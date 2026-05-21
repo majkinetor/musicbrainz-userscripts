@@ -2,6 +2,8 @@
 
 Import Discogs credits as MusicBrainz release relationships.
 
+- [Install at Greasy Fork](https://greasyfork.org/en/scripts/578977-musicbrainz-import-discogs-credits)
+
 This userscript presents itself on *Edit relationships* screen of the MusicBrainz release for those releases having associated Discogs release link.
 
 The workflow is as follows:
