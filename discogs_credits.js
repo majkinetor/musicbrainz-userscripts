@@ -10,8 +10,6 @@
 // @match        https://musicbrainz.org/place/*
 // @license      MIT
 // @grant        unsafeWindow
-// @downloadURL https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.user.js
-// @updateURL https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.meta.js
 // ==/UserScript==
 
 let db;
