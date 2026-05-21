@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         MusicBrainz - Import Discogs Credits
-// @namespace    majkinetor
-// @version      2.3
-// @description  Add a button to import Discogs release relationships to MusicBrainz
+// @name         Import Discogs Credits
+// @namespace    https://github.com/majkinetor/musicbrainz-userscripts
+// @version      3.0
+// @description  Import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
 // @match        https://musicbrainz.org/artist/*
