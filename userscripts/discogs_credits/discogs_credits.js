@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz - Import Discogs Credits
 // @namespace    majkinetor
-// @version      2.1
+// @version      3.0
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -463,7 +463,7 @@ function insertDiscogsBar(discogsUrl) {
 
         const copyLogBtn = document.createElement('button');
         copyLogBtn.textContent = 'Copy log';
-        copyLogBtn.style.cssText = 'font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-top:0.4rem;display:block;';
+        copyLogBtn.style.cssText = 'font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-left:auto;flex-shrink:0;';
         copyLogBtn.addEventListener('click', () => {
             const lines = [...logs.querySelectorAll('li')].map(li => li.innerText).join('\n');
             navigator.clipboard.writeText(lines).catch(() => {
@@ -473,7 +473,7 @@ function insertDiscogsBar(discogsUrl) {
             copyLogBtn.textContent = 'Copied!';
             setTimeout(() => { copyLogBtn.textContent = 'Copy log'; }, 1500);
         });
-        outputDiv.appendChild(copyLogBtn);
+        row2.appendChild(copyLogBtn);
 
         // Expose progress update hooks for instantFillRelationships to call
         bar._setProgress = (pct, statusText) => {
@@ -1369,13 +1369,39 @@ function startImportRels(discogsUrl, processTracklist, applyToTracks, createWork
             const allArtistRoles = artistRoles.concat(tracklistRels);
             const uniqueArtists = [];
             const seenResourceUrls = new Set();
+            // rolesMap: resource_url → [{linkType, trackPos, trackTitle}]
+            const rolesMap = new Map();
             allArtistRoles.forEach(role => {
-                if (role.artist && role.artist.resource_url && !seenResourceUrls.has(role.artist.resource_url)) {
-                    seenResourceUrls.add(role.artist.resource_url);
+                const url = role.artist?.resource_url;
+                if (!url) return;
+                if (!rolesMap.has(url)) rolesMap.set(url, []);
+                // Build display label: instrument/vocal name > linkType
+                let displayLabel = role.linkType;
+                if (role.attributes && role.attributes.length > 0) {
+                    const attr = role.attributes[0];
+                    if (attr._type === 'instrument' && attr.value) displayLabel = attr.value;
+                    else if (attr._type === 'vocal' && attr.value) displayLabel = attr.value;
+                    else if (typeof attr === 'string') displayLabel = `${role.linkType} [${attr}]`;
+                }
+                rolesMap.get(url).push({
+                    linkType: role.linkType,
+                    displayLabel,
+                    trackPos: role.track?.position || '',
+                    trackTitle: role.track?.title || '',
+                });
+                if (!seenResourceUrls.has(url)) {
+                    seenResourceUrls.add(url);
                     // Ensure link_infos is populated for this artist before any MB lookup
-                    getDiscogsLinkKey(role.artist.resource_url);
+                    getDiscogsLinkKey(url);
                     uniqueArtists.push(role.artist);
                 }
+            });
+            // Also add company roles to a companiesRolesMap
+            const companiesRolesMap = new Map();
+            json.companies.forEach(c => {
+                if (!c.resource_url) return;
+                if (!companiesRolesMap.has(c.resource_url)) companiesRolesMap.set(c.resource_url, []);
+                companiesRolesMap.get(c.resource_url).push({ linkType: c.entity_type_name || '' });
             });
 
             // Pre-flight: check artists and companies, show unified review table.
@@ -1400,7 +1426,7 @@ function startImportRels(discogsUrl, processTracklist, applyToTracks, createWork
                 }
             } catch(e) {}
 
-            function runPreflight() {
+            function runPreflight(bypassIdb) {
                 const artistProgressLi = document.createElement('li');
                 artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz…`;
                 logs.appendChild(artistProgressLi);
@@ -1410,34 +1436,40 @@ function startImportRels(discogsUrl, processTracklist, applyToTracks, createWork
                 logs.appendChild(companyProgressLi);
 
                 return Promise.all([
-                    checkMissingArtists(uniqueArtists, artistProgressLi),
-                    checkMissingCompanies(uniqueCompanies, companyProgressLi),
+                    checkMissingArtists(uniqueArtists, artistProgressLi, bypassIdb),
+                    checkMissingCompanies(uniqueCompanies, companyProgressLi, bypassIdb),
                 ]).then(([artistResults, companyResults]) => {
                     const allResults = [...artistResults.allResults, ...companyResults.allResults];
-                    // Save to cache
-                    try { localStorage.setItem(PREFLIGHT_CACHE_KEY, JSON.stringify({ date: today, results: allResults })); } catch(e) {}
+                    // Save to cache (only if not bypassing)
+                    if (!bypassIdb) try { localStorage.setItem(PREFLIGHT_CACHE_KEY, JSON.stringify({ date: today, results: allResults })); } catch(e) {}
                     return allResults;
                 });
             }
 
-            const preflightPromise = cachedResults
-                ? (() => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `Using cached pre-flight results from today. <button id="discogs-refresh-preflight" style="font-size:0.8rem;cursor:pointer;padding:0.1rem 0.4rem;">🔄 Refresh</button>`;
-                    logs.appendChild(li);
-                    return new Promise(resolve => {
-                        document.getElementById('discogs-refresh-preflight')?.addEventListener('click', () => {
-                            try { localStorage.removeItem(PREFLIGHT_CACHE_KEY); } catch(e) {}
-                            li.textContent = 'Cache cleared — re-running pre-flight…';
-                            runPreflight().then(resolve);
-                        });
-                        resolve(cachedResults);
-                    });
-                })()
-                : runPreflight();
+            const preflightPromise = cachedResults ? Promise.resolve(cachedResults) : runPreflight();
 
             return preflightPromise.then(allResults => {
-                return showReviewTable(allResults);
+                // Annotate each result with its Discogs roles (works for both cache and fresh)
+                allResults.forEach(r => {
+                    const url = r.entity?.resource_url;
+                    if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
+                });
+                return showReviewTable(allResults, rolesMap, companiesRolesMap, {
+                    isFromCache: !!cachedResults,
+                    cacheKey: PREFLIGHT_CACHE_KEY,
+                    onRefresh: () => {
+                        // Also clear the Discogs release cache so data is truly fresh
+                        const relKey = `discogs-release-${discogsUrl.replace(/[^a-z0-9]/gi, '-')}`;
+                        try { localStorage.removeItem(relKey); } catch(e) {}
+                        return runPreflight(true).then(freshResults => {
+                        freshResults.forEach(r => {
+                            const url = r.entity?.resource_url;
+                            if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
+                        });
+                        return freshResults;
+                        });
+                    },
+                });
             })
                 .then(confirmedMap => {
                     // Update localStorage preflight cache to reflect user's confirmed selections
@@ -1491,7 +1523,7 @@ function startImportRels(discogsUrl, processTracklist, applyToTracks, createWork
  *   nameMatches – array of { id, name, disambiguation } from the MB name search
  *                 (empty array means truly not found → needs creation)
  */
-async function checkMissingArtists(artists, progressLi) {
+async function checkMissingArtists(artists, progressLi, bypassIdb) {
     const CONCURRENCY = 5;   // requests in-flight at once
     const MIN_GAP_MS  = 200; // minimum ms between launching each slot
 
@@ -1538,7 +1570,7 @@ async function checkMissingArtists(artists, progressLi) {
             try {
                 const tx = db.transaction(['mblinks'], 'readonly');
                 const req = tx.objectStore('mblinks').get(key);
-                req.onsuccess = () => resolve(req.result?.mb_links?.[0] || null);
+                req.onsuccess = () => resolve(req.result || null);
                 req.onerror  = () => resolve(null);
             } catch(e) { resolve(null); }
         });
@@ -1564,11 +1596,20 @@ async function checkMissingArtists(artists, progressLi) {
             return json ? { name: json.name || null, disambiguation: json.disambiguation || '' } : { name: null, disambiguation: '' };
         }
 
-        // 1. IDB cache — instant, no network (but fetch name for display)
-        const cached = await checkIdbCache(key);
-        if (cached) {
-            const info = await fetchMbArtistInfo(cached);
-            return resolvedResult(cached, info.name, info.disambiguation, 'cache');
+        // 1. IDB cache — instant, no network
+        if (!bypassIdb) {
+            const cachedRec = await checkIdbCache(key);
+            if (cachedRec?.mb_links?.[0]) {
+                const cached = cachedRec.mb_links[0];
+                if (cachedRec.mb_name) {
+                    return resolvedResult(cached, cachedRec.mb_name, cachedRec.mb_disambiguation || '', 'cache');
+                }
+                const info = await fetchMbArtistInfo(cached);
+                if (info.name) {
+                    try { const t=db.transaction(['mblinks'],'readwrite'); t.objectStore('mblinks').put({...cachedRec, mb_name:info.name, mb_disambiguation:info.disambiguation}); } catch(e){}
+                }
+                return resolvedResult(cached, info.name, info.disambiguation, 'cache');
+            }
         }
 
         // 2. Name search — resolves newly created artists without a Discogs link yet
@@ -1587,7 +1628,7 @@ async function checkMissingArtists(artists, progressLi) {
             if (key) {
                 try {
                     const tx = db.transaction(['mblinks'], 'readwrite');
-                    tx.objectStore('mblinks').put({ discogs_id: key, mb_links: [mbUrl] });
+                    tx.objectStore('mblinks').put({ discogs_id: key, mb_links: [mbUrl], mb_name: a.name, mb_disambiguation: a.disambiguation || '' });
                 } catch(e) { /* ignore duplicate */ }
             }
             return resolvedResult(mbUrl, a.name, a.disambiguation, 'name');
@@ -1604,7 +1645,15 @@ async function checkMissingArtists(artists, progressLi) {
                 const mbUrl = `//musicbrainz.org/artist/${a.id}`;
                 // rel.artist from the URL endpoint may not include full name details; fetch them
                 const info = (a.name) ? a : await fetchMbArtistInfo(mbUrl);
-                return resolvedResult(mbUrl, info.name || a.name, info.disambiguation || a.disambiguation || '', 'url');
+                const resolvedName = info.name || a.name;
+                const resolvedDisam = info.disambiguation || a.disambiguation || '';
+                if (key && resolvedName) {
+                    try {
+                        const tx2 = db.transaction(['mblinks'], 'readwrite');
+                        tx2.objectStore('mblinks').put({ discogs_id: key, mb_links: [mbUrl], mb_name: resolvedName, mb_disambiguation: resolvedDisam });
+                    } catch(e) {}
+                }
+                return resolvedResult(mbUrl, resolvedName, resolvedDisam, 'url');
             }
         }
 
@@ -1654,7 +1703,7 @@ async function checkMissingArtists(artists, progressLi) {
  * Checks companies (labels/places) against MB — same approach as checkMissingArtists.
  * Returns { allResults } with the same unified result shape.
  */
-async function checkMissingCompanies(companies, progressLi) {
+async function checkMissingCompanies(companies, progressLi, bypassIdb) {
     const CONCURRENCY = 5;
     const MIN_GAP_MS  = 200;
     let done = 0;
@@ -1696,7 +1745,7 @@ async function checkMissingCompanies(companies, progressLi) {
             try {
                 const tx = db.transaction(['mblinks'], 'readonly');
                 const req = tx.objectStore('mblinks').get(key);
-                req.onsuccess = () => resolve(req.result?.mb_links?.[0] || null);
+                req.onsuccess = () => resolve(req.result || null);
                 req.onerror  = () => resolve(null);
             } catch(e) { resolve(null); }
         });
@@ -1720,14 +1769,26 @@ async function checkMissingCompanies(companies, progressLi) {
                         : { name: null, disambiguation: '' };
         }
 
-        // 1. IDB cache
-        const cached = await checkIdbCache(key);
-        if (cached) {
-            const info = await fetchMbEntityInfo(cached);
-            return { type: 'resolved', entityType, entity: company, displayName, discogsHref,
-                     mbUrl: cached, mbName: info.name, mbDisambig: info.disambiguation,
-                     logEntry: { displayName, discogsHref, mbUrl: cached, mbName: info.name,
-                                 mbDisambig: info.disambiguation, via: 'cache' } };
+        // 1. IDB cache — use stored name if available (skip when bypassIdb)
+        if (!bypassIdb) {
+            const cachedRec = await checkIdbCache(key);
+            if (cachedRec?.mb_links?.[0]) {
+                const cached = cachedRec.mb_links[0];
+                if (cachedRec.mb_name) {
+                    return { type: 'resolved', entityType, entity: company, displayName, discogsHref,
+                             mbUrl: cached, mbName: cachedRec.mb_name, mbDisambig: cachedRec.mb_disambiguation || '',
+                             logEntry: { displayName, discogsHref, mbUrl: cached, mbName: cachedRec.mb_name,
+                                         mbDisambig: cachedRec.mb_disambiguation || '', via: 'cache' } };
+                }
+                const info = await fetchMbEntityInfo(cached);
+                if (info.name) {
+                    try { const t=db.transaction(['mblinks'],'readwrite'); t.objectStore('mblinks').put({...cachedRec, mb_name:info.name, mb_disambiguation:info.disambiguation}); } catch(e){}
+                }
+                return { type: 'resolved', entityType, entity: company, displayName, discogsHref,
+                         mbUrl: cached, mbName: info.name, mbDisambig: info.disambiguation,
+                         logEntry: { displayName, discogsHref, mbUrl: cached, mbName: info.name,
+                                     mbDisambig: info.disambiguation, via: 'cache' } };
+            }
         }
 
         // 2. Name search
@@ -1750,6 +1811,7 @@ async function checkMissingCompanies(companies, progressLi) {
                     tx.objectStore('mblinks').put({ discogs_id: key, mb_links: [mbUrl] });
                 } catch(e) {}
             }
+            if (key) try { const t=db.transaction(['mblinks'],'readwrite'); t.objectStore('mblinks').put({discogs_id:key, mb_links:[mbUrl], mb_name:a.name, mb_disambiguation:a.disambiguation||''}); } catch(e){}
             return { type: 'resolved', entityType, entity: company, displayName, discogsHref,
                      mbUrl, mbName: a.name, mbDisambig: a.disambiguation,
                      logEntry: { displayName, discogsHref, mbUrl, mbName: a.name,
@@ -1881,7 +1943,12 @@ function guessSortName(name) {
  * artist the user has confirmed (or left as auto-matched). The import never
  * starts until the user explicitly clicks "Start import".
  */
-async function showReviewTable(allResults) {
+async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
+    rolesMap = rolesMap || new Map();
+    companiesRolesMap = companiesRolesMap || new Map();
+    const isFromCache = opts?.isFromCache || false;
+    const cacheKey = opts?.cacheKey || null;
+    const onRefresh = opts?.onRefresh || null;
     return new Promise(resolve => {
         // Per-row state: resource_url -> { mbUrl, mbName, mbDisambig, confirmed }
         // confirmed = true means the user is happy with this match (or it auto-matched cleanly)
@@ -1939,16 +2006,42 @@ async function showReviewTable(allResults) {
             const _r2 = _bar.querySelector('.discogs-bar-row2'); if (_r2) _r2.style.marginTop = '';
         }
 
-        const heading = document.createElement('h4');
-        heading.style.cssText = 'margin:0 0 0.3rem;color:#5a4000;font-size:1rem;';
-        heading.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}`;
+        const heading = document.createElement('div');
+        heading.style.cssText = `display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;` +
+            (isFromCache ? 'background:#ddeeff;border:1px solid #88aacc;' : 'background:#f5e8a0;border:1px solid #d4b800;');
+        const headingText = document.createElement('span');
+        headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:#' + (isFromCache ? '003366' : '5a4000') + ';flex:1;';
+        headingText.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}` +
+            (isFromCache ? ' (cached)' : '');
+        heading.appendChild(headingText);
+        if (isFromCache) {
+            const refreshBtn = document.createElement('button');
+            refreshBtn.textContent = '🔄 Refresh';
+            refreshBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #88aacc;border-radius:3px;background:#fff;color:#003366;';
+            refreshBtn.title = 'Clear cache and re-run pre-flight checks';
+            refreshBtn.addEventListener('click', () => {
+                if (cacheKey) try { localStorage.removeItem(cacheKey); } catch(e) {}
+                (panelLi || panel).remove();
+                if (onRefresh) {
+                    onRefresh().then(freshResults => {
+                        // Show new review table with fresh results (not from cache)
+                        showReviewTable(freshResults, rolesMap, companiesRolesMap, {
+                            isFromCache: false,
+                            cacheKey,
+                            onRefresh,
+                        }).then(confirmedMap => resolve(confirmedMap));
+                    });
+                }
+            });
+            heading.appendChild(refreshBtn);
+        }
         panel.appendChild(heading);
 
         const intro = document.createElement('p');
         intro.style.cssText = 'margin:0 0 0.75rem;font-size:0.85rem;color:#666;';
         intro.innerHTML =
             'Review all artist matches before importing. ' +
-            '<span style="background:#fff3cd;padding:0 0.3rem;border-radius:2px;">Orange rows</span> need attention. ' +
+            '<span style="background:#ffe0e0;padding:0 0.3rem;border-radius:2px;">Red rows</span> need attention. ' +
             '<span style="background:#fff8e1;padding:0 0.3rem;border-radius:2px;">Yellow rows</span> have a name mismatch — verify. ' +
             'Green rows are confirmed. Use the search or create buttons to resolve outstanding issues.';
         panel.appendChild(intro);
@@ -1988,8 +2081,8 @@ async function showReviewTable(allResults) {
             const needsAttention = r.type === 'attention';
 
             // Row background: orange = needs attention, yellow = mismatch, white = clean
-            const rowBg = needsAttention ? '#fff3cd' : (nameMismatch ? '#fff8e1' : '#fff');
-            const borderColor = needsAttention ? '#f0a800' : '#d4d4d4';
+            const rowBg = needsAttention ? '#ffe0e0' : (nameMismatch ? '#fff8e1' : '#fff');
+            const borderColor = needsAttention ? '#cc6666' : '#d4d4d4';
 
             const tr = document.createElement('tr');
             tr.style.cssText = `vertical-align:top;background:${rowBg};`;
@@ -2020,6 +2113,20 @@ async function showReviewTable(allResults) {
                 tdDiscogs.appendChild(w);
             }
             tr.appendChild(tdDiscogs);
+
+            // Roles line below entity name
+            const rolesList = r._roles || [];
+            if (rolesList.length > 0) {
+                const labels = [...new Map(rolesList.map(({displayLabel, linkType, trackPos}) => {
+                    const key = displayLabel || linkType;
+                    return [key + (trackPos ? '['+trackPos+']' : ''), key + (trackPos ? ' ['+trackPos+']' : '')];
+                })).values()];
+                const rolesLine = document.createElement('div');
+                rolesLine.style.cssText = 'font-size:0.75rem;color:#888;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;';
+                rolesLine.title = labels.join(', ');
+                rolesLine.textContent = labels.join(', ');
+                tdDiscogs.appendChild(rolesLine);
+            }
 
             // ── Col 2: MB artist / search ──────────────────────────────────────
             const tdMb = document.createElement('td');
@@ -2085,7 +2192,7 @@ async function showReviewTable(allResults) {
 
             function setRowUnresolved() {
                 rowState.set(r.entity.resource_url, { mbUrl: null, mbName: null, mbDisambig: '', confirmed: false });
-                tr.style.background = '#fff3cd';
+                tr.style.background = '#ffe0e0';
                 searchInput.disabled = false;
                 searchBtn.disabled = false;
                 candidateList.innerHTML = '';
@@ -2107,50 +2214,48 @@ async function showReviewTable(allResults) {
                     tdAction.appendChild(linkSlot);
 
                     // Query whether this specific Discogs URL is already linked in MB.
-                    // Runs through the shared serial queue to avoid rate-limiting.
-                    queuedUrlCheck(() =>
-                        fetchWithRetry(`//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`)
-                            .then(json => {
-                                const linkedIds = (json.relations || [])
-                                    .filter(r => r[entityType])
-                                    .map(r => r[entityType].id);
-                                const linkedToThis  = linkedIds.includes(selected.id);
-                                const linkedToOther = linkedIds.length > 0 && !linkedToThis;
+                    // Cache result in localStorage for today to avoid repeated checks.
+                    const urlCheckCacheKey = `discogs-urlcheck-${selected.id}-${discogsHref.replace(/[^a-z0-9]/gi,'-').substring(0,80)}`;
+                    const urlCheckToday = new Date().toISOString().slice(0, 10);
+                    let urlCheckCached = null;
+                    try { const s = JSON.parse(localStorage.getItem(urlCheckCacheKey)||'null'); if (s?.date===urlCheckToday) urlCheckCached = s.result; } catch(e) {}
 
-                                if (linkedToThis) {
-                                    linkSlot.textContent = '\u2713 Discogs URL already linked';
-                                    linkSlot.style.color = '#5a5';
-                                } else if (linkedToOther) {
-                                    linkSlot.innerHTML = `\u26a0\ufe0f Linked to a <a href="https://musicbrainz.org/${entityType}/${linkedIds[0]}" target="_blank" rel="noopener noreferrer nofollow">different MB ${entityType}</a>`;
-                                    linkSlot.style.color = '#c80';
-                                } else {
-                                    linkSlot.textContent = '';
-                                    const addLinkBtn = document.createElement('button');
-                                    addLinkBtn.textContent = 'Add Discogs link \u2197';
-                                    addLinkBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;';
-                                    addLinkBtn.addEventListener('click', () => {
-                                        const ltId = entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
-                                        const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
-                                        const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
-                                        window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, '_blank', 'noopener,noreferrer');
-                                    });
-                                    linkSlot.appendChild(addLinkBtn);
-                                }
-                            })
-                            .catch(() => {
-                                linkSlot.textContent = '';
-                                const addLinkBtn = document.createElement('button');
-                                addLinkBtn.textContent = 'Add Discogs link \u2197';
-                                addLinkBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;';
-                                addLinkBtn.addEventListener('click', () => {
-                                    const ltId = entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
-                                    const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
-                                    const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
-                                    window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, '_blank', 'noopener,noreferrer');
-                                });
-                                linkSlot.appendChild(addLinkBtn);
-                            })
-                    );
+                    function applyUrlCheckResult(result) {
+                        if (result === 'linked') {
+                            linkSlot.textContent = '\u2713 Discogs URL already linked';
+                            linkSlot.style.color = '#5a5';
+                        } else if (result === 'other') {
+                            linkSlot.innerHTML = `\u26a0\ufe0f Linked to a different MB ${entityType}`;
+                            linkSlot.style.color = '#c80';
+                        } else {
+                            linkSlot.textContent = '';
+                            const addLinkBtn = document.createElement('button');
+                            addLinkBtn.textContent = 'Add Discogs link \u2197';
+                            addLinkBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;';
+                            addLinkBtn.addEventListener('click', () => {
+                                const ltId = entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
+                                const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
+                                const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
+                                window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, '_blank', 'noopener,noreferrer');
+                            });
+                            linkSlot.appendChild(addLinkBtn);
+                        }
+                    }
+
+                    if (urlCheckCached !== null) {
+                        applyUrlCheckResult(urlCheckCached);
+                    } else {
+                        queuedUrlCheck(() =>
+                            fetchWithRetry(`//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`)
+                                .then(json => {
+                                    const linkedIds = (json.relations || []).filter(r => r[entityType]).map(r => r[entityType].id);
+                                    const result = linkedIds.includes(selected.id) ? 'linked' : linkedIds.length > 0 ? 'other' : 'none';
+                                    try { localStorage.setItem(urlCheckCacheKey, JSON.stringify({ date: urlCheckToday, result })); } catch(e) {}
+                                    applyUrlCheckResult(result);
+                                })
+                                .catch(() => applyUrlCheckResult('none'))
+                        );
+                    }
                 }
                 const createBtn = document.createElement('button');
                 createBtn.textContent = 'Create in MB ↗';
@@ -2285,19 +2390,26 @@ async function showReviewTable(allResults) {
             searchBtn.addEventListener('click', () => doSearch(searchInput.value.trim()));
 
             // ── Initial population ─────────────────────────────────────────────
-            if (isResolved && initMbName) {
+            if (isResolved && initMbUrl) {
                 // Pre-fill with the auto-matched result.
                 // Always reconstruct the MB URL using the current entityType — the cached
                 // mbUrl may have been stored as /artist/ for what is now a /label/ or /place/.
                 const mbid = initMbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
                 const correctedMbUrl = `//musicbrainz.org/${entityType}/${mbid}`;
-                const fakeA = { id: mbid, name: initMbName, disambiguation: initMbDisam };
+                // If name fetch was rate-limited, use MBID as display and mark unconfirmed
+                const displayName2 = initMbName || mbid;
+                if (!initMbName) {
+                    // Name unknown — keep confirmed:true but flag yellow for user awareness
+                    rowState.set(r.entity.resource_url, { mbUrl: initMbUrl, mbName: null, mbDisambig: '', confirmed: true });
+                    tr.style.background = '#fff8e1'; // yellow — needs verification
+                }
+                const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
                 candidateList.innerHTML = '';
                 const selRow = document.createElement('div');
                 selRow.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;';
                 const selA = document.createElement('a');
                 selA.href = 'https:' + correctedMbUrl; selA.target = '_blank'; selA.rel = 'noopener noreferrer nofollow';
-                selA.textContent = '\u2713 ' + initMbName + (initMbDisam ? ` (${initMbDisam})` : '');
+                selA.textContent = '\u2713 ' + displayName2 + (initMbDisam ? ` (${initMbDisam})` : '') + (!initMbName ? ' ⚠ name unknown' : '');
                 selA.style.fontWeight = 'bold';
                 const undoBtn = document.createElement('button');
                 undoBtn.textContent = '\u2715';
@@ -2356,6 +2468,67 @@ async function showReviewTable(allResults) {
             rowState.forEach((s, resourceUrl) => {
                 if (s.mbUrl) confirmedMap.set(resourceUrl, s.mbUrl);
             });
+
+            // ── Log summary table ──────────────────────────────────────
+            const tbl = document.createElement('table');
+            tbl.style.cssText = 'border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;';
+            const thRow = document.createElement('tr');
+            thRow.style.background = '#f5f5f5';
+            ['Discogs entity', 'Roles / Tracks', 'MB match', 'MBID'].forEach(h => {
+                const th = document.createElement('th');
+                th.style.cssText = 'text-align:left;padding:0.2rem 0.4rem;border:1px solid #ddd;white-space:nowrap;';
+                th.textContent = h;
+                thRow.appendChild(th);
+            });
+            tbl.appendChild(thRow);
+            allResults.forEach(r => {
+                const state = rowState.get(r.entity?.resource_url) || {};
+                const tr2 = document.createElement('tr');
+                const url = r.entity?.resource_url || '';
+                const rolesList2 = url ? (rolesMap.get(url) || companiesRolesMap.get(url) || []) : [];
+                const grouped2 = new Map();
+                rolesList2.forEach(({ displayLabel, linkType, trackPos }) => {
+                    const key = displayLabel || linkType;
+                    if (!grouped2.has(key)) grouped2.set(key, new Set());
+                    if (trackPos) grouped2.get(key).add(trackPos);
+                });
+                const rolesText = [...grouped2.entries()].map(([label, tr]) =>
+                    label + (tr.size ? ' [' + [...tr].join(',') + ']' : '')).join('; ');
+
+                const mbid = state.mbUrl ? state.mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi,'').substring(0,36) : '';
+                const matchText = state.mbName || (state.mbUrl ? mbid : '');
+
+                [r.displayName || r.entity?.name, rolesText, matchText, mbid].forEach((val, ci) => {
+                    const td = document.createElement('td');
+                    td.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #ddd;' +
+                        (ci === 2 && !val ? 'color:#aaa;' : ci === 2 ? 'color:#060;' : '');
+                    if (ci === 2 && mbid) {
+                        const a = document.createElement('a');
+                        a.href = 'https:' + state.mbUrl; a.target = '_blank'; a.rel = 'noopener noreferrer nofollow';
+                        a.textContent = val || mbid;
+                        td.appendChild(a);
+                    } else {
+                        td.textContent = val || (ci === 1 ? '' : ci === 2 ? '—' : '');
+                    }
+                    tr2.appendChild(td);
+                });
+                tbl.appendChild(tr2);
+            });
+            const tblLi = document.createElement('li');
+            tblLi.style.cssText = 'list-style:none;margin:0;padding:0;';
+            tblLi.appendChild(tbl);
+            logs.appendChild(tblLi);
+            // ─────────────────────────────────────────────────────────
+
+            // Add unresolved count line after the table
+            const unresolvedCount = allResults.filter(r => !rowState.get(r.entity?.resource_url)?.confirmed).length;
+            if (unresolvedCount > 0) {
+                const unresolvedLi = document.createElement('li');
+                unresolvedLi.style.cssText = 'list-style:none;margin:0.2rem 0;font-size:0.82rem;color:#a06000;';
+                unresolvedLi.textContent = `⚠ ${unresolvedCount} entity/entities unresolved — will be skipped`;
+                logs.appendChild(unresolvedLi);
+            }
+
             (panelLi || panel).remove();
             resolve(confirmedMap);
         });
@@ -2369,6 +2542,7 @@ async function showReviewTable(allResults) {
         panelLi.appendChild(panel);
         logs.appendChild(panelLi);
         logs.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        _hideBar();
     });
 }
 
@@ -2482,17 +2656,24 @@ function convertDiscogsArtistsToRolesRelationships(artists) {
 }
 
 function getDiscogsReleaseData(url) {
+    const cacheKey = `discogs-release-${url.replace(/[^a-z0-9]/gi, '-')}`;
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+        const saved = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+        if (saved?.date === today && saved.data) {
+            return Promise.resolve(saved.data);
+        }
+    } catch(e) {}
+
     return fetch(
         `${url.replace(
             'https://www.discogs.com/release/',
             'https://api.discogs.com/releases/'
         )}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`
     )
-        .then(body => {
-            return body.json();
-        })
+        .then(body => body.json())
         .then(json => {
-            console.log(json);
+            try { localStorage.setItem(cacheKey, JSON.stringify({ date: today, data: json })); } catch(e) {}
             return json;
         });
 }
