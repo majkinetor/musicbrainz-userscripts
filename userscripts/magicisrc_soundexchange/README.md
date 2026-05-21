@@ -1,6 +1,6 @@
 # MagicISRC SoundExchange Search
 
-Scripts adds batch lookup on the [MagicISRC](https://magicisrc.kepstin.ca/) using the [SoundExchange](https://isrc.soundexchange.com/) ISRC database.
+Script adds batch lookup on the [MagicISRC](https://magicisrc.kepstin.ca/) using the [SoundExchange](https://isrc.soundexchange.com/) ISRC database.
 
 - [Install at Greasy Fork](https://greasyfork.org/en/scripts/577713-magicisrc-soundexchange-quick-search)
 
