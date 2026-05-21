@@ -12,6 +12,8 @@ The workflow is as follows:
     1. Some relationship are added to the work instead of the track. Non existent work can automatically be created depending on option. If the work doesn't exist, relationship will not be added and will be reported in log
 1. At the end and after potential manual interventions, user confirms the edit
 
+![](./screenshot.png)
+
 Based on the userscripts of mattgoldspink, vzell, kellnerd.
 
 ## Features
@@ -79,6 +81,6 @@ For [Funk D’Void - Technoir](https://musicbrainz.org/release/63b2e0e6-5857-43c
 
 ![usage1](./usage1.gif)
 
-For [Mocky - Music Will Explain (Choir Music Vol. 01)](https://musicbrainz.org/release/3e5946b6-d275-4664-a8e9-1b15f0c55d68), many credits are already in place. Script skips those already created and adds those that do not exist. No works are created because existing ones are found.
+For [Mocky - Music Will Explain (Choir Music Vol. 01)](https://musicbrainz.org/release/3e5946b6-d275-4664-a8e9-1b15f0c55d68), many credits are already in place. Script skips those already created and adds those that do not exist. No works are created because existing ones are found. Existing release level credits that would be added to recordings by the script if they didn't exist, are not removed.
 
 ![usage2](./usage2.gif)
