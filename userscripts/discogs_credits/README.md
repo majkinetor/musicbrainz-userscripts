@@ -72,3 +72,13 @@ Uses `@grant unsafeWindow` to access MB's real page `window` (where `MB.relation
 Same-origin cross-tab messaging for the entity-creation→review-table feedback loop
 1. **Discogs API**
 <br>Fetches release data (artists, companies, tracklist) from `api.discogs.com` using the token from MB's stored Discogs URL
+
+## Animated gifs
+
+For [Funk D’Void - Technoir](https://musicbrainz.org/release/63b2e0e6-5857-43cf-be6b-c98397f5d817), just one work exists, everything else is added by the import script
+
+![usage1](./usage1.gif)
+
+For [Mocky - Music Will Explain (Choir Music Vol. 01)](https://musicbrainz.org/release/3e5946b6-d275-4664-a8e9-1b15f0c55d68), many credits are already in place. Script skips those already created and adds those that do not exist. No works are created because existing ones are found.
+
+![usage2](./usage2.gif)
