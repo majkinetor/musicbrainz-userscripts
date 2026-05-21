@@ -41,9 +41,9 @@ For every recording without a linked work, create a new inline work (title = rec
 
 Entity lookup, matching, search, create and Discogs link association. Requests visit MB and Discogs trough queue to avoid rate limit (5 concurrent workers, 200ms stager).
 
-**Row colors** are used to signify that attention is needed: 🟢 Green = confirmed · 🟡 Yellow = name mismatch (verify) · 🔴 Red = needs attention (not resolved)
+**Row colors** are used to signify that attention is needed: 🟢 confirmed, 🟡 name mismatch (verify), 🔴 needs attention (not resolved)
 
-**Discogs links** are checked after entity is selected and appropriate info is shown: ✓ Discogs URL already linked · "Add Discogs link" · "Linked to a different entity"
+**Discogs links** are checked after entity is selected and appropriate info is shown: ✓ Discogs URL already linked,  "Add Discogs link",  "Linked to a different entity"
 
 - **Parallel lookup**<br>
 Checks all artists, labels and places against MB simultaneously. MB lookup - using IDB cache → name search → Discogs URL lookup
