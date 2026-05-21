@@ -21,7 +21,7 @@ Scripts adds batch lookup on the [MagicISRC](https://magicisrc.kepstin.ca/) usin
 - "Search on SoundExchange" option to invoke search panel for the track
 - +1 button - set track ISRC as 1 higher than previous track
 - On losing focus on ISRC input field, queries SX and shows result inline with mismatch highlights
-- Highlights: 🟠 name mismatch, 🟡 duration mismatch, 🔵 no ISRC present in MB
+- Highlights: 🟠 name mismatch, 🟡 duration mismatch, 🔵 perfect hit (or no ISRC present in MB on initial load)
 
 
 ### Search Panel
