@@ -4,6 +4,8 @@ Scripts adds batch lookup on the [MagicISRC](https://magicisrc.kepstin.ca/) usin
 
 - [Install at Greasy Fork](https://greasyfork.org/en/scripts/577713-magicisrc-soundexchange-quick-search)
 
+![screenshot](./screenshot.png)
+
 ## Features
 
 ### Header
