@@ -14,6 +14,8 @@ The workflow is as follows:
 
 ![](./screenshot.png)
 
+See also [animated gifs](#animated-gifs).
+
 Based on the userscripts of mattgoldspink, vzell, kellnerd.
 
 ## Features
