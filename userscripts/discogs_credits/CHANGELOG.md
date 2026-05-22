@@ -1,6 +1,6 @@
 # Import Discogs Credits Changelog
 
-## 2026-06-22
+## 2026-05-22
 
 ### Features
 
