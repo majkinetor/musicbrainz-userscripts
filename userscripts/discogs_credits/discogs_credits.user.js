@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         MusicBrainz - Import Discogs Credits
+// @name         Import Discogs Credits
 // @namespace    majkinetor
 // @version      2026-05-22
 // @description  Add a button to import Discogs release relationships to MusicBrainz
