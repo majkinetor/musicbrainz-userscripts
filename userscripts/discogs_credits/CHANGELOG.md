@@ -1,6 +1,6 @@
 # Import Discogs Credits Changelog
 
-## 2026.05.22
+## 2026.5.22
 
 ### Features
 
@@ -17,6 +17,6 @@
 1. Cached review table still firing background requests and loosing state
 1. Object error when finally submitting data - labels/places specified with incorrect role
 
-## 2026.05.21
+## 2026.5.21
 
 Initial version
