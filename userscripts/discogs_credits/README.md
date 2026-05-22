@@ -20,7 +20,7 @@ The workflow is as follows:
 
 See also [animated gifs](#animated-gifs).
 
-Based on the userscripts of mattgoldspink, vzell, kellnerd.
+Based on the userscripts of *mattgoldspink*, *vzell*, *kellnerd*.
 
 ## Features
 
@@ -58,7 +58,7 @@ MB results are saved for a day so repeated lookups are instant
 
 ### Instant Fill
 
-The dispatch-based zero-dialog import mechanism, skiping existing relationships (idempotent).
+The dispatch-based zero-dialog import mechanism, skipping existing relationships (idempotent).
 
 - Release-level Relationships — labels, places, company credits, release artists ...
 - Tracklist Relationships — instrument, vocal, task attributes ...
@@ -77,7 +77,7 @@ Pre-flight checks use 5-slot worker pools with 200ms stagger; Discogs URL checks
 1. **unsafeWindow**<br>
 Uses `@grant unsafeWindow` to access MB's real page `window` (where `MB.relationshipEditor` lives) from the userscript sandbox
 1. **BroadcastChannel**<br>
-Same-origin cross-tab messaging for the entity-creation→review-table feedback loop
+Same-origin cross-tab messaging for the entity-creation → review-table feedback loop
 1. **Discogs API**
 <br>Fetches release data (artists, companies, tracklist) from `api.discogs.com` using the token from MB's stored Discogs URL
 

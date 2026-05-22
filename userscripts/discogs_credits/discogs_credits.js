@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz - Import Discogs Credits
 // @namespace    majkinetor
-// @version      3.0
+// @version      3.1
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -10,8 +10,6 @@
 // @match        https://musicbrainz.org/place/*
 // @license      MIT
 // @grant        unsafeWindow
-// @downloadURL https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.user.js
-// @updateURL https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.meta.js
 // ==/UserScript==
 
 let db;
@@ -812,7 +810,9 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
     const positionByGid       = new Map(); // recGid   → track position string
     let trackCount = 0;
     try {
+        let mediumIndex = 0;
         for (const [mediumKey, medium] of MB.tree.iterate(re.state.mediums)) {
+            mediumIndex++;
             const tracks = medium?.tracks ?? medium;
             let trackIndex = 0;
             for (const rawTrack of MB.tree.iterate(tracks)) {
@@ -824,7 +824,8 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
                 trackCount++;
                 if (rec.gid) {
                     recordingByGid.set(rec.gid, rec);
-                    positionByGid.set(rec.gid, String(trackIndex + 1));
+                    // Store compound position for multi-medium releases
+                    positionByGid.set(rec.gid, `${mediumIndex}-${trackIndex + 1}`);
                     // relatedWorks on the track wrapper contains works already linked in the editor
                     const rw = trackObj?.relatedWorks;
                                     if (rw && rw.size > 0) {
@@ -845,6 +846,10 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
                     trackObj?.position, trackObj?.number,
                     rec?.position, rec?.number,
                     trackKey, trackIndex + 1,
+                    // Compound keys: "mediumIndex-trackPosition"
+                    `${mediumIndex}-${trackIndex + 1}`,
+                    trackObj?.position != null ? `${mediumIndex}-${trackObj.position}` : null,
+                    trackObj?.number != null ? `${mediumIndex}-${trackObj.number}` : null,
                 ].filter(x => x != null).map(String));
                 for (const p of positions) recordingByPosition.set(p, rec);
                 trackIndex++;
@@ -867,12 +872,25 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
         if (wsJson) {
             const mediaCount = wsJson.media?.length ?? 0;
             addLogLine(`WS2: ${mediaCount} medium/media in response`);
-            for (const medium of (wsJson.media || [])) {
+            const mediaArr = wsJson.media || [];
+            const isMultiMedium = mediaArr.length > 1;
+            for (const medium of mediaArr) {
+                const medPos = medium.position; // 1-based medium index
                 for (const track of (medium.tracks || [])) {
                     const gid = track.recording?.id;
                     if (!gid) continue;
-                    if (track.position != null) positionToGid.set(String(track.position), gid);
-                    if (track.number != null)   positionToGid.set(String(track.number), gid);
+                    // Always add compound "medPos-trackPos" key (Discogs format for multi-disc)
+                    if (medPos != null && track.position != null) {
+                        positionToGid.set(`${medPos}-${track.position}`, gid);
+                    }
+                    if (medPos != null && track.number != null) {
+                        positionToGid.set(`${medPos}-${track.number}`, gid);
+                    }
+                    // For single-medium releases also add plain position keys
+                    if (!isMultiMedium) {
+                        if (track.position != null) positionToGid.set(String(track.position), gid);
+                        if (track.number != null)   positionToGid.set(String(track.number), gid);
+                    }
                 }
             }
             addLogLine(`WS2 position map: ${positionToGid.size} entries (${[...positionToGid.keys()].sort().join(', ')})`);
@@ -1472,22 +1490,6 @@ function startImportRels(discogsUrl, processTracklist, applyToTracks, createWork
                 });
             })
                 .then(confirmedMap => {
-                    // Update localStorage preflight cache to reflect user's confirmed selections
-                    try {
-                        const updatedResults = allResults.map(r => {
-                            const confirmedUrl = confirmedMap.get(r.entity?.resource_url);
-                            if (confirmedUrl && confirmedUrl !== r.mbUrl) {
-                                // User picked a different match — update the cached result
-                                const mbid = confirmedUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
-                                return { ...r, type: 'resolved', mbUrl: confirmedUrl,
-                                         mbName: null, mbDisambig: '',
-                                         logEntry: r.logEntry ? { ...r.logEntry, mbUrl: confirmedUrl, mbName: null } : null };
-                            }
-                            return r;
-                        });
-                        localStorage.setItem(PREFLIGHT_CACHE_KEY, JSON.stringify({ date: today, results: updatedResults }));
-                    } catch(e) {}
-
                     // Cache every confirmed artist MBID into IDB
                     const cachePromises = [];
                     confirmedMap.forEach((mbUrl, resourceUrl) => {
@@ -1951,6 +1953,24 @@ async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
     const onRefresh = opts?.onRefresh || null;
     return new Promise(resolve => {
         // Per-row state: resource_url -> { mbUrl, mbName, mbDisambig, confirmed }
+        // saveCache: persists current rowState to localStorage immediately
+        function saveCache() {
+            if (!cacheKey) return;
+            try {
+                const today2 = new Date().toISOString().slice(0, 10);
+                const updatedResults = allResults.map(r => {
+                    const url = r.entity?.resource_url;
+                    const s = url ? rowState.get(url) : null;
+                    if (!s?.mbUrl) return { ...r, type: 'attention' };
+                    if (s.mbUrl === r.mbUrl && s.mbName === r.mbName) return r;
+                    return { ...r, type: 'resolved', mbUrl: s.mbUrl,
+                             mbName: s.mbName || null, mbDisambig: s.mbDisambig || '',
+                             logEntry: { ...(r.logEntry||{}), mbUrl: s.mbUrl,
+                                         mbName: s.mbName || null, mbDisambig: s.mbDisambig || '' }};
+                });
+                localStorage.setItem(cacheKey, JSON.stringify({ date: today2, results: updatedResults }));
+            } catch(e) {}
+        }
         // confirmed = true means the user is happy with this match (or it auto-matched cleanly)
         const rowState = new Map();
 
@@ -2188,6 +2208,7 @@ async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
                 // Actions: Add Discogs link + Create fallback
                 renderActions(a);
                 updateImportBtn();
+                saveCache();
             }
 
             function setRowUnresolved() {
@@ -2202,6 +2223,7 @@ async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
                 candidateList.appendChild(none);
                 renderActions(null);
                 updateImportBtn();
+                saveCache();
             }
 
             function renderActions(selected) {
@@ -2468,6 +2490,8 @@ async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
             rowState.forEach((s, resourceUrl) => {
                 if (s.mbUrl) confirmedMap.set(resourceUrl, s.mbUrl);
             });
+
+            saveCache();
 
             // ── Log summary table ──────────────────────────────────────
             const tbl = document.createElement('table');
