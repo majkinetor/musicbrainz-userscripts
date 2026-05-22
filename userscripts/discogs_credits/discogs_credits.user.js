@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz - Import Discogs Credits
 // @namespace    majkinetor
-// @version      3.1
+// @version      2026-05-22
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -14,8 +14,12 @@
 // @match        https://beta.musicbrainz.org/place/*
 // @license      MIT
 // @grant        unsafeWindow
+// @downloadURL  https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.user.js
+// @updateURL    https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.meta.js
+// @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits
+// @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
+// @installURL   https://greasyfork.org/en/scripts/578977
 // ==/UserScript==
-// https://greasyfork.org/en/scripts/578977-muscibrainz-import-discogs-credits
 
 let db;
 const request = indexedDB.open('mblink');
@@ -844,22 +848,59 @@ function readIdbRecord(key) {
     });
 }
 
-async function fetchWithRetry(url, retries = 4) {
-    for (let attempt = 0; attempt <= retries; attempt++) {
-        try {
-            const res = await fetch(url);
-            if (res.status === 429 || res.status === 503) {
-                await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
-                continue;
-            }
-            if (!res.ok) return null; // 404 etc. — don't retry, just return null
-            return await res.json();
-        } catch(e) {
-            if (attempt === retries) return null;
-            await new Promise(r => setTimeout(r, 500));
-        }
+// ── Centralized MB API throttle ──────────────────────────────────────────
+// All MB API requests go through this single queue to avoid 503 storms.
+// Starts fast, slows on 503, reads Retry-After, speeds up on success.
+const mbThrottle = (() => {
+    let _chain = Promise.resolve();
+    let _gap = 250;          // ms between requests — start optimistic
+    const MIN_GAP = 200;
+    const MAX_GAP = 3000;
+    let _totalRequests = 0;
+    let _rateLimited = 0;
+
+    function _enqueue(url, retries, wantJson) {
+        return new Promise((resolve) => {
+            _chain = _chain.then(async () => {
+                for (let attempt = 0; attempt <= retries; attempt++) {
+                    _totalRequests++;
+                    try {
+                        const res = await fetch(url);
+                        if (res.status === 429 || res.status === 503) {
+                            _rateLimited++;
+                            const ra = parseInt(res.headers.get('Retry-After'), 10);
+                            const waitMs = (ra > 0) ? ra * 1000 : Math.min(2000 * Math.pow(2, attempt), 30000);
+                            _gap = Math.min(_gap * 2, MAX_GAP);
+                            await new Promise(r => setTimeout(r, waitMs));
+                            continue;
+                        }
+                        if (!res.ok) { resolve(null); return; }
+                        // Success — gradually speed up
+                        _gap = Math.max(Math.floor(_gap * 0.85), MIN_GAP);
+                        const result = wantJson ? await res.json() : res;
+                        resolve(result);
+                        // Wait gap before next queued request starts
+                        await new Promise(r => setTimeout(r, _gap));
+                        return;
+                    } catch (e) {
+                        if (attempt === retries) { resolve(null); return; }
+                        await new Promise(r => setTimeout(r, 500));
+                    }
+                }
+                resolve(null);
+            });
+        });
     }
-    return null;
+
+    return {
+        fetchJson: (url, retries = 3) => _enqueue(url, retries, true),
+        fetchRaw:  (url, retries = 3) => _enqueue(url, retries, false),
+        stats: () => ({ total: _totalRequests, rateLimited: _rateLimited, gap: _gap }),
+    };
+})();
+
+async function fetchWithRetry(url, retries = 4) {
+    return mbThrottle.fetchJson(url, retries);
 }
 
 
@@ -1701,8 +1742,8 @@ function startImportRels(discogsUrl, processTracklist, applyToTracks, createWork
  *                 (empty array means truly not found → needs creation)
  */
 async function checkMissingArtists(artists, progressLi, bypassIdb) {
-    const CONCURRENCY = 5;   // requests in-flight at once
-    const MIN_GAP_MS  = 200; // minimum ms between launching each slot
+    const CONCURRENCY = 5;   // worker count (MB requests are serialized via mbThrottle)
+    const MIN_GAP_MS  = 50;  // stagger between worker starts (actual MB pacing is in mbThrottle)
 
     let done = 0;
     let inFlight = 0; // names of artists currently being fetched
@@ -1724,21 +1765,7 @@ async function checkMissingArtists(artists, progressLi, bypassIdb) {
     // Fetch with automatic retry on 503/429; backs off and retries up to 4 times.
     // Returns parsed JSON or null on permanent failure.
     async function mbFetch(url, retries = 4) {
-        for (let attempt = 0; attempt <= retries; attempt++) {
-            try {
-                const res = await fetch(url);
-                if (res.status === 503 || res.status === 429) {
-                    // Rate limited — back off then retry
-                    await delay(1000 * Math.pow(2, attempt)); // 1s, 2s, 4s, 8s
-                    continue;
-                }
-                return await res.json();
-            } catch (e) {
-                if (attempt === retries) return null;
-                await delay(500);
-            }
-        }
-        return null;
+        return mbThrottle.fetchJson(url, retries);
     }
 
     function checkIdbCache(key) {
@@ -2145,17 +2172,14 @@ async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
             const mbid = (r.mbUrl || '').split('/').pop().replace(/[^a-f0-9-]/g, '').substring(0, 36);
             if (!mbid) continue;
             const et = r.entityType || 'artist';
-            const resp = await fetch(`https://musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
-            if (resp.ok) {
-                const data = await resp.json();
-                if (data?.name) {
+            const data = await mbThrottle.fetchJson(`https://musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
+            if (data?.name) {
                     _preloadedNames.set(rUrl, { name: data.name, dis: data.disambiguation || '' });
                     if (idbKey && db) try {
                         db.transaction(['mblinks'], 'readwrite').objectStore('mblinks').put({
                             discogs_id: idbKey, mb_links: [r.mbUrl],
                             mb_name: data.name, mb_disambiguation: data.disambiguation || '' });
                     } catch(e) {}
-                }
             }
             await new Promise(ok => setTimeout(ok, 200));
         } catch(e) {}
@@ -2626,9 +2650,9 @@ async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
                 const mbid = extractMbid(q);
                 if (mbid) {
                     candidateList.innerHTML = '<div style="font-size:0.82rem;color:#888;">Looking up MBID…</div>';
-                    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`)
-                        .then(res => { if (!res.ok) throw new Error(res.status); return res.json(); })
+                    mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`)
                         .then(json => {
+                            if (!json) return;
                             candidateList.innerHTML = '';
                             if (json.id) {
                                 candidateList.appendChild(makeCandidateRow({
@@ -2645,9 +2669,9 @@ async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
                         });
                     return;
                 }
-                fetch(`//musicbrainz.org/ws/2/${entityType}?query=${encodeURIComponent(q)}&fmt=json&limit=8`)
-                    .then(res => res.json())
+                mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}?query=${encodeURIComponent(q)}&fmt=json&limit=8`)
                     .then(json => {
+                        if (!json) return;
                         candidateList.innerHTML = '';
                         const resultKey = entityType === 'label' ? 'labels' : entityType === 'place' ? 'places' : 'artists';
                         if (!json[resultKey] || json[resultKey].length === 0) {
