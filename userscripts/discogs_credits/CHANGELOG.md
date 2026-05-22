@@ -11,7 +11,6 @@
 1. Musicbrainz beta server added
 1. All *arrange* roles moved from work to recording relationship
 
-
 ### Fixes
 
 1. Instant fill now works with releases with multiple media
