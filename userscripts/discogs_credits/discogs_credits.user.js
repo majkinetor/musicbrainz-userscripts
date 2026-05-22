@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         MusicBrainz - Import Discogs Credits
+// @name         Import Discogs Credits
 // @namespace    majkinetor
 // @version      2026-05-22
 // @description  Add a button to import Discogs release relationships to MusicBrainz
@@ -13,12 +13,12 @@
 // @match        https://beta.musicbrainz.org/label/*
 // @match        https://beta.musicbrainz.org/place/*
 // @license      MIT
-// @grant        unsafeWindow
 // @downloadURL  https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.user.js
 // @updateURL    https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.meta.js
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
 // @installURL   https://greasyfork.org/en/scripts/578977
+// @grant        unsafeWindow
 // ==/UserScript==
 
 let db;
@@ -1927,20 +1927,7 @@ async function checkMissingCompanies(companies, progressLi, bypassIdb) {
     const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
     async function mbFetch(url, retries = 4) {
-        for (let attempt = 0; attempt <= retries; attempt++) {
-            try {
-                const res = await fetch(url);
-                if (res.status === 503 || res.status === 429) {
-                    await delay(1000 * Math.pow(2, attempt));
-                    continue;
-                }
-                return await res.json();
-            } catch(e) {
-                if (attempt === retries) return null;
-                await delay(500);
-            }
-        }
-        return null;
+        return mbThrottle.fetchJson(url, retries);
     }
 
     function checkIdbCache(key) {
@@ -2986,13 +2973,13 @@ function getDiscogsReleaseData(url) {
  *  2. selectValue(EditNote) in updateSummary() after import
  */
 function buildEditNote(discogsUrl, opts, extraLines) {
+    const s = GM_info.script;
     const mbUrl = location.href.replace(/\/edit-relationships$/, '');
     const lines = [
-        'MusicBrainz - Import Discogs Credits v' + GM_info.script.version,
-        'https://greasyfork.org/en/scripts/578977-muscibrainz-import-discogs-credits',
+        s.name + ' v' + s.version + ' by ' + s.author + ' - ' + s.homepageURL,
         '',
-        'MusicBrainz: ' + mbUrl,
-        'Discogs: ' + discogsUrl,
+        'Release URL: ' + mbUrl,
+        'Discogs URL: ' + discogsUrl,
     ];
     if (opts) lines.push('Options: ' + opts);
     if (extraLines) lines.push(...(Array.isArray(extraLines) ? extraLines : [extraLines]));
@@ -4829,10 +4816,10 @@ const WORK_ONLY_ARTIST_RELS = [
     'revised by',
     'translator',
     'reconstructed by',
-    'arranger',
-    'instruments arranger',
+    // 'arranger',
+    // 'instruments arranger',
     'orchestrator',
-    'vocals arranger',
+    // 'vocals arranger',
     'previously attributed to',
     'miscellaneous support',
     'dedicated to',
