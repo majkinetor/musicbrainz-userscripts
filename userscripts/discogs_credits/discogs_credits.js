@@ -3951,7 +3951,7 @@ const INSTRUMENTS = {
     Percussion: null,
     Rainstick: null,
     Ratchet: null,
-    Rattle: null,
+    Rattle: 'shaken idiophone',
     'Reco-reco': null,
     Repinique: null,
     Rototoms: null,
