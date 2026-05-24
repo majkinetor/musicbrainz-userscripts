@@ -130,25 +130,40 @@ userscripts/discogs_credits/
 
 `pnpm run dev` rebuilds `dist/` on every save **and** serves it at
 `http://127.0.0.1:8765/discogs_credits.user.js` with the metadata block
-rewritten on the fly so VM/TM treats every rebuild as a new release:
+rewritten on the fly so the userscript manager treats every rebuild as
+a new release:
 
-- `@version` gets a unix-timestamp suffix appended (`X.Y.Z` → `X.Y.Z.<ts>`), monotonically increasing
-- `@updateURL` and `@downloadURL` are rewritten to the localhost URL above
+- `@version` is overridden with `YYYY.M.D.HHMMSS` — recognizable, always-newer.
+- `@updateURL` and `@downloadURL` are rewritten to the localhost URL above.
 
-One-time install:
+Every request the dev server serves is logged to the terminal (e.g. `[19:42:11] GET / → 219.775 bytes`), so you can see when the manager polls.
+
+The "how to update" step depends on which manager you're using.
+
+#### Tampermonkey (lowest friction)
 
 1. Run `pnpm run dev`.
-2. Open Violentmonkey (or Tampermonkey) Dashboard → "Install from URL" → paste
-   `http://127.0.0.1:8765/discogs_credits.user.js`.
-3. After installing, open the script in the dashboard and set
-   **Check for updates** → **On every page load**
-   (VM: per-script "Settings" tab → Updates; TM: "Updates" tab → set interval to `0`).
-4. Reload MB. The script re-fetches from localhost on every page load and
-   picks up the latest rebuild because the version bumps every time.
+2. Visit `http://127.0.0.1:8765/discogs_credits.user.js` in the browser — TM's `.user.js` handler intercepts and offers Install.
+3. After install, open the script in TM → **Settings** tab → set **Check for updates** to `0` days (interval = "every page load").
+4. Reload MB. TM re-fetches from localhost on each load; the script updates because `@version` always bumps.
 
-Stop with Ctrl-C when you're done. While the dev server is down VM/TM will
-log a fetch error but the *installed* copy keeps working — it just won't
-update until you start the server again.
+#### Violentmonkey
+
+VM does **not** have a per-script "check on every page load" knob. Auto-update runs on the global interval (Dashboard → Settings → Updates, minimum 1 day) — too slow for a tight dev cycle. Two workable patterns:
+
+**Recommended — bookmark the dev URL.** After installing once via `http://127.0.0.1:8765/discogs_credits.user.js`, save that URL as a browser bookmark. After each `src/` save:
+
+1. Click the bookmark.
+2. VM detects the matching `@name`+`@namespace` already installed, sees a newer `@version`, and shows the install/update prompt inline → one click to update.
+3. Reload the MB tab to use the new copy.
+
+Two clicks per dev cycle, no manual paste, no manager polling needed.
+
+**Or — use TM as your dev manager.** TM and VM ship the same script identically; nothing stops you installing TM alongside VM just for the dev install and keeping VM for everything else.
+
+#### Stopping the dev server
+
+Ctrl-C in the terminal. While the server is down, the installed copy keeps working — it just won't update until you start the server again.
 
 ### Alternatives
 

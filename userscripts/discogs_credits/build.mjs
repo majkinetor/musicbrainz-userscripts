@@ -66,9 +66,11 @@ function serve() {
     const server = createServer(async (req, res) => {
         // Single route — anything under / serves the script. Keeps the URL
         // path stable so the install link is always /discogs_credits.user.js.
+        const ts = new Date().toLocaleTimeString();
         if (req.method !== 'GET') {
             res.writeHead(405, { 'Content-Type': 'text/plain' });
             res.end('GET only');
+            console.log(`[${ts}] ${req.method} ${req.url} → 405`);
             return;
         }
         try {
@@ -80,16 +82,21 @@ function serve() {
                 'Pragma':        'no-cache',
             });
             res.end(body);
+            // Log every fetch — useful for confirming when VM/TM polls.
+            console.log(`[${ts}] GET ${req.url} → ${body.length.toLocaleString()} bytes`);
         } catch (e) {
             res.writeHead(500, { 'Content-Type': 'text/plain' });
             res.end('build error: ' + e.message);
+            console.log(`[${ts}] GET ${req.url} → 500 (${e.message})`);
         }
     });
     server.listen(PORT, HOST, () => {
         const url = `http://${HOST}:${PORT}/discogs_credits.user.js`;
         console.log(`serving:  ${url}`);
-        console.log('install:  paste that URL into VM/TM Dashboard → "Install from URL"');
-        console.log('then set: "Check for updates" → "On every page load"\n');
+        console.log('install:  visit that URL in the browser (VM/TM intercept .user.js)');
+        console.log('update:   TM — set "Check for updates" interval = 0 (every page load)');
+        console.log('          VM — bookmark the URL and click it after each save');
+        console.log('          (VM has no per-page-load knob; see DEVELOP.md).\n');
     });
 }
 
