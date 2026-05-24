@@ -1643,21 +1643,53 @@
     }, []) || [];
   }
 
-  // src/discogs_credits.user.js
-  var db;
-  var request = indexedDB.open("mblink");
-  request.onerror = function() {
+  // src/storage.js
+  var db = null;
+  var _request = indexedDB.open("mblink");
+  _request.onerror = function() {
     console.error("Why didn't you allow my web app to use IndexedDB?!");
   };
-  request.onsuccess = function(event) {
+  _request.onsuccess = function(event) {
     db = event.target.result;
   };
-  request.onupgradeneeded = function(event) {
-    const db2 = event.target.result;
-    db2.createObjectStore("mblinks", {
+  _request.onupgradeneeded = function(event) {
+    const upgradeDb = event.target.result;
+    upgradeDb.createObjectStore("mblinks", {
       keyPath: "discogs_id"
     });
   };
+  function readIdbRecord(key) {
+    return new Promise((resolve) => {
+      if (!key || !db) return resolve(null);
+      try {
+        const tx = db.transaction(["mblinks"], "readonly");
+        const req = tx.objectStore("mblinks").get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      } catch (e) {
+        resolve(null);
+      }
+    });
+  }
+
+  // src/edit-note.js
+  function buildEditNote(discogsUrl2, opts, extraLines) {
+    const s = GM_info.script;
+    const mbUrl = location.href.replace(/\/edit-relationships$/, "");
+    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits";
+    const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
+    const lines = [
+      header,
+      "",
+      "Release URL: " + mbUrl,
+      "Discogs URL: " + discogsUrl2
+    ];
+    if (opts) lines.push("Options: " + opts);
+    if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
+    return lines.join("\n");
+  }
+
+  // src/discogs_credits.user.js
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
   (function handleEntityPageIfNeeded() {
     const entityMatch = location.href.match(
@@ -2297,19 +2329,6 @@
     } catch (e) {
     }
   })();
-  function readIdbRecord(key) {
-    return new Promise((resolve) => {
-      if (!key || !db) return resolve(null);
-      try {
-        const tx = db.transaction(["mblinks"], "readonly");
-        const req = tx.objectStore("mblinks").get(key);
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => resolve(null);
-      } catch (e) {
-        resolve(null);
-      }
-    });
-  }
   async function instantFillRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap) {
     resolvedEntityTypes = resolvedEntityTypes || /* @__PURE__ */ new Map();
     confirmedMap = confirmedMap || /* @__PURE__ */ new Map();
@@ -4064,20 +4083,5 @@
       _hideBar();
       tableReady = true;
     });
-  }
-  function buildEditNote(discogsUrl2, opts, extraLines) {
-    const s = GM_info.script;
-    const mbUrl = location.href.replace(/\/edit-relationships$/, "");
-    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits";
-    const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
-    const lines = [
-      header,
-      "",
-      "Release URL: " + mbUrl,
-      "Discogs URL: " + discogsUrl2
-    ];
-    if (opts) lines.push("Options: " + opts);
-    if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
-    return lines.join("\n");
   }
 })();

@@ -40,25 +40,11 @@ import {
     getArtistRoles,
     convertDiscogsArtistsToRolesRelationships,
 }                                  from './mappers.js';
-
-let db;
-const request = indexedDB.open('mblink');
-request.onerror = function () {
-    console.error("Why didn't you allow my web app to use IndexedDB?!");
-};
-request.onsuccess = function (event) {
-    db = event.target.result;
-};
-request.onupgradeneeded = function (event) {
-    const db = event.target.result;
-
-    // Create an objectStore to hold information about our customers. We're
-    // going to use "ssn" as our key path because it's guaranteed to be
-    // unique - or at least that's what I was told during the kickoff meeting.
-    db.createObjectStore('mblinks', {
-        keyPath: 'discogs_id',
-    });
-};
+import {
+    db,
+    readIdbRecord,
+}                                  from './storage.js';
+import { buildEditNote }           from './edit-note.js';
 
 // ── BroadcastChannel: cross-tab artist creation signalling ────────────────────
 // When this script runs on an MB artist page that was opened by the "Create in MB"
@@ -789,18 +775,6 @@ const _urlCheckSessionCache = new Map();
 })();
 
 // Module-level IDB cache read (used by showReviewTable to pre-load names)
-function readIdbRecord(key) {
-    return new Promise(resolve => {
-        if (!key || !db) return resolve(null);
-        try {
-            const tx = db.transaction(['mblinks'], 'readonly');
-            const req = tx.objectStore('mblinks').get(key);
-            req.onsuccess = () => resolve(req.result || null);
-            req.onerror  = () => resolve(null);
-        } catch(e) { resolve(null); }
-    });
-}
-
 async function instantFillRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap) {
     resolvedEntityTypes = resolvedEntityTypes || new Map();
     confirmedMap = confirmedMap || new Map();
@@ -2777,30 +2751,5 @@ async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
 
 
 
-/**
- * Build the edit note / summary text used in two places:
- *  1. re.dispatch({ type: 'update-edit-note' }) at import start
- *  2. selectValue(EditNote) in updateSummary() after import
- */
-function buildEditNote(discogsUrl, opts, extraLines) {
-    const s = GM_info.script;
-    const mbUrl = location.href.replace(/\/edit-relationships$/, '');
-    // Tampermonkey exposes the @homepageURL metadata key as `homepage` on
-    // GM_info.script (not `homepageURL`), while Greasemonkey and Violentmonkey
-    // use `homepageURL`. Fall back across both, and to a hard-coded literal
-    // (keeps the @homepageURL value above in sync) so the edit note never
-    // contains the literal string "undefined". (issue #7)
-    const homepage = s.homepageURL || s.homepage || 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits';
-    const header = s.name + ' v' + s.version + ' by ' + s.author + ' - ' + homepage;
-    const lines = [
-        header,
-        '',
-        'Release URL: ' + mbUrl,
-        'Discogs URL: ' + discogsUrl,
-    ];
-    if (opts) lines.push('Options: ' + opts);
-    if (extraLines) lines.push(...(Array.isArray(extraLines) ? extraLines : [extraLines]));
-    return lines.join('\n');
-}
 
 
