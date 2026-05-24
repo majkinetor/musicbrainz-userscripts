@@ -113,13 +113,17 @@ for (let i = 0; i < selected.length; i++) {
         const { log: importLog, timedOut } = await waitForImportDone(page);
 
         // Persist BOTH the import-bar log AND the browser console+pageerrors per fixture.
+        // Filename: `<ISO8601>_<mbid>.log` so multiple runs accumulate, sorted.
+        // Windows file names can't contain `:` so we replace them with `-`.
         const browserLog = getCapturedLog(page);
         const combined =
             `### Userscript import log (from .discogs-output ul.logs)\n\n${importLog || '(empty)\n'}\n\n` +
             `### Browser console + page errors\n\n${browserLog || '(none)\n'}\n`;
-        const logPath = resolve(LOG_DIR, `${mbid}.log`);
+        const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        const logName = `${stamp}_${mbid}.log`;
+        const logPath = resolve(LOG_DIR, logName);
         await writeFile(logPath, combined);
-        log(c.grey(`  saved log:     test/logs/${mbid}.log  (${combined.length.toLocaleString()} bytes)`));
+        log(c.grey(`  saved log:     test/logs/${logName}  (${combined.length.toLocaleString()} bytes)`));
 
         if (timedOut) {
             log(c.red(`  x import timed out — script never returned to idle. Import-log tail:`));
@@ -197,9 +201,11 @@ for (let i = 0; i < selected.length; i++) {
             }
             try {
                 const browserLog = getCapturedLog(page);
-                const logPath = resolve(LOG_DIR, `${mbid}.log`);
+                const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                const logName = `${stamp}_${mbid}.log`;
+                const logPath = resolve(LOG_DIR, logName);
                 await writeFile(logPath, `### Runner error: ${e.message}\n\n### Browser console + page errors\n\n${browserLog || '(none)\n'}\n`);
-                log(c.grey(`  saved log:     test/logs/${mbid}.log`));
+                log(c.grey(`  saved log:     test/logs/${logName}`));
             } catch (_) { /* ignore log-write errors */ }
         }
         totalFailures++;

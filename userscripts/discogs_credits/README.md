@@ -96,43 +96,4 @@ For [Mocky - Music Will Explain (Choir Music Vol. 01)](https://musicbrainz.org/r
 
 ## Development
 
-Source lives in `src/`, built artifact in `dist/`. Tampermonkey loads `dist/discogs_credits.user.js`.
-
-### One-time setup
-
-```powershell
-pnpm install
-pnpm exec playwright install chromium    # ~150 MB, only needed for tests
-pnpm run login                           # opens MB, log in once, browser auto-closes
-```
-
-`pnpm run login` stores cookies + IDB cache under `.pw-profile/` (gitignored). Subsequent tests reuse the session.
-
-### Iteration loop
-
-```powershell
-pnpm run dev        # watches src/, rebuilds dist/ on every save (~30 ms)
-pnpm run verify     # lint + build + node --check  (static gate)
-pnpm test           # headless run on every fixture in test/fixtures.json
-pnpm test -- --headed --only=fd4c7ae2    # show the browser, run one fixture
-```
-
-The test gate **never submits any edit to MusicBrainz** — it stages the relationships and reads `MB.relationshipEditor.state` directly to assert against Discogs JSON + MB's own validity rules.
-
-### Layout
-
-```
-src/discogs_credits.user.js     source
-dist/discogs_credits.user.js    build output (what Tampermonkey loads)
-build.mjs                       build driver (pass-through for now; esbuild bundle from commit 3 onwards)
-eslint.config.mjs               ESLint 9 flat config
-test/
-├── fixtures.json               release URLs the tests run against
-├── login.mjs                   one-time MB sign-in
-├── run.mjs                     main test runner
-└── lib/                        Playwright helpers + property-based assertions
-dev/
-├── ANALYSIS.md                 living refactor plan
-├── DECISIONS.md                append-only design-decisions log
-└── align-md-tables.mjs         markdown table aligner (dev tool)
-```
+See [DEVELOP.md](./DEVELOP.md) for prerequisites, install steps, the dev loop, testing, and contributor workflow.

@@ -1163,11 +1163,15 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
                 skipped++; tickProgress(); continue;
             }
         }
+        // Resolution must come from the review-table phase: confirmedMap → IDB cache.
+        // The old `getMbId` (network) fallback added ~1-3s per unresolved entity (bug
+        // majkinetor/musicbrainz-userscripts#8) and was redundant — preflight already
+        // tried the same `/ws/2/url` lookup. Unresolved here = unresolved by user.
         let mbUrl;
         try { mbUrl = await getMbidForEntity(company, resolvedEt); }
         catch(e) {
-            try { mbUrl = await getMbId(company, resolvedEt); }
-            catch(e2) { addLogLine(`<span style="color:orange">WARN Skipped ${company.name}: ${e2}</span>`); skipped++; tickProgress(); continue; }
+            addLogLine(`<span style="color:orange">WARN Skipped ${company.name} — not resolved in review</span>`);
+            skipped++; tickProgress(); continue;
         }
         const et = resolvedEt;
         const [t0, t1] = et <= 'release' ? [et, 'release'] : ['release', et];
@@ -1198,15 +1202,11 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
             skipped++; tickProgress(); continue;
         }
         if (!mbUrl) {
+            // See bug #8 — no network fallback; unresolved = skip immediately.
             try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
             catch(e) {
-                try { mbUrl = await getMbId(role.artist, 'artist'); }
-                catch(e2) {
-                    const msg = String(e2);
-                    if (msg.includes('was not found in MB')) addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} — not in MB (${role.linkType})</span>`);
-                    else addLogLine(`<span style="color:red">ERR Lookup failed for ${role.artist.name}: ${msg}</span>`);
-                    skipped++; tickProgress(); continue;
-                }
+                addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} — not resolved in review (${role.linkType})</span>`);
+                skipped++; tickProgress(); continue;
             }
         }
         const credit = role.artist.anv?.trim() || role.artist.name;
@@ -1222,13 +1222,11 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
             addLogLine(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)…`);
             for (const role of applicable) {
                 let mbUrl;
+                // See bug #8 — no network fallback.
                 try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
                 catch(e) {
-                    try { mbUrl = await getMbId(role.artist, 'artist'); }
-                    catch(e2) {
-                        addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} (${role.linkType}) in applyToTracks: ${String(e2).substring(0,80)}</span>`);
-                        continue;
-                    }
+                    addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review</span>`);
+                    continue;
                 }
                 const credit = role.artist.anv?.trim() || role.artist.name;
                 for (const recEntity of recordingByGid.values()) {
@@ -1393,15 +1391,11 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
                 // Apply all work-only artist rels to the work
                 for (const { role } of entries) {
                     let mbUrl;
+                    // See bug #8 — no network fallback.
                     try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
                     catch(e) {
-                        try { mbUrl = await getMbId(role.artist, 'artist'); }
-                        catch(e2) {
-                            const msg = String(e2);
-                            if (msg.includes('was not found in MB')) addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} — not in MB (${role.linkType})</span>`);
-                            else addLogLine(`<span style="color:red">ERR Lookup failed for ${role.artist.name}: ${msg}</span>`);
-                            continue;
-                        }
+                        addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} — not resolved in review (${role.linkType})</span>`);
+                        continue;
                     }
                     const credit = role.artist.anv?.trim() || role.artist.name;
                     if (workEntity.gid) {
@@ -1443,15 +1437,11 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
             continue;
         }
         if (!mbUrl) {
+            // See bug #8 — no network fallback.
             try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
             catch(e) {
-                try { mbUrl = await getMbId(role.artist, 'artist'); }
-                catch(e2) {
-                    const msg = String(e2);
-                    if (msg.includes('was not found in MB')) addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} on track ${role.track.position} — not in MB</span>`);
-                    else addLogLine(`<span style="color:red">ERR Lookup failed for ${role.artist.name} on track ${role.track.position}: ${msg}</span>`);
-                    continue;
-                }
+                addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} on track ${role.track.position} — not resolved in review</span>`);
+                continue;
             }
         }
 
@@ -1493,7 +1483,10 @@ function addLogLine(message) {
     const d = new Date();
     const pad = n => String(n).padStart(2, '0');
     const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;margin-right:0.5em;">${stamp}</span>${message}`;
+    // Real space character after the timestamp span — `margin-right` on the span
+    // renders fine in the browser but disappears when log content is copied as
+    // text (CSS spacing isn't part of textContent).
+    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${message}`;
     logs.insertAdjacentElement('beforeend', li);
     // Feed progress ticker (strip HTML tags for plain-text display)
     const bar = document.querySelector('.discogs-bar');
