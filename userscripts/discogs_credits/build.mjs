@@ -38,13 +38,16 @@ const isServe = process.argv.includes('--serve');
  */
 function devifyMetadata(content) {
     const localUrl = `http://${HOST}:${PORT}/discogs_credits.user.js`;
-    // Use Unix-seconds-since-epoch as a monotonically increasing 4th version
-    // segment. Userscript managers compare via SemVer-ish dotted-numeric
-    // ordering and accept >3 segments, so X.Y.Z.<ts> > X.Y.Z always.
-    const ts = Math.floor(Date.now() / 1000);
+    // Build a date-style 4-segment version matching the script's own
+    // `YYYY.M.D` release scheme: `YYYY.M.D.HHMMSS`. Always increasing
+    // (HHMMSS within a day, the date itself across days), and reads as a
+    // recognizable timestamp instead of an opaque integer.
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const ver = `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}.${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
     return content
-        .replace(/^(\/\/\s*@version\s+)(\S+)/m,
-                 (_m, lead, ver) => `${lead}${ver}.${ts}`)
+        .replace(/^(\/\/\s*@version\s+)\S+/m,
+                 (_m, lead) => `${lead}${ver}`)
         .replace(/^(\/\/\s*@updateURL\s+)\S.*$/m,
                  (_m, lead) => `${lead}${localUrl}`)
         .replace(/^(\/\/\s*@downloadURL\s+)\S.*$/m,
