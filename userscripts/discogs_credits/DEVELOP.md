@@ -150,11 +150,17 @@ What it catches:
 Drives a real Chromium with your stored MB session, runs the import on each fixture in `test/fixtures.json`, snapshots `MB.relationshipEditor.state` directly, and asserts the staged relationships against the Discogs JSON + MB's own validity rules. **Never submits.**
 
 ```powershell
-pnpm test                                  # all 7 fixtures, headless
+pnpm test                                  # all fixtures, headless
 pnpm test:headed                           # show the browser
-pnpm test -- --only=18cae3db               # one fixture by URL substring
-pnpm test -- --only=0                      # one fixture by index (0-based)
+
+# Filtering (combine freely; AND across flags, OR within --tags list):
+pnpm test -- --only=18cae3db               # URL or MBID substring (also accepts 0-based index)
+pnpm test -- --name=street                 # case-insensitive name substring
+pnpm test -- --tags=small,ep               # any of these tags (comma- or space-separated)
+pnpm test -- --name=bosporus --tags=small  # AND across flags
 ```
+
+Each fixture in `test/fixtures.json` is an object with `name`, `url`, and `tags` (space-separated string). Add tags freely as new patterns emerge; the runner treats unknown tags as ignorable.
 
 Each fixture's full log lands at `test/logs/<ISO8601>_<mbid>.log` and contains the userscript's import-bar output + the browser's console + uncaught page errors.
 

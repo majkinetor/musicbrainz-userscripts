@@ -3,12 +3,16 @@
 // and MB's own validity rules.
 //
 // Usage:
-//     pnpm test                     # all fixtures
-//     pnpm test -- --headed         # show the browser (for debugging)
-//     pnpm test -- --only=1         # only the 2nd fixture (0-indexed)
-//     pnpm test -- --only=fd4c7ae2  # match fixture by URL substring
+//     pnpm test                          # all fixtures
+//     pnpm test -- --headed              # show the browser (for debugging)
 //
-// Exit code is 0 only if every fixture passes every assertion.
+//   Filtering (combine freely; AND across flags, OR within --tags list):
+//     pnpm test -- --only=fd4c7ae2       # URL or MBID substring (also accepts a 0-based index)
+//     pnpm test -- --name=street         # case-insensitive name substring
+//     pnpm test -- --tags=small,ep       # match any of the given tags (comma- or space-separated)
+//     pnpm test -- --name=bosporus --tags=small
+//
+// Exit code is 0 only if every selected fixture passes every assertion.
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath }              from 'node:url';
@@ -27,7 +31,14 @@ import {
 // ──── args ────────────────────────────────────────────────────────────────
 const args   = process.argv.slice(2);
 const headed = args.includes('--headed');
-const only   = (args.find(a => a.startsWith('--only=')) || '').replace('--only=', '');
+const arg    = name => {
+    const found = args.find(a => a.startsWith(`${name}=`));
+    return found ? found.slice(name.length + 1) : null;
+};
+const only       = arg('--only');                // URL/MBID substring or 0-based index
+const nameFilter = arg('--name');                // case-insensitive name substring
+const tagsArg    = arg('--tags');                // comma- or space-separated tag list
+const wantedTags = tagsArg ? tagsArg.split(/[,\s]+/).filter(Boolean).map(t => t.toLowerCase()) : null;
 
 const HERE         = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_FILE = resolve(HERE, 'fixtures.json');
@@ -35,12 +46,30 @@ const LOG_DIR      = resolve(HERE, 'logs');
 await mkdir(LOG_DIR, { recursive: true });
 
 const fixtures = JSON.parse(await readFile(FIXTURE_FILE, 'utf8'));
-const selected = only
-    ? fixtures.filter((u, i) => u.includes(only) || String(i) === only)
-    : fixtures;
+
+function matches(fixture, i) {
+    if (only) {
+        if (!(fixture.url.includes(only) || String(i) === only)) return false;
+    }
+    if (nameFilter) {
+        if (!fixture.name.toLowerCase().includes(nameFilter.toLowerCase())) return false;
+    }
+    if (wantedTags) {
+        const fixTags = (fixture.tags || '').toLowerCase().split(/\s+/).filter(Boolean);
+        if (!wantedTags.some(t => fixTags.includes(t))) return false;
+    }
+    return true;
+}
+
+const selected = fixtures.filter(matches);
 
 if (selected.length === 0) {
-    console.error(`No fixture matches --only=${only}`);
+    const flags = [
+        only       ? `--only=${only}`           : null,
+        nameFilter ? `--name=${nameFilter}`     : null,
+        tagsArg    ? `--tags=${tagsArg}`        : null,
+    ].filter(Boolean).join(' ');
+    console.error(`No fixture matches ${flags || '(no filter — fixtures.json is empty?)'}`);
     process.exit(2);
 }
 
@@ -86,11 +115,12 @@ const context = await launchTestContext({ headed });
 let totalFailures = 0;
 
 for (let i = 0; i < selected.length; i++) {
-    const url = selected[i];
-    const mbid = url.match(/release\/([a-f0-9-]{36})/)?.[1];
-    const tag  = `[${i + 1}/${selected.length}] ${mbid || url}`;
-    log(c.bold(`\n${tag}`));
-    log(c.grey(`  ${url}`));
+    const fixture = selected[i];
+    const url     = fixture.url;
+    const mbid    = url.match(/release\/([a-f0-9-]{36})/)?.[1];
+    const header  = `[${i + 1}/${selected.length}] ${fixture.name}`;
+    log(c.bold(`\n${header}`));
+    log(c.grey(`  ${url}${fixture.tags ? `   [${fixture.tags}]` : ''}`));
 
     let page;
     try {
