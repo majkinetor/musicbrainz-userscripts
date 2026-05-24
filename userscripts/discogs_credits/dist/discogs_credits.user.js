@@ -1199,6 +1199,40 @@
     "inspired the name of"
   ];
 
+  // src/constants.js
+  var REL_TEMPLATE = {
+    _lineage: [],
+    _original: null,
+    _status: 1,
+    attributes: null,
+    begin_date: null,
+    editsPending: false,
+    end_date: null,
+    ended: false,
+    entity0_credit: "",
+    entity1_credit: "",
+    id: null,
+    linkOrder: 0,
+    linkTypeID: null
+  };
+  var SELECTORS = {
+    MediumsInput: ".multiselect-input",
+    MediumsInputOptions: ".multiselect-input + .menu a",
+    InstrumentsInput: "#add-relationship-dialog .multiselect.instrument input[aria-autocomplete]",
+    VocalsTypeInput: "#add-relationship-dialog .multiselect.vocal input[aria-autocomplete]",
+    AddRelationshipsDialogEntityType: "#add-relationship-dialog .entity-type",
+    AddRelationshipsDialogRelationshipType: "#add-relationship-dialog input.relationship-type",
+    AddRelationshipsDialogRelationshipTarget: "#add-relationship-dialog input.relationship-target",
+    AddRelationshipsDialogEntityCredit: "#add-relationship-dialog input.entity-credit",
+    AddRelationshipsDialogDoneButton: "#add-relationship-dialog .buttons button.positive",
+    AddRelationshipsDialogError: "#add-relationship-dialog .error",
+    AddRelationshipsDialogCancelButton: "#add-relationship-dialog .buttons button.negative",
+    AddReleaseRelationshipButton: "#release-rels button.add-relationship",
+    EditNote: "#edit-note-text",
+    TaskInput: "#add-relationship-dialog .attribute-container.task input"
+  };
+  var DISCOGS_LOGO_URL = "https://volkerzell.de/favicons/discogs.png";
+
   // src/discogs_credits.user.js
   var db;
   var request = indexedDB.open("mblink");
@@ -1719,21 +1753,6 @@
     }
     insertBar();
   }
-  var REL_TEMPLATE = {
-    _lineage: [],
-    _original: null,
-    _status: 1,
-    attributes: null,
-    begin_date: null,
-    editsPending: false,
-    end_date: null,
-    ended: false,
-    entity0_credit: "",
-    entity1_credit: "",
-    id: null,
-    linkOrder: 0,
-    linkTypeID: null
-  };
   async function waitForMBEditor(timeoutMs = 15e3) {
     addLogLine("Waiting for MB relationship editor\u2026");
     let waited = 0;
@@ -4047,21 +4066,4 @@
     }
     return false;
   }
-  var SELECTORS = {
-    MediumsInput: ".multiselect-input",
-    MediumsInputOptions: ".multiselect-input + .menu a",
-    InstrumentsInput: "#add-relationship-dialog .multiselect.instrument input[aria-autocomplete]",
-    VocalsTypeInput: "#add-relationship-dialog .multiselect.vocal input[aria-autocomplete]",
-    AddRelationshipsDialogEntityType: "#add-relationship-dialog .entity-type",
-    AddRelationshipsDialogRelationshipType: "#add-relationship-dialog input.relationship-type",
-    AddRelationshipsDialogRelationshipTarget: "#add-relationship-dialog input.relationship-target",
-    AddRelationshipsDialogEntityCredit: "#add-relationship-dialog input.entity-credit",
-    AddRelationshipsDialogDoneButton: "#add-relationship-dialog .buttons button.positive",
-    AddRelationshipsDialogError: "#add-relationship-dialog .error",
-    AddRelationshipsDialogCancelButton: "#add-relationship-dialog .buttons button.negative",
-    AddReleaseRelationshipButton: "#release-rels button.add-relationship",
-    EditNote: "#edit-note-text",
-    TaskInput: "#add-relationship-dialog .attribute-container.task input"
-  };
-  var DISCOGS_LOGO_URL = "https://volkerzell.de/favicons/discogs.png";
 })();

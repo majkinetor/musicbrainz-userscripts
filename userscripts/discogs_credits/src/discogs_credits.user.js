@@ -5,6 +5,18 @@
 import { ENTITY_TYPE_MAP }        from './data/entity-map.js';
 import { INSTRUMENTS }            from './data/instruments.js';
 import { WORK_ONLY_ARTIST_RELS }  from './data/work-only-rels.js';
+import {
+    REL_TEMPLATE,
+    SELECTORS,
+    DISCOGS_LOGO_URL,
+}                                  from './constants.js';
+import {
+    doNext,
+    setNativeValue,
+    selectValue,
+    makeKeyDownEvent,
+    makeClickEvent,
+}                                  from './util.js';
 
 let db;
 const request = indexedDB.open('mblink');
@@ -573,22 +585,6 @@ function insertDiscogsBar(discogsUrl) {
 // ── Instant relationship dispatch engine ─────────────────────────────────────
 // Based on kellnerd's bookmarklets: https://github.com/kellnerd/musicbrainz-scripts
 // MB.relationshipEditor.dispatch() injects relationships directly into React state.
-
-const REL_TEMPLATE = {
-    _lineage: [],
-    _original: null,
-    _status: 1,
-    attributes: null,
-    begin_date: null,
-    editsPending: false,
-    end_date: null,
-    ended: false,
-    entity0_credit: '',
-    entity1_credit: '',
-    id: null,
-    linkOrder: 0,
-    linkTypeID: null,
-};
 
 /** Poll for MB.relationshipEditor.state.entity with verbose log feedback. */
 async function waitForMBEditor(timeoutMs = 15000) {
@@ -3715,90 +3711,3 @@ function getDiscogsLinkKey(url) {
     return false;
 }
 
-const SELECTORS = {
-    MediumsInput: '.multiselect-input',
-    MediumsInputOptions: '.multiselect-input + .menu a',
-    InstrumentsInput: '#add-relationship-dialog .multiselect.instrument input[aria-autocomplete]',
-    VocalsTypeInput: '#add-relationship-dialog .multiselect.vocal input[aria-autocomplete]',
-    AddRelationshipsDialogEntityType: '#add-relationship-dialog .entity-type',
-    AddRelationshipsDialogRelationshipType: '#add-relationship-dialog input.relationship-type',
-    AddRelationshipsDialogRelationshipTarget: '#add-relationship-dialog input.relationship-target',
-    AddRelationshipsDialogEntityCredit: '#add-relationship-dialog input.entity-credit',
-    AddRelationshipsDialogDoneButton: '#add-relationship-dialog .buttons button.positive',
-    AddRelationshipsDialogError: '#add-relationship-dialog .error',
-    AddRelationshipsDialogCancelButton: '#add-relationship-dialog .buttons button.negative',
-    AddReleaseRelationshipButton: '#release-rels button.add-relationship',
-    EditNote: '#edit-note-text',
-    TaskInput: '#add-relationship-dialog .attribute-container.task input',
-};
-
-function doNext(fn, ms = 80) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            try {
-                const response = fn();
-                if (response && typeof response.then === 'function') {
-                    response.then(resolve).catch(e => reject(e));
-                } else {
-                    resolve();
-                }
-            } catch (e) {
-                reject(e);
-            }
-        }, ms);
-    });
-}
-
-function setNativeValue(element, value) {
-    if (typeof element === 'string') {
-        element = $(element).get(0);
-    }
-    let lastValue = element.value;
-    element.value = value;
-    let event = new Event('input', { target: element, bubbles: true });
-    // React 15
-    event.simulated = true;
-    // React 16
-    let tracker = element._valueTracker;
-    if (tracker) {
-        tracker.setValue(lastValue);
-    }
-    element.dispatchEvent(event);
-}
-
-function selectValue(element, value) {
-    if (typeof element === 'string') {
-        element = $(element).get(0);
-    }
-    let lastValue = element.value;
-    element.value = value;
-    let event = new Event('change', { target: element, bubbles: true });
-    // React 15
-    event.simulated = true;
-    // React 16
-    let tracker = element._valueTracker;
-    if (tracker) {
-        tracker.setValue(lastValue);
-    }
-    element.dispatchEvent(event);
-}
-
-function makeKeyDownEvent(keyCode) {
-    return new KeyboardEvent('keydown', {
-        key: 'Enter', bubbles: true, cancelable: true, keyCode: 13,
-    });
-}
-
-function makeClickEvent(element) {
-    const clickEvent = new PointerEvent('click', {
-        pointerType: 'mouse',
-        type: 'click',
-        isTrusted: true,
-        view: unsafeWindow,
-        bubbles: true, // You can set this to true to make the event bubble up the DOM tree
-        cancelable: true, // You can set this to true to make the event cancelable
-    });
-    element.dispatchEvent(clickEvent);
-}
-
-const DISCOGS_LOGO_URL = 'https://volkerzell.de/favicons/discogs.png';
