@@ -59,7 +59,9 @@ function matches(fixture, i) {
         if (!fixture.name.toLowerCase().includes(nameFilter.toLowerCase())) return false;
     }
     if (wantedTags) {
-        const fixTags = (fixture.tags || '').toLowerCase().split(/\s+/).filter(Boolean);
+        // Accept whitespace or comma as the per-fixture tag separator so authors
+        // can write either "a b c" or "a, b, c" without surprises.
+        const fixTags = (fixture.tags || '').toLowerCase().split(/[\s,]+/).filter(Boolean);
         if (!wantedTags.some(t => fixTags.includes(t))) return false;
     }
     return true;
