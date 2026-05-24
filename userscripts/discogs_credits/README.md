@@ -50,7 +50,10 @@ Checks all artists, labels and places against MB simultaneously. MB lookup - usi
 - **Inline MB search**<br>
 Live search field on every row; results appear as selectable candidates. MBID can be used directly in search to select specific entity. Rows with no suggestions auto-trigger a search so candidates appear immediately. *Select* option appears near all results, use it to mark entity resolved
 - **Auto-match**<br>
-Single exact-name match is auto-resolved and cached to IDB.
+Name search and Discogs URL lookup run in parallel. Auto-resolution happens only when the result is trustworthy:
+  - **Both agree** on the same MB entity → resolved with high confidence (cached as `resolvedVia: 'both'`).
+  - **Only one side** returns a hit → auto-accepted only when strong (exact-name unique match OR a direct Discogs↔MB URL relationship).
+  - **They disagree** on the MBID → left unresolved for manual review (prevents false positives from a wrongly-linked Discogs URL in MB).
 - **Entity Creation**<br>
 New-tab creation with auto-select on return - opens creation page pre-filled with name, sort name (guessed), *Person* type, Discogs* URL and link-type ID; after creation the new tab signals back via BroadcastChannel and the row auto-selects the created entity.
 - **Cache**<br>
@@ -90,3 +93,7 @@ For [Funk D’Void - Technoir](https://musicbrainz.org/release/63b2e0e6-5857-43c
 For [Mocky - Music Will Explain (Choir Music Vol. 01)](https://musicbrainz.org/release/3e5946b6-d275-4664-a8e9-1b15f0c55d68), many credits are already in place. Script skips those already created and adds those that do not exist. No works are created because existing ones are found. Existing release level credits that would be added to recordings by the script if they didn't exist, are not removed.
 
 ![usage2](./usage2.gif)
+
+## Development
+
+See [DEVELOP.md](./DEVELOP.md) for prerequisites, install steps, the dev loop, testing, and contributor workflow.

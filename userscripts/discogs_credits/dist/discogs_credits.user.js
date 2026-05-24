@@ -639,49 +639,75 @@ async function fetchMBEntity(mbid) {
 
 /**
  * Resolve a link type name to its numeric ID from MB.linkedEntities.link_type.
- * Tries (in order):
- *   1. Exact name + entity type pair match
- *   2. Exact name only
- *   3. Partial/contains match with entity type pair (handles minor wording differences)
- * Logs available types for the entity pair when nothing matches.
+ *
+ * Strictness invariant (post bug #2 fix): the returned link type's
+ * `(type0, type1)` MUST equal the requested `(type0, type1)`. If no link
+ * type satisfies the entity-type pair, return null — never silently fall
+ * back to a same-named link type with the wrong entity types (that's how
+ * we used to send `orchestra` to the "orchestra at" event link type,
+ * issue #2 + the orchestra variant caught by the test gate).
+ *
+ * Match strategy, constrained to `(type0, type1)`:
+ *   1. Exact match on `name` (canonical identifier)
+ *   2. Exact match on `link_phrase` (forward UI phrase) or
+ *      `reverse_link_phrase` (backward UI phrase)
+ *   3. Contains-match on any of those three fields — pick the shortest
+ *      (most specific) candidate
+ *
+ * MB's internal `name` field often differs from what the user sees in the
+ * relationship dropdown. For example, MB's recording-orchestra link type
+ * has `name = "performing orchestra"` but its `link_phrase = "{additional}
+ * orchestra"`. A name-only matcher misses it; phrase matching catches it.
+ *
+ * Returns: numeric link-type id, or null with a WARN logged.
  */
 function resolveLinkTypeId(name, type0, type1) {
     const lt = pageWindow.MB?.linkedEntities?.link_type;
     if (!lt) { addLogLine('<span style="color:red">ERR MB.linkedEntities.link_type not available</span>'); return null; }
-    const lower = name.toLowerCase().trim();
+    const needle = name.toLowerCase().trim();
+    // Strip MB's curly-brace attribute placeholders, e.g. "{additional} orchestra"
+    // → "orchestra" so a Discogs role "orchestra" matches.
+    const stripAttrs = s => (s || '').toLowerCase().replace(/\{[^}]*\}/g, '').replace(/\s+/g, ' ').trim();
 
-    // 1. Exact name + entity type pair
-    for (const v of Object.values(lt)) {
-        if (v.name.toLowerCase() === lower && v.type0 === type0 && v.type1 === type1) return v.id;
+    // Only consider link types with the exact (type0, type1) pair we need.
+    const candidates = Object.values(lt).filter(v => v.type0 === type0 && v.type1 === type1);
+
+    // 1. Exact match on `name`
+    for (const v of candidates) {
+        if ((v.name || '').toLowerCase() === needle) return v.id;
     }
-    // 2. Exact name, any entity types
-    for (const v of Object.values(lt)) {
-        if (v.name.toLowerCase() === lower) return v.id;
+    // 2. Exact match on `link_phrase` or `reverse_link_phrase` (with placeholders stripped)
+    for (const v of candidates) {
+        if (stripAttrs(v.link_phrase)         === needle) return v.id;
+        if (stripAttrs(v.reverse_link_phrase) === needle) return v.id;
     }
-    // 3. Partial match constrained to entity type pair — prefer longer (more specific) names
-    const fuzzyMatches = Object.values(lt).filter(v =>
-        v.type0 === type0 && v.type1 === type1 &&
-        (v.name.toLowerCase().includes(lower) || lower.includes(v.name.toLowerCase()))
-    );
-    if (fuzzyMatches.length > 0) {
-        fuzzyMatches.sort((a, b) => b.name.length - a.name.length);
-        const best = fuzzyMatches[0];
-        if (best.name.toLowerCase() !== lower) addLogLine(`Fuzzy match: "${name}" → "${best.name}" (${type0}→${type1})`);
+    // 3. Contains-match on any of the three fields — pick the shortest (most specific).
+    const contains = candidates.filter(v => {
+        const blobs = [v.name, stripAttrs(v.link_phrase), stripAttrs(v.reverse_link_phrase)].filter(Boolean);
+        return blobs.some(b => b.includes(needle) || needle.includes(b));
+    });
+    if (contains.length > 0) {
+        contains.sort((a, b) => ((a.name || '').length || 999) - ((b.name || '').length || 999));
+        const best = contains[0];
+        if ((best.name || '').toLowerCase() !== needle) {
+            addLogLine(`Fuzzy match: "${name}" → "${best.name}" (${type0}→${type1})`);
+        }
         return best.id;
     }
 
-    // Nothing found — log available types for this pair to help diagnose
-    const available = Object.values(lt)
-        .filter(v => v.type0 === type0 && v.type1 === type1)
-        .map(v => v.name)
-        .sort()
-        .join(', ');
-    // Also log exact matches regardless of type pair (to diagnose type0/type1 mismatch)
-    const anyMatch = Object.values(lt).filter(v => v.name.toLowerCase() === lower);
-    if (anyMatch.length > 0) {
-        addLogLine(`<span style="color:orange">WARN Link type "${name}" exists but wrong entity types: ${anyMatch.map(v => `${v.name}(${v.type0}→${v.type1})`).join(', ')} — tried (${type0}→${type1})</span>`);
+    // Nothing found for this entity-type pair. Show what IS available so the
+    // user can manually pick a better Discogs→MB role mapping later.
+    const availableNames = candidates.map(v => v.name).filter(Boolean).sort().join(', ');
+    const wrongPairHits = Object.values(lt).filter(v =>
+        (v.name || '').toLowerCase() === needle ||
+        stripAttrs(v.link_phrase)        === needle ||
+        stripAttrs(v.reverse_link_phrase) === needle
+    );
+    if (wrongPairHits.length > 0) {
+        const hitDesc = wrongPairHits.map(v => `${v.name}(${v.type0}→${v.type1})`).join(', ');
+        addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}→${type1}) — exists for other entity pairs: ${hitDesc} — skipping</span>`);
     } else {
-        addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}→${type1}). Available: ${available || 'none'}</span>`);
+        addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}→${type1}). Available for this pair: ${availableNames || 'none'}</span>`);
     }
     return null;
 }
@@ -988,8 +1014,6 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
                 trackIndex++;
             }
         }
-            + tracklistRels.length
-            + 1;
         addLogLine(`Found ${trackCount} track(s) in editor state (${recordingByGid.size} with GID, ${recordingByPosition.size} position entries: ${[...recordingByPosition.keys()].join(',')}). relatedWorks: ${editorWorkByRecGid.size} pre-linked`)
     } catch(e) {
         addLogLine(`<span style="color:orange">WARN Iterating MB state: ${e.message}</span>`);
@@ -1165,11 +1189,15 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
                 skipped++; tickProgress(); continue;
             }
         }
+        // Resolution must come from the review-table phase: confirmedMap → IDB cache.
+        // The old `getMbId` (network) fallback added ~1-3s per unresolved entity (bug
+        // majkinetor/musicbrainz-userscripts#8) and was redundant — preflight already
+        // tried the same `/ws/2/url` lookup. Unresolved here = unresolved by user.
         let mbUrl;
         try { mbUrl = await getMbidForEntity(company, resolvedEt); }
         catch(e) {
-            try { mbUrl = await getMbId(company, resolvedEt); }
-            catch(e2) { addLogLine(`<span style="color:orange">WARN Skipped ${company.name}: ${e2}</span>`); skipped++; tickProgress(); continue; }
+            addLogLine(`<span style="color:orange">WARN Skipped ${company.name} — not resolved in review</span>`);
+            skipped++; tickProgress(); continue;
         }
         const et = resolvedEt;
         const [t0, t1] = et <= 'release' ? [et, 'release'] : ['release', et];
@@ -1200,15 +1228,11 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
             skipped++; tickProgress(); continue;
         }
         if (!mbUrl) {
+            // See bug #8 — no network fallback; unresolved = skip immediately.
             try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
             catch(e) {
-                try { mbUrl = await getMbId(role.artist, 'artist'); }
-                catch(e2) {
-                    const msg = String(e2);
-                    if (msg.includes('was not found in MB')) addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} — not in MB (${role.linkType})</span>`);
-                    else addLogLine(`<span style="color:red">ERR Lookup failed for ${role.artist.name}: ${msg}</span>`);
-                    skipped++; tickProgress(); continue;
-                }
+                addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} — not resolved in review (${role.linkType})</span>`);
+                skipped++; tickProgress(); continue;
             }
         }
         const credit = role.artist.anv?.trim() || role.artist.name;
@@ -1224,13 +1248,11 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
             addLogLine(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)…`);
             for (const role of applicable) {
                 let mbUrl;
+                // See bug #8 — no network fallback.
                 try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
                 catch(e) {
-                    try { mbUrl = await getMbId(role.artist, 'artist'); }
-                    catch(e2) {
-                        addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} (${role.linkType}) in applyToTracks: ${String(e2).substring(0,80)}</span>`);
-                        continue;
-                    }
+                    addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review</span>`);
+                    continue;
                 }
                 const credit = role.artist.anv?.trim() || role.artist.name;
                 for (const recEntity of recordingByGid.values()) {
@@ -1395,15 +1417,11 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
                 // Apply all work-only artist rels to the work
                 for (const { role } of entries) {
                     let mbUrl;
+                    // See bug #8 — no network fallback.
                     try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
                     catch(e) {
-                        try { mbUrl = await getMbId(role.artist, 'artist'); }
-                        catch(e2) {
-                            const msg = String(e2);
-                            if (msg.includes('was not found in MB')) addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} — not in MB (${role.linkType})</span>`);
-                            else addLogLine(`<span style="color:red">ERR Lookup failed for ${role.artist.name}: ${msg}</span>`);
-                            continue;
-                        }
+                        addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} — not resolved in review (${role.linkType})</span>`);
+                        continue;
                     }
                     const credit = role.artist.anv?.trim() || role.artist.name;
                     if (workEntity.gid) {
@@ -1445,15 +1463,11 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
             continue;
         }
         if (!mbUrl) {
+            // See bug #8 — no network fallback.
             try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
             catch(e) {
-                try { mbUrl = await getMbId(role.artist, 'artist'); }
-                catch(e2) {
-                    const msg = String(e2);
-                    if (msg.includes('was not found in MB')) addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} on track ${role.track.position} — not in MB</span>`);
-                    else addLogLine(`<span style="color:red">ERR Lookup failed for ${role.artist.name} on track ${role.track.position}: ${msg}</span>`);
-                    continue;
-                }
+                addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} on track ${role.track.position} — not resolved in review</span>`);
+                continue;
             }
         }
 
@@ -1490,7 +1504,15 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
 
 function addLogLine(message) {
     const li = document.createElement('li');
-    li.innerHTML = message;
+    // HH:MM:SS prefix so per-step timings are visible. Styled muted/monospace so
+    // it doesn't fight with the actual content for attention.
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    // Real space character after the timestamp span — `margin-right` on the span
+    // renders fine in the browser but disappears when log content is copied as
+    // text (CSS spacing isn't part of textContent).
+    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${message}`;
     logs.insertAdjacentElement('beforeend', li);
     // Feed progress ticker (strip HTML tags for plain-text display)
     const bar = document.querySelector('.discogs-bar');
@@ -4079,6 +4101,13 @@ function makeClickEvent(element) {
     element.dispatchEvent(clickEvent);
 }
 
+// ⚠ KNOWN BUG (deferred to commit 4): this object has ~51 duplicate keys where an
+// early mapped entry (e.g. `Banjo: 'banjo'`) is silently overridden by a later
+// `Banjo: null` entry from the catch-all "unmapped" block at the bottom. Per JS
+// spec the later wins, so those instruments are currently being DROPPED at import
+// time. Documented as bug #5 in dev/ANALYSIS.md §4. Lint disabled here until the
+// data is cleaned in commit 4.
+/* eslint-disable no-dupe-keys */
 const INSTRUMENTS = {
     Afoxé: null,
     Agogô: null,
@@ -4818,6 +4847,7 @@ const INSTRUMENTS = {
     'Wind Chimes': null,
     'Wobble Board': null,
 };
+/* eslint-enable no-dupe-keys */
 
 const WORK_ONLY_ARTIST_RELS = [
     'writer',

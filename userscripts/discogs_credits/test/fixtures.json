@@ -1,0 +1,37 @@
+[
+    {
+        "name": "Street Corner Symphonies, Volume 11",
+        "url":  "https://musicbrainz.org/release/18cae3db-fa2c-493e-8e53-803bed92b8a5",
+        "tags": "compilation oldies many-existing-rels orchestra-bug"
+    },
+    {
+        "name": "Jugotronic EP",
+        "url":  "https://musicbrainz.org/release/fd4c7ae2-39b7-4849-a021-856d67fb1e7b",
+        "tags": "ep small modern"
+    },
+    {
+        "name": "Bosporus Bridges 3",
+        "url":  "https://musicbrainz.org/release/24f4c94a-c51b-4f9b-b727-a09562c6e4b4",
+        "tags": "compilation small"
+    },
+    {
+        "name": "Bosporus Bridges 2",
+        "url":  "https://musicbrainz.org/release/ba55d980-c3da-438a-bb13-16f4121d5f7a",
+        "tags": "compilation small"
+    },
+    {
+        "name": "Midwest Funk",
+        "url":  "https://musicbrainz.org/release/62a764a8-cf05-459c-a358-2c65dbf0b729",
+        "tags": "compilation many-entities many-unresolved"
+    },
+    {
+        "name": "Spiritual Jazz Volume II",
+        "url":  "https://musicbrainz.org/release/d3cb8510-d914-4a8d-8a2e-0b088d6a5827",
+        "tags": "compilation many-instruments"
+    },
+    {
+        "name": "AnotherLateNight: Howie B.",
+        "url":  "https://musicbrainz.org/release/5deefe9a-ea67-4d1d-a389-72d17fcd17a2",
+        "tags": "dj-mix many-rels"
+    }
+]
