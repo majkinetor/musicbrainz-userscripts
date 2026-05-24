@@ -48,3 +48,9 @@ For the full reasoning behind any decision, `git log -- dev/ANALYSIS.md` finds t
 - 2026-05-24 11:47 — bug #7 logged → entity cache only persists when user clicks "Start import" on the review table. Interrupted preflights lose all resolution work. Cold-cache restarts are NOT idempotent today. (user-reported; fix in commit 4 = write to IDB as each entity resolves, not just on confirm)
 - 2026-05-24 13:30 — branch `refactoring_and_some_fixes` created from `main`; commit `32d63a6` lands the tooling + Playwright harness from commits 1+2 of the plan as a single commit (the work was tightly intertwined; splitting retroactively required shuffling package.json/.gitignore). Subsequent bug fixes go on this branch.
 - 2026-05-24 13:40 — bug #8 fixed → removed the `getMbId` (network) fallback in all 5 fill-phase resolution spots in `instantFillRelationships`. Resolution is now strictly `confirmedMap` → `getMbidForEntity` (IDB) → skip with WARN. Saves ~1-3s per unresolved entity (160 unresolved × ~2s = ~5 min saved on Midwest Funk). The fallback was redundant — preflight already tried the same `/ws/2/url` lookup. (resolves majkinetor/musicbrainz-userscripts#8)
+- 2026-05-24 13:55 — branch pushed → `github/refactoring_and_some_fixes` with commits `32d63a6` (tooling + Playwright harness) and `6956539` (bug #8 fix + DEVELOP.md + log polish). PR not yet opened.
+- 2026-05-24 13:58 — GitHub Discussions enabled on the repo (was off; default categories created). Bug findings #5/#6/#7 filed as Discussions in the "General" category:
+    - #5 → https://github.com/majkinetor/musicbrainz-userscripts/discussions/10 (INSTRUMENTS dup keys)
+    - #6 → https://github.com/majkinetor/musicbrainz-userscripts/discussions/11 (already-existed counter only counts works)
+    - #7 → https://github.com/majkinetor/musicbrainz-userscripts/discussions/12 (cache only persists on confirm)
+    `dev/discussions-to-create.md` deleted post-filing.
