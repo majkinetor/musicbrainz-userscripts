@@ -988,8 +988,6 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
                 trackIndex++;
             }
         }
-            + tracklistRels.length
-            + 1;
         addLogLine(`Found ${trackCount} track(s) in editor state (${recordingByGid.size} with GID, ${recordingByPosition.size} position entries: ${[...recordingByPosition.keys()].join(',')}). relatedWorks: ${editorWorkByRecGid.size} pre-linked`)
     } catch(e) {
         addLogLine(`<span style="color:orange">WARN Iterating MB state: ${e.message}</span>`);
@@ -1490,7 +1488,12 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
 
 function addLogLine(message) {
     const li = document.createElement('li');
-    li.innerHTML = message;
+    // HH:MM:SS prefix so per-step timings are visible. Styled muted/monospace so
+    // it doesn't fight with the actual content for attention.
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;margin-right:0.5em;">${stamp}</span>${message}`;
     logs.insertAdjacentElement('beforeend', li);
     // Feed progress ticker (strip HTML tags for plain-text display)
     const bar = document.querySelector('.discogs-bar');
@@ -4079,6 +4082,13 @@ function makeClickEvent(element) {
     element.dispatchEvent(clickEvent);
 }
 
+// ⚠ KNOWN BUG (deferred to commit 4): this object has ~51 duplicate keys where an
+// early mapped entry (e.g. `Banjo: 'banjo'`) is silently overridden by a later
+// `Banjo: null` entry from the catch-all "unmapped" block at the bottom. Per JS
+// spec the later wins, so those instruments are currently being DROPPED at import
+// time. Documented as bug #5 in dev/ANALYSIS.md §4. Lint disabled here until the
+// data is cleaned in commit 4.
+/* eslint-disable no-dupe-keys */
 const INSTRUMENTS = {
     Afoxé: null,
     Agogô: null,
@@ -4818,6 +4828,7 @@ const INSTRUMENTS = {
     'Wind Chimes': null,
     'Wobble Board': null,
 };
+/* eslint-enable no-dupe-keys */
 
 const WORK_ONLY_ARTIST_RELS = [
     'writer',

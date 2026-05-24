@@ -50,7 +50,10 @@ Checks all artists, labels and places against MB simultaneously. MB lookup - usi
 - **Inline MB search**<br>
 Live search field on every row; results appear as selectable candidates. MBID can be used directly in search to select specific entity. Rows with no suggestions auto-trigger a search so candidates appear immediately. *Select* option appears near all results, use it to mark entity resolved
 - **Auto-match**<br>
-Single exact-name match is auto-resolved and cached to IDB.
+Name search and Discogs URL lookup run in parallel. Auto-resolution happens only when the result is trustworthy:
+  - **Both agree** on the same MB entity → resolved with high confidence (cached as `resolvedVia: 'both'`).
+  - **Only one side** returns a hit → auto-accepted only when strong (exact-name unique match OR a direct Discogs↔MB URL relationship).
+  - **They disagree** on the MBID → left unresolved for manual review (prevents false positives from a wrongly-linked Discogs URL in MB).
 - **Entity Creation**<br>
 New-tab creation with auto-select on return - opens creation page pre-filled with name, sort name (guessed), *Person* type, Discogs* URL and link-type ID; after creation the new tab signals back via BroadcastChannel and the row auto-selects the created entity.
 - **Cache**<br>
@@ -90,3 +93,46 @@ For [Funk D’Void - Technoir](https://musicbrainz.org/release/63b2e0e6-5857-43c
 For [Mocky - Music Will Explain (Choir Music Vol. 01)](https://musicbrainz.org/release/3e5946b6-d275-4664-a8e9-1b15f0c55d68), many credits are already in place. Script skips those already created and adds those that do not exist. No works are created because existing ones are found. Existing release level credits that would be added to recordings by the script if they didn't exist, are not removed.
 
 ![usage2](./usage2.gif)
+
+## Development
+
+Source lives in `src/`, built artifact in `dist/`. Tampermonkey loads `dist/discogs_credits.user.js`.
+
+### One-time setup
+
+```powershell
+pnpm install
+pnpm exec playwright install chromium    # ~150 MB, only needed for tests
+pnpm run login                           # opens MB, log in once, browser auto-closes
+```
+
+`pnpm run login` stores cookies + IDB cache under `.pw-profile/` (gitignored). Subsequent tests reuse the session.
+
+### Iteration loop
+
+```powershell
+pnpm run dev        # watches src/, rebuilds dist/ on every save (~30 ms)
+pnpm run verify     # lint + build + node --check  (static gate)
+pnpm test           # headless run on every fixture in test/fixtures.json
+pnpm test -- --headed --only=fd4c7ae2    # show the browser, run one fixture
+```
+
+The test gate **never submits any edit to MusicBrainz** — it stages the relationships and reads `MB.relationshipEditor.state` directly to assert against Discogs JSON + MB's own validity rules.
+
+### Layout
+
+```
+src/discogs_credits.user.js     source
+dist/discogs_credits.user.js    build output (what Tampermonkey loads)
+build.mjs                       build driver (pass-through for now; esbuild bundle from commit 3 onwards)
+eslint.config.mjs               ESLint 9 flat config
+test/
+├── fixtures.json               release URLs the tests run against
+├── login.mjs                   one-time MB sign-in
+├── run.mjs                     main test runner
+└── lib/                        Playwright helpers + property-based assertions
+dev/
+├── ANALYSIS.md                 living refactor plan
+├── DECISIONS.md                append-only design-decisions log
+└── align-md-tables.mjs         markdown table aligner (dev tool)
+```

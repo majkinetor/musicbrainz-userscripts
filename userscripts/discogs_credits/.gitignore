@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Playwright persistent profile (cookies, IDB cache — never commit)
+.pw-profile/
+storageState.json
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Build cache
+.esbuild/
+*.tsbuildinfo
+
+# Logs from local runs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Per-fixture import logs from `pnpm test`
+test/logs/
