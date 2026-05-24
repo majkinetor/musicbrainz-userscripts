@@ -59,3 +59,9 @@ export function getDiscogsReleaseData(url) {
             return json;
         });
 }
+
+/** Evict a single release from the session cache. Used by the review
+ *  table's "Refresh" button to force a re-fetch from Discogs. */
+export function clearReleaseDataCache(url) {
+    _releaseDataCache.delete(url);
+}

@@ -22,6 +22,301 @@
 // ==/UserScript==
 
 (() => {
+  // src/constants.js
+  var REL_TEMPLATE = {
+    _lineage: [],
+    _original: null,
+    _status: 1,
+    attributes: null,
+    begin_date: null,
+    editsPending: false,
+    end_date: null,
+    ended: false,
+    entity0_credit: "",
+    entity1_credit: "",
+    id: null,
+    linkOrder: 0,
+    linkTypeID: null
+  };
+  var SELECTORS = {
+    MediumsInput: ".multiselect-input",
+    MediumsInputOptions: ".multiselect-input + .menu a",
+    InstrumentsInput: "#add-relationship-dialog .multiselect.instrument input[aria-autocomplete]",
+    VocalsTypeInput: "#add-relationship-dialog .multiselect.vocal input[aria-autocomplete]",
+    AddRelationshipsDialogEntityType: "#add-relationship-dialog .entity-type",
+    AddRelationshipsDialogRelationshipType: "#add-relationship-dialog input.relationship-type",
+    AddRelationshipsDialogRelationshipTarget: "#add-relationship-dialog input.relationship-target",
+    AddRelationshipsDialogEntityCredit: "#add-relationship-dialog input.entity-credit",
+    AddRelationshipsDialogDoneButton: "#add-relationship-dialog .buttons button.positive",
+    AddRelationshipsDialogError: "#add-relationship-dialog .error",
+    AddRelationshipsDialogCancelButton: "#add-relationship-dialog .buttons button.negative",
+    AddReleaseRelationshipButton: "#release-rels button.add-relationship",
+    EditNote: "#edit-note-text",
+    TaskInput: "#add-relationship-dialog .attribute-container.task input"
+  };
+  var DISCOGS_LOGO_URL = "https://volkerzell.de/favicons/discogs.png";
+  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+
+  // src/log.js
+  var _logs = null;
+  function setLogContainer(el) {
+    _logs = el;
+  }
+  function getLogContainer() {
+    return _logs;
+  }
+  function addLogLine(message) {
+    if (!_logs) return;
+    const li = document.createElement("li");
+    const d = /* @__PURE__ */ new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${message}`;
+    _logs.insertAdjacentElement("beforeend", li);
+    const bar = document.querySelector(".discogs-bar");
+    if (bar?._setProgress) {
+      bar._setProgress(null, message.replace(/<[^>]*>/g, "").trim().substring(0, 120));
+    }
+  }
+
+  // src/api-mb.js
+  async function fetchMBEntity(mbid) {
+    const res = await fetch(`/ws/js/entity/${mbid}`);
+    if (!res.ok) throw new Error(`/ws/js/entity/${mbid} \u2192 ${res.status}`);
+    return res.json();
+  }
+  var mbThrottle = /* @__PURE__ */ (() => {
+    const MAX_CONCURRENT = 4;
+    let _running = 0;
+    let _pauseUntil = 0;
+    const _queue = [];
+    let _totalRequests = 0;
+    let _rateLimited = 0;
+    async function _waitForPause() {
+      let wait;
+      while ((wait = _pauseUntil - Date.now()) > 0) {
+        await new Promise((r) => setTimeout(r, wait));
+      }
+    }
+    function _drain() {
+      while (_running < MAX_CONCURRENT && _queue.length > 0) {
+        _running++;
+        const item = _queue.shift();
+        _run(item).finally(() => {
+          _running--;
+          _drain();
+        });
+      }
+    }
+    async function _run(item) {
+      for (let attempt = 0; attempt <= item.retries; attempt++) {
+        await _waitForPause();
+        _totalRequests++;
+        try {
+          const res = await fetch(item.url);
+          if (res.status === 429 || res.status === 503) {
+            _rateLimited++;
+            const ra = parseInt(res.headers.get("Retry-After"), 10);
+            const waitMs = ra > 0 ? ra * 1e3 : Math.min(1e3 * Math.pow(2, attempt), 3e4);
+            _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
+            continue;
+          }
+          if (!res.ok) {
+            item.resolve(null);
+            return;
+          }
+          const data = item.wantJson ? await res.json() : res;
+          item.resolve(data);
+          return;
+        } catch (e) {
+          if (attempt === item.retries) {
+            item.resolve(null);
+            return;
+          }
+          await new Promise((r) => setTimeout(r, 500));
+        }
+      }
+      item.resolve(null);
+    }
+    function _enqueue(url, retries, wantJson) {
+      return new Promise((resolve) => {
+        _queue.push({ url, retries, wantJson, resolve });
+        _drain();
+      });
+    }
+    return {
+      fetchJson: (url, retries = 3) => _enqueue(url, retries, true),
+      fetchRaw: (url, retries = 3) => _enqueue(url, retries, false),
+      stats: () => ({
+        total: _totalRequests,
+        rateLimited: _rateLimited,
+        inFlight: _running,
+        queued: _queue.length
+      })
+    };
+  })();
+  async function fetchWithRetry(url, retries = 4) {
+    return mbThrottle.fetchJson(url, retries);
+  }
+  function hasDiscogsLinkDefined(mbid) {
+    const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
+    return fetch(url).then((body) => body.json()).then((json) => {
+      const matchingRel = (json.relationships || []).find((rel) => {
+        return rel.target?.sidebar_name === "Discogs";
+      });
+      return matchingRel?.target?.href_url || null;
+    });
+  }
+  function resolveLinkTypeId(name, type0, type1) {
+    const lt = pageWindow.MB?.linkedEntities?.link_type;
+    if (!lt) {
+      addLogLine('<span style="color:red">ERR MB.linkedEntities.link_type not available</span>');
+      return null;
+    }
+    const needle = name.toLowerCase().trim();
+    const stripAttrs = (s) => (s || "").toLowerCase().replace(/\{[^}]*\}/g, "").replace(/\s+/g, " ").trim();
+    const candidates = Object.values(lt).filter(
+      (v) => v.type0 === type0 && v.type1 === type1 && !v.deprecated
+    );
+    for (const v of candidates) {
+      if ((v.name || "").toLowerCase() === needle) return v.id;
+    }
+    for (const v of candidates) {
+      if (stripAttrs(v.link_phrase) === needle) return v.id;
+      if (stripAttrs(v.reverse_link_phrase) === needle) return v.id;
+    }
+    const contains = candidates.filter((v) => {
+      const blobs = [v.name, stripAttrs(v.link_phrase), stripAttrs(v.reverse_link_phrase)].filter(Boolean);
+      return blobs.some((b) => b.includes(needle) || needle.includes(b));
+    });
+    if (contains.length > 0) {
+      contains.sort((a, b) => ((a.name || "").length || 999) - ((b.name || "").length || 999));
+      const best = contains[0];
+      if ((best.name || "").toLowerCase() !== needle) {
+        addLogLine(`Fuzzy match: "${name}" \u2192 "${best.name}" (${type0}\u2192${type1})`);
+      }
+      return best.id;
+    }
+    const availableNames = candidates.map((v) => v.name).filter(Boolean).sort().join(", ");
+    const allByName = Object.values(lt).filter(
+      (v) => (v.name || "").toLowerCase() === needle || stripAttrs(v.link_phrase) === needle || stripAttrs(v.reverse_link_phrase) === needle
+    );
+    const deprecatedHit = allByName.find((v) => v.type0 === type0 && v.type1 === type1 && v.deprecated);
+    const wrongPairHits = allByName.filter((v) => !(v.type0 === type0 && v.type1 === type1));
+    if (deprecatedHit) {
+      const altPairs = [...new Set(allByName.filter((v) => !v.deprecated).map((v) => `${v.type0}\u2192${v.type1}`))].join(", ");
+      addLogLine(`<span style="color:red">ERR "${name}" (${type0}\u2192${type1}) is deprecated by MB and would block the commit \u2014 skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ""}.</span>`);
+    } else if (wrongPairHits.length > 0) {
+      const hitDesc = wrongPairHits.map((v) => `${v.name}(${v.type0}\u2192${v.type1})`).join(", ");
+      addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}\u2192${type1}) \u2014 exists for other entity pairs: ${hitDesc} \u2014 skipping</span>`);
+    } else {
+      addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}\u2192${type1}). Available for this pair: ${availableNames || "none"}</span>`);
+    }
+    return null;
+  }
+
+  // src/storage.js
+  var db = null;
+  var _request = indexedDB.open("mblink");
+  _request.onerror = function() {
+    console.error("Why didn't you allow my web app to use IndexedDB?!");
+  };
+  _request.onsuccess = function(event) {
+    db = event.target.result;
+  };
+  _request.onupgradeneeded = function(event) {
+    const upgradeDb = event.target.result;
+    upgradeDb.createObjectStore("mblinks", {
+      keyPath: "discogs_id"
+    });
+  };
+  function readIdbRecord(key) {
+    return new Promise((resolve) => {
+      if (!key || !db) return resolve(null);
+      try {
+        const tx = db.transaction(["mblinks"], "readonly");
+        const req = tx.objectStore("mblinks").get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      } catch (e) {
+        resolve(null);
+      }
+    });
+  }
+
+  // src/progress-bar.js
+  var _pInterval = null;
+  var _pPos = -40;
+  function _showBar() {
+    const row1 = document.querySelector(".discogs-bar-row1");
+    const row2 = document.querySelector(".discogs-bar-row2");
+    const r1h = row1 ? row1.getBoundingClientRect().height : 42;
+    let pb = document.getElementById("discogs-pb");
+    if (!pb) {
+      pb = document.createElement("div");
+      pb.id = "discogs-pb";
+      pb.style.cssText = "position:fixed;left:0;right:0;height:5px;z-index:99999;background:#ddd;overflow:hidden;";
+      const fill = document.createElement("div");
+      fill.id = "discogs-pb-fill";
+      fill.style.cssText = "position:absolute;top:0;height:100%;width:40%;background:#e8771d;";
+      pb.appendChild(fill);
+      document.body.appendChild(pb);
+    }
+    pb.style.top = r1h + "px";
+    pb.style.display = "block";
+    if (row2) row2.style.marginTop = r1h + 5 + "px";
+    clearInterval(_pInterval);
+    _pPos = -40;
+    _pInterval = setInterval(() => {
+      _pPos += 1.5;
+      if (_pPos > 100) _pPos = -40;
+      const fill = document.getElementById("discogs-pb-fill");
+      if (fill) fill.style.left = _pPos + "%";
+    }, 16);
+  }
+  function _hideBar() {
+    clearInterval(_pInterval);
+    const pb = document.getElementById("discogs-pb");
+    if (pb) pb.style.display = "none";
+    const row2 = document.querySelector(".discogs-bar-row2");
+    if (row2) row2.style.marginTop = "";
+  }
+
+  // src/api-discogs.js
+  var link_infos = {};
+  function getDiscogsLinkKey(url) {
+    const re = /^https?:\/\/(?:www|api)\.discogs\.com\/(?:(?:(?!sell).+|sell.+)\/)?(master|release|artist|label)s?\/(\d+)(?:[^?#]*)(?:\?noanv=1|\?anv=[^=]+)?$/i;
+    const m = re.exec(url);
+    if (m !== null) {
+      const key = `${m[1]}/${m[2]}`;
+      if (!link_infos[key]) {
+        link_infos[key] = {
+          type: m[1],
+          id: m[2],
+          clean_url: `https://www.discogs.com/${m[1]}/${m[2]}`
+        };
+      }
+      return key;
+    }
+    return false;
+  }
+  var _releaseDataCache = /* @__PURE__ */ new Map();
+  function getDiscogsReleaseData(url) {
+    if (_releaseDataCache.has(url)) return Promise.resolve(_releaseDataCache.get(url));
+    return fetch(
+      `${url.replace(
+        "https://www.discogs.com/release/",
+        "https://api.discogs.com/releases/"
+      )}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`
+    ).then((body) => body.json()).then((json) => {
+      _releaseDataCache.set(url, json);
+      return json;
+    });
+  }
+  function clearReleaseDataCache(url) {
+    _releaseDataCache.delete(url);
+  }
+
   // src/data/entity-map.js
   var ENTITY_TYPE_MAP = {
     // Places
@@ -1177,253 +1472,6 @@
     "Wobble Board": null
   };
 
-  // src/data/work-only-rels.js
-  var WORK_ONLY_ARTIST_RELS = [
-    "writer",
-    "composer",
-    "lyricist",
-    "librettist",
-    "revised by",
-    "translator",
-    "reconstructed by",
-    // 'arranger',
-    // 'instruments arranger',
-    "orchestrator",
-    // 'vocals arranger',
-    "previously attributed to",
-    "miscellaneous support",
-    "dedicated to",
-    "premiered by",
-    "was commissioned by",
-    "publisher",
-    "inspired the name of"
-  ];
-
-  // src/constants.js
-  var REL_TEMPLATE = {
-    _lineage: [],
-    _original: null,
-    _status: 1,
-    attributes: null,
-    begin_date: null,
-    editsPending: false,
-    end_date: null,
-    ended: false,
-    entity0_credit: "",
-    entity1_credit: "",
-    id: null,
-    linkOrder: 0,
-    linkTypeID: null
-  };
-  var SELECTORS = {
-    MediumsInput: ".multiselect-input",
-    MediumsInputOptions: ".multiselect-input + .menu a",
-    InstrumentsInput: "#add-relationship-dialog .multiselect.instrument input[aria-autocomplete]",
-    VocalsTypeInput: "#add-relationship-dialog .multiselect.vocal input[aria-autocomplete]",
-    AddRelationshipsDialogEntityType: "#add-relationship-dialog .entity-type",
-    AddRelationshipsDialogRelationshipType: "#add-relationship-dialog input.relationship-type",
-    AddRelationshipsDialogRelationshipTarget: "#add-relationship-dialog input.relationship-target",
-    AddRelationshipsDialogEntityCredit: "#add-relationship-dialog input.entity-credit",
-    AddRelationshipsDialogDoneButton: "#add-relationship-dialog .buttons button.positive",
-    AddRelationshipsDialogError: "#add-relationship-dialog .error",
-    AddRelationshipsDialogCancelButton: "#add-relationship-dialog .buttons button.negative",
-    AddReleaseRelationshipButton: "#release-rels button.add-relationship",
-    EditNote: "#edit-note-text",
-    TaskInput: "#add-relationship-dialog .attribute-container.task input"
-  };
-  var DISCOGS_LOGO_URL = "https://volkerzell.de/favicons/discogs.png";
-  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-
-  // src/api-discogs.js
-  var link_infos = {};
-  function getDiscogsLinkKey(url) {
-    const re = /^https?:\/\/(?:www|api)\.discogs\.com\/(?:(?:(?!sell).+|sell.+)\/)?(master|release|artist|label)s?\/(\d+)(?:[^?#]*)(?:\?noanv=1|\?anv=[^=]+)?$/i;
-    const m = re.exec(url);
-    if (m !== null) {
-      const key = `${m[1]}/${m[2]}`;
-      if (!link_infos[key]) {
-        link_infos[key] = {
-          type: m[1],
-          id: m[2],
-          clean_url: `https://www.discogs.com/${m[1]}/${m[2]}`
-        };
-      }
-      return key;
-    }
-    return false;
-  }
-  var _releaseDataCache2 = /* @__PURE__ */ new Map();
-  function getDiscogsReleaseData(url) {
-    if (_releaseDataCache2.has(url)) return Promise.resolve(_releaseDataCache2.get(url));
-    return fetch(
-      `${url.replace(
-        "https://www.discogs.com/release/",
-        "https://api.discogs.com/releases/"
-      )}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`
-    ).then((body) => body.json()).then((json) => {
-      _releaseDataCache2.set(url, json);
-      return json;
-    });
-  }
-
-  // src/log.js
-  var _logs = null;
-  function setLogContainer(el) {
-    _logs = el;
-  }
-  function getLogContainer() {
-    return _logs;
-  }
-  function addLogLine(message) {
-    if (!_logs) return;
-    const li = document.createElement("li");
-    const d = /* @__PURE__ */ new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${message}`;
-    _logs.insertAdjacentElement("beforeend", li);
-    const bar = document.querySelector(".discogs-bar");
-    if (bar?._setProgress) {
-      bar._setProgress(null, message.replace(/<[^>]*>/g, "").trim().substring(0, 120));
-    }
-  }
-
-  // src/api-mb.js
-  async function fetchMBEntity(mbid) {
-    const res = await fetch(`/ws/js/entity/${mbid}`);
-    if (!res.ok) throw new Error(`/ws/js/entity/${mbid} \u2192 ${res.status}`);
-    return res.json();
-  }
-  var mbThrottle = /* @__PURE__ */ (() => {
-    const MAX_CONCURRENT = 4;
-    let _running = 0;
-    let _pauseUntil = 0;
-    const _queue = [];
-    let _totalRequests = 0;
-    let _rateLimited = 0;
-    async function _waitForPause() {
-      let wait;
-      while ((wait = _pauseUntil - Date.now()) > 0) {
-        await new Promise((r) => setTimeout(r, wait));
-      }
-    }
-    function _drain() {
-      while (_running < MAX_CONCURRENT && _queue.length > 0) {
-        _running++;
-        const item = _queue.shift();
-        _run(item).finally(() => {
-          _running--;
-          _drain();
-        });
-      }
-    }
-    async function _run(item) {
-      for (let attempt = 0; attempt <= item.retries; attempt++) {
-        await _waitForPause();
-        _totalRequests++;
-        try {
-          const res = await fetch(item.url);
-          if (res.status === 429 || res.status === 503) {
-            _rateLimited++;
-            const ra = parseInt(res.headers.get("Retry-After"), 10);
-            const waitMs = ra > 0 ? ra * 1e3 : Math.min(1e3 * Math.pow(2, attempt), 3e4);
-            _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
-            continue;
-          }
-          if (!res.ok) {
-            item.resolve(null);
-            return;
-          }
-          const data = item.wantJson ? await res.json() : res;
-          item.resolve(data);
-          return;
-        } catch (e) {
-          if (attempt === item.retries) {
-            item.resolve(null);
-            return;
-          }
-          await new Promise((r) => setTimeout(r, 500));
-        }
-      }
-      item.resolve(null);
-    }
-    function _enqueue(url, retries, wantJson) {
-      return new Promise((resolve) => {
-        _queue.push({ url, retries, wantJson, resolve });
-        _drain();
-      });
-    }
-    return {
-      fetchJson: (url, retries = 3) => _enqueue(url, retries, true),
-      fetchRaw: (url, retries = 3) => _enqueue(url, retries, false),
-      stats: () => ({
-        total: _totalRequests,
-        rateLimited: _rateLimited,
-        inFlight: _running,
-        queued: _queue.length
-      })
-    };
-  })();
-  async function fetchWithRetry2(url, retries = 4) {
-    return mbThrottle.fetchJson(url, retries);
-  }
-  function hasDiscogsLinkDefined(mbid) {
-    const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
-    return fetch(url).then((body) => body.json()).then((json) => {
-      const matchingRel = (json.relationships || []).find((rel) => {
-        return rel.target?.sidebar_name === "Discogs";
-      });
-      return matchingRel?.target?.href_url || null;
-    });
-  }
-  function resolveLinkTypeId(name, type0, type1) {
-    const lt = pageWindow.MB?.linkedEntities?.link_type;
-    if (!lt) {
-      addLogLine('<span style="color:red">ERR MB.linkedEntities.link_type not available</span>');
-      return null;
-    }
-    const needle = name.toLowerCase().trim();
-    const stripAttrs = (s) => (s || "").toLowerCase().replace(/\{[^}]*\}/g, "").replace(/\s+/g, " ").trim();
-    const candidates = Object.values(lt).filter(
-      (v) => v.type0 === type0 && v.type1 === type1 && !v.deprecated
-    );
-    for (const v of candidates) {
-      if ((v.name || "").toLowerCase() === needle) return v.id;
-    }
-    for (const v of candidates) {
-      if (stripAttrs(v.link_phrase) === needle) return v.id;
-      if (stripAttrs(v.reverse_link_phrase) === needle) return v.id;
-    }
-    const contains = candidates.filter((v) => {
-      const blobs = [v.name, stripAttrs(v.link_phrase), stripAttrs(v.reverse_link_phrase)].filter(Boolean);
-      return blobs.some((b) => b.includes(needle) || needle.includes(b));
-    });
-    if (contains.length > 0) {
-      contains.sort((a, b) => ((a.name || "").length || 999) - ((b.name || "").length || 999));
-      const best = contains[0];
-      if ((best.name || "").toLowerCase() !== needle) {
-        addLogLine(`Fuzzy match: "${name}" \u2192 "${best.name}" (${type0}\u2192${type1})`);
-      }
-      return best.id;
-    }
-    const availableNames = candidates.map((v) => v.name).filter(Boolean).sort().join(", ");
-    const allByName = Object.values(lt).filter(
-      (v) => (v.name || "").toLowerCase() === needle || stripAttrs(v.link_phrase) === needle || stripAttrs(v.reverse_link_phrase) === needle
-    );
-    const deprecatedHit = allByName.find((v) => v.type0 === type0 && v.type1 === type1 && v.deprecated);
-    const wrongPairHits = allByName.filter((v) => !(v.type0 === type0 && v.type1 === type1));
-    if (deprecatedHit) {
-      const altPairs = [...new Set(allByName.filter((v) => !v.deprecated).map((v) => `${v.type0}\u2192${v.type1}`))].join(", ");
-      addLogLine(`<span style="color:red">ERR "${name}" (${type0}\u2192${type1}) is deprecated by MB and would block the commit \u2014 skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ""}.</span>`);
-    } else if (wrongPairHits.length > 0) {
-      const hitDesc = wrongPairHits.map((v) => `${v.name}(${v.type0}\u2192${v.type1})`).join(", ");
-      addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}\u2192${type1}) \u2014 exists for other entity pairs: ${hitDesc} \u2014 skipping</span>`);
-    } else {
-      addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}\u2192${type1}). Available for this pair: ${availableNames || "none"}</span>`);
-    }
-    return null;
-  }
-
   // src/mappers.js
   function guessSortName(name) {
     if (!name || !name.trim()) return name;
@@ -1653,175 +1701,6 @@
       }
       return rolesArr;
     }, []) || [];
-  }
-
-  // src/storage.js
-  var db = null;
-  var _request = indexedDB.open("mblink");
-  _request.onerror = function() {
-    console.error("Why didn't you allow my web app to use IndexedDB?!");
-  };
-  _request.onsuccess = function(event) {
-    db = event.target.result;
-  };
-  _request.onupgradeneeded = function(event) {
-    const upgradeDb = event.target.result;
-    upgradeDb.createObjectStore("mblinks", {
-      keyPath: "discogs_id"
-    });
-  };
-  function readIdbRecord(key) {
-    return new Promise((resolve) => {
-      if (!key || !db) return resolve(null);
-      try {
-        const tx = db.transaction(["mblinks"], "readonly");
-        const req = tx.objectStore("mblinks").get(key);
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => resolve(null);
-      } catch (e) {
-        resolve(null);
-      }
-    });
-  }
-
-  // src/edit-note.js
-  function buildEditNote(discogsUrl3, opts, extraLines) {
-    const s = GM_info.script;
-    const mbUrl = location.href.replace(/\/edit-relationships$/, "");
-    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits";
-    const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
-    const lines = [
-      header,
-      "",
-      "Release URL: " + mbUrl,
-      "Discogs URL: " + discogsUrl3
-    ];
-    if (opts) lines.push("Options: " + opts);
-    if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
-    return lines.join("\n");
-  }
-
-  // src/editor-state.js
-  async function waitForMBEditor(timeoutMs = 15e3) {
-    addLogLine("Waiting for MB relationship editor\u2026");
-    let waited = 0;
-    while (waited < timeoutMs) {
-      const MB = pageWindow.MB;
-      const re = MB?.relationshipEditor;
-      const st = re?.state;
-      if (st?.entity) {
-        addLogLine(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
-        return re;
-      }
-      if (waited % 2e3 === 0 && waited > 0) {
-        const mbKeys = MB ? Object.keys(MB).join(", ") : "undefined";
-        const reKeys = re ? Object.keys(re).join(", ") : "undefined";
-        const stKeys = st ? Object.keys(st).join(", ") : "undefined";
-        addLogLine(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
-      }
-      await new Promise((r) => setTimeout(r, 200));
-      waited += 200;
-    }
-    addLogLine('<span style="color:red">ERR MB editor not ready after 15s \u2014 aborting</span>');
-    return null;
-  }
-  function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes, trackPos) {
-    const swapped = sourceEntity.entityType > targetEntity.entityType;
-    const e0 = swapped ? targetEntity : sourceEntity;
-    const e1 = swapped ? sourceEntity : targetEntity;
-    const ltEntry = pageWindow.MB?.linkedEntities?.link_type?.[linkTypeID];
-    const ltName = ltEntry ? ltEntry.name : linkTypeID;
-    let attrDesc = "";
-    if (attributes) {
-      try {
-        const parts = [];
-        for (const a of pageWindow.MB.tree.iterate(attributes)) {
-          const n = a.type?.name || a.typeID;
-          const v = a.text_value ? `=${a.text_value}` : "";
-          if (n) parts.push(n + v);
-        }
-        if (parts.length) attrDesc = ` [${parts.join(", ")}]`;
-      } catch (e) {
-      }
-    }
-    const posLabel = trackPos != null && trackPos !== "" ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : "";
-    addLogLine(`\u2192 <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} \u2194 ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ""}`);
-    re.dispatch({
-      type: "update-relationship-state",
-      sourceEntity,
-      batchSelectionCount: null,
-      creditsToChangeForSource: "",
-      creditsToChangeForTarget: "",
-      oldRelationshipState: null,
-      newRelationshipState: {
-        ...REL_TEMPLATE,
-        entity0: e0,
-        entity0_credit: swapped ? credit || "" : "",
-        entity1: e1,
-        entity1_credit: swapped ? "" : credit || "",
-        id: re.getRelationshipStateId(),
-        linkTypeID,
-        attributes: attributes || null
-      }
-    });
-  }
-  function buildAttributes(rawAttributes) {
-    if (!rawAttributes || rawAttributes.length === 0) return null;
-    const MB = pageWindow.MB;
-    const tree = MB?.tree;
-    const lat = MB?.linkedEntities?.link_attribute_type;
-    if (!tree || !lat) return null;
-    function findAttrByName(name) {
-      const lower = name.toLowerCase().trim();
-      for (const v of Object.values(lat)) {
-        if (v.name?.toLowerCase() === lower) return v;
-      }
-      if (lower.length >= 4) {
-        for (const v of Object.values(lat)) {
-          const vl = v.name?.toLowerCase() || "";
-          if (vl.length < 4) continue;
-          if (vl.includes(lower) || lower.includes(vl)) return v;
-        }
-      }
-      addLogLine(`<span style="color:orange">WARN Attribute "${name}" not found in MB \u2014 dropping attribute but keeping the rel</span>`);
-      return null;
-    }
-    function extractFnValue(fn) {
-      const src = fn.toString();
-      const m = src.match(/,\s*['"`]([^'"`]+)['"`]\s*\)/);
-      return m ? m[1] : null;
-    }
-    const attrObjs = [];
-    const seen = /* @__PURE__ */ new Set();
-    for (const attr of rawAttributes) {
-      let attrName = null;
-      let textValue = "";
-      if (typeof attr === "string") {
-        attrName = attr;
-      } else if (attr && typeof attr === "object" && attr._type) {
-        if (attr._type === "task") {
-          attrName = "task";
-          textValue = attr.value;
-        } else {
-          attrName = attr.value;
-        }
-      } else if (typeof attr === "function") {
-        attrName = extractFnValue(attr);
-      }
-      if (!attrName) continue;
-      const found = findAttrByName(attrName);
-      if (!found || seen.has(found.id)) continue;
-      seen.add(found.id);
-      attrObjs.push({ type: found, typeID: found.id, credited_as: "", text_value: textValue });
-    }
-    if (attrObjs.length === 0) return null;
-    attrObjs.sort((a, b) => a.typeID - b.typeID);
-    try {
-      return tree.fromDistinctAscArray(attrObjs);
-    } catch (e) {
-      addLogLine(`<span style="color:orange">WARN Attribute tree build failed (${e.message}) \u2014 importing without attributes</span>`);
-      return null;
-    }
   }
 
   // src/preflight.js
@@ -2160,44 +2039,6 @@
       if (slots > 0) await Promise.all(Array.from({ length: slots }, (_, i) => worker(i)));
       return { allResults: resultArr.filter(Boolean) };
     })();
-  }
-
-  // src/progress-bar.js
-  var _pInterval = null;
-  var _pPos = -40;
-  function _showBar() {
-    const row1 = document.querySelector(".discogs-bar-row1");
-    const row2 = document.querySelector(".discogs-bar-row2");
-    const r1h = row1 ? row1.getBoundingClientRect().height : 42;
-    let pb = document.getElementById("discogs-pb");
-    if (!pb) {
-      pb = document.createElement("div");
-      pb.id = "discogs-pb";
-      pb.style.cssText = "position:fixed;left:0;right:0;height:5px;z-index:99999;background:#ddd;overflow:hidden;";
-      const fill = document.createElement("div");
-      fill.id = "discogs-pb-fill";
-      fill.style.cssText = "position:absolute;top:0;height:100%;width:40%;background:#e8771d;";
-      pb.appendChild(fill);
-      document.body.appendChild(pb);
-    }
-    pb.style.top = r1h + "px";
-    pb.style.display = "block";
-    if (row2) row2.style.marginTop = r1h + 5 + "px";
-    clearInterval(_pInterval);
-    _pPos = -40;
-    _pInterval = setInterval(() => {
-      _pPos += 1.5;
-      if (_pPos > 100) _pPos = -40;
-      const fill = document.getElementById("discogs-pb-fill");
-      if (fill) fill.style.left = _pPos + "%";
-    }, 16);
-  }
-  function _hideBar() {
-    clearInterval(_pInterval);
-    const pb = document.getElementById("discogs-pb");
-    if (pb) pb.style.display = "none";
-    const row2 = document.querySelector(".discogs-bar-row2");
-    if (row2) row2.style.marginTop = "";
   }
 
   // src/review-table.js
@@ -2842,6 +2683,168 @@
     });
   }
 
+  // src/editor-state.js
+  async function waitForMBEditor(timeoutMs = 15e3) {
+    addLogLine("Waiting for MB relationship editor\u2026");
+    let waited = 0;
+    while (waited < timeoutMs) {
+      const MB = pageWindow.MB;
+      const re = MB?.relationshipEditor;
+      const st = re?.state;
+      if (st?.entity) {
+        addLogLine(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
+        return re;
+      }
+      if (waited % 2e3 === 0 && waited > 0) {
+        const mbKeys = MB ? Object.keys(MB).join(", ") : "undefined";
+        const reKeys = re ? Object.keys(re).join(", ") : "undefined";
+        const stKeys = st ? Object.keys(st).join(", ") : "undefined";
+        addLogLine(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
+      }
+      await new Promise((r) => setTimeout(r, 200));
+      waited += 200;
+    }
+    addLogLine('<span style="color:red">ERR MB editor not ready after 15s \u2014 aborting</span>');
+    return null;
+  }
+  function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes, trackPos) {
+    const swapped = sourceEntity.entityType > targetEntity.entityType;
+    const e0 = swapped ? targetEntity : sourceEntity;
+    const e1 = swapped ? sourceEntity : targetEntity;
+    const ltEntry = pageWindow.MB?.linkedEntities?.link_type?.[linkTypeID];
+    const ltName = ltEntry ? ltEntry.name : linkTypeID;
+    let attrDesc = "";
+    if (attributes) {
+      try {
+        const parts = [];
+        for (const a of pageWindow.MB.tree.iterate(attributes)) {
+          const n = a.type?.name || a.typeID;
+          const v = a.text_value ? `=${a.text_value}` : "";
+          if (n) parts.push(n + v);
+        }
+        if (parts.length) attrDesc = ` [${parts.join(", ")}]`;
+      } catch (e) {
+      }
+    }
+    const posLabel = trackPos != null && trackPos !== "" ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : "";
+    addLogLine(`\u2192 <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} \u2194 ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ""}`);
+    re.dispatch({
+      type: "update-relationship-state",
+      sourceEntity,
+      batchSelectionCount: null,
+      creditsToChangeForSource: "",
+      creditsToChangeForTarget: "",
+      oldRelationshipState: null,
+      newRelationshipState: {
+        ...REL_TEMPLATE,
+        entity0: e0,
+        entity0_credit: swapped ? credit || "" : "",
+        entity1: e1,
+        entity1_credit: swapped ? "" : credit || "",
+        id: re.getRelationshipStateId(),
+        linkTypeID,
+        attributes: attributes || null
+      }
+    });
+  }
+  function buildAttributes(rawAttributes) {
+    if (!rawAttributes || rawAttributes.length === 0) return null;
+    const MB = pageWindow.MB;
+    const tree = MB?.tree;
+    const lat = MB?.linkedEntities?.link_attribute_type;
+    if (!tree || !lat) return null;
+    function findAttrByName(name) {
+      const lower = name.toLowerCase().trim();
+      for (const v of Object.values(lat)) {
+        if (v.name?.toLowerCase() === lower) return v;
+      }
+      if (lower.length >= 4) {
+        for (const v of Object.values(lat)) {
+          const vl = v.name?.toLowerCase() || "";
+          if (vl.length < 4) continue;
+          if (vl.includes(lower) || lower.includes(vl)) return v;
+        }
+      }
+      addLogLine(`<span style="color:orange">WARN Attribute "${name}" not found in MB \u2014 dropping attribute but keeping the rel</span>`);
+      return null;
+    }
+    function extractFnValue(fn) {
+      const src = fn.toString();
+      const m = src.match(/,\s*['"`]([^'"`]+)['"`]\s*\)/);
+      return m ? m[1] : null;
+    }
+    const attrObjs = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const attr of rawAttributes) {
+      let attrName = null;
+      let textValue = "";
+      if (typeof attr === "string") {
+        attrName = attr;
+      } else if (attr && typeof attr === "object" && attr._type) {
+        if (attr._type === "task") {
+          attrName = "task";
+          textValue = attr.value;
+        } else {
+          attrName = attr.value;
+        }
+      } else if (typeof attr === "function") {
+        attrName = extractFnValue(attr);
+      }
+      if (!attrName) continue;
+      const found = findAttrByName(attrName);
+      if (!found || seen.has(found.id)) continue;
+      seen.add(found.id);
+      attrObjs.push({ type: found, typeID: found.id, credited_as: "", text_value: textValue });
+    }
+    if (attrObjs.length === 0) return null;
+    attrObjs.sort((a, b) => a.typeID - b.typeID);
+    try {
+      return tree.fromDistinctAscArray(attrObjs);
+    } catch (e) {
+      addLogLine(`<span style="color:orange">WARN Attribute tree build failed (${e.message}) \u2014 importing without attributes</span>`);
+      return null;
+    }
+  }
+
+  // src/edit-note.js
+  function buildEditNote(discogsUrl2, opts, extraLines) {
+    const s = GM_info.script;
+    const mbUrl = location.href.replace(/\/edit-relationships$/, "");
+    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits";
+    const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
+    const lines = [
+      header,
+      "",
+      "Release URL: " + mbUrl,
+      "Discogs URL: " + discogsUrl2
+    ];
+    if (opts) lines.push("Options: " + opts);
+    if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
+    return lines.join("\n");
+  }
+
+  // src/data/work-only-rels.js
+  var WORK_ONLY_ARTIST_RELS = [
+    "writer",
+    "composer",
+    "lyricist",
+    "librettist",
+    "revised by",
+    "translator",
+    "reconstructed by",
+    // 'arranger',
+    // 'instruments arranger',
+    "orchestrator",
+    // 'vocals arranger',
+    "previously attributed to",
+    "miscellaneous support",
+    "dedicated to",
+    "premiered by",
+    "was commissioned by",
+    "publisher",
+    "inspired the name of"
+  ];
+
   // src/dispatch.js
   async function instantFillRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap) {
     resolvedEntityTypes = resolvedEntityTypes || /* @__PURE__ */ new Map();
@@ -2940,7 +2943,7 @@
     try {
       const relMbid = releaseEntity.gid;
       addLogLine(`WS2: fetching recordings for release ${relMbid}\u2026`);
-      const wsJson = await fetchWithRetry2(`/ws/2/release/${relMbid}?inc=recordings&fmt=json`);
+      const wsJson = await fetchWithRetry(`/ws/2/release/${relMbid}?inc=recordings&fmt=json`);
       addLogLine(`WS2: response received`);
       if (wsJson) {
         const mediaCount = wsJson.media?.length ?? 0;
@@ -3393,56 +3396,10 @@
     addLogLine(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
   }
 
-  // src/discogs_credits.user.js
-  var DISCOGS_CHANNEL2 = new BroadcastChannel("discogs-importer-artist");
-  (function handleEntityPageIfNeeded() {
-    const entityMatch = location.href.match(
-      /musicbrainz\.org\/(artist|label|place)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:[^/]|$)/i
-    );
-    if (!entityMatch) return;
-    const entityType = entityMatch[1];
-    const mbid = entityMatch[2];
-    const pendingKey = "discogs-importer-pending-artist";
-    const pending = sessionStorage.getItem(pendingKey);
-    if (!pending) return;
-    sessionStorage.removeItem(pendingKey);
-    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`).then((r) => r.json()).then((json) => {
-      DISCOGS_CHANNEL2.postMessage({
-        type: "artist-created",
-        // keep same message type for compatibility
-        id: mbid,
-        name: json.name || "",
-        disambiguation: json.disambiguation || "",
-        resourceUrl: pending
-      });
-      setTimeout(() => window.close(), 800);
-    }).catch(() => {
-      DISCOGS_CHANNEL2.postMessage({
-        type: "artist-created",
-        id: mbid,
-        name: "",
-        disambiguation: "",
-        resourceUrl: pending
-      });
-      setTimeout(() => window.close(), 800);
-    });
-  })();
-  var logs;
-  var summary;
-  var discogsUrl2;
-  $(document).ready(function() {
-    const re = new RegExp("musicbrainz.org/release/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/edit-relationships", "i");
-    let m;
-    if (m = window.location.href.match(re)) {
-      hasDiscogsLinkDefined(m[1]).then((discogsUrlParam) => {
-        discogsUrl2 = discogsUrlParam;
-        if (discogsUrl2) {
-          insertDiscogsBar(discogsUrl2);
-        }
-      });
-    }
-  });
-  function insertDiscogsBar(discogsUrl3) {
+  // src/ui-bar.js
+  var _logs2;
+  var _summary;
+  function insertDiscogsBar(discogsUrl2) {
     const style = document.createElement("style");
     style.innerText = `
         .discogs-bar {
@@ -3641,7 +3598,7 @@
     row1.appendChild(logo);
     const sourceSpan = document.createElement("span");
     sourceSpan.className = "discogs-source";
-    sourceSpan.innerHTML = `<a href="${discogsUrl3}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl3}</a>`;
+    sourceSpan.innerHTML = `<a href="${discogsUrl2}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl2}</a>`;
     row1.appendChild(sourceSpan);
     const importBtn = document.createElement("button");
     importBtn.className = "discogs-import-btn";
@@ -3746,14 +3703,14 @@
         _showBar();
       };
       requestAnimationFrame(bar._showProgress);
-      logs = document.createElement("ul");
-      logs.className = "logs";
-      setLogContainer(logs);
-      summary = document.createElement("p");
-      summary.className = "summary";
+      _logs2 = document.createElement("ul");
+      _logs2.className = "logs";
+      setLogContainer(_logs2);
+      _summary = document.createElement("p");
+      _summary.className = "summary";
       outputDiv.innerHTML = "";
-      outputDiv.appendChild(summary);
-      outputDiv.appendChild(logs);
+      outputDiv.appendChild(_summary);
+      outputDiv.appendChild(_logs2);
       const copyLogBtn = document.createElement("button");
       copyLogBtn.textContent = "Copy log";
       copyLogBtn.style.cssText = "font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-left:auto;flex-shrink:0;";
@@ -3800,7 +3757,7 @@
           const _md = nodeToMd(el);
           return _md.startsWith("\n\n") || _md.endsWith("\n\n") ? _md : _md.replace(/^\n/, "").replace(/\n$/, "");
         }
-        const lines = [...logs.querySelectorAll("li")].map((li) => {
+        const lines = [..._logs2.querySelectorAll("li")].map((li) => {
           const md = htmlToMd(li);
           if (md.startsWith("\n\n|") || md.startsWith("<details>")) return md;
           return md + "  ";
@@ -3830,13 +3787,13 @@
       };
       requestAnimationFrame(_showBar);
       const opts = `per-track:${tracklistCb.checked ? "on" : "off"}, move-to-tracks:${applyTracksCb.checked ? "on" : "off"}, create-works:${createWorksCb.checked ? "on" : "off"}`;
-      const editNote = buildEditNote(discogsUrl3, opts);
+      const editNote = buildEditNote(discogsUrl2, opts);
       editNote.split("\n").forEach((line) => {
         if (!line.trim()) return;
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
         addLogLine(html);
       });
-      startImportRels(discogsUrl3, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
+      startImportRels(discogsUrl2, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
         importBtn.disabled = false;
         importBtn.textContent = "Import from Discogs";
         progressPct.textContent = "100%";
@@ -3875,13 +3832,13 @@
     } catch (e) {
     }
   })();
-  function startImportRels(discogsUrl3, processTracklist, applyToTracks, createWorks) {
-    return getDiscogsReleaseData(discogsUrl3).then((json) => {
+  function startImportRels(discogsUrl2, processTracklist, applyToTracks, createWorks) {
+    return getDiscogsReleaseData(discogsUrl2).then((json) => {
       let artistRoles = convertDiscogsArtistsToRolesRelationships(json.extraartists?.filter((artist) => !artist.tracks));
-      if (!logs._releaseInfoAdded) {
-        logs._releaseInfoAdded = true;
+      if (!_logs2._releaseInfoAdded) {
+        _logs2._releaseInfoAdded = true;
         const trackCount = (json.tracklist || []).filter((t) => t.type_ === "track").length;
-        const summary2 = `${json.title || ""}${json.year ? " \xB7 " + json.year : ""} \xB7 ${trackCount} tracks`;
+        const summary = `${json.title || ""}${json.year ? " \xB7 " + json.year : ""} \xB7 ${trackCount} tracks`;
         const li = document.createElement("li");
         const pre = document.createElement("pre");
         pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
@@ -3903,10 +3860,10 @@
             copyJsonBtn.textContent = "Copy JSON";
           }, 1500);
         });
-        li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${summary2} \u2014 raw Discogs JSON</strong></summary></details>`;
+        li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${summary} \u2014 raw Discogs JSON</strong></summary></details>`;
         li.querySelector("summary").appendChild(copyJsonBtn);
         li.querySelector("details").appendChild(pre);
-        logs.appendChild(li);
+        _logs2.appendChild(li);
       }
       addLogLine(`Found ${json.companies.length + artistRoles.length} release relationships`);
       artistRoles = artistRoles.concat(convertPotentialDJMixers(json));
@@ -3987,7 +3944,7 @@
           uniqueCompanies.push(c);
         }
       });
-      const PREFLIGHT_CACHE_KEY = `discogs-preflight-${discogsUrl3}`;
+      const PREFLIGHT_CACHE_KEY = `discogs-preflight-${discogsUrl2}`;
       const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
       let cachedResults = null;
       try {
@@ -4000,10 +3957,10 @@
       function runPreflight(bypassIdb) {
         const artistProgressLi = document.createElement("li");
         artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz\u2026`;
-        logs.appendChild(artistProgressLi);
+        _logs2.appendChild(artistProgressLi);
         const companyProgressLi = document.createElement("li");
         companyProgressLi.textContent = `Checking ${uniqueCompanies.length} label(s)/place(s) against MusicBrainz\u2026`;
-        logs.appendChild(companyProgressLi);
+        _logs2.appendChild(companyProgressLi);
         return Promise.all([
           checkMissingArtists(uniqueArtists, artistProgressLi, bypassIdb),
           checkMissingCompanies(uniqueCompanies, companyProgressLi, bypassIdb)
@@ -4044,7 +4001,7 @@
           isFromCache: !!cachedResults,
           cacheKey: PREFLIGHT_CACHE_KEY,
           onRefresh: () => {
-            _releaseDataCache.delete(discogsUrl3);
+            clearReleaseDataCache(discogsUrl2);
             return runPreflight(true).then((freshResults) => {
               freshResults.forEach((r) => {
                 if (!r) return;
@@ -4095,4 +4052,49 @@
     }).then(() => {
     });
   }
+
+  // src/discogs_credits.user.js
+  var DISCOGS_CHANNEL2 = new BroadcastChannel("discogs-importer-artist");
+  (function handleEntityPageIfNeeded() {
+    const entityMatch = location.href.match(
+      /musicbrainz\.org\/(artist|label|place)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:[^/]|$)/i
+    );
+    if (!entityMatch) return;
+    const entityType = entityMatch[1];
+    const mbid = entityMatch[2];
+    const pendingKey = "discogs-importer-pending-artist";
+    const pending = sessionStorage.getItem(pendingKey);
+    if (!pending) return;
+    sessionStorage.removeItem(pendingKey);
+    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`).then((r) => r.json()).then((json) => {
+      DISCOGS_CHANNEL2.postMessage({
+        type: "artist-created",
+        // keep same message type for compatibility
+        id: mbid,
+        name: json.name || "",
+        disambiguation: json.disambiguation || "",
+        resourceUrl: pending
+      });
+      setTimeout(() => window.close(), 800);
+    }).catch(() => {
+      DISCOGS_CHANNEL2.postMessage({
+        type: "artist-created",
+        id: mbid,
+        name: "",
+        disambiguation: "",
+        resourceUrl: pending
+      });
+      setTimeout(() => window.close(), 800);
+    });
+  })();
+  $(document).ready(function() {
+    const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
+    const m = window.location.href.match(re);
+    if (!m) return;
+    hasDiscogsLinkDefined(m[1]).then((discogsUrl2) => {
+      if (discogsUrl2) {
+        insertDiscogsBar(discogsUrl2);
+      }
+    });
+  });
 })();

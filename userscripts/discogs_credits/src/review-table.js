@@ -5,7 +5,7 @@
 // the user explicitly clicks "Start import".
 
 import { db, readIdbRecord }              from './storage.js';
-import { mbThrottle }                      from './api-mb.js';
+import { mbThrottle, fetchWithRetry }      from './api-mb.js';
 import { getDiscogsLinkKey, link_infos }   from './api-discogs.js';
 import { guessSortName }                   from './mappers.js';
 import { getLogContainer }                 from './log.js';
