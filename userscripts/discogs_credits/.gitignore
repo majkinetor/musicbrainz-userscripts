@@ -24,3 +24,7 @@ pnpm-debug.log*
 
 # Per-fixture import logs from `pnpm test`
 test/logs/
+
+# GitHub credentials for the dedicated automation account (claude-ai-milic).
+# Never commit. Sample shape in DEVELOP.md.
+dev/.github-credentials.json

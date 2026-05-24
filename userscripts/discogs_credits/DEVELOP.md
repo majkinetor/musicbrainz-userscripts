@@ -49,7 +49,7 @@ npm install -g pnpm
 
 If you use `nvm-windows` and `nvm use X` reports "Now using…" but `node --version` doesn't change: open PowerShell **as administrator** and re-run `nvm use`. nvm-windows needs admin to update the `C:\Program Files\nodejs` symlink — without it the switch silently fails.
 
-### One-time `gh` auth
+### One-time `gh` auth (for humans)
 
 ```powershell
 gh auth login                              # choose HTTPS, "Login with a web browser"
@@ -57,6 +57,33 @@ gh auth status                             # verify
 ```
 
 After this, the `gh` CLI works against your GitHub identity.
+
+### Bot identity for AI-driven work
+
+This repo uses a dedicated GitHub account **`claude-ai-milic`** for any
+commits, Issues, or PRs that an AI assistant produces. Keeping bot activity
+separate from the maintainer's identity makes review easier and prevents
+accidental impersonation.
+
+Setup (one-time, done by the maintainer):
+
+1. Create the `claude-ai-milic` GitHub account.
+2. Add it as a **collaborator** on `majkinetor/musicbrainz-userscripts` with
+   write access; accept the invite from the bot account.
+3. While logged in as the bot, generate a classic Personal Access Token at
+   <https://github.com/settings/tokens> with scopes `repo` + `write:discussion`.
+4. Save the token in `dev/.github-credentials.json` (gitignored — never commit):
+
+   ```jsonc
+   {
+     "username": "claude-ai-milic",
+     "token":    "github_pat_..."
+   }
+   ```
+
+5. The AI assistant reads this file when it needs to interact with GitHub and
+   uses the token explicitly (env var or `Authorization: Bearer …` header).
+   It does **not** use the human's authenticated `gh` session.
 
 ---
 
