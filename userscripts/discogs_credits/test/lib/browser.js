@@ -23,6 +23,10 @@ export async function launchTestContext({ headed = false } = {}) {
     const context = await chromium.launchPersistentContext(PROFILE_DIR, {
         headless: !headed,
         viewport: { width: 1400, height: 900 },
+        // 2x pixel density — full-page screenshots come out crisp instead of
+        // ~1400px-wide blurry. Doubles PNG size (typically ~1 MB per shot)
+        // but small text on the MB editor stays legible when zoomed in.
+        deviceScaleFactor: 2,
     });
     // Block creation-flow popups (we don't want to open MB entity-creation tabs in tests).
     context.on('page', async (page) => {

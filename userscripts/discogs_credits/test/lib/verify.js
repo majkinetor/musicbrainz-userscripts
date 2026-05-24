@@ -115,6 +115,19 @@ export function runAssertions({ existingRels, finalRels, newRels, discogsJson, m
         }
     }
 
+    // ── Assertion 1b: no staged rel uses a deprecated link type
+    // (MB would reject the commit — that was the original symptom of issue #2)
+    for (const r of newRels) {
+        const lt = linkTypes[r.linkTypeID];
+        if (lt?.deprecated) {
+            failures.push({
+                kind: 'deprecated_link_type',
+                rel:  r,
+                msg:  `linkTypeID ${r.linkTypeID} (name="${lt.name}", ${lt.type0}→${lt.type1}) is deprecated — commit would be rejected`,
+            });
+        }
+    }
+
     // ── Assertion 2: (linkTypeID, sourceType, targetType) triple is valid
     // With `backward: false` source is entity0, so expected sourceType=lt.type0, targetType=lt.type1.
     // With `backward: true`  source is entity1, so expected sourceType=lt.type1, targetType=lt.type0.
@@ -286,12 +299,14 @@ export async function probeLinkTypesByPhrase(page, needles) {
             const blob = [v.name, v.link_phrase, v.reverse_link_phrase, v.long_link_phrase].filter(Boolean).join(' | ').toLowerCase();
             if (lower.some(n => blob.includes(n))) {
                 out.push({
-                    id:       v.id,
-                    name:     v.name,
-                    type0:    v.type0,
-                    type1:    v.type1,
-                    forward:  v.link_phrase,
-                    reverse:  v.reverse_link_phrase,
+                    id:         v.id,
+                    name:       v.name,
+                    type0:      v.type0,
+                    type1:      v.type1,
+                    forward:    v.link_phrase,
+                    reverse:    v.reverse_link_phrase,
+                    deprecated: v.deprecated ?? v.is_deprecated ?? false,
+                    rawKeys:    Object.keys(v).sort(),
                 });
             }
         }
