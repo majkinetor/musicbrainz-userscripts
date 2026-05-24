@@ -162,9 +162,20 @@ pnpm test -- --tags=small,ep               # any of these tags (comma- or space-
 pnpm test -- --name=bosporus --tags=small  # AND across flags
 ```
 
-Each fixture in `test/fixtures.json` is an object with `name`, `url`, and `tags` (space-separated string). Add tags freely as new patterns emerge; the runner treats unknown tags as ignorable.
+Each fixture in `test/fixtures.json` is an object with `name`, `url`, and `tags` (space- or comma-separated). Add tags freely as new patterns emerge; the runner treats unknown tags as ignorable.
 
-Each fixture's full log lands at `test/logs/<ISO8601>_<mbid>.log` and contains the userscript's import-bar output + the browser's console + uncaught page errors.
+### Per-run output
+
+Each `pnpm test` invocation creates its own directory:
+
+```
+test/logs/<ISO8601-timestamp>/
+├── README.md                  the command, start/finish time, results table
+├── <fixture-slug>.log         userscript import-bar log + browser console + page errors
+└── <fixture-slug>.png         full-page screenshot of MB just before close
+```
+
+Useful for comparing runs (e.g. before vs after a fix), correlating a UI regression to a specific run, and archiving evidence. Gitignored.
 
 **Persistent profile.** `.pw-profile/` lives in this directory and holds the MB login cookies + the IDB entity cache the userscript builds up. **Don't delete it casually** — its loss means re-running `pnpm run login` *and* re-paying the cold-cache preflight cost (a few minutes per release for many-entity ones).
 

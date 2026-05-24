@@ -14,6 +14,11 @@
 //     pnpm test -- --tags=small,ep       # match any of the given tags (comma- or space-separated)
 //     pnpm test -- --name=bosporus --tags=small
 //
+// Each invocation creates a fresh directory `test/logs/<ISO8601>/` containing:
+//   - README.md           — command line, start time, selected fixtures, results
+//   - <fixture-slug>.log  — userscript import-bar log + browser console + page errors
+//   - <fixture-slug>.png  — full-page screenshot of the MB editor right before close
+//
 // Exit code is 0 only if every selected fixture passes every assertion.
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -46,8 +51,7 @@ const wantedTags = tagsArg ? tagsArg.split(/[,\s]+/).filter(Boolean).map(t => t.
 
 const HERE         = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_FILE = resolve(HERE, 'fixtures.json');
-const LOG_DIR      = resolve(HERE, 'logs');
-await mkdir(LOG_DIR, { recursive: true });
+const LOG_ROOT     = resolve(HERE, 'logs');
 
 const fixtures = JSON.parse(await readFile(FIXTURE_FILE, 'utf8'));
 
@@ -79,6 +83,23 @@ if (selected.length === 0) {
     process.exit(2);
 }
 
+// ──── per-run directory ───────────────────────────────────────────────────
+// One directory per invocation, named by ISO-8601 start timestamp (colons
+// replaced with `-` for Windows). Holds README.md + one .log + one .png per
+// fixture, each named by the fixture's sanitized slug.
+const runStart = new Date();
+const runStamp = runStart.toISOString().slice(0, 19).replace(/:/g, '-');
+const RUN_DIR  = resolve(LOG_ROOT, runStamp);
+await mkdir(RUN_DIR, { recursive: true });
+
+function fixtureSlug(name) {
+    return (name || 'unnamed')
+        .replace(/[^a-zA-Z0-9._-]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .slice(0, 100)
+        || 'unnamed';
+}
+
 // ──── small console helpers ───────────────────────────────────────────────
 const c = {
     grey:  s => `\x1b[90m${s}\x1b[0m`,
@@ -88,8 +109,6 @@ const c = {
     bold:  s => `\x1b[1m${s}\x1b[0m`,
 };
 
-// HH:MM:SS prefix on every line so step durations are visible.
-// Multi-line messages get the prefix on every line for grep/copy friendliness.
 function ts() {
     const d = new Date();
     const pad = n => String(n).padStart(2, '0');
@@ -97,7 +116,6 @@ function ts() {
 }
 function log(...args) {
     const prefix = c.grey(`[${ts()}]`);
-    // Preserve blank-line spacing without timestamping it.
     if (args.length === 1 && typeof args[0] === 'string' && args[0].startsWith('\n')) {
         process.stdout.write('\n');
         console.log(prefix, args[0].slice(1));
@@ -106,8 +124,7 @@ function log(...args) {
     }
 }
 
-// Wait for the user to press Enter on stdin. Used by --pause so they can
-// inspect the staged relationships visually before the next fixture loads.
+// Wait for the user to press Enter on stdin (used by --pause).
 function waitForEnter(prompt) {
     return new Promise(resolve => {
         const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -125,7 +142,65 @@ function logFailure(f) {
     }
 }
 
+// ──── README ──────────────────────────────────────────────────────────────
+// Written at start with command + fixture intent; rewritten at end with
+// results. If the runner crashes mid-way, the start-version remains so we
+// at least know what was being attempted.
+
+const results = selected.map(f => ({ status: 'pending', tail: '' }));
+
+// Reconstruct the command the user actually typed. When invoked via pnpm,
+// `process.env.npm_lifecycle_event` is the script name ("test", "test:headed");
+// otherwise fall back to the literal node invocation.
+function reconstructCommand() {
+    const passThroughArgs = process.argv.slice(2).filter(a => a !== '--');
+    const lifecycle = process.env.npm_lifecycle_event;
+    const quoted    = a => (/\s/.test(a) ? `"${a}"` : a);
+    const argsStr   = passThroughArgs.map(quoted).join(' ');
+    if (lifecycle) {
+        const sep = passThroughArgs.length ? ' -- ' : '';
+        return `pnpm ${lifecycle}${sep}${argsStr}`;
+    }
+    return `node test/run.mjs${argsStr ? ' ' + argsStr : ''}`;
+}
+
+async function writeRunReadme(finished) {
+    // Two trailing spaces on each metadata line force a hard line break in
+    // rendered markdown — without them, consecutive lines collapse into a
+    // single paragraph when GitHub renders the README.
+    const lines = [
+        `# Test run ${runStamp}`,
+        '',
+        `**Started:** \`${runStart.toISOString()}\`  `,
+        `**Command:** \`${reconstructCommand()}\`  `,
+        `**Fixtures selected:** ${selected.length} / ${fixtures.length}  `,
+    ];
+    if (finished) {
+        const elapsed = ((finished.getTime() - runStart.getTime()) / 1000).toFixed(1);
+        const failed  = results.filter(r => !/^OK/.test(r.status)).length;
+        lines.push(
+            `**Finished:** \`${finished.toISOString()}\`  `,
+            `**Elapsed:** ${elapsed}s  `,
+            `**Result:** ${failed === 0 ? '✅ all pass' : `❌ ${failed} of ${results.length} failed`}  `,
+        );
+    }
+    // URL column dropped — the fixture name in the first column already links to it.
+    lines.push('', '## Fixtures', '', '| # | Fixture | Tags | Result |', '| --- | --- | --- | --- |');
+    selected.forEach((f, i) => {
+        const slug = fixtureSlug(f.name);
+        const r = results[i];
+        const link = `[\`${slug}.log\`](./${slug}.log)`;
+        const png  = `[png](./${slug}.png)`;
+        lines.push(`| ${i + 1} | [${f.name}](${f.url}) | \`${f.tags || ''}\` | ${r.status} — ${link} · ${png} |`);
+    });
+    await writeFile(resolve(RUN_DIR, 'README.md'), lines.join('\n') + '\n');
+}
+
+await writeRunReadme(null);
+
 // ──── main ────────────────────────────────────────────────────────────────
+log(c.grey(`run dir: test/logs/${runStamp}/  (${selected.length} fixture${selected.length === 1 ? '' : 's'})`));
+
 const context = await launchTestContext({ headed });
 let totalFailures = 0;
 
@@ -133,7 +208,11 @@ for (let i = 0; i < selected.length; i++) {
     const fixture = selected[i];
     const url     = fixture.url;
     const mbid    = url.match(/release\/([a-f0-9-]{36})/)?.[1];
+    const slug    = fixtureSlug(fixture.name);
+    const logPath = resolve(RUN_DIR, `${slug}.log`);
+    const pngPath = resolve(RUN_DIR, `${slug}.png`);
     const header  = `[${i + 1}/${selected.length}] ${fixture.name}`;
+
     log(c.bold(`\n${header}`));
     log(c.grey(`  ${url}${fixture.tags ? `   [${fixture.tags}]` : ''}`));
 
@@ -145,8 +224,8 @@ for (let i = 0; i < selected.length; i++) {
         const discogsUrl = await getDetectedDiscogsUrl(page);
         if (!discogsUrl) {
             log(c.red('  x no Discogs URL detected on this release — skipping'));
+            results[i] = { status: 'FAIL (no Discogs URL)', tail: '' };
             totalFailures++;
-            await page.close();
             continue;
         }
         log(c.grey(`  discogs:       ${discogsUrl}`));
@@ -157,34 +236,27 @@ for (let i = 0; i < selected.length; i++) {
 
         const { log: importLog, timedOut } = await waitForImportDone(page);
 
-        // Persist BOTH the import-bar log AND the browser console+pageerrors per fixture.
-        // Filename: `<ISO8601>_<mbid>.log` so multiple runs accumulate, sorted.
-        // Windows file names can't contain `:` so we replace them with `-`.
+        // Persist the userscript import-bar log + browser console+pageerrors.
         const browserLog = getCapturedLog(page);
         const combined =
             `### Userscript import log (from .discogs-output ul.logs)\n\n${importLog || '(empty)\n'}\n\n` +
             `### Browser console + page errors\n\n${browserLog || '(none)\n'}\n`;
-        const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-        const logName = `${stamp}_${mbid}.log`;
-        const logPath = resolve(LOG_DIR, logName);
         await writeFile(logPath, combined);
-        log(c.grey(`  saved log:     test/logs/${logName}  (${combined.length.toLocaleString()} bytes)`));
+        log(c.grey(`  saved log:     ${slug}.log  (${combined.length.toLocaleString()} bytes)`));
 
         if (timedOut) {
             log(c.red(`  x import timed out — script never returned to idle. Import-log tail:`));
             const tail = importLog.split('\n').slice(-12).join('\n      ');
             log(c.amber(`      ${tail || '(no log)'}`));
-            // Surface any uncaught page errors — frequent cause of hangs
             if (page.__captured?.pageErrors?.length) {
                 log(c.red(`  page errors during run (${page.__captured.pageErrors.length}):`));
                 for (const e of page.__captured.pageErrors.slice(-5)) log(c.red(`      [${e.ts}] ${e.name}: ${e.text}`));
             }
+            results[i] = { status: 'FAIL (timeout)', tail };
             totalFailures++;
             continue;
         }
 
-        // Single snapshot. Splits into {all, existing, staged} using `_status` from
-        // MB's `relationshipsBySource` (staged = `_status` != 0).
         const snap = await snapshotRelationships(page);
         if (snap.errors.length) log(c.amber(`  snapshot warnings: ${snap.errors.slice(0, 3).join('; ')}${snap.errors.length > 3 ? ` (+${snap.errors.length - 3} more)` : ''}`));
 
@@ -192,13 +264,11 @@ for (let i = 0; i < selected.length; i++) {
         if (doneLine) log(c.grey(`  script says:   ${doneLine}`));
         log(c.grey(`  state rels:    persisted=${snap.existing.length}  staged=${snap.staged.length}  total=${snap.all.length}`));
 
-        // If nothing was staged, dump the log tail so we can see why
         if (snap.staged.length === 0) {
             const tail = importLog.split('\n').slice(-15).join('\n      ');
             log(c.amber(`  import-log tail:\n      ${tail}`));
         }
 
-        // Fetch reference data
         const [linked, discogsJson, mbReleaseJson] = await Promise.all([
             fetchMbLinkedEntities(page),
             fetchDiscogsJson(page, discogsUrl),
@@ -220,15 +290,14 @@ for (let i = 0; i < selected.length; i++) {
 
         if (failures.length === 0 && warnings.length === 0) {
             log(c.green(`  OK ${snap.staged.length} staged rels — all assertions pass`));
+            results[i] = { status: `OK ${snap.staged.length} staged`, tail: '' };
         } else {
             if (warnings.length) log(c.amber(`  ${warnings.length} warning(s):`));
             for (const w of warnings) log(c.amber(`    ! ${w.msg}`));
             if (failures.length) log(c.red(`  ${failures.length} failure(s):`));
             for (const f of failures) logFailure(f);
 
-            // Bug-#2 diagnostic: for every `invalid_triple` failure, dump all the
-            // MB link types whose name/phrase contains the role name. Helps us
-            // see which alternate link type the script SHOULD have picked.
+            // Bug-#2 diagnostic for invalid_triple failures
             const triples = failures.filter(f => f.kind === 'invalid_triple' && f.rel);
             if (triples.length > 0) {
                 const names = [...new Set(triples.map(f => linked.linkTypes[f.rel.linkTypeID]?.name).filter(Boolean))];
@@ -239,12 +308,12 @@ for (let i = 0; i < selected.length; i++) {
                 }
             }
 
+            results[i] = { status: failures.length ? `FAIL (${failures.length})` : `WARN (${warnings.length})`, tail: failures[0]?.msg || '' };
             totalFailures += failures.length;
         }
     } catch (e) {
         log(c.red(`  x runner error: ${e.message}`));
         if (e.stack) log(c.grey(e.stack.split('\n').slice(1, 4).join('\n')));
-        // If we got a page, dump captured browser console+errors and save them.
         if (page?.__captured) {
             const cap = page.__captured;
             if (cap.pageErrors.length) {
@@ -260,29 +329,41 @@ for (let i = 0; i < selected.length; i++) {
             }
             try {
                 const browserLog = getCapturedLog(page);
-                const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-                const logName = `${stamp}_${mbid}.log`;
-                const logPath = resolve(LOG_DIR, logName);
                 await writeFile(logPath, `### Runner error: ${e.message}\n\n### Browser console + page errors\n\n${browserLog || '(none)\n'}\n`);
-                log(c.grey(`  saved log:     test/logs/${logName}`));
-            } catch (_) { /* ignore log-write errors */ }
+                log(c.grey(`  saved log:     ${slug}.log`));
+            } catch (_) { /* ignore */ }
         }
+        results[i] = { status: `FAIL (runner: ${e.message.slice(0, 60)})`, tail: '' };
         totalFailures++;
     } finally {
+        // Snapshot the page right before we close (or pause) it.
+        if (page) {
+            try {
+                await page.screenshot({ path: pngPath, fullPage: true });
+                log(c.grey(`  screenshot:    ${slug}.png`));
+            } catch (e) {
+                log(c.amber(`  screenshot failed: ${e.message}`));
+            }
+        }
         if (pause && page) {
-            // Block until the user presses Enter. They can interact with the
-            // browser freely during this — we just keep the page alive.
             await waitForEnter(`  -- paused. press Enter to continue, Ctrl-C to abort -- `);
         }
         if (page) await page.close().catch(() => {});
     }
+
+    // Rewrite README after each fixture so it's useful even if a later
+    // fixture crashes.
+    await writeRunReadme(null);
 }
 
 await context.close();
+await writeRunReadme(new Date());
 
 if (totalFailures > 0) {
     log(c.red(`\n${totalFailures} assertion failure(s) across ${selected.length} fixture(s).`));
+    log(c.grey(`Run dir: test/logs/${runStamp}/`));
     process.exit(1);
 }
 log(c.green(`\nOK all ${selected.length} fixture(s) pass.`));
+log(c.grey(`Run dir: test/logs/${runStamp}/`));
 process.exit(0);
