@@ -3142,8 +3142,14 @@ function getDiscogsReleaseData(url) {
 function buildEditNote(discogsUrl, opts, extraLines) {
     const s = GM_info.script;
     const mbUrl = location.href.replace(/\/edit-relationships$/, '');
+    // Tampermonkey exposes the @homepageURL metadata key as `homepage` on
+    // GM_info.script (not `homepageURL`), while Greasemonkey and Violentmonkey
+    // use `homepageURL`. Fall back across both to avoid "undefined" appearing
+    // in the edit note. (issue #7)
+    const homepage = s.homepageURL || s.homepage || '';
+    const header = s.name + ' v' + s.version + ' by ' + s.author + (homepage ? ' - ' + homepage : '');
     const lines = [
-        s.name + ' v' + s.version + ' by ' + s.author + ' - ' + s.homepageURL,
+        header,
         '',
         'Release URL: ' + mbUrl,
         'Discogs URL: ' + discogsUrl,
