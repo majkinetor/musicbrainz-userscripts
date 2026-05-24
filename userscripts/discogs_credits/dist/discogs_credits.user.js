@@ -3144,10 +3144,11 @@ function buildEditNote(discogsUrl, opts, extraLines) {
     const mbUrl = location.href.replace(/\/edit-relationships$/, '');
     // Tampermonkey exposes the @homepageURL metadata key as `homepage` on
     // GM_info.script (not `homepageURL`), while Greasemonkey and Violentmonkey
-    // use `homepageURL`. Fall back across both to avoid "undefined" appearing
-    // in the edit note. (issue #7)
-    const homepage = s.homepageURL || s.homepage || '';
-    const header = s.name + ' v' + s.version + ' by ' + s.author + (homepage ? ' - ' + homepage : '');
+    // use `homepageURL`. Fall back across both, and to a hard-coded literal
+    // (keeps the @homepageURL value above in sync) so the edit note never
+    // contains the literal string "undefined". (issue #7)
+    const homepage = s.homepageURL || s.homepage || 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits';
+    const header = s.name + ' v' + s.version + ' by ' + s.author + ' - ' + homepage;
     const lines = [
         header,
         '',
