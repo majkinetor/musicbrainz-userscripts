@@ -45,7 +45,7 @@ export async function openReleasePage(context, releaseUrl) {
     const page = await context.newPage();
 
     // Buffer everything the browser prints / throws so we can diagnose hangs.
-    const captured = { console: [], pageErrors: [] };
+    const captured = { console: [], pageErrors: [], network: [] };
     page.__captured = captured;
     page.on('console', msg => {
         captured.console.push({
@@ -60,6 +60,35 @@ export async function openReleasePage(context, releaseUrl) {
             name:  err.name,
             text:  err.message,
             stack: err.stack,
+        });
+    });
+    // HTTP error responses (4xx/5xx). The page's `console` only sees a generic
+    // "Failed to load resource: status 404" — we want the URL/method/body too.
+    page.on('response', async resp => {
+        const status = resp.status();
+        if (status < 400) return;
+        const req = resp.request();
+        let body = '';
+        try { body = (await resp.text()).slice(0, 1000); } catch (_) { body = '(body unreadable)'; }
+        captured.network.push({
+            ts:         new Date().toTimeString().slice(0, 8),
+            kind:       'http',
+            method:     req.method(),
+            url:        req.url(),
+            status,
+            statusText: resp.statusText(),
+            body,
+        });
+    });
+    // True network failures (DNS, connection reset, blocked, etc. — never reached
+    // a status code).
+    page.on('requestfailed', req => {
+        captured.network.push({
+            ts:      new Date().toTimeString().slice(0, 8),
+            kind:    'fail',
+            method:  req.method(),
+            url:     req.url(),
+            failure: req.failure()?.errorText || '(no error text)',
         });
     });
 
@@ -99,6 +128,20 @@ export function getCapturedLog(page) {
         for (const e of cap.pageErrors) {
             lines.push(`[${e.ts}] ${e.name}: ${e.text}`);
             if (e.stack) lines.push(e.stack.split('\n').slice(0, 5).map(l => '    ' + l).join('\n'));
+        }
+    }
+    if (cap.network?.length) {
+        lines.push('── network errors (HTTP ≥400 + request failures) ───');
+        for (const n of cap.network) {
+            if (n.kind === 'http') {
+                lines.push(`[${n.ts}] HTTP ${n.status} ${n.statusText}  ${n.method} ${n.url}`);
+                if (n.body) {
+                    const preview = n.body.trim().split('\n').slice(0, 8).map(l => '    ' + l).join('\n');
+                    if (preview) lines.push(preview);
+                }
+            } else if (n.kind === 'fail') {
+                lines.push(`[${n.ts}] FAIL  ${n.method} ${n.url}  (${n.failure})`);
+            }
         }
     }
     return lines.join('\n');
