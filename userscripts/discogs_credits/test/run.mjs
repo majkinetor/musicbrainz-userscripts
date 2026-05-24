@@ -165,29 +165,33 @@ function reconstructCommand() {
 }
 
 async function writeRunReadme(finished) {
+    // Two trailing spaces on each metadata line force a hard line break in
+    // rendered markdown — without them, consecutive lines collapse into a
+    // single paragraph when GitHub renders the README.
     const lines = [
         `# Test run ${runStamp}`,
         '',
-        `**Started:** \`${runStart.toISOString()}\``,
-        `**Command:** \`${reconstructCommand()}\``,
-        `**Fixtures selected:** ${selected.length} / ${fixtures.length}`,
+        `**Started:** \`${runStart.toISOString()}\`  `,
+        `**Command:** \`${reconstructCommand()}\`  `,
+        `**Fixtures selected:** ${selected.length} / ${fixtures.length}  `,
     ];
     if (finished) {
         const elapsed = ((finished.getTime() - runStart.getTime()) / 1000).toFixed(1);
         const failed  = results.filter(r => !/^OK/.test(r.status)).length;
         lines.push(
-            `**Finished:** \`${finished.toISOString()}\``,
-            `**Elapsed:** ${elapsed}s`,
-            `**Result:** ${failed === 0 ? '✅ all pass' : `❌ ${failed} of ${results.length} failed`}`,
+            `**Finished:** \`${finished.toISOString()}\`  `,
+            `**Elapsed:** ${elapsed}s  `,
+            `**Result:** ${failed === 0 ? '✅ all pass' : `❌ ${failed} of ${results.length} failed`}  `,
         );
     }
-    lines.push('', '## Fixtures', '', '| # | Fixture | URL | Tags | Result |', '| --- | --- | --- | --- | --- |');
+    // URL column dropped — the fixture name in the first column already links to it.
+    lines.push('', '## Fixtures', '', '| # | Fixture | Tags | Result |', '| --- | --- | --- | --- |');
     selected.forEach((f, i) => {
         const slug = fixtureSlug(f.name);
         const r = results[i];
         const link = `[\`${slug}.log\`](./${slug}.log)`;
         const png  = `[png](./${slug}.png)`;
-        lines.push(`| ${i + 1} | [${f.name}](${f.url}) | \`${f.url}\` | \`${f.tags || ''}\` | ${r.status} — ${link} · ${png} |`);
+        lines.push(`| ${i + 1} | [${f.name}](${f.url}) | \`${f.tags || ''}\` | ${r.status} — ${link} · ${png} |`);
     });
     await writeFile(resolve(RUN_DIR, 'README.md'), lines.join('\n') + '\n');
 }
