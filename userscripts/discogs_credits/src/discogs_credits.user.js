@@ -1116,31 +1116,42 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
     }
 
     function getRecordingEntity(track) {
-        const rawCandidates = [track.position, String(parseInt(track.position, 10)), track.number]
-            .filter(c => c && c !== 'NaN');
+        // Discogs zero-pads compound positions ("1-02") while MB doesn't ("1-2").
+        // Strips one or more leading zeros after the dash. Issue #4 was originally
+        // diagnosed as a multi-medium collapse but the actual root cause was this
+        // zero-padding mismatch: lookup of "1-02" missed, fell through to
+        // `parseInt("1-02") = 1` → tried "1-1" → matched the wrong track.
+        const stripPad = s => String(s).replace(/-0+(\d)/g, '-$1');
 
-        // Build compound candidates. If Discogs already supplies a compound
-        // (e.g. "2-01"), keep that as-is and skip the disc-inference pass.
+        const pos = track.position != null ? String(track.position) : '';
+        const num = track.number   != null ? String(track.number)   : '';
+
         const compounds = new Set();
-        for (const c of rawCandidates) {
-            if (/^\d+-/.test(c)) {
-                compounds.add(c);                          // Discogs already explicit
-                continue;
-            }
-            const inferredDisc = inferDiscFromVinylSide(c);
-            if (inferredDisc != null) {
-                compounds.add(`${inferredDisc}-${c}`);     // letter → disc inference
-            }
-            for (let m = 1; m <= 10; m++) compounds.add(`${m}-${c}`); // fallback: try all
+        const plain     = new Set();
+
+        // Position handling
+        if (/^\d+-/.test(pos)) {
+            // Discogs already gave a compound. NOT a fallback for parseInt — for
+            // "1-02", parseInt returns 1 which is meaningless and produces a
+            // misleading "1-1" candidate that matches the WRONG recording.
+            compounds.add(pos);
+            const unpadded = stripPad(pos);
+            if (unpadded !== pos) compounds.add(unpadded);
+        } else if (pos) {
+            plain.add(pos);
+            const inferredDisc = inferDiscFromVinylSide(pos);
+            if (inferredDisc != null) compounds.add(`${inferredDisc}-${pos}`);
+            for (let m = 1; m <= 10; m++) compounds.add(`${m}-${pos}`);
         }
 
-        // Look up: on multi-medium releases, ONLY compound candidates are valid.
-        // Disambiguating preference: explicit Discogs compound > letter-inferred
-        // > generic loop. The compound `Set` preserves insertion order, which
-        // matches this priority above.
-        const tryKeys = isMultiMedium
-            ? [...compounds]
-            : [...rawCandidates, ...compounds];
+        // Track number (some Discogs entries set both .position and .number)
+        if (num && num !== pos) {
+            plain.add(num);
+            for (let m = 1; m <= 10; m++) compounds.add(`${m}-${num}`);
+        }
+
+        // On multi-medium releases, plain candidates are ambiguous — skip them.
+        const tryKeys = isMultiMedium ? [...compounds] : [...plain, ...compounds];
 
         // 1. WS2-based GID lookup
         for (const c of tryKeys) {

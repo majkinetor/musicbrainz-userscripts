@@ -161,6 +161,12 @@ export function runAssertions({ existingRels, finalRels, newRels, discogsJson, m
     // ── Assertion 6: for track-level new rels, the recording's track position
     // matches a Discogs credit at that same position.
     //
+    // Caveat: only checks rels with `sourceType === 'recording'`. Work-source
+    // rels (writer/composer credits on a work linked to a recording) aren't
+    // checked here — a wrong-track collapse of writer credits would pass
+    // (#4 was originally diagnosed this way; the fix is in
+    // `getRecordingEntity`'s compound-position handling rather than the test).
+    //
     // Each staged rel carries `sourceTrackPos` (from the medium walk in the snapshot).
     // We accept a rel if a Discogs track credit exists with matching name+role at
     // either the plain position (e.g. "A1", "3") or compound "medPos-trackPos".
