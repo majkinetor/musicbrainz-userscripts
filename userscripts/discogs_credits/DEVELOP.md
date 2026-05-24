@@ -21,7 +21,8 @@ pnpm exec playwright install chromium      # ~150 MB browser binary
 pnpm run login                             # opens MB once for manual sign-in
 
 # 3. day-to-day
-pnpm run dev                               # watches src/, rebuilds dist/ on save
+pnpm run dev                               # watches src/, rebuilds dist/, serves it on http://127.0.0.1:8765 for VM/TM live-update
+pnpm run watch                             # same watcher, no HTTP server
 pnpm run verify                            # lint + build + node --check
 pnpm test                                  # headless test on 7 fixtures
 pnpm test:headed -- --only=18cae3db        # show the browser, one fixture
@@ -123,12 +124,36 @@ userscripts/discogs_credits/
 
 ## The dev loop
 
-`src/` → `pnpm run dev` (watch) → `dist/discogs_credits.user.js` → Tampermonkey.
+`src/` → `pnpm run dev` (watch + serve) → `dist/discogs_credits.user.js` → Violentmonkey / Tampermonkey.
 
-Two ways to load `dist/discogs_credits.user.js` into Tampermonkey:
+### Live-install via `pnpm run dev` (recommended)
 
-1. **Re-paste on each change.** Open the script in Tampermonkey, paste the new contents.
-2. **Point Tampermonkey at the local file URL.** In Tampermonkey → Dashboard → click your script → "Externals" tab → add the absolute `file:///C:/.../dist/discogs_credits.user.js` path. Tampermonkey will re-read on each request — but you may need to enable "Allow access to file URLs" in the Chromium extension settings first. This avoids the manual paste.
+`pnpm run dev` rebuilds `dist/` on every save **and** serves it at
+`http://127.0.0.1:8765/discogs_credits.user.js` with the metadata block
+rewritten on the fly so VM/TM treats every rebuild as a new release:
+
+- `@version` gets a unix-timestamp suffix appended (`X.Y.Z` → `X.Y.Z.<ts>`), monotonically increasing
+- `@updateURL` and `@downloadURL` are rewritten to the localhost URL above
+
+One-time install:
+
+1. Run `pnpm run dev`.
+2. Open Violentmonkey (or Tampermonkey) Dashboard → "Install from URL" → paste
+   `http://127.0.0.1:8765/discogs_credits.user.js`.
+3. After installing, open the script in the dashboard and set
+   **Check for updates** → **On every page load**
+   (VM: per-script "Settings" tab → Updates; TM: "Updates" tab → set interval to `0`).
+4. Reload MB. The script re-fetches from localhost on every page load and
+   picks up the latest rebuild because the version bumps every time.
+
+Stop with Ctrl-C when you're done. While the dev server is down VM/TM will
+log a fetch error but the *installed* copy keeps working — it just won't
+update until you start the server again.
+
+### Alternatives
+
+- **`pnpm run watch`** — same watcher, no HTTP server. Use when you don't want a listening port (you can still paste `dist/` contents manually).
+- **`pnpm run build`** — one-shot build with no watch, no server.
 
 For headless tests, none of the above matters — `test/run.mjs` reads `dist/discogs_credits.user.js` directly and injects it into the page.
 
