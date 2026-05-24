@@ -161,45 +161,101 @@ export function runAssertions({ existingRels, finalRels, newRels, discogsJson, m
     // ── Assertion 6: for track-level new rels, the recording's track position
     // matches a Discogs credit at that same position.
     //
-    // Caveat: only checks rels with `sourceType === 'recording'`. Work-source
-    // rels (writer/composer credits on a work linked to a recording) aren't
-    // checked here — a wrong-track collapse of writer credits would pass
-    // (#4 was originally diagnosed this way; the fix is in
-    // `getRecordingEntity`'s compound-position handling rather than the test).
+    // Covers both:
+    //  - recording-source rels (performer/producer/instrument/etc.) — the
+    //    source's own track position is checked.
+    //  - work-source rels (writer/composer/lyricist/etc.) — the work is
+    //    followed back to the recording it's linked to (via the "recording
+    //    of" / "performance" rel found in the snapshot), and THAT recording's
+    //    track position is checked.
     //
-    // Each staged rel carries `sourceTrackPos` (from the medium walk in the snapshot).
-    // We accept a rel if a Discogs track credit exists with matching name+role at
-    // either the plain position (e.g. "A1", "3") or compound "medPos-trackPos".
+    // The latter catches the wrong-track-collapse class that bug #4 originally
+    // hit (writer credits for tracks 2-13 all landed on track 1's work, but
+    // assertion #6 only checked recording-source rels and missed it).
+    //
+    // Discogs↔MB role-name aliases (Discogs "Written-By" ↔ MB "writer", etc.)
+    // are needed because the existing substring matcher fails for those.
+    const ROLE_ALIASES = {
+        writer:        ['written-by', 'songwriter'],
+        composer:      ['composed by', 'composition'],
+        lyricist:      ['lyrics by', 'lyrics'],
+        arranger:      ['arranged by'],
+        producer:      ['producer', 'produced by', 'produced'],
+        engineer:      ['engineer', 'engineered by'],
+        mix:           ['mixed by', 'mix'],
+        mastering:     ['mastered by'],
+        performer:     ['performer'],
+    };
+
+    function rolesMatch(discogsRole, mbLinkTypeName) {
+        const lower = discogsRole.toLowerCase();
+        if (lower.includes(mbLinkTypeName)) return true;
+        const cRole0 = lower.split(/[\[(,]/)[0].trim();
+        if (cRole0 && mbLinkTypeName.includes(cRole0)) return true;
+        const aliases = ROLE_ALIASES[mbLinkTypeName] || [];
+        return aliases.some(a => lower.includes(a));
+    }
+
+    // Build a map: work.gid → { trackPos, medPos } via "performance"/"recording of"
+    // rels in the snapshot. Use ALL rels (existing + staged) because a brand-new
+    // writer-on-work rel uses a previously-existing recording↔work link.
+    const allKnownRels = (finalRels || []).concat(existingRels || []);
+    const workToTrack = new Map();
+    for (const rel of allKnownRels) {
+        if (rel.sourceType === 'recording' && rel.targetType === 'work'
+                && rel.targetGid && rel.sourceTrackPos != null) {
+            if (!workToTrack.has(rel.targetGid)) {
+                workToTrack.set(rel.targetGid, {
+                    trackPos: rel.sourceTrackPos,
+                    medPos:   rel.sourceMedPos,
+                });
+            }
+        }
+    }
+
     const credits = discogsCreditIndex(discogsJson);
     for (const r of newRels) {
-        if (r.sourceType !== 'recording') continue;
-        if (r.sourceTrackPos == null)    continue;   // unmapped recording
+        // Resolve a track position for this rel — directly for recording-source,
+        // via workToTrack for work-source. Anything else is out of scope.
+        let trackPos, medPos;
+        if (r.sourceType === 'recording') {
+            if (r.sourceTrackPos == null) continue;
+            trackPos = r.sourceTrackPos;
+            medPos   = r.sourceMedPos;
+        } else if (r.sourceType === 'work') {
+            const link = workToTrack.get(r.sourceGid);
+            if (!link) continue;   // orphan work — can't verify
+            trackPos = link.trackPos;
+            medPos   = link.medPos;
+        } else {
+            continue;
+        }
 
         const credit = (r.targetCredit || r.targetName || '').trim().toLowerCase();
         const ltName = (linkTypes[r.linkTypeID]?.name || '').toLowerCase();
-        const compoundPos = r.sourceMedPos ? `${r.sourceMedPos}-${r.sourceTrackPos}` : null;
+        const compoundPos = medPos ? `${medPos}-${trackPos}` : null;
 
         const supported = credits.some(c => {
             if (!c.track) return false;
             const cPos = String(c.track.position);
-            const posMatch = cPos === r.sourceTrackPos ||
-                             (compoundPos && cPos === compoundPos);
+            // Accept both plain and compound match for both candidate forms.
+            // Discogs may zero-pad ("1-02") while our trackPos is "2" — so try
+            // both as-is and a "1-2"-style unpadded compound.
+            const padded   = cPos;
+            const unpadded = cPos.replace(/-0+(\d)/g, '-$1');
+            const posMatch = padded === trackPos || unpadded === trackPos ||
+                             (compoundPos && (padded === compoundPos || unpadded === compoundPos));
             if (!posMatch) return false;
 
             const nameMatch = c.name.toLowerCase().trim() === credit ||
                               (c.anv || '').toLowerCase().trim() === credit;
-            // Loose role match: ltName may be embedded in c.role (e.g. "Producer [Co]"),
-            // or c.role may be a sub-part of ltName.
-            const cRole0 = c.role.toLowerCase().split(/[\[(,]/)[0].trim();
-            const roleMatch = c.role.toLowerCase().includes(ltName) ||
-                              (cRole0 && ltName.includes(cRole0));
-            return nameMatch && roleMatch;
+            return nameMatch && rolesMatch(c.role, ltName);
         });
         if (!supported) {
             failures.push({
                 kind: 'track_mismatch',
                 rel: r,
-                msg: `track-level rel "${ltName}" → "${credit}" on recording at position ${r.sourceTrackPos}${compoundPos ? ` (or ${compoundPos})` : ''}: no matching Discogs credit at that position`,
+                msg: `${r.sourceType}-source rel "${ltName}" → "${credit}" at track ${trackPos}${compoundPos ? ` (or ${compoundPos})` : ''}: no matching Discogs credit at that position`,
             });
         }
     }
