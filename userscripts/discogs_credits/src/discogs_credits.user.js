@@ -27,7 +27,12 @@ import {
     fetchMBEntity,
     mbThrottle,
     fetchWithRetry,
+    resolveLinkTypeId,
 }                                  from './api-mb.js';
+import {
+    addLogLine,
+    setLogContainer,
+}                                  from './log.js';
 
 let db;
 const request = indexedDB.open('mblink');
@@ -469,6 +474,7 @@ function insertDiscogsBar(discogsUrl) {
         // Fresh log/summary elements each run
         logs = document.createElement('ul');
         logs.className = 'logs';
+        setLogContainer(logs);
         summary = document.createElement('p');
         summary.className = 'summary';
         outputDiv.innerHTML = '';
@@ -621,96 +627,7 @@ async function waitForMBEditor(timeoutMs = 15000) {
     return null;
 }
 
-/**
- * Resolve a link type name to its numeric ID from MB.linkedEntities.link_type.
- *
- * Strictness invariant (post bug #2 fix): the returned link type's
- * `(type0, type1)` MUST equal the requested `(type0, type1)`. If no link
- * type satisfies the entity-type pair, return null — never silently fall
- * back to a same-named link type with the wrong entity types (that's how
- * we used to send `orchestra` to the "orchestra at" event link type,
- * issue #2 + the orchestra variant caught by the test gate).
- *
- * Match strategy, constrained to `(type0, type1)`:
- *   1. Exact match on `name` (canonical identifier)
- *   2. Exact match on `link_phrase` (forward UI phrase) or
- *      `reverse_link_phrase` (backward UI phrase)
- *   3. Contains-match on any of those three fields — pick the shortest
- *      (most specific) candidate
- *
- * MB's internal `name` field often differs from what the user sees in the
- * relationship dropdown. For example, MB's recording-orchestra link type
- * has `name = "performing orchestra"` but its `link_phrase = "{additional}
- * orchestra"`. A name-only matcher misses it; phrase matching catches it.
- *
- * Returns: numeric link-type id, or null with a WARN logged.
- */
-function resolveLinkTypeId(name, type0, type1) {
-    const lt = pageWindow.MB?.linkedEntities?.link_type;
-    if (!lt) { addLogLine('<span style="color:red">ERR MB.linkedEntities.link_type not available</span>'); return null; }
-    const needle = name.toLowerCase().trim();
-    // Strip MB's curly-brace attribute placeholders, e.g. "{additional} orchestra"
-    // → "orchestra" so a Discogs role "orchestra" matches.
-    const stripAttrs = s => (s || '').toLowerCase().replace(/\{[^}]*\}/g, '').replace(/\s+/g, ' ').trim();
-
-    // Only consider link types with the exact (type0, type1) pair we need
-    // AND that are NOT deprecated. MB ships deprecated link types in
-    // `link_type` so existing rels still render — but the server rejects
-    // any new submission using them. Picking one would block the commit
-    // (issue #2: "mastering on recording is deprecated"). Skip them.
-    const candidates = Object.values(lt).filter(v =>
-        v.type0 === type0 && v.type1 === type1 && !v.deprecated
-    );
-
-    // 1. Exact match on `name`
-    for (const v of candidates) {
-        if ((v.name || '').toLowerCase() === needle) return v.id;
-    }
-    // 2. Exact match on `link_phrase` or `reverse_link_phrase` (with placeholders stripped)
-    for (const v of candidates) {
-        if (stripAttrs(v.link_phrase)         === needle) return v.id;
-        if (stripAttrs(v.reverse_link_phrase) === needle) return v.id;
-    }
-    // 3. Contains-match on any of the three fields — pick the shortest (most specific).
-    const contains = candidates.filter(v => {
-        const blobs = [v.name, stripAttrs(v.link_phrase), stripAttrs(v.reverse_link_phrase)].filter(Boolean);
-        return blobs.some(b => b.includes(needle) || needle.includes(b));
-    });
-    if (contains.length > 0) {
-        contains.sort((a, b) => ((a.name || '').length || 999) - ((b.name || '').length || 999));
-        const best = contains[0];
-        if ((best.name || '').toLowerCase() !== needle) {
-            addLogLine(`Fuzzy match: "${name}" → "${best.name}" (${type0}→${type1})`);
-        }
-        return best.id;
-    }
-
-    // Nothing found for this entity-type pair. Show what IS available so the
-    // user can manually pick a better Discogs→MB role mapping later.
-    const availableNames = candidates.map(v => v.name).filter(Boolean).sort().join(', ');
-    const allByName = Object.values(lt).filter(v =>
-        (v.name || '').toLowerCase() === needle ||
-        stripAttrs(v.link_phrase)        === needle ||
-        stripAttrs(v.reverse_link_phrase) === needle
-    );
-    const deprecatedHit = allByName.find(v => v.type0 === type0 && v.type1 === type1 && v.deprecated);
-    const wrongPairHits  = allByName.filter(v => !(v.type0 === type0 && v.type1 === type1));
-    if (deprecatedHit) {
-        // MB deprecates link types but keeps them in `link_type` so existing
-        // rels still render. New submissions are rejected — picking one would
-        // block the commit. Log as ERR (red) since this is a hard refusal,
-        // not a warning the user might safely override.
-        const altPairs = [...new Set(allByName.filter(v => !v.deprecated).map(v => `${v.type0}→${v.type1}`))].join(', ');
-        addLogLine(`<span style="color:red">ERR "${name}" (${type0}→${type1}) is deprecated by MB and would block the commit — skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ''}.</span>`);
-    } else if (wrongPairHits.length > 0) {
-        const hitDesc = wrongPairHits.map(v => `${v.name}(${v.type0}→${v.type1})`).join(', ');
-        addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}→${type1}) — exists for other entity pairs: ${hitDesc} — skipping</span>`);
-    } else {
-        addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}→${type1}). Available for this pair: ${availableNames || 'none'}</span>`);
-    }
-    return null;
-}
-
+// `resolveLinkTypeId` moved to api-mb.js — see import at top of this file.
 
 /**
  * Dispatch one relationship into MB's React editor state.
@@ -1548,24 +1465,7 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
 }
 
 
-function addLogLine(message) {
-    const li = document.createElement('li');
-    // HH:MM:SS prefix so per-step timings are visible. Styled muted/monospace so
-    // it doesn't fight with the actual content for attention.
-    const d = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    // Real space character after the timestamp span — `margin-right` on the span
-    // renders fine in the browser but disappears when log content is copied as
-    // text (CSS spacing isn't part of textContent).
-    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${message}`;
-    logs.insertAdjacentElement('beforeend', li);
-    // Feed progress ticker (strip HTML tags for plain-text display)
-    const bar = document.querySelector('.discogs-bar');
-    if (bar?._setProgress) {
-        bar._setProgress(null, message.replace(/<[^>]*>/g, '').trim().substring(0, 120));
-    }
-}
+// `addLogLine` moved to log.js — see import at top of this file.
 
 function hasDiscogsLinkDefined(mbid) {
     let url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;

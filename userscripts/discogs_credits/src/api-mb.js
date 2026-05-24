@@ -1,6 +1,10 @@
-// MusicBrainz API helpers — the throttled fetch and small wrappers that go
-// through it. The throttle is the single chokepoint for everything that hits
-// musicbrainz.org/ws/2 (and /ws/js), so rate-limit handling lives in one place.
+// MusicBrainz API helpers — the throttled fetch, small wrappers that go
+// through it, and `MB.linkedEntities` lookups. The throttle is the single
+// chokepoint for everything that hits musicbrainz.org/ws/2 (and /ws/js), so
+// rate-limit handling lives in one place.
+
+import { pageWindow } from './constants.js';
+import { addLogLine } from './log.js';
 
 /**
  * Fetch a full MB entity from the internal `/ws/js/entity/{mbid}` endpoint.
@@ -96,4 +100,94 @@ export const mbThrottle = (() => {
 /** Thin wrapper around `mbThrottle.fetchJson` with a slightly higher retry default. */
 export async function fetchWithRetry(url, retries = 4) {
     return mbThrottle.fetchJson(url, retries);
+}
+
+/**
+ * Resolve a link type name to its numeric ID from MB.linkedEntities.link_type.
+ *
+ * Strictness invariant (post bug #2 fix): the returned link type's
+ * `(type0, type1)` MUST equal the requested `(type0, type1)`. If no link
+ * type satisfies the entity-type pair, return null — never silently fall
+ * back to a same-named link type with the wrong entity types (that's how
+ * we used to send `orchestra` to the "orchestra at" event link type,
+ * issue #2 + the orchestra variant caught by the test gate).
+ *
+ * Match strategy, constrained to `(type0, type1)`:
+ *   1. Exact match on `name` (canonical identifier)
+ *   2. Exact match on `link_phrase` (forward UI phrase) or
+ *      `reverse_link_phrase` (backward UI phrase)
+ *   3. Contains-match on any of those three fields — pick the shortest
+ *      (most specific) candidate
+ *
+ * MB's internal `name` field often differs from what the user sees in the
+ * relationship dropdown. For example, MB's recording-orchestra link type
+ * has `name = "performing orchestra"` but its `link_phrase = "{additional}
+ * orchestra"`. A name-only matcher misses it; phrase matching catches it.
+ *
+ * Returns: numeric link-type id, or null with a WARN logged.
+ */
+export function resolveLinkTypeId(name, type0, type1) {
+    const lt = pageWindow.MB?.linkedEntities?.link_type;
+    if (!lt) { addLogLine('<span style="color:red">ERR MB.linkedEntities.link_type not available</span>'); return null; }
+    const needle = name.toLowerCase().trim();
+    // Strip MB's curly-brace attribute placeholders, e.g. "{additional} orchestra"
+    // → "orchestra" so a Discogs role "orchestra" matches.
+    const stripAttrs = s => (s || '').toLowerCase().replace(/\{[^}]*\}/g, '').replace(/\s+/g, ' ').trim();
+
+    // Only consider link types with the exact (type0, type1) pair we need
+    // AND that are NOT deprecated. MB ships deprecated link types in
+    // `link_type` so existing rels still render — but the server rejects
+    // any new submission using them. Picking one would block the commit
+    // (issue #2: "mastering on recording is deprecated"). Skip them.
+    const candidates = Object.values(lt).filter(v =>
+        v.type0 === type0 && v.type1 === type1 && !v.deprecated
+    );
+
+    // 1. Exact match on `name`
+    for (const v of candidates) {
+        if ((v.name || '').toLowerCase() === needle) return v.id;
+    }
+    // 2. Exact match on `link_phrase` or `reverse_link_phrase` (with placeholders stripped)
+    for (const v of candidates) {
+        if (stripAttrs(v.link_phrase)         === needle) return v.id;
+        if (stripAttrs(v.reverse_link_phrase) === needle) return v.id;
+    }
+    // 3. Contains-match on any of the three fields — pick the shortest (most specific).
+    const contains = candidates.filter(v => {
+        const blobs = [v.name, stripAttrs(v.link_phrase), stripAttrs(v.reverse_link_phrase)].filter(Boolean);
+        return blobs.some(b => b.includes(needle) || needle.includes(b));
+    });
+    if (contains.length > 0) {
+        contains.sort((a, b) => ((a.name || '').length || 999) - ((b.name || '').length || 999));
+        const best = contains[0];
+        if ((best.name || '').toLowerCase() !== needle) {
+            addLogLine(`Fuzzy match: "${name}" → "${best.name}" (${type0}→${type1})`);
+        }
+        return best.id;
+    }
+
+    // Nothing found for this entity-type pair. Show what IS available so the
+    // user can manually pick a better Discogs→MB role mapping later.
+    const availableNames = candidates.map(v => v.name).filter(Boolean).sort().join(', ');
+    const allByName = Object.values(lt).filter(v =>
+        (v.name || '').toLowerCase() === needle ||
+        stripAttrs(v.link_phrase)        === needle ||
+        stripAttrs(v.reverse_link_phrase) === needle
+    );
+    const deprecatedHit = allByName.find(v => v.type0 === type0 && v.type1 === type1 && v.deprecated);
+    const wrongPairHits  = allByName.filter(v => !(v.type0 === type0 && v.type1 === type1));
+    if (deprecatedHit) {
+        // MB deprecates link types but keeps them in `link_type` so existing
+        // rels still render. New submissions are rejected — picking one would
+        // block the commit. Log as ERR (red) since this is a hard refusal,
+        // not a warning the user might safely override.
+        const altPairs = [...new Set(allByName.filter(v => !v.deprecated).map(v => `${v.type0}→${v.type1}`))].join(', ');
+        addLogLine(`<span style="color:red">ERR "${name}" (${type0}→${type1}) is deprecated by MB and would block the commit — skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ''}.</span>`);
+    } else if (wrongPairHits.length > 0) {
+        const hitDesc = wrongPairHits.map(v => `${v.name}(${v.type0}→${v.type1})`).join(', ');
+        addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}→${type1}) — exists for other entity pairs: ${hitDesc} — skipping</span>`);
+    } else {
+        addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}→${type1}). Available for this pair: ${availableNames || 'none'}</span>`);
+    }
+    return null;
 }

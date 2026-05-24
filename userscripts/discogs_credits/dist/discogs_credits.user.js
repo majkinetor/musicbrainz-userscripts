@@ -1266,6 +1266,25 @@
     });
   }
 
+  // src/log.js
+  var _logs = null;
+  function setLogContainer(el) {
+    _logs = el;
+  }
+  function addLogLine(message) {
+    if (!_logs) return;
+    const li = document.createElement("li");
+    const d = /* @__PURE__ */ new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${message}`;
+    _logs.insertAdjacentElement("beforeend", li);
+    const bar = document.querySelector(".discogs-bar");
+    if (bar?._setProgress) {
+      bar._setProgress(null, message.replace(/<[^>]*>/g, "").trim().substring(0, 120));
+    }
+  }
+
   // src/api-mb.js
   async function fetchMBEntity(mbid) {
     const res = await fetch(`/ws/js/entity/${mbid}`);
@@ -1344,6 +1363,53 @@
   })();
   async function fetchWithRetry(url, retries = 4) {
     return mbThrottle.fetchJson(url, retries);
+  }
+  function resolveLinkTypeId(name, type0, type1) {
+    const lt = pageWindow.MB?.linkedEntities?.link_type;
+    if (!lt) {
+      addLogLine('<span style="color:red">ERR MB.linkedEntities.link_type not available</span>');
+      return null;
+    }
+    const needle = name.toLowerCase().trim();
+    const stripAttrs = (s) => (s || "").toLowerCase().replace(/\{[^}]*\}/g, "").replace(/\s+/g, " ").trim();
+    const candidates = Object.values(lt).filter(
+      (v) => v.type0 === type0 && v.type1 === type1 && !v.deprecated
+    );
+    for (const v of candidates) {
+      if ((v.name || "").toLowerCase() === needle) return v.id;
+    }
+    for (const v of candidates) {
+      if (stripAttrs(v.link_phrase) === needle) return v.id;
+      if (stripAttrs(v.reverse_link_phrase) === needle) return v.id;
+    }
+    const contains = candidates.filter((v) => {
+      const blobs = [v.name, stripAttrs(v.link_phrase), stripAttrs(v.reverse_link_phrase)].filter(Boolean);
+      return blobs.some((b) => b.includes(needle) || needle.includes(b));
+    });
+    if (contains.length > 0) {
+      contains.sort((a, b) => ((a.name || "").length || 999) - ((b.name || "").length || 999));
+      const best = contains[0];
+      if ((best.name || "").toLowerCase() !== needle) {
+        addLogLine(`Fuzzy match: "${name}" \u2192 "${best.name}" (${type0}\u2192${type1})`);
+      }
+      return best.id;
+    }
+    const availableNames = candidates.map((v) => v.name).filter(Boolean).sort().join(", ");
+    const allByName = Object.values(lt).filter(
+      (v) => (v.name || "").toLowerCase() === needle || stripAttrs(v.link_phrase) === needle || stripAttrs(v.reverse_link_phrase) === needle
+    );
+    const deprecatedHit = allByName.find((v) => v.type0 === type0 && v.type1 === type1 && v.deprecated);
+    const wrongPairHits = allByName.filter((v) => !(v.type0 === type0 && v.type1 === type1));
+    if (deprecatedHit) {
+      const altPairs = [...new Set(allByName.filter((v) => !v.deprecated).map((v) => `${v.type0}\u2192${v.type1}`))].join(", ");
+      addLogLine(`<span style="color:red">ERR "${name}" (${type0}\u2192${type1}) is deprecated by MB and would block the commit \u2014 skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ""}.</span>`);
+    } else if (wrongPairHits.length > 0) {
+      const hitDesc = wrongPairHits.map((v) => `${v.name}(${v.type0}\u2192${v.type1})`).join(", ");
+      addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}\u2192${type1}) \u2014 exists for other entity pairs: ${hitDesc} \u2014 skipping</span>`);
+    } else {
+      addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}\u2192${type1}). Available for this pair: ${availableNames || "none"}</span>`);
+    }
+    return null;
   }
 
   // src/discogs_credits.user.js
@@ -1751,6 +1817,7 @@
       requestAnimationFrame(bar._showProgress);
       logs = document.createElement("ul");
       logs.className = "logs";
+      setLogContainer(logs);
       summary = document.createElement("p");
       summary.className = "summary";
       outputDiv.innerHTML = "";
@@ -1886,53 +1953,6 @@
       waited += 200;
     }
     addLogLine('<span style="color:red">ERR MB editor not ready after 15s \u2014 aborting</span>');
-    return null;
-  }
-  function resolveLinkTypeId(name, type0, type1) {
-    const lt = pageWindow.MB?.linkedEntities?.link_type;
-    if (!lt) {
-      addLogLine('<span style="color:red">ERR MB.linkedEntities.link_type not available</span>');
-      return null;
-    }
-    const needle = name.toLowerCase().trim();
-    const stripAttrs = (s) => (s || "").toLowerCase().replace(/\{[^}]*\}/g, "").replace(/\s+/g, " ").trim();
-    const candidates = Object.values(lt).filter(
-      (v) => v.type0 === type0 && v.type1 === type1 && !v.deprecated
-    );
-    for (const v of candidates) {
-      if ((v.name || "").toLowerCase() === needle) return v.id;
-    }
-    for (const v of candidates) {
-      if (stripAttrs(v.link_phrase) === needle) return v.id;
-      if (stripAttrs(v.reverse_link_phrase) === needle) return v.id;
-    }
-    const contains = candidates.filter((v) => {
-      const blobs = [v.name, stripAttrs(v.link_phrase), stripAttrs(v.reverse_link_phrase)].filter(Boolean);
-      return blobs.some((b) => b.includes(needle) || needle.includes(b));
-    });
-    if (contains.length > 0) {
-      contains.sort((a, b) => ((a.name || "").length || 999) - ((b.name || "").length || 999));
-      const best = contains[0];
-      if ((best.name || "").toLowerCase() !== needle) {
-        addLogLine(`Fuzzy match: "${name}" \u2192 "${best.name}" (${type0}\u2192${type1})`);
-      }
-      return best.id;
-    }
-    const availableNames = candidates.map((v) => v.name).filter(Boolean).sort().join(", ");
-    const allByName = Object.values(lt).filter(
-      (v) => (v.name || "").toLowerCase() === needle || stripAttrs(v.link_phrase) === needle || stripAttrs(v.reverse_link_phrase) === needle
-    );
-    const deprecatedHit = allByName.find((v) => v.type0 === type0 && v.type1 === type1 && v.deprecated);
-    const wrongPairHits = allByName.filter((v) => !(v.type0 === type0 && v.type1 === type1));
-    if (deprecatedHit) {
-      const altPairs = [...new Set(allByName.filter((v) => !v.deprecated).map((v) => `${v.type0}\u2192${v.type1}`))].join(", ");
-      addLogLine(`<span style="color:red">ERR "${name}" (${type0}\u2192${type1}) is deprecated by MB and would block the commit \u2014 skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ""}.</span>`);
-    } else if (wrongPairHits.length > 0) {
-      const hitDesc = wrongPairHits.map((v) => `${v.name}(${v.type0}\u2192${v.type1})`).join(", ");
-      addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}\u2192${type1}) \u2014 exists for other entity pairs: ${hitDesc} \u2014 skipping</span>`);
-    } else {
-      addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}\u2192${type1}). Available for this pair: ${availableNames || "none"}</span>`);
-    }
     return null;
   }
   function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes, trackPos) {
@@ -2607,18 +2627,6 @@
     } catch (e) {
     }
     addLogLine(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
-  }
-  function addLogLine(message) {
-    const li = document.createElement("li");
-    const d = /* @__PURE__ */ new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${message}`;
-    logs.insertAdjacentElement("beforeend", li);
-    const bar = document.querySelector(".discogs-bar");
-    if (bar?._setProgress) {
-      bar._setProgress(null, message.replace(/<[^>]*>/g, "").trim().substring(0, 120));
-    }
   }
   function hasDiscogsLinkDefined(mbid) {
     let url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
