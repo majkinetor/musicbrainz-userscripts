@@ -3859,6 +3859,18 @@ const ENTITY_TYPE_MAP = {
         entityType: 'artist',
         linkType: 'performer',
     },
+    // Discogs role "Accompanied By" → MB has no dedicated link type or
+    // attribute for this. Closest semantic fit is `performer` with the
+    // `additional` attribute (used elsewhere in MB for non-primary
+    // contributions). Previously this fell through to the INSTRUMENTS map
+    // and was dispatched as a bare `instrument` rel with the bogus
+    // attribute value "accompanied by" — which MB silently drops, leaving
+    // a junk instrument rel with no instrument named.
+    'Accompanied By': {
+        entityType: 'artist',
+        linkType: 'performer',
+        attributes: ['additional'],
+    },
     Instruments: {
         entityType: 'artist',
         linkType: 'instrument',
@@ -4902,7 +4914,8 @@ const INSTRUMENTS = {
     Tannerin: null,
     Tape: null,
     Turntables: null,
-    'Accompanied By': null,
+    // 'Accompanied By' deliberately NOT in INSTRUMENTS — it's a meta role,
+    // not an instrument. Mapped in ENTITY_TYPE_MAP to performer + additional.
     'Audio Generator': null,
     'Backing Band': null,
     Band: null,
