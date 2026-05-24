@@ -17,6 +17,11 @@ import {
     makeKeyDownEvent,
     makeClickEvent,
 }                                  from './util.js';
+import {
+    link_infos,
+    getDiscogsLinkKey,
+    getDiscogsReleaseData,
+}                                  from './api-discogs.js';
 
 let db;
 const request = indexedDB.open('mblink');
@@ -3122,25 +3127,6 @@ function convertDiscogsArtistsToRolesRelationships(artists) {
     }, []) || [];
 }
 
-// In-memory session cache for Discogs release JSON (avoids localStorage quota issues)
-const _releaseDataCache = new Map();
-
-function getDiscogsReleaseData(url) {
-    // Check session memory first
-    if (_releaseDataCache.has(url)) return Promise.resolve(_releaseDataCache.get(url));
-
-    return fetch(
-        `${url.replace(
-            'https://www.discogs.com/release/',
-            'https://api.discogs.com/releases/'
-        )}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`
-    )
-        .then(body => body.json())
-        .then(json => {
-            _releaseDataCache.set(url, json); // session cache only
-            return json;
-        });
-}
 
 /**
  * Build the edit note / summary text used in two places:
@@ -3689,25 +3675,4 @@ function setValueOnAutocomplete(selector, value) {
     });
 }
 
-// contains infos for each link key
-const link_infos = {};
-
-// Parse discogs url to extract info, returns a key and set link_infos for this key
-// the key is in the form discogs_type/discogs_id
-function getDiscogsLinkKey(url) {
-    const re = /^https?:\/\/(?:www|api)\.discogs\.com\/(?:(?:(?!sell).+|sell.+)\/)?(master|release|artist|label)s?\/(\d+)(?:[^?#]*)(?:\?noanv=1|\?anv=[^=]+)?$/i;
-    const m = re.exec(url);
-    if (m !== null) {
-        const key = `${m[1]}/${m[2]}`;
-        if (!link_infos[key]) {
-            link_infos[key] = {
-                type: m[1],
-                id: m[2],
-                clean_url: `https://www.discogs.com/${m[1]}/${m[2]}`,
-            };
-        }
-        return key;
-    }
-    return false;
-}
 

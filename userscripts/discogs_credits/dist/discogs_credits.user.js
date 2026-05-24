@@ -1233,6 +1233,38 @@
   };
   var DISCOGS_LOGO_URL = "https://volkerzell.de/favicons/discogs.png";
 
+  // src/api-discogs.js
+  var link_infos = {};
+  function getDiscogsLinkKey(url) {
+    const re = /^https?:\/\/(?:www|api)\.discogs\.com\/(?:(?:(?!sell).+|sell.+)\/)?(master|release|artist|label)s?\/(\d+)(?:[^?#]*)(?:\?noanv=1|\?anv=[^=]+)?$/i;
+    const m = re.exec(url);
+    if (m !== null) {
+      const key = `${m[1]}/${m[2]}`;
+      if (!link_infos[key]) {
+        link_infos[key] = {
+          type: m[1],
+          id: m[2],
+          clean_url: `https://www.discogs.com/${m[1]}/${m[2]}`
+        };
+      }
+      return key;
+    }
+    return false;
+  }
+  var _releaseDataCache2 = /* @__PURE__ */ new Map();
+  function getDiscogsReleaseData(url) {
+    if (_releaseDataCache2.has(url)) return Promise.resolve(_releaseDataCache2.get(url));
+    return fetch(
+      `${url.replace(
+        "https://www.discogs.com/release/",
+        "https://api.discogs.com/releases/"
+      )}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`
+    ).then((body) => body.json()).then((json) => {
+      _releaseDataCache2.set(url, json);
+      return json;
+    });
+  }
+
   // src/discogs_credits.user.js
   var db;
   var request = indexedDB.open("mblink");
@@ -3916,19 +3948,6 @@
       return rolesArr;
     }, []) || [];
   }
-  var _releaseDataCache = /* @__PURE__ */ new Map();
-  function getDiscogsReleaseData(url) {
-    if (_releaseDataCache.has(url)) return Promise.resolve(_releaseDataCache.get(url));
-    return fetch(
-      `${url.replace(
-        "https://www.discogs.com/release/",
-        "https://api.discogs.com/releases/"
-      )}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`
-    ).then((body) => body.json()).then((json) => {
-      _releaseDataCache.set(url, json);
-      return json;
-    });
-  }
   function buildEditNote(discogsUrl2, opts, extraLines) {
     const s = GM_info.script;
     const mbUrl = location.href.replace(/\/edit-relationships$/, "");
@@ -4048,22 +4067,5 @@
     }).filter((resolvedRole) => {
       return !!resolvedRole;
     });
-  }
-  var link_infos = {};
-  function getDiscogsLinkKey(url) {
-    const re = /^https?:\/\/(?:www|api)\.discogs\.com\/(?:(?:(?!sell).+|sell.+)\/)?(master|release|artist|label)s?\/(\d+)(?:[^?#]*)(?:\?noanv=1|\?anv=[^=]+)?$/i;
-    const m = re.exec(url);
-    if (m !== null) {
-      const key = `${m[1]}/${m[2]}`;
-      if (!link_infos[key]) {
-        link_infos[key] = {
-          type: m[1],
-          id: m[2],
-          clean_url: `https://www.discogs.com/${m[1]}/${m[2]}`
-        };
-      }
-      return key;
-    }
-    return false;
   }
 })();
