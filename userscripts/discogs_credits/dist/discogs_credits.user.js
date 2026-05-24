@@ -1412,6 +1412,237 @@
     return null;
   }
 
+  // src/mappers.js
+  function guessSortName(name) {
+    if (!name || !name.trim()) return name;
+    name = name.trim();
+    const articleRe = /^(the|a|an)\s+(.+)$/i;
+    const honorifics = /^(dr\.?|prof\.?|sir|lady|lord|rev\.?|st\.?|dj|mc|mc\.?)\s+/i;
+    const suffixRe = /^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i;
+    const words = name.split(/\s+/);
+    if (words.length === 1) return name;
+    const articleMatch = name.match(articleRe);
+    if (articleMatch) {
+      const article = articleMatch[1];
+      const rest = articleMatch[2];
+      return `${rest}, ${article.charAt(0).toUpperCase() + article.slice(1).toLowerCase()}`;
+    }
+    let suffix = "";
+    let baseName = name;
+    const suffixMatch = name.match(suffixRe);
+    if (suffixMatch) {
+      baseName = suffixMatch[1].trim();
+      suffix = " " + suffixMatch[2];
+    }
+    const baseWords = baseName.split(/\s+/);
+    if (baseWords.length === 1) return name;
+    const familyName = baseWords[baseWords.length - 1];
+    const givenPart = baseWords.slice(0, -1).join(" ");
+    return `${familyName}, ${givenPart}${suffix}`;
+  }
+  function getAllArtistTracks(tracklist, artistTracks) {
+    return artistTracks.split(",").reduce((trackArray, trackNumber) => {
+      if (/ to /.test(trackNumber)) {
+        const parts = trackNumber.split(" to ");
+        const startTrack = parts[0].trim().replace(".", "-");
+        const lastTrack = parts[1].trim().replace(".", "-");
+        let hasFoundStart = false, hasFoundEnd = false;
+        tracklist.forEach((track) => {
+          const resolvedTrackPosition = track.position.replace(".", "-");
+          if (!hasFoundStart && resolvedTrackPosition === startTrack) {
+            hasFoundStart = true;
+            trackArray.push(track);
+          } else if (hasFoundStart && !hasFoundEnd) {
+            if (resolvedTrackPosition === lastTrack) {
+              hasFoundEnd = true;
+              trackArray.push(track);
+            } else if (track.position === "") {
+              hasFoundEnd = true;
+            } else {
+              trackArray.push(track);
+            }
+          }
+        });
+      } else {
+        const track = tracklist.find((track2) => {
+          return track2.position === trackNumber.trim();
+        });
+        if (track) {
+          trackArray.push(track);
+        }
+      }
+      return trackArray;
+    }, []);
+  }
+  function convertPotentialDJMixers(json) {
+    let djmixers = json.extraartists?.filter((artist) => artist.role === "DJ Mix") || [];
+    djmixers = djmixers.map((artist) => {
+      const tracks = getAllArtistTracks(json.tracklist, artist.tracks);
+      const mediums = json.tracklist.reduce(
+        (mediums2, track, index) => {
+          if (track.type_ === "heading") {
+            if (index > 0) {
+              mediums2.push([]);
+            }
+          } else {
+            mediums2[mediums2.length - 1].push(track);
+          }
+          return mediums2;
+        },
+        [[]]
+      );
+      tracks.forEach((t) => {
+        for (let i = 0; i < mediums.length; i++) {
+          mediums[i] = mediums[i].filter((track) => {
+            return t.position !== track.position;
+          });
+        }
+      });
+      let mediumsDjAppearsOn = mediums.filter((medium) => medium.length === 0);
+      if (mediumsDjAppearsOn.length !== mediums.length) {
+        json.extraartists = json.extraartists?.filter((a) => {
+          return a !== artist;
+        }) || [];
+        return Object.assign({}, ENTITY_TYPE_MAP["DJ Mix"], {
+          artist,
+          attributes: [
+            () => {
+              for (let j = mediums.length - 1; j >= 0; j--) {
+                if (mediums[j].length === 0) {
+                  $(SELECTORS.MediumsInput).click();
+                  $($(SELECTORS.MediumsInputOptions).get(j)).click();
+                }
+              }
+            }
+          ]
+        });
+      } else if (mediumsDjAppearsOn.length === mediums.length) {
+        json.extraartists = json.extraartists?.filter((a) => {
+          return a !== artist;
+        }) || [];
+        return Object.assign({}, ENTITY_TYPE_MAP["DJ Mix"], {
+          artist
+        });
+      }
+      return null;
+    }).filter((role) => role !== null);
+    return djmixers;
+  }
+  function getArtistRoles(artist) {
+    const roleStr = artist.role;
+    const rawRoles = roleStr.split(",");
+    if (/\([0-9]+\)/.test(artist.anv)) {
+      artist.anv = artist.anv.replace(/\([0-9]+\)/, "").trim();
+    }
+    if (/\([0-9]+\)/.test(artist.name)) {
+      artist.name = artist.name.replace(/\([0-9]+\)/, "").trim();
+    }
+    return rawRoles.map((role) => {
+      let additionalAttributes = [];
+      let rolePart = role.trim().split("[");
+      const actualRole = rolePart[0].trim();
+      if (/Recording Engineer/.test(rolePart[1]) && actualRole === "Engineer") {
+        return Object.assign({}, ENTITY_TYPE_MAP["Recording Engineer"], {
+          artist
+        });
+      }
+      if (/Mastering Engineer/.test(rolePart[1]) && actualRole === "Engineer") {
+        return Object.assign({}, ENTITY_TYPE_MAP["Mastered By"], {
+          artist
+        });
+      }
+      if (/Cover Design/.test(rolePart[1]) && actualRole === "Artwork") {
+        return Object.assign({}, ENTITY_TYPE_MAP["Design"], {
+          artist
+        });
+      }
+      if (/Design/.test(rolePart[1]) && actualRole === "Cover") {
+        return Object.assign({}, ENTITY_TYPE_MAP["Design"], {
+          artist
+        });
+      }
+      if (/Art/.test(rolePart[1]) && actualRole === "Cover") {
+        return Object.assign({}, ENTITY_TYPE_MAP["Artwork"], {
+          artist
+        });
+      }
+      if (/Additional/.test(rolePart[1])) {
+        additionalAttributes.push("additional");
+      }
+      if (/Assistant/.test(rolePart[1])) {
+        additionalAttributes.push("assistant");
+      }
+      if (/Co /.test(rolePart[1])) {
+        additionalAttributes.push("additional");
+      }
+      if (/Executive/.test(rolePart[1])) {
+        additionalAttributes.push("executive");
+      }
+      if (/Associate/.test(rolePart[1])) {
+        additionalAttributes.push("associate");
+      }
+      if (/Guest/.test(rolePart[1])) {
+        additionalAttributes.push("guest");
+      }
+      if (/Solo/.test(rolePart[1])) {
+        additionalAttributes.push("solo");
+      }
+      const mapping = ENTITY_TYPE_MAP[actualRole];
+      if (mapping && mapping.linkType == "misc") {
+        const taskValue = rolePart[1] ? rolePart[1].replace("]", "").trim().toLowerCase() : actualRole.trim().toLowerCase();
+        additionalAttributes.push({ _type: "task", value: taskValue });
+      }
+      if (mapping && mapping.linkType == "engineer" && rolePart[1]) {
+        additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
+      }
+      if (mapping && mapping.linkType == "mix" && rolePart[1]) {
+        additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
+      }
+      if (mapping && mapping.linkType == "photography" && rolePart[1]) {
+        additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
+      }
+      if (mapping && mapping.linkType == "artwork" && rolePart[1]) {
+        additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
+      }
+      if (!mapping && INSTRUMENTS[actualRole] !== void 0) {
+        let instrumentName = actualRole;
+        if (INSTRUMENTS[actualRole]) {
+          instrumentName = INSTRUMENTS[actualRole];
+        }
+        let role2 = ENTITY_TYPE_MAP.Instruments;
+        if ("Drum Programming" === actualRole) {
+          role2 = ENTITY_TYPE_MAP["Programmed By"];
+          instrumentName = INSTRUMENTS["Drum Machine"];
+        }
+        return Object.assign({}, role2, {
+          artist,
+          attributes: instrumentName ? [{ _type: "instrument", value: instrumentName.toLowerCase() }] : []
+        });
+      }
+      if (!mapping) {
+        return null;
+      }
+      if (Array.isArray(mapping.attributes)) {
+        additionalAttributes = additionalAttributes.concat(mapping.attributes);
+      }
+      return Object.assign({}, mapping, {
+        artist,
+        attributes: additionalAttributes
+      });
+    }).filter((resolvedRole) => {
+      return !!resolvedRole;
+    });
+  }
+  function convertDiscogsArtistsToRolesRelationships(artists) {
+    return artists?.reduce((rolesArr, artist) => {
+      const roles = getArtistRoles(artist);
+      if (Array.isArray(roles) && roles.length > 0) {
+        return rolesArr.concat(roles);
+      }
+      return rolesArr;
+    }, []) || [];
+  }
+
   // src/discogs_credits.user.js
   var db;
   var request = indexedDB.open("mblink");
@@ -3195,33 +3426,6 @@
       return { allResults: resultArr.filter(Boolean) };
     })();
   }
-  function guessSortName(name) {
-    if (!name || !name.trim()) return name;
-    name = name.trim();
-    const articleRe = /^(the|a|an)\s+(.+)$/i;
-    const honorifics = /^(dr\.?|prof\.?|sir|lady|lord|rev\.?|st\.?|dj|mc|mc\.?)\s+/i;
-    const suffixRe = /^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i;
-    const words = name.split(/\s+/);
-    if (words.length === 1) return name;
-    const articleMatch = name.match(articleRe);
-    if (articleMatch) {
-      const article = articleMatch[1];
-      const rest = articleMatch[2];
-      return `${rest}, ${article.charAt(0).toUpperCase() + article.slice(1).toLowerCase()}`;
-    }
-    let suffix = "";
-    let baseName = name;
-    const suffixMatch = name.match(suffixRe);
-    if (suffixMatch) {
-      baseName = suffixMatch[1].trim();
-      suffix = " " + suffixMatch[2];
-    }
-    const baseWords = baseName.split(/\s+/);
-    if (baseWords.length === 1) return name;
-    const familyName = baseWords[baseWords.length - 1];
-    const givenPart = baseWords.slice(0, -1).join(" ");
-    return `${familyName}, ${givenPart}${suffix}`;
-  }
   async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
     rolesMap = rolesMap || /* @__PURE__ */ new Map();
     companiesRolesMap = companiesRolesMap || /* @__PURE__ */ new Map();
@@ -3861,103 +4065,6 @@
       tableReady = true;
     });
   }
-  function convertPotentialDJMixers(json) {
-    let djmixers = json.extraartists?.filter((artist) => artist.role === "DJ Mix") || [];
-    djmixers = djmixers.map((artist) => {
-      const tracks = getAllArtistTracks(json.tracklist, artist.tracks);
-      const mediums = json.tracklist.reduce(
-        (mediums2, track, index) => {
-          if (track.type_ === "heading") {
-            if (index > 0) {
-              mediums2.push([]);
-            }
-          } else {
-            mediums2[mediums2.length - 1].push(track);
-          }
-          return mediums2;
-        },
-        [[]]
-      );
-      tracks.forEach((t) => {
-        for (let i = 0; i < mediums.length; i++) {
-          mediums[i] = mediums[i].filter((track) => {
-            return t.position !== track.position;
-          });
-        }
-      });
-      let mediumsDjAppearsOn = mediums.filter((medium) => medium.length === 0);
-      if (mediumsDjAppearsOn.length !== mediums.length) {
-        json.extraartists = json.extraartists?.filter((a) => {
-          return a !== artist;
-        }) || [];
-        return Object.assign({}, ENTITY_TYPE_MAP["DJ Mix"], {
-          artist,
-          attributes: [
-            () => {
-              for (let j = mediums.length - 1; j >= 0; j--) {
-                if (mediums[j].length === 0) {
-                  $(SELECTORS.MediumsInput).click();
-                  $($(SELECTORS.MediumsInputOptions).get(j)).click();
-                }
-              }
-            }
-          ]
-        });
-      } else if (mediumsDjAppearsOn.length === mediums.length) {
-        json.extraartists = json.extraartists?.filter((a) => {
-          return a !== artist;
-        }) || [];
-        return Object.assign({}, ENTITY_TYPE_MAP["DJ Mix"], {
-          artist
-        });
-      }
-      return null;
-    }).filter((role) => role !== null);
-    return djmixers;
-  }
-  function getAllArtistTracks(tracklist, artistTracks) {
-    return artistTracks.split(",").reduce((trackArray, trackNumber) => {
-      if (/ to /.test(trackNumber)) {
-        const parts = trackNumber.split(" to ");
-        const startTrack = parts[0].trim().replace(".", "-");
-        const lastTrack = parts[1].trim().replace(".", "-");
-        let hasFoundStart = false, hasFoundEnd = false;
-        tracklist.forEach((track) => {
-          const resolvedTrackPosition = track.position.replace(".", "-");
-          if (!hasFoundStart && resolvedTrackPosition === startTrack) {
-            hasFoundStart = true;
-            trackArray.push(track);
-          } else if (hasFoundStart && !hasFoundEnd) {
-            if (resolvedTrackPosition === lastTrack) {
-              hasFoundEnd = true;
-              trackArray.push(track);
-            } else if (track.position === "") {
-              hasFoundEnd = true;
-            } else {
-              trackArray.push(track);
-            }
-          }
-        });
-      } else {
-        const track = tracklist.find((track2) => {
-          return track2.position === trackNumber.trim();
-        });
-        if (track) {
-          trackArray.push(track);
-        }
-      }
-      return trackArray;
-    }, []);
-  }
-  function convertDiscogsArtistsToRolesRelationships(artists) {
-    return artists?.reduce((rolesArr, artist) => {
-      const roles = getArtistRoles(artist);
-      if (Array.isArray(roles) && roles.length > 0) {
-        return rolesArr.concat(roles);
-      }
-      return rolesArr;
-    }, []) || [];
-  }
   function buildEditNote(discogsUrl2, opts, extraLines) {
     const s = GM_info.script;
     const mbUrl = location.href.replace(/\/edit-relationships$/, "");
@@ -3972,110 +4079,5 @@
     if (opts) lines.push("Options: " + opts);
     if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
     return lines.join("\n");
-  }
-  function getArtistRoles(artist) {
-    const roleStr = artist.role;
-    const rawRoles = roleStr.split(",");
-    if (/\([0-9]+\)/.test(artist.anv)) {
-      artist.anv = artist.anv.replace(/\([0-9]+\)/, "").trim();
-    }
-    if (/\([0-9]+\)/.test(artist.name)) {
-      artist.name = artist.name.replace(/\([0-9]+\)/, "").trim();
-    }
-    return rawRoles.map((role) => {
-      let additionalAttributes = [];
-      let rolePart = role.trim().split("[");
-      const actualRole = rolePart[0].trim();
-      if (/Recording Engineer/.test(rolePart[1]) && actualRole === "Engineer") {
-        return Object.assign({}, ENTITY_TYPE_MAP["Recording Engineer"], {
-          artist
-        });
-      }
-      if (/Mastering Engineer/.test(rolePart[1]) && actualRole === "Engineer") {
-        return Object.assign({}, ENTITY_TYPE_MAP["Mastered By"], {
-          artist
-        });
-      }
-      if (/Cover Design/.test(rolePart[1]) && actualRole === "Artwork") {
-        return Object.assign({}, ENTITY_TYPE_MAP["Design"], {
-          artist
-        });
-      }
-      if (/Design/.test(rolePart[1]) && actualRole === "Cover") {
-        return Object.assign({}, ENTITY_TYPE_MAP["Design"], {
-          artist
-        });
-      }
-      if (/Art/.test(rolePart[1]) && actualRole === "Cover") {
-        return Object.assign({}, ENTITY_TYPE_MAP["Artwork"], {
-          artist
-        });
-      }
-      if (/Additional/.test(rolePart[1])) {
-        additionalAttributes.push("additional");
-      }
-      if (/Assistant/.test(rolePart[1])) {
-        additionalAttributes.push("assistant");
-      }
-      if (/Co /.test(rolePart[1])) {
-        additionalAttributes.push("additional");
-      }
-      if (/Executive/.test(rolePart[1])) {
-        additionalAttributes.push("executive");
-      }
-      if (/Associate/.test(rolePart[1])) {
-        additionalAttributes.push("associate");
-      }
-      if (/Guest/.test(rolePart[1])) {
-        additionalAttributes.push("guest");
-      }
-      if (/Solo/.test(rolePart[1])) {
-        additionalAttributes.push("solo");
-      }
-      const mapping = ENTITY_TYPE_MAP[actualRole];
-      if (mapping && mapping.linkType == "misc") {
-        const taskValue = rolePart[1] ? rolePart[1].replace("]", "").trim().toLowerCase() : actualRole.trim().toLowerCase();
-        additionalAttributes.push({ _type: "task", value: taskValue });
-      }
-      if (mapping && mapping.linkType == "engineer" && rolePart[1]) {
-        additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
-      }
-      if (mapping && mapping.linkType == "mix" && rolePart[1]) {
-        additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
-      }
-      if (mapping && mapping.linkType == "photography" && rolePart[1]) {
-        additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
-      }
-      if (mapping && mapping.linkType == "artwork" && rolePart[1]) {
-        additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
-      }
-      if (!mapping && INSTRUMENTS[actualRole] !== void 0) {
-        let instrumentName = actualRole;
-        if (INSTRUMENTS[actualRole]) {
-          instrumentName = INSTRUMENTS[actualRole];
-        }
-        let role2 = ENTITY_TYPE_MAP.Instruments;
-        if ("Drum Programming" === actualRole) {
-          role2 = ENTITY_TYPE_MAP["Programmed By"];
-          instrumentName = INSTRUMENTS["Drum Machine"];
-        }
-        return Object.assign({}, role2, {
-          artist,
-          attributes: instrumentName ? [{ _type: "instrument", value: instrumentName.toLowerCase() }] : []
-        });
-      }
-      if (!mapping) {
-        return null;
-      }
-      if (Array.isArray(mapping.attributes)) {
-        additionalAttributes = additionalAttributes.concat(mapping.attributes);
-      }
-      return Object.assign({}, mapping, {
-        artist,
-        attributes: additionalAttributes
-      });
-    }).filter((resolvedRole) => {
-      return !!resolvedRole;
-    });
   }
 })();
