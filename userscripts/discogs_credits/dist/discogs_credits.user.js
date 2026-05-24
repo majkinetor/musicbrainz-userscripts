@@ -639,49 +639,75 @@ async function fetchMBEntity(mbid) {
 
 /**
  * Resolve a link type name to its numeric ID from MB.linkedEntities.link_type.
- * Tries (in order):
- *   1. Exact name + entity type pair match
- *   2. Exact name only
- *   3. Partial/contains match with entity type pair (handles minor wording differences)
- * Logs available types for the entity pair when nothing matches.
+ *
+ * Strictness invariant (post bug #2 fix): the returned link type's
+ * `(type0, type1)` MUST equal the requested `(type0, type1)`. If no link
+ * type satisfies the entity-type pair, return null — never silently fall
+ * back to a same-named link type with the wrong entity types (that's how
+ * we used to send `orchestra` to the "orchestra at" event link type,
+ * issue #2 + the orchestra variant caught by the test gate).
+ *
+ * Match strategy, constrained to `(type0, type1)`:
+ *   1. Exact match on `name` (canonical identifier)
+ *   2. Exact match on `link_phrase` (forward UI phrase) or
+ *      `reverse_link_phrase` (backward UI phrase)
+ *   3. Contains-match on any of those three fields — pick the shortest
+ *      (most specific) candidate
+ *
+ * MB's internal `name` field often differs from what the user sees in the
+ * relationship dropdown. For example, MB's recording-orchestra link type
+ * has `name = "performing orchestra"` but its `link_phrase = "{additional}
+ * orchestra"`. A name-only matcher misses it; phrase matching catches it.
+ *
+ * Returns: numeric link-type id, or null with a WARN logged.
  */
 function resolveLinkTypeId(name, type0, type1) {
     const lt = pageWindow.MB?.linkedEntities?.link_type;
     if (!lt) { addLogLine('<span style="color:red">ERR MB.linkedEntities.link_type not available</span>'); return null; }
-    const lower = name.toLowerCase().trim();
+    const needle = name.toLowerCase().trim();
+    // Strip MB's curly-brace attribute placeholders, e.g. "{additional} orchestra"
+    // → "orchestra" so a Discogs role "orchestra" matches.
+    const stripAttrs = s => (s || '').toLowerCase().replace(/\{[^}]*\}/g, '').replace(/\s+/g, ' ').trim();
 
-    // 1. Exact name + entity type pair
-    for (const v of Object.values(lt)) {
-        if (v.name.toLowerCase() === lower && v.type0 === type0 && v.type1 === type1) return v.id;
+    // Only consider link types with the exact (type0, type1) pair we need.
+    const candidates = Object.values(lt).filter(v => v.type0 === type0 && v.type1 === type1);
+
+    // 1. Exact match on `name`
+    for (const v of candidates) {
+        if ((v.name || '').toLowerCase() === needle) return v.id;
     }
-    // 2. Exact name, any entity types
-    for (const v of Object.values(lt)) {
-        if (v.name.toLowerCase() === lower) return v.id;
+    // 2. Exact match on `link_phrase` or `reverse_link_phrase` (with placeholders stripped)
+    for (const v of candidates) {
+        if (stripAttrs(v.link_phrase)         === needle) return v.id;
+        if (stripAttrs(v.reverse_link_phrase) === needle) return v.id;
     }
-    // 3. Partial match constrained to entity type pair — prefer longer (more specific) names
-    const fuzzyMatches = Object.values(lt).filter(v =>
-        v.type0 === type0 && v.type1 === type1 &&
-        (v.name.toLowerCase().includes(lower) || lower.includes(v.name.toLowerCase()))
-    );
-    if (fuzzyMatches.length > 0) {
-        fuzzyMatches.sort((a, b) => b.name.length - a.name.length);
-        const best = fuzzyMatches[0];
-        if (best.name.toLowerCase() !== lower) addLogLine(`Fuzzy match: "${name}" → "${best.name}" (${type0}→${type1})`);
+    // 3. Contains-match on any of the three fields — pick the shortest (most specific).
+    const contains = candidates.filter(v => {
+        const blobs = [v.name, stripAttrs(v.link_phrase), stripAttrs(v.reverse_link_phrase)].filter(Boolean);
+        return blobs.some(b => b.includes(needle) || needle.includes(b));
+    });
+    if (contains.length > 0) {
+        contains.sort((a, b) => ((a.name || '').length || 999) - ((b.name || '').length || 999));
+        const best = contains[0];
+        if ((best.name || '').toLowerCase() !== needle) {
+            addLogLine(`Fuzzy match: "${name}" → "${best.name}" (${type0}→${type1})`);
+        }
         return best.id;
     }
 
-    // Nothing found — log available types for this pair to help diagnose
-    const available = Object.values(lt)
-        .filter(v => v.type0 === type0 && v.type1 === type1)
-        .map(v => v.name)
-        .sort()
-        .join(', ');
-    // Also log exact matches regardless of type pair (to diagnose type0/type1 mismatch)
-    const anyMatch = Object.values(lt).filter(v => v.name.toLowerCase() === lower);
-    if (anyMatch.length > 0) {
-        addLogLine(`<span style="color:orange">WARN Link type "${name}" exists but wrong entity types: ${anyMatch.map(v => `${v.name}(${v.type0}→${v.type1})`).join(', ')} — tried (${type0}→${type1})</span>`);
+    // Nothing found for this entity-type pair. Show what IS available so the
+    // user can manually pick a better Discogs→MB role mapping later.
+    const availableNames = candidates.map(v => v.name).filter(Boolean).sort().join(', ');
+    const wrongPairHits = Object.values(lt).filter(v =>
+        (v.name || '').toLowerCase() === needle ||
+        stripAttrs(v.link_phrase)        === needle ||
+        stripAttrs(v.reverse_link_phrase) === needle
+    );
+    if (wrongPairHits.length > 0) {
+        const hitDesc = wrongPairHits.map(v => `${v.name}(${v.type0}→${v.type1})`).join(', ');
+        addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}→${type1}) — exists for other entity pairs: ${hitDesc} — skipping</span>`);
     } else {
-        addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}→${type1}). Available: ${available || 'none'}</span>`);
+        addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}→${type1}). Available for this pair: ${availableNames || 'none'}</span>`);
     }
     return null;
 }

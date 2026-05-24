@@ -224,26 +224,40 @@ export function runAssertions({ existingRels, finalRels, newRels, discogsJson, m
     return { failures, warnings, stats };
 }
 
-/** Fetch the Discogs release JSON from MB-side Discogs URL. */
-export async function fetchDiscogsJson(page, discogsUrl) {
-    // Convert /release/123 to api.discogs.com/releases/123
-    const m = discogsUrl.match(/discogs\.com\/(?:release|releases)\/(\d+)/);
-    if (!m) throw new Error(`Cannot parse Discogs URL: ${discogsUrl}`);
-    const id = m[1];
-    return await page.evaluate(async (apiUrl) => {
-        const res = await fetch(apiUrl);
-        if (!res.ok) throw new Error(`Discogs API ${apiUrl} → ${res.status}`);
-        return await res.json();
-    }, `https://api.discogs.com/releases/${id}`);
+/** Fetch JSON with exponential-backoff retry on 429/503 (rate-limit / overload).
+ * Runs inside the page so the request originates from MB's own origin (matching
+ * the userscript's own throttle path).
+ */
+async function fetchJsonWithRetry(page, url, label) {
+    return await page.evaluate(async ({ url, label }) => {
+        const RETRIES = 4;
+        for (let attempt = 0; attempt <= RETRIES; attempt++) {
+            const res = await fetch(url);
+            if (res.ok) return await res.json();
+            if (res.status === 429 || res.status === 503) {
+                if (attempt === RETRIES) {
+                    throw new Error(`${label} ${url} → ${res.status} after ${RETRIES} retries`);
+                }
+                const retryAfter = parseInt(res.headers.get('Retry-After'), 10);
+                const waitMs = retryAfter > 0 ? retryAfter * 1000 : Math.min(1000 * Math.pow(2, attempt), 16_000);
+                await new Promise(r => setTimeout(r, waitMs));
+                continue;
+            }
+            throw new Error(`${label} ${url} → ${res.status}`);
+        }
+    }, { url, label });
 }
 
-/** Fetch the MB release WS2 JSON (with recordings) from the page. */
+/** Fetch the Discogs release JSON. */
+export async function fetchDiscogsJson(page, discogsUrl) {
+    const m = discogsUrl.match(/discogs\.com\/(?:release|releases)\/(\d+)/);
+    if (!m) throw new Error(`Cannot parse Discogs URL: ${discogsUrl}`);
+    return fetchJsonWithRetry(page, `https://api.discogs.com/releases/${m[1]}`, 'Discogs');
+}
+
+/** Fetch the MB release WS2 JSON (with recordings + media). */
 export async function fetchMbReleaseJson(page, mbid) {
-    return await page.evaluate(async (mbid_) => {
-        const res = await fetch(`https://musicbrainz.org/ws/2/release/${mbid_}?inc=recordings+media&fmt=json`);
-        if (!res.ok) throw new Error(`MB WS2 release/${mbid_} → ${res.status}`);
-        return await res.json();
-    }, mbid);
+    return fetchJsonWithRetry(page, `https://musicbrainz.org/ws/2/release/${mbid}?inc=recordings+media&fmt=json`, 'MB WS2');
 }
 
 /** Read MB.linkedEntities.{link_type, link_attribute_type} from the page. */
