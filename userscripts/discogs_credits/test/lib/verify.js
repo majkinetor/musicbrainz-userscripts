@@ -257,6 +257,34 @@ export async function fetchMbLinkedEntities(page) {
     });
 }
 
+/**
+ * Diagnostic: every link type whose `name`, `link_phrase`, or `reverse_link_phrase`
+ * contains the search string (case-insensitive). Used to figure out, e.g.,
+ * which exact MB link type powers "orchestra" on a recording (bug #2 fix).
+ */
+export async function probeLinkTypesByPhrase(page, needles) {
+    return await page.evaluate((needlesIn) => {
+        const w = /** @type any */ (window);
+        const lt = w.MB?.linkedEntities?.link_type || {};
+        const lower = (needlesIn || []).map(s => String(s).toLowerCase());
+        const out = [];
+        for (const v of Object.values(lt)) {
+            const blob = [v.name, v.link_phrase, v.reverse_link_phrase, v.long_link_phrase].filter(Boolean).join(' | ').toLowerCase();
+            if (lower.some(n => blob.includes(n))) {
+                out.push({
+                    id:       v.id,
+                    name:     v.name,
+                    type0:    v.type0,
+                    type1:    v.type1,
+                    forward:  v.link_phrase,
+                    reverse:  v.reverse_link_phrase,
+                });
+            }
+        }
+        return out;
+    }, needles);
+}
+
 /** Get the Discogs URL the script auto-detected for this release (from the import bar). */
 export async function getDetectedDiscogsUrl(page) {
     return await page.evaluate(() => {

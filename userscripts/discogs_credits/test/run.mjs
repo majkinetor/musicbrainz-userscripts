@@ -28,7 +28,7 @@ import {
 } from './lib/browser.js';
 import {
     runAssertions, fetchDiscogsJson, fetchMbReleaseJson,
-    fetchMbLinkedEntities, getDetectedDiscogsUrl,
+    fetchMbLinkedEntities, getDetectedDiscogsUrl, probeLinkTypesByPhrase,
 } from './lib/verify.js';
 
 // ──── args ────────────────────────────────────────────────────────────────
@@ -223,6 +223,20 @@ for (let i = 0; i < selected.length; i++) {
             for (const w of warnings) log(c.amber(`    ! ${w.msg}`));
             if (failures.length) log(c.red(`  ${failures.length} failure(s):`));
             for (const f of failures) logFailure(f);
+
+            // Bug-#2 diagnostic: for every `invalid_triple` failure, dump all the
+            // MB link types whose name/phrase contains the role name. Helps us
+            // see which alternate link type the script SHOULD have picked.
+            const triples = failures.filter(f => f.kind === 'invalid_triple' && f.rel);
+            if (triples.length > 0) {
+                const names = [...new Set(triples.map(f => linked.linkTypes[f.rel.linkTypeID]?.name).filter(Boolean))];
+                if (names.length) {
+                    const probe = await probeLinkTypesByPhrase(page, names);
+                    log(c.amber(`  link-type probe for [${names.join(', ')}]:`));
+                    for (const p of probe) log(c.amber(`    ltID=${p.id}  name="${p.name}"  ${p.type0}→${p.type1}  fwd="${p.forward}"  rev="${p.reverse}"`));
+                }
+            }
+
             totalFailures += failures.length;
         }
     } catch (e) {
