@@ -46,3 +46,13 @@ export const SELECTORS = {
 };
 
 export const DISCOGS_LOGO_URL = 'https://volkerzell.de/favicons/discogs.png';
+
+/**
+ * The page's real `window` — Tampermonkey exposes it as `unsafeWindow` to
+ * userscripts; Greasemonkey/Violentmonkey too. In Playwright (test mode) or
+ * any environment without that grant, we fall through to plain `window`.
+ *
+ * Use `pageWindow` to read MB-provided globals like `MB.relationshipEditor`
+ * or `MB.linkedEntities` that live on the page's own JS context.
+ */
+export const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow : window;

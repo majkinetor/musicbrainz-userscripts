@@ -1232,6 +1232,7 @@
     TaskInput: "#add-relationship-dialog .attribute-container.task input"
   };
   var DISCOGS_LOGO_URL = "https://volkerzell.de/favicons/discogs.png";
+  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
 
   // src/api-discogs.js
   var link_infos = {};
@@ -1263,6 +1264,86 @@
       _releaseDataCache2.set(url, json);
       return json;
     });
+  }
+
+  // src/api-mb.js
+  async function fetchMBEntity(mbid) {
+    const res = await fetch(`/ws/js/entity/${mbid}`);
+    if (!res.ok) throw new Error(`/ws/js/entity/${mbid} \u2192 ${res.status}`);
+    return res.json();
+  }
+  var mbThrottle = /* @__PURE__ */ (() => {
+    const MAX_CONCURRENT = 4;
+    let _running = 0;
+    let _pauseUntil = 0;
+    const _queue = [];
+    let _totalRequests = 0;
+    let _rateLimited = 0;
+    async function _waitForPause() {
+      let wait;
+      while ((wait = _pauseUntil - Date.now()) > 0) {
+        await new Promise((r) => setTimeout(r, wait));
+      }
+    }
+    function _drain() {
+      while (_running < MAX_CONCURRENT && _queue.length > 0) {
+        _running++;
+        const item = _queue.shift();
+        _run(item).finally(() => {
+          _running--;
+          _drain();
+        });
+      }
+    }
+    async function _run(item) {
+      for (let attempt = 0; attempt <= item.retries; attempt++) {
+        await _waitForPause();
+        _totalRequests++;
+        try {
+          const res = await fetch(item.url);
+          if (res.status === 429 || res.status === 503) {
+            _rateLimited++;
+            const ra = parseInt(res.headers.get("Retry-After"), 10);
+            const waitMs = ra > 0 ? ra * 1e3 : Math.min(1e3 * Math.pow(2, attempt), 3e4);
+            _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
+            continue;
+          }
+          if (!res.ok) {
+            item.resolve(null);
+            return;
+          }
+          const data = item.wantJson ? await res.json() : res;
+          item.resolve(data);
+          return;
+        } catch (e) {
+          if (attempt === item.retries) {
+            item.resolve(null);
+            return;
+          }
+          await new Promise((r) => setTimeout(r, 500));
+        }
+      }
+      item.resolve(null);
+    }
+    function _enqueue(url, retries, wantJson) {
+      return new Promise((resolve) => {
+        _queue.push({ url, retries, wantJson, resolve });
+        _drain();
+      });
+    }
+    return {
+      fetchJson: (url, retries = 3) => _enqueue(url, retries, true),
+      fetchRaw: (url, retries = 3) => _enqueue(url, retries, false),
+      stats: () => ({
+        total: _totalRequests,
+        rateLimited: _rateLimited,
+        inFlight: _running,
+        queued: _queue.length
+      })
+    };
+  })();
+  async function fetchWithRetry(url, retries = 4) {
+    return mbThrottle.fetchJson(url, retries);
   }
 
   // src/discogs_credits.user.js
@@ -1313,7 +1394,6 @@
       setTimeout(() => window.close(), 800);
     });
   })();
-  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
   var logs;
   var summary;
   var discogsUrl;
@@ -1808,11 +1888,6 @@
     addLogLine('<span style="color:red">ERR MB editor not ready after 15s \u2014 aborting</span>');
     return null;
   }
-  async function fetchMBEntity(mbid) {
-    const res = await fetch(`/ws/js/entity/${mbid}`);
-    if (!res.ok) throw new Error(`/ws/js/entity/${mbid} \u2192 ${res.status}`);
-    return res.json();
-  }
   function resolveLinkTypeId(name, type0, type1) {
     const lt = pageWindow.MB?.linkedEntities?.link_type;
     if (!lt) {
@@ -1983,79 +2058,6 @@
         resolve(null);
       }
     });
-  }
-  var mbThrottle = /* @__PURE__ */ (() => {
-    const MAX_CONCURRENT = 4;
-    let _running = 0;
-    let _pauseUntil = 0;
-    const _queue = [];
-    let _totalRequests = 0;
-    let _rateLimited = 0;
-    async function _waitForPause() {
-      let wait;
-      while ((wait = _pauseUntil - Date.now()) > 0) {
-        await new Promise((r) => setTimeout(r, wait));
-      }
-    }
-    function _drain() {
-      while (_running < MAX_CONCURRENT && _queue.length > 0) {
-        _running++;
-        const item = _queue.shift();
-        _run(item).finally(() => {
-          _running--;
-          _drain();
-        });
-      }
-    }
-    async function _run(item) {
-      for (let attempt = 0; attempt <= item.retries; attempt++) {
-        await _waitForPause();
-        _totalRequests++;
-        try {
-          const res = await fetch(item.url);
-          if (res.status === 429 || res.status === 503) {
-            _rateLimited++;
-            const ra = parseInt(res.headers.get("Retry-After"), 10);
-            const waitMs = ra > 0 ? ra * 1e3 : Math.min(1e3 * Math.pow(2, attempt), 3e4);
-            _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
-            continue;
-          }
-          if (!res.ok) {
-            item.resolve(null);
-            return;
-          }
-          const data = item.wantJson ? await res.json() : res;
-          item.resolve(data);
-          return;
-        } catch (e) {
-          if (attempt === item.retries) {
-            item.resolve(null);
-            return;
-          }
-          await new Promise((r) => setTimeout(r, 500));
-        }
-      }
-      item.resolve(null);
-    }
-    function _enqueue(url, retries, wantJson) {
-      return new Promise((resolve) => {
-        _queue.push({ url, retries, wantJson, resolve });
-        _drain();
-      });
-    }
-    return {
-      fetchJson: (url, retries = 3) => _enqueue(url, retries, true),
-      fetchRaw: (url, retries = 3) => _enqueue(url, retries, false),
-      stats: () => ({
-        total: _totalRequests,
-        rateLimited: _rateLimited,
-        inFlight: _running,
-        queued: _queue.length
-      })
-    };
-  })();
-  async function fetchWithRetry(url, retries = 4) {
-    return mbThrottle.fetchJson(url, retries);
   }
   async function instantFillRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap) {
     resolvedEntityTypes = resolvedEntityTypes || /* @__PURE__ */ new Map();
