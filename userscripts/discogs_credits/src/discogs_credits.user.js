@@ -55,6 +55,10 @@ import {
     checkMissingArtists,
     checkMissingCompanies,
 }                                  from './preflight.js';
+import {
+    _showBar,
+    _hideBar,
+}                                  from './progress-bar.js';
 
 // ── BroadcastChannel: cross-tab artist creation signalling ────────────────────
 // When this script runs on an MB artist page that was opened by the "Create in MB"
@@ -124,45 +128,7 @@ $(document).ready(function () {
     }
 });
 
-// ── Progress bar (module-level so all functions can access) ─────────────────
-let _pInterval = null;
-let _pPos = -40;
-
-function _showBar() {
-    const row1 = document.querySelector('.discogs-bar-row1');
-    const row2 = document.querySelector('.discogs-bar-row2');
-    const r1h = row1 ? row1.getBoundingClientRect().height : 42;
-    let pb = document.getElementById('discogs-pb');
-    if (!pb) {
-        pb = document.createElement('div');
-        pb.id = 'discogs-pb';
-        pb.style.cssText = 'position:fixed;left:0;right:0;height:5px;z-index:99999;background:#ddd;overflow:hidden;';
-        const fill = document.createElement('div');
-        fill.id = 'discogs-pb-fill';
-        fill.style.cssText = 'position:absolute;top:0;height:100%;width:40%;background:#e8771d;';
-        pb.appendChild(fill);
-        document.body.appendChild(pb);
-    }
-    pb.style.top = r1h + 'px';
-    pb.style.display = 'block';
-    if (row2) row2.style.marginTop = (r1h + 5) + 'px';
-    clearInterval(_pInterval);
-    _pPos = -40;
-    _pInterval = setInterval(() => {
-        _pPos += 1.5;
-        if (_pPos > 100) _pPos = -40;
-        const fill = document.getElementById('discogs-pb-fill');
-        if (fill) fill.style.left = _pPos + '%';
-    }, 16);
-}
-
-function _hideBar() {
-    clearInterval(_pInterval);
-    const pb = document.getElementById('discogs-pb');
-    if (pb) pb.style.display = 'none';
-    const row2 = document.querySelector('.discogs-bar-row2');
-    if (row2) row2.style.marginTop = '';
-}
+// Progress bar (`_showBar` / `_hideBar`) moved to progress-bar.js.
 
 function insertDiscogsBar(discogsUrl) {
     // Inject styles
