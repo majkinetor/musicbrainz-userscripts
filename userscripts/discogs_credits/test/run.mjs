@@ -5,6 +5,8 @@
 // Usage:
 //     pnpm test                          # all fixtures
 //     pnpm test -- --headed              # show the browser (for debugging)
+//     pnpm test -- --pause               # pause after each fixture for visual inspection
+//                                          (implies --headed; Enter to continue, Ctrl-C to abort)
 //
 //   Filtering (combine freely; AND across flags, OR within --tags list):
 //     pnpm test -- --only=fd4c7ae2       # URL or MBID substring (also accepts a 0-based index)
@@ -17,6 +19,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath }              from 'node:url';
 import { dirname, resolve }           from 'node:path';
+import { createInterface }            from 'node:readline';
 
 import {
     launchTestContext, openReleasePage, injectUserscript,
@@ -30,7 +33,8 @@ import {
 
 // ──── args ────────────────────────────────────────────────────────────────
 const args   = process.argv.slice(2);
-const headed = args.includes('--headed');
+const pause  = args.includes('--pause');
+const headed = args.includes('--headed') || pause;   // --pause implies --headed
 const arg    = name => {
     const found = args.find(a => a.startsWith(`${name}=`));
     return found ? found.slice(name.length + 1) : null;
@@ -98,6 +102,15 @@ function log(...args) {
     } else {
         console.log(prefix, ...args);
     }
+}
+
+// Wait for the user to press Enter on stdin. Used by --pause so they can
+// inspect the staged relationships visually before the next fixture loads.
+function waitForEnter(prompt) {
+    return new Promise(resolve => {
+        const rl = createInterface({ input: process.stdin, output: process.stdout });
+        rl.question(prompt, () => { rl.close(); resolve(); });
+    });
 }
 
 function logFailure(f) {
@@ -240,6 +253,11 @@ for (let i = 0; i < selected.length; i++) {
         }
         totalFailures++;
     } finally {
+        if (pause && page) {
+            // Block until the user presses Enter. They can interact with the
+            // browser freely during this — we just keep the page alive.
+            await waitForEnter(`  -- paused. press Enter to continue, Ctrl-C to abort -- `);
+        }
         if (page) await page.close().catch(() => {});
     }
 }

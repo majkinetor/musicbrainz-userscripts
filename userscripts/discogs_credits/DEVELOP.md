@@ -152,6 +152,8 @@ Drives a real Chromium with your stored MB session, runs the import on each fixt
 ```powershell
 pnpm test                                  # all fixtures, headless
 pnpm test:headed                           # show the browser
+pnpm test -- --pause                       # pause after each fixture for visual inspection
+                                           # (implies --headed; Enter to continue, Ctrl-C to abort)
 
 # Filtering (combine freely; AND across flags, OR within --tags list):
 pnpm test -- --only=18cae3db               # URL or MBID substring (also accepts 0-based index)
