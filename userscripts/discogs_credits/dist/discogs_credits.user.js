@@ -669,8 +669,14 @@ function resolveLinkTypeId(name, type0, type1) {
     // → "orchestra" so a Discogs role "orchestra" matches.
     const stripAttrs = s => (s || '').toLowerCase().replace(/\{[^}]*\}/g, '').replace(/\s+/g, ' ').trim();
 
-    // Only consider link types with the exact (type0, type1) pair we need.
-    const candidates = Object.values(lt).filter(v => v.type0 === type0 && v.type1 === type1);
+    // Only consider link types with the exact (type0, type1) pair we need
+    // AND that are NOT deprecated. MB ships deprecated link types in
+    // `link_type` so existing rels still render — but the server rejects
+    // any new submission using them. Picking one would block the commit
+    // (issue #2: "mastering on recording is deprecated"). Skip them.
+    const candidates = Object.values(lt).filter(v =>
+        v.type0 === type0 && v.type1 === type1 && !v.deprecated
+    );
 
     // 1. Exact match on `name`
     for (const v of candidates) {
@@ -698,12 +704,21 @@ function resolveLinkTypeId(name, type0, type1) {
     // Nothing found for this entity-type pair. Show what IS available so the
     // user can manually pick a better Discogs→MB role mapping later.
     const availableNames = candidates.map(v => v.name).filter(Boolean).sort().join(', ');
-    const wrongPairHits = Object.values(lt).filter(v =>
+    const allByName = Object.values(lt).filter(v =>
         (v.name || '').toLowerCase() === needle ||
         stripAttrs(v.link_phrase)        === needle ||
         stripAttrs(v.reverse_link_phrase) === needle
     );
-    if (wrongPairHits.length > 0) {
+    const deprecatedHit = allByName.find(v => v.type0 === type0 && v.type1 === type1 && v.deprecated);
+    const wrongPairHits  = allByName.filter(v => !(v.type0 === type0 && v.type1 === type1));
+    if (deprecatedHit) {
+        // MB deprecates link types but keeps them in `link_type` so existing
+        // rels still render. New submissions are rejected — picking one would
+        // block the commit. Log as ERR (red) since this is a hard refusal,
+        // not a warning the user might safely override.
+        const altPairs = [...new Set(allByName.filter(v => !v.deprecated).map(v => `${v.type0}→${v.type1}`))].join(', ');
+        addLogLine(`<span style="color:red">ERR "${name}" (${type0}→${type1}) is deprecated by MB and would block the commit — skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ''}.</span>`);
+    } else if (wrongPairHits.length > 0) {
         const hitDesc = wrongPairHits.map(v => `${v.name}(${v.type0}→${v.type1})`).join(', ');
         addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}→${type1}) — exists for other entity pairs: ${hitDesc} — skipping</span>`);
     } else {
@@ -938,17 +953,34 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
 
     const MB = pageWindow.MB;
     const releaseEntity = re.state.entity;
-    let added = 0, skipped = 0, failed = 0;
+    // Counter semantics (issue #14):
+    //   added       — rels actually dispatched into editor state this session
+    //   existedRels — rels that were already on the source entity in MB before
+    //                 this session, OR already dispatched earlier in this session
+    //                 (within-session dedup). The script would have added them
+    //                 but MB's reducer would silently no-op the dispatch.
+    //   skipped     — credits the script chose not to dispatch (no Discogs
+    //                 page, no MB ID, no review-table confirmation, etc.)
+    //   failed      — errors (bad MBID, deprecated link type, entity fetch
+    //                 failure, etc.)
+    let added = 0, existedRels = 0, skipped = 0, failed = 0;
     // Track dispatched relationships this session to catch same-run duplicates
     const dispatchedThisSession = new Set(); // "sourceGid|linkTypeID|targetGid"
 
     // Link types that belong on recordings, not the release
     // (used for both the "skip at release level" and "move to tracks" logic)
+    // Link types that belong on recordings (and are eligible for "move to tracks"
+    // via applyToTracks). DO NOT add link types here whose MB artist→recording
+    // variant is deprecated — e.g. `mastering` — they belong only at release
+    // level. resolveLinkTypeId enforces this independently, but keeping the
+    // set tight avoids running the dispatch machinery for credits that
+    // resolveLinkTypeId will then refuse.
     const RECORDING_LINK_TYPES = new Set([
         'performer', 'instrument', 'vocal', 'vocals', 'orchestra', 'conductor',
         'concertmaster', 'chorus master', 'producer', 'engineer', 'mix',
         'recording', 'remixer', 'DJ-mixer', 'additional', 'guest',
         'programming',
+        // NOT 'mastering' — MB deprecated artist→recording mastering (link type 136).
     ]);
 
     addLogLine(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
@@ -1110,6 +1142,30 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
         });
     }
 
+    // ── Helper: does a matching rel already exist on the source entity? ─────
+    // Compares (linkTypeID, target gid, attributes) — what MB's reducer would
+    // dedupe on. Without this check the script counted every dispatch as
+    // "added", even when MB silently no-op'd them (issue #14).
+    function relAlreadyExists(sourceEntity, linkTypeID, targetGid, attrTree) {
+        const rels = sourceEntity?.relationships;
+        if (!Array.isArray(rels) || rels.length === 0) return false;
+        const candSig = (() => {
+            if (!attrTree) return '';
+            try {
+                return [...pageWindow.MB.tree.iterate(attrTree)]
+                    .map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
+            } catch (e) { return ''; }
+        })();
+        return rels.some(r => {
+            if (r.linkTypeID !== linkTypeID) return false;
+            const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
+            if (tgt !== targetGid) return false;
+            const existingSig = (r.attributes || [])
+                .map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
+            return existingSig === candSig;
+        });
+    }
+
     // ── Helper: process one relationship ─────────────────────────────────────
     async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos) {
         const mbid = mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
@@ -1117,14 +1173,18 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
 
         const linkTypeID = resolveLinkTypeId(linkTypeName, entityType0, entityType1);
         if (!linkTypeID) {
-            addLogLine(`<span style="color:orange">WARN Unknown link type "${linkTypeName}" (${entityType0}→${entityType1}) — skipped</span>`);
+            // resolveLinkTypeId has already logged a precise reason (deprecated,
+            // wrong entity pair, unknown name, etc.). No need to double-log.
             failed++; return;
         }
 
         const attrTree = buildAttributes(rawAttributes);
         const attrSig = attrTree ? (() => { try { return [...pageWindow.MB.tree.iterate(attrTree)].map(a => a.typeID || '').join(','); } catch(e) { return ''; } })() : '';
         const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}`;
-        if (dispatchedThisSession.has(sessionKey)) { skipped++; return; }
+        // Within-session dedup: same (source, linkType, target, attrs) tuple
+        // gets visited multiple times if a Discogs credit appears at both
+        // release and track level. Count as already-existing, not as "skipped".
+        if (dispatchedThisSession.has(sessionKey)) { existedRels++; return; }
         dispatchedThisSession.add(sessionKey);
 
         let targetEntity;
@@ -1168,7 +1228,14 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
             }
         }
 
-        // Re-check duplicate with the resolved link type ID (may differ from original)
+        // Pre-existence check against MB state: if the source entity already
+        // has a rel with the same (linkTypeID, target.gid, attrs), MB's
+        // reducer would no-op the dispatch and we'd over-count. Detect now,
+        // log clearly, count as existed instead of added. (issue #14)
+        if (relAlreadyExists(sourceEntity, resolvedLinkTypeID, targetEntity.gid, attrTree)) {
+            existedRels++;
+            return;
+        }
 
         dispatchRelationship(re, sourceEntity, targetEntity, resolvedLinkTypeID, credit, attrTree, trackPos);
         added++;
@@ -1498,7 +1565,7 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
         re.dispatch({ type: 'update-edit-note', editNote: note });
     } catch(e) { /* ignore */ }
 
-    addLogLine(`<strong>Done: ${added} added, ${skipped} already existed, ${failed} failed/skipped</strong>`);
+    addLogLine(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
 }
 
 
