@@ -1689,6 +1689,129 @@
     return lines.join("\n");
   }
 
+  // src/editor-state.js
+  async function waitForMBEditor(timeoutMs = 15e3) {
+    addLogLine("Waiting for MB relationship editor\u2026");
+    let waited = 0;
+    while (waited < timeoutMs) {
+      const MB = pageWindow.MB;
+      const re = MB?.relationshipEditor;
+      const st = re?.state;
+      if (st?.entity) {
+        addLogLine(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
+        return re;
+      }
+      if (waited % 2e3 === 0 && waited > 0) {
+        const mbKeys = MB ? Object.keys(MB).join(", ") : "undefined";
+        const reKeys = re ? Object.keys(re).join(", ") : "undefined";
+        const stKeys = st ? Object.keys(st).join(", ") : "undefined";
+        addLogLine(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
+      }
+      await new Promise((r) => setTimeout(r, 200));
+      waited += 200;
+    }
+    addLogLine('<span style="color:red">ERR MB editor not ready after 15s \u2014 aborting</span>');
+    return null;
+  }
+  function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes, trackPos) {
+    const swapped = sourceEntity.entityType > targetEntity.entityType;
+    const e0 = swapped ? targetEntity : sourceEntity;
+    const e1 = swapped ? sourceEntity : targetEntity;
+    const ltEntry = pageWindow.MB?.linkedEntities?.link_type?.[linkTypeID];
+    const ltName = ltEntry ? ltEntry.name : linkTypeID;
+    let attrDesc = "";
+    if (attributes) {
+      try {
+        const parts = [];
+        for (const a of pageWindow.MB.tree.iterate(attributes)) {
+          const n = a.type?.name || a.typeID;
+          const v = a.text_value ? `=${a.text_value}` : "";
+          if (n) parts.push(n + v);
+        }
+        if (parts.length) attrDesc = ` [${parts.join(", ")}]`;
+      } catch (e) {
+      }
+    }
+    const posLabel = trackPos != null && trackPos !== "" ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : "";
+    addLogLine(`\u2192 <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} \u2194 ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ""}`);
+    re.dispatch({
+      type: "update-relationship-state",
+      sourceEntity,
+      batchSelectionCount: null,
+      creditsToChangeForSource: "",
+      creditsToChangeForTarget: "",
+      oldRelationshipState: null,
+      newRelationshipState: {
+        ...REL_TEMPLATE,
+        entity0: e0,
+        entity0_credit: swapped ? credit || "" : "",
+        entity1: e1,
+        entity1_credit: swapped ? "" : credit || "",
+        id: re.getRelationshipStateId(),
+        linkTypeID,
+        attributes: attributes || null
+      }
+    });
+  }
+  function buildAttributes(rawAttributes) {
+    if (!rawAttributes || rawAttributes.length === 0) return null;
+    const MB = pageWindow.MB;
+    const tree = MB?.tree;
+    const lat = MB?.linkedEntities?.link_attribute_type;
+    if (!tree || !lat) return null;
+    function findAttrByName(name) {
+      const lower = name.toLowerCase().trim();
+      for (const v of Object.values(lat)) {
+        if (v.name?.toLowerCase() === lower) return v;
+      }
+      if (lower.length >= 4) {
+        for (const v of Object.values(lat)) {
+          const vl = v.name?.toLowerCase() || "";
+          if (vl.length < 4) continue;
+          if (vl.includes(lower) || lower.includes(vl)) return v;
+        }
+      }
+      addLogLine(`<span style="color:orange">WARN Attribute "${name}" not found in MB \u2014 dropping attribute but keeping the rel</span>`);
+      return null;
+    }
+    function extractFnValue(fn) {
+      const src = fn.toString();
+      const m = src.match(/,\s*['"`]([^'"`]+)['"`]\s*\)/);
+      return m ? m[1] : null;
+    }
+    const attrObjs = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const attr of rawAttributes) {
+      let attrName = null;
+      let textValue = "";
+      if (typeof attr === "string") {
+        attrName = attr;
+      } else if (attr && typeof attr === "object" && attr._type) {
+        if (attr._type === "task") {
+          attrName = "task";
+          textValue = attr.value;
+        } else {
+          attrName = attr.value;
+        }
+      } else if (typeof attr === "function") {
+        attrName = extractFnValue(attr);
+      }
+      if (!attrName) continue;
+      const found = findAttrByName(attrName);
+      if (!found || seen.has(found.id)) continue;
+      seen.add(found.id);
+      attrObjs.push({ type: found, typeID: found.id, credited_as: "", text_value: textValue });
+    }
+    if (attrObjs.length === 0) return null;
+    attrObjs.sort((a, b) => a.typeID - b.typeID);
+    try {
+      return tree.fromDistinctAscArray(attrObjs);
+    } catch (e) {
+      addLogLine(`<span style="color:orange">WARN Attribute tree build failed (${e.message}) \u2014 importing without attributes</span>`);
+      return null;
+    }
+  }
+
   // src/discogs_credits.user.js
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
   (function handleEntityPageIfNeeded() {
@@ -2194,127 +2317,6 @@
       anchor.insertBefore(bar, anchor.firstChild);
     }
     insertBar();
-  }
-  async function waitForMBEditor(timeoutMs = 15e3) {
-    addLogLine("Waiting for MB relationship editor\u2026");
-    let waited = 0;
-    while (waited < timeoutMs) {
-      const MB = pageWindow.MB;
-      const re = MB?.relationshipEditor;
-      const st = re?.state;
-      if (st?.entity) {
-        addLogLine(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
-        return re;
-      }
-      if (waited % 2e3 === 0 && waited > 0) {
-        const mbKeys = MB ? Object.keys(MB).join(", ") : "undefined";
-        const reKeys = re ? Object.keys(re).join(", ") : "undefined";
-        const stKeys = st ? Object.keys(st).join(", ") : "undefined";
-        addLogLine(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
-      }
-      await new Promise((r) => setTimeout(r, 200));
-      waited += 200;
-    }
-    addLogLine('<span style="color:red">ERR MB editor not ready after 15s \u2014 aborting</span>');
-    return null;
-  }
-  function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes, trackPos) {
-    const swapped = sourceEntity.entityType > targetEntity.entityType;
-    const e0 = swapped ? targetEntity : sourceEntity;
-    const e1 = swapped ? sourceEntity : targetEntity;
-    const ltEntry = pageWindow.MB?.linkedEntities?.link_type?.[linkTypeID];
-    const ltName = ltEntry ? ltEntry.name : linkTypeID;
-    let attrDesc = "";
-    if (attributes) {
-      try {
-        const parts = [];
-        for (const a of pageWindow.MB.tree.iterate(attributes)) {
-          const n = a.type?.name || a.typeID;
-          const v = a.text_value ? `=${a.text_value}` : "";
-          if (n) parts.push(n + v);
-        }
-        if (parts.length) attrDesc = ` [${parts.join(", ")}]`;
-      } catch (e) {
-      }
-    }
-    const posLabel = trackPos != null && trackPos !== "" ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : "";
-    addLogLine(`\u2192 <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} \u2194 ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ""}`);
-    re.dispatch({
-      type: "update-relationship-state",
-      sourceEntity,
-      batchSelectionCount: null,
-      creditsToChangeForSource: "",
-      creditsToChangeForTarget: "",
-      oldRelationshipState: null,
-      newRelationshipState: {
-        ...REL_TEMPLATE,
-        entity0: e0,
-        entity0_credit: swapped ? credit || "" : "",
-        entity1: e1,
-        entity1_credit: swapped ? "" : credit || "",
-        id: re.getRelationshipStateId(),
-        linkTypeID,
-        attributes: attributes || null
-      }
-    });
-  }
-  function buildAttributes(rawAttributes) {
-    if (!rawAttributes || rawAttributes.length === 0) return null;
-    const MB = pageWindow.MB;
-    const tree = MB?.tree;
-    const lat = MB?.linkedEntities?.link_attribute_type;
-    if (!tree || !lat) return null;
-    function findAttrByName(name) {
-      const lower = name.toLowerCase().trim();
-      for (const v of Object.values(lat)) {
-        if (v.name?.toLowerCase() === lower) return v;
-      }
-      if (lower.length >= 4) {
-        for (const v of Object.values(lat)) {
-          const vl = v.name?.toLowerCase() || "";
-          if (vl.length < 4) continue;
-          if (vl.includes(lower) || lower.includes(vl)) return v;
-        }
-      }
-      addLogLine(`<span style="color:orange">WARN Attribute "${name}" not found in MB \u2014 dropping attribute but keeping the rel</span>`);
-      return null;
-    }
-    function extractFnValue(fn) {
-      const src = fn.toString();
-      const m = src.match(/,\s*['"`]([^'"`]+)['"`]\s*\)/);
-      return m ? m[1] : null;
-    }
-    const attrObjs = [];
-    const seen = /* @__PURE__ */ new Set();
-    for (const attr of rawAttributes) {
-      let attrName = null;
-      let textValue = "";
-      if (typeof attr === "string") {
-        attrName = attr;
-      } else if (attr && typeof attr === "object" && attr._type) {
-        if (attr._type === "task") {
-          attrName = "task";
-          textValue = attr.value;
-        } else {
-          attrName = attr.value;
-        }
-      } else if (typeof attr === "function") {
-        attrName = extractFnValue(attr);
-      }
-      if (!attrName) continue;
-      const found = findAttrByName(attrName);
-      if (!found || seen.has(found.id)) continue;
-      seen.add(found.id);
-      attrObjs.push({ type: found, typeID: found.id, credited_as: "", text_value: textValue });
-    }
-    if (attrObjs.length === 0) return null;
-    attrObjs.sort((a, b) => a.typeID - b.typeID);
-    try {
-      return tree.fromDistinctAscArray(attrObjs);
-    } catch (e) {
-      addLogLine(`<span style="color:orange">WARN Attribute tree build failed (${e.message}) \u2014 importing without attributes</span>`);
-      return null;
-    }
   }
   var _urlCheckSessionCache = /* @__PURE__ */ new Map();
   (function cleanupLocalStorage() {

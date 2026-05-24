@@ -45,6 +45,11 @@ import {
     readIdbRecord,
 }                                  from './storage.js';
 import { buildEditNote }           from './edit-note.js';
+import {
+    waitForMBEditor,
+    dispatchRelationship,
+    buildAttributes,
+}                                  from './editor-state.js';
 
 // ── BroadcastChannel: cross-tab artist creation signalling ────────────────────
 // When this script runs on an MB artist page that was opened by the "Create in MB"
@@ -589,164 +594,9 @@ function insertDiscogsBar(discogsUrl) {
     insertBar();
 }
 
-// ── Instant relationship dispatch engine ─────────────────────────────────────
-// Based on kellnerd's bookmarklets: https://github.com/kellnerd/musicbrainz-scripts
-// MB.relationshipEditor.dispatch() injects relationships directly into React state.
-
-/** Poll for MB.relationshipEditor.state.entity with verbose log feedback. */
-async function waitForMBEditor(timeoutMs = 15000) {
-    addLogLine('Waiting for MB relationship editor…');
-    let waited = 0;
-    while (waited < timeoutMs) {
-        const MB = pageWindow.MB;
-        const re = MB?.relationshipEditor;
-        const st = re?.state;
-        if (st?.entity) {
-            addLogLine(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
-            return re;
-        }
-        if (waited % 2000 === 0 && waited > 0) {
-            const mbKeys = MB ? Object.keys(MB).join(', ') : 'undefined';
-            const reKeys = re ? Object.keys(re).join(', ') : 'undefined';
-            const stKeys = st ? Object.keys(st).join(', ') : 'undefined';
-            addLogLine(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
-        }
-        await new Promise(r => setTimeout(r, 200));
-        waited += 200;
-    }
-    addLogLine('<span style="color:red">ERR MB editor not ready after 15s — aborting</span>');
-    return null;
-}
-
-// `resolveLinkTypeId` moved to api-mb.js — see import at top of this file.
-
-/**
- * Dispatch one relationship into MB's React editor state.
- * sourceEntity and targetEntity are full MB entity objects (from /ws/js/entity/).
- * credit is the "credited as" string (may be empty).
- * attributes is an ImmutableTree or null.
- */
-function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes, trackPos) {
-    const swapped = sourceEntity.entityType > targetEntity.entityType;
-    const e0 = swapped ? targetEntity : sourceEntity;
-    const e1 = swapped ? sourceEntity : targetEntity;
-    // Resolve link type name and attribute values for the log
-    const ltEntry = pageWindow.MB?.linkedEntities?.link_type?.[linkTypeID];
-    const ltName = ltEntry ? ltEntry.name : linkTypeID;
-    let attrDesc = '';
-    if (attributes) {
-        try {
-            const parts = [];
-            for (const a of pageWindow.MB.tree.iterate(attributes)) {
-                const n = a.type?.name || a.typeID;
-                const v = a.text_value ? `=${a.text_value}` : '';
-                if (n) parts.push(n + v);
-            }
-            if (parts.length) attrDesc = ` [${parts.join(', ')}]`;
-        } catch(e) {}
-    }
-    const posLabel = (trackPos != null && trackPos !== '') ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : '';
-    addLogLine(`→ <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} ↔ ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ''}`);
-    re.dispatch({
-        type: 'update-relationship-state',
-        sourceEntity,
-        batchSelectionCount: null,
-        creditsToChangeForSource: '',
-        creditsToChangeForTarget: '',
-        oldRelationshipState: null,
-        newRelationshipState: {
-            ...REL_TEMPLATE,
-            entity0: e0,
-            entity0_credit: swapped ? (credit || '') : '',
-            entity1: e1,
-            entity1_credit: swapped ? '' : (credit || ''),
-            id: re.getRelationshipStateId(),
-            linkTypeID,
-            attributes: attributes || null,
-        },
-    });
-}
-
-/**
- * Build an MB attribute ImmutableTree from a mixed attributes array.
- * Handles:
- *   - strings: 'additional', 'guest', 'solo' → checkbox attributes
- *   - functions: extract the value they would set via toString() parsing
- *     (legacy format: () => setValueOnAutocomplete(selector, value) or setNativeValue(el, value))
- */
-function buildAttributes(rawAttributes) {
-    if (!rawAttributes || rawAttributes.length === 0) return null;
-    const MB = pageWindow.MB;
-    const tree = MB?.tree;
-    const lat = MB?.linkedEntities?.link_attribute_type;
-    if (!tree || !lat) return null;
-
-    function findAttrByName(name) {
-        const lower = name.toLowerCase().trim();
-        // Exact match
-        for (const v of Object.values(lat)) {
-            if (v.name?.toLowerCase() === lower) return v;
-        }
-        // Partial/root match — "drums" may be under a parent "drum kit" or
-        // vice versa. Require BOTH the needle and the candidate to be at
-        // least 4 chars to avoid the "co" → "concertina" class of false
-        // positive that triggered issue #3. Anything shorter that doesn't
-        // hit the exact-match arm above is treated as an unknown attribute.
-        if (lower.length >= 4) {
-            for (const v of Object.values(lat)) {
-                const vl = v.name?.toLowerCase() || '';
-                if (vl.length < 4) continue;
-                if (vl.includes(lower) || lower.includes(vl)) return v;
-            }
-        }
-        addLogLine(`<span style="color:orange">WARN Attribute "${name}" not found in MB — dropping attribute but keeping the rel</span>`);
-        return null;
-    }
-
-    // Extract string value from a legacy function attribute by inspecting its source
-    function extractFnValue(fn) {
-        const src = fn.toString();
-        // Match: setValueOnAutocomplete(SELECTORS.X, 'value') or setNativeValue(el, 'value')
-        const m = src.match(/,\s*['"`]([^'"`]+)['"`]\s*\)/);
-        return m ? m[1] : null;
-    }
-
-    const attrObjs = [];
-    const seen = new Set();
-    for (const attr of rawAttributes) {
-        let attrName = null;
-        let textValue = '';
-        if (typeof attr === 'string') {
-            // Checkbox-style: 'additional', 'guest', 'solo'
-            attrName = attr;
-        } else if (attr && typeof attr === 'object' && attr._type) {
-            // Structured: { _type: 'instrument'|'vocal'|'task', value: '...' }
-            if (attr._type === 'task') {
-                // Task is a free-text attribute — look up the "task" type, set text_value
-                attrName = 'task';
-                textValue = attr.value;
-            } else {
-                attrName = attr.value;
-            }
-        } else if (typeof attr === 'function') {
-            // Legacy function attribute — extract quoted string from source
-            attrName = extractFnValue(attr);
-        }
-        if (!attrName) continue;
-        const found = findAttrByName(attrName);
-        if (!found || seen.has(found.id)) continue;
-        seen.add(found.id);
-        attrObjs.push({ type: found, typeID: found.id, credited_as: '', text_value: textValue });
-    }
-    if (attrObjs.length === 0) return null;
-    attrObjs.sort((a, b) => a.typeID - b.typeID);
-    try {
-        return tree.fromDistinctAscArray(attrObjs);
-    } catch(e) {
-        addLogLine(`<span style="color:orange">WARN Attribute tree build failed (${e.message}) — importing without attributes</span>`);
-        return null;
-    }
-}
+// `waitForMBEditor`, `dispatchRelationship`, `buildAttributes` moved to editor-state.js.
+// `resolveLinkTypeId` moved to api-mb.js.
+// (See imports at top of this file.)
 
 /**
  * Master instant fill: processes all companies, release-level artists, and
