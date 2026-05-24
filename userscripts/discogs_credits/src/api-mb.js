@@ -103,6 +103,28 @@ export async function fetchWithRetry(url, retries = 4) {
 }
 
 /**
+ * Probe `/ws/js/release/<mbid>?fmt=json&inc=rels` and return the Discogs URL
+ * linked to the release (if any), else `null`. Used at import start to decide
+ * which Discogs release to fetch.
+ *
+ * Skips `mbThrottle` deliberately — it's a one-shot at session start, not in
+ * the hot preflight loop. If MB rate-limits it the worst case is the import
+ * never starts (and the user sees no progress, which is the same UX as the
+ * throttle pausing it).
+ */
+export function hasDiscogsLinkDefined(mbid) {
+    const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
+    return fetch(url)
+        .then(body => body.json())
+        .then(json => {
+            const matchingRel = (json.relationships || []).find(rel => {
+                return rel.target?.sidebar_name === 'Discogs';
+            });
+            return matchingRel?.target?.href_url || null;
+        });
+}
+
+/**
  * Resolve a link type name to its numeric ID from MB.linkedEntities.link_type.
  *
  * Strictness invariant (post bug #2 fix): the returned link type's
