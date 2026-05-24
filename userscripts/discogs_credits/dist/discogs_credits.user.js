@@ -1685,7 +1685,7 @@
   }
 
   // src/edit-note.js
-  function buildEditNote(discogsUrl2, opts, extraLines) {
+  function buildEditNote(discogsUrl3, opts, extraLines) {
     const s = GM_info.script;
     const mbUrl = location.href.replace(/\/edit-relationships$/, "");
     const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits";
@@ -1694,7 +1694,7 @@
       header,
       "",
       "Release URL: " + mbUrl,
-      "Discogs URL: " + discogsUrl2
+      "Discogs URL: " + discogsUrl3
     ];
     if (opts) lines.push("Options: " + opts);
     if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
@@ -2842,488 +2842,7 @@
     });
   }
 
-  // src/discogs_credits.user.js
-  var DISCOGS_CHANNEL2 = new BroadcastChannel("discogs-importer-artist");
-  (function handleEntityPageIfNeeded() {
-    const entityMatch = location.href.match(
-      /musicbrainz\.org\/(artist|label|place)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:[^/]|$)/i
-    );
-    if (!entityMatch) return;
-    const entityType = entityMatch[1];
-    const mbid = entityMatch[2];
-    const pendingKey = "discogs-importer-pending-artist";
-    const pending = sessionStorage.getItem(pendingKey);
-    if (!pending) return;
-    sessionStorage.removeItem(pendingKey);
-    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`).then((r) => r.json()).then((json) => {
-      DISCOGS_CHANNEL2.postMessage({
-        type: "artist-created",
-        // keep same message type for compatibility
-        id: mbid,
-        name: json.name || "",
-        disambiguation: json.disambiguation || "",
-        resourceUrl: pending
-      });
-      setTimeout(() => window.close(), 800);
-    }).catch(() => {
-      DISCOGS_CHANNEL2.postMessage({
-        type: "artist-created",
-        id: mbid,
-        name: "",
-        disambiguation: "",
-        resourceUrl: pending
-      });
-      setTimeout(() => window.close(), 800);
-    });
-  })();
-  var logs;
-  var summary;
-  var discogsUrl;
-  $(document).ready(function() {
-    const re = new RegExp("musicbrainz.org/release/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/edit-relationships", "i");
-    let m;
-    if (m = window.location.href.match(re)) {
-      hasDiscogsLinkDefined(m[1]).then((discogsUrlParam) => {
-        discogsUrl = discogsUrlParam;
-        if (discogsUrl) {
-          insertDiscogsBar(discogsUrl);
-        }
-      });
-    }
-  });
-  function insertDiscogsBar(discogsUrl2) {
-    const style = document.createElement("style");
-    style.innerText = `
-        .discogs-bar {
-            font-family: inherit;
-            background: #fff;
-            border: 1px solid #e0c88a;
-            border-left: 4px solid #e8771d;
-            border-radius: 0.35rem;
-            margin-bottom: 1rem;
-            overflow: hidden;
-        }
-        .discogs-bar-row1 {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.5rem 0.75rem;
-            background: #fdf8f0;
-            border-bottom: 1px solid #eeddb0;
-        }
-        .discogs-bar img.discogs-logo {
-            height: 20px;
-            width: auto;
-            flex-shrink: 0;
-            opacity: 0.85;
-        }
-        .discogs-bar .discogs-source {
-            flex: 1;
-            font-size: 0.82rem;
-            color: #555;
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .discogs-bar .discogs-source a {
-            color: #e8771d;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .discogs-bar .discogs-source a:hover { text-decoration: underline; }
-        .discogs-import-btn {
-            flex-shrink: 0;
-            padding: 0.3rem 1rem;
-            background: #e8771d;
-            color: #fff;
-            border: none;
-            border-radius: 0.25rem;
-            cursor: pointer;
-            font-size: 0.88rem;
-            font-weight: bold;
-            letter-spacing: 0.01em;
-        }
-        .discogs-import-btn:hover { background: #cf6618; }
-        .discogs-import-btn:disabled { background: #c8a070; cursor: default; }
-        .discogs-bar-row2 {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.35rem 0.75rem;
-            flex-wrap: wrap;
-        }
-        .discogs-bar-row2 .discogs-opts-label {
-            font-size: 0.75rem;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-right: 0.2rem;
-            flex-shrink: 0;
-        }
-        .discogs-toggle {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.15rem 0.55rem 0.15rem 0.35rem;
-            border: 1px solid #d8c8a0;
-            border-radius: 2rem;
-            background: #fffdf7;
-            cursor: pointer;
-            font-size: 0.8rem;
-            color: #555;
-            user-select: none;
-            transition: background 0.12s, border-color 0.12s;
-        }
-        .discogs-toggle:hover { border-color: #e8771d; color: #333; }
-        .discogs-toggle input[type=checkbox] { display: none; }
-        .discogs-toggle .discogs-toggle-dot {
-            width: 14px; height: 14px;
-            border-radius: 50%;
-            border: 2px solid #bbb;
-            background: #fff;
-            flex-shrink: 0;
-            transition: border-color 0.12s, background 0.12s;
-        }
-        .discogs-toggle.active {
-            background: #fff8ee;
-            border-color: #e8771d;
-            color: #333;
-        }
-        .discogs-toggle.active .discogs-toggle-dot {
-            border-color: #e8771d;
-            background: #e8771d;
-        }
-        .discogs-output { padding: 0.5rem 0.75rem 0.25rem; }
-        .discogs-output .summary { margin: 0 0 0.25rem; font-size: 0.88rem; color: #555; }
-        .discogs-output .logs { margin: 0; padding-left: 1.2rem; font-size: 0.83rem; }
-        /* \u2500\u2500 Progress / sticky bar \u2500\u2500 */
-        .discogs-bar.is-importing .discogs-bar-row1 {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 9000;
-            background: #fdf8f0;
-            border-bottom: 1px solid #eeddb0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        .discogs-progress-track {
-            height: 5px;
-            background: #eeddb0;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        .discogs-progress-fill {
-            height: 100%;
-            width: 0%;
-            background: #e8771d;
-            border-radius: 3px;
-            transition: width 0.3s ease;
-        }
-        .discogs-progress-fill.indeterminate {
-            width: 40%;
-            animation: discogs-slide 1.4s ease-in-out infinite;
-        }
-        @keyframes discogs-slide {
-            0%   { margin-left: -40%; }
-            100% { margin-left: 100%; }
-        }
-        .discogs-progress-status {
-            font-size: 0.8rem;
-            color: #7a5000;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .discogs-recent-logs {
-            font-size: 0.78rem;
-            color: #888;
-            max-height: 3.2rem;
-            overflow: hidden;
-            line-height: 1.4;
-        }
-        .discogs-recent-logs span {
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .discogs-toggle { position: relative; }
-        .discogs-tooltip {
-            display: none;
-            position: absolute;
-            bottom: calc(100% + 6px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: #fff;
-            font-size: 0.78rem;
-            line-height: 1.45;
-            padding: 0.45rem 0.65rem;
-            border-radius: 0.3rem;
-            white-space: normal;
-            width: 220px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-            pointer-events: none;
-            z-index: 9999;
-            text-align: left;
-        }
-        .discogs-tooltip::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 5px solid transparent;
-            border-top-color: #333;
-        }
-        .discogs-toggle:hover .discogs-tooltip { display: block; }
-    `;
-    document.head.appendChild(style);
-    const bar = document.createElement("div");
-    bar.className = "discogs-bar";
-    const row1 = document.createElement("div");
-    row1.className = "discogs-bar-row1";
-    const logo = document.createElement("img");
-    logo.src = DISCOGS_LOGO_URL;
-    logo.className = "discogs-logo";
-    logo.alt = "Discogs";
-    row1.appendChild(logo);
-    const sourceSpan = document.createElement("span");
-    sourceSpan.className = "discogs-source";
-    sourceSpan.innerHTML = `<a href="${discogsUrl2}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl2}</a>`;
-    row1.appendChild(sourceSpan);
-    const importBtn = document.createElement("button");
-    importBtn.className = "discogs-import-btn";
-    importBtn.textContent = "Import from Discogs";
-    const progressPct = document.createElement("span");
-    progressPct.id = "discogs-progress-pct";
-    progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
-    row1.appendChild(importBtn);
-    row1.appendChild(progressPct);
-    bar.appendChild(row1);
-    const row2 = document.createElement("div");
-    row2.className = "discogs-bar-row2";
-    const optsLabel = document.createElement("span");
-    optsLabel.className = "discogs-opts-label";
-    optsLabel.textContent = "Options:";
-    row2.appendChild(optsLabel);
-    function makeCheckbox(labelText, checkedByDefault, tooltipText) {
-      const lbl = document.createElement("label");
-      lbl.className = "discogs-toggle" + (checkedByDefault ? " active" : "");
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = checkedByDefault;
-      const dot = document.createElement("span");
-      dot.className = "discogs-toggle-dot";
-      lbl.appendChild(cb);
-      lbl.appendChild(dot);
-      lbl.appendChild(document.createTextNode(labelText));
-      if (tooltipText) {
-        const tip = document.createElement("span");
-        tip.className = "discogs-tooltip";
-        tip.textContent = tooltipText;
-        lbl.appendChild(tip);
-      }
-      lbl.addEventListener("click", (e) => {
-        e.preventDefault();
-        cb.checked = !cb.checked;
-        lbl.classList.toggle("active", cb.checked);
-      });
-      row2.appendChild(lbl);
-      return cb;
-    }
-    const OPTS_KEY = "discogs-importer-opts";
-    let savedOpts = {};
-    try {
-      savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || "{}");
-    } catch (e) {
-    }
-    const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
-    const tracklistCb = makeCheckbox(
-      "Per-track credits",
-      bv("tracklist", true),
-      "Import per-track artist credits from Discogs."
-    );
-    const applyTracksCb = makeCheckbox(
-      "Move release credits to tracks",
-      bv("applyTracks", true),
-      "Move performance credits from the release down to every recording."
-    );
-    const createWorksCb = makeCheckbox(
-      "Create missing works",
-      bv("createWorks", true),
-      "Create a new inline work for recordings without one, and link composer/lyricist/writer credits to it."
-    );
-    const saveOpts = () => {
-      try {
-        localStorage.setItem(OPTS_KEY, JSON.stringify({
-          tracklist: tracklistCb.checked,
-          applyTracks: applyTracksCb.checked,
-          createWorks: createWorksCb.checked
-        }));
-      } catch (e) {
-      }
-    };
-    [tracklistCb, applyTracksCb, createWorksCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
-    bar.appendChild(row2);
-    const progressBar = { style: { display: "" } };
-    const progressRow = progressBar;
-    const progressTrack = progressBar;
-    const progressFill = { style: {}, className: "" };
-    const progressStatus = { textContent: "" };
-    const recentLogsEl = { innerHTML: "" };
-    const recentLogBuffer = [];
-    function pushRecentLog() {
-    }
-    function startProgressAnim() {
-      _showBar();
-    }
-    function stopProgressAnim() {
-      _hideBar();
-    }
-    const outputDiv = document.createElement("div");
-    outputDiv.className = "discogs-output";
-    importBtn.addEventListener("click", () => {
-      importBtn.disabled = true;
-      importBtn.textContent = "Importing\u2026";
-      progressPct.style.display = "inline";
-      progressPct.textContent = "0%";
-      bar.classList.add("is-importing");
-      startProgressAnim();
-      bar.scrollIntoView({ behavior: "smooth", block: "start" });
-      bar._showProgress = () => {
-        _showBar();
-      };
-      requestAnimationFrame(bar._showProgress);
-      logs = document.createElement("ul");
-      logs.className = "logs";
-      setLogContainer(logs);
-      summary = document.createElement("p");
-      summary.className = "summary";
-      outputDiv.innerHTML = "";
-      outputDiv.appendChild(summary);
-      outputDiv.appendChild(logs);
-      const copyLogBtn = document.createElement("button");
-      copyLogBtn.textContent = "Copy log";
-      copyLogBtn.style.cssText = "font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-left:auto;flex-shrink:0;";
-      copyLogBtn.addEventListener("click", () => {
-        function htmlToMd(el) {
-          function nodeToMd(node) {
-            if (node.nodeType === Node.TEXT_NODE) return node.textContent;
-            const tag = node.tagName?.toLowerCase();
-            const inner = [...node.childNodes].map(nodeToMd).join("");
-            if (tag === "strong" || tag === "b") return `**${inner}**`;
-            if (tag === "em" || tag === "i") return `_${inner}_`;
-            if (tag === "a") return `[${inner}](${node.href})`;
-            if (tag === "br") return "\n";
-            if (tag === "pre") {
-              return "\n```json\n" + node.textContent + "\n```\n";
-            }
-            if (tag === "details") {
-              const sum = node.querySelector("summary");
-              const sumText = sum ? [...sum.childNodes].map((n) => {
-                if (n.nodeType === Node.TEXT_NODE) return n.textContent;
-                if (n.tagName?.toLowerCase() === "strong") return "**" + n.textContent + "**";
-                return n.textContent;
-              }).join("") : "";
-              const body = [...node.childNodes].filter((n) => n !== sum).map(nodeToMd).join("");
-              return "<details><summary>" + sumText + "</summary>\n\n" + body + "\n</details>";
-            }
-            if (tag === "summary") return "";
-            if (tag === "span") return inner;
-            if (tag === "div") return inner + "\n";
-            if (tag === "ul") return inner;
-            if (tag === "li" && el !== node) return "- " + inner + "\n";
-            if (tag === "table") {
-              const rows = [...node.querySelectorAll("tr")];
-              if (!rows.length) return "";
-              const cells = rows.map((r) => [...r.querySelectorAll("th,td")].map((c) => c.innerText.trim().replace(/\|/g, "\\|")));
-              const widths = cells[0]?.map((_, i) => Math.max(...cells.map((r) => (r[i] || "").length), 3));
-              const pad = (s, w) => s + " ".repeat(Math.max(0, w - s.length));
-              const mdRows = cells.map((row) => "| " + row.map((c, i) => pad(c, widths[i])).join(" | ") + " |");
-              if (mdRows.length > 1) mdRows.splice(1, 0, "| " + widths.map((w) => "-".repeat(w)).join(" | ") + " |");
-              return "\n\n" + mdRows.join("\n") + "\n\n";
-            }
-            return inner;
-          }
-          const _md = nodeToMd(el);
-          return _md.startsWith("\n\n") || _md.endsWith("\n\n") ? _md : _md.replace(/^\n/, "").replace(/\n$/, "");
-        }
-        const lines = [...logs.querySelectorAll("li")].map((li) => {
-          const md = htmlToMd(li);
-          if (md.startsWith("\n\n|") || md.startsWith("<details>")) return md;
-          return md + "  ";
-        }).join("\n");
-        navigator.clipboard.writeText(lines).catch(() => {
-          const ta = Object.assign(document.createElement("textarea"), { value: lines });
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          ta.remove();
-        }).finally?.(() => {
-        });
-        copyLogBtn.textContent = "Copied!";
-        setTimeout(() => {
-          copyLogBtn.textContent = "Copy log";
-        }, 1500);
-      });
-      row2.appendChild(copyLogBtn);
-      bar._setProgress = (pct, statusText) => {
-        if (pct !== null && pct >= 100) {
-          stopProgressAnim();
-        }
-        if (statusText) {
-          progressStatus.textContent = statusText;
-          pushRecentLog(statusText.replace(/<[^>]*>/g, ""));
-        }
-      };
-      requestAnimationFrame(_showBar);
-      const opts = `per-track:${tracklistCb.checked ? "on" : "off"}, move-to-tracks:${applyTracksCb.checked ? "on" : "off"}, create-works:${createWorksCb.checked ? "on" : "off"}`;
-      const editNote = buildEditNote(discogsUrl2, opts);
-      editNote.split("\n").forEach((line) => {
-        if (!line.trim()) return;
-        const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
-        addLogLine(html);
-      });
-      startImportRels(discogsUrl2, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
-        importBtn.disabled = false;
-        importBtn.textContent = "Import from Discogs";
-        progressPct.textContent = "100%";
-        setTimeout(() => {
-          progressPct.style.display = "none";
-        }, 2e3);
-        progressFill.className = "discogs-progress-fill";
-        progressFill.style.width = "100%";
-        progressStatus.textContent = "Done";
-        setTimeout(() => {
-          bar.classList.remove("is-importing");
-          stopProgressAnim();
-        }, 2e3);
-        delete bar._setProgress;
-      });
-    });
-    bar.appendChild(outputDiv);
-    function insertBar() {
-      const anchor = document.querySelector(".release-rel-editor") || // MB React wrapper
-      document.querySelector("#content > div") || // generic first content div
-      document.querySelector("#content");
-      if (!anchor) return setTimeout(insertBar, 300);
-      anchor.insertBefore(bar, anchor.firstChild);
-    }
-    insertBar();
-  }
-  (function cleanupLocalStorage() {
-    try {
-      const keysToRemove = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k) continue;
-        if (k.startsWith("discogs-release-")) keysToRemove.push(k);
-      }
-      keysToRemove.forEach((k) => localStorage.removeItem(k));
-    } catch (e) {
-    }
-  })();
+  // src/dispatch.js
   async function instantFillRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap) {
     resolvedEntityTypes = resolvedEntityTypes || /* @__PURE__ */ new Map();
     confirmedMap = confirmedMap || /* @__PURE__ */ new Map();
@@ -3873,8 +3392,491 @@
     }
     addLogLine(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
   }
-  function startImportRels(discogsUrl2, processTracklist, applyToTracks, createWorks) {
-    return getDiscogsReleaseData(discogsUrl2).then((json) => {
+
+  // src/discogs_credits.user.js
+  var DISCOGS_CHANNEL2 = new BroadcastChannel("discogs-importer-artist");
+  (function handleEntityPageIfNeeded() {
+    const entityMatch = location.href.match(
+      /musicbrainz\.org\/(artist|label|place)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:[^/]|$)/i
+    );
+    if (!entityMatch) return;
+    const entityType = entityMatch[1];
+    const mbid = entityMatch[2];
+    const pendingKey = "discogs-importer-pending-artist";
+    const pending = sessionStorage.getItem(pendingKey);
+    if (!pending) return;
+    sessionStorage.removeItem(pendingKey);
+    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`).then((r) => r.json()).then((json) => {
+      DISCOGS_CHANNEL2.postMessage({
+        type: "artist-created",
+        // keep same message type for compatibility
+        id: mbid,
+        name: json.name || "",
+        disambiguation: json.disambiguation || "",
+        resourceUrl: pending
+      });
+      setTimeout(() => window.close(), 800);
+    }).catch(() => {
+      DISCOGS_CHANNEL2.postMessage({
+        type: "artist-created",
+        id: mbid,
+        name: "",
+        disambiguation: "",
+        resourceUrl: pending
+      });
+      setTimeout(() => window.close(), 800);
+    });
+  })();
+  var logs;
+  var summary;
+  var discogsUrl2;
+  $(document).ready(function() {
+    const re = new RegExp("musicbrainz.org/release/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/edit-relationships", "i");
+    let m;
+    if (m = window.location.href.match(re)) {
+      hasDiscogsLinkDefined(m[1]).then((discogsUrlParam) => {
+        discogsUrl2 = discogsUrlParam;
+        if (discogsUrl2) {
+          insertDiscogsBar(discogsUrl2);
+        }
+      });
+    }
+  });
+  function insertDiscogsBar(discogsUrl3) {
+    const style = document.createElement("style");
+    style.innerText = `
+        .discogs-bar {
+            font-family: inherit;
+            background: #fff;
+            border: 1px solid #e0c88a;
+            border-left: 4px solid #e8771d;
+            border-radius: 0.35rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .discogs-bar-row1 {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 0.75rem;
+            background: #fdf8f0;
+            border-bottom: 1px solid #eeddb0;
+        }
+        .discogs-bar img.discogs-logo {
+            height: 20px;
+            width: auto;
+            flex-shrink: 0;
+            opacity: 0.85;
+        }
+        .discogs-bar .discogs-source {
+            flex: 1;
+            font-size: 0.82rem;
+            color: #555;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .discogs-bar .discogs-source a {
+            color: #e8771d;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .discogs-bar .discogs-source a:hover { text-decoration: underline; }
+        .discogs-import-btn {
+            flex-shrink: 0;
+            padding: 0.3rem 1rem;
+            background: #e8771d;
+            color: #fff;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: bold;
+            letter-spacing: 0.01em;
+        }
+        .discogs-import-btn:hover { background: #cf6618; }
+        .discogs-import-btn:disabled { background: #c8a070; cursor: default; }
+        .discogs-bar-row2 {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.75rem;
+            flex-wrap: wrap;
+        }
+        .discogs-bar-row2 .discogs-opts-label {
+            font-size: 0.75rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-right: 0.2rem;
+            flex-shrink: 0;
+        }
+        .discogs-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.55rem 0.15rem 0.35rem;
+            border: 1px solid #d8c8a0;
+            border-radius: 2rem;
+            background: #fffdf7;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #555;
+            user-select: none;
+            transition: background 0.12s, border-color 0.12s;
+        }
+        .discogs-toggle:hover { border-color: #e8771d; color: #333; }
+        .discogs-toggle input[type=checkbox] { display: none; }
+        .discogs-toggle .discogs-toggle-dot {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            border: 2px solid #bbb;
+            background: #fff;
+            flex-shrink: 0;
+            transition: border-color 0.12s, background 0.12s;
+        }
+        .discogs-toggle.active {
+            background: #fff8ee;
+            border-color: #e8771d;
+            color: #333;
+        }
+        .discogs-toggle.active .discogs-toggle-dot {
+            border-color: #e8771d;
+            background: #e8771d;
+        }
+        .discogs-output { padding: 0.5rem 0.75rem 0.25rem; }
+        .discogs-output .summary { margin: 0 0 0.25rem; font-size: 0.88rem; color: #555; }
+        .discogs-output .logs { margin: 0; padding-left: 1.2rem; font-size: 0.83rem; }
+        /* \u2500\u2500 Progress / sticky bar \u2500\u2500 */
+        .discogs-bar.is-importing .discogs-bar-row1 {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 9000;
+            background: #fdf8f0;
+            border-bottom: 1px solid #eeddb0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .discogs-progress-track {
+            height: 5px;
+            background: #eeddb0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .discogs-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #e8771d;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        .discogs-progress-fill.indeterminate {
+            width: 40%;
+            animation: discogs-slide 1.4s ease-in-out infinite;
+        }
+        @keyframes discogs-slide {
+            0%   { margin-left: -40%; }
+            100% { margin-left: 100%; }
+        }
+        .discogs-progress-status {
+            font-size: 0.8rem;
+            color: #7a5000;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .discogs-recent-logs {
+            font-size: 0.78rem;
+            color: #888;
+            max-height: 3.2rem;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+        .discogs-recent-logs span {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .discogs-toggle { position: relative; }
+        .discogs-tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            font-size: 0.78rem;
+            line-height: 1.45;
+            padding: 0.45rem 0.65rem;
+            border-radius: 0.3rem;
+            white-space: normal;
+            width: 220px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            pointer-events: none;
+            z-index: 9999;
+            text-align: left;
+        }
+        .discogs-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #333;
+        }
+        .discogs-toggle:hover .discogs-tooltip { display: block; }
+    `;
+    document.head.appendChild(style);
+    const bar = document.createElement("div");
+    bar.className = "discogs-bar";
+    const row1 = document.createElement("div");
+    row1.className = "discogs-bar-row1";
+    const logo = document.createElement("img");
+    logo.src = DISCOGS_LOGO_URL;
+    logo.className = "discogs-logo";
+    logo.alt = "Discogs";
+    row1.appendChild(logo);
+    const sourceSpan = document.createElement("span");
+    sourceSpan.className = "discogs-source";
+    sourceSpan.innerHTML = `<a href="${discogsUrl3}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl3}</a>`;
+    row1.appendChild(sourceSpan);
+    const importBtn = document.createElement("button");
+    importBtn.className = "discogs-import-btn";
+    importBtn.textContent = "Import from Discogs";
+    const progressPct = document.createElement("span");
+    progressPct.id = "discogs-progress-pct";
+    progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
+    row1.appendChild(importBtn);
+    row1.appendChild(progressPct);
+    bar.appendChild(row1);
+    const row2 = document.createElement("div");
+    row2.className = "discogs-bar-row2";
+    const optsLabel = document.createElement("span");
+    optsLabel.className = "discogs-opts-label";
+    optsLabel.textContent = "Options:";
+    row2.appendChild(optsLabel);
+    function makeCheckbox(labelText, checkedByDefault, tooltipText) {
+      const lbl = document.createElement("label");
+      lbl.className = "discogs-toggle" + (checkedByDefault ? " active" : "");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = checkedByDefault;
+      const dot = document.createElement("span");
+      dot.className = "discogs-toggle-dot";
+      lbl.appendChild(cb);
+      lbl.appendChild(dot);
+      lbl.appendChild(document.createTextNode(labelText));
+      if (tooltipText) {
+        const tip = document.createElement("span");
+        tip.className = "discogs-tooltip";
+        tip.textContent = tooltipText;
+        lbl.appendChild(tip);
+      }
+      lbl.addEventListener("click", (e) => {
+        e.preventDefault();
+        cb.checked = !cb.checked;
+        lbl.classList.toggle("active", cb.checked);
+      });
+      row2.appendChild(lbl);
+      return cb;
+    }
+    const OPTS_KEY = "discogs-importer-opts";
+    let savedOpts = {};
+    try {
+      savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || "{}");
+    } catch (e) {
+    }
+    const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
+    const tracklistCb = makeCheckbox(
+      "Per-track credits",
+      bv("tracklist", true),
+      "Import per-track artist credits from Discogs."
+    );
+    const applyTracksCb = makeCheckbox(
+      "Move release credits to tracks",
+      bv("applyTracks", true),
+      "Move performance credits from the release down to every recording."
+    );
+    const createWorksCb = makeCheckbox(
+      "Create missing works",
+      bv("createWorks", true),
+      "Create a new inline work for recordings without one, and link composer/lyricist/writer credits to it."
+    );
+    const saveOpts = () => {
+      try {
+        localStorage.setItem(OPTS_KEY, JSON.stringify({
+          tracklist: tracklistCb.checked,
+          applyTracks: applyTracksCb.checked,
+          createWorks: createWorksCb.checked
+        }));
+      } catch (e) {
+      }
+    };
+    [tracklistCb, applyTracksCb, createWorksCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    bar.appendChild(row2);
+    const progressBar = { style: { display: "" } };
+    const progressRow = progressBar;
+    const progressTrack = progressBar;
+    const progressFill = { style: {}, className: "" };
+    const progressStatus = { textContent: "" };
+    const recentLogsEl = { innerHTML: "" };
+    const recentLogBuffer = [];
+    function pushRecentLog() {
+    }
+    function startProgressAnim() {
+      _showBar();
+    }
+    function stopProgressAnim() {
+      _hideBar();
+    }
+    const outputDiv = document.createElement("div");
+    outputDiv.className = "discogs-output";
+    importBtn.addEventListener("click", () => {
+      importBtn.disabled = true;
+      importBtn.textContent = "Importing\u2026";
+      progressPct.style.display = "inline";
+      progressPct.textContent = "0%";
+      bar.classList.add("is-importing");
+      startProgressAnim();
+      bar.scrollIntoView({ behavior: "smooth", block: "start" });
+      bar._showProgress = () => {
+        _showBar();
+      };
+      requestAnimationFrame(bar._showProgress);
+      logs = document.createElement("ul");
+      logs.className = "logs";
+      setLogContainer(logs);
+      summary = document.createElement("p");
+      summary.className = "summary";
+      outputDiv.innerHTML = "";
+      outputDiv.appendChild(summary);
+      outputDiv.appendChild(logs);
+      const copyLogBtn = document.createElement("button");
+      copyLogBtn.textContent = "Copy log";
+      copyLogBtn.style.cssText = "font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-left:auto;flex-shrink:0;";
+      copyLogBtn.addEventListener("click", () => {
+        function htmlToMd(el) {
+          function nodeToMd(node) {
+            if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+            const tag = node.tagName?.toLowerCase();
+            const inner = [...node.childNodes].map(nodeToMd).join("");
+            if (tag === "strong" || tag === "b") return `**${inner}**`;
+            if (tag === "em" || tag === "i") return `_${inner}_`;
+            if (tag === "a") return `[${inner}](${node.href})`;
+            if (tag === "br") return "\n";
+            if (tag === "pre") {
+              return "\n```json\n" + node.textContent + "\n```\n";
+            }
+            if (tag === "details") {
+              const sum = node.querySelector("summary");
+              const sumText = sum ? [...sum.childNodes].map((n) => {
+                if (n.nodeType === Node.TEXT_NODE) return n.textContent;
+                if (n.tagName?.toLowerCase() === "strong") return "**" + n.textContent + "**";
+                return n.textContent;
+              }).join("") : "";
+              const body = [...node.childNodes].filter((n) => n !== sum).map(nodeToMd).join("");
+              return "<details><summary>" + sumText + "</summary>\n\n" + body + "\n</details>";
+            }
+            if (tag === "summary") return "";
+            if (tag === "span") return inner;
+            if (tag === "div") return inner + "\n";
+            if (tag === "ul") return inner;
+            if (tag === "li" && el !== node) return "- " + inner + "\n";
+            if (tag === "table") {
+              const rows = [...node.querySelectorAll("tr")];
+              if (!rows.length) return "";
+              const cells = rows.map((r) => [...r.querySelectorAll("th,td")].map((c) => c.innerText.trim().replace(/\|/g, "\\|")));
+              const widths = cells[0]?.map((_, i) => Math.max(...cells.map((r) => (r[i] || "").length), 3));
+              const pad = (s, w) => s + " ".repeat(Math.max(0, w - s.length));
+              const mdRows = cells.map((row) => "| " + row.map((c, i) => pad(c, widths[i])).join(" | ") + " |");
+              if (mdRows.length > 1) mdRows.splice(1, 0, "| " + widths.map((w) => "-".repeat(w)).join(" | ") + " |");
+              return "\n\n" + mdRows.join("\n") + "\n\n";
+            }
+            return inner;
+          }
+          const _md = nodeToMd(el);
+          return _md.startsWith("\n\n") || _md.endsWith("\n\n") ? _md : _md.replace(/^\n/, "").replace(/\n$/, "");
+        }
+        const lines = [...logs.querySelectorAll("li")].map((li) => {
+          const md = htmlToMd(li);
+          if (md.startsWith("\n\n|") || md.startsWith("<details>")) return md;
+          return md + "  ";
+        }).join("\n");
+        navigator.clipboard.writeText(lines).catch(() => {
+          const ta = Object.assign(document.createElement("textarea"), { value: lines });
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+        }).finally?.(() => {
+        });
+        copyLogBtn.textContent = "Copied!";
+        setTimeout(() => {
+          copyLogBtn.textContent = "Copy log";
+        }, 1500);
+      });
+      row2.appendChild(copyLogBtn);
+      bar._setProgress = (pct, statusText) => {
+        if (pct !== null && pct >= 100) {
+          stopProgressAnim();
+        }
+        if (statusText) {
+          progressStatus.textContent = statusText;
+          pushRecentLog(statusText.replace(/<[^>]*>/g, ""));
+        }
+      };
+      requestAnimationFrame(_showBar);
+      const opts = `per-track:${tracklistCb.checked ? "on" : "off"}, move-to-tracks:${applyTracksCb.checked ? "on" : "off"}, create-works:${createWorksCb.checked ? "on" : "off"}`;
+      const editNote = buildEditNote(discogsUrl3, opts);
+      editNote.split("\n").forEach((line) => {
+        if (!line.trim()) return;
+        const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
+        addLogLine(html);
+      });
+      startImportRels(discogsUrl3, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
+        importBtn.disabled = false;
+        importBtn.textContent = "Import from Discogs";
+        progressPct.textContent = "100%";
+        setTimeout(() => {
+          progressPct.style.display = "none";
+        }, 2e3);
+        progressFill.className = "discogs-progress-fill";
+        progressFill.style.width = "100%";
+        progressStatus.textContent = "Done";
+        setTimeout(() => {
+          bar.classList.remove("is-importing");
+          stopProgressAnim();
+        }, 2e3);
+        delete bar._setProgress;
+      });
+    });
+    bar.appendChild(outputDiv);
+    function insertBar() {
+      const anchor = document.querySelector(".release-rel-editor") || // MB React wrapper
+      document.querySelector("#content > div") || // generic first content div
+      document.querySelector("#content");
+      if (!anchor) return setTimeout(insertBar, 300);
+      anchor.insertBefore(bar, anchor.firstChild);
+    }
+    insertBar();
+  }
+  (function cleanupLocalStorage() {
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        if (k.startsWith("discogs-release-")) keysToRemove.push(k);
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    } catch (e) {
+    }
+  })();
+  function startImportRels(discogsUrl3, processTracklist, applyToTracks, createWorks) {
+    return getDiscogsReleaseData(discogsUrl3).then((json) => {
       let artistRoles = convertDiscogsArtistsToRolesRelationships(json.extraartists?.filter((artist) => !artist.tracks));
       if (!logs._releaseInfoAdded) {
         logs._releaseInfoAdded = true;
@@ -3985,7 +3987,7 @@
           uniqueCompanies.push(c);
         }
       });
-      const PREFLIGHT_CACHE_KEY = `discogs-preflight-${discogsUrl2}`;
+      const PREFLIGHT_CACHE_KEY = `discogs-preflight-${discogsUrl3}`;
       const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
       let cachedResults = null;
       try {
@@ -4042,7 +4044,7 @@
           isFromCache: !!cachedResults,
           cacheKey: PREFLIGHT_CACHE_KEY,
           onRefresh: () => {
-            _releaseDataCache.delete(discogsUrl2);
+            _releaseDataCache.delete(discogsUrl3);
             return runPreflight(true).then((freshResults) => {
               freshResults.forEach((r) => {
                 if (!r) return;
