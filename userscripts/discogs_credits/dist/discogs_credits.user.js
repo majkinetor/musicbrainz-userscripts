@@ -795,13 +795,19 @@ function buildAttributes(rawAttributes) {
         for (const v of Object.values(lat)) {
             if (v.name?.toLowerCase() === lower) return v;
         }
-        // Partial/root match — e.g. "drums" may be under a parent "drum kit" or vice versa
-        // Also handles MB storing "drum kit" while Discogs says "drums"
-        for (const v of Object.values(lat)) {
-            const vl = v.name?.toLowerCase() || '';
-            if (vl.includes(lower) || lower.includes(vl)) return v;
+        // Partial/root match — "drums" may be under a parent "drum kit" or
+        // vice versa. Require BOTH the needle and the candidate to be at
+        // least 4 chars to avoid the "co" → "concertina" class of false
+        // positive that triggered issue #3. Anything shorter that doesn't
+        // hit the exact-match arm above is treated as an unknown attribute.
+        if (lower.length >= 4) {
+            for (const v of Object.values(lat)) {
+                const vl = v.name?.toLowerCase() || '';
+                if (vl.length < 4) continue;
+                if (vl.includes(lower) || lower.includes(vl)) return v;
+            }
         }
-        addLogLine(`<span style="color:orange">WARN Attribute not found in MB: "${name}"</span>`);
+        addLogLine(`<span style="color:orange">WARN Attribute "${name}" not found in MB — dropping attribute but keeping the rel</span>`);
         return null;
     }
 
@@ -1089,21 +1095,66 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
     }
 
     // ── Helper: get recording entity for a Discogs track ─────────────────────
+    //
+    // Multi-medium guard (issue #4): on multi-medium releases, plain non-prefixed
+    // candidates would match the first medium's track at that position — silently
+    // collapsing disc-2 credits onto disc-1 recordings. We REQUIRE the candidate
+    // key to carry an explicit `<medPos>-` prefix when the release has >1 medium,
+    // except when Discogs already supplies one (e.g. "2-01"). For vinyl letter
+    // positions ("C1") without explicit medium, infer the disc from the side
+    // letter — A/B → disc 1, C/D → disc 2, etc.
+    //
+    // For single-medium releases, plain candidates are accepted (the only medium
+    // is unambiguous).
+    const isMultiMedium = positionToGid.size > 0
+        && [...positionToGid.keys()].some(k => /^[2-9]-/.test(k));
+
+    function inferDiscFromVinylSide(pos) {
+        const m = String(pos || '').match(/^([A-Z])\d+$/i);
+        if (!m) return null;
+        return Math.floor((m[1].toUpperCase().charCodeAt(0) - 65) / 2) + 1;
+    }
+
     function getRecordingEntity(track) {
-        const rawCandidates = [track.position, String(parseInt(track.position, 10)), track.number].filter(Boolean);
-        // For vinyl positions (A1, B2, C3, D4), also try medium-prefixed variants (1-A1, 2-C3)
-        // since WS2 returns compound keys for multi-medium releases
-        const candidates = [...rawCandidates];
-        for (const c of rawCandidates) {
-            if (/^[A-Z]/i.test(c)) {
-                // Try all medium prefixes — we don't know which medium this side belongs to
-                for (let m = 1; m <= 10; m++) {
-                    candidates.push(`${m}-${c}`);
-                }
-            }
+        // Discogs zero-pads compound positions ("1-02") while MB doesn't ("1-2").
+        // Strips one or more leading zeros after the dash. Issue #4 was originally
+        // diagnosed as a multi-medium collapse but the actual root cause was this
+        // zero-padding mismatch: lookup of "1-02" missed, fell through to
+        // `parseInt("1-02") = 1` → tried "1-1" → matched the wrong track.
+        const stripPad = s => String(s).replace(/-0+(\d)/g, '-$1');
+
+        const pos = track.position != null ? String(track.position) : '';
+        const num = track.number   != null ? String(track.number)   : '';
+
+        const compounds = new Set();
+        const plain     = new Set();
+
+        // Position handling
+        if (/^\d+-/.test(pos)) {
+            // Discogs already gave a compound. NOT a fallback for parseInt — for
+            // "1-02", parseInt returns 1 which is meaningless and produces a
+            // misleading "1-1" candidate that matches the WRONG recording.
+            compounds.add(pos);
+            const unpadded = stripPad(pos);
+            if (unpadded !== pos) compounds.add(unpadded);
+        } else if (pos) {
+            plain.add(pos);
+            const inferredDisc = inferDiscFromVinylSide(pos);
+            if (inferredDisc != null) compounds.add(`${inferredDisc}-${pos}`);
+            for (let m = 1; m <= 10; m++) compounds.add(`${m}-${pos}`);
         }
-        // 1. WS2-based GID lookup (most reliable — linked recordings)
-        for (const c of candidates) {
+
+        // Track number (some Discogs entries set both .position and .number)
+        if (num && num !== pos) {
+            plain.add(num);
+            for (let m = 1; m <= 10; m++) compounds.add(`${m}-${num}`);
+        }
+
+        // On multi-medium releases, plain candidates are ambiguous — skip them.
+        const tryKeys = isMultiMedium ? [...compounds] : [...plain, ...compounds];
+
+        // 1. WS2-based GID lookup
+        for (const c of tryKeys) {
             const gid = positionToGid.get(c);
             if (gid) {
                 const rec = recordingByGid.get(gid);
@@ -1112,12 +1163,12 @@ async function instantFillRelationships(companies, artistRoles, tracklistRels, a
                 return null;
             }
         }
-        // 2. Direct position lookup from editor state (unlinked tracks / no recordings yet)
-        for (const c of candidates) {
+        // 2. Direct position lookup from editor state
+        for (const c of tryKeys) {
             const rec = recordingByPosition.get(c);
             if (rec) return rec;
         }
-        // Nothing found — log what we have so the user can debug
+        // Nothing found
         if (trackCount > 0) {
             const ws2Keys   = positionToGid.size    ? [...positionToGid.keys()].join(', ')    : '(empty)';
             const stateKeys = recordingByPosition.size ? [...recordingByPosition.keys()].join(', ') : '(empty)';
@@ -1799,7 +1850,13 @@ function startImportRels(discogsUrl, processTracklist, applyToTracks, createWork
             })
                 .then(confirmedMap => {
                     capturedConfirmedMap = confirmedMap;
-                    // Cache every confirmed artist MBID into IDB
+                    // Bulk-write confirmed entries to IDB. Inline writes in
+                    // `setRowResolved` (review-table) and `checkOne` (preflight)
+                    // already persist as each entity resolves (issue #23), so
+                    // this is a final correctness sweep — and it MERGES into
+                    // any existing record so `mb_name` / `mb_disambiguation`
+                    // from the inline writes survive instead of being clobbered
+                    // by a 2-field `{discogs_id, mb_links}` put.
                     const cachePromises = [];
                     confirmedMap.forEach((mbUrl, resourceUrl) => {
                         const key = getDiscogsLinkKey(resourceUrl);
@@ -1808,7 +1865,17 @@ function startImportRels(discogsUrl, processTracklist, applyToTracks, createWork
                             try {
                                 const tx = db.transaction(['mblinks'], 'readwrite');
                                 tx.oncomplete = res; tx.onerror = res;
-                                tx.objectStore('mblinks').put({ discogs_id: key, mb_links: [mbUrl] });
+                                const store = tx.objectStore('mblinks');
+                                const readReq = store.get(key);
+                                readReq.onsuccess = () => {
+                                    const prev = readReq.result || {};
+                                    store.put({
+                                        ...prev,
+                                        discogs_id: key,
+                                        mb_links:   [mbUrl],
+                                    });
+                                };
+                                readReq.onerror = () => store.put({ discogs_id: key, mb_links: [mbUrl] });
                             } catch (e) { res(); }
                         }));
                     });
@@ -3264,7 +3331,11 @@ function getArtistRoles(artist) {
                 additionalAttributes.push('assistant');
             }
             if (/Co /.test(rolePart[1])) {
-                additionalAttributes.push('co');
+                // MB has no `co` attribute. The convention for "Co-X" is the
+                // `additional` attribute on the base role (issue #3). Without
+                // this remap MB rejects the commit ("Instrument with 'co'
+                // attribute blocks the commit").
+                additionalAttributes.push('additional');
             }
             if (/Executive/.test(rolePart[1])) {
                 additionalAttributes.push('executive');
@@ -3908,7 +3979,10 @@ const ENTITY_TYPE_MAP = {
     'Co-producer': {
         entityType: 'artist',
         linkType: 'producer',
-        attributes: ['co'],
+        // MB has no `co` attribute. The convention for "Co-X" is `additional`
+        // on the base role (issue #3). See also the matching remap in
+        // `getArtistRoles` for the regex /Co /.
+        attributes: ['additional'],
     },
     'Executive-Producer': {
         entityType: 'artist',
@@ -4168,13 +4242,14 @@ function makeClickEvent(element) {
     element.dispatchEvent(clickEvent);
 }
 
-// ⚠ KNOWN BUG (deferred to commit 4): this object has ~51 duplicate keys where an
-// early mapped entry (e.g. `Banjo: 'banjo'`) is silently overridden by a later
-// `Banjo: null` entry from the catch-all "unmapped" block at the bottom. Per JS
-// spec the later wins, so those instruments are currently being DROPPED at import
-// time. Documented as bug #5 in dev/ANALYSIS.md §4. Lint disabled here until the
-// data is cleaned in commit 4.
-/* eslint-disable no-dupe-keys */
+// Discogs instrument name → MB instrument attribute value. `null` means the
+// Discogs name isn't mapped (the script drops the instrument attribute but
+// keeps the relationship).
+//
+// Duplicate keys were silently dropping 51 mappings (issue #22) before being
+// cleaned up. ESLint's `no-dupe-keys` runs against this block now — keep it
+// that way; if you need to override a mapping, edit the existing entry rather
+// than adding a new line further down.
 const INSTRUMENTS = {
     Afoxé: null,
     Agogô: null,
@@ -4197,7 +4272,6 @@ const INSTRUMENTS = {
     'Acoustic Guitar': 'acoustic guitar',
     'Double Bass': 'double bass',
     'Goblet Drum': 'goblet drum',
-    'Bongos': 'bongo drum',
     'Maracas': 'maracas',
 
     'Electronics': 'electronics',
@@ -4246,7 +4320,6 @@ const INSTRUMENTS = {
     'Bassoon': 'bassoon',
     'Tuba': 'tuba',
     'French Horn': 'French horn',
-    'Xylophone': 'xylophone',
     'Marimba': 'marimba',
     'Melodica': 'melodica',
     'Sitar': 'sitar',
@@ -4267,13 +4340,11 @@ const INSTRUMENTS = {
     'Bass Drum': null,
     Bata: null,
     'Bell Tree': null,
-    Bells: 'Bell',
     Bendir: null,
     Bodhrán: null,
     'Body Percussion': null,
     Bombo: null,
     Bones: null,
-    Bongos: null,
     Buhay: null,
     Buk: null,
     Cabasa: null,
@@ -4286,9 +4357,6 @@ const INSTRUMENTS = {
     "Chak'chas": null,
     Chinchín: null,
     Ching: null,
-    Claves: null,
-    Congas: null,
-    Cowbell: null,
     Cymbal: null,
     Daf: null,
     Davul: null,
@@ -4334,12 +4402,10 @@ const INSTRUMENTS = {
     "Lion's Roar": null,
     Madal: null,
     Mallets: null,
-    Maracas: null,
     'Monkey stick': null,
     Mridangam: null,
     Pakhavaj: null,
     Pandeiro: null,
-    Percussion: null,
     Rainstick: null,
     Ratchet: null,
     Rattle: null,
@@ -4347,7 +4413,6 @@ const INSTRUMENTS = {
     Repinique: null,
     Rototoms: null,
     Scraper: null,
-    Shaker: null,
     Shakubyoshi: null,
     Shekere: null,
     Shuitar: null,
@@ -4360,26 +4425,22 @@ const INSTRUMENTS = {
     'Stomp Box': null,
     Surdo: null,
     Surigane: null,
-    Tabla: null,
     Taiko: null,
     'Talking Drum': null,
     'Tam-tam': null,
     Tambora: null,
     Tamboril: null,
     Tamborim: null,
-    Tambourine: null,
     'Tan-Tan': null,
     'Tap Dance': null,
     'Tar (Drum)': null,
     'Temple Bells': null,
     'Temple Block': null,
     Thavil: null,
-    Timbales: null,
     Timpani: null,
     'Tom Tom': null,
     Triangle: null,
     Tüngür: null,
-    Udu: null,
     Vibraslap: null,
     Washboard: null,
     Waterphone: null,
@@ -4390,14 +4451,10 @@ const INSTRUMENTS = {
     Balafon: null,
     Boomwhacker: null,
     Carillon: null,
-    Celesta: null,
-    Chimes: null,
     Crotales: null,
-    Glockenspiel: null,
     Guitaret: null,
     Kalimba: null,
     Lamellophone: null,
-    Marimba: null,
     Marimbula: null,
     Metallophone: null,
     'Musical Box': null,
@@ -4409,8 +4466,6 @@ const INSTRUMENTS = {
     'Tubular Bells': null,
     Tun: null,
     Txalaparta: null,
-    Vibraphone: null,
-    Xylophone: null,
     'Baby Grand Piano': null,
     Chamberlin: null,
     Claviorgan: null,
@@ -4421,22 +4476,14 @@ const INSTRUMENTS = {
     'Electric Organ': null,
     Fortepiano: null,
     'Grand Piano': null,
-    Harmonium: null,
-    Harpsichord: null,
-    Keyboards: 'Keyboard',
     Mellotron: null,
-    Melodica: null,
     Omnichord: null,
     'Ondes Martenot': null,
-    Organ: null,
     'Parlour Grand Piano': null,
     Pedalboard: null,
-    Piano: null,
     'Player Piano': null,
     Regal: null,
     Stylophone: null,
-    Synth: 'Synthesizer',
-    Synthesizer: null,
     'Tangent Piano': null,
     'Toy Piano': null,
     'Upright Piano': null,
@@ -4458,7 +4505,6 @@ const INSTRUMENTS = {
     Bandura: null,
     Bandurria: null,
     Banhu: null,
-    Banjo: null,
     Banjolin: null,
     'Baroque Guitar': null,
     Baryton: null,
@@ -4472,7 +4518,6 @@ const INSTRUMENTS = {
     'Bulbul Tarang': null,
     Byzaanchi: null,
     Cavaquinho: null,
-    Cello: null,
     'Cello Banjo': null,
     Changi: null,
     Chanzy: null,
@@ -4536,7 +4581,6 @@ const INSTRUMENTS = {
     Haegum: null,
     Halldorophone: null,
     Hardingfele: null,
-    Harp: null,
     'Harp Guitar': null,
     Hummel: null,
     Huqin: null,
@@ -4554,13 +4598,11 @@ const INSTRUMENTS = {
     Kirar: null,
     Kobyz: null,
     Kokyu: null,
-    Kora: null,
     Koto: null,
     Krar: null,
     Langeleik: null,
     Laouto: null,
     'Lap Steel Guitar': null,
-    Laúd: null,
     Lavta: null,
     'Lead Guitar': null,
     Lira: null,
@@ -4573,7 +4615,6 @@ const INSTRUMENTS = {
     Mandocello: null,
     Mandoguitar: null,
     Mandola: null,
-    Mandolin: null,
     'Mandolin Banjo': null,
     Mandolincello: null,
     Marxophone: null,
@@ -4585,7 +4626,6 @@ const INSTRUMENTS = {
     Ngoni: null,
     Nyckelharpa: null,
     'Open-Back Banjo': null,
-    Oud: null,
     Outi: null,
     Panduri: null,
     'Pedal Steel Guitar': null,
@@ -4617,10 +4657,8 @@ const INSTRUMENTS = {
     'Shahi Baaja': null,
     Shamisen: null,
     Sintir: null,
-    Sitar: null,
     Spinet: null,
     'Steel Guitar': null,
-    Strings: null,
     'Stroh Violin': null,
     Strumstick: null,
     Surbahar: null,
@@ -4645,7 +4683,6 @@ const INSTRUMENTS = {
     'Tromba Marina': null,
     'Twelve-String Guitar': null,
     Tzouras: null,
-    Ukulele: null,
     'Ukulele Banjo': null,
     Ütőgardon: null,
     Valiha: null,
@@ -4653,14 +4690,12 @@ const INSTRUMENTS = {
     Vielle: null,
     Vihuela: null,
     Viol: null,
-    Viola: null,
     'Viola Caipira': null,
     "Viola d'Amore": null,
     'Viola da Gamba': null,
     'Viola de Cocho': null,
     'Viola Kontra': null,
     'Viola Nordestina': null,
-    Violin: null,
     'Violino Piccolo': null,
     Violoncello: null,
     Violone: null,
@@ -4670,7 +4705,6 @@ const INSTRUMENTS = {
     Yanggeum: null,
     Zither: null,
     Zongora: null,
-    Accordion: null,
     Algoza: null,
     Alphorn: null,
     'Alto Clarinet': null,
@@ -4689,7 +4723,6 @@ const INSTRUMENTS = {
     'Bass Trumpet': null,
     'Bass Tuba': null,
     'Basset Horn': null,
-    Bassoon: null,
     Bawu: null,
     Bayan: null,
     Bellowphone: null,
@@ -4705,7 +4738,6 @@ const INSTRUMENTS = {
     Chanter: null,
     Charamel: null,
     Chirimia: null,
-    Clarinet: null,
     Clarion: null,
     Claviola: null,
     Comb: null,
@@ -4717,13 +4749,11 @@ const INSTRUMENTS = {
     'Contrabass Saxophone': null,
     Contrabassoon: null,
     'Cor Anglais': null,
-    Cornet: null,
     Cornett: null,
     Cromorne: null,
     Crumhorn: null,
     Daegeum: null,
     Danso: null,
-    Didgeridoo: null,
     'Dili Tuiduk': null,
     Dizi: null,
     Drone: null,
@@ -4737,10 +4767,8 @@ const INSTRUMENTS = {
     Fife: null,
     Flageolet: null,
     Flugabone: null,
-    Flugelhorn: null,
     Fluier: null,
     Flumpet: null,
-    Flute: null,
     "Flute D'Amour": null,
     Friscaletto: null,
     Fujara: null,
@@ -4748,7 +4776,6 @@ const INSTRUMENTS = {
     Gemshorn: null,
     Gudastviri: null,
     Harmet: null,
-    Harmonica: null,
     Heckelphone: null,
     Helicon: null,
     Hichiriki: null,
@@ -4784,7 +4811,6 @@ const INSTRUMENTS = {
     Ney: null,
     'Northumbrian Pipes': null,
     'Nose Flute': null,
-    Oboe: null,
     "Oboe d'Amore": null,
     'Oboe Da Caccia': null,
     Ocarina: null,
@@ -4814,7 +4840,6 @@ const INSTRUMENTS = {
     Sarrusophone: null,
     Saxello: null,
     Saxhorn: null,
-    Saxophone: null,
     Schwyzerörgeli: null,
     Serpent: null,
     Shakuhachi: null,
@@ -4846,9 +4871,6 @@ const INSTRUMENTS = {
     'Ti-tse': null,
     'Tin Whistle': null,
     Tonette: null,
-    Trombone: null,
-    Trumpet: null,
-    Tuba: null,
     Txirula: null,
     Txistu: null,
     'Uilleann Pipes': null,
@@ -4868,7 +4890,6 @@ const INSTRUMENTS = {
     Computer: null,
     'Drum Machine': null,
     Effects: null,
-    Electronics: null,
     Groovebox: null,
     Loops: null,
     'MIDI Controller': null,
@@ -4880,9 +4901,7 @@ const INSTRUMENTS = {
     Talkbox: null,
     Tannerin: null,
     Tape: null,
-    Theremin: null,
     Turntables: null,
-    Vocoder: null,
     'Accompanied By': null,
     'Audio Generator': null,
     'Backing Band': null,
@@ -4899,7 +4918,6 @@ const INSTRUMENTS = {
     Homus: null,
     Instruments: null,
     "Jew's Harp": null,
-    Mbira: null,
     Morchang: null,
     Musician: null,
     Orchestra: null,
@@ -4914,7 +4932,6 @@ const INSTRUMENTS = {
     'Wind Chimes': null,
     'Wobble Board': null,
 };
-/* eslint-enable no-dupe-keys */
 
 const WORK_ONLY_ARTIST_RELS = [
     'writer',

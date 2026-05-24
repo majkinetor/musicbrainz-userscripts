@@ -60,7 +60,9 @@ function matches(fixture, i) {
         if (!(fixture.url.includes(only) || String(i) === only)) return false;
     }
     if (nameFilter) {
-        if (!fixture.name.toLowerCase().includes(nameFilter.toLowerCase())) return false;
+        // Strip diacritics so `--name=ethiopiques` matches "Éthiopiques 1".
+        const fold = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+        if (!fold(fixture.name).includes(fold(nameFilter))) return false;
     }
     if (wantedTags) {
         // Accept whitespace or comma as the per-fixture tag separator so authors

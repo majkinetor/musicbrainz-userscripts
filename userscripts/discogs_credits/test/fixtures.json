@@ -46,7 +46,17 @@
     },
     {
         "name": "Radio Utopia 4",
-        "url": "https://musicbrainz.org/release/8364ceba-65dd-4259-a84f-20c5e3c920e7",
+        "url":  "https://musicbrainz.org/release/8364ceba-65dd-4259-a84f-20c5e3c920e7",
         "tags": "state-full compilation bug-mastering"
+    },
+    {
+        "name": "Ethiopiques 1",
+        "url":  "https://musicbrainz.org/release/bf12d998-2e5f-4ee0-aa7f-b00d3937d5ce",
+        "tags": "state-low compilation bug-co-attr"
+    },
+    {
+        "name": "La Collection Chapter 2",
+        "url":  "https://musicbrainz.org/release/416b791d-6fe5-3929-bfc3-138a80ac9f77",
+        "tags": "state-low multi-medium bug-multi-medium"
     }
 ]
