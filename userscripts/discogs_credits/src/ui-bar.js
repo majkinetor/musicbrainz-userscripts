@@ -15,7 +15,7 @@
 // entries from old versions on every page load (cheap, idempotent).
 
 import { DISCOGS_LOGO_URL }              from './constants.js';
-import { db }                             from './storage.js';
+import { writeIdbRecord }                 from './storage.js';
 import {
     log,
     setLogContainer,
@@ -701,32 +701,24 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                 .then(confirmedMap => {
                     capturedConfirmedMap = confirmedMap;
                     // Bulk-write confirmed entries to IDB. Inline writes in
-                    // `setRowResolved` (review-table) and `checkOne` (preflight)
-                    // already persist as each entity resolves (issue #23), so
-                    // this is a final correctness sweep — and it MERGES into
-                    // any existing record so `mb_name` / `mb_disambiguation`
-                    // from the inline writes survive instead of being clobbered
-                    // by a 2-field `{discogs_id, mb_links}` put.
+                    // `setRowResolved` (review-table) and `resolveEntity`
+                    // (preflight) already persist as each entity resolves
+                    // (issue #23), so this is a final correctness sweep.
+                    // `writeIdbRecord` merges, so name/disambiguation set by
+                    // the inline writes survive.
                     const cachePromises = [];
                     confirmedMap.forEach((mbUrl, resourceUrl) => {
                         const key = parseDiscogsUrl(resourceUrl)?.key;
                         if (!key) return;
-                        cachePromises.push(new Promise(res => {
-                            try {
-                                const tx = db.transaction(['mblinks'], 'readwrite');
-                                tx.oncomplete = res; tx.onerror = res;
-                                const store = tx.objectStore('mblinks');
-                                const readReq = store.get(key);
-                                readReq.onsuccess = () => {
-                                    const prev = readReq.result || {};
-                                    store.put({
-                                        ...prev,
-                                        discogs_id: key,
-                                        mb_links:   [mbUrl],
-                                    });
-                                };
-                                readReq.onerror = () => store.put({ discogs_id: key, mb_links: [mbUrl] });
-                            } catch (e) { res(); }
+                        // mbUrl is `//musicbrainz.org/<entityType>/<mbid>` —
+                        // extract both halves so the new schema's `mbid` and
+                        // `entityType` fields stay populated.
+                        const m = mbUrl.match(/\/(artist|label|place)\/([a-f0-9-]+)/);
+                        if (!m) return;
+                        cachePromises.push(writeIdbRecord(key, {
+                            mbid:       m[2],
+                            entityType: m[1],
+                            // No resolvedVia change — the inline write owns it.
                         }));
                     });
                     return Promise.all(cachePromises);

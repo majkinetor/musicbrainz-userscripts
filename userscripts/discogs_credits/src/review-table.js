@@ -4,7 +4,7 @@
 // `<ul.logs>` element wired by the UI bar; never starts the import until
 // the user explicitly clicks "Start import".
 
-import { db, readIdbRecord }              from './storage.js';
+import { readIdbRecord, writeIdbRecord }   from './storage.js';
 import { mbThrottle, fetchWithRetry }      from './api-mb.js';
 import { parseDiscogsUrl }                 from './api-discogs.js';
 import { guessSortName }                   from './mappers.js';
@@ -38,8 +38,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         try {
             const idbKey = parseDiscogsUrl(rUrl)?.key;
             const rec = await readIdbRecord(idbKey);
-            if (rec?.mb_name) {
-                _preloadedNames.set(rUrl, { name: rec.mb_name, dis: rec.mb_disambiguation || '' });
+            if (rec?.name) {
+                _preloadedNames.set(rUrl, { name: rec.name, dis: rec.disambiguation || '' });
                 continue;
             }
             const mbid = (r.mbUrl || '').split('/').pop().replace(/[^a-f0-9-]/g, '').substring(0, 36);
@@ -47,12 +47,18 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const et = r.entityType || 'artist';
             const data = await mbThrottle.fetchJson(`https://musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
             if (data?.name) {
-                    _preloadedNames.set(rUrl, { name: data.name, dis: data.disambiguation || '' });
-                    if (idbKey && db) try {
-                        db.transaction(['mblinks'], 'readwrite').objectStore('mblinks').put({
-                            discogs_id: idbKey, mb_links: [r.mbUrl],
-                            mb_name: data.name, mb_disambiguation: data.disambiguation || '' });
-                    } catch(e) {}
+                _preloadedNames.set(rUrl, { name: data.name, dis: data.disambiguation || '' });
+                if (idbKey) {
+                    await writeIdbRecord(idbKey, {
+                        mbid,
+                        entityType:     et,
+                        name:           data.name,
+                        disambiguation: data.disambiguation || '',
+                        // No resolvedVia change — this is just a name-display
+                        // populate; whatever set the cached mbid stays the
+                        // source of truth for `resolvedVia`.
+                    });
+                }
             }
             // No artificial gap — `mbThrottle` paces and backs off on 503.
         } catch(e) {}
@@ -313,11 +319,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', confirmed: true });
                 // Persist to IDB immediately so selection survives even without clicking Start import
                 const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
-                if (_idbKey && db) {
-                    try {
-                        const _tx = db.transaction(['mblinks'], 'readwrite');
-                        _tx.objectStore('mblinks').put({ discogs_id: _idbKey, mb_links: [mbUrl], mb_name: a.name, mb_disambiguation: a.disambiguation || '' });
-                    } catch(e) {}
+                if (_idbKey) {
+                    writeIdbRecord(_idbKey, {
+                        mbid:           a.id,
+                        entityType,
+                        name:           a.name,
+                        disambiguation: a.disambiguation || '',
+                        resolvedVia:    'user',  // user picked this in the review table
+                    });
                 }
 
                 tr.style.background = '#f0fff0';

@@ -6,7 +6,7 @@
 
 import { log }                  from './log.js';
 import { pageWindow }                   from './constants.js';
-import { db }                            from './storage.js';
+import { readIdbRecord }                  from './storage.js';
 import { parseDiscogsUrl }               from './api-discogs.js';
 import {
     mbThrottle,
@@ -249,20 +249,15 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         return null;
     }
 
-    // ── Helper: resolve MBID from IDB cache for a Discogs entity ─────────────
+    // ── Helper: resolve MB URL from IDB cache for a Discogs entity ───────────
     async function getMbidForEntity(entity, entityType) {
-        return new Promise((resolve, reject) => {
-            const key = parseDiscogsUrl(entity.resource_url)?.key;
-            if (!key) return reject(`No Discogs key for ${entity.name}`);
-            const tx = db.transaction(['mblinks'], 'readonly');
-            const req = tx.objectStore('mblinks').get(key);
-            req.onsuccess = () => {
-                const mbUrl = req.result?.mb_links?.[0];
-                if (mbUrl) resolve(mbUrl);
-                else reject(`${entity.name} not in IDB cache — run pre-flight check first`);
-            };
-            req.onerror = () => reject(`IDB error for ${entity.name}`);
-        });
+        const key = parseDiscogsUrl(entity.resource_url)?.key;
+        if (!key) throw new Error(`No Discogs key for ${entity.name}`);
+        const rec = await readIdbRecord(key);
+        if (!rec?.mbUrl) {
+            throw new Error(`${entity.name} not in IDB cache — run pre-flight check first`);
+        }
+        return rec.mbUrl;
     }
 
     // ── Helper: does a matching rel already exist on the source entity? ─────
