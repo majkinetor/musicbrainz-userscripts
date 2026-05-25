@@ -413,6 +413,27 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         if (urlCheckCached !== null) _urlCheckSessionCache.set(urlCheckCacheKey, urlCheckCached);
                     }
 
+                    // Re-runs the MB URL-relation check for THIS row, bypassing
+                    // both session and localStorage caches. Used by the
+                    // "Add Discogs link" focus-return handler so the button
+                    // updates to "\u2713 already linked" once the user has actually
+                    // submitted the link edit on the other tab (issue #6).
+                    function recheckUrlBypassCache() {
+                        _urlCheckSessionCache.delete(urlCheckCacheKey);
+                        try { localStorage.removeItem(urlCheckLsKey); } catch(e) {}
+                        queuedUrlCheck(() =>
+                            fetchWithRetry(`//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`)
+                                .then(json => {
+                                    const linkedIds = (json.relations || []).filter(r => r[entityType]).map(r => r[entityType].id);
+                                    const result = linkedIds.includes(selected.id) ? 'linked' : linkedIds.length > 0 ? 'other' : 'none';
+                                    _urlCheckSessionCache.set(urlCheckCacheKey, result);
+                                    try { localStorage.setItem(urlCheckLsKey, JSON.stringify({ date: urlCheckToday, result })); } catch(e) {}
+                                    applyUrlCheckResult(result);
+                                })
+                                .catch(() => applyUrlCheckResult('none'))
+                        );
+                    }
+
                     function applyUrlCheckResult(result) {
                         if (result === 'linked') {
                             linkSlot.textContent = '\u2713 Discogs URL already linked';
@@ -422,6 +443,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             linkSlot.style.color = '#c80';
                         } else {
                             linkSlot.textContent = '';
+                            linkSlot.style.color = '';
                             const addLinkBtn = document.createElement('button');
                             addLinkBtn.textContent = 'Add Discogs link \u2197';
                             addLinkBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;';
@@ -430,6 +452,26 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                 const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
                                 const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
                                 window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, '_blank', 'noopener,noreferrer');
+                                // Replace button with a "pending verification" badge.
+                                // When the user comes back to this tab, we re-run the
+                                // URL check (cache-bypassed) and the row flips to
+                                // "\u2713 Discogs URL already linked" \u2014 or, if the user
+                                // didn't actually submit the edit, the button is
+                                // restored. Issue #6: previously the button just sat
+                                // there forever, not reflecting the link.
+                                linkSlot.innerHTML = '';
+                                const pending = document.createElement('span');
+                                pending.textContent = '\u2026 verifying on return';
+                                pending.style.cssText = 'font-size:0.8rem;color:#888;font-style:italic;';
+                                linkSlot.appendChild(pending);
+                                const onReturn = () => {
+                                    if (document.visibilityState !== 'visible') return;
+                                    document.removeEventListener('visibilitychange', onReturn);
+                                    window.removeEventListener('focus', onReturn);
+                                    recheckUrlBypassCache();
+                                };
+                                document.addEventListener('visibilitychange', onReturn);
+                                window.addEventListener('focus', onReturn);
                             });
                             linkSlot.appendChild(addLinkBtn);
                         }
