@@ -17,6 +17,7 @@
 1. Some instruments silently dropped due to duplicate keys in the map ([#22](https://github.com/majkinetor/musicbrainz-userscripts/issues/22))
 1. Discogs role 'Accompanied By' mapped to 'instrument' link type instead of 'performer' ([#26](https://github.com/majkinetor/musicbrainz-userscripts/issues/26))
 1. Slow speed of entity lookup ([#30](https://github.com/majkinetor/musicbrainz-userscripts/issues/30))
+1. Rattle instrument mapped to shaken idiophone instead of ankle rattlers ([#1](https://github.com/majkinetor/musicbrainz-userscripts/pull/1), thanks @musoke)
 
 ## 2026.5.22
 
