@@ -364,270 +364,279 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         added++;
     }
 
-    // ── Companies / labels / places ───────────────────────────────────────────
-    for (const company of companies) {
-        const details = ENTITY_TYPE_MAP[company.entity_type_name];
-        if (!details) continue;
-        // Use the entity type actually found in MB (e.g. 'label' instead of 'place')
-        const resolvedEt = resolvedEntityTypes.get(company.resource_url) || details.entityType;
-        // If resolved type doesn't match mapping type, check if the link is valid for that type
-        if (resolvedEt !== details.entityType) {
-            // MB only supports certain link types per entity type combination.
-            // All place-mapped link types are place-only and cannot be used with labels.
-            if (details.entityType === 'place' && resolvedEt === 'label') {
-                log.warn(`Skipped ${company.name}: MB has no "${details.linkType}" relationship for labels (only places). Add manually if needed.`);
-                skipped++; tickProgress(); continue;
-            }
-        }
-        // Resolution must come from the review-table phase: confirmedMap → IDB cache.
-        // The old `getMbId` (network) fallback added ~1-3s per unresolved entity (bug
-        // majkinetor/musicbrainz-userscripts#8) and was redundant — preflight already
-        // tried the same `/ws/2/url` lookup. Unresolved here = unresolved by user.
-        let mbUrl;
-        try { mbUrl = await getMbidForEntity(company, resolvedEt); }
-        catch(e) {
-            log.warn(`Skipped ${company.name} — not resolved in review`);
-            skipped++; tickProgress(); continue;
-        }
-        const et = resolvedEt;
-        const [t0, t1] = et <= 'release' ? [et, 'release'] : ['release', et];
-        await processOne(releaseEntity, t0, t1, details.linkType, mbUrl, [], '');
-        tickProgress();
-    }
+    // ── Children: each named for the section it owns, called in order at the
+    //              bottom of this function. They share the enclosing closure
+    //              (counters, recordingByGid, processOne, etc.).
 
-    // ── Release-level artist roles ────────────────────────────────────────────
-    // When "move to tracks" is on, RECORDING_LINK_TYPES roles are skipped here
-    // and dispatched only to recordings below — keeping them off the release.
-    for (const role of artistRoles) {
-        if (applyToTracks && RECORDING_LINK_TYPES.has(role.linkType)) continue;
-        // Work-only rels (writer, composer, etc.) go to works, not the release
-        if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-
-        // Try confirmedMap first (handles artists with no resource_url)
-        const _artKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
-        let mbUrl = confirmedMap.get(_artKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
-        // Name-based fallback: search all confirmedMap keys for _nourl_ match
-        if (!mbUrl) {
-            for (const [k, v] of confirmedMap) {
-                if (k === `_nourl_${role.artist.name}`) { mbUrl = v; break; }
+    async function dispatchCompanies() {
+        for (const company of companies) {
+            const details = ENTITY_TYPE_MAP[company.entity_type_name];
+            if (!details) continue;
+            // Use the entity type actually found in MB (e.g. 'label' instead of 'place')
+            const resolvedEt = resolvedEntityTypes.get(company.resource_url) || details.entityType;
+            // If resolved type doesn't match mapping type, check if the link is valid for that type
+            if (resolvedEt !== details.entityType) {
+                // MB only supports certain link types per entity type combination.
+                // All place-mapped link types are place-only and cannot be used with labels.
+                if (details.entityType === 'place' && resolvedEt === 'label') {
+                    log.warn(`Skipped ${company.name}: MB has no "${details.linkType}" relationship for labels (only places). Add manually if needed.`);
+                    skipped++; tickProgress(); continue;
+                }
             }
-        }
-        if (!mbUrl && !role.artist.resource_url) {
-            // No Discogs page, not in confirmedMap — skip with clear message
-            log.warn(`Skipped ${role.artist.name} (${role.linkType}) — no Discogs page, not confirmed in review`);
-            skipped++; tickProgress(); continue;
-        }
-        if (!mbUrl) {
-            // See bug #8 — no network fallback; unresolved = skip immediately.
-            try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
+            // Resolution must come from the review-table phase: confirmedMap → IDB cache.
+            // The old `getMbId` (network) fallback added ~1-3s per unresolved entity (bug
+            // majkinetor/musicbrainz-userscripts#8) and was redundant — preflight already
+            // tried the same `/ws/2/url` lookup. Unresolved here = unresolved by user.
+            let mbUrl;
+            try { mbUrl = await getMbidForEntity(company, resolvedEt); }
             catch(e) {
-                log.warn(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
+                log.warn(`Skipped ${company.name} — not resolved in review`);
                 skipped++; tickProgress(); continue;
             }
+            const et = resolvedEt;
+            const [t0, t1] = et <= 'release' ? [et, 'release'] : ['release', et];
+            await processOne(releaseEntity, t0, t1, details.linkType, mbUrl, [], '');
+            tickProgress();
         }
-        const credit = role.artist.anv?.trim() || role.artist.name;
-        await processOne(releaseEntity, 'artist', 'release', role.linkType, mbUrl, role.attributes || [], credit);
-        tickProgress();
     }
 
-    // ── Apply release-level artist credits to all recordings ────────────────
-    if (applyToTracks && recordingByGid.size > 0) {
-        // Exclude work-only roles — those go to works via the works section below
-        const applicable = artistRoles.filter(role => RECORDING_LINK_TYPES.has(role.linkType) && !WORK_ONLY_ARTIST_RELS.includes(role.linkType));
-        if (applicable.length > 0) {
-            log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)…`);
-            for (const role of applicable) {
-                let mbUrl;
-                // See bug #8 — no network fallback.
+    async function dispatchReleaseArtists() {
+        // When "move to tracks" is on, RECORDING_LINK_TYPES roles are skipped here
+        // and dispatched only to recordings below — keeping them off the release.
+        for (const role of artistRoles) {
+            if (applyToTracks && RECORDING_LINK_TYPES.has(role.linkType)) continue;
+            // Work-only rels (writer, composer, etc.) go to works, not the release
+            if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+
+            // Try confirmedMap first (handles artists with no resource_url)
+            const _artKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
+            let mbUrl = confirmedMap.get(_artKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
+            // Name-based fallback: search all confirmedMap keys for _nourl_ match
+            if (!mbUrl) {
+                for (const [k, v] of confirmedMap) {
+                    if (k === `_nourl_${role.artist.name}`) { mbUrl = v; break; }
+                }
+            }
+            if (!mbUrl && !role.artist.resource_url) {
+                // No Discogs page, not in confirmedMap — skip with clear message
+                log.warn(`Skipped ${role.artist.name} (${role.linkType}) — no Discogs page, not confirmed in review`);
+                skipped++; tickProgress(); continue;
+            }
+            if (!mbUrl) {
+                // See bug #8 — no network fallback; unresolved = skip immediately.
                 try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
                 catch(e) {
-                    log.warn(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review`);
-                    continue;
-                }
-                const credit = role.artist.anv?.trim() || role.artist.name;
-                for (const recEntity of recordingByGid.values()) {
-                    await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || '*');
+                    log.warn(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
+                    skipped++; tickProgress(); continue;
                 }
             }
+            const credit = role.artist.anv?.trim() || role.artist.name;
+            await processOne(releaseEntity, 'artist', 'release', role.linkType, mbUrl, role.attributes || [], credit);
+            tickProgress();
         }
     }
 
-    // ── Work-only tracklist relationships (composer, lyricist, arranger etc.) ──
-    // recordingOfLinkTypeId: the "recording of" / "performance" link type
-    const recordingOfLinkTypeId = resolveLinkTypeId('performance', 'recording', 'work');
-
-    // Collect work-only tracklist rels grouped by recording GID
-    const workOnlyByGid = new Map(); // recGid → [{ role, recEntity }, ...]
-    for (const role of tracklistRels) {
-        if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-        const recEntity = getRecordingEntity(role.track);
-        if (!recEntity) {
-            log.error(`Work-only rel for track ${role.track.position} "${role.track.title}" — no recording found, skipped`);
-            failed++;
-            continue;
-        }
-        if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
-        workOnlyByGid.get(recEntity.gid).push({ role, recEntity });
-    }
-
-    // Release-level work-only roles apply to all recordings — only when createWorks is on
-    if (createWorks) {
-        for (const role of artistRoles) {
-            if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-            for (const recEntity of recordingByGid.values()) {
-                const syntheticRole = { ...role, track: { position: '', title: recEntity.name || '' } };
-                if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
-                workOnlyByGid.get(recEntity.gid).push({ role: syntheticRole, recEntity });
-            }
-        }
-    }
-
-    // When createWorks is ON, also ensure all recordings have a work —
-    // even those with no work-only artist relationships.
-    if (createWorks && recordingOfLinkTypeId) {
-        for (const recEntity of recordingByGid.values()) {
-            if (!workOnlyByGid.has(recEntity.gid)) {
-                workOnlyByGid.set(recEntity.gid, []); // empty roles — work creation only
-            }
-        }
-    }
-
-    if (workOnlyByGid.size > 0) {
-        if (!recordingOfLinkTypeId) {
-            log.error('Could not resolve "performance" link type — work processing skipped');
-        } else {
-            log.info(`Processing work relationships for ${workOnlyByGid.size} recording(s)…`);
-
-            // Use editor state relatedWorks (built during recording map phase above) — no extra fetch needed
-            const existingWorkByRecGid = editorWorkByRecGid;
-            log.info(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
-
-            // Check editor state only for relationships dispatched in THIS session
-            function getWorkFromEditorState(recEntity) {
-                try {
-                    for (const rel of MB.tree.iterate(recEntity.relationships)) {
-                        if (rel._status === 1 && rel.linkTypeID === recordingOfLinkTypeId) {
-                            return rel.entity0?.entityType === 'work' ? rel.entity0 : rel.entity1;
-                        }
-                    }
-                } catch(e) {}
-                return null;
-            }
-
-            for (const [recGid, entries] of workOnlyByGid) {
-                // entries may be empty when createWorks adds all recordings (no work-only roles)
-                const recEntity  = entries[0]?.recEntity  ?? recordingByGid.get(recGid);
-                const trackTitle = entries[0]?.role.track.title    ?? recEntity?.name ?? recGid;
-                const trackPos   = entries[0]?.role.track.position ?? '';
-                if (!recEntity) continue;
-
-                // Check for pre-existing works using MB's own relatedWorks field on the track wrapper
-                // (mirrors MB's batch-create-works logic: `if (relatedWorks.size !== 0) continue`)
-                const hasExistingWork = editorWorkByRecGid.has(recGid);
-
-                let workEntity = null;
-                if (hasExistingWork) {
-                    workEntity = editorWorkByRecGid.get(recGid);
-                    const wid = workEntity.gid || workEntity.id;
-                    log.info(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || 'existing'}) — skipping creation`);
-                    if (!workEntity.gid && !workEntity.id) continue; // can't use this entity
-                }
-
-                // Also check for works dispatched in this session (newly created ones)
-                if (!workEntity) workEntity = getWorkFromEditorState(recEntity);
-
-                // 3. No work found
-                if (!workEntity) {
-                    if (!createWorks) {
-                        // Log as error — work-only rels cannot be applied without a work
-                        for (const { role } of entries) {
-                            log.error(`Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) — enable "Create missing works" or add work manually`);
-                            failed++;
-                        }
-                        continue;
-                    }
-
-                    // Use MB's own batch-create-works mechanism:
-                    // 1. Build work object matching MB's createWorkObject() output
-                    // 2. Register it via mergeLinkedEntities so the editor knows about it
-                    // 3. Dispatch the recording→work relationship
-                    const MB = pageWindow.MB;
-                    const newWorkId = re.getRelationshipStateId(); // negative unique ID
-                    workEntity = {
-                        _fromBatchCreateWorksDialog: true,
-                        attributes: [],
-                        comment: '',
-                        editsPending: false,
-                        entityType: 'work',
-                        gid: null,
-                        id: newWorkId,
-                        iswcs: [],
-                        languages: [],
-                        name: trackTitle,
-                        typeID: null,
-                    };
-                    // Register the new work entity in MB's linked entities store
-                    // (mirrors what MB does before dispatching batch-created works)
-                    if (MB.mergeLinkedEntities) {
-                        MB.mergeLinkedEntities({ work: { [newWorkId]: workEntity } });
-                    }
-                    // Dispatch recording→work relationship using MB's own relationship structure
-                    re.dispatch({
-                        type: 'update-relationship-state',
-                        sourceEntity: recEntity,
-                        batchSelectionCount: null,
-                        creditsToChangeForSource: '',
-                        creditsToChangeForTarget: '',
-                        oldRelationshipState: null,
-                        newRelationshipState: {
-                            _lineage: ['batch-created work'],
-                            _original: null,
-                            _status: 1,
-                            attributes: null,
-                            begin_date: null,
-                            editsPending: false,
-                            end_date: null,
-                            ended: false,
-                            entity0: recEntity,
-                            entity0_credit: '',
-                            entity1: workEntity,
-                            entity1_credit: '',
-                            id: re.getRelationshipStateId(),
-                            linkOrder: 0,
-                            linkTypeID: recordingOfLinkTypeId,
-                        },
-                    });
-                    log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
-                    added++;
-                    tickProgress();
-                    // Re-read from editor state so subsequent artist→work dispatches see the live entity
-                    workEntity = getWorkFromEditorState(recEntity) || workEntity;
-                }
-
-                // Apply all work-only artist rels to the work
-                for (const { role } of entries) {
+    async function dispatchTracklist() {
+        // Apply release-level artist credits to all recordings (only when applyToTracks is on).
+        if (applyToTracks && recordingByGid.size > 0) {
+            // Exclude work-only roles — those go to works via dispatchWorks below.
+            const applicable = artistRoles.filter(role => RECORDING_LINK_TYPES.has(role.linkType) && !WORK_ONLY_ARTIST_RELS.includes(role.linkType));
+            if (applicable.length > 0) {
+                log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)…`);
+                for (const role of applicable) {
                     let mbUrl;
                     // See bug #8 — no network fallback.
                     try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
                     catch(e) {
-                        log.warn(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
+                        log.warn(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review`);
                         continue;
                     }
                     const credit = role.artist.anv?.trim() || role.artist.name;
-                    if (workEntity.gid) {
-                        await processOne(workEntity, 'artist', 'work', role.linkType, mbUrl, role.attributes || [], credit, trackPos || (entries[0]?.role?.track?.position));
-                    } else {
-                        // New work (no MBID yet) — dispatch directly with the provisional entity
-                        const linkTypeID = resolveLinkTypeId(role.linkType, 'artist', 'work');
-                        if (linkTypeID) {
-                            const mbid = mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
-                            try {
-                                const artistEntity = await fetchMBEntity(mbid);
-                                dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || []));
-                                added++;
-                            } catch(e) {
-                                log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);
-                            }
+                    for (const recEntity of recordingByGid.values()) {
+                        await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || '*');
+                    }
+                }
+            }
+        }
+    }
+
+    async function dispatchWorks() {
+        // recordingOfLinkTypeId: the "recording of" / "performance" link type
+        const recordingOfLinkTypeId = resolveLinkTypeId('performance', 'recording', 'work');
+
+        // Collect work-only tracklist rels grouped by recording GID
+        const workOnlyByGid = new Map(); // recGid → [{ role, recEntity }, ...]
+        for (const role of tracklistRels) {
+            if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+            const recEntity = getRecordingEntity(role.track);
+            if (!recEntity) {
+                log.error(`Work-only rel for track ${role.track.position} "${role.track.title}" — no recording found, skipped`);
+                failed++;
+                continue;
+            }
+            if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
+            workOnlyByGid.get(recEntity.gid).push({ role, recEntity });
+        }
+
+        // Release-level work-only roles apply to all recordings — only when createWorks is on
+        if (createWorks) {
+            for (const role of artistRoles) {
+                if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+                for (const recEntity of recordingByGid.values()) {
+                    const syntheticRole = { ...role, track: { position: '', title: recEntity.name || '' } };
+                    if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
+                    workOnlyByGid.get(recEntity.gid).push({ role: syntheticRole, recEntity });
+                }
+            }
+        }
+
+        // When createWorks is ON, also ensure all recordings have a work —
+        // even those with no work-only artist relationships.
+        if (createWorks && recordingOfLinkTypeId) {
+            for (const recEntity of recordingByGid.values()) {
+                if (!workOnlyByGid.has(recEntity.gid)) {
+                    workOnlyByGid.set(recEntity.gid, []); // empty roles — work creation only
+                }
+            }
+        }
+
+        if (workOnlyByGid.size === 0) return;
+
+        if (!recordingOfLinkTypeId) {
+            log.error('Could not resolve "performance" link type — work processing skipped');
+            return;
+        }
+
+        log.info(`Processing work relationships for ${workOnlyByGid.size} recording(s)…`);
+
+        // Use editor state relatedWorks (built during recording map phase above) — no extra fetch needed
+        const existingWorkByRecGid = editorWorkByRecGid;
+        log.info(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
+
+        // Check editor state only for relationships dispatched in THIS session
+        function getWorkFromEditorState(recEntity) {
+            try {
+                for (const rel of MB.tree.iterate(recEntity.relationships)) {
+                    if (rel._status === 1 && rel.linkTypeID === recordingOfLinkTypeId) {
+                        return rel.entity0?.entityType === 'work' ? rel.entity0 : rel.entity1;
+                    }
+                }
+            } catch(e) {}
+            return null;
+        }
+
+        for (const [recGid, entries] of workOnlyByGid) {
+            // entries may be empty when createWorks adds all recordings (no work-only roles)
+            const recEntity  = entries[0]?.recEntity  ?? recordingByGid.get(recGid);
+            const trackTitle = entries[0]?.role.track.title    ?? recEntity?.name ?? recGid;
+            const trackPos   = entries[0]?.role.track.position ?? '';
+            if (!recEntity) continue;
+
+            // Check for pre-existing works using MB's own relatedWorks field on the track wrapper
+            // (mirrors MB's batch-create-works logic: `if (relatedWorks.size !== 0) continue`)
+            const hasExistingWork = editorWorkByRecGid.has(recGid);
+
+            let workEntity = null;
+            if (hasExistingWork) {
+                workEntity = editorWorkByRecGid.get(recGid);
+                const wid = workEntity.gid || workEntity.id;
+                log.info(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || 'existing'}) — skipping creation`);
+                if (!workEntity.gid && !workEntity.id) continue; // can't use this entity
+            }
+
+            // Also check for works dispatched in this session (newly created ones)
+            if (!workEntity) workEntity = getWorkFromEditorState(recEntity);
+
+            // No work found
+            if (!workEntity) {
+                if (!createWorks) {
+                    // Log as error — work-only rels cannot be applied without a work
+                    for (const { role } of entries) {
+                        log.error(`Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) — enable "Create missing works" or add work manually`);
+                        failed++;
+                    }
+                    continue;
+                }
+
+                // Use MB's own batch-create-works mechanism:
+                //   1. Build a work object matching MB's createWorkObject() output
+                //   2. Register it via mergeLinkedEntities so the editor knows about it
+                //   3. Dispatch the recording→work relationship
+                const newWorkId = re.getRelationshipStateId(); // negative unique ID
+                workEntity = {
+                    _fromBatchCreateWorksDialog: true,
+                    attributes: [],
+                    comment: '',
+                    editsPending: false,
+                    entityType: 'work',
+                    gid: null,
+                    id: newWorkId,
+                    iswcs: [],
+                    languages: [],
+                    name: trackTitle,
+                    typeID: null,
+                };
+                // Register the new work entity in MB's linked entities store
+                // (mirrors what MB does before dispatching batch-created works)
+                if (MB.mergeLinkedEntities) {
+                    MB.mergeLinkedEntities({ work: { [newWorkId]: workEntity } });
+                }
+                // Dispatch recording→work relationship using MB's own relationship structure
+                re.dispatch({
+                    type: 'update-relationship-state',
+                    sourceEntity: recEntity,
+                    batchSelectionCount: null,
+                    creditsToChangeForSource: '',
+                    creditsToChangeForTarget: '',
+                    oldRelationshipState: null,
+                    newRelationshipState: {
+                        _lineage: ['batch-created work'],
+                        _original: null,
+                        _status: 1,
+                        attributes: null,
+                        begin_date: null,
+                        editsPending: false,
+                        end_date: null,
+                        ended: false,
+                        entity0: recEntity,
+                        entity0_credit: '',
+                        entity1: workEntity,
+                        entity1_credit: '',
+                        id: re.getRelationshipStateId(),
+                        linkOrder: 0,
+                        linkTypeID: recordingOfLinkTypeId,
+                    },
+                });
+                log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
+                added++;
+                tickProgress();
+                // Re-read from editor state so subsequent artist→work dispatches see the live entity
+                workEntity = getWorkFromEditorState(recEntity) || workEntity;
+            }
+
+            // Apply all work-only artist rels to the work
+            for (const { role } of entries) {
+                let mbUrl;
+                // See bug #8 — no network fallback.
+                try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
+                catch(e) {
+                    log.warn(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
+                    continue;
+                }
+                const credit = role.artist.anv?.trim() || role.artist.name;
+                if (workEntity.gid) {
+                    await processOne(workEntity, 'artist', 'work', role.linkType, mbUrl, role.attributes || [], credit, trackPos || (entries[0]?.role?.track?.position));
+                } else {
+                    // New work (no MBID yet) — dispatch directly with the provisional entity
+                    const linkTypeID = resolveLinkTypeId(role.linkType, 'artist', 'work');
+                    if (linkTypeID) {
+                        const mbid = mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
+                        try {
+                            const artistEntity = await fetchMBEntity(mbid);
+                            dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || []));
+                            added++;
+                        } catch(e) {
+                            log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);
                         }
                     }
                 }
@@ -635,47 +644,55 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         }
     }
 
-    // ── Tracklist non-work artist roles ───────────────────────────────────────
-    const seenTrackRels = new Set();
-    for (const role of tracklistRels) {
-        if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue; // handled above
+    async function dispatchTracklistArtists() {
+        const seenTrackRels = new Set();
+        for (const role of tracklistRels) {
+            if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue; // handled by dispatchWorks
 
-        // Try confirmedMap first (handles artists with no resource_url)
-        const _tArtKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
-        let mbUrl = confirmedMap.get(_tArtKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
-        if (!mbUrl) {
-            for (const [k, v] of confirmedMap) {
-                if (k === `_nourl_${role.artist.name}`) { mbUrl = v; break; }
+            // Try confirmedMap first (handles artists with no resource_url)
+            const _tArtKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
+            let mbUrl = confirmedMap.get(_tArtKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
+            if (!mbUrl) {
+                for (const [k, v] of confirmedMap) {
+                    if (k === `_nourl_${role.artist.name}`) { mbUrl = v; break; }
+                }
             }
-        }
-        if (!mbUrl && !role.artist.resource_url) {
-            log.warn(`Skipped ${role.artist.name} on track ${role.track.position} — no Discogs page, not confirmed`);
-            continue;
-        }
-        if (!mbUrl) {
-            // See bug #8 — no network fallback.
-            try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
-            catch(e) {
-                log.warn(`Skipped ${role.artist.name} on track ${role.track.position} — not resolved in review`);
+            if (!mbUrl && !role.artist.resource_url) {
+                log.warn(`Skipped ${role.artist.name} on track ${role.track.position} — no Discogs page, not confirmed`);
                 continue;
             }
-        }
+            if (!mbUrl) {
+                // See bug #8 — no network fallback.
+                try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
+                catch(e) {
+                    log.warn(`Skipped ${role.artist.name} on track ${role.track.position} — not resolved in review`);
+                    continue;
+                }
+            }
 
-        const recEntity = getRecordingEntity(role.track);
-        if (!recEntity) {
-            log.warn(`No recording found for track ${role.track.position} "${role.track.title}" — skipped`);
-            failed++; continue;
-        }
+            const recEntity = getRecordingEntity(role.track);
+            if (!recEntity) {
+                log.warn(`No recording found for track ${role.track.position} "${role.track.title}" — skipped`);
+                failed++; continue;
+            }
 
-        const credit = role.artist.anv?.trim() || role.artist.name;
-        const attrKey = (role.attributes||[]).map(a=>a.value||a._type||'').join(',');
-        const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
-        if (seenTrackRels.has(trackRelKey)) continue;
-        seenTrackRels.add(trackRelKey);
-        log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> — ${credit}`);
-        await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
-        tickProgress();
+            const credit = role.artist.anv?.trim() || role.artist.name;
+            const attrKey = (role.attributes||[]).map(a=>a.value||a._type||'').join(',');
+            const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
+            if (seenTrackRels.has(trackRelKey)) continue;
+            seenTrackRels.add(trackRelKey);
+            log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> — ${credit}`);
+            await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
+            tickProgress();
+        }
     }
+
+    // ── Orchestrate: call the five children in their original execution order.
+    await dispatchCompanies();
+    await dispatchReleaseArtists();
+    await dispatchTracklist();
+    await dispatchWorks();
+    await dispatchTracklistArtists();
 
     // ── Update edit note ──────────────────────────────────────────────────────
     try {

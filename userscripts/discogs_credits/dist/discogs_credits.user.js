@@ -2934,270 +2934,283 @@
       dispatchRelationship(re, sourceEntity, targetEntity, resolvedLinkTypeID, credit, attrTree, trackPos);
       added++;
     }
-    for (const company of companies) {
-      const details = ENTITY_TYPE_MAP[company.entity_type_name];
-      if (!details) continue;
-      const resolvedEt = resolvedEntityTypes.get(company.resource_url) || details.entityType;
-      if (resolvedEt !== details.entityType) {
-        if (details.entityType === "place" && resolvedEt === "label") {
-          log.warn(`Skipped ${company.name}: MB has no "${details.linkType}" relationship for labels (only places). Add manually if needed.`);
-          skipped++;
-          tickProgress();
-          continue;
-        }
-      }
-      let mbUrl;
-      try {
-        mbUrl = await getMbidForEntity(company, resolvedEt);
-      } catch (e) {
-        log.warn(`Skipped ${company.name} \u2014 not resolved in review`);
-        skipped++;
-        tickProgress();
-        continue;
-      }
-      const et = resolvedEt;
-      const [t0, t1] = et <= "release" ? [et, "release"] : ["release", et];
-      await processOne(releaseEntity, t0, t1, details.linkType, mbUrl, [], "");
-      tickProgress();
-    }
-    for (const role of artistRoles) {
-      if (applyToTracks && RECORDING_LINK_TYPES.has(role.linkType)) continue;
-      if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-      const _artKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
-      let mbUrl = confirmedMap.get(_artKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
-      if (!mbUrl) {
-        for (const [k, v] of confirmedMap) {
-          if (k === `_nourl_${role.artist.name}`) {
-            mbUrl = v;
-            break;
+    async function dispatchCompanies() {
+      for (const company of companies) {
+        const details = ENTITY_TYPE_MAP[company.entity_type_name];
+        if (!details) continue;
+        const resolvedEt = resolvedEntityTypes.get(company.resource_url) || details.entityType;
+        if (resolvedEt !== details.entityType) {
+          if (details.entityType === "place" && resolvedEt === "label") {
+            log.warn(`Skipped ${company.name}: MB has no "${details.linkType}" relationship for labels (only places). Add manually if needed.`);
+            skipped++;
+            tickProgress();
+            continue;
           }
         }
-      }
-      if (!mbUrl && !role.artist.resource_url) {
-        log.warn(`Skipped ${role.artist.name} (${role.linkType}) \u2014 no Discogs page, not confirmed in review`);
-        skipped++;
-        tickProgress();
-        continue;
-      }
-      if (!mbUrl) {
+        let mbUrl;
         try {
-          mbUrl = await getMbidForEntity(role.artist, "artist");
+          mbUrl = await getMbidForEntity(company, resolvedEt);
         } catch (e) {
-          log.warn(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
+          log.warn(`Skipped ${company.name} \u2014 not resolved in review`);
           skipped++;
           tickProgress();
           continue;
         }
+        const et = resolvedEt;
+        const [t0, t1] = et <= "release" ? [et, "release"] : ["release", et];
+        await processOne(releaseEntity, t0, t1, details.linkType, mbUrl, [], "");
+        tickProgress();
       }
-      const credit = role.artist.anv?.trim() || role.artist.name;
-      await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit);
-      tickProgress();
     }
-    if (applyToTracks && recordingByGid.size > 0) {
-      const applicable = artistRoles.filter((role) => RECORDING_LINK_TYPES.has(role.linkType) && !WORK_ONLY_ARTIST_RELS.includes(role.linkType));
-      if (applicable.length > 0) {
-        log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)\u2026`);
-        for (const role of applicable) {
-          let mbUrl;
+    async function dispatchReleaseArtists() {
+      for (const role of artistRoles) {
+        if (applyToTracks && RECORDING_LINK_TYPES.has(role.linkType)) continue;
+        if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+        const _artKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
+        let mbUrl = confirmedMap.get(_artKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
+        if (!mbUrl) {
+          for (const [k, v] of confirmedMap) {
+            if (k === `_nourl_${role.artist.name}`) {
+              mbUrl = v;
+              break;
+            }
+          }
+        }
+        if (!mbUrl && !role.artist.resource_url) {
+          log.warn(`Skipped ${role.artist.name} (${role.linkType}) \u2014 no Discogs page, not confirmed in review`);
+          skipped++;
+          tickProgress();
+          continue;
+        }
+        if (!mbUrl) {
           try {
             mbUrl = await getMbidForEntity(role.artist, "artist");
           } catch (e) {
-            log.warn(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review`);
+            log.warn(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
+            skipped++;
+            tickProgress();
             continue;
           }
-          const credit = role.artist.anv?.trim() || role.artist.name;
-          for (const recEntity of recordingByGid.values()) {
-            await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*");
-          }
         }
+        const credit = role.artist.anv?.trim() || role.artist.name;
+        await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit);
+        tickProgress();
       }
     }
-    const recordingOfLinkTypeId = resolveLinkTypeId("performance", "recording", "work");
-    const workOnlyByGid = /* @__PURE__ */ new Map();
-    for (const role of tracklistRels) {
-      if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-      const recEntity = getRecordingEntity(role.track);
-      if (!recEntity) {
-        log.error(`Work-only rel for track ${role.track.position} "${role.track.title}" \u2014 no recording found, skipped`);
-        failed++;
-        continue;
-      }
-      if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
-      workOnlyByGid.get(recEntity.gid).push({ role, recEntity });
-    }
-    if (createWorks) {
-      for (const role of artistRoles) {
-        if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-        for (const recEntity of recordingByGid.values()) {
-          const syntheticRole = { ...role, track: { position: "", title: recEntity.name || "" } };
-          if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
-          workOnlyByGid.get(recEntity.gid).push({ role: syntheticRole, recEntity });
-        }
-      }
-    }
-    if (createWorks && recordingOfLinkTypeId) {
-      for (const recEntity of recordingByGid.values()) {
-        if (!workOnlyByGid.has(recEntity.gid)) {
-          workOnlyByGid.set(recEntity.gid, []);
-        }
-      }
-    }
-    if (workOnlyByGid.size > 0) {
-      if (!recordingOfLinkTypeId) {
-        log.error('Could not resolve "performance" link type \u2014 work processing skipped');
-      } else {
-        let getWorkFromEditorState = function(recEntity) {
-          try {
-            for (const rel of MB.tree.iterate(recEntity.relationships)) {
-              if (rel._status === 1 && rel.linkTypeID === recordingOfLinkTypeId) {
-                return rel.entity0?.entityType === "work" ? rel.entity0 : rel.entity1;
-              }
-            }
-          } catch (e) {
-          }
-          return null;
-        };
-        log.info(`Processing work relationships for ${workOnlyByGid.size} recording(s)\u2026`);
-        const existingWorkByRecGid = editorWorkByRecGid;
-        log.info(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
-        for (const [recGid, entries] of workOnlyByGid) {
-          const recEntity = entries[0]?.recEntity ?? recordingByGid.get(recGid);
-          const trackTitle = entries[0]?.role.track.title ?? recEntity?.name ?? recGid;
-          const trackPos = entries[0]?.role.track.position ?? "";
-          if (!recEntity) continue;
-          const hasExistingWork = editorWorkByRecGid.has(recGid);
-          let workEntity = null;
-          if (hasExistingWork) {
-            workEntity = editorWorkByRecGid.get(recGid);
-            const wid = workEntity.gid || workEntity.id;
-            log.info(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || "existing"}) \u2014 skipping creation`);
-            if (!workEntity.gid && !workEntity.id) continue;
-          }
-          if (!workEntity) workEntity = getWorkFromEditorState(recEntity);
-          if (!workEntity) {
-            if (!createWorks) {
-              for (const { role } of entries) {
-                log.error(`Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) \u2014 enable "Create missing works" or add work manually`);
-                failed++;
-              }
-              continue;
-            }
-            const MB2 = pageWindow.MB;
-            const newWorkId = re.getRelationshipStateId();
-            workEntity = {
-              _fromBatchCreateWorksDialog: true,
-              attributes: [],
-              comment: "",
-              editsPending: false,
-              entityType: "work",
-              gid: null,
-              id: newWorkId,
-              iswcs: [],
-              languages: [],
-              name: trackTitle,
-              typeID: null
-            };
-            if (MB2.mergeLinkedEntities) {
-              MB2.mergeLinkedEntities({ work: { [newWorkId]: workEntity } });
-            }
-            re.dispatch({
-              type: "update-relationship-state",
-              sourceEntity: recEntity,
-              batchSelectionCount: null,
-              creditsToChangeForSource: "",
-              creditsToChangeForTarget: "",
-              oldRelationshipState: null,
-              newRelationshipState: {
-                _lineage: ["batch-created work"],
-                _original: null,
-                _status: 1,
-                attributes: null,
-                begin_date: null,
-                editsPending: false,
-                end_date: null,
-                ended: false,
-                entity0: recEntity,
-                entity0_credit: "",
-                entity1: workEntity,
-                entity1_credit: "",
-                id: re.getRelationshipStateId(),
-                linkOrder: 0,
-                linkTypeID: recordingOfLinkTypeId
-              }
-            });
-            log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
-            added++;
-            tickProgress();
-            workEntity = getWorkFromEditorState(recEntity) || workEntity;
-          }
-          for (const { role } of entries) {
+    async function dispatchTracklist() {
+      if (applyToTracks && recordingByGid.size > 0) {
+        const applicable = artistRoles.filter((role) => RECORDING_LINK_TYPES.has(role.linkType) && !WORK_ONLY_ARTIST_RELS.includes(role.linkType));
+        if (applicable.length > 0) {
+          log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)\u2026`);
+          for (const role of applicable) {
             let mbUrl;
             try {
               mbUrl = await getMbidForEntity(role.artist, "artist");
             } catch (e) {
-              log.warn(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
+              log.warn(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review`);
               continue;
             }
             const credit = role.artist.anv?.trim() || role.artist.name;
-            if (workEntity.gid) {
-              await processOne(workEntity, "artist", "work", role.linkType, mbUrl, role.attributes || [], credit, trackPos || entries[0]?.role?.track?.position);
-            } else {
-              const linkTypeID = resolveLinkTypeId(role.linkType, "artist", "work");
-              if (linkTypeID) {
-                const mbid = mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
-                try {
-                  const artistEntity = await fetchMBEntity(mbid);
-                  dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || []));
-                  added++;
-                } catch (e) {
-                  log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);
-                }
+            for (const recEntity of recordingByGid.values()) {
+              await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*");
+            }
+          }
+        }
+      }
+    }
+    async function dispatchWorks() {
+      const recordingOfLinkTypeId = resolveLinkTypeId("performance", "recording", "work");
+      const workOnlyByGid = /* @__PURE__ */ new Map();
+      for (const role of tracklistRels) {
+        if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+        const recEntity = getRecordingEntity(role.track);
+        if (!recEntity) {
+          log.error(`Work-only rel for track ${role.track.position} "${role.track.title}" \u2014 no recording found, skipped`);
+          failed++;
+          continue;
+        }
+        if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
+        workOnlyByGid.get(recEntity.gid).push({ role, recEntity });
+      }
+      if (createWorks) {
+        for (const role of artistRoles) {
+          if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+          for (const recEntity of recordingByGid.values()) {
+            const syntheticRole = { ...role, track: { position: "", title: recEntity.name || "" } };
+            if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
+            workOnlyByGid.get(recEntity.gid).push({ role: syntheticRole, recEntity });
+          }
+        }
+      }
+      if (createWorks && recordingOfLinkTypeId) {
+        for (const recEntity of recordingByGid.values()) {
+          if (!workOnlyByGid.has(recEntity.gid)) {
+            workOnlyByGid.set(recEntity.gid, []);
+          }
+        }
+      }
+      if (workOnlyByGid.size === 0) return;
+      if (!recordingOfLinkTypeId) {
+        log.error('Could not resolve "performance" link type \u2014 work processing skipped');
+        return;
+      }
+      log.info(`Processing work relationships for ${workOnlyByGid.size} recording(s)\u2026`);
+      const existingWorkByRecGid = editorWorkByRecGid;
+      log.info(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
+      function getWorkFromEditorState(recEntity) {
+        try {
+          for (const rel of MB.tree.iterate(recEntity.relationships)) {
+            if (rel._status === 1 && rel.linkTypeID === recordingOfLinkTypeId) {
+              return rel.entity0?.entityType === "work" ? rel.entity0 : rel.entity1;
+            }
+          }
+        } catch (e) {
+        }
+        return null;
+      }
+      for (const [recGid, entries] of workOnlyByGid) {
+        const recEntity = entries[0]?.recEntity ?? recordingByGid.get(recGid);
+        const trackTitle = entries[0]?.role.track.title ?? recEntity?.name ?? recGid;
+        const trackPos = entries[0]?.role.track.position ?? "";
+        if (!recEntity) continue;
+        const hasExistingWork = editorWorkByRecGid.has(recGid);
+        let workEntity = null;
+        if (hasExistingWork) {
+          workEntity = editorWorkByRecGid.get(recGid);
+          const wid = workEntity.gid || workEntity.id;
+          log.info(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || "existing"}) \u2014 skipping creation`);
+          if (!workEntity.gid && !workEntity.id) continue;
+        }
+        if (!workEntity) workEntity = getWorkFromEditorState(recEntity);
+        if (!workEntity) {
+          if (!createWorks) {
+            for (const { role } of entries) {
+              log.error(`Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) \u2014 enable "Create missing works" or add work manually`);
+              failed++;
+            }
+            continue;
+          }
+          const newWorkId = re.getRelationshipStateId();
+          workEntity = {
+            _fromBatchCreateWorksDialog: true,
+            attributes: [],
+            comment: "",
+            editsPending: false,
+            entityType: "work",
+            gid: null,
+            id: newWorkId,
+            iswcs: [],
+            languages: [],
+            name: trackTitle,
+            typeID: null
+          };
+          if (MB.mergeLinkedEntities) {
+            MB.mergeLinkedEntities({ work: { [newWorkId]: workEntity } });
+          }
+          re.dispatch({
+            type: "update-relationship-state",
+            sourceEntity: recEntity,
+            batchSelectionCount: null,
+            creditsToChangeForSource: "",
+            creditsToChangeForTarget: "",
+            oldRelationshipState: null,
+            newRelationshipState: {
+              _lineage: ["batch-created work"],
+              _original: null,
+              _status: 1,
+              attributes: null,
+              begin_date: null,
+              editsPending: false,
+              end_date: null,
+              ended: false,
+              entity0: recEntity,
+              entity0_credit: "",
+              entity1: workEntity,
+              entity1_credit: "",
+              id: re.getRelationshipStateId(),
+              linkOrder: 0,
+              linkTypeID: recordingOfLinkTypeId
+            }
+          });
+          log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
+          added++;
+          tickProgress();
+          workEntity = getWorkFromEditorState(recEntity) || workEntity;
+        }
+        for (const { role } of entries) {
+          let mbUrl;
+          try {
+            mbUrl = await getMbidForEntity(role.artist, "artist");
+          } catch (e) {
+            log.warn(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
+            continue;
+          }
+          const credit = role.artist.anv?.trim() || role.artist.name;
+          if (workEntity.gid) {
+            await processOne(workEntity, "artist", "work", role.linkType, mbUrl, role.attributes || [], credit, trackPos || entries[0]?.role?.track?.position);
+          } else {
+            const linkTypeID = resolveLinkTypeId(role.linkType, "artist", "work");
+            if (linkTypeID) {
+              const mbid = mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
+              try {
+                const artistEntity = await fetchMBEntity(mbid);
+                dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || []));
+                added++;
+              } catch (e) {
+                log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);
               }
             }
           }
         }
       }
     }
-    const seenTrackRels = /* @__PURE__ */ new Set();
-    for (const role of tracklistRels) {
-      if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-      const _tArtKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
-      let mbUrl = confirmedMap.get(_tArtKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
-      if (!mbUrl) {
-        for (const [k, v] of confirmedMap) {
-          if (k === `_nourl_${role.artist.name}`) {
-            mbUrl = v;
-            break;
+    async function dispatchTracklistArtists() {
+      const seenTrackRels = /* @__PURE__ */ new Set();
+      for (const role of tracklistRels) {
+        if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+        const _tArtKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
+        let mbUrl = confirmedMap.get(_tArtKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
+        if (!mbUrl) {
+          for (const [k, v] of confirmedMap) {
+            if (k === `_nourl_${role.artist.name}`) {
+              mbUrl = v;
+              break;
+            }
           }
         }
-      }
-      if (!mbUrl && !role.artist.resource_url) {
-        log.warn(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 no Discogs page, not confirmed`);
-        continue;
-      }
-      if (!mbUrl) {
-        try {
-          mbUrl = await getMbidForEntity(role.artist, "artist");
-        } catch (e) {
-          log.warn(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 not resolved in review`);
+        if (!mbUrl && !role.artist.resource_url) {
+          log.warn(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 no Discogs page, not confirmed`);
           continue;
         }
+        if (!mbUrl) {
+          try {
+            mbUrl = await getMbidForEntity(role.artist, "artist");
+          } catch (e) {
+            log.warn(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 not resolved in review`);
+            continue;
+          }
+        }
+        const recEntity = getRecordingEntity(role.track);
+        if (!recEntity) {
+          log.warn(`No recording found for track ${role.track.position} "${role.track.title}" \u2014 skipped`);
+          failed++;
+          continue;
+        }
+        const credit = role.artist.anv?.trim() || role.artist.name;
+        const attrKey = (role.attributes || []).map((a) => a.value || a._type || "").join(",");
+        const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
+        if (seenTrackRels.has(trackRelKey)) continue;
+        seenTrackRels.add(trackRelKey);
+        log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> \u2014 ${credit}`);
+        await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
+        tickProgress();
       }
-      const recEntity = getRecordingEntity(role.track);
-      if (!recEntity) {
-        log.warn(`No recording found for track ${role.track.position} "${role.track.title}" \u2014 skipped`);
-        failed++;
-        continue;
-      }
-      const credit = role.artist.anv?.trim() || role.artist.name;
-      const attrKey = (role.attributes || []).map((a) => a.value || a._type || "").join(",");
-      const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
-      if (seenTrackRels.has(trackRelKey)) continue;
-      seenTrackRels.add(trackRelKey);
-      log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> \u2014 ${credit}`);
-      await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
-      tickProgress();
     }
+    await dispatchCompanies();
+    await dispatchReleaseArtists();
+    await dispatchTracklist();
+    await dispatchWorks();
+    await dispatchTracklistArtists();
     try {
       const opts = [
         processTracklist !== void 0 ? `per-track:${processTracklist ? "on" : "off"}` : null,
