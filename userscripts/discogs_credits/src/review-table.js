@@ -500,15 +500,16 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 }
                 // Opens the MB create-entity tab pre-filled with name + Discogs
                 // URL relation, optionally also `comment` (= disambiguation).
-                // Used by both "Create in MB" (no disambiguation) and the
-                // "Create (Dis)" popup flow (issue #5).
-                function openCreateTab(disambiguation) {
+                // Used by both "Create in MB" (default-name, no disambiguation)
+                // and the "Create (adv)" popup flow (issue #5).
+                function openCreateTab({ name, disambiguation } = {}) {
+                    const finalName = (name || displayName).trim();
                     let createUrl;
                     let createParams;
                     if (entityType === 'artist') {
                         createParams = {
-                            'edit-artist.name':      displayName,
-                            'edit-artist.sort_name': guessSortName(displayName),
+                            'edit-artist.name':      finalName,
+                            'edit-artist.sort_name': guessSortName(finalName),
                             'edit-artist.type_id':   '1',
                         };
                         if (discogsHref) {
@@ -520,7 +521,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     } else {
                         const ltId = entityType === 'label' ? '217' : '705';
                         createParams = {
-                            [`edit-${entityType}.name`]:                displayName,
+                            [`edit-${entityType}.name`]:                finalName,
                             [`edit-${entityType}.url.0.text`]:          discogsHref,
                             [`edit-${entityType}.url.0.link_type_id`]: ltId,
                         };
@@ -545,26 +546,44 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     DISCOGS_CHANNEL.addEventListener('message', onCreated);
                 }
 
+                // The two Create buttons live in a tight cluster so the row's
+                // action column stays compact. Same height + visual weight,
+                // separated by a thin gap; primary first, advanced second.
+                const createCluster = document.createElement('div');
+                createCluster.style.cssText = 'display:flex;flex-direction:column;gap:0.25rem;';
+                const CREATE_BTN_STYLE = 'font-size:0.78rem;line-height:1.25;padding:0.2rem 0.55rem;cursor:pointer;white-space:nowrap;'
+                                       + 'border:1px solid #bfbfbf;border-radius:0.25rem;background:#fafafa;color:#333;';
+                const CREATE_BTN_HOVER  = 'background:#f0f0f0;border-color:#999;';
+                function styleCreateBtn(btn) {
+                    btn.style.cssText = CREATE_BTN_STYLE;
+                    btn.addEventListener('mouseenter', () => btn.setAttribute('style', CREATE_BTN_STYLE + CREATE_BTN_HOVER));
+                    btn.addEventListener('mouseleave', () => btn.setAttribute('style', CREATE_BTN_STYLE));
+                }
+
                 const createBtn = document.createElement('button');
                 createBtn.textContent = 'Create in MB ↗';
-                createBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;';
-                createBtn.addEventListener('click', () => openCreateTab(null));
-                tdAction.appendChild(createBtn);
+                createBtn.title = 'Open MB create form with the Discogs name + URL pre-filled';
+                styleCreateBtn(createBtn);
+                createBtn.addEventListener('click', () => openCreateTab());
+                createCluster.appendChild(createBtn);
 
-                // "Create (Dis)" — pops up a disambiguation editor. The user
-                // edits the suggested value (defaults to the row's first 3
-                // distinct roles), sees the Discogs profile blurb for context,
-                // and clicks Create to open the MB create tab with `comment`
-                // pre-filled. Issue #5.
-                const createDisBtn = document.createElement('button');
-                createDisBtn.textContent = 'Create (Dis) ↗';
-                createDisBtn.title = 'Create in MB with a disambiguation comment — pre-fills from the Discogs role, lets you adjust';
-                createDisBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;margin-top:0.15rem;';
-                createDisBtn.addEventListener('click', () => openDisambiguationPopup());
-                tdAction.appendChild(createDisBtn);
+                // "Create (adv)" — opens an editor popup with a name input
+                // (defaults to the Discogs realname when available), a
+                // disambiguation input (defaults to first 3 distinct roles),
+                // and the Discogs profile blurb beneath. Selecting text in
+                // the blurb auto-populates the disambiguation field, so the
+                // user can pick a phrase without typing. Issue #5.
+                const createAdvBtn = document.createElement('button');
+                createAdvBtn.textContent = 'Create (adv) ↗';
+                createAdvBtn.title = 'Create in MB with editable name + disambiguation, pre-filled from the Discogs profile';
+                styleCreateBtn(createAdvBtn);
+                createAdvBtn.addEventListener('click', () => openAdvancedCreatePopup());
+                createCluster.appendChild(createAdvBtn);
 
-                async function openDisambiguationPopup() {
-                    // Default suggestion: first 3 distinct role labels.
+                tdAction.appendChild(createCluster);
+
+                async function openAdvancedCreatePopup() {
+                    // Default disambiguation suggestion: first 3 distinct role labels.
                     const distinctRoles = [];
                     const seen = new Set();
                     for (const role of (r._roles || [])) {
@@ -576,45 +595,95 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     }
                     const defaultDis = distinctRoles.join(', ');
 
+                    // ── Modal shell ─────────────────────────────────────────
                     const overlay = document.createElement('div');
                     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:flex;align-items:center;justify-content:center;';
                     const modal = document.createElement('div');
-                    modal.style.cssText = 'background:#fff;border-radius:0.5rem;padding:1rem 1.25rem;max-width:560px;width:90%;max-height:80vh;display:flex;flex-direction:column;gap:0.65rem;box-shadow:0 8px 24px rgba(0,0,0,0.3);';
+                    modal.style.cssText = 'background:#fff;border-radius:0.5rem;padding:1.1rem 1.35rem 1rem;max-width:600px;width:92%;max-height:82vh;'
+                                        + 'display:flex;flex-direction:column;gap:0.55rem;box-shadow:0 12px 32px rgba(0,0,0,0.32);'
+                                        + 'font-family:inherit;';
 
                     const heading = document.createElement('div');
-                    heading.style.cssText = 'font-weight:bold;font-size:1rem;';
-                    heading.textContent = `Create "${displayName}" in MB with disambiguation`;
+                    heading.style.cssText = 'font-weight:bold;font-size:1.02rem;color:#222;margin-bottom:0.15rem;';
+                    heading.textContent = `Create ${entityType} in MusicBrainz`;
                     modal.appendChild(heading);
 
-                    const label = document.createElement('label');
-                    label.style.cssText = 'font-size:0.85rem;color:#555;';
-                    label.textContent = 'Disambiguation (MB comment):';
-                    modal.appendChild(label);
+                    // ── Name input ──────────────────────────────────────────
+                    const FIELD_LABEL = 'font-size:0.78rem;color:#666;font-weight:600;letter-spacing:0.02em;text-transform:uppercase;margin-top:0.25rem;';
+                    const FIELD_INPUT = 'padding:0.45rem 0.55rem;border:1px solid #c8c8c8;border-radius:0.3rem;font-size:0.93rem;font-family:inherit;';
+
+                    const nameLabel = document.createElement('label');
+                    nameLabel.style.cssText = FIELD_LABEL;
+                    nameLabel.textContent = 'Name';
+                    modal.appendChild(nameLabel);
+
+                    const nameInput = document.createElement('input');
+                    nameInput.type = 'text';
+                    nameInput.value = displayName;
+                    nameInput.style.cssText = FIELD_INPUT;
+                    modal.appendChild(nameInput);
+                    // Track whether the user has touched the input — if they
+                    // haven't, we'll overwrite it with the Discogs realname
+                    // once the lazy fetch completes (and the realname differs
+                    // from the Discogs displayName, i.e. it's actually useful).
+                    let nameUserTouched = false;
+                    nameInput.addEventListener('input', () => { nameUserTouched = true; });
+
+                    // ── Disambiguation input ────────────────────────────────
+                    const disLabel = document.createElement('label');
+                    disLabel.style.cssText = FIELD_LABEL;
+                    disLabel.textContent = 'Disambiguation';
+                    modal.appendChild(disLabel);
 
                     const disInput = document.createElement('input');
                     disInput.type = 'text';
                     disInput.value = defaultDis;
-                    disInput.style.cssText = 'padding:0.4rem 0.5rem;border:1px solid #ccc;border-radius:0.25rem;font-size:0.95rem;';
+                    disInput.style.cssText = FIELD_INPUT;
                     modal.appendChild(disInput);
+                    let disUserTouched = false;
+                    disInput.addEventListener('input', () => { disUserTouched = true; });
 
+                    // ── Discogs profile blurb ───────────────────────────────
                     const profileLabel = document.createElement('div');
-                    profileLabel.style.cssText = 'font-size:0.82rem;color:#888;margin-top:0.35rem;';
-                    profileLabel.textContent = 'Discogs profile (select text to copy into the field above):';
+                    profileLabel.style.cssText = 'font-size:0.78rem;color:#888;margin-top:0.55rem;';
+                    profileLabel.textContent = 'Discogs profile — select text to copy into Disambiguation';
                     modal.appendChild(profileLabel);
 
                     const profileBox = document.createElement('div');
-                    profileBox.style.cssText = 'border:1px solid #e0e0e0;border-radius:0.25rem;padding:0.45rem 0.55rem;background:#fafafa;font-size:0.85rem;line-height:1.45;white-space:pre-wrap;overflow:auto;max-height:18rem;flex:1;';
+                    profileBox.style.cssText = 'border:1px solid #e0e0e0;border-radius:0.3rem;padding:0.5rem 0.6rem;background:#fafafa;'
+                                             + 'font-size:0.85rem;line-height:1.5;white-space:pre-wrap;overflow:auto;'
+                                             + 'min-height:5rem;max-height:18rem;flex:1;color:#444;';
                     profileBox.textContent = 'Loading profile from Discogs…';
                     modal.appendChild(profileBox);
 
+                    // Selecting text inside the profile auto-fills the
+                    // Disambiguation input. `mouseup` + `keyup` together
+                    // catch both drag and shift-arrow selection. We bail
+                    // when the selection is empty (e.g. the user just
+                    // clicked to deselect — don't clobber the field).
+                    const captureSelection = () => {
+                        const sel = window.getSelection();
+                        if (!sel || sel.isCollapsed) return;
+                        if (!profileBox.contains(sel.anchorNode)) return;
+                        const text = sel.toString().trim();
+                        if (!text) return;
+                        disInput.value = text;
+                        // Counts as user input — don't surprise the user by
+                        // overwriting with the realname later.
+                        disUserTouched = true;
+                    };
+                    profileBox.addEventListener('mouseup', captureSelection);
+                    profileBox.addEventListener('keyup',   captureSelection);
+
+                    // ── Button row ──────────────────────────────────────────
                     const btnRow = document.createElement('div');
-                    btnRow.style.cssText = 'display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.35rem;';
+                    btnRow.style.cssText = 'display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.55rem;';
                     const cancelBtn = document.createElement('button');
                     cancelBtn.textContent = 'Cancel';
-                    cancelBtn.style.cssText = 'padding:0.4rem 0.9rem;cursor:pointer;';
+                    cancelBtn.style.cssText = 'padding:0.4rem 1rem;cursor:pointer;border:1px solid #c8c8c8;border-radius:0.25rem;background:#fafafa;color:#444;font-size:0.88rem;';
                     const submitBtn = document.createElement('button');
                     submitBtn.textContent = 'Create ↗';
-                    submitBtn.style.cssText = 'padding:0.4rem 0.9rem;cursor:pointer;font-weight:bold;background:#2ecc40;color:#fff;border:none;border-radius:0.25rem;';
+                    submitBtn.style.cssText = 'padding:0.4rem 1.1rem;cursor:pointer;font-weight:bold;background:#2ecc40;color:#fff;border:none;border-radius:0.25rem;font-size:0.9rem;';
                     btnRow.appendChild(cancelBtn);
                     btnRow.appendChild(submitBtn);
                     modal.appendChild(btnRow);
@@ -622,34 +691,39 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     overlay.appendChild(modal);
                     document.body.appendChild(overlay);
 
-                    // Cleanup helpers — handle Esc, overlay click, Cancel, Submit.
+                    // ── Cleanup + submit handlers ───────────────────────────
                     const close = () => {
                         document.removeEventListener('keydown', onKey);
                         overlay.remove();
                     };
-                    const onKey = (ev) => {
-                        if (ev.key === 'Escape') close();
-                        else if (ev.key === 'Enter' && ev.target === disInput) submit();
-                    };
                     const submit = () => {
-                        const dis = disInput.value.trim();
+                        const name = nameInput.value.trim();
+                        const dis  = disInput.value.trim();
                         close();
-                        openCreateTab(dis || null);
+                        openCreateTab({ name: name || displayName, disambiguation: dis || null });
+                    };
+                    const onKey = (ev) => {
+                        if (ev.key === 'Escape') { close(); }
+                        else if (ev.key === 'Enter' && (ev.target === disInput || ev.target === nameInput)) submit();
                     };
                     document.addEventListener('keydown', onKey);
                     overlay.addEventListener('click', ev => { if (ev.target === overlay) close(); });
                     cancelBtn.addEventListener('click', close);
                     submitBtn.addEventListener('click', submit);
 
-                    // Focus + select the default so user can immediately type-replace.
+                    // Focus the disambiguation field (the field the user is
+                    // most likely to edit). Select-all so type-replace works.
                     disInput.focus(); disInput.select();
 
-                    // Fetch the Discogs entity for the profile blurb (lazy —
-                    // doesn't block opening the modal).
+                    // ── Lazy Discogs fetch — profile + realname ────────────
                     try {
                         const data = await getDiscogsEntityData(r.entity?.resource_url);
+                        // Bump the name input to realname if the user hasn't
+                        // started typing AND it's actually different/useful.
+                        if (data?.realname && !nameUserTouched && data.realname.trim() !== displayName.trim()) {
+                            nameInput.value = data.realname.trim();
+                        }
                         const lines = [];
-                        if (data?.realname && data.realname !== displayName) lines.push(`Real name: ${data.realname}`);
                         if (data?.namevariations?.length) lines.push(`Also known as: ${data.namevariations.slice(0, 6).join(', ')}`);
                         if (data?.profile) {
                             if (lines.length) lines.push('');
@@ -892,6 +966,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 getLogContainer().appendChild(unresolvedLi);
             }
 
+            // Stash the unresolved + total counts on `confirmedMap` for the
+            // dispatch layer to surface in the edit note (no call-site
+            // signature change — Maps accept arbitrary properties).
+            confirmedMap.unresolvedCount = unresolvedCount;
+            confirmedMap.totalEntities   = allResults.length;
             (panelLi || panel).remove();
             resolve(confirmedMap);
         });

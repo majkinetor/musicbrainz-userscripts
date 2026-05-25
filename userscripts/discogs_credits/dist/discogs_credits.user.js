@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.25.225300
+// @version      2026.5.25.231514
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2365,13 +2365,14 @@
               );
             }
           }
-          function openCreateTab(disambiguation) {
+          function openCreateTab({ name, disambiguation } = {}) {
+            const finalName = (name || displayName).trim();
             let createUrl;
             let createParams;
             if (entityType === "artist") {
               createParams = {
-                "edit-artist.name": displayName,
-                "edit-artist.sort_name": guessSortName(displayName),
+                "edit-artist.name": finalName,
+                "edit-artist.sort_name": guessSortName(finalName),
                 "edit-artist.type_id": "1"
               };
               if (discogsHref) {
@@ -2383,7 +2384,7 @@
             } else {
               const ltId = entityType === "label" ? "217" : "705";
               createParams = {
-                [`edit-${entityType}.name`]: displayName,
+                [`edit-${entityType}.name`]: finalName,
                 [`edit-${entityType}.url.0.text`]: discogsHref,
                 [`edit-${entityType}.url.0.link_type_id`]: ltId
               };
@@ -2410,61 +2411,102 @@
             };
             DISCOGS_CHANNEL.addEventListener("message", onCreated);
           }
+          const createCluster = document.createElement("div");
+          createCluster.style.cssText = "display:flex;flex-direction:column;gap:0.25rem;";
+          const CREATE_BTN_STYLE = "font-size:0.78rem;line-height:1.25;padding:0.2rem 0.55rem;cursor:pointer;white-space:nowrap;border:1px solid #bfbfbf;border-radius:0.25rem;background:#fafafa;color:#333;";
+          const CREATE_BTN_HOVER = "background:#f0f0f0;border-color:#999;";
+          function styleCreateBtn(btn) {
+            btn.style.cssText = CREATE_BTN_STYLE;
+            btn.addEventListener("mouseenter", () => btn.setAttribute("style", CREATE_BTN_STYLE + CREATE_BTN_HOVER));
+            btn.addEventListener("mouseleave", () => btn.setAttribute("style", CREATE_BTN_STYLE));
+          }
           const createBtn = document.createElement("button");
           createBtn.textContent = "Create in MB \u2197";
-          createBtn.style.cssText = "font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;";
-          createBtn.addEventListener("click", () => openCreateTab(null));
-          tdAction.appendChild(createBtn);
-          const createDisBtn = document.createElement("button");
-          createDisBtn.textContent = "Create (Dis) \u2197";
-          createDisBtn.title = "Create in MB with a disambiguation comment \u2014 pre-fills from the Discogs role, lets you adjust";
-          createDisBtn.style.cssText = "font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;margin-top:0.15rem;";
-          createDisBtn.addEventListener("click", () => openDisambiguationPopup());
-          tdAction.appendChild(createDisBtn);
-          async function openDisambiguationPopup() {
+          createBtn.title = "Open MB create form with the Discogs name + URL pre-filled";
+          styleCreateBtn(createBtn);
+          createBtn.addEventListener("click", () => openCreateTab());
+          createCluster.appendChild(createBtn);
+          const createAdvBtn = document.createElement("button");
+          createAdvBtn.textContent = "Create (adv) \u2197";
+          createAdvBtn.title = "Create in MB with editable name + disambiguation, pre-filled from the Discogs profile";
+          styleCreateBtn(createAdvBtn);
+          createAdvBtn.addEventListener("click", () => openAdvancedCreatePopup());
+          createCluster.appendChild(createAdvBtn);
+          tdAction.appendChild(createCluster);
+          async function openAdvancedCreatePopup() {
             const distinctRoles = [];
             const seen = /* @__PURE__ */ new Set();
             for (const role of r._roles || []) {
-              const label2 = (role.displayLabel || role.linkType || "").trim();
-              if (!label2 || seen.has(label2)) continue;
-              seen.add(label2);
-              distinctRoles.push(label2);
+              const label = (role.displayLabel || role.linkType || "").trim();
+              if (!label || seen.has(label)) continue;
+              seen.add(label);
+              distinctRoles.push(label);
               if (distinctRoles.length === 3) break;
             }
             const defaultDis = distinctRoles.join(", ");
             const overlay = document.createElement("div");
             overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:flex;align-items:center;justify-content:center;";
             const modal = document.createElement("div");
-            modal.style.cssText = "background:#fff;border-radius:0.5rem;padding:1rem 1.25rem;max-width:560px;width:90%;max-height:80vh;display:flex;flex-direction:column;gap:0.65rem;box-shadow:0 8px 24px rgba(0,0,0,0.3);";
+            modal.style.cssText = "background:#fff;border-radius:0.5rem;padding:1.1rem 1.35rem 1rem;max-width:600px;width:92%;max-height:82vh;display:flex;flex-direction:column;gap:0.55rem;box-shadow:0 12px 32px rgba(0,0,0,0.32);font-family:inherit;";
             const heading2 = document.createElement("div");
-            heading2.style.cssText = "font-weight:bold;font-size:1rem;";
-            heading2.textContent = `Create "${displayName}" in MB with disambiguation`;
+            heading2.style.cssText = "font-weight:bold;font-size:1.02rem;color:#222;margin-bottom:0.15rem;";
+            heading2.textContent = `Create ${entityType} in MusicBrainz`;
             modal.appendChild(heading2);
-            const label = document.createElement("label");
-            label.style.cssText = "font-size:0.85rem;color:#555;";
-            label.textContent = "Disambiguation (MB comment):";
-            modal.appendChild(label);
+            const FIELD_LABEL = "font-size:0.78rem;color:#666;font-weight:600;letter-spacing:0.02em;text-transform:uppercase;margin-top:0.25rem;";
+            const FIELD_INPUT = "padding:0.45rem 0.55rem;border:1px solid #c8c8c8;border-radius:0.3rem;font-size:0.93rem;font-family:inherit;";
+            const nameLabel = document.createElement("label");
+            nameLabel.style.cssText = FIELD_LABEL;
+            nameLabel.textContent = "Name";
+            modal.appendChild(nameLabel);
+            const nameInput = document.createElement("input");
+            nameInput.type = "text";
+            nameInput.value = displayName;
+            nameInput.style.cssText = FIELD_INPUT;
+            modal.appendChild(nameInput);
+            let nameUserTouched = false;
+            nameInput.addEventListener("input", () => {
+              nameUserTouched = true;
+            });
+            const disLabel = document.createElement("label");
+            disLabel.style.cssText = FIELD_LABEL;
+            disLabel.textContent = "Disambiguation";
+            modal.appendChild(disLabel);
             const disInput = document.createElement("input");
             disInput.type = "text";
             disInput.value = defaultDis;
-            disInput.style.cssText = "padding:0.4rem 0.5rem;border:1px solid #ccc;border-radius:0.25rem;font-size:0.95rem;";
+            disInput.style.cssText = FIELD_INPUT;
             modal.appendChild(disInput);
+            let disUserTouched = false;
+            disInput.addEventListener("input", () => {
+              disUserTouched = true;
+            });
             const profileLabel = document.createElement("div");
-            profileLabel.style.cssText = "font-size:0.82rem;color:#888;margin-top:0.35rem;";
-            profileLabel.textContent = "Discogs profile (select text to copy into the field above):";
+            profileLabel.style.cssText = "font-size:0.78rem;color:#888;margin-top:0.55rem;";
+            profileLabel.textContent = "Discogs profile \u2014 select text to copy into Disambiguation";
             modal.appendChild(profileLabel);
             const profileBox = document.createElement("div");
-            profileBox.style.cssText = "border:1px solid #e0e0e0;border-radius:0.25rem;padding:0.45rem 0.55rem;background:#fafafa;font-size:0.85rem;line-height:1.45;white-space:pre-wrap;overflow:auto;max-height:18rem;flex:1;";
+            profileBox.style.cssText = "border:1px solid #e0e0e0;border-radius:0.3rem;padding:0.5rem 0.6rem;background:#fafafa;font-size:0.85rem;line-height:1.5;white-space:pre-wrap;overflow:auto;min-height:5rem;max-height:18rem;flex:1;color:#444;";
             profileBox.textContent = "Loading profile from Discogs\u2026";
             modal.appendChild(profileBox);
+            const captureSelection = () => {
+              const sel = window.getSelection();
+              if (!sel || sel.isCollapsed) return;
+              if (!profileBox.contains(sel.anchorNode)) return;
+              const text = sel.toString().trim();
+              if (!text) return;
+              disInput.value = text;
+              disUserTouched = true;
+            };
+            profileBox.addEventListener("mouseup", captureSelection);
+            profileBox.addEventListener("keyup", captureSelection);
             const btnRow2 = document.createElement("div");
-            btnRow2.style.cssText = "display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.35rem;";
+            btnRow2.style.cssText = "display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.55rem;";
             const cancelBtn = document.createElement("button");
             cancelBtn.textContent = "Cancel";
-            cancelBtn.style.cssText = "padding:0.4rem 0.9rem;cursor:pointer;";
+            cancelBtn.style.cssText = "padding:0.4rem 1rem;cursor:pointer;border:1px solid #c8c8c8;border-radius:0.25rem;background:#fafafa;color:#444;font-size:0.88rem;";
             const submitBtn = document.createElement("button");
             submitBtn.textContent = "Create \u2197";
-            submitBtn.style.cssText = "padding:0.4rem 0.9rem;cursor:pointer;font-weight:bold;background:#2ecc40;color:#fff;border:none;border-radius:0.25rem;";
+            submitBtn.style.cssText = "padding:0.4rem 1.1rem;cursor:pointer;font-weight:bold;background:#2ecc40;color:#fff;border:none;border-radius:0.25rem;font-size:0.9rem;";
             btnRow2.appendChild(cancelBtn);
             btnRow2.appendChild(submitBtn);
             modal.appendChild(btnRow2);
@@ -2474,14 +2516,16 @@
               document.removeEventListener("keydown", onKey);
               overlay.remove();
             };
-            const onKey = (ev) => {
-              if (ev.key === "Escape") close();
-              else if (ev.key === "Enter" && ev.target === disInput) submit();
-            };
             const submit = () => {
+              const name = nameInput.value.trim();
               const dis = disInput.value.trim();
               close();
-              openCreateTab(dis || null);
+              openCreateTab({ name: name || displayName, disambiguation: dis || null });
+            };
+            const onKey = (ev) => {
+              if (ev.key === "Escape") {
+                close();
+              } else if (ev.key === "Enter" && (ev.target === disInput || ev.target === nameInput)) submit();
             };
             document.addEventListener("keydown", onKey);
             overlay.addEventListener("click", (ev) => {
@@ -2493,8 +2537,10 @@
             disInput.select();
             try {
               const data = await getDiscogsEntityData(r.entity?.resource_url);
+              if (data?.realname && !nameUserTouched && data.realname.trim() !== displayName.trim()) {
+                nameInput.value = data.realname.trim();
+              }
               const lines = [];
-              if (data?.realname && data.realname !== displayName) lines.push(`Real name: ${data.realname}`);
               if (data?.namevariations?.length) lines.push(`Also known as: ${data.namevariations.slice(0, 6).join(", ")}`);
               if (data?.profile) {
                 if (lines.length) lines.push("");
@@ -2713,6 +2759,8 @@
           unresolvedLi.textContent = `\u26A0 ${unresolvedCount} entity/entities unresolved \u2014 will be skipped`;
           getLogContainer().appendChild(unresolvedLi);
         }
+        confirmedMap.unresolvedCount = unresolvedCount;
+        confirmedMap.totalEntities = allResults.length;
         (panelLi || panel).remove();
         resolve(confirmedMap);
       });
@@ -3404,9 +3452,12 @@
       ].filter(Boolean).join(", ");
       const trackCount2 = Array.isArray(discogsTracklist) ? discogsTracklist.length : 0;
       const inputStats = `Input: ${companies?.length || 0} companies, ${artistRoles?.length || 0} release credits, ${tracklistRels?.length || 0} tracklist credits on ${trackCount2} track${trackCount2 === 1 ? "" : "s"}`;
-      const dedupPart2 = dedupedThisSession > 0 ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? "" : "s"}` : "";
-      const resultStats = `Result: ${added} added, ${existedInMb} already in MB${dedupPart2}, ${skipped} skipped, ${failed} failed`;
-      const note = buildEditNote(discogsUrl, opts, [inputStats, resultStats]);
+      const unresolvedCount = confirmedMap?.unresolvedCount || 0;
+      const totalEntities = confirmedMap?.totalEntities || 0;
+      const unresolvedLine = unresolvedCount > 0 ? `Unresolved: ${unresolvedCount} of ${totalEntities} entit${totalEntities === 1 ? "y" : "ies"} skipped in review` : null;
+      const editNoteDedupPart = dedupedThisSession > 0 ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? "" : "s"}` : "";
+      const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteDedupPart}, ${skipped} skipped, ${failed} failed`;
+      const note = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean));
       re.dispatch({ type: "update-edit-note", editNote: note });
     } catch (e) {
     }
