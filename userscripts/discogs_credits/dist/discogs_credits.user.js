@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.25.220141
+// @version      2026.5.25.220815
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -1817,6 +1817,9 @@
           true
         );
       }
+      if (cachedRec && Array.isArray(cachedRec.nameMatches)) {
+        return buildAttention(cachedRec.nameMatches, false);
+      }
     }
     const [nameJson, urlJson] = await Promise.all([
       mbThrottle.fetchJson(
@@ -1855,6 +1858,19 @@
         };
       }
     }
+    async function cacheAttention(matches) {
+      if (key && !nameSearchFailed) {
+        await writeIdbRecord(key, {
+          mbid: null,
+          entityType: null,
+          name: null,
+          mbUrl: null,
+          disambiguation: "",
+          resolvedVia: null,
+          nameMatches: matches
+        });
+      }
+    }
     let resolved = null;
     let via = null;
     if (nameHit && urlHit) {
@@ -1862,6 +1878,7 @@
         resolved = urlHit;
         via = "both";
       } else {
+        await cacheAttention(nameMatches);
         return buildAttention(
           nameMatches,
           false,
@@ -1895,6 +1912,7 @@
       }
       return buildResolved(mbUrl, finalName, finalDisam || "", via, resolved.kind);
     }
+    await cacheAttention(nameMatches);
     return buildAttention(nameMatches, nameSearchFailed);
   }
   async function resolveAll(entities, opts) {
