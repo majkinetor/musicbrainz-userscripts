@@ -283,22 +283,18 @@
   }
 
   // src/api-discogs.js
-  var link_infos = {};
-  function getDiscogsLinkKey(url) {
-    const re = /^https?:\/\/(?:www|api)\.discogs\.com\/(?:(?:(?!sell).+|sell.+)\/)?(master|release|artist|label)s?\/(\d+)(?:[^?#]*)(?:\?noanv=1|\?anv=[^=]+)?$/i;
-    const m = re.exec(url);
-    if (m !== null) {
-      const key = `${m[1]}/${m[2]}`;
-      if (!link_infos[key]) {
-        link_infos[key] = {
-          type: m[1],
-          id: m[2],
-          clean_url: `https://www.discogs.com/${m[1]}/${m[2]}`
-        };
-      }
-      return key;
-    }
-    return false;
+  var DISCOGS_URL_RE = /^https?:\/\/(?:www|api)\.discogs\.com\/(?:(?:(?!sell).+|sell.+)\/)?(master|release|artist|label)s?\/(\d+)(?:[^?#]*)(?:\?noanv=1|\?anv=[^=]+)?$/i;
+  function parseDiscogsUrl(url) {
+    const m = DISCOGS_URL_RE.exec(url);
+    if (!m) return null;
+    const type = m[1];
+    const id = m[2];
+    return {
+      type,
+      id,
+      key: `${type}/${id}`,
+      cleanUrl: `https://www.discogs.com/${type}/${id}`
+    };
   }
   var _releaseDataCache = /* @__PURE__ */ new Map();
   function getDiscogsReleaseData(url) {
@@ -1734,7 +1730,8 @@
       });
     }
     async function checkOne(artist) {
-      const key = getDiscogsLinkKey(artist.resource_url);
+      const parsed = parseDiscogsUrl(artist.resource_url);
+      const key = parsed?.key;
       const searchName = artist.name;
       const displayName = artist.anv && artist.anv.trim() || artist.name;
       const discogsHref = artist.resource_url.replace("https://api.discogs.com/artists/", "https://www.discogs.com/artist/");
@@ -1793,8 +1790,8 @@
         }
         return resolvedResult(mbUrl, a.name, a.disambiguation, "name");
       }
-      const urlJson = key && link_infos[key] ? await mbFetch(
-        `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(link_infos[key].clean_url)}&inc=artist-rels&fmt=json`
+      const urlJson = parsed ? await mbFetch(
+        `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=artist-rels&fmt=json`
       ) : null;
       if (urlJson?.relations?.length > 0) {
         const rel = urlJson.relations.find((r) => r.artist);
@@ -1879,7 +1876,8 @@
       const details = ENTITY_TYPE_MAP[company.entity_type_name];
       if (!details) return null;
       const entityType = details.entityType;
-      const key = getDiscogsLinkKey(company.resource_url);
+      const parsed = parseDiscogsUrl(company.resource_url);
+      const key = parsed?.key;
       const searchName = company.name;
       const displayName = company.name;
       const discogsHref = company.resource_url.replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, "https://www.discogs.com/$1/$2");
@@ -1983,8 +1981,8 @@
         };
       }
       const incRels = entityType === "place" ? "place-rels+label-rels" : `${entityType}-rels`;
-      const urlJson = key && link_infos[key] ? await mbFetch(
-        `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(link_infos[key].clean_url)}&inc=${incRels}&fmt=json`
+      const urlJson = parsed ? await mbFetch(
+        `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
       ) : null;
       if (urlJson?.relations?.length > 0) {
         const rel = urlJson.relations.find((r) => r[entityType] || r["label"] || r["place"]);
@@ -2054,7 +2052,7 @@
     for (const r of _nullNames) {
       const rUrl = r.entity?.resource_url;
       try {
-        const idbKey = getDiscogsLinkKey(rUrl);
+        const idbKey = parseDiscogsUrl(rUrl)?.key;
         const rec = await readIdbRecord(idbKey);
         if (rec?.mb_name) {
           _preloadedNames.set(rUrl, { name: rec.mb_name, dis: rec.mb_disambiguation || "" });
@@ -2292,7 +2290,7 @@
         function setRowResolved(a) {
           const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
           rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true });
-          const _idbKey = r.entity?.resource_url ? getDiscogsLinkKey(r.entity.resource_url) : null;
+          const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
           if (_idbKey && db) {
             try {
               const _tx = db.transaction(["mblinks"], "readwrite");
@@ -3021,7 +3019,7 @@
     }
     async function getMbidForEntity(entity, entityType) {
       return new Promise((resolve, reject) => {
-        const key = getDiscogsLinkKey(entity.resource_url);
+        const key = parseDiscogsUrl(entity.resource_url)?.key;
         if (!key) return reject(`No Discogs key for ${entity.name}`);
         const tx = db.transaction(["mblinks"], "readonly");
         const req = tx.objectStore("mblinks").get(key);
@@ -3924,7 +3922,6 @@
         });
         if (!seenResourceUrls.has(url)) {
           seenResourceUrls.add(url);
-          if (role.artist?.resource_url) getDiscogsLinkKey(role.artist.resource_url);
           if (!role.artist?.resource_url && role.artist) role.artist._syntheticKey = url;
           uniqueArtists.push(role.artist);
         }
@@ -3940,7 +3937,6 @@
       json.companies.forEach((c) => {
         if (c.resource_url && !seenCompanyUrls.has(c.resource_url) && ENTITY_TYPE_MAP[c.entity_type_name]) {
           seenCompanyUrls.add(c.resource_url);
-          getDiscogsLinkKey(c.resource_url);
           uniqueCompanies.push(c);
         }
       });
@@ -4016,7 +4012,7 @@
         capturedConfirmedMap = confirmedMap;
         const cachePromises = [];
         confirmedMap.forEach((mbUrl, resourceUrl) => {
-          const key = getDiscogsLinkKey(resourceUrl);
+          const key = parseDiscogsUrl(resourceUrl)?.key;
           if (!key) return;
           cachePromises.push(new Promise((res) => {
             try {

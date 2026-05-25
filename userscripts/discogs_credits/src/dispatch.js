@@ -7,7 +7,7 @@
 import { addLogLine }                  from './log.js';
 import { pageWindow }                   from './constants.js';
 import { db }                            from './storage.js';
-import { getDiscogsLinkKey }             from './api-discogs.js';
+import { parseDiscogsUrl }               from './api-discogs.js';
 import {
     mbThrottle,
     fetchMBEntity,
@@ -252,7 +252,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
     // ── Helper: resolve MBID from IDB cache for a Discogs entity ─────────────
     async function getMbidForEntity(entity, entityType) {
         return new Promise((resolve, reject) => {
-            const key = getDiscogsLinkKey(entity.resource_url);
+            const key = parseDiscogsUrl(entity.resource_url)?.key;
             if (!key) return reject(`No Discogs key for ${entity.name}`);
             const tx = db.transaction(['mblinks'], 'readonly');
             const req = tx.objectStore('mblinks').get(key);

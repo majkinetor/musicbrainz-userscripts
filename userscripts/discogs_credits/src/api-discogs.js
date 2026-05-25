@@ -1,39 +1,33 @@
 // Discogs API wrappers and URL helpers.
-//
-// `link_infos` holds the parsed pieces of every Discogs URL the script has
-// seen this session, keyed by `${type}/${id}`. It's mutated by
-// `getDiscogsLinkKey` and read directly from many call sites — that's why
-// it's exported.
 
-/** Map of "<type>/<id>" → { type, id, clean_url }. Populated lazily by `getDiscogsLinkKey`. */
-export const link_infos = {};
+const DISCOGS_URL_RE = /^https?:\/\/(?:www|api)\.discogs\.com\/(?:(?:(?!sell).+|sell.+)\/)?(master|release|artist|label)s?\/(\d+)(?:[^?#]*)(?:\?noanv=1|\?anv=[^=]+)?$/i;
 
 /**
- * Parse a Discogs URL (api.discogs.com or www.discogs.com) into a key of the
- * form "<type>/<id>" and cache its pieces in `link_infos[key]`.
+ * Parse a Discogs URL (api.discogs.com or www.discogs.com) into its pieces.
  *
  * Recognises `master`, `release`, `artist`, `label` URLs in singular and
- * plural ("/labels/123" vs "/label/123") forms. Returns `false` when the URL
- * doesn't match.
+ * plural ("/labels/123" vs "/label/123") forms.
  *
- * Side effect: mutates `link_infos`. Idempotent — re-parsing the same URL
- * just returns the cached key.
+ * Returns `{type, id, key, cleanUrl}` on match, or `null` otherwise.
+ *
+ *   - `type`     — `'master' | 'release' | 'artist' | 'label'`
+ *   - `id`       — the numeric Discogs id, as a string
+ *   - `key`      — `"<type>/<id>"`, the IDB / localStorage key used elsewhere
+ *   - `cleanUrl` — canonical `https://www.discogs.com/<type>/<id>` form
+ *
+ * Pure: no side effects, no module state.
  */
-export function getDiscogsLinkKey(url) {
-    const re = /^https?:\/\/(?:www|api)\.discogs\.com\/(?:(?:(?!sell).+|sell.+)\/)?(master|release|artist|label)s?\/(\d+)(?:[^?#]*)(?:\?noanv=1|\?anv=[^=]+)?$/i;
-    const m = re.exec(url);
-    if (m !== null) {
-        const key = `${m[1]}/${m[2]}`;
-        if (!link_infos[key]) {
-            link_infos[key] = {
-                type: m[1],
-                id: m[2],
-                clean_url: `https://www.discogs.com/${m[1]}/${m[2]}`,
-            };
-        }
-        return key;
-    }
-    return false;
+export function parseDiscogsUrl(url) {
+    const m = DISCOGS_URL_RE.exec(url);
+    if (!m) return null;
+    const type = m[1];
+    const id   = m[2];
+    return {
+        type,
+        id,
+        key:      `${type}/${id}`,
+        cleanUrl: `https://www.discogs.com/${type}/${id}`,
+    };
 }
 
 // In-memory session cache for Discogs release JSON. Avoids localStorage
