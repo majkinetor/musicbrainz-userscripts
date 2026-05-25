@@ -61,7 +61,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         // NOT 'mastering' — MB deprecated artist→recording mastering (link type 136).
     ]);
 
-    log.line(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
+    log.info(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
 
     const bar = document.querySelector('.discogs-bar');
     function tickProgress() {
@@ -124,7 +124,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                 trackIndex++;
             }
         }
-        log.line(`Found ${trackCount} track(s) in editor state (${recordingByGid.size} with GID, ${recordingByPosition.size} position entries: ${[...recordingByPosition.keys()].join(',')}). relatedWorks: ${editorWorkByRecGid.size} pre-linked`)
+        log.info(`Found ${trackCount} track(s) in editor state (${recordingByGid.size} with GID, ${recordingByPosition.size} position entries: ${[...recordingByPosition.keys()].join(',')}). relatedWorks: ${editorWorkByRecGid.size} pre-linked`)
     } catch(e) {
         log.warn(`Iterating MB state: ${e.message}`);
     }
@@ -133,12 +133,12 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
     const positionToGid = new Map(); // "1" / "A1" → recording GID
     try {
         const relMbid = releaseEntity.gid;
-        log.line(`WS2: fetching recordings for release ${relMbid}…`);
+        log.info(`WS2: fetching recordings for release ${relMbid}…`);
         const wsJson = await fetchWithRetry(`/ws/2/release/${relMbid}?inc=recordings&fmt=json`);
-        log.line(`WS2: response received`);
+        log.info(`WS2: response received`);
         if (wsJson) {
             const mediaCount = wsJson.media?.length ?? 0;
-            log.line(`WS2: ${mediaCount} medium/media in response`);
+            log.info(`WS2: ${mediaCount} medium/media in response`);
             const mediaArr = wsJson.media || [];
             const isMultiMedium = mediaArr.length > 1;
             for (const medium of mediaArr) {
@@ -160,7 +160,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                     }
                 }
             }
-            log.line(`WS2 position map: ${positionToGid.size} entries (${[...positionToGid.keys()].sort().join(', ')})`);
+            log.info(`WS2 position map: ${positionToGid.size} entries (${[...positionToGid.keys()].sort().join(', ')})`);
         }
     } catch(e) {
         log.warn(`WS2 recording fetch failed: ${e.message} — using editor state positions only`);
@@ -435,7 +435,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         // Exclude work-only roles — those go to works via the works section below
         const applicable = artistRoles.filter(role => RECORDING_LINK_TYPES.has(role.linkType) && !WORK_ONLY_ARTIST_RELS.includes(role.linkType));
         if (applicable.length > 0) {
-            log.line(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)…`);
+            log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)…`);
             for (const role of applicable) {
                 let mbUrl;
                 // See bug #8 — no network fallback.
@@ -496,11 +496,11 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         if (!recordingOfLinkTypeId) {
             log.error('Could not resolve "performance" link type — work processing skipped');
         } else {
-            log.line(`Processing work relationships for ${workOnlyByGid.size} recording(s)…`);
+            log.info(`Processing work relationships for ${workOnlyByGid.size} recording(s)…`);
 
             // Use editor state relatedWorks (built during recording map phase above) — no extra fetch needed
             const existingWorkByRecGid = editorWorkByRecGid;
-            log.line(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
+            log.info(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
 
             // Check editor state only for relationships dispatched in THIS session
             function getWorkFromEditorState(recEntity) {
@@ -529,7 +529,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                 if (hasExistingWork) {
                     workEntity = editorWorkByRecGid.get(recGid);
                     const wid = workEntity.gid || workEntity.id;
-                    log.line(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || 'existing'}) — skipping creation`);
+                    log.info(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || 'existing'}) — skipping creation`);
                     if (!workEntity.gid && !workEntity.id) continue; // can't use this entity
                 }
 
@@ -597,7 +597,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                             linkTypeID: recordingOfLinkTypeId,
                         },
                     });
-                    log.line(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
+                    log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
                     added++;
                     tickProgress();
                     // Re-read from editor state so subsequent artist→work dispatches see the live entity
@@ -672,7 +672,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
         if (seenTrackRels.has(trackRelKey)) continue;
         seenTrackRels.add(trackRelKey);
-        log.line(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> — ${credit}`);
+        log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> — ${credit}`);
         await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
         tickProgress();
     }
@@ -688,5 +688,5 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         re.dispatch({ type: 'update-edit-note', editNote: note });
     } catch(e) { /* ignore */ }
 
-    log.line(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
+    log.info(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
 }

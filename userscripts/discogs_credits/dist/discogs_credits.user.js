@@ -79,7 +79,7 @@
     }
   }
   var log = {
-    line: (msg) => _emit(msg, msg),
+    info: (msg) => _emit(msg, msg),
     warn: (msg) => _emit(`<span style="color:orange">WARN ${msg}</span>`, `WARN ${msg}`),
     error: (msg) => _emit(`<span style="color:red">ERR ${msg}</span>`, `ERR ${msg}`)
   };
@@ -198,7 +198,7 @@
       contains.sort((a, b) => ((a.name || "").length || 999) - ((b.name || "").length || 999));
       const best = contains[0];
       if ((best.name || "").toLowerCase() !== needle) {
-        log.line(`Fuzzy match: "${name}" \u2192 "${best.name}" (${type0}\u2192${type1})`);
+        log.info(`Fuzzy match: "${name}" \u2192 "${best.name}" (${type0}\u2192${type1})`);
       }
       return best.id;
     }
@@ -2688,21 +2688,21 @@
 
   // src/editor-state.js
   async function waitForMBEditor(timeoutMs = 15e3) {
-    log.line("Waiting for MB relationship editor\u2026");
+    log.info("Waiting for MB relationship editor\u2026");
     let waited = 0;
     while (waited < timeoutMs) {
       const MB = pageWindow.MB;
       const re = MB?.relationshipEditor;
       const st = re?.state;
       if (st?.entity) {
-        log.line(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
+        log.info(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
         return re;
       }
       if (waited % 2e3 === 0 && waited > 0) {
         const mbKeys = MB ? Object.keys(MB).join(", ") : "undefined";
         const reKeys = re ? Object.keys(re).join(", ") : "undefined";
         const stKeys = st ? Object.keys(st).join(", ") : "undefined";
-        log.line(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
+        log.info(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
       }
       await new Promise((r) => setTimeout(r, 200));
       waited += 200;
@@ -2730,7 +2730,7 @@
       }
     }
     const posLabel = trackPos != null && trackPos !== "" ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : "";
-    log.line(`\u2192 <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} \u2194 ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ""}`);
+    log.info(`\u2192 <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} \u2194 ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ""}`);
     re.dispatch({
       type: "update-relationship-state",
       sourceEntity,
@@ -2878,7 +2878,7 @@
       "programming"
       // NOT 'mastering' — MB deprecated artist→recording mastering (link type 136).
     ]);
-    log.line(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
+    log.info(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
     const bar = document.querySelector(".discogs-bar");
     function tickProgress() {
       const done = added + skipped + failed;
@@ -2938,19 +2938,19 @@
           trackIndex++;
         }
       }
-      log.line(`Found ${trackCount} track(s) in editor state (${recordingByGid.size} with GID, ${recordingByPosition.size} position entries: ${[...recordingByPosition.keys()].join(",")}). relatedWorks: ${editorWorkByRecGid.size} pre-linked`);
+      log.info(`Found ${trackCount} track(s) in editor state (${recordingByGid.size} with GID, ${recordingByPosition.size} position entries: ${[...recordingByPosition.keys()].join(",")}). relatedWorks: ${editorWorkByRecGid.size} pre-linked`);
     } catch (e) {
       log.warn(`Iterating MB state: ${e.message}`);
     }
     const positionToGid = /* @__PURE__ */ new Map();
     try {
       const relMbid = releaseEntity.gid;
-      log.line(`WS2: fetching recordings for release ${relMbid}\u2026`);
+      log.info(`WS2: fetching recordings for release ${relMbid}\u2026`);
       const wsJson = await fetchWithRetry(`/ws/2/release/${relMbid}?inc=recordings&fmt=json`);
-      log.line(`WS2: response received`);
+      log.info(`WS2: response received`);
       if (wsJson) {
         const mediaCount = wsJson.media?.length ?? 0;
-        log.line(`WS2: ${mediaCount} medium/media in response`);
+        log.info(`WS2: ${mediaCount} medium/media in response`);
         const mediaArr = wsJson.media || [];
         const isMultiMedium2 = mediaArr.length > 1;
         for (const medium of mediaArr) {
@@ -2970,7 +2970,7 @@
             }
           }
         }
-        log.line(`WS2 position map: ${positionToGid.size} entries (${[...positionToGid.keys()].sort().join(", ")})`);
+        log.info(`WS2 position map: ${positionToGid.size} entries (${[...positionToGid.keys()].sort().join(", ")})`);
       }
     } catch (e) {
       log.warn(`WS2 recording fetch failed: ${e.message} \u2014 using editor state positions only`);
@@ -3184,7 +3184,7 @@
     if (applyToTracks && recordingByGid.size > 0) {
       const applicable = artistRoles.filter((role) => RECORDING_LINK_TYPES.has(role.linkType) && !WORK_ONLY_ARTIST_RELS.includes(role.linkType));
       if (applicable.length > 0) {
-        log.line(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)\u2026`);
+        log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)\u2026`);
         for (const role of applicable) {
           let mbUrl;
           try {
@@ -3245,9 +3245,9 @@
           }
           return null;
         };
-        log.line(`Processing work relationships for ${workOnlyByGid.size} recording(s)\u2026`);
+        log.info(`Processing work relationships for ${workOnlyByGid.size} recording(s)\u2026`);
         const existingWorkByRecGid = editorWorkByRecGid;
-        log.line(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
+        log.info(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
         for (const [recGid, entries] of workOnlyByGid) {
           const recEntity = entries[0]?.recEntity ?? recordingByGid.get(recGid);
           const trackTitle = entries[0]?.role.track.title ?? recEntity?.name ?? recGid;
@@ -3258,7 +3258,7 @@
           if (hasExistingWork) {
             workEntity = editorWorkByRecGid.get(recGid);
             const wid = workEntity.gid || workEntity.id;
-            log.line(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || "existing"}) \u2014 skipping creation`);
+            log.info(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || "existing"}) \u2014 skipping creation`);
             if (!workEntity.gid && !workEntity.id) continue;
           }
           if (!workEntity) workEntity = getWorkFromEditorState(recEntity);
@@ -3313,7 +3313,7 @@
                 linkTypeID: recordingOfLinkTypeId
               }
             });
-            log.line(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
+            log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
             added++;
             tickProgress();
             workEntity = getWorkFromEditorState(recEntity) || workEntity;
@@ -3382,7 +3382,7 @@
       const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
       if (seenTrackRels.has(trackRelKey)) continue;
       seenTrackRels.add(trackRelKey);
-      log.line(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> \u2014 ${credit}`);
+      log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> \u2014 ${credit}`);
       await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
       tickProgress();
     }
@@ -3396,7 +3396,7 @@
       re.dispatch({ type: "update-edit-note", editNote: note });
     } catch (e) {
     }
-    log.line(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
+    log.info(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
   }
 
   // src/ui-bar.js
@@ -3794,7 +3794,7 @@
       editNote.split("\n").forEach((line) => {
         if (!line.trim()) return;
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
-        log.line(html);
+        log.info(html);
       });
       runImport(discogsUrl2, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
         importBtn.disabled = false;
@@ -3868,7 +3868,7 @@
         li.querySelector("details").appendChild(pre);
         _logs2.appendChild(li);
       }
-      log.line(`Found ${json.companies.length + artistRoles.length} release relationships`);
+      log.info(`Found ${json.companies.length + artistRoles.length} release relationships`);
       artistRoles = artistRoles.concat(convertPotentialDJMixers(json));
       let tracklistRels = [];
       if (processTracklist) {
@@ -3903,7 +3903,7 @@
             }, [])
           );
         }
-        log.line(`Found ${tracklistRels.length} tracklist relationships`);
+        log.info(`Found ${tracklistRels.length} tracklist relationships`);
       }
       const allArtistRoles = artistRoles.concat(tracklistRels);
       const uniqueArtists = [];

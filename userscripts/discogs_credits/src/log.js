@@ -3,7 +3,7 @@
 //
 // Public API:
 //
-//   log.line(msg)   plain line
+//   log.info(msg)   plain line
 //   log.warn(msg)   orange "WARN <msg>"
 //   log.error(msg)  red "ERR <msg>"
 //
@@ -53,7 +53,7 @@ function _emit(html, plainText) {
  * shared log container plus pipes a plain-text summary into the
  * progress ticker.
  *
- *   - `log.line(msg)`   plain (no prefix, no colour).
+ *   - `log.info(msg)`   plain (no prefix, no colour).
  *   - `log.warn(msg)`   orange `WARN ${msg}`.
  *   - `log.error(msg)`  red `ERR ${msg}`.
  *
@@ -62,13 +62,13 @@ function _emit(html, plainText) {
  * by the logger.
  */
 export const log = {
-    line:  msg => _emit(msg, msg),
+    info:  msg => _emit(msg, msg),
     warn:  msg => _emit(`<span style="color:orange">WARN ${msg}</span>`, `WARN ${msg}`),
     error: msg => _emit(`<span style="color:red">ERR ${msg}</span>`,     `ERR ${msg}`),
 };
 
 /**
- * @deprecated  Use `log.line` / `log.warn` / `log.error` instead.
+ * @deprecated  Use `log.info` / `log.warn` / `log.error` instead.
  *
  * Old API where severity was encoded into the message string as inline
  * HTML (`<span style="color:orange">WARN ...</span>`). New callers

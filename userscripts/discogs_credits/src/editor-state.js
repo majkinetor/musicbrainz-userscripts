@@ -11,21 +11,21 @@ import { log }               from './log.js';
 
 /** Poll for MB.relationshipEditor.state.entity with verbose log feedback. */
 export async function waitForMBEditor(timeoutMs = 15000) {
-    log.line('Waiting for MB relationship editor…');
+    log.info('Waiting for MB relationship editor…');
     let waited = 0;
     while (waited < timeoutMs) {
         const MB = pageWindow.MB;
         const re = MB?.relationshipEditor;
         const st = re?.state;
         if (st?.entity) {
-            log.line(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
+            log.info(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
             return re;
         }
         if (waited % 2000 === 0 && waited > 0) {
             const mbKeys = MB ? Object.keys(MB).join(', ') : 'undefined';
             const reKeys = re ? Object.keys(re).join(', ') : 'undefined';
             const stKeys = st ? Object.keys(st).join(', ') : 'undefined';
-            log.line(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
+            log.info(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
         }
         await new Promise(r => setTimeout(r, 200));
         waited += 200;
@@ -65,7 +65,7 @@ export function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID,
         } catch(e) {}
     }
     const posLabel = (trackPos != null && trackPos !== '') ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : '';
-    log.line(`→ <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} ↔ ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ''}`);
+    log.info(`→ <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} ↔ ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ''}`);
     re.dispatch({
         type: 'update-relationship-state',
         sourceEntity,

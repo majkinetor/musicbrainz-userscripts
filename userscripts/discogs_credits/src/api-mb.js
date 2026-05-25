@@ -183,7 +183,7 @@ export function resolveLinkTypeId(name, type0, type1) {
         contains.sort((a, b) => ((a.name || '').length || 999) - ((b.name || '').length || 999));
         const best = contains[0];
         if ((best.name || '').toLowerCase() !== needle) {
-            log.line(`Fuzzy match: "${name}" → "${best.name}" (${type0}→${type1})`);
+            log.info(`Fuzzy match: "${name}" → "${best.name}" (${type0}→${type1})`);
         }
         return best.id;
     }
