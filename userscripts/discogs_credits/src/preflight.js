@@ -125,6 +125,14 @@ async function resolveEntity(entity, kind, opts) {
             return buildResolved(cachedRec.mbUrl, info.name, info.disambiguation,
                                  via, cachedRec.entityType, true);
         }
+        if (cachedRec && Array.isArray(cachedRec.nameMatches)) {
+            // Negative cache hit — we previously ran MB queries for this
+            // Discogs id and found no auto-resolve target. Return the
+            // remembered candidate list without re-querying MB so that an
+            // immediate page reload doesn't redo every unresolved-entity
+            // round-trip. Use the "🔄 Refresh from MB" button to bypass.
+            return buildAttention(cachedRec.nameMatches, false);
+        }
     }
 
     // ── 2 + 3. Name search AND URL relation, in parallel ────────────────────
@@ -177,6 +185,25 @@ async function resolveEntity(entity, kind, opts) {
         }
     }
 
+    // Helper: stash the unresolved result in IDB so a page reload short-
+    // circuits the MB queries (above). Skipped when the name search
+    // outright failed — that's a "we don't know" state, not "we know it
+    // doesn't match anything". Disagreement (name vs URL → different MBIDs)
+    // also caches via this path because it's a stable user-review state.
+    async function cacheAttention(matches) {
+        if (key && !nameSearchFailed) {
+            await writeIdbRecord(key, {
+                mbid:           null,
+                entityType:     null,
+                name:           null,
+                mbUrl:          null,
+                disambiguation: '',
+                resolvedVia:    null,
+                nameMatches:    matches,
+            });
+        }
+    }
+
     // ── 4. Decide ───────────────────────────────────────────────────────────
     let resolved = null;
     let via      = null;
@@ -192,6 +219,7 @@ async function resolveEntity(entity, kind, opts) {
             // whichever came first (always name, because the URL lookup was
             // a fall-through); this is the latent bug that issue #32
             // proposal E fixes.
+            await cacheAttention(nameMatches);
             return buildAttention(
                 nameMatches, false,
                 `name → ${nameHit.kind}/${nameHit.mbid}, URL → ${urlHit.kind}/${urlHit.mbid}`
@@ -229,6 +257,7 @@ async function resolveEntity(entity, kind, opts) {
     }
 
     // Nothing resolved.
+    await cacheAttention(nameMatches);
     return buildAttention(nameMatches, nameSearchFailed);
 }
 

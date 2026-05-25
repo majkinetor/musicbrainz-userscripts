@@ -1,7 +1,9 @@
 // IndexedDB cache for Discogs↔MB entity resolutions.
 //
 // Single object store `entity_cache`, keyed by `discogs_id` of the form
-// `"<type>/<id>"` (e.g. `"artist/12345"`, `"label/678"`). Record shape:
+// `"<type>/<id>"` (e.g. `"artist/12345"`, `"label/678"`).
+//
+// Record shape — RESOLVED (preflight found an unambiguous MB match):
 //
 //   {
 //     discogs_id,      // mirror of the key
@@ -20,6 +22,29 @@
 //                      //   user  — user picked / confirmed in the review table
 //     resolvedAt,      // ISO8601 timestamp of the resolution
 //   }
+//
+// Record shape — UNRESOLVED (preflight found no auto-match, user needs to
+// pick or skip). Stored so an immediate page reload doesn't redo the MB
+// queries for entities that genuinely have no exact-name + URL match:
+//
+//   {
+//     discogs_id,
+//     mbid:           null,
+//     entityType:     null,
+//     mbUrl:          null,
+//     name:           null,
+//     disambiguation: '',
+//     resolvedVia:    null,
+//     nameMatches:    [ { id, name, disambiguation, score }, … ],  // search hits
+//     resolvedAt,
+//   }
+//
+// Negative cache is sticky — the "🔄 Refresh from MB" button in the review
+// table sets `bypassIdb: true` to force a fresh resolve when the user wants
+// to re-check (e.g. they just created the entity in MB on another tab).
+// Negative cache is NOT written when the name search itself failed
+// (network error / rate-limit) — that's a "don't know" state, retry next
+// time, not "we know there's nothing".
 //
 // `db` is exported as a live binding — `null` until `indexedDB.open()`'s
 // async success callback fires, then the IDBDatabase. ES-module imports
