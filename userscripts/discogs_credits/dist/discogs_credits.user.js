@@ -221,8 +221,11 @@
   }
 
   // src/storage.js
+  var DB_NAME = "mblink";
+  var DB_VERSION = 2;
+  var STORE = "entity_cache";
   var db = null;
-  var _request = indexedDB.open("mblink");
+  var _request = indexedDB.open(DB_NAME, DB_VERSION);
   _request.onerror = function() {
     console.error("Why didn't you allow my web app to use IndexedDB?!");
   };
@@ -231,18 +234,44 @@
   };
   _request.onupgradeneeded = function(event) {
     const upgradeDb = event.target.result;
-    upgradeDb.createObjectStore("mblinks", {
-      keyPath: "discogs_id"
-    });
+    if (!upgradeDb.objectStoreNames.contains(STORE)) {
+      upgradeDb.createObjectStore(STORE, { keyPath: "discogs_id" });
+    }
   };
+  function mbUrlOf(entityType, mbid) {
+    return `//musicbrainz.org/${entityType}/${mbid}`;
+  }
   function readIdbRecord(key) {
     return new Promise((resolve) => {
       if (!key || !db) return resolve(null);
       try {
-        const tx = db.transaction(["mblinks"], "readonly");
-        const req = tx.objectStore("mblinks").get(key);
+        const tx = db.transaction([STORE], "readonly");
+        const req = tx.objectStore(STORE).get(key);
         req.onsuccess = () => resolve(req.result || null);
         req.onerror = () => resolve(null);
+      } catch (e) {
+        resolve(null);
+      }
+    });
+  }
+  function writeIdbRecord(key, partial) {
+    return new Promise((resolve) => {
+      if (!key || !db) return resolve(null);
+      try {
+        const tx = db.transaction([STORE], "readwrite");
+        const store = tx.objectStore(STORE);
+        const getReq = store.get(key);
+        getReq.onsuccess = () => {
+          const existing = getReq.result || {};
+          const merged = { ...existing, ...partial, discogs_id: key, resolvedAt: (/* @__PURE__ */ new Date()).toISOString() };
+          if (merged.mbid && merged.entityType && !partial.mbUrl) {
+            merged.mbUrl = mbUrlOf(merged.entityType, merged.mbid);
+          }
+          const putReq = store.put(merged);
+          putReq.onsuccess = () => resolve(merged);
+          putReq.onerror = () => resolve(null);
+        };
+        getReq.onerror = () => resolve(null);
       } catch (e) {
         resolve(null);
       }
@@ -313,9 +342,6 @@
       _releaseDataCache.set(url, json);
       return json;
     });
-  }
-  function clearReleaseDataCache(url) {
-    _releaseDataCache.delete(url);
   }
 
   // src/data/entity-map.js
@@ -1721,7 +1747,7 @@
     const searchName = entity.name;
     const displayName = kind === "artist" ? entity.anv && entity.anv.trim() || entity.name : entity.name;
     const discogsHref = entity.resource_url.replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, "https://www.discogs.com/$1/$2");
-    function buildResolved(mbUrl, mbName, mbDisambig, via, actualKind = kind) {
+    function buildResolved(mbUrl, mbName, mbDisambig, via2, actualKind = kind, fromCache = false) {
       return {
         type: "resolved",
         entityType: actualKind,
@@ -1731,35 +1757,74 @@
         mbUrl,
         mbName,
         mbDisambig,
-        logEntry: { displayName, discogsHref, mbUrl, mbName, mbDisambig, via }
+        // `via`      — the resolution mechanism (`name` / `url` / `both` / `user`,
+        //              or `cache` only when a legacy IDB record predates the
+        //              `resolvedVia` field and we genuinely can't recover it).
+        // `fromCache`— whether THIS resolution came from IDB rather than a fresh
+        //              MB lookup. The two are orthogonal: a name-resolved entity
+        //              loaded from cache is `via='name'` + `fromCache=true`, and
+        //              the UI surfaces both as `name (cache)`.
+        logEntry: { displayName, discogsHref, mbUrl, mbName, mbDisambig, via: via2, fromCache }
       };
     }
-    async function fetchMbEntityInfo(mbUrl) {
-      const m = mbUrl.match(/\/(artist|label|place)\/([a-f0-9-]+)/);
-      if (!m) return { name: null, disambiguation: "" };
-      const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${m[1]}/${m[2]}?fmt=json`);
+    function buildAttention(nameMatches2, nameSearchFailed2, ambiguityReason) {
+      return {
+        type: "attention",
+        entityType: kind,
+        entity,
+        displayName,
+        discogsHref,
+        nameMatches: nameMatches2 || [],
+        // Only artists track this — used by the review table to badge
+        // entries that failed because of a rate-limited name search vs
+        // entries that genuinely don't exist in MB.
+        rateLimited: kind === "artist" && nameSearchFailed2 && !nameMatches2?.length,
+        ambiguityReason: ambiguityReason || null
+      };
+    }
+    async function fetchMbEntityInfo(et, mbid) {
+      const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
       return json ? { name: json.name || null, disambiguation: json.disambiguation || "" } : { name: null, disambiguation: "" };
     }
     if (!bypassIdb && key) {
       const cachedRec = await readIdbRecord(key);
-      if (cachedRec?.mb_links?.[0]) {
-        const cached = cachedRec.mb_links[0];
-        if (cachedRec.mb_name) {
-          return buildResolved(cached, cachedRec.mb_name, cachedRec.mb_disambiguation || "", "cache");
+      if (cachedRec?.mbid && cachedRec?.entityType) {
+        const via2 = cachedRec.resolvedVia || "cache";
+        if (cachedRec.name) {
+          return buildResolved(
+            cachedRec.mbUrl,
+            cachedRec.name,
+            cachedRec.disambiguation || "",
+            via2,
+            cachedRec.entityType,
+            true
+          );
         }
-        const info = await fetchMbEntityInfo(cached);
-        if (info.name && db) {
-          try {
-            db.transaction(["mblinks"], "readwrite").objectStore("mblinks").put({ ...cachedRec, mb_name: info.name, mb_disambiguation: info.disambiguation });
-          } catch (e) {
-          }
+        const info = await fetchMbEntityInfo(cachedRec.entityType, cachedRec.mbid);
+        if (info.name) {
+          await writeIdbRecord(key, {
+            name: info.name,
+            disambiguation: info.disambiguation
+          });
         }
-        return buildResolved(cached, info.name, info.disambiguation, "cache");
+        return buildResolved(
+          cachedRec.mbUrl,
+          info.name,
+          info.disambiguation,
+          via2,
+          cachedRec.entityType,
+          true
+        );
       }
     }
-    const nameJson = await mbThrottle.fetchJson(
-      `//musicbrainz.org/ws/2/${kind}?query=${encodeURIComponent(searchName)}&fmt=json&limit=${searchLimit}`
-    );
+    const [nameJson, urlJson] = await Promise.all([
+      mbThrottle.fetchJson(
+        `//musicbrainz.org/ws/2/${kind}?query=${encodeURIComponent(searchName)}&fmt=json&limit=${searchLimit}`
+      ),
+      parsed ? mbThrottle.fetchJson(
+        `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
+      ) : Promise.resolve(null)
+    ]);
     const nameSearchFailed = nameJson === null;
     const normalized = searchName.toLowerCase().trim();
     const nameMatches = !nameJson?.[resultKey] ? [] : nameJson[resultKey].filter((a) => a.name.toLowerCase().trim() === normalized || a.score != null && a.score >= 70).map((a) => ({
@@ -1768,51 +1833,68 @@
       disambiguation: a.disambiguation || a["disambiguation-comment"] || "",
       score: a.score || 0
     }));
-    const exactMatches = nameMatches.filter((a) => a.name.toLowerCase().trim() === normalized);
-    if (exactMatches.length === 1) {
-      const a = exactMatches[0];
-      const mbUrl = `//musicbrainz.org/${kind}/${a.id}`;
-      if (key && db) {
-        try {
-          db.transaction(["mblinks"], "readwrite").objectStore("mblinks").put({ discogs_id: key, mb_links: [mbUrl], mb_name: a.name, mb_disambiguation: a.disambiguation || "" });
-        } catch (e) {
-        }
-      }
-      return buildResolved(mbUrl, a.name, a.disambiguation || "", "name");
-    }
-    const urlJson = parsed ? await mbThrottle.fetchJson(
-      `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
-    ) : null;
+    const exactNameMatches = nameMatches.filter((a) => a.name.toLowerCase().trim() === normalized);
+    const nameHit = exactNameMatches.length === 1 ? {
+      kind,
+      mbid: exactNameMatches[0].id,
+      name: exactNameMatches[0].name,
+      disambiguation: exactNameMatches[0].disambiguation || ""
+    } : null;
+    let urlHit = null;
     if (urlJson?.relations?.length > 0) {
       const rel = kind === "place" ? urlJson.relations.find((r) => r.place || r.label) : urlJson.relations.find((r) => r[kind]);
       if (rel) {
         const actualKind = rel[kind] ? kind : rel.label ? "label" : "place";
         const a = rel[actualKind];
-        const mbUrl = `//musicbrainz.org/${actualKind}/${a.id}`;
-        const info = a.name ? a : await fetchMbEntityInfo(mbUrl);
-        const resolvedName = info.name || a.name;
-        const resolvedDisam = info.disambiguation || a.disambiguation || "";
-        if (key && resolvedName && db) {
-          try {
-            db.transaction(["mblinks"], "readwrite").objectStore("mblinks").put({ discogs_id: key, mb_links: [mbUrl], mb_name: resolvedName, mb_disambiguation: resolvedDisam });
-          } catch (e) {
-          }
-        }
-        return buildResolved(mbUrl, resolvedName, resolvedDisam, "url", actualKind);
+        urlHit = {
+          kind: actualKind,
+          mbid: a.id,
+          name: a.name || null,
+          disambiguation: a.disambiguation || ""
+        };
       }
     }
-    return {
-      type: "attention",
-      entityType: kind,
-      entity,
-      displayName,
-      discogsHref,
-      nameMatches,
-      // Only artists track this — used by the review table to badge
-      // entries that failed because of a rate-limited name search vs
-      // entries that genuinely don't exist in MB.
-      rateLimited: kind === "artist" && nameSearchFailed && !nameMatches.length
-    };
+    let resolved = null;
+    let via = null;
+    if (nameHit && urlHit) {
+      if (nameHit.mbid === urlHit.mbid && nameHit.kind === urlHit.kind) {
+        resolved = urlHit;
+        via = "both";
+      } else {
+        return buildAttention(
+          nameMatches,
+          false,
+          `name \u2192 ${nameHit.kind}/${nameHit.mbid}, URL \u2192 ${urlHit.kind}/${urlHit.mbid}`
+        );
+      }
+    } else if (urlHit) {
+      resolved = urlHit;
+      via = "url";
+    } else if (nameHit) {
+      resolved = nameHit;
+      via = "name";
+    }
+    if (resolved) {
+      const mbUrl = `//musicbrainz.org/${resolved.kind}/${resolved.mbid}`;
+      let finalName = resolved.name;
+      let finalDisam = resolved.disambiguation;
+      if (!finalName) {
+        const info = await fetchMbEntityInfo(resolved.kind, resolved.mbid);
+        finalName = info.name || null;
+        finalDisam = info.disambiguation || "";
+      }
+      if (key) {
+        await writeIdbRecord(key, {
+          mbid: resolved.mbid,
+          entityType: resolved.kind,
+          name: finalName,
+          disambiguation: finalDisam || "",
+          resolvedVia: via
+        });
+      }
+      return buildResolved(mbUrl, finalName, finalDisam || "", via, resolved.kind);
+    }
+    return buildAttention(nameMatches, nameSearchFailed);
   }
   async function resolveAll(entities, opts) {
     const { kindOf, progressLi, bypassIdb, progressLabel } = opts;
@@ -1861,9 +1943,7 @@
   async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
     rolesMap = rolesMap || /* @__PURE__ */ new Map();
     companiesRolesMap = companiesRolesMap || /* @__PURE__ */ new Map();
-    const isFromCache = opts?.isFromCache || false;
-    const cacheKey = opts?.cacheKey || null;
-    const onRefresh = opts?.onRefresh || null;
+    void opts;
     const _preloadedNames = /* @__PURE__ */ new Map();
     const _nullNames = allResults.filter((r) => r.type === "resolved" && r.mbUrl && !r.mbName);
     for (const r of _nullNames) {
@@ -1871,8 +1951,8 @@
       try {
         const idbKey = parseDiscogsUrl(rUrl)?.key;
         const rec = await readIdbRecord(idbKey);
-        if (rec?.mb_name) {
-          _preloadedNames.set(rUrl, { name: rec.mb_name, dis: rec.mb_disambiguation || "" });
+        if (rec?.name) {
+          _preloadedNames.set(rUrl, { name: rec.name, dis: rec.disambiguation || "" });
           continue;
         }
         const mbid = (r.mbUrl || "").split("/").pop().replace(/[^a-f0-9-]/g, "").substring(0, 36);
@@ -1881,49 +1961,22 @@
         const data = await mbThrottle.fetchJson(`https://musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
         if (data?.name) {
           _preloadedNames.set(rUrl, { name: data.name, dis: data.disambiguation || "" });
-          if (idbKey && db) try {
-            db.transaction(["mblinks"], "readwrite").objectStore("mblinks").put({
-              discogs_id: idbKey,
-              mb_links: [r.mbUrl],
-              mb_name: data.name,
-              mb_disambiguation: data.disambiguation || ""
+          if (idbKey) {
+            await writeIdbRecord(idbKey, {
+              mbid,
+              entityType: et,
+              name: data.name,
+              disambiguation: data.disambiguation || ""
+              // No resolvedVia change — this is just a name-display
+              // populate; whatever set the cached mbid stays the
+              // source of truth for `resolvedVia`.
             });
-          } catch (e) {
           }
         }
       } catch (e) {
       }
     }
     return new Promise((resolve) => {
-      let tableReady = false;
-      function saveCache() {
-        if (!tableReady) return;
-        if (!cacheKey) return;
-        try {
-          const today2 = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-          const slim = allResults.map((r) => {
-            const eKey = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
-            const s = rowState.get(eKey);
-            const mbUrl = s?.mbUrl || r.mbUrl || null;
-            const mbName = s?.mbName || r.mbName || null;
-            return {
-              type: mbUrl ? "resolved" : "attention",
-              entityType: r.entityType || "artist",
-              displayName: r.displayName || r.entity?.name || "",
-              discogsHref: r.discogsHref || "",
-              rateLimited: mbUrl ? false : r.rateLimited || false,
-              nameMatches: mbUrl ? [] : (r.nameMatches || []).slice(0, 5),
-              mbUrl,
-              mbName: mbName || r.mbName || null,
-              mbDisambig: s?.mbDisambig || r.mbDisambig || "",
-              entity: { resource_url: r.entity?.resource_url, name: r.entity?.name || "", _syntheticKey: r.entity?._syntheticKey || "" }
-            };
-          });
-          localStorage.setItem(cacheKey, JSON.stringify({ date: today2, results: slim }));
-        } catch (e) {
-          console.warn("Discogs importer: saveCache failed", e);
-        }
-      }
       const rowState = /* @__PURE__ */ new Map();
       const attentionCount = allResults.filter((r) => r.type === "attention").length;
       const mismatchCount = allResults.filter((r) => {
@@ -1955,6 +2008,35 @@
         }
         urlCheckRunning--;
       }
+      const VIA_STYLES = {
+        both: { text: "name+url", color: "#2a7" },
+        // green — high confidence
+        url: { text: "url", color: "#46a" },
+        // blue
+        name: { text: "name", color: "#46a" },
+        // blue
+        user: { text: "user", color: "#777" },
+        // grey
+        cache: { text: "cache", color: "#777" }
+        // grey (legacy: original mechanism unknown)
+      };
+      function viaCfg(via, fromCache) {
+        const base = VIA_STYLES[via];
+        if (!base) return null;
+        if (fromCache && via !== "cache") {
+          return { text: `${base.text} (cache)`, color: base.color };
+        }
+        return base;
+      }
+      function makeViaBadge(via, fromCache) {
+        const cfg = viaCfg(via, fromCache);
+        if (!cfg) return null;
+        const span = document.createElement("span");
+        span.textContent = cfg.text;
+        span.title = fromCache && via !== "cache" ? `Resolved via ${via}, served from cache` : `Resolved via ${via}`;
+        span.style.cssText = `font-size:0.68rem;background:#f5f5f5;color:${cfg.color};padding:0 0.35rem;border-radius:8px;border:1px solid #ddd;flex-shrink:0;`;
+        return span;
+      }
       const panel = document.createElement("div");
       panel.style.cssText = "border:2px solid #c8a000;border-radius:0.5rem;background:#fffef5;padding:1rem 1.5rem;margin:0.5rem 0;";
       {
@@ -1968,34 +2050,11 @@
         if (_r2) _r2.style.marginTop = "";
       }
       const heading = document.createElement("div");
-      heading.style.cssText = `display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;` + (isFromCache ? "background:#ddeeff;border:1px solid #88aacc;" : "background:#f5e8a0;border:1px solid #d4b800;");
+      heading.style.cssText = "display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;background:#f5e8a0;border:1px solid #d4b800;";
       const headingText = document.createElement("span");
-      headingText.style.cssText = "font-weight:bold;font-size:1rem;color:#" + (isFromCache ? "003366" : "5a4000") + ";flex:1;";
-      headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}` + (isFromCache ? " (cached)" : "");
+      headingText.style.cssText = "font-weight:bold;font-size:1rem;color:#5a4000;flex:1;";
+      headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}`;
       heading.appendChild(headingText);
-      if (isFromCache) {
-        const refreshBtn = document.createElement("button");
-        refreshBtn.textContent = "\u{1F504} Refresh";
-        refreshBtn.style.cssText = "font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #88aacc;border-radius:3px;background:#fff;color:#003366;";
-        refreshBtn.title = "Clear cache and re-run pre-flight checks";
-        refreshBtn.addEventListener("click", () => {
-          if (cacheKey) try {
-            localStorage.removeItem(cacheKey);
-          } catch (e) {
-          }
-          (panelLi || panel).remove();
-          if (onRefresh) {
-            onRefresh().then((freshResults) => {
-              showReviewTable(freshResults, rolesMap, companiesRolesMap, {
-                isFromCache: false,
-                cacheKey,
-                onRefresh
-              }).then((confirmedMap) => resolve(confirmedMap));
-            });
-          }
-        });
-        heading.appendChild(refreshBtn);
-      }
       panel.appendChild(heading);
       const intro = document.createElement("p");
       intro.style.cssText = "margin:0 0 0.75rem;font-size:0.85rem;color:#666;";
@@ -2037,7 +2096,9 @@
           mbUrl: initMbUrl,
           mbName: initMbName,
           mbDisambig: initMbDisam,
-          confirmed: isResolved && !needsAttention
+          confirmed: isResolved && !needsAttention,
+          via: isResolved ? r.logEntry?.via || null : null,
+          fromCache: isResolved ? r.logEntry?.fromCache || false : false
         });
         const tdDiscogs = document.createElement("td");
         tdDiscogs.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;`;
@@ -2106,14 +2167,17 @@
         tbody.appendChild(tr);
         function setRowResolved(a) {
           const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
-          rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true });
+          rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true, via: "user", fromCache: false });
           const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
-          if (_idbKey && db) {
-            try {
-              const _tx = db.transaction(["mblinks"], "readwrite");
-              _tx.objectStore("mblinks").put({ discogs_id: _idbKey, mb_links: [mbUrl], mb_name: a.name, mb_disambiguation: a.disambiguation || "" });
-            } catch (e2) {
-            }
+          if (_idbKey) {
+            writeIdbRecord(_idbKey, {
+              mbid: a.id,
+              entityType,
+              name: a.name,
+              disambiguation: a.disambiguation || "",
+              resolvedVia: "user"
+              // user picked this in the review table
+            });
           }
           tr.style.background = "#f0fff0";
           searchInput.disabled = true;
@@ -2133,14 +2197,15 @@
           undoBtn.style.cssText = "font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;";
           undoBtn.addEventListener("click", () => setRowUnresolved());
           selRow.appendChild(selA);
+          const viaBadge = makeViaBadge("user", false);
+          if (viaBadge) selRow.appendChild(viaBadge);
           selRow.appendChild(undoBtn);
           candidateList.appendChild(selRow);
           renderActions(a);
           updateImportBtn();
-          saveCache();
         }
         function setRowUnresolved() {
-          rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: "", confirmed: false });
+          rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: "", confirmed: false, via: null, fromCache: false });
           tr.style.background = "#ffe0e0";
           searchInput.disabled = false;
           searchBtn.disabled = false;
@@ -2151,7 +2216,6 @@
           candidateList.appendChild(none);
           renderActions(null);
           updateImportBtn();
-          saveCache();
         }
         function renderActions(selected) {
           tdAction.innerHTML = "";
@@ -2362,7 +2426,7 @@
           const correctedMbUrl = `//musicbrainz.org/${entityType}/${mbid}`;
           const displayName2 = initMbName || mbid;
           if (!initMbName) {
-            rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: "", confirmed: true });
+            rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: "", confirmed: true, via: r.logEntry?.via || null, fromCache: r.logEntry?.fromCache || false });
             tr.style.background = "#fff8e1";
           }
           const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
@@ -2381,6 +2445,8 @@
           undoBtn.style.cssText = "font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;";
           undoBtn.addEventListener("click", () => setRowUnresolved());
           selRow.appendChild(selA);
+          const viaBadge = makeViaBadge(r.logEntry?.via, r.logEntry?.fromCache);
+          if (viaBadge) selRow.appendChild(viaBadge);
           selRow.appendChild(undoBtn);
           candidateList.appendChild(selRow);
           renderActions(fakeA);
@@ -2424,12 +2490,11 @@
         rowState.forEach((s, key) => {
           if (s.mbUrl) confirmedMap.set(key, s.mbUrl);
         });
-        saveCache();
         const tbl = document.createElement("table");
         tbl.style.cssText = "border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;";
         const thRow = document.createElement("tr");
         thRow.style.background = "#f5f5f5";
-        ["Discogs entity", "Roles / Tracks", "MB match", "MBID"].forEach((h) => {
+        ["Discogs entity", "Roles / Tracks", "MB match", "MBID", "Resolved via"].forEach((h) => {
           const th = document.createElement("th");
           th.style.cssText = "text-align:left;padding:0.2rem 0.4rem;border:1px solid #ddd;white-space:nowrap;";
           th.textContent = h;
@@ -2451,9 +2516,11 @@
           const rolesText = [...grouped2.entries()].map(([label, tr]) => label + (tr.size ? " [" + [...tr].join(",") + "]" : "")).join("; ");
           const mbid = state.mbUrl ? state.mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36) : "";
           const matchText = state.mbName || (state.mbUrl ? mbid : "");
-          [r.displayName || r.entity?.name, rolesText, matchText, mbid].forEach((val, ci) => {
+          const vCfg = state.via ? viaCfg(state.via, state.fromCache) : null;
+          const viaText = vCfg ? vCfg.text : state.mbUrl ? "\u2014" : "";
+          [r.displayName || r.entity?.name, rolesText, matchText, mbid, viaText].forEach((val, ci) => {
             const td = document.createElement("td");
-            td.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #ddd;" + (ci === 2 && !val ? "color:#aaa;" : ci === 2 ? "color:#060;" : "");
+            td.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #ddd;" + (ci === 2 && !val ? "color:#aaa;" : ci === 2 ? "color:#060;" : ci === 4 && vCfg ? `color:${vCfg.color};` : "");
             if (ci === 2 && mbid) {
               const a = document.createElement("a");
               a.href = "https:" + state.mbUrl;
@@ -2494,7 +2561,6 @@
       getLogContainer().appendChild(panelLi);
       getLogContainer().scrollIntoView({ behavior: "smooth", block: "nearest" });
       _hideBar();
-      tableReady = true;
     });
   }
 
@@ -2835,18 +2901,13 @@
       return null;
     }
     async function getMbidForEntity(entity, entityType) {
-      return new Promise((resolve, reject) => {
-        const key = parseDiscogsUrl(entity.resource_url)?.key;
-        if (!key) return reject(`No Discogs key for ${entity.name}`);
-        const tx = db.transaction(["mblinks"], "readonly");
-        const req = tx.objectStore("mblinks").get(key);
-        req.onsuccess = () => {
-          const mbUrl = req.result?.mb_links?.[0];
-          if (mbUrl) resolve(mbUrl);
-          else reject(`${entity.name} not in IDB cache \u2014 run pre-flight check first`);
-        };
-        req.onerror = () => reject(`IDB error for ${entity.name}`);
-      });
+      const key = parseDiscogsUrl(entity.resource_url)?.key;
+      if (!key) throw new Error(`No Discogs key for ${entity.name}`);
+      const rec = await readIdbRecord(key);
+      if (!rec?.mbUrl) {
+        throw new Error(`${entity.name} not in IDB cache \u2014 run pre-flight check first`);
+      }
+      return rec.mbUrl;
     }
     function relAlreadyExists(sourceEntity, linkTypeID, targetGid, attrTree) {
       const rels = sourceEntity?.relationships;
@@ -3770,17 +3831,7 @@
           uniqueCompanies.push(c);
         }
       });
-      const PREFLIGHT_CACHE_KEY = `discogs-preflight-${discogsUrl2}`;
-      const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-      let cachedResults = null;
-      try {
-        const saved = JSON.parse(localStorage.getItem(PREFLIGHT_CACHE_KEY) || "null");
-        if (saved?.date === today && Array.isArray(saved.results)) {
-          cachedResults = saved.results;
-        }
-      } catch (e) {
-      }
-      function runPreflight(bypassIdb) {
+      function runPreflight() {
         const artistProgressLi = document.createElement("li");
         artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz\u2026`;
         _logs2.appendChild(artistProgressLi);
@@ -3790,89 +3841,38 @@
         return Promise.all([
           resolveAll(uniqueArtists, {
             progressLi: artistProgressLi,
-            bypassIdb,
             progressLabel: "Checking artists against MusicBrainz",
             kindOf: ARTIST_KIND
           }),
           resolveAll(uniqueCompanies, {
             progressLi: companyProgressLi,
-            bypassIdb,
             progressLabel: "Checking labels/places against MusicBrainz",
             kindOf: COMPANY_KIND
           })
-        ]).then(([artistResults, companyResults]) => {
-          const allResults = [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
-          if (!bypassIdb) try {
-            const slimResults = allResults.map((r) => ({
-              type: r.type,
-              entityType: r.entityType || "artist",
-              displayName: r.displayName || r.entity?.name || "",
-              discogsHref: r.discogsHref || "",
-              rateLimited: r.rateLimited || false,
-              nameMatches: (r.nameMatches || []).slice(0, 5),
-              mbUrl: r.mbUrl || null,
-              // Only save mbName if we actually have it — don't cache null names
-              mbName: r.mbName || null,
-              mbDisambig: r.mbDisambig || "",
-              entity: { resource_url: r.entity?.resource_url, name: r.entity?.name || "", _syntheticKey: r.entity?._syntheticKey || "" }
-            }));
-            localStorage.setItem(PREFLIGHT_CACHE_KEY, JSON.stringify({ date: today, results: slimResults }));
-          } catch (e) {
-            console.warn("Discogs importer: preflight cache save failed", e);
-          }
-          return allResults;
-        });
+        ]).then(([artistResults, companyResults]) => [...artistResults.allResults, ...companyResults.allResults].filter(Boolean));
       }
       let capturedResults = null;
       let capturedConfirmedMap = null;
-      const preflightPromise = cachedResults ? Promise.resolve(cachedResults) : runPreflight();
-      return preflightPromise.then((allResults) => {
+      return runPreflight().then((allResults) => {
         allResults.forEach((r) => {
           if (!r) return;
           const url = r.entity?.resource_url || r.entity?._syntheticKey;
           if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
         });
         capturedResults = allResults;
-        return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
-          isFromCache: !!cachedResults,
-          cacheKey: PREFLIGHT_CACHE_KEY,
-          onRefresh: () => {
-            clearReleaseDataCache(discogsUrl2);
-            return runPreflight(true).then((freshResults) => {
-              freshResults.forEach((r) => {
-                if (!r) return;
-                const url = r.entity?.resource_url || r.entity?._syntheticKey;
-                if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
-              });
-              return freshResults;
-            });
-          }
-        });
+        return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {});
       }).then((confirmedMap) => {
         capturedConfirmedMap = confirmedMap;
         const cachePromises = [];
         confirmedMap.forEach((mbUrl, resourceUrl) => {
           const key = parseDiscogsUrl(resourceUrl)?.key;
           if (!key) return;
-          cachePromises.push(new Promise((res) => {
-            try {
-              const tx = db.transaction(["mblinks"], "readwrite");
-              tx.oncomplete = res;
-              tx.onerror = res;
-              const store = tx.objectStore("mblinks");
-              const readReq = store.get(key);
-              readReq.onsuccess = () => {
-                const prev = readReq.result || {};
-                store.put({
-                  ...prev,
-                  discogs_id: key,
-                  mb_links: [mbUrl]
-                });
-              };
-              readReq.onerror = () => store.put({ discogs_id: key, mb_links: [mbUrl] });
-            } catch (e) {
-              res();
-            }
+          const m = mbUrl.match(/\/(artist|label|place)\/([a-f0-9-]+)/);
+          if (!m) return;
+          cachePromises.push(writeIdbRecord(key, {
+            mbid: m[2],
+            entityType: m[1]
+            // No resolvedVia change — the inline write owns it.
           }));
         });
         return Promise.all(cachePromises);

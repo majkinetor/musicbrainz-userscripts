@@ -4,7 +4,7 @@
 // `<ul.logs>` element wired by the UI bar; never starts the import until
 // the user explicitly clicks "Start import".
 
-import { db, readIdbRecord }              from './storage.js';
+import { readIdbRecord, writeIdbRecord }   from './storage.js';
 import { mbThrottle, fetchWithRetry }      from './api-mb.js';
 import { parseDiscogsUrl }                 from './api-discogs.js';
 import { guessSortName }                   from './mappers.js';
@@ -26,9 +26,11 @@ const _urlCheckSessionCache = new Map();
 export async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
     rolesMap = rolesMap || new Map();
     companiesRolesMap = companiesRolesMap || new Map();
-    const isFromCache = opts?.isFromCache || false;
-    const cacheKey = opts?.cacheKey || null;
-    const onRefresh = opts?.onRefresh || null;
+    // `opts` is reserved for future configuration. The release-level preflight
+    // cache (and its `isFromCache` / `cacheKey` / `onRefresh` hooks) was
+    // removed — IDB-backed entity caching covers the practical wins on its
+    // own, without the stale-shape footguns of an extra cache layer.
+    void opts;
 
     // Pre-load missing names into a Map — IDB first, then MB WS2 fetch.
     const _preloadedNames = new Map();
@@ -38,8 +40,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         try {
             const idbKey = parseDiscogsUrl(rUrl)?.key;
             const rec = await readIdbRecord(idbKey);
-            if (rec?.mb_name) {
-                _preloadedNames.set(rUrl, { name: rec.mb_name, dis: rec.mb_disambiguation || '' });
+            if (rec?.name) {
+                _preloadedNames.set(rUrl, { name: rec.name, dis: rec.disambiguation || '' });
                 continue;
             }
             const mbid = (r.mbUrl || '').split('/').pop().replace(/[^a-f0-9-]/g, '').substring(0, 36);
@@ -47,51 +49,30 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const et = r.entityType || 'artist';
             const data = await mbThrottle.fetchJson(`https://musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
             if (data?.name) {
-                    _preloadedNames.set(rUrl, { name: data.name, dis: data.disambiguation || '' });
-                    if (idbKey && db) try {
-                        db.transaction(['mblinks'], 'readwrite').objectStore('mblinks').put({
-                            discogs_id: idbKey, mb_links: [r.mbUrl],
-                            mb_name: data.name, mb_disambiguation: data.disambiguation || '' });
-                    } catch(e) {}
+                _preloadedNames.set(rUrl, { name: data.name, dis: data.disambiguation || '' });
+                if (idbKey) {
+                    await writeIdbRecord(idbKey, {
+                        mbid,
+                        entityType:     et,
+                        name:           data.name,
+                        disambiguation: data.disambiguation || '',
+                        // No resolvedVia change — this is just a name-display
+                        // populate; whatever set the cached mbid stays the
+                        // source of truth for `resolvedVia`.
+                    });
+                }
             }
             // No artificial gap — `mbThrottle` paces and backs off on 503.
         } catch(e) {}
     }
 
     return new Promise(resolve => {
-        // Per-row state: resource_url -> { mbUrl, mbName, mbDisambig, confirmed }
-        let tableReady = false; // prevents saveCache during initial row population
-        // saveCache: persists current rowState to localStorage immediately
-        // Stores a minimal representation to avoid localStorage quota issues
-        function saveCache() {
-            if (!tableReady) return; // don't save during initial population
-            if (!cacheKey) return;
-            try {
-                const today2 = new Date().toISOString().slice(0, 10);
-                const slim = allResults.map(r => {
-                    const eKey = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
-                    const s = rowState.get(eKey);
-                    const mbUrl  = s?.mbUrl  || r.mbUrl  || null;
-                    const mbName = s?.mbName || r.mbName || null;
-                    return {
-                        type:         mbUrl ? 'resolved' : 'attention',
-                        entityType:   r.entityType   || 'artist',
-                        displayName:  r.displayName  || r.entity?.name || '',
-                        discogsHref:  r.discogsHref  || '',
-                        rateLimited:  mbUrl ? false : (r.rateLimited || false),
-                        nameMatches:  mbUrl ? [] : (r.nameMatches || []).slice(0, 5),
-                        mbUrl,
-                        mbName: mbName || r.mbName || null,
-                        mbDisambig: s?.mbDisambig || r.mbDisambig || '',
-                        entity: { resource_url: r.entity?.resource_url, name: r.entity?.name || '', _syntheticKey: r.entity?._syntheticKey || '' },
-                    };
-                });
-                localStorage.setItem(cacheKey, JSON.stringify({ date: today2, results: slim }));
-            } catch(e) {
-                console.warn('Discogs importer: saveCache failed', e);
-            }
-        }
-        // confirmed = true means the user is happy with this match (or it auto-matched cleanly)
+        // Per-row state: resource_url -> { mbUrl, mbName, mbDisambig, confirmed, via }.
+        // `confirmed = true` means the user is happy with this match (or it
+        // auto-matched cleanly). Mutations from user picks / undo / IDB
+        // pre-load are immediately reflected in `rowState` — and from there
+        // into the IDB `entity_cache` via `writeIdbRecord`. No separate
+        // localStorage layer.
         const rowState = new Map();
 
         const attentionCount = allResults.filter(r => r.type === 'attention').length;
@@ -133,6 +114,45 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             urlCheckRunning--;
         }
 
+        // ── Helpers shared across rows ─────────────────────────────────────
+        // Small pill that surfaces *how* an entity was resolved. Two facts
+        // travel together:
+        //   `via`       — the resolution mechanism (`name` / `url` / `both` /
+        //                 `user`, or `cache` for legacy IDB records that
+        //                 predate the `resolvedVia` field).
+        //   `fromCache` — whether THIS resolution was served from IDB rather
+        //                 than a fresh MB lookup.
+        // The label composes both: a name-resolved entity loaded from cache
+        // shows `name (cache)`, freshly-resolved shows just `name`.
+        const VIA_STYLES = {
+            both:  { text: 'name+url', color: '#2a7' }, // green — high confidence
+            url:   { text: 'url',      color: '#46a' }, // blue
+            name:  { text: 'name',     color: '#46a' }, // blue
+            user:  { text: 'user',     color: '#777' }, // grey
+            cache: { text: 'cache',    color: '#777' }, // grey (legacy: original mechanism unknown)
+        };
+        /** Resolve a `(via, fromCache)` pair to `{ text, color }` for display. */
+        function viaCfg(via, fromCache) {
+            const base = VIA_STYLES[via];
+            if (!base) return null;
+            if (fromCache && via !== 'cache') {
+                return { text: `${base.text} (cache)`, color: base.color };
+            }
+            return base;
+        }
+        function makeViaBadge(via, fromCache) {
+            const cfg = viaCfg(via, fromCache);
+            if (!cfg) return null;
+            const span = document.createElement('span');
+            span.textContent = cfg.text;
+            span.title = fromCache && via !== 'cache'
+                ? `Resolved via ${via}, served from cache`
+                : `Resolved via ${via}`;
+            span.style.cssText = `font-size:0.68rem;background:#f5f5f5;color:${cfg.color};` +
+                                 `padding:0 0.35rem;border-radius:8px;border:1px solid #ddd;flex-shrink:0;`;
+            return span;
+        }
+
         // ── Panel shell ────────────────────────────────────────────────────────
         const panel = document.createElement('div');
         panel.style.cssText = 'border:2px solid #c8a000;border-radius:0.5rem;background:#fffef5;padding:1rem 1.5rem;margin:0.5rem 0;';
@@ -146,34 +166,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         }
 
         const heading = document.createElement('div');
-        heading.style.cssText = `display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;` +
-            (isFromCache ? 'background:#ddeeff;border:1px solid #88aacc;' : 'background:#f5e8a0;border:1px solid #d4b800;');
+        heading.style.cssText = 'display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;background:#f5e8a0;border:1px solid #d4b800;';
         const headingText = document.createElement('span');
-        headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:#' + (isFromCache ? '003366' : '5a4000') + ';flex:1;';
-        headingText.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}` +
-            (isFromCache ? ' (cached)' : '');
+        headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:#5a4000;flex:1;';
+        headingText.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? 'y' : 'ies'}`;
         heading.appendChild(headingText);
-        if (isFromCache) {
-            const refreshBtn = document.createElement('button');
-            refreshBtn.textContent = '🔄 Refresh';
-            refreshBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #88aacc;border-radius:3px;background:#fff;color:#003366;';
-            refreshBtn.title = 'Clear cache and re-run pre-flight checks';
-            refreshBtn.addEventListener('click', () => {
-                if (cacheKey) try { localStorage.removeItem(cacheKey); } catch(e) {}
-                (panelLi || panel).remove();
-                if (onRefresh) {
-                    onRefresh().then(freshResults => {
-                        // Show new review table with fresh results (not from cache)
-                        showReviewTable(freshResults, rolesMap, companiesRolesMap, {
-                            isFromCache: false,
-                            cacheKey,
-                            onRefresh,
-                        }).then(confirmedMap => resolve(confirmedMap));
-                    });
-                }
-            });
-            heading.appendChild(refreshBtn);
-        }
         panel.appendChild(heading);
 
         const intro = document.createElement('p');
@@ -228,10 +225,18 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const tr = document.createElement('tr');
             tr.style.cssText = `vertical-align:top;background:${rowBg};`;
 
-            // Initialise rowState
+            // Initialise rowState. `via` carries how the entity got resolved
+            // (`name` / `url` / `both` / `user` / `cache`) — surfaced in the
+            // post-import log summary table so users can audit auto-matches.
+            // `via` carries the ORIGINAL mechanism (`name` / `url` / `both` /
+            // `user`, or `cache` for legacy IDB records); `fromCache` flags
+            // whether IDB served the resolution. The label composes them, e.g.
+            // `name (cache)`.
             rowState.set(_entityKey, {
                 mbUrl: initMbUrl, mbName: initMbName, mbDisambig: initMbDisam,
                 confirmed: isResolved && !needsAttention,
+                via:       isResolved ? (r.logEntry?.via       || null)  : null,
+                fromCache: isResolved ? (r.logEntry?.fromCache || false) : false,
             });
 
             // ── Col 1: Discogs ─────────────────────────────────────────────────
@@ -310,14 +315,17 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             function setRowResolved(a) {
                 // a = { id, name, disambiguation }
                 const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
-                rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', confirmed: true });
+                rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', confirmed: true, via: 'user', fromCache: false });
                 // Persist to IDB immediately so selection survives even without clicking Start import
                 const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
-                if (_idbKey && db) {
-                    try {
-                        const _tx = db.transaction(['mblinks'], 'readwrite');
-                        _tx.objectStore('mblinks').put({ discogs_id: _idbKey, mb_links: [mbUrl], mb_name: a.name, mb_disambiguation: a.disambiguation || '' });
-                    } catch(e) {}
+                if (_idbKey) {
+                    writeIdbRecord(_idbKey, {
+                        mbid:           a.id,
+                        entityType,
+                        name:           a.name,
+                        disambiguation: a.disambiguation || '',
+                        resolvedVia:    'user',  // user picked this in the review table
+                    });
                 }
 
                 tr.style.background = '#f0fff0';
@@ -338,17 +346,20 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 undoBtn.style.cssText = 'font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
                 selRow.appendChild(selA);
+                // User picked via the dropdown \u2014 always badge as `user`,
+                // never `(cache)` (this is a fresh pick).
+                const viaBadge = makeViaBadge('user', false);
+                if (viaBadge) selRow.appendChild(viaBadge);
                 selRow.appendChild(undoBtn);
                 candidateList.appendChild(selRow);
 
                 // Actions: Add Discogs link + Create fallback
                 renderActions(a);
                 updateImportBtn();
-                saveCache();
             }
 
             function setRowUnresolved() {
-                rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: '', confirmed: false });
+                rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: '', confirmed: false, via: null, fromCache: false });
                 tr.style.background = '#ffe0e0';
                 searchInput.disabled = false;
                 searchBtn.disabled = false;
@@ -359,7 +370,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 candidateList.appendChild(none);
                 renderActions(null);
                 updateImportBtn();
-                saveCache();
             }
 
             function renderActions(selected) {
@@ -573,7 +583,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const displayName2 = initMbName || mbid;
                 if (!initMbName) {
                     // Name was null in cache — keep yellow, IDB pre-load handled before rendering
-                    rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: '', confirmed: true });
+                    rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: '', confirmed: true, via: r.logEntry?.via || null, fromCache: r.logEntry?.fromCache || false });
                     tr.style.background = '#fff8e1';
                 }
                 const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
@@ -590,6 +600,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 undoBtn.style.cssText = 'font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
                 selRow.appendChild(selA);
+                // `via` badge — `name`, `url`, `both`, or `cache`, with a
+                // `(cache)` suffix when the resolution came from IDB.
+                const viaBadge = makeViaBadge(r.logEntry?.via, r.logEntry?.fromCache);
+                if (viaBadge) selRow.appendChild(viaBadge);
                 selRow.appendChild(undoBtn);
                 candidateList.appendChild(selRow);
                 renderActions(fakeA);
@@ -642,14 +656,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 if (s.mbUrl) confirmedMap.set(key, s.mbUrl);
             });
 
-            saveCache();
-
             // ── Log summary table ──────────────────────────────────────
             const tbl = document.createElement('table');
             tbl.style.cssText = 'border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;';
             const thRow = document.createElement('tr');
             thRow.style.background = '#f5f5f5';
-            ['Discogs entity', 'Roles / Tracks', 'MB match', 'MBID'].forEach(h => {
+            ['Discogs entity', 'Roles / Tracks', 'MB match', 'MBID', 'Resolved via'].forEach(h => {
                 const th = document.createElement('th');
                 th.style.cssText = 'text-align:left;padding:0.2rem 0.4rem;border:1px solid #ddd;white-space:nowrap;';
                 th.textContent = h;
@@ -673,11 +685,18 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
                 const mbid = state.mbUrl ? state.mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi,'').substring(0,36) : '';
                 const matchText = state.mbName || (state.mbUrl ? mbid : '');
+                // Resolution mechanism + cache state — composed via `viaCfg`:
+                // fresh → `name+url`/`url`/`name`/`user`; from IDB →
+                // `name (cache)` / `url (cache)` / `both (cache)` / etc.;
+                // legacy IDB record with no original mechanism → `cache`.
+                const vCfg = state.via ? viaCfg(state.via, state.fromCache) : null;
+                const viaText = vCfg ? vCfg.text : (state.mbUrl ? '—' : '');
 
-                [r.displayName || r.entity?.name, rolesText, matchText, mbid].forEach((val, ci) => {
+                [r.displayName || r.entity?.name, rolesText, matchText, mbid, viaText].forEach((val, ci) => {
                     const td = document.createElement('td');
                     td.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #ddd;' +
-                        (ci === 2 && !val ? 'color:#aaa;' : ci === 2 ? 'color:#060;' : '');
+                        (ci === 2 && !val ? 'color:#aaa;' : ci === 2 ? 'color:#060;' :
+                         ci === 4 && vCfg ? `color:${vCfg.color};` : '');
                     if (ci === 2 && mbid) {
                         const a = document.createElement('a');
                         a.href = 'https:' + state.mbUrl; a.target = '_blank'; a.rel = 'noopener noreferrer nofollow';
@@ -719,6 +738,5 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         getLogContainer().appendChild(panelLi);
         getLogContainer().scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         _hideBar();
-        tableReady = true; // allow saveCache now that all rows are populated
     });
 }

@@ -15,7 +15,7 @@
 // entries from old versions on every page load (cheap, idempotent).
 
 import { DISCOGS_LOGO_URL }              from './constants.js';
-import { db }                             from './storage.js';
+import { writeIdbRecord }                 from './storage.js';
 import {
     log,
     setLogContainer,
@@ -24,7 +24,6 @@ import { _showBar, _hideBar }             from './progress-bar.js';
 import {
     parseDiscogsUrl,
     getDiscogsReleaseData,
-    clearReleaseDataCache,
 }                                        from './api-discogs.js';
 import {
     convertPotentialDJMixers,
@@ -614,18 +613,16 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                 }
             });
 
-            // ── Pre-flight cache ─────────────────────────────────────────
-            const PREFLIGHT_CACHE_KEY = `discogs-preflight-${discogsUrl}`;
-            const today = new Date().toISOString().slice(0, 10);
-            let cachedResults = null;
-            try {
-                const saved = JSON.parse(localStorage.getItem(PREFLIGHT_CACHE_KEY) || 'null');
-                if (saved?.date === today && Array.isArray(saved.results)) {
-                    cachedResults = saved.results;
-                }
-            } catch(e) {}
-
-            function runPreflight(bypassIdb) {
+            // ── Pre-flight ───────────────────────────────────────────────
+            // No release-level cache layer: the IDB `entity_cache` (per-entity
+            // Discogs-id → MBID, written by `resolveEntity` and on user confirm)
+            // already short-circuits the slow MB API calls for entities we've
+            // ever resolved. Walking 80–150 IDB rows on every page open is
+            // cheap; carrying a second cache that snapshots whole-release
+            // review-table state was net-negative once the entity layer
+            // existed (stale-shape footguns > the marginal speedup on
+            // same-release re-opens, which are rare).
+            function runPreflight() {
                 const artistProgressLi = document.createElement('li');
                 artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz…`;
                 _logs.appendChild(artistProgressLi);
@@ -637,96 +634,52 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                 return Promise.all([
                     resolveAll(uniqueArtists, {
                         progressLi:    artistProgressLi,
-                        bypassIdb,
                         progressLabel: 'Checking artists against MusicBrainz',
                         kindOf:        ARTIST_KIND,
                     }),
                     resolveAll(uniqueCompanies, {
                         progressLi:    companyProgressLi,
-                        bypassIdb,
                         progressLabel: 'Checking labels/places against MusicBrainz',
                         kindOf:        COMPANY_KIND,
                     }),
-                ]).then(([artistResults, companyResults]) => {
-                    const allResults = [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
-                    // Save to cache (only if not bypassing)
-                    if (!bypassIdb) try {
-                        const slimResults = allResults.map(r => ({
-                            type: r.type, entityType: r.entityType || 'artist',
-                            displayName: r.displayName || r.entity?.name || '',
-                            discogsHref: r.discogsHref || '',
-                            rateLimited: r.rateLimited || false,
-                            nameMatches: (r.nameMatches || []).slice(0, 5),
-                            mbUrl: r.mbUrl || null,
-                            // Only save mbName if we actually have it — don't cache null names
-                            mbName: r.mbName || null,
-                            mbDisambig: r.mbDisambig || '',
-                            entity: { resource_url: r.entity?.resource_url, name: r.entity?.name || '', _syntheticKey: r.entity?._syntheticKey || '' },
-                        }));
-                        localStorage.setItem(PREFLIGHT_CACHE_KEY, JSON.stringify({ date: today, results: slimResults }));
-                    } catch(e) { console.warn('Discogs importer: preflight cache save failed', e); }
-                    return allResults;
-                });
+                ]).then(([artistResults, companyResults]) =>
+                    [...artistResults.allResults, ...companyResults.allResults].filter(Boolean));
             }
 
             let capturedResults = null; // shared across promise chain
             let capturedConfirmedMap = null;
-            const preflightPromise = cachedResults ? Promise.resolve(cachedResults) : runPreflight();
 
-            return preflightPromise.then(allResults => {
-                // Annotate each result with its Discogs roles (works for both cache and fresh)
+            return runPreflight().then(allResults => {
+                // Annotate each result with its Discogs roles
                 allResults.forEach(r => {
                     if (!r) return;
                     const url = r.entity?.resource_url || r.entity?._syntheticKey;
                     if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
                 });
                 capturedResults = allResults;
-                return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
-                    isFromCache: !!cachedResults,
-                    cacheKey: PREFLIGHT_CACHE_KEY,
-                    onRefresh: () => {
-                        // Clear session memory cache for this release so data is truly fresh
-                        clearReleaseDataCache(discogsUrl);
-                        return runPreflight(true).then(freshResults => {
-                        freshResults.forEach(r => {
-                            if (!r) return;
-                            const url = r.entity?.resource_url || r.entity?._syntheticKey;
-                            if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
-                        });
-                        return freshResults;
-                        });
-                    },
-                });
+                return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {});
             })
                 .then(confirmedMap => {
                     capturedConfirmedMap = confirmedMap;
                     // Bulk-write confirmed entries to IDB. Inline writes in
-                    // `setRowResolved` (review-table) and `checkOne` (preflight)
-                    // already persist as each entity resolves (issue #23), so
-                    // this is a final correctness sweep — and it MERGES into
-                    // any existing record so `mb_name` / `mb_disambiguation`
-                    // from the inline writes survive instead of being clobbered
-                    // by a 2-field `{discogs_id, mb_links}` put.
+                    // `setRowResolved` (review-table) and `resolveEntity`
+                    // (preflight) already persist as each entity resolves
+                    // (issue #23), so this is a final correctness sweep.
+                    // `writeIdbRecord` merges, so name/disambiguation set by
+                    // the inline writes survive.
                     const cachePromises = [];
                     confirmedMap.forEach((mbUrl, resourceUrl) => {
                         const key = parseDiscogsUrl(resourceUrl)?.key;
                         if (!key) return;
-                        cachePromises.push(new Promise(res => {
-                            try {
-                                const tx = db.transaction(['mblinks'], 'readwrite');
-                                tx.oncomplete = res; tx.onerror = res;
-                                const store = tx.objectStore('mblinks');
-                                const readReq = store.get(key);
-                                readReq.onsuccess = () => {
-                                    const prev = readReq.result || {};
-                                    store.put({
-                                        ...prev,
-                                        discogs_id: key,
-                                        mb_links:   [mbUrl],
-                                    });
-                                };
-                                readReq.onerror = () => store.put({ discogs_id: key, mb_links: [mbUrl] });
-                            } catch (e) { res(); }
+                        // mbUrl is `//musicbrainz.org/<entityType>/<mbid>` —
+                        // extract both halves so the new schema's `mbid` and
+                        // `entityType` fields stay populated.
+                        const m = mbUrl.match(/\/(artist|label|place)\/([a-f0-9-]+)/);
+                        if (!m) return;
+                        cachePromises.push(writeIdbRecord(key, {
+                            mbid:       m[2],
+                            entityType: m[1],
+                            // No resolvedVia change — the inline write owns it.
                         }));
                     });
                     return Promise.all(cachePromises);
