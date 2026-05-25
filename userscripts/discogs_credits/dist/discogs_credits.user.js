@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Import Discogs Credits (restore-refresh-button)
+// @name         Import Discogs Credits (fix-issue-6-add-link-button-stale)
 // @namespace    majkinetor
 // @version      2026.5.25
 // @description  Add a button to import Discogs release relationships to MusicBrainz
@@ -2235,7 +2235,25 @@
         function renderActions(selected) {
           tdAction.innerHTML = "";
           if (selected) {
-            let applyUrlCheckResult = function(result) {
+            let recheckUrlBypassCache = function() {
+              _urlCheckSessionCache.delete(urlCheckCacheKey);
+              try {
+                localStorage.removeItem(urlCheckLsKey);
+              } catch (e2) {
+              }
+              queuedUrlCheck(
+                () => fetchWithRetry(`//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`).then((json) => {
+                  const linkedIds = (json.relations || []).filter((r2) => r2[entityType]).map((r2) => r2[entityType].id);
+                  const result = linkedIds.includes(selected.id) ? "linked" : linkedIds.length > 0 ? "other" : "none";
+                  _urlCheckSessionCache.set(urlCheckCacheKey, result);
+                  try {
+                    localStorage.setItem(urlCheckLsKey, JSON.stringify({ date: urlCheckToday, result }));
+                  } catch (e2) {
+                  }
+                  applyUrlCheckResult(result);
+                }).catch(() => applyUrlCheckResult("none"))
+              );
+            }, applyUrlCheckResult = function(result) {
               if (result === "linked") {
                 linkSlot.textContent = "\u2713 Discogs URL already linked";
                 linkSlot.style.color = "#5a5";
@@ -2244,6 +2262,7 @@
                 linkSlot.style.color = "#c80";
               } else {
                 linkSlot.textContent = "";
+                linkSlot.style.color = "";
                 const addLinkBtn = document.createElement("button");
                 addLinkBtn.textContent = "Add Discogs link \u2197";
                 addLinkBtn.style.cssText = "font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;";
@@ -2252,6 +2271,19 @@
                   const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
                   const mbid = selected.id.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
                   window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, "_blank", "noopener,noreferrer");
+                  linkSlot.innerHTML = "";
+                  const pending = document.createElement("span");
+                  pending.textContent = "\u2026 verifying on return";
+                  pending.style.cssText = "font-size:0.8rem;color:#888;font-style:italic;";
+                  linkSlot.appendChild(pending);
+                  const onReturn = () => {
+                    if (document.visibilityState !== "visible") return;
+                    document.removeEventListener("visibilitychange", onReturn);
+                    window.removeEventListener("focus", onReturn);
+                    recheckUrlBypassCache();
+                  };
+                  document.addEventListener("visibilitychange", onReturn);
+                  window.addEventListener("focus", onReturn);
                 });
                 linkSlot.appendChild(addLinkBtn);
               }
