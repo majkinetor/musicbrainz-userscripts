@@ -343,9 +343,6 @@
       return json;
     });
   }
-  function clearReleaseDataCache(url) {
-    _releaseDataCache.delete(url);
-  }
 
   // src/data/entity-map.js
   var ENTITY_TYPE_MAP = {
@@ -1750,7 +1747,7 @@
     const searchName = entity.name;
     const displayName = kind === "artist" ? entity.anv && entity.anv.trim() || entity.name : entity.name;
     const discogsHref = entity.resource_url.replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, "https://www.discogs.com/$1/$2");
-    function buildResolved(mbUrl, mbName, mbDisambig, via2, actualKind = kind) {
+    function buildResolved(mbUrl, mbName, mbDisambig, via2, actualKind = kind, fromCache = false) {
       return {
         type: "resolved",
         entityType: actualKind,
@@ -1760,7 +1757,14 @@
         mbUrl,
         mbName,
         mbDisambig,
-        logEntry: { displayName, discogsHref, mbUrl, mbName, mbDisambig, via: via2 }
+        // `via`      — the resolution mechanism (`name` / `url` / `both` / `user`,
+        //              or `cache` only when a legacy IDB record predates the
+        //              `resolvedVia` field and we genuinely can't recover it).
+        // `fromCache`— whether THIS resolution came from IDB rather than a fresh
+        //              MB lookup. The two are orthogonal: a name-resolved entity
+        //              loaded from cache is `via='name'` + `fromCache=true`, and
+        //              the UI surfaces both as `name (cache)`.
+        logEntry: { displayName, discogsHref, mbUrl, mbName, mbDisambig, via: via2, fromCache }
       };
     }
     function buildAttention(nameMatches2, nameSearchFailed2, ambiguityReason) {
@@ -1792,7 +1796,8 @@
             cachedRec.name,
             cachedRec.disambiguation || "",
             via2,
-            cachedRec.entityType
+            cachedRec.entityType,
+            true
           );
         }
         const info = await fetchMbEntityInfo(cachedRec.entityType, cachedRec.mbid);
@@ -1807,7 +1812,8 @@
           info.name,
           info.disambiguation,
           via2,
-          cachedRec.entityType
+          cachedRec.entityType,
+          true
         );
       }
     }
@@ -1937,9 +1943,7 @@
   async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
     rolesMap = rolesMap || /* @__PURE__ */ new Map();
     companiesRolesMap = companiesRolesMap || /* @__PURE__ */ new Map();
-    const isFromCache = opts?.isFromCache || false;
-    const cacheKey = opts?.cacheKey || null;
-    const onRefresh = opts?.onRefresh || null;
+    void opts;
     const _preloadedNames = /* @__PURE__ */ new Map();
     const _nullNames = allResults.filter((r) => r.type === "resolved" && r.mbUrl && !r.mbName);
     for (const r of _nullNames) {
@@ -1973,35 +1977,6 @@
       }
     }
     return new Promise((resolve) => {
-      let tableReady = false;
-      function saveCache() {
-        if (!tableReady) return;
-        if (!cacheKey) return;
-        try {
-          const today2 = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-          const slim = allResults.map((r) => {
-            const eKey = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
-            const s = rowState.get(eKey);
-            const mbUrl = s?.mbUrl || r.mbUrl || null;
-            const mbName = s?.mbName || r.mbName || null;
-            return {
-              type: mbUrl ? "resolved" : "attention",
-              entityType: r.entityType || "artist",
-              displayName: r.displayName || r.entity?.name || "",
-              discogsHref: r.discogsHref || "",
-              rateLimited: mbUrl ? false : r.rateLimited || false,
-              nameMatches: mbUrl ? [] : (r.nameMatches || []).slice(0, 5),
-              mbUrl,
-              mbName: mbName || r.mbName || null,
-              mbDisambig: s?.mbDisambig || r.mbDisambig || "",
-              entity: { resource_url: r.entity?.resource_url, name: r.entity?.name || "", _syntheticKey: r.entity?._syntheticKey || "" }
-            };
-          });
-          localStorage.setItem(cacheKey, JSON.stringify({ date: today2, results: slim }));
-        } catch (e) {
-          console.warn("Discogs importer: saveCache failed", e);
-        }
-      }
       const rowState = /* @__PURE__ */ new Map();
       const attentionCount = allResults.filter((r) => r.type === "attention").length;
       const mismatchCount = allResults.filter((r) => {
@@ -2033,7 +2008,7 @@
         }
         urlCheckRunning--;
       }
-      const VIA_LABELS = {
+      const VIA_STYLES = {
         both: { text: "name+url", color: "#2a7" },
         // green — high confidence
         url: { text: "url", color: "#46a" },
@@ -2043,14 +2018,22 @@
         user: { text: "user", color: "#777" },
         // grey
         cache: { text: "cache", color: "#777" }
-        // grey (legacy records)
+        // grey (legacy: original mechanism unknown)
       };
-      function makeViaBadge(via) {
-        const cfg = VIA_LABELS[via];
+      function viaCfg(via, fromCache) {
+        const base = VIA_STYLES[via];
+        if (!base) return null;
+        if (fromCache && via !== "cache") {
+          return { text: `${base.text} (cache)`, color: base.color };
+        }
+        return base;
+      }
+      function makeViaBadge(via, fromCache) {
+        const cfg = viaCfg(via, fromCache);
         if (!cfg) return null;
         const span = document.createElement("span");
         span.textContent = cfg.text;
-        span.title = `Resolved via ${via}`;
+        span.title = fromCache && via !== "cache" ? `Resolved via ${via}, served from cache` : `Resolved via ${via}`;
         span.style.cssText = `font-size:0.68rem;background:#f5f5f5;color:${cfg.color};padding:0 0.35rem;border-radius:8px;border:1px solid #ddd;flex-shrink:0;`;
         return span;
       }
@@ -2067,34 +2050,11 @@
         if (_r2) _r2.style.marginTop = "";
       }
       const heading = document.createElement("div");
-      heading.style.cssText = `display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;` + (isFromCache ? "background:#ddeeff;border:1px solid #88aacc;" : "background:#f5e8a0;border:1px solid #d4b800;");
+      heading.style.cssText = "display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;background:#f5e8a0;border:1px solid #d4b800;";
       const headingText = document.createElement("span");
-      headingText.style.cssText = "font-weight:bold;font-size:1rem;color:#" + (isFromCache ? "003366" : "5a4000") + ";flex:1;";
-      headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}` + (isFromCache ? " (cached)" : "");
+      headingText.style.cssText = "font-weight:bold;font-size:1rem;color:#5a4000;flex:1;";
+      headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}`;
       heading.appendChild(headingText);
-      if (isFromCache) {
-        const refreshBtn = document.createElement("button");
-        refreshBtn.textContent = "\u{1F504} Refresh";
-        refreshBtn.style.cssText = "font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #88aacc;border-radius:3px;background:#fff;color:#003366;";
-        refreshBtn.title = "Clear cache and re-run pre-flight checks";
-        refreshBtn.addEventListener("click", () => {
-          if (cacheKey) try {
-            localStorage.removeItem(cacheKey);
-          } catch (e) {
-          }
-          (panelLi || panel).remove();
-          if (onRefresh) {
-            onRefresh().then((freshResults) => {
-              showReviewTable(freshResults, rolesMap, companiesRolesMap, {
-                isFromCache: false,
-                cacheKey,
-                onRefresh
-              }).then((confirmedMap) => resolve(confirmedMap));
-            });
-          }
-        });
-        heading.appendChild(refreshBtn);
-      }
       panel.appendChild(heading);
       const intro = document.createElement("p");
       intro.style.cssText = "margin:0 0 0.75rem;font-size:0.85rem;color:#666;";
@@ -2137,7 +2097,8 @@
           mbName: initMbName,
           mbDisambig: initMbDisam,
           confirmed: isResolved && !needsAttention,
-          via: isResolved ? r.logEntry?.via || r.via || null : null
+          via: isResolved ? r.logEntry?.via || null : null,
+          fromCache: isResolved ? r.logEntry?.fromCache || false : false
         });
         const tdDiscogs = document.createElement("td");
         tdDiscogs.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;`;
@@ -2206,7 +2167,7 @@
         tbody.appendChild(tr);
         function setRowResolved(a) {
           const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
-          rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true, via: "user" });
+          rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true, via: "user", fromCache: false });
           const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
           if (_idbKey) {
             writeIdbRecord(_idbKey, {
@@ -2236,16 +2197,15 @@
           undoBtn.style.cssText = "font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;";
           undoBtn.addEventListener("click", () => setRowUnresolved());
           selRow.appendChild(selA);
-          const viaBadge = makeViaBadge("user");
+          const viaBadge = makeViaBadge("user", false);
           if (viaBadge) selRow.appendChild(viaBadge);
           selRow.appendChild(undoBtn);
           candidateList.appendChild(selRow);
           renderActions(a);
           updateImportBtn();
-          saveCache();
         }
         function setRowUnresolved() {
-          rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: "", confirmed: false, via: null });
+          rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: "", confirmed: false, via: null, fromCache: false });
           tr.style.background = "#ffe0e0";
           searchInput.disabled = false;
           searchBtn.disabled = false;
@@ -2256,7 +2216,6 @@
           candidateList.appendChild(none);
           renderActions(null);
           updateImportBtn();
-          saveCache();
         }
         function renderActions(selected) {
           tdAction.innerHTML = "";
@@ -2467,7 +2426,7 @@
           const correctedMbUrl = `//musicbrainz.org/${entityType}/${mbid}`;
           const displayName2 = initMbName || mbid;
           if (!initMbName) {
-            rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: "", confirmed: true, via: r.logEntry?.via || r.via || null });
+            rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: "", confirmed: true, via: r.logEntry?.via || null, fromCache: r.logEntry?.fromCache || false });
             tr.style.background = "#fff8e1";
           }
           const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
@@ -2486,8 +2445,7 @@
           undoBtn.style.cssText = "font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;";
           undoBtn.addEventListener("click", () => setRowUnresolved());
           selRow.appendChild(selA);
-          const initialVia = r.logEntry?.via || r.via;
-          const viaBadge = makeViaBadge(initialVia);
+          const viaBadge = makeViaBadge(r.logEntry?.via, r.logEntry?.fromCache);
           if (viaBadge) selRow.appendChild(viaBadge);
           selRow.appendChild(undoBtn);
           candidateList.appendChild(selRow);
@@ -2532,7 +2490,6 @@
         rowState.forEach((s, key) => {
           if (s.mbUrl) confirmedMap.set(key, s.mbUrl);
         });
-        saveCache();
         const tbl = document.createElement("table");
         tbl.style.cssText = "border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;";
         const thRow = document.createElement("tr");
@@ -2559,11 +2516,11 @@
           const rolesText = [...grouped2.entries()].map(([label, tr]) => label + (tr.size ? " [" + [...tr].join(",") + "]" : "")).join("; ");
           const mbid = state.mbUrl ? state.mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36) : "";
           const matchText = state.mbName || (state.mbUrl ? mbid : "");
-          const viaCfg = state.via ? VIA_LABELS[state.via] : null;
-          const viaText = viaCfg ? viaCfg.text : state.mbUrl ? "\u2014" : "";
+          const vCfg = state.via ? viaCfg(state.via, state.fromCache) : null;
+          const viaText = vCfg ? vCfg.text : state.mbUrl ? "\u2014" : "";
           [r.displayName || r.entity?.name, rolesText, matchText, mbid, viaText].forEach((val, ci) => {
             const td = document.createElement("td");
-            td.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #ddd;" + (ci === 2 && !val ? "color:#aaa;" : ci === 2 ? "color:#060;" : ci === 4 && viaCfg ? `color:${viaCfg.color};` : "");
+            td.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #ddd;" + (ci === 2 && !val ? "color:#aaa;" : ci === 2 ? "color:#060;" : ci === 4 && vCfg ? `color:${vCfg.color};` : "");
             if (ci === 2 && mbid) {
               const a = document.createElement("a");
               a.href = "https:" + state.mbUrl;
@@ -2604,7 +2561,6 @@
       getLogContainer().appendChild(panelLi);
       getLogContainer().scrollIntoView({ behavior: "smooth", block: "nearest" });
       _hideBar();
-      tableReady = true;
     });
   }
 
@@ -3875,17 +3831,7 @@
           uniqueCompanies.push(c);
         }
       });
-      const PREFLIGHT_CACHE_KEY = `discogs-preflight-v2-${discogsUrl2}`;
-      const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-      let cachedResults = null;
-      try {
-        const saved = JSON.parse(localStorage.getItem(PREFLIGHT_CACHE_KEY) || "null");
-        if (saved?.date === today && Array.isArray(saved.results)) {
-          cachedResults = saved.results;
-        }
-      } catch (e) {
-      }
-      function runPreflight(bypassIdb) {
+      function runPreflight() {
         const artistProgressLi = document.createElement("li");
         artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz\u2026`;
         _logs2.appendChild(artistProgressLi);
@@ -3895,68 +3841,26 @@
         return Promise.all([
           resolveAll(uniqueArtists, {
             progressLi: artistProgressLi,
-            bypassIdb,
             progressLabel: "Checking artists against MusicBrainz",
             kindOf: ARTIST_KIND
           }),
           resolveAll(uniqueCompanies, {
             progressLi: companyProgressLi,
-            bypassIdb,
             progressLabel: "Checking labels/places against MusicBrainz",
             kindOf: COMPANY_KIND
           })
-        ]).then(([artistResults, companyResults]) => {
-          const allResults = [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
-          if (!bypassIdb) try {
-            const slimResults = allResults.map((r) => ({
-              type: r.type,
-              entityType: r.entityType || "artist",
-              displayName: r.displayName || r.entity?.name || "",
-              discogsHref: r.discogsHref || "",
-              rateLimited: r.rateLimited || false,
-              nameMatches: (r.nameMatches || []).slice(0, 5),
-              mbUrl: r.mbUrl || null,
-              // Only save mbName if we actually have it — don't cache null names
-              mbName: r.mbName || null,
-              mbDisambig: r.mbDisambig || "",
-              // Resolution mechanism (`name`/`url`/`both`/`user`/`cache`) — the
-              // review table surfaces this in both the interactive badge and the
-              // post-import log summary table, so it has to survive the cache.
-              via: r.logEntry?.via || null,
-              entity: { resource_url: r.entity?.resource_url, name: r.entity?.name || "", _syntheticKey: r.entity?._syntheticKey || "" }
-            }));
-            localStorage.setItem(PREFLIGHT_CACHE_KEY, JSON.stringify({ date: today, results: slimResults }));
-          } catch (e) {
-            console.warn("Discogs importer: preflight cache save failed", e);
-          }
-          return allResults;
-        });
+        ]).then(([artistResults, companyResults]) => [...artistResults.allResults, ...companyResults.allResults].filter(Boolean));
       }
       let capturedResults = null;
       let capturedConfirmedMap = null;
-      const preflightPromise = cachedResults ? Promise.resolve(cachedResults) : runPreflight();
-      return preflightPromise.then((allResults) => {
+      return runPreflight().then((allResults) => {
         allResults.forEach((r) => {
           if (!r) return;
           const url = r.entity?.resource_url || r.entity?._syntheticKey;
           if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
         });
         capturedResults = allResults;
-        return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
-          isFromCache: !!cachedResults,
-          cacheKey: PREFLIGHT_CACHE_KEY,
-          onRefresh: () => {
-            clearReleaseDataCache(discogsUrl2);
-            return runPreflight(true).then((freshResults) => {
-              freshResults.forEach((r) => {
-                if (!r) return;
-                const url = r.entity?.resource_url || r.entity?._syntheticKey;
-                if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
-              });
-              return freshResults;
-            });
-          }
-        });
+        return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {});
       }).then((confirmedMap) => {
         capturedConfirmedMap = confirmedMap;
         const cachePromises = [];

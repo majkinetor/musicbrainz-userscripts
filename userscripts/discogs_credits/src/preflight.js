@@ -63,11 +63,18 @@ async function resolveEntity(entity, kind, opts) {
     const discogsHref = entity.resource_url
         .replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, 'https://www.discogs.com/$1/$2');
 
-    function buildResolved(mbUrl, mbName, mbDisambig, via, actualKind = kind) {
+    function buildResolved(mbUrl, mbName, mbDisambig, via, actualKind = kind, fromCache = false) {
         return {
             type: 'resolved', entityType: actualKind, entity,
             displayName, discogsHref, mbUrl, mbName, mbDisambig,
-            logEntry: { displayName, discogsHref, mbUrl, mbName, mbDisambig, via },
+            // `via`      — the resolution mechanism (`name` / `url` / `both` / `user`,
+            //              or `cache` only when a legacy IDB record predates the
+            //              `resolvedVia` field and we genuinely can't recover it).
+            // `fromCache`— whether THIS resolution came from IDB rather than a fresh
+            //              MB lookup. The two are orthogonal: a name-resolved entity
+            //              loaded from cache is `via='name'` + `fromCache=true`, and
+            //              the UI surfaces both as `name (cache)`.
+            logEntry: { displayName, discogsHref, mbUrl, mbName, mbDisambig, via, fromCache },
         };
     }
 
@@ -95,16 +102,17 @@ async function resolveEntity(entity, kind, opts) {
     if (!bypassIdb && key) {
         const cachedRec = await readIdbRecord(key);
         if (cachedRec?.mbid && cachedRec?.entityType) {
-            // Cache has an MBID. Surface the ORIGINAL `resolvedVia` (how this
-            // record first got resolved — name / url / both / user) so the
-            // review table can show the underlying mechanism rather than the
-            // less-informative `cache`. Records written before resolvedVia
-            // existed fall back to the literal `cache` for clarity.
+            // Cache has an MBID. Preserve the ORIGINAL `resolvedVia` (how this
+            // record first got resolved — `name` / `url` / `both` / `user`) and
+            // set `fromCache: true` separately. The UI composes both into a
+            // label like `name (cache)`. Records written before `resolvedVia`
+            // existed fall back to the literal `cache` (still flagged
+            // `fromCache: true` for symmetry, but the label is just `cache`).
             const via = cachedRec.resolvedVia || 'cache';
             if (cachedRec.name) {
                 return buildResolved(cachedRec.mbUrl, cachedRec.name,
                                      cachedRec.disambiguation || '', via,
-                                     cachedRec.entityType);
+                                     cachedRec.entityType, true);
             }
             // Name missing — fetch it once, write back, return.
             const info = await fetchMbEntityInfo(cachedRec.entityType, cachedRec.mbid);
@@ -115,7 +123,7 @@ async function resolveEntity(entity, kind, opts) {
                 });
             }
             return buildResolved(cachedRec.mbUrl, info.name, info.disambiguation,
-                                 via, cachedRec.entityType);
+                                 via, cachedRec.entityType, true);
         }
     }
 

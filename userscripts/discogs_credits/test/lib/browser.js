@@ -156,16 +156,6 @@ export function getCapturedLog(page) {
  * The script's `pageWindow` shim sees plain `window` (no Tampermonkey sandbox).
  */
 export async function injectUserscript(page) {
-    // Clear the preflight cache so every test forces a fresh preflight pass — otherwise
-    // stale slim records (e.g. before we added the `via` field) would mask issues.
-    await page.evaluate(() => {
-        const toDel = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const k = localStorage.key(i);
-            if (k && k.startsWith('discogs-preflight')) toDel.push(k);
-        }
-        toDel.forEach(k => localStorage.removeItem(k));
-    });
     const code = await readFile(SCRIPT_PATH, 'utf8');
     // Tampermonkey provides `GM_info` and `unsafeWindow`; the script falls back
     // to plain `window` for the latter but expects `GM_info.script.{name,version}`
