@@ -23,6 +23,7 @@
 
 import { readFile, writeFile, mkdir, watch as fsWatch } from 'node:fs/promises';
 import { createServer }                                  from 'node:http';
+import { execSync }                                      from 'node:child_process';
 import { build as esBuild, context as esContext }       from 'esbuild';
 
 const META_SRC = 'src/meta.txt';
@@ -33,6 +34,32 @@ const PORT     = 8765;
 
 const isWatch = process.argv.includes('--watch');
 const isServe = process.argv.includes('--serve');
+
+/**
+ * Current git branch, or `null` if detached / no git. Used to brand non-main
+ * builds in the userscript manager — the maintainer ends up with several
+ * installs (prod GreasyFork copy, plus dev installs from feature branches)
+ * and needs to see at a glance which one is which.
+ */
+function currentBranch() {
+    try {
+        const b = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+        return b === 'HEAD' ? null : b;  // detached → no marker
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Append the branch name to `@name` when not on `main`, so the userscript
+ * shows up as e.g. `Import Discogs Credits (refactor)` in VM/TM dashboards.
+ * Production builds (released from `main`) keep the bare name.
+ */
+function brandMeta(meta, branch) {
+    if (!branch || branch === 'main') return meta;
+    return meta.replace(/^(\/\/\s*@name\s+)(.+?)\s*$/m,
+                        (_m, lead, name) => `${lead}${name} (${branch})`);
+}
 
 const esbuildOptions = {
     entryPoints: [ENTRY],
@@ -54,12 +81,14 @@ async function build() {
         readFile(META_SRC, 'utf8'),
         esBuild(esbuildOptions),
     ]);
+    const branch = currentBranch();
     const bundle = result.outputFiles[0].text;
-    const out = meta.trimEnd() + '\n\n' + bundle;
+    const out = brandMeta(meta, branch).trimEnd() + '\n\n' + bundle;
     await mkdir('dist', { recursive: true });
     await writeFile(OUT, out);
     const ts = new Date().toLocaleTimeString();
-    console.log(`[${ts}] built ${OUT} (${out.length.toLocaleString()} bytes)`);
+    const tag = branch && branch !== 'main' ? ` [${branch}]` : '';
+    console.log(`[${ts}] built ${OUT} (${out.length.toLocaleString()} bytes)${tag}`);
     return out;
 }
 
@@ -144,12 +173,14 @@ if (isWatch) {
                     }
                     try {
                         const meta = await readFile(META_SRC, 'utf8');
+                        const branch = currentBranch();
                         const bundle = result.outputFiles[0].text;
-                        const out = meta.trimEnd() + '\n\n' + bundle;
+                        const out = brandMeta(meta, branch).trimEnd() + '\n\n' + bundle;
                         await mkdir('dist', { recursive: true });
                         await writeFile(OUT, out);
                         const ts = new Date().toLocaleTimeString();
-                        console.log(`[${ts}] rebuilt ${OUT} (${out.length.toLocaleString()} bytes)`);
+                        const tag = branch && branch !== 'main' ? ` [${branch}]` : '';
+                        console.log(`[${ts}] rebuilt ${OUT} (${out.length.toLocaleString()} bytes)${tag}`);
                     } catch (e) {
                         console.error('rebuild failed:', e.message);
                     }
