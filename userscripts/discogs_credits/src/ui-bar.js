@@ -615,7 +615,10 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
             });
 
             // ── Pre-flight cache ─────────────────────────────────────────
-            const PREFLIGHT_CACHE_KEY = `discogs-preflight-${discogsUrl}`;
+            // `v2` — slim cache shape now carries `via` (resolution mechanism). Older
+            // entries without it would render the new "Resolved via" column as "—",
+            // so invalidate them by bumping the key.
+            const PREFLIGHT_CACHE_KEY = `discogs-preflight-v2-${discogsUrl}`;
             const today = new Date().toISOString().slice(0, 10);
             let cachedResults = null;
             try {
@@ -661,6 +664,10 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                             // Only save mbName if we actually have it — don't cache null names
                             mbName: r.mbName || null,
                             mbDisambig: r.mbDisambig || '',
+                            // Resolution mechanism (`name`/`url`/`both`/`user`/`cache`) — the
+                            // review table surfaces this in both the interactive badge and the
+                            // post-import log summary table, so it has to survive the cache.
+                            via: r.logEntry?.via || null,
                             entity: { resource_url: r.entity?.resource_url, name: r.entity?.name || '', _syntheticKey: r.entity?._syntheticKey || '' },
                         }));
                         localStorage.setItem(PREFLIGHT_CACHE_KEY, JSON.stringify({ date: today, results: slimResults }));

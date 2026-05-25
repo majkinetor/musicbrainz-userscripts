@@ -258,10 +258,16 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const tr = document.createElement('tr');
             tr.style.cssText = `vertical-align:top;background:${rowBg};`;
 
-            // Initialise rowState
+            // Initialise rowState. `via` carries how the entity got resolved
+            // (`name` / `url` / `both` / `user` / `cache`) — surfaced in the
+            // post-import log summary table so users can audit auto-matches.
+            // Fresh preflight results carry it on `r.logEntry.via`; results
+            // restored from the localStorage preflight cache have it on `r.via`
+            // (logEntry is stripped to keep the cache slim).
             rowState.set(_entityKey, {
                 mbUrl: initMbUrl, mbName: initMbName, mbDisambig: initMbDisam,
                 confirmed: isResolved && !needsAttention,
+                via: isResolved ? (r.logEntry?.via || r.via || null) : null,
             });
 
             // ── Col 1: Discogs ─────────────────────────────────────────────────
@@ -340,7 +346,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             function setRowResolved(a) {
                 // a = { id, name, disambiguation }
                 const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
-                rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', confirmed: true });
+                rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', confirmed: true, via: 'user' });
                 // Persist to IDB immediately so selection survives even without clicking Start import
                 const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
                 if (_idbKey) {
@@ -384,7 +390,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             }
 
             function setRowUnresolved() {
-                rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: '', confirmed: false });
+                rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: '', confirmed: false, via: null });
                 tr.style.background = '#ffe0e0';
                 searchInput.disabled = false;
                 searchBtn.disabled = false;
@@ -609,7 +615,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const displayName2 = initMbName || mbid;
                 if (!initMbName) {
                     // Name was null in cache — keep yellow, IDB pre-load handled before rendering
-                    rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: '', confirmed: true });
+                    rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: '', confirmed: true, via: r.logEntry?.via || r.via || null });
                     tr.style.background = '#fff8e1';
                 }
                 const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
@@ -626,8 +632,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 undoBtn.style.cssText = 'font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
                 selRow.appendChild(selA);
-                // `via` badge — name / url / both / cache (initial auto-match)
-                const initialVia = r.logEntry?.via;
+                // `via` badge — name / url / both / cache (initial auto-match).
+                // Read from logEntry (fresh) or top-level `via` (preflight cache).
+                const initialVia = r.logEntry?.via || r.via;
                 const viaBadge = makeViaBadge(initialVia);
                 if (viaBadge) selRow.appendChild(viaBadge);
                 selRow.appendChild(undoBtn);
@@ -689,7 +696,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             tbl.style.cssText = 'border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;';
             const thRow = document.createElement('tr');
             thRow.style.background = '#f5f5f5';
-            ['Discogs entity', 'Roles / Tracks', 'MB match', 'MBID'].forEach(h => {
+            ['Discogs entity', 'Roles / Tracks', 'MB match', 'MBID', 'Resolved via'].forEach(h => {
                 const th = document.createElement('th');
                 th.style.cssText = 'text-align:left;padding:0.2rem 0.4rem;border:1px solid #ddd;white-space:nowrap;';
                 th.textContent = h;
@@ -713,11 +720,16 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
                 const mbid = state.mbUrl ? state.mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi,'').substring(0,36) : '';
                 const matchText = state.mbName || (state.mbUrl ? mbid : '');
+                // Resolution mechanism, e.g. `name+url`, `url`, `name`, `user`,
+                // `cache` — null when the row was not resolved (skipped).
+                const viaCfg = state.via ? VIA_LABELS[state.via] : null;
+                const viaText = viaCfg ? viaCfg.text : (state.mbUrl ? '—' : '');
 
-                [r.displayName || r.entity?.name, rolesText, matchText, mbid].forEach((val, ci) => {
+                [r.displayName || r.entity?.name, rolesText, matchText, mbid, viaText].forEach((val, ci) => {
                     const td = document.createElement('td');
                     td.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #ddd;' +
-                        (ci === 2 && !val ? 'color:#aaa;' : ci === 2 ? 'color:#060;' : '');
+                        (ci === 2 && !val ? 'color:#aaa;' : ci === 2 ? 'color:#060;' :
+                         ci === 4 && viaCfg ? `color:${viaCfg.color};` : '');
                     if (ci === 2 && mbid) {
                         const a = document.createElement('a');
                         a.href = 'https:' + state.mbUrl; a.target = '_blank'; a.rel = 'noopener noreferrer nofollow';

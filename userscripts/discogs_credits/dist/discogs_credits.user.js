@@ -1785,12 +1785,13 @@
     if (!bypassIdb && key) {
       const cachedRec = await readIdbRecord(key);
       if (cachedRec?.mbid && cachedRec?.entityType) {
+        const via2 = cachedRec.resolvedVia || "cache";
         if (cachedRec.name) {
           return buildResolved(
             cachedRec.mbUrl,
             cachedRec.name,
             cachedRec.disambiguation || "",
-            "cache",
+            via2,
             cachedRec.entityType
           );
         }
@@ -1805,7 +1806,7 @@
           cachedRec.mbUrl,
           info.name,
           info.disambiguation,
-          "cache",
+          via2,
           cachedRec.entityType
         );
       }
@@ -2032,6 +2033,27 @@
         }
         urlCheckRunning--;
       }
+      const VIA_LABELS = {
+        both: { text: "name+url", color: "#2a7" },
+        // green — high confidence
+        url: { text: "url", color: "#46a" },
+        // blue
+        name: { text: "name", color: "#46a" },
+        // blue
+        user: { text: "user", color: "#777" },
+        // grey
+        cache: { text: "cache", color: "#777" }
+        // grey (legacy records)
+      };
+      function makeViaBadge(via) {
+        const cfg = VIA_LABELS[via];
+        if (!cfg) return null;
+        const span = document.createElement("span");
+        span.textContent = cfg.text;
+        span.title = `Resolved via ${via}`;
+        span.style.cssText = `font-size:0.68rem;background:#f5f5f5;color:${cfg.color};padding:0 0.35rem;border-radius:8px;border:1px solid #ddd;flex-shrink:0;`;
+        return span;
+      }
       const panel = document.createElement("div");
       panel.style.cssText = "border:2px solid #c8a000;border-radius:0.5rem;background:#fffef5;padding:1rem 1.5rem;margin:0.5rem 0;";
       {
@@ -2114,7 +2136,8 @@
           mbUrl: initMbUrl,
           mbName: initMbName,
           mbDisambig: initMbDisam,
-          confirmed: isResolved && !needsAttention
+          confirmed: isResolved && !needsAttention,
+          via: isResolved ? r.logEntry?.via || r.via || null : null
         });
         const tdDiscogs = document.createElement("td");
         tdDiscogs.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;`;
@@ -2183,7 +2206,7 @@
         tbody.appendChild(tr);
         function setRowResolved(a) {
           const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
-          rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true });
+          rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true, via: "user" });
           const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
           if (_idbKey) {
             writeIdbRecord(_idbKey, {
@@ -2213,6 +2236,8 @@
           undoBtn.style.cssText = "font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;";
           undoBtn.addEventListener("click", () => setRowUnresolved());
           selRow.appendChild(selA);
+          const viaBadge = makeViaBadge("user");
+          if (viaBadge) selRow.appendChild(viaBadge);
           selRow.appendChild(undoBtn);
           candidateList.appendChild(selRow);
           renderActions(a);
@@ -2220,7 +2245,7 @@
           saveCache();
         }
         function setRowUnresolved() {
-          rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: "", confirmed: false });
+          rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: "", confirmed: false, via: null });
           tr.style.background = "#ffe0e0";
           searchInput.disabled = false;
           searchBtn.disabled = false;
@@ -2442,7 +2467,7 @@
           const correctedMbUrl = `//musicbrainz.org/${entityType}/${mbid}`;
           const displayName2 = initMbName || mbid;
           if (!initMbName) {
-            rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: "", confirmed: true });
+            rowState.set(_entityKey, { mbUrl: initMbUrl, mbName: null, mbDisambig: "", confirmed: true, via: r.logEntry?.via || r.via || null });
             tr.style.background = "#fff8e1";
           }
           const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
@@ -2461,6 +2486,9 @@
           undoBtn.style.cssText = "font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;";
           undoBtn.addEventListener("click", () => setRowUnresolved());
           selRow.appendChild(selA);
+          const initialVia = r.logEntry?.via || r.via;
+          const viaBadge = makeViaBadge(initialVia);
+          if (viaBadge) selRow.appendChild(viaBadge);
           selRow.appendChild(undoBtn);
           candidateList.appendChild(selRow);
           renderActions(fakeA);
@@ -2509,7 +2537,7 @@
         tbl.style.cssText = "border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;";
         const thRow = document.createElement("tr");
         thRow.style.background = "#f5f5f5";
-        ["Discogs entity", "Roles / Tracks", "MB match", "MBID"].forEach((h) => {
+        ["Discogs entity", "Roles / Tracks", "MB match", "MBID", "Resolved via"].forEach((h) => {
           const th = document.createElement("th");
           th.style.cssText = "text-align:left;padding:0.2rem 0.4rem;border:1px solid #ddd;white-space:nowrap;";
           th.textContent = h;
@@ -2531,9 +2559,11 @@
           const rolesText = [...grouped2.entries()].map(([label, tr]) => label + (tr.size ? " [" + [...tr].join(",") + "]" : "")).join("; ");
           const mbid = state.mbUrl ? state.mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36) : "";
           const matchText = state.mbName || (state.mbUrl ? mbid : "");
-          [r.displayName || r.entity?.name, rolesText, matchText, mbid].forEach((val, ci) => {
+          const viaCfg = state.via ? VIA_LABELS[state.via] : null;
+          const viaText = viaCfg ? viaCfg.text : state.mbUrl ? "\u2014" : "";
+          [r.displayName || r.entity?.name, rolesText, matchText, mbid, viaText].forEach((val, ci) => {
             const td = document.createElement("td");
-            td.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #ddd;" + (ci === 2 && !val ? "color:#aaa;" : ci === 2 ? "color:#060;" : "");
+            td.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #ddd;" + (ci === 2 && !val ? "color:#aaa;" : ci === 2 ? "color:#060;" : ci === 4 && viaCfg ? `color:${viaCfg.color};` : "");
             if (ci === 2 && mbid) {
               const a = document.createElement("a");
               a.href = "https:" + state.mbUrl;
@@ -3845,7 +3875,7 @@
           uniqueCompanies.push(c);
         }
       });
-      const PREFLIGHT_CACHE_KEY = `discogs-preflight-${discogsUrl2}`;
+      const PREFLIGHT_CACHE_KEY = `discogs-preflight-v2-${discogsUrl2}`;
       const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
       let cachedResults = null;
       try {
@@ -3889,6 +3919,10 @@
               // Only save mbName if we actually have it — don't cache null names
               mbName: r.mbName || null,
               mbDisambig: r.mbDisambig || "",
+              // Resolution mechanism (`name`/`url`/`both`/`user`/`cache`) — the
+              // review table surfaces this in both the interactive badge and the
+              // post-import log summary table, so it has to survive the cache.
+              via: r.logEntry?.via || null,
               entity: { resource_url: r.entity?.resource_url, name: r.entity?.name || "", _syntheticKey: r.entity?._syntheticKey || "" }
             }));
             localStorage.setItem(PREFLIGHT_CACHE_KEY, JSON.stringify({ date: today, results: slimResults }));
