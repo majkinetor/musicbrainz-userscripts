@@ -7,30 +7,30 @@
 //     into MB's internal ImmutableTree shape via `MB.tree.fromDistinctAscArray`.
 
 import { pageWindow, REL_TEMPLATE } from './constants.js';
-import { addLogLine }               from './log.js';
+import { log }               from './log.js';
 
 /** Poll for MB.relationshipEditor.state.entity with verbose log feedback. */
 export async function waitForMBEditor(timeoutMs = 15000) {
-    addLogLine('Waiting for MB relationship editor…');
+    log.line('Waiting for MB relationship editor…');
     let waited = 0;
     while (waited < timeoutMs) {
         const MB = pageWindow.MB;
         const re = MB?.relationshipEditor;
         const st = re?.state;
         if (st?.entity) {
-            addLogLine(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
+            log.line(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
             return re;
         }
         if (waited % 2000 === 0 && waited > 0) {
             const mbKeys = MB ? Object.keys(MB).join(', ') : 'undefined';
             const reKeys = re ? Object.keys(re).join(', ') : 'undefined';
             const stKeys = st ? Object.keys(st).join(', ') : 'undefined';
-            addLogLine(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
+            log.line(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
         }
         await new Promise(r => setTimeout(r, 200));
         waited += 200;
     }
-    addLogLine('<span style="color:red">ERR MB editor not ready after 15s — aborting</span>');
+    log.error('MB editor not ready after 15s — aborting');
     return null;
 }
 
@@ -65,7 +65,7 @@ export function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID,
         } catch(e) {}
     }
     const posLabel = (trackPos != null && trackPos !== '') ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : '';
-    addLogLine(`→ <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} ↔ ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ''}`);
+    log.line(`→ <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} ↔ ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ''}`);
     re.dispatch({
         type: 'update-relationship-state',
         sourceEntity,
@@ -126,7 +126,7 @@ export function buildAttributes(rawAttributes) {
                 if (vl.includes(lower) || lower.includes(vl)) return v;
             }
         }
-        addLogLine(`<span style="color:orange">WARN Attribute "${name}" not found in MB — dropping attribute but keeping the rel</span>`);
+        log.warn(`Attribute "${name}" not found in MB — dropping attribute but keeping the rel`);
         return null;
     }
 
@@ -170,7 +170,7 @@ export function buildAttributes(rawAttributes) {
     try {
         return tree.fromDistinctAscArray(attrObjs);
     } catch(e) {
-        addLogLine(`<span style="color:orange">WARN Attribute tree build failed (${e.message}) — importing without attributes</span>`);
+        log.warn(`Attribute tree build failed (${e.message}) — importing without attributes`);
         return null;
     }
 }
