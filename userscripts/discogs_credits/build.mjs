@@ -11,12 +11,23 @@
 //         node build.mjs --watch          # rebuild on every save under src/
 //         node build.mjs --watch --serve  # also serve dist/ over HTTP for live dev install
 //
+// `@version` is auto-stamped on every build (`YYYY.M.D.HHMMSS`). VM/TM
+// detect each rebuild as a new version → users on the GreasyFork copy
+// auto-update on every merge to main without anyone manually bumping
+// `meta.txt`. The version stamp lives only in `dist/`; `meta.txt`'s
+// `@version` is the placeholder that gets overwritten.
+//
 // Dev-server mode (--serve):
 //   - Serves the built script on http://127.0.0.1:8765/discogs_credits.user.js
-//   - Rewrites @version / @updateURL / @downloadURL in the served `meta.txt`
-//     so VM/TM detect every rebuild as a new version and re-download from
-//     localhost instead of GreasyFork.
-//   - One-time install: visit that URL in the browser; the manager intercepts.
+//   - Brands the served `@name` with the current branch (e.g. "Import Discogs
+//     Credits (refactor)") and rewrites `@updateURL` / `@downloadURL` to
+//     localhost — VM/TM detect every rebuild as a new version and re-download
+//     from the local server instead of GreasyFork.
+//   - The on-disk `dist/` is always clean (no branch suffix) so committing it
+//     doesn't leak a branch name into `main` — the brand is purely a
+//     served-time decoration so the maintainer can tell branch dev installs
+//     from the production GreasyFork install in their VM/TM dashboard.
+//   - One-time install: visit the URL in the browser; the manager intercepts.
 //     TM — set "Check for updates" interval = 0 (every page load).
 //     VM — bookmark the URL and click after each save (VM has no per-page-load
 //     knob; see DEVELOP.md).
@@ -36,10 +47,11 @@ const isWatch = process.argv.includes('--watch');
 const isServe = process.argv.includes('--serve');
 
 /**
- * Current git branch, or `null` if detached / no git. Used to brand non-main
- * builds in the userscript manager — the maintainer ends up with several
- * installs (prod GreasyFork copy, plus dev installs from feature branches)
- * and needs to see at a glance which one is which.
+ * Current git branch, or `null` if detached / no git. Used in `--serve`
+ * mode to brand the served `@name` with the branch — the maintainer ends
+ * up with several installs (prod GreasyFork copy + dev installs from
+ * feature branches) and needs to see at a glance which is which.
+ * NOT applied to the on-disk `dist/` (would leak into `main` post-merge).
  */
 function currentBranch() {
     try {
@@ -50,15 +62,17 @@ function currentBranch() {
     }
 }
 
-/**
- * Append the branch name to `@name` when not on `main`, so the userscript
- * shows up as e.g. `Import Discogs Credits (refactor)` in VM/TM dashboards.
- * Production builds (released from `main`) keep the bare name.
- */
-function brandMeta(meta, branch) {
-    if (!branch || branch === 'main') return meta;
-    return meta.replace(/^(\/\/\s*@name\s+)(.+?)\s*$/m,
-                        (_m, lead, name) => `${lead}${name} (${branch})`);
+/** `YYYY.M.D.HHMMSS` — monotonic, parses as a date for humans. */
+function timestampVersion() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}.${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+}
+
+/** Replace `@version` in the meta block with the current build timestamp. */
+function stampVersion(meta) {
+    const ver = timestampVersion();
+    return meta.replace(/^(\/\/\s*@version\s+)\S+/m, (_m, lead) => `${lead}${ver}`);
 }
 
 const esbuildOptions = {
@@ -73,40 +87,39 @@ const esbuildOptions = {
 };
 
 /**
- * Run esbuild on the entry module, prepend the meta.txt header, write to OUT.
- * Returns the final bytes (for the dev server to optionally rewrite).
+ * Run esbuild on the entry module, prepend the meta.txt header (with a
+ * fresh `@version` stamp), write to OUT. Returns the final bytes.
  */
 async function build() {
     const [meta, result] = await Promise.all([
         readFile(META_SRC, 'utf8'),
         esBuild(esbuildOptions),
     ]);
-    const branch = currentBranch();
     const bundle = result.outputFiles[0].text;
-    const out = brandMeta(meta, branch).trimEnd() + '\n\n' + bundle;
+    const out = stampVersion(meta).trimEnd() + '\n\n' + bundle;
     await mkdir('dist', { recursive: true });
     await writeFile(OUT, out);
     const ts = new Date().toLocaleTimeString();
-    const tag = branch && branch !== 'main' ? ` [${branch}]` : '';
-    console.log(`[${ts}] built ${OUT} (${out.length.toLocaleString()} bytes)${tag}`);
+    console.log(`[${ts}] built ${OUT} (${out.length.toLocaleString()} bytes)`);
     return out;
 }
 
 /**
- * Rewrite metadata-block fields in `meta.txt` content so VM/TM auto-update
- * the install from localhost instead of from GreasyFork, and treat every
- * rebuild as new.
+ * Decorate the meta block for the dev server: brand `@name` with the
+ * current branch (so VM/TM dashboards distinguish branch installs from
+ * the GreasyFork prod install), and point `@updateURL` / `@downloadURL`
+ * at the local server so the manager pulls the live rebuild.
+ * `@version` is already stamped at build time, no need to redo it here.
  */
 function devifyMetadata(meta) {
     const localUrl = `http://${HOST}:${PORT}/discogs_credits.user.js`;
-    // Date-style 4-segment version `YYYY.M.D.HHMMSS` matches the script's own
-    // release scheme; monotonic within a day (HHMMSS) and across days (date).
-    const d = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    const ver = `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}.${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-    return meta
-        .replace(/^(\/\/\s*@version\s+)\S+/m,
-                 (_m, lead) => `${lead}${ver}`)
+    const branch = currentBranch();
+    let out = meta;
+    if (branch && branch !== 'main') {
+        out = out.replace(/^(\/\/\s*@name\s+)(.+?)\s*$/m,
+                          (_m, lead, name) => `${lead}${name} (${branch})`);
+    }
+    return out
         .replace(/^(\/\/\s*@updateURL\s+)\S.*$/m,
                  (_m, lead) => `${lead}${localUrl}`)
         .replace(/^(\/\/\s*@downloadURL\s+)\S.*$/m,
@@ -123,8 +136,9 @@ function serve() {
             return;
         }
         try {
-            // Read the built file and swap its metadata block on the fly.
-            // (Re-reading is cheap; keeps the rewrite logic in one place.)
+            // Read the built file and decorate its metadata block on the fly
+            // (brand + localhost URLs). Re-reading is cheap; keeps the
+            // rewrite logic in one place.
             const built = await readFile(OUT, 'utf8');
             const splitIdx = built.indexOf('// ==/UserScript==');
             const endIdx = built.indexOf('\n', splitIdx) + 1;
@@ -173,14 +187,12 @@ if (isWatch) {
                     }
                     try {
                         const meta = await readFile(META_SRC, 'utf8');
-                        const branch = currentBranch();
                         const bundle = result.outputFiles[0].text;
-                        const out = brandMeta(meta, branch).trimEnd() + '\n\n' + bundle;
+                        const out = stampVersion(meta).trimEnd() + '\n\n' + bundle;
                         await mkdir('dist', { recursive: true });
                         await writeFile(OUT, out);
                         const ts = new Date().toLocaleTimeString();
-                        const tag = branch && branch !== 'main' ? ` [${branch}]` : '';
-                        console.log(`[${ts}] rebuilt ${OUT} (${out.length.toLocaleString()} bytes)${tag}`);
+                        console.log(`[${ts}] rebuilt ${OUT} (${out.length.toLocaleString()} bytes)`);
                     } catch (e) {
                         console.error('rebuild failed:', e.message);
                     }
