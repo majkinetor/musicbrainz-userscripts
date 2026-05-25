@@ -6,8 +6,6 @@
 
 import { log }                  from './log.js';
 import { pageWindow }                   from './constants.js';
-import { readIdbRecord }                  from './storage.js';
-import { parseDiscogsUrl }               from './api-discogs.js';
 import {
     mbThrottle,
     fetchMBEntity,
@@ -249,15 +247,25 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         return null;
     }
 
-    // ── Helper: resolve MB URL from IDB cache for a Discogs entity ───────────
-    async function getMbidForEntity(entity, entityType) {
-        const key = parseDiscogsUrl(entity.resource_url)?.key;
-        if (!key) throw new Error(`No Discogs key for ${entity.name}`);
-        const rec = await readIdbRecord(key);
-        if (!rec?.mbUrl) {
-            throw new Error(`${entity.name} not in IDB cache — run pre-flight check first`);
+    // ── Helper: confirmedMap lookup for a Discogs entity ───────────────────
+    // Single source of truth for "is this entity authorised to be dispatched":
+    // the review-table phase populates `confirmedMap` with everything the user
+    // (or auto-match) approved. If the entity isn't in the map, it's been
+    // either explicitly unresolved by the user OR was never resolved at all —
+    // either way we skip it. Used to be: fall back to IDB on miss, which
+    // let unselected entities sneak through (issue #35) because IDB still
+    // had the preflight auto-match cached.
+    function confirmedMbUrl(entity) {
+        if (!entity) return null;
+        const direct = confirmedMap.get(entity.resource_url)
+                    || confirmedMap.get(entity._syntheticKey)
+                    || null;
+        if (direct) return direct;
+        // Artists without a Discogs page get keyed by `_nourl_<name>`.
+        if (entity.name) {
+            return confirmedMap.get(`_nourl_${entity.name}`) || null;
         }
-        return rec.mbUrl;
+        return null;
     }
 
     // ── Helper: does a matching rel already exist on the source entity? ─────
@@ -378,13 +386,12 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                     skipped++; tickProgress(); continue;
                 }
             }
-            // Resolution must come from the review-table phase: confirmedMap → IDB cache.
-            // The old `getMbId` (network) fallback added ~1-3s per unresolved entity (bug
-            // majkinetor/musicbrainz-userscripts#8) and was redundant — preflight already
-            // tried the same `/ws/2/url` lookup. Unresolved here = unresolved by user.
-            let mbUrl;
-            try { mbUrl = await getMbidForEntity(company, resolvedEt); }
-            catch(e) {
+            // Resolution comes from the review-table phase (`confirmedMap`).
+            // No IDB fallback: if the user explicitly cleared the auto-match
+            // (issue #35), IDB still has the cached MBID but `confirmedMap`
+            // doesn't — and the user wins.
+            const mbUrl = confirmedMbUrl(company);
+            if (!mbUrl) {
                 log.warn(`Skipped ${company.name} — not resolved in review`);
                 skipped++; tickProgress(); continue;
             }
@@ -403,27 +410,10 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             // Work-only rels (writer, composer, etc.) go to works, not the release
             if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
 
-            // Try confirmedMap first (handles artists with no resource_url)
-            const _artKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
-            let mbUrl = confirmedMap.get(_artKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
-            // Name-based fallback: search all confirmedMap keys for _nourl_ match
+            const mbUrl = confirmedMbUrl(role.artist);
             if (!mbUrl) {
-                for (const [k, v] of confirmedMap) {
-                    if (k === `_nourl_${role.artist.name}`) { mbUrl = v; break; }
-                }
-            }
-            if (!mbUrl && !role.artist.resource_url) {
-                // No Discogs page, not in confirmedMap — skip with clear message
-                log.warn(`Skipped ${role.artist.name} (${role.linkType}) — no Discogs page, not confirmed in review`);
+                log.warn(`Skipped ${role.artist.name} (${role.linkType}) — not resolved in review`);
                 skipped++; tickProgress(); continue;
-            }
-            if (!mbUrl) {
-                // See bug #8 — no network fallback; unresolved = skip immediately.
-                try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
-                catch(e) {
-                    log.warn(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
-                    skipped++; tickProgress(); continue;
-                }
             }
             const credit = role.artist.anv?.trim() || role.artist.name;
             await processOne(releaseEntity, 'artist', 'release', role.linkType, mbUrl, role.attributes || [], credit);
@@ -439,10 +429,8 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             if (applicable.length > 0) {
                 log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)…`);
                 for (const role of applicable) {
-                    let mbUrl;
-                    // See bug #8 — no network fallback.
-                    try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
-                    catch(e) {
+                    const mbUrl = confirmedMbUrl(role.artist);
+                    if (!mbUrl) {
                         log.warn(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review`);
                         continue;
                     }
@@ -611,10 +599,8 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
 
             // Apply all work-only artist rels to the work
             for (const { role } of entries) {
-                let mbUrl;
-                // See bug #8 — no network fallback.
-                try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
-                catch(e) {
+                const mbUrl = confirmedMbUrl(role.artist);
+                if (!mbUrl) {
                     log.warn(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
                     continue;
                 }
@@ -644,25 +630,10 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         for (const role of tracklistRels) {
             if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue; // handled by dispatchWorks
 
-            // Try confirmedMap first (handles artists with no resource_url)
-            const _tArtKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
-            let mbUrl = confirmedMap.get(_tArtKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
+            const mbUrl = confirmedMbUrl(role.artist);
             if (!mbUrl) {
-                for (const [k, v] of confirmedMap) {
-                    if (k === `_nourl_${role.artist.name}`) { mbUrl = v; break; }
-                }
-            }
-            if (!mbUrl && !role.artist.resource_url) {
-                log.warn(`Skipped ${role.artist.name} on track ${role.track.position} — no Discogs page, not confirmed`);
+                log.warn(`Skipped ${role.artist.name} on track ${role.track.position} — not resolved in review`);
                 continue;
-            }
-            if (!mbUrl) {
-                // See bug #8 — no network fallback.
-                try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
-                catch(e) {
-                    log.warn(`Skipped ${role.artist.name} on track ${role.track.position} — not resolved in review`);
-                    continue;
-                }
             }
 
             const recEntity = getRecordingEntity(role.track);

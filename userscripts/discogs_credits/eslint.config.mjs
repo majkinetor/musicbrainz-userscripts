@@ -13,7 +13,7 @@ export default [
         ignores: ['dist/**', 'node_modules/**', '.pw-profile/**', 'test/**'],
         languageOptions: {
             ecmaVersion: 2022,
-            sourceType:  'script',
+            sourceType:  'module',
             globals: {
                 // Browser
                 window:                 'readonly',

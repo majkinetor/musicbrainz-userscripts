@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Import Discogs Credits (refactor)
+// @name         Import Discogs Credits (fix-issue-35-unselected-entities)
 // @namespace    majkinetor
 // @version      2026.5.25
 // @description  Add a button to import Discogs release relationships to MusicBrainz
@@ -2900,14 +2900,14 @@
       }
       return null;
     }
-    async function getMbidForEntity(entity, entityType) {
-      const key = parseDiscogsUrl(entity.resource_url)?.key;
-      if (!key) throw new Error(`No Discogs key for ${entity.name}`);
-      const rec = await readIdbRecord(key);
-      if (!rec?.mbUrl) {
-        throw new Error(`${entity.name} not in IDB cache \u2014 run pre-flight check first`);
+    function confirmedMbUrl(entity) {
+      if (!entity) return null;
+      const direct = confirmedMap.get(entity.resource_url) || confirmedMap.get(entity._syntheticKey) || null;
+      if (direct) return direct;
+      if (entity.name) {
+        return confirmedMap.get(`_nourl_${entity.name}`) || null;
       }
-      return rec.mbUrl;
+      return null;
     }
     function relAlreadyExists(sourceEntity, linkTypeID, targetGid, attrTree) {
       const rels = sourceEntity?.relationships;
@@ -3008,10 +3008,8 @@
             continue;
           }
         }
-        let mbUrl;
-        try {
-          mbUrl = await getMbidForEntity(company, resolvedEt);
-        } catch (e) {
+        const mbUrl = confirmedMbUrl(company);
+        if (!mbUrl) {
           log.warn(`Skipped ${company.name} \u2014 not resolved in review`);
           skipped++;
           tickProgress();
@@ -3027,31 +3025,12 @@
       for (const role of artistRoles) {
         if (applyToTracks && RECORDING_LINK_TYPES.has(role.linkType)) continue;
         if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-        const _artKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
-        let mbUrl = confirmedMap.get(_artKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
+        const mbUrl = confirmedMbUrl(role.artist);
         if (!mbUrl) {
-          for (const [k, v] of confirmedMap) {
-            if (k === `_nourl_${role.artist.name}`) {
-              mbUrl = v;
-              break;
-            }
-          }
-        }
-        if (!mbUrl && !role.artist.resource_url) {
-          log.warn(`Skipped ${role.artist.name} (${role.linkType}) \u2014 no Discogs page, not confirmed in review`);
+          log.warn(`Skipped ${role.artist.name} (${role.linkType}) \u2014 not resolved in review`);
           skipped++;
           tickProgress();
           continue;
-        }
-        if (!mbUrl) {
-          try {
-            mbUrl = await getMbidForEntity(role.artist, "artist");
-          } catch (e) {
-            log.warn(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
-            skipped++;
-            tickProgress();
-            continue;
-          }
         }
         const credit = role.artist.anv?.trim() || role.artist.name;
         await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit);
@@ -3064,10 +3043,8 @@
         if (applicable.length > 0) {
           log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)\u2026`);
           for (const role of applicable) {
-            let mbUrl;
-            try {
-              mbUrl = await getMbidForEntity(role.artist, "artist");
-            } catch (e) {
+            const mbUrl = confirmedMbUrl(role.artist);
+            if (!mbUrl) {
               log.warn(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review`);
               continue;
             }
@@ -3199,10 +3176,8 @@
           workEntity = getWorkFromEditorState(recEntity) || workEntity;
         }
         for (const { role } of entries) {
-          let mbUrl;
-          try {
-            mbUrl = await getMbidForEntity(role.artist, "artist");
-          } catch (e) {
+          const mbUrl = confirmedMbUrl(role.artist);
+          if (!mbUrl) {
             log.warn(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
             continue;
           }
@@ -3229,27 +3204,10 @@
       const seenTrackRels = /* @__PURE__ */ new Set();
       for (const role of tracklistRels) {
         if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-        const _tArtKey = role.artist.resource_url || role.artist._syntheticKey || `_nourl_${role.artist.name}`;
-        let mbUrl = confirmedMap.get(_tArtKey) || (role.artist.resource_url ? confirmedMap.get(role.artist.resource_url) : null);
+        const mbUrl = confirmedMbUrl(role.artist);
         if (!mbUrl) {
-          for (const [k, v] of confirmedMap) {
-            if (k === `_nourl_${role.artist.name}`) {
-              mbUrl = v;
-              break;
-            }
-          }
-        }
-        if (!mbUrl && !role.artist.resource_url) {
-          log.warn(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 no Discogs page, not confirmed`);
+          log.warn(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 not resolved in review`);
           continue;
-        }
-        if (!mbUrl) {
-          try {
-            mbUrl = await getMbidForEntity(role.artist, "artist");
-          } catch (e) {
-            log.warn(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 not resolved in review`);
-            continue;
-          }
         }
         const recEntity = getRecordingEntity(role.track);
         if (!recEntity) {
