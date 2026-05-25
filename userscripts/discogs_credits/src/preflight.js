@@ -13,7 +13,7 @@
 
 import { mbThrottle }                       from './api-mb.js';
 import { db }                                from './storage.js';
-import { getDiscogsLinkKey, link_infos }    from './api-discogs.js';
+import { parseDiscogsUrl }                  from './api-discogs.js';
 import { ENTITY_TYPE_MAP }                  from './data/entity-map.js';
 
 /**
@@ -69,7 +69,8 @@ export async function checkMissingArtists(artists, progressLi, bypassIdb) {
     }
 
     async function checkOne(artist) {
-        const key         = getDiscogsLinkKey(artist.resource_url);
+        const parsed      = parseDiscogsUrl(artist.resource_url);
+        const key         = parsed?.key;
         const searchName  = artist.name;
         const displayName = (artist.anv && artist.anv.trim()) || artist.name;
         const discogsHref = artist.resource_url
@@ -128,8 +129,8 @@ export async function checkMissingArtists(artists, progressLi, bypassIdb) {
         }
 
         // 3. URL lookup — needed when name search is ambiguous or empty
-        const urlJson = key && link_infos[key] ? await mbFetch(
-            `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(link_infos[key].clean_url)}&inc=artist-rels&fmt=json`
+        const urlJson = parsed ? await mbFetch(
+            `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=artist-rels&fmt=json`
         ) : null;
         if (urlJson?.relations?.length > 0) {
             const rel = urlJson.relations.find(r => r.artist);
@@ -234,7 +235,8 @@ export async function checkMissingCompanies(companies, progressLi, bypassIdb) {
         const details = ENTITY_TYPE_MAP[company.entity_type_name];
         if (!details) return null; // unmapped company type — skip
         const entityType  = details.entityType; // 'label' or 'place'
-        const key         = getDiscogsLinkKey(company.resource_url);
+        const parsed      = parseDiscogsUrl(company.resource_url);
+        const key         = parsed?.key;
         const searchName  = company.name;
         const displayName = company.name;
         // API uses plural paths (labels/, masters/) but website uses singular (label/, master/)
@@ -300,8 +302,8 @@ export async function checkMissingCompanies(companies, progressLi, bypassIdb) {
 
         // 3. URL lookup — for places also try label-rels (facilities are often stored as labels in MB)
         const incRels = entityType === 'place' ? 'place-rels+label-rels' : `${entityType}-rels`;
-        const urlJson = key && link_infos[key] ? await mbFetch(
-            `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(link_infos[key].clean_url)}&inc=${incRels}&fmt=json`
+        const urlJson = parsed ? await mbFetch(
+            `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
         ) : null;
         if (urlJson?.relations?.length > 0) {
             const rel = urlJson.relations.find(r => r[entityType] || r['label'] || r['place']);

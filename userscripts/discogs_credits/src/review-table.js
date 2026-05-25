@@ -6,7 +6,7 @@
 
 import { db, readIdbRecord }              from './storage.js';
 import { mbThrottle, fetchWithRetry }      from './api-mb.js';
-import { getDiscogsLinkKey, link_infos }   from './api-discogs.js';
+import { parseDiscogsUrl }                 from './api-discogs.js';
 import { guessSortName }                   from './mappers.js';
 import { getLogContainer }                 from './log.js';
 import { _hideBar }                        from './progress-bar.js';
@@ -36,7 +36,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
     for (const r of _nullNames) {
         const rUrl = r.entity?.resource_url;
         try {
-            const idbKey = getDiscogsLinkKey(rUrl);
+            const idbKey = parseDiscogsUrl(rUrl)?.key;
             const rec = await readIdbRecord(idbKey);
             if (rec?.mb_name) {
                 _preloadedNames.set(rUrl, { name: rec.mb_name, dis: rec.mb_disambiguation || '' });
@@ -312,7 +312,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
                 rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', confirmed: true });
                 // Persist to IDB immediately so selection survives even without clicking Start import
-                const _idbKey = r.entity?.resource_url ? getDiscogsLinkKey(r.entity.resource_url) : null;
+                const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
                 if (_idbKey && db) {
                     try {
                         const _tx = db.transaction(['mblinks'], 'readwrite');

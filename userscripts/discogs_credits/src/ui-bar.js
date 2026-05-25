@@ -22,7 +22,7 @@ import {
 }                                        from './log.js';
 import { _showBar, _hideBar }             from './progress-bar.js';
 import {
-    getDiscogsLinkKey,
+    parseDiscogsUrl,
     getDiscogsReleaseData,
     clearReleaseDataCache,
 }                                        from './api-discogs.js';
@@ -586,7 +586,10 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                 });
                 if (!seenResourceUrls.has(url)) {
                     seenResourceUrls.add(url);
-                    if (role.artist?.resource_url) getDiscogsLinkKey(role.artist.resource_url);
+                    // (was: `getDiscogsLinkKey(role.artist.resource_url)` for
+                    //  side-effect-populating the link_infos global; the
+                    //  preflight code now calls parseDiscogsUrl itself, so no
+                    //  pre-population needed.)
                     // Attach synthetic key for artists with no Discogs URL
                     if (!role.artist?.resource_url && role.artist) role.artist._syntheticKey = url;
                     uniqueArtists.push(role.artist);
@@ -606,7 +609,6 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
             json.companies.forEach(c => {
                 if (c.resource_url && !seenCompanyUrls.has(c.resource_url) && ENTITY_TYPE_MAP[c.entity_type_name]) {
                     seenCompanyUrls.add(c.resource_url);
-                    getDiscogsLinkKey(c.resource_url);
                     uniqueCompanies.push(c);
                 }
             });
@@ -696,7 +698,7 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                     // by a 2-field `{discogs_id, mb_links}` put.
                     const cachePromises = [];
                     confirmedMap.forEach((mbUrl, resourceUrl) => {
-                        const key = getDiscogsLinkKey(resourceUrl);
+                        const key = parseDiscogsUrl(resourceUrl)?.key;
                         if (!key) return;
                         cachePromises.push(new Promise(res => {
                             try {
