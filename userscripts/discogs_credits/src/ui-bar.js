@@ -14,7 +14,7 @@
 // One IIFE at the top cleans up stale `discogs-release-*` localStorage
 // entries from old versions on every page load (cheap, idempotent).
 
-import { DISCOGS_LOGO_URL }              from './constants.js';
+import { DISCOGS_LOGO_URL, pageWindow }   from './constants.js';
 import { writeIdbRecord }                 from './storage.js';
 import {
     log,
@@ -354,10 +354,15 @@ export function insertDiscogsBar(discogsUrl) {
         outputDiv.appendChild(_summary);
         outputDiv.appendChild(_logs);
 
-        const copyLogBtn = document.createElement('button');
-        copyLogBtn.textContent = 'Copy log';
-        copyLogBtn.style.cssText = 'font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-left:auto;flex-shrink:0;';
-        copyLogBtn.addEventListener('click', () => {
+        // Two "Copy log" variants:
+        //   - "Copy log"           — full output, includes the raw Discogs JSON block
+        //   - "Copy log (no JSON)" — skips the JSON block so the paste fits in a
+        //                            GitHub issue (the JSON alone is often >50 kB)
+        //
+        // Both wrap the output in `<details><summary>{releaseName}</summary>…
+        // </details>` so a forum / issue paste collapses by default and shows
+        // just the release name as the click-to-expand summary. (Issue #46.)
+        function buildCopyText({ skipDiscogsJson }) {
             function htmlToMd(el) {
                 function nodeToMd(node) {
                     if (node.nodeType === Node.TEXT_NODE) return node.textContent;
@@ -378,6 +383,13 @@ export function insertDiscogsBar(discogsUrl) {
                             if (n.tagName?.toLowerCase() === 'strong') return '**' + n.textContent + '**';
                             return n.textContent;
                         }).join('') : '';
+                        // The raw-Discogs-JSON block is itself a `<details>`
+                        // whose summary contains "raw Discogs JSON" — skip the
+                        // whole thing (including the summary) when the user
+                        // chose the no-JSON variant.
+                        if (skipDiscogsJson && /raw Discogs JSON/i.test(sumText)) {
+                            return '';
+                        }
                         // Get non-summary children
                         const body = [...node.childNodes].filter(n => n !== sum).map(nodeToMd).join('');
                         return '<details><summary>' + sumText + '</summary>\n\n' + body + '\n</details>';
@@ -403,18 +415,54 @@ export function insertDiscogsBar(discogsUrl) {
             }
             const lines = [..._logs.querySelectorAll('li')].map(li => {
                 const md = htmlToMd(li);
+                if (!md) return ''; // skipped details emit empty — drop the line
                 // Add trailing two-spaces for markdown line breaks, except tables/details
                 if (md.startsWith('\n\n|') || md.startsWith('<details>')) return md;
                 return md + '  ';
-            }).join('\n');
-            navigator.clipboard.writeText(lines).catch(() => {
-                const ta = Object.assign(document.createElement('textarea'), { value: lines });
+            }).filter(Boolean).join('\n');
+            // Release-name summary — MB's editor state is the canonical source;
+            // fall back to the document title if the editor state isn't mounted
+            // (shouldn't happen on a release-edit page, but defensive).
+            const releaseName = pageWindow?.MB?.relationshipEditor?.state?.entity?.name
+                             || document.title.replace(/ - MusicBrainz.*/, '').trim()
+                             || 'Import log';
+            return `<details><summary>${releaseName}</summary>\n\n${lines}\n\n</details>`;
+        }
+
+        function copyToClipboard(text, btn, restoreText) {
+            const restore = () => {
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = restoreText; }, 1500);
+            };
+            const fallback = () => {
+                const ta = Object.assign(document.createElement('textarea'), { value: text });
                 document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-            }).finally?.(() => {});
-            copyLogBtn.textContent = 'Copied!';
-            setTimeout(() => { copyLogBtn.textContent = 'Copy log'; }, 1500);
+                restore();
+            };
+            if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(text).then(restore, fallback);
+            } else {
+                fallback();
+            }
+        }
+
+        const copyLogBtn = document.createElement('button');
+        copyLogBtn.textContent = 'Copy log';
+        copyLogBtn.title = 'Copy the full import log (incl. raw Discogs JSON)';
+        copyLogBtn.style.cssText = 'font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-left:auto;flex-shrink:0;';
+        copyLogBtn.addEventListener('click', () => {
+            copyToClipboard(buildCopyText({ skipDiscogsJson: false }), copyLogBtn, 'Copy log');
         });
         row2.appendChild(copyLogBtn);
+
+        const copyLogNoJsonBtn = document.createElement('button');
+        copyLogNoJsonBtn.textContent = 'Copy log (no JSON)';
+        copyLogNoJsonBtn.title = 'Copy the log without the raw Discogs JSON block — small enough to fit in a GitHub issue';
+        copyLogNoJsonBtn.style.cssText = 'font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;flex-shrink:0;';
+        copyLogNoJsonBtn.addEventListener('click', () => {
+            copyToClipboard(buildCopyText({ skipDiscogsJson: true }), copyLogNoJsonBtn, 'Copy log (no JSON)');
+        });
+        row2.appendChild(copyLogNoJsonBtn);
 
         // Expose progress update hook for `dispatchAllRelationships` to call
         // — currently only the `pct >= 100` branch matters; the status-text
