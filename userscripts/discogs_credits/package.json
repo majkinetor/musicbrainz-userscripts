@@ -5,20 +5,19 @@
   "type": "module",
   "description": "Import Discogs Credits — userscript build & test scaffolding",
   "scripts": {
-    "build": "node build.mjs",
-    "dev": "node build.mjs --watch --serve",
-    "watch": "node build.mjs --watch",
-    "lint": "eslint src/",
-    "check": "node --check dist/discogs_credits.user.js",
+    "build":  "node build.mjs",
+    "dev":    "node build.mjs --watch --serve",
+    "watch":  "node build.mjs --watch",
+    "lint":   "eslint src/",
+    "check":  "node --check dist/discogs_credits.user.js",
     "verify": "pnpm run lint && pnpm run build && pnpm run check",
-    "test": "node test/run.mjs",
+    "test":   "node test/run.mjs",
     "test:headed": "node test/run.mjs --headed",
-    "login": "node test/login.mjs",
+    "login":  "node test/login.mjs",
     "align-md": "node dev/align-md-tables.mjs dev/ANALYSIS.md dev/DECISIONS.md"
   },
   "devDependencies": {
-    "esbuild": "^0.28.0",
-    "eslint": "^9.16.0",
+    "eslint":     "^9.16.0",
     "playwright": "^1.49.0"
   }
 }

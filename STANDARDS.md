@@ -89,21 +89,3 @@ the URL form, which would write the token into `.git/config`.
 Keeps human and bot activity clearly attributable in commit / PR
 authors, makes a token-rotation easy (only the bot's PAT, never the
 maintainer's session), and means a bot-misstep is easily revertable.
-
-## 8. Kill stuck tests early
-
-If a test (smoke or full suite) runs substantially longer than its
-typical wallclock, kill the process and diagnose rather than waiting.
-"Substantially longer" = roughly 2–3× the baseline. A smoke fixture is
-~10–15 s; if it's still running at 60 s something is wrong. A 12-fixture
-suite is ~3 min; past ~7 min is suspect.
-
-A stuck test usually means the script broke at module init or hit a
-silent loop — the actual error lives in the browser console + page-error
-stream of the per-run log dir (`test/logs/<ts>/<fixture>.log` →
-`── browser console + page errors ──`). Read that first.
-
-Wakeups (`ScheduleWakeup`) for waiting on background tasks should be
-short and conditional, not "set and forget". They get cancelled when
-the user re-engages in conversation, so they're a fallback only — the
-real signal is the `<task-notification>` event when the process exits.
