@@ -132,30 +132,26 @@ the blanks.
 
 ## 9. Link every referenced entity to the closest anchor
 
-When referencing docs, code artifacts, or external entities in chat or
-on GitHub, **always provide a link** — and aim for the most specific
-anchor available, not the project's front page. The reader should be
-able to click straight to the thing being discussed without doing their
-own search.
+When referencing docs, code artifacts, or external entities in chat or on GitHub, **always provide a link** — and aim for the most specific anchor available, not the project's front page. The reader should be able to click straight to the thing being discussed without doing their own search.
 
 Apply to:
 
-- **Project docs in this repo** — link with a relative path *and a
-  header anchor* when the relevant section is known. Example:
-  `[ANALYSIS#auto-match](userscripts/discogs_credits/dev/ANALYSIS.md#auto-match)`
-  rather than the bare word `ANALYSIS`.
-- **MusicBrainz entities** — link to the entity page using the MBID,
-  e.g. `[SST GmbH](https://musicbrainz.org/place/0c5c44bc-2d8d-4c72-b007-fbc752dfe8dc)`
-  rather than just `SST GmbH (0c5c44bc-…)`.
-- **Discogs entities** — link to the entity page using the Discogs ID,
-  e.g. `[SST GmbH](https://www.discogs.com/label/3987)` rather than the
-  bare ID.
-- **Issues, PRs, commits** — use `#N` (GitHub auto-links inside the
-  repo) or full URLs when posting elsewhere.
+- **Project docs in this repo** — link with a relative path *and a header anchor* when the relevant section is known. Example: `[ANALYSIS#auto-match](userscripts/discogs_credits/dev/ANALYSIS.md#auto-match)` rather than the bare word `ANALYSIS`.
+- **MusicBrainz entities** — link to the entity page using the MBID, e.g. `[SST GmbH](https://musicbrainz.org/place/0c5c44bc-2d8d-4c72-b007-fbc752dfe8dc)` rather than just `SST GmbH (0c5c44bc-…)`.
+- **Discogs entities** — link to the entity page using the Discogs ID, e.g. `[SST GmbH](https://www.discogs.com/label/3987)` rather than the bare ID.
+- **Issues, PRs, commits** — use `#N` (GitHub auto-links inside the repo) or full URLs when posting elsewhere.
 
-If the closest anchor isn't readily available (e.g. a doc section
-without a header), link the file and quote the relevant line —
-better than leaving the reader to grep for it.
+**Make documents anchorable.** When you need to reference a doc section that has no good link target, *fix the doc first*: add a header (preferred — it shows in the GitHub TOC), or drop an explicit anchor where a header would feel out of place:
 
-The goal is *zero-friction verification*: every claim that names a
-thing carries its own evidence trail.
+```markdown
+<a id="auto-match-disagreement"></a>
+
+A paragraph that other commits / PRs / chat messages can now link
+to via `…/ANALYSIS.md#auto-match-disagreement`.
+```
+
+Both header anchors (`## My Section` → `#my-section`) and explicit `<a id="…"></a>` work on GitHub. Prefer headers; use explicit anchors only when no header fits.
+
+**Don't hard-wrap the prose** in long-form markdown blocks like this one — let the renderer reflow naturally. Hard wraps look like manual line breaks in raw view and are a maintenance burden when the text edits in place. (Code blocks, tables, and lists still wrap where the grammar requires.)
+
+The goal is *zero-friction verification*: every claim that names a thing carries its own evidence trail.
