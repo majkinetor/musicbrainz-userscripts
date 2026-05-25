@@ -95,10 +95,15 @@ async function resolveEntity(entity, kind, opts) {
     if (!bypassIdb && key) {
         const cachedRec = await readIdbRecord(key);
         if (cachedRec?.mbid && cachedRec?.entityType) {
-            // Cache has an MBID. If the display name is also present, return now.
+            // Cache has an MBID. Surface the ORIGINAL `resolvedVia` (how this
+            // record first got resolved — name / url / both / user) so the
+            // review table can show the underlying mechanism rather than the
+            // less-informative `cache`. Records written before resolvedVia
+            // existed fall back to the literal `cache` for clarity.
+            const via = cachedRec.resolvedVia || 'cache';
             if (cachedRec.name) {
                 return buildResolved(cachedRec.mbUrl, cachedRec.name,
-                                     cachedRec.disambiguation || '', 'cache',
+                                     cachedRec.disambiguation || '', via,
                                      cachedRec.entityType);
             }
             // Name missing — fetch it once, write back, return.
@@ -110,7 +115,7 @@ async function resolveEntity(entity, kind, opts) {
                 });
             }
             return buildResolved(cachedRec.mbUrl, info.name, info.disambiguation,
-                                 'cache', cachedRec.entityType);
+                                 via, cachedRec.entityType);
         }
     }
 

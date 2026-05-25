@@ -139,6 +139,30 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             urlCheckRunning--;
         }
 
+        // ── Helpers shared across rows ─────────────────────────────────────
+        // Small pill that surfaces *how* an entity was resolved — the
+        // `resolvedVia` value (`name`, `url`, `both`, `user`, `cache`) that
+        // preflight records and the IDB cache persists. Lets the user see
+        // at a glance whether they should trust the auto-match without
+        // having to dig into per-row evidence.
+        const VIA_LABELS = {
+            both:  { text: 'name+url', color: '#2a7' }, // green — high confidence
+            url:   { text: 'url',      color: '#46a' }, // blue
+            name:  { text: 'name',     color: '#46a' }, // blue
+            user:  { text: 'user',     color: '#777' }, // grey
+            cache: { text: 'cache',    color: '#777' }, // grey (legacy records)
+        };
+        function makeViaBadge(via) {
+            const cfg = VIA_LABELS[via];
+            if (!cfg) return null;
+            const span = document.createElement('span');
+            span.textContent = cfg.text;
+            span.title = `Resolved via ${via}`;
+            span.style.cssText = `font-size:0.68rem;background:#f5f5f5;color:${cfg.color};` +
+                                 `padding:0 0.35rem;border-radius:8px;border:1px solid #ddd;flex-shrink:0;`;
+            return span;
+        }
+
         // ── Panel shell ────────────────────────────────────────────────────────
         const panel = document.createElement('div');
         panel.style.cssText = 'border:2px solid #c8a000;border-radius:0.5rem;background:#fffef5;padding:1rem 1.5rem;margin:0.5rem 0;';
@@ -347,6 +371,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 undoBtn.style.cssText = 'font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
                 selRow.appendChild(selA);
+                // User picked via the dropdown \u2014 always badge as `user`.
+                const viaBadge = makeViaBadge('user');
+                if (viaBadge) selRow.appendChild(viaBadge);
                 selRow.appendChild(undoBtn);
                 candidateList.appendChild(selRow);
 
@@ -599,6 +626,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 undoBtn.style.cssText = 'font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
                 selRow.appendChild(selA);
+                // `via` badge — name / url / both / cache (initial auto-match)
+                const initialVia = r.logEntry?.via;
+                const viaBadge = makeViaBadge(initialVia);
+                if (viaBadge) selRow.appendChild(viaBadge);
                 selRow.appendChild(undoBtn);
                 candidateList.appendChild(selRow);
                 renderActions(fakeA);
