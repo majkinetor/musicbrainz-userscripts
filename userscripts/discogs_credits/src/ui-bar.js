@@ -609,7 +609,11 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
             // review-table state was net-negative once the entity layer
             // existed (stale-shape footguns > the marginal speedup on
             // same-release re-opens, which are rare).
-            function runPreflight() {
+            // `bypassIdb` forces a fresh MB lookup per entity even when the
+            // IDB `entity_cache` already has it — wired to the review-table's
+            // "🔄 Refresh from MB" button so the user can re-resolve when a
+            // cached entry is stale (entity got merged, renamed, etc.).
+            function runPreflight(bypassIdb = false) {
                 const artistProgressLi = document.createElement('li');
                 artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz…`;
                 _logs.appendChild(artistProgressLi);
@@ -623,28 +627,43 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                         progressLi:    artistProgressLi,
                         progressLabel: 'Checking artists against MusicBrainz',
                         kindOf:        ARTIST_KIND,
+                        bypassIdb,
                     }),
                     resolveAll(uniqueCompanies, {
                         progressLi:    companyProgressLi,
                         progressLabel: 'Checking labels/places against MusicBrainz',
                         kindOf:        COMPANY_KIND,
+                        bypassIdb,
                     }),
                 ]).then(([artistResults, companyResults]) =>
                     [...artistResults.allResults, ...companyResults.allResults].filter(Boolean));
+            }
+
+            // Annotate each result with its Discogs roles. Used both on the
+            // initial run and on the refresh-from-MB pass below.
+            function annotateRoles(allResults) {
+                allResults.forEach(r => {
+                    if (!r) return;
+                    const url = r.entity?.resource_url || r.entity?._syntheticKey;
+                    if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
+                });
             }
 
             let capturedResults = null; // shared across promise chain
             let capturedConfirmedMap = null;
 
             return runPreflight().then(allResults => {
-                // Annotate each result with its Discogs roles
-                allResults.forEach(r => {
-                    if (!r) return;
-                    const url = r.entity?.resource_url || r.entity?._syntheticKey;
-                    if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
-                });
+                annotateRoles(allResults);
                 capturedResults = allResults;
-                return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {});
+                return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
+                    // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
+                    // every entity via MB API. Used when a cached MBID is stale.
+                    onRefresh: () => runPreflight(true).then(freshResults => {
+                        annotateRoles(freshResults);
+                        capturedResults = freshResults;
+                        return freshResults;
+                    }),
+                });
             })
                 .then(confirmedMap => {
                     capturedConfirmedMap = confirmedMap;
