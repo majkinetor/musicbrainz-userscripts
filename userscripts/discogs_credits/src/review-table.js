@@ -6,7 +6,7 @@
 
 import { readIdbRecord, writeIdbRecord }   from './storage.js';
 import { mbThrottle, fetchWithRetry }      from './api-mb.js';
-import { parseDiscogsUrl }                 from './api-discogs.js';
+import { parseDiscogsUrl, getDiscogsEntityData } from './api-discogs.js';
 import { guessSortName }                   from './mappers.js';
 import { getLogContainer }                 from './log.js';
 import { _hideBar }                        from './progress-bar.js';
@@ -498,61 +498,168 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         );
                     }
                 }
+                // Opens the MB create-entity tab pre-filled with name + Discogs
+                // URL relation, optionally also `comment` (= disambiguation).
+                // Used by both "Create in MB" (no disambiguation) and the
+                // "Create (Dis)" popup flow (issue #5).
+                function openCreateTab(disambiguation) {
+                    let createUrl;
+                    let createParams;
+                    if (entityType === 'artist') {
+                        createParams = {
+                            'edit-artist.name':      displayName,
+                            'edit-artist.sort_name': guessSortName(displayName),
+                            'edit-artist.type_id':   '1',
+                        };
+                        if (discogsHref) {
+                            createParams['edit-artist.url.0.text']         = discogsHref;
+                            createParams['edit-artist.url.0.link_type_id'] = '180';
+                        }
+                        if (disambiguation) createParams['edit-artist.comment'] = disambiguation;
+                        createUrl = 'https://musicbrainz.org/artist/create';
+                    } else {
+                        const ltId = entityType === 'label' ? '217' : '705';
+                        createParams = {
+                            [`edit-${entityType}.name`]:                displayName,
+                            [`edit-${entityType}.url.0.text`]:          discogsHref,
+                            [`edit-${entityType}.url.0.link_type_id`]: ltId,
+                        };
+                        if (disambiguation) createParams[`edit-${entityType}.comment`] = disambiguation;
+                        createUrl = `https://musicbrainz.org/${entityType}/create`;
+                    }
+                    const p = new URLSearchParams(createParams);
+                    const newTab = window.open(`${createUrl}?${p}`, '_blank');
+                    if (newTab) {
+                        const trySet = () => {
+                            try { newTab.sessionStorage.setItem('discogs-importer-pending-artist', r.entity.resource_url); }
+                            catch(e) { setTimeout(trySet, 50); }
+                        };
+                        trySet();
+                    }
+                    const onCreated = (evt) => {
+                        if (evt.data?.type !== 'artist-created') return;
+                        if (evt.data.resourceUrl !== r.entity.resource_url) return;
+                        DISCOGS_CHANNEL.removeEventListener('message', onCreated);
+                        setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
+                    };
+                    DISCOGS_CHANNEL.addEventListener('message', onCreated);
+                }
+
                 const createBtn = document.createElement('button');
                 createBtn.textContent = 'Create in MB ↗';
                 createBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;';
-                createBtn.addEventListener('click', () => {
-                    if (entityType === 'artist') {
-                        const createParams = {
-                            'edit-artist.name': displayName,
-                            'edit-artist.sort_name': guessSortName(displayName),
-                            'edit-artist.type_id': '1',
-                        };
-                        if (discogsHref) {
-                            createParams['edit-artist.url.0.text'] = discogsHref;
-                            createParams['edit-artist.url.0.link_type_id'] = '180';
-                        }
-                        const p = new URLSearchParams(createParams);
-                        const newTab = window.open(`https://musicbrainz.org/artist/create?${p}`, '_blank');
-                        if (newTab) {
-                            const trySet = () => {
-                                try { newTab.sessionStorage.setItem('discogs-importer-pending-artist', r.entity.resource_url); }
-                                catch(e) { setTimeout(trySet, 50); }
-                            };
-                            trySet();
-                        }
-                        const onCreated = (evt) => {
-                            if (evt.data?.type !== 'artist-created') return;
-                            if (evt.data.resourceUrl !== r.entity.resource_url) return;
-                            DISCOGS_CHANNEL.removeEventListener('message', onCreated);
-                            setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
-                        };
-                        DISCOGS_CHANNEL.addEventListener('message', onCreated);
-                    } else {
-                        const ltId = entityType === 'label' ? '217' : '705';
-                        const p = new URLSearchParams({
-                            [`edit-${entityType}.name`]: displayName,
-                            [`edit-${entityType}.url.0.text`]: discogsHref,
-                            [`edit-${entityType}.url.0.link_type_id`]: ltId,
-                        });
-                        const newTab = window.open(`https://musicbrainz.org/${entityType}/create?${p}`, '_blank');
-                        if (newTab) {
-                            const trySet = () => {
-                                try { newTab.sessionStorage.setItem('discogs-importer-pending-artist', r.entity.resource_url); }
-                                catch(e) { setTimeout(trySet, 50); }
-                            };
-                            trySet();
-                        }
-                        const onCreated = (evt) => {
-                            if (evt.data?.type !== 'artist-created') return;
-                            if (evt.data.resourceUrl !== r.entity.resource_url) return;
-                            DISCOGS_CHANNEL.removeEventListener('message', onCreated);
-                            setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
-                        };
-                        DISCOGS_CHANNEL.addEventListener('message', onCreated);
-                    }
-                });
+                createBtn.addEventListener('click', () => openCreateTab(null));
                 tdAction.appendChild(createBtn);
+
+                // "Create (Dis)" — pops up a disambiguation editor. The user
+                // edits the suggested value (defaults to the row's first 3
+                // distinct roles), sees the Discogs profile blurb for context,
+                // and clicks Create to open the MB create tab with `comment`
+                // pre-filled. Issue #5.
+                const createDisBtn = document.createElement('button');
+                createDisBtn.textContent = 'Create (Dis) ↗';
+                createDisBtn.title = 'Create in MB with a disambiguation comment — pre-fills from the Discogs role, lets you adjust';
+                createDisBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;margin-top:0.15rem;';
+                createDisBtn.addEventListener('click', () => openDisambiguationPopup());
+                tdAction.appendChild(createDisBtn);
+
+                async function openDisambiguationPopup() {
+                    // Default suggestion: first 3 distinct role labels.
+                    const distinctRoles = [];
+                    const seen = new Set();
+                    for (const role of (r._roles || [])) {
+                        const label = (role.displayLabel || role.linkType || '').trim();
+                        if (!label || seen.has(label)) continue;
+                        seen.add(label);
+                        distinctRoles.push(label);
+                        if (distinctRoles.length === 3) break;
+                    }
+                    const defaultDis = distinctRoles.join(', ');
+
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:flex;align-items:center;justify-content:center;';
+                    const modal = document.createElement('div');
+                    modal.style.cssText = 'background:#fff;border-radius:0.5rem;padding:1rem 1.25rem;max-width:560px;width:90%;max-height:80vh;display:flex;flex-direction:column;gap:0.65rem;box-shadow:0 8px 24px rgba(0,0,0,0.3);';
+
+                    const heading = document.createElement('div');
+                    heading.style.cssText = 'font-weight:bold;font-size:1rem;';
+                    heading.textContent = `Create "${displayName}" in MB with disambiguation`;
+                    modal.appendChild(heading);
+
+                    const label = document.createElement('label');
+                    label.style.cssText = 'font-size:0.85rem;color:#555;';
+                    label.textContent = 'Disambiguation (MB comment):';
+                    modal.appendChild(label);
+
+                    const disInput = document.createElement('input');
+                    disInput.type = 'text';
+                    disInput.value = defaultDis;
+                    disInput.style.cssText = 'padding:0.4rem 0.5rem;border:1px solid #ccc;border-radius:0.25rem;font-size:0.95rem;';
+                    modal.appendChild(disInput);
+
+                    const profileLabel = document.createElement('div');
+                    profileLabel.style.cssText = 'font-size:0.82rem;color:#888;margin-top:0.35rem;';
+                    profileLabel.textContent = 'Discogs profile (select text to copy into the field above):';
+                    modal.appendChild(profileLabel);
+
+                    const profileBox = document.createElement('div');
+                    profileBox.style.cssText = 'border:1px solid #e0e0e0;border-radius:0.25rem;padding:0.45rem 0.55rem;background:#fafafa;font-size:0.85rem;line-height:1.45;white-space:pre-wrap;overflow:auto;max-height:18rem;flex:1;';
+                    profileBox.textContent = 'Loading profile from Discogs…';
+                    modal.appendChild(profileBox);
+
+                    const btnRow = document.createElement('div');
+                    btnRow.style.cssText = 'display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.35rem;';
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.style.cssText = 'padding:0.4rem 0.9rem;cursor:pointer;';
+                    const submitBtn = document.createElement('button');
+                    submitBtn.textContent = 'Create ↗';
+                    submitBtn.style.cssText = 'padding:0.4rem 0.9rem;cursor:pointer;font-weight:bold;background:#2ecc40;color:#fff;border:none;border-radius:0.25rem;';
+                    btnRow.appendChild(cancelBtn);
+                    btnRow.appendChild(submitBtn);
+                    modal.appendChild(btnRow);
+
+                    overlay.appendChild(modal);
+                    document.body.appendChild(overlay);
+
+                    // Cleanup helpers — handle Esc, overlay click, Cancel, Submit.
+                    const close = () => {
+                        document.removeEventListener('keydown', onKey);
+                        overlay.remove();
+                    };
+                    const onKey = (ev) => {
+                        if (ev.key === 'Escape') close();
+                        else if (ev.key === 'Enter' && ev.target === disInput) submit();
+                    };
+                    const submit = () => {
+                        const dis = disInput.value.trim();
+                        close();
+                        openCreateTab(dis || null);
+                    };
+                    document.addEventListener('keydown', onKey);
+                    overlay.addEventListener('click', ev => { if (ev.target === overlay) close(); });
+                    cancelBtn.addEventListener('click', close);
+                    submitBtn.addEventListener('click', submit);
+
+                    // Focus + select the default so user can immediately type-replace.
+                    disInput.focus(); disInput.select();
+
+                    // Fetch the Discogs entity for the profile blurb (lazy —
+                    // doesn't block opening the modal).
+                    try {
+                        const data = await getDiscogsEntityData(r.entity?.resource_url);
+                        const lines = [];
+                        if (data?.realname && data.realname !== displayName) lines.push(`Real name: ${data.realname}`);
+                        if (data?.namevariations?.length) lines.push(`Also known as: ${data.namevariations.slice(0, 6).join(', ')}`);
+                        if (data?.profile) {
+                            if (lines.length) lines.push('');
+                            lines.push(data.profile);
+                        }
+                        profileBox.textContent = lines.length ? lines.join('\n') : '(no Discogs profile)';
+                    } catch (e) {
+                        profileBox.textContent = '(failed to load Discogs profile)';
+                    }
+                }
             }
 
             function makeCandidateRow(a) {
