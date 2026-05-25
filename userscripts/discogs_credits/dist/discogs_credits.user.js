@@ -158,7 +158,7 @@
   async function fetchWithRetry(url, retries = 4) {
     return mbThrottle.fetchJson(url, retries);
   }
-  function hasDiscogsLinkDefined(mbid) {
+  function getDiscogsUrlForRelease(mbid) {
     const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
     return fetch(url).then((body) => body.json()).then((json) => {
       const matchingRel = (json.relationships || []).find((rel) => {
@@ -1693,7 +1693,7 @@
       return !!resolvedRole;
     });
   }
-  function convertDiscogsArtistsToRolesRelationships(artists) {
+  function rolesFromDiscogsArtists(artists) {
     return artists?.reduce((rolesArr, artist) => {
       const roles = getArtistRoles(artist);
       if (Array.isArray(roles) && roles.length > 0) {
@@ -3793,7 +3793,7 @@
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
         addLogLine(html);
       });
-      startImportRels(discogsUrl2, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
+      runImport(discogsUrl2, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
         importBtn.disabled = false;
         importBtn.textContent = "Import from Discogs";
         progressPct.textContent = "100%";
@@ -3832,9 +3832,9 @@
     } catch (e) {
     }
   })();
-  function startImportRels(discogsUrl2, processTracklist, applyToTracks, createWorks) {
+  function runImport(discogsUrl2, processTracklist, applyToTracks, createWorks) {
     return getDiscogsReleaseData(discogsUrl2).then((json) => {
-      let artistRoles = convertDiscogsArtistsToRolesRelationships(json.extraartists?.filter((artist) => !artist.tracks));
+      let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter((artist) => !artist.tracks));
       if (!_logs2._releaseInfoAdded) {
         _logs2._releaseInfoAdded = true;
         const trackCount = (json.tracklist || []).filter((t) => t.type_ === "track").length;
@@ -3874,7 +3874,7 @@
             return map;
           }
           return map.concat(
-            convertDiscogsArtistsToRolesRelationships(track.extraartists).map((rel) => {
+            rolesFromDiscogsArtists(track.extraartists).map((rel) => {
               return Object.assign({}, rel, {
                 track
               });
@@ -4091,7 +4091,7 @@
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
-    hasDiscogsLinkDefined(m[1]).then((discogsUrl2) => {
+    getDiscogsUrlForRelease(m[1]).then((discogsUrl2) => {
       if (discogsUrl2) {
         insertDiscogsBar(discogsUrl2);
       }

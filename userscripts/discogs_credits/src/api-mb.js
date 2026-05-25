@@ -112,7 +112,7 @@ export async function fetchWithRetry(url, retries = 4) {
  * never starts (and the user sees no progress, which is the same UX as the
  * throttle pausing it).
  */
-export function hasDiscogsLinkDefined(mbid) {
+export function getDiscogsUrlForRelease(mbid) {
     const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
     return fetch(url)
         .then(body => body.json())

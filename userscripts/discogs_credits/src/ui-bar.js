@@ -2,13 +2,13 @@
 // `/edit-relationships` page when a Discogs URL is linked to the
 // release. Owns the bar styles (embedded so the userscript ships
 // self-contained), the option toggles, the "Import" button, and the
-// orchestration that runs after click (`startImportRels`).
+// orchestration that runs after click (`runImport`).
 //
 // Two pieces of module-private state are reused across re-runs of the
 // bar's onclick handler:
 //   _logs   — the <ul> the script appends per-line log messages to.
 //   _summary — the <p> shown above the log with the import summary.
-// They're set when insertDiscogsBar mounts the bar; startImportRels
+// They're set when insertDiscogsBar mounts the bar; runImport
 // reads them when populating the run output.
 //
 // One IIFE at the top cleans up stale `discogs-release-*` localStorage
@@ -28,7 +28,7 @@ import {
 }                                        from './api-discogs.js';
 import {
     convertPotentialDJMixers,
-    convertDiscogsArtistsToRolesRelationships,
+    rolesFromDiscogsArtists,
     getAllArtistTracks,
     getArtistRoles,
 }                                        from './mappers.js';
@@ -444,7 +444,7 @@ export function insertDiscogsBar(discogsUrl) {
             const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
             addLogLine(html);
         });
-        startImportRels(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
+        runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
             importBtn.disabled = false;
             importBtn.textContent = 'Import from Discogs';
             progressPct.textContent = '100%';
@@ -490,10 +490,10 @@ export function insertDiscogsBar(discogsUrl) {
         keysToRemove.forEach(k => localStorage.removeItem(k));
     } catch(e) {}
 })();
-function startImportRels(discogsUrl, processTracklist, applyToTracks, createWorks) {
+function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
     return getDiscogsReleaseData(discogsUrl)
         .then(json => {
-            let artistRoles = convertDiscogsArtistsToRolesRelationships(json.extraartists?.filter(artist => !artist.tracks));
+            let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter(artist => !artist.tracks));
             // ── Raw Discogs JSON (collapsible, once per log session) ─────────────────
             if (!_logs._releaseInfoAdded) {
                 _logs._releaseInfoAdded = true;
@@ -532,7 +532,7 @@ function startImportRels(discogsUrl, processTracklist, applyToTracks, createWork
                             return map;
                         }
                         return map.concat(
-                            convertDiscogsArtistsToRolesRelationships(track.extraartists).map(rel => {
+                            rolesFromDiscogsArtists(track.extraartists).map(rel => {
                                 return Object.assign({}, rel, {
                                     track: track,
                                 });

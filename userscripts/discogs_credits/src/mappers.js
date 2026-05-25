@@ -318,7 +318,7 @@ export function getArtistRoles(artist) {
 }
 
 /** Run `getArtistRoles` over every artist, flattening the results. */
-export function convertDiscogsArtistsToRolesRelationships(artists) {
+export function rolesFromDiscogsArtists(artists) {
     return artists?.reduce((rolesArr, artist) => {
         const roles = getArtistRoles(artist);
         if (Array.isArray(roles) && roles.length > 0) {
