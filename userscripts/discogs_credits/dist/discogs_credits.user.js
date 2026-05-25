@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.25.220815
+// @version      2026.5.25.222418
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -3304,7 +3304,11 @@
         applyToTracks !== void 0 ? `move-to-tracks:${applyToTracks ? "on" : "off"}` : null,
         createWorks !== void 0 ? `create-works:${createWorks ? "on" : "off"}` : null
       ].filter(Boolean).join(", ");
-      const note = buildEditNote(discogsUrl, opts);
+      const trackCount2 = Array.isArray(discogsTracklist) ? discogsTracklist.length : 0;
+      const inputStats = `Input: ${companies?.length || 0} companies, ${artistRoles?.length || 0} release credits, ${tracklistRels?.length || 0} tracklist credits on ${trackCount2} track${trackCount2 === 1 ? "" : "s"}`;
+      const dedupPart2 = dedupedThisSession > 0 ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? "" : "s"}` : "";
+      const resultStats = `Result: ${added} added, ${existedInMb} already in MB${dedupPart2}, ${skipped} skipped, ${failed} failed`;
+      const note = buildEditNote(discogsUrl, opts, [inputStats, resultStats]);
       re.dispatch({ type: "update-edit-note", editNote: note });
     } catch (e) {
     }
