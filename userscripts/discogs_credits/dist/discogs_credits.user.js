@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.25.215443
+// @version      2026.5.25.220141
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -55,6 +55,7 @@
     TaskInput: "#add-relationship-dialog .attribute-container.task input"
   };
   var DISCOGS_LOGO_URL = "https://volkerzell.de/favicons/discogs.png";
+  var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
   var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
 
   // src/log.js
@@ -2735,7 +2736,7 @@
   }
 
   // src/edit-note.js
-  function buildEditNote(discogsUrl2, opts, extraLines) {
+  function buildEditNote(discogsUrl, opts, extraLines) {
     const s = GM_info.script;
     const mbUrl = location.href.replace(/\/edit-relationships$/, "");
     const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits";
@@ -2744,7 +2745,7 @@
       header,
       "",
       "Release URL: " + mbUrl,
-      "Discogs URL: " + discogsUrl2
+      "Discogs URL: " + discogsUrl
     ];
     if (opts) lines.push("Options: " + opts);
     if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
@@ -2774,7 +2775,7 @@
   ];
 
   // src/dispatch.js
-  async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap) {
+  async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl) {
     resolvedEntityTypes = resolvedEntityTypes || /* @__PURE__ */ new Map();
     confirmedMap = confirmedMap || /* @__PURE__ */ new Map();
     const re = await waitForMBEditor();
@@ -3296,7 +3297,7 @@
   // src/ui-bar.js
   var _logs2;
   var _summary;
-  function insertDiscogsBar(discogsUrl2) {
+  function insertDiscogsBar(discogsUrl) {
     const style = document.createElement("style");
     style.innerText = `
         .discogs-bar {
@@ -3495,7 +3496,7 @@
     row1.appendChild(logo);
     const sourceSpan = document.createElement("span");
     sourceSpan.className = "discogs-source";
-    sourceSpan.innerHTML = `<a href="${discogsUrl2}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl2}</a>`;
+    sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
     row1.appendChild(sourceSpan);
     const importBtn = document.createElement("button");
     importBtn.className = "discogs-import-btn";
@@ -3663,13 +3664,13 @@
       };
       requestAnimationFrame(_showBar);
       const opts = `per-track:${tracklistCb.checked ? "on" : "off"}, move-to-tracks:${applyTracksCb.checked ? "on" : "off"}, create-works:${createWorksCb.checked ? "on" : "off"}`;
-      const editNote = buildEditNote(discogsUrl2, opts);
+      const editNote = buildEditNote(discogsUrl, opts);
       editNote.split("\n").forEach((line) => {
         if (!line.trim()) return;
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
         log.info(html);
       });
-      runImport(discogsUrl2, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
+      runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
         importBtn.disabled = false;
         importBtn.textContent = "Import from Discogs";
         progressPct.textContent = "100%";
@@ -3705,8 +3706,8 @@
     } catch (e) {
     }
   })();
-  function runImport(discogsUrl2, processTracklist, applyToTracks, createWorks) {
-    return getDiscogsReleaseData(discogsUrl2).then((json) => {
+  function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
+    return getDiscogsReleaseData(discogsUrl).then((json) => {
       let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter((artist) => !artist.tracks));
       if (!_logs2._releaseInfoAdded) {
         _logs2._releaseInfoAdded = true;
@@ -3880,14 +3881,13 @@
             resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
           }
         });
-        return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap);
+        return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl);
       });
     }).then(() => {
     });
   }
 
   // src/discogs_credits.user.js
-  var DISCOGS_CHANNEL2 = new BroadcastChannel("discogs-importer-artist");
   (function handleEntityPageIfNeeded() {
     const entityMatch = location.href.match(
       /musicbrainz\.org\/(artist|label|place)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:[^/]|$)/i
@@ -3900,7 +3900,7 @@
     if (!pending) return;
     sessionStorage.removeItem(pendingKey);
     fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`).then((r) => r.json()).then((json) => {
-      DISCOGS_CHANNEL2.postMessage({
+      DISCOGS_CHANNEL.postMessage({
         type: "artist-created",
         // keep same message type for compatibility
         id: mbid,
@@ -3910,7 +3910,7 @@
       });
       setTimeout(() => window.close(), 800);
     }).catch(() => {
-      DISCOGS_CHANNEL2.postMessage({
+      DISCOGS_CHANNEL.postMessage({
         type: "artist-created",
         id: mbid,
         name: "",
@@ -3924,9 +3924,9 @@
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
-    getDiscogsUrlForRelease(m[1]).then((discogsUrl2) => {
-      if (discogsUrl2) {
-        insertDiscogsBar(discogsUrl2);
+    getDiscogsUrlForRelease(m[1]).then((discogsUrl) => {
+      if (discogsUrl) {
+        insertDiscogsBar(discogsUrl);
       }
     });
   });

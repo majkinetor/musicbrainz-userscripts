@@ -10,6 +10,7 @@ import { parseDiscogsUrl }                 from './api-discogs.js';
 import { guessSortName }                   from './mappers.js';
 import { getLogContainer }                 from './log.js';
 import { _hideBar }                        from './progress-bar.js';
+import { DISCOGS_CHANNEL }                 from './constants.js';
 
 // Session-level URL check cache (avoids localStorage key mismatches across sessions)
 const _urlCheckSessionCache = new Map();

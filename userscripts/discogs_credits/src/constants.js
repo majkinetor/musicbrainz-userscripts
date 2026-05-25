@@ -48,6 +48,19 @@ export const SELECTORS = {
 export const DISCOGS_LOGO_URL = 'https://volkerzell.de/favicons/discogs.png';
 
 /**
+ * Cross-tab channel used by the "Create in MB" flow. The userscript runs on
+ * MB artist/label/place pages too — when it detects it was opened from the
+ * review table (post-creation), it broadcasts the newly-created entity's
+ * MBID + name back here so the review-table row auto-fills.
+ *
+ * One channel module-wide so both the entry-bootstrap listener and the
+ * review-table-side `renderActions` see the same instance. Without this
+ * export, review-table.js referenced a free `DISCOGS_CHANNEL` symbol that
+ * only existed in the entry module's scope → ReferenceError at runtime.
+ */
+export const DISCOGS_CHANNEL = new BroadcastChannel('discogs-importer-artist');
+
+/**
  * The page's real `window` — Tampermonkey exposes it as `unsafeWindow` to
  * userscripts; Greasemonkey/Violentmonkey too. In Playwright (test mode) or
  * any environment without that grant, we fall through to plain `window`.

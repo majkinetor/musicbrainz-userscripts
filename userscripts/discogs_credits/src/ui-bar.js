@@ -698,7 +698,7 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                             resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
                         }
                     });
-                    return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap);
+                    return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl);
                 });
         })
         .then(() => { });
