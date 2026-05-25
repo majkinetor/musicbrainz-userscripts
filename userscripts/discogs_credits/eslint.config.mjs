@@ -91,10 +91,17 @@ export default [
             'no-cond-assign':           'warn',
             'no-empty':                ['warn', { allowEmptyCatch: true }],
 
-            // ── Deliberately off until commit 3 cleans up legacy code ────────
-            'no-undef':                 'off',
-            'no-unused-vars':           'off',
+            // ── On now that the source split is in (was 'off' under
+            //     `sourceType: 'script'` to suppress legacy noise; flipping
+            //     them to 'error' caught two real undef ReferenceErrors —
+            //     `DISCOGS_CHANNEL` in review-table, `discogsUrl` in
+            //     dispatch — that the test gate's try/catch was swallowing.)
+            'no-undef':                 'error',
             'no-prototype-builtins':    'off',
+            // 'no-unused-vars' deliberately still 'off' — the modules
+            // import things they don't use yet (intentionally — keeps the
+            // import surface intact during incremental work).
+            'no-unused-vars':           'off',
         },
     },
 ];

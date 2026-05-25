@@ -15,13 +15,16 @@
 
 import { getDiscogsUrlForRelease } from './api-mb.js';
 import { insertDiscogsBar }      from './ui-bar.js';
+import { DISCOGS_CHANNEL }       from './constants.js';
 import                                './storage.js';   // opens IndexedDB on load
 
 // ── BroadcastChannel: cross-tab artist creation signalling ────────────────────
-// When this script runs on an MB artist page that was opened by the "Create in MB"
-// button, it detects the successful creation (URL contains a MBID) and posts the
-// new artist data back to the opener tab, then closes itself.
-const DISCOGS_CHANNEL = new BroadcastChannel('discogs-importer-artist');
+// `DISCOGS_CHANNEL` is created once in `constants.js` and imported here +
+// in `review-table.js` so both sides share one channel instance. The bootstrap
+// below is the LISTENER half — when this script runs on an MB
+// artist/label/place page that was opened by the "Create in MB" button, it
+// detects the successful creation (URL contains a MBID), posts the new entity
+// back to the opener tab via the channel, then closes itself.
 
 (function handleEntityPageIfNeeded() {
     // Match artist, label, or place pages with a MBID

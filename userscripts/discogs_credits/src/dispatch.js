@@ -21,7 +21,7 @@ import { buildEditNote }                from './edit-note.js';
 import { ENTITY_TYPE_MAP }               from './data/entity-map.js';
 import { WORK_ONLY_ARTIST_RELS }         from './data/work-only-rels.js';
 
-export async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap) {
+export async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl) {
     resolvedEntityTypes = resolvedEntityTypes || new Map();
     confirmedMap = confirmedMap || new Map();
     const re = await waitForMBEditor();
