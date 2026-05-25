@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.25.220815
+// @version      2026.5.25.222156
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -3612,10 +3612,7 @@
       outputDiv.innerHTML = "";
       outputDiv.appendChild(_summary);
       outputDiv.appendChild(_logs2);
-      const copyLogBtn = document.createElement("button");
-      copyLogBtn.textContent = "Copy log";
-      copyLogBtn.style.cssText = "font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-left:auto;flex-shrink:0;";
-      copyLogBtn.addEventListener("click", () => {
+      function buildCopyText({ skipDiscogsJson }) {
         function htmlToMd(el) {
           function nodeToMd(node) {
             if (node.nodeType === Node.TEXT_NODE) return node.textContent;
@@ -3635,6 +3632,9 @@
                 if (n.tagName?.toLowerCase() === "strong") return "**" + n.textContent + "**";
                 return n.textContent;
               }).join("") : "";
+              if (skipDiscogsJson && /raw Discogs JSON/i.test(sumText)) {
+                return "";
+              }
               const body = [...node.childNodes].filter((n) => n !== sum).map(nodeToMd).join("");
               return "<details><summary>" + sumText + "</summary>\n\n" + body + "\n</details>";
             }
@@ -3660,23 +3660,54 @@
         }
         const lines = [..._logs2.querySelectorAll("li")].map((li) => {
           const md = htmlToMd(li);
+          if (!md) return "";
           if (md.startsWith("\n\n|") || md.startsWith("<details>")) return md;
           return md + "  ";
-        }).join("\n");
-        navigator.clipboard.writeText(lines).catch(() => {
-          const ta = Object.assign(document.createElement("textarea"), { value: lines });
+        }).filter(Boolean).join("\n");
+        const releaseName = pageWindow?.MB?.relationshipEditor?.state?.entity?.name || document.title.replace(/ - MusicBrainz.*/, "").trim() || "Import log";
+        return `<details><summary>${releaseName}</summary>
+
+${lines}
+
+</details>`;
+      }
+      function copyToClipboard(text, btn, restoreText) {
+        const restore = () => {
+          btn.textContent = "Copied!";
+          setTimeout(() => {
+            btn.textContent = restoreText;
+          }, 1500);
+        };
+        const fallback = () => {
+          const ta = Object.assign(document.createElement("textarea"), { value: text });
           document.body.appendChild(ta);
           ta.select();
           document.execCommand("copy");
           ta.remove();
-        }).finally?.(() => {
-        });
-        copyLogBtn.textContent = "Copied!";
-        setTimeout(() => {
-          copyLogBtn.textContent = "Copy log";
-        }, 1500);
+          restore();
+        };
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(text).then(restore, fallback);
+        } else {
+          fallback();
+        }
+      }
+      const copyLogBtn = document.createElement("button");
+      copyLogBtn.textContent = "Copy log";
+      copyLogBtn.title = "Copy the full import log (incl. raw Discogs JSON)";
+      copyLogBtn.style.cssText = "font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-left:auto;flex-shrink:0;";
+      copyLogBtn.addEventListener("click", () => {
+        copyToClipboard(buildCopyText({ skipDiscogsJson: false }), copyLogBtn, "Copy log");
       });
       row2.appendChild(copyLogBtn);
+      const copyLogNoJsonBtn = document.createElement("button");
+      copyLogNoJsonBtn.textContent = "Copy log (no JSON)";
+      copyLogNoJsonBtn.title = "Copy the log without the raw Discogs JSON block \u2014 small enough to fit in a GitHub issue";
+      copyLogNoJsonBtn.style.cssText = "font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;flex-shrink:0;";
+      copyLogNoJsonBtn.addEventListener("click", () => {
+        copyToClipboard(buildCopyText({ skipDiscogsJson: true }), copyLogNoJsonBtn, "Copy log (no JSON)");
+      });
+      row2.appendChild(copyLogNoJsonBtn);
       bar._setProgress = (pct) => {
         if (pct !== null && pct >= 100) _hideBar();
       };
