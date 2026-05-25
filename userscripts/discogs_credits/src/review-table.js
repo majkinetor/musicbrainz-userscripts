@@ -83,8 +83,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         }).length;
 
         // ── Shared concurrency pool for Discogs-URL-link checks ─────────────
-        // Uses the same burst+retry pattern as checkMissingArtists:
-        // up to 5 concurrent requests, 200ms stagger between slots,
+        // Up to 5 concurrent requests, 200ms stagger between slots,
         // automatic exponential backoff on 429/503.
         const URL_CHECK_CONCURRENCY = 5;
         const urlCheckPending = []; // { fn, resolve, reject }
@@ -199,7 +198,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         const tbody = document.createElement('tbody');
 
         allResults.forEach(r => {
-            // Unified fields set by both checkMissingArtists and checkMissingCompanies
+            // Unified fields set by `resolveEntity` (artists + companies share the
+            // same shape, dispatched by `resolveAll` in preflight.js).
             const entityType  = r.entityType || 'artist';
             const displayName = r.displayName || r.entity?.name || '';
             const discogsHref = r.discogsHref || '';

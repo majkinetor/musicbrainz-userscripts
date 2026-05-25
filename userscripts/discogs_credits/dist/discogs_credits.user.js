@@ -2727,7 +2727,7 @@
   ];
 
   // src/dispatch.js
-  async function instantFillRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap) {
+  async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap) {
     resolvedEntityTypes = resolvedEntityTypes || /* @__PURE__ */ new Map();
     confirmedMap = confirmedMap || /* @__PURE__ */ new Map();
     const re = await waitForMBEditor();
@@ -3563,21 +3563,6 @@
     };
     [tracklistCb, applyTracksCb, createWorksCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     bar.appendChild(row2);
-    const progressBar = { style: { display: "" } };
-    const progressRow = progressBar;
-    const progressTrack = progressBar;
-    const progressFill = { style: {}, className: "" };
-    const progressStatus = { textContent: "" };
-    const recentLogsEl = { innerHTML: "" };
-    const recentLogBuffer = [];
-    function pushRecentLog() {
-    }
-    function startProgressAnim() {
-      _showBar();
-    }
-    function stopProgressAnim() {
-      _hideBar();
-    }
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output";
     importBtn.addEventListener("click", () => {
@@ -3586,7 +3571,7 @@
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
       bar.classList.add("is-importing");
-      startProgressAnim();
+      _showBar();
       bar.scrollIntoView({ behavior: "smooth", block: "start" });
       bar._showProgress = () => {
         _showBar();
@@ -3665,14 +3650,8 @@
         }, 1500);
       });
       row2.appendChild(copyLogBtn);
-      bar._setProgress = (pct, statusText) => {
-        if (pct !== null && pct >= 100) {
-          stopProgressAnim();
-        }
-        if (statusText) {
-          progressStatus.textContent = statusText;
-          pushRecentLog(statusText.replace(/<[^>]*>/g, ""));
-        }
+      bar._setProgress = (pct) => {
+        if (pct !== null && pct >= 100) _hideBar();
       };
       requestAnimationFrame(_showBar);
       const opts = `per-track:${tracklistCb.checked ? "on" : "off"}, move-to-tracks:${applyTracksCb.checked ? "on" : "off"}, create-works:${createWorksCb.checked ? "on" : "off"}`;
@@ -3689,12 +3668,9 @@
         setTimeout(() => {
           progressPct.style.display = "none";
         }, 2e3);
-        progressFill.className = "discogs-progress-fill";
-        progressFill.style.width = "100%";
-        progressStatus.textContent = "Done";
         setTimeout(() => {
           bar.classList.remove("is-importing");
-          stopProgressAnim();
+          _hideBar();
         }, 2e3);
         delete bar._setProgress;
       });
@@ -3883,7 +3859,7 @@
             resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
           }
         });
-        return instantFillRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap);
+        return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap);
       });
     }).then(() => {
     });

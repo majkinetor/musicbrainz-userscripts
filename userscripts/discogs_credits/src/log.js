@@ -67,14 +67,3 @@ export const log = {
     error: msg => _emit(`<span style="color:red">ERR ${msg}</span>`,     `ERR ${msg}`),
 };
 
-/**
- * @deprecated  Use `log.info` / `log.warn` / `log.error` instead.
- *
- * Old API where severity was encoded into the message string as inline
- * HTML (`<span style="color:orange">WARN ...</span>`). New callers
- * should use the severity-aware methods; existing callers will be
- * migrated incrementally and this re-export removed afterwards.
- */
-export function addLogLine(message) {
-    _emit(message, message);
-}

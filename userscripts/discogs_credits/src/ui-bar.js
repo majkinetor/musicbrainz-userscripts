@@ -37,7 +37,7 @@ import {
     COMPANY_KIND,
 }                                        from './preflight.js';
 import { showReviewTable }               from './review-table.js';
-import { instantFillRelationships }      from './dispatch.js';
+import { dispatchAllRelationships }      from './dispatch.js';
 import { buildEditNote }                 from './edit-note.js';
 import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
 
@@ -321,19 +321,11 @@ export function insertDiscogsBar(discogsUrl) {
     bar.appendChild(row2);
 
     // ── Progress bar ──────────────────────────────────────────────────────────
-    // _showBar / _hideBar are module-level (defined before insertDiscogsBar)
-
-    // Compat shims — old code references these names
-    const progressBar = { style: { display: '' } };
-    const progressRow = progressBar;
-    const progressTrack = progressBar;
-    const progressFill = { style: {}, className: '' };
-    const progressStatus = { textContent: '' };
-    const recentLogsEl = { innerHTML: '' };
-    const recentLogBuffer = [];
-    function pushRecentLog() {}
-    function startProgressAnim() { _showBar(); }
-    function stopProgressAnim() { _hideBar(); }
+    // `_showBar` / `_hideBar` (module-level, imported from progress-bar.js)
+    // own the actual marquee element. The legacy `progressBar` /
+    // `progressFill` / `progressStatus` / `recentLogsEl` shim objects were
+    // removed — their writes hit dummy objects that never made it into the
+    // DOM, so the lines were dead.
 
     // Output area
     const outputDiv = document.createElement('div');
@@ -347,7 +339,7 @@ export function insertDiscogsBar(discogsUrl) {
 
         // Show sticky progress bar
         bar.classList.add('is-importing');
-        startProgressAnim();
+        _showBar();
         bar.scrollIntoView({ behavior: 'smooth', block: 'start' });
         bar._showProgress = () => { _showBar(); };
         requestAnimationFrame(bar._showProgress);
@@ -424,13 +416,12 @@ export function insertDiscogsBar(discogsUrl) {
         });
         row2.appendChild(copyLogBtn);
 
-        // Expose progress update hooks for instantFillRelationships to call
-        bar._setProgress = (pct, statusText) => {
-            if (pct !== null && pct >= 100) { stopProgressAnim(); }
-            if (statusText) {
-                progressStatus.textContent = statusText;
-                pushRecentLog(statusText.replace(/<[^>]*>/g, ''));
-            }
+        // Expose progress update hook for `dispatchAllRelationships` to call
+        // — currently only the `pct >= 100` branch matters; the status-text
+        // path landed in the marquee bar's tooltip but the real status now
+        // lives in the line-by-line log.
+        bar._setProgress = (pct) => {
+            if (pct !== null && pct >= 100) _hideBar();
         };
 
         // Re-show progress bar
@@ -449,13 +440,9 @@ export function insertDiscogsBar(discogsUrl) {
             importBtn.textContent = 'Import from Discogs';
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
-            // Freeze progress at 100% then remove sticky after a moment
-            progressFill.className = 'discogs-progress-fill';
-            progressFill.style.width = '100%';
-            progressStatus.textContent = 'Done';
             setTimeout(() => {
                 bar.classList.remove('is-importing');
-                stopProgressAnim();
+                _hideBar();
             }, 2000);
             delete bar._setProgress;
         });
@@ -692,7 +679,7 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                             resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
                         }
                     });
-                    return instantFillRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap);
+                    return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap);
                 });
         })
         .then(() => { });
