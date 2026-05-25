@@ -679,16 +679,26 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             applyToTracks   !== undefined ? `move-to-tracks:${applyToTracks ? 'on' : 'off'}` : null,
             createWorks     !== undefined ? `create-works:${createWorks ? 'on' : 'off'}` : null,
         ].filter(Boolean).join(', ');
-        // Statistics (issue #56) — surface input size + dispatch outcome in
-        // the edit note so a reviewer can see at a glance how big the import
-        // was without expanding any log section.
+        // Statistics (issues #56, follow-up) — surface input size, review
+        // outcome (unresolved entities), and dispatch outcome in the edit
+        // note so a reviewer can see at a glance how big the import was
+        // without expanding any log section.
+        // `unresolvedCount` is the count of distinct entities the user
+        // couldn't / wouldn't resolve in the review table — stashed on
+        // `confirmedMap` by review-table because the dispatch layer doesn't
+        // see `allResults` directly.
         const trackCount = Array.isArray(discogsTracklist) ? discogsTracklist.length : 0;
         const inputStats = `Input: ${companies?.length || 0} companies, ${artistRoles?.length || 0} release credits, ${tracklistRels?.length || 0} tracklist credits on ${trackCount} track${trackCount === 1 ? '' : 's'}`;
-        const dedupPart = dedupedThisSession > 0
+        const unresolvedCount = confirmedMap?.unresolvedCount || 0;
+        const totalEntities   = confirmedMap?.totalEntities   || 0;
+        const unresolvedLine  = unresolvedCount > 0
+            ? `Unresolved: ${unresolvedCount} of ${totalEntities} entit${totalEntities === 1 ? 'y' : 'ies'} skipped in review`
+            : null;
+        const editNoteDedupPart = dedupedThisSession > 0
             ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? '' : 's'}`
             : '';
-        const resultStats = `Result: ${added} added, ${existedInMb} already in MB${dedupPart}, ${skipped} skipped, ${failed} failed`;
-        const note = buildEditNote(discogsUrl, opts, [inputStats, resultStats]);
+        const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteDedupPart}, ${skipped} skipped, ${failed} failed`;
+        const note = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean));
         re.dispatch({ type: 'update-edit-note', editNote: note });
     } catch(e) { /* ignore */ }
 
