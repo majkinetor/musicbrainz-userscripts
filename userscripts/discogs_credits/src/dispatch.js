@@ -29,17 +29,22 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
 
     const MB = pageWindow.MB;
     const releaseEntity = re.state.entity;
-    // Counter semantics (issue #14):
+    // Counter semantics (issues #14, #34):
     //   added       — rels actually dispatched into editor state this session
-    //   existedRels — rels that were already on the source entity in MB before
-    //                 this session, OR already dispatched earlier in this session
-    //                 (within-session dedup). The script would have added them
-    //                 but MB's reducer would silently no-op the dispatch.
+    //   existedInMb — the source entity already had this rel in MB *before*
+    //                 this session. Detected via `relAlreadyExists` against
+    //                 `re.state` — MB's reducer would silently no-op us.
+    //   dedupedThisSession — same (source, linkType, target, attrs) tuple
+    //                 was dispatched earlier in *this* session (e.g. Discogs
+    //                 credit appears at both release and track level).
+    //                 Previously combined into `existedRels` which was
+    //                 misleading — "already existed" implied pre-existing,
+    //                 but the count was inflated by intra-session duplicates.
     //   skipped     — credits the script chose not to dispatch (no Discogs
     //                 page, no MB ID, no review-table confirmation, etc.)
     //   failed      — errors (bad MBID, deprecated link type, entity fetch
     //                 failure, etc.)
-    let added = 0, existedRels = 0, skipped = 0, failed = 0;
+    let added = 0, existedInMb = 0, dedupedThisSession = 0, skipped = 0, failed = 0;
     // Track dispatched relationships this session to catch same-run duplicates
     const dispatchedThisSession = new Set(); // "sourceGid|linkTypeID|targetGid"
 
@@ -309,8 +314,13 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}`;
         // Within-session dedup: same (source, linkType, target, attrs) tuple
         // gets visited multiple times if a Discogs credit appears at both
-        // release and track level. Count as already-existing, not as "skipped".
-        if (dispatchedThisSession.has(sessionKey)) { existedRels++; return; }
+        // release and track level. Tracked separately from "existed in MB"
+        // (issue #34) so the final summary doesn't conflate them.
+        if (dispatchedThisSession.has(sessionKey)) {
+            log.info(`Skipped duplicate dispatch of <strong>${linkTypeName}</strong>: ${sourceEntity.name} ↔ ${credit || ''} — already queued earlier this run`);
+            dedupedThisSession++;
+            return;
+        }
         dispatchedThisSession.add(sessionKey);
 
         let targetEntity;
@@ -357,9 +367,11 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         // Pre-existence check against MB state: if the source entity already
         // has a rel with the same (linkTypeID, target.gid, attrs), MB's
         // reducer would no-op the dispatch and we'd over-count. Detect now,
-        // log clearly, count as existed instead of added. (issue #14)
+        // log per-rel (issue #34 — silent count was misleading), count as
+        // existed instead of added. (issue #14)
         if (relAlreadyExists(sourceEntity, resolvedLinkTypeID, targetEntity.gid, attrTree)) {
-            existedRels++;
+            log.info(`Already in MB: <strong>${linkTypeName}</strong>: ${sourceEntity.name} ↔ ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ''}`);
+            existedInMb++;
             return;
         }
 
@@ -671,5 +683,12 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         re.dispatch({ type: 'update-edit-note', editNote: note });
     } catch(e) { /* ignore */ }
 
-    log.info(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
+    // Final summary. `existedInMb` and `dedupedThisSession` separated per
+    // issue #34 — a combined "already existed" was confusing because the
+    // dedup case counted intra-session duplicates, which the user reads
+    // as "the rel was already in MB" (they aren't).
+    const dedupPart = dedupedThisSession > 0
+        ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? '' : 's'}`
+        : '';
+    log.info(`<strong>Done: ${added} added, ${existedInMb} already in MB${dedupPart}, ${skipped} skipped, ${failed} failed</strong>`);
 }
