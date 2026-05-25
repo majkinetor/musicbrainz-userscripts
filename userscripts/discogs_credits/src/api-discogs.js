@@ -59,3 +59,45 @@ export function getDiscogsReleaseData(url) {
 export function clearReleaseDataCache(url) {
     _releaseDataCache.delete(url);
 }
+
+// Session cache for individual entity JSON (artist / label). Only the
+// fields the "Create (Dis)" popup needs are kept; nothing else fetches
+// these so a separate cache from `_releaseDataCache` is fine.
+const _entityDataCache = new Map();
+
+/**
+ * Fetch a Discogs entity's JSON (artist or label) and return the slim
+ * subset the create-with-disambiguation flow needs.
+ *
+ *   @param {string} resourceUrl — the Discogs entity's `resource_url`
+ *     (`https://api.discogs.com/<type>s/<id>`) — same shape that the
+ *     release JSON carries on every credited entity.
+ *
+ *   Returns `{ profile, name, namevariations, realname }` (each string
+ *   or `null`/absent), or `null` on fetch / parse failure.
+ *
+ * `profile` is Discogs's free-form biography blurb. The popup surfaces
+ * it so the user can pick a phrase for the MB disambiguation field —
+ * MB-side disambiguation should be short (a few words), while Discogs
+ * profiles can be paragraphs, so the popup shows the text + a default
+ * suggestion (first ~3 roles) and lets the user select / edit before
+ * submitting.
+ */
+export function getDiscogsEntityData(resourceUrl) {
+    if (!resourceUrl) return Promise.resolve(null);
+    if (_entityDataCache.has(resourceUrl)) return Promise.resolve(_entityDataCache.get(resourceUrl));
+    return fetch(`${resourceUrl}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`)
+        .then(r => r.ok ? r.json() : null)
+        .then(json => {
+            if (!json) { _entityDataCache.set(resourceUrl, null); return null; }
+            const slim = {
+                profile:        json.profile        || '',
+                name:           json.name           || '',
+                namevariations: json.namevariations || [],
+                realname:       json.realname       || '',
+            };
+            _entityDataCache.set(resourceUrl, slim);
+            return slim;
+        })
+        .catch(() => null);
+}
