@@ -33,8 +33,9 @@ import {
     getArtistRoles,
 }                                        from './mappers.js';
 import {
-    checkMissingArtists,
-    checkMissingCompanies,
+    resolveAll,
+    ARTIST_KIND,
+    COMPANY_KIND,
 }                                        from './preflight.js';
 import { showReviewTable }               from './review-table.js';
 import { instantFillRelationships }      from './dispatch.js';
@@ -634,8 +635,18 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                 _logs.appendChild(companyProgressLi);
 
                 return Promise.all([
-                    checkMissingArtists(uniqueArtists, artistProgressLi, bypassIdb),
-                    checkMissingCompanies(uniqueCompanies, companyProgressLi, bypassIdb),
+                    resolveAll(uniqueArtists, {
+                        progressLi:    artistProgressLi,
+                        bypassIdb,
+                        progressLabel: 'Checking artists against MusicBrainz',
+                        kindOf:        ARTIST_KIND,
+                    }),
+                    resolveAll(uniqueCompanies, {
+                        progressLi:    companyProgressLi,
+                        bypassIdb,
+                        progressLabel: 'Checking labels/places against MusicBrainz',
+                        kindOf:        COMPANY_KIND,
+                    }),
                 ]).then(([artistResults, companyResults]) => {
                     const allResults = [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
                     // Save to cache (only if not bypassing)
