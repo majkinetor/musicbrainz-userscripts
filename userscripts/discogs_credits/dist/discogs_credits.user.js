@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Import Discogs Credits (fix-issue-35-unselected-entities)
+// @name         Import Discogs Credits (fix-issue-34-existed-count-and-logging)
 // @namespace    majkinetor
 // @version      2026.5.25
 // @description  Add a button to import Discogs release relationships to MusicBrainz
@@ -2734,7 +2734,7 @@
     if (!re) return;
     const MB = pageWindow.MB;
     const releaseEntity = re.state.entity;
-    let added = 0, existedRels = 0, skipped = 0, failed = 0;
+    let added = 0, existedInMb = 0, dedupedThisSession = 0, skipped = 0, failed = 0;
     const dispatchedThisSession = /* @__PURE__ */ new Set();
     const RECORDING_LINK_TYPES = /* @__PURE__ */ new Set([
       "performer",
@@ -2950,7 +2950,8 @@
       })() : "";
       const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}`;
       if (dispatchedThisSession.has(sessionKey)) {
-        existedRels++;
+        log.info(`Skipped duplicate dispatch of <strong>${linkTypeName}</strong>: ${sourceEntity.name} \u2194 ${credit || ""} \u2014 already queued earlier this run`);
+        dedupedThisSession++;
         return;
       }
       dispatchedThisSession.add(sessionKey);
@@ -2989,7 +2990,8 @@
         }
       }
       if (relAlreadyExists(sourceEntity, resolvedLinkTypeID, targetEntity.gid, attrTree)) {
-        existedRels++;
+        log.info(`Already in MB: <strong>${linkTypeName}</strong>: ${sourceEntity.name} \u2194 ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ""}`);
+        existedInMb++;
         return;
       }
       dispatchRelationship(re, sourceEntity, targetEntity, resolvedLinkTypeID, credit, attrTree, trackPos);
@@ -3240,7 +3242,8 @@
       re.dispatch({ type: "update-edit-note", editNote: note });
     } catch (e) {
     }
-    log.info(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
+    const dedupPart = dedupedThisSession > 0 ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? "" : "s"}` : "";
+    log.info(`<strong>Done: ${added} added, ${existedInMb} already in MB${dedupPart}, ${skipped} skipped, ${failed} failed</strong>`);
   }
 
   // src/ui-bar.js
