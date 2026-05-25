@@ -26,11 +26,10 @@ const _urlCheckSessionCache = new Map();
 export async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
     rolesMap = rolesMap || new Map();
     companiesRolesMap = companiesRolesMap || new Map();
-    // `opts` is reserved for future configuration. The release-level preflight
-    // cache (and its `isFromCache` / `cacheKey` / `onRefresh` hooks) was
-    // removed — IDB-backed entity caching covers the practical wins on its
-    // own, without the stale-shape footguns of an extra cache layer.
-    void opts;
+    // `opts.onRefresh` — optional callback wired by ui-bar; when invoked, it
+    // re-runs preflight with `bypassIdb=true` and returns the fresh results.
+    // The review table exposes a "🔄 Refresh from MB" button that calls it.
+    const onRefresh = opts?.onRefresh || null;
 
     // Pre-load missing names into a Map — IDB first, then MB WS2 fetch.
     const _preloadedNames = new Map();
@@ -170,6 +169,25 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:#5a4000;flex:1;';
         headingText.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? 'y' : 'ies'}`;
         heading.appendChild(headingText);
+        if (onRefresh) {
+            // Refresh-from-MB button — re-runs preflight with the IDB cache
+            // bypassed, so stale entries (entity merged, renamed, etc.) get
+            // re-resolved from the live MB API.
+            const refreshBtn = document.createElement('button');
+            refreshBtn.textContent = '🔄 Refresh from MB';
+            refreshBtn.title = 'Re-resolve every entity via MusicBrainz API, ignoring the local IDB cache';
+            refreshBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #b59a00;border-radius:3px;background:#fff;color:#5a4000;';
+            refreshBtn.addEventListener('click', () => {
+                refreshBtn.disabled = true;
+                refreshBtn.textContent = '🔄 Refreshing…';
+                (panelLi || panel).remove();
+                onRefresh().then(freshResults => {
+                    showReviewTable(freshResults, rolesMap, companiesRolesMap, { onRefresh })
+                        .then(confirmedMap => resolve(confirmedMap));
+                });
+            });
+            heading.appendChild(refreshBtn);
+        }
         panel.appendChild(heading);
 
         const intro = document.createElement('p');

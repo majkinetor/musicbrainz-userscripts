@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Import Discogs Credits (fix-issue-34-existed-count-and-logging)
+// @name         Import Discogs Credits (restore-refresh-button)
 // @namespace    majkinetor
 // @version      2026.5.25
 // @description  Add a button to import Discogs release relationships to MusicBrainz
@@ -1943,7 +1943,7 @@
   async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
     rolesMap = rolesMap || /* @__PURE__ */ new Map();
     companiesRolesMap = companiesRolesMap || /* @__PURE__ */ new Map();
-    void opts;
+    const onRefresh = opts?.onRefresh || null;
     const _preloadedNames = /* @__PURE__ */ new Map();
     const _nullNames = allResults.filter((r) => r.type === "resolved" && r.mbUrl && !r.mbName);
     for (const r of _nullNames) {
@@ -2055,6 +2055,21 @@
       headingText.style.cssText = "font-weight:bold;font-size:1rem;color:#5a4000;flex:1;";
       headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}`;
       heading.appendChild(headingText);
+      if (onRefresh) {
+        const refreshBtn = document.createElement("button");
+        refreshBtn.textContent = "\u{1F504} Refresh from MB";
+        refreshBtn.title = "Re-resolve every entity via MusicBrainz API, ignoring the local IDB cache";
+        refreshBtn.style.cssText = "font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #b59a00;border-radius:3px;background:#fff;color:#5a4000;";
+        refreshBtn.addEventListener("click", () => {
+          refreshBtn.disabled = true;
+          refreshBtn.textContent = "\u{1F504} Refreshing\u2026";
+          (panelLi || panel).remove();
+          onRefresh().then((freshResults) => {
+            showReviewTable(freshResults, rolesMap, companiesRolesMap, { onRefresh }).then((confirmedMap) => resolve(confirmedMap));
+          });
+        });
+        heading.appendChild(refreshBtn);
+      }
       panel.appendChild(heading);
       const intro = document.createElement("p");
       intro.style.cssText = "margin:0 0 0.75rem;font-size:0.85rem;color:#666;";
@@ -3768,7 +3783,7 @@
           uniqueCompanies.push(c);
         }
       });
-      function runPreflight() {
+      function runPreflight(bypassIdb = false) {
         const artistProgressLi = document.createElement("li");
         artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz\u2026`;
         _logs2.appendChild(artistProgressLi);
@@ -3779,25 +3794,38 @@
           resolveAll(uniqueArtists, {
             progressLi: artistProgressLi,
             progressLabel: "Checking artists against MusicBrainz",
-            kindOf: ARTIST_KIND
+            kindOf: ARTIST_KIND,
+            bypassIdb
           }),
           resolveAll(uniqueCompanies, {
             progressLi: companyProgressLi,
             progressLabel: "Checking labels/places against MusicBrainz",
-            kindOf: COMPANY_KIND
+            kindOf: COMPANY_KIND,
+            bypassIdb
           })
         ]).then(([artistResults, companyResults]) => [...artistResults.allResults, ...companyResults.allResults].filter(Boolean));
       }
-      let capturedResults = null;
-      let capturedConfirmedMap = null;
-      return runPreflight().then((allResults) => {
+      function annotateRoles(allResults) {
         allResults.forEach((r) => {
           if (!r) return;
           const url = r.entity?.resource_url || r.entity?._syntheticKey;
           if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
         });
+      }
+      let capturedResults = null;
+      let capturedConfirmedMap = null;
+      return runPreflight().then((allResults) => {
+        annotateRoles(allResults);
         capturedResults = allResults;
-        return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {});
+        return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
+          // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
+          // every entity via MB API. Used when a cached MBID is stale.
+          onRefresh: () => runPreflight(true).then((freshResults) => {
+            annotateRoles(freshResults);
+            capturedResults = freshResults;
+            return freshResults;
+          })
+        });
       }).then((confirmedMap) => {
         capturedConfirmedMap = confirmedMap;
         const cachePromises = [];
