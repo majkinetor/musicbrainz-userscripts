@@ -15,21 +15,33 @@ For project-specific decisions (e.g. "MB's `[no artist]` MBID is
 
 ## 1. Issue titles read as changelog entries
 
-Issue titles describe the user-visible symptom (for bugs) or the feature
-name (for enhancements). They become changelog lines verbatim, with
-`Fixed: ` / `Added: ` prefixed from the label.
+Issue titles describe the user-visible symptom (for bugs) or the
+feature name (for enhancements). They become **changelog lines
+verbatim** — when cutting a release, copy the issue title across as the
+bullet text, untouched. The `bug` / `enhancement` label decides which
+section the bullet lands under (Fixes / Features respectively).
 
-Rules:
+Format per bullet:
+
+```markdown
+1. <issue title verbatim> ([#N](https://github.com/<org>/<repo>/issues/N))
+```
+
+Rules for the title itself (so the verbatim copy reads well):
 - No leading verb (`Fix`, `Add`, `Persist`, `Refactor`, …).
 - No internal implementation details — no line numbers, exact counts,
   internal variable names, file paths.
-- Describe what the user observes (for bugs) or what the feature is (for
-  enhancements), not how it's implemented.
+- Describe what the user observes (for bugs) or what the feature is
+  (for enhancements), not how it's implemented.
 
 | Bad                                                                       | Good                                                       |
 | ------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | Fix 51 instruments silently dropped due to duplicate keys in INSTRUMENTS  | Some instruments silently dropped due to duplicate keys in the map |
 | Persist entity-resolution cache incrementally instead of only on confirm  | Incremental cache persistence                              |
+
+If the title doesn't read well in the changelog, **fix the title first**
+(then update the changelog from the new title) — don't paraphrase in the
+changelog. The single source of truth is the issue tracker.
 
 ## 2. `bug` vs `enhancement` labels are meaningful
 
@@ -89,3 +101,31 @@ the URL form, which would write the token into `.git/config`.
 Keeps human and bot activity clearly attributable in commit / PR
 authors, makes a token-rotation easy (only the bot's PAT, never the
 maintainer's session), and means a bot-misstep is easily revertable.
+
+## 8. Markdown headers — blank line before and after, always
+
+Every `#`, `##`, `###`, … gets a blank line *before* and a blank line
+*after*. No exceptions for the level-1 at the top of a file (still
+needs the blank line below) or for adjacent subsections (the gap is
+just one blank line between them).
+
+```markdown
+preceding paragraph.
+
+## Section
+
+First line of the section.
+
+### Subsection
+
+Content.
+
+### Next subsection
+
+…
+```
+
+Common renderers will *sometimes* parse `## Heading` without the
+surrounding blanks, but the result is fragile — list items, inline
+HTML, and `<details>` blocks all break the heuristic. Always include
+the blanks.
