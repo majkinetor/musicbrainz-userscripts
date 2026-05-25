@@ -1,0 +1,22 @@
+// ==UserScript==
+// @name         Import Discogs Credits
+// @namespace    majkinetor
+// @version      2026.5.25
+// @description  Add a button to import Discogs release relationships to MusicBrainz
+// @author       majkinetor
+// @match        https://musicbrainz.org/release/*/edit-relationships
+// @match        https://musicbrainz.org/artist/*
+// @match        https://musicbrainz.org/label/*
+// @match        https://musicbrainz.org/place/*
+// @match        https://beta.musicbrainz.org/release/*/edit-relationships
+// @match        https://beta.musicbrainz.org/artist/*
+// @match        https://beta.musicbrainz.org/label/*
+// @match        https://beta.musicbrainz.org/place/*
+// @license      MIT
+// @downloadURL  https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.user.js
+// @updateURL    https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.meta.js
+// @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits
+// @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
+// @installURL   https://greasyfork.org/en/scripts/578977
+// @grant        unsafeWindow
+// ==/UserScript==

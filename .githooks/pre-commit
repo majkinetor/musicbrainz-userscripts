@@ -1,0 +1,28 @@
+#!/bin/sh
+# Pre-commit: rebuild dist/ for any userscript whose source is being committed.
+#
+# Why: dist/<userscript>.user.js is the install vector (the README links the
+# raw GitHub URL of the latest release), so the committed dist/ has to match
+# the committed src/. Without this hook, "I forgot to rebuild" silently ships
+# a stale userscript.
+#
+# Activation: `pnpm install` at the repo root runs the `prepare` script in
+# package.json, which sets `core.hooksPath` to .githooks/ for the local
+# clone. New contributors get the hook automatically the first time they
+# install dependencies.
+#
+# Bypass: `git commit --no-verify`. Use sparingly (e.g. doc-only commits
+# where you're sure src/ didn't change).
+
+set -e
+
+STAGED=$(git diff --cached --name-only)
+
+# discogs_credits — esbuild bundle
+if printf '%s\n' "$STAGED" | grep -qE '^userscripts/discogs_credits/(src/|build\.mjs)'; then
+    echo "[pre-commit] rebuilding userscripts/discogs_credits/dist/…"
+    (cd userscripts/discogs_credits && pnpm run build >/dev/null)
+    git add userscripts/discogs_credits/dist/discogs_credits.user.js
+fi
+
+# Add new userscript builds here as they gain custom build scripts.

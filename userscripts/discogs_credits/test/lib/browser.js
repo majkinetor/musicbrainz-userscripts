@@ -410,12 +410,34 @@ export async function confirmReviewTable(page, { timeout = 20 * 60_000 } = {}) {
     return true;
 }
 
-/** Read the userscript's full log (whatever's currently in the .discogs-output UL). */
+/** Read the userscript's full log (whatever's currently in the .discogs-output UL).
+ *  When an `<li>` contains a `<table>` (the post-import review summary), the table is
+ *  rendered as GitHub-flavoured markdown so it stays readable in the saved log instead
+ *  of mashing every cell into one unspaced line. */
 export async function readImportLog(page) {
     return await page.evaluate(() => {
         const ul = document.querySelector('.discogs-output ul.logs');
         if (!ul) return '';
-        return [...ul.querySelectorAll('li')].map(li => li.textContent.trim()).join('\n');
+        function liToText(li) {
+            const tbl = li.querySelector('table');
+            if (!tbl) return li.textContent.trim();
+            // Render the table as markdown. Other text in the `<li>` (rare) is preserved.
+            const rows = [...tbl.querySelectorAll('tr')].map(tr =>
+                [...tr.children].map(c => (c.textContent || '').replace(/\s*\|\s*/g, ' / ').trim() || ' '));
+            if (rows.length === 0) return li.textContent.trim();
+            const md = ['| ' + rows[0].join(' | ') + ' |',
+                        '| ' + rows[0].map(() => '---').join(' | ') + ' |',
+                        ...rows.slice(1).map(r => '| ' + r.join(' | ') + ' |')].join('\n');
+            // Preserve any non-table text on the same `<li>` (none in current code, future-proof).
+            const tblText = tbl.textContent;
+            const liText  = li.textContent;
+            const extra   = liText.replace(tblText, '').trim();
+            // Wrap with blank lines so the table renders as a real markdown table
+            // when this log is pasted into GitHub / Discord / etc. (Standards #8).
+            const body = extra ? (extra + '\n\n' + md) : md;
+            return '\n' + body + '\n';
+        }
+        return [...ul.querySelectorAll(':scope > li')].map(liToText).join('\n');
     });
 }
 
