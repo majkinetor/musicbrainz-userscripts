@@ -1705,344 +1705,156 @@
   }
 
   // src/preflight.js
-  async function checkMissingArtists(artists, progressLi, bypassIdb) {
+  var KIND_TABLE = {
+    artist: { searchLimit: 10, resultKey: "artists", incRels: "artist-rels" },
+    label: { searchLimit: 8, resultKey: "labels", incRels: "label-rels" },
+    // Places also accept label-rels because MB editors often file a
+    // facility as a label rather than a place (issue we've worked around
+    // since the original company resolver).
+    place: { searchLimit: 8, resultKey: "places", incRels: "place-rels+label-rels" }
+  };
+  async function resolveEntity(entity, kind, opts) {
+    const { bypassIdb } = opts;
+    const { searchLimit, resultKey, incRels } = KIND_TABLE[kind];
+    const parsed = parseDiscogsUrl(entity.resource_url);
+    const key = parsed?.key;
+    const searchName = entity.name;
+    const displayName = kind === "artist" ? entity.anv && entity.anv.trim() || entity.name : entity.name;
+    const discogsHref = entity.resource_url.replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, "https://www.discogs.com/$1/$2");
+    function buildResolved(mbUrl, mbName, mbDisambig, via, actualKind = kind) {
+      return {
+        type: "resolved",
+        entityType: actualKind,
+        entity,
+        displayName,
+        discogsHref,
+        mbUrl,
+        mbName,
+        mbDisambig,
+        logEntry: { displayName, discogsHref, mbUrl, mbName, mbDisambig, via }
+      };
+    }
+    async function fetchMbEntityInfo(mbUrl) {
+      const m = mbUrl.match(/\/(artist|label|place)\/([a-f0-9-]+)/);
+      if (!m) return { name: null, disambiguation: "" };
+      const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${m[1]}/${m[2]}?fmt=json`);
+      return json ? { name: json.name || null, disambiguation: json.disambiguation || "" } : { name: null, disambiguation: "" };
+    }
+    if (!bypassIdb && key) {
+      const cachedRec = await readIdbRecord(key);
+      if (cachedRec?.mb_links?.[0]) {
+        const cached = cachedRec.mb_links[0];
+        if (cachedRec.mb_name) {
+          return buildResolved(cached, cachedRec.mb_name, cachedRec.mb_disambiguation || "", "cache");
+        }
+        const info = await fetchMbEntityInfo(cached);
+        if (info.name && db) {
+          try {
+            db.transaction(["mblinks"], "readwrite").objectStore("mblinks").put({ ...cachedRec, mb_name: info.name, mb_disambiguation: info.disambiguation });
+          } catch (e) {
+          }
+        }
+        return buildResolved(cached, info.name, info.disambiguation, "cache");
+      }
+    }
+    const nameJson = await mbThrottle.fetchJson(
+      `//musicbrainz.org/ws/2/${kind}?query=${encodeURIComponent(searchName)}&fmt=json&limit=${searchLimit}`
+    );
+    const nameSearchFailed = nameJson === null;
+    const normalized = searchName.toLowerCase().trim();
+    const nameMatches = !nameJson?.[resultKey] ? [] : nameJson[resultKey].filter((a) => a.name.toLowerCase().trim() === normalized || a.score != null && a.score >= 70).map((a) => ({
+      id: a.id,
+      name: a.name,
+      disambiguation: a.disambiguation || a["disambiguation-comment"] || "",
+      score: a.score || 0
+    }));
+    const exactMatches = nameMatches.filter((a) => a.name.toLowerCase().trim() === normalized);
+    if (exactMatches.length === 1) {
+      const a = exactMatches[0];
+      const mbUrl = `//musicbrainz.org/${kind}/${a.id}`;
+      if (key && db) {
+        try {
+          db.transaction(["mblinks"], "readwrite").objectStore("mblinks").put({ discogs_id: key, mb_links: [mbUrl], mb_name: a.name, mb_disambiguation: a.disambiguation || "" });
+        } catch (e) {
+        }
+      }
+      return buildResolved(mbUrl, a.name, a.disambiguation || "", "name");
+    }
+    const urlJson = parsed ? await mbThrottle.fetchJson(
+      `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
+    ) : null;
+    if (urlJson?.relations?.length > 0) {
+      const rel = kind === "place" ? urlJson.relations.find((r) => r.place || r.label) : urlJson.relations.find((r) => r[kind]);
+      if (rel) {
+        const actualKind = rel[kind] ? kind : rel.label ? "label" : "place";
+        const a = rel[actualKind];
+        const mbUrl = `//musicbrainz.org/${actualKind}/${a.id}`;
+        const info = a.name ? a : await fetchMbEntityInfo(mbUrl);
+        const resolvedName = info.name || a.name;
+        const resolvedDisam = info.disambiguation || a.disambiguation || "";
+        if (key && resolvedName && db) {
+          try {
+            db.transaction(["mblinks"], "readwrite").objectStore("mblinks").put({ discogs_id: key, mb_links: [mbUrl], mb_name: resolvedName, mb_disambiguation: resolvedDisam });
+          } catch (e) {
+          }
+        }
+        return buildResolved(mbUrl, resolvedName, resolvedDisam, "url", actualKind);
+      }
+    }
+    return {
+      type: "attention",
+      entityType: kind,
+      entity,
+      displayName,
+      discogsHref,
+      nameMatches,
+      // Only artists track this — used by the review table to badge
+      // entries that failed because of a rate-limited name search vs
+      // entries that genuinely don't exist in MB.
+      rateLimited: kind === "artist" && nameSearchFailed && !nameMatches.length
+    };
+  }
+  async function resolveAll(entities, opts) {
+    const { kindOf, progressLi, bypassIdb, progressLabel } = opts;
     const CONCURRENCY = 5;
     const MIN_GAP_MS = 50;
     let done = 0;
-    let inFlight = 0;
     const inFlightNames = /* @__PURE__ */ new Set();
     function setProgress() {
       if (!progressLi) return;
-      const remaining = artists.length - done;
+      const remaining = entities.length - done;
       const checking = inFlightNames.size ? ` \u2014 checking <em>${[...inFlightNames].join(", ")}</em>` : "";
-      progressLi.innerHTML = `Checking artists against MusicBrainz\u2026 <strong>${done}/${artists.length}</strong> done${checking}` + (remaining === 0 ? " \u2714" : ` (${remaining} remaining)`);
+      progressLi.innerHTML = `${progressLabel}\u2026 <strong>${done}/${entities.length}</strong> done${checking}` + (remaining === 0 ? " \u2714" : ` (${remaining} remaining)`);
     }
     const delay = (ms) => new Promise((r) => setTimeout(r, ms));
-    async function mbFetch(url, retries = 4) {
-      return mbThrottle.fetchJson(url, retries);
-    }
-    function checkIdbCache(key) {
-      return new Promise((resolve) => {
-        if (!key || !db) return resolve(null);
-        try {
-          const tx = db.transaction(["mblinks"], "readonly");
-          const req = tx.objectStore("mblinks").get(key);
-          req.onsuccess = () => resolve(req.result || null);
-          req.onerror = () => resolve(null);
-        } catch (e) {
-          resolve(null);
-        }
-      });
-    }
-    async function checkOne(artist) {
-      const parsed = parseDiscogsUrl(artist.resource_url);
-      const key = parsed?.key;
-      const searchName = artist.name;
-      const displayName = artist.anv && artist.anv.trim() || artist.name;
-      const discogsHref = artist.resource_url.replace("https://api.discogs.com/artists/", "https://www.discogs.com/artist/");
-      function resolvedResult(mbUrl, mbName, mbDisambig, via) {
-        return {
-          type: "resolved",
-          entityType: "artist",
-          entity: artist,
-          displayName,
-          discogsHref,
-          mbUrl,
-          mbName,
-          mbDisambig,
-          logEntry: { displayName, discogsHref, mbUrl, mbName, mbDisambig, via }
-        };
-      }
-      async function fetchMbArtistInfo(mbUrl) {
-        const mbid = mbUrl.replace(/.*\/artist\//, "");
-        const json = await mbFetch(`//musicbrainz.org/ws/2/artist/${mbid}?fmt=json`);
-        return json ? { name: json.name || null, disambiguation: json.disambiguation || "" } : { name: null, disambiguation: "" };
-      }
-      if (!bypassIdb && key) {
-        const cachedRec = await checkIdbCache(key);
-        if (cachedRec?.mb_links?.[0]) {
-          const cached = cachedRec.mb_links[0];
-          if (cachedRec.mb_name) {
-            return resolvedResult(cached, cachedRec.mb_name, cachedRec.mb_disambiguation || "", "cache");
-          }
-          const info = await fetchMbArtistInfo(cached);
-          if (info.name) {
-            try {
-              const t = db.transaction(["mblinks"], "readwrite");
-              t.objectStore("mblinks").put({ ...cachedRec, mb_name: info.name, mb_disambiguation: info.disambiguation });
-            } catch (e) {
-            }
-          }
-          return resolvedResult(cached, info.name, info.disambiguation, "cache");
-        }
-      }
-      const nameJson = await mbFetch(
-        `//musicbrainz.org/ws/2/artist?query=${encodeURIComponent(searchName)}&fmt=json&limit=10`
-      );
-      const nameSearchFailed = nameJson === null;
-      const normalized = searchName.toLowerCase().trim();
-      const nameMatches = !nameJson?.artists ? [] : nameJson.artists.filter((a) => a.name.toLowerCase().trim() === normalized || a.score != null && a.score >= 70).map((a) => ({ id: a.id, name: a.name, disambiguation: a.disambiguation || "", score: a.score || 0 }));
-      const exactMatches = nameMatches.filter((a) => a.name.toLowerCase().trim() === normalized);
-      if (exactMatches.length === 1) {
-        const a = exactMatches[0];
-        const mbUrl = `//musicbrainz.org/artist/${a.id}`;
-        if (key) {
-          try {
-            const tx = db.transaction(["mblinks"], "readwrite");
-            tx.objectStore("mblinks").put({ discogs_id: key, mb_links: [mbUrl], mb_name: a.name, mb_disambiguation: a.disambiguation || "" });
-          } catch (e) {
-          }
-        }
-        return resolvedResult(mbUrl, a.name, a.disambiguation, "name");
-      }
-      const urlJson = parsed ? await mbFetch(
-        `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=artist-rels&fmt=json`
-      ) : null;
-      if (urlJson?.relations?.length > 0) {
-        const rel = urlJson.relations.find((r) => r.artist);
-        if (rel) {
-          const a = rel.artist;
-          const mbUrl = `//musicbrainz.org/artist/${a.id}`;
-          const info = a.name ? a : await fetchMbArtistInfo(mbUrl);
-          const resolvedName = info.name || a.name;
-          const resolvedDisam = info.disambiguation || a.disambiguation || "";
-          if (key && resolvedName) {
-            try {
-              const tx2 = db.transaction(["mblinks"], "readwrite");
-              tx2.objectStore("mblinks").put({ discogs_id: key, mb_links: [mbUrl], mb_name: resolvedName, mb_disambiguation: resolvedDisam });
-            } catch (e) {
-            }
-          }
-          return resolvedResult(mbUrl, resolvedName, resolvedDisam, "url");
-        }
-      }
-      return {
-        type: "attention",
-        entityType: "artist",
-        entity: artist,
-        displayName,
-        discogsHref,
-        nameMatches,
-        rateLimited: nameSearchFailed && !nameMatches.length
-      };
-    }
-    return (async () => {
-      const queue = artists.map((a, i) => ({ artist: a, index: i }));
-      const results = new Array(artists.length);
-      setProgress();
-      async function worker(slotIndex) {
-        await delay(slotIndex * MIN_GAP_MS);
-        while (queue.length > 0) {
-          const { artist, index } = queue.shift();
-          const displayName = artist.anv && artist.anv.trim() || artist.name;
-          inFlightNames.add(displayName);
-          setProgress();
-          const result = await checkOne(artist);
-          results[index] = result;
-          inFlightNames.delete(displayName);
+    const queue = entities.map((e, i) => ({ entity: e, index: i }));
+    const results = new Array(entities.length);
+    setProgress();
+    async function worker(slotIndex) {
+      await delay(slotIndex * MIN_GAP_MS);
+      while (queue.length > 0) {
+        const { entity, index } = queue.shift();
+        const kind = kindOf(entity);
+        if (!kind) {
           done++;
           setProgress();
+          continue;
         }
+        const displayName = kind === "artist" ? entity.anv && entity.anv.trim() || entity.name : entity.name;
+        inFlightNames.add(displayName);
+        setProgress();
+        results[index] = await resolveEntity(entity, kind, { bypassIdb });
+        inFlightNames.delete(displayName);
+        done++;
+        setProgress();
       }
-      const slots = Math.min(CONCURRENCY, artists.length);
-      await Promise.all(Array.from({ length: slots }, (_, i) => worker(i)));
-      return { allResults: results };
-    })();
+    }
+    const slots = Math.min(CONCURRENCY, entities.length);
+    if (slots > 0) await Promise.all(Array.from({ length: slots }, (_, i) => worker(i)));
+    return { allResults: results.filter(Boolean) };
   }
-  async function checkMissingCompanies(companies, progressLi, bypassIdb) {
-    const CONCURRENCY = 5;
-    const MIN_GAP_MS = 200;
-    let done = 0;
-    const inFlightNames = /* @__PURE__ */ new Set();
-    function setProgress() {
-      if (!progressLi) return;
-      const remaining = companies.length - done;
-      const checking = inFlightNames.size ? ` \u2014 checking <em>${[...inFlightNames].join(", ")}</em>` : "";
-      progressLi.innerHTML = `Checking labels/places against MusicBrainz\u2026 <strong>${done}/${companies.length}</strong> done${checking}` + (remaining === 0 ? " \u2714" : ` (${remaining} remaining)`);
-    }
-    const delay = (ms) => new Promise((r) => setTimeout(r, ms));
-    async function mbFetch(url, retries = 4) {
-      return mbThrottle.fetchJson(url, retries);
-    }
-    function checkIdbCache(key) {
-      return new Promise((resolve) => {
-        if (!key || !db) return resolve(null);
-        try {
-          const tx = db.transaction(["mblinks"], "readonly");
-          const req = tx.objectStore("mblinks").get(key);
-          req.onsuccess = () => resolve(req.result || null);
-          req.onerror = () => resolve(null);
-        } catch (e) {
-          resolve(null);
-        }
-      });
-    }
-    async function checkOne(company) {
-      const details = ENTITY_TYPE_MAP[company.entity_type_name];
-      if (!details) return null;
-      const entityType = details.entityType;
-      const parsed = parseDiscogsUrl(company.resource_url);
-      const key = parsed?.key;
-      const searchName = company.name;
-      const displayName = company.name;
-      const discogsHref = company.resource_url.replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, "https://www.discogs.com/$1/$2");
-      async function fetchMbEntityInfo(mbUrl) {
-        const mbid = mbUrl.replace(/.*\/(label|place)\//, "");
-        const json = await mbFetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`);
-        return json ? { name: json.name || null, disambiguation: json.disambiguation || "" } : { name: null, disambiguation: "" };
-      }
-      if (!bypassIdb) {
-        const cachedRec = await checkIdbCache(key);
-        if (cachedRec?.mb_links?.[0]) {
-          const cached = cachedRec.mb_links[0];
-          if (cachedRec.mb_name) {
-            return {
-              type: "resolved",
-              entityType,
-              entity: company,
-              displayName,
-              discogsHref,
-              mbUrl: cached,
-              mbName: cachedRec.mb_name,
-              mbDisambig: cachedRec.mb_disambiguation || "",
-              logEntry: {
-                displayName,
-                discogsHref,
-                mbUrl: cached,
-                mbName: cachedRec.mb_name,
-                mbDisambig: cachedRec.mb_disambiguation || "",
-                via: "cache"
-              }
-            };
-          }
-          const info = await fetchMbEntityInfo(cached);
-          if (info.name) {
-            try {
-              const t = db.transaction(["mblinks"], "readwrite");
-              t.objectStore("mblinks").put({ ...cachedRec, mb_name: info.name, mb_disambiguation: info.disambiguation });
-            } catch (e) {
-            }
-          }
-          return {
-            type: "resolved",
-            entityType,
-            entity: company,
-            displayName,
-            discogsHref,
-            mbUrl: cached,
-            mbName: info.name,
-            mbDisambig: info.disambiguation,
-            logEntry: {
-              displayName,
-              discogsHref,
-              mbUrl: cached,
-              mbName: info.name,
-              mbDisambig: info.disambiguation,
-              via: "cache"
-            }
-          };
-        }
-      }
-      const nameJson = await mbFetch(
-        `//musicbrainz.org/ws/2/${entityType}?query=${encodeURIComponent(searchName)}&fmt=json&limit=8`
-      );
-      const resultKey = entityType === "label" ? "labels" : "places";
-      const normalized = searchName.toLowerCase().trim();
-      const nameSearchFailed2 = nameJson === null;
-      const nameMatches = !nameJson?.[resultKey] ? [] : nameJson[resultKey].filter((a) => a.name.toLowerCase().trim() === normalized || a.score != null && a.score >= 70).map((a) => ({ id: a.id, name: a.name, disambiguation: a.disambiguation || a["disambiguation-comment"] || "", score: a.score || 0 }));
-      const exactMatches = nameMatches.filter((a) => a.name.toLowerCase().trim() === normalized);
-      if (exactMatches.length === 1) {
-        const a = exactMatches[0];
-        const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
-        if (key) {
-          try {
-            const tx = db.transaction(["mblinks"], "readwrite");
-            tx.objectStore("mblinks").put({ discogs_id: key, mb_links: [mbUrl] });
-          } catch (e) {
-          }
-        }
-        if (key) try {
-          const t = db.transaction(["mblinks"], "readwrite");
-          t.objectStore("mblinks").put({ discogs_id: key, mb_links: [mbUrl], mb_name: a.name, mb_disambiguation: a.disambiguation || "" });
-        } catch (e) {
-        }
-        return {
-          type: "resolved",
-          entityType,
-          entity: company,
-          displayName,
-          discogsHref,
-          mbUrl,
-          mbName: a.name,
-          mbDisambig: a.disambiguation,
-          logEntry: {
-            displayName,
-            discogsHref,
-            mbUrl,
-            mbName: a.name,
-            mbDisambig: a.disambiguation,
-            via: "name"
-          }
-        };
-      }
-      const incRels = entityType === "place" ? "place-rels+label-rels" : `${entityType}-rels`;
-      const urlJson = parsed ? await mbFetch(
-        `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
-      ) : null;
-      if (urlJson?.relations?.length > 0) {
-        const rel = urlJson.relations.find((r) => r[entityType] || r["label"] || r["place"]);
-        if (rel) {
-          const actualEt = rel[entityType] ? entityType : rel["label"] ? "label" : "place";
-          const a = rel[actualEt];
-          const mbUrl = `//musicbrainz.org/${actualEt}/${a.id}`;
-          const info = a.name ? a : await fetchMbEntityInfo(mbUrl);
-          return {
-            type: "resolved",
-            entityType: actualEt,
-            entity: company,
-            displayName,
-            discogsHref,
-            mbUrl,
-            mbName: info.name || a.name,
-            mbDisambig: info.disambiguation || "",
-            logEntry: {
-              displayName,
-              discogsHref,
-              mbUrl,
-              mbName: info.name || a.name,
-              mbDisambig: info.disambiguation || "",
-              via: "url"
-            }
-          };
-        }
-      }
-      return { type: "attention", entityType, entity: company, displayName, discogsHref, nameMatches };
-    }
-    return (async () => {
-      const queue = companies.map((c, i) => ({ company: c, index: i }));
-      const results = [];
-      const resultArr = new Array(companies.length);
-      setProgress();
-      async function worker(slotIndex) {
-        await delay(slotIndex * MIN_GAP_MS);
-        while (queue.length > 0) {
-          const _item = queue.shift();
-          const company = _item.company || _item;
-          const _cIdx = _item.index ?? -1;
-          inFlightNames.add(company.name);
-          setProgress();
-          const result = await checkOne(company);
-          if (result && _cIdx >= 0) resultArr[_cIdx] = result;
-          inFlightNames.delete(company.name);
-          done++;
-          setProgress();
-        }
-      }
-      const slots = Math.min(CONCURRENCY, companies.length);
-      if (slots > 0) await Promise.all(Array.from({ length: slots }, (_, i) => worker(i)));
-      return { allResults: resultArr.filter(Boolean) };
-    })();
-  }
+  var ARTIST_KIND = () => "artist";
+  var COMPANY_KIND = (c) => ENTITY_TYPE_MAP[c.entity_type_name]?.entityType ?? null;
 
   // src/review-table.js
   var _urlCheckSessionCache = /* @__PURE__ */ new Map();
@@ -3963,8 +3775,18 @@
         companyProgressLi.textContent = `Checking ${uniqueCompanies.length} label(s)/place(s) against MusicBrainz\u2026`;
         _logs2.appendChild(companyProgressLi);
         return Promise.all([
-          checkMissingArtists(uniqueArtists, artistProgressLi, bypassIdb),
-          checkMissingCompanies(uniqueCompanies, companyProgressLi, bypassIdb)
+          resolveAll(uniqueArtists, {
+            progressLi: artistProgressLi,
+            bypassIdb,
+            progressLabel: "Checking artists against MusicBrainz",
+            kindOf: ARTIST_KIND
+          }),
+          resolveAll(uniqueCompanies, {
+            progressLi: companyProgressLi,
+            bypassIdb,
+            progressLabel: "Checking labels/places against MusicBrainz",
+            kindOf: COMPANY_KIND
+          })
         ]).then(([artistResults, companyResults]) => {
           const allResults = [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
           if (!bypassIdb) try {
