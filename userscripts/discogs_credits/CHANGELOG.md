@@ -1,5 +1,23 @@
 # Import Discogs Credits Changelog
 
+## 2026.5.25
+
+### Features
+
+1. Per-line timestamps in the import log ([#9](https://github.com/majkinetor/musicbrainz-userscripts/issues/9))
+1. Persistence of entity cache incrementally, not only after confirming ([#23](https://github.com/majkinetor/musicbrainz-userscripts/issues/23))
+
+### Fixes
+
+1. Mastering relationship is deprecated for recordings ([#2](https://github.com/majkinetor/musicbrainz-userscripts/issues/2))
+1. Instrument with 'co' attribute blocks the commit - attribute unsupported ([#3](https://github.com/majkinetor/musicbrainz-userscripts/issues/3))
+1. Collapsing relationships with multiple media ([#4](https://github.com/majkinetor/musicbrainz-userscripts/issues/4))
+1. homepageURL in edit note is undefined ([#7](https://github.com/majkinetor/musicbrainz-userscripts/issues/7))
+1. Background fetches during relationship filling phase for all unresolved artists ([#8](https://github.com/majkinetor/musicbrainz-userscripts/issues/8))
+1. Some instruments silently dropped due to duplicate keys in the map ([#22](https://github.com/majkinetor/musicbrainz-userscripts/issues/22))
+1. Discogs role 'Accompanied By' mapped to 'instrument' link type instead of 'performer' ([#26](https://github.com/majkinetor/musicbrainz-userscripts/issues/26))
+1. Slow speed of entity lookup ([#30](https://github.com/majkinetor/musicbrainz-userscripts/issues/30))
+
 ## 2026.5.22
 
 ### Features
