@@ -4,7 +4,7 @@
 // rate-limit handling lives in one place.
 
 import { pageWindow } from './constants.js';
-import { addLogLine } from './log.js';
+import { log }        from './log.js';
 
 /**
  * Fetch a full MB entity from the internal `/ws/js/entity/{mbid}` endpoint.
@@ -150,7 +150,7 @@ export function getDiscogsUrlForRelease(mbid) {
  */
 export function resolveLinkTypeId(name, type0, type1) {
     const lt = pageWindow.MB?.linkedEntities?.link_type;
-    if (!lt) { addLogLine('<span style="color:red">ERR MB.linkedEntities.link_type not available</span>'); return null; }
+    if (!lt) { log.error('MB.linkedEntities.link_type not available'); return null; }
     const needle = name.toLowerCase().trim();
     // Strip MB's curly-brace attribute placeholders, e.g. "{additional} orchestra"
     // → "orchestra" so a Discogs role "orchestra" matches.
@@ -183,7 +183,7 @@ export function resolveLinkTypeId(name, type0, type1) {
         contains.sort((a, b) => ((a.name || '').length || 999) - ((b.name || '').length || 999));
         const best = contains[0];
         if ((best.name || '').toLowerCase() !== needle) {
-            addLogLine(`Fuzzy match: "${name}" → "${best.name}" (${type0}→${type1})`);
+            log.info(`Fuzzy match: "${name}" → "${best.name}" (${type0}→${type1})`);
         }
         return best.id;
     }
@@ -204,12 +204,12 @@ export function resolveLinkTypeId(name, type0, type1) {
         // block the commit. Log as ERR (red) since this is a hard refusal,
         // not a warning the user might safely override.
         const altPairs = [...new Set(allByName.filter(v => !v.deprecated).map(v => `${v.type0}→${v.type1}`))].join(', ');
-        addLogLine(`<span style="color:red">ERR "${name}" (${type0}→${type1}) is deprecated by MB and would block the commit — skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ''}.</span>`);
+        log.error(`"${name}" (${type0}→${type1}) is deprecated by MB and would block the commit — skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ''}.`);
     } else if (wrongPairHits.length > 0) {
         const hitDesc = wrongPairHits.map(v => `${v.name}(${v.type0}→${v.type1})`).join(', ');
-        addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}→${type1}) — exists for other entity pairs: ${hitDesc} — skipping</span>`);
+        log.warn(`No "${name}" link type for (${type0}→${type1}) — exists for other entity pairs: ${hitDesc} — skipping`);
     } else {
-        addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}→${type1}). Available for this pair: ${availableNames || 'none'}</span>`);
+        log.warn(`Unknown link type "${name}" (${type0}→${type1}). Available for this pair: ${availableNames || 'none'}`);
     }
     return null;
 }

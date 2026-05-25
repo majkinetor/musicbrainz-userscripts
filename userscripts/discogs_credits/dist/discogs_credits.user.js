@@ -65,19 +65,24 @@
   function getLogContainer() {
     return _logs;
   }
-  function addLogLine(message) {
+  function _emit(html, plainText) {
     if (!_logs) return;
     const li = document.createElement("li");
     const d = /* @__PURE__ */ new Date();
     const pad = (n) => String(n).padStart(2, "0");
     const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${message}`;
+    li.innerHTML = `<span style="color:#999;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82em;">${stamp}</span> ${html}`;
     _logs.insertAdjacentElement("beforeend", li);
     const bar = document.querySelector(".discogs-bar");
     if (bar?._setProgress) {
-      bar._setProgress(null, message.replace(/<[^>]*>/g, "").trim().substring(0, 120));
+      bar._setProgress(null, plainText.replace(/<[^>]*>/g, "").trim().substring(0, 120));
     }
   }
+  var log = {
+    info: (msg) => _emit(msg, msg),
+    warn: (msg) => _emit(`<span style="color:orange">WARN ${msg}</span>`, `WARN ${msg}`),
+    error: (msg) => _emit(`<span style="color:red">ERR ${msg}</span>`, `ERR ${msg}`)
+  };
 
   // src/api-mb.js
   async function fetchMBEntity(mbid) {
@@ -170,7 +175,7 @@
   function resolveLinkTypeId(name, type0, type1) {
     const lt = pageWindow.MB?.linkedEntities?.link_type;
     if (!lt) {
-      addLogLine('<span style="color:red">ERR MB.linkedEntities.link_type not available</span>');
+      log.error("MB.linkedEntities.link_type not available");
       return null;
     }
     const needle = name.toLowerCase().trim();
@@ -193,7 +198,7 @@
       contains.sort((a, b) => ((a.name || "").length || 999) - ((b.name || "").length || 999));
       const best = contains[0];
       if ((best.name || "").toLowerCase() !== needle) {
-        addLogLine(`Fuzzy match: "${name}" \u2192 "${best.name}" (${type0}\u2192${type1})`);
+        log.info(`Fuzzy match: "${name}" \u2192 "${best.name}" (${type0}\u2192${type1})`);
       }
       return best.id;
     }
@@ -205,12 +210,12 @@
     const wrongPairHits = allByName.filter((v) => !(v.type0 === type0 && v.type1 === type1));
     if (deprecatedHit) {
       const altPairs = [...new Set(allByName.filter((v) => !v.deprecated).map((v) => `${v.type0}\u2192${v.type1}`))].join(", ");
-      addLogLine(`<span style="color:red">ERR "${name}" (${type0}\u2192${type1}) is deprecated by MB and would block the commit \u2014 skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ""}.</span>`);
+      log.error(`"${name}" (${type0}\u2192${type1}) is deprecated by MB and would block the commit \u2014 skipping${altPairs ? `. Valid alternative(s): ${altPairs}` : ""}.`);
     } else if (wrongPairHits.length > 0) {
       const hitDesc = wrongPairHits.map((v) => `${v.name}(${v.type0}\u2192${v.type1})`).join(", ");
-      addLogLine(`<span style="color:orange">WARN No "${name}" link type for (${type0}\u2192${type1}) \u2014 exists for other entity pairs: ${hitDesc} \u2014 skipping</span>`);
+      log.warn(`No "${name}" link type for (${type0}\u2192${type1}) \u2014 exists for other entity pairs: ${hitDesc} \u2014 skipping`);
     } else {
-      addLogLine(`<span style="color:orange">WARN Unknown link type "${name}" (${type0}\u2192${type1}). Available for this pair: ${availableNames || "none"}</span>`);
+      log.warn(`Unknown link type "${name}" (${type0}\u2192${type1}). Available for this pair: ${availableNames || "none"}`);
     }
     return null;
   }
@@ -2683,26 +2688,26 @@
 
   // src/editor-state.js
   async function waitForMBEditor(timeoutMs = 15e3) {
-    addLogLine("Waiting for MB relationship editor\u2026");
+    log.info("Waiting for MB relationship editor\u2026");
     let waited = 0;
     while (waited < timeoutMs) {
       const MB = pageWindow.MB;
       const re = MB?.relationshipEditor;
       const st = re?.state;
       if (st?.entity) {
-        addLogLine(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
+        log.info(`Editor ready (${waited}ms). Release: "${st.entity.name}"`);
         return re;
       }
       if (waited % 2e3 === 0 && waited > 0) {
         const mbKeys = MB ? Object.keys(MB).join(", ") : "undefined";
         const reKeys = re ? Object.keys(re).join(", ") : "undefined";
         const stKeys = st ? Object.keys(st).join(", ") : "undefined";
-        addLogLine(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
+        log.info(`[${waited}ms] MB={${mbKeys}} re={${reKeys}} state={${stKeys}}`);
       }
       await new Promise((r) => setTimeout(r, 200));
       waited += 200;
     }
-    addLogLine('<span style="color:red">ERR MB editor not ready after 15s \u2014 aborting</span>');
+    log.error("MB editor not ready after 15s \u2014 aborting");
     return null;
   }
   function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes, trackPos) {
@@ -2725,7 +2730,7 @@
       }
     }
     const posLabel = trackPos != null && trackPos !== "" ? ` <span style="color:#888;font-size:0.85em">#${trackPos}</span>` : "";
-    addLogLine(`\u2192 <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} \u2194 ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ""}`);
+    log.info(`\u2192 <strong>${ltName}</strong>${attrDesc}${posLabel}: ${sourceEntity.name || sourceEntity.gid} \u2194 ${targetEntity.name || targetEntity.gid}${credit && credit !== (targetEntity.name || targetEntity.gid) ? ` (credited: ${credit})` : ""}`);
     re.dispatch({
       type: "update-relationship-state",
       sourceEntity,
@@ -2763,7 +2768,7 @@
           if (vl.includes(lower) || lower.includes(vl)) return v;
         }
       }
-      addLogLine(`<span style="color:orange">WARN Attribute "${name}" not found in MB \u2014 dropping attribute but keeping the rel</span>`);
+      log.warn(`Attribute "${name}" not found in MB \u2014 dropping attribute but keeping the rel`);
       return null;
     }
     function extractFnValue(fn) {
@@ -2799,7 +2804,7 @@
     try {
       return tree.fromDistinctAscArray(attrObjs);
     } catch (e) {
-      addLogLine(`<span style="color:orange">WARN Attribute tree build failed (${e.message}) \u2014 importing without attributes</span>`);
+      log.warn(`Attribute tree build failed (${e.message}) \u2014 importing without attributes`);
       return null;
     }
   }
@@ -2873,7 +2878,7 @@
       "programming"
       // NOT 'mastering' — MB deprecated artist→recording mastering (link type 136).
     ]);
-    addLogLine(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
+    log.info(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
     const bar = document.querySelector(".discogs-bar");
     function tickProgress() {
       const done = added + skipped + failed;
@@ -2933,19 +2938,19 @@
           trackIndex++;
         }
       }
-      addLogLine(`Found ${trackCount} track(s) in editor state (${recordingByGid.size} with GID, ${recordingByPosition.size} position entries: ${[...recordingByPosition.keys()].join(",")}). relatedWorks: ${editorWorkByRecGid.size} pre-linked`);
+      log.info(`Found ${trackCount} track(s) in editor state (${recordingByGid.size} with GID, ${recordingByPosition.size} position entries: ${[...recordingByPosition.keys()].join(",")}). relatedWorks: ${editorWorkByRecGid.size} pre-linked`);
     } catch (e) {
-      addLogLine(`<span style="color:orange">WARN Iterating MB state: ${e.message}</span>`);
+      log.warn(`Iterating MB state: ${e.message}`);
     }
     const positionToGid = /* @__PURE__ */ new Map();
     try {
       const relMbid = releaseEntity.gid;
-      addLogLine(`WS2: fetching recordings for release ${relMbid}\u2026`);
+      log.info(`WS2: fetching recordings for release ${relMbid}\u2026`);
       const wsJson = await fetchWithRetry(`/ws/2/release/${relMbid}?inc=recordings&fmt=json`);
-      addLogLine(`WS2: response received`);
+      log.info(`WS2: response received`);
       if (wsJson) {
         const mediaCount = wsJson.media?.length ?? 0;
-        addLogLine(`WS2: ${mediaCount} medium/media in response`);
+        log.info(`WS2: ${mediaCount} medium/media in response`);
         const mediaArr = wsJson.media || [];
         const isMultiMedium2 = mediaArr.length > 1;
         for (const medium of mediaArr) {
@@ -2965,10 +2970,10 @@
             }
           }
         }
-        addLogLine(`WS2 position map: ${positionToGid.size} entries (${[...positionToGid.keys()].sort().join(", ")})`);
+        log.info(`WS2 position map: ${positionToGid.size} entries (${[...positionToGid.keys()].sort().join(", ")})`);
       }
     } catch (e) {
-      addLogLine(`<span style="color:orange">WARN WS2 recording fetch failed: ${e.message} \u2014 using editor state positions only</span>`);
+      log.warn(`WS2 recording fetch failed: ${e.message} \u2014 using editor state positions only`);
     }
     const isMultiMedium = positionToGid.size > 0 && [...positionToGid.keys()].some((k) => /^[2-9]-/.test(k));
     function inferDiscFromVinylSide(pos) {
@@ -3002,7 +3007,7 @@
         if (gid) {
           const rec = recordingByGid.get(gid);
           if (rec) return rec;
-          addLogLine(`<span style="color:orange">WARN Recording ${gid} for track ${track.position} not in editor state</span>`);
+          log.warn(`Recording ${gid} for track ${track.position} not in editor state`);
           return null;
         }
       }
@@ -3013,7 +3018,7 @@
       if (trackCount > 0) {
         const ws2Keys = positionToGid.size ? [...positionToGid.keys()].join(", ") : "(empty)";
         const stateKeys = recordingByPosition.size ? [...recordingByPosition.keys()].join(", ") : "(empty)";
-        addLogLine(`<span style="color:orange">WARN No recording for track ${track.position} "${track.title}". WS2 keys: ${ws2Keys} | State keys: ${stateKeys}</span>`);
+        log.warn(`No recording for track ${track.position} "${track.title}". WS2 keys: ${ws2Keys} | State keys: ${stateKeys}`);
       }
       return null;
     }
@@ -3053,7 +3058,7 @@
     async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos) {
       const mbid = mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
       if (!mbid) {
-        addLogLine(`<span style="color:red">ERR Bad MBID URL: ${mbUrl}</span>`);
+        log.error(`Bad MBID URL: ${mbUrl}`);
         failed++;
         return;
       }
@@ -3080,7 +3085,7 @@
       try {
         targetEntity = await fetchMBEntity(mbid);
       } catch (e) {
-        addLogLine(`<span style="color:red">ERR Entity fetch failed for ${mbid}: ${e.message}</span>`);
+        log.error(`Entity fetch failed for ${mbid}: ${e.message}`);
         failed++;
         return;
       }
@@ -3107,7 +3112,7 @@
         if (reResolved) {
           resolvedLinkTypeID = reResolved;
         } else {
-          addLogLine(`<span style="color:orange">WARN Entity "${targetEntity.name}" is a ${targetEntity.entityType} but expected ${entityType0}/${entityType1} \u2014 link type "${linkTypeName}" may not apply</span>`);
+          log.warn(`Entity "${targetEntity.name}" is a ${targetEntity.entityType} but expected ${entityType0}/${entityType1} \u2014 link type "${linkTypeName}" may not apply`);
         }
       }
       if (relAlreadyExists(sourceEntity, resolvedLinkTypeID, targetEntity.gid, attrTree)) {
@@ -3123,7 +3128,7 @@
       const resolvedEt = resolvedEntityTypes.get(company.resource_url) || details.entityType;
       if (resolvedEt !== details.entityType) {
         if (details.entityType === "place" && resolvedEt === "label") {
-          addLogLine(`<span style="color:orange">WARN Skipped ${company.name}: MB has no "${details.linkType}" relationship for labels (only places). Add manually if needed.</span>`);
+          log.warn(`Skipped ${company.name}: MB has no "${details.linkType}" relationship for labels (only places). Add manually if needed.`);
           skipped++;
           tickProgress();
           continue;
@@ -3133,7 +3138,7 @@
       try {
         mbUrl = await getMbidForEntity(company, resolvedEt);
       } catch (e) {
-        addLogLine(`<span style="color:orange">WARN Skipped ${company.name} \u2014 not resolved in review</span>`);
+        log.warn(`Skipped ${company.name} \u2014 not resolved in review`);
         skipped++;
         tickProgress();
         continue;
@@ -3157,7 +3162,7 @@
         }
       }
       if (!mbUrl && !role.artist.resource_url) {
-        addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} (${role.linkType}) \u2014 no Discogs page, not confirmed in review</span>`);
+        log.warn(`Skipped ${role.artist.name} (${role.linkType}) \u2014 no Discogs page, not confirmed in review`);
         skipped++;
         tickProgress();
         continue;
@@ -3166,7 +3171,7 @@
         try {
           mbUrl = await getMbidForEntity(role.artist, "artist");
         } catch (e) {
-          addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})</span>`);
+          log.warn(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
           skipped++;
           tickProgress();
           continue;
@@ -3179,13 +3184,13 @@
     if (applyToTracks && recordingByGid.size > 0) {
       const applicable = artistRoles.filter((role) => RECORDING_LINK_TYPES.has(role.linkType) && !WORK_ONLY_ARTIST_RELS.includes(role.linkType));
       if (applicable.length > 0) {
-        addLogLine(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)\u2026`);
+        log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)\u2026`);
         for (const role of applicable) {
           let mbUrl;
           try {
             mbUrl = await getMbidForEntity(role.artist, "artist");
           } catch (e) {
-            addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review</span>`);
+            log.warn(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review`);
             continue;
           }
           const credit = role.artist.anv?.trim() || role.artist.name;
@@ -3201,7 +3206,7 @@
       if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
       const recEntity = getRecordingEntity(role.track);
       if (!recEntity) {
-        addLogLine(`<span style="color:red">ERR Work-only rel for track ${role.track.position} "${role.track.title}" \u2014 no recording found, skipped</span>`);
+        log.error(`Work-only rel for track ${role.track.position} "${role.track.title}" \u2014 no recording found, skipped`);
         failed++;
         continue;
       }
@@ -3227,7 +3232,7 @@
     }
     if (workOnlyByGid.size > 0) {
       if (!recordingOfLinkTypeId) {
-        addLogLine('<span style="color:red">ERR Could not resolve "performance" link type \u2014 work processing skipped</span>');
+        log.error('Could not resolve "performance" link type \u2014 work processing skipped');
       } else {
         let getWorkFromEditorState = function(recEntity) {
           try {
@@ -3240,9 +3245,9 @@
           }
           return null;
         };
-        addLogLine(`Processing work relationships for ${workOnlyByGid.size} recording(s)\u2026`);
+        log.info(`Processing work relationships for ${workOnlyByGid.size} recording(s)\u2026`);
         const existingWorkByRecGid = editorWorkByRecGid;
-        addLogLine(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
+        log.info(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
         for (const [recGid, entries] of workOnlyByGid) {
           const recEntity = entries[0]?.recEntity ?? recordingByGid.get(recGid);
           const trackTitle = entries[0]?.role.track.title ?? recEntity?.name ?? recGid;
@@ -3253,14 +3258,14 @@
           if (hasExistingWork) {
             workEntity = editorWorkByRecGid.get(recGid);
             const wid = workEntity.gid || workEntity.id;
-            addLogLine(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || "existing"}) \u2014 skipping creation`);
+            log.info(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || "existing"}) \u2014 skipping creation`);
             if (!workEntity.gid && !workEntity.id) continue;
           }
           if (!workEntity) workEntity = getWorkFromEditorState(recEntity);
           if (!workEntity) {
             if (!createWorks) {
               for (const { role } of entries) {
-                addLogLine(`<span style="color:red">ERR Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) \u2014 enable "Create missing works" or add work manually</span>`);
+                log.error(`Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) \u2014 enable "Create missing works" or add work manually`);
                 failed++;
               }
               continue;
@@ -3308,7 +3313,7 @@
                 linkTypeID: recordingOfLinkTypeId
               }
             });
-            addLogLine(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
+            log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
             added++;
             tickProgress();
             workEntity = getWorkFromEditorState(recEntity) || workEntity;
@@ -3318,7 +3323,7 @@
             try {
               mbUrl = await getMbidForEntity(role.artist, "artist");
             } catch (e) {
-              addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})</span>`);
+              log.warn(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
               continue;
             }
             const credit = role.artist.anv?.trim() || role.artist.name;
@@ -3333,7 +3338,7 @@
                   dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || []));
                   added++;
                 } catch (e) {
-                  addLogLine(`<span style="color:red">ERR Failed to add ${role.linkType} for new work: ${e.message}</span>`);
+                  log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);
                 }
               }
             }
@@ -3355,20 +3360,20 @@
         }
       }
       if (!mbUrl && !role.artist.resource_url) {
-        addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} on track ${role.track.position} \u2014 no Discogs page, not confirmed</span>`);
+        log.warn(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 no Discogs page, not confirmed`);
         continue;
       }
       if (!mbUrl) {
         try {
           mbUrl = await getMbidForEntity(role.artist, "artist");
         } catch (e) {
-          addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} on track ${role.track.position} \u2014 not resolved in review</span>`);
+          log.warn(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 not resolved in review`);
           continue;
         }
       }
       const recEntity = getRecordingEntity(role.track);
       if (!recEntity) {
-        addLogLine(`<span style="color:orange">WARN No recording found for track ${role.track.position} "${role.track.title}" \u2014 skipped</span>`);
+        log.warn(`No recording found for track ${role.track.position} "${role.track.title}" \u2014 skipped`);
         failed++;
         continue;
       }
@@ -3377,7 +3382,7 @@
       const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
       if (seenTrackRels.has(trackRelKey)) continue;
       seenTrackRels.add(trackRelKey);
-      addLogLine(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> \u2014 ${credit}`);
+      log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> \u2014 ${credit}`);
       await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
       tickProgress();
     }
@@ -3391,7 +3396,7 @@
       re.dispatch({ type: "update-edit-note", editNote: note });
     } catch (e) {
     }
-    addLogLine(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
+    log.info(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
   }
 
   // src/ui-bar.js
@@ -3789,7 +3794,7 @@
       editNote.split("\n").forEach((line) => {
         if (!line.trim()) return;
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
-        addLogLine(html);
+        log.info(html);
       });
       runImport(discogsUrl2, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
         importBtn.disabled = false;
@@ -3863,7 +3868,7 @@
         li.querySelector("details").appendChild(pre);
         _logs2.appendChild(li);
       }
-      addLogLine(`Found ${json.companies.length + artistRoles.length} release relationships`);
+      log.info(`Found ${json.companies.length + artistRoles.length} release relationships`);
       artistRoles = artistRoles.concat(convertPotentialDJMixers(json));
       let tracklistRels = [];
       if (processTracklist) {
@@ -3898,7 +3903,7 @@
             }, [])
           );
         }
-        addLogLine(`Found ${tracklistRels.length} tracklist relationships`);
+        log.info(`Found ${tracklistRels.length} tracklist relationships`);
       }
       const allArtistRoles = artistRoles.concat(tracklistRels);
       const uniqueArtists = [];

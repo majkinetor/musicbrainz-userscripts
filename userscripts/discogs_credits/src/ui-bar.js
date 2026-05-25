@@ -17,7 +17,7 @@
 import { DISCOGS_LOGO_URL }              from './constants.js';
 import { db }                             from './storage.js';
 import {
-    addLogLine,
+    log,
     setLogContainer,
 }                                        from './log.js';
 import { _showBar, _hideBar }             from './progress-bar.js';
@@ -442,7 +442,7 @@ export function insertDiscogsBar(discogsUrl) {
             if (!line.trim()) return;
             // Make URLs clickable in the log
             const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
-            addLogLine(html);
+            log.info(html);
         });
         runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
             importBtn.disabled = false;
@@ -520,7 +520,7 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                 li.querySelector('details').appendChild(pre);
                 _logs.appendChild(li);
             }
-            addLogLine(`Found ${json.companies.length + artistRoles.length} release relationships`);
+            log.info(`Found ${json.companies.length + artistRoles.length} release relationships`);
             // handle potential dj mixes - if the tracks are the full medium then assign it to the release/medium else leave it as individual tracks
             artistRoles = artistRoles.concat(convertPotentialDJMixers(json));
             let tracklistRels = [];
@@ -558,7 +558,7 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                         }, [])
                     );
                 }
-                addLogLine(`Found ${tracklistRels.length} tracklist relationships`);
+                log.info(`Found ${tracklistRels.length} tracklist relationships`);
             }
 
             // Collect all unique artist entities referenced across release-level and tracklist roles

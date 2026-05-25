@@ -4,7 +4,7 @@
 // track-level artist credits, and the work-level credits — with
 // deduplication against this session and against MB's existing rels.
 
-import { addLogLine }                  from './log.js';
+import { log }                  from './log.js';
 import { pageWindow }                   from './constants.js';
 import { db }                            from './storage.js';
 import { parseDiscogsUrl }               from './api-discogs.js';
@@ -61,7 +61,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         // NOT 'mastering' — MB deprecated artist→recording mastering (link type 136).
     ]);
 
-    addLogLine(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
+    log.info(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
 
     const bar = document.querySelector('.discogs-bar');
     function tickProgress() {
@@ -124,21 +124,21 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                 trackIndex++;
             }
         }
-        addLogLine(`Found ${trackCount} track(s) in editor state (${recordingByGid.size} with GID, ${recordingByPosition.size} position entries: ${[...recordingByPosition.keys()].join(',')}). relatedWorks: ${editorWorkByRecGid.size} pre-linked`)
+        log.info(`Found ${trackCount} track(s) in editor state (${recordingByGid.size} with GID, ${recordingByPosition.size} position entries: ${[...recordingByPosition.keys()].join(',')}). relatedWorks: ${editorWorkByRecGid.size} pre-linked`)
     } catch(e) {
-        addLogLine(`<span style="color:orange">WARN Iterating MB state: ${e.message}</span>`);
+        log.warn(`Iterating MB state: ${e.message}`);
     }
 
     // ── Fetch position→GID map from WS2 (authoritative, always correct) ──────
     const positionToGid = new Map(); // "1" / "A1" → recording GID
     try {
         const relMbid = releaseEntity.gid;
-        addLogLine(`WS2: fetching recordings for release ${relMbid}…`);
+        log.info(`WS2: fetching recordings for release ${relMbid}…`);
         const wsJson = await fetchWithRetry(`/ws/2/release/${relMbid}?inc=recordings&fmt=json`);
-        addLogLine(`WS2: response received`);
+        log.info(`WS2: response received`);
         if (wsJson) {
             const mediaCount = wsJson.media?.length ?? 0;
-            addLogLine(`WS2: ${mediaCount} medium/media in response`);
+            log.info(`WS2: ${mediaCount} medium/media in response`);
             const mediaArr = wsJson.media || [];
             const isMultiMedium = mediaArr.length > 1;
             for (const medium of mediaArr) {
@@ -160,10 +160,10 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                     }
                 }
             }
-            addLogLine(`WS2 position map: ${positionToGid.size} entries (${[...positionToGid.keys()].sort().join(', ')})`);
+            log.info(`WS2 position map: ${positionToGid.size} entries (${[...positionToGid.keys()].sort().join(', ')})`);
         }
     } catch(e) {
-        addLogLine(`<span style="color:orange">WARN WS2 recording fetch failed: ${e.message} — using editor state positions only</span>`);
+        log.warn(`WS2 recording fetch failed: ${e.message} — using editor state positions only`);
     }
 
     // ── Helper: get recording entity for a Discogs track ─────────────────────
@@ -231,7 +231,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
             if (gid) {
                 const rec = recordingByGid.get(gid);
                 if (rec) return rec;
-                addLogLine(`<span style="color:orange">WARN Recording ${gid} for track ${track.position} not in editor state</span>`);
+                log.warn(`Recording ${gid} for track ${track.position} not in editor state`);
                 return null;
             }
         }
@@ -244,7 +244,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         if (trackCount > 0) {
             const ws2Keys   = positionToGid.size    ? [...positionToGid.keys()].join(', ')    : '(empty)';
             const stateKeys = recordingByPosition.size ? [...recordingByPosition.keys()].join(', ') : '(empty)';
-            addLogLine(`<span style="color:orange">WARN No recording for track ${track.position} "${track.title}". WS2 keys: ${ws2Keys} | State keys: ${stateKeys}</span>`);
+            log.warn(`No recording for track ${track.position} "${track.title}". WS2 keys: ${ws2Keys} | State keys: ${stateKeys}`);
         }
         return null;
     }
@@ -292,7 +292,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
     // ── Helper: process one relationship ─────────────────────────────────────
     async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos) {
         const mbid = mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
-        if (!mbid) { addLogLine(`<span style="color:red">ERR Bad MBID URL: ${mbUrl}</span>`); failed++; return; }
+        if (!mbid) { log.error(`Bad MBID URL: ${mbUrl}`); failed++; return; }
 
         const linkTypeID = resolveLinkTypeId(linkTypeName, entityType0, entityType1);
         if (!linkTypeID) {
@@ -314,7 +314,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         try {
             targetEntity = await fetchMBEntity(mbid);
         } catch(e) {
-            addLogLine(`<span style="color:red">ERR Entity fetch failed for ${mbid}: ${e.message}</span>`);
+            log.error(`Entity fetch failed for ${mbid}: ${e.message}`);
             failed++; return;
         }
 
@@ -347,7 +347,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
             if (reResolved) {
                 resolvedLinkTypeID = reResolved;
             } else {
-                addLogLine(`<span style="color:orange">WARN Entity "${targetEntity.name}" is a ${targetEntity.entityType} but expected ${entityType0}/${entityType1} — link type "${linkTypeName}" may not apply</span>`);
+                log.warn(`Entity "${targetEntity.name}" is a ${targetEntity.entityType} but expected ${entityType0}/${entityType1} — link type "${linkTypeName}" may not apply`);
             }
         }
 
@@ -375,7 +375,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
             // MB only supports certain link types per entity type combination.
             // All place-mapped link types are place-only and cannot be used with labels.
             if (details.entityType === 'place' && resolvedEt === 'label') {
-                addLogLine(`<span style="color:orange">WARN Skipped ${company.name}: MB has no "${details.linkType}" relationship for labels (only places). Add manually if needed.</span>`);
+                log.warn(`Skipped ${company.name}: MB has no "${details.linkType}" relationship for labels (only places). Add manually if needed.`);
                 skipped++; tickProgress(); continue;
             }
         }
@@ -386,7 +386,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         let mbUrl;
         try { mbUrl = await getMbidForEntity(company, resolvedEt); }
         catch(e) {
-            addLogLine(`<span style="color:orange">WARN Skipped ${company.name} — not resolved in review</span>`);
+            log.warn(`Skipped ${company.name} — not resolved in review`);
             skipped++; tickProgress(); continue;
         }
         const et = resolvedEt;
@@ -414,14 +414,14 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         }
         if (!mbUrl && !role.artist.resource_url) {
             // No Discogs page, not in confirmedMap — skip with clear message
-            addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} (${role.linkType}) — no Discogs page, not confirmed in review</span>`);
+            log.warn(`Skipped ${role.artist.name} (${role.linkType}) — no Discogs page, not confirmed in review`);
             skipped++; tickProgress(); continue;
         }
         if (!mbUrl) {
             // See bug #8 — no network fallback; unresolved = skip immediately.
             try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
             catch(e) {
-                addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} — not resolved in review (${role.linkType})</span>`);
+                log.warn(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
                 skipped++; tickProgress(); continue;
             }
         }
@@ -435,13 +435,13 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         // Exclude work-only roles — those go to works via the works section below
         const applicable = artistRoles.filter(role => RECORDING_LINK_TYPES.has(role.linkType) && !WORK_ONLY_ARTIST_RELS.includes(role.linkType));
         if (applicable.length > 0) {
-            addLogLine(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)…`);
+            log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)…`);
             for (const role of applicable) {
                 let mbUrl;
                 // See bug #8 — no network fallback.
                 try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
                 catch(e) {
-                    addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review</span>`);
+                    log.warn(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review`);
                     continue;
                 }
                 const credit = role.artist.anv?.trim() || role.artist.name;
@@ -462,7 +462,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
         const recEntity = getRecordingEntity(role.track);
         if (!recEntity) {
-            addLogLine(`<span style="color:red">ERR Work-only rel for track ${role.track.position} "${role.track.title}" — no recording found, skipped</span>`);
+            log.error(`Work-only rel for track ${role.track.position} "${role.track.title}" — no recording found, skipped`);
             failed++;
             continue;
         }
@@ -494,13 +494,13 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
 
     if (workOnlyByGid.size > 0) {
         if (!recordingOfLinkTypeId) {
-            addLogLine('<span style="color:red">ERR Could not resolve "performance" link type — work processing skipped</span>');
+            log.error('Could not resolve "performance" link type — work processing skipped');
         } else {
-            addLogLine(`Processing work relationships for ${workOnlyByGid.size} recording(s)…`);
+            log.info(`Processing work relationships for ${workOnlyByGid.size} recording(s)…`);
 
             // Use editor state relatedWorks (built during recording map phase above) — no extra fetch needed
             const existingWorkByRecGid = editorWorkByRecGid;
-            addLogLine(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
+            log.info(`Editor state: ${existingWorkByRecGid.size} recording(s) already have a linked work`);
 
             // Check editor state only for relationships dispatched in THIS session
             function getWorkFromEditorState(recEntity) {
@@ -529,7 +529,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                 if (hasExistingWork) {
                     workEntity = editorWorkByRecGid.get(recGid);
                     const wid = workEntity.gid || workEntity.id;
-                    addLogLine(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || 'existing'}) — skipping creation`);
+                    log.info(`Track ${trackPos} "${trackTitle}": work already linked (${workEntity.name || wid || 'existing'}) — skipping creation`);
                     if (!workEntity.gid && !workEntity.id) continue; // can't use this entity
                 }
 
@@ -541,7 +541,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                     if (!createWorks) {
                         // Log as error — work-only rels cannot be applied without a work
                         for (const { role } of entries) {
-                            addLogLine(`<span style="color:red">ERR Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) — enable "Create missing works" or add work manually</span>`);
+                            log.error(`Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) — enable "Create missing works" or add work manually`);
                             failed++;
                         }
                         continue;
@@ -597,7 +597,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                             linkTypeID: recordingOfLinkTypeId,
                         },
                     });
-                    addLogLine(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
+                    log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
                     added++;
                     tickProgress();
                     // Re-read from editor state so subsequent artist→work dispatches see the live entity
@@ -610,7 +610,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                     // See bug #8 — no network fallback.
                     try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
                     catch(e) {
-                        addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} — not resolved in review (${role.linkType})</span>`);
+                        log.warn(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
                         continue;
                     }
                     const credit = role.artist.anv?.trim() || role.artist.name;
@@ -626,7 +626,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
                                 dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || []));
                                 added++;
                             } catch(e) {
-                                addLogLine(`<span style="color:red">ERR Failed to add ${role.linkType} for new work: ${e.message}</span>`);
+                                log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);
                             }
                         }
                     }
@@ -649,21 +649,21 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
             }
         }
         if (!mbUrl && !role.artist.resource_url) {
-            addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} on track ${role.track.position} — no Discogs page, not confirmed</span>`);
+            log.warn(`Skipped ${role.artist.name} on track ${role.track.position} — no Discogs page, not confirmed`);
             continue;
         }
         if (!mbUrl) {
             // See bug #8 — no network fallback.
             try { mbUrl = await getMbidForEntity(role.artist, 'artist'); }
             catch(e) {
-                addLogLine(`<span style="color:orange">WARN Skipped ${role.artist.name} on track ${role.track.position} — not resolved in review</span>`);
+                log.warn(`Skipped ${role.artist.name} on track ${role.track.position} — not resolved in review`);
                 continue;
             }
         }
 
         const recEntity = getRecordingEntity(role.track);
         if (!recEntity) {
-            addLogLine(`<span style="color:orange">WARN No recording found for track ${role.track.position} "${role.track.title}" — skipped</span>`);
+            log.warn(`No recording found for track ${role.track.position} "${role.track.title}" — skipped`);
             failed++; continue;
         }
 
@@ -672,7 +672,7 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
         if (seenTrackRels.has(trackRelKey)) continue;
         seenTrackRels.add(trackRelKey);
-        addLogLine(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> — ${credit}`);
+        log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> — ${credit}`);
         await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
         tickProgress();
     }
@@ -688,5 +688,5 @@ export async function instantFillRelationships(companies, artistRoles, tracklist
         re.dispatch({ type: 'update-edit-note', editNote: note });
     } catch(e) { /* ignore */ }
 
-    addLogLine(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
+    log.info(`<strong>Done: ${added} added, ${existedRels} already existed, ${skipped} skipped, ${failed} failed</strong>`);
 }
