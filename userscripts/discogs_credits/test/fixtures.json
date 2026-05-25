@@ -58,5 +58,15 @@
         "name": "La Collection Chapter 2",
         "url":  "https://musicbrainz.org/release/416b791d-6fe5-3929-bfc3-138a80ac9f77",
         "tags": "state-low multi-medium bug-multi-medium"
+    },
+    {
+        "name": "Jambú E Os Míticos Sons Da Amazônia",
+        "url":  "https://musicbrainz.org/release/53da0af0-6e2a-4fb3-bdb2-364044451dcc",
+        "tags": "debug bug-34"
+    },
+    {
+        "name": "Quantic - The 5th Exotic",
+        "url":  "https://musicbrainz.org/release/5cbf9bb5-6b4d-4b4e-843e-0db79f8f3a58",
+        "tags": "debug bug-35"
     }
 ]
