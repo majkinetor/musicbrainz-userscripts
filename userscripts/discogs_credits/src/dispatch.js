@@ -679,7 +679,16 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             applyToTracks   !== undefined ? `move-to-tracks:${applyToTracks ? 'on' : 'off'}` : null,
             createWorks     !== undefined ? `create-works:${createWorks ? 'on' : 'off'}` : null,
         ].filter(Boolean).join(', ');
-        const note = buildEditNote(discogsUrl, opts);
+        // Statistics (issue #56) — surface input size + dispatch outcome in
+        // the edit note so a reviewer can see at a glance how big the import
+        // was without expanding any log section.
+        const trackCount = Array.isArray(discogsTracklist) ? discogsTracklist.length : 0;
+        const inputStats = `Input: ${companies?.length || 0} companies, ${artistRoles?.length || 0} release credits, ${tracklistRels?.length || 0} tracklist credits on ${trackCount} track${trackCount === 1 ? '' : 's'}`;
+        const dedupPart = dedupedThisSession > 0
+            ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? '' : 's'}`
+            : '';
+        const resultStats = `Result: ${added} added, ${existedInMb} already in MB${dedupPart}, ${skipped} skipped, ${failed} failed`;
+        const note = buildEditNote(discogsUrl, opts, [inputStats, resultStats]);
         re.dispatch({ type: 'update-edit-note', editNote: note });
     } catch(e) { /* ignore */ }
 
