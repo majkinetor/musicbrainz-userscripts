@@ -14,6 +14,11 @@
 //     pnpm test -- --tags=small,ep       # match any of the given tags (comma- or space-separated)
 //     pnpm test -- --name=bosporus --tags=small
 //
+//   Fixtures tagged `debug` are SKIPPED by default — they reproduce specific
+//   bug reports and are noisy in a regular full run. Opt them in with any
+//   explicit filter:  `--tags=debug` (only debug),  `--name=quantic` (one of
+//   them by name),  or `--only=<id>`.
+//
 // Each invocation creates a fresh directory `test/logs/<ISO8601>/` containing:
 //   - README.md           — command line, start time, selected fixtures, results
 //   - <fixture-slug>.log  — userscript import-bar log + browser console + page errors
@@ -64,11 +69,14 @@ function matches(fixture, i) {
         const fold = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
         if (!fold(fixture.name).includes(fold(nameFilter))) return false;
     }
+    // Accept whitespace or comma as the per-fixture tag separator so authors
+    // can write either "a b c" or "a, b, c" without surprises.
+    const fixTags = (fixture.tags || '').toLowerCase().split(/[\s,]+/).filter(Boolean);
     if (wantedTags) {
-        // Accept whitespace or comma as the per-fixture tag separator so authors
-        // can write either "a b c" or "a, b, c" without surprises.
-        const fixTags = (fixture.tags || '').toLowerCase().split(/[\s,]+/).filter(Boolean);
         if (!wantedTags.some(t => fixTags.includes(t))) return false;
+    } else if (fixTags.includes('debug') && !only && !nameFilter) {
+        // `debug` fixtures are opt-in — skipped in unfiltered runs.
+        return false;
     }
     return true;
 }
