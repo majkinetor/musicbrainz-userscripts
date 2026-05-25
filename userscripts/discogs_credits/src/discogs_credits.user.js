@@ -13,7 +13,7 @@
 // Side-effect imports (`./storage.js`, `./ui-bar.js`) trigger module init at
 // load time — opening IndexedDB and running the localStorage-cleanup IIFE.
 
-import { hasDiscogsLinkDefined } from './api-mb.js';
+import { getDiscogsUrlForRelease } from './api-mb.js';
 import { insertDiscogsBar }      from './ui-bar.js';
 import                                './storage.js';   // opens IndexedDB on load
 
@@ -70,7 +70,7 @@ $(document).ready(function () {
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
-    hasDiscogsLinkDefined(m[1]).then(discogsUrl => {
+    getDiscogsUrlForRelease(m[1]).then(discogsUrl => {
         if (discogsUrl) {
             insertDiscogsBar(discogsUrl);
         }
