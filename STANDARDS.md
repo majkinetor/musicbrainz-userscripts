@@ -82,6 +82,15 @@ When several consecutive `**Key:** value` lines should render as separate lines 
 
 Commits, branches, Issues, PRs, and Discussions created by an AI assistant go through a separate GitHub account, never via the maintainer's authenticated session. The bot's PAT lives in a gitignored local credentials file (see the per-project DEVELOP.md for path conventions). Push-with-token URLs are one-shot — never `git push -u` the URL form, which would write the token into `.git/config`.
 
+**This applies to `gh` CLI calls too.** The local `gh` is logged in as the maintainer (for human use); every `gh` write (`gh pr create`, `gh issue comment`, `gh pr close`, …) made by the AI assistant **must** explicitly override the auth with the bot's PAT:
+
+```powershell
+$env:GH_TOKEN = (Get-Content userscripts/discogs_credits/dev/.github-credentials.json | ConvertFrom-Json).token
+gh pr create --title …      # now authenticated as the bot
+```
+
+Plain `gh pr create` / `gh issue comment` without `GH_TOKEN` set will silently post under the maintainer's name — a Standard #7 violation that's only visible after the fact in the comment's author field.
+
 Keeps human and bot activity clearly attributable in commit / PR authors, makes a token-rotation easy (only the bot's PAT, never the maintainer's session), and means a bot-misstep is easily revertable.
 
 <a id="standard-8"></a>
