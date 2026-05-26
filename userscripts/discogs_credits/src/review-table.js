@@ -155,6 +155,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         // ── Panel shell ────────────────────────────────────────────────────────
         const panel = document.createElement('div');
         panel.style.cssText = 'border:2px solid #c8a000;border-radius:0.5rem;background:#fffef5;padding:1rem 1.5rem;margin:0.5rem 0;';
+        // Hover-highlight (issue #63) lives in `src/hover-highlight.js` and
+        // installs once at script load, scoped to the whole page — see that
+        // module's header for why. The chips below still carry
+        // `data-role-key` because hover-highlight reads it directly.
         // Hide progress row while review table is shown
         { const _pb = document.getElementById('discogs-progress-bar'); if (_pb) _pb.style.display = 'none'; }
         // Hide progress row while review table is shown
@@ -243,6 +247,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
             const tr = document.createElement('tr');
             tr.style.cssText = `vertical-align:top;background:${rowBg};`;
+            // `data-entity-key` — used by the issue #63 hover-highlight to
+            // dim/lit the row when a role chip on another row matches.
+            tr.dataset.entityKey = _entityKey;
 
             // Initialise rowState. `via` carries how the entity got resolved
             // (`name` / `url` / `both` / `user` / `cache`) — surfaced in the
@@ -271,6 +278,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const dlA = document.createElement(hasDiscogsUrl ? 'a' : 'span');
             dlA.href = discogsHref; dlA.target = '_blank'; dlA.rel = 'noopener noreferrer nofollow';
             dlA.textContent = displayName;
+            // Used by the issue-#63 hover-highlight to identify entity-name
+            // elements regardless of href presence.
+            if (!hasDiscogsUrl) dlA.className = 'discogs-entity-name';
             tdDiscogs.appendChild(dlA);
             if (!hasDiscogsUrl) {
                 const noUrl = document.createElement('span');
@@ -286,17 +296,37 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             }
             tr.appendChild(tdDiscogs);
 
-            // Roles line below entity name
+            // Roles line below entity name. Each role is its own <span> so it
+            // can carry a `data-role-key` (display label *without* the track-
+            // position suffix) — issue #63 hover-highlight matches the key,
+            // not the displayed text, so `bass [1]` and `bass [3]` highlight
+            // together on hover.
             const rolesList = r._roles || [];
             if (rolesList.length > 0) {
-                const labels = [...new Map(rolesList.map(({displayLabel, linkType, trackPos}) => {
+                const seen = new Map(); // unique-display-string -> { roleKey, displayText }
+                rolesList.forEach(({ displayLabel, linkType, trackPos }) => {
                     const key = displayLabel || linkType;
-                    return [key + (trackPos ? '['+trackPos+']' : ''), key + (trackPos ? ' ['+trackPos+']' : '')];
-                })).values()];
+                    if (!key) return;
+                    const uniqueKey = key + (trackPos ? '[' + trackPos + ']' : '');
+                    if (seen.has(uniqueKey)) return;
+                    seen.set(uniqueKey, {
+                        roleKey:     key,
+                        displayText: key + (trackPos ? ' [' + trackPos + ']' : ''),
+                    });
+                });
+                const chips = [...seen.values()];
+
                 const rolesLine = document.createElement('div');
                 rolesLine.style.cssText = 'font-size:0.75rem;color:#888;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;';
-                rolesLine.title = labels.join(', ');
-                rolesLine.textContent = labels.join(', ');
+                rolesLine.title = chips.map(c => c.displayText).join(', ');
+                chips.forEach((chip, i) => {
+                    if (i > 0) rolesLine.appendChild(document.createTextNode(', '));
+                    const span = document.createElement('span');
+                    span.className = 'discogs-role-chip';
+                    span.dataset.roleKey = chip.roleKey;
+                    span.textContent = chip.displayText;
+                    rolesLine.appendChild(span);
+                });
                 tdDiscogs.appendChild(rolesLine);
             }
 

@@ -48,6 +48,10 @@ export default [
                 HTMLElement:            'readonly',
                 Image:                  'readonly',
                 getComputedStyle:       'readonly',
+                CSS:                    'readonly',
+                NodeFilter:             'readonly',
+                Highlight:              'readonly',
+                Range:                  'readonly',
                 // Greasemonkey / Tampermonkey
                 unsafeWindow:           'readonly',
                 GM_info:                'readonly',

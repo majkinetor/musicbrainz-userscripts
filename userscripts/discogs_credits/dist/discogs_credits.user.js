@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.26.194007
+// @version      2026.5.26.203314
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2171,6 +2171,7 @@
         const borderColor = needsAttention ? "#cc6666" : "#d4d4d4";
         const tr = document.createElement("tr");
         tr.style.cssText = `vertical-align:top;background:${rowBg};`;
+        tr.dataset.entityKey = _entityKey;
         rowState.set(_entityKey, {
           mbUrl: initMbUrl,
           mbName: initMbName,
@@ -2193,6 +2194,7 @@
         dlA.target = "_blank";
         dlA.rel = "noopener noreferrer nofollow";
         dlA.textContent = displayName;
+        if (!hasDiscogsUrl) dlA.className = "discogs-entity-name";
         tdDiscogs.appendChild(dlA);
         if (!hasDiscogsUrl) {
           const noUrl = document.createElement("span");
@@ -2211,14 +2213,29 @@
         tr.appendChild(tdDiscogs);
         const rolesList = r._roles || [];
         if (rolesList.length > 0) {
-          const labels = [...new Map(rolesList.map(({ displayLabel, linkType, trackPos }) => {
+          const seen = /* @__PURE__ */ new Map();
+          rolesList.forEach(({ displayLabel, linkType, trackPos }) => {
             const key = displayLabel || linkType;
-            return [key + (trackPos ? "[" + trackPos + "]" : ""), key + (trackPos ? " [" + trackPos + "]" : "")];
-          })).values()];
+            if (!key) return;
+            const uniqueKey = key + (trackPos ? "[" + trackPos + "]" : "");
+            if (seen.has(uniqueKey)) return;
+            seen.set(uniqueKey, {
+              roleKey: key,
+              displayText: key + (trackPos ? " [" + trackPos + "]" : "")
+            });
+          });
+          const chips = [...seen.values()];
           const rolesLine = document.createElement("div");
           rolesLine.style.cssText = "font-size:0.75rem;color:#888;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;";
-          rolesLine.title = labels.join(", ");
-          rolesLine.textContent = labels.join(", ");
+          rolesLine.title = chips.map((c) => c.displayText).join(", ");
+          chips.forEach((chip, i) => {
+            if (i > 0) rolesLine.appendChild(document.createTextNode(", "));
+            const span = document.createElement("span");
+            span.className = "discogs-role-chip";
+            span.dataset.roleKey = chip.roleKey;
+            span.textContent = chip.displayText;
+            rolesLine.appendChild(span);
+          });
           tdDiscogs.appendChild(rolesLine);
         }
         const tdMb = document.createElement("td");
@@ -4123,14 +4140,130 @@ ${lines}
     });
   }
 
-  // src/batch-remove.js
+  // src/hover-highlight.js
   var _installed = false;
-  function installBatchRemove() {
+  function installHoverHighlight() {
     if (_installed) return;
     _installed = true;
     if (!document.body) {
       document.addEventListener("DOMContentLoaded", () => {
         _installed = false;
+        installHoverHighlight();
+      }, { once: true });
+      return;
+    }
+    const style = document.createElement("style");
+    style.id = "discogs-hover-highlight-style";
+    style.textContent = `
+        ::highlight(discogs-hover-existing) { background-color: blue; color: white; }
+        ::highlight(discogs-hover-new)      { background-color: blue; color: yellow; }
+        .discogs-role-chip { padding: 0 2px; border-radius: 3px; transition: background 0.08s, color 0.08s; }
+        .discogs-role-chip:hover { background: #ffe066; color: #222; cursor: default; }
+    `;
+    document.head.appendChild(style);
+    document.body.addEventListener("mouseover", (ev) => {
+      const needle = needleFor(ev.target);
+      if (needle) highlightPageText(needle);
+    });
+    document.body.addEventListener("mouseout", (ev) => {
+      const needle = needleFor(ev.target);
+      if (needle) clearPageHighlight();
+    });
+  }
+  function needleFor(target) {
+    if (!target || !target.closest) return null;
+    const chip = target.closest(".discogs-role-chip");
+    if (chip) return chip.dataset.roleKey || "";
+    const phraseTh = target.closest("th.link-phrase");
+    if (phraseTh && !target.closest("button")) {
+      const label = phraseTh.querySelector("label");
+      if (label) {
+        let text = (label.textContent || "").trim();
+        if (text.endsWith(":")) text = text.slice(0, -1).trim();
+        if (text) return text;
+      }
+    }
+    const link = target.closest("a[href]");
+    if (link) {
+      const href = link.getAttribute("href") || "";
+      if (/\/(artist|work|label|place|recording|series|release-group|event|instrument|area)\/[a-f0-9-]/.test(href)) {
+        return (link.textContent || "").trim();
+      }
+    }
+    const span = target.closest("span.discogs-entity-name");
+    if (span) return (span.textContent || "").trim();
+    return null;
+  }
+  function classifyRow(textNode) {
+    const item = textNode.parentNode && textNode.parentNode.closest ? textNode.parentNode.closest('.relationship-item, [class*="relationship-item"]') : null;
+    if (!item) return null;
+    const cls = item.className || "";
+    if (/(^|\s)(rel-add|relationship-add)(\s|$)/.test(cls) || /\badd(ed)?\b/i.test(cls)) {
+      return "new";
+    }
+    const rm = item.querySelector('button.remove-item[id^="remove-relationship-"]');
+    if (rm) {
+      const tail = rm.id.split("-").pop();
+      const segs = rm.id.split("-");
+      const last = segs[segs.length - 1];
+      const secondLast = segs[segs.length - 2];
+      if (secondLast === "" && /^\d+$/.test(last)) return "new";
+      if (/^-\d+$/.test(last)) return "new";
+    }
+    return "existing";
+  }
+  function highlightPageText(needle) {
+    if (!needle || !window.CSS?.highlights || typeof Highlight === "undefined") return;
+    const lower = needle.toLowerCase();
+    if (lower.length < 2) return;
+    const rangesExisting = [];
+    const rangesNew = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode(n) {
+        const p = n.parentNode;
+        if (!p) return NodeFilter.FILTER_REJECT;
+        const tag = p.tagName;
+        if (tag === "STYLE" || tag === "SCRIPT" || tag === "NOSCRIPT" || tag === "TEXTAREA" || tag === "INPUT") return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    let node;
+    while (node = walker.nextNode()) {
+      const txt = node.nodeValue;
+      if (txt.length < lower.length) continue;
+      const lowerTxt = txt.toLowerCase();
+      const bucket = classifyRow(node) === "new" ? rangesNew : rangesExisting;
+      let i = 0;
+      while ((i = lowerTxt.indexOf(lower, i)) !== -1) {
+        const r = document.createRange();
+        r.setStart(node, i);
+        r.setEnd(node, i + lower.length);
+        bucket.push(r);
+        i += lower.length;
+      }
+    }
+    try {
+      window.CSS.highlights.set("discogs-hover-existing", new Highlight(...rangesExisting));
+      window.CSS.highlights.set("discogs-hover-new", new Highlight(...rangesNew));
+    } catch (e) {
+    }
+  }
+  function clearPageHighlight() {
+    try {
+      window.CSS.highlights?.delete("discogs-hover-existing");
+      window.CSS.highlights?.delete("discogs-hover-new");
+    } catch (e) {
+    }
+  }
+
+  // src/batch-remove.js
+  var _installed2 = false;
+  function installBatchRemove() {
+    if (_installed2) return;
+    _installed2 = true;
+    if (!document.body) {
+      document.addEventListener("DOMContentLoaded", () => {
+        _installed2 = false;
         installBatchRemove();
       }, { once: true });
       return;
@@ -4397,6 +4530,7 @@ ${lines}
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
+    installHoverHighlight();
     installBatchRemove();
     getDiscogsUrlForRelease(m[1]).then((discogsUrl) => {
       if (discogsUrl) {
