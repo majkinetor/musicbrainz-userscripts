@@ -278,6 +278,26 @@ pnpm run login
 
 Already does — logs save every run to `test/logs/<ISO8601>_<mbid>.log`.
 
+### "Get a Windows toast when somebody comments on a bot PR"
+
+[`dev/check-gh-notifications.ps1`](dev/check-gh-notifications.ps1) polls GitHub for unread notifications whose latest comment is by someone other than the bot (claude-ai-milic), and pops a Windows balloon for each. State (last-poll time + deduped comment URLs) lives in `dev/.notification-state.json` (gitignored).
+
+Register the recurring schedule once (defaults to one poll per hour, 12–23 local; edit `$startMinutes` / `$hourRange` in the install script to taste):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File dev/install-notification-task.ps1
+```
+
+Manage:
+
+```powershell
+schtasks /Query  /TN "MB-Userscripts notif poller" /V /FO LIST   # status + last run
+schtasks /Change /TN "MB-Userscripts notif poller" /DISABLE      # pause
+schtasks /Delete /TN "MB-Userscripts notif poller" /F            # remove
+```
+
+Avoids burning Claude tokens on hourly polling — Task Scheduler does the polling natively, Claude is only engaged when the maintainer actually needs to act on something.
+
 ---
 
 ## Troubleshooting
