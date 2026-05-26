@@ -96,7 +96,14 @@ try {
     # body once afterwards. `-UseBasicParsing` keeps it light.
     $resp = Invoke-WebRequest -Uri $apiUrl -Headers $headers -UseBasicParsing -ErrorAction Stop
     $status = [int]$resp.StatusCode
-    $notifs = if ($resp.Content) { @(($resp.Content | ConvertFrom-Json)) } else { @() }
+    # `@(...)` collapses a 1-element JSON array into a bare PSCustomObject
+    # before we get to wrap it, so .Count renders blank. Explicit
+    # ForEach-Object pipe through an intermediate ArrayList guarantees we
+    # end with a real array even for the 1-item case.
+    $notifs = @()
+    if ($resp.Content) {
+        foreach ($item in ($resp.Content | ConvertFrom-Json)) { $notifs += $item }
+    }
     Log-Line "    -> HTTP $status, $($notifs.Count) thread(s)"
 } catch {
     $msg = $_.Exception.Message
@@ -208,11 +215,69 @@ foreach ($n in $notifs) {
     }
 }
 
+# =====================================================================
+# Pass 2: deterministic merge detection (independent of GH notifications)
+# =====================================================================
+# GH doesn't reliably emit a notification when a PR is merged — esp.
+# when the bot opened the PR and the maintainer merges with no further
+# interaction. This second pass uses the Search API to find bot-authored
+# PRs merged since `lastPolled`, regardless of whether GH bothered to
+# notify the bot. Surfaced as `kind='event'` with `reason='merged'`.
+# Repository is hardcoded -- this poller is single-project by design.
+$mergeRepo = 'majkinetor/musicbrainz-userscripts'
+# Search needs a lower-bound timestamp. `lastPolled` already covers
+# everything we've reacted to; reuse it. If empty (first run), look back
+# 1 hour so we don't flood with historical merges.
+$mergeSinceText = $sinceText
+if (-not $mergeSinceText) {
+    $mergeSinceText = (Get-Date).ToUniversalTime().AddHours(-1).ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture)
+}
+$searchQuery = "repo:$mergeRepo is:pr is:merged author:$botLogin merged:>=$mergeSinceText"
+$searchUrl   = 'https://api.github.com/search/issues?q=' + [System.Uri]::EscapeDataString($searchQuery)
+Log-Line "  GET $searchUrl"
+try {
+    $sresp = Invoke-WebRequest -Uri $searchUrl -Headers $headers -UseBasicParsing -ErrorAction Stop
+    $sstatus = [int]$sresp.StatusCode
+    $sbody = if ($sresp.Content) { $sresp.Content | ConvertFrom-Json } else { $null }
+    $merged = @()
+    if ($sbody -and $sbody.items) { foreach ($it in $sbody.items) { $merged += $it } }
+    Log-Line "    -> HTTP $sstatus, $($merged.Count) merged PR(s) by $botLogin since $mergeSinceText"
+    foreach ($pr in $merged) {
+        $prNum = '#' + [string]$pr.number
+        $prTitle = $pr.title
+        # Search returns `closed_at` but not the precise merged_at. For
+        # PRs `closed_at` == `merged_at` when `state=closed,merged=true`.
+        $mergedAt = $pr.closed_at
+        $mergeKey = "pr-merge${prNum}@$mergedAt"
+        Log-Line "  $prNum '$prTitle'  (merged_at=$mergedAt)"
+        if ($state.seenComments -contains $mergeKey) {
+            Log-Line '    -> skip: already seen (dedupe)'
+            continue
+        }
+        Log-Line "    -> ACTIONABLE (event): merged"
+        $actionable += [pscustomobject]@{
+            kind       = 'event'
+            number     = $prNum
+            title      = $prTitle
+            author     = $botLogin   # the PR's author (filter target)
+            type       = 'PullRequest'
+            reason     = 'merged'
+            url        = $pr.html_url
+            commentUrl = $mergeKey
+        }
+    }
+} catch {
+    # Search failures shouldn't kill the rest of the poll. Log and move
+    # on -- next tick will retry.
+    Log-Line "    -> WARN: merge search failed: $($_.Exception.Message)"
+}
+
 Log-Line "  result: $($notifs.Count) unread, $($actionable.Count) actionable"
 if ($actionable.Count -gt 0) {
     # One-line summary of every actionable item:
     #   '#65 by majkinetor: title'             (comment)
-    #   '#70 event (state_change): title'      (event)
+    #   '#70 event (state_change): title'      (event from notification)
+    #   '#71 event (merged): title'            (event from search)
     foreach ($a in $actionable) {
         $tag = if ($a.number) { $a.number } else { '#?' }
         $who = if ($a.kind -eq 'event') { "event ($($a.reason))" } else { "by $($a.author)" }
