@@ -297,7 +297,7 @@ npm install
 # 2. enable the MCP server. Copy the template to the repo root:
 copy mcp.json.template ..\..\..\..\.mcp.json
 
-# 3. register the recurring poll (every 10 min, 12:00-23:50 local = 72 polls/day)
+# 3. register the recurring poll (every 10 min, 09:00-23:50 local = 90 polls/day)
 powershell -ExecutionPolicy Bypass -File userscripts\discogs_credits\dev\install-notification-task.ps1
 ```
 

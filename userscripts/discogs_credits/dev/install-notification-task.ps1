@@ -1,5 +1,5 @@
 # Register a Windows Task Scheduler entry that runs
-# `check-gh-notifications.ps1` every 10 minutes between 12:00 and 23:50
+# `check-gh-notifications.ps1` every 10 minutes between 09:00 and 23:50
 # local time. Polling is essentially free (no Anthropic tokens consumed
 # unless an event actually reaches Claude), so the cadence is generous.
 #
@@ -17,9 +17,9 @@ $here       = Split-Path -Parent $MyInvocation.MyCommand.Path
 $pollerPath = (Resolve-Path (Join-Path $here 'check-gh-notifications.ps1')).Path
 $taskName   = 'MB-Userscripts notif poller'
 
-# Default: every 10 minutes from 12:00 to 23:50 local = 72 polls/day.
+# Default: every 10 minutes from 09:02 to 23:52 local = 90 polls/day.
 $startMinutes = @(2, 12, 22, 32, 42, 52)
-$hourRange    = 12..23
+$hourRange    = 9..23
 $startTimes   = foreach ($h in $hourRange) {
     foreach ($m in $startMinutes) {
         (Get-Date -Hour $h -Minute $m -Second 0).ToString('HH:mm')
