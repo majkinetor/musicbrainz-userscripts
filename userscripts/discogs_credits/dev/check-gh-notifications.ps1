@@ -11,7 +11,14 @@
 # Cost model: zero Anthropic tokens unless an event reaches Claude. The
 # poll itself is just an HTTPS call to GH + a local TCP probe.
 #
-# Logging is split across three files so each side is auditable:
+# Logging is verbose by design — every tick writes a `=== poll start ===`
+# block ending in `=== poll end OK ===` or `=== poll end ERROR ===` to
+# `dev/.notif-poll.log`. Between the markers: the exact GH URL, response
+# status, every thread inspected with title/type/reason/updated, the
+# per-thread filter decision (actionable / skipped + why), and the
+# channel POST outcome. Each log line is timestamped so you can grep
+# `=== poll start ===` to find tick boundaries.
+#
 #   dev/.notification-state.json   last-poll timestamp + dedupe set
 #   dev/.notif-poll.log            per-poll outcome from this script
 #   dev/notif-channel/.channel.log webhook.mjs's view of each POST
@@ -34,8 +41,11 @@ function Log-Line {
     try { Add-Content -Path $pollLog -Value "[$ts] $msg" } catch {}
 }
 
+Log-Line '=== poll start ==='
+
 if (-not (Test-Path $credFile)) {
-    Log-Line "ERROR: missing $credFile -- bot PAT not found, exiting"
+    Log-Line "  ERROR: missing $credFile -- bot PAT not found"
+    Log-Line '=== poll end ERROR ==='
     Write-Error "Missing $credFile -- bot PAT not found."
     exit 1
 }
@@ -57,17 +67,62 @@ $headers = @{
     'User-Agent'  = 'mb-userscripts-notifier/2.0'
 }
 
+# GH requires `since` in ISO 8601 `YYYY-MM-DDTHH:MM:SSZ` (no fractional
+# seconds). PowerShell 7+'s ConvertFrom-Json auto-parses ISO strings into
+# `[DateTime]`, which then string-interpolates as the current locale
+# (e.g. `05/26/2026 16:30:02` in US) — GH 422s on that. PS 5.x doesn't
+# auto-parse, so Task-Scheduler-launched runs were unaffected. Normalize
+# to a culture-invariant ISO string regardless of how the JSON parser
+# represented the field.
 $qs = 'all=false&participating=true'
-if ($state.lastPolled) { $qs = $qs + '&since=' + $state.lastPolled }
+$sinceText = $null
+if ($state.lastPolled) {
+    $sinceText = if ($state.lastPolled -is [DateTime]) {
+        $state.lastPolled.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture)
+    } else {
+        # Already a string -- trim fractional seconds if present so we
+        # always send the canonical GH-accepted form.
+        ([string]$state.lastPolled) -replace '\.\d+Z$', 'Z'
+    }
+    $qs = $qs + '&since=' + $sinceText
+}
 $apiUrl = 'https://api.github.com/notifications?' + $qs
+Log-Line "  bot=$botLogin  since=$sinceText"
+Log-Line "  GET $apiUrl"
 
 $notifs = @()
 try {
-    $resp = Invoke-RestMethod -Uri $apiUrl -Headers $headers -ErrorAction Stop
-    if ($resp) { $notifs = @($resp) }
+    # Invoke-WebRequest gives access to StatusCode for the log; convert
+    # body once afterwards. `-UseBasicParsing` keeps it light.
+    $resp = Invoke-WebRequest -Uri $apiUrl -Headers $headers -UseBasicParsing -ErrorAction Stop
+    $status = [int]$resp.StatusCode
+    $notifs = if ($resp.Content) { @(($resp.Content | ConvertFrom-Json)) } else { @() }
+    Log-Line "    -> HTTP $status, $($notifs.Count) thread(s)"
 } catch {
-    Log-Line "ERROR: GH /notifications fetch failed: $($_.Exception.Message)"
-    Write-Error "Failed to fetch notifications: $($_.Exception.Message)"
+    $msg = $_.Exception.Message
+    $body = ''
+    $statusCode = ''
+    if ($_.Exception.Response) {
+        try {
+            $statusCode = [int]$_.Exception.Response.StatusCode
+            # PS 7+: ErrorDetails carries the response body; PS 5.x: read
+            # the stream directly. Cover both.
+            if ($_.ErrorDetails -and $_.ErrorDetails.Message) {
+                $body = $_.ErrorDetails.Message
+            } else {
+                $stream = $_.Exception.Response.GetResponseStream()
+                if ($stream) {
+                    $reader = New-Object System.IO.StreamReader($stream)
+                    $body = $reader.ReadToEnd()
+                    $reader.Close()
+                }
+            }
+        } catch {}
+    }
+    Log-Line "    -> ERROR: HTTP $statusCode  $msg"
+    if ($body) { Log-Line "       body: $($body.Substring(0, [Math]::Min(500, $body.Length)))" }
+    Log-Line '=== poll end ERROR ==='
+    Write-Error "Failed to fetch notifications: $msg"
     exit 1
 }
 
@@ -76,35 +131,56 @@ try {
 # noise.
 $actionable = @()
 foreach ($n in $notifs) {
-    if (-not $n.subject.latest_comment_url) { continue }
-    if ($state.seenComments -contains $n.subject.latest_comment_url) { continue }
+    $title = $n.subject.title
+    $type  = $n.subject.type
+    $reason = $n.reason
+    $updated = $n.updated_at
+    Log-Line "  thread: '$title' (type=$type, reason=$reason, updated=$updated)"
+    if (-not $n.subject.latest_comment_url) {
+        Log-Line '    -> skip: no latest_comment_url'
+        continue
+    }
+    if ($state.seenComments -contains $n.subject.latest_comment_url) {
+        Log-Line '    -> skip: already seen (dedupe)'
+        continue
+    }
     try {
         $comment = Invoke-RestMethod -Uri $n.subject.latest_comment_url -Headers $headers -ErrorAction Stop
         $author = $comment.user.login
-        if ($author -and $author -ne $botLogin) {
-            $actionable += [pscustomobject]@{
-                title      = $n.subject.title
-                author     = $author
-                type       = $n.subject.type
-                url        = $n.subject.url -replace 'api\.github\.com/repos', 'github.com'
-                commentUrl = $n.subject.latest_comment_url
-            }
+        if (-not $author) {
+            Log-Line '    -> skip: comment has no author'
+            continue
+        }
+        if ($author -eq $botLogin) {
+            Log-Line "    -> skip: latest comment by self ($author)"
+            continue
+        }
+        Log-Line "    -> ACTIONABLE: latest comment by $author"
+        $actionable += [pscustomobject]@{
+            title      = $title
+            author     = $author
+            type       = $type
+            url        = $n.subject.url -replace 'api\.github\.com/repos', 'github.com'
+            commentUrl = $n.subject.latest_comment_url
         }
     } catch {
-        # Comment fetch failed (deleted / 404) -- skip silently.
+        $cmsg = $_.Exception.Message
+        Log-Line "    -> skip: comment fetch failed: $cmsg"
     }
 }
 
+Log-Line "  result: $($notifs.Count) unread, $($actionable.Count) actionable"
+
 if ($actionable.Count -eq 0) {
-    Log-Line "OK: $($notifs.Count) unread, 0 actionable"
-    Write-Host "Polled GH: $($notifs.Count) unread thread(s), 0 actionable."
-    # Update state -- nothing to dedupe, just bump lastPolled.
+    # Nothing to deliver -- just bump lastPolled.
     $newState = [pscustomobject]@{
-        lastPolled   = (Get-Date).ToUniversalTime().ToString('o')
+        lastPolled   = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture)
         seenComments = @(@($state.seenComments) | Where-Object { $_ } | Select-Object -Last 200)
     }
     $json = $newState | ConvertTo-Json -Depth 4
     [System.IO.File]::WriteAllText($stateFile, $json, [System.Text.UTF8Encoding]::new($false))
+    Log-Line '=== poll end OK ==='
+    Write-Host "Polled GH: $($notifs.Count) unread thread(s), 0 actionable."
     exit 0
 }
 
@@ -116,7 +192,7 @@ $payload = [pscustomobject]@{
     actionable = $actionable
 } | ConvertTo-Json -Depth 5
 
-Log-Line "DELIVER: $($actionable.Count) actionable to $channelUrl"
+Log-Line "  POST $channelUrl  ($($actionable.Count) actionable, $($payload.Length) bytes)"
 try {
     $resp = Invoke-WebRequest -Uri $channelUrl -Method POST `
         -Body $payload `
@@ -126,17 +202,18 @@ try {
         -ErrorAction Stop
     $status = [int]$resp.StatusCode
     if ($status -lt 200 -or $status -ge 300) {
-        Log-Line "WARN: channel returned HTTP $status; will retry next poll"
+        Log-Line "    -> WARN: channel returned HTTP $status; will retry next poll"
+        Log-Line '=== poll end OK (channel-degraded) ==='
         Write-Host "Polled GH: $($notifs.Count) unread, $($actionable.Count) actionable -- channel HTTP $status, will retry."
         exit 0
     }
-    Log-Line "OK: delivered to channel (HTTP $status)"
-    Write-Host "Polled GH: $($notifs.Count) unread, $($actionable.Count) actionable -- delivered to channel."
+    Log-Line "    -> HTTP $status, delivered"
 } catch {
     # Connection refused / timeout / DNS / etc. -- Claude session is
     # probably not running with the channel attached. Skip state update.
     $msg = $_.Exception.Message
-    Log-Line "channel-down: $msg -- not updating state, will retry next poll"
+    Log-Line "    -> channel-down: $msg (not updating state, will retry next poll)"
+    Log-Line '=== poll end OK (channel-down) ==='
     Write-Host "Polled GH: $($notifs.Count) unread, $($actionable.Count) actionable -- channel down, will retry."
     exit 0
 }
@@ -152,3 +229,5 @@ $newState = [pscustomobject]@{
 }
 $json = $newState | ConvertTo-Json -Depth 4
 [System.IO.File]::WriteAllText($stateFile, $json, [System.Text.UTF8Encoding]::new($false))
+Log-Line '=== poll end OK ==='
+Write-Host "Polled GH: $($notifs.Count) unread, $($actionable.Count) actionable -- delivered to channel."
