@@ -110,7 +110,7 @@ function collectGroup(seedBtn, mode) {
         roleLabel,
         targetHref,
         targetLabel,
-        tracks: collectTrackContexts(matched),
+        locations: collectLocations(matched),
     };
 }
 
@@ -176,39 +176,85 @@ function cssEscape(s) {
     return String(s).replace(/(["\\\\])/g, '\\$1');
 }
 
-function collectTrackContexts(items) {
-    // Best-effort: walk up from each item looking for a track-position
-    // marker. MB renders these as a `<td class="medium-track-info">` or
-    // similar with the position text. If none found, label as 'release'.
-    const seen = new Set();
-    const out = [];
+// Classify each matched rel-item by where the rel is anchored: the
+// release, a specific recording (track), or a work. Returns a flat list
+// the modal renders, grouped by location with counts. The source type
+// is decoded from MB's `remove-item` button id pattern:
+//   id="remove-relationship-<targetType>-<sourceType>-<relId>"
+// so we don't need to parse MB's React DOM further to know whether the
+// rel is release-level or track-level.
+function collectLocations(items) {
+    const byLocation = new Map(); // label -> count
     for (const item of items) {
-        const ctx = findTrackContext(item);
-        if (seen.has(ctx)) continue;
-        seen.add(ctx);
-        out.push(ctx);
+        const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
+        const srcType = parseSourceTypeFromButton(btn);
+        let label;
+        if (srcType === 'release')   label = 'Release';
+        else if (srcType === 'work') label = 'Work';
+        else if (srcType === 'recording') {
+            // Look up the track position from nearby DOM. MB usually
+            // renders the position in a header cell on the same row or
+            // in an ancestor track wrapper. Several selectors are tried;
+            // first hit wins, otherwise we fall back to `Track ?`.
+            const pos = findRecordingPosition(item);
+            label = pos ? `Track ${pos}` : 'Track ?';
+        }
+        else label = srcType ? `${srcType[0].toUpperCase() + srcType.slice(1)}` : 'Other';
+        byLocation.set(label, (byLocation.get(label) || 0) + 1);
     }
-    return out;
+    return [...byLocation.entries()].map(([label, count]) => ({ label, count }));
 }
 
-function findTrackContext(item) {
-    // Try a few selectors MB uses across versions of the rel editor.
-    // Fall back to 'release-level' if none match.
-    let el = item.closest('tr.subh-track') || item.closest('tr[data-track-position]');
+function parseSourceTypeFromButton(btn) {
+    if (!btn || !btn.id) return null;
+    // id="remove-relationship-<targetType>-<sourceType>-<relId>"
+    // <relId> may be a negative number (-3) for newly-staged rels; the
+    // hyphen there doesn't break the split because we slice the last
+    // two segments off the end.
+    const segs = btn.id.split('-');
+    // Find the last all-numeric (or "-N" negative) segment from the end.
+    // Source type is the segment just before it.
+    let i = segs.length - 1;
+    while (i >= 0 && (segs[i] === '' || /^-?\d+$/.test(segs[i]))) i--;
+    return segs[i] || null;
+}
+
+function findRecordingPosition(item) {
+    // 1) data-* attribute on any ancestor (cheapest signal if MB renders it).
+    let el = item.closest(
+        '[data-track-position], [data-position], [data-medium-track-position]'
+    );
     if (el) {
-        const pos = el.getAttribute('data-track-position') || el.querySelector('.track-position')?.textContent;
+        const pos = el.getAttribute('data-track-position')
+                 || el.getAttribute('data-medium-track-position')
+                 || el.getAttribute('data-position');
         if (pos) return String(pos).trim();
     }
-    // Walk up looking for a track-number cell in the previous siblings.
-    let row = item.closest('tr');
-    while (row) {
-        const prev = row.previousElementSibling;
-        if (!prev) break;
-        const pos = prev.querySelector?.('td.medium-track-pos, .track-position, .position');
-        if (pos && pos.textContent) return pos.textContent.trim();
-        row = prev;
+    // 2) Walk up the table chain. For track-level rels, MB nests the
+    //    rels under a track wrapper (typically `<table>` or `<div>`)
+    //    that has a header row containing the position.
+    let scope = item.closest('table, tbody, .relationship-list-wrapper');
+    while (scope) {
+        // Position is usually in the FIRST child <tr> or a header cell.
+        const h = scope.querySelector?.(
+            ':scope > thead .track-position, ' +
+            ':scope > tbody > tr:first-child .track-position, ' +
+            ':scope > tbody > tr:first-child .position, ' +
+            ':scope > tr:first-child .track-position, ' +
+            ':scope > tr:first-child .position'
+        );
+        if (h && h.textContent) return h.textContent.trim();
+        // Sometimes MB shows the position as the first td in the first row.
+        const firstRow = scope.querySelector?.(':scope > tbody > tr:first-child, :scope > tr:first-child');
+        if (firstRow) {
+            const td = firstRow.querySelector?.(':scope > td:first-child, :scope > th:first-child');
+            const txt = td?.textContent?.trim();
+            // Accept "1", "1.01", "A1", "1-A1", etc. as a position-looking string.
+            if (txt && /^[A-Z]?\d+([\-.]\d+|[A-Z]?\d*)?$/.test(txt)) return txt;
+        }
+        scope = scope.parentElement?.closest('table, .relationship-list-wrapper, .track-relationships');
     }
-    return 'release';
+    return null;
 }
 
 // ── modal UI ─────────────────────────────────────────────────────────────────
@@ -216,6 +262,10 @@ function findTrackContext(item) {
 function buildStyle() {
     const style = document.createElement('style');
     style.id = 'discogs-batch-remove-style';
+    // Selectors are namespaced under `.discogs-batch-modal` and use
+    // `box-sizing: border-box` + explicit `line-height` on the buttons
+    // to keep them visually aligned regardless of MB's global page CSS
+    // (which sometimes injects extra vertical padding on bare buttons).
     style.textContent = `
         .discogs-batch-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.5);
@@ -224,31 +274,45 @@ function buildStyle() {
         }
         .discogs-batch-modal {
             background: #fff; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            max-width: 480px; width: 90%; padding: 1.2rem 1.4rem;
+            max-width: 540px; width: 90%; padding: 1.2rem 1.4rem;
+            box-sizing: border-box; color: #222;
         }
+        .discogs-batch-modal * { box-sizing: border-box; }
         .discogs-batch-modal h2 {
-            margin: 0 0 0.6rem; font-size: 1.05rem;
+            margin: 0 0 0.6rem; font-size: 1.05rem; line-height: 1.3;
         }
-        .discogs-batch-modal .what { margin: 0 0 0.4rem; }
-        .discogs-batch-modal .tracks {
-            margin: 0.2rem 0 0.8rem; padding: 0.4rem 0.6rem;
-            background: #f5f5f5; border-radius: 4px;
-            font-family: monospace; font-size: 0.85rem;
-            max-height: 6rem; overflow-y: auto;
+        .discogs-batch-modal .what { margin: 0 0 0.5rem; }
+        .discogs-batch-modal .locations {
+            margin: 0.4rem 0 0.9rem; padding: 0.5rem 0.7rem;
+            background: #f6f6f6; border-radius: 4px;
+            font-size: 0.85rem; line-height: 1.55;
+            max-height: 12rem; overflow-y: auto;
+        }
+        .discogs-batch-modal .locations .loc {
+            display: flex; justify-content: space-between; gap: 0.6rem;
+        }
+        .discogs-batch-modal .locations .loc-label { color: #333; }
+        .discogs-batch-modal .locations .loc-count {
+            font-variant-numeric: tabular-nums; color: #666;
         }
         .discogs-batch-modal .actions {
-            display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.8rem;
+            display: flex; justify-content: flex-end; align-items: center;
+            gap: 0.5rem; margin-top: 1rem;
         }
         .discogs-batch-modal button {
-            padding: 0.35rem 0.9rem; border-radius: 4px;
+            padding: 0.4rem 1rem; border-radius: 4px;
             border: 1px solid #bbb; cursor: pointer; font-size: 0.9rem;
+            line-height: 1.2; min-width: 5.5rem;
+            font-family: inherit;
         }
         .discogs-batch-modal button.confirm {
             background: #c0392b; color: #fff; border-color: #962c20;
         }
+        .discogs-batch-modal button.confirm:hover { background: #a83426; }
         .discogs-batch-modal button.cancel {
             background: #f5f5f5; color: #333;
         }
+        .discogs-batch-modal button.cancel:hover { background: #eaeaea; }
     `;
     return style;
 }
@@ -269,11 +333,23 @@ function openConfirm(group, mode, onConfirm) {
     what.innerHTML = describeAction(group, mode);
     modal.appendChild(what);
 
-    if (group.tracks && group.tracks.length) {
-        const tracks = document.createElement('div');
-        tracks.className = 'tracks';
-        tracks.textContent = 'Affected: ' + group.tracks.join(', ');
-        modal.appendChild(tracks);
+    if (group.locations && group.locations.length) {
+        const list = document.createElement('div');
+        list.className = 'locations';
+        for (const { label, count } of group.locations) {
+            const row = document.createElement('div');
+            row.className = 'loc';
+            const l = document.createElement('span');
+            l.className = 'loc-label';
+            l.textContent = label;
+            const c = document.createElement('span');
+            c.className = 'loc-count';
+            c.textContent = count === 1 ? '1 rel' : `${count} rels`;
+            row.appendChild(l);
+            row.appendChild(c);
+            list.appendChild(row);
+        }
+        modal.appendChild(list);
     }
 
     const actions = document.createElement('div');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.132141
+// @version      2026.5.27.133045
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -4482,7 +4482,7 @@ ${lines}
       roleLabel,
       targetHref,
       targetLabel,
-      tracks: collectTrackContexts(matched)
+      locations: collectLocations(matched)
     };
   }
   function pickRoleClass(tr) {
@@ -4524,32 +4524,52 @@ ${lines}
   function cssEscape(s) {
     return String(s).replace(/(["\\\\])/g, "\\$1");
   }
-  function collectTrackContexts(items) {
-    const seen = /* @__PURE__ */ new Set();
-    const out = [];
+  function collectLocations(items) {
+    const byLocation = /* @__PURE__ */ new Map();
     for (const item of items) {
-      const ctx = findTrackContext(item);
-      if (seen.has(ctx)) continue;
-      seen.add(ctx);
-      out.push(ctx);
+      const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
+      const srcType = parseSourceTypeFromButton(btn);
+      let label;
+      if (srcType === "release") label = "Release";
+      else if (srcType === "work") label = "Work";
+      else if (srcType === "recording") {
+        const pos = findRecordingPosition(item);
+        label = pos ? `Track ${pos}` : "Track ?";
+      } else label = srcType ? `${srcType[0].toUpperCase() + srcType.slice(1)}` : "Other";
+      byLocation.set(label, (byLocation.get(label) || 0) + 1);
     }
-    return out;
+    return [...byLocation.entries()].map(([label, count]) => ({ label, count }));
   }
-  function findTrackContext(item) {
-    let el = item.closest("tr.subh-track") || item.closest("tr[data-track-position]");
+  function parseSourceTypeFromButton(btn) {
+    if (!btn || !btn.id) return null;
+    const segs = btn.id.split("-");
+    let i = segs.length - 1;
+    while (i >= 0 && (segs[i] === "" || /^-?\d+$/.test(segs[i]))) i--;
+    return segs[i] || null;
+  }
+  function findRecordingPosition(item) {
+    let el = item.closest(
+      "[data-track-position], [data-position], [data-medium-track-position]"
+    );
     if (el) {
-      const pos = el.getAttribute("data-track-position") || el.querySelector(".track-position")?.textContent;
+      const pos = el.getAttribute("data-track-position") || el.getAttribute("data-medium-track-position") || el.getAttribute("data-position");
       if (pos) return String(pos).trim();
     }
-    let row = item.closest("tr");
-    while (row) {
-      const prev = row.previousElementSibling;
-      if (!prev) break;
-      const pos = prev.querySelector?.("td.medium-track-pos, .track-position, .position");
-      if (pos && pos.textContent) return pos.textContent.trim();
-      row = prev;
+    let scope = item.closest("table, tbody, .relationship-list-wrapper");
+    while (scope) {
+      const h = scope.querySelector?.(
+        ":scope > thead .track-position, :scope > tbody > tr:first-child .track-position, :scope > tbody > tr:first-child .position, :scope > tr:first-child .track-position, :scope > tr:first-child .position"
+      );
+      if (h && h.textContent) return h.textContent.trim();
+      const firstRow = scope.querySelector?.(":scope > tbody > tr:first-child, :scope > tr:first-child");
+      if (firstRow) {
+        const td = firstRow.querySelector?.(":scope > td:first-child, :scope > th:first-child");
+        const txt = td?.textContent?.trim();
+        if (txt && /^[A-Z]?\d+([\-.]\d+|[A-Z]?\d*)?$/.test(txt)) return txt;
+      }
+      scope = scope.parentElement?.closest("table, .relationship-list-wrapper, .track-relationships");
     }
-    return "release";
+    return null;
   }
   function buildStyle() {
     const style = document.createElement("style");
@@ -4562,31 +4582,45 @@ ${lines}
         }
         .discogs-batch-modal {
             background: #fff; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            max-width: 480px; width: 90%; padding: 1.2rem 1.4rem;
+            max-width: 540px; width: 90%; padding: 1.2rem 1.4rem;
+            box-sizing: border-box; color: #222;
         }
+        .discogs-batch-modal * { box-sizing: border-box; }
         .discogs-batch-modal h2 {
-            margin: 0 0 0.6rem; font-size: 1.05rem;
+            margin: 0 0 0.6rem; font-size: 1.05rem; line-height: 1.3;
         }
-        .discogs-batch-modal .what { margin: 0 0 0.4rem; }
-        .discogs-batch-modal .tracks {
-            margin: 0.2rem 0 0.8rem; padding: 0.4rem 0.6rem;
-            background: #f5f5f5; border-radius: 4px;
-            font-family: monospace; font-size: 0.85rem;
-            max-height: 6rem; overflow-y: auto;
+        .discogs-batch-modal .what { margin: 0 0 0.5rem; }
+        .discogs-batch-modal .locations {
+            margin: 0.4rem 0 0.9rem; padding: 0.5rem 0.7rem;
+            background: #f6f6f6; border-radius: 4px;
+            font-size: 0.85rem; line-height: 1.55;
+            max-height: 12rem; overflow-y: auto;
+        }
+        .discogs-batch-modal .locations .loc {
+            display: flex; justify-content: space-between; gap: 0.6rem;
+        }
+        .discogs-batch-modal .locations .loc-label { color: #333; }
+        .discogs-batch-modal .locations .loc-count {
+            font-variant-numeric: tabular-nums; color: #666;
         }
         .discogs-batch-modal .actions {
-            display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.8rem;
+            display: flex; justify-content: flex-end; align-items: center;
+            gap: 0.5rem; margin-top: 1rem;
         }
         .discogs-batch-modal button {
-            padding: 0.35rem 0.9rem; border-radius: 4px;
+            padding: 0.4rem 1rem; border-radius: 4px;
             border: 1px solid #bbb; cursor: pointer; font-size: 0.9rem;
+            line-height: 1.2; min-width: 5.5rem;
+            font-family: inherit;
         }
         .discogs-batch-modal button.confirm {
             background: #c0392b; color: #fff; border-color: #962c20;
         }
+        .discogs-batch-modal button.confirm:hover { background: #a83426; }
         .discogs-batch-modal button.cancel {
             background: #f5f5f5; color: #333;
         }
+        .discogs-batch-modal button.cancel:hover { background: #eaeaea; }
     `;
     return style;
   }
@@ -4602,11 +4636,23 @@ ${lines}
     what.className = "what";
     what.innerHTML = describeAction(group, mode);
     modal.appendChild(what);
-    if (group.tracks && group.tracks.length) {
-      const tracks = document.createElement("div");
-      tracks.className = "tracks";
-      tracks.textContent = "Affected: " + group.tracks.join(", ");
-      modal.appendChild(tracks);
+    if (group.locations && group.locations.length) {
+      const list = document.createElement("div");
+      list.className = "locations";
+      for (const { label, count } of group.locations) {
+        const row = document.createElement("div");
+        row.className = "loc";
+        const l = document.createElement("span");
+        l.className = "loc-label";
+        l.textContent = label;
+        const c = document.createElement("span");
+        c.className = "loc-count";
+        c.textContent = count === 1 ? "1 rel" : `${count} rels`;
+        row.appendChild(l);
+        row.appendChild(c);
+        list.appendChild(row);
+      }
+      modal.appendChild(list);
     }
     const actions = document.createElement("div");
     actions.className = "actions";
