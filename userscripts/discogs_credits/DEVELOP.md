@@ -59,20 +59,17 @@ gh auth status                             # verify
 
 After this, the `gh` CLI works against your GitHub identity.
 
+<a id="bot-identity"></a>
+
 ### Bot identity for AI-driven work
 
-This repo uses a dedicated GitHub account **`claude-ai-milic`** for any
-commits, Issues, or PRs that an AI assistant produces. Keeping bot activity
-separate from the maintainer's identity makes review easier and prevents
-accidental impersonation.
+This repo uses a dedicated GitHub account **`claude-ai-milic`** for any commits, Issues, or PRs that an AI assistant produces. Keeping bot activity separate from the maintainer's identity makes review easier and prevents accidental impersonation.
 
 Setup (one-time, done by the maintainer):
 
 1. Create the `claude-ai-milic` GitHub account.
-2. Add it as a **collaborator** on `majkinetor/musicbrainz-userscripts` with
-   write access; accept the invite from the bot account.
-3. While logged in as the bot, generate a classic Personal Access Token at
-   <https://github.com/settings/tokens> with scopes `repo` + `write:discussion`.
+2. Add it as a **collaborator** on `majkinetor/musicbrainz-userscripts` with write access; accept the invite from the bot account.
+3. While logged in as the bot, generate a classic Personal Access Token at <https://github.com/settings/tokens> with scopes `repo` + `write:discussion`.
 4. Save the token in `dev/.github-credentials.json` (gitignored — never commit):
 
    ```jsonc
@@ -82,9 +79,7 @@ Setup (one-time, done by the maintainer):
    }
    ```
 
-5. The AI assistant reads this file when it needs to interact with GitHub and
-   uses the token explicitly (env var or `Authorization: Bearer …` header).
-   It does **not** use the human's authenticated `gh` session.
+5. The AI assistant reads this file when it needs to interact with GitHub and uses the token explicitly (env var or `Authorization: Bearer …` header). It does **not** use the human's authenticated `gh` session.
 
 ---
 
@@ -128,10 +123,7 @@ userscripts/discogs_credits/
 
 ### Live-install via `pnpm run dev` (recommended)
 
-`pnpm run dev` rebuilds `dist/` on every save **and** serves it at
-`http://127.0.0.1:8765/discogs_credits.user.js` with the metadata block
-rewritten on the fly so the userscript manager treats every rebuild as
-a new release:
+`pnpm run dev` rebuilds `dist/` on every save **and** serves it at `http://127.0.0.1:8765/discogs_credits.user.js` with the metadata block rewritten on the fly so the userscript manager treats every rebuild as a new release:
 
 - `@version` is overridden with `YYYY.M.D.HHMMSS` — recognizable, always-newer.
 - `@updateURL` and `@downloadURL` are rewritten to the localhost URL above.

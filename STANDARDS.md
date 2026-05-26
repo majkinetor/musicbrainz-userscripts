@@ -6,7 +6,11 @@ New standards arrive when the maintainer prefixes a chat message with `standard:
 
 For project-specific decisions (e.g. "MB's `[no artist]` MBID is `eec63d3c-…`"), use the per-project `dev/DECISIONS.md` log, not this file.
 
+Each numbered section also carries a stable short anchor (`#standard-1` … `#standard-9`) so links like `STANDARDS.md#standard-9` keep working even when the section title is reworded.
+
 ---
+
+<a id="standard-1"></a>
 
 ## 1. Issue titles read as changelog entries
 
@@ -31,6 +35,8 @@ Rules for the title itself (so the verbatim copy reads well):
 
 If the title doesn't read well in the changelog, **fix the title first** (then update the changelog from the new title) — don't paraphrase in the changelog. The single source of truth is the issue tracker.
 
+<a id="standard-2"></a>
+
 ## 2. `bug` vs `enhancement` labels are meaningful
 
 - `bug` — something is broken; the user sees incorrect behaviour.
@@ -38,9 +44,13 @@ If the title doesn't read well in the changelog, **fix the title first** (then u
 
 If an issue filed as a bug turns out to be an enhancement after investigation, relabel.
 
+<a id="standard-3"></a>
+
 ## 3. PowerShell, not bash, for scripts and commands
 
 Windows-native environment. Shell scripts in the repo are `.ps1`. Command examples in documentation use PowerShell syntax. Node/.mjs scripts are shell-agnostic and unaffected.
+
+<a id="standard-4"></a>
 
 ## 4. Per-project `dev/DECISIONS.md` log
 
@@ -52,21 +62,29 @@ Each project keeps an append-only one-line-per-entry decision log at `dev/DECISI
 
 Newest entries at the bottom. Grep-friendly. Future contributors (human or AI) read this to understand *why* the code looks the way it does without diffing every commit.
 
+<a id="standard-5"></a>
+
 ## 5. Markdown table alignment
 
 Column-align tables by padding cells with spaces so columns line up. Fall back to **compact** form (`| cell | cell |` with a minimal `| --- | --- |` separator) when any row's cumulative cell content exceeds **200 characters** — past that, alignment makes the line so long it hurts readability more than it helps.
 
 A small enforcer lives at `userscripts/discogs_credits/dev/align-md-tables.mjs` (generic, takes any markdown files as args).
 
+<a id="standard-6"></a>
+
 ## 6. Markdown — hard line breaks for stacked metadata
 
 When several consecutive `**Key:** value` lines should render as separate lines (e.g. start time / command / fixtures / finished / result), append two trailing spaces to each — without them GitHub's renderer collapses them into a single paragraph.
+
+<a id="standard-7"></a>
 
 ## 7. AI-driven git work uses a dedicated bot identity
 
 Commits, branches, Issues, PRs, and Discussions created by an AI assistant go through a separate GitHub account, never via the maintainer's authenticated session. The bot's PAT lives in a gitignored local credentials file (see the per-project DEVELOP.md for path conventions). Push-with-token URLs are one-shot — never `git push -u` the URL form, which would write the token into `.git/config`.
 
 Keeps human and bot activity clearly attributable in commit / PR authors, makes a token-rotation easy (only the bot's PAT, never the maintainer's session), and means a bot-misstep is easily revertable.
+
+<a id="standard-8"></a>
 
 ## 8. Markdown headers — blank line before and after, always
 
@@ -89,6 +107,8 @@ Content.
 ```
 
 Common renderers will *sometimes* parse `## Heading` without the surrounding blanks, but the result is fragile — list items, inline HTML, and `<details>` blocks all break the heuristic. Always include the blanks.
+
+<a id="standard-9"></a>
 
 ## 9. Link every referenced entity to the closest anchor
 
