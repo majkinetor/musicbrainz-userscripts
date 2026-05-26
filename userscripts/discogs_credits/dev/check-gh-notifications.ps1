@@ -96,7 +96,14 @@ try {
     # body once afterwards. `-UseBasicParsing` keeps it light.
     $resp = Invoke-WebRequest -Uri $apiUrl -Headers $headers -UseBasicParsing -ErrorAction Stop
     $status = [int]$resp.StatusCode
-    $notifs = if ($resp.Content) { @(($resp.Content | ConvertFrom-Json)) } else { @() }
+    # `@(...)` collapses a 1-element JSON array into a bare PSCustomObject
+    # before we get to wrap it, so .Count renders blank. Explicit
+    # ForEach-Object pipe through an intermediate ArrayList guarantees we
+    # end with a real array even for the 1-item case.
+    $notifs = @()
+    if ($resp.Content) {
+        foreach ($item in ($resp.Content | ConvertFrom-Json)) { $notifs += $item }
+    }
     Log-Line "    -> HTTP $status, $($notifs.Count) thread(s)"
 } catch {
     $msg = $_.Exception.Message
