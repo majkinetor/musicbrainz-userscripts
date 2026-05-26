@@ -126,50 +126,99 @@ try {
     exit 1
 }
 
-# Filter to threads where the latest comment is by someone OTHER than the
-# bot. Self-comments (the bot opening / commenting on its own PRs) are
-# noise.
+# Inspect each notification. Two paths:
+#   - Has `latest_comment_url`: fetch the comment, treat as actionable if
+#     its author is someone OTHER than the bot (self-comments are noise).
+#   - No `latest_comment_url` (typical for `state_change` events like
+#     merges, `subscribed`, etc.): surface the notification itself as
+#     actionable, using `kind=event` so the channel side can distinguish
+#     from regular comments. Dedupe by `<thread-id>@<updated_at>` so the
+#     same merge doesn't fire twice.
 $actionable = @()
 foreach ($n in $notifs) {
     $title = $n.subject.title
     $type  = $n.subject.type
     $reason = $n.reason
     $updated = $n.updated_at
-    Log-Line "  thread: '$title' (type=$type, reason=$reason, updated=$updated)"
-    if (-not $n.subject.latest_comment_url) {
-        Log-Line '    -> skip: no latest_comment_url'
+    # Subject url shape (issues + PRs share the same trailing `/N`):
+    #   https://api.github.com/repos/<owner>/<repo>/{issues|pulls}/65
+    # Extract `65` -> render as `#65` for log lines.
+    $num = ''
+    if ($n.subject.url -and $n.subject.url -match '/(\d+)(?:[?#].*)?$') {
+        $num = '#' + $matches[1]
+    }
+    $label = if ($num) { "$num '$title'" } else { "'$title'" }
+    Log-Line "  $label  (type=$type, reason=$reason, updated=$updated)"
+
+    if ($n.subject.latest_comment_url) {
+        # === comment path =================================================
+        if ($state.seenComments -contains $n.subject.latest_comment_url) {
+            Log-Line '    -> skip: already seen (dedupe)'
+            continue
+        }
+        try {
+            $comment = Invoke-RestMethod -Uri $n.subject.latest_comment_url -Headers $headers -ErrorAction Stop
+            $author = $comment.user.login
+            if (-not $author) {
+                Log-Line '    -> skip: comment has no author'
+                continue
+            }
+            if ($author -eq $botLogin) {
+                Log-Line "    -> skip: latest comment by self ($author)"
+                continue
+            }
+            Log-Line "    -> ACTIONABLE (comment): latest comment by $author"
+            $actionable += [pscustomobject]@{
+                kind       = 'comment'
+                number     = $num
+                title      = $title
+                author     = $author
+                type       = $type
+                reason     = $reason
+                url        = $n.subject.url -replace 'api\.github\.com/repos', 'github.com'
+                commentUrl = $n.subject.latest_comment_url
+            }
+        } catch {
+            $cmsg = $_.Exception.Message
+            Log-Line "    -> skip: comment fetch failed: $cmsg"
+        }
         continue
     }
-    if ($state.seenComments -contains $n.subject.latest_comment_url) {
+
+    # === event path (merges, state_change, subscribed, etc.) =============
+    # No comment URL means GH considers this a thread-level event. We use
+    # `thread.id@updated_at` as a dedupe key so the same merge doesn't
+    # fire on a second tick (since the same event can stay in the
+    # notification list briefly after first seen).
+    $eventKey = "$($n.id)@$updated"
+    if ($state.seenComments -contains $eventKey) {
         Log-Line '    -> skip: already seen (dedupe)'
         continue
     }
-    try {
-        $comment = Invoke-RestMethod -Uri $n.subject.latest_comment_url -Headers $headers -ErrorAction Stop
-        $author = $comment.user.login
-        if (-not $author) {
-            Log-Line '    -> skip: comment has no author'
-            continue
-        }
-        if ($author -eq $botLogin) {
-            Log-Line "    -> skip: latest comment by self ($author)"
-            continue
-        }
-        Log-Line "    -> ACTIONABLE: latest comment by $author"
-        $actionable += [pscustomobject]@{
-            title      = $title
-            author     = $author
-            type       = $type
-            url        = $n.subject.url -replace 'api\.github\.com/repos', 'github.com'
-            commentUrl = $n.subject.latest_comment_url
-        }
-    } catch {
-        $cmsg = $_.Exception.Message
-        Log-Line "    -> skip: comment fetch failed: $cmsg"
+    Log-Line "    -> ACTIONABLE (event): no comment; surfacing reason=$reason"
+    $actionable += [pscustomobject]@{
+        kind       = 'event'
+        number     = $num
+        title      = $title
+        author     = ''        # event has no single author
+        type       = $type
+        reason     = $reason   # state_change / subscribed / …
+        url        = $n.subject.url -replace 'api\.github\.com/repos', 'github.com'
+        commentUrl = $eventKey # carries the dedupe key for state update below
     }
 }
 
 Log-Line "  result: $($notifs.Count) unread, $($actionable.Count) actionable"
+if ($actionable.Count -gt 0) {
+    # One-line summary of every actionable item:
+    #   '#65 by majkinetor: title'             (comment)
+    #   '#70 event (state_change): title'      (event)
+    foreach ($a in $actionable) {
+        $tag = if ($a.number) { $a.number } else { '#?' }
+        $who = if ($a.kind -eq 'event') { "event ($($a.reason))" } else { "by $($a.author)" }
+        Log-Line "    $tag ${who}: $($a.title)"
+    }
+}
 
 if ($actionable.Count -eq 0) {
     # Nothing to deliver -- just bump lastPolled.
