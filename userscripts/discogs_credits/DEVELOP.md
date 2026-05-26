@@ -270,6 +270,58 @@ pnpm run login
 
 Already does — logs save every run to `test/logs/<ISO8601>_<mbid>.log`.
 
+### "Auto-react to GH notifs via a channel into a running Claude session"
+
+The notif pipeline pushes GitHub activity into Claude **without spawning a fresh session**, so the bot reacts with full conversation context. Zero tokens used unless something is actually delivered.
+
+Two pieces:
+
+- **[`dev/notif-channel/webhook.mjs`](dev/notif-channel/webhook.mjs)** — a tiny MCP channel server (Node, [research-preview channel API](https://code.claude.com/docs/en/channels)). Claude Code spawns it as a subprocess; it listens on `http://127.0.0.1:8788` and forwards every POSTed payload to the running Claude session as a `<channel source="notif-channel">` event.
+- **[`dev/check-gh-notifications.ps1`](dev/check-gh-notifications.ps1)** — polls GitHub for unread non-self comments, POSTs the actionable list to `localhost:8788`. If the channel server isn't reachable (no Claude running with it attached), it logs `channel-down` and exits — no fallback to `claude -p`, since fresh sessions miss the conversation context that makes Claude useful here.
+
+#### One-time setup
+
+```powershell
+# 1. install MCP SDK for the channel server
+cd userscripts\discogs_credits\dev\notif-channel
+npm install
+
+# 2. enable the MCP server. Copy the template to the repo root:
+copy mcp.json.template ..\..\..\..\.mcp.json
+
+# 3. register the recurring poll (every 10 min, 09:00-23:50 local = 90 polls/day)
+powershell -ExecutionPolicy Bypass -File userscripts\discogs_credits\dev\install-notification-task.ps1
+```
+
+#### Day-to-day
+
+Launch Claude **with the channel attached** from the repo root:
+
+```powershell
+cd C:\Work\mb-userscripts
+claude --dangerously-load-development-channels server:notif-channel
+```
+
+(The `--dangerously-load-development-channels` flag is required during the channels research preview — custom channels aren't on the Anthropic allowlist yet.)
+
+Keep that terminal open for as long as you want auto-react. The poller fires every 10 min; if there's actionable activity, Claude in that terminal receives the event and acts.
+
+#### Audit logs (gitignored)
+
+| File | What's in it |
+|---|---|
+| `dev/.notif-poll.log` | Each poll: how many unread, how many actionable, delivery outcome (`OK`, `channel-down`, etc.) |
+| `dev/notif-channel/.channel.log` | The MCP server's view: each POST received, whether it forwarded to Claude |
+| Claude session terminal | The actual `<channel>` event Claude processed + what it did |
+
+#### Manage the scheduled task
+
+```powershell
+schtasks /Query  /TN "MB-Userscripts notif poller" /V /FO LIST   # status + last run
+schtasks /Change /TN "MB-Userscripts notif poller" /DISABLE      # pause
+schtasks /Delete /TN "MB-Userscripts notif poller" /F            # remove
+```
+
 ---
 
 ## Troubleshooting
