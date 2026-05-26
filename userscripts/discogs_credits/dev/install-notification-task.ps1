@@ -1,6 +1,6 @@
 # Register a Windows Task Scheduler entry that runs
 # `check-gh-notifications.ps1` once per hour at minute 7, from 12:00 to
-# 23:00 local time — 12 polls per day inside the maintainer's working
+# 23:00 local time -- 12 polls per day inside the maintainer's working
 # window (matches the cadence originally asked for the Claude-side cron,
 # now moved out of Claude). External polling is essentially free, so
 # you can crank this higher (every 30 / 15 / 5 min) by editing the
@@ -19,8 +19,8 @@ $pollerPath = (Resolve-Path (Join-Path $here 'check-gh-notifications.ps1')).Path
 $taskName   = 'MB-Userscripts notif poller'
 
 # Triggers: fire at the listed minutes of each hour from 12:00 to 23:00.
-# Default is minute 7 only → 12 polls/day. Crank by adding minutes,
-# e.g. @(7, 22, 37, 52) → 4×/hour × 12h = 48 polls/day.
+# Default is minute 7 only -> 12 polls/day. Crank by adding minutes,
+# e.g. @(7, 22, 37, 52) -> 4 per hour, 12 hours = 48 polls/day.
 $startMinutes = @(7)
 $hourRange    = 12..23
 $startTimes   = foreach ($h in $hourRange) {
@@ -49,7 +49,7 @@ $principal = New-ScheduledTaskPrincipal `
 
 # Settings: don't run if the laptop's on battery saver, allow start when
 # missed (so a quick lid-close-open doesn't lose polls), kill after 5 min
-# (the poller is ~2 s normally — 5 min is a generous ceiling).
+# (the poller is ~2 s normally -- 5 min is a generous ceiling).
 $settings = New-ScheduledTaskSettingsSet `
     -AllowStartIfOnBatteries `
     -DontStopIfGoingOnBatteries `
@@ -63,13 +63,13 @@ if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
 
 Register-ScheduledTask `
     -TaskName    $taskName `
-    -Description 'Polls GitHub for new mb-userscripts notifications and shows a Windows toast.' `
+    -Description 'Polls GitHub for new mb-userscripts notifications and spawns claude -p to act on them.' `
     -Trigger     $triggers `
     -Action      $action `
     -Principal   $principal `
     -Settings    $settings | Out-Null
 
-Write-Host "Registered task '$taskName' — $($startTimes.Count) fires/day starting at $($startTimes[0]) local."
+Write-Host "Registered task '$taskName' -- $($startTimes.Count) fires/day starting at $($startTimes[0]) local."
 Write-Host "Inspect: schtasks /Query /TN `"$taskName`" /V /FO LIST"
 Write-Host "Disable: schtasks /Change /TN `"$taskName`" /DISABLE"
 Write-Host "Remove:  schtasks /Delete /TN `"$taskName`" /F"

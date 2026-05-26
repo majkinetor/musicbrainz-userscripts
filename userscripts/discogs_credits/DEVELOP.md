@@ -278,9 +278,13 @@ pnpm run login
 
 Already does — logs save every run to `test/logs/<ISO8601>_<mbid>.log`.
 
-### "Get a Windows toast when somebody comments on a bot PR"
+### "Auto-respond to GH activity on bot PRs (no human in the loop)"
 
-[`dev/check-gh-notifications.ps1`](dev/check-gh-notifications.ps1) polls GitHub for unread notifications whose latest comment is by someone other than the bot (claude-ai-milic), and pops a Windows balloon for each. State (last-poll time + deduped comment URLs) lives in `dev/.notification-state.json` (gitignored).
+[`dev/check-gh-notifications.ps1`](dev/check-gh-notifications.ps1) polls GitHub for unread notifications whose latest comment is by someone other than the bot (claude-ai-milic), and — when something is actionable — spawns a one-shot `claude -p` session that investigates and acts on each thread per the maintainer's standards.
+
+State files (both gitignored):
+- `dev/.notification-state.json` — last-poll timestamp + recent comment URLs to dedupe.
+- `dev/.notif-trigger.log` — append-only audit log of each spawned `claude -p` invocation (prompt + output).
 
 Register the recurring schedule once (defaults to one poll per hour, 12–23 local; edit `$startMinutes` / `$hourRange` in the install script to taste):
 
@@ -296,7 +300,13 @@ schtasks /Change /TN "MB-Userscripts notif poller" /DISABLE      # pause
 schtasks /Delete /TN "MB-Userscripts notif poller" /F            # remove
 ```
 
-Avoids burning Claude tokens on hourly polling — Task Scheduler does the polling natively, Claude is only engaged when the maintainer actually needs to act on something.
+Tail the trigger log to see what got spawned:
+
+```powershell
+Get-Content -Wait -Tail 30 userscripts/discogs_credits/dev/.notif-trigger.log
+```
+
+Polling is essentially free (a few HTTP calls per run); only the spawned `claude -p` invocations cost tokens, and only when there's actually something to act on. Each spawn is capped at $0.50 via `--max-budget-usd`.
 
 ---
 

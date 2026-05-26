@@ -30,5 +30,7 @@ test/logs/
 dev/.github-credentials.json
 
 # Local state for the GH notification poller (Task Scheduler script).
-# Stores last-polled timestamp + recent comment URLs to dedupe toasts.
+# Stores last-polled timestamp + recent comment URLs to dedupe activity.
 dev/.notification-state.json
+# Append-only log of spawned `claude -p` sessions (prompt + output) for audit.
+dev/.notif-trigger.log
