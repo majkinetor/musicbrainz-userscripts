@@ -5,7 +5,7 @@
 // deduplication against this session and against MB's existing rels.
 
 import { log }                  from './log.js';
-import { pageWindow }                   from './constants.js';
+import { pageWindow, EQUIVALENCE_SETS } from './constants.js';
 import {
     mbThrottle,
     fetchMBEntity,
@@ -21,13 +21,63 @@ import { buildEditNote }                from './edit-note.js';
 import { ENTITY_TYPE_MAP }               from './data/entity-map.js';
 import { WORK_ONLY_ARTIST_RELS }         from './data/work-only-rels.js';
 
-export async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl) {
+// Dedup options come in as a trailing object (default empty). Used by
+// `relAlreadyExists` to honor the maintainer-configurable rules from
+// issue #62:
+//   dedupeEquivalenceSets  — treat writer ≡ composer (etc.) when looking
+//                            up existing rels for skipping.
+//   dedupeDuplicateRoles   — when (linkType, target) is already on the
+//                            source, skip regardless of attr/credit/date
+//                            differences. Without this, only an exact
+//                            attr-signature match counts as "already
+//                            there", so e.g. instrument with different
+//                            tasks would still dispatch.
+//   creditOverrides        — Map<mbUrl, string> from the review table's
+//                            editable "Credited as" input. When present
+//                            for the resolved entity, the override wins
+//                            over the Discogs-side credit. Falls back to
+//                            the Discogs name when no override exists.
+export async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl, dedupOpts) {
     resolvedEntityTypes = resolvedEntityTypes || new Map();
     confirmedMap = confirmedMap || new Map();
+    dedupOpts = dedupOpts || {};
+    const dedupeEquivalenceSets = dedupOpts.dedupeEquivalenceSets !== false; // default ON
+    const dedupeDuplicateRoles  = dedupOpts.dedupeDuplicateRoles  !== false; // default ON
+    const creditOverrides       = dedupOpts.creditOverrides || new Map();
     const re = await waitForMBEditor();
     if (!re) return;
 
     const MB = pageWindow.MB;
+
+    // Precompute the equivalence-set lookup once: linkTypeID -> Set of
+    // sibling linkTypeIDs (incl. itself) that share a configured group.
+    // `EQUIVALENCE_SETS` lists names like ['writer', 'composer']; we
+    // resolve those against MB.linkedEntities.link_type to MBIDs at the
+    // exact (sourceType, targetType) pair to keep matches strict.
+    const equivalenceLookup = (() => {
+        const m = new Map();
+        if (!dedupeEquivalenceSets || !MB?.linkedEntities?.link_type) return m;
+        for (const set of EQUIVALENCE_SETS) {
+            // For each set, collect all link types whose name lowercase-matches
+            // any member. Group them by (type0, type1) pair so we don't
+            // cross-contaminate (e.g. work-level composer vs recording-level
+            // composer have different IDs but live under the same pair name).
+            const byPair = new Map(); // 'type0|type1' -> [linkTypeID]
+            for (const [id, lt] of Object.entries(MB.linkedEntities.link_type)) {
+                if (!lt?.name) continue;
+                if (!set.includes(String(lt.name).toLowerCase())) continue;
+                const key = `${lt.type0}|${lt.type1}`;
+                if (!byPair.has(key)) byPair.set(key, []);
+                byPair.get(key).push(Number(id));
+            }
+            for (const ids of byPair.values()) {
+                if (ids.length < 2) continue; // single-member pair: no equivalence
+                const sibSet = new Set(ids);
+                for (const id of ids) m.set(id, sibSet);
+            }
+        }
+        return m;
+    })();
     const releaseEntity = re.state.entity;
     // Counter semantics (issues #14, #34):
     //   added       — rels actually dispatched into editor state this session
@@ -280,6 +330,9 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     function relAlreadyExists(sourceEntity, linkTypeID, targetGid, attrTree) {
         const rels = sourceEntity?.relationships;
         if (!Array.isArray(rels) || rels.length === 0) return false;
+        // Equivalence-set expansion: when ON, a writer rel counts as
+        // existing for an incoming composer dispatch (and vice versa).
+        const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || new Set([linkTypeID]);
         const candSig = (() => {
             if (!attrTree) return '';
             try {
@@ -288,9 +341,14 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             } catch (e) { return ''; }
         })();
         return rels.some(r => {
-            if (r.linkTypeID !== linkTypeID) return false;
+            if (!acceptableLinkTypes.has(r.linkTypeID)) return false;
             const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
             if (tgt !== targetGid) return false;
+            // Without dedupeDuplicateRoles, only an EXACT attr-signature
+            // match counts as already-there (the conservative default
+            // before #62). With it, any (linkType, target) match wins
+            // regardless of attribute / task / date differences.
+            if (dedupeDuplicateRoles) return true;
             const existingSig = (r.attributes || [])
                 .map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
             return existingSig === candSig;
@@ -299,6 +357,15 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
 
     // ── Helper: process one relationship ─────────────────────────────────────
     async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos) {
+        // Credited-as override (issue #62): when the user edited the
+        // "Credited as" input on this entity's review-table row, that
+        // value wins over the Discogs-side credit for every rel
+        // dispatched to this target. Empty/missing override falls
+        // through to the caller's credit (typically Discogs ANV).
+        const overrideCredit = creditOverrides.get(mbUrl);
+        if (overrideCredit && String(overrideCredit).trim()) {
+            credit = String(overrideCredit).trim();
+        }
         const mbid = mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
         if (!mbid) { log.error(`Bad MBID URL: ${mbUrl}`); failed++; return; }
 

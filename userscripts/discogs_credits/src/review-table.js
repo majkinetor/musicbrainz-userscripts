@@ -10,7 +10,7 @@ import { parseDiscogsUrl, getDiscogsEntityData } from './api-discogs.js';
 import { guessSortName }                   from './mappers.js';
 import { getLogContainer }                 from './log.js';
 import { _hideBar }                        from './progress-bar.js';
-import { DISCOGS_CHANNEL }                 from './constants.js';
+import { DISCOGS_CHANNEL, pageWindow }     from './constants.js';
 
 // Session-level URL check cache (avoids localStorage key mismatches across sessions)
 const _urlCheckSessionCache = new Map();
@@ -150,6 +150,58 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             span.style.cssText = `font-size:0.68rem;background:#f5f5f5;color:${cfg.color};` +
                                  `padding:0 0.35rem;border-radius:8px;border:1px solid #ddd;flex-shrink:0;`;
             return span;
+        }
+
+        // ── Credited-as override map (issue #62) ────────────────────────────
+        // Keyed by mbUrl (final resolved MB entity URL). Populated by the
+        // per-row "Credited as" input. Stashed on `confirmedMap` at
+        // confirm-time so the dispatch layer can pick it up and override
+        // the Discogs-side credit when sending each rel. Empty string =
+        // user explicitly cleared the field; the dispatcher treats
+        // missing/empty as "fall through to Discogs default".
+        const creditOverrides = new Map();
+
+        // Build the pre-fill source: walk MB's currently-loaded state and
+        // collect every existing `entity1_credit` per target entity. The
+        // most-frequent string for each (entity, source-id) pair becomes
+        // the suggested override. If no existing rel mentions the entity,
+        // the input falls through to the Discogs display name (the
+        // current behaviour pre-#62).
+        const existingCreditByMbid = computeExistingCreditByMbid();
+        function computeExistingCreditByMbid() {
+            const counts = new Map(); // mbid -> Map(credit -> count)
+            try {
+                const root = pageWindow?.MB?.relationshipEditor?.state?.relationshipsBySource;
+                if (!root) return new Map();
+                walk(root);
+                function walk(node) {
+                    if (!node) return;
+                    if (Array.isArray(node)) { for (const r of node) tally(r); return; }
+                    if (typeof node === 'object') {
+                        for (const v of Object.values(node)) walk(v);
+                    }
+                }
+                function tally(rel) {
+                    if (!rel || rel._status === 2) return; // skip removed
+                    const credit = rel.entity1_credit;
+                    if (!credit) return;
+                    const tgt = rel.entity1?.gid;
+                    if (!tgt) return;
+                    if (!counts.has(tgt)) counts.set(tgt, new Map());
+                    const m = counts.get(tgt);
+                    m.set(credit, (m.get(credit) || 0) + 1);
+                }
+            } catch (e) { /* MB state shape changed -- best effort, skip */ }
+            // Reduce to mbid -> most-frequent-credit.
+            const out = new Map();
+            for (const [mbid, m] of counts) {
+                let best = null, bestN = 0;
+                for (const [credit, n] of m) {
+                    if (n > bestN) { best = credit; bestN = n; }
+                }
+                if (best) out.set(mbid, best);
+            }
+            return out;
         }
 
         // ── Panel shell ────────────────────────────────────────────────────────
@@ -330,6 +382,53 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 tdDiscogs.appendChild(rolesLine);
             }
 
+            // ── "Credited as" editable input (issue #62) ──────────────────
+            // The default value comes from `existingCreditByMbid` if MB
+            // already has the entity on this release; otherwise the
+            // Discogs display name (current behaviour). When the row's
+            // MB entity changes (via search-pick or manual edit), the
+            // pre-fill is recomputed if the user hasn't typed.
+            // The active value is mirrored into `creditOverrides[mbUrl]`
+            // on every edit, ready for the dispatch step to consume.
+            const credLine = document.createElement('div');
+            credLine.style.cssText = 'display:flex;align-items:center;gap:0.3rem;margin-top:0.25rem;max-width:280px;';
+            const credLabel = document.createElement('label');
+            credLabel.textContent = 'Credited as:';
+            credLabel.style.cssText = 'font-size:0.72rem;color:#888;flex-shrink:0;';
+            const credInput = document.createElement('input');
+            credInput.type = 'text';
+            credInput.style.cssText = 'flex:1;padding:0.1rem 0.3rem;font-size:0.78rem;border:1px solid #ddd;border-radius:3px;background:#fff;';
+            credInput.placeholder = displayName;
+            credInput.title = `Override the credited name dispatched with every rel for this entity.\nLeave empty to use the default (Discogs name, or MB's most-frequent existing credit when known).`;
+            // Initial value: most-frequent existing MB credit, or Discogs
+            // display name as fallback.
+            function pickPrefill(mbUrl) {
+                if (mbUrl) {
+                    const mbid = (String(mbUrl).split('/').pop() || '').replace(/[^a-f0-9-]/gi, '').slice(0, 36);
+                    if (mbid && existingCreditByMbid.has(mbid)) return existingCreditByMbid.get(mbid);
+                }
+                return displayName;
+            }
+            credInput.value = pickPrefill(r.mbUrl);
+            credInput._userTouched = false;
+            credInput.addEventListener('input', () => {
+                credInput._userTouched = true;
+                // Mirror into the side-map immediately. The mbUrl on the
+                // row may change later (search → pick a different MBID);
+                // the row.mbUrlForCredits closure is bumped in those
+                // handlers, see `setRowResolved` below.
+                const url = credInput._activeMbUrl;
+                if (url) creditOverrides.set(url, credInput.value);
+            });
+            credInput._activeMbUrl = r.mbUrl;
+            if (r.mbUrl) creditOverrides.set(r.mbUrl, credInput.value);
+            credLine.appendChild(credLabel);
+            credLine.appendChild(credInput);
+            tdDiscogs.appendChild(credLine);
+            // Stash so other parts (search picker, refresh) can re-target
+            // the override key when the row's mbUrl changes.
+            r._credInput = credInput;
+
             // ── Col 2: MB artist / search ──────────────────────────────────────
             const tdMb = document.createElement('td');
             tdMb.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};min-width:240px;`;
@@ -365,6 +464,21 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // a = { id, name, disambiguation }
                 const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
                 rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', confirmed: true, via: 'user', fromCache: false });
+                // Re-target the Credited-as override for this row to the
+                // newly-selected mbUrl (#62). If the input still holds
+                // the pre-fill (user hasn't touched), recompute the
+                // pre-fill against the new mbid; otherwise preserve
+                // their typed value verbatim.
+                if (r._credInput) {
+                    const oldUrl = r._credInput._activeMbUrl;
+                    if (oldUrl && oldUrl !== mbUrl) creditOverrides.delete(oldUrl);
+                    r._credInput._activeMbUrl = mbUrl;
+                    if (!r._credInput._userTouched) {
+                        const fresh = pickPrefill(mbUrl);
+                        r._credInput.value = fresh;
+                    }
+                    creditOverrides.set(mbUrl, r._credInput.value);
+                }
                 // Persist to IDB immediately so selection survives even without clicking Start import
                 const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
                 if (_idbKey) {
@@ -409,6 +523,13 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
             function setRowUnresolved() {
                 rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: '', confirmed: false, via: null, fromCache: false });
+                // Clear the Credited-as override now that there's no
+                // resolved entity to attach it to (#62). Input value is
+                // kept so the user doesn't lose their typing.
+                if (r._credInput && r._credInput._activeMbUrl) {
+                    creditOverrides.delete(r._credInput._activeMbUrl);
+                    r._credInput._activeMbUrl = null;
+                }
                 tr.style.background = '#ffe0e0';
                 searchInput.disabled = false;
                 searchBtn.disabled = false;
@@ -1013,6 +1134,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // signature change — Maps accept arbitrary properties).
             confirmedMap.unresolvedCount = unresolvedCount;
             confirmedMap.totalEntities   = allResults.length;
+            // Credited-as overrides keyed by final mbUrl (#62). The
+            // dispatcher picks these up via the `dedupOpts` arg and
+            // overrides each rel's `entity1_credit` when present.
+            confirmedMap.creditOverrides = creditOverrides;
             (panelLi || panel).remove();
             resolve(confirmedMap);
         });
