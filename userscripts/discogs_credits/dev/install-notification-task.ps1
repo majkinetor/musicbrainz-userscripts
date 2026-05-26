@@ -17,18 +17,23 @@ $here       = Split-Path -Parent $MyInvocation.MyCommand.Path
 $pollerPath = (Resolve-Path (Join-Path $here 'check-gh-notifications.ps1')).Path
 $taskName   = 'MB-Userscripts notif poller'
 
-# Default: every 10 minutes from 09:02 to 23:52 local = 90 polls/day.
-$startMinutes = @(2, 12, 22, 32, 42, 52)
-$hourRange    = 9..23
-$startTimes   = foreach ($h in $hourRange) {
-    foreach ($m in $startMinutes) {
-        (Get-Date -Hour $h -Minute $m -Second 0).ToString('HH:mm')
-    }
-}
+# Default: every 10 minutes from 09:00 to 23:50 local = 90 polls/day.
+# Implemented as ONE daily trigger with a repetition pattern (not 90
+# individual CalendarTrigger nodes — Task Scheduler XML rejects that many
+# with "too many nodes of the same type").
+$startTime   = '09:00'
+$repeatEvery = New-TimeSpan -Minutes 10
+$repeatFor   = New-TimeSpan -Hours 14 -Minutes 50   # 09:00 .. 23:50
 
-$triggers = foreach ($t in $startTimes) {
-    New-ScheduledTaskTrigger -Daily -At $t
-}
+# Build the daily trigger, then borrow the Repetition object from a
+# transient -Once trigger (PowerShell's `New-ScheduledTaskTrigger -Daily`
+# doesn't accept `-RepetitionInterval` directly).
+$dailyTrigger  = New-ScheduledTaskTrigger -Daily -At $startTime
+$repeatPattern = (New-ScheduledTaskTrigger -Once -At $startTime `
+                    -RepetitionInterval $repeatEvery `
+                    -RepetitionDuration $repeatFor).Repetition
+$dailyTrigger.Repetition = $repeatPattern
+$triggers = @($dailyTrigger)
 
 $action = New-ScheduledTaskAction `
     -Execute 'powershell.exe' `
@@ -57,7 +62,7 @@ Register-ScheduledTask `
     -Principal   $principal `
     -Settings    $settings | Out-Null
 
-Write-Host "Registered task '$taskName' -- $($startTimes.Count) fires/day starting at $($startTimes[0]) local."
+Write-Host "Registered task '$taskName' -- 90 fires/day starting at $startTime local (every 10 min, ends 23:50)."
 Write-Host "Inspect: schtasks /Query /TN `"$taskName`" /V /FO LIST"
 Write-Host "Disable: schtasks /Change /TN `"$taskName`" /DISABLE"
 Write-Host "Remove:  schtasks /Delete /TN `"$taskName`" /F"
