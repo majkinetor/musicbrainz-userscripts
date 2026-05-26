@@ -22,6 +22,8 @@ The workflow is as follows:
 
 See also [animated gifs](#animated-gifs).
 
+Make sure to read [Style / Relationships](https://musicbrainz.org/doc/Style/Relationships) for general guidelines.
+
 Based on the userscripts of *mattgoldspink*, *vzell*, *kellnerd*.
 
 ## Features
