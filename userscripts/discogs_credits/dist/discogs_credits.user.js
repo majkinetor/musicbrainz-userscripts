@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.26.102151
+// @version      2026.5.26.194007
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -4123,6 +4123,243 @@ ${lines}
     });
   }
 
+  // src/batch-remove.js
+  var _installed = false;
+  function installBatchRemove() {
+    if (_installed) return;
+    _installed = true;
+    if (!document.body) {
+      document.addEventListener("DOMContentLoaded", () => {
+        _installed = false;
+        installBatchRemove();
+      }, { once: true });
+      return;
+    }
+    document.head.appendChild(buildStyle());
+    document.body.addEventListener("click", onClick, true);
+  }
+  function onClick(ev) {
+    if (!(ev.shiftKey || ev.ctrlKey || ev.metaKey)) return;
+    const btn = ev.target.closest?.("button.icon.remove-item");
+    if (!btn) return;
+    const mode = modeFor(ev);
+    if (!mode) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    const group = collectGroup(btn, mode);
+    if (group.buttons.length === 0) return;
+    openConfirm(group, mode, () => {
+      for (const b of group.buttons) b.click();
+    });
+  }
+  function modeFor(ev) {
+    if ((ev.ctrlKey || ev.metaKey) && ev.shiftKey) return "role-and-target";
+    if (ev.ctrlKey || ev.metaKey) return "target";
+    if (ev.shiftKey) return "role";
+    return null;
+  }
+  function collectGroup(seedBtn, mode) {
+    const seedItem = seedBtn.closest(".relationship-item");
+    const seedRow = seedBtn.closest("tr");
+    if (!seedItem || !seedRow) return { buttons: [] };
+    const roleClass = pickRoleClass(seedRow);
+    const targetHref = pickTargetHref(seedItem);
+    const targetLabel = pickTargetLabel(seedItem);
+    const roleLabel = pickRoleLabel(seedRow);
+    const allItems = Array.from(document.querySelectorAll(".relationship-item"));
+    const matched = allItems.filter((item) => {
+      if (mode === "role") {
+        return rowHasClass(item.closest("tr"), roleClass);
+      }
+      if (mode === "target") {
+        return hasTargetHref(item, targetHref);
+      }
+      return rowHasClass(item.closest("tr"), roleClass) && hasTargetHref(item, targetHref);
+    });
+    const buttons = matched.map((it) => it.querySelector("button.icon.remove-item")).filter(Boolean);
+    return {
+      buttons,
+      roleClass,
+      roleLabel,
+      targetHref,
+      targetLabel,
+      tracks: collectTrackContexts(matched)
+    };
+  }
+  function pickRoleClass(tr) {
+    if (!tr) return null;
+    const stop = /* @__PURE__ */ new Set(["odd", "even", "highlighted", "selected", "subrow", "rel-add", "rel-edit", "rel-remove"]);
+    for (const c of tr.classList) {
+      if (!stop.has(c) && /^[a-z][a-z0-9-]*$/.test(c)) return c;
+    }
+    return null;
+  }
+  function pickRoleLabel(tr) {
+    if (!tr) return "";
+    const lbl = tr.querySelector("th.link-phrase label");
+    if (!lbl) return "";
+    return (lbl.textContent || "").replace(/:\s*$/, "").trim();
+  }
+  function pickTargetHref(item) {
+    if (!item) return null;
+    const a = item.querySelector(
+      'a[href^="/artist/"], a[href^="/work/"], a[href^="/label/"], a[href^="/place/"], a[href^="/recording/"], a[href^="/series/"], a[href^="/release-group/"], a[href^="/event/"], a[href^="/instrument/"], a[href^="/area/"]'
+    );
+    return a ? a.getAttribute("href") : null;
+  }
+  function pickTargetLabel(item) {
+    if (!item) return "";
+    const a = item.querySelector(
+      'a[href^="/artist/"], a[href^="/work/"], a[href^="/label/"], a[href^="/place/"], a[href^="/recording/"], a[href^="/series/"], a[href^="/release-group/"], a[href^="/event/"], a[href^="/instrument/"], a[href^="/area/"]'
+    );
+    return a ? (a.textContent || "").trim() : "";
+  }
+  function rowHasClass(tr, cls) {
+    if (!tr || !cls) return false;
+    return tr.classList.contains(cls);
+  }
+  function hasTargetHref(item, href) {
+    if (!item || !href) return false;
+    return !!item.querySelector(`a[href="${cssEscape(href)}"]`);
+  }
+  function cssEscape(s) {
+    return String(s).replace(/(["\\\\])/g, "\\$1");
+  }
+  function collectTrackContexts(items) {
+    const seen = /* @__PURE__ */ new Set();
+    const out = [];
+    for (const item of items) {
+      const ctx = findTrackContext(item);
+      if (seen.has(ctx)) continue;
+      seen.add(ctx);
+      out.push(ctx);
+    }
+    return out;
+  }
+  function findTrackContext(item) {
+    let el = item.closest("tr.subh-track") || item.closest("tr[data-track-position]");
+    if (el) {
+      const pos = el.getAttribute("data-track-position") || el.querySelector(".track-position")?.textContent;
+      if (pos) return String(pos).trim();
+    }
+    let row = item.closest("tr");
+    while (row) {
+      const prev = row.previousElementSibling;
+      if (!prev) break;
+      const pos = prev.querySelector?.("td.medium-track-pos, .track-position, .position");
+      if (pos && pos.textContent) return pos.textContent.trim();
+      row = prev;
+    }
+    return "release";
+  }
+  function buildStyle() {
+    const style = document.createElement("style");
+    style.id = "discogs-batch-remove-style";
+    style.textContent = `
+        .discogs-batch-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 100000; display: flex; align-items: center; justify-content: center;
+            font-family: inherit; font-size: 14px;
+        }
+        .discogs-batch-modal {
+            background: #fff; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            max-width: 480px; width: 90%; padding: 1.2rem 1.4rem;
+        }
+        .discogs-batch-modal h2 {
+            margin: 0 0 0.6rem; font-size: 1.05rem;
+        }
+        .discogs-batch-modal .what { margin: 0 0 0.4rem; }
+        .discogs-batch-modal .tracks {
+            margin: 0.2rem 0 0.8rem; padding: 0.4rem 0.6rem;
+            background: #f5f5f5; border-radius: 4px;
+            font-family: monospace; font-size: 0.85rem;
+            max-height: 6rem; overflow-y: auto;
+        }
+        .discogs-batch-modal .actions {
+            display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.8rem;
+        }
+        .discogs-batch-modal button {
+            padding: 0.35rem 0.9rem; border-radius: 4px;
+            border: 1px solid #bbb; cursor: pointer; font-size: 0.9rem;
+        }
+        .discogs-batch-modal button.confirm {
+            background: #c0392b; color: #fff; border-color: #962c20;
+        }
+        .discogs-batch-modal button.cancel {
+            background: #f5f5f5; color: #333;
+        }
+    `;
+    return style;
+  }
+  function openConfirm(group, mode, onConfirm) {
+    const overlay = document.createElement("div");
+    overlay.className = "discogs-batch-overlay";
+    const modal = document.createElement("div");
+    modal.className = "discogs-batch-modal";
+    const title = document.createElement("h2");
+    title.textContent = `Remove ${group.buttons.length} relationship${group.buttons.length === 1 ? "" : "s"}?`;
+    modal.appendChild(title);
+    const what = document.createElement("p");
+    what.className = "what";
+    what.innerHTML = describeAction(group, mode);
+    modal.appendChild(what);
+    if (group.tracks && group.tracks.length) {
+      const tracks = document.createElement("div");
+      tracks.className = "tracks";
+      tracks.textContent = "Affected: " + group.tracks.join(", ");
+      modal.appendChild(tracks);
+    }
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    const cancel = document.createElement("button");
+    cancel.className = "cancel";
+    cancel.textContent = "Cancel";
+    const confirm = document.createElement("button");
+    confirm.className = "confirm";
+    confirm.textContent = "Remove";
+    actions.appendChild(cancel);
+    actions.appendChild(confirm);
+    modal.appendChild(actions);
+    overlay.appendChild(modal);
+    function close() {
+      overlay.remove();
+      document.removeEventListener("keydown", onKey, true);
+    }
+    function onKey(ev) {
+      if (ev.key === "Escape") {
+        close();
+        ev.preventDefault();
+      }
+      if (ev.key === "Enter") {
+        onConfirm();
+        close();
+        ev.preventDefault();
+      }
+    }
+    cancel.addEventListener("click", close);
+    confirm.addEventListener("click", () => {
+      onConfirm();
+      close();
+    });
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
+    });
+    document.addEventListener("keydown", onKey, true);
+    document.body.appendChild(overlay);
+    confirm.focus();
+  }
+  function describeAction(group, mode) {
+    const role = group.roleLabel ? `<b>${escapeHtml(group.roleLabel)}</b>` : "<i>(unknown role)</i>";
+    const target = group.targetLabel ? `<b>${escapeHtml(group.targetLabel)}</b>` : "<i>(unknown entity)</i>";
+    if (mode === "role") return `Remove role ${role} from every relationship on this release.`;
+    if (mode === "target") return `Remove entity ${target} from every relationship on this release, regardless of role.`;
+    if (mode === "role-and-target") return `Remove entity ${target} on role ${role}.`;
+    return "Remove these relationships.";
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => c === "&" ? "&amp;" : c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === '"' ? "&quot;" : "&#39;");
+  }
+
   // src/discogs_credits.user.js
   (function handleEntityPageIfNeeded() {
     const entityMatch = location.href.match(
@@ -4160,6 +4397,7 @@ ${lines}
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
+    installBatchRemove();
     getDiscogsUrlForRelease(m[1]).then((discogsUrl) => {
       if (discogsUrl) {
         insertDiscogsBar(discogsUrl);

@@ -16,6 +16,7 @@
 import { getDiscogsUrlForRelease } from './api-mb.js';
 import { insertDiscogsBar }      from './ui-bar.js';
 import { DISCOGS_CHANNEL }       from './constants.js';
+import { installBatchRemove }    from './batch-remove.js';
 import                                './storage.js';   // opens IndexedDB on load
 
 // ── BroadcastChannel: cross-tab artist creation signalling ────────────────────
@@ -73,6 +74,10 @@ $(document).ready(function () {
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
+    // Batch-remove (issue #68) runs on every rel-edit page regardless of
+    // whether we mount the import bar — modifier-click on any MB `×`
+    // button opens our confirmation popup. See `src/batch-remove.js`.
+    installBatchRemove();
     getDiscogsUrlForRelease(m[1]).then(discogsUrl => {
         if (discogsUrl) {
             insertDiscogsBar(discogsUrl);
