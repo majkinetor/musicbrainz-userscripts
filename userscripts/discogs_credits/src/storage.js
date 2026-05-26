@@ -21,6 +21,12 @@
 //                      //   both  — name AND url agreed (high confidence)
 //                      //   user  — user picked / confirmed in the review table
 //     resolvedAt,      // ISO8601 timestamp of the resolution
+//     urlLinkedIds,    // MBIDs that have a relation to this Discogs URL,
+//                      // harvested from preflight's `/ws/2/url?inc=<kind>-rels`
+//                      // call. Lets the review-table answer "is X linked to
+//                      // this Discogs URL?" without re-fetching per row.
+//                      // Absent on legacy records — review-table falls back
+//                      // to its own query in that case.
 //   }
 //
 // Record shape — UNRESOLVED (preflight found no auto-match, user needs to
@@ -36,6 +42,7 @@
 //     disambiguation: '',
 //     resolvedVia:    null,
 //     nameMatches:    [ { id, name, disambiguation, score }, … ],  // search hits
+//     urlLinkedIds:   [ <mbid>, … ],                                // see above
 //     resolvedAt,
 //   }
 //
