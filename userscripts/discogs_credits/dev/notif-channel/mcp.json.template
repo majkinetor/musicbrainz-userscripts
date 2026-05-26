@@ -1,0 +1,9 @@
+{
+    "_comment": "Copy this file to `.mcp.json` at the repo root (C:\\Work\\mb-userscripts\\.mcp.json) — Claude reads it on startup and spawns the notif-channel MCP server. Then launch Claude with `claude --dangerously-load-development-channels server:notif-channel` from the repo root. See DEVELOP.md > 'Auto-react to GH notifs via a channel' for the full flow.",
+    "mcpServers": {
+        "notif-channel": {
+            "command": "node",
+            "args": ["./userscripts/discogs_credits/dev/notif-channel/webhook.mjs"]
+        }
+    }
+}
