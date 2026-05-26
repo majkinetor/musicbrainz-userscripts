@@ -308,6 +308,8 @@ All three questions answered 2026-05-23; resolutions captured in `DECISIONS.md` 
 2. **IDB schema** → no migration concerns (user is on Firefox with no existing cache to preserve). Free to **simplify** the schema: rename store to `entity_cache`, key by Discogs `type/id`, store `{mbid, name, disambiguation, resolvedVia: 'cache'|'name'|'url'|'both', resolvedAt: ISO8601}`. The `resolvedVia` field lets us implement the §3.4 stricter auto-match below. Old code's hardcoded URL strings disappear — we store MBIDs and rebuild URLs on read.
 3. **Test mode policy for ambiguous matches** → not particularly important; a wrong pick is just a wrong credit, not a bug. Going with default (b): treat ambiguous as unknown → route to `[no artist|label|place]` placeholder. The real concern is **auto-match correctness** when the script *thinks* it has a unique resolution — addressed below.
 
+<a id="auto-match"></a>
+
 ### 8.1 New scope: tighter auto-match (added per Q3 follow-up)
 
 Today's auto-match accepts a single hit from name search OR URL lookup independently. The user noted: **ideally both name and Discogs URL should check out** before we trust the auto-resolution.
