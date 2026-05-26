@@ -15,6 +15,7 @@ $ErrorActionPreference = 'Stop'
 
 $here       = Split-Path -Parent $MyInvocation.MyCommand.Path
 $pollerPath = (Resolve-Path (Join-Path $here 'check-gh-notifications.ps1')).Path
+$vbsPath    = (Resolve-Path (Join-Path $here 'run-hidden.vbs')).Path
 $taskName   = 'MB-Userscripts notif poller'
 
 # Default: every 10 minutes from 09:00 to 23:50 local = 90 polls/day.
@@ -35,9 +36,13 @@ $repeatPattern = (New-ScheduledTaskTrigger -Once -At $startTime `
 $dailyTrigger.Repetition = $repeatPattern
 $triggers = @($dailyTrigger)
 
+# wscript + `run-hidden.vbs` instead of direct `powershell -WindowStyle
+# Hidden` — the latter still flashes a console window for one frame
+# before applying Hidden; wscript spawns the process with no window from
+# the start. See `run-hidden.vbs` for the rationale.
 $action = New-ScheduledTaskAction `
-    -Execute 'powershell.exe' `
-    -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$pollerPath`""
+    -Execute 'wscript.exe' `
+    -Argument "`"$vbsPath`" `"$pollerPath`""
 
 $principal = New-ScheduledTaskPrincipal `
     -UserId  ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) `
