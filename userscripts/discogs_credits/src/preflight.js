@@ -63,10 +63,22 @@ async function resolveEntity(entity, kind, opts) {
     const discogsHref = entity.resource_url
         .replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, 'https://www.discogs.com/$1/$2');
 
-    function buildResolved(mbUrl, mbName, mbDisambig, via, actualKind = kind, fromCache = false) {
+    function buildResolved(mbUrl, mbName, mbDisambig, via, actualKind = kind, fromCache = false, urlLinkedIds) {
         return {
             type: 'resolved', entityType: actualKind, entity,
             displayName, discogsHref, mbUrl, mbName, mbDisambig,
+            // `urlLinkedIds` — MBIDs that have a relation to this Discogs URL,
+            //                  harvested from the URL lookup done during
+            //                  preflight. The review-table uses this to render
+            //                  the "Add Discogs link" / "already linked" / "linked
+            //                  to different MB <type>" badge without issuing
+            //                  another `/ws/2/url?…` query per row. `undefined`
+            //                  means "preflight didn't ask MB" (IDB hit on a
+            //                  legacy record that predates this field), in which
+            //                  case review-table falls back to its own per-row
+            //                  fetch. `[]` means "asked MB, got no relations" —
+            //                  no fallback needed.
+            urlLinkedIds,
             // `via`      — the resolution mechanism (`name` / `url` / `both` / `user`,
             //              or `cache` only when a legacy IDB record predates the
             //              `resolvedVia` field and we genuinely can't recover it).
@@ -78,10 +90,14 @@ async function resolveEntity(entity, kind, opts) {
         };
     }
 
-    function buildAttention(nameMatches, nameSearchFailed, ambiguityReason) {
+    function buildAttention(nameMatches, nameSearchFailed, ambiguityReason, urlLinkedIds) {
         return {
             type: 'attention', entityType: kind, entity,
             displayName, discogsHref, nameMatches: nameMatches || [],
+            // Same `urlLinkedIds` contract as on the resolved shape — review-table
+            // uses it to skip the per-row URL fetch even for attention rows once
+            // the user picks an MBID from the candidate list.
+            urlLinkedIds,
             // Only artists track this — used by the review table to badge
             // entries that failed because of a rate-limited name search vs
             // entries that genuinely don't exist in MB.
@@ -109,10 +125,17 @@ async function resolveEntity(entity, kind, opts) {
             // existed fall back to the literal `cache` (still flagged
             // `fromCache: true` for symmetry, but the label is just `cache`).
             const via = cachedRec.resolvedVia || 'cache';
+            // `urlLinkedIds` was added later — old records lack it. Synthesise
+            // for via='url'/'both' (we know the linked MBID by definition);
+            // leave undefined otherwise so review-table falls back to query.
+            let cachedLinkedIds = cachedRec.urlLinkedIds;
+            if (cachedLinkedIds === undefined && (via === 'url' || via === 'both')) {
+                cachedLinkedIds = [cachedRec.mbid];
+            }
             if (cachedRec.name) {
                 return buildResolved(cachedRec.mbUrl, cachedRec.name,
                                      cachedRec.disambiguation || '', via,
-                                     cachedRec.entityType, true);
+                                     cachedRec.entityType, true, cachedLinkedIds);
             }
             // Name missing — fetch it once, write back, return.
             const info = await fetchMbEntityInfo(cachedRec.entityType, cachedRec.mbid);
@@ -123,7 +146,7 @@ async function resolveEntity(entity, kind, opts) {
                 });
             }
             return buildResolved(cachedRec.mbUrl, info.name, info.disambiguation,
-                                 via, cachedRec.entityType, true);
+                                 via, cachedRec.entityType, true, cachedLinkedIds);
         }
         if (cachedRec && Array.isArray(cachedRec.nameMatches)) {
             // Negative cache hit — we previously ran MB queries for this
@@ -131,7 +154,7 @@ async function resolveEntity(entity, kind, opts) {
             // remembered candidate list without re-querying MB so that an
             // immediate page reload doesn't redo every unresolved-entity
             // round-trip. Use the "🔄 Refresh from MB" button to bypass.
-            return buildAttention(cachedRec.nameMatches, false);
+            return buildAttention(cachedRec.nameMatches, false, null, cachedRec.urlLinkedIds);
         }
     }
 
@@ -167,8 +190,13 @@ async function resolveEntity(entity, kind, opts) {
 
     // URL relation — extract the first matching rel (kind-specific; places
     // also accept label rels because MB editors often file a facility as a
-    // label rather than a place).
+    // label rather than a place). Also collect ALL linked MBIDs (regardless
+    // of which one we pick) so the review-table can answer "is the chosen
+    // entity already linked?" without re-querying MB per row.
     let urlHit = null;
+    const urlLinkedIds = (urlJson?.relations || [])
+        .map(r => kind === 'place' ? (r.place?.id || r.label?.id || null) : (r[kind]?.id || null))
+        .filter(Boolean);
     if (urlJson?.relations?.length > 0) {
         const rel = kind === 'place'
             ? urlJson.relations.find(r => r.place || r.label)
@@ -200,6 +228,7 @@ async function resolveEntity(entity, kind, opts) {
                 disambiguation: '',
                 resolvedVia:    null,
                 nameMatches:    matches,
+                urlLinkedIds,
             });
         }
     }
@@ -222,7 +251,8 @@ async function resolveEntity(entity, kind, opts) {
             await cacheAttention(nameMatches);
             return buildAttention(
                 nameMatches, false,
-                `name → ${nameHit.kind}/${nameHit.mbid}, URL → ${urlHit.kind}/${urlHit.mbid}`
+                `name → ${nameHit.kind}/${nameHit.mbid}, URL → ${urlHit.kind}/${urlHit.mbid}`,
+                urlLinkedIds,
             );
         }
     } else if (urlHit) {
@@ -251,14 +281,15 @@ async function resolveEntity(entity, kind, opts) {
                 name:           finalName,
                 disambiguation: finalDisam || '',
                 resolvedVia:    via,
+                urlLinkedIds,
             });
         }
-        return buildResolved(mbUrl, finalName, finalDisam || '', via, resolved.kind);
+        return buildResolved(mbUrl, finalName, finalDisam || '', via, resolved.kind, false, urlLinkedIds);
     }
 
     // Nothing resolved.
     await cacheAttention(nameMatches);
-    return buildAttention(nameMatches, nameSearchFailed);
+    return buildAttention(nameMatches, nameSearchFailed, null, urlLinkedIds);
 }
 
 /**

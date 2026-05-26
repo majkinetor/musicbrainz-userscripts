@@ -482,6 +482,18 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         // No Discogs URL — skip URL check entirely
                         linkSlot.textContent = '⚠ No Discogs page';
                         linkSlot.style.color = '#c80';
+                    } else if (Array.isArray(r.urlLinkedIds)) {
+                        // Preflight already harvested the Discogs-URL → MB-entity
+                        // relations (parallel with name search). Compute the row's
+                        // state from that without firing another `/ws/2/url?…`
+                        // request per row. Populates both caches so post-import
+                        // re-checks (focus-return) stay equally cheap.
+                        const result = r.urlLinkedIds.includes(selected.id) ? 'linked'
+                                     : r.urlLinkedIds.length > 0          ? 'other'
+                                                                          : 'none';
+                        _urlCheckSessionCache.set(urlCheckCacheKey, result);
+                        try { localStorage.setItem(urlCheckLsKey, JSON.stringify({ date: urlCheckToday, result })); } catch(e) {}
+                        applyUrlCheckResult(result);
                     } else if (urlCheckCached !== null) {
                         applyUrlCheckResult(urlCheckCached);
                     } else {

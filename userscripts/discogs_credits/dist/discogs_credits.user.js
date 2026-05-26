@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.25.231643
+// @version      2026.5.26.100439
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -1767,7 +1767,7 @@
     const searchName = entity.name;
     const displayName = kind === "artist" ? entity.anv && entity.anv.trim() || entity.name : entity.name;
     const discogsHref = entity.resource_url.replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, "https://www.discogs.com/$1/$2");
-    function buildResolved(mbUrl, mbName, mbDisambig, via2, actualKind = kind, fromCache = false) {
+    function buildResolved(mbUrl, mbName, mbDisambig, via2, actualKind = kind, fromCache = false, urlLinkedIds2) {
       return {
         type: "resolved",
         entityType: actualKind,
@@ -1777,6 +1777,18 @@
         mbUrl,
         mbName,
         mbDisambig,
+        // `urlLinkedIds` — MBIDs that have a relation to this Discogs URL,
+        //                  harvested from the URL lookup done during
+        //                  preflight. The review-table uses this to render
+        //                  the "Add Discogs link" / "already linked" / "linked
+        //                  to different MB <type>" badge without issuing
+        //                  another `/ws/2/url?…` query per row. `undefined`
+        //                  means "preflight didn't ask MB" (IDB hit on a
+        //                  legacy record that predates this field), in which
+        //                  case review-table falls back to its own per-row
+        //                  fetch. `[]` means "asked MB, got no relations" —
+        //                  no fallback needed.
+        urlLinkedIds: urlLinkedIds2,
         // `via`      — the resolution mechanism (`name` / `url` / `both` / `user`,
         //              or `cache` only when a legacy IDB record predates the
         //              `resolvedVia` field and we genuinely can't recover it).
@@ -1787,7 +1799,7 @@
         logEntry: { displayName, discogsHref, mbUrl, mbName, mbDisambig, via: via2, fromCache }
       };
     }
-    function buildAttention(nameMatches2, nameSearchFailed2, ambiguityReason) {
+    function buildAttention(nameMatches2, nameSearchFailed2, ambiguityReason, urlLinkedIds2) {
       return {
         type: "attention",
         entityType: kind,
@@ -1795,6 +1807,10 @@
         displayName,
         discogsHref,
         nameMatches: nameMatches2 || [],
+        // Same `urlLinkedIds` contract as on the resolved shape — review-table
+        // uses it to skip the per-row URL fetch even for attention rows once
+        // the user picks an MBID from the candidate list.
+        urlLinkedIds: urlLinkedIds2,
         // Only artists track this — used by the review table to badge
         // entries that failed because of a rate-limited name search vs
         // entries that genuinely don't exist in MB.
@@ -1810,6 +1826,10 @@
       const cachedRec = await readIdbRecord(key);
       if (cachedRec?.mbid && cachedRec?.entityType) {
         const via2 = cachedRec.resolvedVia || "cache";
+        let cachedLinkedIds = cachedRec.urlLinkedIds;
+        if (cachedLinkedIds === void 0 && (via2 === "url" || via2 === "both")) {
+          cachedLinkedIds = [cachedRec.mbid];
+        }
         if (cachedRec.name) {
           return buildResolved(
             cachedRec.mbUrl,
@@ -1817,7 +1837,8 @@
             cachedRec.disambiguation || "",
             via2,
             cachedRec.entityType,
-            true
+            true,
+            cachedLinkedIds
           );
         }
         const info = await fetchMbEntityInfo(cachedRec.entityType, cachedRec.mbid);
@@ -1833,11 +1854,12 @@
           info.disambiguation,
           via2,
           cachedRec.entityType,
-          true
+          true,
+          cachedLinkedIds
         );
       }
       if (cachedRec && Array.isArray(cachedRec.nameMatches)) {
-        return buildAttention(cachedRec.nameMatches, false);
+        return buildAttention(cachedRec.nameMatches, false, null, cachedRec.urlLinkedIds);
       }
     }
     const [nameJson, urlJson] = await Promise.all([
@@ -1864,6 +1886,7 @@
       disambiguation: exactNameMatches[0].disambiguation || ""
     } : null;
     let urlHit = null;
+    const urlLinkedIds = (urlJson?.relations || []).map((r) => kind === "place" ? r.place?.id || r.label?.id || null : r[kind]?.id || null).filter(Boolean);
     if (urlJson?.relations?.length > 0) {
       const rel = kind === "place" ? urlJson.relations.find((r) => r.place || r.label) : urlJson.relations.find((r) => r[kind]);
       if (rel) {
@@ -1886,7 +1909,8 @@
           mbUrl: null,
           disambiguation: "",
           resolvedVia: null,
-          nameMatches: matches
+          nameMatches: matches,
+          urlLinkedIds
         });
       }
     }
@@ -1901,7 +1925,8 @@
         return buildAttention(
           nameMatches,
           false,
-          `name \u2192 ${nameHit.kind}/${nameHit.mbid}, URL \u2192 ${urlHit.kind}/${urlHit.mbid}`
+          `name \u2192 ${nameHit.kind}/${nameHit.mbid}, URL \u2192 ${urlHit.kind}/${urlHit.mbid}`,
+          urlLinkedIds
         );
       }
     } else if (urlHit) {
@@ -1926,13 +1951,14 @@
           entityType: resolved.kind,
           name: finalName,
           disambiguation: finalDisam || "",
-          resolvedVia: via
+          resolvedVia: via,
+          urlLinkedIds
         });
       }
-      return buildResolved(mbUrl, finalName, finalDisam || "", via, resolved.kind);
+      return buildResolved(mbUrl, finalName, finalDisam || "", via, resolved.kind, false, urlLinkedIds);
     }
     await cacheAttention(nameMatches);
-    return buildAttention(nameMatches, nameSearchFailed);
+    return buildAttention(nameMatches, nameSearchFailed, null, urlLinkedIds);
   }
   async function resolveAll(entities, opts) {
     const { kindOf, progressLi, bypassIdb, progressLabel } = opts;
@@ -2348,6 +2374,14 @@
             if (!discogsHref) {
               linkSlot.textContent = "\u26A0 No Discogs page";
               linkSlot.style.color = "#c80";
+            } else if (Array.isArray(r.urlLinkedIds)) {
+              const result = r.urlLinkedIds.includes(selected.id) ? "linked" : r.urlLinkedIds.length > 0 ? "other" : "none";
+              _urlCheckSessionCache.set(urlCheckCacheKey, result);
+              try {
+                localStorage.setItem(urlCheckLsKey, JSON.stringify({ date: urlCheckToday, result }));
+              } catch (e2) {
+              }
+              applyUrlCheckResult(result);
             } else if (urlCheckCached !== null) {
               applyUrlCheckResult(urlCheckCached);
             } else {
