@@ -32,7 +32,14 @@ export async function fetchMBEntity(mbid) {
 // produced (issue #30) while keeping the burst throughput that gave that
 // approach its speed advantage over the strict serial chain it replaced.
 export const mbThrottle = (() => {
-    const MAX_CONCURRENT = 4;       // simultaneous in-flight requests
+    // 8 concurrent in-flight requests. Bumped from 4 per #87 ("Slow
+    // entity fetch ... I rarely see any 503's") — the previous cap was
+    // leaving MB headroom unused. With preflight running 10 workers
+    // (each emitting 2 parallel requests — name + URL — per entity), 8
+    // is the natural saturation point for MB's anonymous endpoint; the
+    // `_pauseUntil` cooperative backoff still kicks in if MB does
+    // return 429/503, so spikes self-correct.
+    const MAX_CONCURRENT = 8;       // simultaneous in-flight requests
     let _running         = 0;
     let _pauseUntil      = 0;        // unix-ms; workers idle until this time
     const _queue         = [];        // pending { url, retries, wantJson, resolve }
