@@ -26,6 +26,7 @@ export default [
                 clearTimeout:           'readonly',
                 setInterval:            'readonly',
                 clearInterval:          'readonly',
+                AbortController:        'readonly',
                 performance:            'readonly',
                 requestAnimationFrame:  'readonly',
                 cancelAnimationFrame:   'readonly',
