@@ -358,6 +358,33 @@ export function insertDiscogsBar(discogsUrl) {
         return cb;
     }
 
+    // Inline label + native `<select>` for binary/enum option picks (#94).
+    // Read the chosen value via the returned element's `.value`. The wrapping
+    // `<span>` carries the tooltip and a class for hover/persist hooks; the
+    // returned element IS the `<select>` so callers don't have to drill into
+    // the wrapper.
+    function makeSelect(labelText, initialValue, options, tooltipText) {
+        const wrap = document.createElement('span');
+        wrap.className = 'discogs-select-wrap';
+        wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:#555;padding:0.15rem 0.2rem 0.15rem 0.55rem;border:1px solid #d8c8a0;border-radius:2rem;background:#fffdf7;';
+        const lbl = document.createElement('span');
+        lbl.textContent = labelText + ':';
+        wrap.appendChild(lbl);
+        const sel = document.createElement('select');
+        sel.style.cssText = 'font-size:0.8rem;padding:0.05rem 0.3rem;border:1px solid #d8c8a0;border-radius:1rem;background:#fff8ee;cursor:pointer;color:#333;font-weight:600;';
+        options.forEach(opt => {
+            const o = document.createElement('option');
+            o.value = opt.value;
+            o.textContent = opt.label;
+            if (opt.value === initialValue) o.selected = true;
+            sel.appendChild(o);
+        });
+        if (tooltipText) wrap.title = tooltipText;
+        wrap.appendChild(sel);
+        row2.appendChild(wrap);
+        return sel;
+    }
+
     const OPTS_KEY = 'discogs-importer-opts';
     let savedOpts = {};
     try { savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || '{}'); } catch(e) {}
@@ -367,8 +394,20 @@ export function insertDiscogsBar(discogsUrl) {
         'Import per-track artist credits from Discogs.');
     const applyTracksCb  = makeCheckbox('Move release credits to tracks', bv('applyTracks', true),
         'Move performance credits from the release down to every recording.');
-    const createWorksCb  = makeCheckbox('Create missing works',           bv('createWorks', true),
-        'Create a new inline work for recordings without one, and link composer/lyricist/writer credits to it.');
+    // #94: "Create works" is now a binary mode picker, not a boolean toggle:
+    //   when-needed (default): create a work only when there's a
+    //                           composer/lyricist/writer credit to attach.
+    //   when-missing:          create a work for EVERY recording without one,
+    //                           credits or no credits (old `createWorks=true`).
+    // Migration: legacy `createWorks: true` → 'when-missing' (preserves the
+    // user's explicit always-create choice); anything else → 'when-needed'.
+    const _legacyCreateWorks = savedOpts.createWorks;
+    const _initialCreateWorksMode = bv('createWorksMode',
+        _legacyCreateWorks === true ? 'when-missing' : 'when-needed');
+    const createWorksMode = makeSelect('Create works', _initialCreateWorksMode, [
+        { value: 'when-needed',  label: 'when needed'  },
+        { value: 'when-missing', label: 'when missing' },
+    ], 'when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one, regardless of credits.');
 
     // ── Deduplication section (issue #62) ─────────────────────────────────
     // Two toggles that change how the dispatcher decides "this rel is
@@ -387,13 +426,14 @@ export function insertDiscogsBar(discogsUrl) {
     const saveOpts = () => {
         try { localStorage.setItem(OPTS_KEY, JSON.stringify({
             tracklist: tracklistCb.checked, applyTracks: applyTracksCb.checked,
-            createWorks: createWorksCb.checked,
+            createWorksMode: createWorksMode.value,
             dedupeEquivalenceSets: dedupeEqCb.checked,
             dedupeDuplicateRoles:  dedupeDupCb.checked,
         })); } catch(e) {}
     };
-    [tracklistCb, applyTracksCb, createWorksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
+    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
+    createWorksMode.addEventListener('change', saveOpts);
 
     bar.appendChild(row2);
 
@@ -575,7 +615,7 @@ export function insertDiscogsBar(discogsUrl) {
         // Re-show progress bar
         requestAnimationFrame(_showBar);
 
-        const opts = `per-track:${tracklistCb.checked?'on':'off'}, move-to-tracks:${applyTracksCb.checked?'on':'off'}, create-works:${createWorksCb.checked?'on':'off'}`;
+        const opts = `per-track:${tracklistCb.checked?'on':'off'}, move-to-tracks:${applyTracksCb.checked?'on':'off'}, create-works:${createWorksMode.value}`;
         const editNote = buildEditNote(discogsUrl, opts);
         editNote.split('\n').forEach(line => {
             if (!line.trim()) return;
@@ -583,7 +623,7 @@ export function insertDiscogsBar(discogsUrl) {
             const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
             log.info(html);
         });
-        runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked, dedupeEqCb.checked, dedupeDupCb.checked).finally(() => {
+        runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksMode.value, dedupeEqCb.checked, dedupeDupCb.checked).finally(() => {
             importBtn.disabled = false;
             importBtn.textContent = 'Import from Discogs';
             progressPct.textContent = '100%';
@@ -625,7 +665,7 @@ export function insertDiscogsBar(discogsUrl) {
         keysToRemove.forEach(k => localStorage.removeItem(k));
     } catch(e) {}
 })();
-function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, dedupeEquivalenceSets, dedupeDuplicateRoles) {
+function runImport(discogsUrl, processTracklist, applyToTracks, createWorksMode, dedupeEquivalenceSets, dedupeDuplicateRoles) {
     return getDiscogsReleaseData(discogsUrl)
         .then(json => {
             let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter(artist => !artist.tracks));
@@ -868,7 +908,7 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, ded
                         dedupeDuplicateRoles,
                         creditOverrides: capturedConfirmedMap?.creditOverrides,
                     };
-                    return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
+                    return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorksMode, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
                 });
         })
         .then(() => { });
