@@ -664,10 +664,17 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             // Also check for works dispatched in this session (newly created ones)
             if (!workEntity) workEntity = getWorkFromEditorState(recEntity);
 
-            // No work found — always create one (#94 removed the "off"
-            // option; the user picks between "when needed" and "when
-            // missing", both of which create works for the recordings in
-            // `workOnlyByGid`).
+            // No work found. In `never` mode we refuse to create one and
+            // log the work-only credits as errors (legacy `createWorks: false`
+            // behaviour, restored as a third picker option). Otherwise
+            // (`when-needed` / `when-missing`) we create a new work below.
+            if (!workEntity && createWorksMode === 'never') {
+                for (const { role } of entries) {
+                    log.error(`Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) — "Create works" is set to "never". Add the work manually or change the mode.`);
+                    failed++;
+                }
+                continue;
+            }
             if (!workEntity) {
                 // Use MB's own batch-create-works mechanism:
                 //   1. Build a work object matching MB's createWorkObject() output
