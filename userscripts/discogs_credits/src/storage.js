@@ -153,3 +153,22 @@ export function writeIdbRecord(key, partial) {
         } catch(e) { resolve(null); }
     });
 }
+
+/**
+ * Delete a single record from `entity_cache`. Resolves to true on success,
+ * false otherwise. Never rejects. Used by the "Refresh from MB" path so a
+ * refresh truly starts from a clean slate — see the comment at
+ * `preflight.js:resolveEntity` for why we wipe instead of merge-write.
+ */
+export function deleteIdbRecord(key) {
+    return new Promise(resolve => {
+        if (!key || !db) return resolve(false);
+        try {
+            const tx    = db.transaction([STORE], 'readwrite');
+            const store = tx.objectStore(STORE);
+            const req   = store.delete(key);
+            req.onsuccess = () => resolve(true);
+            req.onerror   = () => resolve(false);
+        } catch(e) { resolve(false); }
+    });
+}

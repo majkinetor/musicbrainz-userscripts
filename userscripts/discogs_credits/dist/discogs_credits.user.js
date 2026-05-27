@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.185521
+// @version      2026.5.27.193334
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -336,6 +336,20 @@
         getReq.onerror = () => resolve(null);
       } catch (e) {
         resolve(null);
+      }
+    });
+  }
+  function deleteIdbRecord(key) {
+    return new Promise((resolve) => {
+      if (!key || !db) return resolve(false);
+      try {
+        const tx = db.transaction([STORE], "readwrite");
+        const store = tx.objectStore(STORE);
+        const req = store.delete(key);
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => resolve(false);
+      } catch (e) {
+        resolve(false);
       }
     });
   }
@@ -1902,6 +1916,9 @@
     async function fetchMbEntityInfo(et, mbid) {
       const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
       return json ? { name: json.name || null, disambiguation: json.disambiguation || "" } : { name: null, disambiguation: "" };
+    }
+    if (bypassIdb && key) {
+      await deleteIdbRecord(key);
     }
     if (!bypassIdb && key) {
       const cachedRec = await readIdbRecord(key);

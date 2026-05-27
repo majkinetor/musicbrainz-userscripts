@@ -25,7 +25,7 @@
 //   { type: 'attention', entity, nameMatches: [...] }
 
 import { mbThrottle }                       from './api-mb.js';
-import { readIdbRecord, writeIdbRecord }    from './storage.js';
+import { readIdbRecord, writeIdbRecord, deleteIdbRecord } from './storage.js';
 import { parseDiscogsUrl }                  from './api-discogs.js';
 import { ENTITY_TYPE_MAP }                  from './data/entity-map.js';
 import { _setProgressPct }                  from './progress-bar.js';
@@ -117,6 +117,17 @@ async function resolveEntity(entity, kind, opts) {
     }
 
     // ── 1. IDB cache ─────────────────────────────────────────────────────────
+    // Refresh-from-MB: wipe the existing record up-front so this entity
+    // genuinely starts from scratch. Earlier we only skipped the read
+    // and let the post-resolution write overwrite — but the write path
+    // can land on "attention" (no single match / disagreement) and
+    // silently overwrite a previously-resolved MBID with `mbid: null`.
+    // That made refresh quietly destructive on flaky MB days. Wiping
+    // first means the worst-case outcome is "no cache entry", not
+    // "cache entry downgraded".
+    if (bypassIdb && key) {
+        await deleteIdbRecord(key);
+    }
     if (!bypassIdb && key) {
         const cachedRec = await readIdbRecord(key);
         if (cachedRec?.mbid && cachedRec?.entityType) {
