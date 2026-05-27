@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.132141
+// @version      2026.5.27.133046
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -4445,6 +4445,7 @@ ${lines}
     if (!mode) return;
     ev.preventDefault();
     ev.stopPropagation();
+    _positionByRelIdCache = buildRelIdToPositionMap();
     const group = collectGroup(btn, mode);
     if (group.buttons.length === 0) return;
     openConfirm(group, mode, () => {
@@ -4482,7 +4483,7 @@ ${lines}
       roleLabel,
       targetHref,
       targetLabel,
-      tracks: collectTrackContexts(matched)
+      locations: collectLocations(matched)
     };
   }
   function pickRoleClass(tr) {
@@ -4524,32 +4525,144 @@ ${lines}
   function cssEscape(s) {
     return String(s).replace(/(["\\\\])/g, "\\$1");
   }
-  function collectTrackContexts(items) {
-    const seen = /* @__PURE__ */ new Set();
-    const out = [];
+  function collectLocations(items) {
+    const buckets = {
+      release: { count: 0, positions: /* @__PURE__ */ new Set() },
+      recording: { count: 0, positions: /* @__PURE__ */ new Set() },
+      work: { count: 0, positions: /* @__PURE__ */ new Set() },
+      other: { count: 0, positions: /* @__PURE__ */ new Set() }
+    };
     for (const item of items) {
-      const ctx = findTrackContext(item);
-      if (seen.has(ctx)) continue;
-      seen.add(ctx);
-      out.push(ctx);
+      const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
+      const srcType = parseSourceTypeFromButton(btn);
+      const key = srcType === "release" || srcType === "recording" || srcType === "work" ? srcType : "other";
+      buckets[key].count++;
+      if (key === "recording" || key === "work") {
+        const pos = findRecordingPosition(item);
+        if (pos) buckets[key].positions.add(pos);
+      }
+    }
+    const order = [
+      ["release", "release"],
+      ["recording", "tracks"],
+      ["work", "works"]
+    ];
+    const out = [];
+    for (const [key, label] of order) {
+      const b = buckets[key];
+      const positions = sortPositions([...b.positions]);
+      out.push({ key, label, count: b.count, positions });
+    }
+    if (buckets.other.count > 0) {
+      out.push({ key: "other", label: "other", count: buckets.other.count, positions: [] });
     }
     return out;
   }
-  function findTrackContext(item) {
-    let el = item.closest("tr.subh-track") || item.closest("tr[data-track-position]");
+  function sortPositions(arr) {
+    return arr.sort((a, b) => {
+      const na = parseFloat(a), nb = parseFloat(b);
+      if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+      return String(a).localeCompare(String(b));
+    });
+  }
+  function parseSourceTypeFromButton(btn) {
+    if (!btn || !btn.id) return null;
+    const segs = btn.id.split("-");
+    let i = segs.length - 1;
+    while (i >= 0 && (segs[i] === "" || /^-?\d+$/.test(segs[i]))) i--;
+    return segs[i] || null;
+  }
+  var _positionByRelIdCache = null;
+  function buildRelIdToPositionMap() {
+    const map = /* @__PURE__ */ new Map();
+    const win = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+    const MB = win.MB;
+    const re = MB?.relationshipEditor;
+    if (!MB || !re?.state) return map;
+    const positionByRecGid = /* @__PURE__ */ new Map();
+    try {
+      let mediumIndex = 0;
+      const mediums = re.state.mediums;
+      if (!mediums) return map;
+      const iter = MB.tree?.iterate ? MB.tree.iterate(mediums) : null;
+      if (!iter) return map;
+      for (const [mediumKey, medium] of iter) {
+        mediumIndex++;
+        const tracks = medium?.tracks ?? medium;
+        let trackIndex = 0;
+        for (const rawTrack of MB.tree.iterate(tracks)) {
+          trackIndex++;
+          const trackObj = Array.isArray(rawTrack) ? rawTrack[1] : rawTrack;
+          const rec = trackObj?.recording ?? trackObj;
+          if (!rec?.gid) continue;
+          let pos = trackObj?.number || trackObj?.position;
+          if (pos == null) pos = `${mediumIndex}.${String(trackIndex).padStart(2, "0")}`;
+          positionByRecGid.set(rec.gid, String(pos));
+        }
+      }
+    } catch (e) {
+    }
+    try {
+      let walk = function(node, sourceGid) {
+        if (!node) return;
+        if (Array.isArray(node)) {
+          for (const r of node) {
+            if (r?.id != null) {
+              const pos = positionByRecGid.get(sourceGid);
+              if (pos) map.set(String(r.id), pos);
+            }
+          }
+          return;
+        }
+        if (typeof node === "object") {
+          for (const v of Object.values(node)) walk(v, sourceGid);
+        }
+      };
+      const root = re.state.relationshipsBySource;
+      if (!root) return map;
+      for (const [gid, perSource] of Object.entries(root)) {
+        walk(perSource, gid);
+      }
+    } catch (e) {
+    }
+    return map;
+  }
+  function parseRelIdFromButton(btn) {
+    if (!btn || !btn.id) return null;
+    const segs = btn.id.split("-");
+    for (let i = segs.length - 1; i >= 0; i--) {
+      if (/^-?\d+$/.test(segs[i])) return segs[i];
+      if (segs[i] === "" && i > 0 && /^\d+$/.test(segs[i + 1])) {
+        return "-" + segs[i + 1];
+      }
+    }
+    return null;
+  }
+  function findRecordingPosition(item) {
+    const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
+    const relId = parseRelIdFromButton(btn);
+    if (relId && _positionByRelIdCache && _positionByRelIdCache.has(relId)) {
+      return _positionByRelIdCache.get(relId);
+    }
+    let el = item.closest(
+      "[data-track-position], [data-position], [data-medium-track-position], [data-track-number]"
+    );
     if (el) {
-      const pos = el.getAttribute("data-track-position") || el.querySelector(".track-position")?.textContent;
+      const pos = el.getAttribute("data-track-position") || el.getAttribute("data-medium-track-position") || el.getAttribute("data-position") || el.getAttribute("data-track-number");
       if (pos) return String(pos).trim();
     }
-    let row = item.closest("tr");
-    while (row) {
-      const prev = row.previousElementSibling;
-      if (!prev) break;
-      const pos = prev.querySelector?.("td.medium-track-pos, .track-position, .position");
-      if (pos && pos.textContent) return pos.textContent.trim();
-      row = prev;
+    let scope = item.closest("table, tbody, .relationship-list-wrapper, .track-relationships, .track-rel");
+    while (scope) {
+      const candidates = scope.querySelectorAll?.(
+        ".track-position, .position, .track-number, .medium-track-pos"
+      );
+      for (const c of candidates || []) {
+        const txt = c.textContent?.trim();
+        if (txt && /^[A-Z]?\d+([\-.]\d+|[A-Z]?\d*)?$/.test(txt)) return txt;
+      }
+      scope = scope.parentElement?.closest("table, .relationship-list-wrapper, .track-relationships, .track-rel");
     }
-    return "release";
+    return null;
   }
   function buildStyle() {
     const style = document.createElement("style");
@@ -4562,31 +4675,55 @@ ${lines}
         }
         .discogs-batch-modal {
             background: #fff; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            max-width: 480px; width: 90%; padding: 1.2rem 1.4rem;
+            max-width: 540px; width: 90%; padding: 1.2rem 1.4rem;
+            box-sizing: border-box; color: #222;
         }
+        .discogs-batch-modal * { box-sizing: border-box; }
         .discogs-batch-modal h2 {
-            margin: 0 0 0.6rem; font-size: 1.05rem;
+            margin: 0 0 0.6rem; font-size: 1.05rem; line-height: 1.3;
         }
-        .discogs-batch-modal .what { margin: 0 0 0.4rem; }
-        .discogs-batch-modal .tracks {
-            margin: 0.2rem 0 0.8rem; padding: 0.4rem 0.6rem;
-            background: #f5f5f5; border-radius: 4px;
-            font-family: monospace; font-size: 0.85rem;
-            max-height: 6rem; overflow-y: auto;
+        .discogs-batch-modal .what { margin: 0 0 0.5rem; }
+        .discogs-batch-modal .total {
+            font-weight: 600; margin: 0.5rem 0 0.3rem; font-size: 0.95rem;
         }
+        .discogs-batch-modal ul.locations {
+            margin: 0 0 0.9rem; padding: 0.5rem 0.7rem 0.5rem 1.5rem;
+            background: #f6f6f6; border-radius: 4px;
+            font-size: 0.88rem; line-height: 1.6;
+            max-height: 12rem; overflow-y: auto;
+            list-style: disc;
+        }
+        .discogs-batch-modal ul.locations li.loc { margin: 0; padding: 0; }
         .discogs-batch-modal .actions {
-            display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.8rem;
+            display: flex; flex-direction: row !important;
+            justify-content: flex-end; align-items: center;
+            gap: 0.5rem; margin-top: 1rem;
         }
-        .discogs-batch-modal button {
-            padding: 0.35rem 0.9rem; border-radius: 4px;
-            border: 1px solid #bbb; cursor: pointer; font-size: 0.9rem;
+        .discogs-batch-modal .actions button {
+            flex: 0 0 auto;
+            display: inline-block;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0.45rem 1.1rem;
+            min-width: 6rem; height: 2.2rem;
+            border-radius: 4px;
+            border: 1px solid #bbb;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+            font-weight: 500;
+            line-height: 1; vertical-align: middle;
+            text-align: center;
+            white-space: nowrap;
         }
-        .discogs-batch-modal button.confirm {
+        .discogs-batch-modal .actions button.confirm {
             background: #c0392b; color: #fff; border-color: #962c20;
         }
-        .discogs-batch-modal button.cancel {
+        .discogs-batch-modal .actions button.confirm:hover { background: #a83426; }
+        .discogs-batch-modal .actions button.cancel {
             background: #f5f5f5; color: #333;
         }
+        .discogs-batch-modal .actions button.cancel:hover { background: #eaeaea; }
     `;
     return style;
   }
@@ -4602,20 +4739,70 @@ ${lines}
     what.className = "what";
     what.innerHTML = describeAction(group, mode);
     modal.appendChild(what);
-    if (group.tracks && group.tracks.length) {
-      const tracks = document.createElement("div");
-      tracks.className = "tracks";
-      tracks.textContent = "Affected: " + group.tracks.join(", ");
-      modal.appendChild(tracks);
+    if (group.locations && group.locations.length) {
+      const total = document.createElement("div");
+      total.className = "total";
+      total.textContent = `Total: ${group.buttons.length}`;
+      modal.appendChild(total);
+      const list = document.createElement("ul");
+      list.className = "locations";
+      for (const { label, count, positions } of group.locations) {
+        const li = document.createElement("li");
+        li.className = "loc";
+        const noun = count === 1 ? "rel" : "rels";
+        const tail = positions && positions.length ? `: ${positions.join(", ")}` : "";
+        li.textContent = `${count} ${noun} from ${label}${tail}`;
+        list.appendChild(li);
+      }
+      modal.appendChild(list);
     }
     const actions = document.createElement("div");
     actions.className = "actions";
+    const actionsCss = {
+      "display": "flex",
+      "flex-direction": "row",
+      "justify-content": "flex-end",
+      "align-items": "center",
+      "gap": "0.5rem",
+      "margin-top": "1rem",
+      "padding": "0",
+      "width": "100%"
+    };
+    for (const [k, v] of Object.entries(actionsCss)) actions.style.setProperty(k, v, "important");
+    function styleBtn(b, isConfirm) {
+      const css = {
+        "flex": "0 0 auto",
+        "display": "inline-block",
+        "box-sizing": "border-box",
+        "margin": "0",
+        "padding": "0.45rem 1.1rem",
+        "min-width": "6rem",
+        "height": "2.2rem",
+        "line-height": "1",
+        "border-radius": "4px",
+        "border": isConfirm ? "1px solid #962c20" : "1px solid #bbb",
+        "background": isConfirm ? "#c0392b" : "#f5f5f5",
+        "color": isConfirm ? "#fff" : "#333",
+        "cursor": "pointer",
+        "font-size": "0.9rem",
+        "font-family": "inherit",
+        "font-weight": "500",
+        "text-align": "center",
+        "vertical-align": "middle",
+        "white-space": "nowrap"
+      };
+      for (const [k, v] of Object.entries(css)) b.style.setProperty(k, v, "important");
+    }
     const cancel = document.createElement("button");
+    cancel.type = "button";
     cancel.className = "cancel";
     cancel.textContent = "Cancel";
+    styleBtn(cancel, false);
     const confirm = document.createElement("button");
+    confirm.type = "button";
     confirm.className = "confirm";
     confirm.textContent = "Remove";
+    styleBtn(confirm, true);
     actions.appendChild(cancel);
     actions.appendChild(confirm);
     modal.appendChild(actions);

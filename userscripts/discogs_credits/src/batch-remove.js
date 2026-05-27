@@ -58,6 +58,10 @@ function onClick(ev) {
     ev.preventDefault();
     ev.stopPropagation();
 
+    // Rebuild the relId → position map at popup-open time. MB's state
+    // is the authoritative position source; DOM scraping was fragile.
+    _positionByRelIdCache = buildRelIdToPositionMap();
+
     const group = collectGroup(btn, mode);
     if (group.buttons.length === 0) return;
 
@@ -110,7 +114,7 @@ function collectGroup(seedBtn, mode) {
         roleLabel,
         targetHref,
         targetLabel,
-        tracks: collectTrackContexts(matched),
+        locations: collectLocations(matched),
     };
 }
 
@@ -176,39 +180,205 @@ function cssEscape(s) {
     return String(s).replace(/(["\\\\])/g, '\\$1');
 }
 
-function collectTrackContexts(items) {
-    // Best-effort: walk up from each item looking for a track-position
-    // marker. MB renders these as a `<td class="medium-track-info">` or
-    // similar with the position text. If none found, label as 'release'.
-    const seen = new Set();
-    const out = [];
+// Classify each matched rel-item by where the rel is anchored: the
+// release, a specific recording (track), or a work. The modal expects
+// the breakdown shape maintainer specified on #68:
+//   Total: N
+//   - X rel from release
+//   - Y rel from tracks: 5, 8
+//   - Z rel from works: 5, 8
+// so we bucket counts per source-type (release / recording / work /
+// other) AND collect the unique track positions touched by each
+// bucket. Source type comes from MB's `remove-item` button id pattern
+//   id="remove-relationship-<targetType>-<sourceType>-<relId>"
+// Track positions come from DOM walking (best-effort -- positions of
+// the enclosing track wrapper apply to both `recording`-source and
+// `work`-source rels since works live inside tracks in MB's editor).
+function collectLocations(items) {
+    const buckets = {
+        release:   { count: 0, positions: new Set() },
+        recording: { count: 0, positions: new Set() },
+        work:      { count: 0, positions: new Set() },
+        other:     { count: 0, positions: new Set() },
+    };
     for (const item of items) {
-        const ctx = findTrackContext(item);
-        if (seen.has(ctx)) continue;
-        seen.add(ctx);
-        out.push(ctx);
+        const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
+        const srcType = parseSourceTypeFromButton(btn);
+        const key = (srcType === 'release' || srcType === 'recording' || srcType === 'work') ? srcType : 'other';
+        buckets[key].count++;
+        // Track position is only meaningful for recording/work rels.
+        if (key === 'recording' || key === 'work') {
+            const pos = findRecordingPosition(item);
+            if (pos) buckets[key].positions.add(pos);
+        }
+    }
+    // Stable order: release, tracks (recording), works, other. Always
+    // include release/recording/work rows even when their count is 0 so
+    // the maintainer's "Total: 4  • 0 rel from release  • 1 rel from
+    // tracks: 5, 8 …" shape lines up. Drop `other` entirely when zero.
+    const order = [
+        ['release',   'release'],
+        ['recording', 'tracks'],
+        ['work',      'works'],
+    ];
+    const out = [];
+    for (const [key, label] of order) {
+        const b = buckets[key];
+        const positions = sortPositions([...b.positions]);
+        out.push({ key, label, count: b.count, positions });
+    }
+    if (buckets.other.count > 0) {
+        out.push({ key: 'other', label: 'other', count: buckets.other.count, positions: [] });
     }
     return out;
 }
 
-function findTrackContext(item) {
-    // Try a few selectors MB uses across versions of the rel editor.
-    // Fall back to 'release-level' if none match.
-    let el = item.closest('tr.subh-track') || item.closest('tr[data-track-position]');
+function sortPositions(arr) {
+    // Numeric-aware: "5" < "8" < "10" < "A1". parseFloat handles "5",
+    // "1.01", "1-5"; falls back to lexicographic for non-numeric.
+    return arr.sort((a, b) => {
+        const na = parseFloat(a), nb = parseFloat(b);
+        if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+        return String(a).localeCompare(String(b));
+    });
+}
+
+function parseSourceTypeFromButton(btn) {
+    if (!btn || !btn.id) return null;
+    // id="remove-relationship-<targetType>-<sourceType>-<relId>"
+    // <relId> may be a negative number (-3) for newly-staged rels; the
+    // hyphen there doesn't break the split because we slice the last
+    // two segments off the end.
+    const segs = btn.id.split('-');
+    // Find the last all-numeric (or "-N" negative) segment from the end.
+    // Source type is the segment just before it.
+    let i = segs.length - 1;
+    while (i >= 0 && (segs[i] === '' || /^-?\d+$/.test(segs[i]))) i--;
+    return segs[i] || null;
+}
+
+// Build a relId → position lookup ONCE per popup-open by walking MB's
+// own state. Far more reliable than DOM scraping — MB knows exactly
+// which recording each rel belongs to, and where that recording sits
+// in the medium/track tree.
+// Returns a Map(string relId → string position e.g. "1.05" or "A1").
+// Empty map if MB state isn't accessible.
+let _positionByRelIdCache = null; // recomputed each popup-open
+function buildRelIdToPositionMap() {
+    const map = new Map();
+    const win = (typeof unsafeWindow !== 'undefined') ? unsafeWindow : window;
+    const MB = win.MB;
+    const re = MB?.relationshipEditor;
+    if (!MB || !re?.state) return map;
+
+    // Step 1: build sourceGid → "M.T" position string.
+    const positionByRecGid = new Map();
+    try {
+        let mediumIndex = 0;
+        const mediums = re.state.mediums;
+        if (!mediums) return map;
+        const iter = MB.tree?.iterate ? MB.tree.iterate(mediums) : null;
+        if (!iter) return map;
+        for (const [mediumKey, medium] of iter) {
+            mediumIndex++;
+            const tracks = medium?.tracks ?? medium;
+            let trackIndex = 0;
+            for (const rawTrack of MB.tree.iterate(tracks)) {
+                trackIndex++;
+                const trackObj = Array.isArray(rawTrack) ? rawTrack[1] : rawTrack;
+                const rec = trackObj?.recording ?? trackObj;
+                if (!rec?.gid) continue;
+                // Prefer the displayable track-position MB ships if any;
+                // fall back to numeric "M.T".
+                let pos = trackObj?.number || trackObj?.position;
+                if (pos == null) pos = `${mediumIndex}.${String(trackIndex).padStart(2, '0')}`;
+                // Multi-medium prefix only when there's more than one medium.
+                positionByRecGid.set(rec.gid, String(pos));
+            }
+        }
+    } catch (e) { /* state shape varies — best effort */ }
+
+    // Step 2: walk all relationships in state, build relId → position.
+    // Source can be a recording (use position), a work (look up the
+    // work's parent recording via relatedWorks reverse-map), or release
+    // (no track position).
+    try {
+        const root = re.state.relationshipsBySource;
+        if (!root) return map;
+        // relationshipsBySource[sourceGid][targetType] = nested objects
+        // ending in { relationships: [rels...] }. Walk recursively.
+        function walk(node, sourceGid) {
+            if (!node) return;
+            if (Array.isArray(node)) {
+                for (const r of node) {
+                    if (r?.id != null) {
+                        // Some rels store the source as `entity0` / `entity1`
+                        // depending on orientation; the sourceGid passed in
+                        // is the indexed key, that's the authoritative one.
+                        const pos = positionByRecGid.get(sourceGid);
+                        if (pos) map.set(String(r.id), pos);
+                    }
+                }
+                return;
+            }
+            if (typeof node === 'object') {
+                for (const v of Object.values(node)) walk(v, sourceGid);
+            }
+        }
+        for (const [gid, perSource] of Object.entries(root)) {
+            walk(perSource, gid);
+        }
+    } catch (e) { /* fall through — empty map is fine */ }
+    return map;
+}
+
+function parseRelIdFromButton(btn) {
+    if (!btn || !btn.id) return null;
+    // id="remove-relationship-<targetType>-<sourceType>-<relId>"
+    // <relId> may be negative; last numeric segment.
+    const segs = btn.id.split('-');
+    // Find the last numeric (or "-N") segment from the end.
+    for (let i = segs.length - 1; i >= 0; i--) {
+        if (/^-?\d+$/.test(segs[i])) return segs[i];
+        // Empty segment + numeric is "-N" split: combine.
+        if (segs[i] === '' && i > 0 && /^\d+$/.test(segs[i + 1])) {
+            return '-' + segs[i + 1];
+        }
+    }
+    return null;
+}
+
+function findRecordingPosition(item) {
+    // 1) Authoritative path: relId from button → MB state lookup.
+    const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
+    const relId = parseRelIdFromButton(btn);
+    if (relId && _positionByRelIdCache && _positionByRelIdCache.has(relId)) {
+        return _positionByRelIdCache.get(relId);
+    }
+    // 2) Fallback A: data-* attribute on any ancestor.
+    let el = item.closest(
+        '[data-track-position], [data-position], [data-medium-track-position], [data-track-number]'
+    );
     if (el) {
-        const pos = el.getAttribute('data-track-position') || el.querySelector('.track-position')?.textContent;
+        const pos = el.getAttribute('data-track-position')
+                 || el.getAttribute('data-medium-track-position')
+                 || el.getAttribute('data-position')
+                 || el.getAttribute('data-track-number');
         if (pos) return String(pos).trim();
     }
-    // Walk up looking for a track-number cell in the previous siblings.
-    let row = item.closest('tr');
-    while (row) {
-        const prev = row.previousElementSibling;
-        if (!prev) break;
-        const pos = prev.querySelector?.('td.medium-track-pos, .track-position, .position');
-        if (pos && pos.textContent) return pos.textContent.trim();
-        row = prev;
+    // 3) Fallback B: walk up looking for a textual position label.
+    let scope = item.closest('table, tbody, .relationship-list-wrapper, .track-relationships, .track-rel');
+    while (scope) {
+        const candidates = scope.querySelectorAll?.(
+            '.track-position, .position, .track-number, .medium-track-pos'
+        );
+        for (const c of (candidates || [])) {
+            const txt = c.textContent?.trim();
+            if (txt && /^[A-Z]?\d+([\-.]\d+|[A-Z]?\d*)?$/.test(txt)) return txt;
+        }
+        scope = scope.parentElement?.closest('table, .relationship-list-wrapper, .track-relationships, .track-rel');
     }
-    return 'release';
+    return null;
 }
 
 // ── modal UI ─────────────────────────────────────────────────────────────────
@@ -216,6 +386,10 @@ function findTrackContext(item) {
 function buildStyle() {
     const style = document.createElement('style');
     style.id = 'discogs-batch-remove-style';
+    // Selectors are namespaced under `.discogs-batch-modal` and use
+    // `box-sizing: border-box` + explicit `line-height` on the buttons
+    // to keep them visually aligned regardless of MB's global page CSS
+    // (which sometimes injects extra vertical padding on bare buttons).
     style.textContent = `
         .discogs-batch-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.5);
@@ -224,31 +398,55 @@ function buildStyle() {
         }
         .discogs-batch-modal {
             background: #fff; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            max-width: 480px; width: 90%; padding: 1.2rem 1.4rem;
+            max-width: 540px; width: 90%; padding: 1.2rem 1.4rem;
+            box-sizing: border-box; color: #222;
         }
+        .discogs-batch-modal * { box-sizing: border-box; }
         .discogs-batch-modal h2 {
-            margin: 0 0 0.6rem; font-size: 1.05rem;
+            margin: 0 0 0.6rem; font-size: 1.05rem; line-height: 1.3;
         }
-        .discogs-batch-modal .what { margin: 0 0 0.4rem; }
-        .discogs-batch-modal .tracks {
-            margin: 0.2rem 0 0.8rem; padding: 0.4rem 0.6rem;
-            background: #f5f5f5; border-radius: 4px;
-            font-family: monospace; font-size: 0.85rem;
-            max-height: 6rem; overflow-y: auto;
+        .discogs-batch-modal .what { margin: 0 0 0.5rem; }
+        .discogs-batch-modal .total {
+            font-weight: 600; margin: 0.5rem 0 0.3rem; font-size: 0.95rem;
         }
+        .discogs-batch-modal ul.locations {
+            margin: 0 0 0.9rem; padding: 0.5rem 0.7rem 0.5rem 1.5rem;
+            background: #f6f6f6; border-radius: 4px;
+            font-size: 0.88rem; line-height: 1.6;
+            max-height: 12rem; overflow-y: auto;
+            list-style: disc;
+        }
+        .discogs-batch-modal ul.locations li.loc { margin: 0; padding: 0; }
         .discogs-batch-modal .actions {
-            display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.8rem;
+            display: flex; flex-direction: row !important;
+            justify-content: flex-end; align-items: center;
+            gap: 0.5rem; margin-top: 1rem;
         }
-        .discogs-batch-modal button {
-            padding: 0.35rem 0.9rem; border-radius: 4px;
-            border: 1px solid #bbb; cursor: pointer; font-size: 0.9rem;
+        .discogs-batch-modal .actions button {
+            flex: 0 0 auto;
+            display: inline-block;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0.45rem 1.1rem;
+            min-width: 6rem; height: 2.2rem;
+            border-radius: 4px;
+            border: 1px solid #bbb;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+            font-weight: 500;
+            line-height: 1; vertical-align: middle;
+            text-align: center;
+            white-space: nowrap;
         }
-        .discogs-batch-modal button.confirm {
+        .discogs-batch-modal .actions button.confirm {
             background: #c0392b; color: #fff; border-color: #962c20;
         }
-        .discogs-batch-modal button.cancel {
+        .discogs-batch-modal .actions button.confirm:hover { background: #a83426; }
+        .discogs-batch-modal .actions button.cancel {
             background: #f5f5f5; color: #333;
         }
+        .discogs-batch-modal .actions button.cancel:hover { background: #eaeaea; }
     `;
     return style;
 }
@@ -269,21 +467,84 @@ function openConfirm(group, mode, onConfirm) {
     what.innerHTML = describeAction(group, mode);
     modal.appendChild(what);
 
-    if (group.tracks && group.tracks.length) {
-        const tracks = document.createElement('div');
-        tracks.className = 'tracks';
-        tracks.textContent = 'Affected: ' + group.tracks.join(', ');
-        modal.appendChild(tracks);
+    if (group.locations && group.locations.length) {
+        // Breakdown shape per #68:
+        //   Total: N
+        //   - X rel from release
+        //   - Y rel from tracks: 5, 8
+        //   - Z rel from works: 5, 8
+        const total = document.createElement('div');
+        total.className = 'total';
+        total.textContent = `Total: ${group.buttons.length}`;
+        modal.appendChild(total);
+
+        const list = document.createElement('ul');
+        list.className = 'locations';
+        for (const { label, count, positions } of group.locations) {
+            const li = document.createElement('li');
+            li.className = 'loc';
+            const noun = count === 1 ? 'rel' : 'rels';
+            const tail = (positions && positions.length) ? `: ${positions.join(', ')}` : '';
+            li.textContent = `${count} ${noun} from ${label}${tail}`;
+            list.appendChild(li);
+        }
+        modal.appendChild(list);
     }
 
+    // Build actions row + buttons with inline `!important` styles so
+    // MB's global page CSS can't unstack them or change dimensions.
+    // External stylesheets — including the one I shipped — keep losing
+    // to MB's selectors in the user's environment; inline + important
+    // wins specificity unconditionally.
     const actions = document.createElement('div');
     actions.className = 'actions';
+    const actionsCss = {
+        'display': 'flex',
+        'flex-direction': 'row',
+        'justify-content': 'flex-end',
+        'align-items': 'center',
+        'gap': '0.5rem',
+        'margin-top': '1rem',
+        'padding': '0',
+        'width': '100%',
+    };
+    for (const [k, v] of Object.entries(actionsCss)) actions.style.setProperty(k, v, 'important');
+
+    function styleBtn(b, isConfirm) {
+        const css = {
+            'flex': '0 0 auto',
+            'display': 'inline-block',
+            'box-sizing': 'border-box',
+            'margin': '0',
+            'padding': '0.45rem 1.1rem',
+            'min-width': '6rem',
+            'height': '2.2rem',
+            'line-height': '1',
+            'border-radius': '4px',
+            'border': isConfirm ? '1px solid #962c20' : '1px solid #bbb',
+            'background': isConfirm ? '#c0392b' : '#f5f5f5',
+            'color': isConfirm ? '#fff' : '#333',
+            'cursor': 'pointer',
+            'font-size': '0.9rem',
+            'font-family': 'inherit',
+            'font-weight': '500',
+            'text-align': 'center',
+            'vertical-align': 'middle',
+            'white-space': 'nowrap',
+        };
+        for (const [k, v] of Object.entries(css)) b.style.setProperty(k, v, 'important');
+    }
+
     const cancel = document.createElement('button');
+    cancel.type = 'button';
     cancel.className = 'cancel';
     cancel.textContent = 'Cancel';
+    styleBtn(cancel, false);
     const confirm = document.createElement('button');
+    confirm.type = 'button';
     confirm.className = 'confirm';
     confirm.textContent = 'Remove';
+    styleBtn(confirm, true);
     actions.appendChild(cancel);
     actions.appendChild(confirm);
     modal.appendChild(actions);
