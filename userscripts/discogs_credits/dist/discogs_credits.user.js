@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.163057
+// @version      2026.5.27.164051
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2571,6 +2571,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               if (evt.data?.type !== "artist-created") return;
               if (evt.data.resourceUrl !== r.entity.resource_url) return;
               DISCOGS_CHANNEL.removeEventListener("message", onCreated);
+              _urlCheckSessionCache.set(`${evt.data.id}|${discogsHref}`, "linked");
               setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
             };
             DISCOGS_CHANNEL.addEventListener("message", onCreated);
