@@ -412,20 +412,27 @@ export function insertDiscogsBar(discogsUrl) {
         'Import per-track artist credits from Discogs.');
     const applyTracksCb  = makeCheckbox('Move release credits to tracks', bv('applyTracks', true),
         'Move performance credits from the release down to every recording.');
-    // #94: "Create works" is now a binary mode picker, not a boolean toggle:
+    // "Create works" mode picker (#94, "never" option restored later):
     //   when-needed (default): create a work only when there's a
     //                           composer/lyricist/writer credit to attach.
     //   when-missing:          create a work for EVERY recording without one,
     //                           credits or no credits (old `createWorks=true`).
-    // Migration: legacy `createWorks: true` → 'when-missing' (preserves the
-    // user's explicit always-create choice); anything else → 'when-needed'.
+    //   never:                  create no works at all (old `createWorks=false`).
+    //                           Work-only credits that need a work that doesn't
+    //                           exist are logged and skipped.
+    // Migration: legacy `createWorks: true` → 'when-missing'; `createWorks: false`
+    // → 'never' (the explicit opt-out path the #94 picker lost); otherwise
+    // 'when-needed'.
     const _legacyCreateWorks = savedOpts.createWorks;
     const _initialCreateWorksMode = bv('createWorksMode',
-        _legacyCreateWorks === true ? 'when-missing' : 'when-needed');
+        _legacyCreateWorks === true  ? 'when-missing' :
+        _legacyCreateWorks === false ? 'never' :
+                                       'when-needed');
     const createWorksMode = makeSelect('Create works', _initialCreateWorksMode, [
         { value: 'when-needed',  label: 'when needed'  },
         { value: 'when-missing', label: 'when missing' },
-    ], 'when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one, regardless of credits.');
+        { value: 'never',        label: 'never'        },
+    ], 'when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one. never: do not create works — work-only credits with no existing work are logged and skipped.');
 
     // ── Deduplication section (issue #62) ─────────────────────────────────
     // Two toggles that change how the dispatcher decides "this rel is
