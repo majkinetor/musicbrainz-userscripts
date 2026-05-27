@@ -63,12 +63,9 @@ function onClick(ev) {
     _positionByRelIdCache = buildRelIdToPositionMap();
 
     const group = collectGroup(btn, mode);
-    if (group.buttons.length === 0) return;
+    if (group.items.length === 0) return;
 
-    openConfirm(group, mode, () => {
-        // Confirmed → trigger native click on every peer remove-item.
-        for (const b of group.buttons) b.click();
-    });
+    openConfirm(group, mode);
 }
 
 function modeFor(ev) {
@@ -83,7 +80,7 @@ function modeFor(ev) {
 function collectGroup(seedBtn, mode) {
     const seedItem = seedBtn.closest('.relationship-item');
     const seedRow  = seedBtn.closest('tr');
-    if (!seedItem || !seedRow) return { buttons: [] };
+    if (!seedItem || !seedRow) return { items: [], roleClass: null, roleLabel: '', targetHref: null, targetLabel: '' };
 
     const roleClass    = pickRoleClass(seedRow); // kebab-case role e.g. 'has-remixes'
     const targetHref   = pickTargetHref(seedItem); // e.g. '/artist/<mbid>'
@@ -104,18 +101,33 @@ function collectGroup(seedBtn, mode) {
             && hasTargetHref(item, targetHref);
     });
 
-    const buttons = matched
-        .map(it => it.querySelector('button.icon.remove-item'))
-        .filter(Boolean);
-
     return {
-        buttons,
+        // Return raw items; modal will derive `buttons` / `locations`
+        // depending on the "only this session" toggle state at confirm
+        // time. Per #68 follow-up: pre-existing rels stay untouched
+        // when the toggle is on.
+        items: matched,
         roleClass,
         roleLabel,
         targetHref,
         targetLabel,
-        locations: collectLocations(matched),
     };
+}
+
+// True iff this .relationship-item represents a rel that was added in
+// the current session (not yet committed to MB). MB's React layer
+// assigns negative ids to freshly-staged rels; persisted rels carry
+// positive DB ids. The id is encoded in the `remove-item` button's
+// `id` attribute we already parse for the position lookup.
+function isSessionRel(item) {
+    const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
+    const relId = parseRelIdFromButton(btn);
+    if (relId == null) return false;
+    return Number(relId) < 0;
+}
+
+function buttonsFor(items) {
+    return items.map(it => it.querySelector('button.icon.remove-item')).filter(Boolean);
 }
 
 function pickRoleClass(tr) {
@@ -451,7 +463,19 @@ function buildStyle() {
     return style;
 }
 
-function openConfirm(group, mode, onConfirm) {
+function openConfirm(group, mode) {
+    // Pre-split items by "this session" vs "pre-existing" so the toggle
+    // can flip between them without re-scanning the DOM. See
+    // `isSessionRel` for the criterion (negative MB-state rel id).
+    const sessionItems = group.items.filter(isSessionRel);
+    const allItems     = group.items;
+    // Default OFF: keep the prior behaviour of "remove everything in
+    // the group" so this is purely additive. Toggle is offered only
+    // when there's actually a mix or session-only subset; if every
+    // matched rel is session-only the toggle is hidden (it would do
+    // nothing).
+    let onlySession = false;
+
     const overlay = document.createElement('div');
     overlay.className = 'discogs-batch-overlay';
 
@@ -459,7 +483,6 @@ function openConfirm(group, mode, onConfirm) {
     modal.className = 'discogs-batch-modal';
 
     const title = document.createElement('h2');
-    title.textContent = `Remove ${group.buttons.length} relationship${group.buttons.length === 1 ? '' : 's'}?`;
     modal.appendChild(title);
 
     const what = document.createElement('p');
@@ -467,20 +490,44 @@ function openConfirm(group, mode, onConfirm) {
     what.innerHTML = describeAction(group, mode);
     modal.appendChild(what);
 
-    if (group.locations && group.locations.length) {
-        // Breakdown shape per #68:
-        //   Total: N
-        //   - X rel from release
-        //   - Y rel from tracks: 5, 8
-        //   - Z rel from works: 5, 8
-        const total = document.createElement('div');
-        total.className = 'total';
-        total.textContent = `Total: ${group.buttons.length}`;
-        modal.appendChild(total);
+    // Optional toggle: only remove rels added in this session (#68 follow-up).
+    // Hidden when there are no session-staged rels or no pre-existing
+    // ones in the group — either way the toggle has nothing to switch.
+    let toggleCb = null;
+    if (sessionItems.length > 0 && sessionItems.length < allItems.length) {
+        const toggleWrap = document.createElement('label');
+        toggleWrap.className = 'session-toggle';
+        toggleWrap.style.cssText = 'display:flex;align-items:center;gap:0.4rem;margin:0.3rem 0 0.7rem;font-size:0.9rem;cursor:pointer;user-select:none;';
+        toggleCb = document.createElement('input');
+        toggleCb.type = 'checkbox';
+        toggleCb.checked = false;
+        toggleWrap.appendChild(toggleCb);
+        toggleWrap.appendChild(document.createTextNode('Only remove relationships added in this session'));
+        modal.appendChild(toggleWrap);
+    }
 
-        const list = document.createElement('ul');
-        list.className = 'locations';
-        for (const { label, count, positions } of group.locations) {
+    // Total + breakdown live in their own container so we can re-render
+    // them in place when the toggle flips.
+    const total = document.createElement('div');
+    total.className = 'total';
+    modal.appendChild(total);
+
+    const list = document.createElement('ul');
+    list.className = 'locations';
+    modal.appendChild(list);
+
+    function activeItems() {
+        return onlySession ? sessionItems : allItems;
+    }
+
+    function render() {
+        const items = activeItems();
+        const buttons = buttonsFor(items);
+        const locs = collectLocations(items);
+        title.textContent = `Remove ${buttons.length} relationship${buttons.length === 1 ? '' : 's'}?`;
+        total.textContent = `Total: ${buttons.length}`;
+        list.innerHTML = '';
+        for (const { label, count, positions } of locs) {
             const li = document.createElement('li');
             li.className = 'loc';
             const noun = count === 1 ? 'rel' : 'rels';
@@ -488,8 +535,26 @@ function openConfirm(group, mode, onConfirm) {
             li.textContent = `${count} ${noun} from ${label}${tail}`;
             list.appendChild(li);
         }
-        modal.appendChild(list);
+        // Confirm button is disabled when there's nothing to remove,
+        // e.g. session-only toggle on but every matched rel is
+        // pre-existing (can happen if the user re-clicks after some
+        // rels were removed earlier in the same modal).
+        if (confirmBtn) {
+            confirmBtn.disabled = (buttons.length === 0);
+            confirmBtn.style.setProperty('opacity', buttons.length === 0 ? '0.5' : '1', 'important');
+            confirmBtn.style.setProperty('cursor', buttons.length === 0 ? 'default' : 'pointer', 'important');
+        }
     }
+    if (toggleCb) {
+        toggleCb.addEventListener('change', () => {
+            onlySession = toggleCb.checked;
+            render();
+        });
+    }
+
+    let confirmBtn; // forward-decl for render()
+    // First render happens after confirm is built (below); see end of
+    // function for the initial render() call.
 
     // Build actions row + buttons with inline `!important` styles so
     // MB's global page CSS can't unstack them or change dimensions.
@@ -540,30 +605,39 @@ function openConfirm(group, mode, onConfirm) {
     cancel.className = 'cancel';
     cancel.textContent = 'Cancel';
     styleBtn(cancel, false);
-    const confirm = document.createElement('button');
-    confirm.type = 'button';
-    confirm.className = 'confirm';
-    confirm.textContent = 'Remove';
-    styleBtn(confirm, true);
+    confirmBtn = document.createElement('button');
+    confirmBtn.type = 'button';
+    confirmBtn.className = 'confirm';
+    confirmBtn.textContent = 'Remove';
+    styleBtn(confirmBtn, true);
     actions.appendChild(cancel);
-    actions.appendChild(confirm);
+    actions.appendChild(confirmBtn);
     modal.appendChild(actions);
+
+    // Final render now that confirmBtn exists so the disabled-state
+    // update can reach it.
+    render();
     overlay.appendChild(modal);
 
     function close() {
         overlay.remove();
         document.removeEventListener('keydown', onKey, true);
     }
+    function doRemove() {
+        const buttons = buttonsFor(activeItems());
+        if (buttons.length === 0) return;
+        for (const b of buttons) b.click();
+    }
     function onKey(ev) {
         if (ev.key === 'Escape') { close(); ev.preventDefault(); }
-        if (ev.key === 'Enter')  { onConfirm(); close(); ev.preventDefault(); }
+        if (ev.key === 'Enter')  { doRemove(); close(); ev.preventDefault(); }
     }
     cancel.addEventListener('click', close);
-    confirm.addEventListener('click', () => { onConfirm(); close(); });
+    confirmBtn.addEventListener('click', () => { doRemove(); close(); });
     overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
     document.addEventListener('keydown', onKey, true);
     document.body.appendChild(overlay);
-    confirm.focus();
+    confirmBtn.focus();
 }
 
 function describeAction(group, mode) {
