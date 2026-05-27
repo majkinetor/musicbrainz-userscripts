@@ -19,7 +19,7 @@
 export function buildEditNote(discogsUrl, opts, extraLines) {
     const s = GM_info.script;
     const mbUrl = location.href.replace(/\/edit-relationships$/, '');
-    const homepage = s.homepageURL || s.homepage || 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits';
+    const homepage = s.homepageURL || s.homepage || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md';
     const header = s.name + ' v' + s.version + ' by ' + s.author + ' - ' + homepage;
     const lines = [
         header,

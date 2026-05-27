@@ -202,12 +202,15 @@ export function insertDiscogsBar(discogsUrl) {
             text-overflow: ellipsis;
         }
         .discogs-toggle { position: relative; }
+        /* position:fixed so the tooltip escapes .discogs-bar's
+           overflow:hidden (needed there to clip child backgrounds to
+           the bar's rounded corners). Per-hover JS in makeCheckbox
+           sets top/left from the toggle's viewport rect, so the
+           tooltip renders outside any overflow-clipping ancestor.
+           Issue #89. */
         .discogs-tooltip {
             display: none;
-            position: absolute;
-            bottom: calc(100% + 6px);
-            left: 50%;
-            transform: translateX(-50%);
+            position: fixed;
             background: #333;
             color: #fff;
             font-size: 0.78rem;
@@ -225,10 +228,18 @@ export function insertDiscogsBar(discogsUrl) {
             content: '';
             position: absolute;
             top: 100%;
-            left: 50%;
+            left: var(--arrow-x, 50%);
             transform: translateX(-50%);
             border: 5px solid transparent;
             border-top-color: #333;
+        }
+        /* When the tooltip flipped below the toggle (no room above),
+           flip the arrow to point up from the tooltip's top edge. */
+        .discogs-tooltip.below::after {
+            top: auto;
+            bottom: 100%;
+            border-top-color: transparent;
+            border-bottom-color: #333;
         }
         .discogs-toggle:hover .discogs-tooltip { display: block; }
     `;
@@ -267,6 +278,22 @@ export function insertDiscogsBar(discogsUrl) {
     sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
     row1.appendChild(sourceSpan);
 
+    // Documentation link on the far-right side of row1 (#90). URL falls
+    // back the same way `buildEditNote` resolves it: the manager-injected
+    // `@homepageURL`, then `@homepage`, then a hard-coded README.md link
+    // so the link works even if the userscript manager strips metadata.
+    const docsHref = (typeof GM_info !== 'undefined' && (
+        GM_info?.script?.homepageURL || GM_info?.script?.homepage
+    )) || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md';
+    const docsLink = document.createElement('a');
+    docsLink.href = docsHref;
+    docsLink.target = '_blank';
+    docsLink.rel = 'noopener noreferrer nofollow';
+    docsLink.textContent = '📖 Documentation';
+    docsLink.title = 'Open the script\'s README in a new tab';
+    docsLink.style.cssText = 'flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;';
+    row1.appendChild(docsLink);
+
     bar.appendChild(row1);
 
     // ── Row 2: option toggles ─────────────────────────────────────────────────
@@ -294,6 +321,33 @@ export function insertDiscogsBar(discogsUrl) {
             tip.className = 'discogs-tooltip';
             tip.textContent = tooltipText;
             lbl.appendChild(tip);
+            // Position on hover. Tooltip is `position: fixed` (escapes the
+            // bar's `overflow: hidden`), so we set top/left from the
+            // toggle's viewport rect each hover. Defaults to "above the
+            // toggle, centred"; if there's not enough room above we flip
+            // below, and the horizontal position is clamped to the viewport
+            // with the arrow re-aimed at the toggle's centre.
+            const TIP_W = 220, TIP_MARGIN = 6, EDGE_PAD = 8;
+            lbl.addEventListener('mouseenter', () => {
+                const r = lbl.getBoundingClientRect();
+                const centerX = r.left + r.width / 2;
+                let x = centerX - TIP_W / 2;
+                x = Math.max(EDGE_PAD, Math.min(x, window.innerWidth - TIP_W - EDGE_PAD));
+                tip.style.left = `${x}px`;
+                // Show off-screen first so we can measure the rendered height
+                // before deciding above-vs-below.
+                tip.style.top = '-9999px';
+                tip.style.display = 'block';
+                const h = tip.offsetHeight;
+                tip.style.display = '';
+                const above = r.top - TIP_MARGIN - h;
+                const fitsAbove = above >= EDGE_PAD;
+                tip.style.top = fitsAbove ? `${above}px` : `${r.bottom + TIP_MARGIN}px`;
+                tip.classList.toggle('below', !fitsAbove);
+                // Aim the arrow at the toggle's actual centre, not the
+                // tooltip's centre (they diverge once edge-clamping kicks in).
+                tip.style.setProperty('--arrow-x', `${centerX - x}px`);
+            });
         }
         lbl.addEventListener('click', (e) => {
             e.preventDefault();

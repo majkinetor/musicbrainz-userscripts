@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.202912
+// @version      2026.5.27.203005
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -15,7 +15,7 @@
 // @license      MIT
 // @downloadURL  https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.user.js
 // @updateURL    https://update.greasyfork.org/scripts/578977/MusicBrainz%20-%20Import%20Discogs%20Credits.meta.js
-// @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits
+// @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
 // @installURL   https://greasyfork.org/en/scripts/578977
 // @grant        unsafeWindow
@@ -3181,7 +3181,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
   function buildEditNote(discogsUrl, opts, extraLines) {
     const s = GM_info.script;
     const mbUrl = location.href.replace(/\/edit-relationships$/, "");
-    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/discogs_credits";
+    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
     const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
     const lines = [
       header,
@@ -3965,12 +3965,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             text-overflow: ellipsis;
         }
         .discogs-toggle { position: relative; }
+        /* position:fixed so the tooltip escapes .discogs-bar's
+           overflow:hidden (needed there to clip child backgrounds to
+           the bar's rounded corners). Per-hover JS in makeCheckbox
+           sets top/left from the toggle's viewport rect, so the
+           tooltip renders outside any overflow-clipping ancestor.
+           Issue #89. */
         .discogs-tooltip {
             display: none;
-            position: absolute;
-            bottom: calc(100% + 6px);
-            left: 50%;
-            transform: translateX(-50%);
+            position: fixed;
             background: #333;
             color: #fff;
             font-size: 0.78rem;
@@ -3988,10 +3991,18 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             content: '';
             position: absolute;
             top: 100%;
-            left: 50%;
+            left: var(--arrow-x, 50%);
             transform: translateX(-50%);
             border: 5px solid transparent;
             border-top-color: #333;
+        }
+        /* When the tooltip flipped below the toggle (no room above),
+           flip the arrow to point up from the tooltip's top edge. */
+        .discogs-tooltip.below::after {
+            top: auto;
+            bottom: 100%;
+            border-top-color: transparent;
+            border-bottom-color: #333;
         }
         .discogs-toggle:hover .discogs-tooltip { display: block; }
     `;
@@ -4017,6 +4028,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     sourceSpan.className = "discogs-source";
     sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
     row1.appendChild(sourceSpan);
+    const docsHref = typeof GM_info !== "undefined" && (GM_info?.script?.homepageURL || GM_info?.script?.homepage) || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
+    const docsLink = document.createElement("a");
+    docsLink.href = docsHref;
+    docsLink.target = "_blank";
+    docsLink.rel = "noopener noreferrer nofollow";
+    docsLink.textContent = "\u{1F4D6} Documentation";
+    docsLink.title = "Open the script's README in a new tab";
+    docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;";
+    row1.appendChild(docsLink);
     bar.appendChild(row1);
     const row2 = document.createElement("div");
     row2.className = "discogs-bar-row2";
@@ -4040,6 +4060,23 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         tip.className = "discogs-tooltip";
         tip.textContent = tooltipText;
         lbl.appendChild(tip);
+        const TIP_W = 220, TIP_MARGIN = 6, EDGE_PAD = 8;
+        lbl.addEventListener("mouseenter", () => {
+          const r = lbl.getBoundingClientRect();
+          const centerX = r.left + r.width / 2;
+          let x = centerX - TIP_W / 2;
+          x = Math.max(EDGE_PAD, Math.min(x, window.innerWidth - TIP_W - EDGE_PAD));
+          tip.style.left = `${x}px`;
+          tip.style.top = "-9999px";
+          tip.style.display = "block";
+          const h = tip.offsetHeight;
+          tip.style.display = "";
+          const above = r.top - TIP_MARGIN - h;
+          const fitsAbove = above >= EDGE_PAD;
+          tip.style.top = fitsAbove ? `${above}px` : `${r.bottom + TIP_MARGIN}px`;
+          tip.classList.toggle("below", !fitsAbove);
+          tip.style.setProperty("--arrow-x", `${centerX - x}px`);
+        });
       }
       lbl.addEventListener("click", (e) => {
         e.preventDefault();
