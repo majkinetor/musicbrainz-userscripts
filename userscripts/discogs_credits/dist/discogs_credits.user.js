@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.173610
+// @version      2026.5.27.173611
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -3177,6 +3177,10 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       // NOT 'mastering' — MB deprecated artist→recording mastering (link type 136).
     ]);
     log.info(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
+    try {
+      _showBar();
+    } catch (_) {
+    }
     const bar = document.querySelector(".discogs-bar");
     function tickProgress() {
       const done = added + skipped + failed;

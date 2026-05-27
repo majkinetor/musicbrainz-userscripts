@@ -20,7 +20,7 @@ import {
 import { buildEditNote }                from './edit-note.js';
 import { ENTITY_TYPE_MAP }               from './data/entity-map.js';
 import { WORK_ONLY_ARTIST_RELS }         from './data/work-only-rels.js';
-import { _setProgressPct }               from './progress-bar.js';
+import { _showBar, _setProgressPct }     from './progress-bar.js';
 
 // Dedup options come in as a trailing object (default empty). Used by
 // `relAlreadyExists` to honor the maintainer-configurable rules from
@@ -116,6 +116,12 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     ]);
 
     log.info(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
+
+    // The review-table code calls `_hideBar()` when it mounts; nothing
+    // re-shows the bar between the review-table tear-down and the
+    // dispatch loop start, so #82's fill-phase progress was invisible
+    // even though `tickProgress` was pushing percentages. Re-show here.
+    try { _showBar(); } catch (_) {}
 
     const bar = document.querySelector('.discogs-bar');
     function tickProgress() {
