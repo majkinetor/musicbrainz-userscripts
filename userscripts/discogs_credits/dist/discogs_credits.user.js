@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.205804
+// @version      2026.5.27.212311
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -4279,14 +4279,22 @@ ${lines}
         if (pct !== null && pct >= 100) _hideBar();
       };
       requestAnimationFrame(_showBar);
-      const opts = `per-track:${tracklistCb.checked ? "on" : "off"}, move-to-tracks:${applyTracksCb.checked ? "on" : "off"}, create-works:${createWorksMode.value}`;
+      const getOpts = () => ({
+        processTracklist: tracklistCb.checked,
+        applyToTracks: applyTracksCb.checked,
+        createWorksMode: createWorksMode.value,
+        dedupeEquivalenceSets: dedupeEqCb.checked,
+        dedupeDuplicateRoles: dedupeDupCb.checked
+      });
+      const _click = getOpts();
+      const opts = `per-track:${_click.processTracklist ? "on" : "off"}, move-to-tracks:${_click.applyToTracks ? "on" : "off"}, create-works:${_click.createWorksMode}`;
       const editNote = buildEditNote(discogsUrl, opts);
       editNote.split("\n").forEach((line) => {
         if (!line.trim()) return;
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
         log.info(html);
       });
-      runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksMode.value, dedupeEqCb.checked, dedupeDupCb.checked).finally(() => {
+      runImport(discogsUrl, getOpts).finally(() => {
         importBtn.disabled = false;
         importBtn.textContent = "Import from Discogs";
         progressPct.textContent = "100%";
@@ -4322,7 +4330,9 @@ ${lines}
     } catch (e) {
     }
   })();
-  function runImport(discogsUrl, processTracklist, applyToTracks, createWorksMode, dedupeEquivalenceSets, dedupeDuplicateRoles) {
+  function runImport(discogsUrl, getOpts) {
+    const initial = getOpts();
+    const { processTracklist } = initial;
     return getDiscogsReleaseData(discogsUrl).then((json) => {
       let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter((artist) => !artist.tracks));
       if (!_logs2._releaseInfoAdded) {
@@ -4502,12 +4512,16 @@ ${lines}
             resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
           }
         });
+        const live = getOpts();
+        if (live.processTracklist !== processTracklist) {
+          log.warn(`"Per-track credits" toggled during review (preflight ran with "${processTracklist ? "on" : "off"}", import will follow preflight). To change, restart the import.`);
+        }
         const dedupOpts = {
-          dedupeEquivalenceSets,
-          dedupeDuplicateRoles,
+          dedupeEquivalenceSets: live.dedupeEquivalenceSets,
+          dedupeDuplicateRoles: live.dedupeDuplicateRoles,
           creditOverrides: capturedConfirmedMap?.creditOverrides
         };
-        return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorksMode, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
+        return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, live.applyToTracks, live.createWorksMode, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
       });
     }).then(() => {
     });

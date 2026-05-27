@@ -615,7 +615,20 @@ export function insertDiscogsBar(discogsUrl) {
         // Re-show progress bar
         requestAnimationFrame(_showBar);
 
-        const opts = `per-track:${tracklistCb.checked?'on':'off'}, move-to-tracks:${applyTracksCb.checked?'on':'off'}, create-works:${createWorksMode.value}`;
+        // Options getter — read current control state on demand. `runImport`
+        // calls it once at preflight start and AGAIN right before dispatch,
+        // so toggling any option during the review-table phase (#94 follow-up
+        // from majkinetor) takes effect at dispatch time. Previously the
+        // values were captured at click time and frozen.
+        const getOpts = () => ({
+            processTracklist:        tracklistCb.checked,
+            applyToTracks:           applyTracksCb.checked,
+            createWorksMode:         createWorksMode.value,
+            dedupeEquivalenceSets:   dedupeEqCb.checked,
+            dedupeDuplicateRoles:    dedupeDupCb.checked,
+        });
+        const _click = getOpts();
+        const opts = `per-track:${_click.processTracklist?'on':'off'}, move-to-tracks:${_click.applyToTracks?'on':'off'}, create-works:${_click.createWorksMode}`;
         const editNote = buildEditNote(discogsUrl, opts);
         editNote.split('\n').forEach(line => {
             if (!line.trim()) return;
@@ -623,7 +636,7 @@ export function insertDiscogsBar(discogsUrl) {
             const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
             log.info(html);
         });
-        runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksMode.value, dedupeEqCb.checked, dedupeDupCb.checked).finally(() => {
+        runImport(discogsUrl, getOpts).finally(() => {
             importBtn.disabled = false;
             importBtn.textContent = 'Import from Discogs';
             progressPct.textContent = '100%';
@@ -665,7 +678,14 @@ export function insertDiscogsBar(discogsUrl) {
         keysToRemove.forEach(k => localStorage.removeItem(k));
     } catch(e) {}
 })();
-function runImport(discogsUrl, processTracklist, applyToTracks, createWorksMode, dedupeEquivalenceSets, dedupeDuplicateRoles) {
+function runImport(discogsUrl, getOpts) {
+    // Initial snapshot — used for the preflight phase (per-track decision is
+    // baked in here because it controls which entities are resolved). The
+    // OTHER options (move-to-tracks, create-works, dedup) are re-read just
+    // before dispatch so users can flip them during the review phase
+    // (#94 follow-up).
+    const initial = getOpts();
+    const { processTracklist } = initial;
     return getDiscogsReleaseData(discogsUrl)
         .then(json => {
             let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter(artist => !artist.tracks));
@@ -899,16 +919,26 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorksMode,
                             resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
                         }
                     });
+                    // Re-read options at dispatch time so toggles changed
+                    // during the review phase take effect (#94 follow-up).
+                    // `processTracklist` is the one exception — it controls
+                    // which entities got preflighted, so we honor the
+                    // initial value (changing it mid-flight can't
+                    // retroactively add or skip preflight work).
+                    const live = getOpts();
+                    if (live.processTracklist !== processTracklist) {
+                        log.warn(`"Per-track credits" toggled during review (preflight ran with "${processTracklist?'on':'off'}", import will follow preflight). To change, restart the import.`);
+                    }
                     // Bundle the dedup options + the Credited-as override
                     // map (the review table stashes it on confirmedMap as
                     // `creditOverrides`). `dispatchAllRelationships` reads
                     // them from a trailing opts arg per #62.
                     const dedupOpts = {
-                        dedupeEquivalenceSets,
-                        dedupeDuplicateRoles,
+                        dedupeEquivalenceSets: live.dedupeEquivalenceSets,
+                        dedupeDuplicateRoles:  live.dedupeDuplicateRoles,
                         creditOverrides: capturedConfirmedMap?.creditOverrides,
                     };
-                    return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorksMode, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
+                    return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, live.applyToTracks, live.createWorksMode, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
                 });
         })
         .then(() => { });
