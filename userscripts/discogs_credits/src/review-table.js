@@ -767,6 +767,17 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         if (evt.data?.type !== 'artist-created') return;
                         if (evt.data.resourceUrl !== r.entity.resource_url) return;
                         DISCOGS_CHANNEL.removeEventListener('message', onCreated);
+                        // Issue #78: `openCreateTab` puts the Discogs URL
+                        // straight into MB's create form (`edit-<type>.url.0.text`
+                        // + `link_type_id`), so when the entity is born the
+                        // URL relation already exists on it. Pre-seed the
+                        // URL-check cache for this new MBID so the row's
+                        // action chip jumps straight to ✓ without going
+                        // through 🔗 "Add Discogs link" — the link is
+                        // already there. The session cache is keyed by
+                        // `${mbid}|${discogsHref}` exactly as renderActions
+                        // builds it.
+                        _urlCheckSessionCache.set(`${evt.data.id}|${discogsHref}`, 'linked');
                         setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
                     };
                     DISCOGS_CHANNEL.addEventListener('message', onCreated);
