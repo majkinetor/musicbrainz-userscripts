@@ -35,22 +35,20 @@ The UI strip at the top of the page with options, an Import button, log output, 
 Options are saved in localStorage and persist across sessions.
 
 1. **Per-track credits**<br>
-Import track-level artist credits in addition to release-level credits. Captured at import-click — toggling it during the review phase logs a warning and the original value is used (preflight is conditional on this).
+Import track-level artist credits in addition to release-level credits. 
 1. **Move release credits to tracks**<br>
 Move appropriate release-level credits down to all recordings (instruments, vocals, producer, mix, etc.). Doesn't move any pre-existing release-level credits.
 1. **Create works** — mode picker:
-    - `when needed` (default) — create a work only when there's a composer/lyricist/writer credit to attach to the recording. Recordings without any such credit (or whose only such credit references an unresolved entity) are left alone.
+    - `when needed` (default) — create a work only when there's a composer/lyricist/writer credit to attach to the recording. 
     - `when missing` — create a work for every recording without one, regardless of credits.
-1. **Dedup: Equivalence sets**<br>
-Skip a role when an equivalent role already exists on the target (writer ≡ composer).
-1. **Dedup: Duplicate roles**<br>
-Skip adding a role when the target already has the same role (regardless of attributes / dates / tasks).
+    - `never` — never create any work, even when there are credits
+1. **Dedup**
+    - **Equivalence sets**<br>
+    Skip a role when an equivalent role already exists on the target (writer ≡ composer).
+    - **Duplicate roles**<br>
+    Skip a role when the target recording already has the same role (regardless of attributes / dates / tasks).
 
 Options 2–5 are re-read at dispatch time, so they can be flipped during the review phase and the import will follow the latest pick.
-
-The bar also includes:
-- **Progress bar** that runs in marquee mode during indeterminate stages (Discogs fetch, MB rate-limit waits) and switches to determinate fill during preflight and dispatch.
-- **Copy log** / **Copy log (no JSON)** for filing issue reports. Mid-review copies substitute the static markdown table for the interactive review panel.
 
 ### Entity Review Table
 
@@ -101,7 +99,7 @@ The dispatch-based zero-dialog import. Idempotent — skips relationships that a
 These run on every `/edit-relationships` page regardless of whether a Discogs link is present:
 
 - **Hover-highlight** — Hovering an entity in the rel editor highlights all relationships that reference it (and vice versa). Also runs against the review table while it's open.
-- **Batch-remove** — Modifier-click on any MB `×` button opens a popup to remove all relationships matching a chosen scope (by entity, by link type, by track range, only-this-session).
+- **Batch-remove** — Modifier-click (SHIFT, CTRL, SHIFT+CTRL) on any `(×)` button opens a popup to remove all relationships matching a chosen scope (by entity, by link type, by track range, only-this-session).
 
 ## Notes
 
