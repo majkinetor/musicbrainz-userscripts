@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.221711
+// @version      2026.5.27.223723
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -3617,9 +3617,11 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     }
     async function dispatchWorks() {
       const recordingOfLinkTypeId = resolveLinkTypeId("performance", "recording", "work");
+      const includeOnlyResolved = createWorksMode === "when-needed";
       const workOnlyByGid = /* @__PURE__ */ new Map();
       for (const role of tracklistRels) {
         if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+        if (includeOnlyResolved && !confirmedMbUrl(role.artist)) continue;
         const recEntity = getRecordingEntity(role.track);
         if (!recEntity) {
           log.error(`Work-only rel for track ${role.track.position} "${role.track.title}" \u2014 no recording found, skipped`);
@@ -3631,6 +3633,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       }
       for (const role of artistRoles) {
         if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+        if (includeOnlyResolved && !confirmedMbUrl(role.artist)) continue;
         for (const recEntity of recordingByGid.values()) {
           const syntheticRole = { ...role, track: { position: "", title: recEntity.name || "" } };
           if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);

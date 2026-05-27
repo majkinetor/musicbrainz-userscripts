@@ -570,10 +570,19 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         // recordingOfLinkTypeId: the "recording of" / "performance" link type
         const recordingOfLinkTypeId = resolveLinkTypeId('performance', 'recording', 'work');
 
-        // Collect work-only tracklist rels grouped by recording GID
+        // Collect work-only tracklist rels grouped by recording GID. In
+        // `when-needed` mode, skip roles whose artist won't actually
+        // dispatch (unresolved or user-skipped in the review). Otherwise
+        // we'd create a work for a recording whose only "work-needed"
+        // reason is a credit that gets dropped at dispatch time anyway.
+        // In `when-missing` we still include them — the user explicitly
+        // asked for a work on every recording, so the work gets created
+        // with whatever resolved credits attach.
+        const includeOnlyResolved = createWorksMode === 'when-needed';
         const workOnlyByGid = new Map(); // recGid → [{ role, recEntity }, ...]
         for (const role of tracklistRels) {
             if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+            if (includeOnlyResolved && !confirmedMbUrl(role.artist)) continue;
             const recEntity = getRecordingEntity(role.track);
             if (!recEntity) {
                 log.error(`Work-only rel for track ${role.track.position} "${role.track.title}" — no recording found, skipped`);
@@ -584,10 +593,11 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             workOnlyByGid.get(recEntity.gid).push({ role, recEntity });
         }
 
-        // Release-level work-only roles apply to all recordings (in both
-        // modes — release-level credits count as "needed").
+        // Release-level work-only roles apply to all recordings. Same
+        // resolved-only filter in `when-needed`.
         for (const role of artistRoles) {
             if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+            if (includeOnlyResolved && !confirmedMbUrl(role.artist)) continue;
             for (const recEntity of recordingByGid.values()) {
                 const syntheticRole = { ...role, track: { position: '', title: recEntity.name || '' } };
                 if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
