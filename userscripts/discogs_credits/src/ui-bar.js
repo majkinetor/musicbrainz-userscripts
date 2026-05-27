@@ -267,6 +267,22 @@ export function insertDiscogsBar(discogsUrl) {
     sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
     row1.appendChild(sourceSpan);
 
+    // Documentation link on the far-right side of row1 (#90). URL falls
+    // back the same way `buildEditNote` resolves it: the manager-injected
+    // `@homepageURL`, then `@homepage`, then a hard-coded README.md link
+    // so the link works even if the userscript manager strips metadata.
+    const docsHref = (typeof GM_info !== 'undefined' && (
+        GM_info?.script?.homepageURL || GM_info?.script?.homepage
+    )) || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md';
+    const docsLink = document.createElement('a');
+    docsLink.href = docsHref;
+    docsLink.target = '_blank';
+    docsLink.rel = 'noopener noreferrer nofollow';
+    docsLink.textContent = '? Documentation';
+    docsLink.title = 'Open the script\'s README in a new tab';
+    docsLink.style.cssText = 'flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;';
+    row1.appendChild(docsLink);
+
     bar.appendChild(row1);
 
     // ── Row 2: option toggles ─────────────────────────────────────────────────
