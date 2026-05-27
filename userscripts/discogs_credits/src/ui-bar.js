@@ -685,6 +685,8 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, ded
             // "🔄 Refresh from MB" button so the user can re-resolve when a
             // cached entry is stale (entity got merged, renamed, etc.).
             function runPreflight(bypassIdb = false) {
+                log.info(`Starting preflight: ${uniqueArtists.length} artist(s), ${uniqueCompanies.length} label(s)/place(s).`);
+
                 const artistProgressLi = document.createElement('li');
                 artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz…`;
                 _logs.appendChild(artistProgressLi);
@@ -701,6 +703,7 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, ded
                 // #87 (a stream of 503s with `Retry-After: 9`). Serialised,
                 // the total time is the same (throttle-bound) but the
                 // request rate is smooth and burst-free.
+                const t0 = performance.now();
                 return (async () => {
                     const artistResults  = await resolveAll(uniqueArtists, {
                         progressLi:    artistProgressLi,
@@ -714,6 +717,8 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, ded
                         kindOf:        COMPANY_KIND,
                         bypassIdb,
                     });
+                    const elapsed = (performance.now() - t0) / 1000;
+                    log.info(`Preflight done in ${elapsed.toFixed(1)}s.`);
                     return [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
                 })();
             }

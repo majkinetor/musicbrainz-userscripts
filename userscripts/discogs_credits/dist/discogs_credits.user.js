@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.183959
+// @version      2026.5.27.185521
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -95,7 +95,7 @@
     const details = document.createElement("details");
     details.style.cssText = "margin:0.3rem 0;";
     const summary = document.createElement("summary");
-    summary.textContent = "Preflight diagnostics (collapsed)";
+    summary.textContent = "Preflight diagnostics";
     summary.style.cssText = "cursor:pointer;font-size:0.8rem;color:#888;user-select:none;";
     details.appendChild(summary);
     const ul = document.createElement("ul");
@@ -150,7 +150,7 @@
       }
     }
     let _diagReqSeq = 0;
-    const REQUEST_TIMEOUT_MS = 15e3;
+    const REQUEST_TIMEOUT_MS = 1e4;
     async function _run(item) {
       const tag = `req#${++_diagReqSeq}`;
       const shortUrl = item.url.replace("//musicbrainz.org", "").replace(/^https:/, "");
@@ -184,8 +184,16 @@
           return;
         } catch (e) {
           const elapsed = Date.now() - t0;
-          const reason = e?.name === "AbortError" ? `timed out after ${REQUEST_TIMEOUT_MS}ms` : `${e?.message || e}`;
-          logDebug(`${tag} threw in ${elapsed}ms: ${reason}`);
+          const isTimeout = e?.name === "AbortError";
+          const reason = isTimeout ? `timed out after ${REQUEST_TIMEOUT_MS}ms` : `${e?.message || e}`;
+          if (isTimeout) {
+            _rateLimited++;
+            const waitMs = Math.min(1e3 * Math.pow(2, attempt), 8e3);
+            _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
+            logDebug(`${tag} threw in ${elapsed}ms: ${reason}; shared pause pushed to +${waitMs}ms`);
+          } else {
+            logDebug(`${tag} threw in ${elapsed}ms: ${reason}`);
+          }
           if (attempt === item.retries) {
             item.resolve(null);
             return;
@@ -4345,12 +4353,14 @@ ${lines}
         }
       });
       function runPreflight(bypassIdb = false) {
+        log.info(`Starting preflight: ${uniqueArtists.length} artist(s), ${uniqueCompanies.length} label(s)/place(s).`);
         const artistProgressLi = document.createElement("li");
         artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz\u2026`;
         _logs2.appendChild(artistProgressLi);
         const companyProgressLi = document.createElement("li");
         companyProgressLi.textContent = `Checking ${uniqueCompanies.length} label(s)/place(s) against MusicBrainz\u2026`;
         _logs2.appendChild(companyProgressLi);
+        const t0 = performance.now();
         return (async () => {
           const artistResults = await resolveAll(uniqueArtists, {
             progressLi: artistProgressLi,
@@ -4364,6 +4374,8 @@ ${lines}
             kindOf: COMPANY_KIND,
             bypassIdb
           });
+          const elapsed = (performance.now() - t0) / 1e3;
+          log.info(`Preflight done in ${elapsed.toFixed(1)}s.`);
           return [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
         })();
       }

@@ -74,10 +74,11 @@ export const mbThrottle = (() => {
     // Per-request hard timeout. The browser will happily wait many tens of
     // seconds on a stuck connection (#87 follow-up: observed a `/ws/2/url`
     // fetch that hung for 40 213ms before the network layer gave up). One
-    // hung request blocks a throttle slot for that whole time. 15s is well
+    // hung request blocks a throttle slot for that whole time. 10s is well
     // beyond MB's normal response time (<500ms typical) but short enough
-    // that a stuck connection retries promptly.
-    const REQUEST_TIMEOUT_MS = 15000;
+    // that a stuck connection retries promptly. Lowered from 15s after a
+    // log from majkinetor showed ~30 stuck requests each burning 15s.
+    const REQUEST_TIMEOUT_MS = 10000;
 
     async function _run(item) {
         const tag = `req#${++_diagReqSeq}`;
@@ -118,10 +119,24 @@ export const mbThrottle = (() => {
                 return;
             } catch (e) {
                 const elapsed = Date.now() - t0;
-                const reason = (e?.name === 'AbortError')
+                const isTimeout = e?.name === 'AbortError';
+                const reason = isTimeout
                     ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
                     : `${e?.message || e}`;
-                logDebug(`${tag} threw in ${elapsed}ms: ${reason}`);
+                // Treat AbortError (network-layer timeout) as cooperative
+                // backpressure. In the #87 logs, timeouts came in clusters of
+                // 3-5 within a few hundred ms — that pattern is MB-side
+                // overload (silently dropping requests instead of returning
+                // 503), not random socket stalls. Bump the shared pause so
+                // the rest of the pool pauses before piling on again.
+                if (isTimeout) {
+                    _rateLimited++;
+                    const waitMs = Math.min(1000 * Math.pow(2, attempt), 8000);
+                    _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
+                    logDebug(`${tag} threw in ${elapsed}ms: ${reason}; shared pause pushed to +${waitMs}ms`);
+                } else {
+                    logDebug(`${tag} threw in ${elapsed}ms: ${reason}`);
+                }
                 if (attempt === item.retries) { item.resolve(null); return; }
                 await new Promise(r => setTimeout(r, 500));
             } finally {

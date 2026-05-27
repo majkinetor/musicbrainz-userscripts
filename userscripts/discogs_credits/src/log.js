@@ -89,7 +89,7 @@ function _ensureDebugUl() {
     const details = document.createElement('details');
     details.style.cssText = 'margin:0.3rem 0;';
     const summary = document.createElement('summary');
-    summary.textContent = 'Preflight diagnostics (collapsed)';
+    summary.textContent = 'Preflight diagnostics';
     summary.style.cssText = 'cursor:pointer;font-size:0.8rem;color:#888;user-select:none;';
     details.appendChild(summary);
     const ul = document.createElement('ul');
