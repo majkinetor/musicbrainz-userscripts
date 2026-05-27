@@ -346,16 +346,25 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // elements regardless of href presence.
             if (!hasDiscogsUrl) dlA.className = 'discogs-entity-name';
             nameWrap.appendChild(dlA);
+            // Distinct warning badges per #81. Both warnings used to be
+            // the same icon, distinguishable only via tooltip. Now each
+            // condition gets a short text label with a distinct color.
+            const BADGE_BASE = 'display:inline-flex;align-items:center;margin-left:0.35rem;' +
+                               'padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;' +
+                               'border-radius:0.7rem;letter-spacing:0.01em;cursor:help;' +
+                               'text-transform:lowercase;line-height:1.4;';
             if (!hasDiscogsUrl) {
                 const noUrl = document.createElement('span');
-                noUrl.textContent = ' \u26a0\ufe0f'; noUrl.title = 'No Discogs artist page — manual search needed';
-                noUrl.style.cssText = 'cursor:help;color:#c80;';
+                noUrl.textContent = 'no profile';
+                noUrl.title = 'No Discogs artist page — name lookup unavailable, search MB manually';
+                noUrl.style.cssText = BADGE_BASE + 'background:#fde0e0;color:#a02020;border:1px solid #d44040;';
                 nameWrap.appendChild(noUrl);
             }
             if (nameMismatch) {
                 const w = document.createElement('span');
-                w.textContent = ' \u26a0\ufe0f'; w.title = 'Name differs from MB match';
-                w.style.cursor = 'help';
+                w.textContent = 'name differs';
+                w.title = 'MB entity name differs from the Discogs display name — double-check this is the right match';
+                w.style.cssText = BADGE_BASE + 'background:#fff1c4;color:#7a5800;border:1px solid #d4ad3a;';
                 nameWrap.appendChild(w);
             }
             nameRow.appendChild(nameWrap);
