@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.193334
+// @version      2026.5.27.202912
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2967,11 +2967,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         }
       }
       updateImportBtn();
-      importBtn.addEventListener("click", () => {
-        const confirmedMap = /* @__PURE__ */ new Map();
-        rowState.forEach((s, key) => {
-          if (s.mbUrl) confirmedMap.set(key, s.mbUrl);
-        });
+      function buildStaticTableLi() {
         const tbl = document.createElement("table");
         tbl.style.cssText = "border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;";
         const thRow = document.createElement("tr");
@@ -3020,7 +3016,14 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         const tblLi = document.createElement("li");
         tblLi.style.cssText = "list-style:none;margin:0;padding:0;";
         tblLi.appendChild(tbl);
-        getLogContainer().appendChild(tblLi);
+        return tblLi;
+      }
+      importBtn.addEventListener("click", () => {
+        const confirmedMap = /* @__PURE__ */ new Map();
+        rowState.forEach((s, key) => {
+          if (s.mbUrl) confirmedMap.set(key, s.mbUrl);
+        });
+        getLogContainer().appendChild(buildStaticTableLi());
         const unresolvedCount = allResults.filter((r) => {
           const _k = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
           return !rowState.get(_k)?.confirmed;
@@ -3042,6 +3045,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       panel.appendChild(btnRow);
       const panelLi = document.createElement("li");
       panelLi.style.cssText = "list-style:none;margin:0;padding:0;";
+      panelLi.classList.add("discogs-review-panel-li");
+      panelLi._buildStaticTableLi = buildStaticTableLi;
       panelLi.appendChild(panel);
       getLogContainer().appendChild(panelLi);
       getLogContainer().scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -4133,14 +4138,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               const sum = node.querySelector("summary");
               const sumText = sum ? [...sum.childNodes].map((n) => {
                 if (n.nodeType === Node.TEXT_NODE) return n.textContent;
-                if (n.tagName?.toLowerCase() === "strong") return "**" + n.textContent + "**";
+                const t = n.tagName?.toLowerCase();
+                if (t === "button" || t === "input") return "";
                 return n.textContent;
-              }).join("") : "";
+              }).join("").trim() : "";
               if (skipDiscogsJson && /raw Discogs JSON/i.test(sumText)) {
                 return "";
               }
               const body = [...node.childNodes].filter((n) => n !== sum).map(nodeToMd).join("");
-              return "<details><summary>" + sumText + "</summary>\n\n" + body + "\n</details>";
+              return "\n\n<details><summary>" + sumText + "</summary>\n\n" + body + "\n</details>\n\n";
             }
             if (tag === "summary") return "";
             if (tag === "span") return inner;
@@ -4163,6 +4169,9 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           return _md.startsWith("\n\n") || _md.endsWith("\n\n") ? _md : _md.replace(/^\n/, "").replace(/\n$/, "");
         }
         const lines = [..._logs2.querySelectorAll("li")].map((li) => {
+          if (li.classList?.contains("discogs-review-panel-li") && typeof li._buildStaticTableLi === "function") {
+            return htmlToMd(li._buildStaticTableLi());
+          }
           const md = htmlToMd(li);
           if (!md) return "";
           if (md.startsWith("\n\n|") || md.startsWith("<details>")) return md;

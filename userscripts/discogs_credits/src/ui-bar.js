@@ -401,11 +401,19 @@ export function insertDiscogsBar(discogsUrl) {
                     }
                     if (tag === 'details') {
                         const sum = node.querySelector('summary');
+                        // Plain-text summary only. Markdown inside `<details><summary>`
+                        // is not rendered by GitHub, and interactive elements like
+                        // `<button>` (e.g. "Copy JSON") don't belong in the copy. So
+                        // skip `<button>`/`<input>` entirely and strip markdown
+                        // wrappers like `<strong>` to their text content. (Nitpick
+                        // #1 from majkinetor on #87: previously the summary read
+                        // `**...** Copy JSON`.)
                         const sumText = sum ? [...sum.childNodes].map(n => {
                             if (n.nodeType === Node.TEXT_NODE) return n.textContent;
-                            if (n.tagName?.toLowerCase() === 'strong') return '**' + n.textContent + '**';
+                            const t = n.tagName?.toLowerCase();
+                            if (t === 'button' || t === 'input') return '';
                             return n.textContent;
-                        }).join('') : '';
+                        }).join('').trim() : '';
                         // The raw-Discogs-JSON block is itself a `<details>`
                         // whose summary contains "raw Discogs JSON" — skip the
                         // whole thing (including the summary) when the user
@@ -415,7 +423,11 @@ export function insertDiscogsBar(discogsUrl) {
                         }
                         // Get non-summary children
                         const body = [...node.childNodes].filter(n => n !== sum).map(nodeToMd).join('');
-                        return '<details><summary>' + sumText + '</summary>\n\n' + body + '\n</details>';
+                        // Surround the block with blank lines so GitHub treats it
+                        // as its own paragraph. Without them, neighbouring log
+                        // lines collapse into the HTML block and lose their
+                        // markdown line breaks (nitpick #3).
+                        return '\n\n<details><summary>' + sumText + '</summary>\n\n' + body + '\n</details>\n\n';
                     }
                     if (tag === 'summary') return ''; // handled by details
                     if (tag === 'span') return inner;
@@ -437,6 +449,17 @@ export function insertDiscogsBar(discogsUrl) {
                 const _md = nodeToMd(el); return _md.startsWith('\n\n') || _md.endsWith('\n\n') ? _md : _md.replace(/^\n/, '').replace(/\n$/, '');
             }
             const lines = [..._logs.querySelectorAll('li')].map(li => {
+                // Swap the interactive review-panel `<li>` for the static
+                // markdown-table form when copying mid-review (nitpick #2 on
+                // #87). `review-table.js` stashes a `_buildStaticTableLi`
+                // closure on the panel `<li>`; calling it returns a fresh
+                // `<li>` containing the table with the user's current picks,
+                // which we feed through `htmlToMd` instead of the panel.
+                // Post-import the panel is gone and the static table lives
+                // in the log on its own, so this branch never fires then.
+                if (li.classList?.contains('discogs-review-panel-li') && typeof li._buildStaticTableLi === 'function') {
+                    return htmlToMd(li._buildStaticTableLi());
+                }
                 const md = htmlToMd(li);
                 if (!md) return ''; // skipped details emit empty — drop the line
                 // Add trailing two-spaces for markdown line breaks, except tables/details
