@@ -45,28 +45,33 @@ import                                './storage.js';   // opens IndexedDB on lo
 
     sessionStorage.removeItem(pendingKey);
 
-    // Fetch entity name to send back
-    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`)
+    // Fetch entity name to send back, but cap the wait so a slow
+    // `/ws/2/<type>/<mbid>` response doesn't keep the new-entity tab
+    // open for many seconds (#97). If the fetch beats the timeout, we
+    // get the real name + disambiguation; otherwise post with empty
+    // strings — the opener tab can backfill via its own state once it
+    // sees the `artist-created` message. Closing was previously gated
+    // on the fetch promise + a flat 800ms delay; this raced to 10s+
+    // whenever MB was slow (which #87 showed is more common than we
+    // thought). New worst case: ~1.1s.
+    const NAME_FETCH_TIMEOUT_MS = 1000;
+    const CLOSE_DELAY_MS = 50; // tiny grace for BroadcastChannel delivery
+    const ctrl  = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), NAME_FETCH_TIMEOUT_MS);
+    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal })
         .then(r => r.json())
-        .then(json => {
+        .then(json => ({ name: json.name || '', disambiguation: json.disambiguation || '' }))
+        .catch(() => ({ name: '', disambiguation: '' }))
+        .then(({ name, disambiguation }) => {
+            clearTimeout(timer);
             DISCOGS_CHANNEL.postMessage({
                 type: 'artist-created',  // keep same message type for compatibility
                 id: mbid,
-                name: json.name || '',
-                disambiguation: json.disambiguation || '',
+                name,
+                disambiguation,
                 resourceUrl: pending,
             });
-            setTimeout(() => window.close(), 800);
-        })
-        .catch(() => {
-            DISCOGS_CHANNEL.postMessage({
-                type: 'artist-created',
-                id: mbid,
-                name: '',
-                disambiguation: '',
-                resourceUrl: pending,
-            });
-            setTimeout(() => window.close(), 800);
+            setTimeout(() => window.close(), CLOSE_DELAY_MS);
         });
 })();
 
