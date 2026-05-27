@@ -262,7 +262,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         const thead = document.createElement('thead');
         const hr = document.createElement('tr');
         hr.style.background = '#f5e8a0';
-        ['Discogs entity', 'MB match / search'].forEach(col => {
+        ['MB match / search', 'Discogs entity'].forEach(col => {
             const th = document.createElement('th');
             th.style.cssText = 'text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;';
             th.textContent = col;
@@ -364,7 +364,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             actionsLine.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;flex-shrink:0;';
             nameRow.appendChild(actionsLine);
             tdDiscogs.appendChild(nameRow);
-            tr.appendChild(tdDiscogs);
+            // NOTE: tdDiscogs is appended to `tr` AFTER tdMb below
+            // (column swap per #77 follow-up: search/select column moves
+            // left). The tdDiscogs DOM keeps being populated below;
+            // we just defer the row append until after tdMb's append.
 
             // Roles line below entity name. Each role is its own <span> so it
             // can carry a `data-role-key` (display label *without* the track-
@@ -409,10 +412,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // The active value is mirrored into `creditOverrides[mbUrl]`
             // on every edit, ready for the dispatch step to consume.
             const credLine = document.createElement('div');
-            // Extra top padding per #77 follow-up so the input sits
-            // visually below the roles line rather than crammed against
-            // it.
-            credLine.style.cssText = 'display:flex;align-items:center;gap:0.3rem;margin-top:0.6rem;max-width:280px;';
+            // Extra top padding per #77 follow-up (and the second follow-up
+            // "add more padding"). Combined margin + padding so the gap is
+            // visible even when the surrounding cell trims margins.
+            credLine.style.cssText = 'display:flex;align-items:center;gap:0.3rem;margin-top:1rem;padding-top:0.25rem;max-width:280px;';
             const credLabel = document.createElement('label');
             credLabel.textContent = 'Credited as:';
             credLabel.style.cssText = 'font-size:0.72rem;color:#888;flex-shrink:0;';
@@ -487,6 +490,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             tdMb.appendChild(candidateList);
             tdMb.appendChild(searchRow);
             tr.appendChild(tdMb);
+            // tdDiscogs goes AFTER tdMb so the MB search column lands on
+            // the left edge of the row (#77 follow-up).
+            tr.appendChild(tdDiscogs);
 
             // No separate Action column — actions render inside the
             // Discogs column's `actionsLine` slot (Proposal C of #77).
@@ -777,9 +783,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // name. Compact icons with descriptive `title=` for
                 // accessibility.
                 const createBtn = document.createElement('button');
-                createBtn.textContent = '🆕';
+                createBtn.textContent = '+';
                 createBtn.title = 'Create in MB with default Discogs name + URL';
-                createBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#2a7;'; // green accent
+                createBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#2a7;font-size:1.15rem;font-weight:600;'; // bigger, bolder plus
                 createBtn.addEventListener('click', () => openCreateTab());
 
                 const createAdvBtn = document.createElement('button');

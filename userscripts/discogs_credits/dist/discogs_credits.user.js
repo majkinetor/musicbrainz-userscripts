@@ -2189,7 +2189,7 @@
       const thead = document.createElement("thead");
       const hr = document.createElement("tr");
       hr.style.background = "#f5e8a0";
-      ["Discogs entity", "MB match / search"].forEach((col) => {
+      ["MB match / search", "Discogs entity"].forEach((col) => {
         const th = document.createElement("th");
         th.style.cssText = "text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;";
         th.textContent = col;
@@ -2264,7 +2264,6 @@
         actionsLine.style.cssText = "display:inline-flex;align-items:center;gap:0.3rem;flex-shrink:0;";
         nameRow.appendChild(actionsLine);
         tdDiscogs.appendChild(nameRow);
-        tr.appendChild(tdDiscogs);
         const rolesList = r._roles || [];
         if (rolesList.length > 0) {
           const seen = /* @__PURE__ */ new Map();
@@ -2293,7 +2292,7 @@
           tdDiscogs.appendChild(rolesLine);
         }
         const credLine = document.createElement("div");
-        credLine.style.cssText = "display:flex;align-items:center;gap:0.3rem;margin-top:0.6rem;max-width:280px;";
+        credLine.style.cssText = "display:flex;align-items:center;gap:0.3rem;margin-top:1rem;padding-top:0.25rem;max-width:280px;";
         const credLabel = document.createElement("label");
         credLabel.textContent = "Credited as:";
         credLabel.style.cssText = "font-size:0.72rem;color:#888;flex-shrink:0;";
@@ -2351,6 +2350,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         tdMb.appendChild(candidateList);
         tdMb.appendChild(searchRow);
         tr.appendChild(tdMb);
+        tr.appendChild(tdDiscogs);
         const tdAction = actionsLine;
         tbody.appendChild(tr);
         function setRowResolved(a) {
@@ -2576,9 +2576,9 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             DISCOGS_CHANNEL.addEventListener("message", onCreated);
           }
           const createBtn = document.createElement("button");
-          createBtn.textContent = "\u{1F195}";
+          createBtn.textContent = "+";
           createBtn.title = "Create in MB with default Discogs name + URL";
-          createBtn.style.cssText = ACTION_CHIP_STYLE + "color:#2a7;";
+          createBtn.style.cssText = ACTION_CHIP_STYLE + "color:#2a7;font-size:1.15rem;font-weight:600;";
           createBtn.addEventListener("click", () => openCreateTab());
           const createAdvBtn = document.createElement("button");
           createAdvBtn.textContent = "\u25BE";
