@@ -222,10 +222,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
         const heading = document.createElement('div');
         heading.style.cssText = 'display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;background:#f5e8a0;border:1px solid #d4b800;';
-        const headingText = document.createElement('span');
-        headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:#5a4000;flex:1;';
-        headingText.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? 'y' : 'ies'}`;
-        heading.appendChild(headingText);
+        // Refresh button on the LEFT side of the heading (#77 follow-up)
+        // so the action lives on the same edge as the rest of the
+        // review table's left-leaning chip layout.
         if (onRefresh) {
             // Refresh-from-MB button — re-runs preflight with the IDB cache
             // bypassed, so stale entries (entity merged, renamed, etc.) get
@@ -233,7 +232,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const refreshBtn = document.createElement('button');
             refreshBtn.textContent = '🔄 Refresh from MB';
             refreshBtn.title = 'Re-resolve every entity via MusicBrainz API, ignoring the local IDB cache';
-            refreshBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #b59a00;border-radius:3px;background:#fff;color:#5a4000;';
+            refreshBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #b59a00;border-radius:3px;background:#fff;color:#5a4000;flex-shrink:0;';
             refreshBtn.addEventListener('click', () => {
                 refreshBtn.disabled = true;
                 refreshBtn.textContent = '🔄 Refreshing…';
@@ -245,6 +244,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             });
             heading.appendChild(refreshBtn);
         }
+        const headingText = document.createElement('span');
+        headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:#5a4000;flex:1;';
+        headingText.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? 'y' : 'ies'}`;
+        heading.appendChild(headingText);
         panel.appendChild(heading);
 
         const intro = document.createElement('p');
