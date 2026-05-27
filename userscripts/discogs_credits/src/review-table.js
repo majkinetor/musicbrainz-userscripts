@@ -708,6 +708,20 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         // No Discogs URL — skip URL check entirely
                         linkSlot.textContent = '⚠ No Discogs page';
                         linkSlot.style.color = '#c80';
+                    } else if (urlCheckCached !== null) {
+                        // Session-cache always takes precedence over the
+                        // preflight `urlLinkedIds` snapshot. The cache is
+                        // updated by: per-row MB checks, the
+                        // recheckUrlBypassCache focus-return flow, and the
+                        // `*-created` BroadcastChannel pre-seed (#78). The
+                        // `urlLinkedIds` array is captured ONCE during
+                        // preflight and is stale the moment the user adds
+                        // the link or creates a new entity. Reading
+                        // urlLinkedIds first (the old order) clobbered the
+                        // #78 pre-seed of `'linked'` with `'none'` derived
+                        // from the empty preflight snapshot — that's why
+                        // the 🔗 chip kept flashing after entity creation.
+                        applyUrlCheckResult(urlCheckCached);
                     } else if (Array.isArray(r.urlLinkedIds)) {
                         // Preflight already harvested the Discogs-URL → MB-entity
                         // relations (parallel with name search). Compute the row's
@@ -720,8 +734,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         _urlCheckSessionCache.set(urlCheckCacheKey, result);
                         try { localStorage.setItem(urlCheckLsKey, JSON.stringify({ date: urlCheckToday, result })); } catch(e) {}
                         applyUrlCheckResult(result);
-                    } else if (urlCheckCached !== null) {
-                        applyUrlCheckResult(urlCheckCached);
                     } else {
                         queuedUrlCheck(() =>
                             fetchWithRetry(`//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`)

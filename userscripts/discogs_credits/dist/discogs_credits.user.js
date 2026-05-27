@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.193438
+// @version      2026.5.27.200252
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2531,6 +2531,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             if (!discogsHref) {
               linkSlot.textContent = "\u26A0 No Discogs page";
               linkSlot.style.color = "#c80";
+            } else if (urlCheckCached !== null) {
+              applyUrlCheckResult(urlCheckCached);
             } else if (Array.isArray(r.urlLinkedIds)) {
               const result = r.urlLinkedIds.includes(selected.id) ? "linked" : r.urlLinkedIds.length > 0 ? "other" : "none";
               _urlCheckSessionCache.set(urlCheckCacheKey, result);
@@ -2539,8 +2541,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               } catch (e2) {
               }
               applyUrlCheckResult(result);
-            } else if (urlCheckCached !== null) {
-              applyUrlCheckResult(urlCheckCached);
             } else {
               queuedUrlCheck(
                 () => fetchWithRetry(`//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`).then((json) => {
