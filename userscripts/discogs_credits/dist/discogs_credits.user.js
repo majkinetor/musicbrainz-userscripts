@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.133046
+// @version      2026.5.27.140128
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -4447,10 +4447,8 @@ ${lines}
     ev.stopPropagation();
     _positionByRelIdCache = buildRelIdToPositionMap();
     const group = collectGroup(btn, mode);
-    if (group.buttons.length === 0) return;
-    openConfirm(group, mode, () => {
-      for (const b of group.buttons) b.click();
-    });
+    if (group.items.length === 0) return;
+    openConfirm(group, mode);
   }
   function modeFor(ev) {
     if ((ev.ctrlKey || ev.metaKey) && ev.shiftKey) return "role-and-target";
@@ -4461,7 +4459,7 @@ ${lines}
   function collectGroup(seedBtn, mode) {
     const seedItem = seedBtn.closest(".relationship-item");
     const seedRow = seedBtn.closest("tr");
-    if (!seedItem || !seedRow) return { buttons: [] };
+    if (!seedItem || !seedRow) return { items: [], roleClass: null, roleLabel: "", targetHref: null, targetLabel: "" };
     const roleClass = pickRoleClass(seedRow);
     const targetHref = pickTargetHref(seedItem);
     const targetLabel = pickTargetLabel(seedItem);
@@ -4476,15 +4474,26 @@ ${lines}
       }
       return rowHasClass(item.closest("tr"), roleClass) && hasTargetHref(item, targetHref);
     });
-    const buttons = matched.map((it) => it.querySelector("button.icon.remove-item")).filter(Boolean);
     return {
-      buttons,
+      // Return raw items; modal will derive `buttons` / `locations`
+      // depending on the "only this session" toggle state at confirm
+      // time. Per #68 follow-up: pre-existing rels stay untouched
+      // when the toggle is on.
+      items: matched,
       roleClass,
       roleLabel,
       targetHref,
-      targetLabel,
-      locations: collectLocations(matched)
+      targetLabel
     };
+  }
+  function isSessionRel(item) {
+    const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
+    const relId = parseRelIdFromButton(btn);
+    if (relId == null) return false;
+    return Number(relId) < 0;
+  }
+  function buttonsFor(items) {
+    return items.map((it) => it.querySelector("button.icon.remove-item")).filter(Boolean);
   }
   function pickRoleClass(tr) {
     if (!tr) return null;
@@ -4629,14 +4638,8 @@ ${lines}
   }
   function parseRelIdFromButton(btn) {
     if (!btn || !btn.id) return null;
-    const segs = btn.id.split("-");
-    for (let i = segs.length - 1; i >= 0; i--) {
-      if (/^-?\d+$/.test(segs[i])) return segs[i];
-      if (segs[i] === "" && i > 0 && /^\d+$/.test(segs[i + 1])) {
-        return "-" + segs[i + 1];
-      }
-    }
-    return null;
+    const m = btn.id.match(/-(-?\d+)$/);
+    return m ? m[1] : null;
   }
   function findRecordingPosition(item) {
     const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
@@ -4727,26 +4730,49 @@ ${lines}
     `;
     return style;
   }
-  function openConfirm(group, mode, onConfirm) {
+  function openConfirm(group, mode) {
+    const sessionItems = group.items.filter(isSessionRel);
+    const allItems = group.items;
+    let onlySession = false;
     const overlay = document.createElement("div");
     overlay.className = "discogs-batch-overlay";
     const modal = document.createElement("div");
     modal.className = "discogs-batch-modal";
     const title = document.createElement("h2");
-    title.textContent = `Remove ${group.buttons.length} relationship${group.buttons.length === 1 ? "" : "s"}?`;
     modal.appendChild(title);
     const what = document.createElement("p");
     what.className = "what";
     what.innerHTML = describeAction(group, mode);
     modal.appendChild(what);
-    if (group.locations && group.locations.length) {
-      const total = document.createElement("div");
-      total.className = "total";
-      total.textContent = `Total: ${group.buttons.length}`;
-      modal.appendChild(total);
-      const list = document.createElement("ul");
-      list.className = "locations";
-      for (const { label, count, positions } of group.locations) {
+    let toggleCb = null;
+    if (sessionItems.length > 0 && sessionItems.length < allItems.length) {
+      const toggleWrap = document.createElement("label");
+      toggleWrap.className = "session-toggle";
+      toggleWrap.style.cssText = "display:flex;align-items:center;gap:0.4rem;margin:0.3rem 0 0.7rem;font-size:0.9rem;cursor:pointer;user-select:none;";
+      toggleCb = document.createElement("input");
+      toggleCb.type = "checkbox";
+      toggleCb.checked = false;
+      toggleWrap.appendChild(toggleCb);
+      toggleWrap.appendChild(document.createTextNode("Only remove relationships added in this session"));
+      modal.appendChild(toggleWrap);
+    }
+    const total = document.createElement("div");
+    total.className = "total";
+    modal.appendChild(total);
+    const list = document.createElement("ul");
+    list.className = "locations";
+    modal.appendChild(list);
+    function activeItems() {
+      return onlySession ? sessionItems : allItems;
+    }
+    function render() {
+      const items = activeItems();
+      const buttons = buttonsFor(items);
+      const locs = collectLocations(items);
+      title.textContent = `Remove ${buttons.length} relationship${buttons.length === 1 ? "" : "s"}?`;
+      total.textContent = `Total: ${buttons.length}`;
+      list.innerHTML = "";
+      for (const { label, count, positions } of locs) {
         const li = document.createElement("li");
         li.className = "loc";
         const noun = count === 1 ? "rel" : "rels";
@@ -4754,8 +4780,19 @@ ${lines}
         li.textContent = `${count} ${noun} from ${label}${tail}`;
         list.appendChild(li);
       }
-      modal.appendChild(list);
+      if (confirmBtn) {
+        confirmBtn.disabled = buttons.length === 0;
+        confirmBtn.style.setProperty("opacity", buttons.length === 0 ? "0.5" : "1", "important");
+        confirmBtn.style.setProperty("cursor", buttons.length === 0 ? "default" : "pointer", "important");
+      }
     }
+    if (toggleCb) {
+      toggleCb.addEventListener("change", () => {
+        onlySession = toggleCb.checked;
+        render();
+      });
+    }
+    let confirmBtn;
     const actions = document.createElement("div");
     actions.className = "actions";
     const actionsCss = {
@@ -4798,18 +4835,24 @@ ${lines}
     cancel.className = "cancel";
     cancel.textContent = "Cancel";
     styleBtn(cancel, false);
-    const confirm = document.createElement("button");
-    confirm.type = "button";
-    confirm.className = "confirm";
-    confirm.textContent = "Remove";
-    styleBtn(confirm, true);
+    confirmBtn = document.createElement("button");
+    confirmBtn.type = "button";
+    confirmBtn.className = "confirm";
+    confirmBtn.textContent = "Remove";
+    styleBtn(confirmBtn, true);
     actions.appendChild(cancel);
-    actions.appendChild(confirm);
+    actions.appendChild(confirmBtn);
     modal.appendChild(actions);
+    render();
     overlay.appendChild(modal);
     function close() {
       overlay.remove();
       document.removeEventListener("keydown", onKey, true);
+    }
+    function doRemove() {
+      const buttons = buttonsFor(activeItems());
+      if (buttons.length === 0) return;
+      for (const b of buttons) b.click();
     }
     function onKey(ev) {
       if (ev.key === "Escape") {
@@ -4817,14 +4860,14 @@ ${lines}
         ev.preventDefault();
       }
       if (ev.key === "Enter") {
-        onConfirm();
+        doRemove();
         close();
         ev.preventDefault();
       }
     }
     cancel.addEventListener("click", close);
-    confirm.addEventListener("click", () => {
-      onConfirm();
+    confirmBtn.addEventListener("click", () => {
+      doRemove();
       close();
     });
     overlay.addEventListener("click", (e) => {
@@ -4832,7 +4875,7 @@ ${lines}
     });
     document.addEventListener("keydown", onKey, true);
     document.body.appendChild(overlay);
-    confirm.focus();
+    confirmBtn.focus();
   }
   function describeAction(group, mode) {
     const role = group.roleLabel ? `<b>${escapeHtml(group.roleLabel)}</b>` : "<i>(unknown role)</i>";
