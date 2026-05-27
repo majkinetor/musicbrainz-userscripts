@@ -72,20 +72,20 @@ All artists, labels and places are checked against MB through a shared throttle 
 - **IDB cache**<br>
 Resolved Discogs ↔ MB MBID mappings persist across sessions and are checked first. Each record tracks how it was originally resolved (`name` / `url` / `both` / `user`) — surfaced in the table's "Resolved via" column.
 - **Inline MB search**<br>
-Live search field on every row; type a name or paste an MBID / MB URL. Results appear as selectable candidates with a "Searching…" placeholder while MB responds (and a visible "Search failed" if it doesn't).
+Live search field on every row; type a name or paste an MBID / MB URL.
 - **Auto-match**<br>
 Name search and Discogs URL lookup run in parallel. Auto-resolution happens only when the result is trustworthy:
-  - **Both agree** on the same MB entity → resolved with high confidence (`resolvedVia: 'both'`).
+  - **Both agree** on the same MB entity → resolved with high confidence.
   - **Only one side** returns a hit → auto-accepted only when strong (unique exact-name match OR direct Discogs↔MB URL relation).
-  - **They disagree** → left unresolved for manual review (prevents false positives from a wrongly-linked Discogs URL).
+  - **They disagree** → left unresolved for manual review.
 - **Entity creation**<br>
-`+` button opens MB's create page pre-filled with name, sort-name guess, type ("Person" for artists), Discogs URL, and link-type ID. After save the new tab closes itself (capped at ~1s) and the row auto-selects the new entity via BroadcastChannel. The Discogs-link chip is pre-seeded to ✓ because the create form included the URL relation.
+`+` button opens MB's create page pre-filled (name, sort name, type, Discogs URL). After save the tab closes itself and the row auto-selects the new entity.
 - **Refresh from MB**<br>
-🔄 button re-resolves every entity against fresh MB data. Bypasses the IDB cache *and* deletes the existing record up-front, so a failed refresh leaves the entity un-cached (next preflight retries MB) rather than downgrading a previously-good MBID to "attention".
+🔄 button re-resolves every entity against fresh MB data. Deletes the existing IDB record up-front, so a failed refresh leaves the entity un-cached rather than downgrading a previously-good MBID.
 - **Credited as**<br>
-Per-entity override input — set the `entity1_credit` field on every dispatched rel for that entity. Useful when Discogs and MB names differ but you want the Discogs name on the credit.
+Per-entity override input — sets `entity1_credit` on every dispatched rel for that entity.
 - **Preflight diagnostics**<br>
-Collapsed `<details>` block below the main log with per-worker, per-request trace (start time, response code, retries, shared-pause events). Useful when something feels slow.
+Collapsed `<details>` block below the main log with per-worker / per-request trace. Useful when something feels slow.
 
 ### Instant Fill
 
@@ -105,18 +105,11 @@ These run on every `/edit-relationships` page regardless of whether a Discogs li
 
 ## Notes
 
-1. **IndexedDB cache**<br>
-`entity_cache` store; resolved Discogs URL → MB MBID mapping with `resolvedVia` source tracking and `urlLinkedIds` so the review table can render the Discogs-link chip without a per-row fetch.
-1. **Rate-limit handling**<br>
-All MB WS2 requests go through a single throttle. `MAX_CONCURRENT=4`. On 429/503 the worker that received the rate-limit pushes a shared `_pauseUntil` forward by the server's `Retry-After` (or exponential backoff if absent); every other worker idles until it elapses (cooperative backoff, no thundering herd). Per-request 10s `AbortController` timeout prevents stuck connections from blocking a slot; network-layer timeouts are treated as cooperative backpressure too.
-1. **Hover-intent tooltips**<br>
-The custom toggle tooltips wait ~1s before showing, matching the browser's native `title=` delay, so sweeping the mouse across the option row doesn't fire a stack of tooltips.
-1. **unsafeWindow**<br>
-Uses `@grant unsafeWindow` to access MB's real page `window` (where `MB.relationshipEditor` lives) from the userscript sandbox.
-1. **BroadcastChannel**<br>
-Same-origin cross-tab messaging for the entity-creation → review-table feedback loop.
-1. **Discogs API**<br>
-Fetches release data (artists, companies, tracklist) from `api.discogs.com` using the token from MB's stored Discogs URL.
+1. **IndexedDB cache** — Resolved Discogs URL → MB MBID mappings persist across sessions.
+1. **Rate-limit handling** — All MB WS2 requests share one throttle. On 429/503 every in-flight worker idles until the `Retry-After` window elapses (cooperative backoff).
+1. **unsafeWindow** — Uses `@grant unsafeWindow` to access MB's real page `window` where `MB.relationshipEditor` lives.
+1. **BroadcastChannel** — Same-origin cross-tab messaging for the entity-creation → review-table feedback loop.
+1. **Discogs API** — Fetches release data from `api.discogs.com` using the token from MB's stored Discogs URL.
 
 ## Animated gifs
 
