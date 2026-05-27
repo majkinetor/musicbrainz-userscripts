@@ -1,6 +1,6 @@
 # Import Discogs Credits Changelog
 
-## 2026.5.27
+## [2026.5.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.5.27)
 
 ### Features
 
@@ -14,7 +14,7 @@
 1. Improvement of Discogs artist warnings ([#81](https://github.com/majkinetor/musicbrainz-userscripts/issues/81))
 1. Improvement of the progress bar ([#82](https://github.com/majkinetor/musicbrainz-userscripts/issues/82))
 1. Documentation link in the header ([#90](https://github.com/majkinetor/musicbrainz-userscripts/issues/90))
-1. Option to create works only when needed ([#94](https://github.com/majkinetor/musicbrainz-userscripts/issues/94))
+1. Option to create works only when needed, with `never` as a third opt-out ([#94](https://github.com/majkinetor/musicbrainz-userscripts/issues/94), [#103](https://github.com/majkinetor/musicbrainz-userscripts/pull/103))
 
 ### Fixes
 
