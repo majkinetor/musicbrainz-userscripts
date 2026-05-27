@@ -347,17 +347,12 @@ function buildRelIdToPositionMap() {
 function parseRelIdFromButton(btn) {
     if (!btn || !btn.id) return null;
     // id="remove-relationship-<targetType>-<sourceType>-<relId>"
-    // <relId> may be negative; last numeric segment.
-    const segs = btn.id.split('-');
-    // Find the last numeric (or "-N") segment from the end.
-    for (let i = segs.length - 1; i >= 0; i--) {
-        if (/^-?\d+$/.test(segs[i])) return segs[i];
-        // Empty segment + numeric is "-N" split: combine.
-        if (segs[i] === '' && i > 0 && /^\d+$/.test(segs[i + 1])) {
-            return '-' + segs[i + 1];
-        }
-    }
-    return null;
+    // <relId> is a (possibly-negative) integer. Match it at the very
+    // end with a single regex -- string-splitting on '-' loses the
+    // negative sign (negative ids produce a `--N` tail which splits to
+    // ['', 'N'] and the earlier loop returned 'N' instead of '-N').
+    const m = btn.id.match(/-(-?\d+)$/);
+    return m ? m[1] : null;
 }
 
 function findRecordingPosition(item) {

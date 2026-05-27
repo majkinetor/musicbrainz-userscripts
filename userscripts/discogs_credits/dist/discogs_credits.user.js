@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.135251
+// @version      2026.5.27.140128
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -4638,14 +4638,8 @@ ${lines}
   }
   function parseRelIdFromButton(btn) {
     if (!btn || !btn.id) return null;
-    const segs = btn.id.split("-");
-    for (let i = segs.length - 1; i >= 0; i--) {
-      if (/^-?\d+$/.test(segs[i])) return segs[i];
-      if (segs[i] === "" && i > 0 && /^\d+$/.test(segs[i + 1])) {
-        return "-" + segs[i + 1];
-      }
-    }
-    return null;
+    const m = btn.id.match(/-(-?\d+)$/);
+    return m ? m[1] : null;
   }
   function findRecordingPosition(item) {
     const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
