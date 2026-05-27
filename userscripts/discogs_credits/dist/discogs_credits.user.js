@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.181707
+// @version      2026.5.27.183526
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -125,7 +125,7 @@
     return res.json();
   }
   var mbThrottle = /* @__PURE__ */ (() => {
-    const MAX_CONCURRENT = 8;
+    const MAX_CONCURRENT = 4;
     let _running = 0;
     let _pauseUntil = 0;
     const _queue = [];
@@ -2029,8 +2029,8 @@
   }
   async function resolveAll(entities, opts) {
     const { kindOf, progressLi, bypassIdb, progressLabel } = opts;
-    const CONCURRENCY = 10;
-    const MIN_GAP_MS = 20;
+    const CONCURRENCY = 5;
+    const MIN_GAP_MS = 50;
     let done = 0;
     const inFlightNames = /* @__PURE__ */ new Set();
     function setProgress() {

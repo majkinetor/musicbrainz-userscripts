@@ -308,18 +308,18 @@ async function resolveEntity(entity, kind, opts) {
  */
 export async function resolveAll(entities, opts) {
     const { kindOf, progressLi, bypassIdb, progressLabel } = opts;
-    // 10 workers, each emitting up to 2 parallel MB requests (name +
-    // URL) per entity. Bumped from 5 per #87 — maintainer reported the
-    // entity-fetch phase felt slow with few 503s, meaning we were
-    // under-utilising MB's headroom. `mbThrottle` (MAX_CONCURRENT=8)
-    // is the real cap; the worker count just keeps the queue full.
-    const CONCURRENCY = 10;
-    // Slot-start stagger trimmed 50ms → 20ms. The original was a
-    // precaution against a thundering herd of simultaneous TCP
-    // connections; with `mbThrottle`'s cooperative backoff that's no
-    // longer needed at this scale, but a small delay still smooths the
-    // open-socket spike at preflight start.
-    const MIN_GAP_MS  = 20;
+    // 5 workers, each emitting up to 2 parallel MB requests (name +
+    // URL) per entity. Briefly bumped to 10 per #87, then reverted: a
+    // single import calls `resolveAll` twice in parallel (artists +
+    // companies), so 10 workers per call = 20 total competing for
+    // `mbThrottle`'s 4 slots. The resulting burst tripped MB's rate
+    // limiter and cascaded 9-second `Retry-After` pauses across every
+    // worker. 5 keeps the queue full without piling on the burst.
+    const CONCURRENCY = 5;
+    // 50ms slot-start stagger to smooth the initial open-socket spike;
+    // raising to 20ms made the burst noticeably worse during the same
+    // #87 test, so it's back where it was.
+    const MIN_GAP_MS  = 50;
     let done = 0;
     const inFlightNames = new Set();
 
