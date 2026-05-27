@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.164051
+// @version      2026.5.27.165253
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2160,15 +2160,11 @@
       }
       const heading = document.createElement("div");
       heading.style.cssText = "display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;background:#f5e8a0;border:1px solid #d4b800;";
-      const headingText = document.createElement("span");
-      headingText.style.cssText = "font-weight:bold;font-size:1rem;color:#5a4000;flex:1;";
-      headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}`;
-      heading.appendChild(headingText);
       if (onRefresh) {
         const refreshBtn = document.createElement("button");
         refreshBtn.textContent = "\u{1F504} Refresh from MB";
         refreshBtn.title = "Re-resolve every entity via MusicBrainz API, ignoring the local IDB cache";
-        refreshBtn.style.cssText = "font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #b59a00;border-radius:3px;background:#fff;color:#5a4000;";
+        refreshBtn.style.cssText = "font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid #b59a00;border-radius:3px;background:#fff;color:#5a4000;flex-shrink:0;";
         refreshBtn.addEventListener("click", () => {
           refreshBtn.disabled = true;
           refreshBtn.textContent = "\u{1F504} Refreshing\u2026";
@@ -2179,6 +2175,10 @@
         });
         heading.appendChild(refreshBtn);
       }
+      const headingText = document.createElement("span");
+      headingText.style.cssText = "font-weight:bold;font-size:1rem;color:#5a4000;flex:1;";
+      headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}`;
+      heading.appendChild(headingText);
       panel.appendChild(heading);
       const intro = document.createElement("p");
       intro.style.cssText = "margin:0 0 0.75rem;font-size:0.85rem;color:#666;";
