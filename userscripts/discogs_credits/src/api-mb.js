@@ -3,8 +3,8 @@
 // chokepoint for everything that hits musicbrainz.org/ws/2 (and /ws/js), so
 // rate-limit handling lives in one place.
 
-import { pageWindow } from './constants.js';
-import { log }        from './log.js';
+import { pageWindow }    from './constants.js';
+import { log, logDebug } from './log.js';
 
 /**
  * Fetch a full MB entity from the internal `/ws/js/entity/{mbid}` endpoint.
@@ -32,6 +32,13 @@ export async function fetchMBEntity(mbid) {
 // produced (issue #30) while keeping the burst throughput that gave that
 // approach its speed advantage over the strict serial chain it replaced.
 export const mbThrottle = (() => {
+    // 4 concurrent in-flight requests. Briefly bumped to 8 per #87 in
+    // an attempt to use MB's headroom, but a real-world test (Tricky -
+    // Back To Mine, 46+38 entities) showed MB returning a stream of
+    // 503s with `Retry-After: 9` once we sustained 8 in-flight + the
+    // two-parallel-`resolveAll` burst (artists + companies). The 9-second
+    // shared pause cascaded across every worker — the run ended up
+    // SLOWER than the previous shape. Reverted: original sizing was right.
     const MAX_CONCURRENT = 4;       // simultaneous in-flight requests
     let _running         = 0;
     let _pauseUntil      = 0;        // unix-ms; workers idle until this time
@@ -40,7 +47,11 @@ export const mbThrottle = (() => {
     let _rateLimited     = 0;
 
     async function _waitForPause() {
-        let wait;
+        let wait = _pauseUntil - Date.now();
+        if (wait <= 0) return;
+        // #87 diagnostic: announce every wait so we can see in the log
+        // "worker X paused 1500ms" pile up under a 503 storm.
+        logDebug(`throttle: waiting ${wait}ms for shared pause`);
         while ((wait = _pauseUntil - Date.now()) > 0) {
             await new Promise(r => setTimeout(r, wait));
         }
@@ -54,12 +65,38 @@ export const mbThrottle = (() => {
         }
     }
 
+    // Per-logical-request diagnostic id (independent of `_totalRequests`,
+    // which counts HTTP attempts incl. retries for stats). One `req#N`
+    // covers all retries of the same call, so the user can read the
+    // story end-to-end in the diagnostic log.
+    let _diagReqSeq = 0;
+
+    // Per-request hard timeout. The browser will happily wait many tens of
+    // seconds on a stuck connection (#87 follow-up: observed a `/ws/2/url`
+    // fetch that hung for 40 213ms before the network layer gave up). One
+    // hung request blocks a throttle slot for that whole time. 10s is well
+    // beyond MB's normal response time (<500ms typical) but short enough
+    // that a stuck connection retries promptly. Lowered from 15s after a
+    // log from majkinetor showed ~30 stuck requests each burning 15s.
+    const REQUEST_TIMEOUT_MS = 10000;
+
     async function _run(item) {
+        const tag = `req#${++_diagReqSeq}`;
+        const shortUrl = item.url.replace('//musicbrainz.org', '').replace(/^https:/, '');
         for (let attempt = 0; attempt <= item.retries; attempt++) {
             await _waitForPause();
             _totalRequests++;
+            const attemptTag = attempt === 0 ? '' : ` (retry ${attempt})`;
+            // #87 diagnostic: log request start with in-flight + queued
+            // snapshot so the user can see contention in the log:
+            //   req#7 [running=8 queued=3] GET /ws/2/artist?query=...
+            logDebug(`${tag} [running=${_running} queued=${_queue.length}] GET ${shortUrl}${attemptTag}`);
+            const t0 = Date.now();
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
             try {
-                const res = await fetch(item.url);
+                const res = await fetch(item.url, { signal: ctrl.signal });
+                const elapsed = Date.now() - t0;
                 if (res.status === 429 || res.status === 503) {
                     _rateLimited++;
                     const ra = parseInt(res.headers.get('Retry-After'), 10);
@@ -68,15 +105,42 @@ export const mbThrottle = (() => {
                     // Push forward only — never backward — so concurrent 503s
                     // from sibling workers don't shorten an already-pending pause.
                     _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
+                    logDebug(`${tag} <- ${res.status} in ${elapsed}ms; shared pause pushed to +${waitMs}ms`);
                     continue;
                 }
-                if (!res.ok) { item.resolve(null); return; }
+                if (!res.ok) {
+                    logDebug(`${tag} <- ${res.status} (give up) in ${elapsed}ms`);
+                    item.resolve(null);
+                    return;
+                }
                 const data = item.wantJson ? await res.json() : res;
+                logDebug(`${tag} <- ${res.status} in ${elapsed}ms`);
                 item.resolve(data);
                 return;
             } catch (e) {
+                const elapsed = Date.now() - t0;
+                const isTimeout = e?.name === 'AbortError';
+                const reason = isTimeout
+                    ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
+                    : `${e?.message || e}`;
+                // Treat AbortError (network-layer timeout) as cooperative
+                // backpressure. In the #87 logs, timeouts came in clusters of
+                // 3-5 within a few hundred ms — that pattern is MB-side
+                // overload (silently dropping requests instead of returning
+                // 503), not random socket stalls. Bump the shared pause so
+                // the rest of the pool pauses before piling on again.
+                if (isTimeout) {
+                    _rateLimited++;
+                    const waitMs = Math.min(1000 * Math.pow(2, attempt), 8000);
+                    _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
+                    logDebug(`${tag} threw in ${elapsed}ms: ${reason}; shared pause pushed to +${waitMs}ms`);
+                } else {
+                    logDebug(`${tag} threw in ${elapsed}ms: ${reason}`);
+                }
                 if (attempt === item.retries) { item.resolve(null); return; }
                 await new Promise(r => setTimeout(r, 500));
+            } finally {
+                clearTimeout(timer);
             }
         }
         item.resolve(null);

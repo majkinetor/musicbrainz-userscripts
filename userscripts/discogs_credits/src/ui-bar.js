@@ -455,11 +455,19 @@ export function insertDiscogsBar(discogsUrl) {
                     }
                     if (tag === 'details') {
                         const sum = node.querySelector('summary');
+                        // Plain-text summary only. Markdown inside `<details><summary>`
+                        // is not rendered by GitHub, and interactive elements like
+                        // `<button>` (e.g. "Copy JSON") don't belong in the copy. So
+                        // skip `<button>`/`<input>` entirely and strip markdown
+                        // wrappers like `<strong>` to their text content. (Nitpick
+                        // #1 from majkinetor on #87: previously the summary read
+                        // `**...** Copy JSON`.)
                         const sumText = sum ? [...sum.childNodes].map(n => {
                             if (n.nodeType === Node.TEXT_NODE) return n.textContent;
-                            if (n.tagName?.toLowerCase() === 'strong') return '**' + n.textContent + '**';
+                            const t = n.tagName?.toLowerCase();
+                            if (t === 'button' || t === 'input') return '';
                             return n.textContent;
-                        }).join('') : '';
+                        }).join('').trim() : '';
                         // The raw-Discogs-JSON block is itself a `<details>`
                         // whose summary contains "raw Discogs JSON" — skip the
                         // whole thing (including the summary) when the user
@@ -469,7 +477,11 @@ export function insertDiscogsBar(discogsUrl) {
                         }
                         // Get non-summary children
                         const body = [...node.childNodes].filter(n => n !== sum).map(nodeToMd).join('');
-                        return '<details><summary>' + sumText + '</summary>\n\n' + body + '\n</details>';
+                        // Surround the block with blank lines so GitHub treats it
+                        // as its own paragraph. Without them, neighbouring log
+                        // lines collapse into the HTML block and lose their
+                        // markdown line breaks (nitpick #3).
+                        return '\n\n<details><summary>' + sumText + '</summary>\n\n' + body + '\n</details>\n\n';
                     }
                     if (tag === 'summary') return ''; // handled by details
                     if (tag === 'span') return inner;
@@ -491,6 +503,17 @@ export function insertDiscogsBar(discogsUrl) {
                 const _md = nodeToMd(el); return _md.startsWith('\n\n') || _md.endsWith('\n\n') ? _md : _md.replace(/^\n/, '').replace(/\n$/, '');
             }
             const lines = [..._logs.querySelectorAll('li')].map(li => {
+                // Swap the interactive review-panel `<li>` for the static
+                // markdown-table form when copying mid-review (nitpick #2 on
+                // #87). `review-table.js` stashes a `_buildStaticTableLi`
+                // closure on the panel `<li>`; calling it returns a fresh
+                // `<li>` containing the table with the user's current picks,
+                // which we feed through `htmlToMd` instead of the panel.
+                // Post-import the panel is gone and the static table lives
+                // in the log on its own, so this branch never fires then.
+                if (li.classList?.contains('discogs-review-panel-li') && typeof li._buildStaticTableLi === 'function') {
+                    return htmlToMd(li._buildStaticTableLi());
+                }
                 const md = htmlToMd(li);
                 if (!md) return ''; // skipped details emit empty — drop the line
                 // Add trailing two-spaces for markdown line breaks, except tables/details
@@ -739,6 +762,8 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, ded
             // "🔄 Refresh from MB" button so the user can re-resolve when a
             // cached entry is stale (entity got merged, renamed, etc.).
             function runPreflight(bypassIdb = false) {
+                log.info(`Starting preflight: ${uniqueArtists.length} artist(s), ${uniqueCompanies.length} label(s)/place(s).`);
+
                 const artistProgressLi = document.createElement('li');
                 artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz…`;
                 _logs.appendChild(artistProgressLi);
@@ -747,21 +772,32 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, ded
                 companyProgressLi.textContent = `Checking ${uniqueCompanies.length} label(s)/place(s) against MusicBrainz…`;
                 _logs.appendChild(companyProgressLi);
 
-                return Promise.all([
-                    resolveAll(uniqueArtists, {
+                // Sequential, not parallel. Both `resolveAll` calls share
+                // the same `mbThrottle` (one chokepoint, one MB server), so
+                // running them in parallel just doubles the worker count
+                // competing for the throttle's 4 slots and bursts harder
+                // at startup — exactly what tripped MB's rate limiter in
+                // #87 (a stream of 503s with `Retry-After: 9`). Serialised,
+                // the total time is the same (throttle-bound) but the
+                // request rate is smooth and burst-free.
+                const t0 = performance.now();
+                return (async () => {
+                    const artistResults  = await resolveAll(uniqueArtists, {
                         progressLi:    artistProgressLi,
                         progressLabel: 'Checking artists against MusicBrainz',
                         kindOf:        ARTIST_KIND,
                         bypassIdb,
-                    }),
-                    resolveAll(uniqueCompanies, {
+                    });
+                    const companyResults = await resolveAll(uniqueCompanies, {
                         progressLi:    companyProgressLi,
                         progressLabel: 'Checking labels/places against MusicBrainz',
                         kindOf:        COMPANY_KIND,
                         bypassIdb,
-                    }),
-                ]).then(([artistResults, companyResults]) =>
-                    [...artistResults.allResults, ...companyResults.allResults].filter(Boolean));
+                    });
+                    const elapsed = (performance.now() - t0) / 1000;
+                    log.info(`Preflight done in ${elapsed.toFixed(1)}s.`);
+                    return [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
+                })();
             }
 
             // Annotate each result with its Discogs roles. Used both on the

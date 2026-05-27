@@ -1141,13 +1141,20 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         }
         updateImportBtn();
 
-        importBtn.addEventListener('click', () => {
-            const confirmedMap = new Map();
-            rowState.forEach((s, key) => {
-                if (s.mbUrl) confirmedMap.set(key, s.mbUrl);
-            });
-
-            // ── Log summary table ──────────────────────────────────────
+        // Build the static "log summary" table from the current `rowState` and
+        // wrap it in an `<li>` ready to append to the log. Used in two places:
+        //   1. importBtn click — replaces the interactive panel with this
+        //      static snapshot before dispatch.
+        //   2. mid-review "Copy log" (#87 nitpick #2) — the interactive panel
+        //      doesn't translate to clean markdown, so `buildCopyText` calls
+        //      this builder via the `_buildStaticTableLi` closure stashed on
+        //      `panelLi` and substitutes its output in the copy.
+        // Captures `allResults`/`rowState`/`rolesMap`/`companiesRolesMap`/
+        // `viaCfg` from the enclosing `showReviewTable` scope, so the table
+        // always reflects the user's current picks (selecting a different MB
+        // entity in the panel updates `rowState`, which the next builder call
+        // reads).
+        function buildStaticTableLi() {
             const tbl = document.createElement('table');
             tbl.style.cssText = 'border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;';
             const thRow = document.createElement('tr');
@@ -1203,7 +1210,17 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const tblLi = document.createElement('li');
             tblLi.style.cssText = 'list-style:none;margin:0;padding:0;';
             tblLi.appendChild(tbl);
-            getLogContainer().appendChild(tblLi);
+            return tblLi;
+        }
+
+        importBtn.addEventListener('click', () => {
+            const confirmedMap = new Map();
+            rowState.forEach((s, key) => {
+                if (s.mbUrl) confirmedMap.set(key, s.mbUrl);
+            });
+
+            // ── Log summary table ──────────────────────────────────────
+            getLogContainer().appendChild(buildStaticTableLi());
             // ─────────────────────────────────────────────────────────
 
             // Add unresolved count line after the table
@@ -1234,6 +1251,13 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
         const panelLi = document.createElement('li');
         panelLi.style.cssText = 'list-style:none;margin:0;padding:0;';
+        // Marker class so `buildCopyText` in ui-bar.js can find the
+        // interactive review panel in the log and swap in the static-table
+        // form via `_buildStaticTableLi` (nitpick #2). Without the swap,
+        // copying the log mid-review produces unintelligible button/select
+        // text instead of a clean markdown table.
+        panelLi.classList.add('discogs-review-panel-li');
+        panelLi._buildStaticTableLi = buildStaticTableLi;
         panelLi.appendChild(panel);
         getLogContainer().appendChild(panelLi);
         getLogContainer().scrollIntoView({ behavior: 'smooth', block: 'nearest' });

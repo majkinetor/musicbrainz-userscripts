@@ -67,3 +67,67 @@ export const log = {
     error: msg => _emit(`<span style="color:red">ERR ${msg}</span>`,     `ERR ${msg}`),
 };
 
+// ── Debug log (issue #87) ───────────────────────────────────────────────────
+// Diagnostic per-worker / per-request log used by `mbThrottle` and
+// `preflight` to surface "why is this slow?" data WITHOUT hijacking
+// the main log. Rendered into a lazy-created `<details>` block titled
+// "Preflight diagnostics" appended to the same `<ul>` container the
+// main log uses, but inside a single `<li>` so it stays out of the
+// way unless the user expands it.
+//
+// Output shape: one `<div>` per line, monospace, muted color,
+// timestamped relative to the first `logDebug` call this session so
+// you can read "this worker waited 230ms before its first request"
+// at a glance.
+
+let _debugUl     = null;
+let _debugStartT = null;
+
+function _ensureDebugUl() {
+    if (_debugUl) return _debugUl;
+    if (!_logs) return null;
+    const details = document.createElement('details');
+    details.style.cssText = 'margin:0.3rem 0;';
+    const summary = document.createElement('summary');
+    summary.textContent = 'Preflight diagnostics';
+    summary.style.cssText = 'cursor:pointer;font-size:0.8rem;color:#888;user-select:none;';
+    details.appendChild(summary);
+    const ul = document.createElement('ul');
+    ul.style.cssText = 'list-style:none;margin:0.3rem 0;padding:0.4rem 0.6rem;'
+                     + 'background:#f7f7f7;border-radius:0.25rem;'
+                     + 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.72rem;'
+                     + 'color:#444;max-height:24rem;overflow-y:auto;';
+    details.appendChild(ul);
+    const li = document.createElement('li');
+    li.style.listStyle = 'none';
+    li.appendChild(details);
+    _logs.appendChild(li);
+    _debugUl     = ul;
+    _debugStartT = performance.now();
+    return _debugUl;
+}
+
+/**
+ * Append one diagnostic line to the collapsed "Preflight diagnostics"
+ * section. Safe to call before the log container exists — silent no-op.
+ *
+ * Lines are timestamped relative to the first `logDebug` call:
+ *
+ *   [+0ms]    worker#0 starting
+ *   [+1ms]    req#1 GET https://musicbrainz.org/ws/2/artist?query=…
+ *   [+312ms]  req#1 ← 200 OK in 311ms
+ *   [+312ms]  worker#0 resolved "Jamie Saft" via name in 312ms
+ *
+ * Use for high-volume / noisy info — the user has to opt in by
+ * expanding the `<details>`, so we can be verbose without drowning
+ * the main log.
+ */
+export function logDebug(line) {
+    const ul = _ensureDebugUl();
+    if (!ul) return;
+    const t = Math.round(performance.now() - _debugStartT);
+    const row = document.createElement('div');
+    row.textContent = `[+${t}ms] ${line}`;
+    ul.appendChild(row);
+}
+

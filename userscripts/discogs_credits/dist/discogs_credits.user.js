@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.200252
+// @version      2026.5.27.210335
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -87,6 +87,36 @@
     warn: (msg) => _emit(`<span style="color:orange">WARN ${msg}</span>`, `WARN ${msg}`),
     error: (msg) => _emit(`<span style="color:red">ERR ${msg}</span>`, `ERR ${msg}`)
   };
+  var _debugUl = null;
+  var _debugStartT = null;
+  function _ensureDebugUl() {
+    if (_debugUl) return _debugUl;
+    if (!_logs) return null;
+    const details = document.createElement("details");
+    details.style.cssText = "margin:0.3rem 0;";
+    const summary = document.createElement("summary");
+    summary.textContent = "Preflight diagnostics";
+    summary.style.cssText = "cursor:pointer;font-size:0.8rem;color:#888;user-select:none;";
+    details.appendChild(summary);
+    const ul = document.createElement("ul");
+    ul.style.cssText = "list-style:none;margin:0.3rem 0;padding:0.4rem 0.6rem;background:#f7f7f7;border-radius:0.25rem;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.72rem;color:#444;max-height:24rem;overflow-y:auto;";
+    details.appendChild(ul);
+    const li = document.createElement("li");
+    li.style.listStyle = "none";
+    li.appendChild(details);
+    _logs.appendChild(li);
+    _debugUl = ul;
+    _debugStartT = performance.now();
+    return _debugUl;
+  }
+  function logDebug(line) {
+    const ul = _ensureDebugUl();
+    if (!ul) return;
+    const t = Math.round(performance.now() - _debugStartT);
+    const row = document.createElement("div");
+    row.textContent = `[+${t}ms] ${line}`;
+    ul.appendChild(row);
+  }
 
   // src/api-mb.js
   async function fetchMBEntity(mbid) {
@@ -102,7 +132,9 @@
     let _totalRequests = 0;
     let _rateLimited = 0;
     async function _waitForPause() {
-      let wait;
+      let wait = _pauseUntil - Date.now();
+      if (wait <= 0) return;
+      logDebug(`throttle: waiting ${wait}ms for shared pause`);
       while ((wait = _pauseUntil - Date.now()) > 0) {
         await new Promise((r) => setTimeout(r, wait));
       }
@@ -117,32 +149,58 @@
         });
       }
     }
+    let _diagReqSeq = 0;
+    const REQUEST_TIMEOUT_MS = 1e4;
     async function _run(item) {
+      const tag = `req#${++_diagReqSeq}`;
+      const shortUrl = item.url.replace("//musicbrainz.org", "").replace(/^https:/, "");
       for (let attempt = 0; attempt <= item.retries; attempt++) {
         await _waitForPause();
         _totalRequests++;
+        const attemptTag = attempt === 0 ? "" : ` (retry ${attempt})`;
+        logDebug(`${tag} [running=${_running} queued=${_queue.length}] GET ${shortUrl}${attemptTag}`);
+        const t0 = Date.now();
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
         try {
-          const res = await fetch(item.url);
+          const res = await fetch(item.url, { signal: ctrl.signal });
+          const elapsed = Date.now() - t0;
           if (res.status === 429 || res.status === 503) {
             _rateLimited++;
             const ra = parseInt(res.headers.get("Retry-After"), 10);
             const waitMs = ra > 0 ? ra * 1e3 : Math.min(1e3 * Math.pow(2, attempt), 3e4);
             _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
+            logDebug(`${tag} <- ${res.status} in ${elapsed}ms; shared pause pushed to +${waitMs}ms`);
             continue;
           }
           if (!res.ok) {
+            logDebug(`${tag} <- ${res.status} (give up) in ${elapsed}ms`);
             item.resolve(null);
             return;
           }
           const data = item.wantJson ? await res.json() : res;
+          logDebug(`${tag} <- ${res.status} in ${elapsed}ms`);
           item.resolve(data);
           return;
         } catch (e) {
+          const elapsed = Date.now() - t0;
+          const isTimeout = e?.name === "AbortError";
+          const reason = isTimeout ? `timed out after ${REQUEST_TIMEOUT_MS}ms` : `${e?.message || e}`;
+          if (isTimeout) {
+            _rateLimited++;
+            const waitMs = Math.min(1e3 * Math.pow(2, attempt), 8e3);
+            _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
+            logDebug(`${tag} threw in ${elapsed}ms: ${reason}; shared pause pushed to +${waitMs}ms`);
+          } else {
+            logDebug(`${tag} threw in ${elapsed}ms: ${reason}`);
+          }
           if (attempt === item.retries) {
             item.resolve(null);
             return;
           }
           await new Promise((r) => setTimeout(r, 500));
+        } finally {
+          clearTimeout(timer);
         }
       }
       item.resolve(null);
@@ -278,6 +336,20 @@
         getReq.onerror = () => resolve(null);
       } catch (e) {
         resolve(null);
+      }
+    });
+  }
+  function deleteIdbRecord(key) {
+    return new Promise((resolve) => {
+      if (!key || !db) return resolve(false);
+      try {
+        const tx = db.transaction([STORE], "readwrite");
+        const store = tx.objectStore(STORE);
+        const req = store.delete(key);
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => resolve(false);
+      } catch (e) {
+        resolve(false);
       }
     });
   }
@@ -1845,6 +1917,9 @@
       const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
       return json ? { name: json.name || null, disambiguation: json.disambiguation || "" } : { name: null, disambiguation: "" };
     }
+    if (bypassIdb && key) {
+      await deleteIdbRecord(key);
+    }
     if (!bypassIdb && key) {
       const cachedRec = await readIdbRecord(key);
       if (cachedRec?.mbid && cachedRec?.entityType) {
@@ -2006,11 +2081,15 @@
     const results = new Array(entities.length);
     setProgress();
     async function worker(slotIndex) {
+      const tag = `worker#${slotIndex}`;
+      logDebug(`${tag} starting (stagger ${slotIndex * MIN_GAP_MS}ms)`);
       await delay(slotIndex * MIN_GAP_MS);
+      let processed = 0;
       while (queue.length > 0) {
         const { entity, index } = queue.shift();
         const kind = kindOf(entity);
         if (!kind) {
+          logDebug(`${tag} skip "${entity?.name || "?"}" \u2014 no resolvable kind`);
           done++;
           setProgress();
           continue;
@@ -2018,14 +2097,24 @@
         const displayName = kind === "artist" ? entity.anv && entity.anv.trim() || entity.name : entity.name;
         inFlightNames.add(displayName);
         setProgress();
+        const t0 = Date.now();
+        logDebug(`${tag} resolving "${displayName}" (${kind})`);
         results[index] = await resolveEntity(entity, kind, { bypassIdb });
+        const elapsed = Date.now() - t0;
+        const r = results[index];
+        const outcome = r?.type === "resolved" ? `resolved via ${r.logEntry?.via || "?"}${r.logEntry?.fromCache ? " (cache)" : ""}` : r?.type === "attention" ? `unresolved (${r.nameMatches?.length || 0} candidates)` : "skipped";
+        logDebug(`${tag} "${displayName}" -> ${outcome} in ${elapsed}ms`);
         inFlightNames.delete(displayName);
         done++;
+        processed++;
         setProgress();
       }
+      logDebug(`${tag} finished (${processed} entit${processed === 1 ? "y" : "ies"})`);
     }
     const slots = Math.min(CONCURRENCY, entities.length);
+    logDebug(`resolveAll: ${entities.length} entit${entities.length === 1 ? "y" : "ies"}, ${slots} worker slot(s)`);
     if (slots > 0) await Promise.all(Array.from({ length: slots }, (_, i) => worker(i)));
+    logDebug(`resolveAll: done`);
     return { allResults: results.filter(Boolean) };
   }
   var ARTIST_KIND = () => "artist";
@@ -2878,11 +2967,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         }
       }
       updateImportBtn();
-      importBtn.addEventListener("click", () => {
-        const confirmedMap = /* @__PURE__ */ new Map();
-        rowState.forEach((s, key) => {
-          if (s.mbUrl) confirmedMap.set(key, s.mbUrl);
-        });
+      function buildStaticTableLi() {
         const tbl = document.createElement("table");
         tbl.style.cssText = "border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;";
         const thRow = document.createElement("tr");
@@ -2931,7 +3016,14 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         const tblLi = document.createElement("li");
         tblLi.style.cssText = "list-style:none;margin:0;padding:0;";
         tblLi.appendChild(tbl);
-        getLogContainer().appendChild(tblLi);
+        return tblLi;
+      }
+      importBtn.addEventListener("click", () => {
+        const confirmedMap = /* @__PURE__ */ new Map();
+        rowState.forEach((s, key) => {
+          if (s.mbUrl) confirmedMap.set(key, s.mbUrl);
+        });
+        getLogContainer().appendChild(buildStaticTableLi());
         const unresolvedCount = allResults.filter((r) => {
           const _k = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
           return !rowState.get(_k)?.confirmed;
@@ -2953,6 +3045,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       panel.appendChild(btnRow);
       const panelLi = document.createElement("li");
       panelLi.style.cssText = "list-style:none;margin:0;padding:0;";
+      panelLi.classList.add("discogs-review-panel-li");
+      panelLi._buildStaticTableLi = buildStaticTableLi;
       panelLi.appendChild(panel);
       getLogContainer().appendChild(panelLi);
       getLogContainer().scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -4081,14 +4175,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               const sum = node.querySelector("summary");
               const sumText = sum ? [...sum.childNodes].map((n) => {
                 if (n.nodeType === Node.TEXT_NODE) return n.textContent;
-                if (n.tagName?.toLowerCase() === "strong") return "**" + n.textContent + "**";
+                const t = n.tagName?.toLowerCase();
+                if (t === "button" || t === "input") return "";
                 return n.textContent;
-              }).join("") : "";
+              }).join("").trim() : "";
               if (skipDiscogsJson && /raw Discogs JSON/i.test(sumText)) {
                 return "";
               }
               const body = [...node.childNodes].filter((n) => n !== sum).map(nodeToMd).join("");
-              return "<details><summary>" + sumText + "</summary>\n\n" + body + "\n</details>";
+              return "\n\n<details><summary>" + sumText + "</summary>\n\n" + body + "\n</details>\n\n";
             }
             if (tag === "summary") return "";
             if (tag === "span") return inner;
@@ -4111,6 +4206,9 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           return _md.startsWith("\n\n") || _md.endsWith("\n\n") ? _md : _md.replace(/^\n/, "").replace(/\n$/, "");
         }
         const lines = [..._logs2.querySelectorAll("li")].map((li) => {
+          if (li.classList?.contains("discogs-review-panel-li") && typeof li._buildStaticTableLi === "function") {
+            return htmlToMd(li._buildStaticTableLi());
+          }
           const md = htmlToMd(li);
           if (!md) return "";
           if (md.startsWith("\n\n|") || md.startsWith("<details>")) return md;
@@ -4318,26 +4416,31 @@ ${lines}
         }
       });
       function runPreflight(bypassIdb = false) {
+        log.info(`Starting preflight: ${uniqueArtists.length} artist(s), ${uniqueCompanies.length} label(s)/place(s).`);
         const artistProgressLi = document.createElement("li");
         artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz\u2026`;
         _logs2.appendChild(artistProgressLi);
         const companyProgressLi = document.createElement("li");
         companyProgressLi.textContent = `Checking ${uniqueCompanies.length} label(s)/place(s) against MusicBrainz\u2026`;
         _logs2.appendChild(companyProgressLi);
-        return Promise.all([
-          resolveAll(uniqueArtists, {
+        const t0 = performance.now();
+        return (async () => {
+          const artistResults = await resolveAll(uniqueArtists, {
             progressLi: artistProgressLi,
             progressLabel: "Checking artists against MusicBrainz",
             kindOf: ARTIST_KIND,
             bypassIdb
-          }),
-          resolveAll(uniqueCompanies, {
+          });
+          const companyResults = await resolveAll(uniqueCompanies, {
             progressLi: companyProgressLi,
             progressLabel: "Checking labels/places against MusicBrainz",
             kindOf: COMPANY_KIND,
             bypassIdb
-          })
-        ]).then(([artistResults, companyResults]) => [...artistResults.allResults, ...companyResults.allResults].filter(Boolean));
+          });
+          const elapsed = (performance.now() - t0) / 1e3;
+          log.info(`Preflight done in ${elapsed.toFixed(1)}s.`);
+          return [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
+        })();
       }
       function annotateRoles(allResults) {
         allResults.forEach((r) => {
