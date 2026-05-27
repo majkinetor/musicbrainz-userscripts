@@ -20,6 +20,7 @@ import {
 import { buildEditNote }                from './edit-note.js';
 import { ENTITY_TYPE_MAP }               from './data/entity-map.js';
 import { WORK_ONLY_ARTIST_RELS }         from './data/work-only-rels.js';
+import { _showBar, _setProgressPct }     from './progress-bar.js';
 
 // Dedup options come in as a trailing object (default empty). Used by
 // `relAlreadyExists` to honor the maintainer-configurable rules from
@@ -116,6 +117,12 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
 
     log.info(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
 
+    // The review-table code calls `_hideBar()` when it mounts; nothing
+    // re-shows the bar between the review-table tear-down and the
+    // dispatch loop start, so #82's fill-phase progress was invisible
+    // even though `tickProgress` was pushing percentages. Re-show here.
+    try { _showBar(); } catch (_) {}
+
     const bar = document.querySelector('.discogs-bar');
     function tickProgress() {
         const done = added + skipped + failed;
@@ -123,6 +130,10 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         const pct = Math.min(Math.round((done / est) * 99), 99);
         const _pct = document.querySelector('#discogs-progress-pct');
         if (_pct) _pct.textContent = pct + '%';
+        // Push the actual fill width to the top-of-page progress bar
+        // (#82). Before this change the bar only animated marquee
+        // during the dispatch phase; only the inline % text moved.
+        try { _setProgressPct(pct); } catch (_) {}
     }
 
     // ── Build recording maps from MB editor state ────────────────────────────
