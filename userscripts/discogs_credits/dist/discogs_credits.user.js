@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.210335
+// @version      2026.5.27.212320
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -3217,7 +3217,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
   ];
 
   // src/dispatch.js
-  async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl, dedupOpts) {
+  async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorksMode, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl, dedupOpts) {
     resolvedEntityTypes = resolvedEntityTypes || /* @__PURE__ */ new Map();
     confirmedMap = confirmedMap || /* @__PURE__ */ new Map();
     dedupOpts = dedupOpts || {};
@@ -3624,17 +3624,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
         workOnlyByGid.get(recEntity.gid).push({ role, recEntity });
       }
-      if (createWorks) {
-        for (const role of artistRoles) {
-          if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-          for (const recEntity of recordingByGid.values()) {
-            const syntheticRole = { ...role, track: { position: "", title: recEntity.name || "" } };
-            if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
-            workOnlyByGid.get(recEntity.gid).push({ role: syntheticRole, recEntity });
-          }
+      for (const role of artistRoles) {
+        if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+        for (const recEntity of recordingByGid.values()) {
+          const syntheticRole = { ...role, track: { position: "", title: recEntity.name || "" } };
+          if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
+          workOnlyByGid.get(recEntity.gid).push({ role: syntheticRole, recEntity });
         }
       }
-      if (createWorks && recordingOfLinkTypeId) {
+      if (createWorksMode === "when-missing" && recordingOfLinkTypeId) {
         for (const recEntity of recordingByGid.values()) {
           if (!workOnlyByGid.has(recEntity.gid)) {
             workOnlyByGid.set(recEntity.gid, []);
@@ -3675,13 +3673,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         }
         if (!workEntity) workEntity = getWorkFromEditorState(recEntity);
         if (!workEntity) {
-          if (!createWorks) {
-            for (const { role } of entries) {
-              log.error(`Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) \u2014 enable "Create missing works" or add work manually`);
-              failed++;
-            }
-            continue;
-          }
           const newWorkId = re.getRelationshipStateId();
           workEntity = {
             _fromBatchCreateWorksDialog: true,
@@ -3788,7 +3779,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const opts = [
         processTracklist !== void 0 ? `per-track:${processTracklist ? "on" : "off"}` : null,
         applyToTracks !== void 0 ? `move-to-tracks:${applyToTracks ? "on" : "off"}` : null,
-        createWorks !== void 0 ? `create-works:${createWorks ? "on" : "off"}` : null
+        createWorksMode !== void 0 ? `create-works:${createWorksMode}` : null
       ].filter(Boolean).join(", ");
       const trackCount2 = Array.isArray(discogsTracklist) ? discogsTracklist.length : 0;
       const inputStats = `Input: ${companies?.length || 0} companies, ${artistRoles?.length || 0} release credits, ${tracklistRels?.length || 0} tracklist credits on ${trackCount2} track${trackCount2 === 1 ? "" : "s"}`;
@@ -4086,6 +4077,27 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       row2.appendChild(lbl);
       return cb;
     }
+    function makeSelect(labelText, initialValue, options, tooltipText) {
+      const wrap = document.createElement("span");
+      wrap.className = "discogs-select-wrap";
+      wrap.style.cssText = "display:inline-flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:#555;padding:0.15rem 0.2rem 0.15rem 0.55rem;border:1px solid #d8c8a0;border-radius:2rem;background:#fffdf7;";
+      const lbl = document.createElement("span");
+      lbl.textContent = labelText + ":";
+      wrap.appendChild(lbl);
+      const sel = document.createElement("select");
+      sel.style.cssText = "font-size:0.8rem;padding:0.05rem 0.3rem;border:1px solid #d8c8a0;border-radius:1rem;background:#fff8ee;cursor:pointer;color:#333;font-weight:600;";
+      options.forEach((opt) => {
+        const o = document.createElement("option");
+        o.value = opt.value;
+        o.textContent = opt.label;
+        if (opt.value === initialValue) o.selected = true;
+        sel.appendChild(o);
+      });
+      if (tooltipText) wrap.title = tooltipText;
+      wrap.appendChild(sel);
+      row2.appendChild(wrap);
+      return sel;
+    }
     const OPTS_KEY = "discogs-importer-opts";
     let savedOpts = {};
     try {
@@ -4103,11 +4115,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       bv("applyTracks", true),
       "Move performance credits from the release down to every recording."
     );
-    const createWorksCb = makeCheckbox(
-      "Create missing works",
-      bv("createWorks", true),
-      "Create a new inline work for recordings without one, and link composer/lyricist/writer credits to it."
+    const _legacyCreateWorks = savedOpts.createWorks;
+    const _initialCreateWorksMode = bv(
+      "createWorksMode",
+      _legacyCreateWorks === true ? "when-missing" : "when-needed"
     );
+    const createWorksMode = makeSelect("Create works", _initialCreateWorksMode, [
+      { value: "when-needed", label: "when needed" },
+      { value: "when-missing", label: "when missing" }
+    ], "when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one, regardless of credits.");
     const dedupSep = document.createElement("span");
     dedupSep.textContent = "Dedup:";
     dedupSep.style.cssText = "margin:0 0.2rem 0 0.6rem;color:#888;font-size:0.85rem;font-weight:600;";
@@ -4127,14 +4143,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         localStorage.setItem(OPTS_KEY, JSON.stringify({
           tracklist: tracklistCb.checked,
           applyTracks: applyTracksCb.checked,
-          createWorks: createWorksCb.checked,
+          createWorksMode: createWorksMode.value,
           dedupeEquivalenceSets: dedupeEqCb.checked,
           dedupeDuplicateRoles: dedupeDupCb.checked
         }));
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, createWorksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    createWorksMode.addEventListener("change", saveOpts);
     bar.appendChild(row2);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output";
@@ -4262,14 +4279,22 @@ ${lines}
         if (pct !== null && pct >= 100) _hideBar();
       };
       requestAnimationFrame(_showBar);
-      const opts = `per-track:${tracklistCb.checked ? "on" : "off"}, move-to-tracks:${applyTracksCb.checked ? "on" : "off"}, create-works:${createWorksCb.checked ? "on" : "off"}`;
+      const getOpts = () => ({
+        processTracklist: tracklistCb.checked,
+        applyToTracks: applyTracksCb.checked,
+        createWorksMode: createWorksMode.value,
+        dedupeEquivalenceSets: dedupeEqCb.checked,
+        dedupeDuplicateRoles: dedupeDupCb.checked
+      });
+      const _click = getOpts();
+      const opts = `per-track:${_click.processTracklist ? "on" : "off"}, move-to-tracks:${_click.applyToTracks ? "on" : "off"}, create-works:${_click.createWorksMode}`;
       const editNote = buildEditNote(discogsUrl, opts);
       editNote.split("\n").forEach((line) => {
         if (!line.trim()) return;
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
         log.info(html);
       });
-      runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked, dedupeEqCb.checked, dedupeDupCb.checked).finally(() => {
+      runImport(discogsUrl, getOpts).finally(() => {
         importBtn.disabled = false;
         importBtn.textContent = "Import from Discogs";
         progressPct.textContent = "100%";
@@ -4305,7 +4330,9 @@ ${lines}
     } catch (e) {
     }
   })();
-  function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, dedupeEquivalenceSets, dedupeDuplicateRoles) {
+  function runImport(discogsUrl, getOpts) {
+    const initial = getOpts();
+    const { processTracklist } = initial;
     return getDiscogsReleaseData(discogsUrl).then((json) => {
       let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter((artist) => !artist.tracks));
       if (!_logs2._releaseInfoAdded) {
@@ -4485,12 +4512,16 @@ ${lines}
             resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
           }
         });
+        const live = getOpts();
+        if (live.processTracklist !== processTracklist) {
+          log.warn(`"Per-track credits" toggled during review (preflight ran with "${processTracklist ? "on" : "off"}", import will follow preflight). To change, restart the import.`);
+        }
         const dedupOpts = {
-          dedupeEquivalenceSets,
-          dedupeDuplicateRoles,
+          dedupeEquivalenceSets: live.dedupeEquivalenceSets,
+          dedupeDuplicateRoles: live.dedupeDuplicateRoles,
           creditOverrides: capturedConfirmedMap?.creditOverrides
         };
-        return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
+        return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, live.applyToTracks, live.createWorksMode, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
       });
     }).then(() => {
     });

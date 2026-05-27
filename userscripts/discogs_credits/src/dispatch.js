@@ -38,7 +38,7 @@ import { _showBar, _setProgressPct }     from './progress-bar.js';
 //                            for the resolved entity, the override wins
 //                            over the Discogs-side credit. Falls back to
 //                            the Discogs name when no override exists.
-export async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl, dedupOpts) {
+export async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorksMode, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl, dedupOpts) {
     resolvedEntityTypes = resolvedEntityTypes || new Map();
     confirmedMap = confirmedMap || new Map();
     dedupOpts = dedupOpts || {};
@@ -584,21 +584,22 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             workOnlyByGid.get(recEntity.gid).push({ role, recEntity });
         }
 
-        // Release-level work-only roles apply to all recordings — only when createWorks is on
-        if (createWorks) {
-            for (const role of artistRoles) {
-                if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
-                for (const recEntity of recordingByGid.values()) {
-                    const syntheticRole = { ...role, track: { position: '', title: recEntity.name || '' } };
-                    if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
-                    workOnlyByGid.get(recEntity.gid).push({ role: syntheticRole, recEntity });
-                }
+        // Release-level work-only roles apply to all recordings (in both
+        // modes — release-level credits count as "needed").
+        for (const role of artistRoles) {
+            if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
+            for (const recEntity of recordingByGid.values()) {
+                const syntheticRole = { ...role, track: { position: '', title: recEntity.name || '' } };
+                if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
+                workOnlyByGid.get(recEntity.gid).push({ role: syntheticRole, recEntity });
             }
         }
 
-        // When createWorks is ON, also ensure all recordings have a work —
-        // even those with no work-only artist relationships.
-        if (createWorks && recordingOfLinkTypeId) {
+        // #94: "when missing" mode also ensures EVERY recording has a work,
+        // even those with no work-only artist relationships. "when needed"
+        // (default) skips this step — recordings without an associated
+        // composer/lyricist/writer credit are left alone.
+        if (createWorksMode === 'when-missing' && recordingOfLinkTypeId) {
             for (const recEntity of recordingByGid.values()) {
                 if (!workOnlyByGid.has(recEntity.gid)) {
                     workOnlyByGid.set(recEntity.gid, []); // empty roles — work creation only
@@ -632,7 +633,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         }
 
         for (const [recGid, entries] of workOnlyByGid) {
-            // entries may be empty when createWorks adds all recordings (no work-only roles)
+            // entries may be empty when createWorksMode='when-missing' adds all recordings (no work-only roles)
             const recEntity  = entries[0]?.recEntity  ?? recordingByGid.get(recGid);
             const trackTitle = entries[0]?.role.track.title    ?? recEntity?.name ?? recGid;
             const trackPos   = entries[0]?.role.track.position ?? '';
@@ -653,17 +654,11 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             // Also check for works dispatched in this session (newly created ones)
             if (!workEntity) workEntity = getWorkFromEditorState(recEntity);
 
-            // No work found
+            // No work found — always create one (#94 removed the "off"
+            // option; the user picks between "when needed" and "when
+            // missing", both of which create works for the recordings in
+            // `workOnlyByGid`).
             if (!workEntity) {
-                if (!createWorks) {
-                    // Log as error — work-only rels cannot be applied without a work
-                    for (const { role } of entries) {
-                        log.error(`Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) — enable "Create missing works" or add work manually`);
-                        failed++;
-                    }
-                    continue;
-                }
-
                 // Use MB's own batch-create-works mechanism:
                 //   1. Build a work object matching MB's createWorkObject() output
                 //   2. Register it via mergeLinkedEntities so the editor knows about it
@@ -788,7 +783,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         const opts = [
             processTracklist !== undefined ? `per-track:${processTracklist ? 'on' : 'off'}` : null,
             applyToTracks   !== undefined ? `move-to-tracks:${applyToTracks ? 'on' : 'off'}` : null,
-            createWorks     !== undefined ? `create-works:${createWorks ? 'on' : 'off'}` : null,
+            createWorksMode !== undefined ? `create-works:${createWorksMode}` : null,
         ].filter(Boolean).join(', ');
         // Statistics (issues #56, follow-up) — surface input size, review
         // outcome (unresolved entities), and dispatch outcome in the edit
