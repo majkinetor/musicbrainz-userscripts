@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.140128
+// @version      2026.5.27.163056
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2189,7 +2189,7 @@
       const thead = document.createElement("thead");
       const hr = document.createElement("tr");
       hr.style.background = "#f5e8a0";
-      ["Discogs entity", "MB match / search", "Actions"].forEach((col) => {
+      ["Discogs entity", "MB match / search"].forEach((col) => {
         const th = document.createElement("th");
         th.style.cssText = "text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;";
         th.textContent = col;
@@ -2227,11 +2227,15 @@
         });
         const tdDiscogs = document.createElement("td");
         tdDiscogs.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;`;
+        const nameRow = document.createElement("div");
+        nameRow.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:0.6rem;";
+        const nameWrap = document.createElement("span");
+        nameWrap.style.cssText = "min-width:0;overflow:hidden;text-overflow:ellipsis;";
         if (entityType !== "artist") {
           const badge = document.createElement("span");
           badge.textContent = entityType;
           badge.style.cssText = "font-size:0.7rem;background:#e0e0e0;border-radius:3px;padding:0 0.3rem;margin-right:0.3rem;color:#555;vertical-align:middle;";
-          tdDiscogs.appendChild(badge);
+          nameWrap.appendChild(badge);
         }
         const hasDiscogsUrl = !!r.entity?.resource_url;
         const dlA = document.createElement(hasDiscogsUrl ? "a" : "span");
@@ -2240,21 +2244,26 @@
         dlA.rel = "noopener noreferrer nofollow";
         dlA.textContent = displayName;
         if (!hasDiscogsUrl) dlA.className = "discogs-entity-name";
-        tdDiscogs.appendChild(dlA);
+        nameWrap.appendChild(dlA);
         if (!hasDiscogsUrl) {
           const noUrl = document.createElement("span");
           noUrl.textContent = " \u26A0\uFE0F";
           noUrl.title = "No Discogs artist page \u2014 manual search needed";
           noUrl.style.cssText = "cursor:help;color:#c80;";
-          tdDiscogs.appendChild(noUrl);
+          nameWrap.appendChild(noUrl);
         }
         if (nameMismatch) {
           const w = document.createElement("span");
           w.textContent = " \u26A0\uFE0F";
           w.title = "Name differs from MB match";
           w.style.cursor = "help";
-          tdDiscogs.appendChild(w);
+          nameWrap.appendChild(w);
         }
+        nameRow.appendChild(nameWrap);
+        const actionsLine = document.createElement("span");
+        actionsLine.style.cssText = "display:inline-flex;align-items:center;gap:0.3rem;flex-shrink:0;";
+        nameRow.appendChild(actionsLine);
+        tdDiscogs.appendChild(nameRow);
         tr.appendChild(tdDiscogs);
         const rolesList = r._roles || [];
         if (rolesList.length > 0) {
@@ -2284,16 +2293,23 @@
           tdDiscogs.appendChild(rolesLine);
         }
         const credLine = document.createElement("div");
-        credLine.style.cssText = "display:flex;align-items:center;gap:0.3rem;margin-top:0.25rem;max-width:280px;";
+        credLine.style.cssText = "display:flex;align-items:center;gap:0.3rem;margin-top:0.6rem;max-width:280px;";
         const credLabel = document.createElement("label");
         credLabel.textContent = "Credited as:";
         credLabel.style.cssText = "font-size:0.72rem;color:#888;flex-shrink:0;";
         const credInput = document.createElement("input");
         credInput.type = "text";
-        credInput.style.cssText = "flex:1;padding:0.1rem 0.3rem;font-size:0.78rem;border:1px solid #ddd;border-radius:3px;background:#fff;";
+        const CRED_BG_SAME = "#fff";
+        const CRED_BG_DIFFERENT = "#fff4d0";
+        credInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid #ddd;border-radius:3px;background:" + CRED_BG_SAME + ";";
         credInput.placeholder = displayName;
         credInput.title = `Override the credited name dispatched with every rel for this entity.
 Leave empty to use the default (Discogs name, or MB's most-frequent existing credit when known).`;
+        function refreshCredBg() {
+          const value = (credInput.value || "").trim();
+          const same = value === "" || value === displayName;
+          credInput.style.background = same ? CRED_BG_SAME : CRED_BG_DIFFERENT;
+        }
         function pickPrefill(mbUrl) {
           if (mbUrl) {
             const mbid = (String(mbUrl).split("/").pop() || "").replace(/[^a-f0-9-]/gi, "").slice(0, 36);
@@ -2303,10 +2319,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         }
         credInput.value = pickPrefill(r.mbUrl);
         credInput._userTouched = false;
+        refreshCredBg();
         credInput.addEventListener("input", () => {
           credInput._userTouched = true;
           const url = credInput._activeMbUrl;
           if (url) creditOverrides.set(url, credInput.value);
+          refreshCredBg();
         });
         credInput._activeMbUrl = r.mbUrl;
         if (r.mbUrl) creditOverrides.set(r.mbUrl, credInput.value);
@@ -2333,9 +2351,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         tdMb.appendChild(candidateList);
         tdMb.appendChild(searchRow);
         tr.appendChild(tdMb);
-        const tdAction = document.createElement("td");
-        tdAction.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;`;
-        tr.appendChild(tdAction);
+        const tdAction = actionsLine;
         tbody.appendChild(tr);
         function setRowResolved(a) {
           const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
@@ -2349,6 +2365,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               r._credInput.value = fresh;
             }
             creditOverrides.set(mbUrl, r._credInput.value);
+            refreshCredBg();
           }
           const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
           if (_idbKey) {
@@ -2403,6 +2420,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           renderActions(null);
           updateImportBtn();
         }
+        const ACTION_CHIP_STYLE = "display:inline-flex;align-items:center;justify-content:center;min-width:1.6rem;height:1.6rem;padding:0 0.35rem;font-size:0.95rem;line-height:1;cursor:pointer;border:1px solid #d6d6d6;border-radius:0.3rem;background:#fafafa;";
         function renderActions(selected) {
           tdAction.innerHTML = "";
           if (selected) {
@@ -2426,27 +2444,31 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               );
             }, applyUrlCheckResult = function(result) {
               if (result === "linked") {
-                linkSlot.textContent = "\u2713 Discogs URL already linked";
+                linkSlot.textContent = "\u2713";
+                linkSlot.title = "Discogs URL already linked to this MB " + entityType;
                 linkSlot.style.color = "#5a5";
+                linkSlot.style.fontWeight = "bold";
               } else if (result === "other") {
-                linkSlot.innerHTML = `\u26A0\uFE0F Linked to a different MB ${entityType}`;
+                linkSlot.textContent = "\u26A0\uFE0F";
+                linkSlot.title = `Discogs URL is linked to a DIFFERENT MB ${entityType}`;
                 linkSlot.style.color = "#c80";
               } else {
                 linkSlot.textContent = "";
                 linkSlot.style.color = "";
                 const addLinkBtn = document.createElement("button");
-                addLinkBtn.textContent = "Add Discogs link \u2197";
-                addLinkBtn.style.cssText = "font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;";
+                addLinkBtn.textContent = "\u{1F517}";
+                addLinkBtn.title = "Add Discogs link to MB " + entityType;
+                addLinkBtn.style.cssText = ACTION_CHIP_STYLE + "color:#e8771d;";
                 addLinkBtn.addEventListener("click", () => {
                   const ltId = entityType === "label" ? "217" : entityType === "place" ? "705" : "180";
                   const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
                   const mbid = selected.id.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
                   window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, "_blank", "noopener,noreferrer");
                   linkSlot.innerHTML = "";
-                  const pending = document.createElement("span");
-                  pending.textContent = "\u2026 verifying on return";
-                  pending.style.cssText = "font-size:0.8rem;color:#888;font-style:italic;";
-                  linkSlot.appendChild(pending);
+                  linkSlot.textContent = "\u2026";
+                  linkSlot.title = "Verifying Discogs link on return to this tab\u2026";
+                  linkSlot.style.color = "#888";
+                  linkSlot.style.fontStyle = "italic";
                   const onReturn = () => {
                     if (document.visibilityState !== "visible") return;
                     document.removeEventListener("visibilitychange", onReturn);
@@ -2460,8 +2482,9 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               }
             };
             const linkSlot = document.createElement("span");
-            linkSlot.style.cssText = "display:block;margin-bottom:0.25rem;font-size:0.8rem;";
-            linkSlot.textContent = "Checking Discogs link\u2026";
+            linkSlot.style.cssText = "display:inline-flex;align-items:center;font-size:0.8rem;color:#888;";
+            linkSlot.textContent = "\u2026";
+            linkSlot.title = "Checking whether MB already has this Discogs URL linked";
             tdAction.appendChild(linkSlot);
             const urlCheckCacheKey = `${selected.id}|${discogsHref}`;
             const urlCheckLsKey = `discogs-urlcheck-${selected.id}-${discogsHref.replace(/[^a-z0-9]/gi, "-").substring(0, 80)}`;
@@ -2552,28 +2575,18 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             };
             DISCOGS_CHANNEL.addEventListener("message", onCreated);
           }
-          const createCluster = document.createElement("div");
-          createCluster.style.cssText = "display:flex;flex-direction:column;gap:0.25rem;";
-          const CREATE_BTN_STYLE = "font-size:0.78rem;line-height:1.25;padding:0.2rem 0.55rem;cursor:pointer;white-space:nowrap;border:1px solid #bfbfbf;border-radius:0.25rem;background:#fafafa;color:#333;";
-          const CREATE_BTN_HOVER = "background:#f0f0f0;border-color:#999;";
-          function styleCreateBtn(btn) {
-            btn.style.cssText = CREATE_BTN_STYLE;
-            btn.addEventListener("mouseenter", () => btn.setAttribute("style", CREATE_BTN_STYLE + CREATE_BTN_HOVER));
-            btn.addEventListener("mouseleave", () => btn.setAttribute("style", CREATE_BTN_STYLE));
-          }
           const createBtn = document.createElement("button");
-          createBtn.textContent = "Create in MB \u2197";
-          createBtn.title = "Open MB create form with the Discogs name + URL pre-filled";
-          styleCreateBtn(createBtn);
+          createBtn.textContent = "\u{1F195}";
+          createBtn.title = "Create in MB with default Discogs name + URL";
+          createBtn.style.cssText = ACTION_CHIP_STYLE + "color:#2a7;";
           createBtn.addEventListener("click", () => openCreateTab());
-          createCluster.appendChild(createBtn);
           const createAdvBtn = document.createElement("button");
-          createAdvBtn.textContent = "Create (adv) \u2197";
+          createAdvBtn.textContent = "\u25BE";
           createAdvBtn.title = "Create in MB with editable name + disambiguation, pre-filled from the Discogs profile";
-          styleCreateBtn(createAdvBtn);
+          createAdvBtn.style.cssText = ACTION_CHIP_STYLE + "color:#666;";
           createAdvBtn.addEventListener("click", () => openAdvancedCreatePopup());
-          createCluster.appendChild(createAdvBtn);
-          tdAction.appendChild(createCluster);
+          tdAction.appendChild(createBtn);
+          tdAction.appendChild(createAdvBtn);
           async function openAdvancedCreatePopup() {
             const distinctRoles = [];
             const seen = /* @__PURE__ */ new Set();
@@ -3856,6 +3869,14 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     bar.className = "discogs-bar";
     const row1 = document.createElement("div");
     row1.className = "discogs-bar-row1";
+    const importBtn = document.createElement("button");
+    importBtn.className = "discogs-import-btn";
+    importBtn.textContent = "Import from Discogs";
+    const progressPct = document.createElement("span");
+    progressPct.id = "discogs-progress-pct";
+    progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
+    row1.appendChild(importBtn);
+    row1.appendChild(progressPct);
     const logo = document.createElement("img");
     logo.src = DISCOGS_LOGO_URL;
     logo.className = "discogs-logo";
@@ -3865,14 +3886,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     sourceSpan.className = "discogs-source";
     sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
     row1.appendChild(sourceSpan);
-    const importBtn = document.createElement("button");
-    importBtn.className = "discogs-import-btn";
-    importBtn.textContent = "Import from Discogs";
-    const progressPct = document.createElement("span");
-    progressPct.id = "discogs-progress-pct";
-    progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
-    row1.appendChild(importBtn);
-    row1.appendChild(progressPct);
     bar.appendChild(row1);
     const row2 = document.createElement("div");
     row2.className = "discogs-bar-row2";
