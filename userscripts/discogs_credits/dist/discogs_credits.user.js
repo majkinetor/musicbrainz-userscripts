@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.132128
+// @version      2026.5.27.132141
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -3289,7 +3289,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     }
     function relAlreadyExists(sourceEntity, linkTypeID, targetGid, attrTree) {
       const rels = sourceEntity?.relationships;
-      if (!Array.isArray(rels) || rels.length === 0) return false;
+      if (!Array.isArray(rels) || rels.length === 0) return null;
       const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || /* @__PURE__ */ new Set([linkTypeID]);
       const candSig = (() => {
         if (!attrTree) return "";
@@ -3299,14 +3299,29 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           return "";
         }
       })();
-      return rels.some((r) => {
-        if (!acceptableLinkTypes.has(r.linkTypeID)) return false;
+      const lookupName = (id) => {
+        try {
+          return pageWindow.MB.linkedEntities.link_type[id]?.name || `#${id}`;
+        } catch (e) {
+          return `#${id}`;
+        }
+      };
+      let dupMatch = null;
+      for (const r of rels) {
+        if (!acceptableLinkTypes.has(r.linkTypeID)) continue;
         const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
-        if (tgt !== targetGid) return false;
-        if (dedupeDuplicateRoles) return true;
+        if (tgt !== targetGid) continue;
+        const isEquivalent = r.linkTypeID !== linkTypeID;
         const existingSig = (r.attributes || []).map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
-        return existingSig === candSig;
-      });
+        const exactMatch = existingSig === candSig;
+        if (exactMatch) {
+          return { kind: isEquivalent ? "equivalence" : "exact", existingLinkName: lookupName(r.linkTypeID) };
+        }
+        if (dedupeDuplicateRoles && !dupMatch) {
+          dupMatch = { kind: isEquivalent ? "equivalence" : "duplicate-role", existingLinkName: lookupName(r.linkTypeID) };
+        }
+      }
+      return dupMatch;
     }
     async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos) {
       const overrideCredit = creditOverrides.get(mbUrl);
@@ -3373,8 +3388,17 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           log.warn(`Entity "${targetEntity.name}" is a ${targetEntity.entityType} but expected ${entityType0}/${entityType1} \u2014 link type "${linkTypeName}" may not apply`);
         }
       }
-      if (relAlreadyExists(sourceEntity, resolvedLinkTypeID, targetEntity.gid, attrTree)) {
-        log.info(`Already in MB: <strong>${linkTypeName}</strong>: ${sourceEntity.name} \u2194 ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ""}`);
+      const dedupHit = relAlreadyExists(sourceEntity, resolvedLinkTypeID, targetEntity.gid, attrTree);
+      if (dedupHit) {
+        const pair = `${sourceEntity.name} \u2194 ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ""}`;
+        const existing = dedupHit.existingLinkName;
+        if (dedupHit.kind === "equivalence") {
+          log.info(`Deduplication (equivalence sets): <strong>${linkTypeName}</strong> not added \u2014 equivalent <strong>${existing}</strong> already on ${pair}`);
+        } else if (dedupHit.kind === "duplicate-role") {
+          log.info(`Deduplication (duplicate roles): <strong>${linkTypeName}</strong> not added \u2014 same role already exists with different attributes on ${pair}`);
+        } else {
+          log.info(`Already in MB: <strong>${linkTypeName}</strong>: ${pair}`);
+        }
         existedInMb++;
         return;
       }

@@ -327,9 +327,16 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     // Compares (linkTypeID, target gid, attributes) — what MB's reducer would
     // dedupe on. Without this check the script counted every dispatch as
     // "added", even when MB silently no-op'd them (issue #14).
+    //
+    // Returns `null` when no match, or `{ kind, existingLinkName }` so the
+    // caller can pick a distinct log message per #62 feedback:
+    //   - 'exact'          identical link type + same attrs ("Already in MB")
+    //   - 'equivalence'    equivalent link type (e.g. writer when adding composer)
+    //   - 'duplicate-role' same link type + same target but DIFFERENT attrs
+    //                      (only counted when `dedupeDuplicateRoles` is on)
     function relAlreadyExists(sourceEntity, linkTypeID, targetGid, attrTree) {
         const rels = sourceEntity?.relationships;
-        if (!Array.isArray(rels) || rels.length === 0) return false;
+        if (!Array.isArray(rels) || rels.length === 0) return null;
         // Equivalence-set expansion: when ON, a writer rel counts as
         // existing for an incoming composer dispatch (and vice versa).
         const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || new Set([linkTypeID]);
@@ -340,19 +347,31 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                     .map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
             } catch (e) { return ''; }
         })();
-        return rels.some(r => {
-            if (!acceptableLinkTypes.has(r.linkTypeID)) return false;
+        const lookupName = (id) => {
+            try { return pageWindow.MB.linkedEntities.link_type[id]?.name || `#${id}`; }
+            catch (e) { return `#${id}`; }
+        };
+        // Two-pass: prefer exact matches over duplicate-role matches when
+        // both could fire, so the log message reflects the cheaper match.
+        let dupMatch = null;
+        for (const r of rels) {
+            if (!acceptableLinkTypes.has(r.linkTypeID)) continue;
             const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
-            if (tgt !== targetGid) return false;
-            // Without dedupeDuplicateRoles, only an EXACT attr-signature
-            // match counts as already-there (the conservative default
-            // before #62). With it, any (linkType, target) match wins
-            // regardless of attribute / task / date differences.
-            if (dedupeDuplicateRoles) return true;
+            if (tgt !== targetGid) continue;
+            const isEquivalent = (r.linkTypeID !== linkTypeID);
             const existingSig = (r.attributes || [])
                 .map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
-            return existingSig === candSig;
-        });
+            const exactMatch = (existingSig === candSig);
+            if (exactMatch) {
+                return { kind: isEquivalent ? 'equivalence' : 'exact', existingLinkName: lookupName(r.linkTypeID) };
+            }
+            // Attrs differ. With dedupeDuplicateRoles, still a match;
+            // remember but keep looking for an exact match elsewhere.
+            if (dedupeDuplicateRoles && !dupMatch) {
+                dupMatch = { kind: isEquivalent ? 'equivalence' : 'duplicate-role', existingLinkName: lookupName(r.linkTypeID) };
+            }
+        }
+        return dupMatch;
     }
 
     // ── Helper: process one relationship ─────────────────────────────────────
@@ -436,8 +455,22 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         // reducer would no-op the dispatch and we'd over-count. Detect now,
         // log per-rel (issue #34 — silent count was misleading), count as
         // existed instead of added. (issue #14)
-        if (relAlreadyExists(sourceEntity, resolvedLinkTypeID, targetEntity.gid, attrTree)) {
-            log.info(`Already in MB: <strong>${linkTypeName}</strong>: ${sourceEntity.name} ↔ ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ''}`);
+        const dedupHit = relAlreadyExists(sourceEntity, resolvedLinkTypeID, targetEntity.gid, attrTree);
+        if (dedupHit) {
+            // Distinct log message per #62 feedback. Three cases:
+            //   exact          — identical rel already in MB
+            //   equivalence    — equivalent role (writer ↔ composer) already there
+            //   duplicate-role — same role + different attrs (only when
+            //                    the "Duplicate roles" option is on)
+            const pair = `${sourceEntity.name} ↔ ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ''}`;
+            const existing = dedupHit.existingLinkName;
+            if (dedupHit.kind === 'equivalence') {
+                log.info(`Deduplication (equivalence sets): <strong>${linkTypeName}</strong> not added — equivalent <strong>${existing}</strong> already on ${pair}`);
+            } else if (dedupHit.kind === 'duplicate-role') {
+                log.info(`Deduplication (duplicate roles): <strong>${linkTypeName}</strong> not added — same role already exists with different attributes on ${pair}`);
+            } else {
+                log.info(`Already in MB: <strong>${linkTypeName}</strong>: ${pair}`);
+            }
             existedInMb++;
             return;
         }
