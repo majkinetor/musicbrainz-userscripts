@@ -278,7 +278,7 @@ export function insertDiscogsBar(discogsUrl) {
     docsLink.href = docsHref;
     docsLink.target = '_blank';
     docsLink.rel = 'noopener noreferrer nofollow';
-    docsLink.textContent = '? Documentation';
+    docsLink.textContent = '📖 Documentation';
     docsLink.title = 'Open the script\'s README in a new tab';
     docsLink.style.cssText = 'flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;';
     row1.appendChild(docsLink);

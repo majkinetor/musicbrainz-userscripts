@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.182151
+// @version      2026.5.27.185619
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -3928,7 +3928,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     docsLink.href = docsHref;
     docsLink.target = "_blank";
     docsLink.rel = "noopener noreferrer nofollow";
-    docsLink.textContent = "? Documentation";
+    docsLink.textContent = "\u{1F4D6} Documentation";
     docsLink.title = "Open the script's README in a new tab";
     docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;";
     row1.appendChild(docsLink);
