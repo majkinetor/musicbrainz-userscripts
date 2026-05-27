@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.163056
+// @version      2026.5.27.163057
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2189,7 +2189,7 @@
       const thead = document.createElement("thead");
       const hr = document.createElement("tr");
       hr.style.background = "#f5e8a0";
-      ["MB match / search", "Discogs entity"].forEach((col) => {
+      ["Discogs entity", "MB match / search"].forEach((col) => {
         const th = document.createElement("th");
         th.style.cssText = "text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;";
         th.textContent = col;
@@ -2264,6 +2264,7 @@
         actionsLine.style.cssText = "display:inline-flex;align-items:center;gap:0.3rem;flex-shrink:0;";
         nameRow.appendChild(actionsLine);
         tdDiscogs.appendChild(nameRow);
+        tr.appendChild(tdDiscogs);
         const rolesList = r._roles || [];
         if (rolesList.length > 0) {
           const seen = /* @__PURE__ */ new Map();
@@ -2345,12 +2346,11 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         searchBtn.textContent = "\u{1F50D}";
         searchBtn.title = "Search MusicBrainz";
         searchBtn.style.cssText = "padding:0.15rem 0.35rem;cursor:pointer;";
-        searchRow.appendChild(searchInput);
         searchRow.appendChild(searchBtn);
+        searchRow.appendChild(searchInput);
         tdMb.appendChild(candidateList);
         tdMb.appendChild(searchRow);
         tr.appendChild(tdMb);
-        tr.appendChild(tdDiscogs);
         const tdAction = actionsLine;
         tbody.appendChild(tr);
         function setRowResolved(a) {
@@ -2709,6 +2709,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         function makeCandidateRow(a) {
           const row = document.createElement("div");
           row.style.cssText = "display:flex;align-items:center;gap:0.35rem;padding:0.2rem 0.35rem;border:1px solid #ddd;border-radius:3px;background:#fff;font-size:0.82rem;";
+          const selBtn = document.createElement("button");
+          selBtn.textContent = "\u2713";
+          selBtn.title = "Select this candidate as the MB match";
+          selBtn.style.cssText = "font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid #b5d5b5;border-radius:0.25rem;background:#eaf6ea;color:#2a7;font-weight:600;flex-shrink:0;";
+          selBtn.addEventListener("click", () => setRowResolved(a));
+          row.appendChild(selBtn);
           const info = document.createElement("span");
           info.style.flex = "1";
           const nameA = document.createElement("a");
@@ -2725,11 +2731,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             info.appendChild(d);
           }
           row.appendChild(info);
-          const selBtn = document.createElement("button");
-          selBtn.textContent = "Select";
-          selBtn.style.cssText = "font-size:0.78rem;cursor:pointer;padding:0.1rem 0.3rem;white-space:nowrap;";
-          selBtn.addEventListener("click", () => setRowResolved(a));
-          row.appendChild(selBtn);
           return row;
         }
         function extractMbid(q) {

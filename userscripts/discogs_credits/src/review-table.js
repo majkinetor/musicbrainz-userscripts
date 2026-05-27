@@ -262,7 +262,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         const thead = document.createElement('thead');
         const hr = document.createElement('tr');
         hr.style.background = '#f5e8a0';
-        ['MB match / search', 'Discogs entity'].forEach(col => {
+        ['Discogs entity', 'MB match / search'].forEach(col => {
             const th = document.createElement('th');
             th.style.cssText = 'text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;';
             th.textContent = col;
@@ -364,10 +364,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             actionsLine.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;flex-shrink:0;';
             nameRow.appendChild(actionsLine);
             tdDiscogs.appendChild(nameRow);
-            // NOTE: tdDiscogs is appended to `tr` AFTER tdMb below
-            // (column swap per #77 follow-up: search/select column moves
-            // left). The tdDiscogs DOM keeps being populated below;
-            // we just defer the row append until after tdMb's append.
+            tr.appendChild(tdDiscogs);
 
             // Roles line below entity name. Each role is its own <span> so it
             // can carry a `data-role-key` (display label *without* the track-
@@ -484,15 +481,13 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             searchBtn.textContent = '\uD83D\uDD0D';
             searchBtn.title = 'Search MusicBrainz';
             searchBtn.style.cssText = 'padding:0.15rem 0.35rem;cursor:pointer;';
-            searchRow.appendChild(searchInput);
+            // Per #77 iter 3: search icon on the LEFT of the input.
             searchRow.appendChild(searchBtn);
+            searchRow.appendChild(searchInput);
 
             tdMb.appendChild(candidateList);
             tdMb.appendChild(searchRow);
             tr.appendChild(tdMb);
-            // tdDiscogs goes AFTER tdMb so the MB search column lands on
-            // the left edge of the row (#77 follow-up).
-            tr.appendChild(tdDiscogs);
 
             // No separate Action column — actions render inside the
             // Discogs column's `actionsLine` slot (Proposal C of #77).
@@ -955,6 +950,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             function makeCandidateRow(a) {
                 const row = document.createElement('div');
                 row.style.cssText = 'display:flex;align-items:center;gap:0.35rem;padding:0.2rem 0.35rem;border:1px solid #ddd;border-radius:3px;background:#fff;font-size:0.82rem;';
+                // Per #77 iter 3: select icon on the LEFT of the candidate row.
+                const selBtn = document.createElement('button');
+                selBtn.textContent = '✓';
+                selBtn.title = 'Select this candidate as the MB match';
+                selBtn.style.cssText = 'font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid #b5d5b5;border-radius:0.25rem;background:#eaf6ea;color:#2a7;font-weight:600;flex-shrink:0;';
+                selBtn.addEventListener('click', () => setRowResolved(a));
+                row.appendChild(selBtn);
+
                 const info = document.createElement('span');
                 info.style.flex = '1';
                 const nameA = document.createElement('a');
@@ -970,11 +973,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     info.appendChild(d);
                 }
                 row.appendChild(info);
-                const selBtn = document.createElement('button');
-                selBtn.textContent = 'Select';
-                selBtn.style.cssText = 'font-size:0.78rem;cursor:pointer;padding:0.1rem 0.3rem;white-space:nowrap;';
-                selBtn.addEventListener('click', () => setRowResolved(a));
-                row.appendChild(selBtn);
                 return row;
             }
 
