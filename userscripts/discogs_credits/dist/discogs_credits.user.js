@@ -4525,20 +4525,44 @@ ${lines}
     return String(s).replace(/(["\\\\])/g, "\\$1");
   }
   function collectLocations(items) {
-    const byLocation = /* @__PURE__ */ new Map();
+    const buckets = {
+      release: { count: 0, positions: /* @__PURE__ */ new Set() },
+      recording: { count: 0, positions: /* @__PURE__ */ new Set() },
+      work: { count: 0, positions: /* @__PURE__ */ new Set() },
+      other: { count: 0, positions: /* @__PURE__ */ new Set() }
+    };
     for (const item of items) {
       const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
       const srcType = parseSourceTypeFromButton(btn);
-      let label;
-      if (srcType === "release") label = "Release";
-      else if (srcType === "work") label = "Work";
-      else if (srcType === "recording") {
+      const key = srcType === "release" || srcType === "recording" || srcType === "work" ? srcType : "other";
+      buckets[key].count++;
+      if (key === "recording" || key === "work") {
         const pos = findRecordingPosition(item);
-        label = pos ? `Track ${pos}` : "Track ?";
-      } else label = srcType ? `${srcType[0].toUpperCase() + srcType.slice(1)}` : "Other";
-      byLocation.set(label, (byLocation.get(label) || 0) + 1);
+        if (pos) buckets[key].positions.add(pos);
+      }
     }
-    return [...byLocation.entries()].map(([label, count]) => ({ label, count }));
+    const order = [
+      ["release", "release"],
+      ["recording", "tracks"],
+      ["work", "works"]
+    ];
+    const out = [];
+    for (const [key, label] of order) {
+      const b = buckets[key];
+      const positions = sortPositions([...b.positions]);
+      out.push({ key, label, count: b.count, positions });
+    }
+    if (buckets.other.count > 0) {
+      out.push({ key: "other", label: "other", count: buckets.other.count, positions: [] });
+    }
+    return out;
+  }
+  function sortPositions(arr) {
+    return arr.sort((a, b) => {
+      const na = parseFloat(a), nb = parseFloat(b);
+      if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+      return String(a).localeCompare(String(b));
+    });
   }
   function parseSourceTypeFromButton(btn) {
     if (!btn || !btn.id) return null;
@@ -4590,37 +4614,47 @@ ${lines}
             margin: 0 0 0.6rem; font-size: 1.05rem; line-height: 1.3;
         }
         .discogs-batch-modal .what { margin: 0 0 0.5rem; }
-        .discogs-batch-modal .locations {
-            margin: 0.4rem 0 0.9rem; padding: 0.5rem 0.7rem;
+        .discogs-batch-modal .total {
+            font-weight: 600; margin: 0.5rem 0 0.3rem; font-size: 0.95rem;
+        }
+        .discogs-batch-modal ul.locations {
+            margin: 0 0 0.9rem; padding: 0.5rem 0.7rem 0.5rem 1.5rem;
             background: #f6f6f6; border-radius: 4px;
-            font-size: 0.85rem; line-height: 1.55;
+            font-size: 0.88rem; line-height: 1.6;
             max-height: 12rem; overflow-y: auto;
+            list-style: disc;
         }
-        .discogs-batch-modal .locations .loc {
-            display: flex; justify-content: space-between; gap: 0.6rem;
-        }
-        .discogs-batch-modal .locations .loc-label { color: #333; }
-        .discogs-batch-modal .locations .loc-count {
-            font-variant-numeric: tabular-nums; color: #666;
-        }
+        .discogs-batch-modal ul.locations li.loc { margin: 0; padding: 0; }
         .discogs-batch-modal .actions {
-            display: flex; justify-content: flex-end; align-items: center;
+            display: flex; flex-direction: row !important;
+            justify-content: flex-end; align-items: center;
             gap: 0.5rem; margin-top: 1rem;
         }
-        .discogs-batch-modal button {
-            padding: 0.4rem 1rem; border-radius: 4px;
-            border: 1px solid #bbb; cursor: pointer; font-size: 0.9rem;
-            line-height: 1.2; min-width: 5.5rem;
+        .discogs-batch-modal .actions button {
+            flex: 0 0 auto;
+            display: inline-block;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0.45rem 1.1rem;
+            min-width: 6rem; height: 2.2rem;
+            border-radius: 4px;
+            border: 1px solid #bbb;
+            cursor: pointer;
+            font-size: 0.9rem;
             font-family: inherit;
+            font-weight: 500;
+            line-height: 1; vertical-align: middle;
+            text-align: center;
+            white-space: nowrap;
         }
-        .discogs-batch-modal button.confirm {
+        .discogs-batch-modal .actions button.confirm {
             background: #c0392b; color: #fff; border-color: #962c20;
         }
-        .discogs-batch-modal button.confirm:hover { background: #a83426; }
-        .discogs-batch-modal button.cancel {
+        .discogs-batch-modal .actions button.confirm:hover { background: #a83426; }
+        .discogs-batch-modal .actions button.cancel {
             background: #f5f5f5; color: #333;
         }
-        .discogs-batch-modal button.cancel:hover { background: #eaeaea; }
+        .discogs-batch-modal .actions button.cancel:hover { background: #eaeaea; }
     `;
     return style;
   }
@@ -4637,20 +4671,19 @@ ${lines}
     what.innerHTML = describeAction(group, mode);
     modal.appendChild(what);
     if (group.locations && group.locations.length) {
-      const list = document.createElement("div");
+      const total = document.createElement("div");
+      total.className = "total";
+      total.textContent = `Total: ${group.buttons.length}`;
+      modal.appendChild(total);
+      const list = document.createElement("ul");
       list.className = "locations";
-      for (const { label, count } of group.locations) {
-        const row = document.createElement("div");
-        row.className = "loc";
-        const l = document.createElement("span");
-        l.className = "loc-label";
-        l.textContent = label;
-        const c = document.createElement("span");
-        c.className = "loc-count";
-        c.textContent = count === 1 ? "1 rel" : `${count} rels`;
-        row.appendChild(l);
-        row.appendChild(c);
-        list.appendChild(row);
+      for (const { label, count, positions } of group.locations) {
+        const li = document.createElement("li");
+        li.className = "loc";
+        const noun = count === 1 ? "rel" : "rels";
+        const tail = positions && positions.length ? `: ${positions.join(", ")}` : "";
+        li.textContent = `${count} ${noun} from ${label}${tail}`;
+        list.appendChild(li);
       }
       modal.appendChild(list);
     }

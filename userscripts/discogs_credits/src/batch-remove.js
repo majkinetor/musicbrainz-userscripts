@@ -177,32 +177,66 @@ function cssEscape(s) {
 }
 
 // Classify each matched rel-item by where the rel is anchored: the
-// release, a specific recording (track), or a work. Returns a flat list
-// the modal renders, grouped by location with counts. The source type
-// is decoded from MB's `remove-item` button id pattern:
+// release, a specific recording (track), or a work. The modal expects
+// the breakdown shape maintainer specified on #68:
+//   Total: N
+//   - X rel from release
+//   - Y rel from tracks: 5, 8
+//   - Z rel from works: 5, 8
+// so we bucket counts per source-type (release / recording / work /
+// other) AND collect the unique track positions touched by each
+// bucket. Source type comes from MB's `remove-item` button id pattern
 //   id="remove-relationship-<targetType>-<sourceType>-<relId>"
-// so we don't need to parse MB's React DOM further to know whether the
-// rel is release-level or track-level.
+// Track positions come from DOM walking (best-effort -- positions of
+// the enclosing track wrapper apply to both `recording`-source and
+// `work`-source rels since works live inside tracks in MB's editor).
 function collectLocations(items) {
-    const byLocation = new Map(); // label -> count
+    const buckets = {
+        release:   { count: 0, positions: new Set() },
+        recording: { count: 0, positions: new Set() },
+        work:      { count: 0, positions: new Set() },
+        other:     { count: 0, positions: new Set() },
+    };
     for (const item of items) {
         const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
         const srcType = parseSourceTypeFromButton(btn);
-        let label;
-        if (srcType === 'release')   label = 'Release';
-        else if (srcType === 'work') label = 'Work';
-        else if (srcType === 'recording') {
-            // Look up the track position from nearby DOM. MB usually
-            // renders the position in a header cell on the same row or
-            // in an ancestor track wrapper. Several selectors are tried;
-            // first hit wins, otherwise we fall back to `Track ?`.
+        const key = (srcType === 'release' || srcType === 'recording' || srcType === 'work') ? srcType : 'other';
+        buckets[key].count++;
+        // Track position is only meaningful for recording/work rels.
+        if (key === 'recording' || key === 'work') {
             const pos = findRecordingPosition(item);
-            label = pos ? `Track ${pos}` : 'Track ?';
+            if (pos) buckets[key].positions.add(pos);
         }
-        else label = srcType ? `${srcType[0].toUpperCase() + srcType.slice(1)}` : 'Other';
-        byLocation.set(label, (byLocation.get(label) || 0) + 1);
     }
-    return [...byLocation.entries()].map(([label, count]) => ({ label, count }));
+    // Stable order: release, tracks (recording), works, other. Always
+    // include release/recording/work rows even when their count is 0 so
+    // the maintainer's "Total: 4  • 0 rel from release  • 1 rel from
+    // tracks: 5, 8 …" shape lines up. Drop `other` entirely when zero.
+    const order = [
+        ['release',   'release'],
+        ['recording', 'tracks'],
+        ['work',      'works'],
+    ];
+    const out = [];
+    for (const [key, label] of order) {
+        const b = buckets[key];
+        const positions = sortPositions([...b.positions]);
+        out.push({ key, label, count: b.count, positions });
+    }
+    if (buckets.other.count > 0) {
+        out.push({ key: 'other', label: 'other', count: buckets.other.count, positions: [] });
+    }
+    return out;
+}
+
+function sortPositions(arr) {
+    // Numeric-aware: "5" < "8" < "10" < "A1". parseFloat handles "5",
+    // "1.01", "1-5"; falls back to lexicographic for non-numeric.
+    return arr.sort((a, b) => {
+        const na = parseFloat(a), nb = parseFloat(b);
+        if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+        return String(a).localeCompare(String(b));
+    });
 }
 
 function parseSourceTypeFromButton(btn) {
@@ -282,37 +316,47 @@ function buildStyle() {
             margin: 0 0 0.6rem; font-size: 1.05rem; line-height: 1.3;
         }
         .discogs-batch-modal .what { margin: 0 0 0.5rem; }
-        .discogs-batch-modal .locations {
-            margin: 0.4rem 0 0.9rem; padding: 0.5rem 0.7rem;
+        .discogs-batch-modal .total {
+            font-weight: 600; margin: 0.5rem 0 0.3rem; font-size: 0.95rem;
+        }
+        .discogs-batch-modal ul.locations {
+            margin: 0 0 0.9rem; padding: 0.5rem 0.7rem 0.5rem 1.5rem;
             background: #f6f6f6; border-radius: 4px;
-            font-size: 0.85rem; line-height: 1.55;
+            font-size: 0.88rem; line-height: 1.6;
             max-height: 12rem; overflow-y: auto;
+            list-style: disc;
         }
-        .discogs-batch-modal .locations .loc {
-            display: flex; justify-content: space-between; gap: 0.6rem;
-        }
-        .discogs-batch-modal .locations .loc-label { color: #333; }
-        .discogs-batch-modal .locations .loc-count {
-            font-variant-numeric: tabular-nums; color: #666;
-        }
+        .discogs-batch-modal ul.locations li.loc { margin: 0; padding: 0; }
         .discogs-batch-modal .actions {
-            display: flex; justify-content: flex-end; align-items: center;
+            display: flex; flex-direction: row !important;
+            justify-content: flex-end; align-items: center;
             gap: 0.5rem; margin-top: 1rem;
         }
-        .discogs-batch-modal button {
-            padding: 0.4rem 1rem; border-radius: 4px;
-            border: 1px solid #bbb; cursor: pointer; font-size: 0.9rem;
-            line-height: 1.2; min-width: 5.5rem;
+        .discogs-batch-modal .actions button {
+            flex: 0 0 auto;
+            display: inline-block;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0.45rem 1.1rem;
+            min-width: 6rem; height: 2.2rem;
+            border-radius: 4px;
+            border: 1px solid #bbb;
+            cursor: pointer;
+            font-size: 0.9rem;
             font-family: inherit;
+            font-weight: 500;
+            line-height: 1; vertical-align: middle;
+            text-align: center;
+            white-space: nowrap;
         }
-        .discogs-batch-modal button.confirm {
+        .discogs-batch-modal .actions button.confirm {
             background: #c0392b; color: #fff; border-color: #962c20;
         }
-        .discogs-batch-modal button.confirm:hover { background: #a83426; }
-        .discogs-batch-modal button.cancel {
+        .discogs-batch-modal .actions button.confirm:hover { background: #a83426; }
+        .discogs-batch-modal .actions button.cancel {
             background: #f5f5f5; color: #333;
         }
-        .discogs-batch-modal button.cancel:hover { background: #eaeaea; }
+        .discogs-batch-modal .actions button.cancel:hover { background: #eaeaea; }
     `;
     return style;
 }
@@ -334,20 +378,25 @@ function openConfirm(group, mode, onConfirm) {
     modal.appendChild(what);
 
     if (group.locations && group.locations.length) {
-        const list = document.createElement('div');
+        // Breakdown shape per #68:
+        //   Total: N
+        //   - X rel from release
+        //   - Y rel from tracks: 5, 8
+        //   - Z rel from works: 5, 8
+        const total = document.createElement('div');
+        total.className = 'total';
+        total.textContent = `Total: ${group.buttons.length}`;
+        modal.appendChild(total);
+
+        const list = document.createElement('ul');
         list.className = 'locations';
-        for (const { label, count } of group.locations) {
-            const row = document.createElement('div');
-            row.className = 'loc';
-            const l = document.createElement('span');
-            l.className = 'loc-label';
-            l.textContent = label;
-            const c = document.createElement('span');
-            c.className = 'loc-count';
-            c.textContent = count === 1 ? '1 rel' : `${count} rels`;
-            row.appendChild(l);
-            row.appendChild(c);
-            list.appendChild(row);
+        for (const { label, count, positions } of group.locations) {
+            const li = document.createElement('li');
+            li.className = 'loc';
+            const noun = count === 1 ? 'rel' : 'rels';
+            const tail = (positions && positions.length) ? `: ${positions.join(', ')}` : '';
+            li.textContent = `${count} ${noun} from ${label}${tail}`;
+            list.appendChild(li);
         }
         modal.appendChild(list);
     }
