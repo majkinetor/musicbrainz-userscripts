@@ -28,6 +28,7 @@ import { mbThrottle }                       from './api-mb.js';
 import { readIdbRecord, writeIdbRecord }    from './storage.js';
 import { parseDiscogsUrl }                  from './api-discogs.js';
 import { ENTITY_TYPE_MAP }                  from './data/entity-map.js';
+import { _setProgressPct }                  from './progress-bar.js';
 
 // `kind`-specific tweaks. Tiny lookup table so the per-strategy code in
 // `resolveEntity` reads as one shared body.
@@ -312,6 +313,13 @@ export async function resolveAll(entities, opts) {
     const inFlightNames = new Set();
 
     function setProgress() {
+        // Push the bar to determinate mode at the current % (#82).
+        // Before this change preflight only updated the text line in
+        // the log; the top bar stayed in its rotating marquee. Now the
+        // bar shows real progress as entities resolve.
+        if (entities.length > 0) {
+            try { _setProgressPct((done / entities.length) * 100); } catch (_) {}
+        }
         if (!progressLi) return;
         const remaining = entities.length - done;
         const checking = inFlightNames.size

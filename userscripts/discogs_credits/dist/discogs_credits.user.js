@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.173303
+// @version      2026.5.27.173610
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -296,24 +296,44 @@
       pb.style.cssText = "position:fixed;left:0;right:0;height:5px;z-index:99999;background:#ddd;overflow:hidden;";
       const fill = document.createElement("div");
       fill.id = "discogs-pb-fill";
-      fill.style.cssText = "position:absolute;top:0;height:100%;width:40%;background:#e8771d;";
+      fill.style.cssText = "position:absolute;top:0;height:100%;width:40%;background:#e8771d;transition:width 0.2s linear;";
       pb.appendChild(fill);
       document.body.appendChild(pb);
     }
     pb.style.top = r1h + "px";
     pb.style.display = "block";
     if (row2) row2.style.marginTop = r1h + 5 + "px";
+    _startMarquee();
+  }
+  function _startMarquee() {
     clearInterval(_pInterval);
+    const fill = document.getElementById("discogs-pb-fill");
+    if (fill) {
+      fill.style.width = "40%";
+      fill.style.left = _pPos + "%";
+      fill.style.transition = "";
+    }
     _pPos = -40;
     _pInterval = setInterval(() => {
       _pPos += 1.5;
       if (_pPos > 100) _pPos = -40;
-      const fill = document.getElementById("discogs-pb-fill");
-      if (fill) fill.style.left = _pPos + "%";
+      const f = document.getElementById("discogs-pb-fill");
+      if (f) f.style.left = _pPos + "%";
     }, 16);
+  }
+  function _setProgressPct(pct) {
+    const p = Math.max(0, Math.min(100, Number(pct) || 0));
+    clearInterval(_pInterval);
+    _pInterval = null;
+    const fill = document.getElementById("discogs-pb-fill");
+    if (!fill) return;
+    fill.style.left = "0";
+    fill.style.transition = "width 0.2s linear";
+    fill.style.width = p + "%";
   }
   function _hideBar() {
     clearInterval(_pInterval);
+    _pInterval = null;
     const pb = document.getElementById("discogs-pb");
     if (pb) pb.style.display = "none";
     const row2 = document.querySelector(".discogs-bar-row2");
@@ -1970,6 +1990,12 @@
     let done = 0;
     const inFlightNames = /* @__PURE__ */ new Set();
     function setProgress() {
+      if (entities.length > 0) {
+        try {
+          _setProgressPct(done / entities.length * 100);
+        } catch (_) {
+        }
+      }
       if (!progressLi) return;
       const remaining = entities.length - done;
       const checking = inFlightNames.size ? ` \u2014 checking <em>${[...inFlightNames].join(", ")}</em>` : "";
@@ -3158,6 +3184,10 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const pct = Math.min(Math.round(done / est * 99), 99);
       const _pct = document.querySelector("#discogs-progress-pct");
       if (_pct) _pct.textContent = pct + "%";
+      try {
+        _setProgressPct(pct);
+      } catch (_) {
+      }
     }
     const recordingByGid = /* @__PURE__ */ new Map();
     const recordingByPosition = /* @__PURE__ */ new Map();
