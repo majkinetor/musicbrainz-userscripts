@@ -3,8 +3,8 @@
 // chokepoint for everything that hits musicbrainz.org/ws/2 (and /ws/js), so
 // rate-limit handling lives in one place.
 
-import { pageWindow } from './constants.js';
-import { log }        from './log.js';
+import { pageWindow }    from './constants.js';
+import { log, logDebug } from './log.js';
 
 /**
  * Fetch a full MB entity from the internal `/ws/js/entity/{mbid}` endpoint.
@@ -47,7 +47,11 @@ export const mbThrottle = (() => {
     let _rateLimited     = 0;
 
     async function _waitForPause() {
-        let wait;
+        let wait = _pauseUntil - Date.now();
+        if (wait <= 0) return;
+        // #87 diagnostic: announce every wait so we can see in the log
+        // "worker X paused 1500ms" pile up under a 503 storm.
+        logDebug(`throttle: waiting ${wait}ms for shared pause`);
         while ((wait = _pauseUntil - Date.now()) > 0) {
             await new Promise(r => setTimeout(r, wait));
         }
@@ -61,12 +65,27 @@ export const mbThrottle = (() => {
         }
     }
 
+    // Per-logical-request diagnostic id (independent of `_totalRequests`,
+    // which counts HTTP attempts incl. retries for stats). One `req#N`
+    // covers all retries of the same call, so the user can read the
+    // story end-to-end in the diagnostic log.
+    let _diagReqSeq = 0;
+
     async function _run(item) {
+        const tag = `req#${++_diagReqSeq}`;
+        const shortUrl = item.url.replace('//musicbrainz.org', '').replace(/^https:/, '');
         for (let attempt = 0; attempt <= item.retries; attempt++) {
             await _waitForPause();
             _totalRequests++;
+            const attemptTag = attempt === 0 ? '' : ` (retry ${attempt})`;
+            // #87 diagnostic: log request start with in-flight + queued
+            // snapshot so the user can see contention in the log:
+            //   req#7 [running=8 queued=3] GET /ws/2/artist?query=...
+            logDebug(`${tag} [running=${_running} queued=${_queue.length}] GET ${shortUrl}${attemptTag}`);
+            const t0 = Date.now();
             try {
                 const res = await fetch(item.url);
+                const elapsed = Date.now() - t0;
                 if (res.status === 429 || res.status === 503) {
                     _rateLimited++;
                     const ra = parseInt(res.headers.get('Retry-After'), 10);
@@ -75,13 +94,21 @@ export const mbThrottle = (() => {
                     // Push forward only — never backward — so concurrent 503s
                     // from sibling workers don't shorten an already-pending pause.
                     _pauseUntil = Math.max(_pauseUntil, Date.now() + waitMs);
+                    logDebug(`${tag} <- ${res.status} in ${elapsed}ms; shared pause pushed to +${waitMs}ms`);
                     continue;
                 }
-                if (!res.ok) { item.resolve(null); return; }
+                if (!res.ok) {
+                    logDebug(`${tag} <- ${res.status} (give up) in ${elapsed}ms`);
+                    item.resolve(null);
+                    return;
+                }
                 const data = item.wantJson ? await res.json() : res;
+                logDebug(`${tag} <- ${res.status} in ${elapsed}ms`);
                 item.resolve(data);
                 return;
             } catch (e) {
+                const elapsed = Date.now() - t0;
+                logDebug(`${tag} threw in ${elapsed}ms: ${e?.message || e}`);
                 if (attempt === item.retries) { item.resolve(null); return; }
                 await new Promise(r => setTimeout(r, 500));
             }

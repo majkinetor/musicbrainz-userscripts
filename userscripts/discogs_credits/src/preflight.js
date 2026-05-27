@@ -29,6 +29,7 @@ import { readIdbRecord, writeIdbRecord }    from './storage.js';
 import { parseDiscogsUrl }                  from './api-discogs.js';
 import { ENTITY_TYPE_MAP }                  from './data/entity-map.js';
 import { _setProgressPct }                  from './progress-bar.js';
+import { logDebug }                         from './log.js';
 
 // `kind`-specific tweaks. Tiny lookup table so the per-strategy code in
 // `resolveEntity` reads as one shared body.
@@ -346,25 +347,47 @@ export async function resolveAll(entities, opts) {
     setProgress();
 
     async function worker(slotIndex) {
-        await delay(slotIndex * MIN_GAP_MS);  // stagger slot starts
+        // #87 diagnostic per worker — slot start + lifecycle entries
+        // land in the collapsed "Preflight diagnostics" section.
+        const tag = `worker#${slotIndex}`;
+        logDebug(`${tag} starting (stagger ${slotIndex * MIN_GAP_MS}ms)`);
+        await delay(slotIndex * MIN_GAP_MS);
+        let processed = 0;
         while (queue.length > 0) {
             const { entity, index } = queue.shift();
             const kind = kindOf(entity);
-            if (!kind) { done++; setProgress(); continue; }
+            if (!kind) {
+                logDebug(`${tag} skip "${entity?.name || '?'}" — no resolvable kind`);
+                done++; setProgress(); continue;
+            }
             const displayName = kind === 'artist'
                 ? (entity.anv && entity.anv.trim()) || entity.name
                 : entity.name;
             inFlightNames.add(displayName);
             setProgress();
+            const t0 = Date.now();
+            logDebug(`${tag} resolving "${displayName}" (${kind})`);
             results[index] = await resolveEntity(entity, kind, { bypassIdb });
+            const elapsed = Date.now() - t0;
+            const r = results[index];
+            const outcome = r?.type === 'resolved'
+                ? `resolved via ${r.logEntry?.via || '?'}${r.logEntry?.fromCache ? ' (cache)' : ''}`
+                : r?.type === 'attention'
+                    ? `unresolved (${r.nameMatches?.length || 0} candidates)`
+                    : 'skipped';
+            logDebug(`${tag} "${displayName}" -> ${outcome} in ${elapsed}ms`);
             inFlightNames.delete(displayName);
             done++;
+            processed++;
             setProgress();
         }
+        logDebug(`${tag} finished (${processed} entit${processed === 1 ? 'y' : 'ies'})`);
     }
 
     const slots = Math.min(CONCURRENCY, entities.length);
+    logDebug(`resolveAll: ${entities.length} entit${entities.length === 1 ? 'y' : 'ies'}, ${slots} worker slot(s)`);
     if (slots > 0) await Promise.all(Array.from({ length: slots }, (_, i) => worker(i)));
+    logDebug(`resolveAll: done`);
 
     return { allResults: results.filter(Boolean) };
 }

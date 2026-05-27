@@ -26,6 +26,7 @@ export default [
                 clearTimeout:           'readonly',
                 setInterval:            'readonly',
                 clearInterval:          'readonly',
+                performance:            'readonly',
                 requestAnimationFrame:  'readonly',
                 cancelAnimationFrame:   'readonly',
                 localStorage:           'readonly',
