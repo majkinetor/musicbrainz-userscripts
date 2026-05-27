@@ -1,5 +1,28 @@
 # Import Discogs Credits Changelog
 
+## [2026.5.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.5.27)
+
+### Features
+
+1. Source code split into modules and bundled with esbuild ([#32](https://github.com/majkinetor/musicbrainz-userscripts/issues/32))
+1. Log wrapping within the *details* section and option to copy without Discogs JSON ([#46](https://github.com/majkinetor/musicbrainz-userscripts/issues/46))
+1. Statistics in edit note ([#56](https://github.com/majkinetor/musicbrainz-userscripts/issues/56))
+1. Import options to prevent duplication ([#62](https://github.com/majkinetor/musicbrainz-userscripts/issues/62))
+1. Highlight entity on different roles ([#63](https://github.com/majkinetor/musicbrainz-userscripts/issues/63))
+1. Batch remove of relationships with confirmation popup ([#68](https://github.com/majkinetor/musicbrainz-userscripts/issues/68))
+1. Improvement of button layout ([#77](https://github.com/majkinetor/musicbrainz-userscripts/issues/77))
+1. Improvement of Discogs artist warnings ([#81](https://github.com/majkinetor/musicbrainz-userscripts/issues/81))
+1. Improvement of the progress bar ([#82](https://github.com/majkinetor/musicbrainz-userscripts/issues/82))
+1. Documentation link in the header ([#90](https://github.com/majkinetor/musicbrainz-userscripts/issues/90))
+1. Option to create works only when needed, with `never` as a third opt-out ([#94](https://github.com/majkinetor/musicbrainz-userscripts/issues/94), [#103](https://github.com/majkinetor/musicbrainz-userscripts/pull/103))
+
+### Fixes
+
+1. Already existed count is not correct ([#34](https://github.com/majkinetor/musicbrainz-userscripts/issues/34))
+1. Entity used after unselecting ([#35](https://github.com/majkinetor/musicbrainz-userscripts/issues/35))
+1. Button to add Discogs link present immediately after creating artist ([#78](https://github.com/majkinetor/musicbrainz-userscripts/issues/78))
+1. Slow entity fetch ([#87](https://github.com/majkinetor/musicbrainz-userscripts/issues/87))
+
 ## 2026.5.25
 
 ### Features
