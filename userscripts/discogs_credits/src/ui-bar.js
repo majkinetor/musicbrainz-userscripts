@@ -241,7 +241,12 @@ export function insertDiscogsBar(discogsUrl) {
             border-top-color: transparent;
             border-bottom-color: #333;
         }
-        .discogs-toggle:hover .discogs-tooltip { display: block; }
+        /* Tooltip shown by JS adding .discogs-tooltip-visible after a
+           hover-intent delay (see makeCheckbox). Native browser title=
+           tooltips have a ~1s delay by convention; the custom tooltips
+           used to fire instantly and felt jumpy when sweeping across
+           toggles. */
+        .discogs-tooltip.discogs-tooltip-visible { display: block; }
     `;
     document.head.appendChild(style);
 
@@ -328,25 +333,38 @@ export function insertDiscogsBar(discogsUrl) {
             // below, and the horizontal position is clamped to the viewport
             // with the arrow re-aimed at the toggle's centre.
             const TIP_W = 220, TIP_MARGIN = 6, EDGE_PAD = 8;
+            // Match the native browser title= delay (~1s) so sweeping the
+            // mouse across the toggle row doesn't fire a stack of tooltips.
+            // The other option on this bar — "Create works" — uses native
+            // title= via makeSelect, which is what the user sees as the
+            // baseline.
+            const HOVER_DELAY_MS = 1000;
+            let _showTimer;
             lbl.addEventListener('mouseenter', () => {
-                const r = lbl.getBoundingClientRect();
-                const centerX = r.left + r.width / 2;
-                let x = centerX - TIP_W / 2;
-                x = Math.max(EDGE_PAD, Math.min(x, window.innerWidth - TIP_W - EDGE_PAD));
-                tip.style.left = `${x}px`;
-                // Show off-screen first so we can measure the rendered height
-                // before deciding above-vs-below.
-                tip.style.top = '-9999px';
-                tip.style.display = 'block';
-                const h = tip.offsetHeight;
-                tip.style.display = '';
-                const above = r.top - TIP_MARGIN - h;
-                const fitsAbove = above >= EDGE_PAD;
-                tip.style.top = fitsAbove ? `${above}px` : `${r.bottom + TIP_MARGIN}px`;
-                tip.classList.toggle('below', !fitsAbove);
-                // Aim the arrow at the toggle's actual centre, not the
-                // tooltip's centre (they diverge once edge-clamping kicks in).
-                tip.style.setProperty('--arrow-x', `${centerX - x}px`);
+                clearTimeout(_showTimer);
+                _showTimer = setTimeout(() => {
+                    const r = lbl.getBoundingClientRect();
+                    const centerX = r.left + r.width / 2;
+                    let x = centerX - TIP_W / 2;
+                    x = Math.max(EDGE_PAD, Math.min(x, window.innerWidth - TIP_W - EDGE_PAD));
+                    tip.style.left = `${x}px`;
+                    // Show off-screen first so we can measure the rendered height
+                    // before deciding above-vs-below.
+                    tip.style.top = '-9999px';
+                    tip.classList.add('discogs-tooltip-visible');
+                    const h = tip.offsetHeight;
+                    const above = r.top - TIP_MARGIN - h;
+                    const fitsAbove = above >= EDGE_PAD;
+                    tip.style.top = fitsAbove ? `${above}px` : `${r.bottom + TIP_MARGIN}px`;
+                    tip.classList.toggle('below', !fitsAbove);
+                    // Aim the arrow at the toggle's actual centre, not the
+                    // tooltip's centre (they diverge once edge-clamping kicks in).
+                    tip.style.setProperty('--arrow-x', `${centerX - x}px`);
+                }, HOVER_DELAY_MS);
+            });
+            lbl.addEventListener('mouseleave', () => {
+                clearTimeout(_showTimer);
+                tip.classList.remove('discogs-tooltip-visible');
             });
         }
         lbl.addEventListener('click', (e) => {

@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.215122
-// @description  User interface for importing Discogs release credits to MusicBrainz relationships 
+// @version      2026.5.27.221711
+// @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
 // @match        https://musicbrainz.org/artist/*
@@ -4000,7 +4000,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             border-top-color: transparent;
             border-bottom-color: #333;
         }
-        .discogs-toggle:hover .discogs-tooltip { display: block; }
+        /* Tooltip shown by JS adding .discogs-tooltip-visible after a
+           hover-intent delay (see makeCheckbox). Native browser title=
+           tooltips have a ~1s delay by convention; the custom tooltips
+           used to fire instantly and felt jumpy when sweeping across
+           toggles. */
+        .discogs-tooltip.discogs-tooltip-visible { display: block; }
     `;
     document.head.appendChild(style);
     const bar = document.createElement("div");
@@ -4057,21 +4062,29 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         tip.textContent = tooltipText;
         lbl.appendChild(tip);
         const TIP_W = 220, TIP_MARGIN = 6, EDGE_PAD = 8;
+        const HOVER_DELAY_MS = 1e3;
+        let _showTimer;
         lbl.addEventListener("mouseenter", () => {
-          const r = lbl.getBoundingClientRect();
-          const centerX = r.left + r.width / 2;
-          let x = centerX - TIP_W / 2;
-          x = Math.max(EDGE_PAD, Math.min(x, window.innerWidth - TIP_W - EDGE_PAD));
-          tip.style.left = `${x}px`;
-          tip.style.top = "-9999px";
-          tip.style.display = "block";
-          const h = tip.offsetHeight;
-          tip.style.display = "";
-          const above = r.top - TIP_MARGIN - h;
-          const fitsAbove = above >= EDGE_PAD;
-          tip.style.top = fitsAbove ? `${above}px` : `${r.bottom + TIP_MARGIN}px`;
-          tip.classList.toggle("below", !fitsAbove);
-          tip.style.setProperty("--arrow-x", `${centerX - x}px`);
+          clearTimeout(_showTimer);
+          _showTimer = setTimeout(() => {
+            const r = lbl.getBoundingClientRect();
+            const centerX = r.left + r.width / 2;
+            let x = centerX - TIP_W / 2;
+            x = Math.max(EDGE_PAD, Math.min(x, window.innerWidth - TIP_W - EDGE_PAD));
+            tip.style.left = `${x}px`;
+            tip.style.top = "-9999px";
+            tip.classList.add("discogs-tooltip-visible");
+            const h = tip.offsetHeight;
+            const above = r.top - TIP_MARGIN - h;
+            const fitsAbove = above >= EDGE_PAD;
+            tip.style.top = fitsAbove ? `${above}px` : `${r.bottom + TIP_MARGIN}px`;
+            tip.classList.toggle("below", !fitsAbove);
+            tip.style.setProperty("--arrow-x", `${centerX - x}px`);
+          }, HOVER_DELAY_MS);
+        });
+        lbl.addEventListener("mouseleave", () => {
+          clearTimeout(_showTimer);
+          tip.classList.remove("discogs-tooltip-visible");
         });
       }
       lbl.addEventListener("click", (e) => {
