@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.133045
+// @version      2026.5.27.133046
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -4445,6 +4445,7 @@ ${lines}
     if (!mode) return;
     ev.preventDefault();
     ev.stopPropagation();
+    _positionByRelIdCache = buildRelIdToPositionMap();
     const group = collectGroup(btn, mode);
     if (group.buttons.length === 0) return;
     openConfirm(group, mode, () => {
@@ -4571,27 +4572,95 @@ ${lines}
     while (i >= 0 && (segs[i] === "" || /^-?\d+$/.test(segs[i]))) i--;
     return segs[i] || null;
   }
+  var _positionByRelIdCache = null;
+  function buildRelIdToPositionMap() {
+    const map = /* @__PURE__ */ new Map();
+    const win = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+    const MB = win.MB;
+    const re = MB?.relationshipEditor;
+    if (!MB || !re?.state) return map;
+    const positionByRecGid = /* @__PURE__ */ new Map();
+    try {
+      let mediumIndex = 0;
+      const mediums = re.state.mediums;
+      if (!mediums) return map;
+      const iter = MB.tree?.iterate ? MB.tree.iterate(mediums) : null;
+      if (!iter) return map;
+      for (const [mediumKey, medium] of iter) {
+        mediumIndex++;
+        const tracks = medium?.tracks ?? medium;
+        let trackIndex = 0;
+        for (const rawTrack of MB.tree.iterate(tracks)) {
+          trackIndex++;
+          const trackObj = Array.isArray(rawTrack) ? rawTrack[1] : rawTrack;
+          const rec = trackObj?.recording ?? trackObj;
+          if (!rec?.gid) continue;
+          let pos = trackObj?.number || trackObj?.position;
+          if (pos == null) pos = `${mediumIndex}.${String(trackIndex).padStart(2, "0")}`;
+          positionByRecGid.set(rec.gid, String(pos));
+        }
+      }
+    } catch (e) {
+    }
+    try {
+      let walk = function(node, sourceGid) {
+        if (!node) return;
+        if (Array.isArray(node)) {
+          for (const r of node) {
+            if (r?.id != null) {
+              const pos = positionByRecGid.get(sourceGid);
+              if (pos) map.set(String(r.id), pos);
+            }
+          }
+          return;
+        }
+        if (typeof node === "object") {
+          for (const v of Object.values(node)) walk(v, sourceGid);
+        }
+      };
+      const root = re.state.relationshipsBySource;
+      if (!root) return map;
+      for (const [gid, perSource] of Object.entries(root)) {
+        walk(perSource, gid);
+      }
+    } catch (e) {
+    }
+    return map;
+  }
+  function parseRelIdFromButton(btn) {
+    if (!btn || !btn.id) return null;
+    const segs = btn.id.split("-");
+    for (let i = segs.length - 1; i >= 0; i--) {
+      if (/^-?\d+$/.test(segs[i])) return segs[i];
+      if (segs[i] === "" && i > 0 && /^\d+$/.test(segs[i + 1])) {
+        return "-" + segs[i + 1];
+      }
+    }
+    return null;
+  }
   function findRecordingPosition(item) {
+    const btn = item.querySelector('button.icon.remove-item[id^="remove-relationship-"]');
+    const relId = parseRelIdFromButton(btn);
+    if (relId && _positionByRelIdCache && _positionByRelIdCache.has(relId)) {
+      return _positionByRelIdCache.get(relId);
+    }
     let el = item.closest(
-      "[data-track-position], [data-position], [data-medium-track-position]"
+      "[data-track-position], [data-position], [data-medium-track-position], [data-track-number]"
     );
     if (el) {
-      const pos = el.getAttribute("data-track-position") || el.getAttribute("data-medium-track-position") || el.getAttribute("data-position");
+      const pos = el.getAttribute("data-track-position") || el.getAttribute("data-medium-track-position") || el.getAttribute("data-position") || el.getAttribute("data-track-number");
       if (pos) return String(pos).trim();
     }
-    let scope = item.closest("table, tbody, .relationship-list-wrapper");
+    let scope = item.closest("table, tbody, .relationship-list-wrapper, .track-relationships, .track-rel");
     while (scope) {
-      const h = scope.querySelector?.(
-        ":scope > thead .track-position, :scope > tbody > tr:first-child .track-position, :scope > tbody > tr:first-child .position, :scope > tr:first-child .track-position, :scope > tr:first-child .position"
+      const candidates = scope.querySelectorAll?.(
+        ".track-position, .position, .track-number, .medium-track-pos"
       );
-      if (h && h.textContent) return h.textContent.trim();
-      const firstRow = scope.querySelector?.(":scope > tbody > tr:first-child, :scope > tr:first-child");
-      if (firstRow) {
-        const td = firstRow.querySelector?.(":scope > td:first-child, :scope > th:first-child");
-        const txt = td?.textContent?.trim();
+      for (const c of candidates || []) {
+        const txt = c.textContent?.trim();
         if (txt && /^[A-Z]?\d+([\-.]\d+|[A-Z]?\d*)?$/.test(txt)) return txt;
       }
-      scope = scope.parentElement?.closest("table, .relationship-list-wrapper, .track-relationships");
+      scope = scope.parentElement?.closest("table, .relationship-list-wrapper, .track-relationships, .track-rel");
     }
     return null;
   }
@@ -4689,12 +4758,51 @@ ${lines}
     }
     const actions = document.createElement("div");
     actions.className = "actions";
+    const actionsCss = {
+      "display": "flex",
+      "flex-direction": "row",
+      "justify-content": "flex-end",
+      "align-items": "center",
+      "gap": "0.5rem",
+      "margin-top": "1rem",
+      "padding": "0",
+      "width": "100%"
+    };
+    for (const [k, v] of Object.entries(actionsCss)) actions.style.setProperty(k, v, "important");
+    function styleBtn(b, isConfirm) {
+      const css = {
+        "flex": "0 0 auto",
+        "display": "inline-block",
+        "box-sizing": "border-box",
+        "margin": "0",
+        "padding": "0.45rem 1.1rem",
+        "min-width": "6rem",
+        "height": "2.2rem",
+        "line-height": "1",
+        "border-radius": "4px",
+        "border": isConfirm ? "1px solid #962c20" : "1px solid #bbb",
+        "background": isConfirm ? "#c0392b" : "#f5f5f5",
+        "color": isConfirm ? "#fff" : "#333",
+        "cursor": "pointer",
+        "font-size": "0.9rem",
+        "font-family": "inherit",
+        "font-weight": "500",
+        "text-align": "center",
+        "vertical-align": "middle",
+        "white-space": "nowrap"
+      };
+      for (const [k, v] of Object.entries(css)) b.style.setProperty(k, v, "important");
+    }
     const cancel = document.createElement("button");
+    cancel.type = "button";
     cancel.className = "cancel";
     cancel.textContent = "Cancel";
+    styleBtn(cancel, false);
     const confirm = document.createElement("button");
+    confirm.type = "button";
     confirm.className = "confirm";
     confirm.textContent = "Remove";
+    styleBtn(confirm, true);
     actions.appendChild(cancel);
     actions.appendChild(confirm);
     modal.appendChild(actions);
