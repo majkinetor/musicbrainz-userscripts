@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.223723
+// @version      2026.5.27.233806
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -3680,6 +3680,13 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           if (!workEntity.gid && !workEntity.id) continue;
         }
         if (!workEntity) workEntity = getWorkFromEditorState(recEntity);
+        if (!workEntity && createWorksMode === "never") {
+          for (const { role } of entries) {
+            log.error(`Track ${trackPos} "${trackTitle}": no work exists for ${role.linkType} (${role.artist.name}) \u2014 "Create works" is set to "never". Add the work manually or change the mode.`);
+            failed++;
+          }
+          continue;
+        }
         if (!workEntity) {
           const newWorkId = re.getRelationshipStateId();
           workEntity = {
@@ -4139,12 +4146,13 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     const _legacyCreateWorks = savedOpts.createWorks;
     const _initialCreateWorksMode = bv(
       "createWorksMode",
-      _legacyCreateWorks === true ? "when-missing" : "when-needed"
+      _legacyCreateWorks === true ? "when-missing" : _legacyCreateWorks === false ? "never" : "when-needed"
     );
     const createWorksMode = makeSelect("Create works", _initialCreateWorksMode, [
       { value: "when-needed", label: "when needed" },
-      { value: "when-missing", label: "when missing" }
-    ], "when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one, regardless of credits.");
+      { value: "when-missing", label: "when missing" },
+      { value: "never", label: "never" }
+    ], "when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one. never: do not create works \u2014 work-only credits with no existing work are logged and skipped.");
     const dedupSep = document.createElement("span");
     dedupSep.textContent = "Dedup:";
     dedupSep.style.cssText = "margin:0 0.2rem 0 0.6rem;color:#888;font-size:0.85rem;font-weight:600;";
