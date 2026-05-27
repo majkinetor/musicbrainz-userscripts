@@ -262,7 +262,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         const thead = document.createElement('thead');
         const hr = document.createElement('tr');
         hr.style.background = '#f5e8a0';
-        ['Discogs entity', 'MB match / search', 'Actions'].forEach(col => {
+        ['Discogs entity', 'MB match / search'].forEach(col => {
             const th = document.createElement('th');
             th.style.cssText = 'text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;';
             th.textContent = col;
@@ -320,11 +320,20 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // ── Col 1: Discogs ─────────────────────────────────────────────────
             const tdDiscogs = document.createElement('td');
             tdDiscogs.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;`;
+
+            // First line — entity name on the left, inline action chips
+            // on the right (Proposal C from #77). Flex justify-between
+            // keeps the actions docked to the right edge of the cell.
+            const nameRow = document.createElement('div');
+            nameRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:0.6rem;';
+            const nameWrap = document.createElement('span');
+            nameWrap.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;';
+
             if (entityType !== 'artist') {
                 const badge = document.createElement('span');
                 badge.textContent = entityType;
                 badge.style.cssText = 'font-size:0.7rem;background:#e0e0e0;border-radius:3px;padding:0 0.3rem;margin-right:0.3rem;color:#555;vertical-align:middle;';
-                tdDiscogs.appendChild(badge);
+                nameWrap.appendChild(badge);
             }
             const hasDiscogsUrl = !!(r.entity?.resource_url);
             const dlA = document.createElement(hasDiscogsUrl ? 'a' : 'span');
@@ -333,19 +342,28 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // Used by the issue-#63 hover-highlight to identify entity-name
             // elements regardless of href presence.
             if (!hasDiscogsUrl) dlA.className = 'discogs-entity-name';
-            tdDiscogs.appendChild(dlA);
+            nameWrap.appendChild(dlA);
             if (!hasDiscogsUrl) {
                 const noUrl = document.createElement('span');
                 noUrl.textContent = ' \u26a0\ufe0f'; noUrl.title = 'No Discogs artist page — manual search needed';
                 noUrl.style.cssText = 'cursor:help;color:#c80;';
-                tdDiscogs.appendChild(noUrl);
+                nameWrap.appendChild(noUrl);
             }
             if (nameMismatch) {
                 const w = document.createElement('span');
                 w.textContent = ' \u26a0\ufe0f'; w.title = 'Name differs from MB match';
                 w.style.cursor = 'help';
-                tdDiscogs.appendChild(w);
+                nameWrap.appendChild(w);
             }
+            nameRow.appendChild(nameWrap);
+
+            // actionsLine slot on the right of nameRow. `renderActions`
+            // (defined later in this closure) appends the link button +
+            // create cluster here per Proposal C — see #77.
+            const actionsLine = document.createElement('span');
+            actionsLine.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;flex-shrink:0;';
+            nameRow.appendChild(actionsLine);
+            tdDiscogs.appendChild(nameRow);
             tr.appendChild(tdDiscogs);
 
             // Roles line below entity name. Each role is its own <span> so it
@@ -391,15 +409,30 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // The active value is mirrored into `creditOverrides[mbUrl]`
             // on every edit, ready for the dispatch step to consume.
             const credLine = document.createElement('div');
-            credLine.style.cssText = 'display:flex;align-items:center;gap:0.3rem;margin-top:0.25rem;max-width:280px;';
+            // Extra top padding per #77 follow-up (and the second follow-up
+            // "add more padding"). Combined margin + padding so the gap is
+            // visible even when the surrounding cell trims margins.
+            credLine.style.cssText = 'display:flex;align-items:center;gap:0.3rem;margin-top:1rem;padding-top:0.25rem;max-width:280px;';
             const credLabel = document.createElement('label');
             credLabel.textContent = 'Credited as:';
             credLabel.style.cssText = 'font-size:0.72rem;color:#888;flex-shrink:0;';
             const credInput = document.createElement('input');
             credInput.type = 'text';
-            credInput.style.cssText = 'flex:1;padding:0.1rem 0.3rem;font-size:0.78rem;border:1px solid #ddd;border-radius:3px;background:#fff;';
+            // Default background is plain white; when the user (or the
+            // most-frequent-existing-credit pre-fill) sets a value
+            // different from the original Discogs `displayName`, the
+            // background flips to a soft yellow so the difference is
+            // obvious at a glance (#77 follow-up).
+            const CRED_BG_SAME      = '#fff';
+            const CRED_BG_DIFFERENT = '#fff4d0'; // soft yellow
+            credInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid #ddd;border-radius:3px;background:' + CRED_BG_SAME + ';';
             credInput.placeholder = displayName;
             credInput.title = `Override the credited name dispatched with every rel for this entity.\nLeave empty to use the default (Discogs name, or MB's most-frequent existing credit when known).`;
+            function refreshCredBg() {
+                const value = (credInput.value || '').trim();
+                const same = (value === '' || value === displayName);
+                credInput.style.background = same ? CRED_BG_SAME : CRED_BG_DIFFERENT;
+            }
             // Initial value: most-frequent existing MB credit, or Discogs
             // display name as fallback.
             function pickPrefill(mbUrl) {
@@ -411,6 +444,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             }
             credInput.value = pickPrefill(r.mbUrl);
             credInput._userTouched = false;
+            refreshCredBg();
             credInput.addEventListener('input', () => {
                 credInput._userTouched = true;
                 // Mirror into the side-map immediately. The mbUrl on the
@@ -419,6 +453,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // handlers, see `setRowResolved` below.
                 const url = credInput._activeMbUrl;
                 if (url) creditOverrides.set(url, credInput.value);
+                refreshCredBg();
             });
             credInput._activeMbUrl = r.mbUrl;
             if (r.mbUrl) creditOverrides.set(r.mbUrl, credInput.value);
@@ -446,17 +481,19 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             searchBtn.textContent = '\uD83D\uDD0D';
             searchBtn.title = 'Search MusicBrainz';
             searchBtn.style.cssText = 'padding:0.15rem 0.35rem;cursor:pointer;';
-            searchRow.appendChild(searchInput);
+            // Per #77 iter 3: search icon on the LEFT of the input.
             searchRow.appendChild(searchBtn);
+            searchRow.appendChild(searchInput);
 
             tdMb.appendChild(candidateList);
             tdMb.appendChild(searchRow);
             tr.appendChild(tdMb);
 
-            // ── Col 3: Actions ─────────────────────────────────────────────────
-            const tdAction = document.createElement('td');
-            tdAction.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};white-space:nowrap;`;
-            tr.appendChild(tdAction);
+            // No separate Action column — actions render inside the
+            // Discogs column's `actionsLine` slot (Proposal C of #77).
+            // We keep a `tdAction` alias pointing at `actionsLine` so the
+            // existing `renderActions` body stays compact below.
+            const tdAction = actionsLine;
             tbody.appendChild(tr);
 
             // ── Helpers ────────────────────────────────────────────────────────
@@ -478,6 +515,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         r._credInput.value = fresh;
                     }
                     creditOverrides.set(mbUrl, r._credInput.value);
+                    refreshCredBg();
                 }
                 // Persist to IDB immediately so selection survives even without clicking Start import
                 const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
@@ -542,13 +580,30 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 updateImportBtn();
             }
 
+            // Shared style for inline icon-chip buttons (Proposal C in
+            // the actionsLine). Color is set per-chip via concatenation
+            // so each action has its own accent: orange for the Discogs
+            // link, green for create, muted gray for advanced.
+            const ACTION_CHIP_STYLE =
+                'display:inline-flex;align-items:center;justify-content:center;' +
+                'min-width:1.6rem;height:1.6rem;padding:0 0.35rem;' +
+                'font-size:0.95rem;line-height:1;cursor:pointer;' +
+                'border:1px solid #d6d6d6;border-radius:0.3rem;background:#fafafa;';
+
             function renderActions(selected) {
                 tdAction.innerHTML = '';
                 if (selected) {
-                    // Check if artist already has this Discogs URL linked — show button only if missing
+                    // Link state lives in a single chip (Proposal C from #77):
+                    //   🔗 — needs adding (default action)
+                    //   ✓  — already linked (no further action)
+                    //   ⚠  — linked to a different MB entity (informational)
+                    //   ⋯  — verifying (after user clicks 🔗 and goes to MB)
+                    // Inline-flex so it sits next to the create chips on the
+                    // same row as the entity name.
                     const linkSlot = document.createElement('span');
-                    linkSlot.style.cssText = 'display:block;margin-bottom:0.25rem;font-size:0.8rem;';
-                    linkSlot.textContent = 'Checking Discogs link…';
+                    linkSlot.style.cssText = 'display:inline-flex;align-items:center;font-size:0.8rem;color:#888;';
+                    linkSlot.textContent = '…';
+                    linkSlot.title = 'Checking whether MB already has this Discogs URL linked';
                     tdAction.appendChild(linkSlot);
 
                     // Query whether this specific Discogs URL is already linked in MB.
@@ -588,17 +643,21 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
                     function applyUrlCheckResult(result) {
                         if (result === 'linked') {
-                            linkSlot.textContent = '\u2713 Discogs URL already linked';
+                            linkSlot.textContent = '\u2713';
+                            linkSlot.title = 'Discogs URL already linked to this MB ' + entityType;
                             linkSlot.style.color = '#5a5';
+                            linkSlot.style.fontWeight = 'bold';
                         } else if (result === 'other') {
-                            linkSlot.innerHTML = `\u26a0\ufe0f Linked to a different MB ${entityType}`;
+                            linkSlot.textContent = '\u26a0\ufe0f';
+                            linkSlot.title = `Discogs URL is linked to a DIFFERENT MB ${entityType}`;
                             linkSlot.style.color = '#c80';
                         } else {
                             linkSlot.textContent = '';
                             linkSlot.style.color = '';
                             const addLinkBtn = document.createElement('button');
-                            addLinkBtn.textContent = 'Add Discogs link \u2197';
-                            addLinkBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;display:block;white-space:nowrap;';
+                            addLinkBtn.textContent = '\ud83d\udd17'; // \ud83d\udd17
+                            addLinkBtn.title = 'Add Discogs link to MB ' + entityType;
+                            addLinkBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#e8771d;'; // Discogs orange accent
                             addLinkBtn.addEventListener('click', () => {
                                 const ltId = entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
                                 const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
@@ -612,10 +671,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                 // restored. Issue #6: previously the button just sat
                                 // there forever, not reflecting the link.
                                 linkSlot.innerHTML = '';
-                                const pending = document.createElement('span');
-                                pending.textContent = '\u2026 verifying on return';
-                                pending.style.cssText = 'font-size:0.8rem;color:#888;font-style:italic;';
-                                linkSlot.appendChild(pending);
+                                // Compact pending indicator (Proposal C):
+                                // an ellipsis with the full status in the
+                                // tooltip \u2014 re-verified when the tab
+                                // regains focus.
+                                linkSlot.textContent = '\u2026';
+                                linkSlot.title = 'Verifying Discogs link on return to this tab\u2026';
+                                linkSlot.style.color = '#888';
+                                linkSlot.style.fontStyle = 'italic';
                                 const onReturn = () => {
                                     if (document.visibilityState !== 'visible') return;
                                     document.removeEventListener('visibilitychange', onReturn);
@@ -709,41 +772,26 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     DISCOGS_CHANNEL.addEventListener('message', onCreated);
                 }
 
-                // The two Create buttons live in a tight cluster so the row's
-                // action column stays compact. Same height + visual weight,
-                // separated by a thin gap; primary first, advanced second.
-                const createCluster = document.createElement('div');
-                createCluster.style.cssText = 'display:flex;flex-direction:column;gap:0.25rem;';
-                const CREATE_BTN_STYLE = 'font-size:0.78rem;line-height:1.25;padding:0.2rem 0.55rem;cursor:pointer;white-space:nowrap;'
-                                       + 'border:1px solid #bfbfbf;border-radius:0.25rem;background:#fafafa;color:#333;';
-                const CREATE_BTN_HOVER  = 'background:#f0f0f0;border-color:#999;';
-                function styleCreateBtn(btn) {
-                    btn.style.cssText = CREATE_BTN_STYLE;
-                    btn.addEventListener('mouseenter', () => btn.setAttribute('style', CREATE_BTN_STYLE + CREATE_BTN_HOVER));
-                    btn.addEventListener('mouseleave', () => btn.setAttribute('style', CREATE_BTN_STYLE));
-                }
-
+                // Inline icon chips (Proposal C from #77). All three
+                // actions — link / create / advanced — render side by
+                // side in the actionsLine to the right of the entity
+                // name. Compact icons with descriptive `title=` for
+                // accessibility.
                 const createBtn = document.createElement('button');
-                createBtn.textContent = 'Create in MB ↗';
-                createBtn.title = 'Open MB create form with the Discogs name + URL pre-filled';
-                styleCreateBtn(createBtn);
+                createBtn.textContent = '+';
+                createBtn.title = 'Create in MB with default Discogs name + URL';
+                createBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#2a7;font-size:1.15rem;font-weight:600;'; // bigger, bolder plus
                 createBtn.addEventListener('click', () => openCreateTab());
-                createCluster.appendChild(createBtn);
 
-                // "Create (adv)" — opens an editor popup with a name input
-                // (defaults to the Discogs realname when available), a
-                // disambiguation input (defaults to first 3 distinct roles),
-                // and the Discogs profile blurb beneath. Selecting text in
-                // the blurb auto-populates the disambiguation field, so the
-                // user can pick a phrase without typing. Issue #5.
                 const createAdvBtn = document.createElement('button');
-                createAdvBtn.textContent = 'Create (adv) ↗';
+                createAdvBtn.textContent = '▾';
                 createAdvBtn.title = 'Create in MB with editable name + disambiguation, pre-filled from the Discogs profile';
-                styleCreateBtn(createAdvBtn);
-                createAdvBtn.addEventListener('click', () => openAdvancedCreatePopup());
-                createCluster.appendChild(createAdvBtn);
+                createAdvBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#666;'; // muted
 
-                tdAction.appendChild(createCluster);
+                createAdvBtn.addEventListener('click', () => openAdvancedCreatePopup());
+
+                tdAction.appendChild(createBtn);
+                tdAction.appendChild(createAdvBtn);
 
                 async function openAdvancedCreatePopup() {
                     // Default disambiguation suggestion: first 3 distinct role labels.
@@ -902,6 +950,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             function makeCandidateRow(a) {
                 const row = document.createElement('div');
                 row.style.cssText = 'display:flex;align-items:center;gap:0.35rem;padding:0.2rem 0.35rem;border:1px solid #ddd;border-radius:3px;background:#fff;font-size:0.82rem;';
+                // Per #77 iter 3: select icon on the LEFT of the candidate row.
+                const selBtn = document.createElement('button');
+                selBtn.textContent = '✓';
+                selBtn.title = 'Select this candidate as the MB match';
+                selBtn.style.cssText = 'font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid #b5d5b5;border-radius:0.25rem;background:#eaf6ea;color:#2a7;font-weight:600;flex-shrink:0;';
+                selBtn.addEventListener('click', () => setRowResolved(a));
+                row.appendChild(selBtn);
+
                 const info = document.createElement('span');
                 info.style.flex = '1';
                 const nameA = document.createElement('a');
@@ -917,11 +973,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     info.appendChild(d);
                 }
                 row.appendChild(info);
-                const selBtn = document.createElement('button');
-                selBtn.textContent = 'Select';
-                selBtn.style.cssText = 'font-size:0.78rem;cursor:pointer;padding:0.1rem 0.3rem;white-space:nowrap;';
-                selBtn.addEventListener('click', () => setRowResolved(a));
-                row.appendChild(selBtn);
                 return row;
             }
 

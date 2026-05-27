@@ -238,9 +238,23 @@ export function insertDiscogsBar(discogsUrl) {
     const bar = document.createElement('div');
     bar.className = 'discogs-bar';
 
-    // ── Row 1: logo + source URL + import button ──────────────────────────────
+    // ── Row 1: import button + logo + source URL (Proposal C of #77) ───
+    // Maintainer asked for the Import button on the LEFT so the eye
+    // doesn't have to travel the full width of the bar. Layout:
+    //
+    //   [ Import from Discogs ]  [Discogs logo]  https://www.discogs…
+    //
     const row1 = document.createElement('div');
     row1.className = 'discogs-bar-row1';
+
+    const importBtn = document.createElement('button');
+    importBtn.className = 'discogs-import-btn';
+    importBtn.textContent = 'Import from Discogs';
+    const progressPct = document.createElement('span');
+    progressPct.id = 'discogs-progress-pct';
+    progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;';
+    row1.appendChild(importBtn);
+    row1.appendChild(progressPct);
 
     const logo = document.createElement('img');
     logo.src = DISCOGS_LOGO_URL;
@@ -253,14 +267,6 @@ export function insertDiscogsBar(discogsUrl) {
     sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
     row1.appendChild(sourceSpan);
 
-    const importBtn = document.createElement('button');
-    importBtn.className = 'discogs-import-btn';
-    importBtn.textContent = 'Import from Discogs';
-    const progressPct = document.createElement('span');
-    progressPct.id = 'discogs-progress-pct';
-    progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;';
-    row1.appendChild(importBtn);
-    row1.appendChild(progressPct);
     bar.appendChild(row1);
 
     // ── Row 2: option toggles ─────────────────────────────────────────────────
