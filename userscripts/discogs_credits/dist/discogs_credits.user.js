@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.183526
+// @version      2026.5.27.183959
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -150,6 +150,7 @@
       }
     }
     let _diagReqSeq = 0;
+    const REQUEST_TIMEOUT_MS = 15e3;
     async function _run(item) {
       const tag = `req#${++_diagReqSeq}`;
       const shortUrl = item.url.replace("//musicbrainz.org", "").replace(/^https:/, "");
@@ -159,8 +160,10 @@
         const attemptTag = attempt === 0 ? "" : ` (retry ${attempt})`;
         logDebug(`${tag} [running=${_running} queued=${_queue.length}] GET ${shortUrl}${attemptTag}`);
         const t0 = Date.now();
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
         try {
-          const res = await fetch(item.url);
+          const res = await fetch(item.url, { signal: ctrl.signal });
           const elapsed = Date.now() - t0;
           if (res.status === 429 || res.status === 503) {
             _rateLimited++;
@@ -181,12 +184,15 @@
           return;
         } catch (e) {
           const elapsed = Date.now() - t0;
-          logDebug(`${tag} threw in ${elapsed}ms: ${e?.message || e}`);
+          const reason = e?.name === "AbortError" ? `timed out after ${REQUEST_TIMEOUT_MS}ms` : `${e?.message || e}`;
+          logDebug(`${tag} threw in ${elapsed}ms: ${reason}`);
           if (attempt === item.retries) {
             item.resolve(null);
             return;
           }
           await new Promise((r) => setTimeout(r, 500));
+        } finally {
+          clearTimeout(timer);
         }
       }
       item.resolve(null);
@@ -4345,20 +4351,21 @@ ${lines}
         const companyProgressLi = document.createElement("li");
         companyProgressLi.textContent = `Checking ${uniqueCompanies.length} label(s)/place(s) against MusicBrainz\u2026`;
         _logs2.appendChild(companyProgressLi);
-        return Promise.all([
-          resolveAll(uniqueArtists, {
+        return (async () => {
+          const artistResults = await resolveAll(uniqueArtists, {
             progressLi: artistProgressLi,
             progressLabel: "Checking artists against MusicBrainz",
             kindOf: ARTIST_KIND,
             bypassIdb
-          }),
-          resolveAll(uniqueCompanies, {
+          });
+          const companyResults = await resolveAll(uniqueCompanies, {
             progressLi: companyProgressLi,
             progressLabel: "Checking labels/places against MusicBrainz",
             kindOf: COMPANY_KIND,
             bypassIdb
-          })
-        ]).then(([artistResults, companyResults]) => [...artistResults.allResults, ...companyResults.allResults].filter(Boolean));
+          });
+          return [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
+        })();
       }
       function annotateRoles(allResults) {
         allResults.forEach((r) => {

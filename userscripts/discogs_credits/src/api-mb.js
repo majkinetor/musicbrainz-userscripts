@@ -71,6 +71,14 @@ export const mbThrottle = (() => {
     // story end-to-end in the diagnostic log.
     let _diagReqSeq = 0;
 
+    // Per-request hard timeout. The browser will happily wait many tens of
+    // seconds on a stuck connection (#87 follow-up: observed a `/ws/2/url`
+    // fetch that hung for 40 213ms before the network layer gave up). One
+    // hung request blocks a throttle slot for that whole time. 15s is well
+    // beyond MB's normal response time (<500ms typical) but short enough
+    // that a stuck connection retries promptly.
+    const REQUEST_TIMEOUT_MS = 15000;
+
     async function _run(item) {
         const tag = `req#${++_diagReqSeq}`;
         const shortUrl = item.url.replace('//musicbrainz.org', '').replace(/^https:/, '');
@@ -83,8 +91,10 @@ export const mbThrottle = (() => {
             //   req#7 [running=8 queued=3] GET /ws/2/artist?query=...
             logDebug(`${tag} [running=${_running} queued=${_queue.length}] GET ${shortUrl}${attemptTag}`);
             const t0 = Date.now();
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
             try {
-                const res = await fetch(item.url);
+                const res = await fetch(item.url, { signal: ctrl.signal });
                 const elapsed = Date.now() - t0;
                 if (res.status === 429 || res.status === 503) {
                     _rateLimited++;
@@ -108,9 +118,14 @@ export const mbThrottle = (() => {
                 return;
             } catch (e) {
                 const elapsed = Date.now() - t0;
-                logDebug(`${tag} threw in ${elapsed}ms: ${e?.message || e}`);
+                const reason = (e?.name === 'AbortError')
+                    ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
+                    : `${e?.message || e}`;
+                logDebug(`${tag} threw in ${elapsed}ms: ${reason}`);
                 if (attempt === item.retries) { item.resolve(null); return; }
                 await new Promise(r => setTimeout(r, 500));
+            } finally {
+                clearTimeout(timer);
             }
         }
         item.resolve(null);

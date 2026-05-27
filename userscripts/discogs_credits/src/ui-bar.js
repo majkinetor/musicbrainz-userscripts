@@ -693,21 +693,29 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, ded
                 companyProgressLi.textContent = `Checking ${uniqueCompanies.length} label(s)/place(s) against MusicBrainz…`;
                 _logs.appendChild(companyProgressLi);
 
-                return Promise.all([
-                    resolveAll(uniqueArtists, {
+                // Sequential, not parallel. Both `resolveAll` calls share
+                // the same `mbThrottle` (one chokepoint, one MB server), so
+                // running them in parallel just doubles the worker count
+                // competing for the throttle's 4 slots and bursts harder
+                // at startup — exactly what tripped MB's rate limiter in
+                // #87 (a stream of 503s with `Retry-After: 9`). Serialised,
+                // the total time is the same (throttle-bound) but the
+                // request rate is smooth and burst-free.
+                return (async () => {
+                    const artistResults  = await resolveAll(uniqueArtists, {
                         progressLi:    artistProgressLi,
                         progressLabel: 'Checking artists against MusicBrainz',
                         kindOf:        ARTIST_KIND,
                         bypassIdb,
-                    }),
-                    resolveAll(uniqueCompanies, {
+                    });
+                    const companyResults = await resolveAll(uniqueCompanies, {
                         progressLi:    companyProgressLi,
                         progressLabel: 'Checking labels/places against MusicBrainz',
                         kindOf:        COMPANY_KIND,
                         bypassIdb,
-                    }),
-                ]).then(([artistResults, companyResults]) =>
-                    [...artistResults.allResults, ...companyResults.allResults].filter(Boolean));
+                    });
+                    return [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
+                })();
             }
 
             // Annotate each result with its Discogs roles. Used both on the
