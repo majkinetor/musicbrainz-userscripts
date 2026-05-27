@@ -357,7 +357,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const noUrl = document.createElement('span');
                 noUrl.textContent = 'no profile';
                 noUrl.title = 'No Discogs artist page — name lookup unavailable, search MB manually';
-                noUrl.style.cssText = BADGE_BASE + 'background:#fde7c0;color:#7a4400;border:1px solid #e0a560;';
+                noUrl.style.cssText = BADGE_BASE + 'background:#fde0e0;color:#a02020;border:1px solid #d44040;';
                 nameWrap.appendChild(noUrl);
             }
             if (nameMismatch) {

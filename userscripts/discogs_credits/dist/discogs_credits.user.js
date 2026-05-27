@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.173302
+// @version      2026.5.27.173303
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2250,7 +2250,7 @@
           const noUrl = document.createElement("span");
           noUrl.textContent = "no profile";
           noUrl.title = "No Discogs artist page \u2014 name lookup unavailable, search MB manually";
-          noUrl.style.cssText = BADGE_BASE + "background:#fde7c0;color:#7a4400;border:1px solid #e0a560;";
+          noUrl.style.cssText = BADGE_BASE + "background:#fde0e0;color:#a02020;border:1px solid #d44040;";
           nameWrap.appendChild(noUrl);
         }
         if (nameMismatch) {
