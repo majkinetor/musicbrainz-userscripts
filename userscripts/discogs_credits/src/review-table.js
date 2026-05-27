@@ -1042,9 +1042,17 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         });
                     return;
                 }
+                // #98: show an immediate progress indicator so the user
+                // knows the search button took effect. Without it the
+                // candidate list looks dead for 1–3s while MB responds
+                // (longer when MB is rate-limiting us, see #87).
+                candidateList.innerHTML = '<div style="font-size:0.82rem;color:#888;font-style:italic;">Searching…</div>';
                 mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}?query=${encodeURIComponent(q)}&fmt=json&limit=8`)
                     .then(json => {
-                        if (!json) return;
+                        if (!json) {
+                            candidateList.innerHTML = '<div style="font-size:0.82rem;color:#c00;">Search failed — MB unavailable</div>';
+                            return;
+                        }
                         candidateList.innerHTML = '';
                         const resultKey = entityType === 'label' ? 'labels' : entityType === 'place' ? 'places' : 'artists';
                         if (!json[resultKey] || json[resultKey].length === 0) {
@@ -1055,7 +1063,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         } else {
                             json[resultKey].forEach(a => candidateList.appendChild(makeCandidateRow(a)));
                         }
-                    }).catch(() => {});
+                    })
+                    .catch(() => {
+                        candidateList.innerHTML = '<div style="font-size:0.82rem;color:#c00;">Search failed</div>';
+                    });
             }
 
             let searchTimer;

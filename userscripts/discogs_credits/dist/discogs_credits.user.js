@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.212320
+// @version      2026.5.27.214123
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2876,8 +2876,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             });
             return;
           }
+          candidateList.innerHTML = '<div style="font-size:0.82rem;color:#888;font-style:italic;">Searching\u2026</div>';
           mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}?query=${encodeURIComponent(q)}&fmt=json&limit=8`).then((json) => {
-            if (!json) return;
+            if (!json) {
+              candidateList.innerHTML = '<div style="font-size:0.82rem;color:#c00;">Search failed \u2014 MB unavailable</div>';
+              return;
+            }
             candidateList.innerHTML = "";
             const resultKey = entityType === "label" ? "labels" : entityType === "place" ? "places" : "artists";
             if (!json[resultKey] || json[resultKey].length === 0) {
@@ -2889,6 +2893,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               json[resultKey].forEach((a) => candidateList.appendChild(makeCandidateRow(a)));
             }
           }).catch(() => {
+            candidateList.innerHTML = '<div style="font-size:0.82rem;color:#c00;">Search failed</div>';
           });
         }
         let searchTimer;
