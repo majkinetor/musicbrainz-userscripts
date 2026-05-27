@@ -48,6 +48,23 @@ export const SELECTORS = {
 export const DISCOGS_LOGO_URL = 'https://volkerzell.de/favicons/discogs.png';
 
 /**
+ * Role-name equivalence groups used by the "Equivalence sets" dedup
+ * option (issue #62). When the option is on, the dispatcher treats any
+ * link type whose `name` falls in the same group as the link type being
+ * dispatched as a hit for the existing-rel check.
+ *
+ * Example: if MB already has a `writer` rel for (target, source), don't
+ * add a `composer` rel for the same pair (and vice versa).
+ *
+ * Sets are bidirectional and applied symmetrically; add new groups as
+ * the maintainer flags them. Names are MB link-type names (lowercased),
+ * matched against `MB.linkedEntities.link_type[id].name`.
+ */
+export const EQUIVALENCE_SETS = [
+    ['writer', 'composer'],
+];
+
+/**
  * Cross-tab channel used by the "Create in MB" flow. The userscript runs on
  * MB artist/label/place pages too — when it detects it was opened from the
  * review table (post-creation), it broadcasts the newly-created entity's

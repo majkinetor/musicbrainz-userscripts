@@ -309,13 +309,30 @@ export function insertDiscogsBar(discogsUrl) {
         'Move performance credits from the release down to every recording.');
     const createWorksCb  = makeCheckbox('Create missing works',           bv('createWorks', true),
         'Create a new inline work for recordings without one, and link composer/lyricist/writer credits to it.');
+
+    // ── Deduplication section (issue #62) ─────────────────────────────────
+    // Two toggles that change how the dispatcher decides "this rel is
+    // already there" against MB's pre-existing state. The third part of
+    // #62 — editable "Credited as" per entity — lives in the review
+    // table, not as a checkbox.
+    const dedupSep = document.createElement('span');
+    dedupSep.textContent = 'Dedup:';
+    dedupSep.style.cssText = 'margin:0 0.2rem 0 0.6rem;color:#888;font-size:0.85rem;font-weight:600;';
+    row2.appendChild(dedupSep);
+    const dedupeEqCb  = makeCheckbox('Equivalence sets',  bv('dedupeEquivalenceSets', true),
+        'Skip a role when an equivalent role already exists on the target (writer ≡ composer).');
+    const dedupeDupCb = makeCheckbox('Duplicate roles',   bv('dedupeDuplicateRoles', true),
+        'Skip adding a role when the target already has the same role (regardless of task / dates / attributes).');
+
     const saveOpts = () => {
         try { localStorage.setItem(OPTS_KEY, JSON.stringify({
             tracklist: tracklistCb.checked, applyTracks: applyTracksCb.checked,
             createWorks: createWorksCb.checked,
+            dedupeEquivalenceSets: dedupeEqCb.checked,
+            dedupeDuplicateRoles:  dedupeDupCb.checked,
         })); } catch(e) {}
     };
-    [tracklistCb, applyTracksCb, createWorksCb].forEach(cb =>
+    [tracklistCb, applyTracksCb, createWorksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
 
     bar.appendChild(row2);
@@ -483,7 +500,7 @@ export function insertDiscogsBar(discogsUrl) {
             const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
             log.info(html);
         });
-        runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
+        runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked, dedupeEqCb.checked, dedupeDupCb.checked).finally(() => {
             importBtn.disabled = false;
             importBtn.textContent = 'Import from Discogs';
             progressPct.textContent = '100%';
@@ -525,7 +542,7 @@ export function insertDiscogsBar(discogsUrl) {
         keysToRemove.forEach(k => localStorage.removeItem(k));
     } catch(e) {}
 })();
-function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
+function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, dedupeEquivalenceSets, dedupeDuplicateRoles) {
     return getDiscogsReleaseData(discogsUrl)
         .then(json => {
             let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter(artist => !artist.tracks));
@@ -746,7 +763,16 @@ function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
                             resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
                         }
                     });
-                    return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl);
+                    // Bundle the dedup options + the Credited-as override
+                    // map (the review table stashes it on confirmedMap as
+                    // `creditOverrides`). `dispatchAllRelationships` reads
+                    // them from a trailing opts arg per #62.
+                    const dedupOpts = {
+                        dedupeEquivalenceSets,
+                        dedupeDuplicateRoles,
+                        creditOverrides: capturedConfirmedMap?.creditOverrides,
+                    };
+                    return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
                 });
         })
         .then(() => { });

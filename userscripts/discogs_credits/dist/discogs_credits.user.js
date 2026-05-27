@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.26.203314
+// @version      2026.5.27.132141
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -55,6 +55,9 @@
     TaskInput: "#add-relationship-dialog .attribute-container.task input"
   };
   var DISCOGS_LOGO_URL = "https://volkerzell.de/favicons/discogs.png";
+  var EQUIVALENCE_SETS = [
+    ["writer", "composer"]
+  ];
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
   var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
 
@@ -2101,6 +2104,48 @@
         span.style.cssText = `font-size:0.68rem;background:#f5f5f5;color:${cfg.color};padding:0 0.35rem;border-radius:8px;border:1px solid #ddd;flex-shrink:0;`;
         return span;
       }
+      const creditOverrides = /* @__PURE__ */ new Map();
+      const existingCreditByMbid = computeExistingCreditByMbid();
+      function computeExistingCreditByMbid() {
+        const counts = /* @__PURE__ */ new Map();
+        try {
+          let walk = function(node) {
+            if (!node) return;
+            if (Array.isArray(node)) {
+              for (const r of node) tally(r);
+              return;
+            }
+            if (typeof node === "object") {
+              for (const v of Object.values(node)) walk(v);
+            }
+          }, tally = function(rel) {
+            if (!rel || rel._status === 2) return;
+            const credit = rel.entity1_credit;
+            if (!credit) return;
+            const tgt = rel.entity1?.gid;
+            if (!tgt) return;
+            if (!counts.has(tgt)) counts.set(tgt, /* @__PURE__ */ new Map());
+            const m = counts.get(tgt);
+            m.set(credit, (m.get(credit) || 0) + 1);
+          };
+          const root = pageWindow?.MB?.relationshipEditor?.state?.relationshipsBySource;
+          if (!root) return /* @__PURE__ */ new Map();
+          walk(root);
+        } catch (e) {
+        }
+        const out = /* @__PURE__ */ new Map();
+        for (const [mbid, m] of counts) {
+          let best = null, bestN = 0;
+          for (const [credit, n] of m) {
+            if (n > bestN) {
+              best = credit;
+              bestN = n;
+            }
+          }
+          if (best) out.set(mbid, best);
+        }
+        return out;
+      }
       const panel = document.createElement("div");
       panel.style.cssText = "border:2px solid #c8a000;border-radius:0.5rem;background:#fffef5;padding:1rem 1.5rem;margin:0.5rem 0;";
       {
@@ -2238,6 +2283,37 @@
           });
           tdDiscogs.appendChild(rolesLine);
         }
+        const credLine = document.createElement("div");
+        credLine.style.cssText = "display:flex;align-items:center;gap:0.3rem;margin-top:0.25rem;max-width:280px;";
+        const credLabel = document.createElement("label");
+        credLabel.textContent = "Credited as:";
+        credLabel.style.cssText = "font-size:0.72rem;color:#888;flex-shrink:0;";
+        const credInput = document.createElement("input");
+        credInput.type = "text";
+        credInput.style.cssText = "flex:1;padding:0.1rem 0.3rem;font-size:0.78rem;border:1px solid #ddd;border-radius:3px;background:#fff;";
+        credInput.placeholder = displayName;
+        credInput.title = `Override the credited name dispatched with every rel for this entity.
+Leave empty to use the default (Discogs name, or MB's most-frequent existing credit when known).`;
+        function pickPrefill(mbUrl) {
+          if (mbUrl) {
+            const mbid = (String(mbUrl).split("/").pop() || "").replace(/[^a-f0-9-]/gi, "").slice(0, 36);
+            if (mbid && existingCreditByMbid.has(mbid)) return existingCreditByMbid.get(mbid);
+          }
+          return displayName;
+        }
+        credInput.value = pickPrefill(r.mbUrl);
+        credInput._userTouched = false;
+        credInput.addEventListener("input", () => {
+          credInput._userTouched = true;
+          const url = credInput._activeMbUrl;
+          if (url) creditOverrides.set(url, credInput.value);
+        });
+        credInput._activeMbUrl = r.mbUrl;
+        if (r.mbUrl) creditOverrides.set(r.mbUrl, credInput.value);
+        credLine.appendChild(credLabel);
+        credLine.appendChild(credInput);
+        tdDiscogs.appendChild(credLine);
+        r._credInput = credInput;
         const tdMb = document.createElement("td");
         tdMb.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};min-width:240px;`;
         const candidateList = document.createElement("div");
@@ -2264,6 +2340,16 @@
         function setRowResolved(a) {
           const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
           rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true, via: "user", fromCache: false });
+          if (r._credInput) {
+            const oldUrl = r._credInput._activeMbUrl;
+            if (oldUrl && oldUrl !== mbUrl) creditOverrides.delete(oldUrl);
+            r._credInput._activeMbUrl = mbUrl;
+            if (!r._credInput._userTouched) {
+              const fresh = pickPrefill(mbUrl);
+              r._credInput.value = fresh;
+            }
+            creditOverrides.set(mbUrl, r._credInput.value);
+          }
           const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
           if (_idbKey) {
             writeIdbRecord(_idbKey, {
@@ -2302,6 +2388,10 @@
         }
         function setRowUnresolved() {
           rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: "", confirmed: false, via: null, fromCache: false });
+          if (r._credInput && r._credInput._activeMbUrl) {
+            creditOverrides.delete(r._credInput._activeMbUrl);
+            r._credInput._activeMbUrl = null;
+          }
           tr.style.background = "#ffe0e0";
           searchInput.disabled = false;
           searchBtn.disabled = false;
@@ -2812,6 +2902,7 @@
         }
         confirmedMap.unresolvedCount = unresolvedCount;
         confirmedMap.totalEntities = allResults.length;
+        confirmedMap.creditOverrides = creditOverrides;
         (panelLi || panel).remove();
         resolve(confirmedMap);
       });
@@ -2990,12 +3081,36 @@
   ];
 
   // src/dispatch.js
-  async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl) {
+  async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorks, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl, dedupOpts) {
     resolvedEntityTypes = resolvedEntityTypes || /* @__PURE__ */ new Map();
     confirmedMap = confirmedMap || /* @__PURE__ */ new Map();
+    dedupOpts = dedupOpts || {};
+    const dedupeEquivalenceSets = dedupOpts.dedupeEquivalenceSets !== false;
+    const dedupeDuplicateRoles = dedupOpts.dedupeDuplicateRoles !== false;
+    const creditOverrides = dedupOpts.creditOverrides || /* @__PURE__ */ new Map();
     const re = await waitForMBEditor();
     if (!re) return;
     const MB = pageWindow.MB;
+    const equivalenceLookup = (() => {
+      const m = /* @__PURE__ */ new Map();
+      if (!dedupeEquivalenceSets || !MB?.linkedEntities?.link_type) return m;
+      for (const set of EQUIVALENCE_SETS) {
+        const byPair = /* @__PURE__ */ new Map();
+        for (const [id, lt] of Object.entries(MB.linkedEntities.link_type)) {
+          if (!lt?.name) continue;
+          if (!set.includes(String(lt.name).toLowerCase())) continue;
+          const key = `${lt.type0}|${lt.type1}`;
+          if (!byPair.has(key)) byPair.set(key, []);
+          byPair.get(key).push(Number(id));
+        }
+        for (const ids of byPair.values()) {
+          if (ids.length < 2) continue;
+          const sibSet = new Set(ids);
+          for (const id of ids) m.set(id, sibSet);
+        }
+      }
+      return m;
+    })();
     const releaseEntity = re.state.entity;
     let added = 0, existedInMb = 0, dedupedThisSession = 0, skipped = 0, failed = 0;
     const dispatchedThisSession = /* @__PURE__ */ new Set();
@@ -3174,7 +3289,8 @@
     }
     function relAlreadyExists(sourceEntity, linkTypeID, targetGid, attrTree) {
       const rels = sourceEntity?.relationships;
-      if (!Array.isArray(rels) || rels.length === 0) return false;
+      if (!Array.isArray(rels) || rels.length === 0) return null;
+      const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || /* @__PURE__ */ new Set([linkTypeID]);
       const candSig = (() => {
         if (!attrTree) return "";
         try {
@@ -3183,15 +3299,35 @@
           return "";
         }
       })();
-      return rels.some((r) => {
-        if (r.linkTypeID !== linkTypeID) return false;
+      const lookupName = (id) => {
+        try {
+          return pageWindow.MB.linkedEntities.link_type[id]?.name || `#${id}`;
+        } catch (e) {
+          return `#${id}`;
+        }
+      };
+      let dupMatch = null;
+      for (const r of rels) {
+        if (!acceptableLinkTypes.has(r.linkTypeID)) continue;
         const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
-        if (tgt !== targetGid) return false;
+        if (tgt !== targetGid) continue;
+        const isEquivalent = r.linkTypeID !== linkTypeID;
         const existingSig = (r.attributes || []).map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
-        return existingSig === candSig;
-      });
+        const exactMatch = existingSig === candSig;
+        if (exactMatch) {
+          return { kind: isEquivalent ? "equivalence" : "exact", existingLinkName: lookupName(r.linkTypeID) };
+        }
+        if (dedupeDuplicateRoles && !dupMatch) {
+          dupMatch = { kind: isEquivalent ? "equivalence" : "duplicate-role", existingLinkName: lookupName(r.linkTypeID) };
+        }
+      }
+      return dupMatch;
     }
     async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos) {
+      const overrideCredit = creditOverrides.get(mbUrl);
+      if (overrideCredit && String(overrideCredit).trim()) {
+        credit = String(overrideCredit).trim();
+      }
       const mbid = mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
       if (!mbid) {
         log.error(`Bad MBID URL: ${mbUrl}`);
@@ -3252,8 +3388,17 @@
           log.warn(`Entity "${targetEntity.name}" is a ${targetEntity.entityType} but expected ${entityType0}/${entityType1} \u2014 link type "${linkTypeName}" may not apply`);
         }
       }
-      if (relAlreadyExists(sourceEntity, resolvedLinkTypeID, targetEntity.gid, attrTree)) {
-        log.info(`Already in MB: <strong>${linkTypeName}</strong>: ${sourceEntity.name} \u2194 ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ""}`);
+      const dedupHit = relAlreadyExists(sourceEntity, resolvedLinkTypeID, targetEntity.gid, attrTree);
+      if (dedupHit) {
+        const pair = `${sourceEntity.name} \u2194 ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ""}`;
+        const existing = dedupHit.existingLinkName;
+        if (dedupHit.kind === "equivalence") {
+          log.info(`Deduplication (equivalence sets): <strong>${linkTypeName}</strong> not added \u2014 equivalent <strong>${existing}</strong> already on ${pair}`);
+        } else if (dedupHit.kind === "duplicate-role") {
+          log.info(`Deduplication (duplicate roles): <strong>${linkTypeName}</strong> not added \u2014 same role already exists with different attributes on ${pair}`);
+        } else {
+          log.info(`Already in MB: <strong>${linkTypeName}</strong>: ${pair}`);
+        }
         existedInMb++;
         return;
       }
@@ -3782,17 +3927,33 @@
       bv("createWorks", true),
       "Create a new inline work for recordings without one, and link composer/lyricist/writer credits to it."
     );
+    const dedupSep = document.createElement("span");
+    dedupSep.textContent = "Dedup:";
+    dedupSep.style.cssText = "margin:0 0.2rem 0 0.6rem;color:#888;font-size:0.85rem;font-weight:600;";
+    row2.appendChild(dedupSep);
+    const dedupeEqCb = makeCheckbox(
+      "Equivalence sets",
+      bv("dedupeEquivalenceSets", true),
+      "Skip a role when an equivalent role already exists on the target (writer \u2261 composer)."
+    );
+    const dedupeDupCb = makeCheckbox(
+      "Duplicate roles",
+      bv("dedupeDuplicateRoles", true),
+      "Skip adding a role when the target already has the same role (regardless of task / dates / attributes)."
+    );
     const saveOpts = () => {
       try {
         localStorage.setItem(OPTS_KEY, JSON.stringify({
           tracklist: tracklistCb.checked,
           applyTracks: applyTracksCb.checked,
-          createWorks: createWorksCb.checked
+          createWorks: createWorksCb.checked,
+          dedupeEquivalenceSets: dedupeEqCb.checked,
+          dedupeDuplicateRoles: dedupeDupCb.checked
         }));
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, createWorksCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, createWorksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     bar.appendChild(row2);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output";
@@ -3923,7 +4084,7 @@ ${lines}
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
         log.info(html);
       });
-      runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked).finally(() => {
+      runImport(discogsUrl, tracklistCb.checked, applyTracksCb.checked, createWorksCb.checked, dedupeEqCb.checked, dedupeDupCb.checked).finally(() => {
         importBtn.disabled = false;
         importBtn.textContent = "Import from Discogs";
         progressPct.textContent = "100%";
@@ -3959,7 +4120,7 @@ ${lines}
     } catch (e) {
     }
   })();
-  function runImport(discogsUrl, processTracklist, applyToTracks, createWorks) {
+  function runImport(discogsUrl, processTracklist, applyToTracks, createWorks, dedupeEquivalenceSets, dedupeDuplicateRoles) {
     return getDiscogsReleaseData(discogsUrl).then((json) => {
       let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter((artist) => !artist.tracks));
       if (!_logs2._releaseInfoAdded) {
@@ -4134,7 +4295,12 @@ ${lines}
             resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
           }
         });
-        return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl);
+        const dedupOpts = {
+          dedupeEquivalenceSets,
+          dedupeDuplicateRoles,
+          creditOverrides: capturedConfirmedMap?.creditOverrides
+        };
+        return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, applyToTracks, createWorks, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
       });
     }).then(() => {
     });
