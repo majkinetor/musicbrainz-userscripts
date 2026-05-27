@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.212320
+// @version      2026.5.27.213202
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -5122,25 +5122,21 @@ ${lines}
     const pending = sessionStorage.getItem(pendingKey);
     if (!pending) return;
     sessionStorage.removeItem(pendingKey);
-    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`).then((r) => r.json()).then((json) => {
+    const NAME_FETCH_TIMEOUT_MS = 1e3;
+    const CLOSE_DELAY_MS = 50;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), NAME_FETCH_TIMEOUT_MS);
+    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal }).then((r) => r.json()).then((json) => ({ name: json.name || "", disambiguation: json.disambiguation || "" })).catch(() => ({ name: "", disambiguation: "" })).then(({ name, disambiguation }) => {
+      clearTimeout(timer);
       DISCOGS_CHANNEL.postMessage({
         type: "artist-created",
         // keep same message type for compatibility
         id: mbid,
-        name: json.name || "",
-        disambiguation: json.disambiguation || "",
+        name,
+        disambiguation,
         resourceUrl: pending
       });
-      setTimeout(() => window.close(), 800);
-    }).catch(() => {
-      DISCOGS_CHANNEL.postMessage({
-        type: "artist-created",
-        id: mbid,
-        name: "",
-        disambiguation: "",
-        resourceUrl: pending
-      });
-      setTimeout(() => window.close(), 800);
+      setTimeout(() => window.close(), CLOSE_DELAY_MS);
     });
   })();
   $(document).ready(function() {
