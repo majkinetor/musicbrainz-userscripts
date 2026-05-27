@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.27.185619
+// @version      2026.5.27.193438
 // @description  Add a button to import Discogs release relationships to MusicBrainz
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -3871,12 +3871,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             text-overflow: ellipsis;
         }
         .discogs-toggle { position: relative; }
+        /* position:fixed so the tooltip escapes .discogs-bar's
+           overflow:hidden (needed there to clip child backgrounds to
+           the bar's rounded corners). Per-hover JS in makeCheckbox
+           sets top/left from the toggle's viewport rect, so the
+           tooltip renders outside any overflow-clipping ancestor.
+           Issue #89. */
         .discogs-tooltip {
             display: none;
-            position: absolute;
-            bottom: calc(100% + 6px);
-            left: 50%;
-            transform: translateX(-50%);
+            position: fixed;
             background: #333;
             color: #fff;
             font-size: 0.78rem;
@@ -3894,10 +3897,18 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             content: '';
             position: absolute;
             top: 100%;
-            left: 50%;
+            left: var(--arrow-x, 50%);
             transform: translateX(-50%);
             border: 5px solid transparent;
             border-top-color: #333;
+        }
+        /* When the tooltip flipped below the toggle (no room above),
+           flip the arrow to point up from the tooltip's top edge. */
+        .discogs-tooltip.below::after {
+            top: auto;
+            bottom: 100%;
+            border-top-color: transparent;
+            border-bottom-color: #333;
         }
         .discogs-toggle:hover .discogs-tooltip { display: block; }
     `;
@@ -3955,6 +3966,23 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         tip.className = "discogs-tooltip";
         tip.textContent = tooltipText;
         lbl.appendChild(tip);
+        const TIP_W = 220, TIP_MARGIN = 6, EDGE_PAD = 8;
+        lbl.addEventListener("mouseenter", () => {
+          const r = lbl.getBoundingClientRect();
+          const centerX = r.left + r.width / 2;
+          let x = centerX - TIP_W / 2;
+          x = Math.max(EDGE_PAD, Math.min(x, window.innerWidth - TIP_W - EDGE_PAD));
+          tip.style.left = `${x}px`;
+          tip.style.top = "-9999px";
+          tip.style.display = "block";
+          const h = tip.offsetHeight;
+          tip.style.display = "";
+          const above = r.top - TIP_MARGIN - h;
+          const fitsAbove = above >= EDGE_PAD;
+          tip.style.top = fitsAbove ? `${above}px` : `${r.bottom + TIP_MARGIN}px`;
+          tip.classList.toggle("below", !fitsAbove);
+          tip.style.setProperty("--arrow-x", `${centerX - x}px`);
+        });
       }
       lbl.addEventListener("click", (e) => {
         e.preventDefault();
