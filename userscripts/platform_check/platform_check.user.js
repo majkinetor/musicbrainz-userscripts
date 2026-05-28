@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.215044
+// @version      2026.5.28.215854
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -868,10 +868,14 @@ function parseMbFromDom() {
         const artistIds   = [...artistAnchors].map(a => (a.getAttribute('href') || '').match(/\/artist\/([0-9a-f-]{36})/)?.[1]).filter(Boolean);
         const artist = artistNames[0] || '';
 
-        // Track count. MB tracklist tables use <tr class="track"> or rows
-        // whose td.pos count tracks. Cross-table dedup is unnecessary because
-        // the release page only shows this release's tracks.
-        const mbTracks = document.querySelectorAll('table.tbl tr.track, table.medium-table tr.track, tr.track[id^="t-"]').length;
+        // Track count. Current MB markup renders each track as a bare <tr>
+        // inside `table.tbl.medium tbody`, the first row being `<tr class="subh">`
+        // (header). Tracks have a `<td class="pos">` cell — counting those
+        // skips the header automatically and works for multi-disc releases
+        // (one table per medium, all summed). The older `tr.track` selector
+        // is kept as a fallback for any legacy renderer.
+        const mbTracks = document.querySelectorAll('table.tbl.medium tbody tr > td.pos').length
+                       || document.querySelectorAll('tr.track').length;
 
         // Release-group MBID — present as a /release-group/<mbid> link in the
         // sidebar's release-information block.
