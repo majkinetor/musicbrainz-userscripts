@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.174718
+// @version      2026.5.28.182833
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -195,12 +195,14 @@ function decodeDdgRedirect(href) {
 
 // Search Brave first (handles concurrent calls cleanly, returns the canonical
 // open.spotify.com / *.bandcamp.com URLs verbatim); fall back to DDG HTML if
-// Brave is blocked. Each engine yields a list of candidate URLs that the caller
-// filters with `urlFilter` to pick the first match.
+// Brave is blocked. Returns up to `maxN` unique URLs that pass `urlFilter` —
+// callers verify each candidate by fetching its server-side metadata, since
+// the first search hit is often a different album by the same artist (e.g.
+// MMW returns "20" for the Stone-series query).
 //
 // Engines are sometimes rate-limited per IP. We try them in order and stop
-// at the first one that yields a usable result.
-async function searchWeb(query, urlFilter, label) {
+// at the first one that yields any usable result.
+async function searchWeb(query, urlFilter, label, maxN = 5) {
     const engines = [
         {
             name: 'Brave',
@@ -250,18 +252,72 @@ async function searchWeb(query, urlFilter, label) {
             appendLog(label, `${eng.name}: response too small (${sizeHint}b) — likely anti-bot block`, 'warn');
             continue;
         }
-        const candidates = eng.extract(res.responseText);
-        appendLog(label, `${eng.name}: ${candidates.length} candidate URLs`);
-        for (const u of candidates) {
-            if (urlFilter(u)) {
-                appendLog(label, `${eng.name}: match -> ${u}`, 'ok');
-                return u;
-            }
+        const all = eng.extract(res.responseText);
+        const matches = [];
+        const seen = new Set();
+        for (const u of all) {
+            if (!urlFilter(u)) continue;
+            // Strip query strings and "/intl-xx/" locale segments before dedup —
+            // the same album often surfaces 5+ times with different locale prefixes.
+            const norm = u.replace(/\/intl-[a-z-]+\//, '/').replace(/\?.*$/, '').replace(/#.*$/, '');
+            if (seen.has(norm)) continue;
+            seen.add(norm);
+            matches.push(norm);
+            if (matches.length >= maxN) break;
         }
+        appendLog(label, `${eng.name}: ${all.length} total hrefs, ${matches.length} unique candidates after filter`);
+        if (matches.length) return matches;
         appendLog(label, `${eng.name}: no candidate matched filter`, 'warn');
     }
     appendLog(label, `All search engines failed to match`, 'error');
-    return null;
+    return [];
+}
+
+// ─── Candidate scoring ──────────────────────────────────────────────────────
+// When the first search hit is wrong (e.g. MMW "20" instead of MMW
+// "The Stone: Issue Four"), we need a way to pick the right one from a few
+// candidates. Strategy: fetch each candidate's server-side metadata and score
+// against the MB release's track count + title.
+function normName(s) {
+    return (s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+function titleSimilar(a, b) {
+    const na = normName(a), nb = normName(b);
+    if (!na || !nb) return false;
+    if (na === nb) return true;
+    return na.includes(nb) || nb.includes(na);
+}
+// Score: tracks match strongest (100), close-but-not-exact 50; title bonus 20.
+// Threshold of ≥100 means we trust the candidate; <100 means show with a "~"
+// icon so the user knows track counts didn't line up.
+function scoreCandidate(meta, mbTracks, mbAlbum) {
+    if (!meta) return -1;
+    let s = 0;
+    if (meta.tracks != null) {
+        if (meta.tracks === mbTracks)               s += 100;
+        else if (Math.abs(meta.tracks - mbTracks) <= 2) s += 50;
+    }
+    if (meta.title && titleSimilar(meta.title, mbAlbum)) s += 20;
+    return s;
+}
+
+// Drive a per-candidate verifier loop. Returns the best { url, meta, score }
+// across the candidate list, plus a per-candidate log table for diagnostics.
+// `fetchMeta(url)` returns `{ tracks, title, year, label }` (any field may be null).
+async function pickBestCandidate(candidates, fetchMeta, mbTracks, mbAlbum, label) {
+    const scored = [];
+    for (const url of candidates) {
+        const meta = await fetchMeta(url);
+        const score = scoreCandidate(meta, mbTracks, mbAlbum);
+        scored.push({ url, meta, score });
+        appendLog(label, `  cand score=${score}  tracks=${meta?.tracks ?? '?'}  title="${meta?.title || '?'}"  url=${url}`);
+        // Short-circuit on a confident match — saves N-1 fetches on the common case
+        // where the first search hit is correct (the Menahan release).
+        if (score >= 100) break;
+    }
+    if (!scored.length) return null;
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0];
 }
 
 // Per-platform-per-MBID URL cache. Once we've successfully found a Spotify /
@@ -278,10 +334,36 @@ let searchChain = Promise.resolve();
 function queueSearch(fn) { const p = searchChain.then(fn, fn); searchChain = p.catch(() => {}); return p; }
 
 // ─── Per-platform scanners ─────────────────────────────────────────────────
+// Fetch Spotify album metadata via the server-rendered /embed/album/<id> page.
+// The embed ships an inline JSON blob; we extract title + track count + year +
+// label by regex (lighter and more tolerant than full-tree parsing).
+async function fetchSpotifyMeta(albumUrl) {
+    const idMatch = albumUrl.match(/album\/([a-zA-Z0-9]{22})/);
+    if (!idMatch) return null;
+    const embedUrl = `https://open.spotify.com/embed/album/${idMatch[1]}`;
+    const er = await gmGet(embedUrl);
+    if (!er.ok) return null;
+    const html = er.responseText;
+    const trackUris = [...html.matchAll(/"uri":"spotify:track:[a-zA-Z0-9]+"/g)];
+    // The album title is the first `"name":"…"` outside of any nested "subtitle"
+    // — empirically reliable on the embed JSON. Track titles come after, so
+    // "name" wins.
+    const titleMatch = html.match(/"name"\s*:\s*"([^"]+)"/);
+    const yearMatch  = html.match(/"releaseDate":"(\d{4})-/) || html.match(/"year"\s*:\s*(\d{4})/);
+    const labelMatch = html.match(/"label":"([^"]+)"/) || html.match(/"copyrights":\s*\[\s*\{\s*"text"\s*:\s*"([^"]+)"/);
+    return {
+        tracks: trackUris.length || null,
+        title:  titleMatch?.[1] || null,
+        year:   yearMatch?.[1]  || null,
+        label:  labelMatch?.[1] || null,
+    };
+}
+
 async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid }) {
     const label = 'Spotify';
     let albumUrl = existingUrl;
     let source = null;
+    let bestMeta = null;
 
     if (albumUrl) {
         appendLog(label, `Using existing MB URL: ${albumUrl}`, 'ok');
@@ -292,39 +374,34 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid }) {
         source = 'cache';
     } else {
         const q = `site:open.spotify.com album ${artist} ${album}`;
-        albumUrl = await searchWeb(q, u => /open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/[a-zA-Z0-9]{22}/.test(u), label);
-        if (!albumUrl) { updateRow('spotify', { url: null, mbTracks, remoteTracks: null }); return; }
-        // Strip "/intl-xx/" segment so the canonical URL is shown.
-        albumUrl = albumUrl.replace(/\/intl-[a-z-]+\/album\//, '/album/').replace(/\?.*$/, '');
-        appendLog(label, `Found: ${albumUrl}`, 'ok');
+        const candidates = await searchWeb(q, u => /open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/[a-zA-Z0-9]{22}/.test(u), label);
+        if (!candidates.length) { updateRow('spotify', { url: null, mbTracks, remoteTracks: null }); return; }
+        appendLog(label, `Verifying ${candidates.length} candidate(s) by track count + title…`);
+        const best = await pickBestCandidate(candidates, fetchSpotifyMeta, mbTracks, album, label);
+        if (!best || best.score === 0) {
+            // Every candidate failed both the track-count and title test —
+            // the album probably doesn't exist on this platform. Don't surface
+            // a wrong URL; let the user see × + the platform's search link.
+            appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
+            updateRow('spotify', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        albumUrl = best.url;
+        bestMeta = best.meta;
+        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
         cacheSet(mbid, 'spotify', albumUrl);
         source = 'search';
     }
 
-    // Extract metadata via Spotify's server-rendered embed page.
-    const idMatch = albumUrl.match(/album\/([a-zA-Z0-9]{22})/);
-    if (!idMatch) { updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: null, source }); return; }
-    const embedUrl = `https://open.spotify.com/embed/album/${idMatch[1]}`;
-    appendLog(label, `Embed: ${embedUrl}`);
-    const er = await gmGet(embedUrl);
-    appendLog(label, `Embed: status=${er.status} ${er.responseText.length}b in ${er.ms}ms`);
-    let tracks = null, year = null, lbl = null;
-    if (er.ok) {
-        // The embed page ships a __NEXT_DATA__-style JSON blob. We don't try to
-        // parse the whole thing — count "uri":"spotify:track:" occurrences in the
-        // trackList, and capture title for sanity-checking via name.
-        const trackUris = [...er.responseText.matchAll(/"uri":"spotify:track:[a-zA-Z0-9]+"/g)];
-        if (trackUris.length) tracks = trackUris.length;
-        const yearMatch = er.responseText.match(/"releaseDate":"(\d{4})-/) || er.responseText.match(/"year"\s*:\s*(\d{4})/);
-        if (yearMatch) year = yearMatch[1];
-        // The embed sometimes lists labels as `"label":"…"` or under `"copyrights":[{"text":"…"}]`.
-        const labelMatch = er.responseText.match(/"label":"([^"]+)"/) || er.responseText.match(/"copyrights":\s*\[\s*\{\s*"text"\s*:\s*"([^"]+)"/);
-        if (labelMatch) lbl = labelMatch[1];
-        appendLog(label, `Embed parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}`, tracks ? 'ok' : 'warn');
+    // If we have bestMeta from the candidate verification, reuse it; otherwise
+    // fetch the embed for the chosen URL (covers the MB-rels / cache paths).
+    const meta = bestMeta || await fetchSpotifyMeta(albumUrl);
+    if (meta) {
+        appendLog(label, `Embed parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
     } else {
-        appendLog(label, `Embed failed`, 'error');
+        appendLog(label, `Embed fetch failed`, 'error');
     }
-    updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+    updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source });
 }
 
 async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid }) {
@@ -407,10 +484,34 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid }) {
     updateRow('discogs', { url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
+// Fetch Bandcamp album metadata via the standard album page. Bandcamp ships
+// a Schema.org JSON-LD block with numTracks/name/datePublished/recordLabel as
+// native JSON (not HTML-escaped) — the cleanest source. The legacy `data-tralbum`
+// attribute has the same data but with &quot; entities and requires decoding.
+async function fetchBandcampMeta(albumUrl) {
+    const ar = await gmGet(albumUrl);
+    if (!ar.ok || !ar.responseText) return null;
+    const html = ar.responseText;
+    const numTracksMatch = html.match(/"numTracks"\s*:\s*(\d+)/);
+    // "@type":"MusicAlbum" is followed by the album name in JSON-LD; pick that
+    // specifically so we don't capture a track or band name.
+    const titleMatch = html.match(/"@type"\s*:\s*"MusicAlbum"[\s\S]{0,200}?"name"\s*:\s*"([^"]+)"/)
+                    || html.match(/<meta\s+name="title"\s+content="([^"|]+)/);
+    const yMatch = html.match(/"datePublished"\s*:\s*"[^"]*?(\d{4})\b/);
+    const lMatch = html.match(/"recordLabel"\s*:\s*\{[^}]*?"name"\s*:\s*"([^"]+)"/);
+    return {
+        tracks: numTracksMatch ? parseInt(numTracksMatch[1], 10) : null,
+        title:  titleMatch?.[1] || null,
+        year:   yMatch?.[1]     || null,
+        label:  lMatch?.[1]     || null,
+    };
+}
+
 async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
     const label = 'Bandcamp';
     let albumUrl = existingUrl;
     let source = null;
+    let bestMeta = null;
 
     if (albumUrl) {
         appendLog(label, `Using existing MB URL: ${albumUrl}`, 'ok');
@@ -421,43 +522,31 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
         source = 'cache';
     } else {
         const q = `site:bandcamp.com ${artist} ${album}`;
-        albumUrl = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), label);
-        if (!albumUrl) { updateRow('bandcamp', { url: null, mbTracks, remoteTracks: null }); return; }
-        albumUrl = albumUrl.replace(/\?.*$/, '');
-        appendLog(label, `Found: ${albumUrl}`, 'ok');
+        // Bandcamp candidate pages are bigger (~300 KB) than Spotify embeds —
+        // limit candidates to 3 to keep total fetch cost reasonable.
+        const candidates = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), label, 3);
+        if (!candidates.length) { updateRow('bandcamp', { url: null, mbTracks, remoteTracks: null }); return; }
+        appendLog(label, `Verifying ${candidates.length} candidate(s) by track count + title…`);
+        const best = await pickBestCandidate(candidates, fetchBandcampMeta, mbTracks, album, label);
+        if (!best || best.score === 0) {
+            appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
+            updateRow('bandcamp', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        albumUrl = best.url;
+        bestMeta = best.meta;
+        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
         cacheSet(mbid, 'bandcamp', albumUrl);
         source = 'search';
     }
 
-    // Bandcamp album pages embed a self-explanatory `data-tralbum="<json>"`
-    // attribute on the <script> tag holding TralbumData. Newer pages also have
-    // a `data-band` attribute with label info.
-    appendLog(label, `Fetching album page…`);
-    const ar = await gmGet(albumUrl);
-    appendLog(label, `Album page: status=${ar.status} ${ar.responseText.length}b in ${ar.ms}ms`);
-
-    let tracks = null, year = null, lbl = null;
-    if (ar.ok && ar.responseText) {
-        const html = ar.responseText;
-        // Bandcamp ships a Schema.org JSON-LD block inside <script type="application/ld+json">
-        // with "numTracks", "datePublished", and "recordLabel":{"name":"…"} as native
-        // (not HTML-escaped) JSON — easiest source for clean metadata. The legacy
-        // data-tralbum attribute has the same info but with &quot; entities, requiring
-        // entity-decoding before regex; not used here.
-        const numTracksMatch = html.match(/"numTracks"\s*:\s*(\d+)/);
-        if (numTracksMatch) tracks = parseInt(numTracksMatch[1], 10);
-        const yMatch = html.match(/"datePublished"\s*:\s*"[^"]*?(\d{4})\b/)
-                    || html.match(/"release_date"&quot;:&quot;[^"&]*?(\d{4})\b/);
-        if (yMatch) year = yMatch[1];
-        const lMatch = html.match(/"recordLabel"\s*:\s*\{[^}]*?"name"\s*:\s*"([^"]+)"/)
-                    || html.match(/label_name&quot;:&quot;([^&]+)&quot;/);
-        if (lMatch) lbl = lMatch[1];
-        appendLog(label, `Album parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}`, tracks ? 'ok' : 'warn');
+    const meta = bestMeta || await fetchBandcampMeta(albumUrl);
+    if (meta) {
+        appendLog(label, `Album parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
     } else {
         appendLog(label, `Album page failed`, 'error');
     }
-
-    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source });
 }
 
 // ─── Main entry ────────────────────────────────────────────────────────────
