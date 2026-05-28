@@ -70,7 +70,7 @@ Setup (one-time, done by the maintainer):
 1. Create the `claude-ai-milic` GitHub account.
 2. Add it as a **collaborator** on `majkinetor/musicbrainz-userscripts` with write access; accept the invite from the bot account.
 3. While logged in as the bot, generate a classic Personal Access Token at <https://github.com/settings/tokens> with scopes `repo` + `write:discussion`.
-4. Save the token in `dev/.github-credentials.json` (gitignored — never commit):
+4. Save the token in `dev/.github-credentials.json` **at the repo root** (gitignored — never commit):
 
    ```jsonc
    {
@@ -276,21 +276,23 @@ The notif pipeline pushes GitHub activity into Claude **without spawning a fresh
 
 Two pieces:
 
-- **[`dev/notif-channel/webhook.mjs`](dev/notif-channel/webhook.mjs)** — a tiny MCP channel server (Node, [research-preview channel API](https://code.claude.com/docs/en/channels)). Claude Code spawns it as a subprocess; it listens on `http://127.0.0.1:8788` and forwards every POSTed payload to the running Claude session as a `<channel source="notif-channel">` event.
-- **[`dev/check-gh-notifications.ps1`](dev/check-gh-notifications.ps1)** — polls GitHub for unread non-self comments, POSTs the actionable list to `localhost:8788`. If the channel server isn't reachable (no Claude running with it attached), it logs `channel-down` and exits — no fallback to `claude -p`, since fresh sessions miss the conversation context that makes Claude useful here.
+Both pieces live at the **repo-root `dev/`** so they apply to every userscript project, not just discogs_credits.
+
+- **[`/dev/notif-channel/webhook.mjs`](../../dev/notif-channel/webhook.mjs)** — a tiny MCP channel server (Node, [research-preview channel API](https://code.claude.com/docs/en/channels)). Claude Code spawns it as a subprocess; it listens on `http://127.0.0.1:8788` and forwards every POSTed payload to the running Claude session as a `<channel source="notif-channel">` event.
+- **[`/dev/check-gh-notifications.ps1`](../../dev/check-gh-notifications.ps1)** — polls GitHub for unread non-self comments, POSTs the actionable list to `localhost:8788`. If the channel server isn't reachable (no Claude running with it attached), it logs `channel-down` and exits — no fallback to `claude -p`, since fresh sessions miss the conversation context that makes Claude useful here.
 
 #### One-time setup
 
 ```powershell
 # 1. install MCP SDK for the channel server
-cd userscripts\discogs_credits\dev\notif-channel
+cd dev\notif-channel
 npm install
 
 # 2. enable the MCP server. Copy the template to the repo root:
-copy mcp.json.template ..\..\..\..\.mcp.json
+copy mcp.json.template ..\..\.mcp.json
 
 # 3. register the recurring poll (every 10 min, 09:00-23:50 local = 90 polls/day)
-powershell -ExecutionPolicy Bypass -File userscripts\discogs_credits\dev\install-notification-task.ps1
+powershell -ExecutionPolicy Bypass -File dev\install-notification-task.ps1
 ```
 
 #### Day-to-day
@@ -310,8 +312,8 @@ Keep that terminal open for as long as you want auto-react. The poller fires eve
 
 | File | What's in it |
 |---|---|
-| `dev/.notif-poll.log` | Each poll: how many unread, how many actionable, delivery outcome (`OK`, `channel-down`, etc.) |
-| `dev/notif-channel/.channel.log` | The MCP server's view: each POST received, whether it forwarded to Claude |
+| `/dev/.notif-poll.log` | Each poll: how many unread, how many actionable, delivery outcome (`OK`, `channel-down`, etc.) |
+| `/dev/notif-channel/.channel.log` | The MCP server's view: each POST received, whether it forwarded to Claude |
 | Claude session terminal | The actual `<channel>` event Claude processed + what it did |
 
 #### Manage the scheduled task

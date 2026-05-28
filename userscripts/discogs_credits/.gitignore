@@ -25,14 +25,5 @@ pnpm-debug.log*
 # Per-fixture import logs from `pnpm test`
 test/logs/
 
-# GitHub credentials for the dedicated automation account (claude-ai-milic).
-# Never commit. Sample shape in DEVELOP.md.
-dev/.github-credentials.json
-
-# State + audit logs for the GH notification → channel pipeline. Each side
-# (the poller and the MCP channel server) writes its own log so both halves
-# are inspectable. Gitignored — pure local runtime state.
-dev/.notification-state.json
-dev/.notif-poll.log
-dev/notif-channel/.channel.log
-dev/notif-channel/node_modules/
+# (Bot credentials + notif-pipeline state moved to the repo-root /.gitignore
+# in <commit>; see /dev/ at the repo root.)

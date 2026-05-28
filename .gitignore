@@ -1,0 +1,28 @@
+# Repo-wide ignores. Per-project ignores live in each userscripts/<name>/.gitignore.
+
+# Dependencies (root and per-project)
+node_modules/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Claude Code per-project settings (not shipped, may contain local-only paths)
+.claude/
+
+# ─── Bot / notification pipeline (dev/) ────────────────────────────────────
+# GH PAT for the dedicated automation account (claude-ai-milic). Never commit.
+# Sample shape in userscripts/discogs_credits/DEVELOP.md > "How the bot logs in".
+dev/.github-credentials.json
+
+# Runtime state + audit logs for the GH-notification → MCP-channel pipeline.
+# Each side (the PS poller and the Node MCP server) writes its own log so both
+# halves are inspectable. Pure local runtime — never committed.
+dev/.notification-state.json
+dev/.notif-poll.log
+dev/notif-channel/.channel.log
+dev/notif-channel/node_modules/
