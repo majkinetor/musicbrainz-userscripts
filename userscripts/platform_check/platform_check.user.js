@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.182833
+// @version      2026.5.28.184945
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @connect      musicbrainz.org
+// @connect      query.wikidata.org
 // @connect      search.brave.com
 // @connect      html.duckduckgo.com
 // @connect      duckduckgo.com
@@ -41,8 +42,9 @@ container.innerHTML = `
   </div>`).join('')}
 </div>
 <div style="display: flex; gap: 4px; margin-top: 8px;">
-  <div id="mb-log-open-btn" style="flex: 1; cursor: pointer; text-align: center; background: #F0F0F0; padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #666; border: 1px solid #E0E0E0;">LOGS</div>
-  <div id="mb-token-setup-btn" style="flex: 1; cursor: pointer; text-align: center; background: #F0F0F0; padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #666; border: 1px solid #E0E0E0;">⚙️ PROVIDERS</div>
+  <div id="mb-log-open-btn"     style="flex: 1; cursor: pointer; text-align: center; background: #F0F0F0; padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #666; border: 1px solid #E0E0E0;">LOGS</div>
+  <div id="mb-refresh-btn"      style="flex: 1; cursor: pointer; text-align: center; background: #F0F0F0; padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #666; border: 1px solid #E0E0E0;">↻ REFRESH</div>
+  <div id="mb-token-setup-btn"  style="flex: 1; cursor: pointer; text-align: center; background: #F0F0F0; padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #666; border: 1px solid #E0E0E0;">⚙️ PROVIDERS</div>
 </div>
 `;
 
@@ -327,6 +329,55 @@ async function pickBestCandidate(candidates, fetchMeta, mbTracks, mbAlbum, label
 function cacheKey(mbid, platform) { return `urlcache:${platform}:${mbid}`; }
 function cacheGet(mbid, platform) { return GM_getValue(cacheKey(mbid, platform), null); }
 function cacheSet(mbid, platform, url) { if (url) GM_setValue(cacheKey(mbid, platform), url); }
+function cacheClear(mbid) {
+    // Setting to null is enough — cacheGet returns null as its default, so the
+    // next lookup will miss. We don't use GM_deleteValue (different VM/TM grant)
+    // to keep @grant slim.
+    for (const p of ['spotify', 'discogs', 'bandcamp']) GM_setValue(cacheKey(mbid, p), null);
+}
+
+// ─── Wikidata fast path ─────────────────────────────────────────────────────
+// Wikidata curates external IDs (Spotify P2205, Apple Music P5121, AllMusic
+// P1729) against MB release-group IDs (P436) and release IDs (P5813). When a
+// release has a Wikidata entity, the data is human-edited and effectively
+// 100% precise — much better than ranking 5 search-engine candidates by
+// track count. Recall is the trade-off: niche / very-recent releases usually
+// have no Wikidata entry, in which case we fall back to web search.
+async function lookupWikidata(releaseGroupMbid, releaseMbid) {
+    if (!releaseGroupMbid && !releaseMbid) return null;
+    // Union of release-group and release lookups in one query — avoids two
+    // round-trips when one or the other might be the indexed entity.
+    const sparql = `SELECT ?spotify ?apple ?allmusic WHERE {
+${releaseGroupMbid ? `  { ?item wdt:P436 "${releaseGroupMbid}" }`           : ''}
+${releaseGroupMbid && releaseMbid ? '  UNION' : ''}
+${releaseMbid      ? `  { ?item wdt:P5813 "${releaseMbid}" }`               : ''}
+  OPTIONAL { ?item wdt:P2205 ?spotify }
+  OPTIONAL { ?item wdt:P5121 ?apple }
+  OPTIONAL { ?item wdt:P1729 ?allmusic }
+} LIMIT 5`;
+    const url = `https://query.wikidata.org/sparql?query=${encodeURIComponent(sparql)}&format=json`;
+    appendLog('Wikidata', `SPARQL lookup rg=${releaseGroupMbid || '-'} rel=${releaseMbid || '-'}`);
+    const res = await gmGet(url, { headers: { 'Accept': 'application/sparql-results+json' } });
+    appendLog('Wikidata', `status=${res.status} ${res.responseText.length}b in ${res.ms}ms`);
+    if (!res.ok) { appendLog('Wikidata', `lookup failed`, 'warn'); return null; }
+    let data;
+    try { data = JSON.parse(res.responseText); } catch (e) { appendLog('Wikidata', `JSON parse: ${e.message}`, 'error'); return null; }
+    const bindings = data.results?.bindings || [];
+    if (!bindings.length) {
+        appendLog('Wikidata', `no entity matches release-group/release MBID — falling back to search`, 'warn');
+        return null;
+    }
+    // Pick first binding that has any populated field; if multiple bindings
+    // disagree (rare), trust the first row.
+    const b = bindings.find(r => r.spotify || r.apple || r.allmusic) || bindings[0];
+    const out = {
+        spotifyId:  b.spotify?.value  || null,
+        appleId:    b.apple?.value    || null,
+        allmusicId: b.allmusic?.value || null,
+    };
+    appendLog('Wikidata', `match: spotify=${out.spotifyId || '-'} apple=${out.appleId || '-'} allmusic=${out.allmusicId || '-'}`, 'ok');
+    return out;
+}
 
 // Concurrent search-engine queries from the same IP can trip anti-bot pages.
 // Serialize them on one chain so two scanners never hit the same engine at once.
@@ -359,7 +410,7 @@ async function fetchSpotifyMeta(albumUrl) {
     };
 }
 
-async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid }) {
+async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidataSpotifyId }) {
     const label = 'Spotify';
     let albumUrl = existingUrl;
     let source = null;
@@ -372,6 +423,11 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid }) {
         albumUrl = cacheGet(mbid, 'spotify');
         appendLog(label, `Cache hit: ${albumUrl}`, 'ok');
         source = 'cache';
+    } else if (wikidataSpotifyId) {
+        albumUrl = `https://open.spotify.com/album/${wikidataSpotifyId}`;
+        appendLog(label, `Wikidata answer: ${albumUrl}`, 'ok');
+        source = 'Wikidata';
+        cacheSet(mbid, 'spotify', albumUrl);
     } else {
         const q = `site:open.spotify.com album ${artist} ${album}`;
         const candidates = await searchWeb(q, u => /open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/[a-zA-Z0-9]{22}/.test(u), label);
@@ -556,11 +612,22 @@ if (!mbid || mbid.length < 10) {
     return;
 }
 
-const mbApiUrl = `https://musicbrainz.org/ws/2/release/${mbid}?inc=artists+media+url-rels&fmt=json`;
-appendLog('MusicBrainz', `Fetching: ${mbApiUrl}`);
+// Reset each platform row back to its initial ⚪ / -- state. Used by the
+// refresh button before re-running the scans.
+function resetRows() {
+    for (const p of ['spotify', 'discogs', 'bandcamp']) {
+        const ico = document.getElementById(`ico-${p}`);
+        const val = document.getElementById(`val-${p}`);
+        const meta = document.getElementById(`meta-${p}`);
+        if (ico)  { ico.textContent = '⚪'; ico.style.color = '#888'; ico.style.fontWeight = 'normal'; }
+        if (val)  { val.textContent = '(-- tracks)'; val.style.color = '#777'; }
+        if (meta) { meta.innerHTML = ''; }
+    }
+}
 
-(async () => {
-    const mb = await gmGet(mbApiUrl);
+async function runScans() {
+    appendLog('MusicBrainz', `Fetching release + release-group: /ws/2/release/${mbid}`);
+    const mb = await gmGet(`https://musicbrainz.org/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups&fmt=json`);
     appendLog('MusicBrainz', `status=${mb.status} ${mb.responseText.length}b in ${mb.ms}ms`);
     if (!mb.ok) {
         appendLog('MusicBrainz', `Halted: API status ${mb.status} ${mb.error || ''}`, 'error');
@@ -573,7 +640,8 @@ appendLog('MusicBrainz', `Fetching: ${mbApiUrl}`);
     const artist = data['artist-credit']?.[0]?.name || data['artist-credit']?.[0]?.artist?.name || '';
     const album  = data.title || '';
     const mbTracks = data.media?.reduce((s, m) => s + (m['track-count'] || 0), 0) || 0;
-    appendLog('MusicBrainz', `Artist: "${artist}"  Album: "${album}"  Tracks: ${mbTracks}`);
+    const releaseGroupMbid = data['release-group']?.id || null;
+    appendLog('MusicBrainz', `Artist: "${artist}"  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
 
     if (!artist || !album) {
         appendLog('MusicBrainz', `Missing artist/album in API payload`, 'error');
@@ -591,6 +659,17 @@ appendLog('MusicBrainz', `Fetching: ${mbApiUrl}`);
     };
     appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}`);
 
+    // Wikidata lookup — fires only when no existing rel + no cached URL would
+    // already satisfy Spotify, since those skip the search path anyway. We
+    // still fire it speculatively when those exist (cheap; one SPARQL call),
+    // because the answer can populate Apple Music / AllMusic rows later.
+    let wd = null;
+    if (!existing.spotify && !cacheGet(mbid, 'spotify')) {
+        wd = await lookupWikidata(releaseGroupMbid, mbid);
+    } else {
+        appendLog('Wikidata', `skipped — Spotify URL already known (MB rels or cache)`);
+    }
+
     // Seed search fallback URLs.
     document.getElementById('mb-online-spotify') .href = `https://open.spotify.com/search/${encodeURIComponent(`${artist} ${album}`)}`;
     document.getElementById('mb-online-discogs') .href = `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`;
@@ -598,11 +677,21 @@ appendLog('MusicBrainz', `Fetching: ${mbApiUrl}`);
 
     const ctx = { artist, album, mbTracks, mbid };
     const tasks = [];
-    if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify  }));
+    if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify,  wikidataSpotifyId: wd?.spotifyId || null }));
     if (GM_getValue('prov_discogs',  true)) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
     if (GM_getValue('prov_bandcamp', true)) tasks.push(scanBandcamp({ ...ctx, existingUrl: existing.bandcamp }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
-})();
+}
+
+// ↻ REFRESH button: clear cached URLs for this MBID, blank the rows, re-run.
+document.getElementById('mb-refresh-btn').addEventListener('click', () => {
+    appendLog('System', `Refresh requested — clearing cache for ${mbid}`, 'warn');
+    cacheClear(mbid);
+    resetRows();
+    runScans();
+});
+
+runScans();
 
 })();
