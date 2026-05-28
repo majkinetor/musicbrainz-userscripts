@@ -183,10 +183,16 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 }
                 function tally(rel) {
                     if (!rel || rel._status === 2) return; // skip removed
-                    const credit = rel.entity1_credit;
-                    if (!credit) return;
                     const tgt = rel.entity1?.gid;
                     if (!tgt) return;
+                    // Use entity1.name as the fallback when entity1_credit is
+                    // empty — MB displays the entity name when no credit
+                    // override is set, so the visible credit IS the entity
+                    // name. Without this, Discogs ANV "Idol" wouldn't default
+                    // to "Billy Idol" because the existing rels carry empty
+                    // entity1_credit (#105).
+                    const credit = rel.entity1_credit || rel.entity1?.name;
+                    if (!credit) return;
                     if (!counts.has(tgt)) counts.set(tgt, new Map());
                     const m = counts.get(tgt);
                     m.set(credit, (m.get(credit) || 0) + 1);
@@ -445,9 +451,16 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const same = (value === '' || value === displayName);
                 credInput.style.background = same ? CRED_BG_SAME : CRED_BG_DIFFERENT;
             }
-            // Initial value: most-frequent existing MB credit, or Discogs
-            // display name as fallback.
+            // Initial value priority (#105):
+            //   1. User's saved override from a prior session (`r.creditOverride`
+            //      — set by preflight from the IDB record).
+            //   2. MB's most-frequent existing credit on this release for the
+            //      resolved entity.
+            //   3. Discogs display name.
             function pickPrefill(mbUrl) {
+                if (r.creditOverride !== undefined && r.creditOverride !== null && r.creditOverride !== '') {
+                    return r.creditOverride;
+                }
                 if (mbUrl) {
                     const mbid = (String(mbUrl).split('/').pop() || '').replace(/[^a-f0-9-]/gi, '').slice(0, 36);
                     if (mbid && existingCreditByMbid.has(mbid)) return existingCreditByMbid.get(mbid);
@@ -457,6 +470,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             credInput.value = pickPrefill(r.mbUrl);
             credInput._userTouched = false;
             refreshCredBg();
+            // Persist user's edits to IDB so the next session pre-fills with
+            // their choice (#105). Debounced so we don't write on every
+            // keystroke.
+            let _credSaveTimer;
             credInput.addEventListener('input', () => {
                 credInput._userTouched = true;
                 // Mirror into the side-map immediately. The mbUrl on the
@@ -466,6 +483,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const url = credInput._activeMbUrl;
                 if (url) creditOverrides.set(url, credInput.value);
                 refreshCredBg();
+                clearTimeout(_credSaveTimer);
+                _credSaveTimer = setTimeout(() => {
+                    const idbKey = parseDiscogsUrl(r.entity?.resource_url)?.key;
+                    if (idbKey) writeIdbRecord(idbKey, { creditOverride: credInput.value });
+                }, 500);
             });
             credInput._activeMbUrl = r.mbUrl;
             if (r.mbUrl) creditOverrides.set(r.mbUrl, credInput.value);
