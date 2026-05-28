@@ -14,6 +14,20 @@
     "notes": "Spotify has two valid editions of this album (US-only `41aeU…` and worldwide `0X9oLn…`); both have 14 tracks and identical metadata, so the script can't distinguish them. Brave's result order picks the first canonical hit, which is non-deterministic across runs. Either is acceptable."
   },
   {
+    "name": "Menahan Street Band — The Exciting Sounds of (vinyl)",
+    "mbid": "3ce2dee2-975f-4e46-849c-b68a8a59f9d4",
+    "tags": "discogs-in-rels vinyl-edition",
+    "expect": {
+      "spotifyOneOf": [
+        "open.spotify.com/album/41aeU2fQpLCNn3n1AVqCIF",
+        "open.spotify.com/album/0X9oLn2APMvGOIsogM1TSp"
+      ],
+      "discogs":  "www.discogs.com/release/17630890",
+      "bandcamp": "menahanstreetband.bandcamp.com/album/the-exciting-sounds-of-menahan-street-band"
+    },
+    "notes": "Vinyl edition of the same release group as the digital fixture (3f6797b2…). Discogs link in MB rels is the vinyl-specific release 17630890; Spotify/Wikidata still resolve to the worldwide-edition album because that's what Wikidata's P2205 anchors the whole release group to."
+  },
+  {
     "name": "Medeski, Martin & Wood — The Stone: Issue Four",
     "mbid": "4cefc624-2b8e-4f84-82cc-296b5d7e46a5",
     "tags": "niche-release multiple-spotify-matches",

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.191105
+// @version      2026.5.28.192648
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -620,6 +620,33 @@ async function fetchBandcampMeta(albumUrl) {
     };
 }
 
+// Bandcamp's own search at /search?item_type=a returns a server-rendered HTML
+// list of album results — works without any token in a real browser (the
+// browser carries Bandcamp's CF clearance cookie). Try this BEFORE the generic
+// web-search engines: when both are available it's faster, lower-noise (only
+// album results), and not subject to Brave/DDG rate-limits. Falls through to
+// `searchWeb` if Cloudflare's bot challenge fires from a cookie-less context.
+async function searchBandcampNative(query, label) {
+    const url = `https://bandcamp.com/search?q=${encodeURIComponent(query)}&item_type=a`;
+    appendLog(label, `Native: ${url}`);
+    const res = await gmGet(url, { headers: { 'Accept': 'text/html,application/xhtml+xml' } });
+    appendLog(label, `Native: status=${res.status} ${res.responseText.length}b in ${res.ms}ms`);
+    if (!res.ok) return [];
+    // Cloudflare's interstitial is ~3 KB and titled "Client Challenge". When we
+    // see it, log it and let the caller fall through to web search — in a real
+    // browser with prior Bandcamp cookies this branch is skipped.
+    if (/<title>\s*Just a moment/i.test(res.responseText) || /<title>\s*Client Challenge/i.test(res.responseText) || res.responseText.length < 5000) {
+        appendLog(label, `Native: blocked by Cloudflare challenge (cookie-less request) — falling through`, 'warn');
+        return [];
+    }
+    // Bandcamp's search-result anchors point at full *.bandcamp.com/album/<slug>
+    // URLs. Strip query strings and dedupe.
+    const urls = [...res.responseText.matchAll(/href="(https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\/[^"?#]+)/gi)].map(m => m[1]);
+    const unique = [...new Set(urls)];
+    appendLog(label, `Native: ${unique.length} unique album link(s)`, unique.length ? 'ok' : 'warn');
+    return unique.slice(0, 5);
+}
+
 async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
     const label = 'Bandcamp';
     let albumUrl = existingUrl;
@@ -634,10 +661,19 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
         appendLog(label, `Cache hit: ${albumUrl}`, 'ok');
         source = 'cache';
     } else {
-        const q = `site:bandcamp.com/album/ "${artist}" "${album}"`;
-        // Bandcamp candidate pages are bigger (~300 KB) than Spotify embeds —
-        // limit candidates to 3 to keep total fetch cost reasonable.
-        const candidates = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), label, 3);
+        // Priority 1: Bandcamp's own search (works when the user's browser
+        // has Bandcamp's Cloudflare clearance cookie — the common case after
+        // any prior Bandcamp visit). Skip when blocked by the CF challenge.
+        let candidates = await searchBandcampNative(`${artist} ${album}`, label);
+        let candidateSource = 'native';
+        if (!candidates.length) {
+            // Priority 2: generic web search via Brave/DDG. Bandcamp candidate
+            // pages are bigger (~300 KB) than Spotify embeds — cap at 3 to
+            // keep total fetch cost reasonable.
+            const q = `site:bandcamp.com/album/ "${artist}" "${album}"`;
+            candidates = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), label, 3);
+            candidateSource = 'search';
+        }
         if (!candidates.length) { updateRow('bandcamp', { url: null, mbTracks, remoteTracks: null }); return; }
         appendLog(label, `Verifying ${candidates.length} candidate(s) by track count + title…`);
         const best = await pickBestCandidate(candidates, fetchBandcampMeta, mbTracks, album, label);
@@ -650,7 +686,7 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
         bestMeta = best.meta;
         appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
         cacheSet(mbid, 'bandcamp', albumUrl);
-        source = 'search';
+        source = candidateSource;
     }
 
     const meta = bestMeta || await fetchBandcampMeta(albumUrl);

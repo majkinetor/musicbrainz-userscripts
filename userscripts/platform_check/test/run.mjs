@@ -97,27 +97,53 @@ const context = await browser.newContext({
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
 });
 
+// Pre-warm bandcamp.com so the context picks up Cloudflare's clearance
+// cookie. The userscript's Bandcamp-native search path requires it; without
+// this warm-up CF returns a "Client Challenge" interstitial to every
+// GM_xmlhttpRequest. Real users hit this naturally after any prior Bandcamp
+// visit; the test harness has to do it explicitly.
+{
+    const warm = await context.newPage();
+    try {
+        log(c.grey('pre-warming bandcamp.com for Cloudflare clearance…'));
+        await warm.goto('https://bandcamp.com/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+        // Give CF's auto-challenge time to resolve and write the cookie.
+        await warm.waitForTimeout(3000);
+        const cookies = await context.cookies('https://bandcamp.com/');
+        log(c.grey(`  bandcamp cookies in context: ${cookies.map(c => c.name).join(', ') || '(none)'}`));
+    } catch (e) {
+        log(c.amber(`  warm-up failed: ${e.message} — Bandcamp native search will likely fall through`));
+    } finally {
+        await warm.close().catch(() => {});
+    }
+}
+
 // ──── GM_xmlhttpRequest bridge ────────────────────────────────────────────
 // Each new page gets the same binding installed. The binding forwards fetches
 // to Node (no CORS) and returns the response. Network errors are surfaced via
 // `_networkError: true` so the in-page shim can dispatch to onerror vs onload
 // the same way real Tampermonkey does.
+// Use the playwright BrowserContext's `request` (an APIRequestContext) instead
+// of a raw Node fetch. That way the binding shares the context's cookie jar —
+// when we pre-warm bandcamp.com to pass Cloudflare's challenge, the resulting
+// cf_clearance cookie is automatically attached to subsequent GM_xhr calls
+// (Tampermonkey behaves the same way in real browsers).
 await context.exposeBinding('__gmFetch', async (_source, opts) => {
     const t0 = Date.now();
     try {
-        const resp = await fetch(opts.url, {
+        const resp = await context.request.fetch(opts.url, {
             method:  opts.method || 'GET',
             headers: opts.headers || {},
-            redirect: 'follow',
+            maxRedirects: 20,
         });
         const body = await resp.text();
         return {
-            ok:           resp.ok,
-            status:       resp.status,
-            statusText:   resp.statusText,
-            finalUrl:     resp.url,
+            ok:           resp.ok(),
+            status:       resp.status(),
+            statusText:   resp.statusText(),
+            finalUrl:     resp.url(),
             responseText: body,
-            headers:      Object.fromEntries([...resp.headers.entries()]),
+            headers:      resp.headers(),
             ms:           Date.now() - t0,
         };
     } catch (e) {
