@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.220447
+// @version      2026.5.28.222539
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -43,6 +43,20 @@ container.innerHTML = `
   #sidebar .online-search-box a img.external,
   #sidebar .online-search-box a img[src*="external"] { display: none !important; }
   .online-search-box .pc-icon-btn:hover { background: #ECECEC; color: #222; }
+  /* Circled ✓ — applied when the platform URL came from an MB url-relationship
+   * (existing rel), as distinct from a found-via-Wikidata/search result. Layered
+   * on top of the colour-tint (green = fresh, steel-blue = cache hit). */
+  .online-search-box .pc-ico-circled {
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    width: 13px;
+    height: 13px;
+    line-height: 11px;
+    text-align: center;
+    font-size: 9px;
+    box-sizing: border-box;
+    display: inline-block;
+  }
 </style>
 <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 8px;">
   <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
@@ -214,21 +228,26 @@ function gmGet(url, { responseType, headers, timeout = 15000 } = {}) {
 }
 
 // ─── UI updater ────────────────────────────────────────────────────────────
-function updateRow(p, { url, mbTracks, remoteTracks, year, label, source }) {
+// `source` is the original origin of the URL ('MB rels' / 'Wikidata' / 'search' /
+// 'native' / 'API search'). `fromCache` is independent — true when this row was
+// resolved from the local cache, regardless of which path originally found it.
+// Two visual signals get layered:
+//   colour tint    — green when fromCache=false, steel-blue when fromCache=true
+//   circled icon   — when source includes 'MB rels' (the URL was put there by
+//                    an MB editor, not discovered by us)
+function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache }) {
     const a   = document.getElementById(`mb-online-${p}`);
     const ico = document.getElementById(`ico-${p}`);
     const val = document.getElementById(`val-${p}`);
     const meta = document.getElementById(`meta-${p}`);
     if (url) a.href = url;
 
+    const fromMbRels = source === 'MB rels';
+
     if (remoteTracks != null) {
         val.textContent = `(${remoteTracks}/${mbTracks} trks)`;
         if (parseInt(remoteTracks, 10) === parseInt(mbTracks, 10)) {
-            // Same ✓ glyph for fresh + cache hits, distinguished by color:
-            // bright green (#008000) = freshly verified this session;
-            // muted steel-blue (#5B82B0) = remembered from a previous run.
-            // The ↻ button re-fetches if a cached entry might be stale.
-            const cacheTone = source === 'cache' ? '#5B82B0' : '#008000';
+            const cacheTone = fromCache ? '#5B82B0' : '#008000';
             ico.textContent = '✓';
             ico.style.color = cacheTone;
             val.style.color = cacheTone;
@@ -244,11 +263,18 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source }) {
         val.textContent = `(no match)`;
     }
 
+    // Circled icon only for confirmed-match-from-MB-rels — circles around ~/?/×
+    // would be visually noisy and the source distinction matters less there.
+    ico.classList.toggle('pc-ico-circled', fromMbRels && ico.textContent === '✓');
+
     const bits = [];
-    if (year)   bits.push(year);
-    if (label)  bits.push(label);
-    // Don't repeat "via cache" — the ☑ icon already conveys that.
-    if (source && source !== 'cache') bits.push(`<span style="color:#BBB;">via ${source}</span>`);
+    if (year)  bits.push(year);
+    if (label) bits.push(label);
+    // Suppress the "via <source>" line for fromCache rows (the blue tint
+    // already conveys cache state) and for MB-rels rows (the circled icon
+    // conveys origin). Show provenance only for fresh non-MB-rels rows where
+    // the source is meaningful to the user (Wikidata / search / etc.).
+    if (source && !fromCache && !fromMbRels) bits.push(`<span style="color:#BBB;">via ${source}</span>`);
     meta.innerHTML = bits.join(' · ');
 }
 
@@ -436,17 +462,20 @@ function mbDataSet(mbid, entry) {
     GM_setValue(mbDataKey(mbid), JSON.stringify(entry));
 }
 
-// Apply a cached row to the UI and log the hit. Centralised so every scanner
-// uses the same path on cache-hit (and the ☑ icon convention stays consistent).
+// Apply a cached row to the UI and log the hit. Preserves the cache entry's
+// original source (e.g. 'MB rels', 'Wikidata', 'search') so updateRow can
+// still decide whether to circle the ✓; cache-state is conveyed separately
+// via the `fromCache: true` flag (which drives the steel-blue tint).
 function applyCachedRow(platform, label, cached, mbTracks) {
-    appendLog(label, `Cache hit: url=${cached.url || '(no match)'}  tracks=${cached.tracks ?? '?'}  year=${cached.year || '?'}  label=${cached.label || '?'}`, 'ok');
+    appendLog(label, `Cache hit: url=${cached.url || '(no match)'}  tracks=${cached.tracks ?? '?'}  year=${cached.year || '?'}  label=${cached.label || '?'}  src=${cached.source || '?'}`, 'ok');
     updateRow(platform, {
         url:          cached.url,
         mbTracks,
         remoteTracks: cached.tracks ?? null,
         year:         cached.year   ?? null,
         label:        cached.label  ?? null,
-        source:       'cache',
+        source:       cached.source || null,
+        fromCache:    true,
     });
 }
 
