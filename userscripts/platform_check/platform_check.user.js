@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.215854
+// @version      2026.5.28.220447
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -603,7 +603,7 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
-async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid }) {
+async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
     const label = 'Discogs';
 
     // Positive cache hit short-circuits before any API call. Cached "no
@@ -632,7 +632,11 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid }) {
     } else {
         // Discogs HTTP UI is Cloudflare-protected (403); the public API works
         // without an auth token for search + detail (~25 req/min unauth'd).
-        const apiUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(`${artist} ${album}`)}&type=release&per_page=5`;
+        // For VA compilations drop the artist term — Discogs doesn't credit
+        // compilations to a literal "Various Artists" string, so including
+        // it in the query produces 0 results.
+        const apiQ = isVariousArtists ? album : `${artist} ${album}`;
+        const apiUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(apiQ)}&type=release&per_page=5`;
         appendLog(label, `API search: ${apiUrl}`);
         const sr = await gmGet(apiUrl);
         appendLog(label, `API search: status=${sr.status} ${sr.responseText.length}b in ${sr.ms}ms`);
@@ -877,10 +881,15 @@ function parseMbFromDom() {
         const mbTracks = document.querySelectorAll('table.tbl.medium tbody tr > td.pos').length
                        || document.querySelectorAll('tr.track').length;
 
-        // Release-group MBID — present as a /release-group/<mbid> link in the
-        // sidebar's release-information block.
-        const rgLink = document.querySelector('a[href*="/release-group/"]');
-        const releaseGroupMbid = rgLink?.getAttribute('href').match(/release-group\/([0-9a-f-]{36})/)?.[1] || null;
+        // Release-group MBID — usually present as a /release-group/<mbid>
+        // anchor in the release-information sidebar block. Some skins or
+        // partially-rendered pages have it only in an inline data attribute
+        // or a meta tag; cast a wider net.
+        const rgFromHref = [...document.querySelectorAll('a[href*="/release-group/"]')]
+            .map(a => a.getAttribute('href').match(/release-group\/([0-9a-f-]{36})/)?.[1])
+            .find(Boolean);
+        const rgFromText = document.body.innerHTML.match(/release-group\/([0-9a-f-]{36})/)?.[1];
+        const releaseGroupMbid = rgFromHref || rgFromText || null;
 
         // Existing URL rels. MB's sidebar has an "External links" section
         // listing platform-specific URLs. Grab every outbound link in the
