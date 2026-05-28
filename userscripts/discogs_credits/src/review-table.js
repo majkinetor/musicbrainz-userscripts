@@ -170,34 +170,72 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         const existingCreditByMbid = computeExistingCreditByMbid();
         function computeExistingCreditByMbid() {
             const counts = new Map(); // mbid -> Map(credit -> count)
-            try {
-                const root = pageWindow?.MB?.relationshipEditor?.state?.relationshipsBySource;
-                if (!root) return new Map();
-                walk(root);
-                function walk(node) {
-                    if (!node) return;
-                    if (Array.isArray(node)) { for (const r of node) tally(r); return; }
-                    if (typeof node === 'object') {
-                        for (const v of Object.values(node)) walk(v);
-                    }
-                }
-                function tally(rel) {
-                    if (!rel || rel._status === 2) return; // skip removed
-                    const tgt = rel.entity1?.gid;
-                    if (!tgt) return;
-                    // Use entity1.name as the fallback when entity1_credit is
+            function tally(rel) {
+                if (!rel || rel._status === 2) return; // skip removed
+                // Check both ends — work→artist rels list the artist as
+                // entity1 (credit on entity1_credit), but other rel
+                // orientations may put the credited entity on entity0.
+                for (const side of [1, 0]) {
+                    const entity = rel[`entity${side}`];
+                    const tgt = entity?.gid;
+                    if (!tgt) continue;
+                    // Use entity name as fallback when entity{N}_credit is
                     // empty — MB displays the entity name when no credit
                     // override is set, so the visible credit IS the entity
                     // name. Without this, Discogs ANV "Idol" wouldn't default
                     // to "Billy Idol" because the existing rels carry empty
                     // entity1_credit (#105).
-                    const credit = rel.entity1_credit || rel.entity1?.name;
-                    if (!credit) return;
+                    const credit = rel[`entity${side}_credit`] || entity.name;
+                    if (!credit) continue;
                     if (!counts.has(tgt)) counts.set(tgt, new Map());
                     const m = counts.get(tgt);
                     m.set(credit, (m.get(credit) || 0) + 1);
                 }
-            } catch (e) { /* MB state shape changed -- best effort, skip */ }
+            }
+            function walk(node) {
+                if (!node) return;
+                if (Array.isArray(node)) { for (const r of node) tally(r); return; }
+                if (typeof node === 'object') {
+                    for (const v of Object.values(node)) walk(v);
+                }
+            }
+            // Pass 1: relationshipsBySource — covers release→artist and
+            // recording→artist rels.
+            try {
+                const root = pageWindow?.MB?.relationshipEditor?.state?.relationshipsBySource;
+                if (root) walk(root);
+            } catch (e) { /* shape changed — fall through */ }
+            // Pass 2: walk recordings → relatedWorks → work.relationships.
+            // Work→artist rels (composer/lyricist/writer) often don't appear
+            // in `relationshipsBySource` for the release-edit page, so the
+            // pass 1 walker misses them. #105: "Daniel Foder" and "Brian
+            // Profilio" defaults weren't picked up because they live in
+            // work rels on a recording-linked work.
+            try {
+                const MB = pageWindow?.MB;
+                const mediums = MB?.relationshipEditor?.state?.mediums;
+                if (mediums && MB?.tree?.iterate) {
+                    for (const mEntry of MB.tree.iterate(mediums)) {
+                        const medium = Array.isArray(mEntry) ? mEntry[1] : mEntry;
+                        const tracks = medium?.tracks;
+                        if (!tracks) continue;
+                        for (const tEntry of MB.tree.iterate(tracks)) {
+                            const trackObj = Array.isArray(tEntry) ? tEntry[1] : tEntry;
+                            const rw = trackObj?.relatedWorks;
+                            if (!rw || !rw.size) continue;
+                            for (const wEntry of MB.tree.iterate(rw)) {
+                                const rwObj = Array.isArray(wEntry) ? wEntry[1] : wEntry;
+                                const work = rwObj?.work ?? rwObj;
+                                const rels = work?.relationships;
+                                if (!rels) continue;
+                                for (const rEntry of MB.tree.iterate(rels)) {
+                                    tally(Array.isArray(rEntry) ? rEntry[1] : rEntry);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) { /* shape changed — fall through */ }
             // Reduce to mbid -> most-frequent-credit.
             const out = new Map();
             for (const [mbid, m] of counts) {

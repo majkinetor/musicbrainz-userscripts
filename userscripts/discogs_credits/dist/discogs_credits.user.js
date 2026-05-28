@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.28.155322
+// @version      2026.5.28.160220
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2241,29 +2241,58 @@
       const existingCreditByMbid = computeExistingCreditByMbid();
       function computeExistingCreditByMbid() {
         const counts = /* @__PURE__ */ new Map();
-        try {
-          let walk = function(node) {
-            if (!node) return;
-            if (Array.isArray(node)) {
-              for (const r of node) tally(r);
-              return;
-            }
-            if (typeof node === "object") {
-              for (const v of Object.values(node)) walk(v);
-            }
-          }, tally = function(rel) {
-            if (!rel || rel._status === 2) return;
-            const tgt = rel.entity1?.gid;
-            if (!tgt) return;
-            const credit = rel.entity1_credit || rel.entity1?.name;
-            if (!credit) return;
+        function tally(rel) {
+          if (!rel || rel._status === 2) return;
+          for (const side of [1, 0]) {
+            const entity = rel[`entity${side}`];
+            const tgt = entity?.gid;
+            if (!tgt) continue;
+            const credit = rel[`entity${side}_credit`] || entity.name;
+            if (!credit) continue;
             if (!counts.has(tgt)) counts.set(tgt, /* @__PURE__ */ new Map());
             const m = counts.get(tgt);
             m.set(credit, (m.get(credit) || 0) + 1);
-          };
+          }
+        }
+        function walk(node) {
+          if (!node) return;
+          if (Array.isArray(node)) {
+            for (const r of node) tally(r);
+            return;
+          }
+          if (typeof node === "object") {
+            for (const v of Object.values(node)) walk(v);
+          }
+        }
+        try {
           const root = pageWindow?.MB?.relationshipEditor?.state?.relationshipsBySource;
-          if (!root) return /* @__PURE__ */ new Map();
-          walk(root);
+          if (root) walk(root);
+        } catch (e) {
+        }
+        try {
+          const MB = pageWindow?.MB;
+          const mediums = MB?.relationshipEditor?.state?.mediums;
+          if (mediums && MB?.tree?.iterate) {
+            for (const mEntry of MB.tree.iterate(mediums)) {
+              const medium = Array.isArray(mEntry) ? mEntry[1] : mEntry;
+              const tracks = medium?.tracks;
+              if (!tracks) continue;
+              for (const tEntry of MB.tree.iterate(tracks)) {
+                const trackObj = Array.isArray(tEntry) ? tEntry[1] : tEntry;
+                const rw = trackObj?.relatedWorks;
+                if (!rw || !rw.size) continue;
+                for (const wEntry of MB.tree.iterate(rw)) {
+                  const rwObj = Array.isArray(wEntry) ? wEntry[1] : wEntry;
+                  const work = rwObj?.work ?? rwObj;
+                  const rels = work?.relationships;
+                  if (!rels) continue;
+                  for (const rEntry of MB.tree.iterate(rels)) {
+                    tally(Array.isArray(rEntry) ? rEntry[1] : rEntry);
+                  }
+                }
+              }
+            }
+          }
         } catch (e) {
         }
         const out = /* @__PURE__ */ new Map();

@@ -68,5 +68,10 @@
         "name": "Quantic - The 5th Exotic",
         "url":  "https://musicbrainz.org/release/5cbf9bb5-6b4d-4b4e-843e-0db79f8f3a58",
         "tags": "debug bug-35"
+    },
+    {
+        "name": "The Exciting Sounds of Menahan Street Band",
+        "url":  "https://musicbrainz.org/release/3ce2dee2-975f-4e46-849c-b68a8a59f9d4",
+        "tags": "debug bug-105 work-credits"
     }
 ]
