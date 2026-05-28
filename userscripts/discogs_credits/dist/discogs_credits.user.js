@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.28.090548
+// @version      2026.5.28.092118
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -1867,7 +1867,7 @@
     const searchName = entity.name;
     const displayName = kind === "artist" ? entity.anv && entity.anv.trim() || entity.name : entity.name;
     const discogsHref = entity.resource_url.replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, "https://www.discogs.com/$1/$2");
-    function buildResolved(mbUrl, mbName, mbDisambig, via2, actualKind = kind, fromCache = false, urlLinkedIds2) {
+    function buildResolved(mbUrl, mbName, mbDisambig, via2, actualKind = kind, fromCache = false, urlLinkedIds2, creditOverride) {
       return {
         type: "resolved",
         entityType: actualKind,
@@ -1877,6 +1877,11 @@
         mbUrl,
         mbName,
         mbDisambig,
+        // User's saved "Credited as" override from a prior session
+        // (IDB `creditOverride` field). Review-table reads this in
+        // `pickPrefill` to populate the field. Undefined when no
+        // prior override exists. #105.
+        creditOverride,
         // `urlLinkedIds` — MBIDs that have a relation to this Discogs URL,
         //                  harvested from the URL lookup done during
         //                  preflight. The review-table uses this to render
@@ -1899,7 +1904,7 @@
         logEntry: { displayName, discogsHref, mbUrl, mbName, mbDisambig, via: via2, fromCache }
       };
     }
-    function buildAttention(nameMatches2, nameSearchFailed2, ambiguityReason, urlLinkedIds2) {
+    function buildAttention(nameMatches2, nameSearchFailed2, ambiguityReason, urlLinkedIds2, creditOverride) {
       return {
         type: "attention",
         entityType: kind,
@@ -1907,6 +1912,8 @@
         displayName,
         discogsHref,
         nameMatches: nameMatches2 || [],
+        // Saved "Credited as" override — see buildResolved. #105.
+        creditOverride,
         // Same `urlLinkedIds` contract as on the resolved shape — review-table
         // uses it to skip the per-row URL fetch even for attention rows once
         // the user picks an MBID from the candidate list.
@@ -1941,7 +1948,8 @@
             via2,
             cachedRec.entityType,
             true,
-            cachedLinkedIds
+            cachedLinkedIds,
+            cachedRec.creditOverride
           );
         }
         const info = await fetchMbEntityInfo(cachedRec.entityType, cachedRec.mbid);
@@ -1958,11 +1966,12 @@
           via2,
           cachedRec.entityType,
           true,
-          cachedLinkedIds
+          cachedLinkedIds,
+          cachedRec.creditOverride
         );
       }
       if (cachedRec && Array.isArray(cachedRec.nameMatches)) {
-        return buildAttention(cachedRec.nameMatches, false, null, cachedRec.urlLinkedIds);
+        return buildAttention(cachedRec.nameMatches, false, null, cachedRec.urlLinkedIds, cachedRec.creditOverride);
       }
     }
     const [nameJson, urlJson] = await Promise.all([
@@ -2240,10 +2249,10 @@
             }
           }, tally = function(rel) {
             if (!rel || rel._status === 2) return;
-            const credit = rel.entity1_credit;
-            if (!credit) return;
             const tgt = rel.entity1?.gid;
             if (!tgt) return;
+            const credit = rel.entity1_credit || rel.entity1?.name;
+            if (!credit) return;
             if (!counts.has(tgt)) counts.set(tgt, /* @__PURE__ */ new Map());
             const m = counts.get(tgt);
             m.set(credit, (m.get(credit) || 0) + 1);
@@ -2432,6 +2441,9 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           credInput.style.background = same ? CRED_BG_SAME : CRED_BG_DIFFERENT;
         }
         function pickPrefill(mbUrl) {
+          if (r.creditOverride !== void 0 && r.creditOverride !== null && r.creditOverride !== "") {
+            return r.creditOverride;
+          }
           if (mbUrl) {
             const mbid = (String(mbUrl).split("/").pop() || "").replace(/[^a-f0-9-]/gi, "").slice(0, 36);
             if (mbid && existingCreditByMbid.has(mbid)) return existingCreditByMbid.get(mbid);
@@ -2441,11 +2453,17 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         credInput.value = pickPrefill(r.mbUrl);
         credInput._userTouched = false;
         refreshCredBg();
+        let _credSaveTimer;
         credInput.addEventListener("input", () => {
           credInput._userTouched = true;
           const url = credInput._activeMbUrl;
           if (url) creditOverrides.set(url, credInput.value);
           refreshCredBg();
+          clearTimeout(_credSaveTimer);
+          _credSaveTimer = setTimeout(() => {
+            const idbKey = parseDiscogsUrl(r.entity?.resource_url)?.key;
+            if (idbKey) writeIdbRecord(idbKey, { creditOverride: credInput.value });
+          }, 500);
         });
         credInput._activeMbUrl = r.mbUrl;
         if (r.mbUrl) creditOverrides.set(r.mbUrl, credInput.value);

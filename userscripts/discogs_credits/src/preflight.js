@@ -65,10 +65,15 @@ async function resolveEntity(entity, kind, opts) {
     const discogsHref = entity.resource_url
         .replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, 'https://www.discogs.com/$1/$2');
 
-    function buildResolved(mbUrl, mbName, mbDisambig, via, actualKind = kind, fromCache = false, urlLinkedIds) {
+    function buildResolved(mbUrl, mbName, mbDisambig, via, actualKind = kind, fromCache = false, urlLinkedIds, creditOverride) {
         return {
             type: 'resolved', entityType: actualKind, entity,
             displayName, discogsHref, mbUrl, mbName, mbDisambig,
+            // User's saved "Credited as" override from a prior session
+            // (IDB `creditOverride` field). Review-table reads this in
+            // `pickPrefill` to populate the field. Undefined when no
+            // prior override exists. #105.
+            creditOverride,
             // `urlLinkedIds` — MBIDs that have a relation to this Discogs URL,
             //                  harvested from the URL lookup done during
             //                  preflight. The review-table uses this to render
@@ -92,10 +97,12 @@ async function resolveEntity(entity, kind, opts) {
         };
     }
 
-    function buildAttention(nameMatches, nameSearchFailed, ambiguityReason, urlLinkedIds) {
+    function buildAttention(nameMatches, nameSearchFailed, ambiguityReason, urlLinkedIds, creditOverride) {
         return {
             type: 'attention', entityType: kind, entity,
             displayName, discogsHref, nameMatches: nameMatches || [],
+            // Saved "Credited as" override — see buildResolved. #105.
+            creditOverride,
             // Same `urlLinkedIds` contract as on the resolved shape — review-table
             // uses it to skip the per-row URL fetch even for attention rows once
             // the user picks an MBID from the candidate list.
@@ -148,7 +155,8 @@ async function resolveEntity(entity, kind, opts) {
             if (cachedRec.name) {
                 return buildResolved(cachedRec.mbUrl, cachedRec.name,
                                      cachedRec.disambiguation || '', via,
-                                     cachedRec.entityType, true, cachedLinkedIds);
+                                     cachedRec.entityType, true, cachedLinkedIds,
+                                     cachedRec.creditOverride);
             }
             // Name missing — fetch it once, write back, return.
             const info = await fetchMbEntityInfo(cachedRec.entityType, cachedRec.mbid);
@@ -159,7 +167,8 @@ async function resolveEntity(entity, kind, opts) {
                 });
             }
             return buildResolved(cachedRec.mbUrl, info.name, info.disambiguation,
-                                 via, cachedRec.entityType, true, cachedLinkedIds);
+                                 via, cachedRec.entityType, true, cachedLinkedIds,
+                                 cachedRec.creditOverride);
         }
         if (cachedRec && Array.isArray(cachedRec.nameMatches)) {
             // Negative cache hit — we previously ran MB queries for this
@@ -167,7 +176,7 @@ async function resolveEntity(entity, kind, opts) {
             // remembered candidate list without re-querying MB so that an
             // immediate page reload doesn't redo every unresolved-entity
             // round-trip. Use the "🔄 Refresh from MB" button to bypass.
-            return buildAttention(cachedRec.nameMatches, false, null, cachedRec.urlLinkedIds);
+            return buildAttention(cachedRec.nameMatches, false, null, cachedRec.urlLinkedIds, cachedRec.creditOverride);
         }
     }
 
