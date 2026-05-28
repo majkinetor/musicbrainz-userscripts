@@ -23,7 +23,7 @@
 1. Button to add Discogs link present immediately after creating artist ([#78](https://github.com/majkinetor/musicbrainz-userscripts/issues/78))
 1. Slow entity fetch ([#87](https://github.com/majkinetor/musicbrainz-userscripts/issues/87))
 
-## 2026.5.25
+## [2026.5.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/discogs_credits%2F2026.5.25)
 
 ### Features
 
