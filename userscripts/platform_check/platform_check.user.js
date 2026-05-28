@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.202214
+// @version      2026.5.28.204114
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -527,9 +527,13 @@ async function fetchSpotifyMeta(albumUrl) {
 async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidataSpotifyId, isVariousArtists }) {
     const label = 'Spotify';
 
-    // Cache hit (full row) — no network calls at all on re-visit.
+    // Cache hit WITH URL → use it and skip everything else. A cached "no
+    // match" (url:null) is NOT a short-circuit — a fresh Wikidata answer
+    // can still override it. Only if Wikidata also has nothing AND no
+    // existing rel do we fall back to rendering the cached no-match
+    // (without rerunning search engines; ↻ forces full retry).
     const cached = cacheGet(mbid, 'spotify');
-    if (cached && (!existingUrl || existingUrl === cached.url)) {
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
         applyCachedRow('spotify', label, cached, mbTracks);
         return;
     }
@@ -545,6 +549,13 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
         albumUrl = `https://open.spotify.com/album/${wikidataSpotifyId}`;
         appendLog(label, `Wikidata answer: ${albumUrl}`, 'ok');
         source = 'Wikidata';
+    } else if (cached) {
+        // Cache says "no match", no MB rel, Wikidata had no answer — surface
+        // the cached state without re-running web search (the user already
+        // saw this; they have ↻ to force a fresh search).
+        appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
+        applyCachedRow('spotify', label, cached, mbTracks);
+        return;
     } else {
         // Restrict the `site:` filter to the /album/ path so artist pages,
         // playlists, tracks, and shows never enter the candidate list. Use
@@ -595,10 +606,16 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
 async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid }) {
     const label = 'Discogs';
 
-    // Cache hit short-circuits before any API call. Invalidate only if the
-    // release's MB rels have started pointing at a different Discogs URL.
+    // Positive cache hit short-circuits before any API call. Cached "no
+    // match" only short-circuits when there's no MB rel either — we still
+    // want a freshly-added MB rel to replace a stale no-match.
     const cached = cacheGet(mbid, 'discogs');
-    if (cached && (!existingUrl || existingUrl === cached.url)) {
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
+        applyCachedRow('discogs', label, cached, mbTracks);
+        return;
+    }
+    if (cached && !cached.url && !existingUrl) {
+        appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('discogs', label, cached, mbTracks);
         return;
     }
@@ -728,7 +745,12 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const label = 'Bandcamp';
 
     const cached = cacheGet(mbid, 'bandcamp');
-    if (cached && (!existingUrl || existingUrl === cached.url)) {
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
+        applyCachedRow('bandcamp', label, cached, mbTracks);
+        return;
+    }
+    if (cached && !cached.url && !existingUrl) {
+        appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('bandcamp', label, cached, mbTracks);
         return;
     }
@@ -878,18 +900,17 @@ async function runScans() {
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
     appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}`);
 
-    // Wikidata lookup — fires only when no existing rel + no cached URL would
-    // already satisfy Spotify, since those skip the search path anyway. We
-    // still fire it speculatively when those exist (cheap; one SPARQL call),
-    // because the answer can populate Apple Music / AllMusic rows later.
-    // Skip the SPARQL call when Spotify is already covered — either by an
-    // existing MB rel, OR by any cache entry (a cached "no match" still
-    // counts; the user has the ↻ button to retry on demand).
+    // Wikidata lookup — fires whenever we don't already have a positive Spotify
+    // URL. A cached "no match" (url:null) doesn't block Wikidata: it's a cheap
+    // independent data source curated by humans, and the cache may have been
+    // written before Wikidata had this album indexed (or before the user
+    // hit ↻ themselves).
+    const spotifyCache = cacheGet(mbid, 'spotify');
     let wd = null;
-    if (!existing.spotify && !cacheGet(mbid, 'spotify')) {
-        wd = await lookupWikidata(releaseGroupMbid, mbid);
+    if (existing.spotify || spotifyCache?.url) {
+        appendLog('Wikidata', `skipped — Spotify URL already in ${existing.spotify ? 'MB rels' : 'cache'}`);
     } else {
-        appendLog('Wikidata', `skipped — Spotify already covered by MB rels or cache`);
+        wd = await lookupWikidata(releaseGroupMbid, mbid);
     }
 
     // Seed search fallback URLs.
