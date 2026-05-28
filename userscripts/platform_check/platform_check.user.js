@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.223501
+// @version      2026.5.28.233046
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -16,6 +16,7 @@
 // @connect      www.discogs.com
 // @connect      open.spotify.com
 // @connect      bandcamp.com
+// @connect      api.deezer.com
 // @connect      *
 // ==/UserScript==
 (function () {
@@ -63,11 +64,11 @@ container.innerHTML = `
   <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
 </div>
 <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
-  ${['spotify', 'discogs', 'bandcamp'].map(p => `
+  ${['spotify', 'discogs', 'bandcamp', 'deezer'].map(p => `
   <div id="row-${p}" style="display: flex; flex-direction: column; gap: 2px;">
     <div style="display: flex; align-items: center;">
       <span id="ico-${p}" style="margin-right: 6px; color: #888; font-size: 11px; min-width: 14px;">⚪</span>
-      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${p === 'spotify' ? '#1DB954' : p === 'bandcamp' ? '#629AA9' : '#222'}; text-decoration: none; font-weight: 600; flex-grow: 1;">${p[0].toUpperCase() + p.slice(1)}</a>
+      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${ {spotify:'#1DB954', bandcamp:'#629AA9', deezer:'#A238FF'}[p] || '#222' }; text-decoration: none; font-weight: 600; flex-grow: 1;">${p[0].toUpperCase() + p.slice(1)}</a>
       <span id="val-${p}" style="font-size: 11px; color: #777; font-family: monospace;">(-- tracks)</span>
     </div>
     <div id="meta-${p}" style="font-size: 11px; color: #999; padding-left: 20px; font-family: sans-serif;"></div>
@@ -87,10 +88,10 @@ logModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width
 // active (toggled = filter ON = entries hidden). State is per-session only;
 // not persisted because the natural workflow is "open log to investigate
 // one provider's behavior on this page".
-const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp'];
+const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer'];
 const LOG_SOURCE_COLORS = {
     System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F',
-    Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9',
+    Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9', Deezer: '#A238FF',
 };
 logModal.innerHTML = `
 <style>
@@ -117,7 +118,7 @@ providerModal.innerHTML = `
 <div id="mb-provider-modal-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: #FFF; padding: 24px; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid #DDD;">
   <h2 style="margin: 0 0 12px 0; font-size: 18px;">Enable providers</h2>
   <p style="font-size: 13px; color: #555; margin: 0 0 16px 0;">Toggle which services to query. All results come from public endpoints — no API keys required.</p>
-  ${['spotify', 'discogs', 'bandcamp'].map(p => `
+  ${['spotify', 'discogs', 'bandcamp', 'deezer'].map(p => `
     <label style="display: flex; align-items: center; margin-bottom: 10px; font-size: 13px; cursor: pointer;">
       <input type="checkbox" id="mb-toggle-${p}" checked style="margin-right: 10px; width: 16px; height: 16px;">
       <span style="font-weight: 500;">${p[0].toUpperCase() + p.slice(1)}</span>
@@ -135,9 +136,9 @@ if (coverArt) sidebar.insertBefore(container, coverArt);
 else sidebar.prepend(container);
 
 const logPanel = document.getElementById('mb-finder-log-panel');
-const providerRows = Object.fromEntries(['spotify', 'discogs', 'bandcamp'].map(p => [p, document.getElementById(`row-${p}`)]));
+const providerRows = Object.fromEntries(['spotify', 'discogs', 'bandcamp', 'deezer'].map(p => [p, document.getElementById(`row-${p}`)]));
 
-['spotify', 'discogs', 'bandcamp'].forEach(p => {
+['spotify', 'discogs', 'bandcamp', 'deezer'].forEach(p => {
     const enabled = GM_getValue(`prov_${p}`, true);
     providerRows[p].style.display = enabled ? 'flex' : 'none';
 });
@@ -171,12 +172,12 @@ for (const chip of logModal.querySelectorAll('.pc-log-chip')) {
     });
 }
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
-    ['spotify', 'discogs', 'bandcamp'].forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
+    ['spotify', 'discogs', 'bandcamp', 'deezer'].forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
     providerModal.style.display = 'block';
 });
 document.getElementById('mb-provider-cancel-btn').addEventListener('click', closeAllModals);
 document.getElementById('mb-provider-save-btn').addEventListener('click', () => {
-    ['spotify', 'discogs', 'bandcamp'].forEach(p => {
+    ['spotify', 'discogs', 'bandcamp', 'deezer'].forEach(p => {
         const checked = document.getElementById(`mb-toggle-${p}`).checked;
         GM_setValue(`prov_${p}`, checked);
         providerRows[p].style.display = checked ? 'flex' : 'none';
@@ -442,7 +443,7 @@ function cacheSet(mbid, platform, entry) {
     GM_setValue(cacheKey(mbid, platform), JSON.stringify(entry));
 }
 function cacheClear(mbid) {
-    for (const p of ['spotify', 'discogs', 'bandcamp']) GM_setValue(cacheKey(mbid, p), null);
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer']) GM_setValue(cacheKey(mbid, p), null);
     GM_setValue(mbDataKey(mbid), null);
 }
 
@@ -848,6 +849,112 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
+// ─── Deezer ─────────────────────────────────────────────────────────────────
+// Deezer's public API (api.deezer.com) is unauthenticated and structured —
+// search returns album id + title + artist + nb_tracks; detail adds release_date
+// + label. No CAPTCHA, no anti-bot, ~50 req / 5 sec / IP. Use it for both
+// the search step and the detail step; no need for any HTML scraping.
+async function fetchDeezerMeta(albumUrl) {
+    const m = albumUrl.match(/deezer\.com\/(?:[a-z]+\/)?album\/(\d+)/i);
+    if (!m) return null;
+    const r = await gmGet(`https://api.deezer.com/album/${m[1]}`);
+    if (!r.ok) return null;
+    try {
+        const d = JSON.parse(r.responseText);
+        return {
+            tracks: d.nb_tracks ?? null,
+            title:  d.title || null,
+            year:   d.release_date ? d.release_date.slice(0, 4) : null,
+            label:  d.label || null,
+        };
+    } catch { return null; }
+}
+
+async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
+    const label = 'Deezer';
+
+    const cached = cacheGet(mbid, 'deezer');
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
+        applyCachedRow('deezer', label, cached, mbTracks);
+        return;
+    }
+    if (cached && !cached.url && !existingUrl) {
+        appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
+        applyCachedRow('deezer', label, cached, mbTracks);
+        return;
+    }
+
+    let albumUrl = existingUrl;
+    let source   = null;
+
+    if (albumUrl) {
+        appendLog(label, `Using existing MB URL: ${albumUrl}`, 'ok');
+        source = 'MB rels';
+    } else {
+        // Deezer search-query syntax supports field-prefix matching, so we can
+        // narrow exactly to artist + album. VA compilations: query by album only
+        // (Deezer credits compilations to the label/aggregator, not to a
+        // literal "Various Artists" string).
+        const q = isVariousArtists ? `album:"${album}"` : `artist:"${artist}" album:"${album}"`;
+        const searchUrl = `https://api.deezer.com/search/album?q=${encodeURIComponent(q)}&limit=10`;
+        appendLog(label, `API search: ${searchUrl}`);
+        const sr = await gmGet(searchUrl);
+        appendLog(label, `API search: status=${sr.status} ${sr.responseText.length}b in ${sr.ms}ms`);
+        if (!sr.ok) {
+            appendLog(label, `API search failed`, 'error');
+            cacheSet(mbid, 'deezer', { url: null, tracks: null, year: null, label: null, source: 'API search' });
+            updateRow('deezer', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        let results = [];
+        try {
+            const data = JSON.parse(sr.responseText);
+            results = data.data || [];
+        } catch (e) {
+            appendLog(label, `API JSON parse error: ${e.message}`, 'error');
+            updateRow('deezer', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        appendLog(label, `API search: ${results.length} candidate(s)`);
+        if (!results.length) {
+            cacheSet(mbid, 'deezer', { url: null, tracks: null, year: null, label: null, source: 'API search' });
+            updateRow('deezer', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        // Pick the best candidate by track count + title (reuse scoreCandidate).
+        // Search results already carry nb_tracks + title so no per-candidate
+        // detail fetch needed at this stage.
+        let best = null;
+        for (const it of results) {
+            const sc = scoreCandidate({ tracks: it.nb_tracks, title: it.title }, mbTracks, album);
+            appendLog(label, `  cand score=${sc}  tracks=${it.nb_tracks ?? '?'}  title="${it.title}"  url=${it.link}`);
+            if (!best || sc > best.score) best = { score: sc, item: it };
+            if (sc >= 100) break;
+        }
+        if (!best || best.score === 0) {
+            appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
+            cacheSet(mbid, 'deezer', { url: null, tracks: null, year: null, label: null, source: 'API search' });
+            updateRow('deezer', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        albumUrl = best.item.link;
+        source = 'API search';
+        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
+    }
+
+    const meta = await fetchDeezerMeta(albumUrl);
+    if (meta) {
+        appendLog(label, `Album parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
+    } else {
+        appendLog(label, `Detail fetch failed`, 'error');
+    }
+    const tracks = meta?.tracks ?? null;
+    const year   = meta?.year   ?? null;
+    const lbl    = meta?.label  ?? null;
+    cacheSet(mbid, 'deezer', { url: albumUrl, tracks, year, label: lbl, source });
+    updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+}
+
 // ─── Main entry ────────────────────────────────────────────────────────────
 const mbid = window.location.pathname.split('/')[2];
 if (!mbid || mbid.length < 10) {
@@ -858,7 +965,7 @@ if (!mbid || mbid.length < 10) {
 // Reset each platform row back to its initial ⚪ / -- state. Used by the
 // refresh button before re-running the scans.
 function resetRows() {
-    for (const p of ['spotify', 'discogs', 'bandcamp']) {
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer']) {
         const ico = document.getElementById(`ico-${p}`);
         const val = document.getElementById(`val-${p}`);
         const meta = document.getElementById(`meta-${p}`);
@@ -934,6 +1041,7 @@ function parseMbFromDom() {
             spotify:  externalHrefs.find(u => /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\//i.test(u)) || null,
             discogs:  externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
             bandcamp: externalHrefs.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
+            deezer:   externalHrefs.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
         };
 
         const isVariousArtists = artistIds.includes(VA_MBID) || artistNames.some(n => VA_NAME_RE.test(n));
@@ -974,6 +1082,7 @@ function parseMbData(data) {
         spotify:  relUrls.find(u => /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\//i.test(u)) || null,
         discogs:  relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
         bandcamp: relUrls.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
+        deezer:   relUrls.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
     };
     return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing };
 }
@@ -1038,12 +1147,14 @@ async function runScans() {
     document.getElementById('mb-online-spotify') .href = `https://open.spotify.com/search/${encodeURIComponent(`${artist} ${album}`)}`;
     document.getElementById('mb-online-discogs') .href = `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`;
     document.getElementById('mb-online-bandcamp').href = `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`;
+    document.getElementById('mb-online-deezer')  .href = `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`;
 
     const ctx = { artist, album, mbTracks, mbid, isVariousArtists };
     const tasks = [];
     if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify,  wikidataSpotifyId: wd?.spotifyId || null }));
     if (GM_getValue('prov_discogs',  true)) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
     if (GM_getValue('prov_bandcamp', true)) tasks.push(scanBandcamp({ ...ctx, existingUrl: existing.bandcamp }));
+    if (GM_getValue('prov_deezer',   true)) tasks.push(scanDeezer  ({ ...ctx, existingUrl: existing.deezer   }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
 }
