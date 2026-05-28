@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.201649
+// @version      2026.5.28.202214
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -417,6 +417,23 @@ function cacheSet(mbid, platform, entry) {
 }
 function cacheClear(mbid) {
     for (const p of ['spotify', 'discogs', 'bandcamp']) GM_setValue(cacheKey(mbid, p), null);
+    GM_setValue(mbDataKey(mbid), null);
+}
+
+// MB-level metadata cache (artist, album, mbTracks, etc.) — written once per
+// MBID after a successful release fetch. When MB returns 503 (rate-limited)
+// or otherwise fails, we fall back to this cache so a tab switch to a
+// previously-scanned release still renders its cached rows instead of
+// halting on "Halted: API status 503".
+function mbDataKey(mbid) { return `pc:mbdata:${mbid}`; }
+function mbDataGet(mbid) {
+    const raw = GM_getValue(mbDataKey(mbid), null);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return null; }
+}
+function mbDataSet(mbid, entry) {
+    if (!entry) return;
+    GM_setValue(mbDataKey(mbid), JSON.stringify(entry));
 }
 
 // Apply a cached row to the UI and log the hit. Centralised so every scanner
@@ -796,44 +813,26 @@ function resetRows() {
     }
 }
 
-async function runScans() {
-    appendLog('MusicBrainz', `Fetching release + release-group: /ws/2/release/${mbid}`);
-    const mb = await gmGet(`https://musicbrainz.org/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups&fmt=json`);
-    appendLog('MusicBrainz', `status=${mb.status} ${mb.responseText.length}b in ${mb.ms}ms`);
-    if (!mb.ok) {
-        appendLog('MusicBrainz', `Halted: API status ${mb.status} ${mb.error || ''}`, 'error');
-        return;
-    }
-    let data;
-    try { data = JSON.parse(mb.responseText); }
-    catch (e) { appendLog('MusicBrainz', `JSON parse failed: ${e.message}`, 'error'); return; }
-
+// Parse a successful MB release-API payload into the lean record we cache and
+// pass to the scanners. Returns null when the payload is missing the artist
+// or album (treated as a fatal-for-this-MBID parse error upstream).
+function parseMbData(data) {
     const artist = data['artist-credit']?.[0]?.name || data['artist-credit']?.[0]?.artist?.name || '';
     const album  = data.title || '';
+    if (!artist || !album) return null;
     const mbTracks = data.media?.reduce((s, m) => s + (m['track-count'] || 0), 0) || 0;
     const releaseGroupMbid = data['release-group']?.id || null;
     // MB's "Various Artists" entity. Compilations on Bandcamp / Spotify
     // typically aren't credited to literally "Various Artists" — they go under
-    // the label (e.g. "Analog Africa", "Soul Jazz Records"), or sometimes a
-    // collective / event-series name. Searching for the VA string yields zero
-    // candidates. Detect VA via the special MBID OR a literal "Various
-    // Artists" / "Various" string (some MB releases credit by name without
-    // linking to the entity) and drop the artist term from the search query;
-    // the verifier (track count + title) picks the right candidate from the
-    // wider net that results.
+    // the label (e.g. "Analog Africa", "Soul Jazz Records"). Detect via the
+    // special MBID OR a literal "Various"/"Various Artists" string match so
+    // we can drop the artist term from the search query; the verifier picks
+    // the right candidate from the wider net.
     const VA_MBID = '89ad4ac3-39f7-470e-963a-56509c546377';
     const isVA = c => c.artist?.id === VA_MBID
                    || /^various(\s+artists?)?$/i.test(c.artist?.name || '')
                    || /^various(\s+artists?)?$/i.test(c.name || '');
-    const isVariousArtists = data['artist-credit']?.some(isVA);
-    appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
-
-    if (!artist || !album) {
-        appendLog('MusicBrainz', `Missing artist/album in API payload`, 'error');
-        return;
-    }
-
-    // Extract existing per-platform URLs from MB url relationships.
+    const isVariousArtists = !!data['artist-credit']?.some(isVA);
     const relUrls = (data.relations || [])
         .filter(r => r['target-type'] === 'url' && r.url?.resource)
         .map(r => r.url.resource);
@@ -842,6 +841,41 @@ async function runScans() {
         discogs:  relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
         bandcamp: relUrls.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
     };
+    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing };
+}
+
+async function runScans() {
+    appendLog('MusicBrainz', `Fetching release + release-group: /ws/2/release/${mbid}`);
+    const mb = await gmGet(`https://musicbrainz.org/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups&fmt=json`);
+    appendLog('MusicBrainz', `status=${mb.status} ${mb.responseText.length}b in ${mb.ms}ms`);
+
+    // Try fresh parse; on any failure (HTTP error, JSON parse error, missing
+    // fields) fall back to mbDataGet so a tab switch to a previously-scanned
+    // release survives transient MB 503s and gives the user the cached UI.
+    let mbData = null;
+    let dataSource = 'fresh';
+    if (mb.ok) {
+        try {
+            const data = JSON.parse(mb.responseText);
+            mbData = parseMbData(data);
+            if (!mbData) appendLog('MusicBrainz', `Missing artist/album in API payload`, 'error');
+        } catch (e) { appendLog('MusicBrainz', `JSON parse failed: ${e.message}`, 'error'); }
+    }
+    if (!mbData) {
+        const cached = mbDataGet(mbid);
+        if (cached) {
+            appendLog('MusicBrainz', `Falling back to cached release data (no fresh fetch this load)`, 'warn');
+            mbData = cached;
+            dataSource = 'cache';
+        } else {
+            appendLog('MusicBrainz', `Halted: no fresh data and nothing cached (status ${mb.status})`, 'error');
+            return;
+        }
+    }
+    if (dataSource === 'fresh') mbDataSet(mbid, mbData);
+
+    const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing } = mbData;
+    appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
     appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}`);
 
     // Wikidata lookup — fires only when no existing rel + no cached URL would
