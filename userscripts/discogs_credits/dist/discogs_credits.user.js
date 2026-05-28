@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.28.091023
+// @version      2026.5.28.092118
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -941,8 +941,11 @@
     Bapang: null,
     "Clarinet": "clarinet",
     "Percussion": "percussion",
-    "Congas": "conga drum",
-    "Bongos": "bongo drum",
+    "Congas": "congas",
+    "Conga": "congas",
+    "Conga Drum": "congas",
+    "Bongos": "bongos",
+    "Bongo": "bongos",
     "Tambourine": "tambourine",
     "Cuica": "cu\xEDca",
     "Guiro": "g\xFCiro",
@@ -951,11 +954,14 @@
     "La\xFAd": "la\xFAd",
     "Laud": "la\xFAd",
     "Mbira": "mbira",
+    "Kalimba": "mbira",
     "Slide Guitar": "slide guitar",
     "Acoustic Guitar": "acoustic guitar",
     "Double Bass": "double bass",
     "Goblet Drum": "goblet drum",
     "Maracas": "maracas",
+    "Steel Drum": "steelpan",
+    "Steelpan": "steelpan",
     "Electronics": "electronics",
     "Electronic": "electronics",
     "Synth Bass": "bass synthesizer",
@@ -1133,15 +1139,14 @@
     Carillon: null,
     Crotales: null,
     Guitaret: null,
-    Kalimba: null,
     Lamellophone: null,
     Marimbula: null,
     Metallophone: null,
     "Musical Box": null,
     Prempensua: null,
     Slagbordun: null,
-    "Steel Drums": null,
-    "Thumb Piano": null,
+    "Steel Drums": "steelpan",
+    "Thumb Piano": "mbira",
     Tubaphone: null,
     "Tubular Bells": null,
     Tun: null,
