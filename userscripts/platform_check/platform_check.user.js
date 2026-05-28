@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.204114
+// @version      2026.5.28.215044
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -835,6 +835,73 @@ function resetRows() {
     }
 }
 
+// VA detection used by both the DOM and API parse paths. Hoisted so both
+// can share the regex without duplication.
+const VA_MBID = '89ad4ac3-39f7-470e-963a-56509c546377';
+const VA_NAME_RE = /^various(\s+artists?)?$/i;
+
+// Scrape the MB release record from the *currently-rendered page DOM* — we're
+// already running on /release/<mbid>, so the data is in front of us. This
+// avoids the typical 10s /ws/2 round-trip when MB is under load. Returns the
+// same shape as parseMbData() or null when the DOM doesn't have what we need
+// (in which case the caller falls back to the API). Selectors are defensive:
+// MB occasionally shuffles its markup; the API fallback covers regressions.
+function parseMbFromDom() {
+    try {
+        // Album title. MB wraps the title in <bdi> inside the release header's
+        // h1. Several layouts exist — use a chain of fallbacks.
+        const titleNode = document.querySelector(
+            '.releaseheader h1 bdi, .release-information h1 bdi, h1 bdi'
+        );
+        const album = titleNode?.textContent?.trim()
+                   || (document.title.match(/^Release\s+["“]([^"”]+)["”]/) || [])[1]
+                   || '';
+
+        // Artist credit. Anchors to /artist/<mbid> appearing in the release
+        // header (or its `.subheader` / `.artist-credit` span). VA detection
+        // by MBID or by literal name.
+        const headerScope = document.querySelector('.releaseheader, .release-information, #content') || document;
+        const artistAnchors = headerScope.querySelectorAll(
+            '.artist-credit a[href^="/artist/"], .subheader a[href^="/artist/"], h1 ~ p a[href^="/artist/"]'
+        );
+        const artistNames = [...artistAnchors].map(a => a.textContent.trim()).filter(Boolean);
+        const artistIds   = [...artistAnchors].map(a => (a.getAttribute('href') || '').match(/\/artist\/([0-9a-f-]{36})/)?.[1]).filter(Boolean);
+        const artist = artistNames[0] || '';
+
+        // Track count. MB tracklist tables use <tr class="track"> or rows
+        // whose td.pos count tracks. Cross-table dedup is unnecessary because
+        // the release page only shows this release's tracks.
+        const mbTracks = document.querySelectorAll('table.tbl tr.track, table.medium-table tr.track, tr.track[id^="t-"]').length;
+
+        // Release-group MBID — present as a /release-group/<mbid> link in the
+        // sidebar's release-information block.
+        const rgLink = document.querySelector('a[href*="/release-group/"]');
+        const releaseGroupMbid = rgLink?.getAttribute('href').match(/release-group\/([0-9a-f-]{36})/)?.[1] || null;
+
+        // Existing URL rels. MB's sidebar has an "External links" section
+        // listing platform-specific URLs. Grab every outbound link in the
+        // sidebar (or whole doc as fallback) and filter to known platforms.
+        const sidebar = document.querySelector('#sidebar') || document;
+        const externalHrefs = [...sidebar.querySelectorAll('a[href^="http"]')]
+            .map(a => a.href);
+        const existing = {
+            spotify:  externalHrefs.find(u => /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\//i.test(u)) || null,
+            discogs:  externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
+            bandcamp: externalHrefs.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
+        };
+
+        const isVariousArtists = artistIds.includes(VA_MBID) || artistNames.some(n => VA_NAME_RE.test(n));
+
+        // Sanity gate: we need artist + album + at least one track row. Anything
+        // less is an unrendered or unfamiliar layout — bail to API.
+        if (!artist || !album || mbTracks < 1) return null;
+        return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing };
+    } catch (e) {
+        // Any selector mishap → API fallback.
+        return null;
+    }
+}
+
 // Parse a successful MB release-API payload into the lean record we cache and
 // pass to the scanners. Returns null when the payload is missing the artist
 // or album (treated as a fatal-for-this-MBID parse error upstream).
@@ -850,10 +917,9 @@ function parseMbData(data) {
     // special MBID OR a literal "Various"/"Various Artists" string match so
     // we can drop the artist term from the search query; the verifier picks
     // the right candidate from the wider net.
-    const VA_MBID = '89ad4ac3-39f7-470e-963a-56509c546377';
     const isVA = c => c.artist?.id === VA_MBID
-                   || /^various(\s+artists?)?$/i.test(c.artist?.name || '')
-                   || /^various(\s+artists?)?$/i.test(c.name || '');
+                   || VA_NAME_RE.test(c.artist?.name || '')
+                   || VA_NAME_RE.test(c.name || '');
     const isVariousArtists = !!data['artist-credit']?.some(isVA);
     const relUrls = (data.relations || [])
         .filter(r => r['target-type'] === 'url' && r.url?.resource)
@@ -867,34 +933,43 @@ function parseMbData(data) {
 }
 
 async function runScans() {
-    appendLog('MusicBrainz', `Fetching release + release-group: /ws/2/release/${mbid}`);
-    const mb = await gmGet(`https://musicbrainz.org/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups&fmt=json`);
-    appendLog('MusicBrainz', `status=${mb.status} ${mb.responseText.length}b in ${mb.ms}ms`);
+    // Source precedence: DOM (instant, no network) > /ws/2 API (~10s when MB is
+    // hot) > mbDataCache (transient MB outage). DOM is identical data to API
+    // for our purposes — both give artist/album/tracks/rg/url-rels — and we're
+    // already running on the page so it's free.
+    let mbData = parseMbFromDom();
+    let dataSource = 'dom';
 
-    // Try fresh parse; on any failure (HTTP error, JSON parse error, missing
-    // fields) fall back to mbDataGet so a tab switch to a previously-scanned
-    // release survives transient MB 503s and gives the user the cached UI.
-    let mbData = null;
-    let dataSource = 'fresh';
-    if (mb.ok) {
-        try {
-            const data = JSON.parse(mb.responseText);
-            mbData = parseMbData(data);
-            if (!mbData) appendLog('MusicBrainz', `Missing artist/album in API payload`, 'error');
-        } catch (e) { appendLog('MusicBrainz', `JSON parse failed: ${e.message}`, 'error'); }
-    }
-    if (!mbData) {
-        const cached = mbDataGet(mbid);
-        if (cached) {
-            appendLog('MusicBrainz', `Falling back to cached release data (no fresh fetch this load)`, 'warn');
-            mbData = cached;
-            dataSource = 'cache';
-        } else {
-            appendLog('MusicBrainz', `Halted: no fresh data and nothing cached (status ${mb.status})`, 'error');
-            return;
+    if (mbData) {
+        appendLog('MusicBrainz', `Parsed from page DOM — skipping API call`, 'ok');
+    } else {
+        appendLog('MusicBrainz', `DOM scrape incomplete — falling back to /ws/2 API`);
+        const mb = await gmGet(`https://musicbrainz.org/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups&fmt=json`);
+        appendLog('MusicBrainz', `status=${mb.status} ${mb.responseText.length}b in ${mb.ms}ms`);
+        if (mb.ok) {
+            try {
+                const data = JSON.parse(mb.responseText);
+                mbData = parseMbData(data);
+                if (mbData) dataSource = 'api';
+                else appendLog('MusicBrainz', `Missing artist/album in API payload`, 'error');
+            } catch (e) { appendLog('MusicBrainz', `JSON parse failed: ${e.message}`, 'error'); }
+        }
+        if (!mbData) {
+            const cached = mbDataGet(mbid);
+            if (cached) {
+                appendLog('MusicBrainz', `Falling back to cached release data (no fresh fetch this load)`, 'warn');
+                mbData = cached;
+                dataSource = 'cache';
+            } else {
+                appendLog('MusicBrainz', `Halted: no DOM, no API, no cache (status ${mb.status})`, 'error');
+                return;
+            }
         }
     }
-    if (dataSource === 'fresh') mbDataSet(mbid, mbData);
+    // Persist DOM- and API-sourced records to the long-term cache so a later
+    // MB 503 can still render. Don't re-persist when we're already inside the
+    // cache-fallback branch.
+    if (dataSource !== 'cache') mbDataSet(mbid, mbData);
 
     const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing } = mbData;
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
