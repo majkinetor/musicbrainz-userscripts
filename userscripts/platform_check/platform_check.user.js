@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.184945
+// @version      2026.5.28.190011
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -28,23 +28,34 @@ if (!sidebar) return;
 const container = document.createElement('div');
 container.className = 'online-search-box';
 container.style.cssText = 'margin-bottom: 12px; padding: 12px; background: #FAF9F6; border: 1px solid #D8D8D8; border-radius: 6px; font-size: 13px; font-family: sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.05);';
+// MB's site CSS adds an external-link icon to every `target="_blank"` anchor
+// (`a[rel~="external"]::after` / similar). On the dark-themed sidebar it
+// renders as a missing-image red square next to each platform name. Suppress
+// it on our anchors via inline ::after override scoped to the panel.
+const iconBtn = 'cursor: pointer; user-select: none; color: #666; padding: 2px 6px; border-radius: 4px; line-height: 1; font-size: 14px;';
 container.innerHTML = `
-<h3 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666; border-bottom: 1px solid #EEE; padding-bottom: 4px;">Streaming & Retail</h3>
+<style>
+  .online-search-box a[target="_blank"]::after { content: none !important; display: none !important; }
+  .online-search-box .pc-icon-btn:hover { background: #ECECEC; color: #222; }
+</style>
+<div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 8px;">
+  <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Streaming & Retail</h3>
+  <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
+</div>
 <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
   ${['spotify', 'discogs', 'bandcamp'].map(p => `
   <div id="row-${p}" style="display: flex; flex-direction: column; gap: 2px;">
     <div style="display: flex; align-items: center;">
       <span id="ico-${p}" style="margin-right: 6px; color: #888; font-size: 11px; min-width: 14px;">⚪</span>
-      <a id="mb-online-${p}" href="#" target="_blank" style="color: ${p === 'spotify' ? '#1DB954' : p === 'bandcamp' ? '#629AA9' : '#222'}; text-decoration: none; font-weight: 600; flex-grow: 1;">${p[0].toUpperCase() + p.slice(1)}</a>
+      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${p === 'spotify' ? '#1DB954' : p === 'bandcamp' ? '#629AA9' : '#222'}; text-decoration: none; font-weight: 600; flex-grow: 1;">${p[0].toUpperCase() + p.slice(1)}</a>
       <span id="val-${p}" style="font-size: 11px; color: #777; font-family: monospace;">(-- tracks)</span>
     </div>
     <div id="meta-${p}" style="font-size: 11px; color: #999; padding-left: 20px; font-family: sans-serif;"></div>
   </div>`).join('')}
 </div>
-<div style="display: flex; gap: 4px; margin-top: 8px;">
-  <div id="mb-log-open-btn"     style="flex: 1; cursor: pointer; text-align: center; background: #F0F0F0; padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #666; border: 1px solid #E0E0E0;">LOGS</div>
-  <div id="mb-refresh-btn"      style="flex: 1; cursor: pointer; text-align: center; background: #F0F0F0; padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #666; border: 1px solid #E0E0E0;">↻ REFRESH</div>
-  <div id="mb-token-setup-btn"  style="flex: 1; cursor: pointer; text-align: center; background: #F0F0F0; padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #666; border: 1px solid #E0E0E0;">⚙️ PROVIDERS</div>
+<div style="display: flex; justify-content: center; gap: 16px; padding-top: 6px; border-top: 1px solid #EEE;">
+  <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log"             style="${iconBtn}">ⓘ</span>
+  <span id="mb-token-setup-btn" class="pc-icon-btn" title="Provider toggles"            style="${iconBtn}">⚙</span>
 </div>
 `;
 
@@ -52,10 +63,27 @@ container.innerHTML = `
 const logModal = document.createElement('div');
 logModal.id = 'mb-log-modal-overlay';
 logModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; font-family: monospace; padding: 30px; box-sizing: border-box;';
+// Provider filter chips — one per source that produces log lines. Default all
+// active (toggled = filter ON = entries hidden). State is per-session only;
+// not persisted because the natural workflow is "open log to investigate
+// one provider's behavior on this page".
+const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp'];
+const LOG_SOURCE_COLORS = {
+    System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F',
+    Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9',
+};
 logModal.innerHTML = `
+<style>
+  .pc-log-chip { display: inline-block; padding: 3px 9px; margin-right: 4px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; user-select: none; border: 1px solid #444; }
+  .pc-log-chip.off { opacity: 0.35; background: transparent !important; color: #AAA !important; }
+  ${LOG_SOURCES.map(s => `#mb-finder-log-panel.pc-hide-${s.toLowerCase()} [data-platform="${s.toLowerCase()}"] { display: none; }`).join('\n  ')}
+</style>
 <div id="mb-log-modal-card" style="max-width: 900px; height: 85vh; margin: 0 auto; background: #1E1E1E; color: #FFF; border-radius: 8px; border: 1px solid #444; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-  <div style="padding: 12px; background: #2D2D2D; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
-    <span style="font-weight: bold; color: #A3BE8C; font-size: 14px;">Platform Check — diagnostic log</span>
+  <div style="padding: 10px 12px; background: #2D2D2D; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+    <span style="font-weight: bold; color: #A3BE8C; font-size: 14px; white-space: nowrap;">Platform Check log</span>
+    <div id="mb-log-filters" style="flex-grow: 1; text-align: left;">
+      ${LOG_SOURCES.map(s => `<span class="pc-log-chip" data-source="${s.toLowerCase()}" style="background:${LOG_SOURCE_COLORS[s]}33; color:${LOG_SOURCE_COLORS[s]};">${s}</span>`).join('')}
+    </div>
     <button id="mb-modal-copy-btn" style="padding: 6px 12px; background: #434C5E; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">Copy</button>
   </div>
   <div id="mb-finder-log-panel" style="flex-grow: 1; overflow-y: auto; padding: 15px; font-size: 12px; line-height: 1.5em; white-space: pre-wrap; background: #151515;"></div>
@@ -100,6 +128,17 @@ providerModal.addEventListener('click', e => { if (!document.getElementById('mb-
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModals(); });
 
 document.getElementById('mb-log-open-btn').addEventListener('click', () => { logModal.style.display = 'block'; });
+
+// Provider-filter chips: clicking toggles a `pc-hide-<source>` class on the
+// log panel. CSS in the modal template hides matching `[data-platform]`
+// entries via that class — no per-entry JS walk on every toggle.
+for (const chip of logModal.querySelectorAll('.pc-log-chip')) {
+    chip.addEventListener('click', () => {
+        const src = chip.dataset.source;
+        chip.classList.toggle('off');
+        logPanel.classList.toggle(`pc-hide-${src}`);
+    });
+}
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     ['spotify', 'discogs', 'bandcamp'].forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
     providerModal.style.display = 'block';
@@ -122,7 +161,9 @@ document.getElementById('mb-modal-copy-btn').addEventListener('click', function 
 function appendLog(platform, msg, kind = 'info') {
     const color = kind === 'error' ? '#FF6B6B' : kind === 'warn' ? '#EBCB8B' : kind === 'ok' ? '#A3BE8C' : '#88C0D0';
     const ts = new Date().toLocaleTimeString();
-    logPanel.innerHTML += `<div style="margin-bottom: 3px; border-left: 3px solid ${color}; padding-left: 6px;"><span style="color: #666;">[${ts}]</span> <span style="color: ${color}; font-weight: bold;">[${platform}]</span> <span style="color: #DDD;">${msg}</span></div>`;
+    // data-platform lets the modal's per-provider filter chips toggle entries
+    // via CSS (`#mb-finder-log-panel.pc-hide-<platform> [data-platform=…]`).
+    logPanel.insertAdjacentHTML('beforeend', `<div data-platform="${platform.toLowerCase()}" style="margin-bottom: 3px; border-left: 3px solid ${color}; padding-left: 6px;"><span style="color: #666;">[${ts}]</span> <span style="color: ${color}; font-weight: bold;">[${platform}]</span> <span style="color: #DDD;">${msg}</span></div>`);
     logPanel.scrollTop = logPanel.scrollHeight;
 }
 appendLog('System', `Platform Check v${(typeof GM_info !== 'undefined' && GM_info.script?.version) || '?'} — startup`);
@@ -429,7 +470,11 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
         source = 'Wikidata';
         cacheSet(mbid, 'spotify', albumUrl);
     } else {
-        const q = `site:open.spotify.com album ${artist} ${album}`;
+        // Restrict the `site:` filter to the /album/ path so artist pages,
+        // playlists, tracks, and shows never enter the candidate list. Both
+        // Brave and DDG honour path-suffixed site: filters. Quoting "artist"
+        // + "album" raises ranking for the exact phrase.
+        const q = `site:open.spotify.com/album/ "${artist}" "${album}"`;
         const candidates = await searchWeb(q, u => /open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/[a-zA-Z0-9]{22}/.test(u), label);
         if (!candidates.length) { updateRow('spotify', { url: null, mbTracks, remoteTracks: null }); return; }
         appendLog(label, `Verifying ${candidates.length} candidate(s) by track count + title…`);
@@ -577,7 +622,7 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
         appendLog(label, `Cache hit: ${albumUrl}`, 'ok');
         source = 'cache';
     } else {
-        const q = `site:bandcamp.com ${artist} ${album}`;
+        const q = `site:bandcamp.com/album/ "${artist}" "${album}"`;
         // Bandcamp candidate pages are bigger (~300 KB) than Spotify embeds —
         // limit candidates to 3 to keep total fetch cost reasonable.
         const candidates = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), label, 3);
