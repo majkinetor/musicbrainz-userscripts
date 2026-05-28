@@ -28,6 +28,15 @@
     "notes": "Vinyl edition of the same release group as the digital fixture (3f6797b2…). Discogs link in MB rels is the vinyl-specific release 17630890; Spotify/Wikidata still resolve to the worldwide-edition album because that's what Wikidata's P2205 anchors the whole release group to."
   },
   {
+    "name": "Various Artists — Space Echo: Cabo Verde",
+    "mbid": "6299ef5a-932f-4982-b7e9-c169cbbf9073",
+    "tags": "various-artists compilation",
+    "expect": {
+      "discogs": "www.discogs.com/release/8688045"
+    },
+    "notes": "Compilation credited to MB's 'Various Artists' entity. Bandcamp credits it to the label (Analog Africa) not 'Various Artists', so the search query must drop the artist term — otherwise zero candidates. Track-count + title verification confirms the right one."
+  },
+  {
     "name": "Medeski, Martin & Wood — The Stone: Issue Four",
     "mbid": "4cefc624-2b8e-4f84-82cc-296b5d7e46a5",
     "tags": "niche-release multiple-spotify-matches",

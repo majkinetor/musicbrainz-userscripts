@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.195145
+// @version      2026.5.28.200807
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -347,6 +347,15 @@ async function searchWeb(query, urlFilter, label, maxN = 5) {
 function normName(s) {
     return (s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 }
+
+// Punctuation-stripped form for use in search-engine queries. Quoting exact
+// phrases is too rigid: MB might have "Space Echo: The Mystery…!" while the
+// Bandcamp page renders it "Space Echo - The Mystery…" (no colon, no bang).
+// Stripping punctuation to spaces lets the engine token-match either form;
+// the verifier later picks the right candidate by track count + normName.
+function searchTerms(s) {
+    return (s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
 function titleSimilar(a, b) {
     const na = normName(a), nb = normName(b);
     if (!na || !nb) return false;
@@ -497,7 +506,7 @@ async function fetchSpotifyMeta(albumUrl) {
     };
 }
 
-async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidataSpotifyId }) {
+async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidataSpotifyId, isVariousArtists }) {
     const label = 'Spotify';
 
     // Cache hit (full row) — no network calls at all on re-visit.
@@ -520,10 +529,17 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
         source = 'Wikidata';
     } else {
         // Restrict the `site:` filter to the /album/ path so artist pages,
-        // playlists, tracks, and shows never enter the candidate list. Both
-        // Brave and DDG honour path-suffixed site: filters. Quoting "artist"
-        // + "album" raises ranking for the exact phrase.
-        const q = `site:open.spotify.com/album/ "${artist}" "${album}"`;
+        // playlists, tracks, and shows never enter the candidate list. Use
+        // punctuation-stripped tokens (not a quoted exact phrase) so the
+        // engine matches "Space Echo - The Mystery..." against MB's
+        // "Space Echo: The Mystery...!". For VA compilations drop the artist
+        // term because the literal phrase "Various Artists" doesn't appear
+        // on streaming pages — labels host compilations under their own name.
+        const albumT  = searchTerms(album);
+        const artistT = searchTerms(artist);
+        const q = isVariousArtists
+            ? `site:open.spotify.com/album/ ${albumT}`
+            : `site:open.spotify.com/album/ ${artistT} ${albumT}`;
         const candidates = await searchWeb(q, u => /open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/[a-zA-Z0-9]{22}/.test(u), label);
         if (!candidates.length) {
             // Cache "no match" so a refresh-less page re-visit doesn't re-search.
@@ -690,7 +706,7 @@ async function searchBandcampNative(query, label) {
     return unique.slice(0, 5);
 }
 
-async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
+async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
     const label = 'Bandcamp';
 
     const cached = cacheGet(mbid, 'bandcamp');
@@ -708,15 +724,22 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
         source = 'MB rels';
     } else {
         // Priority 1: Bandcamp's own search (works when the browser has CF
-        // clearance — the common case after any prior Bandcamp visit). Skip
-        // when blocked by the CF challenge.
-        let candidates = await searchBandcampNative(`${artist} ${album}`, label);
+        // clearance — common after any prior Bandcamp visit). Skip when
+        // blocked. VA compilations: search by album only — Bandcamp credits
+        // them to the label, not "Various Artists".
+        const albumT  = searchTerms(album);
+        const artistT = searchTerms(artist);
+        const nativeQ = isVariousArtists ? albumT : `${artistT} ${albumT}`;
+        let candidates = await searchBandcampNative(nativeQ, label);
         let candidateSource = 'native';
         if (!candidates.length) {
-            // Priority 2: generic web search via Brave/DDG. Bandcamp candidate
-            // pages are bigger (~300 KB) than Spotify embeds — cap at 3 to
-            // keep total fetch cost reasonable.
-            const q = `site:bandcamp.com/album/ "${artist}" "${album}"`;
+            // Priority 2: generic web search. Punctuation-stripped tokens, no
+            // exact-phrase quotes — MB's "Foo: Bar!" and Bandcamp's
+            // "Foo - Bar" still hit each other this way; the verifier handles
+            // the rest. Bandcamp candidate pages are ~300 KB so cap at 3.
+            const q = isVariousArtists
+                ? `site:bandcamp.com/album/ ${albumT}`
+                : `site:bandcamp.com/album/ ${artistT} ${albumT}`;
             candidates = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), label, 3);
             candidateSource = 'search';
         }
@@ -788,7 +811,21 @@ async function runScans() {
     const album  = data.title || '';
     const mbTracks = data.media?.reduce((s, m) => s + (m['track-count'] || 0), 0) || 0;
     const releaseGroupMbid = data['release-group']?.id || null;
-    appendLog('MusicBrainz', `Artist: "${artist}"  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
+    // MB's "Various Artists" entity. Compilations on Bandcamp / Spotify
+    // typically aren't credited to literally "Various Artists" — they go under
+    // the label (e.g. "Analog Africa", "Soul Jazz Records"), or sometimes a
+    // collective / event-series name. Searching for the VA string yields zero
+    // candidates. Detect VA via the special MBID OR a literal "Various
+    // Artists" / "Various" string (some MB releases credit by name without
+    // linking to the entity) and drop the artist term from the search query;
+    // the verifier (track count + title) picks the right candidate from the
+    // wider net that results.
+    const VA_MBID = '89ad4ac3-39f7-470e-963a-56509c546377';
+    const isVA = c => c.artist?.id === VA_MBID
+                   || /^various(\s+artists?)?$/i.test(c.artist?.name || '')
+                   || /^various(\s+artists?)?$/i.test(c.name || '');
+    const isVariousArtists = data['artist-credit']?.some(isVA);
+    appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
 
     if (!artist || !album) {
         appendLog('MusicBrainz', `Missing artist/album in API payload`, 'error');
@@ -825,7 +862,7 @@ async function runScans() {
     document.getElementById('mb-online-discogs') .href = `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`;
     document.getElementById('mb-online-bandcamp').href = `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`;
 
-    const ctx = { artist, album, mbTracks, mbid };
+    const ctx = { artist, album, mbTracks, mbid, isVariousArtists };
     const tasks = [];
     if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify,  wikidataSpotifyId: wd?.spotifyId || null }));
     if (GM_getValue('prov_discogs',  true)) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
