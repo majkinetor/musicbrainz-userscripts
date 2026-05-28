@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.200807
+// @version      2026.5.28.201649
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -224,13 +224,14 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source }) {
     if (remoteTracks != null) {
         val.textContent = `(${remoteTracks}/${mbTracks} trks)`;
         if (parseInt(remoteTracks, 10) === parseInt(mbTracks, 10)) {
-            // Distinguish a fresh confirmation (✓) from a remembered cache hit (☑).
-            // Both are green/good; the glyph swap lets the user see at a glance
-            // whether they're looking at this-session data or a previous run's
-            // result that may be stale.
-            ico.textContent = source === 'cache' ? '☑' : '✓';
-            ico.style.color = '#008000';
-            val.style.color = '#008000';
+            // Same ✓ glyph for fresh + cache hits, distinguished by color:
+            // bright green (#008000) = freshly verified this session;
+            // muted steel-blue (#5B82B0) = remembered from a previous run.
+            // The ↻ button re-fetches if a cached entry might be stale.
+            const cacheTone = source === 'cache' ? '#5B82B0' : '#008000';
+            ico.textContent = '✓';
+            ico.style.color = cacheTone;
+            val.style.color = cacheTone;
         } else {
             ico.textContent = '~'; ico.style.color = '#FF8C00';
             val.style.color = '#FF8C00';
