@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.190011
+// @version      2026.5.28.191105
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -53,9 +53,10 @@ container.innerHTML = `
     <div id="meta-${p}" style="font-size: 11px; color: #999; padding-left: 20px; font-family: sans-serif;"></div>
   </div>`).join('')}
 </div>
-<div style="display: flex; justify-content: center; gap: 16px; padding-top: 6px; border-top: 1px solid #EEE;">
-  <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log"             style="${iconBtn}">ⓘ</span>
-  <span id="mb-token-setup-btn" class="pc-icon-btn" title="Provider toggles"            style="${iconBtn}">⚙</span>
+<div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
+  <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log"  style="${iconBtn}">ⓘ</span>
+  <span style="font-size: 10px; color: #999; font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase;">Platform Check</span>
+  <span id="mb-token-setup-btn" class="pc-icon-btn" title="Provider toggles" style="${iconBtn}">⚙</span>
 </div>
 `;
 
@@ -129,14 +130,25 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModa
 
 document.getElementById('mb-log-open-btn').addEventListener('click', () => { logModal.style.display = 'block'; });
 
-// Provider-filter chips: clicking toggles a `pc-hide-<source>` class on the
-// log panel. CSS in the modal template hides matching `[data-platform]`
-// entries via that class — no per-entry JS walk on every toggle.
+// Provider-filter chips: exclusive selection. Click a chip → only that
+// source's entries remain visible (every other chip dims to .off). Click
+// the same chip again → back to "all sources visible". CSS-driven via the
+// `pc-hide-<source>` classes on the log panel; no per-entry DOM walk.
+let activeFilter = null;     // null = show everything
 for (const chip of logModal.querySelectorAll('.pc-log-chip')) {
     chip.addEventListener('click', () => {
         const src = chip.dataset.source;
-        chip.classList.toggle('off');
-        logPanel.classList.toggle(`pc-hide-${src}`);
+        activeFilter = (activeFilter === src) ? null : src;   // click again = clear
+        // Refresh chip dimming.
+        for (const c of logModal.querySelectorAll('.pc-log-chip')) {
+            const isActive = activeFilter === null || c.dataset.source === activeFilter;
+            c.classList.toggle('off', !isActive);
+        }
+        // Refresh panel hide-classes: hide every source except the active one.
+        for (const s of LOG_SOURCES) {
+            const sLower = s.toLowerCase();
+            logPanel.classList.toggle(`pc-hide-${sLower}`, activeFilter !== null && sLower !== activeFilter);
+        }
     });
 }
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
