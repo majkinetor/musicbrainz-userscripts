@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.28.162925
+// @version      2026.5.28.175415
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2502,10 +2502,49 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         });
         credInput._activeMbUrl = r.mbUrl;
         if (r.mbUrl) creditOverrides.set(r.mbUrl, credInput.value);
+        const CRED_BTN_STYLE = "flex-shrink:0;padding:0.05rem 0.35rem;font-size:0.7rem;line-height:1;cursor:pointer;border:1px solid #c8a000;border-radius:3px;background:#fffbe6;color:#7a5000;";
+        const mbBtn = document.createElement("button");
+        mbBtn.type = "button";
+        mbBtn.textContent = "MB";
+        mbBtn.title = "Set Credited as to the MB entity name";
+        mbBtn.style.cssText = CRED_BTN_STYLE;
+        const dBtn = document.createElement("button");
+        dBtn.type = "button";
+        dBtn.textContent = "D";
+        dBtn.title = "Set Credited as to the Discogs name";
+        dBtn.style.cssText = CRED_BTN_STYLE;
+        function currentMbName() {
+          return rowState.get(_entityKey)?.mbName || r.mbName || null;
+        }
+        function refreshCredBtns() {
+          const val = credInput.value;
+          const mbName = currentMbName();
+          mbBtn.disabled = !mbName || val === mbName;
+          dBtn.disabled = val === displayName;
+          [mbBtn, dBtn].forEach((b) => {
+            b.style.opacity = b.disabled ? "0.4" : "1";
+            b.style.cursor = b.disabled ? "default" : "pointer";
+          });
+        }
+        function setCredViaButton(value) {
+          credInput.value = value;
+          credInput._userTouched = true;
+          credInput.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+        mbBtn.addEventListener("click", () => {
+          const mbName = currentMbName();
+          if (mbName) setCredViaButton(mbName);
+        });
+        dBtn.addEventListener("click", () => setCredViaButton(displayName));
+        credInput.addEventListener("input", refreshCredBtns);
+        refreshCredBtns();
         credLine.appendChild(credLabel);
         credLine.appendChild(credInput);
+        credLine.appendChild(mbBtn);
+        credLine.appendChild(dBtn);
         tdDiscogs.appendChild(credLine);
         r._credInput = credInput;
+        r._refreshCredBtns = refreshCredBtns;
         const tdMb = document.createElement("td");
         tdMb.style.cssText = `padding:0.3rem 0.5rem;border:1px solid ${borderColor};min-width:240px;`;
         const candidateList = document.createElement("div");
@@ -2540,6 +2579,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             }
             creditOverrides.set(mbUrl, r._credInput.value);
             refreshCredBg();
+            if (r._refreshCredBtns) r._refreshCredBtns();
           }
           const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
           if (_idbKey) {
