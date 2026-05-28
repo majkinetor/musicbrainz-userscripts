@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.222539
+// @version      2026.5.28.223501
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -921,11 +921,15 @@ function parseMbFromDom() {
         const releaseGroupMbid = rgFromHref || rgFromText || null;
 
         // Existing URL rels. MB's sidebar has an "External links" section
-        // listing platform-specific URLs. Grab every outbound link in the
-        // sidebar (or whole doc as fallback) and filter to known platforms.
+        // listing platform-specific URLs. MB renders some platform anchors
+        // with a protocol-relative `href="//host/path"` (verified on Bandcamp
+        // rels) — `[href^="http"]` skips those even though their resolved
+        // `.href` is absolute. Query every `a[href]` and filter on the
+        // resolved URL property instead, which is always an absolute URL.
         const sidebar = document.querySelector('#sidebar') || document;
-        const externalHrefs = [...sidebar.querySelectorAll('a[href^="http"]')]
-            .map(a => a.href);
+        const externalHrefs = [...sidebar.querySelectorAll('a[href]')]
+            .map(a => a.href)
+            .filter(u => /^https?:\/\//.test(u));
         const existing = {
             spotify:  externalHrefs.find(u => /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\//i.test(u)) || null,
             discogs:  externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
