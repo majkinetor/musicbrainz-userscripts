@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.192648
+// @version      2026.5.28.195145
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -35,11 +35,17 @@ container.style.cssText = 'margin-bottom: 12px; padding: 12px; background: #FAF9
 const iconBtn = 'cursor: pointer; user-select: none; color: #666; padding: 2px 6px; border-radius: 4px; line-height: 1; font-size: 14px;';
 container.innerHTML = `
 <style>
-  .online-search-box a[target="_blank"]::after { content: none !important; display: none !important; }
+  /* MB's site CSS marks any outbound link with a red external-link ::after icon
+   * via selectors that beat our specificity unless we anchor on #sidebar. The
+   * ID-prefixed selector (specificity 1,2,2) beats anything class-only. */
+  #sidebar .online-search-box a::before,
+  #sidebar .online-search-box a::after { content: none !important; display: none !important; background: none !important; background-image: none !important; }
+  #sidebar .online-search-box a img.external,
+  #sidebar .online-search-box a img[src*="external"] { display: none !important; }
   .online-search-box .pc-icon-btn:hover { background: #ECECEC; color: #222; }
 </style>
 <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 8px;">
-  <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Streaming & Retail</h3>
+  <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
   <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
 </div>
 <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
@@ -55,7 +61,6 @@ container.innerHTML = `
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
   <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log"  style="${iconBtn}">ⓘ</span>
-  <span style="font-size: 10px; color: #999; font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase;">Platform Check</span>
   <span id="mb-token-setup-btn" class="pc-icon-btn" title="Provider toggles" style="${iconBtn}">⚙</span>
 </div>
 `;
@@ -219,7 +224,12 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source }) {
     if (remoteTracks != null) {
         val.textContent = `(${remoteTracks}/${mbTracks} trks)`;
         if (parseInt(remoteTracks, 10) === parseInt(mbTracks, 10)) {
-            ico.textContent = '✓'; ico.style.color = '#008000';
+            // Distinguish a fresh confirmation (✓) from a remembered cache hit (☑).
+            // Both are green/good; the glyph swap lets the user see at a glance
+            // whether they're looking at this-session data or a previous run's
+            // result that may be stale.
+            ico.textContent = source === 'cache' ? '☑' : '✓';
+            ico.style.color = '#008000';
             val.style.color = '#008000';
         } else {
             ico.textContent = '~'; ico.style.color = '#FF8C00';
@@ -236,7 +246,8 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source }) {
     const bits = [];
     if (year)   bits.push(year);
     if (label)  bits.push(label);
-    if (source) bits.push(`<span style="color:#BBB;">via ${source}</span>`);
+    // Don't repeat "via cache" — the ☑ icon already conveys that.
+    if (source && source !== 'cache') bits.push(`<span style="color:#BBB;">via ${source}</span>`);
     meta.innerHTML = bits.join(' · ');
 }
 
@@ -375,18 +386,41 @@ async function pickBestCandidate(candidates, fetchMeta, mbTracks, mbAlbum, label
     return scored[0];
 }
 
-// Per-platform-per-MBID URL cache. Once we've successfully found a Spotify /
-// Bandcamp / Discogs URL for a given release, remember it so subsequent loads
-// of the same release page never re-hit external search engines (which
-// rate-limit aggressively per IP).
-function cacheKey(mbid, platform) { return `urlcache:${platform}:${mbid}`; }
-function cacheGet(mbid, platform) { return GM_getValue(cacheKey(mbid, platform), null); }
-function cacheSet(mbid, platform, url) { if (url) GM_setValue(cacheKey(mbid, platform), url); }
+// Per-platform-per-MBID cache. Stores the full resolved row so a return visit
+// to a release page does ZERO network calls: no MB-rels-driven detail fetch,
+// no Wikidata SPARQL, no search, no embed/album-page parse. The ↻ button
+// clears entries when the user wants to force a re-scan.
+//
+// Schema (JSON-encoded value): { url, tracks, year, label, source } where
+// `url` may be null when we've definitively concluded "no match exists on
+// this platform" (so we don't keep re-searching for niche releases that
+// genuinely aren't on Spotify/Bandcamp).
+function cacheKey(mbid, platform) { return `pc:cache:${platform}:${mbid}`; }
+function cacheGet(mbid, platform) {
+    const raw = GM_getValue(cacheKey(mbid, platform), null);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return null; }
+}
+function cacheSet(mbid, platform, entry) {
+    if (!entry) return;
+    GM_setValue(cacheKey(mbid, platform), JSON.stringify(entry));
+}
 function cacheClear(mbid) {
-    // Setting to null is enough — cacheGet returns null as its default, so the
-    // next lookup will miss. We don't use GM_deleteValue (different VM/TM grant)
-    // to keep @grant slim.
     for (const p of ['spotify', 'discogs', 'bandcamp']) GM_setValue(cacheKey(mbid, p), null);
+}
+
+// Apply a cached row to the UI and log the hit. Centralised so every scanner
+// uses the same path on cache-hit (and the ☑ icon convention stays consistent).
+function applyCachedRow(platform, label, cached, mbTracks) {
+    appendLog(label, `Cache hit: url=${cached.url || '(no match)'}  tracks=${cached.tracks ?? '?'}  year=${cached.year || '?'}  label=${cached.label || '?'}`, 'ok');
+    updateRow(platform, {
+        url:          cached.url,
+        mbTracks,
+        remoteTracks: cached.tracks ?? null,
+        year:         cached.year   ?? null,
+        label:        cached.label  ?? null,
+        source:       'cache',
+    });
 }
 
 // ─── Wikidata fast path ─────────────────────────────────────────────────────
@@ -465,22 +499,25 @@ async function fetchSpotifyMeta(albumUrl) {
 
 async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidataSpotifyId }) {
     const label = 'Spotify';
+
+    // Cache hit (full row) — no network calls at all on re-visit.
+    const cached = cacheGet(mbid, 'spotify');
+    if (cached && (!existingUrl || existingUrl === cached.url)) {
+        applyCachedRow('spotify', label, cached, mbTracks);
+        return;
+    }
+
     let albumUrl = existingUrl;
-    let source = null;
+    let source   = null;
     let bestMeta = null;
 
     if (albumUrl) {
         appendLog(label, `Using existing MB URL: ${albumUrl}`, 'ok');
         source = 'MB rels';
-    } else if (cacheGet(mbid, 'spotify')) {
-        albumUrl = cacheGet(mbid, 'spotify');
-        appendLog(label, `Cache hit: ${albumUrl}`, 'ok');
-        source = 'cache';
     } else if (wikidataSpotifyId) {
         albumUrl = `https://open.spotify.com/album/${wikidataSpotifyId}`;
         appendLog(label, `Wikidata answer: ${albumUrl}`, 'ok');
         source = 'Wikidata';
-        cacheSet(mbid, 'spotify', albumUrl);
     } else {
         // Restrict the `site:` filter to the /album/ path so artist pages,
         // playlists, tracks, and shows never enter the candidate list. Both
@@ -488,56 +525,62 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
         // + "album" raises ranking for the exact phrase.
         const q = `site:open.spotify.com/album/ "${artist}" "${album}"`;
         const candidates = await searchWeb(q, u => /open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/[a-zA-Z0-9]{22}/.test(u), label);
-        if (!candidates.length) { updateRow('spotify', { url: null, mbTracks, remoteTracks: null }); return; }
+        if (!candidates.length) {
+            // Cache "no match" so a refresh-less page re-visit doesn't re-search.
+            cacheSet(mbid, 'spotify', { url: null, tracks: null, year: null, label: null, source: 'search' });
+            updateRow('spotify', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
         appendLog(label, `Verifying ${candidates.length} candidate(s) by track count + title…`);
         const best = await pickBestCandidate(candidates, fetchSpotifyMeta, mbTracks, album, label);
         if (!best || best.score === 0) {
-            // Every candidate failed both the track-count and title test —
-            // the album probably doesn't exist on this platform. Don't surface
-            // a wrong URL; let the user see × + the platform's search link.
             appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
+            cacheSet(mbid, 'spotify', { url: null, tracks: null, year: null, label: null, source: 'search' });
             updateRow('spotify', { url: null, mbTracks, remoteTracks: null });
             return;
         }
         albumUrl = best.url;
         bestMeta = best.meta;
         appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
-        cacheSet(mbid, 'spotify', albumUrl);
         source = 'search';
     }
 
-    // If we have bestMeta from the candidate verification, reuse it; otherwise
-    // fetch the embed for the chosen URL (covers the MB-rels / cache paths).
     const meta = bestMeta || await fetchSpotifyMeta(albumUrl);
     if (meta) {
         appendLog(label, `Embed parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
     } else {
         appendLog(label, `Embed fetch failed`, 'error');
     }
-    updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source });
+    const tracks = meta?.tracks ?? null;
+    const year   = meta?.year   ?? null;
+    const lbl    = meta?.label  ?? null;
+    cacheSet(mbid, 'spotify', { url: albumUrl, tracks, year, label: lbl, source });
+    updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
 async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid }) {
     const label = 'Discogs';
+
+    // Cache hit short-circuits before any API call. Invalidate only if the
+    // release's MB rels have started pointing at a different Discogs URL.
+    const cached = cacheGet(mbid, 'discogs');
+    if (cached && (!existingUrl || existingUrl === cached.url)) {
+        applyCachedRow('discogs', label, cached, mbTracks);
+        return;
+    }
+
     let releaseUrl = existingUrl;
-    let releaseId = null;
-    let source = null;
+    let releaseId  = null;
+    let source     = null;
 
     if (releaseUrl) {
         appendLog(label, `Using existing MB URL: ${releaseUrl}`, 'ok');
         source = 'MB rels';
         const m = releaseUrl.match(/\/release\/(\d+)/);
         if (m) releaseId = m[1];
-    } else if (cacheGet(mbid, 'discogs')) {
-        releaseUrl = cacheGet(mbid, 'discogs');
-        appendLog(label, `Cache hit: ${releaseUrl}`, 'ok');
-        source = 'cache';
-        const m = releaseUrl.match(/\/release\/(\d+)/);
-        if (m) releaseId = m[1];
     } else {
-        // The Discogs HTTP UI is Cloudflare-protected and returns 403 to script
-        // requests; the public API works without an auth token for these
-        // endpoints (rate-limited to ~25 req/min unauth'd).
+        // Discogs HTTP UI is Cloudflare-protected (403); the public API works
+        // without an auth token for search + detail (~25 req/min unauth'd).
         const apiUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(`${artist} ${album}`)}&type=release&per_page=5`;
         appendLog(label, `API search: ${apiUrl}`);
         const sr = await gmGet(apiUrl);
@@ -547,9 +590,9 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid }) {
                 const data = JSON.parse(sr.responseText);
                 const first = data.results?.[0];
                 if (first) {
-                    releaseId = String(first.id);
+                    releaseId  = String(first.id);
                     releaseUrl = `https://www.discogs.com/release/${releaseId}`;
-                    source = 'API search';
+                    source     = 'API search';
                     appendLog(label, `Found via API: ${releaseUrl}`, 'ok');
                 } else {
                     appendLog(label, `API search returned 0 results`, 'warn');
@@ -558,7 +601,6 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid }) {
         } else {
             appendLog(label, `API search failed`, 'error');
         }
-        // Fallback: web search.
         if (!releaseUrl) {
             const fallback = await searchWeb(`site:discogs.com release ${artist} ${album}`, u => /www\.discogs\.com\/release\/\d+/.test(u) || /www\.discogs\.com\/.*\/release\/\d+/.test(u), label);
             if (fallback) {
@@ -568,12 +610,14 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid }) {
                 source = 'web search';
             }
         }
-        if (releaseUrl) cacheSet(mbid, 'discogs', releaseUrl);
     }
 
-    if (!releaseUrl) { updateRow('discogs', { url: null, mbTracks, remoteTracks: null }); return; }
+    if (!releaseUrl) {
+        cacheSet(mbid, 'discogs', { url: null, tracks: null, year: null, label: null, source: 'search' });
+        updateRow('discogs', { url: null, mbTracks, remoteTracks: null });
+        return;
+    }
 
-    // Fetch the release detail via the API for clean metadata.
     let tracks = null, year = null, lbl = null;
     if (releaseId) {
         const detailUrl = `https://api.discogs.com/releases/${releaseId}`;
@@ -583,17 +627,16 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid }) {
         if (dr.ok) {
             try {
                 const data = JSON.parse(dr.responseText);
-                // Discogs tracklists can include section headings (`type_:"heading"`)
-                // and index/track entries; count only `type_ == "track"`.
                 const trk = (data.tracklist || []).filter(t => t.type_ === 'track' || !t.type_);
                 tracks = trk.length || null;
-                year = data.year || null;
-                lbl  = (data.labels || []).map(l => l.name).join(', ') || null;
+                year   = data.year || null;
+                lbl    = (data.labels || []).map(l => l.name).join(', ') || null;
                 appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}`, 'ok');
             } catch (e) { appendLog(label, `API detail parse error: ${e.message}`, 'error'); }
         } else { appendLog(label, `API detail failed`, 'error'); }
     }
 
+    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, source });
     updateRow('discogs', { url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
@@ -649,21 +692,24 @@ async function searchBandcampNative(query, label) {
 
 async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
     const label = 'Bandcamp';
+
+    const cached = cacheGet(mbid, 'bandcamp');
+    if (cached && (!existingUrl || existingUrl === cached.url)) {
+        applyCachedRow('bandcamp', label, cached, mbTracks);
+        return;
+    }
+
     let albumUrl = existingUrl;
-    let source = null;
+    let source   = null;
     let bestMeta = null;
 
     if (albumUrl) {
         appendLog(label, `Using existing MB URL: ${albumUrl}`, 'ok');
         source = 'MB rels';
-    } else if (cacheGet(mbid, 'bandcamp')) {
-        albumUrl = cacheGet(mbid, 'bandcamp');
-        appendLog(label, `Cache hit: ${albumUrl}`, 'ok');
-        source = 'cache';
     } else {
-        // Priority 1: Bandcamp's own search (works when the user's browser
-        // has Bandcamp's Cloudflare clearance cookie — the common case after
-        // any prior Bandcamp visit). Skip when blocked by the CF challenge.
+        // Priority 1: Bandcamp's own search (works when the browser has CF
+        // clearance — the common case after any prior Bandcamp visit). Skip
+        // when blocked by the CF challenge.
         let candidates = await searchBandcampNative(`${artist} ${album}`, label);
         let candidateSource = 'native';
         if (!candidates.length) {
@@ -674,18 +720,22 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
             candidates = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), label, 3);
             candidateSource = 'search';
         }
-        if (!candidates.length) { updateRow('bandcamp', { url: null, mbTracks, remoteTracks: null }); return; }
+        if (!candidates.length) {
+            cacheSet(mbid, 'bandcamp', { url: null, tracks: null, year: null, label: null, source: 'search' });
+            updateRow('bandcamp', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
         appendLog(label, `Verifying ${candidates.length} candidate(s) by track count + title…`);
         const best = await pickBestCandidate(candidates, fetchBandcampMeta, mbTracks, album, label);
         if (!best || best.score === 0) {
             appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
+            cacheSet(mbid, 'bandcamp', { url: null, tracks: null, year: null, label: null, source: 'search' });
             updateRow('bandcamp', { url: null, mbTracks, remoteTracks: null });
             return;
         }
         albumUrl = best.url;
         bestMeta = best.meta;
         appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
-        cacheSet(mbid, 'bandcamp', albumUrl);
         source = candidateSource;
     }
 
@@ -695,7 +745,11 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid }) {
     } else {
         appendLog(label, `Album page failed`, 'error');
     }
-    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source });
+    const tracks = meta?.tracks ?? null;
+    const year   = meta?.year   ?? null;
+    const lbl    = meta?.label  ?? null;
+    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, source });
+    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
 // ─── Main entry ────────────────────────────────────────────────────────────
@@ -756,11 +810,14 @@ async function runScans() {
     // already satisfy Spotify, since those skip the search path anyway. We
     // still fire it speculatively when those exist (cheap; one SPARQL call),
     // because the answer can populate Apple Music / AllMusic rows later.
+    // Skip the SPARQL call when Spotify is already covered — either by an
+    // existing MB rel, OR by any cache entry (a cached "no match" still
+    // counts; the user has the ↻ button to retry on demand).
     let wd = null;
     if (!existing.spotify && !cacheGet(mbid, 'spotify')) {
         wd = await lookupWikidata(releaseGroupMbid, mbid);
     } else {
-        appendLog('Wikidata', `skipped — Spotify URL already known (MB rels or cache)`);
+        appendLog('Wikidata', `skipped — Spotify already covered by MB rels or cache`);
     }
 
     // Seed search fallback URLs.
