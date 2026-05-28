@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.28.092118
+// @version      2026.5.28.155322
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -1620,6 +1620,9 @@
   };
 
   // src/mappers.js
+  var INSTRUMENTS_CI = Object.fromEntries(
+    Object.entries(INSTRUMENTS).map(([k, v]) => [k.toLowerCase(), v])
+  );
   function guessSortName(name) {
     if (!name || !name.trim()) return name;
     name = name.trim();
@@ -1811,15 +1814,16 @@
       if (mapping && mapping.linkType == "artwork" && rolePart[1]) {
         additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
       }
-      if (!mapping && INSTRUMENTS[actualRole] !== void 0) {
+      const actualRoleLc = actualRole.toLowerCase();
+      if (!mapping && Object.prototype.hasOwnProperty.call(INSTRUMENTS_CI, actualRoleLc)) {
         let instrumentName = actualRole;
-        if (INSTRUMENTS[actualRole]) {
-          instrumentName = INSTRUMENTS[actualRole];
+        if (INSTRUMENTS_CI[actualRoleLc]) {
+          instrumentName = INSTRUMENTS_CI[actualRoleLc];
         }
         let role2 = ENTITY_TYPE_MAP.Instruments;
-        if ("Drum Programming" === actualRole) {
+        if (actualRoleLc === "drum programming") {
           role2 = ENTITY_TYPE_MAP["Programmed By"];
-          instrumentName = INSTRUMENTS["Drum Machine"];
+          instrumentName = INSTRUMENTS_CI["drum machine"];
         }
         return Object.assign({}, role2, {
           artist,

@@ -7,6 +7,17 @@ import { ENTITY_TYPE_MAP } from './data/entity-map.js';
 import { INSTRUMENTS }     from './data/instruments.js';
 import { SELECTORS }       from './constants.js';
 
+// Case-insensitive view of INSTRUMENTS so Discogs role variants like
+// "Conga Drum" / "conga drum" / "CONGA DRUM" all hit the same entry.
+// Without this, a non-canonical casing fell through the case-sensitive
+// `INSTRUMENTS[actualRole]` lookup; the rel then dispatched with the raw
+// (un-mapped) role name as the instrument attribute, which MB doesn't
+// recognise — observed on majkinetor's "Ifetayo" import (#104) and
+// reported again post-fix.
+const INSTRUMENTS_CI = Object.fromEntries(
+    Object.entries(INSTRUMENTS).map(([k, v]) => [k.toLowerCase(), v])
+);
+
 /**
  * Best-effort `Name → Sort, Name` heuristic. Used when we create a new MB
  * artist from a Discogs credit. MB's own button has the same limitations and
@@ -285,16 +296,18 @@ export function getArtistRoles(artist) {
             if (mapping && mapping.linkType == 'artwork' && rolePart[1]) {
                 additionalAttributes.push({ _type: 'task', value: rolePart[1].replace(']', '').trim().toLowerCase() });
             }
-            if (!mapping && INSTRUMENTS[actualRole] !== undefined) {
-                // check if it's an instrument
+            const actualRoleLc = actualRole.toLowerCase();
+            if (!mapping && Object.prototype.hasOwnProperty.call(INSTRUMENTS_CI, actualRoleLc)) {
+                // check if it's an instrument — case-insensitive so
+                // Discogs role casing variants all hit the same entry.
                 let instrumentName = actualRole;
-                if (INSTRUMENTS[actualRole]) {
-                    instrumentName = INSTRUMENTS[actualRole];
+                if (INSTRUMENTS_CI[actualRoleLc]) {
+                    instrumentName = INSTRUMENTS_CI[actualRoleLc];
                 }
                 let role = ENTITY_TYPE_MAP.Instruments;
-                if ('Drum Programming' === actualRole) {
+                if (actualRoleLc === 'drum programming') {
                     role = ENTITY_TYPE_MAP['Programmed By'];
-                    instrumentName = INSTRUMENTS['Drum Machine'];
+                    instrumentName = INSTRUMENTS_CI['drum machine'];
                 }
                 return Object.assign({}, role, {
                     artist: artist,
