@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.28.175415
+// @version      2026.5.28.181839
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -2519,12 +2519,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         function refreshCredBtns() {
           const val = credInput.value;
           const mbName = currentMbName();
-          mbBtn.disabled = !mbName || val === mbName;
-          dBtn.disabled = val === displayName;
-          [mbBtn, dBtn].forEach((b) => {
-            b.style.opacity = b.disabled ? "0.4" : "1";
-            b.style.cursor = b.disabled ? "default" : "pointer";
-          });
+          mbBtn.style.display = !mbName || val === mbName ? "none" : "";
+          dBtn.style.display = val === displayName ? "none" : "";
         }
         function setCredViaButton(value) {
           credInput.value = value;

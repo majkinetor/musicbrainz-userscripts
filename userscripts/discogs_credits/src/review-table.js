@@ -565,12 +565,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             function refreshCredBtns() {
                 const val = credInput.value;
                 const mbName = currentMbName();
-                mbBtn.disabled = !mbName || val === mbName;
-                dBtn.disabled  = val === displayName;
-                [mbBtn, dBtn].forEach(b => {
-                    b.style.opacity = b.disabled ? '0.4' : '1';
-                    b.style.cursor  = b.disabled ? 'default' : 'pointer';
-                });
+                // Hide rather than disable — disabled chips next to every
+                // row looked spammy. Buttons disappear entirely when the
+                // action would be a no-op (#108 follow-up).
+                mbBtn.style.display = (!mbName || val === mbName) ? 'none' : '';
+                dBtn.style.display  = (val === displayName) ? 'none' : '';
             }
             function setCredViaButton(value) {
                 credInput.value = value;
