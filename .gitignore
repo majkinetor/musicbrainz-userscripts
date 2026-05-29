@@ -19,3 +19,11 @@ dev/notif-channel/node_modules/
 /node_modules/
 /package.json
 /pnpm-lock.yaml
+
+# Per-developer MCP config. Each contributor copies
+# `dev/notif-channel/mcp.json.template` → `.mcp.json` themselves
+# (see DEVELOP.md). The template is tracked; the live config isn't.
+/.mcp.json
+
+# Claude Code per-user state: permission allowlist, etc. Machine-specific.
+/.claude/
