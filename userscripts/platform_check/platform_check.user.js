@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.28.233046
+// @version      2026.5.29.090208
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -21,6 +21,103 @@
 // ==/UserScript==
 (function () {
 'use strict';
+
+// ─── /edit-relationships sub-page ───────────────────────────────────────────
+// When the user clicks + on the release page, we stash the OK URLs in
+// `pc:pending:<mbid>` and open this page in a new tab. Detect that path
+// and short-circuit to the inject helper — the sidebar UI / scans below
+// only make sense on the canonical release page.
+if (/\/release\/[0-9a-f-]{36}\/edit-relationships(?:[?#]|$)/.test(window.location.pathname)) {
+    runInjectHelper();
+    return;
+}
+
+function runInjectHelper() {
+    const mbid = (window.location.pathname.match(/\/release\/([0-9a-f-]{36})/) || [])[1];
+    if (!mbid) return;
+    const raw = GM_getValue(`pc:pending:${mbid}`, null);
+    if (!raw) return;
+    let pending;
+    try { pending = JSON.parse(raw); } catch { return; }
+    const entries = Object.entries(pending || {}).filter(([, u]) => u);
+    if (entries.length === 0) return;
+
+    const tryInsert = () => {
+        const target = document.querySelector('#content') || document.body;
+        if (!target) { setTimeout(tryInsert, 200); return; }
+        const wrap = document.createElement('div');
+        wrap.id = 'pc-inject-banner';
+        wrap.style.cssText = 'position:relative;margin:12px 0;padding:12px 36px 10px 12px;background:#FFF8E1;border:1px solid #FFC107;border-radius:6px;font-family:sans-serif;font-size:13px;line-height:1.4;';
+        wrap.innerHTML = `
+            <div style="font-weight:bold;margin-bottom:8px;color:#7B5E00;">Platform Check — ${entries.length} URL${entries.length === 1 ? '' : 's'} to add</div>
+            ${entries.map(([p, u]) => `
+                <div style="margin:4px 0;display:flex;align-items:center;gap:8px;">
+                    <span style="text-transform:capitalize;font-weight:500;min-width:70px;">${p}:</span>
+                    <code style="flex-grow:1;background:#FFF;padding:2px 6px;border-radius:3px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u}</code>
+                    <button class="pc-copy-btn" data-url="${u}" type="button" style="padding:3px 10px;font-size:11px;cursor:pointer;border:1px solid #BBB;background:#FFF;border-radius:3px;">Copy</button>
+                </div>`).join('')}
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+                <button id="pc-inject-all" type="button" style="padding:5px 12px;font-size:12px;font-weight:bold;cursor:pointer;border:1px solid #FFC107;background:#FFC107;color:#000;border-radius:3px;">Inject all</button>
+                <span style="font-size:11px;color:#856404;">Tries MB's relationship editor dispatch — review pending changes before you Save. ↻ on the release page to verify they land as circled ✓.</span>
+            </div>
+            <button id="pc-inject-dismiss" type="button" style="position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;font-size:18px;line-height:1;color:#7B5E00;" title="Dismiss (drops pending without injecting)">×</button>`;
+        target.insertBefore(wrap, target.firstChild);
+
+        for (const btn of wrap.querySelectorAll('.pc-copy-btn')) {
+            btn.addEventListener('click', () => {
+                navigator.clipboard.writeText(btn.dataset.url).then(() => {
+                    const t = btn.textContent; btn.textContent = '✓';
+                    setTimeout(() => { btn.textContent = t; }, 1200);
+                });
+            });
+        }
+        document.getElementById('pc-inject-dismiss').addEventListener('click', () => {
+            GM_setValue(`pc:pending:${mbid}`, null);
+            wrap.remove();
+        });
+        document.getElementById('pc-inject-all').addEventListener('click', () => injectAll(entries, wrap, mbid));
+    };
+    tryInsert();
+}
+
+// Best-effort programmatic URL injection. MB's edit-relationships page has
+// an "Add a relationship" button per side and the URL entity has a target
+// input that auto-detects link type from the URL pattern. Click the add
+// button, find the latest URL input, set the value via React's native
+// setter, dispatch input + change so React picks up the new state.
+async function injectAll(entries, banner, mbid) {
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    let injected = 0;
+    for (const [platform, url] of entries) {
+        // Find the latest "Add a relationship" trigger. MB renders one per
+        // entity type; we want the one labelled URL.
+        const addBtn = [...document.querySelectorAll('button, a')]
+            .filter(el => /add a relationship|add (?:another )?url/i.test(el.textContent || ''))
+            .pop();
+        if (!addBtn) { console.warn('[pc] could not find Add Relationship button'); break; }
+        addBtn.click();
+        await wait(300);
+        // Find the freshly-rendered URL input (last text/url input in the doc).
+        const candidates = document.querySelectorAll('input[type="url"], input[name$=".url"], input[name*="target"]');
+        const input = candidates[candidates.length - 1];
+        if (!input) { console.warn('[pc] could not find URL input after add'); continue; }
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        setter.call(input, url);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        injected++;
+        await wait(200);
+    }
+    // Update banner to show outcome; keep visible so user has the URLs as
+    // fallback if injection didn't take.
+    const status = document.createElement('div');
+    status.style.cssText = 'margin-top:8px;padding:6px 8px;font-size:12px;background:#E8F5E9;border:1px solid #81C784;border-radius:3px;';
+    status.textContent = injected === entries.length
+        ? `Injected ${injected} URL(s) — review pending changes and click Save.`
+        : `Injected ${injected}/${entries.length} URL(s). Use the Copy buttons above for the rest.`;
+    banner.appendChild(status);
+    if (injected > 0) GM_setValue(`pc:pending:${mbid}`, null);
+}
 
 // ─── UI ────────────────────────────────────────────────────────────────────
 const sidebar = document.querySelector('#sidebar');
@@ -75,8 +172,9 @@ container.innerHTML = `
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
-  <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log"  style="${iconBtn}">ⓘ</span>
-  <span id="mb-token-setup-btn" class="pc-icon-btn" title="Provider toggles" style="${iconBtn}">⚙</span>
+  <span id="mb-inject-btn"      class="pc-icon-btn" title="Inject OK URLs into MB's edit-relationships page" style="${iconBtn}">+</span>
+  <span id="mb-token-setup-btn" class="pc-icon-btn" title="Provider toggles"                                  style="${iconBtn}">⚙</span>
+  <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log"                                    style="${iconBtn}">ⓘ</span>
 </div>
 `;
 
@@ -1165,6 +1263,35 @@ document.getElementById('mb-refresh-btn').addEventListener('click', () => {
     cacheClear(mbid);
     resetRows();
     runScans();
+});
+
+// + INJECT button: collect every confirmed (✓) URL that ISN'T already in MB's
+// url-rels, stash it under `pc:pending:<mbid>` in GM storage, and open the
+// edit-relationships page in a new tab. The companion handler that runs on
+// that page (same script, @match'd against /edit-relationships) reads the
+// pending entry and dispatches each URL into MB's relationship editor.
+document.getElementById('mb-inject-btn').addEventListener('click', () => {
+    const pending = {};
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer']) {
+        const cached = cacheGet(mbid, p);
+        if (!cached?.url) continue;
+        // Skip URLs that are already in MB rels (the row is circled and the
+        // URL is already on the release — no point re-adding).
+        if (cached.source === 'MB rels') continue;
+        // Skip rows where the track count didn't match (~ icon) — the user
+        // hasn't confirmed those.
+        const icoText = document.getElementById(`ico-${p}`)?.textContent?.trim();
+        if (icoText !== '✓') continue;
+        pending[p] = cached.url;
+    }
+    const count = Object.keys(pending).length;
+    if (count === 0) {
+        appendLog('System', 'Inject: no new ✓ URLs to add (all already in MB rels or unverified)', 'warn');
+        return;
+    }
+    GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pending));
+    appendLog('System', `Inject: queued ${count} URL(s) — opening edit page`, 'ok');
+    window.open(`https://musicbrainz.org/release/${mbid}/edit-relationships`, '_blank');
 });
 
 runScans();
