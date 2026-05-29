@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.182657
+// @version      2026.5.29.183449
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -216,29 +216,43 @@ function showInjectBanner(text, reports = [], opts = {}) {
     const overlay = document.createElement('div');
     overlay.id = 'pc-inject-status';
     const fail = !!opts.fail;
+    const palette = fail
+        ? { bg: '#FFF8E1', border: '#FFB300', accent: '#7B5E00', title: '#5D4400', tagOk: '#1B5E20', tagFail: '#B71C1C' }
+        : { bg: '#E8F5E9', border: '#66BB6A', accent: '#1B5E20', title: '#0E4814', tagOk: '#1B5E20', tagFail: '#B71C1C' };
     overlay.style.cssText = `
-        position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
-        z-index: 999999; padding: 8px 14px; border-radius: 6px;
-        font-family: sans-serif; font-size: 12px; max-width: 90vw;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        background: ${fail ? '#FFF3CD' : '#E8F5E9'};
-        border: 1px solid ${fail ? '#FFC107' : '#81C784'};
-        color: ${fail ? '#7B5E00' : '#1B5E20'};`;
-    let body = `<strong>${text}</strong>`;
+        position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+        z-index: 999999; padding: 12px 36px 12px 14px; border-radius: 8px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 13px; line-height: 1.4; max-width: 520px; min-width: 280px;
+        background: ${palette.bg};
+        border: 1px solid ${palette.border};
+        color: ${palette.accent};
+        box-shadow: 0 6px 20px rgba(0,0,0,0.18), 0 2px 4px rgba(0,0,0,0.08);`;
+
+    const closeBtn = `<button id="pc-inject-close" type="button" aria-label="Close" style="
+        position: absolute; top: 6px; right: 6px;
+        width: 22px; height: 22px; padding: 0; border: 0; border-radius: 50%;
+        background: transparent; color: ${palette.accent}; font-size: 16px; line-height: 1;
+        cursor: pointer; opacity: 0.6;">×</button>`;
+    let body = `<div style="font-weight: 600; color: ${palette.title}; margin-right: 6px;">${text}</div>`;
     if (reports.length) {
-        body += '<ul style="margin:4px 0 0 18px;padding:0;font-size:11px;">';
+        body += '<ul style="margin: 8px 0 0 0; padding: 0; list-style: none; font-size: 12px;">';
         for (const r of reports) {
             const host = (r.url || '').match(/^https?:\/\/([^/]+)/)?.[1] || '';
-            body += r.ok
-                ? `<li>${host}: <span style="color:#1B5E20">OK</span>${r.type ? ` · ${r.type}` : ''}${r.note ? ` · ${r.note}` : ''}</li>`
-                : `<li>${host}: <span style="color:#A33">FAIL</span> · ${r.miss}</li>`;
+            const tail = r.ok
+                ? `<span style="color: ${palette.tagOk}; font-weight: 600;">OK</span>${r.type ? ` <span style="color:#555;">· ${r.type}</span>` : ''}${r.note ? ` <span style="color:#888;">· ${r.note}</span>` : ''}`
+                : `<span style="color: ${palette.tagFail}; font-weight: 600;">FAIL</span> <span style="color:#555;">· ${r.miss}</span>`;
+            body += `<li style="padding: 2px 0; display: flex; gap: 6px;"><span style="color:#888; min-width: 0;">${host}</span><span style="color:#555;">·</span><span style="flex: 1;">${tail}</span></li>`;
         }
         body += '</ul>';
-        body += '<div style="margin-top:6px;font-size:11px;color:#555;">Remember to set an edit note and click <strong>Enter edit</strong> to save.</div>';
+        body += `<div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid ${palette.border}; font-size: 11px; color: #666;">Remember to set an edit note and click <strong style="color: ${palette.accent};">Enter edit</strong> to save.</div>`;
     }
-    overlay.innerHTML = body + ' <span id="pc-inject-close" style="cursor:pointer;margin-left:10px;color:#666;font-weight:bold;">×</span>';
+    overlay.innerHTML = body + closeBtn;
     document.body.appendChild(overlay);
-    document.getElementById('pc-inject-close')?.addEventListener('click', () => overlay.remove());
+    const close = document.getElementById('pc-inject-close');
+    close?.addEventListener('mouseenter', () => { close.style.opacity = '1'; close.style.background = 'rgba(0,0,0,0.06)'; });
+    close?.addEventListener('mouseleave', () => { close.style.opacity = '0.6'; close.style.background = 'transparent'; });
+    close?.addEventListener('click', () => overlay.remove());
 }
 
 // ─── UI ────────────────────────────────────────────────────────────────────
