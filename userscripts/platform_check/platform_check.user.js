@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.090208
+// @version      2026.5.29.090716
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -22,12 +22,14 @@
 (function () {
 'use strict';
 
-// ─── /edit-relationships sub-page ───────────────────────────────────────────
+// ─── Release editor sub-pages (/edit and /edit-relationships) ──────────────
 // When the user clicks + on the release page, we stash the OK URLs in
-// `pc:pending:<mbid>` and open this page in a new tab. Detect that path
-// and short-circuit to the inject helper — the sidebar UI / scans below
-// only make sense on the canonical release page.
-if (/\/release\/[0-9a-f-]{36}\/edit-relationships(?:[?#]|$)/.test(window.location.pathname)) {
+// `pc:pending:<mbid>` and open the release editor in a new tab. Detect both
+// /edit and /edit-relationships (former is the multi-tab editor where URL
+// relationships live under "External Links"; latter is the dedicated rel
+// editor) and short-circuit to the inject helper — the sidebar UI / scans
+// below only make sense on the canonical release page.
+if (/\/release\/[0-9a-f-]{36}\/(edit|edit-relationships)(?:[?#]|$)/.test(window.location.pathname)) {
     runInjectHelper();
     return;
 }
@@ -172,7 +174,7 @@ container.innerHTML = `
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
-  <span id="mb-inject-btn"      class="pc-icon-btn" title="Inject OK URLs into MB's edit-relationships page" style="${iconBtn}">+</span>
+  <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add" style="${iconBtn}">+</span>
   <span id="mb-token-setup-btn" class="pc-icon-btn" title="Provider toggles"                                  style="${iconBtn}">⚙</span>
   <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log"                                    style="${iconBtn}">ⓘ</span>
 </div>
@@ -1285,13 +1287,17 @@ document.getElementById('mb-inject-btn').addEventListener('click', () => {
         pending[p] = cached.url;
     }
     const count = Object.keys(pending).length;
-    if (count === 0) {
-        appendLog('System', 'Inject: no new ✓ URLs to add (all already in MB rels or unverified)', 'warn');
-        return;
+    // Always open the tab — gives the user predictable feedback ("click +
+    // opens release editor"). When count > 0 the inject banner appears on
+    // the editor page with the URLs queued; when count === 0 the editor
+    // just opens normally so the user can edit other things.
+    if (count > 0) {
+        GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pending));
+        appendLog('System', `Inject: queued ${count} URL(s) — opening release editor`, 'ok');
+    } else {
+        appendLog('System', `Inject: nothing new to add (all OK URLs are already in MB rels) — opening release editor anyway`, 'warn');
     }
-    GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pending));
-    appendLog('System', `Inject: queued ${count} URL(s) — opening edit page`, 'ok');
-    window.open(`https://musicbrainz.org/release/${mbid}/edit-relationships`, '_blank');
+    window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
 });
 
 runScans();
