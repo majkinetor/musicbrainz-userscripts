@@ -19,9 +19,9 @@ The workflow is as follows:
     1. Some relationship are added to the work instead of the track. Non existent work can automatically be created depending on option. If the work doesn't exist, relationship will not be added and will be reported in log
 1. At the end and after potential manual interventions, user confirms the edit
 
-View [video](./screen.webm).
+<img width="800" src="./screenshot.png" />
 
-![](./screenshot.png)
+[screen.webm](https://github.com/user-attachments/assets/6f4acf05-a518-4068-844c-7546d9b3d638)
 
 Make sure to read [Style / Relationships](https://musicbrainz.org/doc/Style/Relationships) for general guidelines.
 
