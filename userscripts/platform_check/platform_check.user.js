@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.132132
+// @version      2026.5.29.133154
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -222,7 +222,7 @@ container.innerHTML = `
       <span id="master-${p}" class="pc-master-slot" style="font-size: 11px; display: inline-block; min-width: 14px; text-align: center; cursor: default;"></span>
       <span id="val-${p}" style="font-size: 12px; font-weight: bold; font-family: monospace; color: #777; min-width: 20px; text-align: right;">—</span>
     </div>
-    <div id="meta-${p}" style="font-size: 10px; color: #999; padding-left: 22px; font-family: sans-serif; line-height: 1.2; margin-top: -1px;"></div>
+    <div id="meta-${p}" style="font-size: 10px; color: #999; font-family: sans-serif; line-height: 1.2; margin-top: -1px;"></div>
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
@@ -1487,26 +1487,46 @@ function parseMbFromDom() {
 
         const isVariousArtists = artistIds.includes(VA_MBID) || artistNames.some(n => VA_NAME_RE.test(n));
 
-        // Release format (CD / Vinyl / Cassette / Digital Media / …). MB renders
-        // it in the medium header above each tracklist. Used by the Discogs
-        // scanner to filter `&format=` so a CD release doesn't pick a vinyl
-        // Discogs entry when a CD is available. Best-effort — null is fine.
-        let format = null;
-        for (const t of document.querySelectorAll('table.tbl.medium')) {
-            const head = (t.previousElementSibling?.textContent || t.querySelector('caption, thead')?.textContent || '').trim();
-            const m = head.match(/\b(CD|Vinyl|Cassette|Digital\s*Media|File|SACD|DVD|Blu-?ray|Flexi-?disc|Minidisc)\b/i);
-            if (m) { format = m[1]; break; }
-        }
-
-        // Year + label for the header subtitle. MB renders these in several
-        // layouts depending on skin/version (dl.properties dt/dd, table th/td,
-        // bare "Date:" paragraphs), so try a few patterns and fall back to a
-        // broad sidebar text/anchor scan.
-        let year = null, releaseLabel = null;
+        // Shared key matcher for "Date:" / "Label:" / "Format:" header
+        // detection across the various skins MB renders.
         const matchKey = (el, ...wanted) => {
             const txt = (el.textContent || '').trim().replace(/:$/, '').toLowerCase();
             return wanted.includes(txt);
         };
+        const FORMAT_RE = /\b(CD|Vinyl|Cassette|Digital\s*Media|File|SACD|DVD|Blu-?ray|Flexi-?disc|Minidisc|12"\s*Vinyl|7"\s*Vinyl|10"\s*Vinyl)\b/i;
+
+        // Release format. MB renders it in several places: a sidebar
+        // dl/dt/dd "Format:" row, a table th/td variant, or a medium-table
+        // header above each tracklist. Try them all.
+        let format = null;
+        for (const dt of document.querySelectorAll('dl.properties dt, dl dt')) {
+            const dd = dt.nextElementSibling;
+            if (!dd || dd.tagName !== 'DD') continue;
+            if (matchKey(dt, 'format', 'formats')) {
+                const m = dd.textContent.match(FORMAT_RE);
+                if (m) { format = m[1]; break; }
+            }
+        }
+        if (!format) {
+            for (const th of document.querySelectorAll('table th')) {
+                const td = th.nextElementSibling;
+                if (!td) continue;
+                if (matchKey(th, 'format', 'formats')) {
+                    const m = td.textContent.match(FORMAT_RE);
+                    if (m) { format = m[1]; break; }
+                }
+            }
+        }
+        if (!format) {
+            for (const t of document.querySelectorAll('table.tbl.medium, table.medium-list')) {
+                const head = (t.previousElementSibling?.textContent || t.querySelector('caption, thead')?.textContent || '').trim();
+                const m = head.match(FORMAT_RE);
+                if (m) { format = m[1]; break; }
+            }
+        }
+
+        // Year + label for the header subtitle. Same multi-pattern approach.
+        let year = null, releaseLabel = null;
         // Pattern A: dl/dt/dd.
         for (const dt of document.querySelectorAll('dl.properties dt, dl dt')) {
             const dd = dt.nextElementSibling;
