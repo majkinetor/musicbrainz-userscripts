@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.091917
+// @version      2026.5.29.092611
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -1118,16 +1118,25 @@ function parseMbFromDom() {
         const rgFromText = document.body.innerHTML.match(/release-group\/([0-9a-f-]{36})/)?.[1];
         const releaseGroupMbid = rgFromHref || rgFromText || null;
 
-        // Existing URL rels. MB's sidebar has an "External links" section
-        // listing platform-specific URLs. MB renders some platform anchors
-        // with a protocol-relative `href="//host/path"` (verified on Bandcamp
-        // rels) — `[href^="http"]` skips those even though their resolved
-        // `.href` is absolute. Query every `a[href]` and filter on the
-        // resolved URL property instead, which is always an absolute URL.
-        const sidebar = document.querySelector('#sidebar') || document;
-        const externalHrefs = [...sidebar.querySelectorAll('a[href]')]
-            .map(a => a.href)
-            .filter(u => /^https?:\/\//.test(u));
+        // Existing URL rels. MB renders the release's URL relationships in
+        // different places depending on layout state — sometimes under
+        // "External links" in #sidebar, sometimes inline in the main #content
+        // under a "Credits" / "External links" section (verified on the
+        // "Mambo loco" release where Discogs / Spotify / Bandcamp all appear
+        // in the main content's credits table). Search both. The platform
+        // URL patterns below are specific enough that we won't false-positive
+        // on unrelated outbound links.
+        //
+        // Some MB anchors use protocol-relative `href="//host/path"` so we
+        // query every `a[href]` and filter on the *resolved* `.href` property
+        // (always absolute) rather than the attribute selector.
+        const scope = document.querySelector('#content, #wrap, body') || document;
+        const sidebar = document.querySelector('#sidebar');
+        const allAnchors = [
+            ...(sidebar ? sidebar.querySelectorAll('a[href]') : []),
+            ...scope.querySelectorAll('a[href]'),
+        ];
+        const externalHrefs = allAnchors.map(a => a.href).filter(u => /^https?:\/\//.test(u));
         const existing = {
             spotify:  externalHrefs.find(u => /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\//i.test(u)) || null,
             discogs:  externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
