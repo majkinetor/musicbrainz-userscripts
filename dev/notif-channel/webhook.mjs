@@ -10,11 +10,12 @@
 // session's full transcript + tool context is intact (unlike `claude -p`
 // which spawns fresh).
 //
-// The PowerShell GH notification poller (`dev/check-gh-notifications.ps1`)
+// The PowerShell GH notification poller (`dev/github-notifications/check-gh-notifications.ps1`)
 // is the primary client; any HTTP POST to localhost:8788 works.
 //
-// Logging: appends to `dev/.channel.log` (gitignored) alongside the
-// PowerShell poller's logs, so the maintainer can audit both sides.
+// Logging: appends to `dev/notif-channel/.channel.log` (gitignored)
+// alongside the PowerShell poller's logs in `dev/github-notifications/`,
+// so the maintainer can audit both sides.
 
 import { Server }              from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';

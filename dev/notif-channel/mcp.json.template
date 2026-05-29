@@ -3,7 +3,7 @@
     "mcpServers": {
         "notif-channel": {
             "command": "node",
-            "args": ["./userscripts/discogs_credits/dev/notif-channel/webhook.mjs"]
+            "args": ["./dev/notif-channel/webhook.mjs"]
         }
     }
 }

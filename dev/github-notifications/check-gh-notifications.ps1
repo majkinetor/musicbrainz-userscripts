@@ -13,24 +13,25 @@
 #
 # Logging is verbose by design — every tick writes a `=== poll start ===`
 # block ending in `=== poll end OK ===` or `=== poll end ERROR ===` to
-# `dev/.notif-poll.log`. Between the markers: the exact GH URL, response
-# status, every thread inspected with title/type/reason/updated, the
-# per-thread filter decision (actionable / skipped + why), and the
-# channel POST outcome. Each log line is timestamped so you can grep
-# `=== poll start ===` to find tick boundaries.
+# `dev/github-notifications/.notif-poll.log`. Between the markers: the
+# exact GH URL, response status, every thread inspected with
+# title/type/reason/updated, the per-thread filter decision
+# (actionable / skipped + why), and the channel POST outcome. Each log
+# line is timestamped so you can grep `=== poll start ===` to find
+# tick boundaries.
 #
-#   dev/.notification-state.json   last-poll timestamp + dedupe set
-#   dev/.notif-poll.log            per-poll outcome from this script
-#   dev/notif-channel/.channel.log webhook.mjs's view of each POST
+#   dev/github-notifications/.notification-state.json  last-poll timestamp + dedupe set
+#   dev/github-notifications/.notif-poll.log           per-poll outcome from this script
+#   dev/notif-channel/.channel.log                     webhook.mjs's view of each POST
 #
 # Usage:
-#   powershell -ExecutionPolicy Bypass -File dev/check-gh-notifications.ps1
+#   powershell -ExecutionPolicy Bypass -File dev/github-notifications/check-gh-notifications.ps1
 # Task Scheduler does the same on a recurring trigger.
 
 $ErrorActionPreference = 'Stop'
 
 $here       = Split-Path -Parent $MyInvocation.MyCommand.Path
-$credFile   = Join-Path $here '.github-credentials.json'
+$credFile   = Join-Path (Split-Path -Parent $here) '.github-credentials.json'
 $stateFile  = Join-Path $here '.notification-state.json'
 $pollLog    = Join-Path $here '.notif-poll.log'
 $channelUrl = 'http://127.0.0.1:8788'

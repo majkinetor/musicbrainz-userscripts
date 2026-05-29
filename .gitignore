@@ -1,0 +1,21 @@
+# Repo-root .gitignore for shared infrastructure under /dev/.
+# Per-userscript ignores live in each userscript's own .gitignore
+# (e.g. userscripts/discogs_credits/.gitignore).
+
+# GitHub credentials for the dedicated automation account (claude-ai-milic).
+# Never commit. Sample shape in userscripts/discogs_credits/DEVELOP.md.
+dev/.github-credentials.json
+
+# State + audit logs for the GH notification → channel pipeline. Each side
+# (the poller and the MCP channel server) writes its own log so both halves
+# are inspectable. Pure local runtime state.
+dev/github-notifications/.notification-state.json
+dev/github-notifications/.notif-poll.log
+dev/notif-channel/.channel.log
+dev/notif-channel/node_modules/
+
+# Repo-root noise from running pnpm install at the root by accident
+# (the real packages live under userscripts/*/).
+/node_modules/
+/package.json
+/pnpm-lock.yaml

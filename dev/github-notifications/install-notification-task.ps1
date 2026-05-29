@@ -6,17 +6,17 @@
 # Adjust `$startMinutes` and `$hourRange` below to change.
 #
 # Run once, from any PowerShell prompt:
-#   powershell -ExecutionPolicy Bypass -File dev/install-notification-task.ps1
+#   powershell -ExecutionPolicy Bypass -File dev/github-notifications/install-notification-task.ps1
 #
 # Uninstall:
-#   schtasks /Delete /TN "MB-Userscripts notif poller" /F
+#   schtasks /Delete /TN "Check github notifications for mb-userscripts" /F
 
 $ErrorActionPreference = 'Stop'
 
 $here       = Split-Path -Parent $MyInvocation.MyCommand.Path
 $pollerPath = (Resolve-Path (Join-Path $here 'check-gh-notifications.ps1')).Path
 $vbsPath    = (Resolve-Path (Join-Path $here 'run-hidden.vbs')).Path
-$taskName   = 'MB-Userscripts notif poller'
+$taskName   = 'Check github notifications for mb-userscripts'
 
 # Default: every 10 minutes from 09:00 to 23:50 local = 90 polls/day.
 # Implemented as ONE daily trigger with a repetition pattern (not 90
