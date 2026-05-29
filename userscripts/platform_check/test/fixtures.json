@@ -44,5 +44,15 @@
       "discogs":  "www.discogs.com/release/2728685"
     },
     "notes": "Spotify and Bandcamp may not have this niche live recording. Discogs is the only guaranteed match. Spotify search returns multiple wrong albums by the same artist — exercises candidate verification."
+  },
+  {
+    "name": "Om Unit — Threads (CD)",
+    "mbid": "accbc866-5913-4aed-aa3c-90968317ae33",
+    "tags": "no-rels cd-format format-aware-discogs panel-self-contamination",
+    "expect": {
+      "discogs": "www.discogs.com/release/5124829",
+      "existingRelsAllNull": true
+    },
+    "notes": "Threads CD release with ZERO external links on MB. Used to verify (a) format extraction picks up 'CD' from the sidebar dl.properties, (b) Discogs format-aware search picks the CD release (5124829) not the vinyl (5045213), and (c) parseMbFromDom does NOT pick up our own panel's anchors as 'existing MB rels' on a refresh — the regression that made every row appear circled."
   }
 ]

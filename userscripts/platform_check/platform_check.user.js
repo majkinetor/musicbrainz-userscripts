@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.135317
+// @version      2026.5.29.135935
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -146,6 +146,7 @@ const sidebar = document.querySelector('#sidebar');
 if (!sidebar) return;
 
 const container = document.createElement('div');
+container.id = 'mb-pc-panel';
 container.className = 'online-search-box';
 container.style.cssText = 'margin-bottom: 12px; padding: 8px 6px; background: #FAF9F6; border: 1px solid #D8D8D8; border-radius: 6px; font-size: 13px; font-family: sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.05);';
 // MB's site CSS adds an external-link icon to every `target="_blank"` anchor
@@ -1409,9 +1410,15 @@ function resetRows() {
         const ico = document.getElementById(`ico-${p}`);
         const val = document.getElementById(`val-${p}`);
         const meta = document.getElementById(`meta-${p}`);
-        if (ico)  { ico.textContent = '⚪'; ico.style.color = '#888'; ico.style.fontWeight = 'normal'; }
+        const a    = document.getElementById(`mb-online-${p}`);
+        if (ico)  { ico.textContent = '⚪'; ico.style.color = '#888'; ico.style.fontWeight = 'normal'; ico.onclick = null; ico.style.cursor = ''; ico.classList.remove('pc-ico-circled'); }
         if (val)  { val.textContent = '(-- tracks)'; val.style.color = '#777'; }
         if (meta) { meta.innerHTML = ''; }
+        // Reset the anchor href to its search-fallback so parseMbFromDom on
+        // a subsequent refresh doesn't see the previous /album/<id> result
+        // as an "existing MB rel" — covered by the #mb-pc-panel exclusion
+        // in parseMbFromDom too, but defensive cleanup either way.
+        if (a)    { a.href = '#'; a.title = ''; }
     }
 }
 
@@ -1481,10 +1488,18 @@ function parseMbFromDom() {
         // (always absolute) rather than the attribute selector.
         const scope = document.querySelector('#content, #wrap, body') || document;
         const sidebar = document.querySelector('#sidebar');
+        // Exclude our own panel — after the first scan finishes, its provider
+        // <a> tags hold the URLs we *found* (e.g. open.spotify.com/album/…)
+        // which look identical to real MB rel anchors. Without this filter a
+        // subsequent ↻ refresh sees every row's discovered URL as "existing
+        // in MB", flips source to 'MB rels', and the entire panel circles
+        // even when MB has no rels at all. (Witnessed on the Threads release
+        // with zero external links.)
+        const pcPanel = document.getElementById('mb-pc-panel');
         const allAnchors = [
             ...(sidebar ? sidebar.querySelectorAll('a[href]') : []),
             ...scope.querySelectorAll('a[href]'),
-        ];
+        ].filter(a => !pcPanel || !pcPanel.contains(a));
         const externalHrefs = allAnchors.map(a => a.href).filter(u => /^https?:\/\//.test(u));
         const existing = {
             spotify:  externalHrefs.find(u => /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\//i.test(u)) || null,
