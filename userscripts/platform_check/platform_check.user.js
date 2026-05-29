@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.190157
+// @version      2026.5.29.191602
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -93,13 +93,14 @@ async function runInjectHelper(entityType) {
     try {
         const re   = new RegExp(`/${entityType}/([0-9a-f-]{36})`);
         const mbid = (window.location.pathname.match(re) || [])[1];
-        if (!mbid) { showInjectBanner(`Platform Check: no MBID in URL (${window.location.pathname})`, [], { fail: true }); return; }
+        if (!mbid) return;
         const key  = entityType === 'release-group' ? `pc:pending:rg:${mbid}` : `pc:pending:${mbid}`;
         const raw  = GM_getValue(key, null);
-        if (!raw) {
-            showInjectBanner(`Platform Check: no pending URLs for ${entityType} ${mbid.slice(0, 8)}… (GM_getValue(${key}) returned null)`, [], { fail: true });
-            return;
-        }
+        // No pending payload means the user navigated to /edit themselves,
+        // not via the panel's + button. Stay silent — banner noise on every
+        // direct edit-page visit is worse than the diagnostic value (the
+        // 2nd-click-doesn't-work bug it was diagnosing has been fixed).
+        if (!raw) return;
         let pending;
         try { pending = JSON.parse(raw); }
         catch (e) {
@@ -107,10 +108,7 @@ async function runInjectHelper(entityType) {
             return;
         }
         const urls = Object.values(pending || {}).filter(Boolean);
-        if (urls.length === 0) {
-            showInjectBanner(`Platform Check: pending object has no URLs (${raw.slice(0, 80)})`, [], { fail: true });
-            return;
-        }
+        if (urls.length === 0) return;
         const tab = [...document.querySelectorAll('a, button, li')].find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
         if (tab) tab.click();
         await pcWait(200);
