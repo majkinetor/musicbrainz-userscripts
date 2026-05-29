@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.161852
+// @version      2026.5.29.162232
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -137,28 +137,61 @@ async function injectInto(urls, storageKey) {
     flashStatusOnExternalLinks(`Platform Check: injected ${injected}/${urls.length} URL${urls.length === 1 ? '' : 's'}`);
 }
 
-// Locate the relationship-type <select> for the row whose URL input matches
-// `url` and pick the first option whose label matches `optionRe`. Returns
-// true on success. Tolerant of MB's exact row markup (which differs between
-// the legacy and React editors) by walking up from the input until a <select>
-// is found in the same row container.
+// Locate the relationship-type chooser for the row whose URL input matches
+// `url` and force it to the option matching `optionRe`. Returns true on
+// success. MB's URL-relationship editor renders the type chooser in
+// different shapes depending on the page (legacy /edit vs React
+// /edit-relationships): sometimes a native <select>, sometimes a React
+// autocomplete <input> backed by a hidden <input>. Try both.
 function forceRelType(url, optionRe) {
-    const inputs = [...document.querySelectorAll('input[type="url"], input[type="text"]')];
+    const inputs = [...document.querySelectorAll('input[type="url"], input[type="text"], input:not([type])')];
     const ourInput = inputs.find(i => (i.value || '') === url);
-    if (!ourInput) return false;
+    if (!ourInput) { console.warn('[platform_check] forceRelType: no input found with value', url); return false; }
+
+    // Walk up to a row-ish container that holds both our URL input and the
+    // type chooser. MB nests these about 3–5 levels above the input.
     let scope = ourInput.parentElement;
-    let select = null;
-    for (let depth = 0; depth < 6 && scope && !select; depth++) {
-        select = scope.querySelector('select');
-        if (!select) scope = scope.parentElement;
+    for (let depth = 0; depth < 8 && scope; depth++) {
+        // Shape 1: native <select>. Pick the option whose visible text matches.
+        const select = scope.querySelector('select');
+        if (select) {
+            const opt = [...select.options].find(o => optionRe.test(o.textContent));
+            if (opt) {
+                const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+                nativeSetter.call(select, opt.value);
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                console.log('[platform_check] forceRelType: set <select> to', opt.textContent);
+                return true;
+            }
+        }
+        // Shape 2: React autocomplete. There's a text <input> whose placeholder
+        // or aria-label mentions "type" / "relationship", and a hidden <input>
+        // alongside it carrying the link_type_id. Type into the visible input,
+        // wait a tick for the suggestion list, then click the matching item.
+        const typeInputs = [...scope.querySelectorAll('input')].filter(i => /relationship\s*type|link\s*type/i.test(i.placeholder || i.getAttribute('aria-label') || ''));
+        if (typeInputs.length) {
+            const tin = typeInputs[0];
+            // Try inline option list: some MB skins render <ul role="listbox">
+            // siblings to the autocomplete input.
+            const listbox = scope.querySelector('[role="listbox"]');
+            if (listbox) {
+                const opt = [...listbox.querySelectorAll('[role="option"], li')].find(o => optionRe.test(o.textContent));
+                if (opt) { opt.click(); console.log('[platform_check] forceRelType: clicked listbox option'); return true; }
+            }
+            // Otherwise type the desired label and let the autocomplete narrow.
+            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+            nativeSetter.call(tin, 'streaming page');
+            tin.dispatchEvent(new Event('input',  { bubbles: true }));
+            console.log('[platform_check] forceRelType: typed into autocomplete input', tin);
+            return true;
+        }
+        scope = scope.parentElement;
     }
-    if (!select) return false;
-    const opt = [...select.options].find(o => optionRe.test(o.textContent));
-    if (!opt) return false;
-    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
-    nativeSetter.call(select, opt.value);
-    select.dispatchEvent(new Event('change', { bubbles: true }));
-    return true;
+
+    // Diagnostic dump so we can iterate without playing browser-forensics blind.
+    const rowDump = ourInput.closest('li, tr, fieldset, div[class*="row"], div[class*="link"]')?.outerHTML?.slice(0, 1200);
+    console.warn('[platform_check] forceRelType: no type chooser found near URL input. Row HTML (truncated):\n', rowDump);
+    return false;
 }
 
 // Small discreet inline status next to the External Links heading — no
