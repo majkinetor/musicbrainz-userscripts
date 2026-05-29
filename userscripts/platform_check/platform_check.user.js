@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.161134
+// @version      2026.5.29.161623
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -122,9 +122,42 @@ async function injectInto(urls, storageKey) {
         // and renders a fresh row + a fresh "Add another link" input. Give it
         // room to land before the next fill.
         await wait(700);
+        // Apple Music auto-classifies as "free streaming" or sometimes
+        // "purchase for download" depending on MB's heuristics. Force
+        // "streaming page" so the link consistently shows as a streaming
+        // entry on the release page. Other platforms auto-classify
+        // correctly out of the box.
+        if (/music\.apple\.com\/.*\/album\//i.test(url)) {
+            const ok = forceRelType(url, /streaming(?:\s+(?:page|music))?/i);
+            if (!ok) console.warn(`[platform_check] inject: couldn't force "streaming page" type on ${url}`);
+        }
     }
     if (injected > 0) GM_setValue(storageKey, null);
     flashStatusOnExternalLinks(`Platform Check: injected ${injected}/${urls.length} URL${urls.length === 1 ? '' : 's'}`);
+}
+
+// Locate the relationship-type <select> for the row whose URL input matches
+// `url` and pick the first option whose label matches `optionRe`. Returns
+// true on success. Tolerant of MB's exact row markup (which differs between
+// the legacy and React editors) by walking up from the input until a <select>
+// is found in the same row container.
+function forceRelType(url, optionRe) {
+    const inputs = [...document.querySelectorAll('input[type="url"], input[type="text"]')];
+    const ourInput = inputs.find(i => (i.value || '') === url);
+    if (!ourInput) return false;
+    let scope = ourInput.parentElement;
+    let select = null;
+    for (let depth = 0; depth < 6 && scope && !select; depth++) {
+        select = scope.querySelector('select');
+        if (!select) scope = scope.parentElement;
+    }
+    if (!select) return false;
+    const opt = [...select.options].find(o => optionRe.test(o.textContent));
+    if (!opt) return false;
+    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+    nativeSetter.call(select, opt.value);
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
 }
 
 // Small discreet inline status next to the External Links heading — no
