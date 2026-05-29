@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.131312
+// @version      2026.5.29.131408
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -452,6 +452,18 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     if (url) a.href = url;
 
     const fromMbRels = source === 'MB rels';
+
+    // Source-on-hover: tooltip on the provider name. "via MB rels", "via
+    // Wikidata", "via API search · cached", etc. Replaces the visible badge
+    // that used to live next to the track count.
+    if (url) {
+        const parts = [];
+        if (source) parts.push(`via ${source}`);
+        if (fromCache) parts.push('cached');
+        a.title = parts.length ? `${PROVIDER_NAME[p]} URL — ${parts.join(' · ')}` : '';
+    } else {
+        a.title = `No ${PROVIDER_NAME[p]} URL found`;
+    }
 
     // val is the platform's track count as a bare number, coloured by match
     // against the MB-side number (shown in the header). No more "(N/M trks)".
