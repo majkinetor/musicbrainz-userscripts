@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.102414
+// @version      2026.5.29.102748
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -1382,9 +1382,10 @@ function parseMbFromDom() {
         const existing = {
             spotify:  externalHrefs.find(u => /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\//i.test(u)) || null,
             discogs:  externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
-            bandcamp: externalHrefs.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
-            deezer:   externalHrefs.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
-            apple:    externalHrefs.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/[^/]+\/\d+/i.test(u)) || null,
+            bandcamp:      externalHrefs.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
+            deezer:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
+            apple:         externalHrefs.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/[^/]+\/\d+/i.test(u)) || null,
+            discogsMaster: externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
         };
 
         const isVariousArtists = artistIds.includes(VA_MBID) || artistNames.some(n => VA_NAME_RE.test(n));
@@ -1435,9 +1436,10 @@ function parseMbData(data) {
     const existing = {
         spotify:  relUrls.find(u => /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\//i.test(u)) || null,
         discogs:  relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
-        bandcamp: relUrls.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
-        deezer:   relUrls.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
-        apple:    relUrls.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/[^/]+\/\d+/i.test(u)) || null,
+        bandcamp:      relUrls.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
+        deezer:        relUrls.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
+        apple:         relUrls.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/[^/]+\/\d+/i.test(u)) || null,
+        discogsMaster: relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
     };
     const format = data.media?.[0]?.format || null;
     return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format };
@@ -1572,31 +1574,21 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     }
 
     // Bucket 2: Discogs master URL → goes onto the release-group, not the
-    // release. Only fire if (a) we have a master, (b) we know the rg MBID,
-    // and (c) MB's release-group doesn't already have it. (c) requires one
-    // /ws/2 call but only when there's actually a candidate to add.
+    // release. Skip if MB already has it: check `existing.discogsMaster`
+    // which parseMbFromDom / parseMbData populated from the release page
+    // DOM (any /discogs.com/master/<id> anchor visible on the page). No
+    // extra /ws/2 round-trip.
     const pendingRG = {};
     const discogsCache = cacheGet(mbid, 'discogs');
     const masterUrl    = discogsCache?.masterUrl;
     const mbCached     = mbDataGet(mbid);
     const rgMbid       = mbCached?.releaseGroupMbid;
-    if (masterUrl && rgMbid) {
-        appendLog('System', `Inject: checking release-group ${rgMbid} for existing Discogs master rel…`);
-        const r = await gmGet(`https://musicbrainz.org/ws/2/release-group/${rgMbid}?inc=url-rels&fmt=json`);
-        let alreadyInRg = false;
-        if (r.ok) {
-            try {
-                const data = JSON.parse(r.responseText);
-                const rgUrls = (data.relations || [])
-                    .filter(rel => rel['target-type'] === 'url' && rel.url?.resource)
-                    .map(rel => rel.url.resource);
-                alreadyInRg = rgUrls.includes(masterUrl);
-                appendLog('System', `Release-group rels: ${rgUrls.length} URL rel(s); master ${alreadyInRg ? 'already present' : 'NOT present'}`);
-            } catch (err) { appendLog('System', `RG rel parse error: ${err.message}`, 'error'); }
-        } else {
-            appendLog('System', `RG rel fetch failed (status=${r.status}) — skipping master check`, 'warn');
-        }
-        if (!alreadyInRg) pendingRG['discogs-master'] = masterUrl;
+    const existingMaster = mbCached?.existing?.discogsMaster;
+    if (masterUrl && rgMbid && !existingMaster) {
+        pendingRG['discogs-master'] = masterUrl;
+        appendLog('System', `Inject: queueing Discogs master ${masterUrl} for release-group ${rgMbid}`);
+    } else if (masterUrl && existingMaster) {
+        appendLog('System', `Inject: Discogs master already in MB rels (${existingMaster}) — skipping`);
     }
 
     const releaseCount = Object.keys(pendingRelease).length;
