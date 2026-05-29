@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.150016
+// @version      2026.5.29.151553
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -1716,11 +1716,23 @@ async function runScans() {
     // immediately on the cache short-circuit — without it the user has to
     // hit ↻ to see the circle, even though MB now considers it an
     // editor-added rel.
+    //
+    // …and the downgrade counterpart: if a cache entry claims source='MB rels'
+    // but MB no longer has that URL relationship (or never did — possible
+    // since the panel-self-contamination bug used to write 'MB rels' for
+    // every platform whenever the user hit ↻), demote to 'search' so the
+    // row uncircles and click-to-add re-enables. Without this, users who
+    // hit a buggy build keep seeing every row as circled+unclickable until
+    // they manually ↻ refresh.
     for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple']) {
         const cached = cacheGet(mbid, p);
-        if (cached?.url && existing[p] === cached.url && cached.source !== 'MB rels') {
+        if (!cached?.url) continue;
+        if (existing[p] === cached.url && cached.source !== 'MB rels') {
             cacheSet(mbid, p, { ...cached, source: 'MB rels' });
             appendLog('MusicBrainz', `Cache upgrade: ${p} URL now in MB rels — source bumped to "MB rels"`, 'ok');
+        } else if (existing[p] !== cached.url && cached.source === 'MB rels') {
+            cacheSet(mbid, p, { ...cached, source: 'search' });
+            appendLog('MusicBrainz', `Cache downgrade: ${p} URL no longer in MB rels (stale 'MB rels' tag) — source bumped to "search"`, 'warn');
         }
     }
 
