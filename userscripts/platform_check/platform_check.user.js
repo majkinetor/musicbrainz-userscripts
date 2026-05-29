@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.180247
+// @version      2026.5.29.181501
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -41,14 +41,29 @@ if (/\/release-group\/[0-9a-f-]{36}\/edit(?:[?#/]|$)/.test(window.location.pathn
 async function runInjectHelper(entityType) {
     const re   = new RegExp(`/${entityType}/([0-9a-f-]{36})`);
     const mbid = (window.location.pathname.match(re) || [])[1];
-    if (!mbid) return;
+    if (!mbid) { showInjectBanner(`Platform Check: no MBID in URL (${window.location.pathname})`, [], { fail: true }); return; }
     const key  = entityType === 'release-group' ? `pc:pending:rg:${mbid}` : `pc:pending:${mbid}`;
     const raw  = GM_getValue(key, null);
-    if (!raw) return;
+    // Show an unobtrusive banner whenever the helper ran but found nothing
+    // queued — lets the user tell apart "script didn't run" vs "ran but
+    // pending was empty" (e.g., TM's GM store didn't propagate from the
+    // source tab's GM_setValue write, or the previous inject already
+    // cleared it).
+    if (!raw) {
+        showInjectBanner(`Platform Check: no pending URLs for ${entityType} ${mbid.slice(0, 8)}… (GM_getValue(${key}) returned null)`, [], { fail: true });
+        return;
+    }
     let pending;
-    try { pending = JSON.parse(raw); } catch { return; }
+    try { pending = JSON.parse(raw); }
+    catch (e) {
+        showInjectBanner(`Platform Check: pending payload not JSON: ${e.message}`, [], { fail: true });
+        return;
+    }
     const urls = Object.values(pending || {}).filter(Boolean);
-    if (urls.length === 0) return;
+    if (urls.length === 0) {
+        showInjectBanner(`Platform Check: pending object has no URLs (${raw.slice(0, 80)})`, [], { fail: true });
+        return;
+    }
     // Click the "External Links" tab if present (multi-tab editor).
     const tab = [...document.querySelectorAll('a, button, li')].find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
     if (tab) tab.click();
@@ -439,10 +454,24 @@ document.getElementById('mb-provider-save-btn').addEventListener('click', () => 
     }
     providerModal.style.display = 'none';
 });
-document.getElementById('mb-modal-copy-btn').addEventListener('click', function () {
-    navigator.clipboard.writeText(logPanel.innerText || '').then(() => {
-        this.textContent = 'Copied!'; setTimeout(() => { this.textContent = 'Copy'; }, 1500);
-    });
+document.getElementById('mb-modal-copy-btn').addEventListener('click', async function () {
+    // Firefox throws NS_ERROR_NOT_INITIALIZED from clipboard.writeText when
+    // the document isn't focused. Fall back to a textarea + execCommand on
+    // failure rather than letting the unhandled rejection surface.
+    const text = logPanel.innerText || '';
+    const flash = msg => { this.textContent = msg; setTimeout(() => { this.textContent = 'Copy'; }, 1500); };
+    try {
+        await navigator.clipboard.writeText(text);
+        flash('Copied!');
+    } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px;';
+        document.body.appendChild(ta); ta.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (_) {}
+        ta.remove();
+        flash(ok ? 'Copied!' : 'Copy failed');
+    }
 });
 
 function appendLog(platform, msg, kind = 'info') {
