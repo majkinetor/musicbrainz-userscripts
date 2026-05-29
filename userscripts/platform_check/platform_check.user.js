@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.135935
+// @version      2026.5.29.150016
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -223,7 +223,7 @@ container.innerHTML = `
       <span id="master-${p}" class="pc-master-slot" style="font-size: 11px; display: inline-block; min-width: 14px; text-align: center; cursor: default;"></span>
       <span id="val-${p}" style="font-size: 12px; font-weight: bold; font-family: monospace; color: #777; min-width: 20px; text-align: right;">—</span>
     </div>
-    <div id="meta-${p}" style="font-size: 10px; color: #999; font-family: sans-serif; line-height: 1.2; margin-top: -1px;"></div>
+    <div id="meta-${p}" style="font-size: 10px; color: #999; font-family: sans-serif; line-height: 1.2; padding-top: 0.3rem;"></div>
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
