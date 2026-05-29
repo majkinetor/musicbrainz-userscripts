@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.094115
+// @version      2026.5.29.100432
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -17,6 +17,7 @@
 // @connect      open.spotify.com
 // @connect      bandcamp.com
 // @connect      api.deezer.com
+// @connect      itunes.apple.com
 // @connect      *
 // ==/UserScript==
 (function () {
@@ -124,6 +125,27 @@ container.style.cssText = 'margin-bottom: 12px; padding: 12px; background: #FAF9
 // renders as a missing-image red square next to each platform name. Suppress
 // it on our anchors via inline ::after override scoped to the panel.
 const iconBtn = 'cursor: pointer; user-select: none; color: #666; padding: 2px 6px; border-radius: 4px; line-height: 1; font-size: 14px;';
+
+// Provider order is user-configurable from the providers modal. Stored as a
+// JSON array under `pc:provider-order`. getProviderOrder() always returns
+// every known platform — unknown stored values are dropped, missing ones
+// are appended — so adding a new platform (like Apple Music) doesn't break
+// stored preferences.
+const ALL_PROVIDERS = ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'];
+function getProviderOrder() {
+    const raw = GM_getValue('pc:provider-order', null);
+    if (!raw) return ALL_PROVIDERS.slice();
+    try {
+        const arr = JSON.parse(raw);
+        const out = [];
+        for (const p of arr) if (ALL_PROVIDERS.includes(p) && !out.includes(p)) out.push(p);
+        for (const p of ALL_PROVIDERS) if (!out.includes(p)) out.push(p);
+        return out;
+    } catch { return ALL_PROVIDERS.slice(); }
+}
+const PROVIDER_ORDER = getProviderOrder();
+const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple Music' };
+const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C' };
 container.innerHTML = `
 <style>
   /* MB's site CSS marks any outbound link with a red external-link ::after icon
@@ -154,11 +176,11 @@ container.innerHTML = `
   <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
 </div>
 <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
-  ${['spotify', 'discogs', 'bandcamp', 'deezer'].map(p => `
+  ${['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].map(p => `
   <div id="row-${p}" style="display: flex; flex-direction: column; gap: 2px;">
     <div style="display: flex; align-items: center;">
       <span id="ico-${p}" style="margin-right: 6px; color: #888; font-size: 11px; min-width: 14px;">⚪</span>
-      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${ {spotify:'#1DB954', bandcamp:'#629AA9', deezer:'#A238FF'}[p] || '#222' }; text-decoration: none; font-weight: 600; flex-grow: 1;">${p[0].toUpperCase() + p.slice(1)}</a>
+      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${ {spotify:'#1DB954', bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C'}[p] || '#222' }; text-decoration: none; font-weight: 600; flex-grow: 1;">${ {apple:'Apple Music'}[p] || (p[0].toUpperCase() + p.slice(1)) }</a>
       <span id="val-${p}" style="font-size: 11px; color: #777; font-family: monospace;">(-- tracks)</span>
     </div>
     <div id="meta-${p}" style="font-size: 11px; color: #999; padding-left: 20px; font-family: sans-serif;"></div>
@@ -179,10 +201,10 @@ logModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width
 // active (toggled = filter ON = entries hidden). State is per-session only;
 // not persisted because the natural workflow is "open log to investigate
 // one provider's behavior on this page".
-const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer'];
+const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple'];
 const LOG_SOURCE_COLORS = {
     System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F',
-    Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9', Deezer: '#A238FF',
+    Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9', Deezer: '#A238FF', Apple: '#FA243C',
 };
 logModal.innerHTML = `
 <style>
@@ -209,10 +231,10 @@ providerModal.innerHTML = `
 <div id="mb-provider-modal-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: #FFF; padding: 24px; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid #DDD;">
   <h2 style="margin: 0 0 12px 0; font-size: 18px;">Enable providers</h2>
   <p style="font-size: 13px; color: #555; margin: 0 0 16px 0;">Toggle which services to query. All results come from public endpoints — no API keys required.</p>
-  ${['spotify', 'discogs', 'bandcamp', 'deezer'].map(p => `
+  ${['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].map(p => `
     <label style="display: flex; align-items: center; margin-bottom: 10px; font-size: 13px; cursor: pointer;">
       <input type="checkbox" id="mb-toggle-${p}" checked style="margin-right: 10px; width: 16px; height: 16px;">
-      <span style="font-weight: 500;">${p[0].toUpperCase() + p.slice(1)}</span>
+      <span style="font-weight: 500;">${ {apple:'Apple Music'}[p] || (p[0].toUpperCase() + p.slice(1)) }</span>
     </label>`).join('')}
   <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
     <button id="mb-provider-cancel-btn" style="padding: 8px 16px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">Cancel</button>
@@ -227,9 +249,9 @@ if (coverArt) sidebar.insertBefore(container, coverArt);
 else sidebar.prepend(container);
 
 const logPanel = document.getElementById('mb-finder-log-panel');
-const providerRows = Object.fromEntries(['spotify', 'discogs', 'bandcamp', 'deezer'].map(p => [p, document.getElementById(`row-${p}`)]));
+const providerRows = Object.fromEntries(['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].map(p => [p, document.getElementById(`row-${p}`)]));
 
-['spotify', 'discogs', 'bandcamp', 'deezer'].forEach(p => {
+['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].forEach(p => {
     const enabled = GM_getValue(`prov_${p}`, true);
     providerRows[p].style.display = enabled ? 'flex' : 'none';
 });
@@ -263,12 +285,12 @@ for (const chip of logModal.querySelectorAll('.pc-log-chip')) {
     });
 }
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
-    ['spotify', 'discogs', 'bandcamp', 'deezer'].forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
+    ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
     providerModal.style.display = 'block';
 });
 document.getElementById('mb-provider-cancel-btn').addEventListener('click', closeAllModals);
 document.getElementById('mb-provider-save-btn').addEventListener('click', () => {
-    ['spotify', 'discogs', 'bandcamp', 'deezer'].forEach(p => {
+    ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].forEach(p => {
         const checked = document.getElementById(`mb-toggle-${p}`).checked;
         GM_setValue(`prov_${p}`, checked);
         providerRows[p].style.display = checked ? 'flex' : 'none';
@@ -538,7 +560,7 @@ function cacheSet(mbid, platform, entry) {
     GM_setValue(cacheKey(mbid, platform), JSON.stringify(entry));
 }
 function cacheClear(mbid) {
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer']) GM_setValue(cacheKey(mbid, p), null);
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple']) GM_setValue(cacheKey(mbid, p), null);
     GM_setValue(mbDataKey(mbid), null);
 }
 
@@ -728,7 +750,20 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
-async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
+// MB's media[].format strings → Discogs API's `format` query value. Other
+// formats (DVD/Blu-ray/SACD/etc.) we just leave unfiltered — those are rare
+// enough on Discogs that adding a filter hurts more than it helps.
+function mbFormatToDiscogs(mbFormat) {
+    if (!mbFormat) return null;
+    const f = String(mbFormat).toLowerCase();
+    if (f.includes('vinyl'))    return 'Vinyl';
+    if (f.includes('cassette')) return 'Cassette';
+    if (f.includes('digital') || f === 'file') return 'File';
+    if (f === 'cd' || f.includes('cd'))        return 'CD';
+    return null;
+}
+
+async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, format }) {
     const label = 'Discogs';
 
     // Positive cache hit short-circuits before any API call. Cached "no
@@ -761,18 +796,34 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         // compilations to a literal "Various Artists" string, so including
         // it in the query produces 0 results.
         const apiQ = isVariousArtists ? album : `${artist} ${album}`;
-        const apiUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(apiQ)}&type=release&per_page=5`;
-        appendLog(label, `API search: ${apiUrl}`);
-        const sr = await gmGet(apiUrl);
-        appendLog(label, `API search: status=${sr.status} ${sr.responseText.length}b in ${sr.ms}ms`);
+        const discogsFmt = mbFormatToDiscogs(format);
+        // Format-aware first try: a CD release shouldn't pick a vinyl Discogs
+        // entry when a CD edition exists. If the format-filtered search
+        // returns 0 results, retry without the format filter and accept
+        // whatever's available.
+        const trySearch = async withFormat => {
+            const u = `https://api.discogs.com/database/search?q=${encodeURIComponent(apiQ)}&type=release&per_page=5${withFormat ? `&format=${encodeURIComponent(discogsFmt)}` : ''}`;
+            appendLog(label, `API search${withFormat ? ` (format=${discogsFmt})` : ''}: ${u}`);
+            const r = await gmGet(u);
+            appendLog(label, `API search: status=${r.status} ${r.responseText.length}b in ${r.ms}ms`);
+            return r;
+        };
+        let sr = await trySearch(!!discogsFmt);
         if (sr.ok) {
             try {
-                const data = JSON.parse(sr.responseText);
+                let data = JSON.parse(sr.responseText);
+                if ((data.results || []).length === 0 && discogsFmt) {
+                    appendLog(label, `0 results with format=${discogsFmt} — retrying without format filter`, 'warn');
+                    sr   = await trySearch(false);
+                    data = sr.ok ? JSON.parse(sr.responseText) : { results: [] };
+                }
                 const first = data.results?.[0];
                 if (first) {
                     releaseId  = String(first.id);
                     releaseUrl = `https://www.discogs.com/release/${releaseId}`;
-                    source     = 'API search';
+                    source     = discogsFmt && data.results.every(r => (r.format || []).some(f => mbFormatToDiscogs(f) === discogsFmt))
+                        ? `API search (format=${discogsFmt})`
+                        : 'API search';
                     appendLog(label, `Found via API: ${releaseUrl}`, 'ok');
                 } else {
                     appendLog(label, `API search returned 0 results`, 'warn');
@@ -1050,6 +1101,108 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
     updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
+// ─── Apple Music ────────────────────────────────────────────────────────────
+// iTunes Search API (itunes.apple.com/{search,lookup}) is unauthenticated and
+// returns structured JSON — same shape as Deezer. trackCount, releaseDate, and
+// `copyright` (label name on most releases) are exposed directly. URL field is
+// `collectionViewUrl` which points at music.apple.com/<country>/album/<slug>/<id>.
+async function fetchAppleMeta(albumUrl) {
+    const m = albumUrl.match(/\/album\/(?:[^/]+\/)?(\d+)/);
+    if (!m) return null;
+    const r = await gmGet(`https://itunes.apple.com/lookup?id=${m[1]}&entity=album`);
+    if (!r.ok) return null;
+    try {
+        const d = JSON.parse(r.responseText);
+        const a = d.results?.[0];
+        if (!a) return null;
+        return {
+            tracks: a.trackCount ?? null,
+            title:  a.collectionName || null,
+            year:   a.releaseDate ? a.releaseDate.slice(0, 4) : null,
+            // copyright field is the label on most albums (e.g. "℗ 2021 Daptone Records"); strip the ℗/© and year prefix.
+            label:  a.copyright ? a.copyright.replace(/^[℗©]\s*\d{4}\s*/, '').trim() || null : null,
+        };
+    } catch { return null; }
+}
+
+async function scanApple({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataAppleId }) {
+    const label = 'Apple';
+
+    const cached = cacheGet(mbid, 'apple');
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
+        applyCachedRow('apple', label, cached, mbTracks);
+        return;
+    }
+    if (cached && !cached.url && !existingUrl) {
+        appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
+        applyCachedRow('apple', label, cached, mbTracks);
+        return;
+    }
+
+    let albumUrl = existingUrl;
+    let source   = null;
+
+    if (albumUrl) {
+        appendLog(label, `Using existing MB URL: ${albumUrl}`, 'ok');
+        source = 'MB rels';
+    } else if (wikidataAppleId) {
+        // P5121 stores the bare numeric Apple Music album ID. Construct the
+        // canonical /us/album/<id> URL (no slug needed for resolution).
+        albumUrl = `https://music.apple.com/us/album/${wikidataAppleId}`;
+        appendLog(label, `Wikidata answer: ${albumUrl}`, 'ok');
+        source = 'Wikidata';
+    } else {
+        // iTunes Search API. VA compilations: query album-only (the API
+        // doesn't credit compilations to a literal "Various Artists" string).
+        const term = isVariousArtists ? album : `${artist} ${album}`;
+        const searchUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=album&limit=10`;
+        appendLog(label, `API search: ${searchUrl}`);
+        const sr = await gmGet(searchUrl);
+        appendLog(label, `API search: status=${sr.status} ${sr.responseText.length}b in ${sr.ms}ms`);
+        let results = [];
+        if (sr.ok) {
+            try { results = (JSON.parse(sr.responseText).results) || []; }
+            catch (e) { appendLog(label, `API JSON parse error: ${e.message}`, 'error'); }
+        }
+        appendLog(label, `API search: ${results.length} candidate(s)`);
+        if (!results.length) {
+            cacheSet(mbid, 'apple', { url: null, tracks: null, year: null, label: null, source: 'API search' });
+            updateRow('apple', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        let best = null;
+        for (const it of results) {
+            const sc = scoreCandidate({ tracks: it.trackCount, title: it.collectionName }, mbTracks, album);
+            appendLog(label, `  cand score=${sc}  tracks=${it.trackCount ?? '?'}  title="${it.collectionName}"  url=${it.collectionViewUrl}`);
+            if (!best || sc > best.score) best = { score: sc, item: it };
+            if (sc >= 100) break;
+        }
+        if (!best || best.score === 0) {
+            appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
+            cacheSet(mbid, 'apple', { url: null, tracks: null, year: null, label: null, source: 'API search' });
+            updateRow('apple', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        // Strip the `?uo=4` affiliate tail that iTunes Search returns on
+        // collectionViewUrl — MB normalises to the clean form.
+        albumUrl = best.item.collectionViewUrl.split('?')[0];
+        source = 'API search';
+        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
+    }
+
+    const meta = await fetchAppleMeta(albumUrl);
+    if (meta) {
+        appendLog(label, `Album parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
+    } else {
+        appendLog(label, `Detail fetch failed`, 'error');
+    }
+    const tracks = meta?.tracks ?? null;
+    const year   = meta?.year   ?? null;
+    const lbl    = meta?.label  ?? null;
+    cacheSet(mbid, 'apple', { url: albumUrl, tracks, year, label: lbl, source });
+    updateRow('apple', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+}
+
 // ─── Main entry ────────────────────────────────────────────────────────────
 const mbid = window.location.pathname.split('/')[2];
 if (!mbid || mbid.length < 10) {
@@ -1060,7 +1213,7 @@ if (!mbid || mbid.length < 10) {
 // Reset each platform row back to its initial ⚪ / -- state. Used by the
 // refresh button before re-running the scans.
 function resetRows() {
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer']) {
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple']) {
         const ico = document.getElementById(`ico-${p}`);
         const val = document.getElementById(`val-${p}`);
         const meta = document.getElementById(`meta-${p}`);
@@ -1146,14 +1299,26 @@ function parseMbFromDom() {
             discogs:  externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
             bandcamp: externalHrefs.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
             deezer:   externalHrefs.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
+            apple:    externalHrefs.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/[^/]+\/\d+/i.test(u)) || null,
         };
 
         const isVariousArtists = artistIds.includes(VA_MBID) || artistNames.some(n => VA_NAME_RE.test(n));
 
+        // Release format (CD / Vinyl / Cassette / Digital Media / …). MB renders
+        // it in the medium header above each tracklist. Used by the Discogs
+        // scanner to filter `&format=` so a CD release doesn't pick a vinyl
+        // Discogs entry when a CD is available. Best-effort — null is fine.
+        let format = null;
+        for (const t of document.querySelectorAll('table.tbl.medium')) {
+            const head = (t.previousElementSibling?.textContent || t.querySelector('caption, thead')?.textContent || '').trim();
+            const m = head.match(/\b(CD|Vinyl|Cassette|Digital\s*Media|File|SACD|DVD|Blu-?ray|Flexi-?disc|Minidisc)\b/i);
+            if (m) { format = m[1]; break; }
+        }
+
         // Sanity gate: we need artist + album + at least one track row. Anything
         // less is an unrendered or unfamiliar layout — bail to API.
         if (!artist || !album || mbTracks < 1) return null;
-        return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing };
+        return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format };
     } catch (e) {
         // Any selector mishap → API fallback.
         return null;
@@ -1187,8 +1352,10 @@ function parseMbData(data) {
         discogs:  relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
         bandcamp: relUrls.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
         deezer:   relUrls.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
+        apple:    relUrls.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/[^/]+\/\d+/i.test(u)) || null,
     };
-    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing };
+    const format = data.media?.[0]?.format || null;
+    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format };
 }
 
 async function runScans() {
@@ -1230,9 +1397,9 @@ async function runScans() {
     // cache-fallback branch.
     if (dataSource !== 'cache') mbDataSet(mbid, mbData);
 
-    const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing } = mbData;
+    const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format } = mbData;
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
-    appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}  deezer=${existing.deezer ? 'YES' : 'no'}`);
+    appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}  deezer=${existing.deezer ? 'YES' : 'no'}  apple=${existing.apple ? 'YES' : 'no'}`);
 
     // Cache upgrade: if MB has acquired a URL rel matching a cached URL (the
     // user just added the URL via + and came back), promote the cached row's
@@ -1240,7 +1407,7 @@ async function runScans() {
     // immediately on the cache short-circuit — without it the user has to
     // hit ↻ to see the circle, even though MB now considers it an
     // editor-added rel.
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer']) {
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple']) {
         const cached = cacheGet(mbid, p);
         if (cached?.url && existing[p] === cached.url && cached.source !== 'MB rels') {
             cacheSet(mbid, p, { ...cached, source: 'MB rels' });
@@ -1266,13 +1433,15 @@ async function runScans() {
     document.getElementById('mb-online-discogs') .href = `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`;
     document.getElementById('mb-online-bandcamp').href = `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`;
     document.getElementById('mb-online-deezer')  .href = `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`;
+    document.getElementById('mb-online-apple')   .href = `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`;
 
-    const ctx = { artist, album, mbTracks, mbid, isVariousArtists };
+    const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format };
     const tasks = [];
     if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify,  wikidataSpotifyId: wd?.spotifyId || null }));
     if (GM_getValue('prov_discogs',  true)) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
     if (GM_getValue('prov_bandcamp', true)) tasks.push(scanBandcamp({ ...ctx, existingUrl: existing.bandcamp }));
     if (GM_getValue('prov_deezer',   true)) tasks.push(scanDeezer  ({ ...ctx, existingUrl: existing.deezer   }));
+    if (GM_getValue('prov_apple',    true)) tasks.push(scanApple   ({ ...ctx, existingUrl: existing.apple,    wikidataAppleId: wd?.appleId || null }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
 }
@@ -1306,7 +1475,7 @@ function flashInfo(targetEl, text, bg = '#5B82B0') {
 
 document.getElementById('mb-inject-btn').addEventListener('click', (e) => {
     const pending = {};
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer']) {
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple']) {
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
         // Skip URLs that are already in MB rels (the row is circled and the
