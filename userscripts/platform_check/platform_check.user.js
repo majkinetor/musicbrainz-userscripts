@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.133154
+// @version      2026.5.29.134206
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -147,7 +147,7 @@ if (!sidebar) return;
 
 const container = document.createElement('div');
 container.className = 'online-search-box';
-container.style.cssText = 'margin-bottom: 12px; padding: 12px; background: #FAF9F6; border: 1px solid #D8D8D8; border-radius: 6px; font-size: 13px; font-family: sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.05);';
+container.style.cssText = 'margin-bottom: 12px; padding: 8px 6px; background: #FAF9F6; border: 1px solid #D8D8D8; border-radius: 6px; font-size: 13px; font-family: sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.05);';
 // MB's site CSS adds an external-link icon to every `target="_blank"` anchor
 // (`a[rel~="external"]::after` / similar). On the dark-themed sidebar it
 // renders as a missing-image red square next to each platform name. Suppress
@@ -1524,6 +1524,16 @@ function parseMbFromDom() {
                 if (m) { format = m[1]; break; }
             }
         }
+        // Pattern D: sidebar text scan for `Format: <FMT>`. Catches the
+        // <strong>Format:</strong> CD layout MB renders inside the
+        // "Release information" block on many releases.
+        if (!format) {
+            const sb = document.querySelector('#sidebar');
+            if (sb) {
+                const m = (sb.textContent || '').match(/Format:?\s+(CD|Vinyl|Cassette|Digital\s*Media|File|SACD|DVD|Blu-?ray|Flexi-?disc|Minidisc)\b/i);
+                if (m) format = m[1];
+            }
+        }
 
         // Year + label for the header subtitle. Same multi-pattern approach.
         let year = null, releaseLabel = null;
@@ -1571,9 +1581,10 @@ function parseMbFromDom() {
         // Sanity gate: we need artist + album + at least one track row. Anything
         // less is an unrendered or unfamiliar layout — bail to API.
         if (!artist || !album || mbTracks < 1) return null;
+        console.log('[platform_check] parseMbFromDom:', { artist, album, mbTracks, format, year, releaseLabel, existing });
         return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel };
     } catch (e) {
-        // Any selector mishap → API fallback.
+        console.warn('[platform_check] parseMbFromDom threw:', e);
         return null;
     }
 }
@@ -1751,10 +1762,15 @@ function flashInfo(targetEl, text, bg = '#5B82B0') {
 // every ✓ row at once.
 function addSingleUrl(platform) {
     const cached = cacheGet(mbid, platform);
-    if (!cached?.url) return;
+    console.log('[platform_check] addSingleUrl click:', { platform, mbid, cached });
+    if (!cached?.url) {
+        console.warn('[platform_check] addSingleUrl: no cached URL — abort');
+        return;
+    }
     GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
     appendLog('System', `Inject (click): queued ${platform} URL — opening release editor`, 'ok');
-    window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
+    const w = window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
+    if (!w) console.warn('[platform_check] window.open returned null — popup blocked?');
 }
 
 // Click-to-add on the Discogs master slot — queues the master URL for the
