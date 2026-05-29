@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.124128
+// @version      2026.5.29.131312
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -210,16 +210,16 @@ container.innerHTML = `
   </h3>
   <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
 </div>
-<div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px;">
+<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px;">
   ${PROVIDER_ORDER.map(p => `
-  <div id="row-${p}" style="display: flex; flex-direction: column; gap: 1px;">
-    <div style="display: flex; align-items: center;">
-      <span id="ico-${p}" style="margin-right: 6px; color: #888; font-size: 11px; min-width: 14px;">⚪</span>
-      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; flex-grow: 1;">${PROVIDER_NAME[p]}</a>
-      <span id="val-${p}" style="font-size: 11px; color: #777; font-family: monospace;">(-- tracks)</span>
-      <span id="extra-${p}" style="margin-left: 6px; display: inline-flex; gap: 3px;"></span>
+  <div id="row-${p}" style="display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; gap: 2px;">
+      <span id="master-${p}" class="pc-master-slot" style="font-size: 11px; min-width: 14px; text-align: center; cursor: default;"></span>
+      <span id="ico-${p}"    class="pc-ico-slot"    style="font-size: 11px; min-width: 14px; text-align: center; color: #888;">⚪</span>
+      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; flex-grow: 1; margin-left: 4px;">${PROVIDER_NAME[p]}</a>
+      <span id="val-${p}" style="font-size: 12px; font-weight: bold; font-family: monospace; color: #777;">—</span>
     </div>
-    <div id="meta-${p}" style="font-size: 10px; color: #999; padding-left: 20px; font-family: sans-serif; line-height: 1.3;"></div>
+    <div id="meta-${p}" style="font-size: 10px; color: #999; padding-left: 36px; font-family: sans-serif; line-height: 1.2; margin-top: -1px;"></div>
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
@@ -444,74 +444,97 @@ function gmGet(url, { responseType, headers, timeout = 15000 } = {}) {
 //   colour tint    — green when fromCache=false, steel-blue when fromCache=true
 //   circled icon   — when source includes 'MB rels' (the URL was put there by
 //                    an MB editor, not discovered by us)
-function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, extra }) {
-    const a   = document.getElementById(`mb-online-${p}`);
-    const ico = document.getElementById(`ico-${p}`);
-    const val = document.getElementById(`val-${p}`);
+function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState }) {
+    const a    = document.getElementById(`mb-online-${p}`);
+    const ico  = document.getElementById(`ico-${p}`);
+    const val  = document.getElementById(`val-${p}`);
     const meta = document.getElementById(`meta-${p}`);
     if (url) a.href = url;
 
     const fromMbRels = source === 'MB rels';
 
+    // val is the platform's track count as a bare number, coloured by match
+    // against the MB-side number (shown in the header). No more "(N/M trks)".
     if (remoteTracks != null) {
-        val.textContent = `(${remoteTracks}/${mbTracks} trks)`;
+        val.textContent = String(remoteTracks);
         if (parseInt(remoteTracks, 10) === parseInt(mbTracks, 10)) {
-            const cacheTone = fromCache ? '#5B82B0' : '#008000';
             ico.textContent = '✓';
-            ico.style.color = cacheTone;
-            val.style.color = cacheTone;
+            const tone = fromCache ? '#5B82B0' : '#008000';
+            ico.style.color = tone;
+            val.style.color = tone;
         } else {
             ico.textContent = '~'; ico.style.color = '#FF8C00';
             val.style.color = '#FF8C00';
         }
     } else if (url) {
         ico.textContent = '?'; ico.style.color = '#999';
-        val.textContent = `(?/${mbTracks} trks)`;
+        val.textContent = '?'; val.style.color = '#999';
     } else {
         ico.textContent = '×'; ico.style.color = '#BF616A';
-        val.textContent = `(no match)`;
+        val.textContent = '—'; val.style.color = '#BF616A';
     }
 
-    // Circle MB-rels rows regardless of verification glyph — the circle says
-    // "URL is in MB", the glyph inside says how well it matches.
+    // Circle MB-rels rows regardless of glyph — circle says "URL is in MB".
     ico.classList.toggle('pc-ico-circled', fromMbRels);
 
-    // Click-to-add: when the row has a verified ✓ AND the URL isn't already
-    // in MB rels, the icon becomes clickable — single click queues just this
-    // platform's URL and opens /release/<mbid>/edit. Gives the user
-    // per-row control alongside the bulk + button at the bottom.
+    // Click-to-add on the main icon for verified ✓ + not-already-in-MB.
     const canAdd = url && ico.textContent === '✓' && !fromMbRels;
     ico.style.cursor = canAdd ? 'pointer' : '';
-    ico.title = canAdd ? `Click to add this URL to MB` : '';
+    ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB` : '';
     ico.onclick = canAdd ? () => addSingleUrl(p) : null;
 
+    // Discogs gets a master state in the left slot. Other platforms have an
+    // empty slot of the same width so the rows still align vertically.
+    const masterEl = document.getElementById(`master-${p}`);
+    if (masterEl) {
+        if (p === 'discogs' && masterState) {
+            applyMasterIcon(masterEl, masterState);
+        } else {
+            masterEl.innerHTML  = '';
+            masterEl.onclick    = null;
+            masterEl.style.cursor = 'default';
+            masterEl.title      = '';
+            masterEl.classList.remove('pc-ico-circled');
+        }
+    }
+
+    // Meta line: year · label · format. Source/cache state is implicit in
+    // the main icon's colour (green = fresh, steel-blue = cache) so no more
+    // "via X" text.
     const bits = [];
     if (year)   bits.push(year);
     if (label)  bits.push(label);
     if (format) bits.push(format);
-
-    // The `extra` slot to the right of the track count holds the source
-    // letter badge (W / S / N / A / etc.) and the Discogs master pill. Both
-    // are HTML; concatenate.
-    const sourceHTML = (!fromMbRels && source) ? sourceBadge(source) : '';
-    const extraEl    = document.getElementById(`extra-${p}`);
-    if (extraEl) extraEl.innerHTML = sourceHTML + (extra || '');
     meta.innerHTML = bits.join(' · ');
 }
 
-// Letter badge for the source path (replaces the old "via X" text). Sits in
-// the extra-<p> slot. Distinct from MB-rels rows which don't get one (the
-// circled icon already conveys that origin).
-function sourceBadge(source) {
-    const def = {
-        'Wikidata':   ['W', '#B8860B', 'Resolved via Wikidata (P2205 / P5121)'],
-        'search':     ['S', '#666',    'Found via web search engine (Brave / DDG)'],
-        'API search': ['A', '#666',    'Found via platform API search'],
-        'native':     ['N', '#629AA9', "Found via the platform's own search"],
-    }[source];
-    if (!def) return '';
-    const [letter, color, title] = def;
-    return `<span style="display:inline-block;font-size:9px;font-weight:bold;color:#FFF;background:${color};padding:1px 5px;border-radius:8px;line-height:1.2;" title="${title}">${letter}</span>`;
+// Apply Discogs master-state to the master slot. State shape:
+// { glyph: '✓'|'~'|'×', circled: bool, clickable: bool, title: str, addMasterUrl?: str }
+function applyMasterIcon(el, state) {
+    el.textContent = state.glyph;
+    el.style.color = state.circled ? '#5B82B0' : '#5B82B0';
+    el.title       = state.title;
+    el.classList.toggle('pc-ico-circled', !!state.circled);
+    if (state.clickable && state.addMasterUrl) {
+        el.style.cursor = 'pointer';
+        el.onclick = () => addMasterUrl(state.addMasterUrl);
+    } else {
+        el.style.cursor = 'default';
+        el.onclick = null;
+    }
+}
+
+// Build the Discogs master-state object given the URL Discogs found + the
+// URL MB has on the release-group already. Drives applyMasterIcon().
+function discogsMasterState(cachedMasterUrl, existingDiscogsMaster) {
+    if (!cachedMasterUrl) return null;
+    if (existingDiscogsMaster === cachedMasterUrl) {
+        return { glyph: '✓', circled: true,  clickable: false, title: 'Discogs master URL is on the release-group' };
+    }
+    if (existingDiscogsMaster) {
+        return { glyph: '~', circled: true,  clickable: false, title: `MB has a different Discogs master on the release-group: ${existingDiscogsMaster}` };
+    }
+    return     { glyph: '✓', circled: false, clickable: true,  title: 'Click to add this Discogs master URL to the release-group', addMasterUrl: cachedMasterUrl };
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -702,7 +725,7 @@ function mbDataSet(mbid, entry) {
 // original source (e.g. 'MB rels', 'Wikidata', 'search') so updateRow can
 // still decide whether to circle the ✓; cache-state is conveyed separately
 // via the `fromCache: true` flag (which drives the steel-blue tint).
-function applyCachedRow(platform, label, cached, mbTracks, extra) {
+function applyCachedRow(platform, label, cached, mbTracks, masterState) {
     appendLog(label, `Cache hit: url=${cached.url || '(no match)'}  tracks=${cached.tracks ?? '?'}  year=${cached.year || '?'}  label=${cached.label || '?'}  src=${cached.source || '?'}`, 'ok');
     updateRow(platform, {
         url:          cached.url,
@@ -713,21 +736,12 @@ function applyCachedRow(platform, label, cached, mbTracks, extra) {
         format:       cached.format  ?? null,
         source:       cached.source || null,
         fromCache:    true,
-        extra:        extra ?? null,
+        masterState:  masterState   ?? null,
     });
 }
 
-// Compose the Discogs row's master-state pill — sits right of the track-count
-// in the `extra-discogs` slot. Surfaces master URL state at a glance so the
-// user can tell whether + will / won't open the release-group editor.
-function discogsMasterExtra(cachedMasterUrl, existingDiscogsMaster) {
-    if (!cachedMasterUrl) return null;
-    const pill = (txt, color, bg, title) =>
-        `<span style="display:inline-block;font-size:10px;font-weight:bold;padding:1px 5px;border:1px solid ${color};color:${color};background:${bg};border-radius:8px;line-height:1.2;" title="${title}">${txt}</span>`;
-    if (!existingDiscogsMaster)                    return pill('+M', '#5B82B0', '#EEF4FA', 'Discogs master not in MB — + will queue it for the release-group');
-    if (existingDiscogsMaster === cachedMasterUrl) return pill('✓M', '#008000', '#EAF5EA', 'Discogs master is already on the release-group');
-    return                                                pill('≠M', '#FF8C00', '#FFF4E5', 'MB has a different Discogs master on the release-group');
-}
+// (Old discogsMasterExtra pill replaced by the master-slot state object —
+// see discogsMasterState() / applyMasterIcon() above.)
 
 // ─── Wikidata fast path ─────────────────────────────────────────────────────
 // Wikidata curates external IDs (Spotify P2205, Apple Music P5121, AllMusic
@@ -903,12 +917,12 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
     // want a freshly-added MB rel to replace a stale no-match.
     const cached = cacheGet(mbid, 'discogs');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
-        applyCachedRow('discogs', label, cached, mbTracks, discogsMasterExtra(cached.masterUrl, existingDiscogsMaster));
+        applyCachedRow('discogs', label, cached, mbTracks, discogsMasterState(cached.masterUrl, existingDiscogsMaster));
         return;
     }
     if (cached && !cached.url && !existingUrl) {
         appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
-        applyCachedRow('discogs', label, cached, mbTracks, discogsMasterExtra(cached.masterUrl, existingDiscogsMaster));
+        applyCachedRow('discogs', label, cached, mbTracks, discogsMasterState(cached.masterUrl, existingDiscogsMaster));
         return;
     }
 
@@ -1011,7 +1025,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
     cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source });
     updateRow('discogs', {
         url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source,
-        extra: discogsMasterExtra(masterUrl, existingDiscogsMaster),
+        masterState: discogsMasterState(masterUrl, existingDiscogsMaster),
     });
 }
 
@@ -1469,10 +1483,27 @@ function parseMbFromDom() {
             if (m) { format = m[1]; break; }
         }
 
+        // Year + label for the header subtitle. Scrape from the sidebar's
+        // release-information dl. Best-effort — both can be null.
+        let year = null, releaseLabel = null;
+        for (const dt of document.querySelectorAll('dl.properties dt, dl dt')) {
+            const txt = (dt.textContent || '').trim().replace(/:$/, '').toLowerCase();
+            const dd = dt.nextElementSibling;
+            if (!dd || dd.tagName !== 'DD') continue;
+            if (txt === 'date' || txt === 'release date') {
+                const m = dd.textContent.match(/(\d{4})/);
+                if (m && !year) year = m[1];
+            }
+            if (txt === 'label' || txt === 'labels') {
+                const aLabels = [...dd.querySelectorAll('a[href*="/label/"]')].map(a => a.textContent.trim()).filter(Boolean);
+                if (aLabels.length) releaseLabel = [...new Set(aLabels)].join(', ');
+            }
+        }
+
         // Sanity gate: we need artist + album + at least one track row. Anything
         // less is an unrendered or unfamiliar layout — bail to API.
         if (!artist || !album || mbTracks < 1) return null;
-        return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format };
+        return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel };
     } catch (e) {
         // Any selector mishap → API fallback.
         return null;
@@ -1510,7 +1541,13 @@ function parseMbData(data) {
         discogsMaster: relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
     };
     const format = data.media?.[0]?.format || null;
-    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format };
+    const year   = data.date ? String(data.date).slice(0, 4) : null;
+    const releaseLabel = (data['label-info'] || [])
+        .map(li => li.label?.name)
+        .filter(Boolean)
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .join(', ') || null;
+    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel };
 }
 
 async function runScans() {
@@ -1525,7 +1562,7 @@ async function runScans() {
         appendLog('MusicBrainz', `Parsed from page DOM — skipping API call`, 'ok');
     } else {
         appendLog('MusicBrainz', `DOM scrape incomplete — falling back to /ws/2 API`);
-        const mb = await gmGet(`https://musicbrainz.org/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups&fmt=json`);
+        const mb = await gmGet(`https://musicbrainz.org/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups+labels&fmt=json`);
         appendLog('MusicBrainz', `status=${mb.status} ${mb.responseText.length}b in ${mb.ms}ms`);
         if (mb.ok) {
             try {
@@ -1552,10 +1589,17 @@ async function runScans() {
     // cache-fallback branch.
     if (dataSource !== 'cache') mbDataSet(mbid, mbData);
 
-    const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format } = mbData;
-    // Header subtitle — small grey text after the title, e.g. "12 trk · CD".
+    const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel } = mbData;
+    // Header subtitle — small grey text after the title, e.g. "2013 · Civil
+    // Music · Digital". Track count rendered separately on the right.
     const infoEl = document.getElementById('mb-mb-info');
-    if (infoEl) infoEl.textContent = `${mbTracks} trk${format ? ' · ' + format : ''}`;
+    if (infoEl) {
+        const parts = [];
+        if (year)         parts.push(year);
+        if (releaseLabel) parts.push(releaseLabel);
+        if (format)       parts.push(format);
+        infoEl.innerHTML = parts.join(' · ') + (parts.length ? ` · <span style="color:#FF8C00;font-weight:bold;">${mbTracks}</span>` : `<span style="color:#FF8C00;font-weight:bold;">${mbTracks} trk</span>`);
+    }
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
     appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}  deezer=${existing.deezer ? 'YES' : 'no'}  apple=${existing.apple ? 'YES' : 'no'}`);
 
@@ -1640,6 +1684,20 @@ function addSingleUrl(platform) {
     GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
     appendLog('System', `Inject (click): queued ${platform} URL — opening release editor`, 'ok');
     window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
+}
+
+// Click-to-add on the Discogs master slot — queues the master URL for the
+// release-group's edit page (different target than the release URLs).
+function addMasterUrl(masterUrl) {
+    const mb = mbDataGet(mbid);
+    const rgMbid = mb?.releaseGroupMbid;
+    if (!rgMbid) {
+        appendLog('System', `Master add: no release-group MBID known for this release`, 'error');
+        return;
+    }
+    GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify({ 'discogs-master': masterUrl }));
+    appendLog('System', `Inject (master): queued ${masterUrl} for release-group ${rgMbid}`, 'ok');
+    window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit`, '_blank');
 }
 
 document.getElementById('mb-inject-btn').addEventListener('click', async (e) => {
