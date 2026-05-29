@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.161623
+// @version      2026.5.29.161852
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
-// @match        https://musicbrainz.org/release-group/*
+// @match        https://musicbrainz.org/release-group/*/edit
+// @match        https://musicbrainz.org/release-group/*/edit-relationships
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -128,7 +129,7 @@ async function injectInto(urls, storageKey) {
         // entry on the release page. Other platforms auto-classify
         // correctly out of the box.
         if (/music\.apple\.com\/.*\/album\//i.test(url)) {
-            const ok = forceRelType(url, /streaming(?:\s+(?:page|music))?/i);
+            const ok = forceRelType(url, /streaming\s+page/i);
             if (!ok) console.warn(`[platform_check] inject: couldn't force "streaming page" type on ${url}`);
         }
     }
