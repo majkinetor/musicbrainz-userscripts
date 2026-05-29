@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.100432
+// @version      2026.5.29.100928
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -176,11 +176,11 @@ container.innerHTML = `
   <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
 </div>
 <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
-  ${['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].map(p => `
+  ${PROVIDER_ORDER.map(p => `
   <div id="row-${p}" style="display: flex; flex-direction: column; gap: 2px;">
     <div style="display: flex; align-items: center;">
       <span id="ico-${p}" style="margin-right: 6px; color: #888; font-size: 11px; min-width: 14px;">⚪</span>
-      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${ {spotify:'#1DB954', bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C'}[p] || '#222' }; text-decoration: none; font-weight: 600; flex-grow: 1;">${ {apple:'Apple Music'}[p] || (p[0].toUpperCase() + p.slice(1)) }</a>
+      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; flex-grow: 1;">${PROVIDER_NAME[p]}</a>
       <span id="val-${p}" style="font-size: 11px; color: #777; font-family: monospace;">(-- tracks)</span>
     </div>
     <div id="meta-${p}" style="font-size: 11px; color: #999; padding-left: 20px; font-family: sans-serif;"></div>
@@ -231,11 +231,15 @@ providerModal.innerHTML = `
 <div id="mb-provider-modal-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: #FFF; padding: 24px; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid #DDD;">
   <h2 style="margin: 0 0 12px 0; font-size: 18px;">Enable providers</h2>
   <p style="font-size: 13px; color: #555; margin: 0 0 16px 0;">Toggle which services to query. All results come from public endpoints — no API keys required.</p>
-  ${['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].map(p => `
-    <label style="display: flex; align-items: center; margin-bottom: 10px; font-size: 13px; cursor: pointer;">
-      <input type="checkbox" id="mb-toggle-${p}" checked style="margin-right: 10px; width: 16px; height: 16px;">
-      <span style="font-weight: 500;">${ {apple:'Apple Music'}[p] || (p[0].toUpperCase() + p.slice(1)) }</span>
-    </label>`).join('')}
+  <div id="mb-provider-list" style="margin-bottom: 14px;">
+  ${PROVIDER_ORDER.map(p => `
+    <div class="pc-prov-row" data-provider="${p}" style="display: flex; align-items: center; margin-bottom: 6px; font-size: 13px; padding: 4px; border-radius: 3px; background: #FAFAFA;">
+      <span class="pc-prov-up"   style="cursor: pointer; padding: 0 6px; user-select: none; color: #666; font-size: 14px;" title="Move up">▲</span>
+      <span class="pc-prov-down" style="cursor: pointer; padding: 0 6px; user-select: none; color: #666; font-size: 14px;" title="Move down">▼</span>
+      <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 10px; width: 16px; height: 16px;">
+      <span style="font-weight: 500; flex-grow: 1;">${PROVIDER_NAME[p]}</span>
+    </div>`).join('')}
+  </div>
   <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
     <button id="mb-provider-cancel-btn" style="padding: 8px 16px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">Cancel</button>
     <button id="mb-provider-save-btn" style="padding: 8px 16px; background: #1DB954; border: none; border-radius: 4px; font-size: 13px; color: #FFF; cursor: pointer;">Save</button>
@@ -249,12 +253,29 @@ if (coverArt) sidebar.insertBefore(container, coverArt);
 else sidebar.prepend(container);
 
 const logPanel = document.getElementById('mb-finder-log-panel');
-const providerRows = Object.fromEntries(['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].map(p => [p, document.getElementById(`row-${p}`)]));
+const providerRows = Object.fromEntries(PROVIDER_ORDER.map(p => [p, document.getElementById(`row-${p}`)]));
 
-['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].forEach(p => {
+PROVIDER_ORDER.forEach(p => {
     const enabled = GM_getValue(`prov_${p}`, true);
-    providerRows[p].style.display = enabled ? 'flex' : 'none';
+    if (providerRows[p]) providerRows[p].style.display = enabled ? 'flex' : 'none';
 });
+
+// Provider-reorder controls in the providers modal. Each row has ▲/▼ that
+// swaps DOM nodes with its sibling. Save reads the resulting DOM order,
+// persists it under pc:provider-order, and reloads so the sidebar re-renders
+// rows in the new sequence.
+for (const row of providerModal.querySelectorAll('.pc-prov-row')) {
+    row.querySelector('.pc-prov-up').addEventListener('click', e => {
+        e.stopPropagation();
+        const prev = row.previousElementSibling;
+        if (prev) row.parentNode.insertBefore(row, prev);
+    });
+    row.querySelector('.pc-prov-down').addEventListener('click', e => {
+        e.stopPropagation();
+        const next = row.nextElementSibling;
+        if (next) row.parentNode.insertBefore(next, row);
+    });
+}
 
 const closeAllModals = () => { logModal.style.display = 'none'; providerModal.style.display = 'none'; };
 logModal.addEventListener('click', e => { if (!document.getElementById('mb-log-modal-card').contains(e.target)) closeAllModals(); });
@@ -285,16 +306,27 @@ for (const chip of logModal.querySelectorAll('.pc-log-chip')) {
     });
 }
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
-    ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
+    PROVIDER_ORDER.forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
     providerModal.style.display = 'block';
 });
 document.getElementById('mb-provider-cancel-btn').addEventListener('click', closeAllModals);
 document.getElementById('mb-provider-save-btn').addEventListener('click', () => {
-    ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'].forEach(p => {
+    PROVIDER_ORDER.forEach(p => {
         const checked = document.getElementById(`mb-toggle-${p}`).checked;
         GM_setValue(`prov_${p}`, checked);
-        providerRows[p].style.display = checked ? 'flex' : 'none';
+        if (providerRows[p]) providerRows[p].style.display = checked ? 'flex' : 'none';
     });
+    // Persist provider order from the modal's current row sequence. If the
+    // order changed, reload — the sidebar's row container was rendered at
+    // script init with the old order, and re-ordering in place would need
+    // careful DOM surgery for not much gain.
+    const newOrder = [...providerModal.querySelectorAll('.pc-prov-row')].map(r => r.dataset.provider);
+    const sameOrder = newOrder.length === PROVIDER_ORDER.length && newOrder.every((v, i) => v === PROVIDER_ORDER[i]);
+    if (!sameOrder) {
+        GM_setValue('pc:provider-order', JSON.stringify(newOrder));
+        location.reload();
+        return;
+    }
     providerModal.style.display = 'none';
 });
 document.getElementById('mb-modal-copy-btn').addEventListener('click', function () {
@@ -349,7 +381,7 @@ function gmGet(url, { responseType, headers, timeout = 15000 } = {}) {
 //   colour tint    — green when fromCache=false, steel-blue when fromCache=true
 //   circled icon   — when source includes 'MB rels' (the URL was put there by
 //                    an MB editor, not discovered by us)
-function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache }) {
+function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format }) {
     const a   = document.getElementById(`mb-online-${p}`);
     const ico = document.getElementById(`ico-${p}`);
     const val = document.getElementById(`val-${p}`);
@@ -386,8 +418,9 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     ico.classList.toggle('pc-ico-circled', fromMbRels);
 
     const bits = [];
-    if (year)  bits.push(year);
-    if (label) bits.push(label);
+    if (year)   bits.push(year);
+    if (label)  bits.push(label);
+    if (format) bits.push(format);
     // Suppress the "via <source>" line for fromCache rows (the blue tint
     // already conveys cache state) and for MB-rels rows (the circled icon
     // conveys origin). Show provenance only for fresh non-MB-rels rows where
@@ -592,6 +625,7 @@ function applyCachedRow(platform, label, cached, mbTracks) {
         remoteTracks: cached.tracks ?? null,
         year:         cached.year   ?? null,
         label:        cached.label  ?? null,
+        format:       cached.format  ?? null,
         source:       cached.source || null,
         fromCache:    true,
     });
@@ -849,7 +883,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         return;
     }
 
-    let tracks = null, year = null, lbl = null;
+    let tracks = null, year = null, lbl = null, fmt = null;
     if (releaseId) {
         const detailUrl = `https://api.discogs.com/releases/${releaseId}`;
         appendLog(label, `API detail: ${detailUrl}`);
@@ -862,13 +896,20 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
                 tracks = trk.length || null;
                 year   = data.year || null;
                 lbl    = (data.labels || []).map(l => l.name).join(', ') || null;
-                appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}`, 'ok');
+                // Discogs `formats` is an array of {name, qty, descriptions}.
+                // Render as `2×Vinyl, LP, Album` style — primary `name` first,
+                // descriptions appended in parentheses.
+                fmt = (data.formats || []).map(f => {
+                    const head = (f.qty && f.qty !== '1' ? `${f.qty}×` : '') + (f.name || '');
+                    return head + (f.descriptions?.length ? ` (${f.descriptions.join(', ')})` : '');
+                }).join(', ') || null;
+                appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'} format=${fmt || '?'}`, 'ok');
             } catch (e) { appendLog(label, `API detail parse error: ${e.message}`, 'error'); }
         } else { appendLog(label, `API detail failed`, 'error'); }
     }
 
-    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, source });
-    updateRow('discogs', { url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, source });
+    updateRow('discogs', { url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source });
 }
 
 // Fetch Bandcamp album metadata via the standard album page. Bandcamp ships
@@ -886,11 +927,19 @@ async function fetchBandcampMeta(albumUrl) {
                     || html.match(/<meta\s+name="title"\s+content="([^"|]+)/);
     const yMatch = html.match(/"datePublished"\s*:\s*"[^"]*?(\d{4})\b/);
     const lMatch = html.match(/"recordLabel"\s*:\s*\{[^}]*?"name"\s*:\s*"([^"]+)"/);
+    // Bandcamp's JSON-LD includes one albumRelease entry per available format
+    // (DigitalFormat / VinylFormat / CDFormat / CassetteFormat / …). Strip
+    // the "Format" suffix and dedupe to a short tag list.
+    const formats = [...new Set(
+        [...html.matchAll(/"musicReleaseFormat"\s*:\s*"(\w+)"/g)]
+            .map(m => m[1].replace(/Format$/, ''))
+    )];
     return {
         tracks: numTracksMatch ? parseInt(numTracksMatch[1], 10) : null,
         title:  titleMatch?.[1] || null,
         year:   yMatch?.[1]     || null,
         label:  lMatch?.[1]     || null,
+        format: formats.length ? formats.join(', ') : null,
     };
 }
 
@@ -984,15 +1033,16 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
 
     const meta = bestMeta || await fetchBandcampMeta(albumUrl);
     if (meta) {
-        appendLog(label, `Album parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
+        appendLog(label, `Album parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} format=${meta.format || '?'}`, meta.tracks ? 'ok' : 'warn');
     } else {
         appendLog(label, `Album page failed`, 'error');
     }
     const tracks = meta?.tracks ?? null;
     const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
-    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, source });
-    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+    const fmt    = meta?.format ?? null;
+    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source });
+    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source });
 }
 
 // ─── Deezer ─────────────────────────────────────────────────────────────────
