@@ -1,5 +1,19 @@
 # Import Discogs Credits Changelog
 
+## [2026.5.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.5.29)
+
+### Features
+
+1. Its not obvious that search does anything for few seconds ([#98](https://github.com/majkinetor/musicbrainz-userscripts/issues/98))
+1. Buttons to set "Credited as" field to MB or Discogs entity name ([#108](https://github.com/majkinetor/musicbrainz-userscripts/issues/108))
+
+### Fixes
+
+1. Some tooltips are not completely visible ([#89](https://github.com/majkinetor/musicbrainz-userscripts/issues/89))
+1. Sometimes auto closing new entity page doesn't work or is too slow ([#97](https://github.com/majkinetor/musicbrainz-userscripts/issues/97))
+1. Instruments not found: conga drum, kalimba, steel ([#104](https://github.com/majkinetor/musicbrainz-userscripts/issues/104))
+1. "Credited as" issues with cache and default ([#105](https://github.com/majkinetor/musicbrainz-userscripts/issues/105))
+
 ## [2026.5.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.5.27)
 
 ### Features
