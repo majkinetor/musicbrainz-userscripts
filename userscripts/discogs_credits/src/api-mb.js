@@ -74,11 +74,12 @@ export const mbThrottle = (() => {
     // Per-request hard timeout. The browser will happily wait many tens of
     // seconds on a stuck connection (#87 follow-up: observed a `/ws/2/url`
     // fetch that hung for 40 213ms before the network layer gave up). One
-    // hung request blocks a throttle slot for that whole time. 10s is well
+    // hung request blocks a throttle slot for that whole time. 5s is well
     // beyond MB's normal response time (<500ms typical) but short enough
-    // that a stuck connection retries promptly. Lowered from 15s after a
-    // log from majkinetor showed ~30 stuck requests each burning 15s.
-    const REQUEST_TIMEOUT_MS = 10000;
+    // that a stuck connection retries promptly. Lowered from 15s → 10s →
+    // 5s as the cluster-of-timeouts pattern showed the throttle pool
+    // recovers faster when stuck slots free sooner.
+    const REQUEST_TIMEOUT_MS = 5000;
 
     async function _run(item) {
         const tag = `req#${++_diagReqSeq}`;

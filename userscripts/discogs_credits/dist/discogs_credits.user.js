@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.29.091021
+// @version      2026.5.29.231916
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -150,7 +150,7 @@
       }
     }
     let _diagReqSeq = 0;
-    const REQUEST_TIMEOUT_MS = 1e4;
+    const REQUEST_TIMEOUT_MS = 5e3;
     async function _run(item) {
       const tag = `req#${++_diagReqSeq}`;
       const shortUrl = item.url.replace("//musicbrainz.org", "").replace(/^https:/, "");
