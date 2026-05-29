@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.102023
+// @version      2026.5.29.102414
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -31,26 +31,34 @@
 // editor) and short-circuit to the inject helper — the sidebar UI / scans
 // below only make sense on the canonical release page.
 if (/\/release\/[0-9a-f-]{36}\/(edit|edit-relationships)(?:[?#]|$)/.test(window.location.pathname)) {
-    runInjectHelper();
+    runInjectHelper('release');
+    return;
+}
+if (/\/release-group\/[0-9a-f-]{36}\/(edit|edit-relationships)(?:[?#]|$)/.test(window.location.pathname)) {
+    runInjectHelper('release-group');
     return;
 }
 
-function runInjectHelper() {
-    const mbid = (window.location.pathname.match(/\/release\/([0-9a-f-]{36})/) || [])[1];
+function runInjectHelper(entityType) {
+    // entityType: 'release' or 'release-group'. Both pages use the same
+    // External Links form, so the injection logic is identical — only the
+    // pending-storage key differs.
+    const re   = new RegExp(`/${entityType}/([0-9a-f-]{36})`);
+    const mbid = (window.location.pathname.match(re) || [])[1];
     if (!mbid) return;
-    const raw = GM_getValue(`pc:pending:${mbid}`, null);
+    const key  = entityType === 'release-group' ? `pc:pending:rg:${mbid}` : `pc:pending:${mbid}`;
+    const raw  = GM_getValue(key, null);
     if (!raw) return;
     let pending;
     try { pending = JSON.parse(raw); } catch { return; }
     const urls = Object.values(pending || {}).filter(Boolean);
     if (urls.length === 0) return;
 
-    // The External Links form may not be ready at document-end on /edit.
-    // Poll briefly for the "Add another link" input before injecting.
+    // The External Links form may not be ready at document-end. Poll briefly.
     const start = Date.now();
     const tick = () => {
         const input = findAddLinkInput();
-        if (input) { injectInto(urls, mbid); return; }
+        if (input) { injectInto(urls, key); return; }
         if (Date.now() - start > 15000) {
             console.warn('[platform_check] inject helper: never found "Add another link" input');
             return;
@@ -70,7 +78,7 @@ function findAddLinkInput() {
         || null;
 }
 
-async function injectInto(urls, mbid) {
+async function injectInto(urls, storageKey) {
     const wait = ms => new Promise(r => setTimeout(r, ms));
     // React/Backbone-compatible native value setter so MB's framework sees
     // the change, not just the raw DOM property.
@@ -82,20 +90,18 @@ async function injectInto(urls, mbid) {
         if (!input) break;
         input.focus();
         nativeSetter.call(input, url);
-        // Dispatch every event MB's form widget could be listening for.
         input.dispatchEvent(new Event('input',  { bubbles: true }));
         input.dispatchEvent(new Event('change', { bubbles: true }));
-        // Some widgets commit on Enter/blur rather than on input.
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
         input.dispatchEvent(new KeyboardEvent('keyup',   { key: 'Enter', code: 'Enter', bubbles: true }));
         input.blur();
         injected++;
-        // MB does URL-pattern auto-detection (Discogs / free streaming /
-        // purchase-for-mail-order, etc.) and renders a fresh row + a fresh
-        // "Add another link" input. Give it room to land before the next fill.
+        // MB does URL-pattern auto-detection (Discogs / free streaming / etc.)
+        // and renders a fresh row + a fresh "Add another link" input. Give it
+        // room to land before the next fill.
         await wait(700);
     }
-    if (injected > 0) GM_setValue(`pc:pending:${mbid}`, null);
+    if (injected > 0) GM_setValue(storageKey, null);
     flashStatusOnExternalLinks(`Platform Check: injected ${injected}/${urls.length} URL${urls.length === 1 ? '' : 's'}`);
 }
 
@@ -910,7 +916,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         return;
     }
 
-    let tracks = null, year = null, lbl = null, fmt = null;
+    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null;
     if (releaseId) {
         const detailUrl = `https://api.discogs.com/releases/${releaseId}`;
         appendLog(label, `API detail: ${detailUrl}`);
@@ -924,18 +930,20 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
                 year   = data.year || null;
                 lbl    = (data.labels || []).map(l => l.name).join(', ') || null;
                 // Discogs `formats` is an array of {name, qty, descriptions}.
-                // Render as `2×Vinyl, LP, Album` style — primary `name` first,
-                // descriptions appended in parentheses.
                 fmt = (data.formats || []).map(f => {
                     const head = (f.qty && f.qty !== '1' ? `${f.qty}×` : '') + (f.name || '');
                     return head + (f.descriptions?.length ? ` (${f.descriptions.join(', ')})` : '');
                 }).join(', ') || null;
-                appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'} format=${fmt || '?'}`, 'ok');
+                // Master URL — points at the release-group equivalent on Discogs.
+                // Stored so the + flow can offer to add it to MB's release-group
+                // url-rels (a separate edit page from the release).
+                if (data.master_id) masterUrl = `https://www.discogs.com/master/${data.master_id}`;
+                appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'} format=${fmt || '?'} master=${masterUrl || '-'}`, 'ok');
             } catch (e) { appendLog(label, `API detail parse error: ${e.message}`, 'error'); }
         } else { appendLog(label, `API detail failed`, 'error'); }
     }
 
-    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, source });
+    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source });
     updateRow('discogs', { url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source });
 }
 
@@ -1550,31 +1558,65 @@ function flashInfo(targetEl, text, bg = '#5B82B0') {
     setTimeout(() => { tip.remove(); }, 1850);
 }
 
-document.getElementById('mb-inject-btn').addEventListener('click', (e) => {
-    const pending = {};
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple']) {
+document.getElementById('mb-inject-btn').addEventListener('click', async (e) => {
+    const triggerBtn = e.currentTarget;
+    // Bucket 1: URLs going onto the release.
+    const pendingRelease = {};
+    for (const p of PROVIDER_ORDER) {
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
-        // Skip URLs that are already in MB rels (the row is circled and the
-        // URL is already on the release — no point re-adding).
         if (cached.source === 'MB rels') continue;
-        // Skip rows where the track count didn't match (~ icon) — the user
-        // hasn't confirmed those.
         const icoText = document.getElementById(`ico-${p}`)?.textContent?.trim();
         if (icoText !== '✓') continue;
-        pending[p] = cached.url;
+        pendingRelease[p] = cached.url;
     }
-    const count = Object.keys(pending).length;
-    if (count === 0) {
-        // Nothing new to add — give visible feedback without opening a tab
-        // the user doesn't need. Tooltip-style toast next to the + button.
-        appendLog('System', `Inject: nothing to add — all OK URLs are already in MB rels`, 'warn');
-        flashInfo(e.currentTarget, 'Already in MB');
+
+    // Bucket 2: Discogs master URL → goes onto the release-group, not the
+    // release. Only fire if (a) we have a master, (b) we know the rg MBID,
+    // and (c) MB's release-group doesn't already have it. (c) requires one
+    // /ws/2 call but only when there's actually a candidate to add.
+    const pendingRG = {};
+    const discogsCache = cacheGet(mbid, 'discogs');
+    const masterUrl    = discogsCache?.masterUrl;
+    const mbCached     = mbDataGet(mbid);
+    const rgMbid       = mbCached?.releaseGroupMbid;
+    if (masterUrl && rgMbid) {
+        appendLog('System', `Inject: checking release-group ${rgMbid} for existing Discogs master rel…`);
+        const r = await gmGet(`https://musicbrainz.org/ws/2/release-group/${rgMbid}?inc=url-rels&fmt=json`);
+        let alreadyInRg = false;
+        if (r.ok) {
+            try {
+                const data = JSON.parse(r.responseText);
+                const rgUrls = (data.relations || [])
+                    .filter(rel => rel['target-type'] === 'url' && rel.url?.resource)
+                    .map(rel => rel.url.resource);
+                alreadyInRg = rgUrls.includes(masterUrl);
+                appendLog('System', `Release-group rels: ${rgUrls.length} URL rel(s); master ${alreadyInRg ? 'already present' : 'NOT present'}`);
+            } catch (err) { appendLog('System', `RG rel parse error: ${err.message}`, 'error'); }
+        } else {
+            appendLog('System', `RG rel fetch failed (status=${r.status}) — skipping master check`, 'warn');
+        }
+        if (!alreadyInRg) pendingRG['discogs-master'] = masterUrl;
+    }
+
+    const releaseCount = Object.keys(pendingRelease).length;
+    const rgCount      = Object.keys(pendingRG).length;
+    if (releaseCount + rgCount === 0) {
+        appendLog('System', `Inject: nothing to add — all OK URLs already in MB`, 'warn');
+        flashInfo(triggerBtn, 'Already in MB');
         return;
     }
-    GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pending));
-    appendLog('System', `Inject: queued ${count} URL(s) — opening release editor`, 'ok');
-    window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
+
+    if (releaseCount > 0) {
+        GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
+        appendLog('System', `Inject: queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
+        window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
+    }
+    if (rgCount > 0 && rgMbid) {
+        GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify(pendingRG));
+        appendLog('System', `Inject: queued ${rgCount} release-group URL(s) — opening release-group editor`, 'ok');
+        window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit`, '_blank');
+    }
 });
 
 runScans();
