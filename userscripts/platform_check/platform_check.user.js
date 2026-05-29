@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.171145
+// @version      2026.5.29.172004
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
-// @match        https://musicbrainz.org/release-group/*/edit
 // @match        https://musicbrainz.org/release-group/*/edit-relationships
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
@@ -25,26 +24,23 @@
 (function () {
 'use strict';
 
-// ─── Release editor sub-pages (/edit and /edit-relationships) ──────────────
-// When the user clicks + on the release page, we stash the OK URLs in
-// `pc:pending:<mbid>` and open the release editor in a new tab. Detect both
-// /edit and /edit-relationships (former is the multi-tab editor where URL
-// relationships live under "External Links"; latter is the dedicated rel
-// editor) and short-circuit to the inject helper — the sidebar UI / scans
-// below only make sense on the canonical release page.
-if (/\/release\/[0-9a-f-]{36}\/(edit|edit-relationships)(?:[?#]|$)/.test(window.location.pathname)) {
+// ─── Release editor sub-pages (/edit-relationships) ───────────────────────
+// + click on /release stashes OK URLs in `pc:pending:<mbid>` and opens
+// /edit-relationships. We dispatch URL relationship state updates directly
+// into MB's React store (window.MB.relationshipEditor.dispatch) — the
+// rinsuki/userscripts technique. Way faster than form-filling, and lets
+// us set the linkTypeID explicitly so Apple Music / Bandcamp don't land
+// with empty "Please select a link type" choosers.
+if (/\/release\/[0-9a-f-]{36}\/edit-relationships(?:[?#]|$)/.test(window.location.pathname)) {
     runInjectHelper('release');
     return;
 }
-if (/\/release-group\/[0-9a-f-]{36}\/(edit|edit-relationships)(?:[?#]|$)/.test(window.location.pathname)) {
+if (/\/release-group\/[0-9a-f-]{36}\/edit-relationships(?:[?#]|$)/.test(window.location.pathname)) {
     runInjectHelper('release-group');
     return;
 }
 
-function runInjectHelper(entityType) {
-    // entityType: 'release' or 'release-group'. Both pages use the same
-    // External Links form, so the injection logic is identical — only the
-    // pending-storage key differs.
+async function runInjectHelper(entityType) {
     const re   = new RegExp(`/${entityType}/([0-9a-f-]{36})`);
     const mbid = (window.location.pathname.match(re) || [])[1];
     if (!mbid) return;
@@ -56,238 +52,149 @@ function runInjectHelper(entityType) {
     const urls = Object.values(pending || {}).filter(Boolean);
     if (urls.length === 0) return;
 
-    // The External Links form may not be ready at document-end. Poll briefly.
+    // Wait for MB's React relationship editor to mount. On a cold reload
+    // this can take a second or two while the JS bundle loads + state
+    // hydrates.
+    const wait = ms => new Promise(r => setTimeout(r, ms));
     const start = Date.now();
-    const tick = () => {
-        const input = findAddLinkInput();
-        if (input) { injectInto(urls, key); return; }
+    while (!window.MB?.relationshipEditor?.state || !window.MB?.linkedEntities?.link_type) {
         if (Date.now() - start > 15000) {
-            const inputs = [...document.querySelectorAll('input')];
-            const placeholders = [...new Set(inputs.map(i => i.placeholder).filter(Boolean))];
-            console.warn(`[platform_check] inject helper: never found "Add another link" input on ${window.location.pathname}. ${inputs.length} input(s) on page. Placeholders seen:`, placeholders);
-            showInjectFailureBanner(urls, entityType, placeholders);
+            console.warn('[platform_check] inject helper: window.MB.relationshipEditor.state never appeared');
+            showInjectBanner(`Platform Check: MB.relationshipEditor never appeared — can't inject ${urls.length} URL(s).`, [], { fail: true });
             return;
         }
-        setTimeout(tick, 200);
-    };
-    tick();
-}
-
-// Visible fallback when the helper can't find the "Add another link" input —
-// happens if MB's edit form structure differs from what we expect. Drop a
-// banner at the top of #content listing the URLs we'd have injected, plus
-// the placeholders we DID see so we can fix the selector.
-function showInjectFailureBanner(urls, entityType, placeholdersSeen) {
-    const target = document.querySelector('#content') || document.body;
-    if (!target) return;
-    const div = document.createElement('div');
-    div.style.cssText = 'margin:12px 0;padding:10px 12px;background:#FFF3CD;border:1px solid #FFC107;border-radius:4px;font-family:sans-serif;font-size:12px;color:#7B5E00;';
-    div.innerHTML = `
-        <strong>Platform Check:</strong> couldn't auto-inject on this ${entityType} editor.
-        <br>URLs to add manually:
-        <ul style="margin:4px 0 0 18px;padding:0;">${urls.map(u => `<li><code style="background:#FFF;padding:1px 4px;border-radius:2px;">${u}</code></li>`).join('')}</ul>
-        <br><small>Inputs seen with placeholders: ${placeholdersSeen.map(p => `<code>${p}</code>`).join(', ') || '(none)'}</small>
-    `;
-    target.insertBefore(div, target.firstChild);
-}
-
-// MB's /edit page renders one bottom-most "Add another link" text input under
-// the External Links section. It re-renders (new node) after each filled URL.
-// Find it by placeholder text so we don't depend on class names that MB churns.
-function findAddLinkInput() {
-    const all = [...document.querySelectorAll('input[type="text"], input[type="url"], input:not([type])')];
-    return all.find(i => /add another (?:link|url)/i.test(i.placeholder || ''))
-        || all.find(i => /add another (?:link|url)/i.test(i.getAttribute('aria-label') || ''))
-        || null;
-}
-
-async function injectInto(urls, storageKey) {
-    const wait = ms => new Promise(r => setTimeout(r, ms));
-    // React/Backbone-compatible native value setter so MB's framework sees
-    // the change, not just the raw DOM property.
-    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-    let injected = 0;
-    const forceReports = [];
-    // MB labels the rel type as "stream for free" in the UI (legacy "free
-    // streaming" / "streaming page" — same gid, different render).
-    const STREAM_RE = /(stream\s+for\s+free|streaming\s+page|free\s+streaming)/i;
-    // Which provider URLs need an explicit type pick because MB's
-    // auto-detection leaves the dropdown empty.
-    const NEEDS_TYPE_FORCE = url =>
-        /music\.apple\.com\/.*\/album\//i.test(url) ||
-        /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(url);
-    for (const url of urls) {
-        // Re-query each iteration — MB replaces the input after each fill.
-        const input = findAddLinkInput();
-        if (!input) break;
-        input.focus();
-        nativeSetter.call(input, url);
-        input.dispatchEvent(new Event('input',  { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
-        input.dispatchEvent(new KeyboardEvent('keyup',   { key: 'Enter', code: 'Enter', bubbles: true }));
-        input.blur();
-        injected++;
-        // MB does URL-pattern auto-detection (Discogs / free streaming / etc.)
-        // and renders a fresh row + a fresh "Add another link" input. Give it
-        // room to land before the next fill.
-        await wait(700);
-        if (NEEDS_TYPE_FORCE(url)) {
-            // Retry with backoff — MB's React occasionally re-renders the row
-            // a beat after the URL lands, blowing away earlier DOM. Two extra
-            // tries cover the typical settle time without spamming.
-            let report = null;
-            for (const delay of [0, 300, 700]) {
-                if (delay) await wait(delay);
-                report = forceRelType(url, STREAM_RE);
-                if (report.ok) break;
-            }
-            forceReports.push({ url, ...report });
-        }
+        await wait(150);
     }
-    if (injected > 0) GM_setValue(storageKey, null);
-    flashStatusOnExternalLinks(`Platform Check: injected ${injected}/${urls.length} URL${urls.length === 1 ? '' : 's'}`, forceReports);
+    dispatchInject(urls, key, entityType);
 }
 
-// Locate the relationship-type chooser for the row whose URL input matches
-// `url` and force it to the option matching `optionRe`. Returns a structured
-// report so the caller can show the outcome inline on the page without
-// needing the user to open DevTools.
-//   { ok, shape: 'select'|'autocomplete-listbox'|'autocomplete-typed',
-//     hit?: text of the picked option, miss?: why we gave up,
-//     rowDump?: outerHTML excerpt of the row we searched }
-function forceRelType(url, optionRe) {
-    // After Enter, MB re-renders the row: the URL <input> goes away and
-    // the URL appears as a clickable <a href="..."> with a sibling Type:
-    // <select>. Match by Apple album ID for Apple URLs (MB strips the
-    // slug on canonicalization), exact href for everything else.
-    const appleIdMatch = url.match(/music\.apple\.com\/[^/]+\/album\/(?:[^/?#]+\/)?(\d+)\b/);
-    const appleId = appleIdMatch?.[1] || null;
-    const inputs = [...document.querySelectorAll('input[type="url"], input[type="text"], input:not([type])')];
-    const anchors = [...document.querySelectorAll('a[href]')];
-    const matchByAppleId = a => appleId && new RegExp(`/album/(?:[^/]+/)?${appleId}\\b`).test(a.getAttribute('href') || a.href);
-    const ourEl = anchors.find(a => a.href === url || a.getAttribute('href') === url)
-               || (appleId && anchors.find(matchByAppleId))
-               || inputs.find(i => (i.value || '') === url)
-               || (appleId && inputs.find(i => new RegExp(`/album/(?:[^/]+/)?${appleId}\\b`).test(i.value || '')));
-    if (!ourEl) return { ok: false, miss: `URL not on page (looked for exact href and id=${appleId || '—'})` };
+// Provider → MB link-type name (release ↔ url relationships).  Looked up
+// in MB.linkedEntities.link_type at runtime so we always get the current
+// linkTypeID without hardcoding numeric IDs.
+const URL_TYPE_NAMES = [
+    { test: u => /music\.apple\.com\/.*\/album\//i.test(u),     name: 'free streaming' },
+    { test: u => /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), name: 'free streaming' },
+    { test: u => /open\.spotify\.com\/.*\/?album\//i.test(u),   name: 'free streaming' },
+    { test: u => /(?:www\.)?deezer\.com\/.*\/?album\//i.test(u),name: 'free streaming' },
+    { test: u => /www\.discogs\.com\/.*\/?release\//i.test(u),  name: 'discography entry' },
+    { test: u => /www\.discogs\.com\/.*\/?master\//i.test(u),   name: 'discography entry' },
+];
 
-    // The type chooser is NOT inside the URL row itself — MB renders the
-    // URL row as a tight <tr class="external-link-item"> with just the
-    // favicon, the X/Edit buttons, and the anchor; the Type: <select>
-    // lives in a sibling row (or following div) that comes right after.
-    // Forward-walk the DOM from ourEl until we find a <select>, bounded
-    // by encountering another external URL anchor (which would mean we've
-    // crossed into the next row).
-    const findNext = () => {
-        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
-        walker.currentNode = ourEl;
-        let node;
-        while ((node = walker.nextNode())) {
-            if (node === ourEl) continue;
-            if (node.tagName === 'A') {
-                const h = node.getAttribute('href') || '';
-                if (/^https?:\/\//.test(h) && !/musicbrainz\.org/.test(h)) return null; // crossed into next row
-            }
-            if (node.tagName === 'SELECT') return node;
+function dispatchInject(urls, storageKey, entityType) {
+    const editor = window.MB.relationshipEditor;
+    const linkedEntities = window.MB.linkedEntities;
+
+    // Resolve the source entity (the release / release-group). MB exposes it
+    // on state.entity in the modern release-relationship editor.
+    const sourceEntity = editor.state.entity || editor.state.release || editor.state.releaseGroup;
+    if (!sourceEntity) {
+        console.warn('[platform_check] inject: no source entity on state. Keys:', Object.keys(editor.state || {}));
+        showInjectBanner(`Platform Check: couldn't locate release entity in MB.relationshipEditor.state`, [], { fail: true });
+        return;
+    }
+    const sourceType0 = sourceEntity.entityType || (entityType === 'release-group' ? 'release_group' : 'release');
+
+    // Resolve linkTypeID by name once.
+    const lookupLinkTypeID = name => {
+        for (const lt of Object.values(linkedEntities.link_type)) {
+            if (lt.type0 === sourceType0 && lt.type1 === 'url' && lt.name === name) return lt.id;
         }
         return null;
     };
-    const forwardSelect = findNext();
-    // Also keep a row reference for diagnostics (the smallest ancestor not
-    // containing another URL — useful for the row-HTML dump on miss).
-    let row = ourEl;
-    let next = ourEl.parentElement;
-    while (next && next !== document.body) {
-        const otherUrls = [...next.querySelectorAll('a[href]')].filter(a =>
-            a !== ourEl && /^https?:\/\//.test(a.href) && !/musicbrainz\.org/.test(a.href));
-        if (otherUrls.length > 0) break;
-        row = next;
-        next = next.parentElement;
-    }
 
-    // Shape 1: native <select> — prefer the forward-walked candidate.
-    const select = forwardSelect || row.querySelector('select');
-    if (select) {
-        const opt = [...select.options].find(o => optionRe.test(o.textContent));
-        if (opt) {
-            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
-            nativeSetter.call(select, opt.value);
-            select.dispatchEvent(new Event('change', { bubbles: true }));
-            return { ok: true, shape: 'select', hit: opt.textContent.trim() };
+    const reports = [];
+    for (const url of urls) {
+        const mapped = URL_TYPE_NAMES.find(m => m.test(url));
+        const typeName = mapped?.name;
+        if (!typeName) { reports.push({ url, ok: false, miss: 'no provider mapping' }); continue; }
+        const linkTypeID = lookupLinkTypeID(typeName);
+        if (!linkTypeID) { reports.push({ url, ok: false, miss: `no linkTypeID for "${typeName}"` }); continue; }
+
+        try {
+            const newId = editor.getRelationshipStateId(null);
+            editor.dispatch({
+                type: 'update-relationship-state',
+                sourceEntity,
+                oldRelationshipState: null,
+                newRelationshipState: {
+                    id: newId,
+                    linkOrder: 0,
+                    linkTypeID,
+                    _lineage: ['added by platform_check'],
+                    _original: null,
+                    _status: 1,
+                    attributes: null,
+                    begin_date: null,
+                    end_date: null,
+                    editsPending: false,
+                    ended: false,
+                    entity0: sourceEntity,
+                    entity0_credit: '',
+                    entity1: {
+                        decoded: '',
+                        editsPending: false,
+                        entityType: 'url',
+                        gid: '',
+                        name: url,
+                        id: editor.getRelationshipStateId(null),
+                        last_updated: null,
+                        href_url: '',
+                        pretty_name: '',
+                    },
+                    entity1_credit: '',
+                },
+                batchSelectionCount: undefined,
+                creditsToChangeForSource: '',
+                creditsToChangeForTarget: '',
+            });
+            reports.push({ url, ok: true, type: typeName, linkTypeID });
+        } catch (e) {
+            console.warn('[platform_check] dispatch threw:', e);
+            reports.push({ url, ok: false, miss: `dispatch error: ${e.message}` });
         }
-        const optsList = [...select.options].map(o => `"${o.textContent.trim()}"`).join(', ').slice(0, 400);
-        return { ok: false, miss: `select had no option matching regex. Options: ${optsList}`, rowDump: row.outerHTML.slice(0, 1200) };
     }
 
-    // Shape 2: React autocomplete inside our row.
-    const typeInputs = [...row.querySelectorAll('input')].filter(i => /relationship\s*type|link\s*type/i.test(i.placeholder || i.getAttribute('aria-label') || ''));
-    if (typeInputs.length) {
-        const tin = typeInputs[0];
-        const listbox = row.querySelector('[role="listbox"]');
-        if (listbox) {
-            const opt = [...listbox.querySelectorAll('[role="option"], li')].find(o => optionRe.test(o.textContent));
-            if (opt) { opt.click(); return { ok: true, shape: 'autocomplete-listbox', hit: opt.textContent.trim() }; }
-        }
-        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-        nativeSetter.call(tin, 'stream for free');
-        tin.dispatchEvent(new Event('input',  { bubbles: true }));
-        return { ok: true, shape: 'autocomplete-typed', hit: 'typed "stream for free"' };
-    }
+    // Append a small edit note tagging the source.
+    try {
+        editor.dispatch({
+            type: 'update-edit-note',
+            editNote: ((editor.state.editNoteField?.value || '') + `\nAdded via Platform Check userscript v${(GM_info?.script?.version) || '?'}.`).trim(),
+        });
+    } catch (_) { /* not all editor versions accept this */ }
 
-    // Wider dump on miss: include the row plus the next ~3 sibling elements,
-    // since the type chooser typically lives in a following sibling row.
-    const parts = [row.outerHTML];
-    let sib = row.nextElementSibling;
-    for (let n = 0; n < 4 && sib; n++, sib = sib.nextElementSibling) parts.push(sib.outerHTML);
-    return { ok: false, miss: 'no <select> or autocomplete found forward of URL', rowDump: parts.join('\n--- next sibling ---\n').slice(0, 2400) };
+    const okCount = reports.filter(r => r.ok).length;
+    GM_setValue(storageKey, null);
+    showInjectBanner(`Platform Check: dispatched ${okCount}/${urls.length} URL relationship(s)`, reports, { fail: okCount < urls.length });
 }
 
-// Fixed-position overlay at the top of the page. The previous inline span
-// next to the "External Links" heading kept getting wiped out by MB's
-// React re-renders after we appended it. A fixed-position root attached to
-// <body> sits outside the React tree, so it survives.
-function flashStatusOnExternalLinks(text, forceReports = []) {
+function showInjectBanner(text, reports = [], opts = {}) {
     document.getElementById('pc-inject-status')?.remove();
-    document.getElementById('pc-inject-rowdump')?.remove();
     const overlay = document.createElement('div');
     overlay.id = 'pc-inject-status';
-    const anyFail = forceReports.some(r => !r.ok);
+    const fail = !!opts.fail;
     overlay.style.cssText = `
         position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
         z-index: 999999; padding: 8px 14px; border-radius: 6px;
         font-family: sans-serif; font-size: 12px; max-width: 90vw;
         box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        background: ${anyFail ? '#FFF3CD' : '#E8F5E9'};
-        border: 1px solid ${anyFail ? '#FFC107' : '#81C784'};
-        color: ${anyFail ? '#7B5E00' : '#1B5E20'};`;
+        background: ${fail ? '#FFF3CD' : '#E8F5E9'};
+        border: 1px solid ${fail ? '#FFC107' : '#81C784'};
+        color: ${fail ? '#7B5E00' : '#1B5E20'};`;
     let body = `<strong>${text}</strong>`;
-    if (forceReports.length) {
-        body += '<br><span style="font-size:11px;">Type-force:</span><ul style="margin:4px 0 0 18px;padding:0;font-size:11px;">';
-        for (const r of forceReports) {
-            const tag = r.ok ? `OK · ${r.shape} → ${r.hit}` : `FAIL · ${r.miss}`;
+    if (reports.length) {
+        body += '<ul style="margin:4px 0 0 18px;padding:0;font-size:11px;">';
+        for (const r of reports) {
             const host = (r.url || '').match(/^https?:\/\/([^/]+)/)?.[1] || '';
-            body += `<li>${host}: ${tag}</li>`;
+            body += r.ok
+                ? `<li>${host}: <span style="color:#1B5E20">OK</span> · ${r.type} (linkTypeID=${r.linkTypeID})</li>`
+                : `<li>${host}: <span style="color:#A33">FAIL</span> · ${r.miss}</li>`;
         }
         body += '</ul>';
+        body += '<div style="margin-top:6px;font-size:11px;color:#555;">Remember to set an edit note and click <strong>Enter edit</strong> to save.</div>';
     }
     overlay.innerHTML = body + ' <span id="pc-inject-close" style="cursor:pointer;margin-left:10px;color:#666;font-weight:bold;">×</span>';
     document.body.appendChild(overlay);
     document.getElementById('pc-inject-close')?.addEventListener('click', () => overlay.remove());
-
-    // If any force-rel report came back with a row dump, drop a collapsible
-    // details block right below the overlay.
-    const dumps = forceReports.map(r => r.rowDump).filter(Boolean);
-    if (dumps.length) {
-        const det = document.createElement('details');
-        det.id = 'pc-inject-rowdump';
-        det.style.cssText = `position: fixed; top: 90px; left: 50%; transform: translateX(-50%);
-            z-index: 999998; max-width: 90vw; padding: 8px 12px; border-radius: 6px;
-            background: #FFF8DC; border: 1px solid #DAA520; font-family: monospace;
-            font-size: 11px; color: #555; box-shadow: 0 4px 12px rgba(0,0,0,0.25);`;
-        det.innerHTML = `<summary style="cursor:pointer;color:#8B4513;font-family:sans-serif;font-weight:bold;">Platform Check: row HTML (click to expand)</summary><pre style="white-space:pre-wrap;word-break:break-all;margin:6px 0 0 0;max-height:400px;overflow:auto;">${dumps.map(d => d.replace(/</g, '&lt;')).join('\n\n---\n\n')}</pre>`;
-        document.body.appendChild(det);
-    }
 }
 
 // ─── UI ────────────────────────────────────────────────────────────────────
@@ -1991,7 +1898,7 @@ function addSingleUrl(platform) {
     }
     GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
     appendLog('System', `Inject (click): queued ${platform} URL — opening release editor`, 'ok');
-    const w = window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
+    const w = window.open(`https://musicbrainz.org/release/${mbid}/edit-relationships`, '_blank');
     if (!w) console.warn('[platform_check] window.open returned null — popup blocked?');
 }
 
@@ -2006,7 +1913,7 @@ function addMasterUrl(masterUrl) {
     }
     GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify({ 'discogs-master': masterUrl }));
     appendLog('System', `Inject (master): queued ${masterUrl} for release-group ${rgMbid}`, 'ok');
-    window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit`, '_blank');
+    window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit-relationships`, '_blank');
 }
 
 document.getElementById('mb-inject-btn').addEventListener('click', async (e) => {
@@ -2051,12 +1958,12 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     if (releaseCount > 0) {
         GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
         appendLog('System', `Inject: queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
-        window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
+        window.open(`https://musicbrainz.org/release/${mbid}/edit-relationships`, '_blank');
     }
     if (rgCount > 0 && rgMbid) {
         GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify(pendingRG));
         appendLog('System', `Inject: queued ${rgCount} release-group URL(s) — opening release-group editor`, 'ok');
-        window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit`, '_blank');
+        window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit-relationships`, '_blank');
     }
 });
 
