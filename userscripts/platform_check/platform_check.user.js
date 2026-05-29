@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.092844
+// @version      2026.5.29.094115
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -1232,7 +1232,21 @@ async function runScans() {
 
     const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing } = mbData;
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
-    appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}`);
+    appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}  deezer=${existing.deezer ? 'YES' : 'no'}`);
+
+    // Cache upgrade: if MB has acquired a URL rel matching a cached URL (the
+    // user just added the URL via + and came back), promote the cached row's
+    // source from search/Wikidata to "MB rels" so the circled icon shows
+    // immediately on the cache short-circuit — without it the user has to
+    // hit ↻ to see the circle, even though MB now considers it an
+    // editor-added rel.
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer']) {
+        const cached = cacheGet(mbid, p);
+        if (cached?.url && existing[p] === cached.url && cached.source !== 'MB rels') {
+            cacheSet(mbid, p, { ...cached, source: 'MB rels' });
+            appendLog('MusicBrainz', `Cache upgrade: ${p} URL now in MB rels — source bumped to "MB rels"`, 'ok');
+        }
+    }
 
     // Wikidata lookup — fires whenever we don't already have a positive Spotify
     // URL. A cached "no match" (url:null) doesn't block Wikidata: it's a cheap
