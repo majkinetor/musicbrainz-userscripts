@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.092611
+// @version      2026.5.29.092844
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -357,7 +357,11 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
 
     // Circled icon only for confirmed-match-from-MB-rels — circles around ~/?/×
     // would be visually noisy and the source distinction matters less there.
-    ico.classList.toggle('pc-ico-circled', fromMbRels && ico.textContent === '✓');
+    // Circle any MB-rels row regardless of verification glyph: ✓ (tracks
+    // match), ~ (track-count mismatch), or ? (couldn't fetch tracks). The
+    // circle says "URL is in MB" — the glyph inside says how well it
+    // matches. Doesn't apply to × because absent-URL can't be from MB rels.
+    ico.classList.toggle('pc-ico-circled', fromMbRels);
 
     const bits = [];
     if (year)  bits.push(year);
