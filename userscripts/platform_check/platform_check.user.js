@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.183449
+// @version      2026.5.29.184650
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -1746,15 +1746,38 @@ function parseMbFromDom() {
                 const aLabels = [...sb.querySelectorAll('a[href*="/label/"]')].map(a => a.textContent.trim()).filter(Boolean);
                 if (aLabels.length) releaseLabel = [...new Set(aLabels)].join(', ');
             }
+            // Helper: read element textContent with <script>/<style>/<noscript>
+            // stripped. The Release events section embeds a React bootstrap
+            // blob whose first year is the country entity's `last_updated`
+            // timestamp (e.g. "2013-08-28" for the [Worldwide] entity), not
+            // the release date — only the rendered "[Worldwide]2017-06-15"
+            // sibling carries the actual year we want.
+            const cleanText = el => {
+                const c = el.cloneNode(true);
+                c.querySelectorAll('script, style, noscript').forEach(n => n.remove());
+                return c.textContent || '';
+            };
             if (!year) {
                 // Prefer the "Release events" section directly when available —
-                // it's the canonical home of the release date.
+                // it's the canonical home of the release date. Look for a
+                // canonical YYYY-MM-DD release-date pattern first; fall back
+                // to a bare year only if no full date is present.
                 const reHeader = [...sb.querySelectorAll('h2, h3')].find(h => /release events?/i.test(h.textContent));
                 if (reHeader) {
+                    let dateYear = null, anyYear = null;
                     for (let n = reHeader.nextElementSibling; n && !/^h[1-6]$/i.test(n.tagName); n = n.nextElementSibling) {
-                        const m = (n.textContent || '').match(/\b(19\d{2}|20\d{2})\b/);
-                        if (m) { year = m[1]; break; }
+                        const t = cleanText(n);
+                        if (!dateYear) {
+                            const d = t.match(/\b(19\d{2}|20\d{2})-(?:0\d|1[0-2])-(?:0\d|[12]\d|3[01])\b/);
+                            if (d) dateYear = d[1];
+                        }
+                        if (!anyYear) {
+                            const m = t.match(/\b(19\d{2}|20\d{2})\b/);
+                            if (m) anyYear = m[1];
+                        }
+                        if (dateYear) break;
                     }
+                    year = dateYear || anyYear || null;
                 }
             }
             if (!year) {
