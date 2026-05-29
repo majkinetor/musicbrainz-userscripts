@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.165753
+// @version      2026.5.29.170842
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -107,7 +107,15 @@ async function injectInto(urls, storageKey) {
     // the change, not just the raw DOM property.
     const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
     let injected = 0;
-    const appleReports = [];
+    const forceReports = [];
+    // MB labels the rel type as "stream for free" in the UI (legacy "free
+    // streaming" / "streaming page" — same gid, different render).
+    const STREAM_RE = /(stream\s+for\s+free|streaming\s+page|free\s+streaming)/i;
+    // Which provider URLs need an explicit type pick because MB's
+    // auto-detection leaves the dropdown empty.
+    const NEEDS_TYPE_FORCE = url =>
+        /music\.apple\.com\/.*\/album\//i.test(url) ||
+        /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(url);
     for (const url of urls) {
         // Re-query each iteration — MB replaces the input after each fill.
         const input = findAddLinkInput();
@@ -124,18 +132,21 @@ async function injectInto(urls, storageKey) {
         // and renders a fresh row + a fresh "Add another link" input. Give it
         // room to land before the next fill.
         await wait(700);
-        // Apple Music auto-classifies as "free streaming" or sometimes
-        // "purchase for download" depending on MB's heuristics. Force
-        // "streaming page" so the link consistently shows as a streaming
-        // entry on the release page. Other platforms auto-classify
-        // correctly out of the box.
-        if (/music\.apple\.com\/.*\/album\//i.test(url)) {
-            const report = forceRelType(url, /streaming\s+page/i);
-            appleReports.push(report);
+        if (NEEDS_TYPE_FORCE(url)) {
+            // Retry with backoff — MB's React occasionally re-renders the row
+            // a beat after the URL lands, blowing away earlier DOM. Two extra
+            // tries cover the typical settle time without spamming.
+            let report = null;
+            for (const delay of [0, 300, 700]) {
+                if (delay) await wait(delay);
+                report = forceRelType(url, STREAM_RE);
+                if (report.ok) break;
+            }
+            forceReports.push({ url, ...report });
         }
     }
     if (injected > 0) GM_setValue(storageKey, null);
-    flashStatusOnExternalLinks(`Platform Check: injected ${injected}/${urls.length} URL${urls.length === 1 ? '' : 's'}`, appleReports);
+    flashStatusOnExternalLinks(`Platform Check: injected ${injected}/${urls.length} URL${urls.length === 1 ? '' : 's'}`, forceReports);
 }
 
 // Locate the relationship-type chooser for the row whose URL input matches
@@ -148,98 +159,110 @@ async function injectInto(urls, storageKey) {
 function forceRelType(url, optionRe) {
     // After Enter, MB re-renders the row: the URL <input> goes away and
     // the URL appears as a clickable <a href="..."> with a sibling Type:
-    // <select>. Match by Apple album ID rather than full URL — MB strips
-    // the slug ("inversion/" segment) on canonicalization, so our queued
-    // URL (slug included) won't equal MB's rendered href.
-    const appleIdMatch = url.match(/\/album\/(?:[^/?#]+\/)?(\d+)\b/);
+    // <select>. Match by Apple album ID for Apple URLs (MB strips the
+    // slug on canonicalization), exact href for everything else.
+    const appleIdMatch = url.match(/music\.apple\.com\/[^/]+\/album\/(?:[^/?#]+\/)?(\d+)\b/);
     const appleId = appleIdMatch?.[1] || null;
     const inputs = [...document.querySelectorAll('input[type="url"], input[type="text"], input:not([type])')];
     const anchors = [...document.querySelectorAll('a[href]')];
-    const matchByAppleId = a => appleId && new RegExp(`\\b${appleId}\\b`).test(a.getAttribute('href') || a.href);
+    const matchByAppleId = a => appleId && new RegExp(`/album/(?:[^/]+/)?${appleId}\\b`).test(a.getAttribute('href') || a.href);
     const ourEl = anchors.find(a => a.href === url || a.getAttribute('href') === url)
                || (appleId && anchors.find(matchByAppleId))
                || inputs.find(i => (i.value || '') === url)
-               || (appleId && inputs.find(i => new RegExp(`\\b${appleId}\\b`).test(i.value || '')));
-    if (!ourEl) return { ok: false, miss: `URL not on page (looked for href= and id=${appleId || '?'})` };
+               || (appleId && inputs.find(i => new RegExp(`/album/(?:[^/]+/)?${appleId}\\b`).test(i.value || '')));
+    if (!ourEl) return { ok: false, miss: `URL not on page (looked for exact href and id=${appleId || '—'})` };
 
-    // Walk up to a row-ish container that holds both our URL element and
-    // the type chooser. MB nests these about 3–5 levels above.
-    let scope = ourEl.parentElement;
-    for (let depth = 0; depth < 8 && scope; depth++) {
-        // Shape 1: native <select>. Pick the option whose visible text matches.
-        const select = scope.querySelector('select');
-        if (select) {
-            const opt = [...select.options].find(o => optionRe.test(o.textContent));
-            if (opt) {
-                const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
-                nativeSetter.call(select, opt.value);
-                select.dispatchEvent(new Event('change', { bubbles: true }));
-                return { ok: true, shape: 'select', hit: opt.textContent.trim() };
-            }
-        }
-        // Shape 2: React autocomplete. There's a text <input> whose placeholder
-        // or aria-label mentions "type" / "relationship", and a hidden <input>
-        // alongside it carrying the link_type_id. Type into the visible input,
-        // wait a tick for the suggestion list, then click the matching item.
-        const typeInputs = [...scope.querySelectorAll('input')].filter(i => /relationship\s*type|link\s*type/i.test(i.placeholder || i.getAttribute('aria-label') || ''));
-        if (typeInputs.length) {
-            const tin = typeInputs[0];
-            const listbox = scope.querySelector('[role="listbox"]');
-            if (listbox) {
-                const opt = [...listbox.querySelectorAll('[role="option"], li')].find(o => optionRe.test(o.textContent));
-                if (opt) { opt.click(); return { ok: true, shape: 'autocomplete-listbox', hit: opt.textContent.trim() }; }
-            }
-            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-            nativeSetter.call(tin, 'streaming page');
-            tin.dispatchEvent(new Event('input',  { bubbles: true }));
-            return { ok: true, shape: 'autocomplete-typed', hit: 'typed "streaming page"' };
-        }
-        scope = scope.parentElement;
+    // Row container = smallest ancestor of ourEl that does NOT contain a
+    // different external-link anchor (i.e. doesn't span into another row).
+    // Walk up until expanding would suck in another row's URL.
+    let row = ourEl;
+    let next = ourEl.parentElement;
+    while (next && next !== document.body) {
+        const otherUrls = [...next.querySelectorAll('a[href]')].filter(a =>
+            a !== ourEl && /^https?:\/\//.test(a.href) && !/musicbrainz\.org/.test(a.href));
+        if (otherUrls.length > 0) break;
+        row = next;
+        if (row.querySelector('select')) break;
+        next = next.parentElement;
     }
 
-    // Diagnostic dump so we can iterate without playing browser-forensics blind.
-    const rowDump = ourInput.closest('li, tr, fieldset, div[class*="row"], div[class*="link"]')?.outerHTML?.slice(0, 1200);
-    return { ok: false, miss: 'no type chooser found near URL input', rowDump };
+    // Shape 1: native <select> inside our row.
+    const select = row.querySelector('select');
+    if (select) {
+        const opt = [...select.options].find(o => optionRe.test(o.textContent));
+        if (opt) {
+            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+            nativeSetter.call(select, opt.value);
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            return { ok: true, shape: 'select', hit: opt.textContent.trim() };
+        }
+        const optsList = [...select.options].map(o => `"${o.textContent.trim()}"`).join(', ').slice(0, 400);
+        return { ok: false, miss: `select had no option matching regex. Options: ${optsList}`, rowDump: row.outerHTML.slice(0, 1200) };
+    }
+
+    // Shape 2: React autocomplete inside our row.
+    const typeInputs = [...row.querySelectorAll('input')].filter(i => /relationship\s*type|link\s*type/i.test(i.placeholder || i.getAttribute('aria-label') || ''));
+    if (typeInputs.length) {
+        const tin = typeInputs[0];
+        const listbox = row.querySelector('[role="listbox"]');
+        if (listbox) {
+            const opt = [...listbox.querySelectorAll('[role="option"], li')].find(o => optionRe.test(o.textContent));
+            if (opt) { opt.click(); return { ok: true, shape: 'autocomplete-listbox', hit: opt.textContent.trim() }; }
+        }
+        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        nativeSetter.call(tin, 'stream for free');
+        tin.dispatchEvent(new Event('input',  { bubbles: true }));
+        return { ok: true, shape: 'autocomplete-typed', hit: 'typed "stream for free"' };
+    }
+
+    return { ok: false, miss: 'no <select> or autocomplete in the row', rowDump: row.outerHTML.slice(0, 1200) };
 }
 
-// Small discreet inline status next to the External Links heading — no
-// top-of-page banner. When forceRelType ran (Apple URLs), append a second
-// inline block showing what shape it found and what it did — so the user
-// can tell whether the type was forced without opening DevTools.
-function flashStatusOnExternalLinks(text, appleReports = []) {
-    const heading = [...document.querySelectorAll('h2, h3, legend, fieldset > legend')]
-        .find(h => /external\s+links/i.test(h.textContent));
-    if (!heading) return;
+// Fixed-position overlay at the top of the page. The previous inline span
+// next to the "External Links" heading kept getting wiped out by MB's
+// React re-renders after we appended it. A fixed-position root attached to
+// <body> sits outside the React tree, so it survives.
+function flashStatusOnExternalLinks(text, forceReports = []) {
     document.getElementById('pc-inject-status')?.remove();
-    if (appleReports.length) {
-        const ok = appleReports.every(r => r.ok);
-        const lines = appleReports.map(r => r.ok ? `force-rel: ${r.shape} → ${r.hit}` : `force-rel FAILED: ${r.miss}`).join(' · ');
-        text += '  |  ' + lines;
-        // If a row dump came back, drop it as a <details> below the heading so
-        // it's visible without needing DevTools.
-        const dumps = appleReports.map(r => r.rowDump).filter(Boolean);
-        if (dumps.length) {
-            const det = document.createElement('details');
-            det.id = 'pc-inject-rowdump';
-            det.style.cssText = 'margin:8px 0;font-family:monospace;font-size:11px;background:#FFF8DC;border:1px solid #DAA520;padding:6px 8px;border-radius:4px;';
-            det.innerHTML = `<summary style="cursor:pointer;color:#8B4513;">Platform Check: row HTML around URL input (click to expand)</summary><pre style="white-space:pre-wrap;word-break:break-all;margin:6px 0 0 0;color:#555;">${dumps.map(d => d.replace(/</g, '&lt;')).join('\n\n---\n\n')}</pre>`;
-            heading.parentElement.insertBefore(det, heading.nextSibling);
+    document.getElementById('pc-inject-rowdump')?.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'pc-inject-status';
+    const anyFail = forceReports.some(r => !r.ok);
+    overlay.style.cssText = `
+        position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
+        z-index: 999999; padding: 8px 14px; border-radius: 6px;
+        font-family: sans-serif; font-size: 12px; max-width: 90vw;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        background: ${anyFail ? '#FFF3CD' : '#E8F5E9'};
+        border: 1px solid ${anyFail ? '#FFC107' : '#81C784'};
+        color: ${anyFail ? '#7B5E00' : '#1B5E20'};`;
+    let body = `<strong>${text}</strong>`;
+    if (forceReports.length) {
+        body += '<br><span style="font-size:11px;">Type-force:</span><ul style="margin:4px 0 0 18px;padding:0;font-size:11px;">';
+        for (const r of forceReports) {
+            const tag = r.ok ? `OK · ${r.shape} → ${r.hit}` : `FAIL · ${r.miss}`;
+            const host = (r.url || '').match(/^https?:\/\/([^/]+)/)?.[1] || '';
+            body += `<li>${host}: ${tag}</li>`;
         }
-        // Tint based on success/failure.
-        const status = document.createElement('span');
-        status.id = 'pc-inject-status';
-        status.style.cssText = ok
-            ? 'margin-left:12px;font-size:11px;padding:2px 8px;background:#E8F5E9;border:1px solid #81C784;border-radius:3px;color:#1B5E20;font-family:sans-serif;font-weight:normal;'
-            : 'margin-left:12px;font-size:11px;padding:2px 8px;background:#FFF3CD;border:1px solid #FFC107;border-radius:3px;color:#7B5E00;font-family:sans-serif;font-weight:normal;';
-        status.textContent = text;
-        heading.appendChild(status);
-        return;
+        body += '</ul>';
     }
-    const status = document.createElement('span');
-    status.id = 'pc-inject-status';
-    status.style.cssText = 'margin-left:12px;font-size:11px;padding:2px 8px;background:#E8F5E9;border:1px solid #81C784;border-radius:3px;color:#1B5E20;font-family:sans-serif;font-weight:normal;';
-    status.textContent = text;
-    heading.appendChild(status);
+    overlay.innerHTML = body + ' <span id="pc-inject-close" style="cursor:pointer;margin-left:10px;color:#666;font-weight:bold;">×</span>';
+    document.body.appendChild(overlay);
+    document.getElementById('pc-inject-close')?.addEventListener('click', () => overlay.remove());
+
+    // If any force-rel report came back with a row dump, drop a collapsible
+    // details block right below the overlay.
+    const dumps = forceReports.map(r => r.rowDump).filter(Boolean);
+    if (dumps.length) {
+        const det = document.createElement('details');
+        det.id = 'pc-inject-rowdump';
+        det.style.cssText = `position: fixed; top: 90px; left: 50%; transform: translateX(-50%);
+            z-index: 999998; max-width: 90vw; padding: 8px 12px; border-radius: 6px;
+            background: #FFF8DC; border: 1px solid #DAA520; font-family: monospace;
+            font-size: 11px; color: #555; box-shadow: 0 4px 12px rgba(0,0,0,0.25);`;
+        det.innerHTML = `<summary style="cursor:pointer;color:#8B4513;font-family:sans-serif;font-weight:bold;">Platform Check: row HTML (click to expand)</summary><pre style="white-space:pre-wrap;word-break:break-all;margin:6px 0 0 0;max-height:400px;overflow:auto;">${dumps.map(d => d.replace(/</g, '&lt;')).join('\n\n---\n\n')}</pre>`;
+        document.body.appendChild(det);
+    }
 }
 
 // ─── UI ────────────────────────────────────────────────────────────────────
