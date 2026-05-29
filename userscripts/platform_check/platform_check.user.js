@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.103359
+// @version      2026.5.29.104626
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -61,12 +61,33 @@ function runInjectHelper(entityType) {
         const input = findAddLinkInput();
         if (input) { injectInto(urls, key); return; }
         if (Date.now() - start > 15000) {
-            console.warn('[platform_check] inject helper: never found "Add another link" input');
+            const inputs = [...document.querySelectorAll('input')];
+            const placeholders = [...new Set(inputs.map(i => i.placeholder).filter(Boolean))];
+            console.warn(`[platform_check] inject helper: never found "Add another link" input on ${window.location.pathname}. ${inputs.length} input(s) on page. Placeholders seen:`, placeholders);
+            showInjectFailureBanner(urls, entityType, placeholders);
             return;
         }
         setTimeout(tick, 200);
     };
     tick();
+}
+
+// Visible fallback when the helper can't find the "Add another link" input —
+// happens if MB's edit form structure differs from what we expect. Drop a
+// banner at the top of #content listing the URLs we'd have injected, plus
+// the placeholders we DID see so we can fix the selector.
+function showInjectFailureBanner(urls, entityType, placeholdersSeen) {
+    const target = document.querySelector('#content') || document.body;
+    if (!target) return;
+    const div = document.createElement('div');
+    div.style.cssText = 'margin:12px 0;padding:10px 12px;background:#FFF3CD;border:1px solid #FFC107;border-radius:4px;font-family:sans-serif;font-size:12px;color:#7B5E00;';
+    div.innerHTML = `
+        <strong>Platform Check:</strong> couldn't auto-inject on this ${entityType} editor.
+        <br>URLs to add manually:
+        <ul style="margin:4px 0 0 18px;padding:0;">${urls.map(u => `<li><code style="background:#FFF;padding:1px 4px;border-radius:2px;">${u}</code></li>`).join('')}</ul>
+        <br><small>Inputs seen with placeholders: ${placeholdersSeen.map(p => `<code>${p}</code>`).join(', ') || '(none)'}</small>
+    `;
+    target.insertBefore(div, target.firstChild);
 }
 
 // MB's /edit page renders one bottom-most "Add another link" text input under
@@ -138,7 +159,11 @@ const iconBtn = 'cursor: pointer; user-select: none; color: #666; padding: 2px 6
 // every known platform — unknown stored values are dropped, missing ones
 // are appended — so adding a new platform (like Apple Music) doesn't break
 // stored preferences.
-const ALL_PROVIDERS = ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple'];
+// Default visual order — Discogs first since it's the most reliable rich
+// metadata source, then the streaming services, with Deezer last because it
+// has the worst catalogue coverage of the four. Users can override via the
+// providers panel (drag-and-drop) and the choice persists in pc:provider-order.
+const ALL_PROVIDERS = ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer'];
 function getProviderOrder() {
     const raw = GM_getValue('pc:provider-order', null);
     if (!raw) return ALL_PROVIDERS.slice();
@@ -189,6 +214,7 @@ container.innerHTML = `
       <span id="ico-${p}" style="margin-right: 6px; color: #888; font-size: 11px; min-width: 14px;">⚪</span>
       <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; flex-grow: 1;">${PROVIDER_NAME[p]}</a>
       <span id="val-${p}" style="font-size: 11px; color: #777; font-family: monospace;">(-- tracks)</span>
+      <span id="extra-${p}" style="margin-left: 6px;"></span>
     </div>
     <div id="meta-${p}" style="font-size: 11px; color: #999; padding-left: 20px; font-family: sans-serif;"></div>
   </div>`).join('')}
@@ -455,7 +481,12 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     if (year)   bits.push(year);
     if (label)  bits.push(label);
     if (format) bits.push(format);
-    if (extra)  bits.push(extra);
+
+    // The `extra` slot is a separate element to the right of the track count
+    // (e.g. the Discogs master-state pill). Always paint it — empty string
+    // clears any previous content.
+    const extraEl = document.getElementById(`extra-${p}`);
+    if (extraEl) extraEl.innerHTML = extra || '';
     // Suppress the "via <source>" line for fromCache rows (the blue tint
     // already conveys cache state) and for MB-rels rows (the circled icon
     // conveys origin). Show provenance only for fresh non-MB-rels rows where
@@ -667,15 +698,16 @@ function applyCachedRow(platform, label, cached, mbTracks, extra) {
     });
 }
 
-// Compose the Discogs row's "extra" badge from the master URL the Discogs
-// API returned + whatever master rel MB's release-group already has (DOM-
-// scraped). Surfaces master state on the row so the user can see at a glance
-// whether + will / won't add it.
+// Compose the Discogs row's master-state pill — sits right of the track-count
+// in the `extra-discogs` slot. Surfaces master URL state at a glance so the
+// user can tell whether + will / won't open the release-group editor.
 function discogsMasterExtra(cachedMasterUrl, existingDiscogsMaster) {
     if (!cachedMasterUrl) return null;
-    if (!existingDiscogsMaster)             return '<span style="color:#5B82B0;">+ master</span>';
-    if (existingDiscogsMaster === cachedMasterUrl) return '<span style="color:#008000;">✓ master</span>';
-    return '<span style="color:#FF8C00;">≠ master</span>';
+    const pill = (txt, color, bg, title) =>
+        `<span style="display:inline-block;font-size:10px;font-weight:bold;padding:1px 5px;border:1px solid ${color};color:${color};background:${bg};border-radius:8px;line-height:1.2;" title="${title}">${txt}</span>`;
+    if (!existingDiscogsMaster)                    return pill('+M', '#5B82B0', '#EEF4FA', 'Discogs master not in MB — + will queue it for the release-group');
+    if (existingDiscogsMaster === cachedMasterUrl) return pill('✓M', '#008000', '#EAF5EA', 'Discogs master is already on the release-group');
+    return                                                pill('≠M', '#FF8C00', '#FFF4E5', 'MB has a different Discogs master on the release-group');
 }
 
 // ─── Wikidata fast path ─────────────────────────────────────────────────────
@@ -1401,7 +1433,7 @@ function parseMbFromDom() {
             discogs:  externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
             bandcamp:      externalHrefs.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
             deezer:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
-            apple:         externalHrefs.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/[^/]+\/\d+/i.test(u)) || null,
+            apple:         externalHrefs.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
             discogsMaster: externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
         };
 
@@ -1455,7 +1487,7 @@ function parseMbData(data) {
         discogs:  relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
         bandcamp:      relUrls.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
         deezer:        relUrls.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
-        apple:         relUrls.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/[^/]+\/\d+/i.test(u)) || null,
+        apple:         relUrls.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
         discogsMaster: relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
     };
     const format = data.media?.[0]?.format || null;
