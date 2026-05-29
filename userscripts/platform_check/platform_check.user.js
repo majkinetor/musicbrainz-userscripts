@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.160759
+// @version      2026.5.29.161134
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -1604,7 +1604,11 @@ function parseMbFromDom() {
                 }
             }
         }
-        // Fallback: any /label/ anchor in #sidebar; first plausible year text.
+        // Fallback: any /label/ anchor in #sidebar; year from the rendered
+        // sidebar text (with `<script type="application/json">` embeds and
+        // `<style>` content stripped — otherwise the first match is often
+        // a country entity's "last_updated" timestamp inside MB's React
+        // bootstrap blob, not the release year).
         const sb = document.querySelector('#sidebar');
         if (sb) {
             if (!releaseLabel) {
@@ -1612,7 +1616,20 @@ function parseMbFromDom() {
                 if (aLabels.length) releaseLabel = [...new Set(aLabels)].join(', ');
             }
             if (!year) {
-                const m = (sb.textContent || '').match(/\b(19\d{2}|20\d{2})\b/);
+                // Prefer the "Release events" section directly when available —
+                // it's the canonical home of the release date.
+                const reHeader = [...sb.querySelectorAll('h2, h3')].find(h => /release events?/i.test(h.textContent));
+                if (reHeader) {
+                    for (let n = reHeader.nextElementSibling; n && !/^h[1-6]$/i.test(n.tagName); n = n.nextElementSibling) {
+                        const m = (n.textContent || '').match(/\b(19\d{2}|20\d{2})\b/);
+                        if (m) { year = m[1]; break; }
+                    }
+                }
+            }
+            if (!year) {
+                const clone = sb.cloneNode(true);
+                clone.querySelectorAll('script, style, noscript').forEach(n => n.remove());
+                const m = (clone.textContent || '').match(/\b(19\d{2}|20\d{2})\b/);
                 if (m) year = m[1];
             }
         }
