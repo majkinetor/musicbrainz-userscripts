@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.181954
+// @version      2026.5.29.182657
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -39,15 +39,53 @@ if (/\/release-group\/[0-9a-f-]{36}\/edit(?:[?#/]|$)/.test(window.location.pathn
 }
 
 // Safe setTimeout wrapper.  Firefox throws NS_ERROR_NOT_INITIALIZED from
-// setTimeout when the script context is being torn down (page redirect,
-// tab close mid-execution) — the Promise constructor turns that into an
-// unhandled rejection that aborts everything. Catch + resolve immediately
-// so the caller can keep going (the subsequent polling already compensates
-// for the missing delay).
+// setTimeout when the script context is being torn down — the Promise
+// constructor turns that into an unhandled rejection that aborts everything.
+// Catch + fall back to a requestAnimationFrame-driven busy wait so the
+// caller still gets a real time delay (not a zero-delay microtask burst
+// that would make polling loops exit instantly with "never appeared").
 function pcWait(ms) {
     return new Promise(resolve => {
-        try { setTimeout(resolve, ms); }
-        catch (_) { resolve(); }
+        try { setTimeout(resolve, ms); return; } catch (_) {}
+        // Fallback: RAF-based wait. Each frame is ~16ms; loop until elapsed.
+        const start = Date.now();
+        const tick = () => {
+            if (Date.now() - start >= ms) { resolve(); return; }
+            try { requestAnimationFrame(tick); }
+            catch (_) { resolve(); }
+        };
+        tick();
+    });
+}
+
+// MutationObserver-backed waiter — resolves the moment `predicate()`
+// returns truthy, falls back to a slow poll if observers aren't usable.
+// Safer than fixed-cadence polling because it doesn't rely on setTimeout
+// running on time, and it picks up the target as soon as MB inserts it.
+function pcWaitFor(predicate, timeoutMs = 10000) {
+    return new Promise(resolve => {
+        const found = predicate();
+        if (found) return resolve(found);
+        let done = false;
+        const finish = result => { if (done) return; done = true; obs?.disconnect(); resolve(result); };
+        let obs = null;
+        try {
+            obs = new MutationObserver(() => {
+                const r = predicate();
+                if (r) finish(r);
+            });
+            obs.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+        } catch (_) { /* observer broken — rely on RAF poll below */ }
+        const start = Date.now();
+        const poll = () => {
+            if (done) return;
+            const r = predicate();
+            if (r) return finish(r);
+            if (Date.now() - start >= timeoutMs) return finish(null);
+            try { requestAnimationFrame(poll); }
+            catch (_) { try { setTimeout(poll, 100); } catch (_) { finish(null); } }
+        };
+        poll();
     });
 }
 
@@ -118,13 +156,10 @@ async function injectInto(urls, storageKey) {
     let injected = 0;
 
     for (const url of urls) {
-        // Poll for the next available "Add another link" input — faster than
-        // a flat sleep, and avoids re-filling a stale input.
-        let input = null;
-        for (let attempt = 0; attempt < 50 && !input; attempt++) {
-            input = findAddLinkInput();
-            if (!input) await wait(100);
-        }
+        // MutationObserver-backed wait — resolves the moment MB renders an
+        // empty "Add another link" input, regardless of how long the page
+        // takes to mount the External Links section.
+        const input = await pcWaitFor(findAddLinkInput, 10000);
         if (!input) { reports.push({ url, ok: false, miss: 'no "Add another link" input ever appeared' }); break; }
 
         input.focus();
@@ -143,11 +178,7 @@ async function injectInto(urls, storageKey) {
             const h = a?.getAttribute('href') || '';
             return h === url || (appleId && new RegExp(`/album/(?:[^/]+/)?${appleId}\\b`).test(h));
         };
-        let urlRow = null;
-        for (let attempt = 0; attempt < 30 && !urlRow; attempt++) {
-            urlRow = [...document.querySelectorAll('tr.external-link-item')].find(matchRowByUrl);
-            if (!urlRow) await wait(100);
-        }
+        const urlRow = await pcWaitFor(() => [...document.querySelectorAll('tr.external-link-item')].find(matchRowByUrl), 5000);
         if (!urlRow) { reports.push({ url, ok: false, miss: 'URL row never appeared after Enter' }); continue; }
 
         // Type-force if applicable.  The Type chooser lives in the NEXT
@@ -155,11 +186,10 @@ async function injectInto(urls, storageKey) {
         const force = TYPE_FORCE.find(t => t.test(url));
         if (!force) { reports.push({ url, ok: true, note: 'auto-typed' }); continue; }
 
-        let typeRow = urlRow.nextElementSibling;
-        for (let attempt = 0; attempt < 15 && (!typeRow || !typeRow.classList?.contains('relationship-item')); attempt++) {
-            await wait(100);
-            typeRow = urlRow.nextElementSibling;
-        }
+        const typeRow = await pcWaitFor(() => {
+            const s = urlRow.nextElementSibling;
+            return (s && s.classList?.contains('relationship-item')) ? s : null;
+        }, 3000);
         const select = typeRow?.querySelector('select.link-type');
         if (!select) {
             reports.push({ url, ok: false, miss: `no <select.link-type> in next sibling (got ${typeRow?.tagName}.${typeRow?.className || ''})` });
