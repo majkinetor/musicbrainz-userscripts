@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Playwright persistent profile (cookies, IDB cache — never commit)
+.pw-profile/
+
+# Per-run test logs + HTML probe dumps
+test/logs/
+test/probe-out/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Claude Code per-project settings
+.claude/

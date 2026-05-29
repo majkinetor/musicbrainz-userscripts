@@ -1,0 +1,14 @@
+{
+  "name": "platform-check-userscript",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Platform Check — find MB release URLs on Spotify/Discogs/Bandcamp",
+  "scripts": {
+    "test":        "node test/run.mjs",
+    "test:headed": "node test/run.mjs --headed"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}
