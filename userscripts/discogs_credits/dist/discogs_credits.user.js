@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.28.181839
+// @version      2026.5.29.091021
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -1816,10 +1816,7 @@
       }
       const actualRoleLc = actualRole.toLowerCase();
       if (!mapping && Object.prototype.hasOwnProperty.call(INSTRUMENTS_CI, actualRoleLc)) {
-        let instrumentName = actualRole;
-        if (INSTRUMENTS_CI[actualRoleLc]) {
-          instrumentName = INSTRUMENTS_CI[actualRoleLc];
-        }
+        let instrumentName = INSTRUMENTS_CI[actualRoleLc];
         let role2 = ENTITY_TYPE_MAP.Instruments;
         if (actualRoleLc === "drum programming") {
           role2 = ENTITY_TYPE_MAP["Programmed By"];

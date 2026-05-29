@@ -298,12 +298,18 @@ export function getArtistRoles(artist) {
             }
             const actualRoleLc = actualRole.toLowerCase();
             if (!mapping && Object.prototype.hasOwnProperty.call(INSTRUMENTS_CI, actualRoleLc)) {
-                // check if it's an instrument — case-insensitive so
-                // Discogs role casing variants all hit the same entry.
-                let instrumentName = actualRole;
-                if (INSTRUMENTS_CI[actualRoleLc]) {
-                    instrumentName = INSTRUMENTS_CI[actualRoleLc];
-                }
+                // It's a known instrument — case-insensitive lookup so
+                // Discogs role casing variants hit the same entry. The
+                // mapper value is either a MB attribute name (string)
+                // or `null` (= "no specific instrument; dispatch bare
+                // instrument rel"). Previously the code defaulted
+                // `instrumentName = actualRole` and only overrode on
+                // truthy values, so vague Discogs roles like `Musician`
+                // (mapped to null) leaked the raw role name through to
+                // findAttrByName — which then logged
+                //   WARN Attribute "musician" not found in MB
+                // and dropped it anyway. Use the mapper value directly.
+                let instrumentName = INSTRUMENTS_CI[actualRoleLc];
                 let role = ENTITY_TYPE_MAP.Instruments;
                 if (actualRoleLc === 'drum programming') {
                     role = ENTITY_TYPE_MAP['Programmed By'];
