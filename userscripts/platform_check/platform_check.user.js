@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.100928
+// @version      2026.5.29.102023
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -233,10 +233,9 @@ providerModal.innerHTML = `
   <p style="font-size: 13px; color: #555; margin: 0 0 16px 0;">Toggle which services to query. All results come from public endpoints — no API keys required.</p>
   <div id="mb-provider-list" style="margin-bottom: 14px;">
   ${PROVIDER_ORDER.map(p => `
-    <div class="pc-prov-row" data-provider="${p}" style="display: flex; align-items: center; margin-bottom: 6px; font-size: 13px; padding: 4px; border-radius: 3px; background: #FAFAFA;">
-      <span class="pc-prov-up"   style="cursor: pointer; padding: 0 6px; user-select: none; color: #666; font-size: 14px;" title="Move up">▲</span>
-      <span class="pc-prov-down" style="cursor: pointer; padding: 0 6px; user-select: none; color: #666; font-size: 14px;" title="Move down">▼</span>
-      <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 10px; width: 16px; height: 16px;">
+    <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; margin-bottom: 4px; font-size: 13px; padding: 6px 8px; border-radius: 4px; background: #FAFAFA; border: 1px solid transparent; cursor: grab; user-select: none;">
+      <span class="pc-prov-grip" style="color: #BBB; font-size: 14px; margin-right: 8px; letter-spacing: -2px;" title="Drag to reorder">⋮⋮</span>
+      <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 10px 0 0; width: 16px; height: 16px;">
       <span style="font-weight: 500; flex-grow: 1;">${PROVIDER_NAME[p]}</span>
     </div>`).join('')}
   </div>
@@ -260,21 +259,49 @@ PROVIDER_ORDER.forEach(p => {
     if (providerRows[p]) providerRows[p].style.display = enabled ? 'flex' : 'none';
 });
 
-// Provider-reorder controls in the providers modal. Each row has ▲/▼ that
-// swaps DOM nodes with its sibling. Save reads the resulting DOM order,
-// persists it under pc:provider-order, and reloads so the sidebar re-renders
-// rows in the new sequence.
-for (const row of providerModal.querySelectorAll('.pc-prov-row')) {
-    row.querySelector('.pc-prov-up').addEventListener('click', e => {
-        e.stopPropagation();
-        const prev = row.previousElementSibling;
-        if (prev) row.parentNode.insertBefore(row, prev);
-    });
-    row.querySelector('.pc-prov-down').addEventListener('click', e => {
-        e.stopPropagation();
-        const next = row.nextElementSibling;
-        if (next) row.parentNode.insertBefore(next, row);
-    });
+// Provider-reorder controls in the providers modal — drag-and-drop. Each row
+// is draggable; dragover on a sibling reorders via the cursor's Y-midpoint
+// (above-mid = insert before, below-mid = insert after). Save reads the
+// resulting DOM order, persists to pc:provider-order, and reloads so the
+// sidebar re-renders rows in the new sequence.
+{
+    let dragged = null;
+    const list = providerModal.querySelector('#mb-provider-list');
+    for (const row of list.querySelectorAll('.pc-prov-row')) {
+        row.addEventListener('dragstart', e => {
+            dragged = row;
+            row.style.opacity = '0.4';
+            e.dataTransfer.effectAllowed = 'move';
+            // Some browsers require setData() for drag to start.
+            try { e.dataTransfer.setData('text/plain', row.dataset.provider); } catch (_) {}
+        });
+        row.addEventListener('dragend', () => {
+            row.style.opacity = '';
+            for (const r of list.querySelectorAll('.pc-prov-row')) r.style.borderColor = 'transparent';
+            dragged = null;
+        });
+        row.addEventListener('dragover', e => {
+            if (!dragged || dragged === row) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const rect = row.getBoundingClientRect();
+            const after = e.clientY > rect.top + rect.height / 2;
+            // Visual hint: highlight which edge will receive the drop.
+            row.style.borderColor = '#1DB954';
+            row.style.borderTopColor    = after ? 'transparent' : '#1DB954';
+            row.style.borderBottomColor = after ? '#1DB954'     : 'transparent';
+            row.style.borderLeftColor   = 'transparent';
+            row.style.borderRightColor  = 'transparent';
+        });
+        row.addEventListener('dragleave', () => { row.style.borderColor = 'transparent'; });
+        row.addEventListener('drop', e => {
+            e.preventDefault();
+            if (!dragged || dragged === row) return;
+            const rect = row.getBoundingClientRect();
+            const after = e.clientY > rect.top + rect.height / 2;
+            list.insertBefore(dragged, after ? row.nextSibling : row);
+        });
+    }
 }
 
 const closeAllModals = () => { logModal.style.display = 'none'; providerModal.style.display = 'none'; };
