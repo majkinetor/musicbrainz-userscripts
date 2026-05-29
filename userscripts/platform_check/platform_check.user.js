@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.102748
+// @version      2026.5.29.103359
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
+// @match        https://musicbrainz.org/release-group/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -414,7 +415,7 @@ function gmGet(url, { responseType, headers, timeout = 15000 } = {}) {
 //   colour tint    — green when fromCache=false, steel-blue when fromCache=true
 //   circled icon   — when source includes 'MB rels' (the URL was put there by
 //                    an MB editor, not discovered by us)
-function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format }) {
+function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, extra }) {
     const a   = document.getElementById(`mb-online-${p}`);
     const ico = document.getElementById(`ico-${p}`);
     const val = document.getElementById(`val-${p}`);
@@ -454,6 +455,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     if (year)   bits.push(year);
     if (label)  bits.push(label);
     if (format) bits.push(format);
+    if (extra)  bits.push(extra);
     // Suppress the "via <source>" line for fromCache rows (the blue tint
     // already conveys cache state) and for MB-rels rows (the circled icon
     // conveys origin). Show provenance only for fresh non-MB-rels rows where
@@ -650,7 +652,7 @@ function mbDataSet(mbid, entry) {
 // original source (e.g. 'MB rels', 'Wikidata', 'search') so updateRow can
 // still decide whether to circle the ✓; cache-state is conveyed separately
 // via the `fromCache: true` flag (which drives the steel-blue tint).
-function applyCachedRow(platform, label, cached, mbTracks) {
+function applyCachedRow(platform, label, cached, mbTracks, extra) {
     appendLog(label, `Cache hit: url=${cached.url || '(no match)'}  tracks=${cached.tracks ?? '?'}  year=${cached.year || '?'}  label=${cached.label || '?'}  src=${cached.source || '?'}`, 'ok');
     updateRow(platform, {
         url:          cached.url,
@@ -661,7 +663,19 @@ function applyCachedRow(platform, label, cached, mbTracks) {
         format:       cached.format  ?? null,
         source:       cached.source || null,
         fromCache:    true,
+        extra:        extra ?? null,
     });
+}
+
+// Compose the Discogs row's "extra" badge from the master URL the Discogs
+// API returned + whatever master rel MB's release-group already has (DOM-
+// scraped). Surfaces master state on the row so the user can see at a glance
+// whether + will / won't add it.
+function discogsMasterExtra(cachedMasterUrl, existingDiscogsMaster) {
+    if (!cachedMasterUrl) return null;
+    if (!existingDiscogsMaster)             return '<span style="color:#5B82B0;">+ master</span>';
+    if (existingDiscogsMaster === cachedMasterUrl) return '<span style="color:#008000;">✓ master</span>';
+    return '<span style="color:#FF8C00;">≠ master</span>';
 }
 
 // ─── Wikidata fast path ─────────────────────────────────────────────────────
@@ -830,7 +844,7 @@ function mbFormatToDiscogs(mbFormat) {
     return null;
 }
 
-async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, format }) {
+async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, format, existingDiscogsMaster }) {
     const label = 'Discogs';
 
     // Positive cache hit short-circuits before any API call. Cached "no
@@ -838,12 +852,12 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
     // want a freshly-added MB rel to replace a stale no-match.
     const cached = cacheGet(mbid, 'discogs');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
-        applyCachedRow('discogs', label, cached, mbTracks);
+        applyCachedRow('discogs', label, cached, mbTracks, discogsMasterExtra(cached.masterUrl, existingDiscogsMaster));
         return;
     }
     if (cached && !cached.url && !existingUrl) {
         appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
-        applyCachedRow('discogs', label, cached, mbTracks);
+        applyCachedRow('discogs', label, cached, mbTracks, discogsMasterExtra(cached.masterUrl, existingDiscogsMaster));
         return;
     }
 
@@ -944,7 +958,10 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
     }
 
     cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source });
-    updateRow('discogs', { url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source });
+    updateRow('discogs', {
+        url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source,
+        extra: discogsMasterExtra(masterUrl, existingDiscogsMaster),
+    });
 }
 
 // Fetch Bandcamp album metadata via the standard album page. Bandcamp ships
@@ -1522,7 +1539,7 @@ async function runScans() {
     document.getElementById('mb-online-deezer')  .href = `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`;
     document.getElementById('mb-online-apple')   .href = `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`;
 
-    const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format };
+    const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format, existingDiscogsMaster: existing.discogsMaster || null };
     const tasks = [];
     if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify,  wikidataSpotifyId: wd?.spotifyId || null }));
     if (GM_getValue('prov_discogs',  true)) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
