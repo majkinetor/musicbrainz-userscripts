@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.184650
+// @version      2026.5.29.190157
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -800,39 +800,74 @@ function normName(s) {
 function searchTerms(s) {
     return (s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
-function titleSimilar(a, b) {
+// Token-set overlap.  `mode` controls strictness:
+//   'max' — ratio against the larger side (default). Strict. Right for
+//           album/title comparison: rejects "Self (The Remixes)" vs
+//           "Jaiye Omo (The Remixes)" (share only "the" + "remixes").
+//   'min' — ratio against the smaller side. Lenient. Right for artist
+//           comparison: MB credits often shorter than streaming-platform
+//           credits (e.g. MB "Hamad Kalkaba" vs Apple "Hamad Kalkaba &
+//           The Golden Sounds" — all of MB's tokens are in Apple's, so
+//           a min-based 0.8 threshold accepts it).
+function tokenMatch(a, b, mode = 'max', threshold = 0.6) {
     const na = normName(a), nb = normName(b);
     if (!na || !nb) return false;
     if (na === nb) return true;
-    return na.includes(nb) || nb.includes(na);
+    const tokensOf = s => new Set(s.split(' ').filter(t => t.length >= 2));
+    const ta = tokensOf(na), tb = tokensOf(nb);
+    if (!ta.size || !tb.size) return false;
+    let common = 0;
+    for (const t of ta) if (tb.has(t)) common++;
+    const denom = mode === 'min' ? Math.min(ta.size, tb.size) : Math.max(ta.size, tb.size);
+    return common / denom >= threshold;
 }
-// Score: tracks match strongest (100), close-but-not-exact 50; title bonus 20.
-// Threshold of ≥100 means we trust the candidate; <100 means show with a "~"
-// icon so the user knows track counts didn't line up.
-function scoreCandidate(meta, mbTracks, mbAlbum) {
+const titleSimilar  = (a, b) => tokenMatch(a, b, 'max', 0.6);
+const artistSimilar = (a, b) => tokenMatch(a, b, 'min', 0.8);
+
+// Score: tracks +100 / ±2 +30, title +60, artist +80 (non-VA).
+//
+// Two subtleties:
+//
+//   - The artist-mismatch penalty (-80) only applies when the title also
+//     fails to match. Compilation reissues commonly credit the curator
+//     label as `byArtist` on Bandcamp (e.g. "Analog Africa") while MB
+//     attributes the recording to the actual artist ("Hamad Kalkaba").
+//     If the title matches strongly, accept the mismatch as a likely
+//     label/series credit.
+//
+//   - Pickable threshold (≥120) means a candidate needs at least one
+//     non-tracks signal (title OR artist) to be trusted. Tracks alone
+//     (100) is not enough — that was the bug behind picking the Jaiye
+//     Omo album for Om Unit's "Self (The Remixes)" purely because both
+//     happened to be 4-track EPs.
+function scoreCandidate(meta, mbTracks, mbAlbum, mbArtist, isVA) {
     if (!meta) return -1;
     let s = 0;
     if (meta.tracks != null) {
-        if (meta.tracks === mbTracks)               s += 100;
-        else if (Math.abs(meta.tracks - mbTracks) <= 2) s += 50;
+        if (meta.tracks === mbTracks)                   s += 100;
+        else if (Math.abs(meta.tracks - mbTracks) <= 2) s += 30;
     }
-    if (meta.title && titleSimilar(meta.title, mbAlbum)) s += 20;
+    const titleMatch = meta.title && titleSimilar(meta.title, mbAlbum);
+    if (titleMatch) s += 60;
+    if (!isVA && mbArtist && meta.artist) {
+        if (artistSimilar(meta.artist, mbArtist)) s += 80;
+        else if (!titleMatch) s -= 80;
+    }
     return s;
 }
 
 // Drive a per-candidate verifier loop. Returns the best { url, meta, score }
 // across the candidate list, plus a per-candidate log table for diagnostics.
 // `fetchMeta(url)` returns `{ tracks, title, year, label }` (any field may be null).
-async function pickBestCandidate(candidates, fetchMeta, mbTracks, mbAlbum, label) {
+async function pickBestCandidate(candidates, fetchMeta, mbTracks, mbAlbum, label, mbArtist, isVA) {
     const scored = [];
     for (const url of candidates) {
         const meta = await fetchMeta(url);
-        const score = scoreCandidate(meta, mbTracks, mbAlbum);
+        const score = scoreCandidate(meta, mbTracks, mbAlbum, mbArtist, isVA);
         scored.push({ url, meta, score });
-        appendLog(label, `  cand score=${score}  tracks=${meta?.tracks ?? '?'}  title="${meta?.title || '?'}"  url=${url}`);
-        // Short-circuit on a confident match — saves N-1 fetches on the common case
-        // where the first search hit is correct (the Menahan release).
-        if (score >= 100) break;
+        appendLog(label, `  cand score=${score}  tracks=${meta?.tracks ?? '?'}  artist="${meta?.artist || '?'}"  title="${meta?.title || '?'}"  url=${url}`);
+        // Short-circuit on a high-confidence match (tracks + (title or artist)).
+        if (score >= 150) break;
     }
     if (!scored.length) return null;
     scored.sort((a, b) => b.score - a.score);
@@ -961,17 +996,21 @@ async function fetchSpotifyMeta(albumUrl) {
     if (!er.ok) return null;
     const html = er.responseText;
     const trackUris = [...html.matchAll(/"uri":"spotify:track:[a-zA-Z0-9]+"/g)];
-    // The album title is the first `"name":"…"` outside of any nested "subtitle"
-    // — empirically reliable on the embed JSON. Track titles come after, so
-    // "name" wins.
     const titleMatch = html.match(/"name"\s*:\s*"([^"]+)"/);
     const yearMatch  = html.match(/"releaseDate":"(\d{4})-/) || html.match(/"year"\s*:\s*(\d{4})/);
     const labelMatch = html.match(/"label":"([^"]+)"/) || html.match(/"copyrights":\s*\[\s*\{\s*"text"\s*:\s*"([^"]+)"/);
+    // Spotify embed stores the album-level artist credit as the first
+    // `"subtitle":"…"` field (subsequent subtitles are per-track artist
+    // credits). The bigger Spotify metadata schemas use `"artists":[…]`
+    // but the embed compresses them all to `subtitle`.
+    const subtitleMatch = html.match(/"subtitle"\s*:\s*"([^"]+)"/);
+    const artist = subtitleMatch?.[1] || null;
     return {
         tracks: trackUris.length || null,
         title:  titleMatch?.[1] || null,
         year:   yearMatch?.[1]  || null,
         label:  labelMatch?.[1] || null,
+        artist,
     };
 }
 
@@ -1027,9 +1066,9 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
             updateRow('spotify', { url: null, mbTracks, remoteTracks: null });
             return;
         }
-        appendLog(label, `Verifying ${candidates.length} candidate(s) by track count + title…`);
-        const best = await pickBestCandidate(candidates, fetchSpotifyMeta, mbTracks, album, label);
-        if (!best || best.score === 0) {
+        appendLog(label, `Verifying ${candidates.length} candidate(s) by tracks + title + artist…`);
+        const best = await pickBestCandidate(candidates, fetchSpotifyMeta, mbTracks, album, label, artist, isVariousArtists);
+        if (!best || best.score < 120) {
             appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
             cacheSet(mbid, 'spotify', { url: null, tracks: null, year: null, label: null, source: 'search' });
             updateRow('spotify', { url: null, mbTracks, remoteTracks: null });
@@ -1037,7 +1076,7 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
         }
         albumUrl = best.url;
         bestMeta = best.meta;
-        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
+        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 150 ? 'ok' : 'warn');
         source = 'search';
     }
 
@@ -1131,14 +1170,32 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
                     sr   = await trySearch(false);
                     data = sr.ok ? JSON.parse(sr.responseText) : { results: [] };
                 }
-                const first = data.results?.[0];
-                if (first) {
-                    releaseId  = String(first.id);
+                // Score every result by parsing its `title` ("Artist - Album")
+                // and matching against MB artist + album. Discogs search
+                // results don't expose track count, so we score on title +
+                // artist only — the detail fetch later will catch a track
+                // mismatch separately. Picking the *best* candidate (rather
+                // than blindly taking results[0]) fixes the "13-track Mista
+                // Savona release picked for a 4-track Om Unit album" bug.
+                const candidates = (data.results || []).slice(0, 8);
+                let best = null;
+                for (const r of candidates) {
+                    const [artistPart, ...albumParts] = (r.title || '').split(' - ');
+                    const albumPart = albumParts.join(' - ');
+                    const sc = scoreCandidate({ title: albumPart, artist: artistPart }, mbTracks, album, artist, isVariousArtists);
+                    appendLog(label, `  cand score=${sc}  id=${r.id}  artist="${artistPart}"  album="${albumPart}"  format=${(r.format || []).join(',')}`);
+                    if (!best || sc > best.score) best = { score: sc, item: r };
+                    if (sc >= 150) break;
+                }
+                if (best && best.score >= 50) {
+                    releaseId  = String(best.item.id);
                     releaseUrl = `https://www.discogs.com/release/${releaseId}`;
-                    source     = discogsFmt && data.results.every(r => (r.format || []).some(f => mbFormatToDiscogs(f) === discogsFmt))
+                    source     = discogsFmt && (best.item.format || []).some(f => mbFormatToDiscogs(f) === discogsFmt)
                         ? `API search (format=${discogsFmt})`
                         : 'API search';
-                    appendLog(label, `Found via API: ${releaseUrl}`, 'ok');
+                    appendLog(label, `Found via API (score=${best.score}): ${releaseUrl}`, 'ok');
+                } else if (candidates.length) {
+                    appendLog(label, `Top candidate score=${best?.score ?? 'n/a'} below 50 threshold — no confident match`, 'warn');
                 } else {
                     appendLog(label, `API search returned 0 results`, 'warn');
                 }
@@ -1209,15 +1266,15 @@ async function fetchBandcampMeta(albumUrl) {
     if (!ar.ok || !ar.responseText) return null;
     const html = ar.responseText;
     const numTracksMatch = html.match(/"numTracks"\s*:\s*(\d+)/);
-    // "@type":"MusicAlbum" is followed by the album name in JSON-LD; pick that
-    // specifically so we don't capture a track or band name.
     const titleMatch = html.match(/"@type"\s*:\s*"MusicAlbum"[\s\S]{0,200}?"name"\s*:\s*"([^"]+)"/)
                     || html.match(/<meta\s+name="title"\s+content="([^"|]+)/);
     const yMatch = html.match(/"datePublished"\s*:\s*"[^"]*?(\d{4})\b/);
     const lMatch = html.match(/"recordLabel"\s*:\s*\{[^}]*?"name"\s*:\s*"([^"]+)"/);
-    // Bandcamp's JSON-LD includes one albumRelease entry per available format
-    // (DigitalFormat / VinylFormat / CDFormat / CassetteFormat / …). Strip
-    // the "Format" suffix and dedupe to a short tag list.
+    // Album artist comes from JSON-LD `"byArtist":{"name":"…"}` (the band/
+    // label that hosts the page may differ from the album artist on
+    // multi-artist labels, so prefer byArtist).
+    const artistMatch = html.match(/"byArtist"\s*:\s*\{[^}]*?"name"\s*:\s*"([^"]+)"/)
+                     || html.match(/<meta\s+name="Description"\s+content="from\s+([^"|,]+)/i);
     const formats = [...new Set(
         [...html.matchAll(/"musicReleaseFormat"\s*:\s*"(\w+)"/g)]
             .map(m => m[1].replace(/Format$/, ''))
@@ -1228,6 +1285,7 @@ async function fetchBandcampMeta(albumUrl) {
         year:   yMatch?.[1]     || null,
         label:  lMatch?.[1]     || null,
         format: formats.length ? formats.join(', ') : null,
+        artist: artistMatch?.[1]?.trim() || null,
     };
 }
 
@@ -1305,9 +1363,9 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
             updateRow('bandcamp', { url: null, mbTracks, remoteTracks: null });
             return;
         }
-        appendLog(label, `Verifying ${candidates.length} candidate(s) by track count + title…`);
-        const best = await pickBestCandidate(candidates, fetchBandcampMeta, mbTracks, album, label);
-        if (!best || best.score === 0) {
+        appendLog(label, `Verifying ${candidates.length} candidate(s) by tracks + title + artist…`);
+        const best = await pickBestCandidate(candidates, fetchBandcampMeta, mbTracks, album, label, artist, isVariousArtists);
+        if (!best || best.score < 120) {
             appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
             cacheSet(mbid, 'bandcamp', { url: null, tracks: null, year: null, label: null, source: 'search' });
             updateRow('bandcamp', { url: null, mbTracks, remoteTracks: null });
@@ -1315,7 +1373,7 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
         }
         albumUrl = best.url;
         bestMeta = best.meta;
-        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
+        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 150 ? 'ok' : 'warn');
         source = candidateSource;
     }
 
@@ -1350,6 +1408,7 @@ async function fetchDeezerMeta(albumUrl) {
             title:  d.title || null,
             year:   d.release_date ? d.release_date.slice(0, 4) : null,
             label:  d.label || null,
+            artist: d.artist?.name || null,
         };
     } catch { return null; }
 }
@@ -1405,17 +1464,16 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
             updateRow('deezer', { url: null, mbTracks, remoteTracks: null });
             return;
         }
-        // Pick the best candidate by track count + title (reuse scoreCandidate).
-        // Search results already carry nb_tracks + title so no per-candidate
-        // detail fetch needed at this stage.
+        // Search results already carry nb_tracks + title + artist so no
+        // per-candidate detail fetch needed at this stage.
         let best = null;
         for (const it of results) {
-            const sc = scoreCandidate({ tracks: it.nb_tracks, title: it.title }, mbTracks, album);
-            appendLog(label, `  cand score=${sc}  tracks=${it.nb_tracks ?? '?'}  title="${it.title}"  url=${it.link}`);
+            const sc = scoreCandidate({ tracks: it.nb_tracks, title: it.title, artist: it.artist?.name }, mbTracks, album, artist, isVariousArtists);
+            appendLog(label, `  cand score=${sc}  tracks=${it.nb_tracks ?? '?'}  artist="${it.artist?.name || '?'}"  title="${it.title}"  url=${it.link}`);
             if (!best || sc > best.score) best = { score: sc, item: it };
-            if (sc >= 100) break;
+            if (sc >= 150) break;
         }
-        if (!best || best.score === 0) {
+        if (!best || best.score < 120) {
             appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
             cacheSet(mbid, 'deezer', { url: null, tracks: null, year: null, label: null, source: 'API search' });
             updateRow('deezer', { url: null, mbTracks, remoteTracks: null });
@@ -1423,7 +1481,7 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
         }
         albumUrl = best.item.link;
         source = 'API search';
-        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
+        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 150 ? 'ok' : 'warn');
     }
 
     const meta = await fetchDeezerMeta(albumUrl);
@@ -1457,8 +1515,8 @@ async function fetchAppleMeta(albumUrl) {
             tracks: a.trackCount ?? null,
             title:  a.collectionName || null,
             year:   a.releaseDate ? a.releaseDate.slice(0, 4) : null,
-            // copyright field is the label on most albums (e.g. "℗ 2021 Daptone Records"); strip the ℗/© and year prefix.
             label:  a.copyright ? a.copyright.replace(/^[℗©]\s*\d{4}\s*/, '').trim() || null : null,
+            artist: a.artistName || null,
         };
     } catch { return null; }
 }
@@ -1510,12 +1568,12 @@ async function scanApple({ artist, album, mbTracks, existingUrl, mbid, isVarious
         }
         let best = null;
         for (const it of results) {
-            const sc = scoreCandidate({ tracks: it.trackCount, title: it.collectionName }, mbTracks, album);
-            appendLog(label, `  cand score=${sc}  tracks=${it.trackCount ?? '?'}  title="${it.collectionName}"  url=${it.collectionViewUrl}`);
+            const sc = scoreCandidate({ tracks: it.trackCount, title: it.collectionName, artist: it.artistName }, mbTracks, album, artist, isVariousArtists);
+            appendLog(label, `  cand score=${sc}  tracks=${it.trackCount ?? '?'}  artist="${it.artistName || '?'}"  title="${it.collectionName}"  url=${it.collectionViewUrl}`);
             if (!best || sc > best.score) best = { score: sc, item: it };
-            if (sc >= 100) break;
+            if (sc >= 150) break;
         }
-        if (!best || best.score === 0) {
+        if (!best || best.score < 120) {
             appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
             cacheSet(mbid, 'apple', { url: null, tracks: null, year: null, label: null, source: 'API search' });
             updateRow('apple', { url: null, mbTracks, remoteTracks: null });
@@ -1525,7 +1583,7 @@ async function scanApple({ artist, album, mbTracks, existingUrl, mbid, isVarious
         // collectionViewUrl — MB normalises to the clean form.
         albumUrl = best.item.collectionViewUrl.split('?')[0];
         source = 'API search';
-        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 100 ? 'ok' : 'warn');
+        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 150 ? 'ok' : 'warn');
     }
 
     const meta = await fetchAppleMeta(albumUrl);
@@ -1938,12 +1996,35 @@ async function runScans() {
         wd = await lookupWikidata(releaseGroupMbid, mbid);
     }
 
-    // Seed search fallback URLs.
-    document.getElementById('mb-online-spotify') .href = `https://open.spotify.com/search/${encodeURIComponent(`${artist} ${album}`)}`;
-    document.getElementById('mb-online-discogs') .href = `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`;
-    document.getElementById('mb-online-bandcamp').href = `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`;
-    document.getElementById('mb-online-deezer')  .href = `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`;
-    document.getElementById('mb-online-apple')   .href = `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`;
+    // Seed search fallback URLs. Each provider link starts pointed at the
+    // provider's native search results — overridden to the resolved album
+    // URL once a scan finds a confident match. The original search URL is
+    // stashed on the anchor's dataset so right-click can re-open it even
+    // after a positive match (convenient for cross-checking).
+    const searchUrls = {
+        spotify:  `https://open.spotify.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
+        discogs:  `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`,
+        bandcamp: `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`,
+        deezer:   `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
+        apple:    `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`,
+    };
+    for (const [p, u] of Object.entries(searchUrls)) {
+        const a = document.getElementById(`mb-online-${p}`);
+        if (!a) continue;
+        a.href = u;
+        a.dataset.searchUrl = u;
+        // Right-click → open native search. Preserves the browser's own
+        // copy-link affordance on middle-click / shift-click; only the
+        // bare-right-click is intercepted.
+        if (!a.dataset.pcContextMenuWired) {
+            a.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                const search = a.dataset.searchUrl;
+                if (search) window.open(search, '_blank', 'noopener');
+            });
+            a.dataset.pcContextMenuWired = '1';
+        }
+    }
 
     const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format, existingDiscogsMaster: existing.discogsMaster || null };
     const tasks = [];
