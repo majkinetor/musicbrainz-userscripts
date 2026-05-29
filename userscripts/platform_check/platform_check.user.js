@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.151553
+// @version      2026.5.29.153325
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -528,7 +528,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
 // { glyph: '✓'|'~'|'×', circled: bool, clickable: bool, title: str, addMasterUrl?: str }
 function applyMasterIcon(el, state) {
     el.textContent = state.glyph;
-    el.style.color = state.circled ? '#5B82B0' : '#5B82B0';
+    el.style.color = state.muted ? '#BBB' : '#5B82B0';
     el.title       = state.title;
     el.classList.toggle('pc-ico-circled', !!state.circled);
     if (state.clickable && state.addMasterUrl) {
@@ -543,7 +543,11 @@ function applyMasterIcon(el, state) {
 // Build the Discogs master-state object given the URL Discogs found + the
 // URL MB has on the release-group already. Drives applyMasterIcon().
 function discogsMasterState(cachedMasterUrl, existingDiscogsMaster) {
-    if (!cachedMasterUrl) return null;
+    // Discogs returns no master_id when the release simply isn't part of a
+    // master group (one-off pressings, niche labels). Show a muted "—" so
+    // the user can distinguish "release has no master" from "we haven't
+    // scanned yet" without the slot looking like a bug.
+    if (!cachedMasterUrl) return { glyph: '—', circled: false, clickable: false, title: 'Discogs release has no master entry', muted: true };
     if (existingDiscogsMaster === cachedMasterUrl) {
         return { glyph: '✓', circled: true,  clickable: false, title: 'Discogs master URL is on the release-group' };
     }
@@ -1035,9 +1039,12 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
                 year   = data.year || null;
                 lbl    = (data.labels || []).map(l => l.name).join(', ') || null;
                 // Discogs `formats` is an array of {name, qty, descriptions}.
+                // We only want the headline — qty + name (e.g. "2×Vinyl") — and
+                // skip the pressing-detail descriptions ('12"', '33 ⅓ RPM',
+                // 'Mini-Album', etc.) that bloat the meta line without adding
+                // useful info for verifying it's the right release.
                 fmt = (data.formats || []).map(f => {
-                    const head = (f.qty && f.qty !== '1' ? `${f.qty}×` : '') + (f.name || '');
-                    return head + (f.descriptions?.length ? ` (${f.descriptions.join(', ')})` : '');
+                    return (f.qty && f.qty !== '1' ? `${f.qty}×` : '') + (f.name || '');
                 }).join(', ') || null;
                 // Master URL — points at the release-group equivalent on Discogs.
                 // Stored so the + flow can offer to add it to MB's release-group
@@ -1692,6 +1699,11 @@ async function runScans() {
     // MB 503 can still render. Don't re-persist when we're already inside the
     // cache-fallback branch.
     if (dataSource !== 'cache') mbDataSet(mbid, mbData);
+
+    // 2nd-line under the MusicBrainz source-info log: clickable link straight
+    // to the release page. Convenient when the user opens the diagnostic log
+    // from a different tab and wants to jump back to MB without re-typing.
+    appendLog('MusicBrainz', `Release: <a href="https://musicbrainz.org/release/${mbid}" target="_blank" rel="noopener" style="color:#BA68C8;text-decoration:underline;">https://musicbrainz.org/release/${mbid}</a>`);
 
     const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel } = mbData;
     // Header subtitle: year · label · format (left-aligned), and the MB
