@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.181501
+// @version      2026.5.29.181954
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -38,37 +38,52 @@ if (/\/release-group\/[0-9a-f-]{36}\/edit(?:[?#/]|$)/.test(window.location.pathn
     return;
 }
 
+// Safe setTimeout wrapper.  Firefox throws NS_ERROR_NOT_INITIALIZED from
+// setTimeout when the script context is being torn down (page redirect,
+// tab close mid-execution) — the Promise constructor turns that into an
+// unhandled rejection that aborts everything. Catch + resolve immediately
+// so the caller can keep going (the subsequent polling already compensates
+// for the missing delay).
+function pcWait(ms) {
+    return new Promise(resolve => {
+        try { setTimeout(resolve, ms); }
+        catch (_) { resolve(); }
+    });
+}
+
 async function runInjectHelper(entityType) {
-    const re   = new RegExp(`/${entityType}/([0-9a-f-]{36})`);
-    const mbid = (window.location.pathname.match(re) || [])[1];
-    if (!mbid) { showInjectBanner(`Platform Check: no MBID in URL (${window.location.pathname})`, [], { fail: true }); return; }
-    const key  = entityType === 'release-group' ? `pc:pending:rg:${mbid}` : `pc:pending:${mbid}`;
-    const raw  = GM_getValue(key, null);
-    // Show an unobtrusive banner whenever the helper ran but found nothing
-    // queued — lets the user tell apart "script didn't run" vs "ran but
-    // pending was empty" (e.g., TM's GM store didn't propagate from the
-    // source tab's GM_setValue write, or the previous inject already
-    // cleared it).
-    if (!raw) {
-        showInjectBanner(`Platform Check: no pending URLs for ${entityType} ${mbid.slice(0, 8)}… (GM_getValue(${key}) returned null)`, [], { fail: true });
-        return;
+    try {
+        const re   = new RegExp(`/${entityType}/([0-9a-f-]{36})`);
+        const mbid = (window.location.pathname.match(re) || [])[1];
+        if (!mbid) { showInjectBanner(`Platform Check: no MBID in URL (${window.location.pathname})`, [], { fail: true }); return; }
+        const key  = entityType === 'release-group' ? `pc:pending:rg:${mbid}` : `pc:pending:${mbid}`;
+        const raw  = GM_getValue(key, null);
+        if (!raw) {
+            showInjectBanner(`Platform Check: no pending URLs for ${entityType} ${mbid.slice(0, 8)}… (GM_getValue(${key}) returned null)`, [], { fail: true });
+            return;
+        }
+        let pending;
+        try { pending = JSON.parse(raw); }
+        catch (e) {
+            showInjectBanner(`Platform Check: pending payload not JSON: ${e.message}`, [], { fail: true });
+            return;
+        }
+        const urls = Object.values(pending || {}).filter(Boolean);
+        if (urls.length === 0) {
+            showInjectBanner(`Platform Check: pending object has no URLs (${raw.slice(0, 80)})`, [], { fail: true });
+            return;
+        }
+        const tab = [...document.querySelectorAll('a, button, li')].find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
+        if (tab) tab.click();
+        await pcWait(200);
+        await injectInto(urls, key);
+    } catch (e) {
+        // Last-resort surface so the user sees *something* on the page when
+        // a Firefox-specific exception kills the inject path silently.
+        try {
+            showInjectBanner(`Platform Check: inject helper crashed — ${e.name || 'Error'}: ${e.message || e}`, [], { fail: true });
+        } catch (_) { /* nothing else we can do here */ }
     }
-    let pending;
-    try { pending = JSON.parse(raw); }
-    catch (e) {
-        showInjectBanner(`Platform Check: pending payload not JSON: ${e.message}`, [], { fail: true });
-        return;
-    }
-    const urls = Object.values(pending || {}).filter(Boolean);
-    if (urls.length === 0) {
-        showInjectBanner(`Platform Check: pending object has no URLs (${raw.slice(0, 80)})`, [], { fail: true });
-        return;
-    }
-    // Click the "External Links" tab if present (multi-tab editor).
-    const tab = [...document.querySelectorAll('a, button, li')].find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
-    if (tab) tab.click();
-    await new Promise(r => setTimeout(r, 200));
-    await injectInto(urls, key);
 }
 
 function findAddLinkInput() {
@@ -96,7 +111,7 @@ async function injectInto(urls, storageKey) {
         { test: u => /music\.apple\.com\/.*\/album\//i.test(u),     ids: ['980', '85'], name: 'streaming page' },
         { test: u => /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
     ];
-    const wait = ms => new Promise(r => setTimeout(r, ms));
+    const wait = pcWait;
     const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
     const setSel = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
     const reports = [];
