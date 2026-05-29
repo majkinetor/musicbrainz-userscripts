@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.163846
+// @version      2026.5.29.165753
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -146,13 +146,25 @@ async function injectInto(urls, storageKey) {
 //     hit?: text of the picked option, miss?: why we gave up,
 //     rowDump?: outerHTML excerpt of the row we searched }
 function forceRelType(url, optionRe) {
+    // After Enter, MB re-renders the row: the URL <input> goes away and
+    // the URL appears as a clickable <a href="..."> with a sibling Type:
+    // <select>. Match by Apple album ID rather than full URL — MB strips
+    // the slug ("inversion/" segment) on canonicalization, so our queued
+    // URL (slug included) won't equal MB's rendered href.
+    const appleIdMatch = url.match(/\/album\/(?:[^/?#]+\/)?(\d+)\b/);
+    const appleId = appleIdMatch?.[1] || null;
     const inputs = [...document.querySelectorAll('input[type="url"], input[type="text"], input:not([type])')];
-    const ourInput = inputs.find(i => (i.value || '') === url);
-    if (!ourInput) return { ok: false, miss: 'URL input not on page' };
+    const anchors = [...document.querySelectorAll('a[href]')];
+    const matchByAppleId = a => appleId && new RegExp(`\\b${appleId}\\b`).test(a.getAttribute('href') || a.href);
+    const ourEl = anchors.find(a => a.href === url || a.getAttribute('href') === url)
+               || (appleId && anchors.find(matchByAppleId))
+               || inputs.find(i => (i.value || '') === url)
+               || (appleId && inputs.find(i => new RegExp(`\\b${appleId}\\b`).test(i.value || '')));
+    if (!ourEl) return { ok: false, miss: `URL not on page (looked for href= and id=${appleId || '?'})` };
 
-    // Walk up to a row-ish container that holds both our URL input and the
-    // type chooser. MB nests these about 3–5 levels above the input.
-    let scope = ourInput.parentElement;
+    // Walk up to a row-ish container that holds both our URL element and
+    // the type chooser. MB nests these about 3–5 levels above.
+    let scope = ourEl.parentElement;
     for (let depth = 0; depth < 8 && scope; depth++) {
         // Shape 1: native <select>. Pick the option whose visible text matches.
         const select = scope.querySelector('select');
