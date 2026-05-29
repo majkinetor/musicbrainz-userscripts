@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.104626
+// @version      2026.5.29.124128
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -203,20 +203,23 @@ container.innerHTML = `
     display: inline-block;
   }
 </style>
-<div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 8px;">
-  <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
+<div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 6px;">
+  <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">
+    Platform Check
+    <span id="mb-mb-info" style="font-weight: normal; font-size: 10px; color: #999; margin-left: 6px; text-transform: none; letter-spacing: 0;"></span>
+  </h3>
   <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
 </div>
-<div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+<div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px;">
   ${PROVIDER_ORDER.map(p => `
-  <div id="row-${p}" style="display: flex; flex-direction: column; gap: 2px;">
+  <div id="row-${p}" style="display: flex; flex-direction: column; gap: 1px;">
     <div style="display: flex; align-items: center;">
       <span id="ico-${p}" style="margin-right: 6px; color: #888; font-size: 11px; min-width: 14px;">⚪</span>
       <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; flex-grow: 1;">${PROVIDER_NAME[p]}</a>
       <span id="val-${p}" style="font-size: 11px; color: #777; font-family: monospace;">(-- tracks)</span>
-      <span id="extra-${p}" style="margin-left: 6px;"></span>
+      <span id="extra-${p}" style="margin-left: 6px; display: inline-flex; gap: 3px;"></span>
     </div>
-    <div id="meta-${p}" style="font-size: 11px; color: #999; padding-left: 20px; font-family: sans-serif;"></div>
+    <div id="meta-${p}" style="font-size: 10px; color: #999; padding-left: 20px; font-family: sans-serif; line-height: 1.3;"></div>
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
@@ -469,30 +472,46 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         val.textContent = `(no match)`;
     }
 
-    // Circled icon only for confirmed-match-from-MB-rels — circles around ~/?/×
-    // would be visually noisy and the source distinction matters less there.
-    // Circle any MB-rels row regardless of verification glyph: ✓ (tracks
-    // match), ~ (track-count mismatch), or ? (couldn't fetch tracks). The
-    // circle says "URL is in MB" — the glyph inside says how well it
-    // matches. Doesn't apply to × because absent-URL can't be from MB rels.
+    // Circle MB-rels rows regardless of verification glyph — the circle says
+    // "URL is in MB", the glyph inside says how well it matches.
     ico.classList.toggle('pc-ico-circled', fromMbRels);
+
+    // Click-to-add: when the row has a verified ✓ AND the URL isn't already
+    // in MB rels, the icon becomes clickable — single click queues just this
+    // platform's URL and opens /release/<mbid>/edit. Gives the user
+    // per-row control alongside the bulk + button at the bottom.
+    const canAdd = url && ico.textContent === '✓' && !fromMbRels;
+    ico.style.cursor = canAdd ? 'pointer' : '';
+    ico.title = canAdd ? `Click to add this URL to MB` : '';
+    ico.onclick = canAdd ? () => addSingleUrl(p) : null;
 
     const bits = [];
     if (year)   bits.push(year);
     if (label)  bits.push(label);
     if (format) bits.push(format);
 
-    // The `extra` slot is a separate element to the right of the track count
-    // (e.g. the Discogs master-state pill). Always paint it — empty string
-    // clears any previous content.
-    const extraEl = document.getElementById(`extra-${p}`);
-    if (extraEl) extraEl.innerHTML = extra || '';
-    // Suppress the "via <source>" line for fromCache rows (the blue tint
-    // already conveys cache state) and for MB-rels rows (the circled icon
-    // conveys origin). Show provenance only for fresh non-MB-rels rows where
-    // the source is meaningful to the user (Wikidata / search / etc.).
-    if (source && !fromCache && !fromMbRels) bits.push(`<span style="color:#BBB;">via ${source}</span>`);
+    // The `extra` slot to the right of the track count holds the source
+    // letter badge (W / S / N / A / etc.) and the Discogs master pill. Both
+    // are HTML; concatenate.
+    const sourceHTML = (!fromMbRels && source) ? sourceBadge(source) : '';
+    const extraEl    = document.getElementById(`extra-${p}`);
+    if (extraEl) extraEl.innerHTML = sourceHTML + (extra || '');
     meta.innerHTML = bits.join(' · ');
+}
+
+// Letter badge for the source path (replaces the old "via X" text). Sits in
+// the extra-<p> slot. Distinct from MB-rels rows which don't get one (the
+// circled icon already conveys that origin).
+function sourceBadge(source) {
+    const def = {
+        'Wikidata':   ['W', '#B8860B', 'Resolved via Wikidata (P2205 / P5121)'],
+        'search':     ['S', '#666',    'Found via web search engine (Brave / DDG)'],
+        'API search': ['A', '#666',    'Found via platform API search'],
+        'native':     ['N', '#629AA9', "Found via the platform's own search"],
+    }[source];
+    if (!def) return '';
+    const [letter, color, title] = def;
+    return `<span style="display:inline-block;font-size:9px;font-weight:bold;color:#FFF;background:${color};padding:1px 5px;border-radius:8px;line-height:1.2;" title="${title}">${letter}</span>`;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -1534,6 +1553,9 @@ async function runScans() {
     if (dataSource !== 'cache') mbDataSet(mbid, mbData);
 
     const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format } = mbData;
+    // Header subtitle — small grey text after the title, e.g. "12 trk · CD".
+    const infoEl = document.getElementById('mb-mb-info');
+    if (infoEl) infoEl.textContent = `${mbTracks} trk${format ? ' · ' + format : ''}`;
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
     appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}  deezer=${existing.deezer ? 'YES' : 'no'}  apple=${existing.apple ? 'YES' : 'no'}`);
 
@@ -1607,6 +1629,17 @@ function flashInfo(targetEl, text, bg = '#5B82B0') {
     document.body.appendChild(tip);
     setTimeout(() => { tip.style.opacity = '0'; }, 1500);
     setTimeout(() => { tip.remove(); }, 1850);
+}
+
+// Single-row click-to-add (icon click) — queues just one platform's URL and
+// opens /release/<mbid>/edit. The bulk + button at the bottom still queues
+// every ✓ row at once.
+function addSingleUrl(platform) {
+    const cached = cacheGet(mbid, platform);
+    if (!cached?.url) return;
+    GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
+    appendLog('System', `Inject (click): queued ${platform} URL — opening release editor`, 'ok');
+    window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
 }
 
 document.getElementById('mb-inject-btn').addEventListener('click', async (e) => {
