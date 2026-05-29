@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.134206
+// @version      2026.5.29.134958
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -205,7 +205,7 @@ container.innerHTML = `
 </style>
 <div style="border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 6px;">
   <div style="display: flex; align-items: center; justify-content: space-between;">
-    <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
+    <h3 style="margin: 0; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
     <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
   </div>
   <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 2px;">
@@ -930,8 +930,18 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
     // Positive cache hit short-circuits before any API call. Cached "no
     // match" only short-circuits when there's no MB rel either — we still
     // want a freshly-added MB rel to replace a stale no-match.
+    //
+    // Format-mismatch invalidation: if the cached release's format differs
+    // from the MB release format (e.g. cache holds a Vinyl pressing but MB
+    // says CD — possible when a prior scan ran without format extraction),
+    // re-search so format-aware ranking can pick the matching edition.
     const cached = cacheGet(mbid, 'discogs');
-    if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
+    const wantFmt = mbFormatToDiscogs(format);
+    const haveFmt = mbFormatToDiscogs(cached?.format);
+    const formatMismatch = !!(wantFmt && haveFmt && wantFmt !== haveFmt && cached?.url && !existingUrl);
+    if (formatMismatch) {
+        appendLog(label, `Cached match is ${haveFmt} but MB format is ${wantFmt} — re-scanning`, 'warn');
+    } else if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
         applyCachedRow('discogs', label, cached, mbTracks, discogsMasterState(cached.masterUrl, existingDiscogsMaster));
         return;
     }
