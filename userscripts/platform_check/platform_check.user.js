@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.131408
+// @version      2026.5.29.132132
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -203,23 +203,26 @@ container.innerHTML = `
     display: inline-block;
   }
 </style>
-<div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 6px;">
-  <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">
-    Platform Check
-    <span id="mb-mb-info" style="font-weight: normal; font-size: 10px; color: #999; margin-left: 6px; text-transform: none; letter-spacing: 0;"></span>
-  </h3>
-  <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
+<div style="border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 6px;">
+  <div style="display: flex; align-items: center; justify-content: space-between;">
+    <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
+    <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
+  </div>
+  <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 2px;">
+    <span id="mb-mb-subtitle" style="font-size: 10px; color: #999; line-height: 1.2; flex-grow: 1;"></span>
+    <span id="mb-mb-tracks" style="font-size: 11px; font-weight: bold; color: #FF8C00; font-family: monospace; min-width: 20px; text-align: right;"></span>
+  </div>
 </div>
 <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px;">
   ${PROVIDER_ORDER.map(p => `
   <div id="row-${p}" style="display: flex; flex-direction: column;">
-    <div style="display: flex; align-items: center; gap: 2px;">
-      <span id="master-${p}" class="pc-master-slot" style="font-size: 11px; min-width: 14px; text-align: center; cursor: default;"></span>
-      <span id="ico-${p}"    class="pc-ico-slot"    style="font-size: 11px; min-width: 14px; text-align: center; color: #888;">⚪</span>
-      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; flex-grow: 1; margin-left: 4px;">${PROVIDER_NAME[p]}</a>
-      <span id="val-${p}" style="font-size: 12px; font-weight: bold; font-family: monospace; color: #777;">—</span>
+    <div style="display: flex; align-items: center; gap: 4px;">
+      <span id="ico-${p}" class="pc-ico-slot" style="font-size: 11px; min-width: 14px; text-align: center; color: #888;">⚪</span>
+      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; flex-grow: 1;">${PROVIDER_NAME[p]}</a>
+      <span id="master-${p}" class="pc-master-slot" style="font-size: 11px; display: inline-block; min-width: 14px; text-align: center; cursor: default;"></span>
+      <span id="val-${p}" style="font-size: 12px; font-weight: bold; font-family: monospace; color: #777; min-width: 20px; text-align: right;">—</span>
     </div>
-    <div id="meta-${p}" style="font-size: 10px; color: #999; padding-left: 36px; font-family: sans-serif; line-height: 1.2; margin-top: -1px;"></div>
+    <div id="meta-${p}" style="font-size: 10px; color: #999; padding-left: 22px; font-family: sans-serif; line-height: 1.2; margin-top: -1px;"></div>
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
@@ -1495,20 +1498,53 @@ function parseMbFromDom() {
             if (m) { format = m[1]; break; }
         }
 
-        // Year + label for the header subtitle. Scrape from the sidebar's
-        // release-information dl. Best-effort — both can be null.
+        // Year + label for the header subtitle. MB renders these in several
+        // layouts depending on skin/version (dl.properties dt/dd, table th/td,
+        // bare "Date:" paragraphs), so try a few patterns and fall back to a
+        // broad sidebar text/anchor scan.
         let year = null, releaseLabel = null;
+        const matchKey = (el, ...wanted) => {
+            const txt = (el.textContent || '').trim().replace(/:$/, '').toLowerCase();
+            return wanted.includes(txt);
+        };
+        // Pattern A: dl/dt/dd.
         for (const dt of document.querySelectorAll('dl.properties dt, dl dt')) {
-            const txt = (dt.textContent || '').trim().replace(/:$/, '').toLowerCase();
             const dd = dt.nextElementSibling;
             if (!dd || dd.tagName !== 'DD') continue;
-            if (txt === 'date' || txt === 'release date') {
-                const m = dd.textContent.match(/(\d{4})/);
-                if (m && !year) year = m[1];
+            if (!year && matchKey(dt, 'date', 'release date')) {
+                const m = dd.textContent.match(/\b(19\d{2}|20\d{2})\b/);
+                if (m) year = m[1];
             }
-            if (txt === 'label' || txt === 'labels') {
+            if (!releaseLabel && matchKey(dt, 'label', 'labels')) {
                 const aLabels = [...dd.querySelectorAll('a[href*="/label/"]')].map(a => a.textContent.trim()).filter(Boolean);
                 if (aLabels.length) releaseLabel = [...new Set(aLabels)].join(', ');
+            }
+        }
+        // Pattern B: table th/td (some MB skins use this for release info).
+        if (!year || !releaseLabel) {
+            for (const th of document.querySelectorAll('table th')) {
+                const td = th.nextElementSibling;
+                if (!td) continue;
+                if (!year && matchKey(th, 'date', 'release date')) {
+                    const m = td.textContent.match(/\b(19\d{2}|20\d{2})\b/);
+                    if (m) year = m[1];
+                }
+                if (!releaseLabel && matchKey(th, 'label', 'labels')) {
+                    const aLabels = [...td.querySelectorAll('a[href*="/label/"]')].map(a => a.textContent.trim()).filter(Boolean);
+                    if (aLabels.length) releaseLabel = [...new Set(aLabels)].join(', ');
+                }
+            }
+        }
+        // Fallback: any /label/ anchor in #sidebar; first plausible year text.
+        const sb = document.querySelector('#sidebar');
+        if (sb) {
+            if (!releaseLabel) {
+                const aLabels = [...sb.querySelectorAll('a[href*="/label/"]')].map(a => a.textContent.trim()).filter(Boolean);
+                if (aLabels.length) releaseLabel = [...new Set(aLabels)].join(', ');
+            }
+            if (!year) {
+                const m = (sb.textContent || '').match(/\b(19\d{2}|20\d{2})\b/);
+                if (m) year = m[1];
             }
         }
 
@@ -1602,16 +1638,19 @@ async function runScans() {
     if (dataSource !== 'cache') mbDataSet(mbid, mbData);
 
     const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel } = mbData;
-    // Header subtitle — small grey text after the title, e.g. "2013 · Civil
-    // Music · Digital". Track count rendered separately on the right.
-    const infoEl = document.getElementById('mb-mb-info');
-    if (infoEl) {
+    // Header subtitle: year · label · format (left-aligned), and the MB
+    // track count right-aligned so it sits in the same column as the
+    // platform vals below.
+    const subEl = document.getElementById('mb-mb-subtitle');
+    const trkEl = document.getElementById('mb-mb-tracks');
+    if (subEl) {
         const parts = [];
         if (year)         parts.push(year);
         if (releaseLabel) parts.push(releaseLabel);
         if (format)       parts.push(format);
-        infoEl.innerHTML = parts.join(' · ') + (parts.length ? ` · <span style="color:#FF8C00;font-weight:bold;">${mbTracks}</span>` : `<span style="color:#FF8C00;font-weight:bold;">${mbTracks} trk</span>`);
+        subEl.textContent = parts.join(' · ');
     }
+    if (trkEl) trkEl.textContent = `${mbTracks}`;
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
     appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}  deezer=${existing.deezer ? 'YES' : 'no'}  apple=${existing.apple ? 'YES' : 'no'}`);
 
