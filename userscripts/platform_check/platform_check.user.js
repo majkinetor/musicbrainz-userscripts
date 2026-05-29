@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.172004
+// @version      2026.5.29.174513
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
+// @match        https://musicbrainz.org/release-group/*/edit
 // @match        https://musicbrainz.org/release-group/*/edit-relationships
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
@@ -24,18 +25,15 @@
 (function () {
 'use strict';
 
-// ─── Release editor sub-pages (/edit-relationships) ───────────────────────
-// + click on /release stashes OK URLs in `pc:pending:<mbid>` and opens
-// /edit-relationships. We dispatch URL relationship state updates directly
-// into MB's React store (window.MB.relationshipEditor.dispatch) — the
-// rinsuki/userscripts technique. Way faster than form-filling, and lets
-// us set the linkTypeID explicitly so Apple Music / Bandcamp don't land
-// with empty "Please select a link type" choosers.
-if (/\/release\/[0-9a-f-]{36}\/edit-relationships(?:[?#]|$)/.test(window.location.pathname)) {
+// ─── Release editor sub-pages (/edit, /edit-relationships) ────────────────
+// + click on /release stashes OK URLs in `pc:pending:<mbid>` and opens the
+// release's /edit page. We fill the "Add another link" input then set the
+// type chooser in the next-sibling <tr.relationship-item>'s <select.link-type>.
+if (/\/release\/[0-9a-f-]{36}\/edit(?:[?#/]|$)/.test(window.location.pathname)) {
     runInjectHelper('release');
     return;
 }
-if (/\/release-group\/[0-9a-f-]{36}\/edit-relationships(?:[?#]|$)/.test(window.location.pathname)) {
+if (/\/release-group\/[0-9a-f-]{36}\/edit(?:[?#/]|$)/.test(window.location.pathname)) {
     runInjectHelper('release-group');
     return;
 }
@@ -51,120 +49,103 @@ async function runInjectHelper(entityType) {
     try { pending = JSON.parse(raw); } catch { return; }
     const urls = Object.values(pending || {}).filter(Boolean);
     if (urls.length === 0) return;
-
-    // Wait for MB's React relationship editor to mount. On a cold reload
-    // this can take a second or two while the JS bundle loads + state
-    // hydrates.
-    const wait = ms => new Promise(r => setTimeout(r, ms));
-    const start = Date.now();
-    while (!window.MB?.relationshipEditor?.state || !window.MB?.linkedEntities?.link_type) {
-        if (Date.now() - start > 15000) {
-            console.warn('[platform_check] inject helper: window.MB.relationshipEditor.state never appeared');
-            showInjectBanner(`Platform Check: MB.relationshipEditor never appeared — can't inject ${urls.length} URL(s).`, [], { fail: true });
-            return;
-        }
-        await wait(150);
-    }
-    dispatchInject(urls, key, entityType);
+    // Click the "External Links" tab if present (multi-tab editor).
+    const tab = [...document.querySelectorAll('a, button, li')].find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
+    if (tab) tab.click();
+    await new Promise(r => setTimeout(r, 200));
+    await injectInto(urls, key);
 }
 
-// Provider → MB link-type name (release ↔ url relationships).  Looked up
-// in MB.linkedEntities.link_type at runtime so we always get the current
-// linkTypeID without hardcoding numeric IDs.
-const URL_TYPE_NAMES = [
-    { test: u => /music\.apple\.com\/.*\/album\//i.test(u),     name: 'free streaming' },
-    { test: u => /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), name: 'free streaming' },
-    { test: u => /open\.spotify\.com\/.*\/?album\//i.test(u),   name: 'free streaming' },
-    { test: u => /(?:www\.)?deezer\.com\/.*\/?album\//i.test(u),name: 'free streaming' },
-    { test: u => /www\.discogs\.com\/.*\/?release\//i.test(u),  name: 'discography entry' },
-    { test: u => /www\.discogs\.com\/.*\/?master\//i.test(u),   name: 'discography entry' },
-];
+function findAddLinkInput() {
+    const all = [...document.querySelectorAll('input[type="text"], input[type="url"], input:not([type])')];
+    return all.find(i => /add another (?:link|url)/i.test(i.placeholder || '') && !i.value)
+        || all.find(i => /add another (?:link|url)/i.test(i.placeholder || ''))
+        || null;
+}
 
-function dispatchInject(urls, storageKey, entityType) {
-    const editor = window.MB.relationshipEditor;
-    const linkedEntities = window.MB.linkedEntities;
-
-    // Resolve the source entity (the release / release-group). MB exposes it
-    // on state.entity in the modern release-relationship editor.
-    const sourceEntity = editor.state.entity || editor.state.release || editor.state.releaseGroup;
-    if (!sourceEntity) {
-        console.warn('[platform_check] inject: no source entity on state. Keys:', Object.keys(editor.state || {}));
-        showInjectBanner(`Platform Check: couldn't locate release entity in MB.relationshipEditor.state`, [], { fail: true });
-        return;
-    }
-    const sourceType0 = sourceEntity.entityType || (entityType === 'release-group' ? 'release_group' : 'release');
-
-    // Resolve linkTypeID by name once.
-    const lookupLinkTypeID = name => {
-        for (const lt of Object.values(linkedEntities.link_type)) {
-            if (lt.type0 === sourceType0 && lt.type1 === 'url' && lt.name === name) return lt.id;
-        }
-        return null;
-    };
-
+async function injectInto(urls, storageKey) {
+    // Force-type providers: MB's URL auto-classifier leaves the type empty
+    // for Apple Music + Bandcamp ("Please select a link type" warning). Map
+    // host pattern → ordered list of preferred link_type_ids. We pick the
+    // first one whose value actually appears as an <option> in the row's
+    // <select.link-type>, because MB's chooser only offers types that are
+    // applicable to that URL host (Apple Music offers 980 'streaming page'
+    // but not 85; Bandcamp offers 85 'stream for free' but not 980). IDs
+    // verified live on MB via probe. Inline-local because the IIFE's
+    // early-return path calls injectInto before any module-level const
+    // after the return is initialised (temporal dead zone).
+    const TYPE_FORCE = [
+        { test: u => /music\.apple\.com\/.*\/album\//i.test(u),     ids: ['980', '85'], name: 'streaming page' },
+        { test: u => /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
+    ];
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    const setSel = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
     const reports = [];
-    for (const url of urls) {
-        const mapped = URL_TYPE_NAMES.find(m => m.test(url));
-        const typeName = mapped?.name;
-        if (!typeName) { reports.push({ url, ok: false, miss: 'no provider mapping' }); continue; }
-        const linkTypeID = lookupLinkTypeID(typeName);
-        if (!linkTypeID) { reports.push({ url, ok: false, miss: `no linkTypeID for "${typeName}"` }); continue; }
+    let injected = 0;
 
-        try {
-            const newId = editor.getRelationshipStateId(null);
-            editor.dispatch({
-                type: 'update-relationship-state',
-                sourceEntity,
-                oldRelationshipState: null,
-                newRelationshipState: {
-                    id: newId,
-                    linkOrder: 0,
-                    linkTypeID,
-                    _lineage: ['added by platform_check'],
-                    _original: null,
-                    _status: 1,
-                    attributes: null,
-                    begin_date: null,
-                    end_date: null,
-                    editsPending: false,
-                    ended: false,
-                    entity0: sourceEntity,
-                    entity0_credit: '',
-                    entity1: {
-                        decoded: '',
-                        editsPending: false,
-                        entityType: 'url',
-                        gid: '',
-                        name: url,
-                        id: editor.getRelationshipStateId(null),
-                        last_updated: null,
-                        href_url: '',
-                        pretty_name: '',
-                    },
-                    entity1_credit: '',
-                },
-                batchSelectionCount: undefined,
-                creditsToChangeForSource: '',
-                creditsToChangeForTarget: '',
-            });
-            reports.push({ url, ok: true, type: typeName, linkTypeID });
-        } catch (e) {
-            console.warn('[platform_check] dispatch threw:', e);
-            reports.push({ url, ok: false, miss: `dispatch error: ${e.message}` });
+    for (const url of urls) {
+        // Poll for the next available "Add another link" input — faster than
+        // a flat sleep, and avoids re-filling a stale input.
+        let input = null;
+        for (let attempt = 0; attempt < 50 && !input; attempt++) {
+            input = findAddLinkInput();
+            if (!input) await wait(100);
         }
+        if (!input) { reports.push({ url, ok: false, miss: 'no "Add another link" input ever appeared' }); break; }
+
+        input.focus();
+        setVal.call(input, url);
+        input.dispatchEvent(new Event('input',  { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+        input.dispatchEvent(new KeyboardEvent('keyup',   { key: 'Enter', code: 'Enter', bubbles: true }));
+        input.blur();
+        injected++;
+
+        // Wait for the URL row + type row to materialise.
+        const appleId = url.match(/music\.apple\.com\/[^/]+\/album\/(?:[^/?#]+\/)?(\d+)\b/)?.[1];
+        const matchRowByUrl = r => {
+            const a = r.querySelector('a[href]');
+            const h = a?.getAttribute('href') || '';
+            return h === url || (appleId && new RegExp(`/album/(?:[^/]+/)?${appleId}\\b`).test(h));
+        };
+        let urlRow = null;
+        for (let attempt = 0; attempt < 30 && !urlRow; attempt++) {
+            urlRow = [...document.querySelectorAll('tr.external-link-item')].find(matchRowByUrl);
+            if (!urlRow) await wait(100);
+        }
+        if (!urlRow) { reports.push({ url, ok: false, miss: 'URL row never appeared after Enter' }); continue; }
+
+        // Type-force if applicable.  The Type chooser lives in the NEXT
+        // sibling <tr.relationship-item> (verified live on MB).
+        const force = TYPE_FORCE.find(t => t.test(url));
+        if (!force) { reports.push({ url, ok: true, note: 'auto-typed' }); continue; }
+
+        let typeRow = urlRow.nextElementSibling;
+        for (let attempt = 0; attempt < 15 && (!typeRow || !typeRow.classList?.contains('relationship-item')); attempt++) {
+            await wait(100);
+            typeRow = urlRow.nextElementSibling;
+        }
+        const select = typeRow?.querySelector('select.link-type');
+        if (!select) {
+            reports.push({ url, ok: false, miss: `no <select.link-type> in next sibling (got ${typeRow?.tagName}.${typeRow?.className || ''})` });
+            continue;
+        }
+        const opt = force.ids.map(id => [...select.options].find(o => o.value === id)).find(Boolean);
+        if (!opt) {
+            const optsList = [...select.options].map(o => `${o.value}=${o.textContent.trim()}`).join(', ').slice(0, 400);
+            reports.push({ url, ok: false, miss: `none of ids=[${force.ids.join(',')}] in options. Options: ${optsList}` });
+            continue;
+        }
+        setSel.call(select, opt.value);
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        reports.push({ url, ok: true, type: opt.textContent.trim(), linkTypeId: opt.value });
     }
 
-    // Append a small edit note tagging the source.
-    try {
-        editor.dispatch({
-            type: 'update-edit-note',
-            editNote: ((editor.state.editNoteField?.value || '') + `\nAdded via Platform Check userscript v${(GM_info?.script?.version) || '?'}.`).trim(),
-        });
-    } catch (_) { /* not all editor versions accept this */ }
-
-    const okCount = reports.filter(r => r.ok).length;
-    GM_setValue(storageKey, null);
-    showInjectBanner(`Platform Check: dispatched ${okCount}/${urls.length} URL relationship(s)`, reports, { fail: okCount < urls.length });
+    if (injected > 0) GM_setValue(storageKey, null);
+    const failCount = reports.filter(r => !r.ok).length;
+    showInjectBanner(`Platform Check: injected ${injected}/${urls.length} URL(s)`, reports, { fail: failCount > 0 });
 }
 
 function showInjectBanner(text, reports = [], opts = {}) {
@@ -186,7 +167,7 @@ function showInjectBanner(text, reports = [], opts = {}) {
         for (const r of reports) {
             const host = (r.url || '').match(/^https?:\/\/([^/]+)/)?.[1] || '';
             body += r.ok
-                ? `<li>${host}: <span style="color:#1B5E20">OK</span> · ${r.type} (linkTypeID=${r.linkTypeID})</li>`
+                ? `<li>${host}: <span style="color:#1B5E20">OK</span>${r.type ? ` · ${r.type}` : ''}${r.note ? ` · ${r.note}` : ''}</li>`
                 : `<li>${host}: <span style="color:#A33">FAIL</span> · ${r.miss}</li>`;
         }
         body += '</ul>';
@@ -262,7 +243,10 @@ container.innerHTML = `
 </style>
 <div style="border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 6px;">
   <div style="display: flex; align-items: center; justify-content: space-between;">
-    <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
+    <div style="display: flex; align-items: center; gap: 4px;">
+      <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
+      <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/platform_check#readme" target="_blank" rel="noopener" title="Open Platform Check README" style="color: #999; text-decoration: none; font-size: 10px; font-weight: bold; border: 1px solid #CCC; border-radius: 50%; width: 13px; height: 13px; line-height: 11px; text-align: center; display: inline-block; box-sizing: border-box;">?</a>
+    </div>
     <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
   </div>
   <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 2px;">
@@ -1693,10 +1677,9 @@ function parseMbFromDom() {
         // Sanity gate: we need artist + album + at least one track row. Anything
         // less is an unrendered or unfamiliar layout — bail to API.
         if (!artist || !album || mbTracks < 1) return null;
-        console.log('[platform_check] parseMbFromDom:', { artist, album, mbTracks, format, year, releaseLabel, existing });
         return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel };
     } catch (e) {
-        console.warn('[platform_check] parseMbFromDom threw:', e);
+        appendLog('System', `parseMbFromDom threw: ${e.message}`, 'error');
         return null;
     }
 }
@@ -1891,15 +1874,14 @@ function flashInfo(targetEl, text, bg = '#5B82B0') {
 // every ✓ row at once.
 function addSingleUrl(platform) {
     const cached = cacheGet(mbid, platform);
-    console.log('[platform_check] addSingleUrl click:', { platform, mbid, cached });
     if (!cached?.url) {
-        console.warn('[platform_check] addSingleUrl: no cached URL — abort');
+        appendLog('System', `Inject (click): no cached URL for ${platform} — abort`, 'warn');
         return;
     }
     GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
     appendLog('System', `Inject (click): queued ${platform} URL — opening release editor`, 'ok');
-    const w = window.open(`https://musicbrainz.org/release/${mbid}/edit-relationships`, '_blank');
-    if (!w) console.warn('[platform_check] window.open returned null — popup blocked?');
+    const w = window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
+    if (!w) appendLog('System', `window.open returned null — popup blocked?`, 'error');
 }
 
 // Click-to-add on the Discogs master slot — queues the master URL for the
@@ -1913,7 +1895,7 @@ function addMasterUrl(masterUrl) {
     }
     GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify({ 'discogs-master': masterUrl }));
     appendLog('System', `Inject (master): queued ${masterUrl} for release-group ${rgMbid}`, 'ok');
-    window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit-relationships`, '_blank');
+    window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit`, '_blank');
 }
 
 document.getElementById('mb-inject-btn').addEventListener('click', async (e) => {
@@ -1958,12 +1940,12 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     if (releaseCount > 0) {
         GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
         appendLog('System', `Inject: queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
-        window.open(`https://musicbrainz.org/release/${mbid}/edit-relationships`, '_blank');
+        window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
     }
     if (rgCount > 0 && rgMbid) {
         GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify(pendingRG));
         appendLog('System', `Inject: queued ${rgCount} release-group URL(s) — opening release-group editor`, 'ok');
-        window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit-relationships`, '_blank');
+        window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit`, '_blank');
     }
 });
 
