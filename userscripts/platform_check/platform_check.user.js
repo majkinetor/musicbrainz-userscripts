@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.162739
-// @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
+// @version      2026.5.29.163846
+// @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
 // @match        https://musicbrainz.org/release-group/*/edit-relationships
@@ -107,6 +107,7 @@ async function injectInto(urls, storageKey) {
     // the change, not just the raw DOM property.
     const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
     let injected = 0;
+    const appleReports = [];
     for (const url of urls) {
         // Re-query each iteration — MB replaces the input after each fill.
         const input = findAddLinkInput();
@@ -129,24 +130,25 @@ async function injectInto(urls, storageKey) {
         // entry on the release page. Other platforms auto-classify
         // correctly out of the box.
         if (/music\.apple\.com\/.*\/album\//i.test(url)) {
-            const ok = forceRelType(url, /streaming\s+page/i);
-            if (!ok) console.warn(`[platform_check] inject: couldn't force "streaming page" type on ${url}`);
+            const report = forceRelType(url, /streaming\s+page/i);
+            appleReports.push(report);
         }
     }
     if (injected > 0) GM_setValue(storageKey, null);
-    flashStatusOnExternalLinks(`Platform Check: injected ${injected}/${urls.length} URL${urls.length === 1 ? '' : 's'}`);
+    flashStatusOnExternalLinks(`Platform Check: injected ${injected}/${urls.length} URL${urls.length === 1 ? '' : 's'}`, appleReports);
 }
 
 // Locate the relationship-type chooser for the row whose URL input matches
-// `url` and force it to the option matching `optionRe`. Returns true on
-// success. MB's URL-relationship editor renders the type chooser in
-// different shapes depending on the page (legacy /edit vs React
-// /edit-relationships): sometimes a native <select>, sometimes a React
-// autocomplete <input> backed by a hidden <input>. Try both.
+// `url` and force it to the option matching `optionRe`. Returns a structured
+// report so the caller can show the outcome inline on the page without
+// needing the user to open DevTools.
+//   { ok, shape: 'select'|'autocomplete-listbox'|'autocomplete-typed',
+//     hit?: text of the picked option, miss?: why we gave up,
+//     rowDump?: outerHTML excerpt of the row we searched }
 function forceRelType(url, optionRe) {
     const inputs = [...document.querySelectorAll('input[type="url"], input[type="text"], input:not([type])')];
     const ourInput = inputs.find(i => (i.value || '') === url);
-    if (!ourInput) { console.warn('[platform_check] forceRelType: no input found with value', url); return false; }
+    if (!ourInput) return { ok: false, miss: 'URL input not on page' };
 
     // Walk up to a row-ish container that holds both our URL input and the
     // type chooser. MB nests these about 3–5 levels above the input.
@@ -160,8 +162,7 @@ function forceRelType(url, optionRe) {
                 const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
                 nativeSetter.call(select, opt.value);
                 select.dispatchEvent(new Event('change', { bubbles: true }));
-                console.log('[platform_check] forceRelType: set <select> to', opt.textContent);
-                return true;
+                return { ok: true, shape: 'select', hit: opt.textContent.trim() };
             }
         }
         // Shape 2: React autocomplete. There's a text <input> whose placeholder
@@ -171,36 +172,57 @@ function forceRelType(url, optionRe) {
         const typeInputs = [...scope.querySelectorAll('input')].filter(i => /relationship\s*type|link\s*type/i.test(i.placeholder || i.getAttribute('aria-label') || ''));
         if (typeInputs.length) {
             const tin = typeInputs[0];
-            // Try inline option list: some MB skins render <ul role="listbox">
-            // siblings to the autocomplete input.
             const listbox = scope.querySelector('[role="listbox"]');
             if (listbox) {
                 const opt = [...listbox.querySelectorAll('[role="option"], li')].find(o => optionRe.test(o.textContent));
-                if (opt) { opt.click(); console.log('[platform_check] forceRelType: clicked listbox option'); return true; }
+                if (opt) { opt.click(); return { ok: true, shape: 'autocomplete-listbox', hit: opt.textContent.trim() }; }
             }
-            // Otherwise type the desired label and let the autocomplete narrow.
             const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
             nativeSetter.call(tin, 'streaming page');
             tin.dispatchEvent(new Event('input',  { bubbles: true }));
-            console.log('[platform_check] forceRelType: typed into autocomplete input', tin);
-            return true;
+            return { ok: true, shape: 'autocomplete-typed', hit: 'typed "streaming page"' };
         }
         scope = scope.parentElement;
     }
 
     // Diagnostic dump so we can iterate without playing browser-forensics blind.
     const rowDump = ourInput.closest('li, tr, fieldset, div[class*="row"], div[class*="link"]')?.outerHTML?.slice(0, 1200);
-    console.warn('[platform_check] forceRelType: no type chooser found near URL input. Row HTML (truncated):\n', rowDump);
-    return false;
+    return { ok: false, miss: 'no type chooser found near URL input', rowDump };
 }
 
 // Small discreet inline status next to the External Links heading — no
-// top-of-page banner.
-function flashStatusOnExternalLinks(text) {
+// top-of-page banner. When forceRelType ran (Apple URLs), append a second
+// inline block showing what shape it found and what it did — so the user
+// can tell whether the type was forced without opening DevTools.
+function flashStatusOnExternalLinks(text, appleReports = []) {
     const heading = [...document.querySelectorAll('h2, h3, legend, fieldset > legend')]
         .find(h => /external\s+links/i.test(h.textContent));
     if (!heading) return;
     document.getElementById('pc-inject-status')?.remove();
+    if (appleReports.length) {
+        const ok = appleReports.every(r => r.ok);
+        const lines = appleReports.map(r => r.ok ? `force-rel: ${r.shape} → ${r.hit}` : `force-rel FAILED: ${r.miss}`).join(' · ');
+        text += '  |  ' + lines;
+        // If a row dump came back, drop it as a <details> below the heading so
+        // it's visible without needing DevTools.
+        const dumps = appleReports.map(r => r.rowDump).filter(Boolean);
+        if (dumps.length) {
+            const det = document.createElement('details');
+            det.id = 'pc-inject-rowdump';
+            det.style.cssText = 'margin:8px 0;font-family:monospace;font-size:11px;background:#FFF8DC;border:1px solid #DAA520;padding:6px 8px;border-radius:4px;';
+            det.innerHTML = `<summary style="cursor:pointer;color:#8B4513;">Platform Check: row HTML around URL input (click to expand)</summary><pre style="white-space:pre-wrap;word-break:break-all;margin:6px 0 0 0;color:#555;">${dumps.map(d => d.replace(/</g, '&lt;')).join('\n\n---\n\n')}</pre>`;
+            heading.parentElement.insertBefore(det, heading.nextSibling);
+        }
+        // Tint based on success/failure.
+        const status = document.createElement('span');
+        status.id = 'pc-inject-status';
+        status.style.cssText = ok
+            ? 'margin-left:12px;font-size:11px;padding:2px 8px;background:#E8F5E9;border:1px solid #81C784;border-radius:3px;color:#1B5E20;font-family:sans-serif;font-weight:normal;'
+            : 'margin-left:12px;font-size:11px;padding:2px 8px;background:#FFF3CD;border:1px solid #FFC107;border-radius:3px;color:#7B5E00;font-family:sans-serif;font-weight:normal;';
+        status.textContent = text;
+        heading.appendChild(status);
+        return;
+    }
     const status = document.createElement('span');
     status.id = 'pc-inject-status';
     status.style.cssText = 'margin-left:12px;font-size:11px;padding:2px 8px;background:#E8F5E9;border:1px solid #81C784;border-radius:3px;color:#1B5E20;font-family:sans-serif;font-weight:normal;';
