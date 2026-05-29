@@ -1,6 +1,6 @@
 # Import Discogs Credits
 
-Import Discogs credits as MusicBrainz release relationships.
+UI for importing Discogs credits as MusicBrainz release relationships and few general import helpers.
 
 - [Install from Greasy Fork](https://greasyfork.org/en/scripts/578977-musicbrainz-import-discogs-credits)
 - [Install latest from GitHub](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/discogs_credits/dist/discogs_credits.user.js)
