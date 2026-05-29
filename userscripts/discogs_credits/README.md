@@ -19,7 +19,7 @@ The workflow is as follows:
     1. Some relationship are added to the work instead of the track. Non existent work can automatically be created depending on option. If the work doesn't exist, relationship will not be added and will be reported in log
 1. At the end and after potential manual interventions, user confirms the edit
 
-<video src="./screen.webm" controls width="800" preload="metadata"></video>
+View [video](./screen.webm).
 
 ![](./screenshot.png)
 
