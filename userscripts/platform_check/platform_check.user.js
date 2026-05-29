@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.090716
+// @version      2026.5.29.090855
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
@@ -1272,7 +1272,21 @@ document.getElementById('mb-refresh-btn').addEventListener('click', () => {
 // edit-relationships page in a new tab. The companion handler that runs on
 // that page (same script, @match'd against /edit-relationships) reads the
 // pending entry and dispatches each URL into MB's relationship editor.
-document.getElementById('mb-inject-btn').addEventListener('click', () => {
+// Small floating toast near a target element, auto-fades after ~1.5 s.
+// Reused as inline feedback for the + button when there's nothing to do.
+function flashInfo(targetEl, text, bg = '#5B82B0') {
+    document.getElementById('pc-flash-info')?.remove();
+    const rect = targetEl.getBoundingClientRect();
+    const tip = document.createElement('div');
+    tip.id = 'pc-flash-info';
+    tip.textContent = text;
+    tip.style.cssText = `position:absolute;left:${rect.left + window.scrollX}px;top:${rect.bottom + window.scrollY + 4}px;background:${bg};color:#FFF;padding:4px 8px;border-radius:3px;font-size:11px;font-family:sans-serif;white-space:nowrap;z-index:99999;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,0.2);transition:opacity .3s;`;
+    document.body.appendChild(tip);
+    setTimeout(() => { tip.style.opacity = '0'; }, 1500);
+    setTimeout(() => { tip.remove(); }, 1850);
+}
+
+document.getElementById('mb-inject-btn').addEventListener('click', (e) => {
     const pending = {};
     for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer']) {
         const cached = cacheGet(mbid, p);
@@ -1287,16 +1301,15 @@ document.getElementById('mb-inject-btn').addEventListener('click', () => {
         pending[p] = cached.url;
     }
     const count = Object.keys(pending).length;
-    // Always open the tab — gives the user predictable feedback ("click +
-    // opens release editor"). When count > 0 the inject banner appears on
-    // the editor page with the URLs queued; when count === 0 the editor
-    // just opens normally so the user can edit other things.
-    if (count > 0) {
-        GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pending));
-        appendLog('System', `Inject: queued ${count} URL(s) — opening release editor`, 'ok');
-    } else {
-        appendLog('System', `Inject: nothing new to add (all OK URLs are already in MB rels) — opening release editor anyway`, 'warn');
+    if (count === 0) {
+        // Nothing new to add — give visible feedback without opening a tab
+        // the user doesn't need. Tooltip-style toast next to the + button.
+        appendLog('System', `Inject: nothing to add — all OK URLs are already in MB rels`, 'warn');
+        flashInfo(e.currentTarget, 'Already in MB');
+        return;
     }
+    GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pending));
+    appendLog('System', `Inject: queued ${count} URL(s) — opening release editor`, 'ok');
     window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
 });
 
