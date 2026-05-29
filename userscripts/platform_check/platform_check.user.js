@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.174513
+// @version      2026.5.29.180247
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -57,9 +57,12 @@ async function runInjectHelper(entityType) {
 }
 
 function findAddLinkInput() {
+    // /release/<mbid>/edit uses placeholder "Add another link".
+    // /release-group/<rg>/edit uses placeholder "Add link" (no "another").
     const all = [...document.querySelectorAll('input[type="text"], input[type="url"], input:not([type])')];
-    return all.find(i => /add another (?:link|url)/i.test(i.placeholder || '') && !i.value)
-        || all.find(i => /add another (?:link|url)/i.test(i.placeholder || ''))
+    const RE = /^(?:add (?:another )?link|add another url)$/i;
+    return all.find(i => RE.test((i.placeholder || '').trim()) && !i.value)
+        || all.find(i => RE.test((i.placeholder || '').trim()))
         || null;
 }
 
