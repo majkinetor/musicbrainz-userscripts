@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.153325
+// @version      2026.5.29.160759
 // @description  Find a MusicBrainz release on Spotify, Discogs and Bandcamp. Uses existing URL relationships when present, otherwise searches via DuckDuckGo's HTML interface and the Discogs public API. No tokens required.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*
@@ -210,7 +210,7 @@ container.innerHTML = `
     <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
   </div>
   <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 2px;">
-    <span id="mb-mb-subtitle" style="font-size: 10px; color: #999; line-height: 1.2; flex-grow: 1;"></span>
+    <span id="mb-mb-subtitle" style="font-size: 10px; color: #999; line-height: 1.2; flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
     <span id="mb-mb-tracks" style="font-size: 11px; font-weight: bold; color: #FF8C00; font-family: monospace; min-width: 20px; text-align: right;"></span>
   </div>
 </div>
@@ -223,7 +223,7 @@ container.innerHTML = `
       <span id="master-${p}" class="pc-master-slot" style="font-size: 11px; display: inline-block; min-width: 14px; text-align: center; cursor: default;"></span>
       <span id="val-${p}" style="font-size: 12px; font-weight: bold; font-family: monospace; color: #777; min-width: 20px; text-align: right;">—</span>
     </div>
-    <div id="meta-${p}" style="font-size: 10px; color: #999; font-family: sans-serif; line-height: 1.2; padding-top: 0.3rem;"></div>
+    <div id="meta-${p}" style="font-size: 10px; color: #999; font-family: sans-serif; line-height: 1.2; padding-top: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
@@ -514,15 +514,22 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         }
     }
 
-    // Meta line: year · label · format. Source/cache state is implicit in
-    // the main icon's colour (green = fresh, steel-blue = cache) so no more
-    // "via X" text.
+    // Meta line: year · format · label. Format before label because labels
+    // run long (multi-name imprints, "Records" suffixes) and would otherwise
+    // shove format past the row's visible width. The line is clipped with
+    // ellipsis (see CSS on #meta-${p}) so an extra-long label trails off
+    // rather than wrapping under the next provider.
     const bits = [];
     if (year)   bits.push(year);
+    if (format) bits.push(normalizeFormat(format));
     if (label)  bits.push(label);
-    if (format) bits.push(format);
-    meta.innerHTML = bits.join(' · ');
+    meta.textContent = bits.join(' · ');
 }
+
+// MB's "Digital Media" is the spec name, but in a tight sidebar "Digital"
+// communicates the same thing. Applied at display time so the cache and
+// scan paths can keep MB's canonical value.
+function normalizeFormat(s) { return String(s || '').replace(/\bDigital\s*Media\b/i, 'Digital'); }
 
 // Apply Discogs master-state to the master slot. State shape:
 // { glyph: '✓'|'~'|'×', circled: bool, clickable: bool, title: str, addMasterUrl?: str }
@@ -1714,8 +1721,8 @@ async function runScans() {
     if (subEl) {
         const parts = [];
         if (year)         parts.push(year);
+        if (format)       parts.push(normalizeFormat(format));
         if (releaseLabel) parts.push(releaseLabel);
-        if (format)       parts.push(format);
         subEl.textContent = parts.join(' · ');
     }
     if (trkEl) trkEl.textContent = `${mbTracks}`;
