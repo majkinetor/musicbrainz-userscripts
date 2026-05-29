@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.170842
+// @version      2026.5.29.171145
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -172,9 +172,30 @@ function forceRelType(url, optionRe) {
                || (appleId && inputs.find(i => new RegExp(`/album/(?:[^/]+/)?${appleId}\\b`).test(i.value || '')));
     if (!ourEl) return { ok: false, miss: `URL not on page (looked for exact href and id=${appleId || '—'})` };
 
-    // Row container = smallest ancestor of ourEl that does NOT contain a
-    // different external-link anchor (i.e. doesn't span into another row).
-    // Walk up until expanding would suck in another row's URL.
+    // The type chooser is NOT inside the URL row itself — MB renders the
+    // URL row as a tight <tr class="external-link-item"> with just the
+    // favicon, the X/Edit buttons, and the anchor; the Type: <select>
+    // lives in a sibling row (or following div) that comes right after.
+    // Forward-walk the DOM from ourEl until we find a <select>, bounded
+    // by encountering another external URL anchor (which would mean we've
+    // crossed into the next row).
+    const findNext = () => {
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+        walker.currentNode = ourEl;
+        let node;
+        while ((node = walker.nextNode())) {
+            if (node === ourEl) continue;
+            if (node.tagName === 'A') {
+                const h = node.getAttribute('href') || '';
+                if (/^https?:\/\//.test(h) && !/musicbrainz\.org/.test(h)) return null; // crossed into next row
+            }
+            if (node.tagName === 'SELECT') return node;
+        }
+        return null;
+    };
+    const forwardSelect = findNext();
+    // Also keep a row reference for diagnostics (the smallest ancestor not
+    // containing another URL — useful for the row-HTML dump on miss).
     let row = ourEl;
     let next = ourEl.parentElement;
     while (next && next !== document.body) {
@@ -182,12 +203,11 @@ function forceRelType(url, optionRe) {
             a !== ourEl && /^https?:\/\//.test(a.href) && !/musicbrainz\.org/.test(a.href));
         if (otherUrls.length > 0) break;
         row = next;
-        if (row.querySelector('select')) break;
         next = next.parentElement;
     }
 
-    // Shape 1: native <select> inside our row.
-    const select = row.querySelector('select');
+    // Shape 1: native <select> — prefer the forward-walked candidate.
+    const select = forwardSelect || row.querySelector('select');
     if (select) {
         const opt = [...select.options].find(o => optionRe.test(o.textContent));
         if (opt) {
@@ -215,7 +235,12 @@ function forceRelType(url, optionRe) {
         return { ok: true, shape: 'autocomplete-typed', hit: 'typed "stream for free"' };
     }
 
-    return { ok: false, miss: 'no <select> or autocomplete in the row', rowDump: row.outerHTML.slice(0, 1200) };
+    // Wider dump on miss: include the row plus the next ~3 sibling elements,
+    // since the type chooser typically lives in a following sibling row.
+    const parts = [row.outerHTML];
+    let sib = row.nextElementSibling;
+    for (let n = 0; n < 4 && sib; n++, sib = sib.nextElementSibling) parts.push(sib.outerHTML);
+    return { ok: false, miss: 'no <select> or autocomplete found forward of URL', rowDump: parts.join('\n--- next sibling ---\n').slice(0, 2400) };
 }
 
 // Fixed-position overlay at the top of the page. The previous inline span
