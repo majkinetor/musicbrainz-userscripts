@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.30.151837
+// @version      2026.5.30.152328
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -1242,7 +1242,13 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         if (dr.ok) {
             try {
                 const data = JSON.parse(dr.responseText);
-                const trk = (data.tracklist || []).filter(t => t.type_ === 'track' || !t.type_);
+                // Discogs tracklist entries have type_ values "track" (normal),
+                // "index" (a parent of sub_tracks, used for medleys like the
+                // 9a/9b/9c entries on Essiebons Special — a single MB
+                // position 9 with 3 songs underneath), and "heading" (section
+                // dividers). MB counts the medley parent as one position, so
+                // include both "track" and "index" — exclude only "heading".
+                const trk = (data.tracklist || []).filter(t => t.type_ === 'track' || t.type_ === 'index' || !t.type_);
                 tracks = trk.length || null;
                 year   = data.year || null;
                 lbl    = (data.labels || []).map(l => l.name).join(', ') || null;
@@ -1968,6 +1974,7 @@ async function runScans() {
     }
     if (trkEl) trkEl.textContent = `${mbTracks}`;
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
+    appendLog('MusicBrainz', `Header meta — year=${year || '?'}  format=${format || '?'}  label=${releaseLabel || '?'}  source=${dataSource}`);
     appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}  deezer=${existing.deezer ? 'YES' : 'no'}  apple=${existing.apple ? 'YES' : 'no'}`);
 
     // Cache upgrade: if MB has acquired a URL rel matching a cached URL (the
