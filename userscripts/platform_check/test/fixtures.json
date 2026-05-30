@@ -54,5 +54,14 @@
       "existingRelsAllNull": true
     },
     "notes": "Threads CD release with ZERO external links on MB. Used to verify (a) format extraction picks up 'CD' from the sidebar dl.properties, (b) Discogs format-aware search picks the CD release (5124829) not the vinyl (5045213), and (c) parseMbFromDom does NOT pick up our own panel's anchors as 'existing MB rels' on a refresh — the regression that made every row appear circled."
+  },
+  {
+    "name": "Pop Makossa (alt edition)",
+    "mbid": "c7f73c79-536e-4b58-8152-a7aad47204c6",
+    "tags": "year-extraction release-events-json-bootstrap",
+    "expect": {
+      "headerYear": "2021"
+    },
+    "notes": "Release date 2021-12-03 (Germany). The Release-events sibling is a <script type=\"application/json\"> bootstrap blob containing the [DE] country entity's last_updated=2013-05-27 timestamp; the rendered '<div>Germany2021-12-03</div>' sibling has the actual year. Used to verify the script-stripping helper handles the case where the sibling itself IS the script (not a descendant of a sibling)."
   }
 ]

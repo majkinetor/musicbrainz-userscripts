@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.29.191602
+// @version      2026.5.30.151837
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -1084,11 +1084,26 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     } else {
         appendLog(label, `Embed fetch failed`, 'error');
     }
+    // The embed strips year/label entirely. Fetch the public album page once
+    // we've settled on a URL to enrich year for display — the JSON-LD blob
+    // includes `datePublished`. Label is still unobtainable without OAuth.
+    let displayYear = meta?.year ?? null;
+    if (!displayYear) {
+        try {
+            const pr = await gmGet(albumUrl);
+            if (pr.ok) {
+                const m = pr.responseText.match(/"datePublished"\s*:\s*"(\d{4})/);
+                if (m) {
+                    displayYear = m[1];
+                    appendLog(label, `Album page year: ${displayYear}`);
+                }
+            }
+        } catch (_) { /* enrichment is best-effort */ }
+    }
     const tracks = meta?.tracks ?? null;
-    const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
-    cacheSet(mbid, 'spotify', { url: albumUrl, tracks, year, label: lbl, source });
-    updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+    cacheSet(mbid, 'spotify', { url: albumUrl, tracks, year: displayYear, label: lbl, source });
+    updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: tracks, year: displayYear, label: lbl, source });
 }
 
 // MB's media[].format strings → Discogs API's `format` query value. Other
