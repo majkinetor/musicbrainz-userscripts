@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.30.111350
+// @version      2026.5.30.111824
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -4239,7 +4239,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     );
     const applyTracksCb = makeCheckbox(
       "Move release credits to tracks",
-      bv("applyTracks", true),
+      bv("applyTracks", false),
       "Move performance credits from the release down to every recording."
     );
     const _legacyCreateWorks = savedOpts.createWorks;

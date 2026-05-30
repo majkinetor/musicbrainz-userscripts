@@ -411,7 +411,7 @@ export function insertDiscogsBar(discogsUrl) {
 
     const tracklistCb    = makeCheckbox('Per-track credits',              bv('tracklist', true),
         'Import per-track artist credits from Discogs.');
-    const applyTracksCb  = makeCheckbox('Move release credits to tracks', bv('applyTracks', true),
+    const applyTracksCb  = makeCheckbox('Move release credits to tracks', bv('applyTracks', false),
         'Move performance credits from the release down to every recording.');
     // "Create works" mode picker (#94, "never" option restored later):
     //   when-needed (default): create a work only when there's a
