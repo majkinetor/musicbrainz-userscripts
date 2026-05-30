@@ -718,7 +718,10 @@ function runImport(discogsUrl, getOpts) {
             // ── Raw Discogs JSON (collapsible, once per log session) ─────────────────
             if (!_logs._releaseInfoAdded) {
                 _logs._releaseInfoAdded = true;
-                const trackCount = (json.tracklist || []).filter(t => t.type_ === 'track').length;
+                // Flatten so index-style tracklists (classical / multi-movement
+                // releases that nest tracks under `sub_tracks`) count their
+                // real tracks instead of reporting 0 (#112 follow-up).
+                const trackCount = flattenTracklist(json.tracklist).filter(t => t.type_ === 'track').length;
                 const summary = `${json.title || ''}${json.year ? ' \u00b7 ' + json.year : ''} \u00b7 ${trackCount} tracks`;
                 const li = document.createElement('li');
                 const pre = document.createElement('pre');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.30.111824
+// @version      2026.5.30.121552
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -4465,7 +4465,7 @@ ${lines}
       let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter((artist) => !artist.tracks));
       if (!_logs2._releaseInfoAdded) {
         _logs2._releaseInfoAdded = true;
-        const trackCount = (json.tracklist || []).filter((t) => t.type_ === "track").length;
+        const trackCount = flattenTracklist(json.tracklist).filter((t) => t.type_ === "track").length;
         const summary = `${json.title || ""}${json.year ? " \xB7 " + json.year : ""} \xB7 ${trackCount} tracks`;
         const li = document.createElement("li");
         const pre = document.createElement("pre");
