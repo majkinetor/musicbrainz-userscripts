@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.30.152328
+// @version      2026.5.30.153315
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -1836,20 +1836,38 @@ function parseMbFromDom() {
             };
             if (!year) {
                 // Prefer the "Release events" section directly when available —
-                // it's the canonical home of the release date. Look for a
-                // canonical YYYY-MM-DD release-date pattern first; fall back
-                // to a bare year only if no full date is present.
+                // it's the canonical home of the release date.
+                //
+                // Two subtleties learned the hard way:
+                //
+                // (1) Skip <script> siblings ENTIRELY. The cleanText helper
+                //     strips descendant scripts from a cloned subtree, but
+                //     if the sibling element itself is a <script>, its own
+                //     content is preserved. MB embeds a JSON bootstrap blob
+                //     as the first Release-events sibling whose JSON order
+                //     varies: sometimes `{"date":{"year":2021},…}` is first
+                //     (we'd luckily land on the right year), sometimes the
+                //     country entity is first with `"last_updated":"2013-…"`
+                //     (we'd extract Germany's last-updated year, not the
+                //     release year). Safer to ignore the script outright.
+                //
+                // (2) Drop the leading \b from the date regex. The rendered
+                //     date sits inside text like "Germany2021-12-03" — no
+                //     word boundary between the country name and the year.
+                //     A trailing \b still rejects the `last_updated`
+                //     "2013-05-27T…" case (T is word-class, no boundary).
                 const reHeader = [...sb.querySelectorAll('h2, h3')].find(h => /release events?/i.test(h.textContent));
                 if (reHeader) {
                     let dateYear = null, anyYear = null;
                     for (let n = reHeader.nextElementSibling; n && !/^h[1-6]$/i.test(n.tagName); n = n.nextElementSibling) {
+                        if (/^(script|style|noscript)$/i.test(n.tagName)) continue;
                         const t = cleanText(n);
                         if (!dateYear) {
-                            const d = t.match(/\b(19\d{2}|20\d{2})-(?:0\d|1[0-2])-(?:0\d|[12]\d|3[01])\b/);
+                            const d = t.match(/(19\d{2}|20\d{2})-(?:0\d|1[0-2])-(?:0\d|[12]\d|3[01])\b/);
                             if (d) dateYear = d[1];
                         }
                         if (!anyYear) {
-                            const m = t.match(/\b(19\d{2}|20\d{2})\b/);
+                            const m = t.match(/(19\d{2}|20\d{2})\b/);
                             if (m) anyYear = m[1];
                         }
                         if (dateYear) break;

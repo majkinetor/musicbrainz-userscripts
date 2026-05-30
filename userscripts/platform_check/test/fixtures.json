@@ -63,5 +63,15 @@
       "headerYear": "2021"
     },
     "notes": "Release date 2021-12-03 (Germany). The Release-events sibling is a <script type=\"application/json\"> bootstrap blob containing the [DE] country entity's last_updated=2013-05-27 timestamp; the rendered '<div>Germany2021-12-03</div>' sibling has the actual year. Used to verify the script-stripping helper handles the case where the sibling itself IS the script (not a descendant of a sibling)."
+  },
+  {
+    "name": "Essiebons Special — Ghana Music Power House",
+    "mbid": "a9e23204-f8b3-4f02-a829-c3a72ee9ef51",
+    "tags": "year-extraction script-sibling country-first-order discogs-medley-index",
+    "expect": {
+      "headerYear": "2021",
+      "discogs": "www.discogs.com/release/21216070"
+    },
+    "notes": "Release date 2021-12-03. Two distinct bugs caught by this fixture: (1) The Release-events JSON bootstrap sibling has the country entity FIRST and the date object second — opposite of Pop Makossa — so the first 4-digit year match inside the script is Germany's last_updated=2013, not the release year. Fixed by skipping <script> siblings outright (cleanText doesn't strip them when they're the sibling root). (2) Discogs release 21216070 has 13 type_=track + 1 type_=index (the 'Medley' parent with 3 sub-tracks 9a/9b/9c). MB counts the medley parent as one position so the right count is 14, not 13."
   }
 ]
