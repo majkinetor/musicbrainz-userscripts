@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.29.091021
+// @version      2026.5.30.111350
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*/edit-relationships
@@ -1650,7 +1650,15 @@
     const givenPart = baseWords.slice(0, -1).join(" ");
     return `${familyName}, ${givenPart}${suffix}`;
   }
+  function flattenTracklist(tracklist) {
+    if (!Array.isArray(tracklist)) return [];
+    return tracklist.flatMap((t) => {
+      if (t?.type_ === "index" && Array.isArray(t.sub_tracks)) return t.sub_tracks;
+      return [t];
+    });
+  }
   function getAllArtistTracks(tracklist, artistTracks) {
+    tracklist = flattenTracklist(tracklist);
     return artistTracks.split(",").reduce((trackArray, trackNumber) => {
       if (/ to /.test(trackNumber)) {
         const parts = trackNumber.split(" to ");
@@ -4489,7 +4497,7 @@ ${lines}
       artistRoles = artistRoles.concat(convertPotentialDJMixers(json));
       let tracklistRels = [];
       if (processTracklist) {
-        tracklistRels = json.tracklist.filter((track) => track.type_ === "track").reduce((map, track) => {
+        tracklistRels = flattenTracklist(json.tracklist).filter((track) => track.type_ === "track").reduce((map, track) => {
           if (!track.extraartists || !Array.isArray(track.extraartists)) {
             return map;
           }

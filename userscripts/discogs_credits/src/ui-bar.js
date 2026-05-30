@@ -29,6 +29,7 @@ import {
     convertPotentialDJMixers,
     rolesFromDiscogsArtists,
     getAllArtistTracks,
+    flattenTracklist,
     getArtistRoles,
 }                                        from './mappers.js';
 import {
@@ -745,7 +746,10 @@ function runImport(discogsUrl, getOpts) {
             artistRoles = artistRoles.concat(convertPotentialDJMixers(json));
             let tracklistRels = [];
             if (processTracklist) {
-                tracklistRels = json.tracklist
+                // #112: classical / multi-movement releases store tracks
+                // under `index` parents in `sub_tracks`. Flatten first or
+                // every per-track credit gets dropped.
+                tracklistRels = flattenTracklist(json.tracklist)
                     .filter(track => track.type_ === 'track')
                     .reduce((map, track) => {
                         if (!track.extraartists || !Array.isArray(track.extraartists)) {

@@ -81,11 +81,29 @@ export function guessSortName(name) {
 }
 
 /**
+ * Flatten Discogs `tracklist`: classical / multi-movement releases group
+ * actual tracks under index-type parent entries (`type_: 'index'`) with a
+ * `sub_tracks` array; only the sub_tracks carry positions like "1", "2"…
+ * Walking `json.tracklist` directly skips every real track. Replace each
+ * index entry with its children so callers see a flat list of tracks.
+ * Issue #112.
+ */
+export function flattenTracklist(tracklist) {
+    if (!Array.isArray(tracklist)) return [];
+    return tracklist.flatMap(t => {
+        if (t?.type_ === 'index' && Array.isArray(t.sub_tracks)) return t.sub_tracks;
+        return [t];
+    });
+}
+
+/**
  * Resolve the tracks a Discogs `tracks` field references. Expands "A1 to A4"
  * ranges and accepts comma-separated lists. Returns an array of track objects
- * from `tracklist`.
+ * from `tracklist`. Internally flattens `sub_tracks` so classical-style index
+ * tracklists work (#112).
  */
 export function getAllArtistTracks(tracklist, artistTracks) {
+    tracklist = flattenTracklist(tracklist);
     // lets parse and get all tracks listed by the artist
     return artistTracks.split(',').reduce((trackArray, trackNumber) => {
         if (/ to /.test(trackNumber)) {

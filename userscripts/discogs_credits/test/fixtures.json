@@ -73,5 +73,10 @@
         "name": "The Exciting Sounds of Menahan Street Band",
         "url":  "https://musicbrainz.org/release/3ce2dee2-975f-4e46-849c-b68a8a59f9d4",
         "tags": "debug bug-105 work-credits"
+    },
+    {
+        "name": "Bartók/Brahms — The Miraculous Mandarin Suite / Symphony No. 1",
+        "url":  "https://musicbrainz.org/release/a69b5a78-a4de-4e81-ade9-d59ebf6b23d8",
+        "tags": "debug bug-112 sub-tracks classical"
     }
 ]
