@@ -185,6 +185,7 @@ foreach ($n in $notifs) {
                 reason     = $reason
                 url        = $n.subject.url -replace 'api\.github\.com/repos', 'github.com'
                 commentUrl = $n.subject.latest_comment_url
+                threadId   = $n.id
             }
         } catch {
             $cmsg = $_.Exception.Message
@@ -213,6 +214,7 @@ foreach ($n in $notifs) {
         reason     = $reason   # state_change / subscribed / …
         url        = $n.subject.url -replace 'api\.github\.com/repos', 'github.com'
         commentUrl = $eventKey # carries the dedupe key for state update below
+        threadId   = $n.id
     }
 }
 
@@ -323,6 +325,22 @@ try {
         exit 0
     }
     Log-Line "    -> HTTP $status, delivered"
+    # Mark each delivered thread as read so the bot's notification list
+    # stays clean -- otherwise unread items pile up across days, and
+    # `since=<lastPolled>` filtering on subsequent polls won't redeliver
+    # them, so they linger forever. Best-effort: a single PATCH failure
+    # just leaves that one notification unread, doesn't fail the poll.
+    foreach ($a in $actionable) {
+        if (-not $a.threadId) { continue }
+        try {
+            $patchUrl = "https://api.github.com/notifications/threads/$($a.threadId)"
+            $null = Invoke-WebRequest -Uri $patchUrl -Method PATCH `
+                -Headers $headers -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
+            Log-Line "      mark-read thread $($a.threadId) ($($a.number))"
+        } catch {
+            Log-Line "      WARN: mark-read failed for thread $($a.threadId): $($_.Exception.Message)"
+        }
+    }
 } catch {
     # Connection refused / timeout / DNS / etc. -- Claude session is
     # probably not running with the channel attached. Skip state update.
