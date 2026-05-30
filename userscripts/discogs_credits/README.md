@@ -52,11 +52,11 @@ Move appropriate release-level credits down to all recordings (instruments, voca
 
 Single-row-per-entity table for confirming Discogs ↔ MusicBrainz matches before dispatch.
 
-**Row state** is conveyed by color and badges:
-- 🟢 confirmed (auto-resolved or user-selected)
-- 🟡 name differs (resolved via URL but the MB name doesn't match Discogs — verify)
-- 🔴 needs attention (not resolved)
-- "no profile" red badge when the Discogs entity has no profile page
+**Row state** is conveyed by colors:
+- ⚪ auto match 
+- 🟢 user selected
+- 🟡 name differs - resolved via URL but the MB name doesn't match Discogs (user should verify)
+- 🔴 needs attention - not resolved
 
 **Discogs URL link state** appears as a single chip per row:
 - ✓ Discogs URL already linked
