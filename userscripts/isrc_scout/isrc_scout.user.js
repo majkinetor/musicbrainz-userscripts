@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.202144
+// @version      2026.5.31.203118
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.202144';
+  const SCRIPT_VERSION = '2026.5.31.203118';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -97,6 +97,7 @@
   const SX_HOME  = 'https://isrc.soundexchange.com/';
   const BATCH_DELAY = 650;
   const SX_BATCH_LIMIT = 30;     // max individual SoundExchange searches per batch (avoid being blocked)
+  const STREAM_BATCH_LIMIT = 50; // max per-track Deezer fetches per batch (1000-track releases would spam Deezer)
   const ISRC_RE  = /^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/;
 
   // Shared, pre-registered MusicBrainz OAuth app (type: Installed application,
@@ -350,6 +351,8 @@
     .ii-tspacer { flex: 1; }
     .ii-prog { font-size: 11px; color: #6c757d; min-width: 0; }
     .ii-prog.err { color: #dc3545; font-weight: 700; }
+    .ii-prog.continue { color: #6f42c1; font-weight: 700; cursor: pointer; text-decoration: underline dotted; }
+    .ii-prog.continue:hover { color: #5a32a3; }
 
     /* table */
     #ii-body { flex: 1; overflow: auto; padding: 0; }
@@ -821,16 +824,27 @@
   /* ═══════════════════════════════════════════════════════════════════════
      DEEZER  (free public API, no auth)
   ═══════════════════════════════════════════════════════════════════════ */
-  async function fetchDeezer(albumId, onProgress, onIsrc) {
-    const r = await gmGet('https://api.deezer.com/album/' + albumId, { 'Accept': 'application/json' });
-    const data = JSON.parse(r.responseText || '{}');
-    if (data.error) throw new Error((data.error.message || data.error.type || 'Deezer error') + ' (album ' + albumId + ')');
-    const list = (data.tracks && data.tracks.data) || [];
-    Log.info('Deezer album "' + (data.title || albumId) + '": ' + list.length + ' track(s)');
-    const out = [];
-    let done = 0, failed = 0;
-    for (const t of list) {
-      // album tracklist lacks isrc → fetch the track for its isrc
+  let _dzListCache = null;   // { albumId, list } — tracklist cached across batches
+  // Fetches ONE batch (STREAM_BATCH_LIMIT tracks) starting at `start`. Deezer's
+  // album endpoint lacks ISRCs, so each track needs its own request — a 1000-track
+  // release would be 1000 calls, hence the batching. Returns { total, next }.
+  async function fetchDeezer(albumId, onProgress, onIsrc, start) {
+    start = start || 0;
+    // (re)fetch the tracklist on a fresh import (start 0) or album change; reuse it on continue
+    if (start === 0 || !_dzListCache || _dzListCache.albumId !== albumId) {
+      const r = await gmGet('https://api.deezer.com/album/' + albumId, { 'Accept': 'application/json' });
+      const data = JSON.parse(r.responseText || '{}');
+      if (data.error) throw new Error((data.error.message || data.error.type || 'Deezer error') + ' (album ' + albumId + ')');
+      const list = (data.tracks && data.tracks.data) || [];
+      Log.info('Deezer album "' + (data.title || albumId) + '": ' + list.length + ' track(s)' +
+        (list.length > STREAM_BATCH_LIMIT ? ' — fetching ' + STREAM_BATCH_LIMIT + ' at a time' : ''));
+      _dzListCache = { albumId, list };
+    }
+    const list = _dzListCache.list;
+    const end = Math.min(start + STREAM_BATCH_LIMIT, list.length);
+    let failed = 0;
+    for (let i = start; i < end; i++) {
+      const t = list[i];
       try {
         const tr = await gmGet('https://api.deezer.com/track/' + t.id, { 'Accept': 'application/json' });
         const td = JSON.parse(tr.responseText || '{}');
@@ -840,20 +854,16 @@
           title:  td.title || t.title || '',
           artist: (td.artist && td.artist.name) || '',
           disc:   td.disk_number || t.disk_number || 1,
-          pos:    td.track_position || t.track_position || (out.length + 1),
+          pos:    td.track_position || t.track_position || (i + 1),
           dur:    td.duration ? msToMmSs(td.duration * 1000) : '',
         };
-        out.push(entry);
         if (onIsrc && isValidIsrc(entry.isrc)) onIsrc(entry);   // fill this track's input now
       } catch (e) { failed++; Log.warn('Deezer track ' + t.id + ' fetch failed: ' + errText(e)); }
-      done++;
-      try { if (onProgress) onProgress(done, list.length); } catch (e) { Log.warn('Deezer progress update hiccup: ' + errText(e)); }
+      try { if (onProgress) onProgress(i + 1, list.length); } catch (e) { Log.warn('Deezer progress update hiccup: ' + errText(e)); }
       await sleep(120);
     }
-    const valid = out.filter(t => isValidIsrc(t.isrc));
-    if (failed) Log.warn('Deezer: ' + failed + ' track fetch(es) failed');
-    if (valid.length < out.length) Log.warn('Deezer: ' + (out.length - valid.length) + ' track(s) had no valid ISRC');
-    return valid;
+    if (failed) Log.warn('Deezer: ' + failed + ' track fetch(es) failed in this batch');
+    return { total: list.length, next: end < list.length ? end : null };
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -893,7 +903,7 @@
       try { if (onIsrc) onIsrc(e); } catch (err) { Log.warn('Spotify map hiccup for ' + e.isrc + ': ' + errText(err)); }
       try { if (onProgress) onProgress(i + 1, rows.length); } catch (err) {}
     });
-    return rows;
+    return { total: rows.length, next: null };   // ISRC Hunt returns everything in one request — never batched
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -1911,19 +1921,39 @@
   }
 
   const errText = e => (e && (e.message || e.stack)) || String(e) || '(no detail)';
-  const setProg = (msg, isErr) => { if (progEl) { progEl.textContent = msg; progEl.classList.toggle('err', !!isErr); } };
-  async function runStreamingSource(label, albumId, fetcher) {
-    const counts = { filled: 0, already: 0, skipped: 0, unmatched: 0 };
+  const setProg = (msg, isErr) => {
+    if (!progEl) return;
+    progEl.textContent = msg; progEl.classList.toggle('err', !!isErr);
+    progEl.classList.remove('continue'); progEl.onclick = null; progEl.style.cursor = '';
+  };
+  const setProgContinue = (msg, onClick) => {
+    if (!progEl) return;
+    progEl.textContent = msg; progEl.classList.remove('err'); progEl.classList.add('continue');
+    progEl.style.cursor = 'pointer';
+    progEl.onclick = () => { onClick(); };
+  };
+  // flush the SX verifications deferred during a batch (decoupled from the import)
+  function flushDeferredVerify() {
+    const toVerify = [..._deferredVerify]; _deferredVerify = new Set();
+    toVerify.forEach(i => { const t = RELEASE.tracks[i]; if (t && isValidIsrc(t.pending)) enqueueVerify(i, t.pending); });
+  }
+
+  let _stream = null;   // current import: { label, albumId, fetcher, cursor, counts }
+  async function runStreamingSource(label, albumId, fetcher, resume) {
+    if (!resume || !_stream) {
+      _stream = { label, albumId, fetcher, cursor: 0, counts: { filled: 0, already: 0, skipped: 0, unmatched: 0 } };
+    }
+    const st = _stream, counts = st.counts;
     setProg(label + ': starting…');
     // defer SoundExchange verification so its requests don't compete with the import
     _deferVerify = true; _deferredVerify = new Set();
-    let found;
+    let res;
     try {
-      found = await fetcher(albumId,
+      res = await fetcher(albumId,
         (d, n) => setProg(n ? (label + ' ' + d + '/' + n) : (label + ': starting…')),
-        s => { counts[mapOneToTrack(s, label)]++; });   // ← fill each ISRC as it's fetched
+        s => { counts[mapOneToTrack(s, label)]++; },   // ← fill each ISRC as it's fetched
+        st.cursor);
     } catch (e) {
-      // report failures the same way as other messages — inline next to the buttons
       Log.err(label + ' failed: ' + errText(e));
       setProg('⚠ ' + label + ' failed — see Log', true);
       _deferVerify = false; _deferredVerify = new Set();
@@ -1931,23 +1961,25 @@
     } finally {
       _deferVerify = false;
     }
-    // the fetch + mapping succeeded — report it. Guard the UI update separately so a
-    // cosmetic hiccup here can't masquerade as an import failure.
-    Log.info(label + ': ' + found.length + ' ISRCs fetched · ' + counts.filled + ' filled, ' +
-      counts.already + ' already, ' + counts.skipped + ' skipped, ' + counts.unmatched + ' unmatched');
-    try {
-      const parts = [counts.filled + ' filled'];
-      if (counts.already)   parts.push(counts.already + ' already present');
-      if (counts.skipped)   parts.push(counts.skipped + ' already entered');
-      if (counts.unmatched) parts.push(counts.unmatched + ' unmatched');
-      setProg(label + ' done — ' + parts.join(' · '));
-    } catch (e) {
-      Log.warn(label + ': imported OK, but a UI update hiccuped: ' + errText(e));
+    flushDeferredVerify();   // verify this batch's rows now, decoupled from the import
+    const total = (res && res.total != null) ? res.total : st.cursor;
+    const next  = (res && res.next  != null) ? res.next  : null;
+    const parts = [counts.filled + ' filled'];
+    if (counts.already)   parts.push(counts.already + ' already present');
+    if (counts.skipped)   parts.push(counts.skipped + ' already entered');
+    if (counts.unmatched) parts.push(counts.unmatched + ' unmatched');
+    if (next != null) {
+      // more tracks remain — pause so we don't spam the source; click to continue
+      st.cursor = next;
+      const remaining = total - next;
+      Log.info(label + ': ' + next + '/' + total + ' so far (' + parts.join(', ') + ') — paused to avoid spamming ' + label);
+      setProgContinue(label + ' ' + next + '/' + total + ' — click to fetch the next ' + Math.min(STREAM_BATCH_LIMIT, remaining),
+        () => runStreamingSource(label, albumId, fetcher, true));
+    } else {
+      Log.info(label + ' done — ' + parts.join(', '));
+      try { setProg(label + ' done — ' + parts.join(' · ')); }
+      catch (e) { Log.warn(label + ': imported OK, but a UI update hiccuped: ' + errText(e)); }
     }
-    // NOW (import finished) verify the filled rows on SoundExchange — decoupled,
-    // so a slow/failing SX never affects the import itself
-    const toVerify = [..._deferredVerify]; _deferredVerify = new Set();
-    toVerify.forEach(i => { const t = RELEASE.tracks[i]; if (t && isValidIsrc(t.pending)) enqueueVerify(i, t.pending); });
   }
 
   async function runDeezer() {
