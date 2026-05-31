@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.171329
+// @version      2026.5.31.172403
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -80,7 +80,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.171329';
+  const SCRIPT_VERSION = '2026.5.31.172403';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -414,8 +414,8 @@
     .ii-exact-set input { cursor: pointer; }
     .ii-cand.inmb { opacity: .72; }
     .ii-cand-inmb { margin-left: auto; font-size: 9px; font-weight: 700; color: #198754; flex-shrink: 0; }
-    .ii-lookup { flex: 1; min-width: 0; font-size: 11px; white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis; }
+    .ii-lookup { flex: 1; min-width: 0; font-size: 11px; white-space: normal;
+      word-break: break-word; line-height: 1.35; }
     .ii-lookup.ok   { color: #198754; }
     .ii-lookup.warn { color: #b8860b; }
     .ii-lookup.err  { color: #dc3545; }
@@ -1218,9 +1218,12 @@
     t.pending = normalizeIsrc(isrc);
     t.source = source || 'manual';
     input.value = t.pending;
-    input.dataset.autofill = '1';            // filled by a source — skip the on-blur lookup
+    input.dataset.autofill = '1';            // filled by a source — the on-input handler won't fire
     validateInput(input, t);
-    const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; }
+    // verify whatever was just set (Deezer, Spotify, SoundExchange, +1, bulk paste)
+    // against SoundExchange so every filled value gets the same match check (cached)
+    if (isValidIsrc(t.pending)) lookupIsrc(idx, t.pending);
+    else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; } }
     if (flash) {
       const tr = input.closest('tr');
       tr.classList.remove('ii-row-fill'); void tr.offsetWidth; tr.classList.add('ii-row-fill');

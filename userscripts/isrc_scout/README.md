@@ -35,7 +35,7 @@ Source buttons only fill **empty** fields and never touch existing ISRCs.
 
 - **+1** — fill with the previous track's ISRC incremented by one.
 - Click any SoundExchange candidate to use it.
-- Track titles link to the MB recording. Typing a full ISRC verifies it on SoundExchange inline (cached). ISRCs duplicated across different recordings are flagged pink.
+- Track titles link to the MB recording. **Any** value set in a field — typed, **+1**, or imported from Deezer / Spotify / SoundExchange — is verified on SoundExchange inline (cached) with the field-level match highlighting below. ISRCs duplicated across different recordings are flagged pink.
 
 #### Match checks & highlighting
 
