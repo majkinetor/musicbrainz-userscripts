@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.215538
+// @version      2026.5.31.221248
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.215538';
+  const SCRIPT_VERSION = '2026.5.31.221248';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -372,7 +372,8 @@
     /* table */
     /* min-height:0 → the track list scrolls instead of pushing the footer out of
        the modal. !important guards against MusicBrainz's page CSS. */
-    #ii-body { flex: 1 1 auto !important; min-height: 0 !important; overflow: auto !important; padding: 0; }
+    #ii-body { flex: 1 1 auto !important; min-height: 0 !important; overflow: auto !important;
+      padding: 0 0 56px 0; }   /* 56px bottom = room for the absolutely-pinned footer */
     #ii-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
     #ii-table thead th { position: sticky; top: 0; z-index: 2; background: #f1f3f5;
       text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -435,10 +436,13 @@
     .ii-row-fill { animation: ii-flash 1s ease-out; }
     @keyframes ii-flash { 0%{background:rgba(25,135,84,.18)} 100%{background:transparent} }
 
-    /* footer */
-    #ii-foot { display: flex; align-items: center; gap: 10px; padding: 9px 16px;
-      border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
-    #ii-foot .ii-summary { font-size: 12px; color: #495057; flex: 1; }
+    /* footer — pinned ABSOLUTELY to the modal's bottom (out of the flex flow) so it
+       can never be pushed off, whatever the body does. The body reserves 56px of
+       bottom padding for it. #ii-modal is position:fixed → it's the containing block. */
+    #ii-foot { position: absolute !important; left: 0; right: 0; bottom: 0; z-index: 2;
+      display: flex; align-items: center; gap: 10px; padding: 9px 16px; height: 56px; box-sizing: border-box;
+      border-top: 1px solid #dee2e6; background: #f8f9fa; }
+    #ii-foot .ii-summary { font-size: 12px; color: #495057; flex: 1; min-width: 0; }
     #ii-foot .ii-summary b { color: #212529; }
     .ii-seq-badge { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 2px 9px;
       font-size: 11px; font-weight: 700; font-family: 'Courier New', monospace; color: #0f5132; background: #d1e7dd;
