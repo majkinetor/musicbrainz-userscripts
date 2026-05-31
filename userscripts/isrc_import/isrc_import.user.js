@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.7.0
+// @version      1.8.0
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -426,6 +426,8 @@
     .ii-sx-group { display: inline-flex; align-items: center; gap: 10px; padding: 3px 10px 3px 4px;
       border: 1px solid #e0d7f2; background: #faf8fe; border-radius: 7px; }
     .ii-exact-set { display: inline-flex; align-items: center; gap: 9px; font-size: 11px; color: #6c757d; }
+    .ii-ex-all-lbl { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+    .ii-ex-all-lbl input { cursor: pointer; }
     .ii-exact-set label { display: inline-flex; align-items: center; gap: 3px; cursor: pointer; margin: 0; }
     .ii-exact-set input { cursor: pointer; }
     .ii-cand.inmb { opacity: .72; }
@@ -754,7 +756,7 @@
   /* ═══════════════════════════════════════════════════════════════════════
      DEEZER  (free public API, no auth)
   ═══════════════════════════════════════════════════════════════════════ */
-  async function fetchDeezer(albumId, onProgress) {
+  async function fetchDeezer(albumId, onProgress, onIsrc) {
     const r = await gmGet('https://api.deezer.com/album/' + albumId, { 'Accept': 'application/json' });
     const data = JSON.parse(r.responseText || '{}');
     if (data.error) throw new Error((data.error.message || data.error.type || 'Deezer error') + ' (album ' + albumId + ')');
@@ -768,14 +770,16 @@
         const tr = await gmGet('https://api.deezer.com/track/' + t.id, { 'Accept': 'application/json' });
         const td = JSON.parse(tr.responseText || '{}');
         if (td.error) { failed++; Log.warn('Deezer track ' + t.id + ': ' + (td.error.message || td.error.type)); }
-        out.push({
+        const entry = {
           isrc:   normalizeIsrc(td.isrc || ''),
           title:  td.title || t.title || '',
           artist: (td.artist && td.artist.name) || '',
           disc:   td.disk_number || t.disk_number || 1,
           pos:    td.track_position || t.track_position || (out.length + 1),
           dur:    td.duration ? msToMmSs(td.duration * 1000) : '',
-        });
+        };
+        out.push(entry);
+        if (onIsrc && isValidIsrc(entry.isrc)) onIsrc(entry);   // fill this track's input now
       } catch (e) { failed++; Log.warn('Deezer track ' + t.id + ' fetch failed: ' + e.message); }
       done++;
       if (onProgress) onProgress(done, list.length);
@@ -848,7 +852,7 @@
     if (cc) return cc;                               // Premium dev app, if configured
     return harvestSpotifyToken(albumId, onProgress); // free web-player token (opens a brief tab)
   }
-  async function fetchSpotify(albumId, onProgress) {
+  async function fetchSpotify(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
     const tok = await getSpotifyToken(albumId, onProgress);
     const auth = { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' };
@@ -870,13 +874,15 @@
       try {
         const r = await gmGet('https://api.spotify.com/v1/tracks/' + meta.id, auth);
         const t = JSON.parse(r.responseText || '{}');
-        out.push({
+        const entry = {
           isrc:   normalizeIsrc((t.external_ids && t.external_ids.isrc) || ''),
           title:  t.name || meta.title || '',
           artist: (t.artists || []).map(a => a.name).join(', '),
           disc:   meta.disc, pos: meta.pos,
           dur:    t.duration_ms ? msToMmSs(t.duration_ms) : '',
-        });
+        };
+        out.push(entry);
+        if (onIsrc && isValidIsrc(entry.isrc)) onIsrc(entry);   // fill this track's input now
       } catch (e) {}
       if (onProgress) onProgress(i + 1, ids.length);
       await sleep(130);
@@ -893,8 +899,10 @@
   const _isrcLookupCache = {};            // isrc -> SX rows (single-ISRC lookup cache)
 
   function defaultNote() {
-    const valid = RELEASE ? RELEASE.tracks.filter(t => { const v = normalizeIsrc(t.pending); return v && isValidIsrc(v) && !t.existing.includes(v); }).length : 0;
-    return 'Submitted with ISRC Import v' + SCRIPT_VERSION + ' (' + valid + ' ISRC' + (valid === 1 ? '' : 's') + ').\n' + SCRIPT_URL;
+    const subs = RELEASE ? RELEASE.tracks.filter(t => { const v = normalizeIsrc(t.pending); return v && isValidIsrc(v) && !t.existing.includes(v); }) : [];
+    const srcs = [...new Set(subs.map(t => t.source || 'manual'))].sort();
+    const srcStr = srcs.length ? ' (source: ' + srcs.join(', ') + ')' : '';
+    return 'Added ' + subs.length + ' ISRC' + (subs.length === 1 ? '' : 's') + srcStr + ' with ISRC Import v' + SCRIPT_VERSION + '.\n' + SCRIPT_URL;
   }
   function ensureNote(force) {
     const ta = modal.querySelector('#ii-note-text');
@@ -927,8 +935,8 @@
       <div id="ii-hdr">
         <h2>🎵 <em>ISRC Import</em><span class="ii-sub" id="ii-rel-sub"></span></h2>
         <a class="ii-tbtn" id="ii-history" target="_blank" rel="noopener"
-           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.2.field=editor&conditions.2.operator=me&conditions.2.name=&conditions.2.args.0="
-           title="Your Add-ISRCs edits on MusicBrainz">🕓 My ISRC edits</a>
+           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
+           title="Your Add/Remove ISRC edits on MusicBrainz">🕓 My ISRC edits</a>
         <button class="ii-tbtn" id="ii-bulk-toggle" title="Bulk paste / import / export">⇪ Bulk / Export</button>
         <button class="ii-tbtn" id="ii-log-toggle" title="Activity log">Log</button>
         <button class="ii-tbtn" id="ii-setup-toggle" title="OAuth setup">⚙ Setup</button>
@@ -1017,7 +1025,9 @@
             <col style="width:40px"><col><col style="width:52px"><col style="width:190px"><col style="width:440px">
           </colgroup>
           <thead><tr>
-            <th>#</th><th>Track</th><th></th><th>Existing</th><th>New ISRC</th>
+            <th>#</th><th>Track</th><th></th>
+            <th><label class="ii-ex-all-lbl" title="Select all existing ISRCs for removal"><input type="checkbox" id="ii-ex-all">Existing</label></th>
+            <th>New ISRC</th>
           </tr></thead>
           <tbody id="ii-tbody"></tbody>
         </table>
@@ -1070,6 +1080,11 @@
     tbody.addEventListener('change', e => {
       if (!e.target.classList.contains('ii-ex-del')) return;
       e.target.closest('.ii-ex-item').classList.toggle('del', e.target.checked);
+      refreshDeleteBtn();
+    });
+    modal.querySelector('#ii-ex-all').addEventListener('change', e => {
+      const on = e.target.checked;
+      tbody.querySelectorAll('.ii-ex-del').forEach(cb => { cb.checked = on; cb.closest('.ii-ex-item').classList.toggle('del', on); });
       refreshDeleteBtn();
     });
 
@@ -1178,6 +1193,7 @@
       const input = tr.querySelector('.ii-input');
       input.addEventListener('input', () => {
         t.pending = normalizeIsrc(input.value);
+        t.source = 'manual';
         if (input.value !== t.pending) {
           const p = input.selectionStart;
           input.value = t.pending; input.setSelectionRange(p, p);
@@ -1260,11 +1276,12 @@
     input.classList.add('ok');
   }
 
-  function setPending(idx, isrc, flash) {
+  function setPending(idx, isrc, flash, source) {
     const t = RELEASE.tracks[idx];
     const input = rowInput(idx);
     if (!t || !input) return;
     t.pending = normalizeIsrc(isrc);
+    t.source = source || 'manual';
     input.value = t.pending;
     input.dataset.autofill = '1';            // filled by a source — skip the on-blur lookup
     validateInput(input, t);
@@ -1361,7 +1378,7 @@
       const v = normalizeIsrc(isrc);
       if (!isValidIsrc(v)) return;
       if (!overwrite && RELEASE.tracks[idx].pending) return;
-      setPending(idx, v, true); applied++;
+      setPending(idx, v, true, 'bulk'); applied++;
     };
     lines.forEach(line => {
       const raw = line.trim();
@@ -1387,7 +1404,7 @@
       const v = normalizeIsrc(isrc);
       if (!isValidIsrc(v)) return;
       if (!overwrite && RELEASE.tracks[idx].pending) return;
-      setPending(idx, v, true); applied++;
+      setPending(idx, v, true, 'bulk'); applied++;
     };
     if (Array.isArray(data)) {
       data.forEach((entry, i) => {
@@ -1450,7 +1467,7 @@
         '<span class="ii-cand-meta">' + esc([f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ')) +
           (relInfo ? '  ·  ' + esc(relInfo) : '') + '</span>' +
         (inMb ? '<span class="ii-cand-inmb">✓ IN MB</span>' : '<span class="ii-cand-src">SX</span>');
-      c.addEventListener('click', () => { setPending(idx, f.isrc, true); updateSummary(); });
+      c.addEventListener('click', () => { setPending(idx, f.isrc, true, 'SoundExchange'); updateSummary(); });
       box.appendChild(c);
     });
     // "refine search" entry — opens the panel to tweak title/artist/release + exact
@@ -1566,7 +1583,7 @@
           (rel ? '<span class="b">' + esc(rel) + '</span>' : '') + '</span>' +
         (inMb ? '<span class="ii-sxp-inmb">✓ IN MB</span>' : '');
       row.addEventListener('click', () => {
-        setPending(idx, f.isrc, true); updateSummary();
+        setPending(idx, f.isrc, true, 'SoundExchange'); updateSummary();
         renderSxPanelResults(idx, rows);   // refresh "cur" highlight
       });
       resEl.appendChild(row);
@@ -1593,7 +1610,7 @@
         if (bestIsrc) {
           matched++;
           // autofill the input only when it's empty AND the match is a NEW isrc
-          if (!t.pending && !t.existing.includes(bestIsrc)) { setPending(i, bestIsrc, true); filled++; }
+          if (!t.pending && !t.existing.includes(bestIsrc)) { setPending(i, bestIsrc, true, 'SoundExchange'); filled++; }
         }
         Log.info('SX #' + (t.number || t.trackPos) + ' "' + t.title + '": ' + rows.length + ' result(s)' +
           (bestIsrc ? ', best ' + bestIsrc + (t.existing.includes(bestIsrc) ? ' (already in MB)' : '') : ', no confident match'));
@@ -1612,60 +1629,51 @@
   }
 
   /* ── streaming-source import (Deezer / Spotify) ── */
-  function mapSourceToTracks(found, label) {
-    // match by (disc,pos) first, then by normalized title; fill empty fields only
-    let filled = 0, already = 0, unmatched = 0;
-    found.forEach(s => {
-      let idx = RELEASE.tracks.findIndex(t =>
-        (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || RELEASE.tracks.filter(x => +x.mediumPos === +s.disc).length === 0));
-      if (idx < 0) idx = RELEASE.tracks.findIndex(t => t.title && isGoodMatch(s.title, s.artist, t.title, t.artist));
-      if (idx < 0) { unmatched++; Log.warn(label + ': no track matched ' + s.isrc + ' "' + s.title + '" (disc ' + s.disc + ' pos ' + s.pos + ')'); return; }
-      const t = RELEASE.tracks[idx];
-      if (t.existing.includes(s.isrc)) { already++; return; }
-      if (t.pending) return;
-      setPending(idx, s.isrc, true);
-      filled++;
-    });
-    Log.info(label + ' mapping: ' + filled + ' filled, ' + already + ' already in MB, ' + unmatched + ' unmatched (of ' + found.length + ')');
-    toast(label + ': filled ' + filled + ' track' + (filled === 1 ? '' : 's') +
-      (already ? ' · ' + already + ' already present' : '') +
-      (unmatched ? ' · ' + unmatched + ' unmatched' : ''), filled ? 'ok' : '');
+  // Map ONE fetched ISRC to a track and fill it immediately (live, as it arrives).
+  // Returns 'filled' | 'already' | 'skipped' | 'unmatched'.
+  function mapOneToTrack(s, label) {
+    let idx = RELEASE.tracks.findIndex(t =>
+      (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || RELEASE.tracks.filter(x => +x.mediumPos === +s.disc).length === 0));
+    if (idx < 0) idx = RELEASE.tracks.findIndex(t => t.title && isGoodMatch(s.title, s.artist, t.title, t.artist));
+    if (idx < 0) { Log.warn(label + ': no track matched ' + s.isrc + ' "' + s.title + '" (disc ' + s.disc + ' pos ' + s.pos + ')'); return 'unmatched'; }
+    const t = RELEASE.tracks[idx];
+    if (t.existing.includes(s.isrc)) return 'already';
+    if (t.pending) return 'skipped';
+    setPending(idx, s.isrc, true, label);   // fills the input box right now
     updateSummary();
+    return 'filled';
+  }
+
+  async function runStreamingSource(label, albumId, fetcher) {
+    const counts = { filled: 0, already: 0, skipped: 0, unmatched: 0 };
+    try {
+      const found = await fetcher(albumId,
+        (d, n) => progEl.textContent = n ? (label + ' ' + d + '/' + n) : (label + ': starting…'),
+        s => { counts[mapOneToTrack(s, label)]++; });   // ← fill each ISRC as it's fetched
+      Log.info(label + ': ' + found.length + ' ISRCs fetched · ' + counts.filled + ' filled, ' + counts.already + ' already, ' + counts.unmatched + ' unmatched');
+      toast(label + ': filled ' + counts.filled +
+        (counts.already ? ' · ' + counts.already + ' already present' : '') +
+        (counts.unmatched ? ' · ' + counts.unmatched + ' unmatched' : ''), counts.filled ? 'ok' : '');
+      progEl.textContent = label + ' done (' + found.length + ' ISRCs)';
+    } catch (e) {
+      Log.err(label + ' failed: ' + e.message);
+      toast(label + ' failed: ' + e.message, 'err');
+      progEl.textContent = label + ' failed — see Log';
+    }
   }
 
   async function runDeezer() {
     if (!RELEASE.deezerId) { Log.warn('Deezer: no Deezer album link on this release'); return; }
     const btn = modal.querySelector('#ii-dz-all'); btn.disabled = true;
     Log.info('Deezer: importing album ' + RELEASE.deezerId);
-    try {
-      progEl.textContent = 'Deezer…';
-      const found = await fetchDeezer(RELEASE.deezerId, (d, n) => progEl.textContent = 'Deezer ' + d + '/' + n);
-      Log.info('Deezer: ' + found.length + ' ISRCs fetched');
-      mapSourceToTracks(found, 'Deezer');
-      progEl.textContent = 'Deezer done (' + found.length + ' ISRCs)';
-    } catch (e) {
-      Log.err('Deezer failed: ' + e.message);
-      toast('Deezer failed: ' + e.message, 'err');
-      progEl.textContent = 'Deezer failed — see Log';
-    }
+    await runStreamingSource('Deezer', RELEASE.deezerId, fetchDeezer);
     btn.disabled = false;
   }
   async function runSpotify() {
     if (!RELEASE.spotifyId) { Log.warn('Spotify: no Spotify album link on this release'); return; }
     const btn = modal.querySelector('#ii-sp-all'); btn.disabled = true;
     Log.info('Spotify: importing album ' + RELEASE.spotifyId);
-    try {
-      progEl.textContent = 'Spotify: getting a token…';
-      const found = await fetchSpotify(RELEASE.spotifyId,
-        (d, n) => progEl.textContent = n ? ('Spotify ' + d + '/' + n) : 'Spotify: opening player tab…');
-      Log.info('Spotify: ' + found.length + ' ISRCs fetched');
-      mapSourceToTracks(found, 'Spotify');
-      progEl.textContent = 'Spotify done (' + found.length + ' ISRCs)';
-    } catch (e) {
-      Log.err('Spotify failed: ' + e.message);
-      toast('Spotify failed: ' + e.message, 'err');
-      progEl.textContent = 'Spotify failed — see Log';
-    }
+    await runStreamingSource('Spotify', RELEASE.spotifyId, fetchSpotify);
     btn.disabled = false;
   }
 
@@ -1707,7 +1715,6 @@
       toast('Authorize first (⚙ Setup)', 'err');
       return;
     }
-    if (!confirm('Submit ' + count + ' ISRC' + (count === 1 ? '' : 's') + ' to MusicBrainz?')) return;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting…';
     const note = getEditNote();
@@ -1744,7 +1751,7 @@
     const total = recs.reduce((n, [, v]) => n + v.isrcs.length, 0);
     if (!total) return;
     if (!Auth.isAuthorized()) { /* deletion uses the session cookie, not OAuth — no auth needed, but warn if not logged in is handled by the request itself */ }
-    if (!confirm('Submit "Remove ISRC" edits for ' + total + ' ISRC' + (total === 1 ? '' : 's') + ' across ' + recs.length + ' recording' + (recs.length === 1 ? '' : 's') + '?\n\nUses your logged-in MusicBrainz session. Removals enter the edit queue (they are not auto-applied), so the ISRCs stay listed until the edits go through — track them under 🕓 My ISRC edits.')) return;
+    if (!confirm('Submit "Remove ISRC" edits for ' + total + ' ISRC' + (total === 1 ? '' : 's') + ' across ' + recs.length + ' recording' + (recs.length === 1 ? '' : 's') + '?\n\nUses your logged-in MusicBrainz session. Unlike additions, ISRC removals are NOT auto-applied — they go to the edit queue for voting, so the ISRCs stay listed (shown ⏳ pending) until the edits pass. Track them under 🕓 My ISRC edits.')) return;
     const note = getEditNote();
     const btn = modal.querySelector('#ii-delete');
     btn.disabled = true;
