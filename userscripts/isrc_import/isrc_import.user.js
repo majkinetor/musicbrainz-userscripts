@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.154420
+// @version      2026.5.31.155254
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
 // @match        https://beta.musicbrainz.org/release/*
+// @match        https://musicbrainz.org/oauth2/oob*
+// @match        https://beta.musicbrainz.org/oauth2/oob*
 // @match        https://open.spotify.com/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
@@ -13,6 +15,7 @@
 // @grant        GM_deleteValue
 // @grant        unsafeWindow
 // @connect      musicbrainz.org
+// @connect      beta.musicbrainz.org
 // @connect      isrc-api.soundexchange.com
 // @connect      isrc.soundexchange.com
 // @connect      api.deezer.com
@@ -137,11 +140,27 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
+     OAUTH OUT-OF-BAND CODE CATCHER
+     After you approve, MusicBrainz lands on /oauth2/oob?code=… showing the code.
+     Grab it, hand it to the editor tab via GM storage, and close this tab — so
+     you never have to copy/paste the code.
+  ═══════════════════════════════════════════════════════════════════════ */
+  if (/oauth2\/oob$/.test(location.pathname)) {
+    const code = new URLSearchParams(location.search).get('code');
+    if (code) {
+      try { GM_setValue('oauth_oob_code', { code: code, ts: Date.now() }); } catch (e) {}
+      try { document.title = 'Authorized — closing…'; } catch (e) {}
+      setTimeout(() => { try { window.close(); } catch (e) {} }, 300);
+    }
+    return; // never run the editor on the oob page
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
      CONSTANTS
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.154420';
+  const SCRIPT_VERSION = '2026.5.31.155254';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_import';
   const CLIENT   = 'isrc_import-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Import/1.0';
@@ -952,8 +971,8 @@
           <button class="ii-tbtn ghost" id="ii-signout">Sign out</button>
         </div>
         <div class="ii-help">
-          Click <b>Authorize</b> → approve in the MusicBrainz tab that opens → paste the code it shows back here.
-          That's it — one time, ever. No app registration needed.
+          Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
+          One time, ever; no app registration. (If the tab doesn't auto-close, use <b>Paste code…</b>.)
         </div>
 
         <h3 style="margin-top:14px">Spotify app (optional)</h3>
@@ -1293,8 +1312,9 @@
   }
 
   function clearPending() {
-    RELEASE.tracks.forEach((t, i) => { t.pending = ''; const inp = rowInput(i); if (inp) { inp.value = ''; validateInput(inp, t); } });
+    RELEASE.tracks.forEach((t, i) => { t.pending = ''; t.source = ''; const inp = rowInput(i); if (inp) { inp.value = ''; validateInput(inp, t); } });
     tbody.querySelectorAll('.ii-cands').forEach(c => c.innerHTML = '');
+    tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.title = ''; });
     updateSummary();
     toast('Cleared entered ISRCs');
   }
@@ -1678,15 +1698,8 @@
   }
 
   /* ── OAuth UI handlers ── */
-  function onAuthorize() {
-    Log.info('OAuth: opening authorize URL');
-    window.open(Auth.authorizeUrl(), '_blank', 'noopener');
-    setTimeout(onPasteCode, 600);
-  }
-  async function onPasteCode() {
-    const code = prompt('Paste the authorization code MusicBrainz showed you:');
-    if (!code) return;
-    Log.info('OAuth: exchanging authorization code');
+  async function exchangeAndFinish(code, how) {
+    Log.info('OAuth: exchanging authorization code (' + how + ')');
     try {
       await Auth.exchangeCode(code);
       refreshAuthState();
@@ -1696,6 +1709,28 @@
       Log.err('OAuth exchange failed: ' + e.message);
       toast('Authorization failed: ' + e.message, 'err');
     }
+  }
+  function onAuthorize() {
+    Log.info('OAuth: opening authorize URL');
+    store.del('oauth_oob_code');
+    // not 'noopener' so the oob tab can close itself once it captures the code
+    const w = window.open(Auth.authorizeUrl(), '_blank');
+    // auto-capture the code from the oob tab (no copy/paste); time out after ~3 min
+    let n = 0;
+    const iv = setInterval(() => {
+      const oob = store.get('oauth_oob_code', null);
+      if (oob && oob.code) {
+        clearInterval(iv); store.del('oauth_oob_code');
+        try { w && w.close(); } catch (e) {}
+        exchangeAndFinish(oob.code, 'auto-captured');
+        return;
+      }
+      if (++n > 180) clearInterval(iv);   // give up; the "Paste code…" button still works
+    }, 1000);
+  }
+  async function onPasteCode() {
+    const code = prompt('Paste the authorization code MusicBrainz showed you:');
+    if (code) exchangeAndFinish(code.trim(), 'pasted');
   }
 
   /* ── submit ── */
