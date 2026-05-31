@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.172738
+// @version      2026.5.31.173552
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -80,7 +80,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.172738';
+  const SCRIPT_VERSION = '2026.5.31.173552';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -1449,7 +1449,19 @@
       <div class="ii-sxp-results"></div>
     `;
     document.body.appendChild(sxPanel);
-    sxPanel.querySelector('#ii-sxp-close').addEventListener('click', () => sxPanel.classList.remove('open'));
+    const closePanel = () => sxPanel.classList.remove('open');
+    sxPanel.querySelector('#ii-sxp-close').addEventListener('click', closePanel);
+    // Esc / click-outside close — this is a transient search panel (unlike the
+    // main editor, which deliberately ignores both to avoid losing entered work).
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && sxPanel.classList.contains('open')) { e.stopPropagation(); closePanel(); }
+    }, true);
+    document.addEventListener('mousedown', e => {
+      if (!sxPanel.classList.contains('open')) return;
+      // ignore clicks inside the panel, and on a "refine search" entry (which re-opens it)
+      if (sxPanel.contains(e.target) || (e.target.closest && e.target.closest('.ii-cand-refine'))) return;
+      closePanel();
+    });
     sxPanel.querySelector('#ii-sxp-search').addEventListener('click', sxPanelSearch);
     ['#ii-sxp-title', '#ii-sxp-artist', '#ii-sxp-release'].forEach(id =>
       sxPanel.querySelector(id).addEventListener('keydown', e => { if (e.key === 'Enter') sxPanelSearch(); }));
