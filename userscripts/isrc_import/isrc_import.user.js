@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.6.0
+// @version      1.6.1
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -322,8 +322,9 @@
     #ii-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
       padding: 8px 16px; border-bottom: 1px solid #eee; flex-shrink: 0; background: #fbfbfd; }
     .ii-tbtn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px;
-      font-size: 12px; font-weight: 600; border-radius: 5px; cursor: pointer;
+      font-size: 12px; font-weight: 600; border-radius: 5px; cursor: pointer; text-decoration: none;
       border: 1px solid #dee2e6; background: #fff; color: #343a40; white-space: nowrap; }
+    a.ii-tbtn:hover { text-decoration: none; }
     .ii-tbtn:hover { background: #f1f3f5; }
     .ii-tbtn:disabled { opacity: .5; cursor: default; }
     .ii-tbtn.sx  { color: #6f42c1; border-color: #d6c7ee; }
@@ -923,6 +924,9 @@
     modal.innerHTML = `
       <div id="ii-hdr">
         <h2>🎵 <em>ISRC Import</em><span class="ii-sub" id="ii-rel-sub"></span></h2>
+        <a class="ii-tbtn" id="ii-history" target="_blank" rel="noopener"
+           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.2.field=editor&conditions.2.operator=me&conditions.2.name=&conditions.2.args.0="
+           title="Your Add-ISRCs edits on MusicBrainz">🕓 My ISRC edits</a>
         <button class="ii-tbtn" id="ii-bulk-toggle" title="Bulk paste / import / export">⇪ Bulk / Export</button>
         <button class="ii-tbtn" id="ii-log-toggle" title="Activity log">Log</button>
         <button class="ii-tbtn" id="ii-setup-toggle" title="OAuth setup">⚙ Setup</button>
