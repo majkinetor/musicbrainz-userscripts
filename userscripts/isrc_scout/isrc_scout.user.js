@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.213402
+// @version      2026.5.31.213658
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.213402';
+  const SCRIPT_VERSION = '2026.5.31.213658';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -1286,7 +1286,7 @@
             '<button class="ii-clear" type="button" tabindex="-1" title="Clear this field">×</button>' +
           '</div>' +
           // first track has no previous ISRC to increment — hide +1 but keep its slot so SX text stays aligned
-          '<button class="ii-plus' + (idx === 0 ? ' ii-plus-hidden' : '') + '" title="Previous ISRC + 1  (right-click: fill down through empty tracks)">+1</button>' +
+          '<button class="ii-plus' + (idx === 0 ? ' ii-plus-hidden' : '') + '" title="Previous ISRC + 1  (right-click: fill the +1 sequence down to the last track, overwriting)">+1</button>' +
           '<span class="ii-lookup"></span>' +
           '</div><div class="ii-cands"></div></td>';
       const input = tr.querySelector('.ii-input');
@@ -1493,8 +1493,8 @@
     toast('No previous ISRC to increment');
   }
 
-  // Right-click +1: fill an incrementing ISRC from here down through every empty
-  // track, stopping at the next field that already has a value (or the end).
+  // Right-click +1: fill an incrementing ISRC from here all the way to the LAST
+  // track, overwriting whatever's in each New-ISRC field.
   function plusOneFillDown(idx) {
     let base = '';
     for (let i = idx - 1; i >= 0; i--) {
@@ -1504,9 +1504,6 @@
     if (!base) { toast('No previous ISRC to increment'); return; }
     let count = 0;
     for (let i = idx; i < RELEASE.tracks.length; i++) {
-      const t = RELEASE.tracks[i];
-      // always fill the starting cell; below it, stop at the first occupied field
-      if (i > idx && (t.pending || t.existing.length)) break;
       base = base.replace(/(\d+)(?!.*\d)/, m => String(parseInt(m, 10) + 1).padStart(m.length, '0'));
       setPending(i, base, true);
       count++;
