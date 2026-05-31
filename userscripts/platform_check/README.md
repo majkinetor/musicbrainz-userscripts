@@ -36,7 +36,7 @@ Discogs has few specifics:
     - `+` click - batch insert all links that have `✓` marker
     - `✓`click - insert only particular link next to the marker
     - On the edit page it fills the **edit note** (script name/version + the links added) and shows a small confirmation next to the *External links* heading — then you review and click **Enter edit**.
-- **Open all found** (`↗`, next to `+`): opens every found platform page (plus the Discogs master) in its own new tab.
+- **Open all found** (`↗`, next to `+`): opens each found platform page that isn't already in MB (non-circled links, plus the Discogs master if not yet added) in its own new tab.
 - **Options**:
     - Toggle usage of each supported platform independently
     - Reorder providers
