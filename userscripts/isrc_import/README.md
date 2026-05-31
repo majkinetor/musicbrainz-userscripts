@@ -27,7 +27,7 @@ submitted.
 | --- | --- | --- | --- |
 | **⟳ SoundExchange** | [SoundExchange](https://isrc.soundexchange.com/) | none | Searches every track by title/artist, shows candidate ISRCs per row, auto-fills confident matches into empty fields. Ported from `magicisrc_soundexchange`. |
 | **Deezer** | `api.deezer.com` | none | Enabled when the release has a Deezer album relationship. Fetches each track's ISRC and maps by disc/position (title fallback). |
-| **Spotify** | `api.spotify.com` | best-effort | Enabled when the release has a Spotify album relationship. Uses an anonymous web token. **Spotify actively bot-blocks this** — it works best while you're logged into `open.spotify.com`, and fails gracefully with a toast otherwise. |
+| **Spotify** | `api.spotify.com` | optional app | Enabled when the release has a Spotify album relationship. Prefers an official **client-credentials token** from a free Spotify app you register once (reliable, what isrchunt uses); falls back to an anonymous web token that Spotify frequently bot-blocks. Fetches ISRCs per track (`/v1/tracks/{id}` — the bulk endpoint was removed Feb 2026). |
 
 Source buttons only fill **empty** fields and never touch existing ISRCs.
 
@@ -66,6 +66,16 @@ token).
 
 Your credentials and tokens live only in the userscript's local storage (`GM_setValue`). **Sign out**
 in Setup clears the stored token.
+
+### Optional: reliable Spotify import
+
+The anonymous Spotify token is frequently bot-blocked. For dependable Spotify import, register a
+**free** app at [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard) and paste
+its Client ID + Secret into ⚙ Setup → *Spotify app*. The script then mints an official
+client-credentials token (the same approach isrchunt uses). Caveat: Spotify keeps removing Web API
+endpoints (it dropped the bulk track/album endpoints and briefly even removed the ISRC field in early
+2026), so Spotify import can break regardless of this setup — Deezer and SoundExchange are the stable
+sources.
 
 ## Why not the session cookie / `/ws/js/edit/create`?
 

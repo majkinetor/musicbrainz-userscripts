@@ -16,6 +16,7 @@
 // @connect      api.deezer.com
 // @connect      open.spotify.com
 // @connect      api.spotify.com
+// @connect      accounts.spotify.com
 // @run-at       document-idle
 // ==/UserScript==
 
@@ -554,48 +555,67 @@
   /* ═══════════════════════════════════════════════════════════════════════
      SPOTIFY  (anonymous web token, no user OAuth)
   ═══════════════════════════════════════════════════════════════════════ */
-  async function spotifyToken() {
-    // Anonymous web token. GM_xmlhttpRequest sends your open.spotify.com cookies
-    // (sp_dc if logged in), which is the best chance of getting past the bot block.
-    const r = await gmGet('https://open.spotify.com/get_access_token?reason=transport&productType=web_player', {
-      'Accept': 'application/json',
-      'App-Platform': 'WebPlayer',
-      'Referer': 'https://open.spotify.com/',
+  // Preferred: official client-credentials token from a free Spotify app (what isrchunt
+  // uses server-side; not bot-blocked). Falls back to the anonymous web token if no app
+  // credentials are configured. Cached in GM storage until it expires.
+  async function spotifyClientCredsToken() {
+    const id = store.get('spotify_client_id', ''), secret = store.get('spotify_client_secret', '');
+    if (!id || !secret) return null;
+    const cached = store.get('spotify_cc_token', ''), exp = store.get('spotify_cc_expiry', 0);
+    if (cached && Date.now() < exp - 60000) return cached;
+    const r = await gmPost('https://accounts.spotify.com/api/token', 'grant_type=client_credentials', {
+      'Content-Type':  'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + btoa(id + ':' + secret),
     });
-    if (r.status === 403) throw new Error('blocked by Spotify (403) — try while logged into open.spotify.com');
-    let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { throw new Error('unexpected response (' + r.status + ')'); }
+    const j = JSON.parse(r.responseText || '{}');
+    if (!j.access_token) throw new Error('client-credentials failed: ' + (j.error_description || j.error || r.status));
+    store.set('spotify_cc_token', j.access_token);
+    store.set('spotify_cc_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
+    return j.access_token;
+  }
+  async function spotifyAnonToken() {
+    const r = await gmGet('https://open.spotify.com/get_access_token?reason=transport&productType=web_player', {
+      'Accept': 'application/json', 'App-Platform': 'WebPlayer', 'Referer': 'https://open.spotify.com/',
+    });
+    if (r.status === 403) throw new Error('anonymous token blocked (403). Add a Spotify app in ⚙ Setup for a reliable token.');
+    let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { throw new Error('unexpected token response (' + r.status + ')'); }
     if (!j.accessToken) throw new Error('token unavailable (' + r.status + ')');
     return j.accessToken;
+  }
+  async function spotifyToken() {
+    return (await spotifyClientCredsToken()) || spotifyAnonToken();
   }
   async function fetchSpotify(albumId, onProgress) {
     const tok = await spotifyToken();
     const auth = { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' };
+    // 1) album tracklist (paginated) — simplified tracks have no ISRC
     const ids = [];
     let url = 'https://api.spotify.com/v1/albums/' + albumId + '/tracks?limit=50';
     while (url) {
       const r = await gmGet(url, auth);
       const j = JSON.parse(r.responseText || '{}');
-      if (j.error) throw new Error('Spotify: ' + (j.error.message || j.error.status));
+      if (j.error) throw new Error((j.error.message || j.error.status));
       (j.items || []).forEach(it => ids.push({ id: it.id, disc: it.disc_number || 1, pos: it.track_number, title: it.name }));
       url = j.next;
     }
+    // 2) per-track fetch for external_ids.isrc — the bulk /v1/tracks endpoint was
+    //    removed in Feb 2026, so we fetch one at a time (like Deezer).
     const out = [];
-    for (let i = 0; i < ids.length; i += 50) {
-      const chunk = ids.slice(i, i + 50);
-      const r = await gmGet('https://api.spotify.com/v1/tracks?ids=' + chunk.map(c => c.id).join(','), auth);
-      const j = JSON.parse(r.responseText || '{}');
-      (j.tracks || []).forEach((t, k) => {
-        const meta = chunk[k];
+    for (let i = 0; i < ids.length; i++) {
+      const meta = ids[i];
+      try {
+        const r = await gmGet('https://api.spotify.com/v1/tracks/' + meta.id, auth);
+        const t = JSON.parse(r.responseText || '{}');
         out.push({
           isrc:   normalizeIsrc((t.external_ids && t.external_ids.isrc) || ''),
-          title:  (t && t.name) || meta.title || '',
-          artist: (t && t.artists || []).map(a => a.name).join(', '),
+          title:  t.name || meta.title || '',
+          artist: (t.artists || []).map(a => a.name).join(', '),
           disc:   meta.disc, pos: meta.pos,
-          dur:    t && t.duration_ms ? msToMmSs(t.duration_ms) : '',
+          dur:    t.duration_ms ? msToMmSs(t.duration_ms) : '',
         });
-      });
-      if (onProgress) onProgress(Math.min(i + 50, ids.length), ids.length);
-      await sleep(150);
+      } catch (e) {}
+      if (onProgress) onProgress(i + 1, ids.length);
+      await sleep(130);
     }
     return out.filter(t => isValidIsrc(t.isrc));
   }
@@ -642,6 +662,19 @@
           — type <b>Installed application</b>, redirect URI <code>urn:ietf:wg:oauth:2.0:oob</code>.
           Paste its Client ID + Secret above, click <b>Authorize</b>, approve in the MB tab, then paste the code it shows.
           You only ever do this once.
+        </div>
+
+        <h3 style="margin-top:14px">Spotify app (optional, for reliable Spotify import)</h3>
+        <div class="row">
+          <div><label>Spotify Client ID</label><input type="text" id="ii-sp-cid" autocomplete="off"></div>
+          <div><label>Spotify Client Secret</label><input type="text" id="ii-sp-csec" autocomplete="off"></div>
+        </div>
+        <div class="row" style="margin-top:8px"><button class="ii-tbtn" id="ii-sp-save">Save Spotify app</button></div>
+        <div class="ii-help">
+          Free to create at
+          <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a>
+          (any redirect URI). Without this, Spotify uses an anonymous token that Spotify frequently bot-blocks.
+          Note: Spotify keeps removing API endpoints, so Spotify import may break independently of this setup.
         </div>
       </div>
 
@@ -708,6 +741,16 @@
     modal.querySelector('#ii-authorize').addEventListener('click', onAuthorize);
     modal.querySelector('#ii-paste-code').addEventListener('click', onPasteCode);
     modal.querySelector('#ii-signout').addEventListener('click', () => { Auth.signOut(); refreshAuthState(); toast('Signed out'); });
+
+    // optional Spotify app credentials
+    modal.querySelector('#ii-sp-cid').value  = store.get('spotify_client_id', '');
+    modal.querySelector('#ii-sp-csec').value = store.get('spotify_client_secret', '');
+    modal.querySelector('#ii-sp-save').addEventListener('click', () => {
+      store.set('spotify_client_id',     modal.querySelector('#ii-sp-cid').value.trim());
+      store.set('spotify_client_secret', modal.querySelector('#ii-sp-csec').value.trim());
+      store.del('spotify_cc_token'); store.del('spotify_cc_expiry');
+      toast('Saved Spotify app — Spotify import will use it', 'ok');
+    });
 
     // bulk pane wiring
     modal.querySelector('#ii-bulk-apply').addEventListener('click', () => applyBulk(false));
