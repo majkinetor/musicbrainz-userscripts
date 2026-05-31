@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.200313
+// @version      2026.5.31.200919
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.200313';
+  const SCRIPT_VERSION = '2026.5.31.200919';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -383,6 +383,9 @@
     .ii-input.dup   { border-color: #fd7e14; background: #fff6ed; }
     .ii-input.dupother { border-color: #d63384; background: #ffe3ef; }
     .ii-input.ok    { border-color: #198754; }
+    .ii-clear { flex-shrink: 0; width: 20px; height: 22px; padding: 0; border: 1px solid #dee2e6;
+      border-radius: 4px; background: #f8f9fa; color: #adb5bd; font-size: 14px; line-height: 1; cursor: pointer; }
+    .ii-clear:hover { background: #fdeaec; border-color: #f1aeb5; color: #dc3545; }
     .ii-plus { font-size: 11px; font-weight: 700; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; background: #f8f9fa; cursor: pointer; color: #6c757d; font-family: monospace; }
     .ii-plus:hover { background: #e9ecef; color: #212529; }
@@ -1219,10 +1222,12 @@
         '<td class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval) + '</td>' +
         '<td><div class="ii-inwrap">' +
           '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
+          '<button class="ii-clear" type="button" tabindex="-1" title="Clear this field">×</button>' +
           '<button class="ii-plus" title="Previous ISRC + 1  (right-click: fill down through empty tracks)">+1</button>' +
           '<span class="ii-lookup"></span>' +
           '</div><div class="ii-cands"></div></td>';
       const input = tr.querySelector('.ii-input');
+      tr.querySelector('.ii-clear').addEventListener('click', () => clearRow(idx));
       input.addEventListener('input', () => {
         t.pending = normalizeIsrc(input.value);
         t.source = 'manual';
@@ -1383,6 +1388,22 @@
     tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.title = ''; l.onclick = null; });
     updateSummary();
     toast('Cleared entered ISRCs');
+  }
+
+  // Clear a single track's New-ISRC field (the row's "×" button).
+  function clearRow(idx) {
+    const t = RELEASE.tracks[idx], input = rowInput(idx);
+    if (!t || !input) return;
+    _vq.items = _vq.items.filter(it => it.idx !== idx);   // drop any queued verify for this row
+    t.pending = ''; t.source = '';
+    input.value = ''; input.dataset.autofill = '';
+    validateInput(input, t);
+    const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.title = ''; lk.onclick = null; }
+    // re-expand the candidate list so a different suggestion can be picked
+    const box = rowCands(idx);
+    if (box) { box.classList.remove('collapsed'); box.querySelectorAll('.ii-cand.chosen').forEach(c => c.classList.remove('chosen')); }
+    updateSummary();
+    input.focus();
   }
 
   function plusOne(idx) {
