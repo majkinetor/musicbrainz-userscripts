@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.2.0
+// @version      1.3.0
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -19,7 +19,7 @@
 // @connect      open.spotify.com
 // @connect      api.spotify.com
 // @connect      accounts.spotify.com
-// @run-at       document-idle
+// @run-at       document-start
 // ==/UserScript==
 
 /*
@@ -31,17 +31,12 @@
  *  authorize EXACTLY ONCE — the refresh token is stored locally and is used
  *  to silently mint short-lived access tokens forever after.
  *
- *  1. Register an application (once):
- *       https://musicbrainz.org/account/applications/register
- *       - Type:         Installed application
- *       - Redirect URI: urn:ietf:wg:oauth:2.0:oob
- *     Copy the OAuth Client ID and Client Secret it gives you.
- *
- *  2. Open the editor (the "ISRC" button on any release page) → ⚙ Setup →
- *     paste Client ID + Secret → click "Authorize". A MusicBrainz tab opens;
- *     approve, copy the code it shows, paste it back. Done forever.
+ *  The OAuth app is baked in, so there's nothing to register:
+ *  open the editor (the "ISRC" button on a release page) → ⚙ Setup → Authorize,
+ *  approve in the MusicBrainz tab, paste the code it shows back. Done forever.
  *
  *  Everything except the final "Submit" runs without any credentials.
+ *  Trouble? Open the editor's "Log" pane (or the browser console, prefix [ISRC]).
  * ─────────────────────────────────────────────────────────────────────────
  */
 
@@ -59,10 +54,13 @@
   ═══════════════════════════════════════════════════════════════════════ */
   if (/(^|\.)spotify\.com$/i.test(location.hostname)) {
     if (location.hash.indexOf('ii_harvest') === -1) return; // not our tab — do nothing
+    const hlog = (m) => { try { console.log('[ISRC-harvest] ' + m); } catch (e) {} };
+    hlog('harvester active on ' + location.href);
     let captured = false;
-    const finish = (token) => {
+    const finish = (token, how) => {
       if (captured || !token) return;
       captured = true;
+      hlog('captured token via ' + how + ' (len ' + token.length + ') — storing & closing');
       try { GM_setValue('spotify_harvest', { token: token, ts: Date.now() }); } catch (e) {}
       setTimeout(() => { try { window.close(); } catch (e) {} }, 250);
     };
@@ -84,28 +82,30 @@
       uw.fetch = function (input, init) {
         try {
           const t = fromHeaders(init && init.headers) || (input && input.headers && fromHeaders(input.headers));
-          if (t) finish(t);
+          if (t) finish(t, 'fetch-header');
         } catch (e) {}
         const p = origFetch.apply(this, arguments);
         try {
           const url = String((input && input.url) || input || '');
           if (/get_access_token|\/api\/token/.test(url)) {
-            p.then(r => r.clone().json()).then(j => { if (j && j.accessToken) finish(j.accessToken); }).catch(() => {});
+            p.then(r => r.clone().json()).then(j => { if (j && j.accessToken) finish(j.accessToken, 'token-response'); }).catch(() => {});
           }
         } catch (e) {}
         return p;
       };
-    }
+      hlog('fetch hook installed');
+    } else { hlog('WARNING: no unsafeWindow.fetch to hook'); }
     // hook XHR header setting
     try {
       const osrh = uw.XMLHttpRequest.prototype.setRequestHeader;
       uw.XMLHttpRequest.prototype.setRequestHeader = function (k, v) {
-        try { if (String(k).toLowerCase() === 'authorization') { const t = fromBearer(v); if (t) finish(t); } } catch (e) {}
+        try { if (String(k).toLowerCase() === 'authorization') { const t = fromBearer(v); if (t) finish(t, 'xhr-header'); } } catch (e) {}
         return osrh.apply(this, arguments);
       };
-    } catch (e) {}
+      hlog('xhr hook installed');
+    } catch (e) { hlog('xhr hook failed: ' + e.message); }
     setTimeout(() => {
-      if (!captured) { try { GM_setValue('spotify_harvest', { error: 'timeout', ts: Date.now() }); } catch (e) {} try { window.close(); } catch (e) {} }
+      if (!captured) { hlog('TIMEOUT — no token captured in 15s'); try { GM_setValue('spotify_harvest', { error: 'timeout', ts: Date.now() }); } catch (e) {} try { window.close(); } catch (e) {} }
     }, 15000);
     return; // never run the MusicBrainz editor on a Spotify page
   }
@@ -151,12 +151,20 @@
      GENERIC HTTP (GM_xmlhttpRequest promisified)
   ═══════════════════════════════════════════════════════════════════════ */
   function http(opts) {
+    const t0 = Date.now();
+    const tag = (opts.method || 'GET') + ' ' + shortUrl(opts.url);
+    Log.net('→ ' + tag);
     return new Promise((resolve, reject) => {
       GM_xmlhttpRequest(Object.assign({
         timeout: 20000,
-        onload:    r => resolve(r),
-        onerror:   () => reject(new Error('network error')),
-        ontimeout: () => reject(new Error('timeout')),
+        onload: r => {
+          const ms = Date.now() - t0;
+          if (r.status >= 200 && r.status < 300) Log.net('← ' + r.status + ' ' + tag + ' (' + ms + 'ms)');
+          else Log.warn('← ' + r.status + ' ' + tag + ' (' + ms + 'ms) ' + String(r.responseText || '').replace(/\s+/g, ' ').slice(0, 160));
+          resolve(r);
+        },
+        onerror:   () => { Log.err('✗ network ' + tag); reject(new Error('network error')); },
+        ontimeout: () => { Log.err('✗ timeout ' + tag); reject(new Error('timeout')); },
       }, opts));
     });
   }
@@ -220,6 +228,33 @@
     clearTimeout(t._timer);
     t._timer = setTimeout(() => { t.className = ''; }, 4200);
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     LOG — console + in-modal pane, for troubleshooting
+  ═══════════════════════════════════════════════════════════════════════ */
+  const Log = (function () {
+    const buf = [], MAX = 800;
+    let paneEl = null;
+    const stamp = () => { const d = new Date(); return d.toTimeString().slice(0, 8) + '.' + String(d.getMilliseconds()).padStart(3, '0'); };
+    const fmt = (d) => { if (d === undefined) return ''; try { return ' ' + (typeof d === 'string' ? d : JSON.stringify(d)); } catch (e) { return ' ' + String(d); } };
+    function render() { if (paneEl) { paneEl.textContent = buf.join('\n'); paneEl.scrollTop = paneEl.scrollHeight; } }
+    function add(level, msg, data) {
+      const line = '[' + stamp() + '] ' + String(level).toUpperCase().padEnd(5) + ' ' + msg + fmt(data);
+      buf.push(line); if (buf.length > MAX) buf.shift();
+      try { (level === 'error' ? console.error : level === 'warn' ? console.warn : console.log)('[ISRC] ' + line); } catch (e) {}
+      render();
+    }
+    return {
+      setPane: el => { paneEl = el; render(); },
+      text:    () => buf.join('\n'),
+      clear:   () => { buf.length = 0; render(); },
+      info: (m, d) => add('info', m, d),
+      warn: (m, d) => add('warn', m, d),
+      err:  (m, d) => add('error', m, d),
+      net:  (m, d) => add('net', m, d),
+    };
+  })();
+  const shortUrl = (u) => String(u || '').replace(/^https?:\/\//, '').replace(/[?#].*$/, '').slice(0, 90);
 
   /* ═══════════════════════════════════════════════════════════════════════
      STYLES
@@ -342,8 +377,24 @@
     #ii-toast.ii-toast-show { transform: translateX(-50%) translateY(0); opacity: 1; }
     #ii-toast.err { background: #b02a37; }
     #ii-toast.ok  { background: #198754; }
+
+    /* log pane */
+    #ii-log-out { font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.45;
+      white-space: pre-wrap; word-break: break-word; background: #0d1117; color: #c9d1d9;
+      padding: 8px 10px; border-radius: 5px; max-height: 240px; overflow: auto; margin: 0; }
+    #ii-log-pane h3 { display: flex; align-items: center; gap: 8px; }
+    .ii-exact-set { display: inline-flex; align-items: center; gap: 9px; font-size: 11px; color: #6c757d; }
+    .ii-exact-set label { display: inline-flex; align-items: center; gap: 3px; cursor: pointer; margin: 0; }
+    .ii-exact-set input { cursor: pointer; }
+    .ii-cand.inmb { opacity: .72; }
+    .ii-cand-inmb { margin-left: auto; font-size: 9px; font-weight: 700; color: #198754; flex-shrink: 0; }
+    .ii-lookup { display: block; margin-top: 3px; font-size: 11px; }
+    .ii-lookup.ok   { color: #198754; }
+    .ii-lookup.warn { color: #b8860b; }
+    .ii-lookup.err  { color: #dc3545; }
+    .ii-lookup.spin { color: #6c757d; }
   `;
-  document.head.appendChild(style);
+  (document.head || document.documentElement).appendChild(style);
 
   /* ═══════════════════════════════════════════════════════════════════════
      RELEASE MODEL (single WS2 fetch → everything)
@@ -385,6 +436,9 @@
         if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))   deezerId  = m[1];
       });
       RELEASE = { title: data.title || '', tracks, deezerId, spotifyId };
+      Log.info('Release "' + RELEASE.title + '": ' + tracks.length + ' track(s), ' +
+        tracks.filter(t => !t.existing.length).length + ' missing ISRC' +
+        '; links: ' + (deezerId ? 'Deezer ' + deezerId : 'no Deezer') + ', ' + (spotifyId ? 'Spotify ' + spotifyId : 'no Spotify'));
       return RELEASE;
     });
   }
@@ -549,42 +603,64 @@
       return 'best';
     }
 
-    function apiSearch(title, artist, start, count) {
-      const body = JSON.stringify({
-        searchFields: {
-          recordingArtistName: { value: artist || '' },
-          recordingTitle:      { value: title || '' },
-        },
-        start: start || 0, number: count || 20, showReleases: true,
+    const applyExact = (v, exact) => (v && exact) ? '"' + String(v).replace(/"/g, '') + '"' : (v || '');
+    function dedupe(raw) {
+      const seen = new Map();
+      raw.forEach(item => {
+        const key = item.isrc || item.id;
+        if (!seen.has(key)) seen.set(key, Object.assign({}, item, { _rels: [] }));
+        if (item.releaseName) seen.get(key)._rels.push(item);
       });
+      const rows = [...seen.values()];
+      rows.forEach(it => {
+        if (it._rels.length > 1) it._rels.sort((a, b) => (a.releaseDate || '9999').localeCompare(b.releaseDate || '9999'));
+        const e = it._rels[0];
+        if (e) { it.releaseName = e.releaseName; it.releaseLabel = e.releaseLabel; it.releaseDate = e.releaseDate; }
+      });
+      return rows;
+    }
+    function post(body) {
       const doReq = (token) => gmPost(SX_API, body, {
         'Content-Type': 'application/json', 'Accept': 'application/json',
         'Authorization': 'Token ' + token, 'Origin': SX_HOME, 'Referer': SX_HOME,
       }).then(r => {
-        if (r.status === 0) throw new Error('blocked');
-        if (r.status === 401 || r.status === 403) return refreshToken().then(t => doReq(t));
-        let p; try { p = JSON.parse(r.responseText); } catch (e) { throw new Error('parse'); }
-        const raw = p.recordings || p.results || p.data || (Array.isArray(p) ? p : []);
-        // dedupe by ISRC, keep earliest release
-        const seen = new Map();
-        raw.forEach(item => {
-          const key = item.isrc || item.id;
-          if (!seen.has(key)) seen.set(key, Object.assign({}, item, { _rels: [] }));
-          if (item.releaseName) seen.get(key)._rels.push(item);
-        });
-        const rows = [...seen.values()];
-        rows.forEach(it => {
-          if (it._rels.length > 1) it._rels.sort((a, b) => (a.releaseDate || '9999').localeCompare(b.releaseDate || '9999'));
-          const e = it._rels[0];
-          if (e) { it.releaseName = e.releaseName; it.releaseLabel = e.releaseLabel; it.releaseDate = e.releaseDate; }
-        });
-        return rows;
+        if (r.status === 0) throw new Error('blocked (SX returned 0 — connection refused?)');
+        if (r.status === 401 || r.status === 403) { Log.warn('SX ' + r.status + ' — refreshing token'); return refreshToken().then(t => doReq(t)); }
+        let p; try { p = JSON.parse(r.responseText); } catch (e) { throw new Error('SX parse error'); }
+        return dedupe(p.recordings || p.results || p.data || (Array.isArray(p) ? p : []));
       });
       return doReq(_token);
     }
+    // exact = { title, artist, release }; opts release string optional
+    function apiSearch(title, artist, start, count, exact, release) {
+      exact = exact || {};
+      return post(JSON.stringify({
+        searchFields: {
+          recordingArtistName: { value: applyExact(artist, exact.artist) },
+          recordingTitle:      { value: applyExact(title, exact.title) },
+          releaseName:         { value: applyExact(release || '', exact.release) },
+        },
+        start: start || 0, number: count || 20, showReleases: true,
+      }));
+    }
+    function apiSearchByIsrc(isrc) {
+      return post(JSON.stringify({ searchFields: { isrc: isrc }, start: 0, number: 10, showReleases: true }));
+    }
 
-    return { refreshToken, apiSearch, fields, classify };
+    return { refreshToken, apiSearch, apiSearchByIsrc, fields, classify };
   })();
+
+  // SX exact-match toggles (persisted)
+  const sxExact = {
+    title:   !!store.get('sx_exact_title', false),
+    artist:  !!store.get('sx_exact_artist', false),
+    release: !!store.get('sx_exact_release', false),
+  };
+  function saveSxExact() {
+    store.set('sx_exact_title', sxExact.title);
+    store.set('sx_exact_artist', sxExact.artist);
+    store.set('sx_exact_release', sxExact.release);
+  }
 
   /* ═══════════════════════════════════════════════════════════════════════
      DEEZER  (free public API, no auth)
@@ -592,15 +668,17 @@
   async function fetchDeezer(albumId, onProgress) {
     const r = await gmGet('https://api.deezer.com/album/' + albumId, { 'Accept': 'application/json' });
     const data = JSON.parse(r.responseText || '{}');
-    if (data.error) throw new Error('Deezer: ' + (data.error.message || 'error'));
+    if (data.error) throw new Error((data.error.message || data.error.type || 'Deezer error') + ' (album ' + albumId + ')');
     const list = (data.tracks && data.tracks.data) || [];
+    Log.info('Deezer album "' + (data.title || albumId) + '": ' + list.length + ' track(s)');
     const out = [];
-    let done = 0;
+    let done = 0, failed = 0;
     for (const t of list) {
       // album tracklist lacks isrc → fetch the track for its isrc
       try {
         const tr = await gmGet('https://api.deezer.com/track/' + t.id, { 'Accept': 'application/json' });
         const td = JSON.parse(tr.responseText || '{}');
+        if (td.error) { failed++; Log.warn('Deezer track ' + t.id + ': ' + (td.error.message || td.error.type)); }
         out.push({
           isrc:   normalizeIsrc(td.isrc || ''),
           title:  td.title || t.title || '',
@@ -609,12 +687,15 @@
           pos:    td.track_position || t.track_position || (out.length + 1),
           dur:    td.duration ? msToMmSs(td.duration * 1000) : '',
         });
-      } catch (e) {}
+      } catch (e) { failed++; Log.warn('Deezer track ' + t.id + ' fetch failed: ' + e.message); }
       done++;
       if (onProgress) onProgress(done, list.length);
       await sleep(120);
     }
-    return out.filter(t => isValidIsrc(t.isrc));
+    const valid = out.filter(t => isValidIsrc(t.isrc));
+    if (failed) Log.warn('Deezer: ' + failed + ' track fetch(es) failed');
+    if (valid.length < out.length) Log.warn('Deezer: ' + (out.length - valid.length) + ' track(s) had no valid ISRC');
+    return valid;
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -644,19 +725,24 @@
   // Must be triggered from a user gesture (the import-button click) or the popup blocks.
   function harvestSpotifyToken(albumId, onProgress) {
     const cached = store.get('spotify_harvest', null);
-    if (cached && cached.token && Date.now() - cached.ts < 50 * 60 * 1000) return Promise.resolve(cached.token);
+    if (cached && cached.token && Date.now() - cached.ts < 50 * 60 * 1000) {
+      Log.info('Spotify: reusing cached web-player token (' + Math.round((Date.now() - cached.ts) / 1000) + 's old)');
+      return Promise.resolve(cached.token);
+    }
     store.del('spotify_harvest');
+    Log.info('Spotify: opening player tab to harvest a token…');
     const w = window.open('https://open.spotify.com/album/' + albumId + '#ii_harvest', 'ii_sp_harvest', 'width=520,height=640');
-    if (!w) return Promise.reject(new Error('popup blocked — allow popups for musicbrainz.org so a Spotify tab can open'));
+    if (!w) { Log.err('Spotify: popup blocked'); return Promise.reject(new Error('popup blocked — allow popups for musicbrainz.org so a Spotify tab can open')); }
     if (onProgress) onProgress(0, 0);
     return new Promise((resolve, reject) => {
       let n = 0;
       const iv = setInterval(() => {
         const h = store.get('spotify_harvest', null);
-        if (h && h.token) { clearInterval(iv); try { w.close(); } catch (e) {} resolve(h.token); return; }
+        if (h && h.token) { clearInterval(iv); try { w.close(); } catch (e) {} Log.info('Spotify: token harvested'); resolve(h.token); return; }
         if ((h && h.error) || ++n > 40) { // ~20s
           clearInterval(iv); try { w.close(); } catch (e) {}
-          reject(new Error('could not get a Spotify token (are you logged into open.spotify.com?)'));
+          Log.err('Spotify: token harvest ' + (h && h.error ? 'reported "' + h.error + '"' : 'timed out') + ' — check the Spotify tab console for [ISRC-harvest] lines');
+          reject(new Error('could not get a Spotify token (open the Spotify tab console; are you logged in?)'));
         }
       }, 500);
     });
@@ -770,13 +856,27 @@
         </div>
       </div>
 
+      <div class="ii-pane" id="ii-log-pane">
+        <h3>Activity log
+          <button class="ii-tbtn" id="ii-log-copy" style="padding:2px 9px;font-size:11px">Copy</button>
+          <button class="ii-tbtn ghost" id="ii-log-clear" style="padding:2px 9px;font-size:11px">Clear</button>
+        </h3>
+        <pre id="ii-log-out"></pre>
+      </div>
+
       <div id="ii-tools">
         <button class="ii-tbtn sx"  id="ii-sx-all"  title="Search every track on SoundExchange">⟳ SoundExchange</button>
+        <span class="ii-exact-set" title="Wrap the SoundExchange query in quotes for an exact match">
+          <label><input type="checkbox" id="ii-ex-title">exact title</label>
+          <label><input type="checkbox" id="ii-ex-artist">exact artist</label>
+          <label><input type="checkbox" id="ii-ex-release">exact release</label>
+        </span>
         <button class="ii-tbtn dz"  id="ii-dz-all"  title="Import ISRCs from the linked Deezer album">Deezer</button>
         <button class="ii-tbtn sp"  id="ii-sp-all"  title="Import ISRCs from the linked Spotify album">Spotify</button>
         <button class="ii-tbtn"     id="ii-bulk-toggle">⇪ Bulk / Export</button>
         <span class="ii-prog" id="ii-prog"></span>
         <span class="ii-tspacer"></span>
+        <button class="ii-tbtn ghost" id="ii-log-toggle" title="Show activity log">Log</button>
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear entered</button>
       </div>
 
@@ -808,6 +908,22 @@
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-clear-pending').addEventListener('click', clearPending);
     modal.querySelector('#ii-sx-all').addEventListener('click', runSxAll);
+
+    // log pane
+    Log.setPane(modal.querySelector('#ii-log-out'));
+    modal.querySelector('#ii-log-toggle').addEventListener('click', () => togglePane('ii-log-pane'));
+    modal.querySelector('#ii-log-copy').addEventListener('click', () => {
+      try { navigator.clipboard.writeText(Log.text()); toast('Log copied'); } catch (e) { toast('Copy failed', 'err'); }
+    });
+    modal.querySelector('#ii-log-clear').addEventListener('click', () => Log.clear());
+
+    // SX exact toggles
+    [['ii-ex-title', 'title'], ['ii-ex-artist', 'artist'], ['ii-ex-release', 'release']].forEach(([id, key]) => {
+      const cb = modal.querySelector('#' + id);
+      cb.checked = sxExact[key];
+      cb.addEventListener('change', () => { sxExact[key] = cb.checked; saveSxExact(); Log.info('SX exact ' + key + ' = ' + cb.checked); });
+    });
+
     modal.querySelector('#ii-dz-all').addEventListener('click', runDeezer);
     modal.querySelector('#ii-sp-all').addEventListener('click', runSpotify);
     submitBtn.addEventListener('click', doSubmit);
@@ -906,7 +1022,7 @@
         '<td><div class="ii-inwrap">' +
           '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
           '<button class="ii-plus" title="Previous ISRC + 1">+1</button>' +
-          '</div><div class="ii-cands"></div></td>';
+          '</div><div class="ii-cands"></div><div class="ii-lookup"></div></td>';
       const input = tr.querySelector('.ii-input');
       input.addEventListener('input', () => {
         t.pending = normalizeIsrc(input.value);
@@ -914,8 +1030,16 @@
           const p = input.selectionStart;
           input.value = t.pending; input.setSelectionRange(p, p);
         }
+        input.dataset.autofill = '';
         validateInput(input, t);
         updateSummary();
+      });
+      // on blur, verify a manually-typed ISRC against SoundExchange
+      input.addEventListener('blur', () => {
+        if (input.dataset.autofill === '1') return;           // came from a source, not typed
+        const v = normalizeIsrc(input.value);
+        if (v && isValidIsrc(v)) lookupIsrc(idx, v);
+        else rowLookup(idx) && (rowLookup(idx).className = 'ii-lookup');
       });
       tr.querySelector('.ii-plus').addEventListener('click', () => plusOne(idx));
       tbody.appendChild(tr);
@@ -935,6 +1059,28 @@
     const tr = tbody.querySelector('tr[data-idx="' + idx + '"]');
     return tr ? tr.querySelector('.ii-cands') : null;
   }
+  function rowLookup(idx) {
+    const tr = tbody.querySelector('tr[data-idx="' + idx + '"]');
+    return tr ? tr.querySelector('.ii-lookup') : null;
+  }
+
+  // verify a typed ISRC on SoundExchange and show inline match/mismatch info
+  function lookupIsrc(idx, isrc) {
+    const el = rowLookup(idx), t = RELEASE.tracks[idx];
+    if (!el) return;
+    el.className = 'ii-lookup spin';
+    el.textContent = '⏳ checking SoundExchange…';
+    Log.info('SX lookup ' + isrc + ' (#' + (t.number || t.trackPos) + ')');
+    SX.apiSearchByIsrc(isrc).then(rows => {
+      if (!rows.length) { el.className = 'ii-lookup err'; el.textContent = '✗ not found on SoundExchange'; Log.warn('SX lookup ' + isrc + ': not found'); return; }
+      const f = SX.fields(rows[0]);
+      const good = isGoodMatch(f.title, f.artist, t.title, t.artist);
+      const rel = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
+      el.className = 'ii-lookup ' + (good ? 'ok' : 'warn');
+      el.textContent = (good ? '✓ ' : '⚠ ') + [f.title, f.artist, f.year].filter(Boolean).join(' — ') + (rel ? '  |  ' + rel : '');
+      Log.info('SX lookup ' + isrc + ': ' + (good ? 'match' : 'MISMATCH') + ' "' + f.title + '" — ' + f.artist);
+    }).catch(e => { el.className = 'ii-lookup err'; el.textContent = '✗ lookup failed'; Log.err('SX lookup ' + isrc + ' failed: ' + e.message); });
+  }
 
   function validateInput(input, t) {
     const v = normalizeIsrc(input.value);
@@ -952,7 +1098,9 @@
     if (!t || !input) return;
     t.pending = normalizeIsrc(isrc);
     input.value = t.pending;
+    input.dataset.autofill = '1';            // filled by a source — skip the on-blur lookup
     validateInput(input, t);
+    const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; }
     if (flash) {
       const tr = input.closest('tr');
       tr.classList.remove('ii-row-fill'); void tr.offsetWidth; tr.classList.add('ii-row-fill');
@@ -1105,12 +1253,16 @@
     rows.slice(0, 5).forEach(item => {
       const f = SX.fields(item);
       const cls = SX.classify(f, t.title, t.artist, t.dur);
+      const inMb = t.existing.includes(normalizeIsrc(f.isrc));
+      const relInfo = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
       const c = document.createElement('div');
-      c.className = 'ii-cand' + (cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : '');
+      c.className = 'ii-cand' + (cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : '') + (inMb ? ' inmb' : '');
+      c.title = relInfo ? 'Appears on: ' + relInfo : '';
       c.innerHTML =
         '<span class="ii-cand-isrc">' + esc(f.isrc) + '</span>' +
-        '<span class="ii-cand-meta">' + esc([f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ')) + '</span>' +
-        '<span class="ii-cand-src">SX</span>';
+        '<span class="ii-cand-meta">' + esc([f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ')) +
+          (relInfo ? '  ·  ' + esc(relInfo) : '') + '</span>' +
+        (inMb ? '<span class="ii-cand-inmb">✓ IN MB</span>' : '<span class="ii-cand-src">SX</span>');
       c.addEventListener('click', () => { setPending(idx, f.isrc, true); updateSummary(); });
       box.appendChild(c);
     });
@@ -1119,93 +1271,113 @@
   async function runSxAll() {
     const btn = modal.querySelector('#ii-sx-all');
     btn.disabled = true;
-    SX.refreshToken().catch(() => {});
+    Log.info('SoundExchange: searching ' + RELEASE.tracks.length + ' tracks', { exact: sxExact });
+    SX.refreshToken().then(() => Log.info('SX token ready')).catch(e => Log.warn('SX token prefetch failed: ' + e.message));
     const tracks = RELEASE.tracks;
-    let done = 0, filled = 0;
+    let done = 0, filled = 0, matched = 0;
     for (let i = 0; i < tracks.length; i++) {
       const t = tracks[i];
       progEl.textContent = 'SoundExchange ' + (done + 1) + '/' + tracks.length;
       try {
-        const rows = await SX.apiSearch(t.title, t.artist, 0, 10);
+        const rows = await SX.apiSearch(t.title, t.artist, 0, 10, sxExact);
         renderCands(i, rows);
-        // auto-fill best match into empty fields
-        if (!t.pending && !t.existing.length) {
-          const best = rows.find(r => SX.classify(SX.fields(r), t.title, t.artist, t.dur) === 'best');
-          if (best) { setPending(i, SX.fields(best).isrc, true); filled++; }
+        const best = rows.find(r => SX.classify(SX.fields(r), t.title, t.artist, t.dur) === 'best');
+        const bestIsrc = best && SX.fields(best).isrc;
+        if (bestIsrc) {
+          matched++;
+          // autofill the input only when it's empty AND the match is a NEW isrc
+          if (!t.pending && !t.existing.includes(bestIsrc)) { setPending(i, bestIsrc, true); filled++; }
         }
+        Log.info('SX #' + (t.number || t.trackPos) + ' "' + t.title + '": ' + rows.length + ' result(s)' +
+          (bestIsrc ? ', best ' + bestIsrc + (t.existing.includes(bestIsrc) ? ' (already in MB)' : '') : ', no confident match'));
       } catch (e) {
         renderCands(i, []);
+        Log.err('SX #' + (t.number || t.trackPos) + ' "' + t.title + '" failed: ' + e.message);
       }
       done++;
       updateSummary();
       if (i < tracks.length - 1) await sleep(BATCH_DELAY);
     }
-    progEl.textContent = 'SoundExchange done — auto-filled ' + filled;
+    progEl.textContent = 'SoundExchange done — ' + matched + ' matched, ' + filled + ' filled';
+    Log.info('SoundExchange done — ' + matched + ' matched, ' + filled + ' newly filled');
     btn.disabled = false;
   }
 
   /* ── streaming-source import (Deezer / Spotify) ── */
   function mapSourceToTracks(found, label) {
     // match by (disc,pos) first, then by normalized title; fill empty fields only
-    let filled = 0;
+    let filled = 0, already = 0, unmatched = 0;
     found.forEach(s => {
       let idx = RELEASE.tracks.findIndex(t =>
         (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || RELEASE.tracks.filter(x => +x.mediumPos === +s.disc).length === 0));
       if (idx < 0) idx = RELEASE.tracks.findIndex(t => t.title && isGoodMatch(s.title, s.artist, t.title, t.artist));
-      if (idx < 0) return;
+      if (idx < 0) { unmatched++; Log.warn(label + ': no track matched ' + s.isrc + ' "' + s.title + '" (disc ' + s.disc + ' pos ' + s.pos + ')'); return; }
       const t = RELEASE.tracks[idx];
-      if (t.pending || t.existing.includes(s.isrc)) return;
+      if (t.existing.includes(s.isrc)) { already++; return; }
+      if (t.pending) return;
       setPending(idx, s.isrc, true);
       filled++;
     });
-    updateSummary();
+    Log.info(label + ' mapping: ' + filled + ' filled, ' + already + ' already in MB, ' + unmatched + ' unmatched (of ' + found.length + ')');
     toast(label + ': filled ' + filled + ' track' + (filled === 1 ? '' : 's') +
-      (filled < found.length ? ' (' + (found.length - filled) + ' unmatched/skipped)' : ''), filled ? 'ok' : '');
+      (already ? ' · ' + already + ' already present' : '') +
+      (unmatched ? ' · ' + unmatched + ' unmatched' : ''), filled ? 'ok' : '');
+    updateSummary();
   }
 
   async function runDeezer() {
-    if (!RELEASE.deezerId) return;
+    if (!RELEASE.deezerId) { Log.warn('Deezer: no Deezer album link on this release'); return; }
     const btn = modal.querySelector('#ii-dz-all'); btn.disabled = true;
+    Log.info('Deezer: importing album ' + RELEASE.deezerId);
     try {
       progEl.textContent = 'Deezer…';
       const found = await fetchDeezer(RELEASE.deezerId, (d, n) => progEl.textContent = 'Deezer ' + d + '/' + n);
+      Log.info('Deezer: ' + found.length + ' ISRCs fetched');
       mapSourceToTracks(found, 'Deezer');
       progEl.textContent = 'Deezer done (' + found.length + ' ISRCs)';
     } catch (e) {
+      Log.err('Deezer failed: ' + e.message);
       toast('Deezer failed: ' + e.message, 'err');
-      progEl.textContent = '';
+      progEl.textContent = 'Deezer failed — see Log';
     }
     btn.disabled = false;
   }
   async function runSpotify() {
-    if (!RELEASE.spotifyId) return;
+    if (!RELEASE.spotifyId) { Log.warn('Spotify: no Spotify album link on this release'); return; }
     const btn = modal.querySelector('#ii-sp-all'); btn.disabled = true;
+    Log.info('Spotify: importing album ' + RELEASE.spotifyId);
     try {
       progEl.textContent = 'Spotify: getting a token…';
       const found = await fetchSpotify(RELEASE.spotifyId,
         (d, n) => progEl.textContent = n ? ('Spotify ' + d + '/' + n) : 'Spotify: opening player tab…');
+      Log.info('Spotify: ' + found.length + ' ISRCs fetched');
       mapSourceToTracks(found, 'Spotify');
       progEl.textContent = 'Spotify done (' + found.length + ' ISRCs)';
     } catch (e) {
+      Log.err('Spotify failed: ' + e.message);
       toast('Spotify failed: ' + e.message, 'err');
-      progEl.textContent = '';
+      progEl.textContent = 'Spotify failed — see Log';
     }
     btn.disabled = false;
   }
 
   /* ── OAuth UI handlers ── */
   function onAuthorize() {
+    Log.info('OAuth: opening authorize URL');
     window.open(Auth.authorizeUrl(), '_blank', 'noopener');
     setTimeout(onPasteCode, 600);
   }
   async function onPasteCode() {
     const code = prompt('Paste the authorization code MusicBrainz showed you:');
     if (!code) return;
+    Log.info('OAuth: exchanging authorization code');
     try {
       await Auth.exchangeCode(code);
       refreshAuthState();
+      Log.info('OAuth: authorized (refresh token stored)');
       toast('Authorized — you never need to do this again', 'ok');
     } catch (e) {
+      Log.err('OAuth exchange failed: ' + e.message);
       toast('Authorization failed: ' + e.message, 'err');
     }
   }
@@ -1230,8 +1402,10 @@
     if (!confirm('Submit ' + count + ' ISRC' + (count === 1 ? '' : 's') + ' to MusicBrainz?')) return;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting…';
+    Log.info('Submitting ' + count + ' ISRC(s) across ' + Object.keys(map).length + ' recording(s)', map);
     try {
       await submitIsrcs(map);
+      Log.info('Submit OK');
       toast('Submitted ' + count + ' ISRC' + (count === 1 ? '' : 's') + ' ✓', 'ok');
       // move submitted into "existing", clear pending
       RELEASE.tracks.forEach(t => {
@@ -1241,6 +1415,7 @@
       renderTracks();
       updateBtnStatus();
     } catch (e) {
+      Log.err('Submit failed: ' + e.message);
       toast('Submit failed: ' + e.message, 'err');
     }
     submitBtn.disabled = false;
