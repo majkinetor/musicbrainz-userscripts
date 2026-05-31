@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.193327
+// @version      2026.5.31.194222
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.193327';
+  const SCRIPT_VERSION = '2026.5.31.194222';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -338,17 +338,15 @@
     .ii-srcmenu.open { display: block; }
     .ii-srcmenu-t { font-size: 11.5px; color: #495057; margin-bottom: 7px; }
     .ii-srcmenu-t b { color: #212529; }
-    .ii-srcmenu-row { display: flex; gap: 6px; align-items: center; }
-    /* MusicBrainz's own input/button CSS out-specifies plain rules (and uses
-       !important on button height), so force matching height with !important. */
-    #ii-modal .ii-srcmenu-row input,
-    #ii-modal .ii-srcmenu-row .ii-tbtn {
-      height: 34px !important; min-height: 34px !important; box-sizing: border-box !important;
-      line-height: 20px !important; font-size: 12px !important; margin: 0 !important; vertical-align: middle !important; }
-    #ii-modal .ii-srcmenu-row input { flex: 1; min-width: 0; padding: 0 9px !important;
-      border: 1px solid #ced4da; border-radius: 6px; }
-    #ii-modal .ii-srcmenu-row input:focus { outline: none; border-color: #6f42c1; }
-    #ii-modal .ii-srcmenu-row .ii-tbtn { padding: 0 16px !important; }
+    /* align-items:stretch makes the input match the button's height no matter what
+       height MusicBrainz forces on the button — no need to fight its CSS. */
+    .ii-srcmenu-row { display: flex; gap: 6px; align-items: stretch; }
+    .ii-srcmenu-row input {
+      flex: 1; min-width: 0; box-sizing: border-box !important; height: auto !important; min-height: 0 !important;
+      padding: 6px 10px !important; border: 1px solid #ced4da !important; border-radius: 6px !important;
+      font-size: 12px !important; margin: 0 !important; }
+    .ii-srcmenu-row input:focus { outline: none; border-color: #6f42c1 !important; }
+    .ii-srcmenu-row .ii-tbtn { margin: 0 !important; }
     .ii-tspacer { flex: 1; }
     .ii-prog { font-size: 11px; color: #6c757d; min-width: 0; }
     .ii-prog.err { color: #dc3545; font-weight: 700; }
@@ -1029,14 +1027,6 @@
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear entered</button>
       </div>
 
-      <div id="ii-src-menu" class="ii-srcmenu">
-        <div class="ii-srcmenu-t">Import from a custom <b id="ii-src-label">Deezer</b> album URL</div>
-        <div class="ii-srcmenu-row">
-          <input type="text" id="ii-src-url" placeholder="Paste album URL…" autocomplete="off">
-          <button class="ii-tbtn primary" id="ii-src-go">Import</button>
-        </div>
-      </div>
-
       <div id="ii-body">
         <table id="ii-table">
           <colgroup>
@@ -1061,6 +1051,19 @@
 
     document.body.appendChild(overlay);
     document.body.appendChild(modal);
+    // The custom-URL menu lives on <body>, NOT inside #ii-modal: the modal has a
+    // transform (centering) which would make a position:fixed child anchor to the
+    // modal instead of the viewport, plus overflow:hidden would clip it. On <body>
+    // it positions correctly under the caret and dodges MB's container button CSS.
+    const srcMenu = document.createElement('div');
+    srcMenu.id = 'ii-src-menu';
+    srcMenu.className = 'ii-srcmenu';
+    srcMenu.innerHTML =
+      '<div class="ii-srcmenu-t">Import from a custom <b id="ii-src-label">Deezer</b> album URL</div>' +
+      '<div class="ii-srcmenu-row">' +
+      '<input type="text" id="ii-src-url" placeholder="Paste album URL…" autocomplete="off">' +
+      '<button class="ii-tbtn primary" id="ii-src-go">Import</button></div>';
+    document.body.appendChild(srcMenu);
     buildSxPanel();
 
     tbody     = modal.querySelector('#ii-tbody');
@@ -1093,11 +1096,11 @@
     modal.querySelector('#ii-sp-all').addEventListener('click', runSpotify);
     modal.querySelector('#ii-dz-menu').addEventListener('click', e => toggleSrcMenu('Deezer', e.currentTarget));
     modal.querySelector('#ii-sp-menu').addEventListener('click', e => toggleSrcMenu('Spotify', e.currentTarget));
-    modal.querySelector('#ii-src-go').addEventListener('click', submitSrcMenu);
-    modal.querySelector('#ii-src-url').addEventListener('keydown', e => { if (e.key === 'Enter') submitSrcMenu(); });
+    document.getElementById('ii-src-go').addEventListener('click', submitSrcMenu);
+    document.getElementById('ii-src-url').addEventListener('keydown', e => { if (e.key === 'Enter') submitSrcMenu(); });
     // close the custom-URL menu on click-outside
     document.addEventListener('mousedown', e => {
-      const menu = modal.querySelector('#ii-src-menu');
+      const menu = document.getElementById('ii-src-menu');
       if (!menu || !menu.classList.contains('open')) return;
       if (menu.contains(e.target) || (e.target.closest && e.target.closest('.ii-caret'))) return;
       menu.classList.remove('open');
@@ -1925,15 +1928,16 @@
         even when the release has no such link ── */
   let _srcMenuSource = null;
   function toggleSrcMenu(source, anchor) {
-    const menu = modal.querySelector('#ii-src-menu');
+    const menu = document.getElementById('ii-src-menu');
     if (menu.classList.contains('open') && _srcMenuSource === source) { menu.classList.remove('open'); return; }
     _srcMenuSource = source;
-    modal.querySelector('#ii-src-label').textContent = source;
-    const url = modal.querySelector('#ii-src-url');
+    document.getElementById('ii-src-label').textContent = source;
+    const url = document.getElementById('ii-src-url');
     url.value = '';
     url.placeholder = source === 'Deezer'
       ? 'https://www.deezer.com/album/123…  (or an album id)'
       : 'https://open.spotify.com/album/…  (or an album id)';
+    // anchor directly under the caret that opened it (menu is fixed, on <body>)
     const r = anchor.getBoundingClientRect();
     menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 386)) + 'px';
     menu.style.top = (r.bottom + 4) + 'px';
@@ -1942,8 +1946,8 @@
   }
   async function submitSrcMenu() {
     const source = _srcMenuSource;
-    const input = modal.querySelector('#ii-src-url').value;
-    modal.querySelector('#ii-src-menu').classList.remove('open');
+    const input = document.getElementById('ii-src-url').value;
+    document.getElementById('ii-src-menu').classList.remove('open');
     if (!source) return;
     const id = parseStreamingId(source, input);
     if (!id) { toast('Couldn\'t find a ' + source + ' album id in that URL', 'err'); Log.warn(source + ': unparseable URL "' + input + '"'); return; }
