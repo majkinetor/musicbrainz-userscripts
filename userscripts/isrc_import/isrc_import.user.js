@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.6.1
+// @version      1.7.0
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -358,6 +358,8 @@
     .ii-ex-item { display: flex; align-items: center; gap: 5px; cursor: pointer; }
     .ii-ex-item input { cursor: pointer; margin: 0; flex-shrink: 0; }
     .ii-ex-item.del samp { text-decoration: line-through; color: #d63384; }
+    .ii-ex-pending samp { color: #b8860b; text-decoration: line-through; }
+    .ii-ex-pending { color: #b8860b; font-size: 11px; }
     .ii-inwrap { display: flex; align-items: center; gap: 5px; }
     .ii-input { width: 150px; flex-shrink: 0; padding: 4px 7px; border: 1px solid #ced4da; border-radius: 4px;
       font-family: 'Courier New', monospace; font-size: 12.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
@@ -1167,7 +1169,7 @@
           (t.recId ? '<a href="' + MB_ROOT + '/recording/' + t.recId + '" target="_blank" rel="noopener" title="' + esc(t.title) + '">' + esc(t.title) + '</a>' : esc(t.title)) +
           '</div><div class="ii-track-artist">' + esc(t.artist) + '</div></td>' +
         '<td class="ii-track-dur">' + esc(t.dur) + '</td>' +
-        '<td class="ii-existing">' + existingHtml(t.existing) + '</td>' +
+        '<td class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval) + '</td>' +
         '<td><div class="ii-inwrap">' +
           '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
           '<button class="ii-plus" title="Previous ISRC + 1">+1</button>' +
@@ -1200,12 +1202,16 @@
     });
     updateSummary();
   }
-  function existingHtml(arr) {
+  function existingHtml(arr, pending) {
     if (!arr || !arr.length) return '<span class="none">none</span>';
-    return arr.map(i =>
-      '<label class="ii-ex-item" title="Check to delete this ISRC from the recording">' +
-      '<input type="checkbox" class="ii-ex-del" data-isrc="' + esc(i) + '">' +
-      '<samp>' + esc(i) + '</samp></label>').join('');
+    const pend = new Set((pending || []).map(normalizeIsrc));
+    return arr.map(i => {
+      if (pend.has(normalizeIsrc(i)))
+        return '<span class="ii-ex-item ii-ex-pending" title="Remove-ISRC edit submitted — pending in the edit queue">⏳ <samp>' + esc(i) + '</samp></span>';
+      return '<label class="ii-ex-item" title="Check to delete this ISRC from the recording">' +
+        '<input type="checkbox" class="ii-ex-del" data-isrc="' + esc(i) + '">' +
+        '<samp>' + esc(i) + '</samp></label>';
+    }).join('');
   }
   function rowInput(idx) {
     const tr = tbody.querySelector('tr[data-idx="' + idx + '"]');
@@ -1738,70 +1744,107 @@
     const total = recs.reduce((n, [, v]) => n + v.isrcs.length, 0);
     if (!total) return;
     if (!Auth.isAuthorized()) { /* deletion uses the session cookie, not OAuth — no auth needed, but warn if not logged in is handled by the request itself */ }
-    if (!confirm('Delete ' + total + ' existing ISRC' + (total === 1 ? '' : 's') + ' from ' + recs.length + ' recording' + (recs.length === 1 ? '' : 's') + '?\n\nThis makes real "Remove ISRC" edits on MusicBrainz (using your logged-in session).')) return;
+    if (!confirm('Submit "Remove ISRC" edits for ' + total + ' ISRC' + (total === 1 ? '' : 's') + ' across ' + recs.length + ' recording' + (recs.length === 1 ? '' : 's') + '?\n\nUses your logged-in MusicBrainz session. Removals enter the edit queue (they are not auto-applied), so the ISRCs stay listed until the edits go through — track them under 🕓 My ISRC edits.')) return;
     const note = getEditNote();
     const btn = modal.querySelector('#ii-delete');
     btn.disabled = true;
-    Log.info('Deleting ' + total + ' ISRC(s) from ' + recs.length + ' recording(s)');
+    Log.info('Submitting Remove-ISRC edits for ' + total + ' ISRC(s) across ' + recs.length + ' recording(s)');
     let ok = 0, fail = 0;
     for (const [recId, info] of recs) {
-      progEl.textContent = 'Deleting from recording ' + recId.slice(0, 8) + '…';
+      progEl.textContent = 'Submitting removal for ' + recId.slice(0, 8) + '…';
       try {
         await removeIsrcsFromRecording(recId, info.isrcs, note);
+        // mark pending (the edit is queued; don't drop from `existing` — it's still on the recording)
         const t = RELEASE.tracks[info.idx];
-        info.isrcs.forEach(i => { const k = t.existing.indexOf(i); if (k >= 0) t.existing.splice(k, 1); });
+        t.pendingRemoval = (t.pendingRemoval || []).concat(info.isrcs);
         ok += info.isrcs.length;
-        Log.info('Removed ' + info.isrcs.join(', ') + ' from recording ' + recId);
+        Log.info('Submitted Remove-ISRC for ' + info.isrcs.join(', ') + ' (recording ' + recId + ') — pending');
       } catch (e) {
         fail += info.isrcs.length;
         Log.err('Remove from recording ' + recId + ' failed: ' + e.message);
       }
       await sleep(700);
     }
-    renderTracks(); updateBtnStatus(); refreshDeleteBtn();
-    progEl.textContent = 'Deleted ' + ok + (fail ? ', ' + fail + ' failed' : '');
-    toast('Deleted ' + ok + ' ISRC' + (ok === 1 ? '' : 's') + (fail ? ' · ' + fail + ' failed (see Log)' : ''), fail ? 'err' : 'ok');
+    renderTracks(); refreshDeleteBtn();
+    progEl.textContent = ok + ' removal edit(s) submitted' + (fail ? ', ' + fail + ' failed' : '');
+    toast(ok + ' Remove-ISRC edit' + (ok === 1 ? '' : 's') + ' submitted (pending in the edit queue)' + (fail ? ' · ' + fail + ' failed (see Log)' : ''), fail ? 'err' : 'ok');
   }
 
-  // GET the recording edit form, echo every field verbatim (preserving name,
-  // artist credit, length, etc.), drop the target ISRC inputs, set the edit note,
-  // POST it back with the session cookie → a "Remove ISRC" edit. Verified via WS2.
+  function decodeHtmlEntities(s) {
+    return String(s || '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&#x27;/gi, "'");
+  }
+
+  // The recording-edit form is React-rendered, so the static HTML only carries a few
+  // plain inputs + the field data embedded as JSON for hydration. We reconstruct the
+  // full `edit-recording.*` POST from BOTH: the JSON field leaves (artist credit with
+  // numeric IDs, name, isrcs.N.value) and the static inputs (comment, length, etc.),
+  // marking the target ISRCs `isrcs.N.removed=1` (omission alone does NOT remove —
+  // MBS-13969). No CSRF token field is used; the session cookie authorises. WS2-verified.
   async function removeIsrcsFromRecording(recId, isrcsToRemove, note) {
     const editUrl = MB_ROOT + '/recording/' + recId + '/edit';
     const gr = await gmGet(editUrl, { 'Accept': 'text/html' });
     if (gr.status !== 200) throw new Error('GET form ' + gr.status + (gr.status === 401 || gr.status === 403 ? ' (are you logged into MusicBrainz?)' : ''));
-    const doc = new DOMParser().parseFromString(gr.responseText, 'text/html');
-    const form = doc.querySelector('form#page-content form, form.edit-recording, form[action$="/edit"]') ||
-                 [...doc.querySelectorAll('form')].find(f => f.querySelector('[name$=".isrcs.0"], [name*=".isrcs."]')) ||
-                 doc.querySelector('form');
-    if (!form) throw new Error('edit form not found in page');
+    const html = gr.responseText;
     const rm = new Set(isrcsToRemove.map(normalizeIsrc));
-    let prefix = 'edit-recording', noteField = null, hadIsrc = false;
     const params = new URLSearchParams();
-    form.querySelectorAll('input[name], select[name], textarea[name]').forEach(el => {
-      const name = el.name;
-      if (!name || el.type === 'submit' || el.type === 'button' || el.type === 'file') return;
-      if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) return;
-      const mIsrc = name.match(/^(.*)\.isrcs\.\d+$/);
-      if (mIsrc) {
-        prefix = mIsrc[1];
-        hadIsrc = true;
-        if (rm.has(normalizeIsrc(el.value))) return;   // drop the ISRC(s) we're deleting
-      }
-      if (/\.edit_note$/.test(name)) { noteField = name; return; }   // set our own below
-      params.append(name, el.value);
+    const seen = new Set();
+    const add = (n, v) => { params.append(n, v); seen.add(n); };
+
+    // 1) JSON-hydrated field leaves (flat objects carrying html_name + value)
+    const leaves = new Map();
+    for (const m of html.matchAll(/\{[^{}]*"html_name":"(edit-recording\.[^"]+)"[^{}]*\}/g)) {
+      const vm = m[0].match(/"value":((?:"(?:[^"\\]|\\.)*")|true|false|null|-?\d+(?:\.\d+)?)/);
+      if (vm) { try { leaves.set(m[1], JSON.parse(vm[1])); } catch (e) {} }
+    }
+    // 2) static plain inputs (comment, length, video, make_votable, …)
+    const formM = html.match(/<form[^>]*class="edit-recording"[\s\S]*?<\/form>/i);
+    const formHtml = formM ? formM[0] : html;
+    const statics = new Map();
+    for (const m of formHtml.matchAll(/<(input|textarea|select)\b([^>]*)>/gi)) {
+      const a = m[2];
+      const nm = (a.match(/name="([^"]*)"/) || [])[1];
+      if (!nm || !/^edit-recording\./.test(nm)) continue;
+      statics.set(nm, {
+        type: (a.match(/type="([^"]*)"/) || [])[1] || (m[1].toLowerCase() === 'textarea' ? 'textarea' : 'text'),
+        value: decodeHtmlEntities((a.match(/value="([^"]*)"/) || [])[1] || ''),
+        checked: /\bchecked\b/i.test(a),
+      });
+    }
+
+    // ISRC entries: prefer the .value leaves; fall back to the static isrcs.N aliases
+    const isrcEntries = [];
+    for (const [n, v] of leaves) { const mi = n.match(/\.isrcs\.(\d+)\.value$/); if (mi) isrcEntries.push({ idx: +mi[1], value: String(v) }); }
+    if (!isrcEntries.length) for (const [n, s] of statics) { const mi = n.match(/\.isrcs\.(\d+)$/); if (mi && s.value) isrcEntries.push({ idx: +mi[1], value: s.value }); }
+    if (!isrcEntries.length) throw new Error('no ISRC fields in the edit form (already removed?)');
+
+    // name + artist credit (numeric IDs) from the JSON leaves
+    for (const [n, v] of leaves) { if (/\.isrcs\./.test(n)) continue; if (v === false) continue; add(n, v === true ? '1' : String(v)); }
+    // comment / length / other plain fields from the static inputs (omit unchecked checkboxes + the isrcs alias + edit_note)
+    for (const [n, s] of statics) {
+      if (seen.has(n) || /\.isrcs\.\d+$/.test(n) || /\.edit_note$/.test(n)) continue;
+      if (s.type === 'checkbox') { if (s.checked) add(n, s.value || '1'); continue; }
+      add(n, s.value);
+    }
+    // ISRCs: every existing value, with removed=1 on the targets
+    isrcEntries.forEach(e => {
+      add('edit-recording.isrcs.' + e.idx + '.value', e.value);
+      if (rm.has(normalizeIsrc(e.value))) add('edit-recording.isrcs.' + e.idx + '.removed', '1');
     });
-    if (!hadIsrc) throw new Error('no ISRC fields in the edit form (already removed?)');
-    params.append(noteField || (prefix + '.edit_note'), note);
+    add('edit-recording.edit_note', note);
+
     Log.info('POST ' + shortUrl(editUrl) + ' (' + [...params.keys()].length + ' fields, removing ' + [...rm].join(',') + ')');
-    const pr = await gmPost(editUrl, params.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'text/html' });
-    if (pr.status !== 200 && pr.status !== 302 && pr.status !== 303) throw new Error('POST ' + pr.status);
-    // Verify via WS2 that the ISRC(s) are actually gone (the POST 200 alone could be a re-rendered form with errors).
-    await sleep(400);
-    const vr = await gmGet(MB_WS2 + 'recording/' + recId + '?inc=isrcs&fmt=json', { 'Accept': 'application/json' });
-    const still = (JSON.parse(vr.responseText || '{}').isrcs || []).map(normalizeIsrc);
-    const leftover = [...rm].filter(i => still.includes(i));
-    if (leftover.length) throw new Error('still present after edit: ' + leftover.join(', ') + ' (edit rejected? not logged in?)');
+    const pr = await gmPost(editUrl, params.toString(), {
+      'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'text/html', 'Referer': editUrl, 'Origin': MB_ROOT,
+    });
+    if (pr.status >= 400) throw new Error('POST ' + pr.status + (pr.status === 401 || pr.status === 403 ? ' (are you logged into MusicBrainz?)' : ''));
+    // A created edit redirects away from /edit to the recording page. A validation
+    // error re-renders the form (stays on /edit, still has the edit-recording inputs).
+    // NOTE: "Remove ISRC" is a normal (non-auto) edit — it enters the edit queue, so the
+    // ISRC stays visible in WS2 until the edit is applied. So we can't verify by re-reading.
+    const finalUrl = pr.finalUrl || '';
+    const reRendered = /\/edit\/?(?:[?#]|$)/.test(finalUrl) || /name="edit-recording\.name"/.test(pr.responseText || '');
+    if (reRendered) throw new Error('edit form returned an error (nothing submitted)');
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
