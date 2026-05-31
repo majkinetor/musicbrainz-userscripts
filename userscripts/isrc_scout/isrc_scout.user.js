@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.184709
+// @version      2026.5.31.185524
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -80,7 +80,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.184709';
+  const SCRIPT_VERSION = '2026.5.31.185524';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -331,6 +331,7 @@
     .ii-srcmenu-row .ii-tbtn { height: 32px; box-sizing: border-box; }
     .ii-tspacer { flex: 1; }
     .ii-prog { font-size: 11px; color: #6c757d; min-width: 0; }
+    .ii-prog.err { color: #dc3545; font-weight: 700; }
 
     /* table */
     #ii-body { flex: 1; overflow: auto; padding: 0; }
@@ -822,9 +823,9 @@
         };
         out.push(entry);
         if (onIsrc && isValidIsrc(entry.isrc)) onIsrc(entry);   // fill this track's input now
-      } catch (e) { failed++; Log.warn('Deezer track ' + t.id + ' fetch failed: ' + e.message); }
+      } catch (e) { failed++; Log.warn('Deezer track ' + t.id + ' fetch failed: ' + errText(e)); }
       done++;
-      if (onProgress) onProgress(done, list.length);
+      try { if (onProgress) onProgress(done, list.length); } catch (e) { Log.warn('Deezer progress update hiccup: ' + errText(e)); }
       await sleep(120);
     }
     const valid = out.filter(t => isValidIsrc(t.isrc));
@@ -866,7 +867,10 @@
     const rows = parseIsrchunt(r.responseText);
     Log.info('ISRC Hunt: ' + rows.length + ' track(s) with an ISRC');
     if (!rows.length) throw new Error('ISRC Hunt found no ISRCs for this album');
-    rows.forEach((e, i) => { if (onIsrc) onIsrc(e); if (onProgress) onProgress(i + 1, rows.length); });
+    rows.forEach((e, i) => {
+      try { if (onIsrc) onIsrc(e); } catch (err) { Log.warn('Spotify map hiccup for ' + e.isrc + ': ' + errText(err)); }
+      try { if (onProgress) onProgress(i + 1, rows.length); } catch (err) {}
+    });
     return rows;
   }
 
@@ -1846,17 +1850,19 @@
   }
 
   const errText = e => (e && (e.message || e.stack)) || String(e) || '(no detail)';
+  const setProg = (msg, isErr) => { if (progEl) { progEl.textContent = msg; progEl.classList.toggle('err', !!isErr); } };
   async function runStreamingSource(label, albumId, fetcher) {
     const counts = { filled: 0, already: 0, skipped: 0, unmatched: 0 };
+    setProg(label + ': starting…');
     let found;
     try {
       found = await fetcher(albumId,
-        (d, n) => progEl.textContent = n ? (label + ' ' + d + '/' + n) : (label + ': starting…'),
+        (d, n) => setProg(n ? (label + ' ' + d + '/' + n) : (label + ': starting…')),
         s => { counts[mapOneToTrack(s, label)]++; });   // ← fill each ISRC as it's fetched
     } catch (e) {
+      // report failures the same way as other messages — inline next to the buttons
       Log.err(label + ' failed: ' + errText(e));
-      toast(label + ' failed: ' + ((e && e.message) || 'see Log'), 'err');
-      progEl.textContent = label + ' failed — see Log';
+      setProg('⚠ ' + label + ' failed — see Log', true);
       return;
     }
     // the fetch + mapping succeeded — report it. Guard the UI update separately so a
@@ -1868,8 +1874,7 @@
       if (counts.already)   parts.push(counts.already + ' already present');
       if (counts.skipped)   parts.push(counts.skipped + ' already entered');
       if (counts.unmatched) parts.push(counts.unmatched + ' unmatched');
-      toast(label + ': ' + parts.join(' · '), counts.filled ? 'ok' : '');
-      progEl.textContent = label + ' done (' + found.length + ' ISRCs)';
+      setProg(label + ' done — ' + parts.join(' · '));
     } catch (e) {
       Log.warn(label + ': imported OK, but a UI update hiccuped: ' + errText(e));
     }
@@ -1879,15 +1884,15 @@
     if (!RELEASE.deezerId) { Log.warn('Deezer: no Deezer album link on this release'); return; }
     const btn = modal.querySelector('#ii-dz-all'); btn.disabled = true;
     Log.info('Deezer: importing album ' + RELEASE.deezerId);
-    await runStreamingSource('Deezer', RELEASE.deezerId, fetchDeezer);
-    btn.disabled = false;
+    try { await runStreamingSource('Deezer', RELEASE.deezerId, fetchDeezer); }
+    finally { btn.disabled = false; }   // always re-enable, even if something throws
   }
   async function runSpotify() {
     if (!RELEASE.spotifyId) { Log.warn('Spotify: no Spotify album link on this release'); return; }
     const btn = modal.querySelector('#ii-sp-all'); btn.disabled = true;
     Log.info('Spotify: importing album ' + RELEASE.spotifyId);
-    await runStreamingSource('Spotify', RELEASE.spotifyId, fetchSpotify);
-    btn.disabled = false;
+    try { await runStreamingSource('Spotify', RELEASE.spotifyId, fetchSpotify); }
+    finally { btn.disabled = false; }
   }
 
   /* ── custom-URL menu (Deezer / Spotify "▾") — import from a pasted album URL,
