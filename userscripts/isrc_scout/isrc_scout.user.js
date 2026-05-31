@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.185524
+// @version      2026.5.31.192201
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -45,6 +45,15 @@
   'use strict';
 
   /* ═══════════════════════════════════════════════════════════════════════
+     TIMERS — Firefox + Violentmonkey can throw "called on incompatible object"
+     when a native timer is invoked with the wrong `this` (sandbox/Xray quirk).
+     Bind them to the window so every call has the right receiver.
+  ═══════════════════════════════════════════════════════════════════════ */
+  const _timerHost   = (typeof window !== 'undefined' && window) || globalThis;
+  const _setTimeout  = _timerHost.setTimeout.bind(_timerHost);
+  const _setInterval = _timerHost.setInterval.bind(_timerHost);
+
+  /* ═══════════════════════════════════════════════════════════════════════
      OAUTH OUT-OF-BAND CODE CATCHER
      After you approve, MusicBrainz lands on /oauth2/oob?code=… showing the code.
      Grab it, hand it to the editor tab via GM storage, and close this tab — so
@@ -59,7 +68,7 @@
         // Browsers block window.close() on a tab that has navigated (authorize → oob);
         // the editor tab also tries to close this popup, but if it's still here, show a
         // clear confirmation so it's obvious it worked.
-        setTimeout(() => {
+        _setTimeout(() => {
           try {
             window.close();
             document.title = '✓ Authorized — you can close this tab';
@@ -80,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.185524';
+  const SCRIPT_VERSION = '2026.5.31.192201';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -220,7 +229,12 @@
     return String(raw || '').toUpperCase().replace(/[\s\-]/g, '');
   }
   function isValidIsrc(s) { return ISRC_RE.test(normalizeIsrc(s)); }
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function sleep(ms) {
+    return new Promise(resolve => {
+      try { _setTimeout(resolve, ms); }
+      catch (e) { resolve(); }   // never stall a flow if the env's timer misbehaves
+    });
+  }
 
   function toast(msg, kind) {
     let t = document.getElementById('ii-toast');
@@ -1107,7 +1121,7 @@
     const codeInput = modal.querySelector('#ii-oauth-code');
     const tryCode = () => { const c = codeInput.value.trim(); if (c) { codeInput.value = ''; exchangeAndFinish(c, 'pasted'); } };
     codeInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tryCode(); } });
-    codeInput.addEventListener('paste', () => setTimeout(tryCode, 50));
+    codeInput.addEventListener('paste', () => _setTimeout(tryCode, 50));
 
     // bulk pane wiring
     modal.querySelector('#ii-bulk-apply').addEventListener('click', () => applyBulk(false));
@@ -1302,17 +1316,21 @@
   async function pumpVerify() {
     if (_vq.running) return;
     _vq.running = true;
-    while (_vq.items.length) {
-      if (_vq.done >= SX_BATCH_LIMIT) { _vq.running = false; showVerifyPauses(); return; }
-      const { idx, isrc } = _vq.items.shift();
-      const t = RELEASE.tracks[idx];
-      // skip if the field no longer holds this value (user changed it meanwhile)
-      if (!t || !isValidIsrc(isrc) || normalizeIsrc(t.pending) !== normalizeIsrc(isrc)) continue;
-      try { await lookupIsrc(idx, isrc); } catch (e) {}
-      _vq.done++;
-      if (_vq.items.length && _vq.done < SX_BATCH_LIMIT) await sleep(BATCH_DELAY);
+    try {
+      while (_vq.items.length) {
+        if (_vq.done >= SX_BATCH_LIMIT) { showVerifyPauses(); return; }
+        const { idx, isrc } = _vq.items.shift();
+        const t = RELEASE.tracks[idx];
+        // skip if the field no longer holds this value (user changed it meanwhile)
+        if (!t || !isValidIsrc(isrc) || normalizeIsrc(t.pending) !== normalizeIsrc(isrc)) continue;
+        try { await lookupIsrc(idx, isrc); } catch (e) {}
+        _vq.done++;
+        if (_vq.items.length && _vq.done < SX_BATCH_LIMIT) await sleep(BATCH_DELAY);
+      }
+    } finally {
+      // always release the lock — a throw in here previously stalled the whole queue
+      _vq.running = false;
     }
-    _vq.running = false;
   }
 
   function validateInput(input, t) {
@@ -1912,7 +1930,7 @@
     menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 386)) + 'px';
     menu.style.top = (r.bottom + 4) + 'px';
     menu.classList.add('open');
-    setTimeout(() => url.focus(), 0);
+    _setTimeout(() => url.focus(), 0);
   }
   async function submitSrcMenu() {
     const source = _srcMenuSource;
@@ -1953,9 +1971,9 @@
     // not 'noopener' so the oob tab can close itself once it captures the code
     const w = window.open(Auth.authorizeUrl(), '_blank');
     const ci = modal.querySelector('#ii-oauth-code');
-    if (ci) setTimeout(() => ci.focus(), 100);   // ready for a manual paste if the tab can't close
+    if (ci) _setTimeout(() => ci.focus(), 100);   // ready for a manual paste if the tab can't close
     let n = 0;
-    const iv = setInterval(() => {
+    const iv = _setInterval(() => {
       const oob = store.get('oauth_oob_code', null);
       if (oob && oob.code) {
         clearInterval(iv); store.del('oauth_oob_code');
@@ -2003,7 +2021,7 @@
       renderTracks();
       updateBtnStatus();
       // no errors — close the editor (the ✓ toast lives on <body> and stays visible)
-      setTimeout(closeModal, 800);
+      _setTimeout(closeModal, 800);
     } catch (e) {
       Log.err('Submit failed: ' + e.message);
       toast('Submit failed: ' + e.message, 'err');
