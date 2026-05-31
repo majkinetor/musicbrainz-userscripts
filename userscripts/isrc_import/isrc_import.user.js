@@ -1,15 +1,17 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.0.0
+// @version      1.1.0
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
 // @match        https://beta.musicbrainz.org/release/*
+// @match        https://open.spotify.com/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
+// @grant        unsafeWindow
 // @connect      musicbrainz.org
 // @connect      isrc-api.soundexchange.com
 // @connect      isrc.soundexchange.com
@@ -45,6 +47,68 @@
 
 (function () {
   'use strict';
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SPOTIFY TOKEN HARVESTER
+     Runs only on open.spotify.com, and only in a tab WE opened (marked with
+     #ii_harvest). The real web player mints its own access token (handling
+     Spotify's TOTP/anti-bot itself, and working for free accounts — no
+     Premium and no dev app). We capture that token off the player's own
+     requests, hand it to the MusicBrainz tab via GM storage, and close.
+     Normal Spotify browsing is untouched (no marker → this returns at once).
+  ═══════════════════════════════════════════════════════════════════════ */
+  if (/(^|\.)spotify\.com$/i.test(location.hostname)) {
+    if (location.hash.indexOf('ii_harvest') === -1) return; // not our tab — do nothing
+    let captured = false;
+    const finish = (token) => {
+      if (captured || !token) return;
+      captured = true;
+      try { GM_setValue('spotify_harvest', { token: token, ts: Date.now() }); } catch (e) {}
+      setTimeout(() => { try { window.close(); } catch (e) {} }, 250);
+    };
+    const fromBearer = (v) => { const m = /Bearer\s+([A-Za-z0-9._-]+)/i.exec(String(v || '')); return m ? m[1] : null; };
+    const fromHeaders = (h) => {
+      try {
+        if (!h) return null;
+        if (typeof h.get === 'function') return fromBearer(h.get('authorization'));
+        if (Array.isArray(h)) { for (const [k, v] of h) if (String(k).toLowerCase() === 'authorization') return fromBearer(v); return null; }
+        for (const k in h) if (k.toLowerCase() === 'authorization') return fromBearer(h[k]);
+      } catch (e) {}
+      return null;
+    };
+    const uw = (typeof unsafeWindow !== 'undefined') ? unsafeWindow : window;
+    // hook fetch — capture the Authorization on the player's API calls (and the
+    // access-token endpoint response as a backup)
+    const origFetch = uw.fetch;
+    if (origFetch) {
+      uw.fetch = function (input, init) {
+        try {
+          const t = fromHeaders(init && init.headers) || (input && input.headers && fromHeaders(input.headers));
+          if (t) finish(t);
+        } catch (e) {}
+        const p = origFetch.apply(this, arguments);
+        try {
+          const url = String((input && input.url) || input || '');
+          if (/get_access_token|\/api\/token/.test(url)) {
+            p.then(r => r.clone().json()).then(j => { if (j && j.accessToken) finish(j.accessToken); }).catch(() => {});
+          }
+        } catch (e) {}
+        return p;
+      };
+    }
+    // hook XHR header setting
+    try {
+      const osrh = uw.XMLHttpRequest.prototype.setRequestHeader;
+      uw.XMLHttpRequest.prototype.setRequestHeader = function (k, v) {
+        try { if (String(k).toLowerCase() === 'authorization') { const t = fromBearer(v); if (t) finish(t); } } catch (e) {}
+        return osrh.apply(this, arguments);
+      };
+    } catch (e) {}
+    setTimeout(() => {
+      if (!captured) { try { GM_setValue('spotify_harvest', { error: 'timeout', ts: Date.now() }); } catch (e) {} try { window.close(); } catch (e) {} }
+    }, 15000);
+    return; // never run the MusicBrainz editor on a Spotify page
+  }
 
   /* ═══════════════════════════════════════════════════════════════════════
      CONSTANTS
@@ -573,20 +637,37 @@
     store.set('spotify_cc_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
     return j.access_token;
   }
-  async function spotifyAnonToken() {
-    const r = await gmGet('https://open.spotify.com/get_access_token?reason=transport&productType=web_player', {
-      'Accept': 'application/json', 'App-Platform': 'WebPlayer', 'Referer': 'https://open.spotify.com/',
+  // Harvest a token from the real web player: open the album in a Spotify tab (the
+  // player mints a working token itself — free account ok, no Premium, no bot-block),
+  // capture it via the harvester at the top of this script, then close the tab.
+  // Must be triggered from a user gesture (the import-button click) or the popup blocks.
+  function harvestSpotifyToken(albumId, onProgress) {
+    const cached = store.get('spotify_harvest', null);
+    if (cached && cached.token && Date.now() - cached.ts < 50 * 60 * 1000) return Promise.resolve(cached.token);
+    store.del('spotify_harvest');
+    const w = window.open('https://open.spotify.com/album/' + albumId + '#ii_harvest', 'ii_sp_harvest', 'width=520,height=640');
+    if (!w) return Promise.reject(new Error('popup blocked — allow popups for musicbrainz.org so a Spotify tab can open'));
+    if (onProgress) onProgress(0, 0);
+    return new Promise((resolve, reject) => {
+      let n = 0;
+      const iv = setInterval(() => {
+        const h = store.get('spotify_harvest', null);
+        if (h && h.token) { clearInterval(iv); try { w.close(); } catch (e) {} resolve(h.token); return; }
+        if ((h && h.error) || ++n > 40) { // ~20s
+          clearInterval(iv); try { w.close(); } catch (e) {}
+          reject(new Error('could not get a Spotify token (are you logged into open.spotify.com?)'));
+        }
+      }, 500);
     });
-    if (r.status === 403) throw new Error('anonymous token blocked (403). Add a Spotify app in ⚙ Setup for a reliable token.');
-    let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { throw new Error('unexpected token response (' + r.status + ')'); }
-    if (!j.accessToken) throw new Error('token unavailable (' + r.status + ')');
-    return j.accessToken;
   }
-  async function spotifyToken() {
-    return (await spotifyClientCredsToken()) || spotifyAnonToken();
+  async function getSpotifyToken(albumId, onProgress) {
+    const cc = await spotifyClientCredsToken();
+    if (cc) return cc;                               // Premium dev app, if configured
+    return harvestSpotifyToken(albumId, onProgress); // free web-player token (opens a brief tab)
   }
   async function fetchSpotify(albumId, onProgress) {
-    const tok = await spotifyToken();
+    if (onProgress) onProgress(0, 0);
+    const tok = await getSpotifyToken(albumId, onProgress);
     const auth = { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' };
     // 1) album tracklist (paginated) — simplified tracks have no ISRC
     const ids = [];
@@ -664,17 +745,19 @@
           You only ever do this once.
         </div>
 
-        <h3 style="margin-top:14px">Spotify app (optional, for reliable Spotify import)</h3>
+        <h3 style="margin-top:14px">Spotify app (optional)</h3>
         <div class="row">
           <div><label>Spotify Client ID</label><input type="text" id="ii-sp-cid" autocomplete="off"></div>
           <div><label>Spotify Client Secret</label><input type="text" id="ii-sp-csec" autocomplete="off"></div>
         </div>
         <div class="row" style="margin-top:8px"><button class="ii-tbtn" id="ii-sp-save">Save Spotify app</button></div>
         <div class="ii-help">
-          Free to create at
-          <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a>
-          (any redirect URI). Without this, Spotify uses an anonymous token that Spotify frequently bot-blocks.
-          Note: Spotify keeps removing API endpoints, so Spotify import may break independently of this setup.
+          <b>You don't need this.</b> By default, Spotify import briefly opens an <code>open.spotify.com</code>
+          tab, borrows the web player's own token (works for free accounts, no Premium), and closes it —
+          so allow popups for musicbrainz.org. Only fill this in if you have a
+          <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">Spotify developer app</a>
+          (requires Premium) and prefer a silent token with no tab. Either way, Spotify keeps removing API
+          endpoints, so Spotify import may break regardless.
         </div>
       </div>
 
@@ -1109,12 +1192,13 @@
     if (!RELEASE.spotifyId) return;
     const btn = modal.querySelector('#ii-sp-all'); btn.disabled = true;
     try {
-      progEl.textContent = 'Spotify…';
-      const found = await fetchSpotify(RELEASE.spotifyId, (d, n) => progEl.textContent = 'Spotify ' + d + '/' + n);
+      progEl.textContent = 'Spotify: getting a token…';
+      const found = await fetchSpotify(RELEASE.spotifyId,
+        (d, n) => progEl.textContent = n ? ('Spotify ' + d + '/' + n) : 'Spotify: opening player tab…');
       mapSourceToTracks(found, 'Spotify');
       progEl.textContent = 'Spotify done (' + found.length + ' ISRCs)';
     } catch (e) {
-      toast('Spotify failed: ' + e.message + ' (token endpoint can be flaky)', 'err');
+      toast('Spotify failed: ' + e.message, 'err');
       progEl.textContent = '';
     }
     btn.disabled = false;
