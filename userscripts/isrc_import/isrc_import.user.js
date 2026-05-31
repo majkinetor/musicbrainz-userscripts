@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.4.0
+// @version      1.5.0
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -424,6 +424,44 @@
     .ii-lookup.warn { color: #b8860b; }
     .ii-lookup.err  { color: #dc3545; }
     .ii-lookup.spin { color: #6c757d; }
+    .ii-cand-refine { font-size: 10.5px; color: #6f42c1; cursor: pointer; padding: 2px 7px;
+      border: 1px dashed #d6c7ee; border-radius: 4px; background: #faf8fe; width: max-content; }
+    .ii-cand-refine:hover { background: #f0e9fb; text-decoration: underline; }
+
+    /* SoundExchange refine panel */
+    #ii-sxpanel { position: fixed; top: 9vh; right: 4vw; width: 560px; max-width: 92vw; max-height: 78vh;
+      background: #fff; border: 1px solid #cdb8ee; border-radius: 10px; box-shadow: 0 14px 44px rgba(0,0,0,.32);
+      z-index: 1000001; display: none; flex-direction: column; overflow: hidden; font-family: system-ui, sans-serif; }
+    #ii-sxpanel.open { display: flex; }
+    .ii-sxp-hdr { display: flex; align-items: center; gap: 8px; padding: 9px 13px; background: #f7f3fe;
+      border-bottom: 1px solid #e6dcf7; cursor: move; user-select: none; }
+    .ii-sxp-hdr .t { flex: 1; font-size: 13px; font-weight: 700; color: #4b2e83; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ii-sxp-hdr .t b { color: #6f42c1; }
+    #ii-sxp-close { background: none; border: none; font-size: 17px; color: #6c757d; cursor: pointer; line-height: 1; }
+    #ii-sxp-close:hover { color: #212529; }
+    .ii-sxp-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; padding: 10px 13px 6px; }
+    .ii-sxp-form input[type=text] { padding: 5px 8px; border: 1px solid #ced4da; border-radius: 5px; font-size: 12px; box-sizing: border-box; width: 100%; }
+    #ii-sxp-title { grid-column: 1; } #ii-sxp-artist { grid-column: 2; }
+    #ii-sxp-release { grid-column: 1 / 3; }
+    #ii-sxp-search { grid-column: 3; grid-row: 1 / 3; align-self: stretch; padding: 0 16px; border: none;
+      border-radius: 5px; background: #6f42c1; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
+    #ii-sxp-search:hover { background: #5a32a3; } #ii-sxp-search:disabled { background: #adb5bd; }
+    .ii-sxp-exacts { grid-column: 1 / 3; display: flex; gap: 12px; font-size: 11px; color: #6c757d; padding-top: 1px; }
+    .ii-sxp-exacts label { display: inline-flex; gap: 3px; align-items: center; cursor: pointer; }
+    .ii-sxp-status { padding: 2px 13px; font-size: 11px; color: #6c757d; min-height: 14px; }
+    .ii-sxp-status.err { color: #dc3545; }
+    .ii-sxp-results { flex: 1; overflow-y: auto; padding: 4px 13px 12px; display: flex; flex-direction: column; gap: 4px; }
+    .ii-sxp-row { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border: 1px solid #e9ecef;
+      border-radius: 6px; cursor: pointer; }
+    .ii-sxp-row:hover { background: #f0f6ff; border-color: #9ec5fe; }
+    .ii-sxp-row.best { border-color: #6ea8fe; background: #e7f1ff; }
+    .ii-sxp-row.warn { background: #fff3cd; }
+    .ii-sxp-row.cur  { border-color: #198754; background: #d1e7dd; }
+    .ii-sxp-isrc { font-family: 'Courier New', monospace; font-weight: 700; color: #084298; flex-shrink: 0; font-size: 12px; }
+    .ii-sxp-meta { flex: 1; min-width: 0; }
+    .ii-sxp-meta .a { font-size: 12px; color: #212529; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ii-sxp-meta .b { font-size: 10.5px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ii-sxp-inmb { font-size: 9px; font-weight: 700; color: #198754; flex-shrink: 0; }
   `;
   // @run-at document-start (needed for the Spotify harvester) can fire before
   // <html>/<head> exist; the MB-side editor only needs the DOM, so defer to ready.
@@ -944,6 +982,7 @@
 
     document.body.appendChild(overlay);
     document.body.appendChild(modal);
+    buildSxPanel();
 
     tbody     = modal.querySelector('#ii-tbody');
     summaryEl = modal.querySelector('#ii-summary');
@@ -1092,6 +1131,12 @@
       tr.querySelector('.ii-plus').addEventListener('click', () => plusOne(idx));
       tbody.appendChild(tr);
       validateInput(input, t);
+      // initial per-track entry point to the SoundExchange refine panel
+      const rf = document.createElement('div');
+      rf.className = 'ii-cand-refine';
+      rf.textContent = '⚙ search SoundExchange…';
+      rf.addEventListener('click', () => openSxPanel(idx));
+      tr.querySelector('.ii-cands').appendChild(rf);
     });
     updateSummary();
   }
@@ -1295,11 +1340,7 @@
     const t = RELEASE.tracks[idx];
     if (!box) return;
     box.innerHTML = '';
-    if (!rows || !rows.length) {
-      box.innerHTML = '<span class="ii-cand-note">no SoundExchange match</span>';
-      return;
-    }
-    rows.slice(0, 5).forEach(item => {
+    (rows || []).slice(0, 5).forEach(item => {
       const f = SX.fields(item);
       const cls = SX.classify(f, t.title, t.artist, t.dur);
       const inMb = t.existing.includes(normalizeIsrc(f.isrc));
@@ -1314,6 +1355,124 @@
         (inMb ? '<span class="ii-cand-inmb">✓ IN MB</span>' : '<span class="ii-cand-src">SX</span>');
       c.addEventListener('click', () => { setPending(idx, f.isrc, true); updateSummary(); });
       box.appendChild(c);
+    });
+    // "refine search" entry — opens the panel to tweak title/artist/release + exact
+    const refine = document.createElement('div');
+    refine.className = 'ii-cand-refine';
+    refine.textContent = (rows && rows.length)
+      ? '⚙ refine search / more…'
+      : '⚙ no match — refine search…';
+    refine.addEventListener('click', () => openSxPanel(idx));
+    box.appendChild(refine);
+  }
+
+  /* ── SoundExchange refine panel ── */
+  let sxPanel = null, _sxPanelIdx = -1, _sxPanelGen = 0;
+  function buildSxPanel() {
+    if (sxPanel) return;
+    sxPanel = document.createElement('div');
+    sxPanel.id = 'ii-sxpanel';
+    sxPanel.innerHTML = `
+      <div class="ii-sxp-hdr">
+        <span class="t">🔍 <b>SoundExchange</b> — <span id="ii-sxp-track"></span></span>
+        <button id="ii-sxp-close" title="Close">✕</button>
+      </div>
+      <div class="ii-sxp-form">
+        <input type="text" id="ii-sxp-title" placeholder="Title" autocomplete="off">
+        <input type="text" id="ii-sxp-artist" placeholder="Artist" autocomplete="off">
+        <input type="text" id="ii-sxp-release" placeholder="Release (optional)" autocomplete="off">
+        <div class="ii-sxp-exacts">
+          <label><input type="checkbox" id="ii-sxp-ex-title">exact title</label>
+          <label><input type="checkbox" id="ii-sxp-ex-artist">exact artist</label>
+          <label><input type="checkbox" id="ii-sxp-ex-release">exact release</label>
+        </div>
+        <button id="ii-sxp-search">Search</button>
+      </div>
+      <div class="ii-sxp-status"></div>
+      <div class="ii-sxp-results"></div>
+    `;
+    document.body.appendChild(sxPanel);
+    sxPanel.querySelector('#ii-sxp-close').addEventListener('click', () => sxPanel.classList.remove('open'));
+    sxPanel.querySelector('#ii-sxp-search').addEventListener('click', sxPanelSearch);
+    ['#ii-sxp-title', '#ii-sxp-artist', '#ii-sxp-release'].forEach(id =>
+      sxPanel.querySelector(id).addEventListener('keydown', e => { if (e.key === 'Enter') sxPanelSearch(); }));
+    // drag by header
+    const hdr = sxPanel.querySelector('.ii-sxp-hdr');
+    let dx = 0, dy = 0, drag = false;
+    hdr.addEventListener('mousedown', e => {
+      if (e.target.id === 'ii-sxp-close') return;
+      drag = true;
+      const r = sxPanel.getBoundingClientRect();
+      sxPanel.style.left = r.left + 'px'; sxPanel.style.top = r.top + 'px'; sxPanel.style.right = 'auto';
+      dx = e.clientX - r.left; dy = e.clientY - r.top; e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => { if (drag) { sxPanel.style.left = (e.clientX - dx) + 'px'; sxPanel.style.top = (e.clientY - dy) + 'px'; } });
+    document.addEventListener('mouseup', () => { drag = false; });
+  }
+  function openSxPanel(idx) {
+    buildSxPanel();
+    const t = RELEASE.tracks[idx];
+    _sxPanelIdx = idx;
+    sxPanel.querySelector('#ii-sxp-track').textContent = t.title + (t.artist ? ' — ' + t.artist : '');
+    sxPanel.querySelector('#ii-sxp-title').value = t.title;
+    sxPanel.querySelector('#ii-sxp-artist').value = t.artist;
+    sxPanel.querySelector('#ii-sxp-release').value = sxPanel.querySelector('#ii-sxp-release').value || '';
+    sxPanel.querySelector('#ii-sxp-ex-title').checked = sxExact.title;
+    sxPanel.querySelector('#ii-sxp-ex-artist').checked = sxExact.artist;
+    sxPanel.querySelector('#ii-sxp-ex-release').checked = sxExact.release;
+    sxPanel.classList.add('open');
+    sxPanelSearch();
+  }
+  function sxPanelSearch() {
+    const idx = _sxPanelIdx;
+    const t = RELEASE.tracks[idx];
+    const title = sxPanel.querySelector('#ii-sxp-title').value.trim();
+    const artist = sxPanel.querySelector('#ii-sxp-artist').value.trim();
+    const release = sxPanel.querySelector('#ii-sxp-release').value.trim();
+    const exact = {
+      title:   sxPanel.querySelector('#ii-sxp-ex-title').checked,
+      artist:  sxPanel.querySelector('#ii-sxp-ex-artist').checked,
+      release: sxPanel.querySelector('#ii-sxp-ex-release').checked,
+    };
+    const stEl = sxPanel.querySelector('.ii-sxp-status');
+    const resEl = sxPanel.querySelector('.ii-sxp-results');
+    const goBtn = sxPanel.querySelector('#ii-sxp-search');
+    stEl.className = 'ii-sxp-status'; stEl.textContent = 'Searching…'; goBtn.disabled = true;
+    const gen = ++_sxPanelGen;
+    Log.info('SX refine #' + (t.number || t.trackPos) + ': "' + title + '" / "' + artist + '"' + (release ? ' / rel "' + release + '"' : ''), exact);
+    SX.apiSearch(title, artist, 0, 25, exact, release).then(rows => {
+      if (gen !== _sxPanelGen) return;
+      goBtn.disabled = false;
+      stEl.textContent = rows.length ? rows.length + ' result' + (rows.length === 1 ? '' : 's') : 'No results';
+      renderSxPanelResults(idx, rows);
+    }).catch(e => {
+      if (gen !== _sxPanelGen) return;
+      goBtn.disabled = false; stEl.className = 'ii-sxp-status err'; stEl.textContent = '⚠ ' + e.message; resEl.innerHTML = '';
+    });
+  }
+  function renderSxPanelResults(idx, rows) {
+    const t = RELEASE.tracks[idx];
+    const resEl = sxPanel.querySelector('.ii-sxp-results');
+    resEl.innerHTML = '';
+    rows.forEach(item => {
+      const f = SX.fields(item);
+      const cls = SX.classify(f, t.title, t.artist, t.dur);
+      const inMb = t.existing.includes(normalizeIsrc(f.isrc));
+      const cur = normalizeIsrc(t.pending) === normalizeIsrc(f.isrc);
+      const rel = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
+      const row = document.createElement('div');
+      row.className = 'ii-sxp-row' + (cur ? ' cur' : cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : '');
+      row.innerHTML =
+        '<span class="ii-sxp-isrc">' + esc(f.isrc) + '</span>' +
+        '<span class="ii-sxp-meta"><span class="a">' + esc([f.title, f.artist].filter(Boolean).join(' — ')) +
+          (f.year ? ' · ' + esc(f.year) : '') + (f.dur ? ' · ' + esc(f.dur) : '') + '</span>' +
+          (rel ? '<span class="b">' + esc(rel) + '</span>' : '') + '</span>' +
+        (inMb ? '<span class="ii-sxp-inmb">✓ IN MB</span>' : '');
+      row.addEventListener('click', () => {
+        setPending(idx, f.isrc, true); updateSummary();
+        renderSxPanelResults(idx, rows);   // refresh "cur" highlight
+      });
+      resEl.appendChild(row);
     });
   }
 
