@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.183755
+// @version      2026.5.31.184709
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -80,7 +80,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.183755';
+  const SCRIPT_VERSION = '2026.5.31.184709';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -227,12 +227,14 @@
     if (!t) {
       t = document.createElement('div');
       t.id = 'ii-toast';
-      document.body.appendChild(t);
+      (document.body || document.documentElement).appendChild(t);
     }
-    t.textContent = msg;
+    // auto-hide is driven by a CSS animation (forwards) — restart it on every call
+    // by removing the class + forcing a reflow, so a toast can never get stuck.
+    t.classList.remove('ii-toast-show');
+    void t.offsetWidth;
+    t.textContent = msg == null ? '' : String(msg);
     t.className = 'ii-toast-show ' + (kind || '');
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => { t.className = ''; }, 4200);
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -415,10 +417,16 @@
     /* toast */
     #ii-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
       background: #212529; color: #fff; padding: 10px 18px; border-radius: 6px; font-size: 13px;
-      font-family: system-ui, sans-serif; z-index: 1000000; opacity: 0; transition: all .25s; pointer-events: none; max-width: 80vw; }
-    #ii-toast.ii-toast-show { transform: translateX(-50%) translateY(0); opacity: 1; }
+      font-family: system-ui, sans-serif; z-index: 1000000; opacity: 0; pointer-events: none; max-width: 80vw; }
+    #ii-toast.ii-toast-show { animation: ii-toast-life 4.4s ease forwards; }
     #ii-toast.err { background: #b02a37; }
     #ii-toast.ok  { background: #198754; }
+    @keyframes ii-toast-life {
+      0%   { transform: translateX(-50%) translateY(80px); opacity: 0; }
+      6%   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+      90%  { transform: translateX(-50%) translateY(0);    opacity: 1; }
+      100% { transform: translateX(-50%) translateY(80px); opacity: 0; }
+    }
 
     /* log pane */
     #ii-log-out { font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.45;
@@ -1837,21 +1845,33 @@
     return 'filled';
   }
 
+  const errText = e => (e && (e.message || e.stack)) || String(e) || '(no detail)';
   async function runStreamingSource(label, albumId, fetcher) {
     const counts = { filled: 0, already: 0, skipped: 0, unmatched: 0 };
+    let found;
     try {
-      const found = await fetcher(albumId,
+      found = await fetcher(albumId,
         (d, n) => progEl.textContent = n ? (label + ' ' + d + '/' + n) : (label + ': starting…'),
         s => { counts[mapOneToTrack(s, label)]++; });   // ← fill each ISRC as it's fetched
-      Log.info(label + ': ' + found.length + ' ISRCs fetched · ' + counts.filled + ' filled, ' + counts.already + ' already, ' + counts.unmatched + ' unmatched');
-      toast(label + ': filled ' + counts.filled +
-        (counts.already ? ' · ' + counts.already + ' already present' : '') +
-        (counts.unmatched ? ' · ' + counts.unmatched + ' unmatched' : ''), counts.filled ? 'ok' : '');
+    } catch (e) {
+      Log.err(label + ' failed: ' + errText(e));
+      toast(label + ' failed: ' + ((e && e.message) || 'see Log'), 'err');
+      progEl.textContent = label + ' failed — see Log';
+      return;
+    }
+    // the fetch + mapping succeeded — report it. Guard the UI update separately so a
+    // cosmetic hiccup here can't masquerade as an import failure.
+    Log.info(label + ': ' + found.length + ' ISRCs fetched · ' + counts.filled + ' filled, ' +
+      counts.already + ' already, ' + counts.skipped + ' skipped, ' + counts.unmatched + ' unmatched');
+    try {
+      const parts = [counts.filled + ' filled'];
+      if (counts.already)   parts.push(counts.already + ' already present');
+      if (counts.skipped)   parts.push(counts.skipped + ' already entered');
+      if (counts.unmatched) parts.push(counts.unmatched + ' unmatched');
+      toast(label + ': ' + parts.join(' · '), counts.filled ? 'ok' : '');
       progEl.textContent = label + ' done (' + found.length + ' ISRCs)';
     } catch (e) {
-      Log.err(label + ' failed: ' + e.message);
-      toast(label + ' failed: ' + e.message, 'err');
-      progEl.textContent = label + ' failed — see Log';
+      Log.warn(label + ': imported OK, but a UI update hiccuped: ' + errText(e));
     }
   }
 
