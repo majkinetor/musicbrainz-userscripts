@@ -26,14 +26,16 @@ submitted.
 | Button | Source | Auth | Notes |
 | --- | --- | --- | --- |
 | **⟳ SoundExchange** | [SoundExchange](https://isrc.soundexchange.com/) | none | Searches each track by title/artist, shows candidate ISRCs per row, auto-fills confident matches into empty fields. Searches are capped at **30 at a time** so SoundExchange doesn't block us — remaining tracks show a *"Not searched — click to load the next 30"* message; click any one to continue. Ported from `magicisrc_soundexchange`. |
-| **Deezer** | `api.deezer.com` | none | Enabled when the release has a Deezer album relationship. Fetches each track's ISRC and maps by disc/position (title fallback). |
+| **Deezer** | `api.deezer.com` | none | Enabled when the release has a Deezer album relationship. Fetches each track's ISRC and maps by disc/position (title fallback). Deezer needs one request **per track**, so imports are capped at **50 tracks per batch** (a *"Deezer N/M — click to fetch the next 50"* prompt continues) to avoid spamming Deezer on huge releases. |
 | **Spotify** | `isrchunt.com` | none | Enabled when the release has a Spotify album relationship. Delegates to ISRC Hunt (which does the Spotify lookup server-side) and scrapes the ISRCs from its result page — no Spotify token, login, or tab. (Direct Spotify access needs Premium and is heavily bot-blocked.) |
 
 Source buttons only fill **empty** fields and never touch existing ISRCs.
 
 The **Deezer** and **Spotify** buttons each have a **▾** menu to *import from a custom album URL* —
 paste any Deezer/Spotify album URL (or bare id) to import from it, even when the release has no such
-link.
+link. If the [`platform_check`](../platform_check/README.md) userscript is also installed and has
+found a Deezer/Spotify URL for the release, the menu offers a one-click **"Use the … URL Platform
+Check found"** option (skipped silently when `platform_check` isn't present).
 
 ### Per-track helpers
 

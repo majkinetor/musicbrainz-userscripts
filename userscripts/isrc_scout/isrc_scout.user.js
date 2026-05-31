@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.203118
+// @version      2026.5.31.203358
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.203118';
+  const SCRIPT_VERSION = '2026.5.31.203358';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -341,6 +341,13 @@
     .ii-srcmenu-t b { color: #212529; }
     /* align-items:stretch makes the input match the button's height no matter what
        height MusicBrainz forces on the button — no need to fight its CSS. */
+    .ii-srcmenu-pc { display: block; width: 100%; box-sizing: border-box; margin-bottom: 9px; padding: 7px 10px;
+      text-align: left; font-size: 12px; color: #0f5132; background: #e8f5ee; border: 1px solid #a3cfbb;
+      border-radius: 6px; cursor: pointer; }
+    .ii-srcmenu-pc:hover { background: #d5eddf; border-color: #75b798; }
+    .ii-srcmenu-pc b { color: #0a3622; }
+    .ii-srcmenu-pc-url { display: block; margin-top: 2px; font-size: 10.5px; color: #6c757d;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ii-srcmenu-row { display: flex; gap: 6px; align-items: stretch; }
     .ii-srcmenu-row input {
       flex: 1; min-width: 0; box-sizing: border-box !important; height: auto !important; min-height: 0 !important;
@@ -1072,6 +1079,9 @@
     srcMenu.id = 'ii-src-menu';
     srcMenu.className = 'ii-srcmenu';
     srcMenu.innerHTML =
+      // shown only when Platform Check (separate userscript) is installed AND found a URL for this source
+      '<button class="ii-srcmenu-pc" id="ii-src-pc" type="button" style="display:none">' +
+      '⌖ Use the <b id="ii-src-pc-label">Deezer</b> URL Platform Check found<span class="ii-srcmenu-pc-url" id="ii-src-pc-url"></span></button>' +
       '<div class="ii-srcmenu-t">Import from a custom <b id="ii-src-label">Deezer</b> album URL</div>' +
       '<div class="ii-srcmenu-row">' +
       '<input type="text" id="ii-src-url" placeholder="Paste album URL…" autocomplete="off">' +
@@ -1111,6 +1121,7 @@
     modal.querySelector('#ii-sp-menu').addEventListener('click', e => toggleSrcMenu('Spotify', e.currentTarget));
     document.getElementById('ii-src-go').addEventListener('click', submitSrcMenu);
     document.getElementById('ii-src-url').addEventListener('keydown', e => { if (e.key === 'Enter') submitSrcMenu(); });
+    document.getElementById('ii-src-pc').addEventListener('click', importFromPlatformCheck);
     // close the custom-URL menu on click-outside
     document.addEventListener('mousedown', e => {
       const menu = document.getElementById('ii-src-menu');
@@ -1999,12 +2010,29 @@
 
   /* ── custom-URL menu (Deezer / Spotify "▾") — import from a pasted album URL,
         even when the release has no such link ── */
-  let _srcMenuSource = null;
+  let _srcMenuSource = null, _srcPcUrl = null;
+  // If Platform Check (separate userscript) is on the page, read the URL it found
+  // for this source from its sidebar anchor (#mb-online-deezer / #mb-online-spotify).
+  function platformCheckUrl(source) {
+    const a = document.getElementById('mb-online-' + source.toLowerCase());
+    if (!a) return null;                                    // Platform Check not installed
+    const href = a.getAttribute('href') || '';
+    if (!/^https?:\/\//.test(href)) return null;            // nothing found yet ('#')
+    return parseStreamingId(source, href) ? href : null;    // only if it parses to an album id
+  }
   function toggleSrcMenu(source, anchor) {
     const menu = document.getElementById('ii-src-menu');
     if (menu.classList.contains('open') && _srcMenuSource === source) { menu.classList.remove('open'); return; }
     _srcMenuSource = source;
     document.getElementById('ii-src-label').textContent = source;
+    // Platform Check option — only when installed and it found a usable URL
+    _srcPcUrl = platformCheckUrl(source);
+    const pcBtn = document.getElementById('ii-src-pc');
+    if (_srcPcUrl) {
+      pcBtn.style.display = '';
+      document.getElementById('ii-src-pc-label').textContent = source;
+      document.getElementById('ii-src-pc-url').textContent = _srcPcUrl.replace(/^https?:\/\//, '');
+    } else { pcBtn.style.display = 'none'; }
     const url = document.getElementById('ii-src-url');
     url.value = '';
     url.placeholder = source === 'Deezer'
@@ -2026,6 +2054,15 @@
     const id = parseStreamingId(source, input);
     if (!id) { toast('Couldn\'t find a ' + source + ' album id in that URL', 'err'); Log.warn(source + ': unparseable URL "' + input + '"'); return; }
     Log.info(source + ': importing custom album ' + id);
+    await runStreamingSource(source, id, source === 'Deezer' ? fetchDeezer : fetchSpotify);
+  }
+  async function importFromPlatformCheck() {
+    const source = _srcMenuSource, url = _srcPcUrl;
+    document.getElementById('ii-src-menu').classList.remove('open');
+    if (!source || !url) return;
+    const id = parseStreamingId(source, url);
+    if (!id) { toast('Couldn\'t parse Platform Check\'s ' + source + ' URL', 'err'); return; }
+    Log.info(source + ': importing from Platform Check\'s URL ' + url + ' (album ' + id + ')');
     await runStreamingSource(source, id, source === 'Deezer' ? fetchDeezer : fetchSpotify);
   }
   function parseStreamingId(source, input) {
