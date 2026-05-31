@@ -34,8 +34,10 @@ Source buttons only fill **empty** fields and never touch existing ISRCs.
 The **Deezer** and **Spotify** buttons each have a **▾** menu to *import from a custom album URL* —
 paste any Deezer/Spotify album URL (or bare id) to import from it, even when the release has no such
 link. If the [`platform_check`](../platform_check/README.md) userscript is also installed and has
-found a Deezer/Spotify URL for the release, the menu offers a one-click **"Use the … URL Platform
-Check found"** option (skipped silently when `platform_check` isn't present).
+found a **Deezer** URL for the release, the Deezer menu offers a one-click **"Use the Deezer URL
+Platform Check found"** option (skipped silently when `platform_check` isn't present). It's Deezer-only
+because Spotify import goes through ISRC Hunt, which resolves the MB release *from* the Spotify URL —
+so a URL not yet linked in MB just errors.
 
 ### Per-track helpers
 
