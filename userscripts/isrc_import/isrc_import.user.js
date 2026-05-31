@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.155254
+// @version      2026.5.31.160149
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -149,8 +149,23 @@
     const code = new URLSearchParams(location.search).get('code');
     if (code) {
       try { GM_setValue('oauth_oob_code', { code: code, ts: Date.now() }); } catch (e) {}
-      try { document.title = 'Authorized — closing…'; } catch (e) {}
-      setTimeout(() => { try { window.close(); } catch (e) {} }, 300);
+      const finishOob = () => {
+        try { window.close(); } catch (e) {}
+        // Browsers block window.close() on a tab that has navigated (authorize → oob);
+        // the editor tab also tries to close this popup, but if it's still here, show a
+        // clear confirmation so it's obvious it worked.
+        setTimeout(() => {
+          try {
+            window.close();
+            document.title = '✓ Authorized — you can close this tab';
+            if (document.body) document.body.innerHTML =
+              '<div style="font:16px/1.5 system-ui;padding:3em;text-align:center;color:#212529">' +
+              '<h2 style="color:#198754">✓ Authorized</h2><p>ISRC Import captured the code. You can close this tab.</p></div>';
+          } catch (e) {}
+        }, 500);
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', finishOob, { once: true });
+      else finishOob();
     }
     return; // never run the editor on the oob page
   }
@@ -160,7 +175,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.155254';
+  const SCRIPT_VERSION = '2026.5.31.160149';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_import';
   const CLIENT   = 'isrc_import-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Import/1.0';
@@ -301,6 +316,7 @@
     };
   })();
   const shortUrl = (u) => String(u || '').replace(/^https?:\/\//, '').replace(/[?#].*$/, '').slice(0, 90);
+  Log.info('ISRC Import v' + SCRIPT_VERSION + ' — ' + MB_ROOT);
 
   /* ═══════════════════════════════════════════════════════════════════════
      STYLES
