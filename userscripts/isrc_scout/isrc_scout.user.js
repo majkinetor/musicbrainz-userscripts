@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.180022
+// @version      2026.5.31.180242
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -80,7 +80,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.180022';
+  const SCRIPT_VERSION = '2026.5.31.180242';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -374,6 +374,9 @@
       border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
     #ii-foot .ii-summary { font-size: 12px; color: #495057; flex: 1; }
     #ii-foot .ii-summary b { color: #212529; }
+    .ii-seq-badge { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 2px 9px;
+      font-size: 11px; font-weight: 700; font-family: 'Courier New', monospace; color: #0f5132; background: #d1e7dd;
+      border: 1px solid #a3cfbb; border-radius: 11px; vertical-align: middle; letter-spacing: .3px; }
 
     /* sub-panels (setup / bulk) */
     .ii-pane { display: none; padding: 14px 16px; border-bottom: 1px solid #eee; background: #fcfcfe; flex-shrink: 0; }
@@ -1147,7 +1150,7 @@
         '<td class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval) + '</td>' +
         '<td><div class="ii-inwrap">' +
           '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
-          '<button class="ii-plus" title="Previous ISRC + 1">+1</button>' +
+          '<button class="ii-plus" title="Previous ISRC + 1  (right-click: fill down through empty tracks)">+1</button>' +
           '<span class="ii-lookup"></span>' +
           '</div><div class="ii-cands"></div></td>';
       const input = tr.querySelector('.ii-input');
@@ -1166,7 +1169,9 @@
         if (v && isValidIsrc(v)) lookupIsrc(idx, v);
         else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; } }
       });
-      tr.querySelector('.ii-plus').addEventListener('click', () => plusOne(idx));
+      const plusBtn = tr.querySelector('.ii-plus');
+      plusBtn.addEventListener('click', () => plusOne(idx));
+      plusBtn.addEventListener('contextmenu', e => { e.preventDefault(); plusOneFillDown(idx); });
       tbody.appendChild(tr);
       validateInput(input, t);
       // initial per-track entry point to the SoundExchange refine panel
@@ -1320,6 +1325,28 @@
     toast('No previous ISRC to increment');
   }
 
+  // Right-click +1: fill an incrementing ISRC from here down through every empty
+  // track, stopping at the next field that already has a value (or the end).
+  function plusOneFillDown(idx) {
+    let base = '';
+    for (let i = idx - 1; i >= 0; i--) {
+      base = RELEASE.tracks[i].pending || RELEASE.tracks[i].existing[0] || '';
+      if (base) break;
+    }
+    if (!base) { toast('No previous ISRC to increment'); return; }
+    let count = 0;
+    for (let i = idx; i < RELEASE.tracks.length; i++) {
+      const t = RELEASE.tracks[i];
+      // always fill the starting cell; below it, stop at the first occupied field
+      if (i > idx && (t.pending || t.existing.length)) break;
+      base = base.replace(/(\d+)(?!.*\d)/, m => String(parseInt(m, 10) + 1).padStart(m.length, '0'));
+      setPending(i, base, true);
+      count++;
+    }
+    updateSummary();
+    toast('Filled ' + count + ' track' + (count === 1 ? '' : 's') + ' with a +1 sequence');
+  }
+
   function updateSummary() {
     const dupSet = highlightDuplicates();   // ISRCs on >1 recording — not submittable
     let valid = 0, bad = 0, dup = 0, crossDup = 0, missing = 0;
@@ -1332,14 +1359,29 @@
       if (dupSet.has(v)) { crossDup++; return; }            // same ISRC on another recording → blocked
       valid++;
     });
+    const seq = iterativeSequence();
     summaryEl.innerHTML =
       '<b>' + RELEASE.tracks.length + '</b> tracks' +
       (bad ? ' · <span style="color:#dc3545">' + bad + ' invalid</span>' : '') +
       (dup ? ' · <span style="color:#fd7e14">' + dup + ' already present</span>' : '') +
       (crossDup ? ' · <span style="color:#d63384">' + crossDup + ' duplicated across tracks (blocked)</span>' : '') +
-      (missing ? ' · ' + missing + ' still missing' : '');
+      (missing ? ' · ' + missing + ' still missing' : '') +
+      (seq ? ' <span class="ii-seq-badge" title="Every track\'s ISRC is the previous one + 1: ' +
+        esc(seq.from) + ' → ' + esc(seq.to) + '">⛓ sequential ' + esc(seq.from) + ' → ' + esc(seq.to) + '</span>' : '');
     submitBtn.textContent = 'Submit to MusicBrainz' + (valid ? ' (' + valid + ')' : '');
     submitBtn.disabled = valid === 0;
+  }
+
+  // If every track has a valid ISRC and they form one perfect +1 run (same first
+  // 7 chars, last-5 designation incrementing by 1), return {from,to,count}; else null.
+  function iterativeSequence() {
+    const isrcs = RELEASE.tracks.map(t => normalizeIsrc(t.pending || t.existing[0] || ''));
+    if (isrcs.length < 2 || isrcs.some(s => !isValidIsrc(s))) return null;
+    for (let i = 1; i < isrcs.length; i++) {
+      if (isrcs[i].slice(0, 7) !== isrcs[i - 1].slice(0, 7)) return null;
+      if (parseInt(isrcs[i].slice(7), 10) !== parseInt(isrcs[i - 1].slice(7), 10) + 1) return null;
+    }
+    return { from: isrcs[0], to: isrcs[isrcs.length - 1], count: isrcs.length };
   }
 
   // Flag ISRCs that appear on more than one distinct recording (pending or existing) and
