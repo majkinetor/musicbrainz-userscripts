@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.164439
+// @version      2026.5.31.165116
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_import/README.md
@@ -79,7 +79,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.164439';
+  const SCRIPT_VERSION = '2026.5.31.165116';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_import';
   const CLIENT   = 'isrc_import-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Import/1.0';
@@ -175,6 +175,49 @@
       (extra <= 2 && shorter.every((w, i) => longer[i] === w));
     const artistOk = !bArtist || wordsMatch(bArtist, aArtist) || wordsMatch(aArtist, bArtist);
     return titleOk && artistOk;
+  }
+  // Per-field comparisons between an SoundExchange result and the MB track,
+  // used to highlight exactly WHICH attribute disagrees. Each returns
+  // true (matches) / false (mismatch) / null (can't compare — no data).
+  function titleClose(sx, mb) {
+    const aw = norm(sx).split(' ').filter(Boolean);
+    const bw = norm(mb).split(' ').filter(Boolean);
+    if (!aw.length || !bw.length) return null;
+    const shorter = aw.length <= bw.length ? aw : bw;
+    const longer  = aw.length <= bw.length ? bw : aw;
+    if (!shorter.every(w => longer.includes(w))) return false;
+    const extra = longer.length - shorter.length;
+    return extra === 0 || extra === 1 || (extra <= 2 && shorter.every((w, i) => longer[i] === w));
+  }
+  function artistClose(sx, mb) {
+    if (!sx || !mb) return null;
+    return wordsMatch(mb, sx) || wordsMatch(sx, mb);
+  }
+  function durClose(sxDur, mbDur) {
+    const a = durToSec(mbDur), b = durToSec(sxDur);
+    return (a === null || b === null) ? null : Math.abs(a - b) <= 10;
+  }
+  function yearOk(sxYear, mbYear) {
+    if (!mbYear || !sxYear) return null;
+    return parseInt(sxYear) <= mbYear + 1;
+  }
+  // Build the "Title · Artist · Year · Dur" meta for an SX result `f` vs MB track
+  // `t`, wrapping each mismatching field in .ii-bad (with a tooltip explaining
+  // it) so problems are obvious in the chip, the candidate list, and the popup.
+  function sxMetaHtml(f, t) {
+    const span = (txt, ok, tip) =>
+      '<span' + (ok === false ? ' class="ii-bad" title="' + esc(tip) + '"' : '') + '>' + esc(txt) + '</span>';
+    const parts = [];
+    if (f.title)  parts.push(span(f.title,  titleClose(f.title, t.title),   'Title differs from "' + t.title + '"'));
+    if (f.artist) parts.push(span(f.artist, artistClose(f.artist, t.artist), 'Artist differs from "' + t.artist + '"'));
+    if (f.year)   parts.push(span(f.year,   yearOk(f.year, RELEASE && RELEASE.year),
+                                  'Recording year ' + f.year + ' is after this release (' + (RELEASE && RELEASE.year) + ')'));
+    if (f.dur) {
+      const dOk = durClose(f.dur, t.dur);
+      parts.push(span(f.dur, dOk, 'Length differs from MB (' + (t.dur || '?') + ')') +
+        (dOk === false && t.dur ? '<span class="ii-mbdur" title="MusicBrainz length"> ↔ ' + esc(t.dur) + '</span>' : ''));
+    }
+    return parts.join(' · ');
   }
   function normalizeIsrc(raw) {
     return String(raw || '').toUpperCase().replace(/[\s\-]/g, '');
@@ -318,6 +361,8 @@
     .ii-cand.warn { background: #fff3cd; }
     .ii-cand-isrc { font-family: 'Courier New', monospace; font-weight: 700; color: #084298; flex-shrink: 0; }
     .ii-cand-meta { color: #495057; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ii-bad { color: #dc3545; font-weight: 600; text-decoration: underline wavy rgba(220,53,69,.55); text-underline-offset: 2px; }
+    .ii-mbdur { color: #198754; font-weight: 600; }
     .ii-cand-src { margin-left: auto; font-size: 9px; text-transform: uppercase; color: #adb5bd; flex-shrink: 0; }
     .ii-cand-note { font-size: 11px; color: #adb5bd; font-style: italic; padding: 2px 7px; }
     .ii-row-fill { animation: ii-flash 1s ease-out; }
@@ -431,7 +476,7 @@
 
   function fetchRelease() {
     return gmGet(
-      MB_WS2 + 'release/' + mbid + '?inc=recordings+artist-credits+isrcs+url-rels&fmt=json',
+      MB_WS2 + 'release/' + mbid + '?inc=recordings+artist-credits+isrcs+url-rels+release-groups&fmt=json',
       { 'Accept': 'application/json', 'User-Agent': UA }
     ).then(r => {
       if (r.status !== 200) throw new Error('MB ' + r.status);
@@ -463,8 +508,13 @@
         if ((m = u.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/))) spotifyId = m[1];
         if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))   deezerId  = m[1];
       });
-      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId };
-      Log.info('Release "' + RELEASE.title + '": ' + tracks.length + ' track(s), ' +
+      // earliest release year for the "SX result newer than MB release" check —
+      // prefer the release-group's first-release-date, fall back to this release's date
+      const rg = data['release-group'] || {};
+      const dateStr = rg['first-release-date'] || data.date || '';
+      const year = parseInt((String(dateStr).match(/^(\d{4})/) || [])[1]) || null;
+      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, year };
+      Log.info('Release "' + RELEASE.title + '"' + (year ? ' (' + year + ')' : '') + ': ' + tracks.length + ' track(s), ' +
         tracks.filter(t => !t.existing.length).length + ' missing ISRC' +
         '; links: ' + (deezerId ? 'Deezer ' + deezerId : 'no Deezer') + ', ' + (spotifyId ? 'Spotify ' + spotifyId : 'no Spotify'));
       return RELEASE;
@@ -626,8 +676,11 @@
         relDate: (item.releaseDate || '').slice(0, 7),
       };
     }
-    function classify(f, mbTitle, mbArtist, mbDurStr) {
+    function classify(f, mbTitle, mbArtist, mbDurStr, mbYear) {
       if (!isGoodMatch(f.title, f.artist, mbTitle, mbArtist)) return 'other';
+      // a recording released after MB's release year (with 1y tolerance) can't be
+      // the source of this release's ISRC — treat as a non-match
+      if (mbYear && f.year && parseInt(f.year) > mbYear + 1) return 'other';
       const a = durToSec(mbDurStr), b = durToSec(f.dur);
       if (a !== null && b !== null && Math.abs(a - b) > 10) return 'warn';
       return 'best';
@@ -1138,12 +1191,13 @@
     sxLookupCached(isrc).then(rows => {
       if (!rows.length) { el.className = 'ii-lookup err'; el.textContent = '✗ not found on SoundExchange'; Log.warn('SX lookup ' + isrc + ': not found'); return; }
       const f = SX.fields(rows[0]);
-      const good = isGoodMatch(f.title, f.artist, t.title, t.artist);
+      const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.year);
+      const good = cls === 'best';
       const rel = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
       el.className = 'ii-lookup ' + (good ? 'ok' : 'warn');
-      el.textContent = (good ? '✓ ' : '⚠ ') + [f.title, f.artist, f.year].filter(Boolean).join(' — ') + (rel ? '  |  ' + rel : '');
-      el.title = el.textContent;
-      Log.info('SX lookup ' + isrc + ': ' + (good ? 'match' : 'MISMATCH') + ' "' + f.title + '" — ' + f.artist);
+      el.innerHTML = (good ? '✓ ' : '⚠ ') + sxMetaHtml(f, t) + (rel ? '  |  ' + esc(rel) : '');
+      el.title = [f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ') + (rel ? '  |  ' + rel : '');
+      Log.info('SX lookup ' + isrc + ': ' + (good ? 'match' : cls === 'warn' ? 'length mismatch' : 'MISMATCH') + ' "' + f.title + '" — ' + f.artist);
     }).catch(e => { el.className = 'ii-lookup err'; el.textContent = '✗ lookup failed'; Log.err('SX lookup ' + isrc + ' failed: ' + e.message); });
   }
 
@@ -1338,7 +1392,7 @@
     box.innerHTML = '';
     (rows || []).slice(0, 5).forEach(item => {
       const f = SX.fields(item);
-      const cls = SX.classify(f, t.title, t.artist, t.dur);
+      const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.year);
       const inMb = t.existing.includes(normalizeIsrc(f.isrc));
       const relInfo = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
       const c = document.createElement('div');
@@ -1346,7 +1400,7 @@
       c.title = relInfo ? 'Appears on: ' + relInfo : '';
       c.innerHTML =
         '<span class="ii-cand-isrc">' + esc(f.isrc) + '</span>' +
-        '<span class="ii-cand-meta">' + esc([f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ')) +
+        '<span class="ii-cand-meta">' + sxMetaHtml(f, t) +
           (relInfo ? '  ·  ' + esc(relInfo) : '') + '</span>' +
         (inMb ? '<span class="ii-cand-inmb">✓ IN MB</span>' : '<span class="ii-cand-src">SX</span>');
       c.addEventListener('click', () => { setPending(idx, f.isrc, true, 'SoundExchange'); updateSummary(); });
@@ -1452,7 +1506,7 @@
     resEl.innerHTML = '';
     rows.forEach(item => {
       const f = SX.fields(item);
-      const cls = SX.classify(f, t.title, t.artist, t.dur);
+      const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.year);
       const inMb = t.existing.includes(normalizeIsrc(f.isrc));
       const cur = normalizeIsrc(t.pending) === normalizeIsrc(f.isrc);
       const rel = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
@@ -1460,8 +1514,7 @@
       row.className = 'ii-sxp-row' + (cur ? ' cur' : cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : '');
       row.innerHTML =
         '<span class="ii-sxp-isrc">' + esc(f.isrc) + '</span>' +
-        '<span class="ii-sxp-meta"><span class="a">' + esc([f.title, f.artist].filter(Boolean).join(' — ')) +
-          (f.year ? ' · ' + esc(f.year) : '') + (f.dur ? ' · ' + esc(f.dur) : '') + '</span>' +
+        '<span class="ii-sxp-meta"><span class="a">' + sxMetaHtml(f, t) + '</span>' +
           (rel ? '<span class="b">' + esc(rel) + '</span>' : '') + '</span>' +
         (inMb ? '<span class="ii-sxp-inmb">✓ IN MB</span>' : '');
       row.addEventListener('click', () => {
@@ -1487,7 +1540,7 @@
       try {
         const rows = await SX.apiSearch(t.title, t.artist, 0, 10, sxExact);
         renderCands(i, rows);
-        const best = rows.find(r => SX.classify(SX.fields(r), t.title, t.artist, t.dur) === 'best');
+        const best = rows.find(r => SX.classify(SX.fields(r), t.title, t.artist, t.dur, RELEASE.year) === 'best');
         const bestIsrc = best && SX.fields(best).isrc;
         if (bestIsrc) {
           matched++;

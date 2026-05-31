@@ -37,6 +37,23 @@ Source buttons only fill **empty** fields and never touch existing ISRCs.
 - Click any SoundExchange candidate to use it.
 - Track titles link to the MB recording. Typing a full ISRC verifies it on SoundExchange inline (cached). ISRCs duplicated across different recordings are flagged pink.
 
+#### Match checks & highlighting
+
+Every SoundExchange result is checked against the MB track and **mismatching fields are highlighted in
+red** (wavy underline, with a tooltip), both in the candidate list under the input, in the typed-ISRC
+verification bullet, and in the search popup:
+
+| Field | Check |
+| --- | --- |
+| **Title** | word-set match (tolerates a couple of extra words, e.g. a version suffix) |
+| **Artist** | word-set match either direction |
+| **Year** | the recording year must be **≤ the MB release year (+1)** — a later recording can't be the source of this release's ISRC |
+| **Length** | flagged when it differs from MB by **> 10 s**; MB's length is shown inline (`↔ m:ss`) for comparison |
+
+A result that passes all checks is the **best** match (blue, auto-filled when the field is empty); a
+length-only disagreement is a **warn** (yellow); a title/artist/year disagreement drops it out of the
+auto-fill running entirely.
+
 ### Deleting existing ISRCs
 
 Check the box next to any existing ISRC and click **🗑 Delete checked**. Deletion goes through the
