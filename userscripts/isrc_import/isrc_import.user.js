@@ -1,27 +1,23 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.161342
+// @version      2026.5.31.162610
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
 // @match        https://beta.musicbrainz.org/release/*
 // @match        https://musicbrainz.org/oauth2/oob*
 // @match        https://beta.musicbrainz.org/oauth2/oob*
-// @match        https://open.spotify.com/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
-// @grant        unsafeWindow
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
 // @connect      isrc-api.soundexchange.com
 // @connect      isrc.soundexchange.com
 // @connect      api.deezer.com
-// @connect      open.spotify.com
-// @connect      api.spotify.com
-// @connect      accounts.spotify.com
+// @connect      isrchunt.com
 // @run-at       document-start
 // ==/UserScript==
 
@@ -45,80 +41,6 @@
 
 (function () {
   'use strict';
-
-  /* ═══════════════════════════════════════════════════════════════════════
-     SPOTIFY TOKEN HARVESTER
-     Runs only on open.spotify.com, and only in a tab WE opened (marked with
-     #ii_harvest). The real web player mints its own access token (handling
-     Spotify's TOTP/anti-bot itself, and working for free accounts — no
-     Premium and no dev app). We capture that token off the player's own
-     requests, hand it to the MusicBrainz tab via GM storage, and close.
-     Normal Spotify browsing is untouched (no marker → this returns at once).
-  ═══════════════════════════════════════════════════════════════════════ */
-  if (/(^|\.)spotify\.com$/i.test(location.hostname)) {
-    if (location.hash.indexOf('ii_harvest') === -1) return; // not our tab — do nothing
-    // log to the Spotify tab console AND to a shared GM buffer the MusicBrainz
-    // tab drains into its Log pane, so everything ends up in one place.
-    const hlog = (m) => {
-      try {
-        const arr = GM_getValue('spotify_harvest_log', []);
-        arr.push('[' + new Date().toTimeString().slice(0, 8) + '] ' + m);
-        if (arr.length > 200) arr.shift();
-        GM_setValue('spotify_harvest_log', arr);
-      } catch (e) {}
-    };
-    hlog('harvester active on ' + location.href);
-    let captured = false;
-    const finish = (token, how) => {
-      if (captured || !token) return;
-      captured = true;
-      hlog('captured token via ' + how + ' (len ' + token.length + ') — storing & closing');
-      try { GM_setValue('spotify_harvest', { token: token, ts: Date.now() }); } catch (e) {}
-      setTimeout(() => { try { window.close(); } catch (e) {} }, 250);
-    };
-    // The player gets its access token via window.fetch, but a sandbox `unsafeWindow.fetch`
-    // override doesn't reach the page bundle on Firefox (Xray), and Spotify's CSP forbids
-    // inline injected scripts. CSP DOES allow blob: scripts, so we inject the hook into the
-    // page's own world via a Blob URL; it posts the token back with window.postMessage,
-    // which the userscript receives here.
-    window.addEventListener('message', (e) => {
-      if (e.source !== window || !e.data || !e.data.__iiSpotifyToken) return;
-      finish(e.data.__iiSpotifyToken, 'page-hook/' + (e.data.via || '?'));
-    });
-    const pageHook = '(' + function () {
-      var got = false;
-      function send(tok, via) { if (got || !tok) return; got = true; try { window.postMessage({ __iiSpotifyToken: String(tok), via: via }, '*'); } catch (e) {} }
-      function bearer(v) { var m = /Bearer\s+([A-Za-z0-9._-]+)/i.exec(String(v || '')); return m ? m[1] : null; }
-      function fromHeaders(h) { try { if (!h) return null; if (typeof h.get === 'function') return bearer(h.get('authorization')); if (Array.isArray(h)) { for (var i = 0; i < h.length; i++) if (String(h[i][0]).toLowerCase() === 'authorization') return bearer(h[i][1]); return null; } for (var k in h) if (k.toLowerCase() === 'authorization') return bearer(h[k]); } catch (e) {} return null; }
-      try {
-        var of = window.fetch;
-        if (of) window.fetch = function (input, init) {
-          try { var t = fromHeaders(init && init.headers) || (input && input.headers && fromHeaders(input.headers)); if (t) send(t, 'fetch-header'); } catch (e) {}
-          var p = of.apply(this, arguments);
-          try { var u = String((input && input.url) || input || ''); if (/get_access_token|\/api\/token/.test(u)) p.then(function (r) { return r.clone().json(); }).then(function (j) { if (j && j.accessToken) send(j.accessToken, 'token-response'); }).catch(function () {}); } catch (e) {}
-          return p;
-        };
-      } catch (e) {}
-      try { var osrh = XMLHttpRequest.prototype.setRequestHeader; XMLHttpRequest.prototype.setRequestHeader = function (k, v) { try { if (String(k).toLowerCase() === 'authorization') { var t = bearer(v); if (t) send(t, 'xhr-header'); } } catch (e) {} return osrh.apply(this, arguments); }; } catch (e) {}
-    }.toString() + ')();';
-    const injectHook = () => {
-      const target = document.head || document.documentElement;
-      if (!target) { setTimeout(injectHook, 0); return; }   // <html> not parsed yet
-      try {
-        const url = URL.createObjectURL(new Blob([pageHook], { type: 'application/javascript' }));
-        const sc = document.createElement('script');
-        sc.src = url; sc.async = false;
-        target.appendChild(sc);
-        sc.onload = () => { try { URL.revokeObjectURL(url); sc.remove(); } catch (e) {} };
-        hlog('page-context fetch/XHR hook injected (blob)');
-      } catch (e) { hlog('hook injection failed: ' + e.message); }
-    };
-    injectHook();
-    setTimeout(() => {
-      if (!captured) { hlog('TIMEOUT — no token captured in 25s'); try { GM_setValue('spotify_harvest', { error: 'timeout', ts: Date.now() }); } catch (e) {} try { window.close(); } catch (e) {} }
-    }, 25000);
-    return; // never run the MusicBrainz editor on a Spotify page
-  }
 
   /* ═══════════════════════════════════════════════════════════════════════
      OAUTH OUT-OF-BAND CODE CATCHER
@@ -156,7 +78,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.161342';
+  const SCRIPT_VERSION = '2026.5.31.162610';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_import';
   const CLIENT   = 'isrc_import-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Import/1.0';
@@ -808,102 +730,40 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SPOTIFY  (anonymous web token, no user OAuth)
+     SPOTIFY  (via ISRC Hunt)
+     Spotify's anti-bot makes a direct userscript token-harvest unreliable, but
+     ISRC Hunt does the Spotify lookup server-side and renders the ISRCs into a
+     plain HTML table — so we just fetch that and scrape it (no token, no login).
   ═══════════════════════════════════════════════════════════════════════ */
-  // Preferred: official client-credentials token from a free Spotify app (what isrchunt
-  // uses server-side; not bot-blocked). Falls back to the anonymous web token if no app
-  // credentials are configured. Cached in GM storage until it expires.
-  async function spotifyClientCredsToken() {
-    const id = store.get('spotify_client_id', ''), secret = store.get('spotify_client_secret', '');
-    if (!id || !secret) return null;
-    const cached = store.get('spotify_cc_token', ''), exp = store.get('spotify_cc_expiry', 0);
-    if (cached && Date.now() < exp - 60000) return cached;
-    const r = await gmPost('https://accounts.spotify.com/api/token', 'grant_type=client_credentials', {
-      'Content-Type':  'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + btoa(id + ':' + secret),
+  function parseIsrchunt(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const tables = [...doc.querySelectorAll('table')];
+    // results table columns: Track number · Track name · Length · ISRC · …
+    const table = tables.find(t => /\bISRC\b/i.test(t.textContent) && /track/i.test(t.textContent)) || tables[0];
+    const out = [];
+    if (!table) return out;
+    [...table.querySelectorAll('tr')].forEach(tr => {
+      const td = [...tr.querySelectorAll('td')];
+      if (td.length < 4) return;
+      const pos = parseInt(td[0].textContent.trim(), 10);
+      const lenMs = parseInt(td[2].textContent.trim(), 10);
+      const isrc = normalizeIsrc(td[3].textContent.trim());
+      if (isValidIsrc(isrc)) out.push({ isrc, title: td[1].textContent.trim(), artist: '', pos: pos || (out.length + 1), disc: 1, dur: lenMs ? msToMmSs(lenMs) : '' });
     });
-    const j = JSON.parse(r.responseText || '{}');
-    if (!j.access_token) throw new Error('client-credentials failed: ' + (j.error_description || j.error || r.status));
-    store.set('spotify_cc_token', j.access_token);
-    store.set('spotify_cc_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
-    return j.access_token;
-  }
-  // Harvest a token from the real web player: open the album in a Spotify tab (the
-  // player mints a working token itself — free account ok, no Premium, no bot-block),
-  // capture it via the harvester at the top of this script, then close the tab.
-  // Must be triggered from a user gesture (the import-button click) or the popup blocks.
-  function harvestSpotifyToken(albumId, onProgress) {
-    const cached = store.get('spotify_harvest', null);
-    if (cached && cached.token && Date.now() - cached.ts < 50 * 60 * 1000) {
-      Log.info('Spotify: reusing cached web-player token (' + Math.round((Date.now() - cached.ts) / 1000) + 's old)');
-      return Promise.resolve(cached.token);
-    }
-    store.del('spotify_harvest');
-    store.set('spotify_harvest_log', []);   // fresh shared buffer for the Spotify tab's lines
-    Log.info('Spotify: opening player tab to harvest a token…');
-    const w = window.open('https://open.spotify.com/album/' + albumId + '#ii_harvest', 'ii_sp_harvest', 'width=520,height=640');
-    if (!w) { Log.err('Spotify: popup blocked'); return Promise.reject(new Error('popup blocked — allow popups for musicbrainz.org so a Spotify tab can open')); }
-    if (onProgress) onProgress(0, 0);
-    let consumed = 0;
-    const drainLog = () => {
-      const arr = store.get('spotify_harvest_log', []);
-      for (; consumed < arr.length; consumed++) Log.info('[spotify-tab] ' + arr[consumed]);
-    };
-    return new Promise((resolve, reject) => {
-      let n = 0;
-      const iv = setInterval(() => {
-        drainLog();
-        const h = store.get('spotify_harvest', null);
-        if (h && h.token) { clearInterval(iv); drainLog(); try { w.close(); } catch (e) {} Log.info('Spotify: token harvested'); resolve(h.token); return; }
-        if ((h && h.error) || ++n > 58) { // ~29s — outlasts the 25s harvester
-          clearInterval(iv); drainLog(); try { w.close(); } catch (e) {}
-          Log.err('Spotify: token harvest ' + (h && h.error ? 'reported "' + h.error + '"' : 'timed out'));
-          reject(new Error('could not get a Spotify token (see [spotify-tab] lines above; are you logged in?)'));
-        }
-      }, 500);
-    });
-  }
-  async function getSpotifyToken(albumId, onProgress) {
-    const cc = await spotifyClientCredsToken();
-    if (cc) return cc;                               // Premium dev app, if configured
-    return harvestSpotifyToken(albumId, onProgress); // free web-player token (opens a brief tab)
+    return out;
   }
   async function fetchSpotify(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
-    const tok = await getSpotifyToken(albumId, onProgress);
-    const auth = { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' };
-    // 1) album tracklist (paginated) — simplified tracks have no ISRC
-    const ids = [];
-    let url = 'https://api.spotify.com/v1/albums/' + albumId + '/tracks?limit=50';
-    while (url) {
-      const r = await gmGet(url, auth);
-      const j = JSON.parse(r.responseText || '{}');
-      if (j.error) throw new Error((j.error.message || j.error.status));
-      (j.items || []).forEach(it => ids.push({ id: it.id, disc: it.disc_number || 1, pos: it.track_number, title: it.name }));
-      url = j.next;
-    }
-    // 2) per-track fetch for external_ids.isrc — the bulk /v1/tracks endpoint was
-    //    removed in Feb 2026, so we fetch one at a time (like Deezer).
-    const out = [];
-    for (let i = 0; i < ids.length; i++) {
-      const meta = ids[i];
-      try {
-        const r = await gmGet('https://api.spotify.com/v1/tracks/' + meta.id, auth);
-        const t = JSON.parse(r.responseText || '{}');
-        const entry = {
-          isrc:   normalizeIsrc((t.external_ids && t.external_ids.isrc) || ''),
-          title:  t.name || meta.title || '',
-          artist: (t.artists || []).map(a => a.name).join(', '),
-          disc:   meta.disc, pos: meta.pos,
-          dur:    t.duration_ms ? msToMmSs(t.duration_ms) : '',
-        };
-        out.push(entry);
-        if (onIsrc && isValidIsrc(entry.isrc)) onIsrc(entry);   // fill this track's input now
-      } catch (e) {}
-      if (onProgress) onProgress(i + 1, ids.length);
-      await sleep(130);
-    }
-    return out.filter(t => isValidIsrc(t.isrc));
+    const albumUrl = 'https://open.spotify.com/album/' + albumId;
+    const url = 'https://isrchunt.com/spotify/importisrc?releaseId=' + encodeURIComponent(albumUrl);
+    Log.info('Spotify via ISRC Hunt: ' + shortUrl(url));
+    const r = await gmGet(url, { 'Accept': 'text/html' });
+    if (r.status !== 200) throw new Error('ISRC Hunt returned ' + r.status);
+    const rows = parseIsrchunt(r.responseText);
+    Log.info('ISRC Hunt: ' + rows.length + ' track(s) with an ISRC');
+    if (!rows.length) throw new Error('ISRC Hunt found no ISRCs for this album');
+    rows.forEach((e, i) => { if (onIsrc) onIsrc(e); if (onProgress) onProgress(i + 1, rows.length); });
+    return rows;
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -962,29 +822,14 @@
       <div class="ii-pane" id="ii-setup-pane">
         <h3><button class="ii-pane-x" title="Close">✕</button>One-time MusicBrainz authorization</h3>
         <div class="ii-authstate" id="ii-auth-state"></div>
-        <div class="row" style="margin-top:8px">
-          <button class="ii-tbtn primary" id="ii-authorize">Authorize</button>
-          <button class="ii-tbtn" id="ii-paste-code">Paste code…</button>
-          <button class="ii-tbtn ghost" id="ii-signout">Sign out</button>
+        <div class="row" style="margin-top:8px; flex-wrap:nowrap">
+          <button class="ii-tbtn primary" id="ii-authorize" style="flex-shrink:0">Authorize</button>
+          <input type="text" id="ii-oauth-code" placeholder="Auto-fills on success — paste the code here only if the tab fails to close" autocomplete="off" style="flex:1; min-width:180px">
+          <button class="ii-tbtn ghost" id="ii-signout" style="flex-shrink:0; display:none">Sign out</button>
         </div>
         <div class="ii-help">
           Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
-          One time, ever; no app registration. (If the tab doesn't auto-close, use <b>Paste code…</b>.)
-        </div>
-
-        <h3 style="margin-top:14px">Spotify app (optional)</h3>
-        <div class="row">
-          <div><label>Spotify Client ID</label><input type="text" id="ii-sp-cid" autocomplete="off"></div>
-          <div><label>Spotify Client Secret</label><input type="text" id="ii-sp-csec" autocomplete="off"></div>
-        </div>
-        <div class="row" style="margin-top:8px"><button class="ii-tbtn" id="ii-sp-save">Save Spotify app</button></div>
-        <div class="ii-help">
-          <b>You don't need this.</b> By default, Spotify import briefly opens an <code>open.spotify.com</code>
-          tab, borrows the web player's own token (works for free accounts, no Premium), and closes it —
-          so allow popups for musicbrainz.org. Only fill this in if you have a
-          <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">Spotify developer app</a>
-          (requires Premium) and prefer a silent token with no tab. Either way, Spotify keeps removing API
-          endpoints, so Spotify import may break regardless.
+          One time, ever; no app registration. If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
         </div>
       </div>
 
@@ -1111,18 +956,11 @@
 
     // setup pane wiring
     modal.querySelector('#ii-authorize').addEventListener('click', onAuthorize);
-    modal.querySelector('#ii-paste-code').addEventListener('click', onPasteCode);
     modal.querySelector('#ii-signout').addEventListener('click', () => { Auth.signOut(); refreshAuthState(); toast('Signed out'); });
-
-    // optional Spotify app credentials
-    modal.querySelector('#ii-sp-cid').value  = store.get('spotify_client_id', '');
-    modal.querySelector('#ii-sp-csec').value = store.get('spotify_client_secret', '');
-    modal.querySelector('#ii-sp-save').addEventListener('click', () => {
-      store.set('spotify_client_id',     modal.querySelector('#ii-sp-cid').value.trim());
-      store.set('spotify_client_secret', modal.querySelector('#ii-sp-csec').value.trim());
-      store.del('spotify_cc_token'); store.del('spotify_cc_expiry');
-      toast('Saved Spotify app — Spotify import will use it', 'ok');
-    });
+    const codeInput = modal.querySelector('#ii-oauth-code');
+    const tryCode = () => { const c = codeInput.value.trim(); if (c) { codeInput.value = ''; exchangeAndFinish(c, 'pasted'); } };
+    codeInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tryCode(); } });
+    codeInput.addEventListener('paste', () => setTimeout(tryCode, 50));
 
     // bulk pane wiring
     modal.querySelector('#ii-bulk-apply').addEventListener('click', () => applyBulk(false));
@@ -1164,7 +1002,13 @@
   function refreshAuthState() {
     const el = modal.querySelector('#ii-auth-state');
     const pane = modal.querySelector('#ii-setup-pane');
-    if (Auth.isAuthorized()) {
+    const authed = Auth.isAuthorized();
+    // when authorized show Sign out; when not, show the code field in its place
+    const code = modal.querySelector('#ii-oauth-code'), out = modal.querySelector('#ii-signout');
+    if (code) code.style.display = authed ? 'none' : '';
+    if (out)  out.style.display  = authed ? '' : 'none';
+    if (authed && code) code.value = '';
+    if (authed) {
       el.className = 'ii-authstate ok';
       el.textContent = '✓ Authorized — submit is ready.';
     } else {
@@ -1712,22 +1556,20 @@
     store.del('oauth_oob_code');
     // not 'noopener' so the oob tab can close itself once it captures the code
     const w = window.open(Auth.authorizeUrl(), '_blank');
-    // auto-capture the code from the oob tab (no copy/paste); time out after ~3 min
+    const ci = modal.querySelector('#ii-oauth-code');
+    if (ci) setTimeout(() => ci.focus(), 100);   // ready for a manual paste if the tab can't close
     let n = 0;
     const iv = setInterval(() => {
       const oob = store.get('oauth_oob_code', null);
       if (oob && oob.code) {
         clearInterval(iv); store.del('oauth_oob_code');
         try { w && w.close(); } catch (e) {}
+        if (ci) ci.value = oob.code;              // show it auto-filled, then exchange
         exchangeAndFinish(oob.code, 'auto-captured');
         return;
       }
-      if (++n > 180) clearInterval(iv);   // give up; the "Paste code…" button still works
+      if (++n > 300) clearInterval(iv);           // stop polling after ~5 min
     }, 1000);
-  }
-  async function onPasteCode() {
-    const code = prompt('Paste the authorization code MusicBrainz showed you:');
-    if (code) exchangeAndFinish(code.trim(), 'pasted');
   }
 
   /* ── submit ── */

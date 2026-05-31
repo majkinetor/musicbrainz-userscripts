@@ -27,7 +27,7 @@ submitted.
 | --- | --- | --- | --- |
 | **⟳ SoundExchange** | [SoundExchange](https://isrc.soundexchange.com/) | none | Searches every track by title/artist, shows candidate ISRCs per row, auto-fills confident matches into empty fields. Ported from `magicisrc_soundexchange`. |
 | **Deezer** | `api.deezer.com` | none | Enabled when the release has a Deezer album relationship. Fetches each track's ISRC and maps by disc/position (title fallback). |
-| **Spotify** | `api.spotify.com` | tab-harvest | Enabled when the release has a Spotify album relationship. Briefly opens an `open.spotify.com` tab, borrows the **web player's own token** (free account, no Premium, no bot-block), then closes it — so allow popups for musicbrainz.org. Optionally use a Spotify developer app instead (silent, but needs Premium). Fetches ISRCs per track (`/v1/tracks/{id}` — the bulk endpoint was removed Feb 2026). |
+| **Spotify** | `isrchunt.com` | none | Enabled when the release has a Spotify album relationship. Delegates to ISRC Hunt (which does the Spotify lookup server-side) and scrapes the ISRCs from its result page — no Spotify token, login, or tab. (Direct Spotify access needs Premium and is heavily bot-blocked.) |
 
 Source buttons only fill **empty** fields and never touch existing ISRCs.
 
@@ -75,24 +75,16 @@ The OAuth app is **baked into the script**, so there's nothing to register:
 Your credentials and tokens live only in the userscript's local storage (`GM_setValue`). **Sign out**
 in Setup clears the stored token.
 
-### How Spotify import works (no Premium, no app)
+### How Spotify import works (via ISRC Hunt)
 
-Spotify's developer API now requires a **Premium** subscription, and its anonymous token endpoint is
-bot-blocked — so the script doesn't rely on either. Instead, when you click **Spotify**, it opens a
-short-lived `open.spotify.com` tab: the real web player mints its own access token (which works for
-**free** accounts and handles Spotify's anti-bot itself), the script captures that token off the
-player's own requests, hands it to the MusicBrainz tab, and closes the Spotify tab. So:
-
-- **Allow popups** for `musicbrainz.org` (the click is the gesture that opens the tab).
-- Being logged into Spotify isn't required, but helps reliability.
-- The token is cached ~50 min, so the tab only reopens occasionally.
-
-**Optional silent path:** if you happen to have a Spotify developer app (Premium), paste its Client
-ID + Secret into ⚙ Setup → *Spotify app* and it'll use a client-credentials token with no tab.
-
-**Caveat:** Spotify keeps removing Web API endpoints (it dropped the bulk track/album endpoints and
-briefly even removed the ISRC field in early 2026), so Spotify import can break regardless. **Deezer
-and SoundExchange are the stable sources.**
+Spotify's developer API now requires a **Premium** subscription, its anonymous token endpoint is
+bot-blocked, and the web player fetches its token through a service worker a userscript can't hook —
+so a direct token harvest is unreliable. Instead the script delegates to
+[ISRC Hunt](https://isrchunt.com), which does the Spotify lookup **server-side** (with its own
+credentials) and renders the ISRCs into a plain HTML table. The script fetches
+`isrchunt.com/spotify/importisrc?releaseId=<album url>`, scrapes that table, and maps the ISRCs to
+your tracks — **no token, no login, no tab.** Spotify can still change things upstream, but **Deezer
+and SoundExchange remain the most robust sources.**
 
 ## Why not the session cookie / `/ws/js/edit/create`?
 
