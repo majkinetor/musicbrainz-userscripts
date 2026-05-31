@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.200919
+// @version      2026.5.31.201456
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.200919';
+  const SCRIPT_VERSION = '2026.5.31.201456';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -1223,7 +1223,8 @@
         '<td><div class="ii-inwrap">' +
           '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
           '<button class="ii-clear" type="button" tabindex="-1" title="Clear this field">×</button>' +
-          '<button class="ii-plus" title="Previous ISRC + 1  (right-click: fill down through empty tracks)">+1</button>' +
+          // no +1 on the very first track — there's no previous ISRC to increment
+          (idx > 0 ? '<button class="ii-plus" title="Previous ISRC + 1  (right-click: fill down through empty tracks)">+1</button>' : '') +
           '<span class="ii-lookup"></span>' +
           '</div><div class="ii-cands"></div></td>';
       const input = tr.querySelector('.ii-input');
@@ -1244,8 +1245,10 @@
         else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; } }
       });
       const plusBtn = tr.querySelector('.ii-plus');
-      plusBtn.addEventListener('click', () => plusOne(idx));
-      plusBtn.addEventListener('contextmenu', e => { e.preventDefault(); plusOneFillDown(idx); });
+      if (plusBtn) {
+        plusBtn.addEventListener('click', () => plusOne(idx));
+        plusBtn.addEventListener('contextmenu', e => { e.preventDefault(); plusOneFillDown(idx); });
+      }
       tbody.appendChild(tr);
       validateInput(input, t);
       // initial per-track entry point to the SoundExchange refine panel
@@ -1314,6 +1317,12 @@
   // "click to verify" bullet; clicking resumes the next batch. (Manual typing
   // stays immediate — it never goes through the queue.)
   const _vq = { items: [], running: false, done: 0 };
+  // During a streaming import (Deezer/Spotify) we DEFER per-fill verification so
+  // SoundExchange's requests don't compete with the import's on the GM queue —
+  // SX must not slow or influence the import. Filled rows are collected here and
+  // verified once the import has finished.
+  let _deferVerify = false;
+  let _deferredVerify = new Set();
   function enqueueVerify(idx, isrc) {
     if (!_vq.items.length && !_vq.running) _vq.done = 0;   // a fresh burst → reset the allowance
     _vq.items = _vq.items.filter(it => it.idx !== idx);    // one pending verify per row
@@ -1373,8 +1382,10 @@
     // Skip it for SoundExchange-sourced fills — the batch search already classified
     // the candidate, so re-querying would just double our SX load. The check is
     // routed through enqueueVerify so bulk imports stay serialized + capped at 30.
-    if (t.source !== 'SoundExchange' && isValidIsrc(t.pending)) enqueueVerify(idx, t.pending);
-    else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; } }
+    if (t.source !== 'SoundExchange' && isValidIsrc(t.pending)) {
+      if (_deferVerify) { _deferredVerify.add(idx); const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; } }
+      else enqueueVerify(idx, t.pending);
+    } else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; } }
     if (flash) {
       const tr = input.closest('tr');
       tr.classList.remove('ii-row-fill'); void tr.offsetWidth; tr.classList.add('ii-row-fill');
@@ -1904,6 +1915,8 @@
   async function runStreamingSource(label, albumId, fetcher) {
     const counts = { filled: 0, already: 0, skipped: 0, unmatched: 0 };
     setProg(label + ': starting…');
+    // defer SoundExchange verification so its requests don't compete with the import
+    _deferVerify = true; _deferredVerify = new Set();
     let found;
     try {
       found = await fetcher(albumId,
@@ -1913,7 +1926,10 @@
       // report failures the same way as other messages — inline next to the buttons
       Log.err(label + ' failed: ' + errText(e));
       setProg('⚠ ' + label + ' failed — see Log', true);
+      _deferVerify = false; _deferredVerify = new Set();
       return;
+    } finally {
+      _deferVerify = false;
     }
     // the fetch + mapping succeeded — report it. Guard the UI update separately so a
     // cosmetic hiccup here can't masquerade as an import failure.
@@ -1928,6 +1944,10 @@
     } catch (e) {
       Log.warn(label + ': imported OK, but a UI update hiccuped: ' + errText(e));
     }
+    // NOW (import finished) verify the filled rows on SoundExchange — decoupled,
+    // so a slow/failing SX never affects the import itself
+    const toVerify = [..._deferredVerify]; _deferredVerify = new Set();
+    toVerify.forEach(i => { const t = RELEASE.tracks[i]; if (t && isValidIsrc(t.pending)) enqueueVerify(i, t.pending); });
   }
 
   async function runDeezer() {
