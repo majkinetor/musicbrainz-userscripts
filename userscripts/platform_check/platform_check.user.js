@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.31.191214
+// @version      2026.5.31.194540
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md
@@ -409,6 +409,7 @@ container.innerHTML = `
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
   <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add" style="${iconBtn}">+</span>
+  <span id="mb-openall-btn"     class="pc-icon-btn" title="Open all found platform pages in new tabs"        style="${iconBtn}">↗</span>
   <span id="mb-token-setup-btn" class="pc-icon-btn" title="Provider toggles"                                  style="${iconBtn}">⚙</span>
   <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log"                                    style="${iconBtn}">ⓘ</span>
 </div>
@@ -2266,6 +2267,27 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
         appendLog('System', `Inject: queued ${rgCount} release-group URL(s) — opening release-group editor`, 'ok');
         window.open(`${MB_ORIGIN}/release-group/${rgMbid}/edit`, '_blank');
     }
+});
+
+// "↗" — open every found platform page (any provider with a URL result, plus the
+// Discogs master) in its own new tab.
+document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
+    const urls = [];
+    for (const p of PROVIDER_ORDER) {
+        const u = cacheGet(mbid, p)?.url;
+        if (u) urls.push(u);
+    }
+    const masterUrl = cacheGet(mbid, 'discogs')?.masterUrl;
+    if (masterUrl) urls.push(masterUrl);
+    const uniq = [...new Set(urls)];
+    if (!uniq.length) {
+        appendLog('System', 'Open all: no found links yet', 'warn');
+        flashInfo(e.currentTarget, 'No links');
+        return;
+    }
+    appendLog('System', `Open all: opening ${uniq.length} found link(s) in new tabs`, 'ok');
+    uniq.forEach(u => window.open(u, '_blank', 'noopener'));
+    flashInfo(e.currentTarget, `Opened ${uniq.length}`);
 });
 
 runScans();
