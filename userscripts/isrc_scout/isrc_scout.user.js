@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.175739
+// @version      2026.5.31.180022
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -80,7 +80,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.175739';
+  const SCRIPT_VERSION = '2026.5.31.180022';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -355,6 +355,8 @@
     .ii-cand { display: flex; align-items: flex-start; gap: 7px; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; cursor: pointer; font-size: 11px; background: #fff; }
     .ii-cand:hover { background: #f0f6ff; border-color: #9ec5fe; }
+    .ii-cands.collapsed .ii-cand:not(.chosen) { display: none; }
+    .ii-cand.chosen { box-shadow: inset 3px 0 0 #198754; }
     .ii-cand.best { border-color: #6ea8fe; background: #d4e6ff; }
     .ii-cand.warn { border-color: #ffe08a; background: #fff3cd; }
     .ii-cand.bad  { border-color: #f3c6cb; background: #fdf2f3; }
@@ -1454,6 +1456,19 @@
   }
 
   /* ── candidate suggestions (SoundExchange) ── */
+  // Collapse a track's candidate list down to just the one matching `isrc`
+  // (marked .chosen); the rest are hidden until the next search re-renders them.
+  function collapseCandsTo(idx, isrc) {
+    const box = rowCands(idx); if (!box) return;
+    const norm = normalizeIsrc(isrc);
+    let found = false;
+    box.querySelectorAll('.ii-cand').forEach(el => {
+      const on = el.dataset.isrc === norm;
+      el.classList.toggle('chosen', on);
+      if (on) found = true;
+    });
+    box.classList.toggle('collapsed', found);
+  }
   function renderCands(idx, rows) {
     const box = rowCands(idx);
     const t = RELEASE.tracks[idx];
@@ -1466,15 +1481,20 @@
       const relInfo = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
       const c = document.createElement('div');
       c.className = 'ii-cand' + (cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : ' bad') + (inMb ? ' inmb' : '');
+      c.dataset.isrc = normalizeIsrc(f.isrc);
       c.title = relInfo ? 'Appears on: ' + relInfo : '';
       c.innerHTML =
         '<span class="ii-cand-isrc">' + esc(f.isrc) + '</span>' +
         '<span class="ii-cand-meta">' + sxMetaHtml(f, t) +
           (relInfo ? '  ·  ' + esc(relInfo) : '') + '</span>' +
         (inMb ? '<span class="ii-cand-inmb">✓ IN MB</span>' : '<span class="ii-cand-src">SX</span>');
-      c.addEventListener('click', () => { setPending(idx, f.isrc, true, 'SoundExchange'); updateSummary(); });
+      c.addEventListener('click', () => {
+        setPending(idx, f.isrc, true, 'SoundExchange'); updateSummary();
+        collapseCandsTo(idx, f.isrc);   // full list stays one "refine search" click away
+      });
       box.appendChild(c);
     });
+    box.classList.remove('collapsed');
     // "refine search" entry — opens the panel to tweak title/artist/release + exact
     const refine = document.createElement('div');
     refine.className = 'ii-cand-refine';
@@ -1699,7 +1719,7 @@
         if (bestIsrc) {
           _sxMatched++;
           // autofill the input only when it's empty AND the match is a NEW isrc
-          if (!t.pending && !t.existing.includes(bestIsrc)) { setPending(i, bestIsrc, true, 'SoundExchange'); _sxFilled++; }
+          if (!t.pending && !t.existing.includes(bestIsrc)) { setPending(i, bestIsrc, true, 'SoundExchange'); collapseCandsTo(i, bestIsrc); _sxFilled++; }
         }
         Log.info('SX #' + (t.number || t.trackPos) + ' "' + t.title + '": ' + rows.length + ' result(s)' +
           (bestIsrc ? ', best ' + bestIsrc + (t.existing.includes(bestIsrc) ? ' (already in MB)' : '') : ', no confident match'));
