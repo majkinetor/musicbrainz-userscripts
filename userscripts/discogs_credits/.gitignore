@@ -1,8 +1,7 @@
 # Dependencies
 node_modules/
 
-# Playwright persistent profile (cookies, IDB cache — never commit)
-.pw-profile/
+# Playwright profile moved to the repo root (/.pw-profile/, shared by all harnesses)
 storageState.json
 
 # Editor / OS

@@ -35,6 +35,10 @@ const HERE         = dirname(fileURLToPath(import.meta.url));
 const SCRIPT_PATH  = resolve(HERE, '..', 'isrc_import.user.js');
 const FIXTURE_PATH = resolve(HERE, 'fixtures.json');
 const LOG_ROOT     = resolve(HERE, 'logs');
+// Shared repo-level Playwright profile (logged-in MB session), used by every harness.
+// Read-only fixtures pass even with a fresh/empty profile; an authenticated profile
+// additionally lets GM_xhr (bridged through the context cookie jar) exercise submit/delete.
+const PROFILE_DIR  = resolve(HERE, '..', '..', '..', '.pw-profile');
 const WS2          = 'https://musicbrainz.org/ws/2/';
 
 // ──── args ────────────────────────────────────────────────────────────────
@@ -77,8 +81,11 @@ await mkdir(RUN_DIR, { recursive: true });
 log(c.grey(`run dir: test/logs/${runStamp}/  (${selected.length} fixture${selected.length === 1 ? '' : 's'})`));
 
 // ──── browser ──────────────────────────────────────────────────────────────
-const browser = await chromium.launch({ headless: !headed });
-const context = await browser.newContext({
+// Persistent context = the shared logged-in MB profile. GM_xhr is bridged through
+// this context's cookie jar, so when the profile is authenticated the harness can
+// drive real submit/delete edits; read-only fixtures work with any profile.
+const context = await chromium.launchPersistentContext(PROFILE_DIR, {
+    headless: !headed,
     viewport: { width: 1400, height: 1000 },
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
 });
@@ -230,7 +237,7 @@ for (let i = 0; i < selected.length; i++) {
     if (pause) await waitForEnter('  -- paused. press Enter to continue, Ctrl-C to abort -- ');
 }
 
-await browser.close();
+await context.close();
 
 // ──── top-level summary ─────────────────────────────────────────────────────
 const summary = [

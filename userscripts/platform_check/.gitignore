@@ -1,8 +1,7 @@
 # Dependencies
 node_modules/
 
-# Playwright persistent profile (cookies, IDB cache — never commit)
-.pw-profile/
+# Playwright profile lives at the repo root (/.pw-profile/, shared by all harnesses)
 
 # Per-run test logs + HTML probe dumps
 test/logs/

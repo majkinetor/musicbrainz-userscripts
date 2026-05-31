@@ -18,7 +18,8 @@ import { dirname, resolve }   from 'node:path';
 import { mkdir }              from 'node:fs/promises';
 
 const HERE         = dirname(fileURLToPath(import.meta.url));
-const PROFILE_DIR  = resolve(HERE, '..', '.pw-profile');
+// Shared repo-level Playwright profile, reused by every userscript test harness.
+const PROFILE_DIR  = resolve(HERE, '..', '..', '..', '.pw-profile');
 const LOGIN_URL    = 'https://musicbrainz.org/login';
 const SUCCESS_URL  = 'https://musicbrainz.org/user/';   // post-login redirect lands under /user/<name>
 

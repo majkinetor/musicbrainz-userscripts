@@ -27,3 +27,8 @@ dev/notif-channel/node_modules/
 
 # Claude Code per-user state: permission allowlist, etc. Machine-specific.
 /.claude/
+
+# Shared Playwright profile (logged-in MB session + IDB cache) reused by every
+# userscript test harness. Populate once with `node test/login.mjs` from any
+# harness. Never commit — it holds session cookies.
+/.pw-profile/

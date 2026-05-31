@@ -13,7 +13,9 @@ import { fileURLToPath }  from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const HERE         = dirname(fileURLToPath(import.meta.url));
-const PROFILE_DIR  = resolve(HERE, '..', '..', '.pw-profile');
+// Shared repo-level Playwright profile (logged-in MB session), reused by every
+// userscript's test harness. From userscripts/discogs_credits/test/lib → repo root.
+const PROFILE_DIR  = resolve(HERE, '..', '..', '..', '..', '.pw-profile');
 const SCRIPT_PATH  = resolve(HERE, '..', '..', 'dist', 'discogs_credits.user.js');
 
 /**
