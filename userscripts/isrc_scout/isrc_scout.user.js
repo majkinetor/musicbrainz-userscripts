@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.175311
+// @version      2026.5.31.175739
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -80,7 +80,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.175311';
+  const SCRIPT_VERSION = '2026.5.31.175739';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -441,15 +441,23 @@
     .ii-sxp-hdr .t b { color: #6f42c1; }
     #ii-sxp-close { background: none; border: none; font-size: 17px; color: #6c757d; cursor: pointer; line-height: 1; }
     #ii-sxp-close:hover { color: #212529; }
-    .ii-sxp-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; padding: 10px 13px 6px; }
-    .ii-sxp-form input[type=text] { padding: 5px 8px; border: 1px solid #ced4da; border-radius: 5px; font-size: 12px; box-sizing: border-box; width: 100%; }
-    #ii-sxp-title { grid-column: 1; } #ii-sxp-artist { grid-column: 2; }
-    #ii-sxp-release { grid-column: 1 / 3; }
-    #ii-sxp-search { grid-column: 3; grid-row: 1 / 3; align-self: stretch; padding: 0 16px; border: none;
-      border-radius: 5px; background: #6f42c1; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .ii-sxp-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; padding: 10px 13px 10px; align-items: start; }
+    .ii-sxp-field { position: relative; display: flex; align-items: center; }
+    #ii-sxp-f-title { grid-column: 1; } #ii-sxp-f-artist { grid-column: 2; }
+    #ii-sxp-f-release { grid-column: 1 / 3; }
+    .ii-sxp-inp { width: 100%; padding: 6px 31px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
+    .ii-sxp-inp:focus { outline: none; border-color: #6f42c1; }
+    .ii-sxp-field.off .ii-sxp-inp { color: #adb5bd; background: #f8f9fa; }
+    .ii-sxp-en { position: absolute; left: 8px; width: 15px; height: 15px; margin: 0; cursor: pointer; z-index: 1; flex-shrink: 0; }
+    .ii-sxp-E { position: absolute; right: 5px; width: 23px; height: 23px; padding: 0; display: inline-flex; align-items: center;
+      justify-content: center; font-size: 12px; font-weight: 700; color: #adb5bd; background: #fff; border: 1px solid #e9ecef;
+      border-radius: 4px; cursor: pointer; }
+    .ii-sxp-E:hover { color: #6f42c1; border-color: #d6c7ee; }
+    .ii-sxp-E.on { color: #212529; border-color: #212529; }
+    .ii-sxp-field.off .ii-sxp-E { opacity: .4; pointer-events: none; }
+    #ii-sxp-search { grid-column: 3; grid-row: 1 / 3; align-self: stretch; padding: 0 18px; border: none;
+      border-radius: 6px; background: #6f42c1; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
     #ii-sxp-search:hover { background: #5a32a3; } #ii-sxp-search:disabled { background: #adb5bd; }
-    .ii-sxp-exacts { grid-column: 1 / 3; display: flex; gap: 12px; font-size: 11px; color: #6c757d; padding-top: 1px; }
-    .ii-sxp-exacts label { display: inline-flex; gap: 3px; align-items: center; cursor: pointer; }
     .ii-sxp-status { padding: 2px 13px; font-size: 11px; color: #6c757d; min-height: 14px; }
     .ii-sxp-status.err { color: #dc3545; }
     .ii-sxp-results { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 13px 12px; display: flex; flex-direction: column; gap: 4px; }
@@ -756,6 +764,9 @@
     store.set('sx_exact_artist', sxExact.artist);
     store.set('sx_exact_release', sxExact.release);
   }
+  // Refine-panel "use this term" toggles. title/artist reset to ON every time the
+  // panel opens; the release toggle (default OFF) is remembered across invocations.
+  let sxRelEnabled = !!store.get('sx_rel_enabled', false);
 
   /* ═══════════════════════════════════════════════════════════════════════
      DEEZER  (free public API, no auth)
@@ -1496,13 +1507,20 @@
         <button id="ii-sxp-close" title="Close">✕</button>
       </div>
       <div class="ii-sxp-form">
-        <input type="text" id="ii-sxp-title" placeholder="Title" autocomplete="off">
-        <input type="text" id="ii-sxp-artist" placeholder="Artist" autocomplete="off">
-        <input type="text" id="ii-sxp-release" placeholder="Release (optional)" autocomplete="off">
-        <div class="ii-sxp-exacts">
-          <label><input type="checkbox" id="ii-sxp-ex-title">exact title</label>
-          <label><input type="checkbox" id="ii-sxp-ex-artist">exact artist</label>
-          <label><input type="checkbox" id="ii-sxp-ex-release">exact release</label>
+        <div class="ii-sxp-field" id="ii-sxp-f-title">
+          <input type="checkbox" class="ii-sxp-en" id="ii-sxp-en-title" title="Use the title in the search">
+          <input type="text" class="ii-sxp-inp" id="ii-sxp-title" placeholder="Title" autocomplete="off">
+          <button type="button" class="ii-sxp-E" id="ii-sxp-ex-title" title="Exact title (match the whole field)">E</button>
+        </div>
+        <div class="ii-sxp-field" id="ii-sxp-f-artist">
+          <input type="checkbox" class="ii-sxp-en" id="ii-sxp-en-artist" title="Use the artist in the search">
+          <input type="text" class="ii-sxp-inp" id="ii-sxp-artist" placeholder="Artist" autocomplete="off">
+          <button type="button" class="ii-sxp-E" id="ii-sxp-ex-artist" title="Exact artist (match the whole field)">E</button>
+        </div>
+        <div class="ii-sxp-field" id="ii-sxp-f-release">
+          <input type="checkbox" class="ii-sxp-en" id="ii-sxp-en-release" title="Use the release in the search">
+          <input type="text" class="ii-sxp-inp" id="ii-sxp-release" placeholder="Release" autocomplete="off">
+          <button type="button" class="ii-sxp-E" id="ii-sxp-ex-release" title="Exact release (match the whole field)">E</button>
         </div>
         <button id="ii-sxp-search">Search</button>
       </div>
@@ -1527,6 +1545,21 @@
     sxPanel.querySelector('#ii-sxp-search').addEventListener('click', sxPanelSearch);
     ['#ii-sxp-title', '#ii-sxp-artist', '#ii-sxp-release'].forEach(id =>
       sxPanel.querySelector(id).addEventListener('keydown', e => { if (e.key === 'Enter') sxPanelSearch(); }));
+    // per-term "use this" checkbox (greys the field when off; release is remembered)
+    // and "E" exact toggle (persisted in sxExact, kept across tracks)
+    ['title', 'artist', 'release'].forEach(key => {
+      const en = sxPanel.querySelector('#ii-sxp-en-' + key);
+      en.addEventListener('change', () => {
+        sxPanel.querySelector('#ii-sxp-f-' + key).classList.toggle('off', !en.checked);
+        if (key === 'release') { sxRelEnabled = en.checked; store.set('sx_rel_enabled', sxRelEnabled); }
+      });
+      const ex = sxPanel.querySelector('#ii-sxp-ex-' + key);
+      ex.addEventListener('click', () => {
+        sxExact[key] = !sxExact[key]; saveSxExact();
+        ex.classList.toggle('on', sxExact[key]);
+        Log.info('SX exact ' + key + ' = ' + sxExact[key]);
+      });
+    });
     // drag by header
     const hdr = sxPanel.querySelector('.ii-sxp-hdr');
     let dx = 0, dy = 0, drag = false;
@@ -1547,24 +1580,33 @@
     sxPanel.querySelector('#ii-sxp-track').textContent = t.title + (t.artist ? ' — ' + t.artist : '');
     sxPanel.querySelector('#ii-sxp-title').value = t.title;
     sxPanel.querySelector('#ii-sxp-artist').value = t.artist;
-    sxPanel.querySelector('#ii-sxp-release').value = sxPanel.querySelector('#ii-sxp-release').value || '';
-    sxPanel.querySelector('#ii-sxp-ex-title').checked = sxExact.title;
-    sxPanel.querySelector('#ii-sxp-ex-artist').checked = sxExact.artist;
-    sxPanel.querySelector('#ii-sxp-ex-release').checked = sxExact.release;
+    sxPanel.querySelector('#ii-sxp-release').value = RELEASE.title || '';   // prefilled from MusicBrainz
+    const setEnabled = (key, on) => {
+      sxPanel.querySelector('#ii-sxp-en-' + key).checked = on;
+      sxPanel.querySelector('#ii-sxp-f-' + key).classList.toggle('off', !on);
+    };
+    const setExact = (key, on) => sxPanel.querySelector('#ii-sxp-ex-' + key).classList.toggle('on', on);
+    // title/artist default ON (reset per track); release uses the remembered toggle
+    setEnabled('title', true);
+    setEnabled('artist', true);
+    setEnabled('release', sxRelEnabled);
+    // E (exact) reflects the persisted, kept-across-tracks state
+    setExact('title', sxExact.title);
+    setExact('artist', sxExact.artist);
+    setExact('release', sxExact.release);
     sxPanel.classList.add('open');
     sxPanelSearch();
   }
   function sxPanelSearch() {
     const idx = _sxPanelIdx;
     const t = RELEASE.tracks[idx];
-    const title = sxPanel.querySelector('#ii-sxp-title').value.trim();
-    const artist = sxPanel.querySelector('#ii-sxp-artist').value.trim();
-    const release = sxPanel.querySelector('#ii-sxp-release').value.trim();
-    const exact = {
-      title:   sxPanel.querySelector('#ii-sxp-ex-title').checked,
-      artist:  sxPanel.querySelector('#ii-sxp-ex-artist').checked,
-      release: sxPanel.querySelector('#ii-sxp-ex-release').checked,
-    };
+    // only enabled terms are used; a disabled term is sent empty (= ignored by SX)
+    const use = key => sxPanel.querySelector('#ii-sxp-en-' + key).checked;
+    const val = key => sxPanel.querySelector('#ii-sxp-' + key).value.trim();
+    const title   = use('title')   ? val('title')   : '';
+    const artist  = use('artist')  ? val('artist')  : '';
+    const release = use('release') ? val('release') : '';
+    const exact = { title: sxExact.title, artist: sxExact.artist, release: sxExact.release };
     const stEl = sxPanel.querySelector('.ii-sxp-status');
     const resEl = sxPanel.querySelector('.ii-sxp-results');
     const goBtn = sxPanel.querySelector('#ii-sxp-search');
