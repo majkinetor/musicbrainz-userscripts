@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.205859
+// @version      2026.5.31.210449
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.205859';
+  const SCRIPT_VERSION = '2026.5.31.210449';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -383,8 +383,11 @@
     .ii-ex-item { display: flex; align-items: center; gap: 5px; cursor: pointer; }
     .ii-ex-item input { cursor: pointer; margin: 0; flex-shrink: 0; }
     .ii-ex-item.del samp { text-decoration: line-through; color: #d63384; }
-    .ii-ex-pending samp { color: #b8860b; text-decoration: line-through; }
-    .ii-ex-pending { color: #b8860b; font-size: 11px; }
+    /* pending Remove-ISRC edit — highlighted like MusicBrainz marks entities with
+       an open edit (orange/peach), with a strike-through to show it's a removal */
+    .ii-ex-pending { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #8a5a00;
+      background: #fde6c8; border: 1px solid #f1c690; border-radius: 3px; padding: 0 4px; }
+    .ii-ex-pending samp { color: #8a5a00; text-decoration: line-through; }
     .ii-inwrap { display: flex; align-items: center; gap: 5px; }
     /* the × lives INSIDE the input box (part of the edit), so it doesn't shift the
        row layout / SX text alignment */
@@ -598,6 +601,19 @@
       // this release's own date year + artist, for the header (mirrors what MB shows)
       const releaseYear = parseInt((String(data.date || '').match(/^(\d{4})/) || [])[1]) || year;
       const artist = acName(data['artist-credit']);
+      // Restore Remove-ISRC edits we previously submitted (still pending in MB's
+      // queue, so WS2 still lists the ISRC). Keep only ISRCs still on the recording
+      // — a gone one means the edit was applied, so drop it from storage.
+      const pend = loadPendingRemovals();
+      let pendChanged = false;
+      tracks.forEach(t => {
+        const stored = pend[t.recId] || [];
+        const stillThere = stored.filter(i => t.existing.includes(normalizeIsrc(i)));
+        if (stillThere.length) t.pendingRemoval = stillThere;
+        if (stillThere.length !== stored.length) { pend[t.recId] = stillThere; pendChanged = true; }
+      });
+      Object.keys(pend).forEach(rid => { if (!tracks.some(t => t.recId === rid)) { delete pend[rid]; pendChanged = true; } });
+      if (pendChanged) savePendingRemovals(pend);
       RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, year, releaseYear, artist };
       Log.info('Release "' + RELEASE.title + '"' + (year ? ' (' + year + ')' : '') + ': ' + tracks.length + ' track(s), ' +
         tracks.filter(t => !t.existing.length).length + ' missing ISRC' +
@@ -608,6 +624,18 @@
   function acName(ac) {
     if (!Array.isArray(ac)) return '';
     return ac.map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('');
+  }
+  // Persisted pending Remove-ISRC edits for this release: { recId: [isrcs] }.
+  function pendKey() { return 'pending_removals_' + mbid; }
+  function loadPendingRemovals() { try { return JSON.parse(store.get(pendKey(), '') || '{}') || {}; } catch (e) { return {}; } }
+  function savePendingRemovals(map) {
+    const has = map && Object.keys(map).some(k => (map[k] || []).length);
+    if (has) store.set(pendKey(), JSON.stringify(map)); else store.del(pendKey());
+  }
+  function recordPendingRemoval(recId, isrcs) {
+    const map = loadPendingRemovals();
+    map[recId] = [...new Set((map[recId] || []).concat(isrcs.map(normalizeIsrc)))];
+    savePendingRemovals(map);
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -1046,7 +1074,7 @@
           </span>
         </span>
         <span class="ii-split"><button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from the linked Deezer album">Deezer</button><button class="ii-tbtn dz ii-caret" id="ii-dz-menu" title="More — import from a custom Deezer URL">▾</button></span>
-        <span class="ii-split"><button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album">Spotify</button><button class="ii-tbtn sp ii-caret" id="ii-sp-menu" title="More — import from a custom Spotify URL">▾</button></span>
+        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album">Spotify</button>
         <span class="ii-prog" id="ii-prog"></span>
         <span class="ii-tspacer"></span>
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear entered</button>
@@ -1123,7 +1151,8 @@
     modal.querySelector('#ii-dz-all').addEventListener('click', runDeezer);
     modal.querySelector('#ii-sp-all').addEventListener('click', runSpotify);
     modal.querySelector('#ii-dz-menu').addEventListener('click', e => toggleSrcMenu('Deezer', e.currentTarget));
-    modal.querySelector('#ii-sp-menu').addEventListener('click', e => toggleSrcMenu('Spotify', e.currentTarget));
+    // Spotify has no ▾ menu: it imports via ISRC Hunt, which resolves the MB release
+    // FROM the Spotify URL — a custom/not-in-MB URL can't work, so there's nothing to offer.
     document.getElementById('ii-src-go').addEventListener('click', submitSrcMenu);
     document.getElementById('ii-src-url').addEventListener('keydown', e => { if (e.key === 'Enter') submitSrcMenu(); });
     document.getElementById('ii-src-pc').addEventListener('click', importFromPlatformCheck);
@@ -2189,6 +2218,7 @@
         // mark pending (the edit is queued; don't drop from `existing` — it's still on the recording)
         const t = RELEASE.tracks[info.idx];
         t.pendingRemoval = (t.pendingRemoval || []).concat(info.isrcs);
+        recordPendingRemoval(recId, info.isrcs);   // remember across reloads (still pending in MB)
         ok += info.isrcs.length;
         Log.info('Submitted Remove-ISRC for ' + info.isrcs.join(', ') + ' (recording ' + recId + ') — pending');
       } catch (e) {
