@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.160149
+// @version      2026.5.31.161342
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -68,74 +68,55 @@
       } catch (e) {}
     };
     hlog('harvester active on ' + location.href);
-    let captured = false, domPoll = null;
+    let captured = false;
     const finish = (token, how) => {
       if (captured || !token) return;
       captured = true;
-      if (domPoll) clearInterval(domPoll);
       hlog('captured token via ' + how + ' (len ' + token.length + ') — storing & closing');
       try { GM_setValue('spotify_harvest', { token: token, ts: Date.now() }); } catch (e) {}
       setTimeout(() => { try { window.close(); } catch (e) {} }, 250);
     };
-    const fromBearer = (v) => { const m = /Bearer\s+([A-Za-z0-9._-]+)/i.exec(String(v || '')); return m ? m[1] : null; };
-    const fromHeaders = (h) => {
+    // The player gets its access token via window.fetch, but a sandbox `unsafeWindow.fetch`
+    // override doesn't reach the page bundle on Firefox (Xray), and Spotify's CSP forbids
+    // inline injected scripts. CSP DOES allow blob: scripts, so we inject the hook into the
+    // page's own world via a Blob URL; it posts the token back with window.postMessage,
+    // which the userscript receives here.
+    window.addEventListener('message', (e) => {
+      if (e.source !== window || !e.data || !e.data.__iiSpotifyToken) return;
+      finish(e.data.__iiSpotifyToken, 'page-hook/' + (e.data.via || '?'));
+    });
+    const pageHook = '(' + function () {
+      var got = false;
+      function send(tok, via) { if (got || !tok) return; got = true; try { window.postMessage({ __iiSpotifyToken: String(tok), via: via }, '*'); } catch (e) {} }
+      function bearer(v) { var m = /Bearer\s+([A-Za-z0-9._-]+)/i.exec(String(v || '')); return m ? m[1] : null; }
+      function fromHeaders(h) { try { if (!h) return null; if (typeof h.get === 'function') return bearer(h.get('authorization')); if (Array.isArray(h)) { for (var i = 0; i < h.length; i++) if (String(h[i][0]).toLowerCase() === 'authorization') return bearer(h[i][1]); return null; } for (var k in h) if (k.toLowerCase() === 'authorization') return bearer(h[k]); } catch (e) {} return null; }
       try {
-        if (!h) return null;
-        if (typeof h.get === 'function') return fromBearer(h.get('authorization'));
-        if (Array.isArray(h)) { for (const [k, v] of h) if (String(k).toLowerCase() === 'authorization') return fromBearer(v); return null; }
-        for (const k in h) if (k.toLowerCase() === 'authorization') return fromBearer(h[k]);
+        var of = window.fetch;
+        if (of) window.fetch = function (input, init) {
+          try { var t = fromHeaders(init && init.headers) || (input && input.headers && fromHeaders(input.headers)); if (t) send(t, 'fetch-header'); } catch (e) {}
+          var p = of.apply(this, arguments);
+          try { var u = String((input && input.url) || input || ''); if (/get_access_token|\/api\/token/.test(u)) p.then(function (r) { return r.clone().json(); }).then(function (j) { if (j && j.accessToken) send(j.accessToken, 'token-response'); }).catch(function () {}); } catch (e) {}
+          return p;
+        };
       } catch (e) {}
-      return null;
+      try { var osrh = XMLHttpRequest.prototype.setRequestHeader; XMLHttpRequest.prototype.setRequestHeader = function (k, v) { try { if (String(k).toLowerCase() === 'authorization') { var t = bearer(v); if (t) send(t, 'xhr-header'); } } catch (e) {} return osrh.apply(this, arguments); }; } catch (e) {}
+    }.toString() + ')();';
+    const injectHook = () => {
+      const target = document.head || document.documentElement;
+      if (!target) { setTimeout(injectHook, 0); return; }   // <html> not parsed yet
+      try {
+        const url = URL.createObjectURL(new Blob([pageHook], { type: 'application/javascript' }));
+        const sc = document.createElement('script');
+        sc.src = url; sc.async = false;
+        target.appendChild(sc);
+        sc.onload = () => { try { URL.revokeObjectURL(url); sc.remove(); } catch (e) {} };
+        hlog('page-context fetch/XHR hook injected (blob)');
+      } catch (e) { hlog('hook injection failed: ' + e.message); }
     };
-    const uw = (typeof unsafeWindow !== 'undefined') ? unsafeWindow : window;
-    // hook fetch — capture the Authorization on the player's API calls (and the
-    // access-token endpoint response as a backup)
-    const origFetch = uw.fetch;
-    if (origFetch) {
-      uw.fetch = function (input, init) {
-        try {
-          const t = fromHeaders(init && init.headers) || (input && input.headers && fromHeaders(input.headers));
-          if (t) finish(t, 'fetch-header');
-        } catch (e) {}
-        const p = origFetch.apply(this, arguments);
-        try {
-          const url = String((input && input.url) || input || '');
-          if (/get_access_token|\/api\/token/.test(url)) {
-            p.then(r => r.clone().json()).then(j => { if (j && j.accessToken) finish(j.accessToken, 'token-response'); }).catch(() => {});
-          }
-        } catch (e) {}
-        return p;
-      };
-      hlog('fetch hook installed');
-    } else { hlog('WARNING: no unsafeWindow.fetch to hook'); }
-    // hook XHR header setting
-    try {
-      const osrh = uw.XMLHttpRequest.prototype.setRequestHeader;
-      uw.XMLHttpRequest.prototype.setRequestHeader = function (k, v) {
-        try { if (String(k).toLowerCase() === 'authorization') { const t = fromBearer(v); if (t) finish(t, 'xhr-header'); } } catch (e) {}
-        return osrh.apply(this, arguments);
-      };
-      hlog('xhr hook installed');
-    } catch (e) { hlog('xhr hook failed: ' + e.message); }
-    // PRIMARY: the web player makes many calls from a service worker our page-level
-    // fetch/XHR hooks can't see. But Spotify server-renders the access token into the
-    // page — read it straight from <script id="session"> (or any inline JSON with
-    // "accessToken"). Poll because at document-start the <body> isn't parsed yet.
-    const scanDom = () => {
-      try { const s = document.getElementById('session'); if (s && s.textContent) { const j = JSON.parse(s.textContent); if (j && j.accessToken) return j.accessToken; } } catch (e) {}
-      try { for (const s of document.querySelectorAll('script')) { const m = s.textContent && s.textContent.match(/"accessToken"\s*:\s*"(BQ[A-Za-z0-9._-]+)"/); if (m) return m[1]; } } catch (e) {}
-      return null;
-    };
-    let domTries = 0;
-    hlog('scanning page for embedded access token…');
-    domPoll = setInterval(() => {
-      const tok = scanDom();
-      if (tok) { finish(tok, 'page-session (try ' + domTries + ')'); return; }
-      if (++domTries > 65) clearInterval(domPoll);
-    }, 300);
+    injectHook();
     setTimeout(() => {
-      if (!captured) { hlog('TIMEOUT — no token found in 20s (logged in? not blocked?)'); try { GM_setValue('spotify_harvest', { error: 'timeout', ts: Date.now() }); } catch (e) {} try { window.close(); } catch (e) {} }
-    }, 20000);
+      if (!captured) { hlog('TIMEOUT — no token captured in 25s'); try { GM_setValue('spotify_harvest', { error: 'timeout', ts: Date.now() }); } catch (e) {} try { window.close(); } catch (e) {} }
+    }, 25000);
     return; // never run the MusicBrainz editor on a Spotify page
   }
 
@@ -175,7 +156,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.160149';
+  const SCRIPT_VERSION = '2026.5.31.161342';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_import';
   const CLIENT   = 'isrc_import-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Import/1.0';
@@ -501,7 +482,7 @@
     .ii-sxp-status.err { color: #dc3545; }
     .ii-sxp-results { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 13px 12px; display: flex; flex-direction: column; gap: 4px; }
     .ii-sxp-row { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border: 1px solid #e9ecef;
-      border-radius: 6px; cursor: pointer; overflow: hidden; }
+      border-radius: 6px; cursor: pointer; overflow: hidden; flex-shrink: 0; }
     .ii-sxp-row:hover { background: #f0f6ff; border-color: #9ec5fe; }
     .ii-sxp-row.best { border-color: #6ea8fe; background: #e7f1ff; }
     .ii-sxp-row.warn { background: #fff3cd; }
@@ -874,7 +855,7 @@
         drainLog();
         const h = store.get('spotify_harvest', null);
         if (h && h.token) { clearInterval(iv); drainLog(); try { w.close(); } catch (e) {} Log.info('Spotify: token harvested'); resolve(h.token); return; }
-        if ((h && h.error) || ++n > 48) { // ~24s — outlasts the 20s harvester
+        if ((h && h.error) || ++n > 58) { // ~29s — outlasts the 25s harvester
           clearInterval(iv); drainLog(); try { w.close(); } catch (e) {}
           Log.err('Spotify: token harvest ' + (h && h.error ? 'reported "' + h.error + '"' : 'timed out'));
           reject(new Error('could not get a Spotify token (see [spotify-tab] lines above; are you logged in?)'));
