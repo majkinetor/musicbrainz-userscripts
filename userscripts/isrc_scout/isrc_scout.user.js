@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.194222
+// @version      2026.5.31.200313
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.194222';
+  const SCRIPT_VERSION = '2026.5.31.200313';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -334,7 +334,7 @@
     .ii-split .ii-tbtn:first-child { border-top-left-radius: 5px; border-bottom-left-radius: 5px; }
     .ii-split .ii-caret { border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-left: none; padding: 4px 7px; font-size: 9px; }
     .ii-srcmenu { display: none; position: fixed; z-index: 1000001; background: #fff; border: 1px solid #ced4da;
-      border-radius: 8px; box-shadow: 0 8px 28px rgba(0,0,0,.2); padding: 11px; width: 370px; box-sizing: border-box; }
+      border-radius: 8px; box-shadow: 0 8px 28px rgba(0,0,0,.2); padding: 11px; width: 520px; max-width: 92vw; box-sizing: border-box; }
     .ii-srcmenu.open { display: block; }
     .ii-srcmenu-t { font-size: 11.5px; color: #495057; margin-bottom: 7px; }
     .ii-srcmenu-t b { color: #212529; }
@@ -1937,11 +1937,12 @@
     url.placeholder = source === 'Deezer'
       ? 'https://www.deezer.com/album/123…  (or an album id)'
       : 'https://open.spotify.com/album/…  (or an album id)';
-    // anchor directly under the caret that opened it (menu is fixed, on <body>)
-    const r = anchor.getBoundingClientRect();
-    menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 386)) + 'px';
-    menu.style.top = (r.bottom + 4) + 'px';
+    // show first so offsetWidth is measurable, then anchor under the caret that
+    // opened it (menu is position:fixed on <body>), kept fully on-screen
     menu.classList.add('open');
+    const r = anchor.getBoundingClientRect();
+    menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - menu.offsetWidth - 12)) + 'px';
+    menu.style.top = (r.bottom + 4) + 'px';
     _setTimeout(() => url.focus(), 0);
   }
   async function submitSrcMenu() {
