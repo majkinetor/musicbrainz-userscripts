@@ -6,7 +6,7 @@ New standards arrive when the maintainer prefixes a chat message with `standard:
 
 For project-specific decisions (e.g. "MB's `[no artist]` MBID is `eec63d3c-…`"), use the per-project `dev/DECISIONS.md` log, not this file.
 
-Each numbered section also carries a stable short anchor (`#standard-1` … `#standard-10`) so links like `STANDARDS.md#standard-10` keep working even when the section title is reworded.
+Each numbered section also carries a stable short anchor (`#standard-1` … `#standard-11`) so links like `STANDARDS.md#standard-11` keep working even when the section title is reworded.
 
 ---
 
@@ -158,3 +158,9 @@ Format (combines with the `@version` install-link convention — the version is 
 ```
 
 Get the SHA from the commit that last touched the file: `git log -1 --format=%H -- <path>`. Tampermonkey/Violentmonkey still auto-detect the `.user.js` and offer install. Note a pinned link installs a **frozen** version — the manager records that same pinned URL for updates, so share a newer commit-pinned link to ship an update (scripts published to Greasy Fork carry their own rolling `@updateURL`).
+
+<a id="standard-11"></a>
+
+## 11. Never hard-wrap markdown prose — let it reflow
+
+Write each markdown paragraph as a single physical line; never insert manual line breaks to fit a column width. The same applies to a list item's text and a table cell — one logical unit, one line. Hard wraps show up as spurious line breaks in raw/diff view, make in-place edits churn unrelated lines, and fight the renderer (which reflows to the reader's width anyway). Break the line only where the markdown grammar requires it — between paragraphs, between list items, between table rows, or inside fenced code blocks (where line breaks are literal). This generalises the note already attached to [Standard #9](#standard-9).
