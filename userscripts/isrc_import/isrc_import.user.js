@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.3.2
+// @version      1.3.3
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -1456,8 +1456,9 @@
     return true;
   }
   if (!injectButton()) {
+    // document-start: document.body may not exist yet — observe documentElement
     const obs = new MutationObserver(() => { if (injectButton()) obs.disconnect(); });
-    obs.observe(document.body, { childList: true, subtree: true });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
   }
 
   function updateBtnStatus() {
