@@ -73,5 +73,14 @@
       "discogs": "www.discogs.com/release/21216070"
     },
     "notes": "Release date 2021-12-03. Two distinct bugs caught by this fixture: (1) The Release-events JSON bootstrap sibling has the country entity FIRST and the date object second — opposite of Pop Makossa — so the first 4-digit year match inside the script is Germany's last_updated=2013, not the release year. Fixed by skipping <script> siblings outright (cleanText doesn't strip them when they're the sibling root). (2) Discogs release 21216070 has 13 type_=track + 1 type_=index (the 'Medley' parent with 3 sub-tracks 9a/9b/9c). MB counts the medley parent as one position so the right count is 14, not 13."
+  },
+  {
+    "name": "Philip Cohran and the Artistic Heritage Ensemble",
+    "mbid": "f53176c9-5e90-4de2-aa0d-8bf66b8b01cc",
+    "tags": "discogs-master-on-rg no-discogs-in-rels",
+    "expect": {
+      "discogsMaster": "www.discogs.com/master/84579"
+    },
+    "notes": "Self-titled Philip Cohran reissue. No Discogs *release* link in MB rels, and the Discogs release search misses (the album title contains the artist, so the query duplicates it; the master's releases are physical-only vs the digital MB release). But the release-GROUP already carries Discogs master 84579 — the master slot must surface that existing RG link regardless of whether a release resolves (discogsMasterState honours existingDiscogsMaster even with no resolved-release master)."
   }
 ]

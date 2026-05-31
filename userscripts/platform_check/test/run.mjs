@@ -230,6 +230,8 @@ for (let i = 0; i < selected.length; i++) {
                 icon:  document.getElementById(`ico-${p}`)?.textContent?.trim() || null,
                 value: document.getElementById(`val-${p}`)?.textContent?.trim() || null,
                 meta:  document.getElementById(`meta-${p}`)?.textContent?.trim() || null,
+                master:      document.getElementById(`master-${p}`)?.textContent?.trim() || null,
+                masterTitle: document.getElementById(`master-${p}`)?.title || null,
             });
             return {
                 spotify:  read('spotify'),
@@ -251,6 +253,12 @@ for (let i = 0; i < selected.length; i++) {
             const got = res[p].url || '';
             const ok = want ? got.includes(want) : wantAny.some(w => got.includes(w));
             perPlatform[p] = { ok, want: want || wantAny.join(' | '), got };
+        }
+        // Optional Discogs master-slot assertion: expect.discogsMaster is a substring
+        // of the master slot's tooltip (which carries the recognised master URL).
+        if (expect.discogsMaster) {
+            const got = res.discogs.masterTitle || '';
+            perPlatform.discogsMaster = { ok: got.includes(expect.discogsMaster), want: expect.discogsMaster, got: (res.discogs.master || '') + ' ' + got };
         }
         const fxOk = Object.values(perPlatform).every(x => x.ok);
 

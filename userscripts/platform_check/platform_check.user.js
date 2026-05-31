@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.30.153315
+// @version      2026.5.31.140337
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
@@ -679,18 +679,27 @@ function applyMasterIcon(el, state) {
 // Build the Discogs master-state object given the URL Discogs found + the
 // URL MB has on the release-group already. Drives applyMasterIcon().
 function discogsMasterState(cachedMasterUrl, existingDiscogsMaster) {
-    // Discogs returns no master_id when the release simply isn't part of a
-    // master group (one-off pressings, niche labels). Show a muted "—" so
-    // the user can distinguish "release has no master" from "we haven't
-    // scanned yet" without the slot looking like a bug.
-    if (!cachedMasterUrl) return { glyph: '—', circled: false, clickable: false, title: 'Discogs release has no master entry', muted: true };
+    if (!cachedMasterUrl) {
+        // No master from a resolved Discogs release — but if the MB
+        // release-group already carries a Discogs master, use it (it's the
+        // authoritative RG-level link, same as honouring any existing MB rel).
+        if (existingDiscogsMaster) {
+            return { glyph: '✓', circled: true, clickable: false, masterUrl: existingDiscogsMaster,
+                title: `Discogs master on the release-group: ${existingDiscogsMaster}` };
+        }
+        // Discogs returns no master_id when the release simply isn't part of a
+        // master group (one-off pressings, niche labels). Show a muted "—" so
+        // the user can distinguish "release has no master" from "we haven't
+        // scanned yet" without the slot looking like a bug.
+        return { glyph: '—', circled: false, clickable: false, title: 'Discogs release has no master entry', muted: true };
+    }
     if (existingDiscogsMaster === cachedMasterUrl) {
-        return { glyph: '✓', circled: true,  clickable: false, title: 'Discogs master URL is on the release-group' };
+        return { glyph: '✓', circled: true,  clickable: false, masterUrl: cachedMasterUrl, title: 'Discogs master URL is on the release-group' };
     }
     if (existingDiscogsMaster) {
-        return { glyph: '~', circled: true,  clickable: false, title: `MB has a different Discogs master on the release-group: ${existingDiscogsMaster}` };
+        return { glyph: '~', circled: true,  clickable: false, masterUrl: existingDiscogsMaster, title: `MB has a different Discogs master on the release-group: ${existingDiscogsMaster}` };
     }
-    return     { glyph: '✓', circled: false, clickable: true,  title: 'Click to add this Discogs master URL to the release-group', addMasterUrl: cachedMasterUrl };
+    return     { glyph: '✓', circled: false, clickable: true,  masterUrl: cachedMasterUrl, title: 'Click to add this Discogs master URL to the release-group', addMasterUrl: cachedMasterUrl };
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -1121,6 +1130,15 @@ function mbFormatToDiscogs(mbFormat) {
 
 async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, format, existingDiscogsMaster }) {
     const label = 'Discogs';
+    appendLog(label, `Existing RG master: ${existingDiscogsMaster || 'none'}`);
+
+    // Surface the existing release-group Discogs master immediately — it's the
+    // authoritative RG-level link (use it, same as any existing MB rel), and it
+    // shouldn't depend on whether we manage to resolve a Discogs *release*.
+    if (existingDiscogsMaster) {
+        const mEl = document.getElementById('master-discogs');
+        if (mEl) applyMasterIcon(mEl, discogsMasterState(null, existingDiscogsMaster));
+    }
 
     // Positive cache hit short-circuits before any API call. Cached "no
     // match" only short-circuits when there's no MB rel either — we still
@@ -1229,7 +1247,9 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
 
     if (!releaseUrl) {
         cacheSet(mbid, 'discogs', { url: null, tracks: null, year: null, label: null, source: 'search' });
-        updateRow('discogs', { url: null, mbTracks, remoteTracks: null });
+        // Even with no resolved release, surface the existing RG-level Discogs master.
+        updateRow('discogs', { url: null, mbTracks, remoteTracks: null,
+            masterState: discogsMasterState(null, existingDiscogsMaster) });
         return;
     }
 
