@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.3.1
+// @version      1.3.2
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -36,7 +36,7 @@
  *  approve in the MusicBrainz tab, paste the code it shows back. Done forever.
  *
  *  Everything except the final "Submit" runs without any credentials.
- *  Trouble? Open the editor's "Log" pane (or the browser console, prefix [ISRC]).
+ *  Trouble? Open the editor's "Log" pane — every action is recorded there.
  * ─────────────────────────────────────────────────────────────────────────
  */
 
@@ -57,7 +57,6 @@
     // log to the Spotify tab console AND to a shared GM buffer the MusicBrainz
     // tab drains into its Log pane, so everything ends up in one place.
     const hlog = (m) => {
-      try { console.log('[ISRC-harvest] ' + m); } catch (e) {}
       try {
         const arr = GM_getValue('spotify_harvest_log', []);
         arr.push('[' + new Date().toTimeString().slice(0, 8) + '] ' + m);
@@ -251,7 +250,6 @@
     function add(level, msg, data) {
       const line = '[' + stamp() + '] ' + String(level).toUpperCase().padEnd(5) + ' ' + msg + fmt(data);
       buf.push(line); if (buf.length > MAX) buf.shift();
-      try { (level === 'error' ? console.error : level === 'warn' ? console.warn : console.log)('[ISRC] ' + line); } catch (e) {}
       render();
     }
     return {
