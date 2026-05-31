@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.8.0
+// @version      2026.5.31.154420
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -141,7 +141,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '1.6.0';
+  const SCRIPT_VERSION = '2026.5.31.154420';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_import';
   const CLIENT   = 'isrc_import-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Import/1.0';
@@ -1314,29 +1314,29 @@
   }
 
   function updateSummary() {
-    let filled = 0, valid = 0, bad = 0, dup = 0, missing = 0;
+    const dupSet = highlightDuplicates();   // ISRCs on >1 recording — not submittable
+    let valid = 0, bad = 0, dup = 0, crossDup = 0, missing = 0;
     RELEASE.tracks.forEach(t => {
       if (!t.existing.length && !t.pending) missing++;
       if (!t.pending) return;
-      filled++;
       const v = normalizeIsrc(t.pending);
-      if (!isValidIsrc(v)) bad++;
-      else if (t.existing.includes(v)) dup++;
-      else valid++;
+      if (!isValidIsrc(v)) { bad++; return; }
+      if (t.existing.includes(v)) { dup++; return; }        // already on this recording
+      if (dupSet.has(v)) { crossDup++; return; }            // same ISRC on another recording → blocked
+      valid++;
     });
-    const cross = highlightDuplicates();
     summaryEl.innerHTML =
       '<b>' + RELEASE.tracks.length + '</b> tracks' +
       (bad ? ' · <span style="color:#dc3545">' + bad + ' invalid</span>' : '') +
       (dup ? ' · <span style="color:#fd7e14">' + dup + ' already present</span>' : '') +
-      (cross ? ' · <span style="color:#d63384">' + cross + ' duplicated across tracks</span>' : '') +
+      (crossDup ? ' · <span style="color:#d63384">' + crossDup + ' duplicated across tracks (blocked)</span>' : '') +
       (missing ? ' · ' + missing + ' still missing' : '');
     submitBtn.textContent = 'Submit to MusicBrainz' + (valid ? ' (' + valid + ')' : '');
     submitBtn.disabled = valid === 0;
   }
 
-  // Flag ISRCs that appear on more than one distinct recording (pending or existing).
-  // Returns how many distinct ISRCs are duplicated. Same-recording repeats don't count.
+  // Flag ISRCs that appear on more than one distinct recording (pending or existing) and
+  // return the Set of those (normalized) ISRCs. Same-recording repeats don't count.
   function highlightDuplicates() {
     const recsByIsrc = {};
     RELEASE.tracks.forEach((t, i) => {
@@ -1345,15 +1345,15 @@
       const pv = normalizeIsrc(t.pending); if (pv && isValidIsrc(pv)) add(pv);
       t.existing.forEach(add);
     });
-    const isDup = v => recsByIsrc[v] && recsByIsrc[v].size > 1;
+    const dupSet = new Set(Object.keys(recsByIsrc).filter(v => recsByIsrc[v].size > 1));
     RELEASE.tracks.forEach((t, i) => {
       const tr = tbody.querySelector('tr[data-idx="' + i + '"]'); if (!tr) return;
       const inp = tr.querySelector('.ii-input');
       const pv = normalizeIsrc(t.pending);
-      inp.classList.toggle('dupother', !!(pv && isValidIsrc(pv) && !t.existing.includes(pv) && isDup(pv)));
-      tr.querySelectorAll('.ii-existing samp').forEach(s => s.classList.toggle('dup', isDup(normalizeIsrc(s.textContent))));
+      inp.classList.toggle('dupother', !!(pv && isValidIsrc(pv) && !t.existing.includes(pv) && dupSet.has(pv)));
+      tr.querySelectorAll('.ii-existing samp').forEach(s => s.classList.toggle('dup', dupSet.has(normalizeIsrc(s.textContent))));
     });
-    return Object.values(recsByIsrc).filter(s => s.size > 1).length;
+    return dupSet;
   }
 
   /* ── bulk paste / export ── */
@@ -1702,14 +1702,15 @@
   async function doSubmit() {
     const map = {};
     let count = 0;
+    const dupSet = highlightDuplicates();   // never submit an ISRC that's on >1 recording
     RELEASE.tracks.forEach(t => {
       const v = normalizeIsrc(t.pending);
       if (!v || !isValidIsrc(v) || !t.recId) return;
-      if (t.existing.includes(v)) return;
+      if (t.existing.includes(v) || dupSet.has(v)) return;
       (map[t.recId] = map[t.recId] || []).push(v);
       count++;
     });
-    if (!count) { toast('Nothing valid to submit', 'err'); return; }
+    if (!count) { toast('Nothing valid to submit (duplicates are blocked)', 'err'); return; }
     if (!Auth.isAuthorized()) {
       togglePane('ii-setup-pane');
       toast('Authorize first (⚙ Setup)', 'err');
