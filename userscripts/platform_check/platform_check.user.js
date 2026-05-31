@@ -1,15 +1,19 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.31.140337
+// @version      2026.5.31.155254
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
 // @match        https://musicbrainz.org/release-group/*/edit-relationships
+// @match        https://beta.musicbrainz.org/release/*
+// @match        https://beta.musicbrainz.org/release-group/*/edit
+// @match        https://beta.musicbrainz.org/release-group/*/edit-relationships
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @connect      musicbrainz.org
+// @connect      beta.musicbrainz.org
 // @connect      query.wikidata.org
 // @connect      search.brave.com
 // @connect      html.duckduckgo.com
@@ -24,6 +28,10 @@
 // ==/UserScript==
 (function () {
 'use strict';
+
+// MusicBrainz origin of the current page (musicbrainz.org or beta.musicbrainz.org),
+// so the script's own MB API calls + edit-page links stay on the same server.
+const MB_ORIGIN = location.origin;
 
 // ─── Release editor sub-pages (/edit, /edit-relationships) ────────────────
 // + click on /release stashes OK URLs in `pc:pending:<mbid>` and opens the
@@ -1965,7 +1973,7 @@ async function runScans() {
         appendLog('MusicBrainz', `Parsed from page DOM — skipping API call`, 'ok');
     } else {
         appendLog('MusicBrainz', `DOM scrape incomplete — falling back to /ws/2 API`);
-        const mb = await gmGet(`https://musicbrainz.org/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups+labels&fmt=json`);
+        const mb = await gmGet(`${MB_ORIGIN}/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups+labels&fmt=json`);
         appendLog('MusicBrainz', `status=${mb.status} ${mb.responseText.length}b in ${mb.ms}ms`);
         if (mb.ok) {
             try {
@@ -1995,7 +2003,7 @@ async function runScans() {
     // 2nd-line under the MusicBrainz source-info log: clickable link straight
     // to the release page. Convenient when the user opens the diagnostic log
     // from a different tab and wants to jump back to MB without re-typing.
-    appendLog('MusicBrainz', `Release: <a href="https://musicbrainz.org/release/${mbid}" target="_blank" rel="noopener" style="color:#BA68C8;text-decoration:underline;">https://musicbrainz.org/release/${mbid}</a>`);
+    appendLog('MusicBrainz', `Release: <a href="${MB_ORIGIN}/release/${mbid}" target="_blank" rel="noopener" style="color:#BA68C8;text-decoration:underline;">${MB_ORIGIN}/release/${mbid}</a>`);
 
     const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel } = mbData;
     // Header subtitle: year · label · format (left-aligned), and the MB
@@ -2133,7 +2141,7 @@ function addSingleUrl(platform) {
     }
     GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
     appendLog('System', `Inject (click): queued ${platform} URL — opening release editor`, 'ok');
-    const w = window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
+    const w = window.open(`${MB_ORIGIN}/release/${mbid}/edit`, '_blank');
     if (!w) appendLog('System', `window.open returned null — popup blocked?`, 'error');
 }
 
@@ -2148,7 +2156,7 @@ function addMasterUrl(masterUrl) {
     }
     GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify({ 'discogs-master': masterUrl }));
     appendLog('System', `Inject (master): queued ${masterUrl} for release-group ${rgMbid}`, 'ok');
-    window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit`, '_blank');
+    window.open(`${MB_ORIGIN}/release-group/${rgMbid}/edit`, '_blank');
 }
 
 document.getElementById('mb-inject-btn').addEventListener('click', async (e) => {
@@ -2193,12 +2201,12 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     if (releaseCount > 0) {
         GM_setValue(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
         appendLog('System', `Inject: queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
-        window.open(`https://musicbrainz.org/release/${mbid}/edit`, '_blank');
+        window.open(`${MB_ORIGIN}/release/${mbid}/edit`, '_blank');
     }
     if (rgCount > 0 && rgMbid) {
         GM_setValue(`pc:pending:rg:${rgMbid}`, JSON.stringify(pendingRG));
         appendLog('System', `Inject: queued ${rgCount} release-group URL(s) — opening release-group editor`, 'ok');
-        window.open(`https://musicbrainz.org/release-group/${rgMbid}/edit`, '_blank');
+        window.open(`${MB_ORIGIN}/release-group/${rgMbid}/edit`, '_blank');
     }
 });
 

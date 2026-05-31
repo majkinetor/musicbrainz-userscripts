@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         MusicBrainz → MagicISRC Button
 // @namespace    https://musicbrainz.org/
-// @version      1.0
+// @version      2026.5.31.155254
 // @description  Adds a "ISRC" check button on MusicBrainz release pages. Highlights if any tracks are missing ISRCs. Navigates to MagicISRC.
 // @author       You
 // @match        https://musicbrainz.org/release/*
+// @match        https://beta.musicbrainz.org/release/*
 // @grant        GM_xmlhttpRequest
 // @connect      musicbrainz.org
+// @connect      beta.musicbrainz.org
 // @run-at       document-idle
 // ==/UserScript==
 
@@ -91,7 +93,7 @@
   // ── Fetch release data and check for missing ISRCs ──
   GM_xmlhttpRequest({
     method: 'GET',
-    url: 'https://musicbrainz.org/ws/2/release/' + mbid + '?inc=recordings+isrcs&fmt=json',
+    url: location.origin + '/ws/2/release/' + mbid + '?inc=recordings+isrcs&fmt=json',
     headers: { 'Accept': 'application/json', 'User-Agent': 'MB-MagicISRC-Helper/1.0' },
     onload(r) {
       const statusEl = document.getElementById('mb-isrc-status');
