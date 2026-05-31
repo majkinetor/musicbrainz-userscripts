@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.192907
+// @version      2026.5.31.193327
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.192907';
+  const SCRIPT_VERSION = '2026.5.31.193327';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -339,15 +339,16 @@
     .ii-srcmenu-t { font-size: 11.5px; color: #495057; margin-bottom: 7px; }
     .ii-srcmenu-t b { color: #212529; }
     .ii-srcmenu-row { display: flex; gap: 6px; align-items: center; }
-    /* #ii-modal-prefixed + matching line-height/box-sizing so MusicBrainz's own
-       input/button CSS can't make the two different heights (was misaligned). */
+    /* MusicBrainz's own input/button CSS out-specifies plain rules (and uses
+       !important on button height), so force matching height with !important. */
     #ii-modal .ii-srcmenu-row input,
     #ii-modal .ii-srcmenu-row .ii-tbtn {
-      height: 34px; box-sizing: border-box; line-height: 20px; font-size: 12px; margin: 0; vertical-align: middle; }
-    #ii-modal .ii-srcmenu-row input { flex: 1; min-width: 0; padding: 0 9px;
+      height: 34px !important; min-height: 34px !important; box-sizing: border-box !important;
+      line-height: 20px !important; font-size: 12px !important; margin: 0 !important; vertical-align: middle !important; }
+    #ii-modal .ii-srcmenu-row input { flex: 1; min-width: 0; padding: 0 9px !important;
       border: 1px solid #ced4da; border-radius: 6px; }
     #ii-modal .ii-srcmenu-row input:focus { outline: none; border-color: #6f42c1; }
-    #ii-modal .ii-srcmenu-row .ii-tbtn { padding: 0 16px; }
+    #ii-modal .ii-srcmenu-row .ii-tbtn { padding: 0 16px !important; }
     .ii-tspacer { flex: 1; }
     .ii-prog { font-size: 11px; color: #6c757d; min-width: 0; }
     .ii-prog.err { color: #dc3545; font-weight: 700; }
