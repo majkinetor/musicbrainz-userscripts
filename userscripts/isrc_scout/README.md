@@ -4,6 +4,8 @@ Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads
 
 ![screenshot](./screenshot.png)
 
+https://github.com/user-attachments/assets/7549eacf-8993-4fd7-ad17-2566ad827da0
+
 ## The button
 
 An **ISRC** button is injected next to the release title, showing how many tracks already have an ISRC (`✓ 12/12`) or pulsing pink when some are missing (`⚠ 9/12`). Click it to open the editor.
