@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.174845
+// @version      2026.5.31.175311
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -80,7 +80,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.174845';
+  const SCRIPT_VERSION = '2026.5.31.175311';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -421,6 +421,8 @@
     .ii-lookup.warn { color: #b8860b; }
     .ii-lookup.err  { color: #dc3545; }
     .ii-lookup.spin { color: #6c757d; }
+    .ii-lookup.pending { color: #6c757d; cursor: pointer; text-decoration: underline dotted #adb5bd; text-underline-offset: 2px; }
+    .ii-lookup.pending:hover { color: #343a40; }
     .ii-cand-refine { font-size: 10.5px; color: #6f42c1; cursor: pointer; padding: 2px 7px;
       border: 1px dashed #d6c7ee; border-radius: 4px; background: #faf8fe; width: max-content; }
     .ii-cand-refine:hover { background: #f0e9fb; text-decoration: underline; }
@@ -1194,12 +1196,13 @@
   }
   function lookupIsrc(idx, isrc) {
     const el = rowLookup(idx), t = RELEASE.tracks[idx];
-    if (!el) return;
+    if (!el) return Promise.resolve();
+    el.onclick = null;                       // drop any "click to verify" handler
     const cached = !!_isrcLookupCache[isrc];
     el.className = 'ii-lookup spin';
     el.textContent = cached ? '' : '⏳ checking SoundExchange…';
     if (!cached) Log.info('SX lookup ' + isrc + ' (#' + (t.number || t.trackPos) + ')');
-    sxLookupCached(isrc).then(rows => {
+    return sxLookupCached(isrc).then(rows => {
       if (!rows.length) { el.className = 'ii-lookup err'; el.textContent = '✗ not found on SoundExchange'; Log.warn('SX lookup ' + isrc + ': not found'); return; }
       const f = SX.fields(rows[0]);
       const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.year);
@@ -1210,6 +1213,43 @@
       el.title = [f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ') + (rel ? '  |  ' + rel : '');
       Log.info('SX lookup ' + isrc + ': ' + (good ? 'match' : cls === 'warn' ? 'length mismatch' : 'MISMATCH') + ' "' + f.title + '" — ' + f.artist);
     }).catch(e => { el.className = 'ii-lookup err'; el.textContent = '✗ lookup failed'; Log.err('SX lookup ' + isrc + ' failed: ' + e.message); });
+  }
+
+  // SoundExchange verification queue — bulk fills (Deezer / Spotify / paste) route
+  // their per-ISRC verification through here so it's SERIALIZED (no concurrent SX
+  // hits) and CAPPED at SX_BATCH_LIMIT. Past the cap, the rest show a clickable
+  // "click to verify" bullet; clicking resumes the next batch. (Manual typing
+  // stays immediate — it never goes through the queue.)
+  const _vq = { items: [], running: false, done: 0 };
+  function enqueueVerify(idx, isrc) {
+    if (!_vq.items.length && !_vq.running) _vq.done = 0;   // a fresh burst → reset the allowance
+    _vq.items = _vq.items.filter(it => it.idx !== idx);    // one pending verify per row
+    _vq.items.push({ idx, isrc });
+    pumpVerify();
+  }
+  function showVerifyPauses() {
+    const remaining = _vq.items.length;
+    _vq.items.forEach(it => {
+      const el = rowLookup(it.idx); if (!el) return;
+      el.className = 'ii-lookup pending';
+      el.textContent = '⏳ Not verified — click to check the next ' + Math.min(SX_BATCH_LIMIT, remaining) + ' on SoundExchange';
+      el.onclick = () => { _vq.done = 0; pumpVerify(); };
+    });
+  }
+  async function pumpVerify() {
+    if (_vq.running) return;
+    _vq.running = true;
+    while (_vq.items.length) {
+      if (_vq.done >= SX_BATCH_LIMIT) { _vq.running = false; showVerifyPauses(); return; }
+      const { idx, isrc } = _vq.items.shift();
+      const t = RELEASE.tracks[idx];
+      // skip if the field no longer holds this value (user changed it meanwhile)
+      if (!t || !isValidIsrc(isrc) || normalizeIsrc(t.pending) !== normalizeIsrc(isrc)) continue;
+      try { await lookupIsrc(idx, isrc); } catch (e) {}
+      _vq.done++;
+      if (_vq.items.length && _vq.done < SX_BATCH_LIMIT) await sleep(BATCH_DELAY);
+    }
+    _vq.running = false;
   }
 
   function validateInput(input, t) {
@@ -1234,9 +1274,10 @@
     // verify whatever was just set (Deezer, Spotify, +1, bulk paste) against
     // SoundExchange so every filled value gets the same match check (cached).
     // Skip it for SoundExchange-sourced fills — the batch search already classified
-    // the candidate, so re-querying would just double our SX load.
-    if (t.source !== 'SoundExchange' && isValidIsrc(t.pending)) lookupIsrc(idx, t.pending);
-    else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; } }
+    // the candidate, so re-querying would just double our SX load. The check is
+    // routed through enqueueVerify so bulk imports stay serialized + capped at 30.
+    if (t.source !== 'SoundExchange' && isValidIsrc(t.pending)) enqueueVerify(idx, t.pending);
+    else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; } }
     if (flash) {
       const tr = input.closest('tr');
       tr.classList.remove('ii-row-fill'); void tr.offsetWidth; tr.classList.add('ii-row-fill');
@@ -1244,9 +1285,10 @@
   }
 
   function clearPending() {
+    _vq.items = []; _vq.done = 0;            // drop any queued SX verifications
     RELEASE.tracks.forEach((t, i) => { t.pending = ''; t.source = ''; const inp = rowInput(i); if (inp) { inp.value = ''; validateInput(inp, t); } });
     tbody.querySelectorAll('.ii-cands').forEach(c => c.innerHTML = '');
-    tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.title = ''; });
+    tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.title = ''; l.onclick = null; });
     updateSummary();
     toast('Cleared entered ISRCs');
   }
