@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.165116
+// @version      2026.5.31.170134
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_import/README.md
@@ -79,7 +79,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.165116';
+  const SCRIPT_VERSION = '2026.5.31.170134';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_import';
   const CLIENT   = 'isrc_import-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Import/1.0';
@@ -164,17 +164,10 @@
     return nw.length > 0 && nw.every(w => hw.includes(w));
   }
   function isGoodMatch(aTitle, aArtist, bTitle, bArtist) {
-    const aw = norm(aTitle).split(' ').filter(Boolean);
-    const bw = norm(bTitle).split(' ').filter(Boolean);
-    if (!aw.length || !bw.length) return false;
-    const shorter = aw.length <= bw.length ? aw : bw;
-    const longer  = aw.length <= bw.length ? bw : aw;
-    if (!shorter.every(w => longer.includes(w))) return false;
-    const extra = longer.length - shorter.length;
-    const titleOk = extra === 0 || extra === 1 ||
-      (extra <= 2 && shorter.every((w, i) => longer[i] === w));
-    const artistOk = !bArtist || wordsMatch(bArtist, aArtist) || wordsMatch(aArtist, bArtist);
-    return titleOk && artistOk;
+    // shares titleClose/artistClose (below) so the row classification and the
+    // per-field highlighting never disagree
+    if (titleClose(aTitle, bTitle) !== true) return false;
+    return !bArtist || artistClose(aArtist, bArtist) === true;
   }
   // Per-field comparisons between an SoundExchange result and the MB track,
   // used to highlight exactly WHICH attribute disagrees. Each returns
@@ -187,7 +180,9 @@
     const longer  = aw.length <= bw.length ? bw : aw;
     if (!shorter.every(w => longer.includes(w))) return false;
     const extra = longer.length - shorter.length;
-    return extra === 0 || extra === 1 || (extra <= 2 && shorter.every((w, i) => longer[i] === w));
+    // extra words are only tolerated as a SUFFIX (a version/remaster tag) — a
+    // leading extra word ("Sacred Motherhood" vs "Motherhood") is a different song
+    return extra === 0 || (extra <= 2 && shorter.every((w, i) => longer[i] === w));
   }
   function artistClose(sx, mb) {
     if (!sx || !mb) return null;
@@ -353,14 +348,15 @@
     .ii-plus { font-size: 11px; font-weight: 700; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; background: #f8f9fa; cursor: pointer; color: #6c757d; font-family: monospace; }
     .ii-plus:hover { background: #e9ecef; color: #212529; }
-    .ii-cands { margin-top: 4px; display: flex; flex-direction: column; gap: 3px; width: 360px; }
-    .ii-cand { display: flex; align-items: center; gap: 7px; padding: 3px 7px; border: 1px solid #dee2e6;
+    .ii-cands { margin-top: 4px; display: flex; flex-direction: column; gap: 3px; width: auto; }
+    .ii-cand { display: flex; align-items: flex-start; gap: 7px; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; cursor: pointer; font-size: 11px; background: #fff; }
     .ii-cand:hover { background: #f0f6ff; border-color: #9ec5fe; }
-    .ii-cand.best { border-color: #6ea8fe; background: #e7f1ff; }
-    .ii-cand.warn { background: #fff3cd; }
-    .ii-cand-isrc { font-family: 'Courier New', monospace; font-weight: 700; color: #084298; flex-shrink: 0; }
-    .ii-cand-meta { color: #495057; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ii-cand.best { border-color: #6ea8fe; background: #d4e6ff; }
+    .ii-cand.warn { border-color: #ffe08a; background: #fff3cd; }
+    .ii-cand.bad  { border-color: #f3c6cb; background: #fdf2f3; }
+    .ii-cand-isrc { font-family: 'Courier New', monospace; font-weight: 700; color: #084298; flex-shrink: 0; padding-top: 1px; }
+    .ii-cand-meta { flex: 1; min-width: 0; color: #495057; white-space: normal; word-break: break-word; line-height: 1.35; }
     .ii-bad { color: #dc3545; font-weight: 600; text-decoration: underline wavy rgba(220,53,69,.55); text-underline-offset: 2px; }
     .ii-mbdur { color: #198754; font-weight: 600; }
     .ii-cand-src { margin-left: auto; font-size: 9px; text-transform: uppercase; color: #adb5bd; flex-shrink: 0; }
@@ -452,12 +448,14 @@
     .ii-sxp-row { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border: 1px solid #e9ecef;
       border-radius: 6px; cursor: pointer; overflow: hidden; flex-shrink: 0; }
     .ii-sxp-row:hover { background: #f0f6ff; border-color: #9ec5fe; }
-    .ii-sxp-row.best { border-color: #6ea8fe; background: #e7f1ff; }
-    .ii-sxp-row.warn { background: #fff3cd; }
+    .ii-sxp-row.best { border-color: #6ea8fe; background: #d4e6ff; }
+    .ii-sxp-row.warn { border-color: #ffe08a; background: #fff3cd; }
+    .ii-sxp-row.bad  { border-color: #f3c6cb; background: #fdf2f3; }
     .ii-sxp-row.cur  { border-color: #198754; background: #d1e7dd; }
-    .ii-sxp-isrc { font-family: 'Courier New', monospace; font-weight: 700; color: #084298; flex-shrink: 0; font-size: 12px; }
-    .ii-sxp-meta { flex: 1; min-width: 0; overflow: hidden; }
-    .ii-sxp-meta .a { display: block; font-size: 12px; color: #212529; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ii-sxp-row { align-items: flex-start; }
+    .ii-sxp-isrc { font-family: 'Courier New', monospace; font-weight: 700; color: #084298; flex-shrink: 0; font-size: 12px; padding-top: 1px; }
+    .ii-sxp-meta { flex: 1; min-width: 0; }
+    .ii-sxp-meta .a { display: block; font-size: 12px; color: #212529; white-space: normal; word-break: break-word; line-height: 1.35; }
     .ii-sxp-meta .b { display: block; font-size: 10.5px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ii-sxp-inmb { font-size: 9px; font-weight: 700; color: #198754; flex-shrink: 0; }
   `;
@@ -957,7 +955,7 @@
       <div id="ii-body">
         <table id="ii-table">
           <colgroup>
-            <col style="width:40px"><col><col style="width:52px"><col style="width:190px"><col style="width:440px">
+            <col style="width:32px"><col><col style="width:44px"><col style="width:124px"><col style="width:560px">
           </colgroup>
           <thead><tr>
             <th>#</th><th>Track</th><th></th>
@@ -1396,7 +1394,7 @@
       const inMb = t.existing.includes(normalizeIsrc(f.isrc));
       const relInfo = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
       const c = document.createElement('div');
-      c.className = 'ii-cand' + (cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : '') + (inMb ? ' inmb' : '');
+      c.className = 'ii-cand' + (cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : ' bad') + (inMb ? ' inmb' : '');
       c.title = relInfo ? 'Appears on: ' + relInfo : '';
       c.innerHTML =
         '<span class="ii-cand-isrc">' + esc(f.isrc) + '</span>' +
@@ -1511,7 +1509,7 @@
       const cur = normalizeIsrc(t.pending) === normalizeIsrc(f.isrc);
       const rel = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
       const row = document.createElement('div');
-      row.className = 'ii-sxp-row' + (cur ? ' cur' : cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : '');
+      row.className = 'ii-sxp-row' + (cur ? ' cur' : cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : ' bad');
       row.innerHTML =
         '<span class="ii-sxp-isrc">' + esc(f.isrc) + '</span>' +
         '<span class="ii-sxp-meta"><span class="a">' + sxMetaHtml(f, t) + '</span>' +
