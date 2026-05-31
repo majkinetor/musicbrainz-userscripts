@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.3.3
+// @version      1.4.0
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -65,10 +65,11 @@
       } catch (e) {}
     };
     hlog('harvester active on ' + location.href);
-    let captured = false;
+    let captured = false, domPoll = null;
     const finish = (token, how) => {
       if (captured || !token) return;
       captured = true;
+      if (domPoll) clearInterval(domPoll);
       hlog('captured token via ' + how + ' (len ' + token.length + ') — storing & closing');
       try { GM_setValue('spotify_harvest', { token: token, ts: Date.now() }); } catch (e) {}
       setTimeout(() => { try { window.close(); } catch (e) {} }, 250);
@@ -113,9 +114,25 @@
       };
       hlog('xhr hook installed');
     } catch (e) { hlog('xhr hook failed: ' + e.message); }
+    // PRIMARY: the web player makes many calls from a service worker our page-level
+    // fetch/XHR hooks can't see. But Spotify server-renders the access token into the
+    // page — read it straight from <script id="session"> (or any inline JSON with
+    // "accessToken"). Poll because at document-start the <body> isn't parsed yet.
+    const scanDom = () => {
+      try { const s = document.getElementById('session'); if (s && s.textContent) { const j = JSON.parse(s.textContent); if (j && j.accessToken) return j.accessToken; } } catch (e) {}
+      try { for (const s of document.querySelectorAll('script')) { const m = s.textContent && s.textContent.match(/"accessToken"\s*:\s*"(BQ[A-Za-z0-9._-]+)"/); if (m) return m[1]; } } catch (e) {}
+      return null;
+    };
+    let domTries = 0;
+    hlog('scanning page for embedded access token…');
+    domPoll = setInterval(() => {
+      const tok = scanDom();
+      if (tok) { finish(tok, 'page-session (try ' + domTries + ')'); return; }
+      if (++domTries > 65) clearInterval(domPoll);
+    }, 300);
     setTimeout(() => {
-      if (!captured) { hlog('TIMEOUT — no token captured in 15s'); try { GM_setValue('spotify_harvest', { error: 'timeout', ts: Date.now() }); } catch (e) {} try { window.close(); } catch (e) {} }
-    }, 15000);
+      if (!captured) { hlog('TIMEOUT — no token found in 20s (logged in? not blocked?)'); try { GM_setValue('spotify_harvest', { error: 'timeout', ts: Date.now() }); } catch (e) {} try { window.close(); } catch (e) {} }
+    }, 20000);
     return; // never run the MusicBrainz editor on a Spotify page
   }
 
@@ -364,7 +381,10 @@
     /* sub-panels (setup / bulk) */
     .ii-pane { display: none; padding: 14px 16px; border-bottom: 1px solid #eee; background: #fcfcfe; flex-shrink: 0; }
     .ii-pane.open { display: block; }
-    .ii-pane h3 { margin: 0 0 8px; font-size: 13px; }
+    .ii-pane h3 { margin: 0 0 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    .ii-pane-x { flex-shrink: 0; width: 19px; height: 19px; line-height: 1; padding: 0; font-size: 13px;
+      color: #6c757d; background: #fff; border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer; }
+    .ii-pane-x:hover { background: #f1f3f5; color: #212529; border-color: #adb5bd; }
     .ii-pane label { display: block; font-size: 11.5px; color: #495057; margin: 6px 0 2px; }
     .ii-pane input[type=text], .ii-pane textarea {
       width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #ced4da;
@@ -391,18 +411,27 @@
       white-space: pre-wrap; word-break: break-word; background: #0d1117; color: #c9d1d9;
       padding: 8px 10px; border-radius: 5px; max-height: 240px; overflow: auto; margin: 0; }
     #ii-log-pane h3 { display: flex; align-items: center; gap: 8px; }
+    .ii-sx-group { display: inline-flex; align-items: center; gap: 10px; padding: 3px 10px 3px 4px;
+      border: 1px solid #e0d7f2; background: #faf8fe; border-radius: 7px; }
     .ii-exact-set { display: inline-flex; align-items: center; gap: 9px; font-size: 11px; color: #6c757d; }
     .ii-exact-set label { display: inline-flex; align-items: center; gap: 3px; cursor: pointer; margin: 0; }
     .ii-exact-set input { cursor: pointer; }
     .ii-cand.inmb { opacity: .72; }
     .ii-cand-inmb { margin-left: auto; font-size: 9px; font-weight: 700; color: #198754; flex-shrink: 0; }
-    .ii-lookup { display: block; margin-top: 3px; font-size: 11px; }
+    .ii-lookup { flex: 1; min-width: 0; font-size: 11px; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; }
     .ii-lookup.ok   { color: #198754; }
     .ii-lookup.warn { color: #b8860b; }
     .ii-lookup.err  { color: #dc3545; }
     .ii-lookup.spin { color: #6c757d; }
   `;
-  (document.head || document.documentElement).appendChild(style);
+  // @run-at document-start (needed for the Spotify harvester) can fire before
+  // <html>/<head> exist; the MB-side editor only needs the DOM, so defer to ready.
+  function whenDomReady(fn) {
+    if (document.head || document.body) fn();
+    else document.addEventListener('DOMContentLoaded', fn, { once: true });
+  }
+  whenDomReady(() => (document.head || document.documentElement).appendChild(style));
 
   /* ═══════════════════════════════════════════════════════════════════════
      RELEASE MODEL (single WS2 fetch → everything)
@@ -754,7 +783,7 @@
         drainLog();
         const h = store.get('spotify_harvest', null);
         if (h && h.token) { clearInterval(iv); drainLog(); try { w.close(); } catch (e) {} Log.info('Spotify: token harvested'); resolve(h.token); return; }
-        if ((h && h.error) || ++n > 40) { // ~20s
+        if ((h && h.error) || ++n > 48) { // ~24s — outlasts the 20s harvester
           clearInterval(iv); drainLog(); try { w.close(); } catch (e) {}
           Log.err('Spotify: token harvest ' + (h && h.error ? 'reported "' + h.error + '"' : 'timed out'));
           reject(new Error('could not get a Spotify token (see [spotify-tab] lines above; are you logged in?)'));
@@ -815,7 +844,8 @@
 
     overlay = document.createElement('div');
     overlay.id = 'ii-overlay';
-    overlay.addEventListener('click', closeModal);
+    // Intentionally NO overlay-click or Esc close — only the ✕ button closes,
+    // so a stray click/keypress can't discard entered ISRCs.
 
     modal = document.createElement('div');
     modal.id = 'ii-modal';
@@ -823,12 +853,14 @@
     modal.innerHTML = `
       <div id="ii-hdr">
         <h2>🎵 <em>ISRC Import</em><span class="ii-sub" id="ii-rel-sub"></span></h2>
-        <button class="ii-tbtn ghost" id="ii-setup-toggle" title="OAuth setup">⚙ Setup</button>
-        <button id="ii-close" title="Close (Esc)">✕</button>
+        <button class="ii-tbtn" id="ii-bulk-toggle" title="Bulk paste / import / export">⇪ Bulk / Export</button>
+        <button class="ii-tbtn" id="ii-log-toggle" title="Activity log">Log</button>
+        <button class="ii-tbtn" id="ii-setup-toggle" title="OAuth setup">⚙ Setup</button>
+        <button id="ii-close" title="Close">✕</button>
       </div>
 
       <div class="ii-pane" id="ii-setup-pane">
-        <h3>One-time MusicBrainz authorization</h3>
+        <h3><button class="ii-pane-x" title="Close">✕</button>One-time MusicBrainz authorization</h3>
         <div class="ii-authstate" id="ii-auth-state"></div>
         <div class="row" style="margin-top:8px">
           <button class="ii-tbtn primary" id="ii-authorize">Authorize</button>
@@ -857,7 +889,7 @@
       </div>
 
       <div class="ii-pane" id="ii-bulk-pane">
-        <h3>Bulk paste / import / export</h3>
+        <h3><button class="ii-pane-x" title="Close">✕</button>Bulk paste / import / export</h3>
         <div class="ii-help" style="margin-top:0">
           Paste one ISRC per line, in track order (blank line = skip a track). Lines like <code>3=USABC1234567</code>
           or <code>USABC1234567 | 1.3</code> target a specific track number. Or paste JSON exported below.
@@ -872,7 +904,7 @@
       </div>
 
       <div class="ii-pane" id="ii-log-pane">
-        <h3>Activity log
+        <h3><button class="ii-pane-x" title="Close">✕</button>Activity log
           <button class="ii-tbtn" id="ii-log-copy" style="padding:2px 9px;font-size:11px">Copy</button>
           <button class="ii-tbtn ghost" id="ii-log-clear" style="padding:2px 9px;font-size:11px">Clear</button>
         </h3>
@@ -880,18 +912,18 @@
       </div>
 
       <div id="ii-tools">
-        <button class="ii-tbtn sx"  id="ii-sx-all"  title="Search every track on SoundExchange">⟳ SoundExchange</button>
-        <span class="ii-exact-set" title="Wrap the SoundExchange query in quotes for an exact match">
-          <label><input type="checkbox" id="ii-ex-title">exact title</label>
-          <label><input type="checkbox" id="ii-ex-artist">exact artist</label>
-          <label><input type="checkbox" id="ii-ex-release">exact release</label>
+        <span class="ii-sx-group">
+          <button class="ii-tbtn sx" id="ii-sx-all" title="Search every track on SoundExchange">⟳ SoundExchange</button>
+          <span class="ii-exact-set" title="Wrap the SoundExchange query in quotes for an exact match">
+            <label><input type="checkbox" id="ii-ex-title">exact title</label>
+            <label><input type="checkbox" id="ii-ex-artist">exact artist</label>
+            <label><input type="checkbox" id="ii-ex-release">exact release</label>
+          </span>
         </span>
-        <button class="ii-tbtn dz"  id="ii-dz-all"  title="Import ISRCs from the linked Deezer album">Deezer</button>
-        <button class="ii-tbtn sp"  id="ii-sp-all"  title="Import ISRCs from the linked Spotify album">Spotify</button>
-        <button class="ii-tbtn"     id="ii-bulk-toggle">⇪ Bulk / Export</button>
+        <button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from the linked Deezer album">Deezer</button>
+        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album">Spotify</button>
         <span class="ii-prog" id="ii-prog"></span>
         <span class="ii-tspacer"></span>
-        <button class="ii-tbtn ghost" id="ii-log-toggle" title="Show activity log">Log</button>
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear entered</button>
       </div>
 
@@ -964,9 +996,9 @@
     modal.querySelector('#ii-export-text').addEventListener('click', exportText);
     modal.querySelector('#ii-export-json').addEventListener('click', exportJson);
 
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
-    });
+    // each sub-pane closes via its own ✕ (next to the title)
+    modal.querySelectorAll('.ii-pane-x').forEach(b =>
+      b.addEventListener('click', () => b.closest('.ii-pane').classList.remove('open')));
   }
 
   function togglePane(id) {
@@ -1037,7 +1069,8 @@
         '<td><div class="ii-inwrap">' +
           '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
           '<button class="ii-plus" title="Previous ISRC + 1">+1</button>' +
-          '</div><div class="ii-cands"></div><div class="ii-lookup"></div></td>';
+          '<span class="ii-lookup"></span>' +
+          '</div><div class="ii-cands"></div></td>';
       const input = tr.querySelector('.ii-input');
       input.addEventListener('input', () => {
         t.pending = normalizeIsrc(input.value);
@@ -1093,6 +1126,7 @@
       const rel = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
       el.className = 'ii-lookup ' + (good ? 'ok' : 'warn');
       el.textContent = (good ? '✓ ' : '⚠ ') + [f.title, f.artist, f.year].filter(Boolean).join(' — ') + (rel ? '  |  ' + rel : '');
+      el.title = el.textContent;
       Log.info('SX lookup ' + isrc + ': ' + (good ? 'match' : 'MISMATCH') + ' "' + f.title + '" — ' + f.artist);
     }).catch(e => { el.className = 'ii-lookup err'; el.textContent = '✗ lookup failed'; Log.err('SX lookup ' + isrc + ' failed: ' + e.message); });
   }
@@ -1453,13 +1487,15 @@
     if (!h1) return false;
     if (document.getElementById('ii-btn')) return true;
     h1.appendChild(btn);
+    updateBtnStatus();           // in case the release already loaded before the button injected
     return true;
   }
-  if (!injectButton()) {
-    // document-start: document.body may not exist yet — observe documentElement
-    const obs = new MutationObserver(() => { if (injectButton()) obs.disconnect(); });
-    obs.observe(document.documentElement, { childList: true, subtree: true });
-  }
+  whenDomReady(() => {
+    if (!injectButton()) {
+      const obs = new MutationObserver(() => { if (injectButton()) obs.disconnect(); });
+      obs.observe(document.documentElement, { childList: true, subtree: true });
+    }
+  });
 
   function updateBtnStatus() {
     const statusEl = document.getElementById('ii-btn-status');

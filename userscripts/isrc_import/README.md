@@ -86,3 +86,24 @@ and SoundExchange are the stable sources.**
 That internal endpoint works for many edit types but has a hardcoded whitelist that **excludes**
 `EDIT_RECORDING_ADD_ISRCS` (type 76), and ISRCs have no website form to scrape. WS2 + OAuth is the
 only path that can actually write ISRCs.
+
+## Tests
+
+A Playwright harness drives the script against real MusicBrainz release pages and asserts it loads
+and renders correctly. The script is injected with `addInitScript` (i.e. at *document-start*, before
+`<body>` exists), so load-time bugs that only bite under `@run-at document-start` reproduce and fail
+the run via the `pageerror` capture.
+
+```sh
+cd userscripts/isrc_import
+pnpm install
+pnpm test                 # all fixtures, headless
+pnpm test -- --headed     # watch the browser
+pnpm test -- --only=Om    # filter by name / MBID substring
+```
+
+Each fixture in [`test/fixtures.json`](./test/fixtures.json) is **self-validating**: the harness
+independently fetches the MB web service for ground truth (track count, ISRC count, streaming links)
+and asserts the rendered editor matches — nothing is hard-coded to a DB state that drifts. Per-run
+output (summary, per-fixture checks, the script's own Log pane, screenshot) lands in
+`test/logs/<timestamp>/` (gitignored).

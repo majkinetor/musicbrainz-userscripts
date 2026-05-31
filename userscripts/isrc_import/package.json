@@ -1,0 +1,14 @@
+{
+  "name": "isrc-import-userscript",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ISRC Import — self-contained ISRC editor for MusicBrainz release pages",
+  "scripts": {
+    "test":        "node test/run.mjs",
+    "test:headed": "node test/run.mjs --headed"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}
