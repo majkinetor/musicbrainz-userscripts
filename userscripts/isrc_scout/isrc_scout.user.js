@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.221248
+// @version      2026.5.31.232038
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.221248';
+  const SCRIPT_VERSION = '2026.5.31.232038';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -217,8 +217,8 @@
     const parts = [];
     if (f.title)  parts.push(span(f.title,  titleClose(f.title, t.title),   'Title differs from "' + t.title + '"'));
     if (f.artist) parts.push(span(f.artist, artistClose(f.artist, t.artist), 'Artist differs from "' + t.artist + '"'));
-    if (f.year)   parts.push(span(f.year,   yearOk(f.year, RELEASE && RELEASE.year),
-                                  'Recording year ' + f.year + ' is after this release (' + (RELEASE && RELEASE.year) + ')'));
+    if (f.year)   parts.push(span(f.year,   yearOk(f.year, RELEASE && RELEASE.releaseYear),
+                                  'Recording year ' + f.year + ' is after this release (' + (RELEASE && RELEASE.releaseYear) + ')'));
     if (f.dur) {
       const dOk = durClose(f.dur, t.dur);
       parts.push(span(f.dur, dOk, 'Length differs from MB (' + (t.dur || '?') + ')') +
@@ -608,13 +608,14 @@
         if ((m = u.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/))) spotifyId = m[1];
         if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))   deezerId  = m[1];
       });
-      // earliest release year for the "SX result newer than MB release" check —
-      // prefer the release-group's first-release-date, fall back to this release's date
+      // THIS release's year — what the header shows AND what the SX "recording newer
+      // than the release" check uses. Prefer the release's own date; only fall back to
+      // the release-group's first-release-date when this release has no date. (Using
+      // the RG-earliest here was wrong for reissues: a 2025 reissue of 2002 material
+      // would reject legitimate later recordings.)
       const rg = data['release-group'] || {};
-      const dateStr = rg['first-release-date'] || data.date || '';
-      const year = parseInt((String(dateStr).match(/^(\d{4})/) || [])[1]) || null;
-      // this release's own date year + artist, for the header (mirrors what MB shows)
-      const releaseYear = parseInt((String(data.date || '').match(/^(\d{4})/) || [])[1]) || year;
+      const rgYear = parseInt((String(rg['first-release-date'] || '').match(/^(\d{4})/) || [])[1]) || null;
+      const releaseYear = parseInt((String(data.date || '').match(/^(\d{4})/) || [])[1]) || rgYear;
       const artist = acName(data['artist-credit']);
       // Restore Remove-ISRC edits we previously submitted (still pending in MB's
       // queue, so WS2 still lists the ISRC). Keep only ISRCs still on the recording
@@ -629,8 +630,8 @@
       });
       Object.keys(pend).forEach(rid => { if (!tracks.some(t => t.recId === rid)) { delete pend[rid]; pendChanged = true; } });
       if (pendChanged) savePendingRemovals(pend);
-      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, year, releaseYear, artist };
-      Log.info('Release "' + RELEASE.title + '"' + (year ? ' (' + year + ')' : '') + ': ' + tracks.length + ' track(s), ' +
+      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, releaseYear, artist };
+      Log.info('Release "' + RELEASE.title + '"' + (releaseYear ? ' (' + releaseYear + ')' : '') + ': ' + tracks.length + ' track(s), ' +
         tracks.filter(t => !t.existing.length).length + ' missing ISRC' +
         '; links: ' + (deezerId ? 'Deezer ' + deezerId : 'no Deezer') + ', ' + (spotifyId ? 'Spotify ' + spotifyId : 'no Spotify'));
       return RELEASE;
@@ -1373,7 +1374,7 @@
     return sxLookupCached(isrc).then(rows => {
       if (!rows.length) { el.className = 'ii-lookup err'; el.textContent = '✗ not found on SoundExchange'; Log.warn('SX lookup ' + isrc + ': not found'); return; }
       const f = SX.fields(rows[0]);
-      const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.year);
+      const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.releaseYear);
       const good = cls === 'best';
       const rel = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
       el.className = 'ii-lookup ' + (good ? 'ok' : 'warn');
@@ -1694,7 +1695,7 @@
     box.innerHTML = '';
     (rows || []).slice(0, 5).forEach(item => {
       const f = SX.fields(item);
-      const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.year);
+      const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.releaseYear);
       const inMb = t.existing.includes(normalizeIsrc(f.isrc));
       const relInfo = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
       const c = document.createElement('div');
@@ -1869,7 +1870,7 @@
     resEl.innerHTML = '';
     rows.forEach(item => {
       const f = SX.fields(item);
-      const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.year);
+      const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.releaseYear);
       const inMb = t.existing.includes(normalizeIsrc(f.isrc));
       const cur = normalizeIsrc(t.pending) === normalizeIsrc(f.isrc);
       const rel = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
@@ -1933,7 +1934,7 @@
       try {
         const rows = await SX.apiSearch(t.title, t.artist, 0, 10, sxExact);
         renderCands(i, rows);
-        const best = rows.find(r => SX.classify(SX.fields(r), t.title, t.artist, t.dur, RELEASE.year) === 'best');
+        const best = rows.find(r => SX.classify(SX.fields(r), t.title, t.artist, t.dur, RELEASE.releaseYear) === 'best');
         const bestIsrc = best && SX.fields(best).isrc;
         if (bestIsrc) {
           _sxMatched++;
