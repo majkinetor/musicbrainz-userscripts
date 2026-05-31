@@ -46,7 +46,9 @@ logged into musicbrainz.org.
 
 ### Edit note
 
-**✎ Edit note** opens a pane (hidden by default) pre-filled with the script name + counts. Edit it
+**✎ Edit note** opens a pane (hidden by default) pre-filled like `discogs_credits`: a header line
+(script name, version, author, homepage — resolved from `GM_info`), the release URL, and a per-source
+breakdown of what's being added (e.g. `Added 3 ISRCs: SoundExchange (2), Spotify (1)`). Edit it
 freely; it's attached to every add (`<edit-note>` in the WS2 submission) and every remove.
 
 ### Bulk / Export (⇪)

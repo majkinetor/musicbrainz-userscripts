@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.162610
+// @version      2026.5.31.164439
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
+// @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_import/README.md
 // @match        https://musicbrainz.org/release/*
 // @match        https://beta.musicbrainz.org/release/*
 // @match        https://musicbrainz.org/oauth2/oob*
@@ -78,7 +79,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.162610';
+  const SCRIPT_VERSION = '2026.5.31.164439';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_import';
   const CLIENT   = 'isrc_import-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Import/1.0';
@@ -774,11 +775,31 @@
   let noteEdited = false;                 // has the user hand-edited the edit note?
   const _isrcLookupCache = {};            // isrc -> SX rows (single-ISRC lookup cache)
 
+  // Header line: script name, version, author, homepage — resolved from GM_info
+  // (Violentmonkey/Greasemonkey: homepageURL; Tampermonkey: homepage) with
+  // hard-coded fallbacks, so "undefined" never leaks into an edit note.
+  function noteHeader() {
+    let s = {};
+    try { if (typeof GM_info !== 'undefined' && GM_info.script) s = GM_info.script; } catch (e) {}
+    const name = s.name || 'MusicBrainz ISRC Import';
+    const version = s.version || SCRIPT_VERSION;
+    const author = s.author || 'majkinetor';
+    const homepage = s.homepageURL || s.homepage || SCRIPT_URL;
+    return name + ' v' + version + ' by ' + author + ' - ' + homepage;
+  }
   function defaultNote() {
     const subs = RELEASE ? RELEASE.tracks.filter(t => { const v = normalizeIsrc(t.pending); return v && isValidIsrc(v) && !t.existing.includes(v); }) : [];
-    const srcs = [...new Set(subs.map(t => t.source || 'manual'))].sort();
-    const srcStr = srcs.length ? ' (source: ' + srcs.join(', ') + ')' : '';
-    return 'Added ' + subs.length + ' ISRC' + (subs.length === 1 ? '' : 's') + srcStr + ' with ISRC Import v' + SCRIPT_VERSION + '.\n' + SCRIPT_URL;
+    // per-source breakdown, e.g. "SoundExchange (2), Spotify (1), manual (1)"
+    const counts = {};
+    subs.forEach(t => { const src = t.source || 'manual'; counts[src] = (counts[src] || 0) + 1; });
+    const breakdown = Object.keys(counts).sort().map(src => src + ' (' + counts[src] + ')').join(', ');
+    const lines = [
+      noteHeader(),
+      '',
+      'Release: ' + MB_ROOT + '/release/' + mbid,
+      'Added ' + subs.length + ' ISRC' + (subs.length === 1 ? '' : 's') + (breakdown ? ': ' + breakdown : ''),
+    ];
+    return lines.join('\n');
   }
   function ensureNote(force) {
     const ta = modal.querySelector('#ii-note-text');
