@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.1.0
+// @version      1.2.0
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -122,7 +122,13 @@
   const BATCH_DELAY = 650;
   const ISRC_RE  = /^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/;
 
+  // Shared, pre-registered MusicBrainz OAuth app (type: Installed application,
+  // redirect urn:ietf:wg:oauth:2.0:oob, scope submit_isrc). Baked in so users only
+  // click "Authorize" once — no per-user app registration. The secret is not truly
+  // confidential for an installed app (same model as MagicISRC / isrchunt).
   const OAUTH = {
+    clientId:     'axXnet_AiWglKOQEVSiM8xF6EAlKFBzM',
+    clientSecret: 'gi-S0GuLeKtOgFs5QRZAEEVATD4Lo6l9',
     authUrl:  MB_ROOT + '/oauth2/authorize',
     tokenUrl: MB_ROOT + '/oauth2/token',
     redirect: 'urn:ietf:wg:oauth:2.0:oob',
@@ -391,16 +397,11 @@
      OAUTH (one-time authorize, offline refresh token)
   ═══════════════════════════════════════════════════════════════════════ */
   const Auth = {
-    clientId()     { return store.get('oauth_client_id', ''); },
-    clientSecret() { return store.get('oauth_client_secret', ''); },
+    // baked-in shared app, with an optional GM-storage override for power users
+    clientId()     { return store.get('oauth_client_id', '')     || OAUTH.clientId; },
+    clientSecret() { return store.get('oauth_client_secret', '') || OAUTH.clientSecret; },
     refreshTok()   { return store.get('oauth_refresh_token', ''); },
     isAuthorized() { return !!this.refreshTok(); },
-    isConfigured() { return !!this.clientId() && !!this.clientSecret(); },
-
-    setCreds(id, secret) {
-      store.set('oauth_client_id', id.trim());
-      store.set('oauth_client_secret', secret.trim());
-    },
 
     authorizeUrl() {
       const p = new URLSearchParams({
@@ -728,21 +729,14 @@
       <div class="ii-pane" id="ii-setup-pane">
         <h3>One-time MusicBrainz authorization</h3>
         <div class="ii-authstate" id="ii-auth-state"></div>
-        <div class="row">
-          <div><label>OAuth Client ID</label><input type="text" id="ii-cid" autocomplete="off"></div>
-          <div><label>OAuth Client Secret</label><input type="text" id="ii-csec" autocomplete="off"></div>
-        </div>
         <div class="row" style="margin-top:8px">
           <button class="ii-tbtn primary" id="ii-authorize">Authorize</button>
           <button class="ii-tbtn" id="ii-paste-code">Paste code…</button>
           <button class="ii-tbtn ghost" id="ii-signout">Sign out</button>
         </div>
         <div class="ii-help">
-          Register an app once at
-          <a href="${MB_ROOT}/account/applications/register" target="_blank" rel="noopener">account → applications → register</a>
-          — type <b>Installed application</b>, redirect URI <code>urn:ietf:wg:oauth:2.0:oob</code>.
-          Paste its Client ID + Secret above, click <b>Authorize</b>, approve in the MB tab, then paste the code it shows.
-          You only ever do this once.
+          Click <b>Authorize</b> → approve in the MusicBrainz tab that opens → paste the code it shows back here.
+          That's it — one time, ever. No app registration needed.
         </div>
 
         <h3 style="margin-top:14px">Spotify app (optional)</h3>
@@ -819,8 +813,6 @@
     submitBtn.addEventListener('click', doSubmit);
 
     // setup pane wiring
-    modal.querySelector('#ii-cid').value  = Auth.clientId();
-    modal.querySelector('#ii-csec').value = Auth.clientSecret();
     modal.querySelector('#ii-authorize').addEventListener('click', onAuthorize);
     modal.querySelector('#ii-paste-code').addEventListener('click', onPasteCode);
     modal.querySelector('#ii-signout').addEventListener('click', () => { Auth.signOut(); refreshAuthState(); toast('Signed out'); });
@@ -878,12 +870,9 @@
     if (Auth.isAuthorized()) {
       el.className = 'ii-authstate ok';
       el.textContent = '✓ Authorized — submit is ready.';
-    } else if (Auth.isConfigured()) {
-      el.className = 'ii-authstate no';
-      el.textContent = '• Credentials saved. Click Authorize to finish (one time).';
     } else {
       el.className = 'ii-authstate no';
-      el.textContent = '• Not set up. Enter Client ID + Secret, then Authorize.';
+      el.textContent = '• Not authorized yet. Click Authorize (one time).';
       pane.classList.add('open'); // nudge first-time users
     }
   }
@@ -1206,10 +1195,6 @@
 
   /* ── OAuth UI handlers ── */
   function onAuthorize() {
-    const id = modal.querySelector('#ii-cid').value.trim();
-    const sec = modal.querySelector('#ii-csec').value.trim();
-    if (!id || !sec) { toast('Enter Client ID and Secret first', 'err'); return; }
-    Auth.setCreds(id, sec);
     window.open(Auth.authorizeUrl(), '_blank', 'noopener');
     setTimeout(onPasteCode, 600);
   }

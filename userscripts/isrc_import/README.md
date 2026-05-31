@@ -44,7 +44,7 @@ Source buttons only fill **empty** fields and never touch existing ISRCs.
 - **Export text** (one per line) / **Export JSON** (`{ recordingMBID: "ISRC" }`) — copied to clipboard.
   Exported JSON can be pasted straight back into the box and re-applied.
 
-## Submitting (one-time setup)
+## Submitting (one-time authorization)
 
 ISRC submission to MusicBrainz **requires OAuth** — the website session cookie cannot write ISRCs,
 and there is no native ISRC web form. This script uses the `submit_isrc` scope with
@@ -52,17 +52,12 @@ and there is no native ISRC web form. This script uses the `submit_isrc` scope w
 forever** (unlike MagicISRC / ISRC Hunt, which re-prompt because they don't persist an offline
 token).
 
-1. Register an application **once** at
-   [account → applications → register](https://musicbrainz.org/account/applications/register):
-   - **Type:** Installed application
-   - **Redirect URI:** `urn:ietf:wg:oauth:2.0:oob`
+The OAuth app is **baked into the script**, so there's nothing to register:
 
-   Copy the **OAuth Client ID** and **Client Secret**.
+1. In the editor click **⚙ Setup → Authorize**. A MusicBrainz tab opens — approve, copy the code it
+   shows, and paste it back. Done permanently.
 
-2. In the editor click **⚙ Setup**, paste the Client ID + Secret, click **Authorize**. A MusicBrainz
-   tab opens — approve, copy the code it shows, and paste it back. Done permanently.
-
-3. Fill in ISRCs, click **Submit to MusicBrainz**.
+2. Fill in ISRCs, click **Submit to MusicBrainz**.
 
 Your credentials and tokens live only in the userscript's local storage (`GM_setValue`). **Sign out**
 in Setup clears the stored token.
