@@ -35,6 +35,19 @@ Source buttons only fill **empty** fields and never touch existing ISRCs.
 
 - **+1** — fill with the previous track's ISRC incremented by one.
 - Click any SoundExchange candidate to use it.
+- Track titles link to the MB recording. Typing a full ISRC verifies it on SoundExchange inline (cached). ISRCs duplicated across different recordings are flagged pink.
+
+### Deleting existing ISRCs
+
+Check the box next to any existing ISRC and click **🗑 Delete checked**. Deletion goes through the
+MusicBrainz recording-edit form using your logged-in session (ISRC removal isn't a WS2 operation), and
+each removal is verified via the web service. Creates normal "Remove ISRC" edits — so you must be
+logged into musicbrainz.org.
+
+### Edit note
+
+**✎ Edit note** opens a pane (hidden by default) pre-filled with the script name + counts. Edit it
+freely; it's attached to every add (`<edit-note>` in the WS2 submission) and every remove.
 
 ### Bulk / Export (⇪)
 

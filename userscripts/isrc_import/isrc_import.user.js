@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.5.0
+// @version      1.6.0
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -141,7 +141,9 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const CLIENT   = 'isrc_import-1.0.0';
+  const SCRIPT_VERSION = '1.6.0';
+  const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_import';
+  const CLIENT   = 'isrc_import-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Import/1.0';
   const SX_API   = 'https://isrc-api.soundexchange.com/api/ext/recordings';
   const SX_HOME  = 'https://isrc.soundexchange.com/';
@@ -335,7 +337,7 @@
 
     /* table */
     #ii-body { flex: 1; overflow: auto; padding: 0; }
-    #ii-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    #ii-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
     #ii-table thead th { position: sticky; top: 0; z-index: 2; background: #f1f3f5;
       text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .3px; color: #6c757d; padding: 7px 10px; border-bottom: 1px solid #dee2e6; }
@@ -343,18 +345,25 @@
       padding: 5px 10px; border-top: 1px solid #dee2e6; }
     #ii-table td { padding: 6px 10px; border-bottom: 1px solid #f1f3f5; vertical-align: top; }
     .ii-pos { color: #adb5bd; font-variant-numeric: tabular-nums; width: 34px; white-space: nowrap; }
-    .ii-track-title { font-weight: 600; }
+    .ii-track-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+    .ii-track-title a { color: inherit; text-decoration: none; }
+    .ii-track-title a:hover { color: #6f42c1; text-decoration: underline; }
     .ii-track-artist { color: #6c757d; font-size: 11.5px; }
     .ii-track-dur { color: #adb5bd; font-size: 11px; font-family: 'Courier New', monospace; }
     .ii-existing { width: 150px; }
-    .ii-existing samp { display: block; font-size: 11px; color: #198754; font-family: 'Courier New', monospace; }
+    .ii-existing samp { display: block; font-size: 11px; font-weight: 700; color: #198754; font-family: 'Courier New', monospace; }
+    .ii-existing samp.dup { color: #d63384; background: #ffe3ef; border-radius: 3px; padding: 0 3px; }
     .ii-existing .none { color: #ced4da; font-style: italic; font-size: 11px; }
+    .ii-ex-item { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+    .ii-ex-item input { cursor: pointer; margin: 0; flex-shrink: 0; }
+    .ii-ex-item.del samp { text-decoration: line-through; color: #d63384; }
     .ii-inwrap { display: flex; align-items: center; gap: 5px; }
-    .ii-input { width: 150px; padding: 4px 7px; border: 1px solid #ced4da; border-radius: 4px;
-      font-family: 'Courier New', monospace; font-size: 12.5px; letter-spacing: .5px; text-transform: uppercase; }
+    .ii-input { width: 150px; flex-shrink: 0; padding: 4px 7px; border: 1px solid #ced4da; border-radius: 4px;
+      font-family: 'Courier New', monospace; font-size: 12.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
     .ii-input:focus { outline: none; border-color: #6f42c1; }
     .ii-input.bad   { border-color: #dc3545; background: #fff0f1; }
     .ii-input.dup   { border-color: #fd7e14; background: #fff6ed; }
+    .ii-input.dupother { border-color: #d63384; background: #ffe3ef; }
     .ii-input.ok    { border-color: #198754; }
     .ii-plus { font-size: 11px; font-weight: 700; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; background: #f8f9fa; cursor: pointer; color: #6c757d; font-family: monospace; }
@@ -450,17 +459,17 @@
     .ii-sxp-exacts label { display: inline-flex; gap: 3px; align-items: center; cursor: pointer; }
     .ii-sxp-status { padding: 2px 13px; font-size: 11px; color: #6c757d; min-height: 14px; }
     .ii-sxp-status.err { color: #dc3545; }
-    .ii-sxp-results { flex: 1; overflow-y: auto; padding: 4px 13px 12px; display: flex; flex-direction: column; gap: 4px; }
+    .ii-sxp-results { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 13px 12px; display: flex; flex-direction: column; gap: 4px; }
     .ii-sxp-row { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border: 1px solid #e9ecef;
-      border-radius: 6px; cursor: pointer; }
+      border-radius: 6px; cursor: pointer; overflow: hidden; }
     .ii-sxp-row:hover { background: #f0f6ff; border-color: #9ec5fe; }
     .ii-sxp-row.best { border-color: #6ea8fe; background: #e7f1ff; }
     .ii-sxp-row.warn { background: #fff3cd; }
     .ii-sxp-row.cur  { border-color: #198754; background: #d1e7dd; }
     .ii-sxp-isrc { font-family: 'Courier New', monospace; font-weight: 700; color: #084298; flex-shrink: 0; font-size: 12px; }
-    .ii-sxp-meta { flex: 1; min-width: 0; }
-    .ii-sxp-meta .a { font-size: 12px; color: #212529; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ii-sxp-meta .b { font-size: 10.5px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ii-sxp-meta { flex: 1; min-width: 0; overflow: hidden; }
+    .ii-sxp-meta .a { display: block; font-size: 12px; color: #212529; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ii-sxp-meta .b { display: block; font-size: 10.5px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ii-sxp-inmb { font-size: 9px; font-weight: 700; color: #198754; flex-shrink: 0; }
   `;
   // @run-at document-start (needed for the Spotify harvester) can fire before
@@ -587,9 +596,11 @@
   /* ═══════════════════════════════════════════════════════════════════════
      WS2 ISRC SUBMISSION
   ═══════════════════════════════════════════════════════════════════════ */
-  function buildIsrcXml(map) {
+  function buildIsrcXml(map, editNote) {
     let x = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-            '<metadata xmlns="http://musicbrainz.org/ns/mmd-2.0#">\n<recording-list>\n';
+            '<metadata xmlns="http://musicbrainz.org/ns/mmd-2.0#">\n';
+    if (editNote) x += '  <edit-note>' + esc(editNote) + '</edit-note>\n';
+    x += '<recording-list>\n';
     for (const [rid, isrcs] of Object.entries(map)) {
       x += '  <recording id="' + rid + '"><isrc-list>';
       isrcs.forEach(i => { x += '<isrc id="' + i + '"/>'; });
@@ -599,9 +610,9 @@
     return x;
   }
 
-  async function submitIsrcs(map) {
+  async function submitIsrcs(map, editNote) {
     const token = await Auth.accessToken();
-    const xml = buildIsrcXml(map);
+    const xml = buildIsrcXml(map, editNote);
     const url = MB_WS2 + 'recording/?client=' + CLIENT;
     const r = await gmPost(url, xml, {
       'Content-Type':  'application/xml; charset=utf-8',
@@ -875,6 +886,27 @@
   ═══════════════════════════════════════════════════════════════════════ */
   let overlay, modal, tbody, summaryEl, progEl, submitBtn;
   let built = false;
+  let noteEdited = false;                 // has the user hand-edited the edit note?
+  const _isrcLookupCache = {};            // isrc -> SX rows (single-ISRC lookup cache)
+
+  function defaultNote() {
+    const valid = RELEASE ? RELEASE.tracks.filter(t => { const v = normalizeIsrc(t.pending); return v && isValidIsrc(v) && !t.existing.includes(v); }).length : 0;
+    return 'Submitted with ISRC Import v' + SCRIPT_VERSION + ' (' + valid + ' ISRC' + (valid === 1 ? '' : 's') + ').\n' + SCRIPT_URL;
+  }
+  function ensureNote(force) {
+    const ta = modal.querySelector('#ii-note-text');
+    if (force || (!noteEdited && !ta.value.trim())) { ta.value = defaultNote(); noteEdited = false; }
+  }
+  function getEditNote() {
+    const ta = modal.querySelector('#ii-note-text');
+    return (noteEdited && ta.value.trim()) ? ta.value.trim() : defaultNote();
+  }
+  function refreshDeleteBtn() {
+    const n = tbody.querySelectorAll('.ii-ex-del:checked').length;
+    const btn = modal.querySelector('#ii-delete');
+    btn.disabled = n === 0;
+    btn.textContent = n ? '🗑 Delete ' + n + ' ISRC' + (n === 1 ? '' : 's') : '🗑 Delete checked';
+  }
 
   function buildModal() {
     if (built) return;
@@ -941,6 +973,14 @@
         </div>
       </div>
 
+      <div class="ii-pane" id="ii-note-pane">
+        <h3><button class="ii-pane-x" title="Close">✕</button>Edit note
+          <button class="ii-tbtn" id="ii-note-reset" style="padding:2px 9px;font-size:11px">Reset to default</button>
+        </h3>
+        <textarea id="ii-note-text" placeholder="Optional edit note attached to the submission…"></textarea>
+        <div class="ii-help" style="margin-top:0">Attached to every ISRC add/remove you submit. Auto-filled with the script name + counts; edit freely (your text is kept until you Reset).</div>
+      </div>
+
       <div class="ii-pane" id="ii-log-pane">
         <h3><button class="ii-pane-x" title="Close">✕</button>Activity log
           <button class="ii-tbtn" id="ii-log-copy" style="padding:2px 9px;font-size:11px">Copy</button>
@@ -967,6 +1007,9 @@
 
       <div id="ii-body">
         <table id="ii-table">
+          <colgroup>
+            <col style="width:40px"><col><col style="width:52px"><col style="width:190px"><col style="width:440px">
+          </colgroup>
           <thead><tr>
             <th>#</th><th>Track</th><th></th><th>Existing</th><th>New ISRC</th>
           </tr></thead>
@@ -976,6 +1019,8 @@
 
       <div id="ii-foot">
         <span class="ii-summary" id="ii-summary"></span>
+        <button class="ii-tbtn" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete checked</button>
+        <button class="ii-tbtn ghost" id="ii-note-toggle" title="Edit note">✎ Edit note</button>
         <button class="ii-tbtn primary" id="ii-submit">Submit to MusicBrainz</button>
       </div>
     `;
@@ -1013,6 +1058,19 @@
     modal.querySelector('#ii-dz-all').addEventListener('click', runDeezer);
     modal.querySelector('#ii-sp-all').addEventListener('click', runSpotify);
     submitBtn.addEventListener('click', doSubmit);
+
+    // delete-existing wiring (checkboxes are delegated)
+    modal.querySelector('#ii-delete').addEventListener('click', doDelete);
+    tbody.addEventListener('change', e => {
+      if (!e.target.classList.contains('ii-ex-del')) return;
+      e.target.closest('.ii-ex-item').classList.toggle('del', e.target.checked);
+      refreshDeleteBtn();
+    });
+
+    // edit-note pane wiring
+    modal.querySelector('#ii-note-toggle').addEventListener('click', () => { ensureNote(); togglePane('ii-note-pane'); });
+    modal.querySelector('#ii-note-reset').addEventListener('click', () => { noteEdited = false; ensureNote(true); });
+    modal.querySelector('#ii-note-text').addEventListener('input', () => { noteEdited = true; });
 
     // setup pane wiring
     modal.querySelector('#ii-authorize').addEventListener('click', onAuthorize);
@@ -1101,8 +1159,9 @@
       tr.dataset.idx = idx;
       tr.innerHTML =
         '<td class="ii-pos">' + esc(t.number || t.trackPos) + '</td>' +
-        '<td><div class="ii-track-title">' + esc(t.title) + '</div>' +
-          '<div class="ii-track-artist">' + esc(t.artist) + '</div></td>' +
+        '<td><div class="ii-track-title">' +
+          (t.recId ? '<a href="' + MB_ROOT + '/recording/' + t.recId + '" target="_blank" rel="noopener" title="' + esc(t.title) + '">' + esc(t.title) + '</a>' : esc(t.title)) +
+          '</div><div class="ii-track-artist">' + esc(t.artist) + '</div></td>' +
         '<td class="ii-track-dur">' + esc(t.dur) + '</td>' +
         '<td class="ii-existing">' + existingHtml(t.existing) + '</td>' +
         '<td><div class="ii-inwrap">' +
@@ -1120,13 +1179,10 @@
         input.dataset.autofill = '';
         validateInput(input, t);
         updateSummary();
-      });
-      // on blur, verify a manually-typed ISRC against SoundExchange
-      input.addEventListener('blur', () => {
-        if (input.dataset.autofill === '1') return;           // came from a source, not typed
+        // verify on SoundExchange as soon as a full ISRC is entered (cached)
         const v = normalizeIsrc(input.value);
         if (v && isValidIsrc(v)) lookupIsrc(idx, v);
-        else rowLookup(idx) && (rowLookup(idx).className = 'ii-lookup');
+        else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; } }
       });
       tr.querySelector('.ii-plus').addEventListener('click', () => plusOne(idx));
       tbody.appendChild(tr);
@@ -1142,7 +1198,10 @@
   }
   function existingHtml(arr) {
     if (!arr || !arr.length) return '<span class="none">none</span>';
-    return arr.map(i => '<samp>' + esc(i) + '</samp>').join('');
+    return arr.map(i =>
+      '<label class="ii-ex-item" title="Check to delete this ISRC from the recording">' +
+      '<input type="checkbox" class="ii-ex-del" data-isrc="' + esc(i) + '">' +
+      '<samp>' + esc(i) + '</samp></label>').join('');
   }
   function rowInput(idx) {
     const tr = tbody.querySelector('tr[data-idx="' + idx + '"]');
@@ -1158,13 +1217,18 @@
   }
 
   // verify a typed ISRC on SoundExchange and show inline match/mismatch info
+  function sxLookupCached(isrc) {
+    if (_isrcLookupCache[isrc]) return Promise.resolve(_isrcLookupCache[isrc]);
+    return SX.apiSearchByIsrc(isrc).then(rows => { _isrcLookupCache[isrc] = rows; return rows; });
+  }
   function lookupIsrc(idx, isrc) {
     const el = rowLookup(idx), t = RELEASE.tracks[idx];
     if (!el) return;
+    const cached = !!_isrcLookupCache[isrc];
     el.className = 'ii-lookup spin';
-    el.textContent = '⏳ checking SoundExchange…';
-    Log.info('SX lookup ' + isrc + ' (#' + (t.number || t.trackPos) + ')');
-    SX.apiSearchByIsrc(isrc).then(rows => {
+    el.textContent = cached ? '' : '⏳ checking SoundExchange…';
+    if (!cached) Log.info('SX lookup ' + isrc + ' (#' + (t.number || t.trackPos) + ')');
+    sxLookupCached(isrc).then(rows => {
       if (!rows.length) { el.className = 'ii-lookup err'; el.textContent = '✗ not found on SoundExchange'; Log.warn('SX lookup ' + isrc + ': not found'); return; }
       const f = SX.fields(rows[0]);
       const good = isGoodMatch(f.title, f.artist, t.title, t.artist);
@@ -1233,13 +1297,36 @@
       else if (t.existing.includes(v)) dup++;
       else valid++;
     });
+    const cross = highlightDuplicates();
     summaryEl.innerHTML =
-      '<b>' + RELEASE.tracks.length + '</b> tracks · ' +
-      '<b>' + valid + '</b> to submit' +
+      '<b>' + RELEASE.tracks.length + '</b> tracks' +
       (bad ? ' · <span style="color:#dc3545">' + bad + ' invalid</span>' : '') +
-      (dup ? ' · <span style="color:#fd7e14">' + dup + ' duplicate</span>' : '') +
+      (dup ? ' · <span style="color:#fd7e14">' + dup + ' already present</span>' : '') +
+      (cross ? ' · <span style="color:#d63384">' + cross + ' duplicated across tracks</span>' : '') +
       (missing ? ' · ' + missing + ' still missing' : '');
+    submitBtn.textContent = 'Submit to MusicBrainz' + (valid ? ' (' + valid + ')' : '');
     submitBtn.disabled = valid === 0;
+  }
+
+  // Flag ISRCs that appear on more than one distinct recording (pending or existing).
+  // Returns how many distinct ISRCs are duplicated. Same-recording repeats don't count.
+  function highlightDuplicates() {
+    const recsByIsrc = {};
+    RELEASE.tracks.forEach((t, i) => {
+      const key = t.recId || ('i' + i);
+      const add = raw => { const v = normalizeIsrc(raw); if (!v) return; (recsByIsrc[v] = recsByIsrc[v] || new Set()).add(key); };
+      const pv = normalizeIsrc(t.pending); if (pv && isValidIsrc(pv)) add(pv);
+      t.existing.forEach(add);
+    });
+    const isDup = v => recsByIsrc[v] && recsByIsrc[v].size > 1;
+    RELEASE.tracks.forEach((t, i) => {
+      const tr = tbody.querySelector('tr[data-idx="' + i + '"]'); if (!tr) return;
+      const inp = tr.querySelector('.ii-input');
+      const pv = normalizeIsrc(t.pending);
+      inp.classList.toggle('dupother', !!(pv && isValidIsrc(pv) && !t.existing.includes(pv) && isDup(pv)));
+      tr.querySelectorAll('.ii-existing samp').forEach(s => s.classList.toggle('dup', isDup(normalizeIsrc(s.textContent))));
+    });
+    return Object.values(recsByIsrc).filter(s => s.size > 1).length;
   }
 
   /* ── bulk paste / export ── */
@@ -1482,10 +1569,12 @@
     Log.info('SoundExchange: searching ' + RELEASE.tracks.length + ' tracks', { exact: sxExact });
     SX.refreshToken().then(() => Log.info('SX token ready')).catch(e => Log.warn('SX token prefetch failed: ' + e.message));
     const tracks = RELEASE.tracks;
+    const todo = tracks.map((t, i) => i).filter(i => !tracks[i].existing.length && !tracks[i].pending);
+    Log.info('SoundExchange: ' + todo.length + ' track(s) without an ISRC (skipping ' + (tracks.length - todo.length) + ' that already have one)');
     let done = 0, filled = 0, matched = 0;
-    for (let i = 0; i < tracks.length; i++) {
+    for (const i of todo) {
       const t = tracks[i];
-      progEl.textContent = 'SoundExchange ' + (done + 1) + '/' + tracks.length;
+      progEl.textContent = 'SoundExchange ' + (done + 1) + '/' + todo.length;
       try {
         const rows = await SX.apiSearch(t.title, t.artist, 0, 10, sxExact);
         renderCands(i, rows);
@@ -1504,9 +1593,10 @@
       }
       done++;
       updateSummary();
-      if (i < tracks.length - 1) await sleep(BATCH_DELAY);
+      if (done < todo.length) await sleep(BATCH_DELAY);
     }
-    progEl.textContent = 'SoundExchange done — ' + matched + ' matched, ' + filled + ' filled';
+    progEl.textContent = 'SoundExchange done — ' + matched + ' matched, ' + filled + ' filled' +
+      (todo.length < tracks.length ? ' (' + (tracks.length - todo.length) + ' already had ISRCs)' : '');
     Log.info('SoundExchange done — ' + matched + ' matched, ' + filled + ' newly filled');
     btn.disabled = false;
   }
@@ -1610,9 +1700,11 @@
     if (!confirm('Submit ' + count + ' ISRC' + (count === 1 ? '' : 's') + ' to MusicBrainz?')) return;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting…';
+    const note = getEditNote();
     Log.info('Submitting ' + count + ' ISRC(s) across ' + Object.keys(map).length + ' recording(s)', map);
+    Log.info('Edit note: ' + note.replace(/\n/g, ' '));
     try {
-      await submitIsrcs(map);
+      await submitIsrcs(map, note);
       Log.info('Submit OK');
       toast('Submitted ' + count + ' ISRC' + (count === 1 ? '' : 's') + ' ✓', 'ok');
       // move submitted into "existing", clear pending
@@ -1626,8 +1718,86 @@
       Log.err('Submit failed: ' + e.message);
       toast('Submit failed: ' + e.message, 'err');
     }
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Submit to MusicBrainz';
+    updateSummary();   // restores "Submit to MusicBrainz (N)" + disabled state
+  }
+
+  /* ── delete existing ISRCs (via the recording-edit website form + session cookie) ── */
+  async function doDelete() {
+    const byRec = {};   // recId -> { idx, isrcs: [] }
+    tbody.querySelectorAll('.ii-ex-del:checked').forEach(cb => {
+      const tr = cb.closest('tr[data-idx]'); if (!tr) return;
+      const idx = +tr.dataset.idx, t = RELEASE.tracks[idx];
+      if (!t.recId) return;
+      (byRec[t.recId] = byRec[t.recId] || { idx, isrcs: [] }).isrcs.push(normalizeIsrc(cb.dataset.isrc));
+    });
+    const recs = Object.entries(byRec);
+    const total = recs.reduce((n, [, v]) => n + v.isrcs.length, 0);
+    if (!total) return;
+    if (!Auth.isAuthorized()) { /* deletion uses the session cookie, not OAuth — no auth needed, but warn if not logged in is handled by the request itself */ }
+    if (!confirm('Delete ' + total + ' existing ISRC' + (total === 1 ? '' : 's') + ' from ' + recs.length + ' recording' + (recs.length === 1 ? '' : 's') + '?\n\nThis makes real "Remove ISRC" edits on MusicBrainz (using your logged-in session).')) return;
+    const note = getEditNote();
+    const btn = modal.querySelector('#ii-delete');
+    btn.disabled = true;
+    Log.info('Deleting ' + total + ' ISRC(s) from ' + recs.length + ' recording(s)');
+    let ok = 0, fail = 0;
+    for (const [recId, info] of recs) {
+      progEl.textContent = 'Deleting from recording ' + recId.slice(0, 8) + '…';
+      try {
+        await removeIsrcsFromRecording(recId, info.isrcs, note);
+        const t = RELEASE.tracks[info.idx];
+        info.isrcs.forEach(i => { const k = t.existing.indexOf(i); if (k >= 0) t.existing.splice(k, 1); });
+        ok += info.isrcs.length;
+        Log.info('Removed ' + info.isrcs.join(', ') + ' from recording ' + recId);
+      } catch (e) {
+        fail += info.isrcs.length;
+        Log.err('Remove from recording ' + recId + ' failed: ' + e.message);
+      }
+      await sleep(700);
+    }
+    renderTracks(); updateBtnStatus(); refreshDeleteBtn();
+    progEl.textContent = 'Deleted ' + ok + (fail ? ', ' + fail + ' failed' : '');
+    toast('Deleted ' + ok + ' ISRC' + (ok === 1 ? '' : 's') + (fail ? ' · ' + fail + ' failed (see Log)' : ''), fail ? 'err' : 'ok');
+  }
+
+  // GET the recording edit form, echo every field verbatim (preserving name,
+  // artist credit, length, etc.), drop the target ISRC inputs, set the edit note,
+  // POST it back with the session cookie → a "Remove ISRC" edit. Verified via WS2.
+  async function removeIsrcsFromRecording(recId, isrcsToRemove, note) {
+    const editUrl = MB_ROOT + '/recording/' + recId + '/edit';
+    const gr = await gmGet(editUrl, { 'Accept': 'text/html' });
+    if (gr.status !== 200) throw new Error('GET form ' + gr.status + (gr.status === 401 || gr.status === 403 ? ' (are you logged into MusicBrainz?)' : ''));
+    const doc = new DOMParser().parseFromString(gr.responseText, 'text/html');
+    const form = doc.querySelector('form#page-content form, form.edit-recording, form[action$="/edit"]') ||
+                 [...doc.querySelectorAll('form')].find(f => f.querySelector('[name$=".isrcs.0"], [name*=".isrcs."]')) ||
+                 doc.querySelector('form');
+    if (!form) throw new Error('edit form not found in page');
+    const rm = new Set(isrcsToRemove.map(normalizeIsrc));
+    let prefix = 'edit-recording', noteField = null, hadIsrc = false;
+    const params = new URLSearchParams();
+    form.querySelectorAll('input[name], select[name], textarea[name]').forEach(el => {
+      const name = el.name;
+      if (!name || el.type === 'submit' || el.type === 'button' || el.type === 'file') return;
+      if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) return;
+      const mIsrc = name.match(/^(.*)\.isrcs\.\d+$/);
+      if (mIsrc) {
+        prefix = mIsrc[1];
+        hadIsrc = true;
+        if (rm.has(normalizeIsrc(el.value))) return;   // drop the ISRC(s) we're deleting
+      }
+      if (/\.edit_note$/.test(name)) { noteField = name; return; }   // set our own below
+      params.append(name, el.value);
+    });
+    if (!hadIsrc) throw new Error('no ISRC fields in the edit form (already removed?)');
+    params.append(noteField || (prefix + '.edit_note'), note);
+    Log.info('POST ' + shortUrl(editUrl) + ' (' + [...params.keys()].length + ' fields, removing ' + [...rm].join(',') + ')');
+    const pr = await gmPost(editUrl, params.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'text/html' });
+    if (pr.status !== 200 && pr.status !== 302 && pr.status !== 303) throw new Error('POST ' + pr.status);
+    // Verify via WS2 that the ISRC(s) are actually gone (the POST 200 alone could be a re-rendered form with errors).
+    await sleep(400);
+    const vr = await gmGet(MB_WS2 + 'recording/' + recId + '?inc=isrcs&fmt=json', { 'Accept': 'application/json' });
+    const still = (JSON.parse(vr.responseText || '{}').isrcs || []).map(normalizeIsrc);
+    const leftover = [...rm].filter(i => still.includes(i));
+    if (leftover.length) throw new Error('still present after edit: ' + leftover.join(', ') + ' (edit rejected? not logged in?)');
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
