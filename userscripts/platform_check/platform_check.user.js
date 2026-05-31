@@ -1,8 +1,10 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.31.155254
+// @version      2026.5.31.191214
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
+// @author       majkinetor
+// @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md
 // @match        https://musicbrainz.org/release/*
 // @match        https://musicbrainz.org/release-group/*/edit
 // @match        https://musicbrainz.org/release-group/*/edit-relationships
@@ -213,8 +215,64 @@ async function injectInto(urls, storageKey) {
     }
 
     if (injected > 0) GM_setValue(storageKey, null);
-    const failCount = reports.filter(r => !r.ok).length;
-    showInjectBanner(`Platform Check: injected ${injected}/${urls.length} URL(s)`, reports, { fail: failCount > 0 });
+    // Set the edit note (as the script used to), and report the result quietly
+    // inline next to the External links heading instead of a centred popup.
+    const okUrls = reports.filter(r => r.ok).map(r => r.url);
+    if (okUrls.length) setEditNote(pcEditNote(okUrls));
+    showInlineSummary(reports);
+}
+
+// Build the edit note: a header line (name/version/author/homepage from GM_info,
+// with fallbacks) + the links that were added — same shape as the other scripts.
+function pcEditNote(urls) {
+    const s = (typeof GM_info !== 'undefined' && GM_info.script) || {};
+    const homepage = s.homepageURL || s.homepage ||
+        'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md';
+    const header = (s.name || 'MB Platform Check') + ' v' + (s.version || '?') +
+        ' by ' + (s.author || 'majkinetor') + ' - ' + homepage;
+    const lines = [header, '', 'Added ' + urls.length + ' external link' + (urls.length === 1 ? '' : 's') + ':'];
+    urls.forEach(u => lines.push(u));
+    return lines.join('\n');
+}
+
+// Fill MB's edit-note textarea via the native setter so React picks it up.
+// Appends to anything already typed there.
+function setEditNote(text) {
+    const ta = document.querySelector(
+        'textarea.edit-note, textarea[name="edit-note"], textarea[name="edit_note"], #id-edit-note, .edit-note textarea');
+    if (!ta) return false;
+    try {
+        const setVal = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+        const existing = (ta.value || '').trim();
+        setVal.call(ta, existing ? existing + '\n' + text : text);
+        ta.dispatchEvent(new Event('input',  { bubbles: true }));
+        ta.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+    } catch (_) { return false; }
+}
+
+// Quiet inline confirmation placed next to the "External links" heading (replaces
+// the old intrusive centred banner). Failures still surface here so nothing's lost.
+function showInlineSummary(reports) {
+    const ok = reports.filter(r => r.ok).length;
+    const fail = reports.length - ok;
+    let el = document.getElementById('pc-inline-summary');
+    if (!el) {
+        el = document.createElement('span');
+        el.id = 'pc-inline-summary';
+        el.style.cssText = 'margin-left: 10px; font-size: 12px; font-weight: 600; font-family: sans-serif; ' +
+            'padding: 1px 8px; border-radius: 10px; vertical-align: middle; display: inline-block;';
+    }
+    el.style.color      = fail ? '#7B5E00' : '#1B5E20';
+    el.style.background = fail ? '#FFF3CD' : '#E8F5E9';
+    el.style.border     = '1px solid ' + (fail ? '#FFC107' : '#81C784');
+    el.title = reports.map(r => ((r.url || '').replace(/^https?:\/\//, '')) + ' — ' + (r.ok ? 'OK' + (r.type ? ' · ' + r.type : '') : 'FAIL · ' + r.miss)).join('\n');
+    el.textContent = '✓ Platform Check added ' + ok + (fail ? ', ' + fail + ' failed' : '') + ' — edit note set, review & Enter edit';
+    const re = /^\s*external links\s*$/i;
+    const heading = [...document.querySelectorAll('h2, h3, legend, label')].find(h => re.test(h.textContent || ''));
+    if (heading) { heading.appendChild(el); return; }
+    const tab = [...document.querySelectorAll('a, button, li')].find(h => re.test(h.textContent || ''));
+    if (tab) tab.after(el); else document.body.appendChild(el);
 }
 
 function showInjectBanner(text, reports = [], opts = {}) {

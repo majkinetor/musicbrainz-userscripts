@@ -35,6 +35,7 @@ Discogs has few specifics:
 - **Insert links to release**: opens *edit* page of the release and inserts one or more links:
     - `+` click - batch insert all links that have `✓` marker
     - `✓`click - insert only particular link next to the marker
+    - On the edit page it fills the **edit note** (script name/version + the links added) and shows a small confirmation next to the *External links* heading — then you review and click **Enter edit**.
 - **Options**:
     - Toggle usage of each supported platform independently
     - Reorder providers
