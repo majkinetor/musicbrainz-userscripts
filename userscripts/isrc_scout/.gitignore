@@ -12,3 +12,7 @@ Thumbs.db
 
 # Claude Code per-project settings
 .claude/
+
+# local debug screen-capture (not a repo asset)
+Animation.webp
+*.webp
