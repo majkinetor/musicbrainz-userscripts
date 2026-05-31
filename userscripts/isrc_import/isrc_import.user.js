@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicBrainz ISRC Import
 // @namespace    https://musicbrainz.org/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @match        https://musicbrainz.org/release/*
@@ -54,7 +54,17 @@
   ═══════════════════════════════════════════════════════════════════════ */
   if (/(^|\.)spotify\.com$/i.test(location.hostname)) {
     if (location.hash.indexOf('ii_harvest') === -1) return; // not our tab — do nothing
-    const hlog = (m) => { try { console.log('[ISRC-harvest] ' + m); } catch (e) {} };
+    // log to the Spotify tab console AND to a shared GM buffer the MusicBrainz
+    // tab drains into its Log pane, so everything ends up in one place.
+    const hlog = (m) => {
+      try { console.log('[ISRC-harvest] ' + m); } catch (e) {}
+      try {
+        const arr = GM_getValue('spotify_harvest_log', []);
+        arr.push('[' + new Date().toTimeString().slice(0, 8) + '] ' + m);
+        if (arr.length > 200) arr.shift();
+        GM_setValue('spotify_harvest_log', arr);
+      } catch (e) {}
+    };
     hlog('harvester active on ' + location.href);
     let captured = false;
     const finish = (token, how) => {
@@ -730,19 +740,26 @@
       return Promise.resolve(cached.token);
     }
     store.del('spotify_harvest');
+    store.set('spotify_harvest_log', []);   // fresh shared buffer for the Spotify tab's lines
     Log.info('Spotify: opening player tab to harvest a token…');
     const w = window.open('https://open.spotify.com/album/' + albumId + '#ii_harvest', 'ii_sp_harvest', 'width=520,height=640');
     if (!w) { Log.err('Spotify: popup blocked'); return Promise.reject(new Error('popup blocked — allow popups for musicbrainz.org so a Spotify tab can open')); }
     if (onProgress) onProgress(0, 0);
+    let consumed = 0;
+    const drainLog = () => {
+      const arr = store.get('spotify_harvest_log', []);
+      for (; consumed < arr.length; consumed++) Log.info('[spotify-tab] ' + arr[consumed]);
+    };
     return new Promise((resolve, reject) => {
       let n = 0;
       const iv = setInterval(() => {
+        drainLog();
         const h = store.get('spotify_harvest', null);
-        if (h && h.token) { clearInterval(iv); try { w.close(); } catch (e) {} Log.info('Spotify: token harvested'); resolve(h.token); return; }
+        if (h && h.token) { clearInterval(iv); drainLog(); try { w.close(); } catch (e) {} Log.info('Spotify: token harvested'); resolve(h.token); return; }
         if ((h && h.error) || ++n > 40) { // ~20s
-          clearInterval(iv); try { w.close(); } catch (e) {}
-          Log.err('Spotify: token harvest ' + (h && h.error ? 'reported "' + h.error + '"' : 'timed out') + ' — check the Spotify tab console for [ISRC-harvest] lines');
-          reject(new Error('could not get a Spotify token (open the Spotify tab console; are you logged in?)'));
+          clearInterval(iv); drainLog(); try { w.close(); } catch (e) {}
+          Log.err('Spotify: token harvest ' + (h && h.error ? 'reported "' + h.error + '"' : 'timed out'));
+          reject(new Error('could not get a Spotify token (see [spotify-tab] lines above; are you logged in?)'));
         }
       }, 500);
     });
