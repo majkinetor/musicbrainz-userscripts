@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.173552
+// @version      2026.5.31.174845
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -80,13 +80,14 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.173552';
+  const SCRIPT_VERSION = '2026.5.31.174845';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
   const SX_API   = 'https://isrc-api.soundexchange.com/api/ext/recordings';
   const SX_HOME  = 'https://isrc.soundexchange.com/';
   const BATCH_DELAY = 650;
+  const SX_BATCH_LIMIT = 30;     // max individual SoundExchange searches per batch (avoid being blocked)
   const ISRC_RE  = /^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/;
 
   // Shared, pre-registered MusicBrainz OAuth app (type: Installed application,
@@ -423,6 +424,9 @@
     .ii-cand-refine { font-size: 10.5px; color: #6f42c1; cursor: pointer; padding: 2px 7px;
       border: 1px dashed #d6c7ee; border-radius: 4px; background: #faf8fe; width: max-content; }
     .ii-cand-refine:hover { background: #f0e9fb; text-decoration: underline; }
+    .ii-cand-pending { font-size: 10.5px; color: #6c757d; cursor: pointer; padding: 3px 8px;
+      border: 1px dashed #ced4da; border-radius: 4px; background: #f8f9fa; width: max-content; }
+    .ii-cand-pending:hover { background: #eceef0; color: #343a40; border-color: #adb5bd; }
 
     /* SoundExchange refine panel */
     #ii-sxpanel { position: fixed; top: 9vh; right: 4vw; width: 560px; max-width: 92vw; max-height: 78vh;
@@ -460,6 +464,9 @@
     .ii-sxp-meta .a { display: block; font-size: 12px; color: #212529; white-space: normal; word-break: break-word; line-height: 1.35; }
     .ii-sxp-meta .b { display: block; font-size: 10.5px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ii-sxp-inmb { font-size: 9px; font-weight: 700; color: #198754; flex-shrink: 0; }
+    .ii-sxp-foot { padding: 8px 13px; border-top: 1px solid #eee; background: #fbfbfd; flex-shrink: 0; }
+    .ii-sxp-foot a { font-size: 11.5px; font-weight: 600; color: #6f42c1; text-decoration: none; }
+    .ii-sxp-foot a:hover { text-decoration: underline; }
   `;
   // @run-at document-start (needed for the Spotify harvester) can fire before
   // <html>/<head> exist; the MB-side editor only needs the DOM, so defer to ready.
@@ -1224,9 +1231,11 @@
     input.value = t.pending;
     input.dataset.autofill = '1';            // filled by a source — the on-input handler won't fire
     validateInput(input, t);
-    // verify whatever was just set (Deezer, Spotify, SoundExchange, +1, bulk paste)
-    // against SoundExchange so every filled value gets the same match check (cached)
-    if (isValidIsrc(t.pending)) lookupIsrc(idx, t.pending);
+    // verify whatever was just set (Deezer, Spotify, +1, bulk paste) against
+    // SoundExchange so every filled value gets the same match check (cached).
+    // Skip it for SoundExchange-sourced fills — the batch search already classified
+    // the candidate, so re-querying would just double our SX load.
+    if (t.source !== 'SoundExchange' && isValidIsrc(t.pending)) lookupIsrc(idx, t.pending);
     else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; } }
     if (flash) {
       const tr = input.closest('tr');
@@ -1425,6 +1434,16 @@
 
   /* ── SoundExchange refine panel ── */
   let sxPanel = null, _sxPanelIdx = -1, _sxPanelGen = 0;
+  // Build a URL to the SoundExchange website's own search for the same query,
+  // so the user can fall back to searching there directly (quoted = exact field).
+  function sxPageUrl(title, artist, release) {
+    const enc = s => encodeURIComponent('"' + String(s).replace(/"/g, '') + '"');
+    const parts = ['tab=' + encodeURIComponent('"simple"')];
+    if (artist)  parts.push('artistName=' + enc(artist));
+    if (title)   parts.push('title=' + enc(title));
+    if (release) parts.push('releaseName=' + enc(release));
+    return SX_HOME + '?' + parts.join('&');
+  }
   function buildSxPanel() {
     if (sxPanel) return;
     sxPanel = document.createElement('div');
@@ -1447,6 +1466,7 @@
       </div>
       <div class="ii-sxp-status"></div>
       <div class="ii-sxp-results"></div>
+      <div class="ii-sxp-foot"><a id="ii-sxp-web" target="_blank" rel="noopener">🔍 Search on SoundExchange ↗</a></div>
     `;
     document.body.appendChild(sxPanel);
     const closePanel = () => sxPanel.classList.remove('open');
@@ -1506,6 +1526,8 @@
     const stEl = sxPanel.querySelector('.ii-sxp-status');
     const resEl = sxPanel.querySelector('.ii-sxp-results');
     const goBtn = sxPanel.querySelector('#ii-sxp-search');
+    const webLink = sxPanel.querySelector('#ii-sxp-web');
+    if (webLink) webLink.href = sxPageUrl(title, artist, release);
     stEl.className = 'ii-sxp-status'; stEl.textContent = 'Searching…'; goBtn.disabled = true;
     const gen = ++_sxPanelGen;
     Log.info('SX refine #' + (t.number || t.trackPos) + ': "' + title + '" / "' + artist + '"' + (release ? ' / rel "' + release + '"' : ''), exact);
@@ -1544,27 +1566,56 @@
     });
   }
 
-  async function runSxAll() {
+  // SoundExchange batch state — we search at most SX_BATCH_LIMIT tracks at a time
+  // so SX doesn't block us; the rest show a "not loaded" message you click to continue.
+  let _sxTodo = [], _sxCursor = 0, _sxMatched = 0, _sxFilled = 0, _sxRunning = false;
+
+  function runSxAll() {
+    const tracks = RELEASE.tracks;
+    _sxTodo = tracks.map((t, i) => i).filter(i => !tracks[i].existing.length && !tracks[i].pending);
+    _sxCursor = 0; _sxMatched = 0; _sxFilled = 0;
+    Log.info('SoundExchange: ' + _sxTodo.length + ' track(s) without an ISRC (skipping ' +
+      (tracks.length - _sxTodo.length) + ' that already have one); up to ' + SX_BATCH_LIMIT + ' per batch');
+    SX.refreshToken().then(() => Log.info('SX token ready')).catch(e => Log.warn('SX token prefetch failed: ' + e.message));
+    processNextSxBatch();
+  }
+
+  // Render a clickable "not loaded" message in a track's candidate box. Clicking
+  // any of them loads the next batch (in order — like the MagicISRC userscript).
+  function sxPlaceholder(idx, remaining) {
+    const box = rowCands(idx);
+    if (!box) return;
+    box.innerHTML = '';
+    const m = document.createElement('div');
+    m.className = 'ii-cand-pending';
+    m.textContent = '⏳ Not searched — click to load the next ' + Math.min(SX_BATCH_LIMIT, remaining) + ' on SoundExchange';
+    m.title = 'SoundExchange searches are capped at ' + SX_BATCH_LIMIT + ' at a time to avoid being blocked';
+    m.addEventListener('click', () => processNextSxBatch());
+    box.appendChild(m);
+  }
+
+  async function processNextSxBatch() {
+    if (_sxRunning) return;
+    _sxRunning = true;
     const btn = modal.querySelector('#ii-sx-all');
     btn.disabled = true;
-    Log.info('SoundExchange: searching ' + RELEASE.tracks.length + ' tracks', { exact: sxExact });
-    SX.refreshToken().then(() => Log.info('SX token ready')).catch(e => Log.warn('SX token prefetch failed: ' + e.message));
     const tracks = RELEASE.tracks;
-    const todo = tracks.map((t, i) => i).filter(i => !tracks[i].existing.length && !tracks[i].pending);
-    Log.info('SoundExchange: ' + todo.length + ' track(s) without an ISRC (skipping ' + (tracks.length - todo.length) + ' that already have one)');
-    let done = 0, filled = 0, matched = 0;
-    for (const i of todo) {
+    const batch = _sxTodo.slice(_sxCursor, _sxCursor + SX_BATCH_LIMIT);
+    // clear any "not loaded" placeholders on the tracks we're about to search
+    batch.forEach(i => { const box = rowCands(i); if (box) box.innerHTML = ''; });
+    let n = 0;
+    for (const i of batch) {
       const t = tracks[i];
-      progEl.textContent = 'SoundExchange ' + (done + 1) + '/' + todo.length;
+      progEl.textContent = 'SoundExchange ' + (_sxCursor + n + 1) + '/' + _sxTodo.length;
       try {
         const rows = await SX.apiSearch(t.title, t.artist, 0, 10, sxExact);
         renderCands(i, rows);
         const best = rows.find(r => SX.classify(SX.fields(r), t.title, t.artist, t.dur, RELEASE.year) === 'best');
         const bestIsrc = best && SX.fields(best).isrc;
         if (bestIsrc) {
-          matched++;
+          _sxMatched++;
           // autofill the input only when it's empty AND the match is a NEW isrc
-          if (!t.pending && !t.existing.includes(bestIsrc)) { setPending(i, bestIsrc, true, 'SoundExchange'); filled++; }
+          if (!t.pending && !t.existing.includes(bestIsrc)) { setPending(i, bestIsrc, true, 'SoundExchange'); _sxFilled++; }
         }
         Log.info('SX #' + (t.number || t.trackPos) + ' "' + t.title + '": ' + rows.length + ' result(s)' +
           (bestIsrc ? ', best ' + bestIsrc + (t.existing.includes(bestIsrc) ? ' (already in MB)' : '') : ', no confident match'));
@@ -1572,14 +1623,23 @@
         renderCands(i, []);
         Log.err('SX #' + (t.number || t.trackPos) + ' "' + t.title + '" failed: ' + e.message);
       }
-      done++;
+      n++;
       updateSummary();
-      if (done < todo.length) await sleep(BATCH_DELAY);
+      if (n < batch.length) await sleep(BATCH_DELAY);
     }
-    progEl.textContent = 'SoundExchange done — ' + matched + ' matched, ' + filled + ' filled' +
-      (todo.length < tracks.length ? ' (' + (tracks.length - todo.length) + ' already had ISRCs)' : '');
-    Log.info('SoundExchange done — ' + matched + ' matched, ' + filled + ' newly filled');
+    _sxCursor += batch.length;
+    const remaining = _sxTodo.length - _sxCursor;
+    if (remaining > 0) {
+      _sxTodo.slice(_sxCursor).forEach(i => sxPlaceholder(i, remaining));
+      progEl.textContent = 'SoundExchange ' + _sxCursor + '/' + _sxTodo.length + ' — ' +
+        remaining + ' not loaded (click a row to search the next ' + Math.min(SX_BATCH_LIMIT, remaining) + ')';
+      Log.info('SoundExchange: paused at ' + _sxCursor + '/' + _sxTodo.length + ' — ' + remaining + ' awaiting a click to continue');
+    } else {
+      progEl.textContent = 'SoundExchange done — ' + _sxMatched + ' matched, ' + _sxFilled + ' filled';
+      Log.info('SoundExchange done — ' + _sxMatched + ' matched, ' + _sxFilled + ' newly filled');
+    }
     btn.disabled = false;
+    _sxRunning = false;
   }
 
   /* ── streaming-source import (Deezer / Spotify) ── */

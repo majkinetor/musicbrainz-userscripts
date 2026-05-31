@@ -25,7 +25,7 @@ submitted.
 
 | Button | Source | Auth | Notes |
 | --- | --- | --- | --- |
-| **⟳ SoundExchange** | [SoundExchange](https://isrc.soundexchange.com/) | none | Searches every track by title/artist, shows candidate ISRCs per row, auto-fills confident matches into empty fields. Ported from `magicisrc_soundexchange`. |
+| **⟳ SoundExchange** | [SoundExchange](https://isrc.soundexchange.com/) | none | Searches each track by title/artist, shows candidate ISRCs per row, auto-fills confident matches into empty fields. Searches are capped at **30 at a time** so SoundExchange doesn't block us — remaining tracks show a *"Not searched — click to load the next 30"* message; click any one to continue. Ported from `magicisrc_soundexchange`. |
 | **Deezer** | `api.deezer.com` | none | Enabled when the release has a Deezer album relationship. Fetches each track's ISRC and maps by disc/position (title fallback). |
 | **Spotify** | `isrchunt.com` | none | Enabled when the release has a Spotify album relationship. Delegates to ISRC Hunt (which does the Spotify lookup server-side) and scrapes the ISRCs from its result page — no Spotify token, login, or tab. (Direct Spotify access needs Premium and is heavily bot-blocked.) |
 
@@ -34,7 +34,7 @@ Source buttons only fill **empty** fields and never touch existing ISRCs.
 ### Per-track helpers
 
 - **+1** — fill with the previous track's ISRC incremented by one.
-- Click any SoundExchange candidate to use it.
+- Click any SoundExchange candidate to use it, or **⚙ refine search** to open a panel where you can tweak the title/artist/release + exact toggles. The panel has a **Search on SoundExchange ↗** link that runs the same query on the SoundExchange website, and closes with **Esc** / click-outside.
 - Track titles link to the MB recording. **Any** value set in a field — typed, **+1**, or imported from Deezer / Spotify / SoundExchange — is verified on SoundExchange inline (cached) with the field-level match highlighting below. ISRCs duplicated across different recordings are flagged pink.
 
 #### Match checks & highlighting
