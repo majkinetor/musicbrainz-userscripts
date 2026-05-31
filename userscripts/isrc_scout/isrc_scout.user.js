@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.180422
+// @version      2026.5.31.180708
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -80,7 +80,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.180422';
+  const SCRIPT_VERSION = '2026.5.31.180708';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -313,6 +313,18 @@
     .ii-tbtn.primary { background: #198754; color: #fff; border-color: #198754; }
     .ii-tbtn.primary:hover { background: #157347; }
     .ii-tbtn.ghost { border-color: transparent; }
+    .ii-split { display: inline-flex; }
+    .ii-split .ii-tbtn { border-radius: 0; }
+    .ii-split .ii-tbtn:first-child { border-top-left-radius: 5px; border-bottom-left-radius: 5px; }
+    .ii-split .ii-caret { border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-left: none; padding: 4px 7px; font-size: 9px; }
+    .ii-srcmenu { display: none; position: fixed; z-index: 1000001; background: #fff; border: 1px solid #ced4da;
+      border-radius: 8px; box-shadow: 0 8px 28px rgba(0,0,0,.2); padding: 11px; width: 370px; box-sizing: border-box; }
+    .ii-srcmenu.open { display: block; }
+    .ii-srcmenu-t { font-size: 11.5px; color: #495057; margin-bottom: 7px; }
+    .ii-srcmenu-t b { color: #212529; }
+    .ii-srcmenu-row { display: flex; gap: 6px; }
+    .ii-srcmenu-row input { flex: 1; min-width: 0; padding: 6px 9px; border: 1px solid #ced4da; border-radius: 6px; font-size: 12px; }
+    .ii-srcmenu-row input:focus { outline: none; border-color: #6f42c1; }
     .ii-tspacer { flex: 1; }
     .ii-prog { font-size: 11px; color: #6c757d; min-width: 0; }
 
@@ -975,11 +987,19 @@
             <label><input type="checkbox" id="ii-ex-release">exact release</label>
           </span>
         </span>
-        <button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from the linked Deezer album">Deezer</button>
-        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album">Spotify</button>
+        <span class="ii-split"><button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from the linked Deezer album">Deezer</button><button class="ii-tbtn dz ii-caret" id="ii-dz-menu" title="More — import from a custom Deezer URL">▾</button></span>
+        <span class="ii-split"><button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album">Spotify</button><button class="ii-tbtn sp ii-caret" id="ii-sp-menu" title="More — import from a custom Spotify URL">▾</button></span>
         <span class="ii-prog" id="ii-prog"></span>
         <span class="ii-tspacer"></span>
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear entered</button>
+      </div>
+
+      <div id="ii-src-menu" class="ii-srcmenu">
+        <div class="ii-srcmenu-t">Import from a custom <b id="ii-src-label">Deezer</b> album URL</div>
+        <div class="ii-srcmenu-row">
+          <input type="text" id="ii-src-url" placeholder="Paste album URL…" autocomplete="off">
+          <button class="ii-tbtn primary" id="ii-src-go">Import</button>
+        </div>
       </div>
 
       <div id="ii-body">
@@ -1036,6 +1056,17 @@
 
     modal.querySelector('#ii-dz-all').addEventListener('click', runDeezer);
     modal.querySelector('#ii-sp-all').addEventListener('click', runSpotify);
+    modal.querySelector('#ii-dz-menu').addEventListener('click', e => toggleSrcMenu('Deezer', e.currentTarget));
+    modal.querySelector('#ii-sp-menu').addEventListener('click', e => toggleSrcMenu('Spotify', e.currentTarget));
+    modal.querySelector('#ii-src-go').addEventListener('click', submitSrcMenu);
+    modal.querySelector('#ii-src-url').addEventListener('keydown', e => { if (e.key === 'Enter') submitSrcMenu(); });
+    // close the custom-URL menu on click-outside
+    document.addEventListener('mousedown', e => {
+      const menu = modal.querySelector('#ii-src-menu');
+      if (!menu || !menu.classList.contains('open')) return;
+      if (menu.contains(e.target) || (e.target.closest && e.target.closest('.ii-caret'))) return;
+      menu.classList.remove('open');
+    });
     submitBtn.addEventListener('click', doSubmit);
 
     // delete-existing wiring (checkboxes are delegated)
@@ -1835,6 +1866,45 @@
     Log.info('Spotify: importing album ' + RELEASE.spotifyId);
     await runStreamingSource('Spotify', RELEASE.spotifyId, fetchSpotify);
     btn.disabled = false;
+  }
+
+  /* ── custom-URL menu (Deezer / Spotify "▾") — import from a pasted album URL,
+        even when the release has no such link ── */
+  let _srcMenuSource = null;
+  function toggleSrcMenu(source, anchor) {
+    const menu = modal.querySelector('#ii-src-menu');
+    if (menu.classList.contains('open') && _srcMenuSource === source) { menu.classList.remove('open'); return; }
+    _srcMenuSource = source;
+    modal.querySelector('#ii-src-label').textContent = source;
+    const url = modal.querySelector('#ii-src-url');
+    url.value = '';
+    url.placeholder = source === 'Deezer'
+      ? 'https://www.deezer.com/album/123…  (or an album id)'
+      : 'https://open.spotify.com/album/…  (or an album id)';
+    const r = anchor.getBoundingClientRect();
+    menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 386)) + 'px';
+    menu.style.top = (r.bottom + 4) + 'px';
+    menu.classList.add('open');
+    setTimeout(() => url.focus(), 0);
+  }
+  async function submitSrcMenu() {
+    const source = _srcMenuSource;
+    const input = modal.querySelector('#ii-src-url').value;
+    modal.querySelector('#ii-src-menu').classList.remove('open');
+    if (!source) return;
+    const id = parseStreamingId(source, input);
+    if (!id) { toast('Couldn\'t find a ' + source + ' album id in that URL', 'err'); Log.warn(source + ': unparseable URL "' + input + '"'); return; }
+    Log.info(source + ': importing custom album ' + id);
+    await runStreamingSource(source, id, source === 'Deezer' ? fetchDeezer : fetchSpotify);
+  }
+  function parseStreamingId(source, input) {
+    const s = String(input || '').trim();
+    if (source === 'Deezer') {
+      const m = s.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/);
+      return m ? m[1] : (/^\d+$/.test(s) ? s : null);
+    }
+    let m = s.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/) || s.match(/spotify:album:([A-Za-z0-9]+)/);
+    return m ? m[1] : (/^[A-Za-z0-9]{18,30}$/.test(s) ? s : null);
   }
 
   /* ── OAuth UI handlers ── */

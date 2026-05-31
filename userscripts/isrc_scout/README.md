@@ -31,6 +31,10 @@ submitted.
 
 Source buttons only fill **empty** fields and never touch existing ISRCs.
 
+The **Deezer** and **Spotify** buttons each have a **▾** menu to *import from a custom album URL* —
+paste any Deezer/Spotify album URL (or bare id) to import from it, even when the release has no such
+link.
+
 ### Per-track helpers
 
 - **+1** — fill with the previous track's ISRC incremented by one.
