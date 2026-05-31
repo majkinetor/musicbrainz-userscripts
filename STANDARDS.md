@@ -6,7 +6,7 @@ New standards arrive when the maintainer prefixes a chat message with `standard:
 
 For project-specific decisions (e.g. "MB's `[no artist]` MBID is `eec63d3c-…`"), use the per-project `dev/DECISIONS.md` log, not this file.
 
-Each numbered section also carries a stable short anchor (`#standard-1` … `#standard-9`) so links like `STANDARDS.md#standard-9` keep working even when the section title is reworded.
+Each numbered section also carries a stable short anchor (`#standard-1` … `#standard-10`) so links like `STANDARDS.md#standard-10` keep working even when the section title is reworded.
 
 ---
 
@@ -144,3 +144,17 @@ Both header anchors (`## My Section` → `#my-section`) and explicit `<a id="…
 **Don't hard-wrap the prose** in long-form markdown blocks like this one — let the renderer reflow naturally. Hard wraps look like manual line breaks in raw view and are a maintenance burden when the text edits in place. (Code blocks, tables, and lists still wrap where the grammar requires.)
 
 The goal is *zero-friction verification*: every claim that names a thing carries its own evidence trail.
+
+<a id="standard-10"></a>
+
+## 10. Install links pin to a commit, not a branch
+
+Userscript install / raw URLs shared in chat or on GitHub must reference an **immutable commit SHA**, never a moving branch like `main`. A pinned link always resolves to the exact reviewed code, so a later push can't silently change what a shared link installs.
+
+Format (combines with the `@version` install-link convention — the version is parsed from that pinned file):
+
+```markdown
+[Install @<version>](https://github.com/<org>/<repo>/raw/<full-commit-sha>/<path>.user.js)
+```
+
+Get the SHA from the commit that last touched the file: `git log -1 --format=%H -- <path>`. Tampermonkey/Violentmonkey still auto-detect the `.user.js` and offer install. Note a pinned link installs a **frozen** version — the manager records that same pinned URL for updates, so share a newer commit-pinned link to ship an update (scripts published to Greasy Fork carry their own rolling `@updateURL`).
