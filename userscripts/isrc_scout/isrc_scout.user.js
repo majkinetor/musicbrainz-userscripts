@@ -1,10 +1,11 @@
 // ==UserScript==
-// @name         MusicBrainz ISRC Import
+// @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.170134
-// @description  Self-contained ISRC editor for MusicBrainz release pages. Reads existing ISRCs, imports from SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
+// @version      2026.5.31.171329
+// @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
-// @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_import/README.md
+// @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
+// @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md
 // @match        https://musicbrainz.org/release/*
 // @match        https://beta.musicbrainz.org/release/*
 // @match        https://musicbrainz.org/oauth2/oob*
@@ -64,7 +65,7 @@
             document.title = '✓ Authorized — you can close this tab';
             if (document.body) document.body.innerHTML =
               '<div style="font:16px/1.5 system-ui;padding:3em;text-align:center;color:#212529">' +
-              '<h2 style="color:#198754">✓ Authorized</h2><p>ISRC Import captured the code. You can close this tab.</p></div>';
+              '<h2 style="color:#198754">✓ Authorized</h2><p>ISRC Scout captured the code. You can close this tab.</p></div>';
           } catch (e) {}
         }, 500);
       };
@@ -79,10 +80,10 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.170134';
-  const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_import';
-  const CLIENT   = 'isrc_import-' + SCRIPT_VERSION;
-  const UA       = 'MB-ISRC-Import/1.0';
+  const SCRIPT_VERSION = '2026.5.31.171329';
+  const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
+  const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
+  const UA       = 'MB-ISRC-Scout/1.0';
   const SX_API   = 'https://isrc-api.soundexchange.com/api/ext/recordings';
   const SX_HOME  = 'https://isrc.soundexchange.com/';
   const BATCH_DELAY = 650;
@@ -258,7 +259,7 @@
     };
   })();
   const shortUrl = (u) => String(u || '').replace(/^https?:\/\//, '').replace(/[?#].*$/, '').slice(0, 90);
-  Log.info('ISRC Import v' + SCRIPT_VERSION + ' — ' + MB_ROOT);
+  Log.info('ISRC Scout v' + SCRIPT_VERSION + ' — ' + MB_ROOT);
 
   /* ═══════════════════════════════════════════════════════════════════════
      STYLES
@@ -291,6 +292,7 @@
       background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0; }
     #ii-hdr h2 { font-size: 15px; font-weight: 700; margin: 0; flex: 1; }
     #ii-hdr h2 em { color: #6f42c1; font-style: normal; }
+    #ii-hdr h2 .ii-logo { vertical-align: -5px; }
     #ii-hdr .ii-sub { font-size: 11px; color: #6c757d; font-weight: 400; margin-left: 6px; }
     #ii-close { background: none; border: none; font-size: 20px; color: #6c757d; cursor: pointer; line-height: 1; }
     #ii-close:hover { color: #212529; }
@@ -832,7 +834,7 @@
   function noteHeader() {
     let s = {};
     try { if (typeof GM_info !== 'undefined' && GM_info.script) s = GM_info.script; } catch (e) {}
-    const name = s.name || 'MusicBrainz ISRC Import';
+    const name = s.name || 'ISRC Scout';
     const version = s.version || SCRIPT_VERSION;
     const author = s.author || 'majkinetor';
     const homepage = s.homepageURL || s.homepage || SCRIPT_URL;
@@ -881,7 +883,7 @@
     modal.addEventListener('click', e => e.stopPropagation());
     modal.innerHTML = `
       <div id="ii-hdr">
-        <h2>🎵 <em>ISRC Import</em><span class="ii-sub" id="ii-rel-sub"></span></h2>
+        <h2><svg class="ii-logo" width="22" height="22" viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/><g fill="none" stroke="#6f42c1" stroke-width="7"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="5" stroke="#b9a3e8"/><circle cx="64" cy="64" r="13" stroke-width="5" stroke="#b9a3e8"/></g><line x1="64" y1="64" x2="64" y2="24" stroke="#6f42c1" stroke-width="7" stroke-linecap="round"/><circle cx="86" cy="50" r="8" fill="#4b2e83"/></svg> <em>ISRC Scout</em><span class="ii-sub" id="ii-rel-sub"></span></h2>
         <a class="ii-tbtn" id="ii-history" target="_blank" rel="noopener"
            href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
            title="Your Add/Remove ISRC edits on MusicBrainz">🕓 My ISRC edits</a>

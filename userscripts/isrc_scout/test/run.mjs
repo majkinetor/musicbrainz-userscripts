@@ -1,4 +1,4 @@
-// Drive the isrc_import userscript against every release in test/fixtures.json
+// Drive the isrc_scout userscript against every release in test/fixtures.json
 // and verify it loads cleanly and renders the editor correctly.
 //
 // The script is injected with page.addInitScript() — i.e. at document-start,
@@ -32,7 +32,7 @@ import { createInterface }            from 'node:readline';
 
 // ──── locations ───────────────────────────────────────────────────────────
 const HERE         = dirname(fileURLToPath(import.meta.url));
-const SCRIPT_PATH  = resolve(HERE, '..', 'isrc_import.user.js');
+const SCRIPT_PATH  = resolve(HERE, '..', 'isrc_scout.user.js');
 const FIXTURE_PATH = resolve(HERE, 'fixtures.json');
 const LOG_ROOT     = resolve(HERE, 'logs');
 // Shared repo-level Playwright profile (logged-in MB session), used by every harness.
@@ -120,14 +120,14 @@ const shim = `
                 .catch(() => { try { opts.onerror && opts.onerror({ status: 0, responseText: '' }); } catch (e) {} });
         };
         window.unsafeWindow = window;
-        window.GM_info = { script: { name: 'isrc_import (test)', version: 'test' }, scriptHandler: 'Playwright' };
+        window.GM_info = { script: { name: 'isrc_scout (test)', version: 'test' }, scriptHandler: 'Playwright' };
     })();
 `;
 
 // ──── ground truth straight from the MB web service ─────────────────────────
 async function groundTruth(mbid) {
     const resp = await context.request.get(`${WS2}release/${mbid}?inc=recordings+isrcs+url-rels&fmt=json`,
-        { headers: { 'Accept': 'application/json', 'User-Agent': 'isrc_import-test/1.0 (CI)' } });
+        { headers: { 'Accept': 'application/json', 'User-Agent': 'isrc_scout-test/1.0 (CI)' } });
     if (!resp.ok()) throw new Error(`WS2 ${resp.status()} for ${mbid}`);
     const data = await resp.json();
     let tracks = 0, isrcs = 0;
@@ -241,7 +241,7 @@ await context.close();
 
 // ──── top-level summary ─────────────────────────────────────────────────────
 const summary = [
-    `# ISRC Import test run ${runStamp}`, ``,
+    `# ISRC Scout test run ${runStamp}`, ``,
     `**Started:** \`${runStart.toISOString()}\`  `,
     `**Fixtures:** ${selected.length} / ${fixtures.length}  `,
     `**Finished:** \`${new Date().toISOString()}\`  `,

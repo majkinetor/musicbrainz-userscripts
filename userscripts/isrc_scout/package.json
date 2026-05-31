@@ -1,9 +1,9 @@
 {
-  "name": "isrc-import-userscript",
+  "name": "isrc-scout-userscript",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "ISRC Import — self-contained ISRC editor for MusicBrainz release pages",
+  "description": "ISRC Scout — self-contained ISRC editor for MusicBrainz release pages",
   "scripts": {
     "test":        "node test/run.mjs",
     "test:headed": "node test/run.mjs --headed"

@@ -1,4 +1,4 @@
-# ISRC Import
+# ISRC Scout
 
 Self-contained ISRC editor that lives **on the MusicBrainz release page** — no MagicISRC, no
 external editor. Reads the release's existing ISRCs, lets you fill in the missing ones from several
@@ -119,7 +119,7 @@ and renders correctly. The script is injected with `addInitScript` (i.e. at *doc
 the run via the `pageerror` capture.
 
 ```sh
-cd userscripts/isrc_import
+cd userscripts/isrc_scout
 pnpm install
 pnpm test                 # all fixtures, headless
 pnpm test -- --headed     # watch the browser
