@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.5.31.200127
+// @version      2026.6.1.175235
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md
@@ -326,7 +326,9 @@ if (!sidebar) return;
 const container = document.createElement('div');
 container.id = 'mb-pc-panel';
 container.className = 'online-search-box';
-container.style.cssText = 'margin-bottom: 12px; padding: 8px 6px; background: #FAF9F6; border: 1px solid #D8D8D8; border-radius: 6px; font-size: 13px; font-family: sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.05);';
+// min-width:0 + max-width + overflow:hidden so a long, no-wrap meta line (e.g. an
+// Apple Music licence string) can't stretch the panel — and the whole sidebar — wide.
+container.style.cssText = 'margin-bottom: 12px; padding: 8px 6px; background: #FAF9F6; border: 1px solid #D8D8D8; border-radius: 6px; font-size: 13px; font-family: sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.05); min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;';
 // MB's site CSS adds an external-link icon to every `target="_blank"` anchor
 // (`a[rel~="external"]::after` / similar). On the dark-themed sidebar it
 // renders as a missing-image red square next to each platform name. Suppress
@@ -397,14 +399,14 @@ container.innerHTML = `
 </div>
 <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px;">
   ${PROVIDER_ORDER.map(p => `
-  <div id="row-${p}" style="display: flex; flex-direction: column;">
+  <div id="row-${p}" style="display: flex; flex-direction: column; min-width: 0; overflow: hidden;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <span id="ico-${p}" class="pc-ico-slot" style="font-size: 11px; min-width: 14px; text-align: center; color: #888;">⚪</span>
       <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; font-size: 12px; flex-grow: 1;">${PROVIDER_NAME[p]}</a>
       <span id="master-${p}" class="pc-master-slot" style="font-size: 11px; display: inline-block; min-width: 14px; text-align: center; cursor: default;"></span>
       <span id="val-${p}" style="font-size: 12px; font-weight: bold; font-family: monospace; color: #777; min-width: 20px; text-align: right;">—</span>
     </div>
-    <div id="meta-${p}" style="font-size: 10px; color: #999; font-family: sans-serif; line-height: 1.2; padding-top: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+    <div id="meta-${p}" style="font-size: 10px; color: #999; font-family: sans-serif; line-height: 1.2; padding-top: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-width: 0;"></div>
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
@@ -472,6 +474,12 @@ document.body.appendChild(providerModal);
 const coverArt = sidebar.querySelector('.cover-art');
 if (coverArt) sidebar.insertBefore(container, coverArt);
 else sidebar.prepend(container);
+// Belt-and-suspenders: pin the panel to the sidebar's natural width *now* — measured
+// synchronously, before the async scans fill in long meta lines AND before the cover
+// art <img> finishes loading — so a content-sized sidebar can't later be stretched
+// wide by either. (Measuring later would risk capturing an already-widened sidebar.)
+const naturalW = sidebar.clientWidth;
+if (naturalW > 40) container.style.maxWidth = naturalW + 'px';
 
 const logPanel = document.getElementById('mb-finder-log-panel');
 const providerRows = Object.fromEntries(PROVIDER_ORDER.map(p => [p, document.getElementById(`row-${p}`)]));
