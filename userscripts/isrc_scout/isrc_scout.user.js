@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.5.31.232038
+// @version      2026.6.1.120816
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.5.31.232038';
+  const SCRIPT_VERSION = '2026.6.1.120816';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -1422,9 +1422,9 @@
         const t = RELEASE.tracks[idx];
         // skip if the field no longer holds this value (user changed it meanwhile)
         if (!t || !isValidIsrc(isrc) || normalizeIsrc(t.pending) !== normalizeIsrc(isrc)) continue;
+        const cached = !!_isrcLookupCache[isrc];   // primed SX rows → no request, no pacing/cap
         try { await lookupIsrc(idx, isrc); } catch (e) {}
-        _vq.done++;
-        if (_vq.items.length && _vq.done < SX_BATCH_LIMIT) await sleep(BATCH_DELAY);
+        if (!cached) { _vq.done++; if (_vq.items.length && _vq.done < SX_BATCH_LIMIT) await sleep(BATCH_DELAY); }
       }
     } finally {
       // always release the lock — a throw in here previously stalled the whole queue
@@ -1451,12 +1451,12 @@
     input.value = t.pending;
     input.dataset.autofill = '1';            // filled by a source — the on-input handler won't fire
     validateInput(input, t);
-    // verify whatever was just set (Deezer, Spotify, +1, bulk paste) against
-    // SoundExchange so every filled value gets the same match check (cached).
-    // Skip it for SoundExchange-sourced fills — the batch search already classified
-    // the candidate, so re-querying would just double our SX load. The check is
-    // routed through enqueueVerify so bulk imports stay serialized + capped at 30.
-    if (t.source !== 'SoundExchange' && isValidIsrc(t.pending)) {
+    // Verify whatever was just set (manual, +1, bulk, Deezer/Spotify, AND
+    // SoundExchange) so every filled value shows the match-check bullet. SX-sourced
+    // fills don't cost an extra request: renderCands / the panel prime _isrcLookupCache
+    // with the search row, so the by-ISRC lookup is served from cache. Routed through
+    // enqueueVerify so bulk imports stay serialized + capped.
+    if (isValidIsrc(t.pending)) {
       if (_deferVerify) { _deferredVerify.add(idx); const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; } }
       else enqueueVerify(idx, t.pending);
     } else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; } }
@@ -1693,6 +1693,9 @@
     const t = RELEASE.tracks[idx];
     if (!box) return;
     box.innerHTML = '';
+    // prime the by-ISRC lookup cache from these search rows, so when one is picked
+    // the verification bullet renders instantly (no extra SoundExchange request)
+    (rows || []).forEach(item => { const iso = normalizeIsrc(SX.fields(item).isrc); if (iso && !_isrcLookupCache[iso]) _isrcLookupCache[iso] = [item]; });
     (rows || []).slice(0, 5).forEach(item => {
       const f = SX.fields(item);
       const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.releaseYear);
@@ -1868,6 +1871,8 @@
     const t = RELEASE.tracks[idx];
     const resEl = sxPanel.querySelector('.ii-sxp-results');
     resEl.innerHTML = '';
+    // prime the by-ISRC cache so picking a result verifies instantly (no extra request)
+    rows.forEach(item => { const iso = normalizeIsrc(SX.fields(item).isrc); if (iso && !_isrcLookupCache[iso]) _isrcLookupCache[iso] = [item]; });
     rows.forEach(item => {
       const f = SX.fields(item);
       const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.releaseYear);
