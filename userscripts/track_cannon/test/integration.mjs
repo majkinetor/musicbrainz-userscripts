@@ -97,12 +97,11 @@ async function main() {
     const dup = Object.values(byCred).find(a => a.length >= 2);
     if (!dup) return { ok: false };
     const ent = dup[0].candidates[0]; tc.pickArtist(dup[0], ent);
-    return { ok: true, cred: dup[0].creditedAs, count: dup.length, allSame: dup.every(s => s.gid === ent.gid && s.status === 'user') };
+    return { ok: true, cred: dup[0].creditedAs, count: dup.length, allSame: dup.every(s => s.gid === ent.gid && s.committed) };
   });
 
-  await page.locator('#tc-panel [data-act="apply"]').click();
-  await page.waitForTimeout(1000);
-
+  // no apply phase — confident matches auto-commit on load and picks commit immediately
+  await page.waitForTimeout(800);
   const report = await page.evaluate(() => {
     const tc = window.__trackCannon;
     const after = tc.readTracklist();

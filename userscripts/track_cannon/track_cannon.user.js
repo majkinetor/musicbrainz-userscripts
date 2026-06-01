@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.1.225321
+// @version      2026.6.1.233949
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -46,7 +46,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { try { return Object.assign({ replace: false, autoRun: false, colWidths: {}, applyMode: 'all' }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { replace: false, autoRun: false, colWidths: {}, applyMode: 'all' }; } }
+  function loadSettings() { try { return Object.assign({ replace: true, autoRun: false, colWidths: {}, applyMode: 'all' }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { replace: true, autoRun: false, colWidths: {}, applyMode: 'all' }; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -143,37 +143,36 @@
       const slots = [];
       for (let i = 0; i < t.names.length; i++) {
         const n = t.names[i];
-        if (n.artistGid) { slots.push({ creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'set', entity: null, gid: n.artistGid, name: n.artistName, candidates: [], accept: false }); }
+        if (n.artistGid) { slots.push({ creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'set', entity: null, gid: n.artistGid, name: n.artistName, candidates: [], committed: true }); }
         else {
           const m = await matchSlot(n.creditedAs, sib && sib[i]);
           const status = m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none';
-          slots.push({ creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status, entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, accept: status === 'rg' || status === 'high' });
+          slots.push({ creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status, entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false });
         }
       }
-      tracks.push({ mi: t.mi, ti: t.ti, number: t.number, title: t.title, length: t.length, slots });
+      const te = { mi: t.mi, ti: t.ti, number: t.number, title: t.title, length: t.length, slots };
+      te.slots.forEach(s => { s._entry = te; });
+      tracks.push(te);
       if (t.names.some(n => !n.artistGid)) { done++; if (onProgress) onProgress(done, todo.length); }
     }
     return { tracks };
   }
 
-  /* ── apply / reset / structural ops ── */
-  function applyTrack(entry, which) {
-    const track = koTrack(entry.mi, entry.ti);
-    const live = liveNames(track);
-    let changed = false;
-    const names = entry.slots.map((s, i) => {
-      if (s.status === 'set') return live[i];
-      const take = which === 'confident' ? ((s.status === 'rg' || s.status === 'high') && (s.accept = true)) : s.accept;
-      if (take && s.entity) { changed = true; return { artist: s.entity, name: s.creditedAs, joinPhrase: s.joinPhrase }; }
-      return live[i];
+  /* ── live commit / reset / structural ops (no apply phase — every change writes through) ── */
+  // write a whole track's artist credit from its slots: committed slots use the picked entity,
+  // uncommitted ones stay as unresolved credited text.
+  function commitTrack(entry) {
+    const track = koTrack(entry.mi, entry.ti), live = liveNames(track);
+    track.artistCredit({
+      names: entry.slots.map((s, i) => {
+        if (s.status === 'set') { const a = (live[i] && u(live[i].artist)) || s.entity || { name: s.name || s.creditedAs }; return { artist: a, name: s.creditedAs, joinPhrase: s.joinPhrase }; }
+        if (s.committed && s.entity) return { artist: s.entity, name: s.creditedAs, joinPhrase: s.joinPhrase };
+        return { artist: { name: s.creditedAs }, name: s.creditedAs, joinPhrase: s.joinPhrase };
+      })
     });
-    if (changed) track.artistCredit({ names });
-    return changed;
   }
-  function refreshEntry(entry) {
-    const live = liveNames(koTrack(entry.mi, entry.ti));
-    entry.slots.forEach((s, i) => { const a = live[i] && u(live[i].artist); const gid = a ? u(a.gid) : null; if (gid) { s.status = 'set'; s.gid = gid; s.name = u(a.name); } });
-  }
+  // on load, immediately write the confident matches (RG/HIGH) — that's the "no apply phase" behaviour
+  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high') { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
   function resetTrack(entry) {
     const orig = ORIGINALS.get(entry.mi + ':' + entry.ti);
     if (orig) koTrack(entry.mi, entry.ti).artistCredit({ names: orig.map(o => ({ artist: o.artist, name: o.creditedAs, joinPhrase: o.joinPhrase })) });
@@ -197,24 +196,25 @@
   }
 
   /* ════════════════════════ UI ════════════════════════ */
-  const ICON = '<svg class="tc-ico" viewBox="0 0 34 28" width="24" height="20" aria-hidden="true" style="vertical-align:-5px">' +
-    '<path d="M17 16 L19.6 19.6 L21.8 19.6" fill="none" stroke="#3d2470" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
-    '<circle cx="17.5" cy="13" r="3.5" fill="#5f3ec0"/><circle cx="21.4" cy="14" r="1.5" fill="#3d2470"/>' +
-    '<polygon points="6.99,4.01 19.43,11.34 16.57,15.66 5.01,6.99" fill="#5f3ec0"/>' +
-    '<line x1="5.01" y1="6.99" x2="6.99" y2="4.01" stroke="#2a1a52" stroke-width="1.7"/>' +
-    '<circle cx="12.5" cy="18.5" r="5.4" fill="#3d2470"/><circle cx="12.5" cy="18.5" r="4.3" fill="none" stroke="#fff" stroke-width="0.9"/>' +
-    '<g stroke="#fff" stroke-width="0.8"><line x1="7.3" y1="18.5" x2="17.7" y2="18.5"/><line x1="12.5" y1="13.3" x2="12.5" y2="23.7"/><line x1="9.53" y1="15.53" x2="15.47" y2="21.47"/><line x1="9.53" y1="21.47" x2="15.47" y2="15.53"/></g>' +
-    '<circle cx="12.5" cy="18.5" r="1.5" fill="#fff"/>' +
-    '<g fill="#e0a800"><circle cx="4.4" cy="4.6" r="1.4"/><circle cx="2.2" cy="2.6" r="0.8"/></g>' +
-    '<text x="0" y="6" font-size="10" font-weight="bold" fill="#1f8a4c" font-family="Arial">♪</text></svg>';
+  const ICON = '<svg class="tc-ico" viewBox="0 0 36 30" width="26" height="22" aria-hidden="true" style="vertical-align:-6px">' +
+    '<path d="M6 16 C6 11 9 10 13 10 L24 10 L24 18 L13 18 C9 18 6 17 6 16 Z" fill="#5f3ec0"/>' +
+    '<polygon points="24,8.5 30,7 30,21 24,19.5" fill="#5f3ec0"/>' +
+    '<line x1="30" y1="7" x2="30" y2="21" stroke="#2a1a52" stroke-width="1.8"/>' +
+    '<circle cx="13" cy="20.5" r="6" fill="#3d2470"/><circle cx="13" cy="20.5" r="4.7" fill="none" stroke="#fff" stroke-width="1"/>' +
+    '<g stroke="#fff" stroke-width="0.9"><line x1="7.2" y1="20.5" x2="18.8" y2="20.5"/><line x1="13" y1="14.7" x2="13" y2="26.3"/><line x1="8.9" y1="16.4" x2="17.1" y2="24.6"/><line x1="8.9" y1="24.6" x2="17.1" y2="16.4"/></g>' +
+    '<circle cx="13" cy="20.5" r="1.7" fill="#fff"/>' +
+    '<text x="31" y="9" font-size="9" font-weight="bold" fill="#1f8a4c" font-family="Arial">♪</text></svg>';
+
+  // outline person / group type icons (use currentColor so they take the link colour)
+  const PERSON_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.4"/><path d="M5 20 C5 14.5 19 14.5 19 20"/></svg>';
+  const GROUP_SVG = '<svg viewBox="0 0 24 24" width="17" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="9" r="2.7"/><circle cx="15.5" cy="9" r="2.7"/><path d="M3 19 C3 15 11 15 11 19"/><path d="M13 19 C13 15 21 15 21 19"/></svg>';
+  const typeSvg = c => { const t = ((c && c.typeName) || '').toLowerCase(); return (t === 'group' || t === 'orchestra' || t === 'choir') ? GROUP_SVG : PERSON_SVG; };
+  const JOINS = [' & ', ', ', ' feat. ', ' ft. ', ' featuring ', ' and ', ' vs. ', ' x ', ' with ', ' / ', ' · ', ' presents '];
 
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
-  const COLS = [{ k: 'mv', w: 34, label: '' }, { k: 'num', w: 26, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 340, label: 'Artist' }, { k: 'len', w: 56, label: 'Length' }, { k: 'x', w: 26, label: '' }];
-  const TYPE_ICON = { person: '👤', group: '👥', orchestra: '🎻', choir: '🎶', character: '🎭', other: '🎤' };
-  const typeIcon = c => TYPE_ICON[(c.typeName || '').toLowerCase()] || (c.typeName ? '🎤' : '·');
+  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 26, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 360, label: 'Artist' }, { k: 'len', w: 56, label: 'Length' }, { k: 'x', w: 26, label: '' }];
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-  const artistLink = (gid, label) => gid ? `<a href="${ORIGIN}/artist/${gid}" target="_blank" rel="noopener" title="open artist page">${esc(label)} ↗</a>` : esc(label);
   function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
   const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s.toUpperCase()}</span>`;
 
@@ -231,29 +231,34 @@
 
     .tc-mirror{table-layout:fixed;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff}
     .tc-mirror th{position:relative;background:#e8e8e8;border-bottom:2px solid #ccc;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
-    .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:3px 6px;vertical-align:top;overflow:hidden}
+    .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:3px 6px;vertical-align:middle;overflow:hidden}
     .tc-mirror .tc-resizer{position:absolute;right:0;top:0;height:100%;width:7px;cursor:col-resize}
     .tc-mirror .c-num{text-align:right;color:#888;font-variant-numeric:tabular-nums}
-    .tc-mirror .c-mv{white-space:nowrap}
-    .tc-mirror input.t-title,.tc-mirror input.t-len{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:2px}
+    .tc-mirror .c-mv{white-space:nowrap;text-align:center}
+    .tc-mirror input.t-title,.tc-mirror input.t-len{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:3px 2px}
     .tc-mirror input.t-len{text-align:right}
     .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus{border-color:#bbb;background:#fff}
-    .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:13px;padding:0 1px}.tc-mirror .mv.rv{color:#888}
+    .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
     .tc-mirror .rm{cursor:pointer;color:#c0392b;font-weight:bold;border:none;background:none;font-size:15px}
-    .tc-aslot{display:flex;align-items:center;gap:3px;margin:2px 0;min-width:0}
-    .tc-aslot .join{color:#999;font-style:italic;font-size:11px;flex:none}
-    .tc-aslot .cred{color:#888;font-size:11px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none}
-    .tc-aslot .slotrev{cursor:pointer;color:#aaa;border:none;background:none;font-size:12px;padding:0 1px}.tc-aslot .slotrev:hover{color:#6f42c1}
-    .tc-combo{display:flex;align-items:center;gap:2px;flex:1;min-width:46px}
-    .tc-combo .tic{flex:none;font-size:12px;width:15px;text-align:center}
-    .tc-acinput{flex:1;min-width:40px;font:12px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px;background:#fff}
-    .tc-acinput.empty{color:#a33;font-style:italic}
-    .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:280px;overflow:auto;font:12px Arial;min-width:200px}
+    /* one artist = two aligned rows: a credited-as title, then the field line */
+    .tc-aslot{padding:3px 0;border-top:1px solid rgba(0,0,0,.06)}
+    .tc-aslot:first-child{border-top:none}
+    .tc-cred{display:block;width:100%;box-sizing:border-box;font:11px Arial;color:#777;border:1px solid transparent;background:transparent;padding:1px 5px;margin-bottom:2px}
+    .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
+    .tc-field{display:flex;align-items:center;gap:5px}
+    .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
+    .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
+    .tc-acinput{flex:1;min-width:50px;box-sizing:border-box;font:12px Arial;padding:3px 5px;border:1px solid #bbb;border-radius:3px;background:#fff}
+    .tc-acinput.empty{color:#a3361f}
+    .tc-rev{flex:none;cursor:pointer;color:#b3a9cf;border:none;background:none;font-size:13px;padding:0 1px}.tc-rev:hover{color:#6f42c1}
+    .tc-join{flex:none;width:74px;box-sizing:border-box;font:11px Arial;padding:2px 3px;border:1px solid #d2cae8;border-radius:3px;background:#faf9ff;color:#555}
+    .tc-join-sp{flex:none;width:74px}
+    .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
-    .tc-acrow .tic{flex:none;width:16px;text-align:center;font-size:13px}
+    .tc-acrow .tic{flex:none;width:17px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0}
     .tc-acrow .nm{font-weight:600;color:#222}.tc-acrow .cmt{color:#888;font-size:11px}
-    .tc-acrow .none{color:#888;font-style:italic}
+    .tc-acrow.none{color:#888;font-style:italic;cursor:default}.tc-acrow.create{color:#1f8a4c;font-weight:600;border-top:1px solid #eee}
     .tc-toolbar{padding:5px 4px;font-size:12px;color:#555;display:flex;align-items:center;gap:6px}
     .tc-toolbar select{font:12px Arial;padding:1px}
     .tc-medhdr{background:#dfd7f0;font-weight:bold;color:#4b3a82;padding:4px 8px}
@@ -279,7 +284,11 @@
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;background:#5f3ec0;color:#fff;border:none;border-radius:20px;padding:8px 14px;font:bold 13px Arial;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
     #tc-btn,#tc-gear-btn{vertical-align:middle}
   `;
-  function style() { if (document.getElementById('tc-css')) return; const s = document.createElement('style'); s.id = 'tc-css'; s.textContent = css; document.head.appendChild(s); }
+  function style() {
+    if (document.getElementById('tc-css')) return;
+    const s = document.createElement('style'); s.id = 'tc-css'; s.textContent = css; document.head.appendChild(s);
+    const dl = document.createElement('datalist'); dl.id = 'tc-joins'; dl.innerHTML = JOINS.map(j => `<option value="${esc(j)}">`).join(''); document.body.appendChild(dl);
+  }
 
   /* ── settings popover (one place; reachable from the Canon interface) ── */
   function openSettings(anchor) {
@@ -287,9 +296,9 @@
     s = document.createElement('div'); s.id = 'tc-settings';
     s.innerHTML = `<h4>${ICON} Track Cannon — settings</h4>
       <label><input type="checkbox" id="tc-s-replace"> <span>Replace MB track list</span></label>
-      <div class="hint">On: the Track Cannon table takes the place of the integrated tracklist. Off: the same table in a floating window.</div>
-      <label><input type="checkbox" id="tc-s-auto"> <span>Run automatically on the Tracklist tab</span></label>
-      <div class="hint">Matches as soon as you open the Tracklist tab (not before — the release group may not be set yet). Nothing is applied until you click.</div>`;
+      <div class="hint">On: the Track Cannon table takes the place of the integrated tracklist. Off: the same table in a floating window you open with the button.</div>
+      <label><input type="checkbox" id="tc-s-auto"> <span>Auto-open the floating window on the Tracklist tab</span></label>
+      <div class="hint">Floating mode only. Opens the window when you reach the Tracklist tab (replace mode is always on).</div>`;
     document.body.appendChild(s);
     const r = anchor ? anchor.getBoundingClientRect() : { left: 60, bottom: 80 };
     s.style.left = Math.min(r.left, window.innerWidth - 360) + 'px'; s.style.top = (r.bottom + 6) + 'px';
@@ -337,74 +346,82 @@
       };
     });
   }
-  // when the user picks an artist for a credit, optionally copy it to every other track
-  // that has the same credited text (the "all" mode above the table)
-  function propagate(srcSlot, c) {
-    if ((SETTINGS.applyMode || 'all') !== 'all') return;
-    const key = fold(srcSlot.creditedAs); let n = 0;
-    MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s === srcSlot || s.status === 'set' || fold(s.creditedAs) !== key) return; s.entity = c; s.gid = c.gid; s.name = c.name; s.status = 'user'; s.accept = true; n++; }));
-    if (n) Log.info('propagated', c.name, '→', n, 'slot(s) credited', JSON.stringify(srcSlot.creditedAs));
+  // picking an artist writes through immediately; in "all" mode it also copies to every other
+  // track credited to the same text, committing each.
+  function pickArtist(slot, c) {
+    slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.committed = true;
+    commitTrack(slot._entry);
+    if ((SETTINGS.applyMode || 'all') === 'all') {
+      const key = fold(slot.creditedAs); const touched = new Set();
+      MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s === slot || s.status === 'set' || fold(s.creditedAs) !== key) return; s.entity = c; s.gid = c.gid; s.name = c.name; s.status = 'user'; s.committed = true; touched.add(s._entry); }));
+      touched.forEach(commitTrack);
+      if (touched.size) Log.info('propagated', c.name, '→', touched.size, 'other track(s) credited', JSON.stringify(slot.creditedAs));
+    }
+    rerender();
   }
-  function pickArtist(slot, c) { slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.accept = true; propagate(slot, c); rerender(); }
-
   async function revertSlot(entry, i) {
     const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig || !orig[i]) return;
-    const track = koTrack(entry.mi, entry.ti), live = liveNames(track);
-    track.artistCredit({ names: entry.slots.map((s, j) => j === i ? { artist: orig[i].artist, name: orig[i].creditedAs, joinPhrase: orig[i].joinPhrase } : (live[j] || { artist: s.entity, name: s.creditedAs, joinPhrase: s.joinPhrase })) });
-    const slot = entry.slots[i]; slot.creditedAs = orig[i].creditedAs; slot.joinPhrase = orig[i].joinPhrase;
+    const slot = entry.slots[i];
+    slot.creditedAs = orig[i].creditedAs; slot.joinPhrase = orig[i].joinPhrase;
     const a = u(orig[i].artist) || {}, gid = u(a.gid);
-    if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: null, candidates: [], accept: false });
-    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const m = await matchSlot(orig[i].creditedAs, sib && sib[i]); Object.assign(slot, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, accept: m.source === 'rg' || m.confidence === 'high' }); }
-    Log.info('reverted slot', i, 'of track', entry.number); rerender();
+    if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: { gid, name: u(a.name), id: u(a.id) }, candidates: [], committed: true });
+    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const m = await matchSlot(orig[i].creditedAs, sib && sib[i]); Object.assign(slot, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false }); }
+    commitTrack(entry); Log.info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
-  // editable autocomplete — type to search MB like the integrated field
-  function combo(entry, slot) {
-    const wrap = document.createElement('span'); wrap.className = 'tc-combo';
-    const tic = document.createElement('span'); tic.className = 'tic'; tic.textContent = slot.entity ? typeIcon(slot.entity) : (slot.status === 'set' ? '🎤' : '·'); wrap.appendChild(tic);
-    const inp = document.createElement('input'); inp.className = 'tc-acinput' + (slot.gid ? '' : ' empty'); inp.value = slot.name || slot.creditedAs || ''; inp.title = inp.value; inp.placeholder = 'search artist…'; wrap.appendChild(inp);
+  // editable autocomplete input (type to search MB); the type icon + revert live outside it
+  function comboInput(entry, slot) {
+    const inp = document.createElement('input'); inp.className = 'tc-acinput' + (slot.gid ? '' : ' empty');
+    inp.value = slot.name || slot.creditedAs || ''; inp.title = inp.value; inp.placeholder = 'search artist…';
     let pop = null, list = [], hi = -1, seq = 0;
     const close = () => { if (pop) { pop.remove(); pop = null; hi = -1; } };
     const choose = c => { close(); pickArtist(slot, c); };
     const draw = arr => {
       close(); list = arr; pop = document.createElement('div'); pop.className = 'tc-acpop';
-      pop.innerHTML = arr.length ? arr.map((c, i) => `<div class="tc-acrow" data-i="${i}"><span class="tic">${typeIcon(c)}</span><span class="nm">${esc(c.name)}</span>${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('')
-        : `<div class="tc-acrow none">no matches — type to search, or + to create</div>`;
-      document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(200, r.width) + 'px';
+      const q = inp.value.trim() || slot.creditedAs;
+      pop.innerHTML = (arr.length ? arr.map((c, i) => `<div class="tc-acrow" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('') : `<div class="tc-acrow none">no matches</div>`)
+        + `<div class="tc-acrow create" data-create="1"><span class="tic">＋</span><span class="nm">Create “${esc(q)}” on MusicBrainz…</span></div>`;
+      document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(210, r.width) + 'px';
       [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
+      pop.querySelector('[data-create]').onmousedown = e => { e.preventDefault(); close(); createArtist(inp.value.trim() || slot.creditedAs); };
     };
     inp.onfocus = () => { inp.select(); draw(slot.candidates && slot.candidates.length ? slot.candidates : []); };
-    let tmr; inp.oninput = () => { clearTimeout(tmr); const q = inp.value; const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(q); if (my === seq) draw(res); }, 250); };
+    let tmr; inp.oninput = () => { clearTimeout(tmr); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq) draw(res); }, 250); };
     inp.onkeydown = e => {
       if (e.key === 'Escape') { close(); inp.blur(); }
-      else if (e.key === 'ArrowDown' && pop) { hi = Math.min(list.length - 1, hi + 1); [...pop.children].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
-      else if (e.key === 'ArrowUp' && pop) { hi = Math.max(0, hi - 1); [...pop.children].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
+      else if (e.key === 'ArrowDown' && pop) { hi = Math.min(list.length - 1, hi + 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
+      else if (e.key === 'ArrowUp' && pop) { hi = Math.max(0, hi - 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
       else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) choose(c); }
     };
-    inp.onblur = () => setTimeout(close, 160);
-    return wrap;
+    inp.onblur = () => setTimeout(() => { close(); if (document.activeElement !== inp) inp.value = slot.name || slot.creditedAs || ''; }, 160);
+    return inp;
   }
 
+  // one artist = a credited-as title row + a field line (icon-link · search · revert · join)
   function slotEl(entry, s, idx) {
-    const slot = document.createElement('div'); slot.className = 'tc-aslot';
-    if (entry.slots.length > 1) slot.insertAdjacentHTML('beforeend', `<span class="join">${esc((s.joinPhrase || '').trim() || '·')}</span>`);
-    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!s.accept; cb.title = 'apply this slot'; cb.style.flex = 'none';
-    cb.onchange = () => { s.accept = cb.checked; }; slot.appendChild(cb);
-    if (s.creditedAs && !sameName(s.creditedAs, s.name)) slot.insertAdjacentHTML('beforeend', `<span class="cred" title="credited as “${esc(s.creditedAs)}”">${esc(s.creditedAs)}</span>`);
-    slot.appendChild(combo(entry, s));
-    if (s.gid) slot.insertAdjacentHTML('beforeend', `<a class="tc-icon" href="${ORIGIN}/artist/${s.gid}" target="_blank" rel="noopener" title="open artist page">↗</a>`);
-    const create = document.createElement('button'); create.className = 'tc-btn mini'; create.textContent = '+'; create.title = 'create “' + s.creditedAs + '” on MusicBrainz';
-    create.onclick = () => createArtist(s.creditedAs); slot.appendChild(create);
-    const rev = document.createElement('button'); rev.className = 'slotrev'; rev.textContent = '↺'; rev.title = 'revert this artist to the original';
-    rev.onclick = () => revertSlot(entry, idx); slot.appendChild(rev);
-    slot.insertAdjacentHTML('beforeend', badge(s.status));
-    return slot;
+    const block = document.createElement('div'); block.className = 'tc-aslot';
+    const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = s.creditedAs || ''; cred.placeholder = 'credited as…'; cred.title = 'credited-as text (what appears in the credit)';
+    cred.onchange = () => { s.creditedAs = cred.value; commitTrack(entry); };
+    block.appendChild(cred);
+    const line = document.createElement('div'); line.className = 'tc-field';
+    const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
+    if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
+    line.appendChild(ic);
+    line.appendChild(comboInput(entry, s));
+    const rev = document.createElement('button'); rev.className = 'tc-rev'; rev.textContent = '↺'; rev.title = 'revert this artist to the original'; rev.onclick = () => revertSlot(entry, idx); line.appendChild(rev);
+    if (idx < entry.slots.length - 1) {
+      const j = document.createElement('input'); j.className = 'tc-join'; j.setAttribute('list', 'tc-joins'); j.value = s.joinPhrase || ''; j.title = 'join phrase to the next artist';
+      j.onchange = () => { s.joinPhrase = j.value; commitTrack(entry); }; line.appendChild(j);
+    } else line.insertAdjacentHTML('beforeend', '<span class="tc-join-sp"></span>');
+    line.insertAdjacentHTML('beforeend', badge(s.status));
+    block.appendChild(line);
+    return block;
   }
   function fillRows(tbody) {
-    tbody.innerHTML = ''; let confident = 0, unresolved = 0, lastMi = -1; const multi = mediums().length > 1;
+    tbody.innerHTML = ''; let committed = 0, unresolved = 0, lastMi = -1; const multi = mediums().length > 1;
     MODEL.tracks.forEach(t => {
       if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
-      t.slots.forEach(s => { if (s.status !== 'set') { unresolved++; if (s.status === 'rg' || s.status === 'high') confident++; } });
+      t.slots.forEach(s => { if (s.status === 'set' || s.committed) committed++; else unresolved++; });
       const tr = document.createElement('tr'); tr.style.background = COLORS[rowConfidence(t)] || '#fff';
       tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span></td>
         <td class="c-num">${t.number}</td>
@@ -420,18 +437,24 @@
       tr.querySelector('.rm').onclick = () => { removeTrack(t); rebuild(); };
       tbody.appendChild(tr);
     });
-    updateStatus(`${MODEL.tracks.length} tracks · ${unresolved} to resolve · ${confident} confident`);
+    updateStatus(`${MODEL.tracks.length} tracks · ${committed} linked · ${unresolved} to resolve`);
   }
-  async function rebuild() { MODEL = await buildModel(); rerender(); if (ACTIVE.mode === 'mirror') hideNative(true); }
-  function doApply(mode) { if (!MODEL) return; MODEL.tracks.forEach(t => { applyTrack(t, mode); refreshEntry(t); }); rerender(); Log.info('apply', mode); }
+  async function loadAndRender(onProgress) { MODEL = await buildModel(onProgress); autoCommit(); fillRows(ACTIVE.tbody); if (ACTIVE.mode === 'mirror') syncNative(); }
+  async function rebuild() { MODEL = await buildModel(); rerender(); if (ACTIVE.mode === 'mirror') syncNative(); }
   function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track's artist to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(); }
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
-      b.onclick = () => { if (a === 'gear') openSettings(b); else if (a === 'close') { host.remove(); ACTIVE = {}; } else if (a === 'conf') doApply('confident'); else if (a === 'apply') doApply('checked'); else if (a === 'revert') revertAll(); };
+      b.onclick = () => {
+        if (a === 'gear') openSettings(b);
+        else if (a === 'close') { host.remove(); ACTIVE = {}; }
+        else if (a === 'revert') revertAll();
+        else if (a === 'toggleorig') { _showOriginal = !_showOriginal; syncNative(); b.textContent = _showOriginal ? 'Hide original' : 'Show original'; }
+      };
     });
   }
-  const FOOTER = `<button class="tc-btn" data-act="conf">Apply confident</button><button class="tc-btn" data-act="revert">Revert all</button><button class="tc-btn primary" data-act="apply">Apply checked</button>`;
+  const FOOTER_FLOAT = `<button class="tc-btn" data-act="revert">Revert all</button>`;
+  const FOOTER_MIRROR = `<button class="tc-btn" data-act="toggleorig">Show original</button><button class="tc-btn" data-act="revert">Revert all</button>`;
 
   /* ── floating window (movable) ── */
   function openPanel() {
@@ -440,33 +463,34 @@
     p.innerHTML = `<div id="tc-hdr">${ICON}<b>Track Cannon</b><span class="tc-status meta">matching…</span>
         <button class="tc-icon" data-act="gear" title="settings">⚙</button><button class="tc-icon" data-act="close" title="close">✕</button></div>
       <div id="tc-body"></div>
-      <div id="tc-foot"><span class="sp"></span>${FOOTER}</div>`;
+      <div id="tc-foot"><span class="sp"></span>${FOOTER_FLOAT}</div>`;
     document.body.appendChild(p);
     const tbody = mountTable(p.querySelector('#tc-body'));
     ACTIVE = { mode: 'float', tbody, statusEl: p.querySelector('.tc-status') };
     const hdr = p.querySelector('#tc-hdr');
     hdr.onmousedown = e => { if (e.target.closest('button')) return; const r = p.getBoundingClientRect(); const ox = e.clientX - r.left, oy = e.clientY - r.top; p.style.right = 'auto'; const mm = ev => { p.style.left = Math.max(0, ev.clientX - ox) + 'px'; p.style.top = Math.max(0, ev.clientY - oy) + 'px'; }; const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }; document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu); };
     bindActions(p);
-    buildModel((d, n) => updateStatus(`matching ${d}/${n}…`)).then(m => { MODEL = m; fillRows(ACTIVE.tbody); });
+    loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
 
   /* ── in-page replacement ── */
+  let _showOriginal = false;
   function nativeTrackTables() { return [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
   function hideNative(hide) { nativeTrackTables().forEach(t => { t.style.display = hide ? 'none' : ''; }); }
+  function syncNative() { nativeTrackTables().forEach(t => { t.style.display = _showOriginal ? '' : 'none'; }); }
   async function showMirror() {
     style(); let wrap = document.getElementById('tc-mirror-wrap');
-    if (wrap) { hideNative(true); return; }
+    if (wrap) { syncNative(); return; }
     wrap = document.createElement('div'); wrap.id = 'tc-mirror-wrap';
     const tbl = nativeTrackTables()[0];
     if (tbl && tbl.parentElement) tbl.parentElement.insertBefore(wrap, tbl);
     else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
-    wrap.innerHTML = `<div id="tc-bar">${ICON}<b>Track Cannon</b><span class="tc-status">matching…</span>${FOOTER}</div><div class="tc-mount"></div>`;
-    hideNative(true);
+    wrap.innerHTML = `<div id="tc-bar">${ICON}<b>Track Cannon</b><span class="tc-status">matching…</span>${FOOTER_MIRROR}</div><div class="tc-mount"></div>`;
+    syncNative();
     const tbody = mountTable(wrap.querySelector('.tc-mount'));
     ACTIVE = { mode: 'mirror', tbody, statusEl: wrap.querySelector('.tc-status') };
     bindActions(wrap);
-    MODEL = await buildModel((d, n) => updateStatus(`matching ${d}/${n}…`));
-    fillRows(ACTIVE.tbody); hideNative(true);
+    await loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
   function hideMirror() { const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); hideNative(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
   function applyMode() { if (SETTINGS.replace) { const p = document.getElementById('tc-panel'); if (p) { p.remove(); ACTIVE = {}; } showMirror(); } else hideMirror(); }
@@ -491,18 +515,22 @@
     b.onclick = () => SETTINGS.replace ? showMirror() : openPanel(); document.body.appendChild(b);
   }
   function tracklistVisible() { const b = [...document.querySelectorAll('button')].find(x => /guess feat\. artists/i.test(x.textContent || '')); return !!(b && b.offsetParent !== null); }
-  let _tlPrev = false, _autoFloatDone = false;
+  let _tlPrev = false, _autoFloatDone = false, _tlRefreshed = false;
   function onEnterTracklist() {
     injectButton();
-    if (SETTINGS.replace) showMirror();
+    if (SETTINGS.replace) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); } }   // re-match once the tab is up (RG may have been set)
     else if (SETTINGS.autoRun && !_autoFloatDone) { _autoFloatDone = true; openPanel(); }
   }
   function watchTracklist() {
-    const tick = () => { const vis = tracklistVisible(); if (vis) injectButton(); if (vis && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab'); onEnterTracklist(); } else if (!vis && _tlPrev) _tlPrev = false; };
-    tick(); setInterval(tick, 700);
+    const tick = () => {
+      const vis = tracklistVisible(); if (vis) injectButton();
+      if (SETTINGS.replace && document.getElementById('tc-mirror-wrap') && !_showOriginal) syncNative();   // keep native hidden if MB re-renders
+      if (vis && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab'); onEnterTracklist(); } else if (!vis && _tlPrev) _tlPrev = false;
+    };
+    tick(); setInterval(tick, 500);
   }
 
-  W.__trackCannon = { readTracklist, buildModel, applyTrack, resetTrack, removeTrack, moveTrack, searchArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, searchArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
@@ -511,7 +539,9 @@
     snapshotOriginals();
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
+    // replacement mode: take over the table immediately (even before the tab is shown) so there's no flash
+    if (SETTINGS.replace) showMirror();
     ensureLauncher();
-    watchTracklist();   // auto-run waits until the Tracklist tab is actually shown
+    watchTracklist();
   })();
 })();

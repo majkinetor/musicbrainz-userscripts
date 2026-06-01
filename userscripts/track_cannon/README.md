@@ -29,14 +29,16 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 1. Open `…/release/add` or `…/release/<mbid>/edit`, go to the **Tracklist** tab.
 2. Click **🎯 Track Cannon** (next to *Guess feat. artists from track titles*; a floating launcher
    also appears so it works from any tab).
-3. Every artist is an **editable type-to-search field** (like MB's own): it's pre-filled with the
-   best match, but you can type to search MB live — results show a **type icon** (👤 person,
-   👥 group, …). **↗** opens the artist page; **+** creates a new one; **↺** reverts that one field.
-4. **Apply confident** links every RG/HIGH match; **Apply checked** links exactly what's ticked.
-   **Revert all** restores the whole release to its page-load state.
-   The toolbar above the table — *When I pick an artist → apply to **all matching tracks** / **this
-   track only*** — controls whether picking an artist also copies it to every other track credited
-   to the same text (handy on compilations).
+3. There is **no apply phase** — confident matches (RG/HIGH) are written to the editor the moment
+   matching finishes, and every later edit writes through immediately. Each artist is an **editable
+   type-to-search field** (like MB's own): pre-filled with the best match, type to search MB live.
+   The small grey text above it is the **credited-as** title (also editable); the **person/group
+   icon** to its left links to the artist page; **↺** reverts that one field; the little combo on
+   the right is the **join phrase** to the next artist (`&`, `feat.`, … — editable with presets).
+   Creating a new artist is the **＋ Create …** row at the bottom of the search dropdown.
+4. **Revert all** restores the whole release to its page-load state; **↺** does one field.
+   The toolbar — *When I pick an artist → apply to **all matching tracks** / **this track only*** —
+   controls whether picking an artist also copies it to every other track credited to the same text.
 5. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
    tab; save it there, then re-open the panel to match it.
 6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself
@@ -47,12 +49,11 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 It's the **same Track Cannon table** in both modes — columns laid out like MB's own
 (▲▼ reorder · ↺ revert-row · # · Title · Artist · Length · ✕), rows tinted by confidence, the artist
 matcher in the Artist column, multi-artist credits stacked with their join phrases, and resizable
-columns (drag a header edge; widths are remembered). **`Replace MB track list`** only changes where
-it lives:
+columns (drag a header edge; widths are remembered). **`Replace MB track list`** (on by default) only changes where it lives:
 
-- **Off — floating window** (default): the table floats beside the editor and can be dragged by its
-  header. MB's own tracklist stays untouched until you Apply.
-- **On — in place**: the table *replaces* the integrated tracklist.
+- **On — in place** (default): the table *replaces* the integrated tracklist, taking over as soon
+  as the page loads (no flash). **Show original** toggles MB's native table back into view alongside.
+- **Off — floating window**: the same table floats beside the editor, draggable by its header.
 
 Either way, every structural action drives MB's real model — **reorder** (`moveTrackUp/Down`),
 **remove** (`removeTrack`), **Title/Length** edits — so nothing diverges from the native editor, and

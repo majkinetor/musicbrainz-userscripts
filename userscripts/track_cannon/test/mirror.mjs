@@ -50,17 +50,15 @@ async function main() {
 
   // mirror should auto-render once the Tracklist tab is shown; wait for its rows
   await page.waitForSelector('#tc-mirror-wrap .tc-mirror tbody tr', { timeout: 60000 });
-  await page.waitForFunction(() => /confident/.test(document.querySelector('#tc-mirror-wrap .tc-status')?.textContent || ''), null, { timeout: 60000 });
-  await page.waitForTimeout(400);
+  await page.waitForFunction(() => /linked/.test(document.querySelector('#tc-mirror-wrap .tc-status')?.textContent || ''), null, { timeout: 60000 });
+  await page.waitForTimeout(600);
   const nativeHidden = await page.evaluate(() => [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')).every(t => t.style.display === 'none'));
   await page.locator('#tc-mirror-wrap').screenshot({ path: resolve(LOG_DIR, 'mirror.png') }).catch(() => page.screenshot({ path: resolve(LOG_DIR, 'mirror.png'), fullPage: true }));
 
   const titles3 = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().slice(0, 3).map(t => u(t.name)); });
   const trackCount = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().length; });
 
-  // Apply confident on the clean model, then verify resolution
-  await page.locator('#tc-mirror-wrap [data-act="conf"]').click();
-  await page.waitForTimeout(900);
+  // no apply phase — confident matches auto-commit on load; verify they're written to the model
   const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
 
   // exercise model-backed ops via the actual UI buttons (which rebuild the mirror)
@@ -79,7 +77,7 @@ async function main() {
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('native table hidden:', nativeHidden);
-  log('after Apply confident — resolved slots:', resolved.res + '/' + resolved.slots);
+  log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
   log('artifacts in', LOG_DIR);
