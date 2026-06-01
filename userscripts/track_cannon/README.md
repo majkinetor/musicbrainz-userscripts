@@ -18,18 +18,25 @@ For every unresolved track it tries, in order:
    outright.
 2. **Name search** against MusicBrainz's artist index for anything siblings don't cover.
 
-Each suggestion is tagged **RG** (from a sibling release), **HIGH** (exact name match) or
-**LOW** (best guess — review it). Multi-artist credits are matched slot-by-slot and the original
-**join phrases** (`&`, `feat.`, `and`, …) and **credited-as** text are preserved.
+Each suggestion is tagged and the whole row is tinted by confidence: **RG** (from a sibling
+release) and **SET** (already linked) are green, **HIGH** (exact diacritic-folded name match) blue,
+**LOW** (best guess — review it) yellow, **USER** (you changed it) purple, **NONE** (nothing found)
+red. Multi-artist credits are matched slot-by-slot and the original **join phrases**
+(`&`, `feat.`, `and`, …) and **credited-as** text are preserved.
 
 ## Usage
 
 1. Open `…/release/add` or `…/release/<mbid>/edit`, go to the **Tracklist** tab.
-2. Click **🎯 Track Cannon** (next to *Guess feat. artists from track titles*).
-3. The panel matches every unresolved slot. Review the dropdowns — each is a normal artist
-   picker, so you can change the choice or uncheck a row.
+2. Click **🎯 Track Cannon** (next to *Guess feat. artists from track titles*; a floating launcher
+   also appears so it works from any tab).
+3. The panel lists **every** track — resolved ones show their current artist as a link (**↗**
+   opens the artist page); unresolved ones get a candidate dropdown you can change or uncheck.
 4. **Apply confident** links every RG/HIGH match; **Apply checked** links exactly what's ticked.
-5. Anything still unmatched stays as typed text — resolve or create it the usual MB way.
+   **Original** (per row) restores a track's artist to what it was when the page loaded.
+5. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
+   tab; save it there, then re-open the panel to match it.
+6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself
+   the next time you open a release add/edit page (it still applies nothing until you click).
 
 Track Cannon only fills the in-page editor. **You** review and press MusicBrainz's own
 *Add release* / *Enter edit* button — nothing is submitted on your behalf.

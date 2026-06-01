@@ -20,7 +20,7 @@ async function main() {
   await mkdir(LOG_DIR, { recursive: true });
   const seed = JSON.parse(await readFile(SEED_PATH, 'utf8'));
   const scriptCode = await readFile(SCRIPT_PATH, 'utf8');
-  const ctx = await chromium.launchPersistentContext(PROFILE_DIR, { headless: !HEADED, viewport: { width: 1500, height: 1000 } });
+  const ctx = await chromium.launchPersistentContext(PROFILE_DIR, { headless: !HEADED, viewport: { width: 1680, height: 1150 }, deviceScaleFactor: 2 });
   ctx.on('page', async p => { try { const u = p.url(); if (u && u !== 'about:blank' && /\/(artist|label)\/(add|create)/.test(u)) await p.close(); } catch {} });
   const page = ctx.pages()[0] || await ctx.newPage();
   const cons = [];
@@ -56,7 +56,12 @@ async function main() {
   await page.locator('#tc-btn').click();
   await page.waitForSelector('#tc-panel .tc-row', { timeout: 60000 });
   await page.waitForFunction(() => /to resolve/.test(document.querySelector('#tc-status')?.textContent || ''), null, { timeout: 60000 });
-  await page.screenshot({ path: resolve(LOG_DIR, 'panel.png') });
+  await page.screenshot({ path: resolve(LOG_DIR, 'panel.png'), fullPage: true });
+  // widen the panel so the capture is landscape and legible (display scales tall images down)
+  await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '1180px'; p.style.maxWidth = 'none'; p.style.right = '12px'; p.style.maxHeight = '94vh'; } });
+  await page.waitForTimeout(150);
+  await page.locator('#tc-panel').screenshot({ path: resolve(LOG_DIR, 'panel-only.png') }).catch(() => {});
+  await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '600px'; p.style.maxWidth = '96vw'; } });
   await page.locator('#tc-apply-conf').click();
   await page.waitForTimeout(1000);
 
@@ -70,12 +75,36 @@ async function main() {
   });
   const afterGreen = await greenCount();
 
-  await page.screenshot({ path: resolve(LOG_DIR, 'after.png') });
+  await page.screenshot({ path: resolve(LOG_DIR, 'after.png'), fullPage: true });
+
+  // ── verify interactive bits: USER-on-change recolor, then Original reset ──
+  const interactive = await page.evaluate(() => {
+    const tc = window.__trackCannon, u = v => (typeof v === 'function' ? v() : v);
+    const out = {};
+    // find a track with a multi-candidate dropdown and switch it → status should become 'user'
+    const t = tc.model.tracks.find(t => t.slots.some(s => s.candidates && s.candidates.length > 1));
+    if (t) {
+      const sel = document.querySelector(`#tc-body .tc-row select`);
+      if (sel && sel.options.length > 1) { sel.value = '1'; sel.dispatchEvent(new Event('change')); }
+      out.userStatus = tc.model.tracks.flatMap(x => x.slots).some(s => s.status === 'user');
+      const purpleRow = [...document.querySelectorAll('#tc-body .tc-row')].some(r => /233, 220, 251/.test(r.style.background) || /e9dcfb/i.test(r.getAttribute('style') || ''));
+      out.purpleRow = purpleRow;
+    }
+    // Original reset on track index 0
+    const r0 = tc.model.tracks[0];
+    const before = tc.readTracklist().find(x => x.mi === r0.mi && x.ti === r0.ti);
+    tc.resetTrack(r0);
+    const after = tc.readTracklist().find(x => x.mi === r0.mi && x.ti === r0.ti);
+    out.track0 = { title: r0.title.slice(0, 24), beforeResolved: before.names.every(n => n.artistGid), afterResolved: after.names.every(n => n.artistGid), afterNames: after.names.map(n => ({ credited: n.creditedAs, gid: !!n.artistGid })) };
+    return out;
+  });
+  log('USER-on-change → some slot status=user:', interactive.userStatus, '· purple row:', interactive.purpleRow);
+  log('Original reset on track 1:', JSON.stringify(interactive.track0));
   // close the panel and capture the clean tracklist (the artist column, resolved/green)
   await page.locator('#tc-close').click().catch(() => {});
   await page.waitForTimeout(300);
   const tbl = page.locator('table.tbl').first();
-  await (tbl.count().then(n => n ? tbl.screenshot({ path: resolve(LOG_DIR, 'tracklist.png') }) : page.screenshot({ path: resolve(LOG_DIR, 'tracklist.png') }))).catch(() => page.screenshot({ path: resolve(LOG_DIR, 'tracklist.png') }));
+  await (tbl.count().then(n => n ? tbl.screenshot({ path: resolve(LOG_DIR, 'tracklist.png') }) : page.screenshot({ path: resolve(LOG_DIR, 'tracklist.png'), fullPage: true }))).catch(() => page.screenshot({ path: resolve(LOG_DIR, 'tracklist.png'), fullPage: true }));
   await writeFile(resolve(LOG_DIR, 'report.json'), JSON.stringify(report, null, 2));
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
 
