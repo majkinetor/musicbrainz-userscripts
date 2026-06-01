@@ -64,16 +64,42 @@ async function main() {
   await page.waitForTimeout(150);
   await page.locator('#tc-panel').screenshot({ path: resolve(LOG_DIR, 'panel-only.png') }).catch(() => {});
   await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '720px'; p.style.maxWidth = '96vw'; } });
-  // USER-on-change recolor — while dropdowns are still present, before applying
-  const userCheck = await page.evaluate(() => {
+  // capture the type-to-search dropdown (with type icons) open
+  await page.locator('#tc-panel .tc-mirror tbody tr .tc-acinput').nth(2).click();
+  await page.locator('#tc-panel .tc-mirror tbody tr .tc-acinput').nth(2).fill('carol');
+  await page.waitForSelector('.tc-acpop .tc-acrow', { timeout: 6000 }).catch(() => {});
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: resolve(LOG_DIR, 'combo.png') });
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(150);
+  // editable combo: focus an input → results pop appears → pick the 2nd → status becomes 'user' + purple
+  const userCheck = await page.evaluate(async () => {
     const tc = window.__trackCannon;
-    const sel = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr select')].find(s => s.options.length > 1);
-    if (!sel) return { userStatus: null, purpleRow: null };
-    sel.value = '1'; sel.dispatchEvent(new Event('change'));
+    const inputs = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr .tc-acinput')];
+    let picked = false, popCount = 0;
+    for (const inp of inputs) {
+      inp.focus(); await new Promise(r => setTimeout(r, 60));
+      const pop = document.querySelector('.tc-acpop'); const rows = pop ? [...pop.querySelectorAll('.tc-acrow[data-i]')] : [];
+      if (rows.length > 1) { popCount = rows.length; rows[1].dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); picked = true; break; }
+      inp.blur();
+    }
+    await new Promise(r => setTimeout(r, 80));
     const userStatus = tc.model.tracks.flatMap(x => x.slots).some(s => s.status === 'user');
     const purpleRow = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].some(r => /233, 220, 251/.test(r.style.background));
-    return { userStatus, purpleRow };
+    return { picked, popCount, userStatus, purpleRow };
   });
+
+  // propagation (all mode): picking an artist copies it to every track with the same credited text
+  const propCheck = await page.evaluate(() => {
+    const tc = window.__trackCannon; tc.settings.applyMode = 'all';
+    const slots = []; tc.model.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && s.entity) slots.push(s); }));
+    const byCred = {}; slots.forEach(s => { const k = s.creditedAs.toLowerCase(); (byCred[k] = byCred[k] || []).push(s); });
+    const dup = Object.values(byCred).find(a => a.length >= 2);
+    if (!dup) return { ok: false };
+    const ent = dup[0].candidates[0]; tc.pickArtist(dup[0], ent);
+    return { ok: true, cred: dup[0].creditedAs, count: dup.length, allSame: dup.every(s => s.gid === ent.gid && s.status === 'user') };
+  });
+
   await page.locator('#tc-panel [data-act="apply"]').click();
   await page.waitForTimeout(1000);
 
@@ -100,7 +126,8 @@ async function main() {
     out.track0 = { title: r0.title.slice(0, 24), beforeResolved: before.names.every(n => n.artistGid), afterResolved: after.names.every(n => n.artistGid), afterNames: after.names.map(n => ({ credited: n.creditedAs, gid: !!n.artistGid })) };
     return out;
   });
-  log('USER-on-change → some slot status=user:', userCheck.userStatus, '· purple row:', userCheck.purpleRow);
+  log('combo search → picked from pop (' + userCheck.popCount + ' results) · status=user:', userCheck.userStatus, '· purple row:', userCheck.purpleRow);
+  log('propagation (all mode):', JSON.stringify(propCheck));
   log('Original reset on track 1:', JSON.stringify(interactive.track0));
   // close the panel and capture the clean tracklist (the artist column, resolved/green)
   await page.locator('#tc-panel [data-act="close"]').click().catch(() => {});

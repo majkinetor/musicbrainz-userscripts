@@ -29,10 +29,14 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 1. Open `…/release/add` or `…/release/<mbid>/edit`, go to the **Tracklist** tab.
 2. Click **🎯 Track Cannon** (next to *Guess feat. artists from track titles*; a floating launcher
    also appears so it works from any tab).
-3. The panel lists **every** track — resolved ones show their current artist as a link (**↗**
-   opens the artist page); unresolved ones get a candidate dropdown you can change or uncheck.
+3. Every artist is an **editable type-to-search field** (like MB's own): it's pre-filled with the
+   best match, but you can type to search MB live — results show a **type icon** (👤 person,
+   👥 group, …). **↗** opens the artist page; **+** creates a new one; **↺** reverts that one field.
 4. **Apply confident** links every RG/HIGH match; **Apply checked** links exactly what's ticked.
-   **Original** (per row) restores a track's artist to what it was when the page loaded.
+   **Revert all** restores the whole release to its page-load state.
+   The toolbar above the table — *When I pick an artist → apply to **all matching tracks** / **this
+   track only*** — controls whether picking an artist also copies it to every other track credited
+   to the same text (handy on compilations).
 5. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
    tab; save it there, then re-open the panel to match it.
 6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself

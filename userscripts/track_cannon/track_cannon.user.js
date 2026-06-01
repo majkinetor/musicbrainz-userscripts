@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.1.223511
+// @version      2026.6.1.224937
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -46,7 +46,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { try { return Object.assign({ replace: false, autoRun: false, colWidths: {} }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { replace: false, autoRun: false, colWidths: {} }; } }
+  function loadSettings() { try { return Object.assign({ replace: false, autoRun: false, colWidths: {}, applyMode: 'all' }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { replace: false, autoRun: false, colWidths: {}, applyMode: 'all' }; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -197,14 +197,19 @@
   }
 
   /* ════════════════════════ UI ════════════════════════ */
-  const ICON = '<svg class="tc-ico" viewBox="0 0 30 24" width="22" height="17" aria-hidden="true" style="vertical-align:-3px">' +
-    '<line x1="7" y1="16.5" x2="16.5" y2="6.5" stroke="#5f3ec0" stroke-width="6.5" stroke-linecap="round"/>' +
-    '<circle cx="7" cy="17.5" r="4.4" fill="#3d2470"/><circle cx="7" cy="17.5" r="1.5" fill="#fff"/>' +
-    '<circle cx="17.3" cy="5.6" r="1.5" fill="#e0a800"/>' +
-    '<text x="20" y="10" font-size="12" font-family="Arial" font-weight="bold" fill="#1f8a4c">♪</text></svg>';
+  const ICON = '<svg class="tc-ico" viewBox="0 0 34 26" width="24" height="18" aria-hidden="true" style="vertical-align:-4px">' +
+    '<polygon points="6,12 19,4.5 22.5,11 9,18.5" fill="#5f3ec0"/>' +
+    '<line x1="18.6" y1="4.2" x2="22.9" y2="11.3" stroke="#2a1a52" stroke-width="2"/>' +
+    '<circle cx="20.8" cy="7.8" r="1.7" fill="#2a1a52"/>' +
+    '<line x1="8" y1="20" x2="12.5" y2="15" stroke="#3d2470" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<circle cx="8" cy="20.5" r="5.4" fill="#3d2470"/><circle cx="8" cy="20.5" r="1.8" fill="#fff"/>' +
+    '<g fill="#e0a800"><circle cx="24" cy="5" r="1.6"/><circle cx="27" cy="3.2" r="0.9"/></g>' +
+    '<text x="26.5" y="10" font-size="11" font-weight="bold" fill="#1f8a4c" font-family="Arial">♪</text></svg>';
 
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
-  const COLS = [{ k: 'mv', w: 48, label: '' }, { k: 'num', w: 26, label: '#' }, { k: 'title', w: 210, label: 'Title' }, { k: 'art', w: 320, label: 'Artist' }, { k: 'len', w: 56, label: 'Length' }, { k: 'x', w: 26, label: '' }];
+  const COLS = [{ k: 'mv', w: 34, label: '' }, { k: 'num', w: 26, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 340, label: 'Artist' }, { k: 'len', w: 56, label: 'Length' }, { k: 'x', w: 26, label: '' }];
+  const TYPE_ICON = { person: '👤', group: '👥', orchestra: '🎻', choir: '🎶', character: '🎭', other: '🎤' };
+  const typeIcon = c => TYPE_ICON[(c.typeName || '').toLowerCase()] || (c.typeName ? '🎤' : '·');
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   const artistLink = (gid, label) => gid ? `<a href="${ORIGIN}/artist/${gid}" target="_blank" rel="noopener" title="open artist page">${esc(label)} ↗</a>` : esc(label);
@@ -233,11 +238,22 @@
     .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus{border-color:#bbb;background:#fff}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:13px;padding:0 1px}.tc-mirror .mv.rv{color:#888}
     .tc-mirror .rm{cursor:pointer;color:#c0392b;font-weight:bold;border:none;background:none;font-size:15px}
-    .tc-aslot{display:flex;align-items:center;gap:4px;margin:2px 0;min-width:0}
+    .tc-aslot{display:flex;align-items:center;gap:3px;margin:2px 0;min-width:0}
     .tc-aslot .join{color:#999;font-style:italic;font-size:11px;flex:none}
-    .tc-aslot .cred{color:#777;font-size:11px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none}
-    .tc-aslot .aset{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .tc-aslot select{flex:1;min-width:30px;font:12px Arial;padding:1px;border:1px solid #bbb;border-radius:3px;background:#fff}
+    .tc-aslot .cred{color:#888;font-size:11px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none}
+    .tc-aslot .slotrev{cursor:pointer;color:#aaa;border:none;background:none;font-size:12px;padding:0 1px}.tc-aslot .slotrev:hover{color:#6f42c1}
+    .tc-combo{display:flex;align-items:center;gap:2px;flex:1;min-width:46px}
+    .tc-combo .tic{flex:none;font-size:12px;width:15px;text-align:center}
+    .tc-acinput{flex:1;min-width:40px;font:12px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px;background:#fff}
+    .tc-acinput.empty{color:#a33;font-style:italic}
+    .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:280px;overflow:auto;font:12px Arial;min-width:200px}
+    .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
+    .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
+    .tc-acrow .tic{flex:none;width:16px;text-align:center;font-size:13px}
+    .tc-acrow .nm{font-weight:600;color:#222}.tc-acrow .cmt{color:#888;font-size:11px}
+    .tc-acrow .none{color:#888;font-style:italic}
+    .tc-toolbar{padding:5px 4px;font-size:12px;color:#555;display:flex;align-items:center;gap:6px}
+    .tc-toolbar select{font:12px Arial;padding:1px}
     .tc-medhdr{background:#dfd7f0;font-weight:bold;color:#4b3a82;padding:4px 8px}
 
     #tc-panel{position:fixed;top:90px;right:18px;width:720px;max-width:96vw;max-height:84vh;background:#fff;
@@ -295,6 +311,18 @@
       `<thead><tr>${COLS.map(c => `<th>${c.label}<span class="tc-resizer"></span></th>`).join('')}</tr></thead><tbody></tbody>`;
     return t;
   }
+  // toolbar (above the table) + table; returns the tbody. Shared by both modes.
+  function mountTable(container) {
+    container.innerHTML = '';
+    const bar = document.createElement('div'); bar.className = 'tc-toolbar';
+    bar.innerHTML = `<span>When I pick an artist → apply to</span><select class="tc-applymode"><option value="all">all matching tracks</option><option value="single">this track only</option></select>`;
+    const am = bar.querySelector('.tc-applymode'); am.value = SETTINGS.applyMode || 'all';
+    am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); Log.info('applyMode =', am.value); };
+    container.appendChild(bar);
+    const wrap = document.createElement('div'); wrap.className = 'tc-tablewrap'; container.appendChild(wrap);
+    const table = buildTable(); wrap.appendChild(table); wireResizers(table);
+    return table.querySelector('tbody');
+  }
   function wireResizers(table) {
     const cols = [...table.querySelectorAll('col')];
     [...table.querySelectorAll('th .tc-resizer')].forEach((rz, i) => {
@@ -307,22 +335,66 @@
       };
     });
   }
-  function slotEl(entry, s) {
+  // when the user picks an artist for a credit, optionally copy it to every other track
+  // that has the same credited text (the "all" mode above the table)
+  function propagate(srcSlot, c) {
+    if ((SETTINGS.applyMode || 'all') !== 'all') return;
+    const key = fold(srcSlot.creditedAs); let n = 0;
+    MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s === srcSlot || s.status === 'set' || fold(s.creditedAs) !== key) return; s.entity = c; s.gid = c.gid; s.name = c.name; s.status = 'user'; s.accept = true; n++; }));
+    if (n) Log.info('propagated', c.name, '→', n, 'slot(s) credited', JSON.stringify(srcSlot.creditedAs));
+  }
+  function pickArtist(slot, c) { slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.accept = true; propagate(slot, c); rerender(); }
+
+  async function revertSlot(entry, i) {
+    const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig || !orig[i]) return;
+    const track = koTrack(entry.mi, entry.ti), live = liveNames(track);
+    track.artistCredit({ names: entry.slots.map((s, j) => j === i ? { artist: orig[i].artist, name: orig[i].creditedAs, joinPhrase: orig[i].joinPhrase } : (live[j] || { artist: s.entity, name: s.creditedAs, joinPhrase: s.joinPhrase })) });
+    const slot = entry.slots[i]; slot.creditedAs = orig[i].creditedAs; slot.joinPhrase = orig[i].joinPhrase;
+    const a = u(orig[i].artist) || {}, gid = u(a.gid);
+    if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: null, candidates: [], accept: false });
+    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const m = await matchSlot(orig[i].creditedAs, sib && sib[i]); Object.assign(slot, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, accept: m.source === 'rg' || m.confidence === 'high' }); }
+    Log.info('reverted slot', i, 'of track', entry.number); rerender();
+  }
+
+  // editable autocomplete — type to search MB like the integrated field
+  function combo(entry, slot) {
+    const wrap = document.createElement('span'); wrap.className = 'tc-combo';
+    const tic = document.createElement('span'); tic.className = 'tic'; tic.textContent = slot.entity ? typeIcon(slot.entity) : (slot.status === 'set' ? '🎤' : '·'); wrap.appendChild(tic);
+    const inp = document.createElement('input'); inp.className = 'tc-acinput' + (slot.gid ? '' : ' empty'); inp.value = slot.name || slot.creditedAs || ''; inp.title = inp.value; inp.placeholder = 'search artist…'; wrap.appendChild(inp);
+    let pop = null, list = [], hi = -1, seq = 0;
+    const close = () => { if (pop) { pop.remove(); pop = null; hi = -1; } };
+    const choose = c => { close(); pickArtist(slot, c); };
+    const draw = arr => {
+      close(); list = arr; pop = document.createElement('div'); pop.className = 'tc-acpop';
+      pop.innerHTML = arr.length ? arr.map((c, i) => `<div class="tc-acrow" data-i="${i}"><span class="tic">${typeIcon(c)}</span><span class="nm">${esc(c.name)}</span>${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('')
+        : `<div class="tc-acrow none">no matches — type to search, or + to create</div>`;
+      document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(200, r.width) + 'px';
+      [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
+    };
+    inp.onfocus = () => { inp.select(); draw(slot.candidates && slot.candidates.length ? slot.candidates : []); };
+    let tmr; inp.oninput = () => { clearTimeout(tmr); const q = inp.value; const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(q); if (my === seq) draw(res); }, 250); };
+    inp.onkeydown = e => {
+      if (e.key === 'Escape') { close(); inp.blur(); }
+      else if (e.key === 'ArrowDown' && pop) { hi = Math.min(list.length - 1, hi + 1); [...pop.children].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
+      else if (e.key === 'ArrowUp' && pop) { hi = Math.max(0, hi - 1); [...pop.children].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
+      else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) choose(c); }
+    };
+    inp.onblur = () => setTimeout(close, 160);
+    return wrap;
+  }
+
+  function slotEl(entry, s, idx) {
     const slot = document.createElement('div'); slot.className = 'tc-aslot';
     if (entry.slots.length > 1) slot.insertAdjacentHTML('beforeend', `<span class="join">${esc((s.joinPhrase || '').trim() || '·')}</span>`);
-    if (s.status === 'set') { slot.insertAdjacentHTML('beforeend', `<span class="aset">${artistLink(s.gid, s.name || s.creditedAs)}</span>${badge('set')}`); return slot; }
-    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!s.accept; cb.title = 'apply this slot';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!s.accept; cb.title = 'apply this slot'; cb.style.flex = 'none';
     cb.onchange = () => { s.accept = cb.checked; }; slot.appendChild(cb);
-    slot.insertAdjacentHTML('beforeend', `<span class="cred" title="${esc(s.creditedAs)}">${esc(s.creditedAs)}</span>`);
-    if (s.candidates && s.candidates.length) {
-      const sel = document.createElement('select');
-      sel.innerHTML = s.candidates.map((c, ci) => `<option value="${ci}"${c.gid === s.gid ? ' selected' : ''}>${esc(c.name)}${c.comment ? ' (' + esc(c.comment) + ')' : ''}${c.typeName ? ' · ' + c.typeName : ''}</option>`).join('');
-      sel.onchange = () => { s.entity = s.candidates[+sel.value]; s.gid = s.entity.gid; s.name = s.entity.name; s.status = 'user'; s.accept = true; rerender(); };
-      slot.appendChild(sel);
-      slot.insertAdjacentHTML('beforeend', `<a class="tc-icon" href="${ORIGIN}/artist/${s.gid}" target="_blank" rel="noopener" title="open artist page">↗</a>`);
-    } else slot.insertAdjacentHTML('beforeend', `<em style="flex:1;color:#a33">no match</em>`);
+    if (s.creditedAs && !sameName(s.creditedAs, s.name)) slot.insertAdjacentHTML('beforeend', `<span class="cred" title="credited as “${esc(s.creditedAs)}”">${esc(s.creditedAs)}</span>`);
+    slot.appendChild(combo(entry, s));
+    if (s.gid) slot.insertAdjacentHTML('beforeend', `<a class="tc-icon" href="${ORIGIN}/artist/${s.gid}" target="_blank" rel="noopener" title="open artist page">↗</a>`);
     const create = document.createElement('button'); create.className = 'tc-btn mini'; create.textContent = '+'; create.title = 'create “' + s.creditedAs + '” on MusicBrainz';
     create.onclick = () => createArtist(s.creditedAs); slot.appendChild(create);
+    const rev = document.createElement('button'); rev.className = 'slotrev'; rev.textContent = '↺'; rev.title = 'revert this artist to the original';
+    rev.onclick = () => revertSlot(entry, idx); slot.appendChild(rev);
     slot.insertAdjacentHTML('beforeend', badge(s.status));
     return slot;
   }
@@ -332,18 +404,17 @@
       if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
       t.slots.forEach(s => { if (s.status !== 'set') { unresolved++; if (s.status === 'rg' || s.status === 'high') confident++; } });
       const tr = document.createElement('tr'); tr.style.background = COLORS[rowConfidence(t)] || '#fff';
-      tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span><span class="mv rv" title="revert this track">↺</span></td>
+      tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span></td>
         <td class="c-num">${t.number}</td>
         <td class="c-title"><input class="t-title" value="${esc(t.title)}"></td>
         <td class="c-art"></td>
         <td class="c-len"><input class="t-len" value="${esc(t.length)}"></td>
         <td class="c-x"><button class="rm" title="remove track">✕</button></td>`;
-      const art = tr.querySelector('.c-art'); t.slots.forEach(s => art.appendChild(slotEl(t, s)));
+      const art = tr.querySelector('.c-art'); t.slots.forEach((s, si) => art.appendChild(slotEl(t, s, si)));
       tr.querySelector('.t-title').onchange = e => setTitle(t, e.target.value);
       tr.querySelector('.t-len').onchange = e => setLength(t, e.target.value);
       tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };
       tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
-      tr.querySelector('.rv').onclick = () => { resetTrack(t); refreshEntry(t); rerender(); };
       tr.querySelector('.rm').onclick = () => { removeTrack(t); rebuild(); };
       tbody.appendChild(tr);
     });
@@ -366,11 +437,11 @@
     const p = document.createElement('div'); p.id = 'tc-panel';
     p.innerHTML = `<div id="tc-hdr">${ICON}<b>Track Cannon</b><span class="tc-status meta">matching…</span>
         <button class="tc-icon" data-act="gear" title="settings">⚙</button><button class="tc-icon" data-act="close" title="close">✕</button></div>
-      <div id="tc-body"><div class="tc-tablewrap"></div></div>
+      <div id="tc-body"></div>
       <div id="tc-foot"><span class="sp"></span>${FOOTER}</div>`;
     document.body.appendChild(p);
-    const table = buildTable(); p.querySelector('.tc-tablewrap').appendChild(table); wireResizers(table);
-    ACTIVE = { mode: 'float', tbody: table.querySelector('tbody'), statusEl: p.querySelector('.tc-status') };
+    const tbody = mountTable(p.querySelector('#tc-body'));
+    ACTIVE = { mode: 'float', tbody, statusEl: p.querySelector('.tc-status') };
     const hdr = p.querySelector('#tc-hdr');
     hdr.onmousedown = e => { if (e.target.closest('button')) return; const r = p.getBoundingClientRect(); const ox = e.clientX - r.left, oy = e.clientY - r.top; p.style.right = 'auto'; const mm = ev => { p.style.left = Math.max(0, ev.clientX - ox) + 'px'; p.style.top = Math.max(0, ev.clientY - oy) + 'px'; }; const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }; document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu); };
     bindActions(p);
@@ -387,10 +458,10 @@
     const tbl = nativeTrackTables()[0];
     if (tbl && tbl.parentElement) tbl.parentElement.insertBefore(wrap, tbl);
     else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
-    wrap.innerHTML = `<div id="tc-bar">${ICON}<b>Track Cannon</b><span class="tc-status">matching…</span>${FOOTER}</div><div class="tc-tablewrap"></div>`;
+    wrap.innerHTML = `<div id="tc-bar">${ICON}<b>Track Cannon</b><span class="tc-status">matching…</span>${FOOTER}</div><div class="tc-mount"></div>`;
     hideNative(true);
-    const table = buildTable(); wrap.querySelector('.tc-tablewrap').appendChild(table); wireResizers(table);
-    ACTIVE = { mode: 'mirror', tbody: table.querySelector('tbody'), statusEl: wrap.querySelector('.tc-status') };
+    const tbody = mountTable(wrap.querySelector('.tc-mount'));
+    ACTIVE = { mode: 'mirror', tbody, statusEl: wrap.querySelector('.tc-status') };
     bindActions(wrap);
     MODEL = await buildModel((d, n) => updateStatus(`matching ${d}/${n}…`));
     fillRows(ACTIVE.tbody); hideNative(true);
@@ -429,7 +500,7 @@
     tick(); setInterval(tick, 700);
   }
 
-  W.__trackCannon = { readTracklist, buildModel, applyTrack, resetTrack, removeTrack, moveTrack, searchArtist, openPanel, showMirror, hideMirror, revertAll, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__trackCannon = { readTracklist, buildModel, applyTrack, resetTrack, removeTrack, moveTrack, searchArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
