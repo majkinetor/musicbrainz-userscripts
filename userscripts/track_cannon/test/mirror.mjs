@@ -74,12 +74,30 @@ async function main() {
   const ops = { before, afterMove, countBefore, countAfter };
   await page.locator('#tc-mirror-wrap').screenshot({ path: resolve(LOG_DIR, 'mirror-after-ops.png') }).catch(() => {});
 
+  // split/merge: add an artist slot to a single-artist track, fill it, then remove it
+  const split = await page.evaluate(async () => {
+    const tc = window.__trackCannon, u = v => (typeof v === 'function' ? v() : v);
+    const t = tc.model.tracks.find(t => t.slots.length === 1);
+    const trackKo = () => u(u(u(window.MB.releaseEditor.rootField.release).mediums)[t.mi].tracks)[t.ti];
+    const credCount = () => (u(u(trackKo().artistCredit).names) || []).length;
+    const c0 = credCount();
+    tc.addSlot(t);
+    const c1 = credCount(); const slots1 = t.slots.length;
+    const cand = (await tc.searchArtist('CBC Band'))[0]; tc.pickArtist(t.slots[t.slots.length - 1], cand);
+    const c2 = credCount();
+    tc.removeSlot(t, t.slots.length - 1);
+    const c3 = credCount();
+    return { title: t.title.slice(0, 20), c0, c1, slots1, c2, c3 };
+  });
+  await page.locator('#tc-mirror-wrap').screenshot({ path: resolve(LOG_DIR, 'mirror-split.png') }).catch(() => {});
+
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('native table hidden:', nativeHidden);
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
+  log('split/merge on', JSON.stringify(split.title), '— credit names:', split.c0, '→ +slot', split.c1, '→ +pick', split.c2, '→ -slot', split.c3);
   log('artifacts in', LOG_DIR);
   if (!HEADED) await ctx.close();
 }

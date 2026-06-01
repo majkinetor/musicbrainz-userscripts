@@ -36,6 +36,8 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    icon** to its left links to the artist page; **↺** reverts that one field; the little combo on
    the right is the **join phrase** to the next artist (`&`, `feat.`, … — editable with presets).
    Creating a new artist is the **＋ Create …** row at the bottom of the search dropdown.
+   **＋ artist** under a track splits the credit into multiple artists; **✕** next to an artist
+   removes that slot (merge).
 4. **Revert all** restores the whole release to its page-load state; **↺** does one field.
    The toolbar — *When I pick an artist → apply to **all matching tracks** / **this track only*** —
    controls whether picking an artist also copies it to every other track credited to the same text.

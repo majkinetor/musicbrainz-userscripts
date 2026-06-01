@@ -72,6 +72,18 @@ async function main() {
   await page.screenshot({ path: resolve(LOG_DIR, 'combo.png') });
   await page.keyboard.press('Escape');
   await page.waitForTimeout(150);
+  // bug fix: focusing an already-resolved (set) field with NO typing must still search (not "no matches")
+  const setFocus = await page.evaluate(async () => {
+    const tc = window.__trackCannon;
+    const t = tc.model.tracks.find(t => t.slots.some(s => s.status === 'set')); if (!t) return { ok: false };
+    const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
+    const inp = tr && tr.querySelector('.tc-acinput'); if (!inp) return { ok: false };
+    inp.focus(); await new Promise(r => setTimeout(r, 600));
+    const pop = document.querySelector('.tc-acpop'); const results = pop ? pop.querySelectorAll('.tc-acrow[data-i]').length : 0;
+    inp.blur(); return { ok: true, results };
+  });
+  await page.keyboard.press('Escape').catch(() => {});
+  await page.waitForTimeout(150);
   // editable combo: focus an input → results pop appears → pick the 2nd → status becomes 'user' + purple
   const userCheck = await page.evaluate(async () => {
     const tc = window.__trackCannon;
@@ -125,6 +137,7 @@ async function main() {
     out.track0 = { title: r0.title.slice(0, 24), beforeResolved: before.names.every(n => n.artistGid), afterResolved: after.names.every(n => n.artistGid), afterNames: after.names.map(n => ({ credited: n.creditedAs, gid: !!n.artistGid })) };
     return out;
   });
+  log('focus a SET field (no typing) → search results:', JSON.stringify(setFocus));
   log('combo search → picked from pop (' + userCheck.popCount + ' results) · status=user:', userCheck.userStatus, '· purple row:', userCheck.purpleRow);
   log('propagation (all mode):', JSON.stringify(propCheck));
   log('Original reset on track 1:', JSON.stringify(interactive.track0));

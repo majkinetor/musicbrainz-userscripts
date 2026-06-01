@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.1.233949
+// @version      2026.6.2.001418
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -253,6 +253,8 @@
     .tc-rev{flex:none;cursor:pointer;color:#b3a9cf;border:none;background:none;font-size:13px;padding:0 1px}.tc-rev:hover{color:#6f42c1}
     .tc-join{flex:none;width:74px;box-sizing:border-box;font:11px Arial;padding:2px 3px;border:1px solid #d2cae8;border-radius:3px;background:#faf9ff;color:#555}
     .tc-join-sp{flex:none;width:74px}
+    .tc-slotx{flex:none;cursor:pointer;color:#c9bfe0;border:none;background:none;font-size:12px;padding:0 1px}.tc-slotx:hover{color:#c0392b}
+    .tc-addart{display:inline-block;margin:3px 0 1px 22px;font:11px Arial;color:#6f54c0;background:none;border:none;cursor:pointer;padding:1px 2px}.tc-addart:hover{text-decoration:underline}
     .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
@@ -369,6 +371,24 @@
     commitTrack(entry); Log.info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
+  // split a credit: append an empty artist slot (defaulting the previous join to " & ")
+  function addSlot(entry) {
+    const last = entry.slots[entry.slots.length - 1];
+    if (last && !(last.joinPhrase || '').trim()) last.joinPhrase = ' & ';
+    const s = { creditedAs: '', joinPhrase: '', status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _entry: entry };
+    entry.slots.push(s); commitTrack(entry); rerender();
+    const row = ACTIVE.tbody && ACTIVE.tbody.querySelector(`tr[data-tk="${entry.mi}:${entry.ti}"]`);
+    if (row) { const ins = row.querySelectorAll('.tc-acinput'); if (ins.length) ins[ins.length - 1].focus(); }
+    Log.info('added artist slot to track', entry.number);
+  }
+  // merge: remove an artist slot (clearing the trailing join on the new last slot)
+  function removeSlot(entry, idx) {
+    if (entry.slots.length <= 1) return;
+    entry.slots.splice(idx, 1);
+    const last = entry.slots[entry.slots.length - 1]; if (last) last.joinPhrase = '';
+    commitTrack(entry); rerender(); Log.info('removed artist slot', idx, 'from track', entry.number);
+  }
+
   // editable autocomplete input (type to search MB); the type icon + revert live outside it
   function comboInput(entry, slot) {
     const inp = document.createElement('input'); inp.className = 'tc-acinput' + (slot.gid ? '' : ' empty');
@@ -385,8 +405,14 @@
       [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
       pop.querySelector('[data-create]').onmousedown = e => { e.preventDefault(); close(); createArtist(inp.value.trim() || slot.creditedAs); };
     };
-    inp.onfocus = () => { inp.select(); draw(slot.candidates && slot.candidates.length ? slot.candidates : []); };
-    let tmr; inp.oninput = () => { clearTimeout(tmr); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq) draw(res); }, 250); };
+    inp.onfocus = () => {
+      inp.select();
+      if (slot.candidates && slot.candidates.length) { draw(slot.candidates); return; }
+      // already-resolved (edit pages) have no cached candidates → search the current text
+      const my = ++seq; const q = inp.value.trim() || slot.creditedAs;
+      if (q) searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) draw(res); }); else draw([]);
+    };
+    let tmr; inp.oninput = () => { clearTimeout(tmr); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250); };
     inp.onkeydown = e => {
       if (e.key === 'Escape') { close(); inp.blur(); }
       else if (e.key === 'ArrowDown' && pop) { hi = Math.min(list.length - 1, hi + 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
@@ -414,6 +440,7 @@
       j.onchange = () => { s.joinPhrase = j.value; commitTrack(entry); }; line.appendChild(j);
     } else line.insertAdjacentHTML('beforeend', '<span class="tc-join-sp"></span>');
     line.insertAdjacentHTML('beforeend', badge(s.status));
+    if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); line.appendChild(x); }
     block.appendChild(line);
     return block;
   }
@@ -422,7 +449,7 @@
     MODEL.tracks.forEach(t => {
       if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
       t.slots.forEach(s => { if (s.status === 'set' || s.committed) committed++; else unresolved++; });
-      const tr = document.createElement('tr'); tr.style.background = COLORS[rowConfidence(t)] || '#fff';
+      const tr = document.createElement('tr'); tr.style.background = COLORS[rowConfidence(t)] || '#fff'; tr.dataset.tk = t.mi + ':' + t.ti;
       tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span></td>
         <td class="c-num">${t.number}</td>
         <td class="c-title"><input class="t-title" value="${esc(t.title)}"></td>
@@ -430,6 +457,7 @@
         <td class="c-len"><input class="t-len" value="${esc(t.length)}"></td>
         <td class="c-x"><button class="rm" title="remove track">✕</button></td>`;
       const art = tr.querySelector('.c-art'); t.slots.forEach((s, si) => art.appendChild(slotEl(t, s, si)));
+      const add = document.createElement('button'); add.className = 'tc-addart'; add.textContent = '＋ artist'; add.title = 'add another artist to this track (split the credit)'; add.onclick = () => addSlot(t); art.appendChild(add);
       tr.querySelector('.t-title').onchange = e => setTitle(t, e.target.value);
       tr.querySelector('.t-len').onchange = e => setLength(t, e.target.value);
       tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };
@@ -530,7 +558,7 @@
     tick(); setInterval(tick, 500);
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, searchArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, searchArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
