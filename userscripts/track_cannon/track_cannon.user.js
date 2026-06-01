@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.1.224937
+// @version      2026.6.1.225321
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -197,14 +197,16 @@
   }
 
   /* ════════════════════════ UI ════════════════════════ */
-  const ICON = '<svg class="tc-ico" viewBox="0 0 34 26" width="24" height="18" aria-hidden="true" style="vertical-align:-4px">' +
-    '<polygon points="6,12 19,4.5 22.5,11 9,18.5" fill="#5f3ec0"/>' +
-    '<line x1="18.6" y1="4.2" x2="22.9" y2="11.3" stroke="#2a1a52" stroke-width="2"/>' +
-    '<circle cx="20.8" cy="7.8" r="1.7" fill="#2a1a52"/>' +
-    '<line x1="8" y1="20" x2="12.5" y2="15" stroke="#3d2470" stroke-width="2.6" stroke-linecap="round"/>' +
-    '<circle cx="8" cy="20.5" r="5.4" fill="#3d2470"/><circle cx="8" cy="20.5" r="1.8" fill="#fff"/>' +
-    '<g fill="#e0a800"><circle cx="24" cy="5" r="1.6"/><circle cx="27" cy="3.2" r="0.9"/></g>' +
-    '<text x="26.5" y="10" font-size="11" font-weight="bold" fill="#1f8a4c" font-family="Arial">♪</text></svg>';
+  const ICON = '<svg class="tc-ico" viewBox="0 0 34 28" width="24" height="20" aria-hidden="true" style="vertical-align:-5px">' +
+    '<path d="M17 16 L19.6 19.6 L21.8 19.6" fill="none" stroke="#3d2470" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<circle cx="17.5" cy="13" r="3.5" fill="#5f3ec0"/><circle cx="21.4" cy="14" r="1.5" fill="#3d2470"/>' +
+    '<polygon points="6.99,4.01 19.43,11.34 16.57,15.66 5.01,6.99" fill="#5f3ec0"/>' +
+    '<line x1="5.01" y1="6.99" x2="6.99" y2="4.01" stroke="#2a1a52" stroke-width="1.7"/>' +
+    '<circle cx="12.5" cy="18.5" r="5.4" fill="#3d2470"/><circle cx="12.5" cy="18.5" r="4.3" fill="none" stroke="#fff" stroke-width="0.9"/>' +
+    '<g stroke="#fff" stroke-width="0.8"><line x1="7.3" y1="18.5" x2="17.7" y2="18.5"/><line x1="12.5" y1="13.3" x2="12.5" y2="23.7"/><line x1="9.53" y1="15.53" x2="15.47" y2="21.47"/><line x1="9.53" y1="21.47" x2="15.47" y2="15.53"/></g>' +
+    '<circle cx="12.5" cy="18.5" r="1.5" fill="#fff"/>' +
+    '<g fill="#e0a800"><circle cx="4.4" cy="4.6" r="1.4"/><circle cx="2.2" cy="2.6" r="0.8"/></g>' +
+    '<text x="0" y="6" font-size="10" font-weight="bold" fill="#1f8a4c" font-family="Arial">♪</text></svg>';
 
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
   const COLS = [{ k: 'mv', w: 34, label: '' }, { k: 'num', w: 26, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 340, label: 'Artist' }, { k: 'len', w: 56, label: 'Length' }, { k: 'x', w: 26, label: '' }];
