@@ -29,6 +29,7 @@ async function main() {
 
   await page.goto(ORIGIN + '/', { waitUntil: 'domcontentloaded' });
   if (page.url().includes('/login')) { console.error('not logged in'); await ctx.close(); process.exit(3); }
+  await page.evaluate(() => localStorage.setItem('trackCannon.settings.v1', JSON.stringify({ replace: false, autoRun: false })));
   await page.evaluate(({ origin, params }) => {
     const f = document.createElement('form'); f.method = 'POST'; f.action = origin + '/release/add'; f.style.display = 'none';
     const add = (n, v) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; f.appendChild(i); };

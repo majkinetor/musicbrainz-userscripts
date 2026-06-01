@@ -38,6 +38,19 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself
    the next time you open a release add/edit page (it still applies nothing until you click).
 
+## Two modes (⚙ settings)
+
+**`Replace MB track list`** switches between:
+
+- **Off — floating panel** (default): a review panel sits beside the editor; you click 🎯, review,
+  Apply. MB's own tracklist is untouched.
+- **On — mirror table**: Track Cannon renders a table that *replaces* the integrated tracklist,
+  laid out like MB's own (▲▼ reorder, #, Title, Artist, 🔍, Length, ✕) with the artist matcher
+  built into the Artist column and rows tinted by confidence. Multi-artist credits stack with their
+  join phrases. Every structural action drives MB's real model — **reorder** (`moveTrackUp/Down`),
+  **remove** (`removeTrack`), **title/length** edits — so nothing diverges from the native editor,
+  and MB's own *Add release* button submits as usual. 🔍 re-matches a single track.
+
 Track Cannon only fills the in-page editor. **You** review and press MusicBrainz's own
 *Add release* / *Enter edit* button — nothing is submitted on your behalf.
 
