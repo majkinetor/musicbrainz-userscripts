@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.1.215715
-// @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Optional mirror table that replaces the integrated tracklist.
+// @version      2026.6.1.223511
+// @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
 // @match        https://musicbrainz.org/release/add
@@ -46,7 +46,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { try { return Object.assign({ replace: false, autoRun: false }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { replace: false, autoRun: false }; } }
+  function loadSettings() { try { return Object.assign({ replace: false, autoRun: false, colWidths: {} }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { replace: false, autoRun: false, colWidths: {} }; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -109,7 +109,7 @@
     if (!rgGid) { Log.info('no release group linked → search-only'); return new Map(); }
     if (!force && _sibCache.gid === rgGid && _sibCache.map && _sibCache.map.size) return _sibCache.map;
     let map = new Map();
-    for (let i = 0; i < 3 && !map.size; i++) { if (i) await new Promise(r => setTimeout(r, 1100)); map = await fetchSiblings(rgGid); }  // MB WS2 ~1 req/s
+    for (let i = 0; i < 3 && !map.size; i++) { if (i) await new Promise(r => setTimeout(r, 1100)); map = await fetchSiblings(rgGid); }
     _sibCache = { gid: rgGid, map };
     if (map.size) Log.info('sibling map:', map.size, 'titles from RG', rgGid);
     else Log.warn('sibling map empty (RG', rgGid + ') — search only; retries on rebuild');
@@ -170,18 +170,19 @@
     if (changed) track.artistCredit({ names });
     return changed;
   }
+  function refreshEntry(entry) {
+    const live = liveNames(koTrack(entry.mi, entry.ti));
+    entry.slots.forEach((s, i) => { const a = live[i] && u(live[i].artist); const gid = a ? u(a.gid) : null; if (gid) { s.status = 'set'; s.gid = gid; s.name = u(a.name); } });
+  }
   function resetTrack(entry) {
     const orig = ORIGINALS.get(entry.mi + ':' + entry.ti);
     if (orig) koTrack(entry.mi, entry.ti).artistCredit({ names: orig.map(o => ({ artist: o.artist, name: o.creditedAs, joinPhrase: o.joinPhrase })) });
     Log.info('reset track', entry.number, 'to original');
   }
-  function removeTrack(entry) { const ed = getEditor(); ed.removeTrack(koTrack(entry.mi, entry.ti)); Log.info('removed track', entry.number); }
-  function moveTrack(entry, dir) { const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); Log.info('moved track', entry.number, dir < 0 ? 'up' : 'down'); }
+  function removeTrack(entry) { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); Log.info('removed track', entry.number); }
+  function moveTrack(entry, dir) { const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); }
   function setTitle(entry, v) { koTrack(entry.mi, entry.ti).name(v); }
-  function setLength(entry, v) {
-    const ed = getEditor(); const t = koTrack(entry.mi, entry.ti);
-    try { const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) t.length(ms); } catch (e) { Log.warn('length parse failed', v, e.message); }
-  }
+  function setLength(entry, v) { const ed = getEditor(); try { const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) koTrack(entry.mi, entry.ti).length(ms); } catch (e) { Log.warn('length parse failed', v, e.message); } }
 
   /* ── create artist ── */
   function guessSortName(name) {
@@ -195,19 +196,23 @@
     Log.info('open MB create-artist for', JSON.stringify(name)); W.open(url, '_blank', 'noopener');
   }
 
-  /* ── shared UI helpers ── */
+  /* ════════════════════════ UI ════════════════════════ */
+  const ICON = '<svg class="tc-ico" viewBox="0 0 30 24" width="22" height="17" aria-hidden="true" style="vertical-align:-3px">' +
+    '<line x1="7" y1="16.5" x2="16.5" y2="6.5" stroke="#5f3ec0" stroke-width="6.5" stroke-linecap="round"/>' +
+    '<circle cx="7" cy="17.5" r="4.4" fill="#3d2470"/><circle cx="7" cy="17.5" r="1.5" fill="#fff"/>' +
+    '<circle cx="17.3" cy="5.6" r="1.5" fill="#e0a800"/>' +
+    '<text x="20" y="10" font-size="12" font-family="Arial" font-weight="bold" fill="#1f8a4c">♪</text></svg>';
+
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
+  const COLS = [{ k: 'mv', w: 48, label: '' }, { k: 'num', w: 26, label: '#' }, { k: 'title', w: 210, label: 'Title' }, { k: 'art', w: 320, label: 'Artist' }, { k: 'len', w: 56, label: 'Length' }, { k: 'x', w: 26, label: '' }];
+  const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   const artistLink = (gid, label) => gid ? `<a href="${ORIGIN}/artist/${gid}" target="_blank" rel="noopener" title="open artist page">${esc(label)} ↗</a>` : esc(label);
-  function rowConfidence(t) {
-    const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set';
-    const order = ['none', 'low', 'user', 'high', 'rg'];
-    return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0];
-  }
+  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
   const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s.toUpperCase()}</span>`;
 
   const css = `
-    .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;letter-spacing:.3px;color:#fff;white-space:nowrap}
+    .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:#fff;white-space:nowrap}
     .tc-badge.rg{background:#1f8a4c}.tc-badge.set{background:#6c757d}.tc-badge.high{background:#2f6fd6}
     .tc-badge.low{background:#e0a800}.tc-badge.user{background:#6f42c1}.tc-badge.none{background:#c0392b}
     .tc-btn{padding:4px 11px;border:1px solid #bbb;border-radius:3px;background:linear-gradient(#fff,#eee);cursor:pointer;font:13px Arial;color:#333}
@@ -215,71 +220,61 @@
     .tc-btn.primary{background:#5f3ec0;color:#fff;border-color:#4f33a3}.tc-btn.primary:hover{background:#553597}
     .tc-btn.mini{padding:1px 6px;font-size:11px}
     .tc-icon{cursor:pointer;border:none;background:none;font-size:13px;padding:0 2px;color:#666}
-    .tc-cred{color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .tc-sel{font:12px Arial;padding:2px;border:1px solid #bbb;border-radius:3px;background:#fff;max-width:100%}
-    #tc-panel a,.tc-mirror a{color:#4800a0;text-decoration:none}
-    #tc-panel a:hover,.tc-mirror a:hover{text-decoration:underline}
+    #tc-panel a,#tc-mirror-wrap a{color:#4800a0;text-decoration:none}#tc-panel a:hover,#tc-mirror-wrap a:hover{text-decoration:underline}
 
-    /* floating panel */
-    #tc-panel{position:fixed;top:90px;right:18px;width:600px;max-width:96vw;max-height:84vh;background:#fff;
-      border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 30px rgba(40,20,80,.28);z-index:99999;
+    .tc-mirror{table-layout:fixed;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff}
+    .tc-mirror th{position:relative;background:#e8e8e8;border-bottom:2px solid #ccc;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
+    .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:3px 6px;vertical-align:top;overflow:hidden}
+    .tc-mirror .tc-resizer{position:absolute;right:0;top:0;height:100%;width:7px;cursor:col-resize}
+    .tc-mirror .c-num{text-align:right;color:#888;font-variant-numeric:tabular-nums}
+    .tc-mirror .c-mv{white-space:nowrap}
+    .tc-mirror input.t-title,.tc-mirror input.t-len{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:2px}
+    .tc-mirror input.t-len{text-align:right}
+    .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus{border-color:#bbb;background:#fff}
+    .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:13px;padding:0 1px}.tc-mirror .mv.rv{color:#888}
+    .tc-mirror .rm{cursor:pointer;color:#c0392b;font-weight:bold;border:none;background:none;font-size:15px}
+    .tc-aslot{display:flex;align-items:center;gap:4px;margin:2px 0;min-width:0}
+    .tc-aslot .join{color:#999;font-style:italic;font-size:11px;flex:none}
+    .tc-aslot .cred{color:#777;font-size:11px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none}
+    .tc-aslot .aset{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .tc-aslot select{flex:1;min-width:30px;font:12px Arial;padding:1px;border:1px solid #bbb;border-radius:3px;background:#fff}
+    .tc-medhdr{background:#dfd7f0;font-weight:bold;color:#4b3a82;padding:4px 8px}
+
+    #tc-panel{position:fixed;top:90px;right:18px;width:720px;max-width:96vw;max-height:84vh;background:#fff;
+      border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 8px 34px rgba(40,20,80,.32);z-index:99999;
       display:flex;flex-direction:column;font:13px/1.4 Arial,Helvetica,sans-serif;color:#1c1c1c}
-    #tc-hdr{display:flex;align-items:center;gap:8px;padding:8px 11px;background:#ede9f6;border-bottom:1px solid #d7ccef;border-radius:6px 6px 0 0}
+    #tc-hdr{display:flex;align-items:center;gap:8px;padding:8px 11px;background:#ede9f6;border-bottom:1px solid #d7ccef;border-radius:6px 6px 0 0;cursor:move;user-select:none}
     #tc-hdr b{flex:1;color:#563b8f;font-size:14px}#tc-hdr .meta{font-size:12px;color:#6b6b6b}
     #tc-body{flex:1;overflow:auto}
     #tc-foot{display:flex;align-items:center;gap:8px;padding:8px 11px;border-top:1px solid #d7ccef;background:#f6f4fb;border-radius:0 0 6px 6px}
-    #tc-foot .sp{flex:1;font-size:12px;color:#555}
-    .tc-row{border-bottom:1px solid #eaeaea;padding:5px 10px}
-    .tc-rowhead{display:flex;align-items:center;gap:7px}
-    .tc-rowhead .num{color:#999;font-variant-numeric:tabular-nums;min-width:20px;text-align:right}
-    .tc-rowhead .ttl{flex:1;font-weight:bold;color:#222}
-    .tc-slot{display:flex;align-items:center;gap:6px;margin:4px 0 0 27px}
-    .tc-slot .tc-cred{min-width:115px;max-width:115px}
-    .tc-slot select{flex:1;min-width:0}
+    #tc-foot .sp{flex:1}
 
-    /* settings popover */
-    #tc-settings{position:fixed;z-index:100000;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 24px rgba(40,20,80,.3);padding:11px 13px;font:13px Arial;color:#222;width:330px}
+    #tc-mirror-wrap{margin:4px 0 10px}
+    #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 2px}
+    #tc-bar b{color:#563b8f}#tc-bar .tc-status{flex:1;font-size:12px;color:#666}
+    .tc-tablewrap{overflow-x:auto}
+
+    #tc-settings{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 24px rgba(40,20,80,.3);padding:11px 13px;font:13px Arial;color:#222;width:340px}
     #tc-settings h4{margin:0 0 8px;color:#563b8f;font-size:13px}
     #tc-settings label{display:flex;gap:8px;align-items:flex-start;margin:7px 0;color:#333}
-    #tc-settings .hint{color:#777;font-size:11px;margin:0 0 0 24px}
-
-    /* mirror table */
-    .tc-mirror{width:100%;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff;margin:4px 0 8px}
-    .tc-mirror th{background:#e8e8e8;border-bottom:2px solid #ccc;text-align:left;padding:4px 6px;font-size:12px;color:#333}
-    .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:4px 6px;vertical-align:top}
-    .tc-mirror .c-mv{width:30px;white-space:nowrap}
-    .tc-mirror .c-num{width:26px;text-align:right;color:#888;font-variant-numeric:tabular-nums}
-    .tc-mirror .c-len{width:54px}.tc-mirror .c-act{width:90px;white-space:nowrap}.tc-mirror .c-x{width:22px}
-    .tc-mirror input.t-title{width:100%;border:1px solid transparent;background:transparent;font:13px Arial;padding:2px}
-    .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus{border-color:#bbb;background:#fff}
-    .tc-mirror input.t-len{width:48px;border:1px solid transparent;background:transparent;font:13px Arial;padding:2px;text-align:right}
-    .tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus{border-color:#bbb;background:#fff}
-    .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:14px;line-height:1}
-    .tc-mirror .rm{cursor:pointer;color:#c0392b;font-weight:bold;border:none;background:none;font-size:15px}
-    .tc-mirror .look{cursor:pointer;color:#666;border:none;background:none;font-size:14px}
-    .tc-aslot{display:flex;align-items:center;gap:5px;margin:2px 0}
-    .tc-aslot .join{color:#999;font-style:italic;font-size:11px;min-width:34px}
-    .tc-aslot select{flex:1;min-width:60px}
-    .tc-medhdr{background:#dfd7f0;font-weight:bold;color:#4b3a82;padding:4px 8px}
-    #tc-mirror-bar{display:flex;align-items:center;gap:8px;padding:6px 0}
-    #tc-mirror-bar b{color:#563b8f}#tc-mirror-bar .sp{flex:1;font-size:12px;color:#666}
+    #tc-settings .hint{color:#777;font-size:11px;margin:0 0 4px 24px}
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;background:#5f3ec0;color:#fff;border:none;border-radius:20px;padding:8px 14px;font:bold 13px Arial;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
+    #tc-btn,#tc-gear-btn{vertical-align:middle}
   `;
   function style() { if (document.getElementById('tc-css')) return; const s = document.createElement('style'); s.id = 'tc-css'; s.textContent = css; document.head.appendChild(s); }
 
-  /* ── settings popover ── */
+  /* ── settings popover (one place; reachable from the Canon interface) ── */
   function openSettings(anchor) {
-    style();
-    let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
+    style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
-    s.innerHTML = `<h4>🎯 Track Cannon — settings</h4>
+    s.innerHTML = `<h4>${ICON} Track Cannon — settings</h4>
       <label><input type="checkbox" id="tc-s-replace"> <span>Replace MB track list</span></label>
-      <div class="hint">On: a Track Cannon table takes over the tracklist (reorder, remove, length and the artist matcher in one). Off: a floating review panel beside the editor.</div>
-      <label><input type="checkbox" id="tc-s-auto"> <span>Run automatically when the page opens</span></label>
-      <div class="hint">Match on load (floating mode opens the panel itself). Nothing is applied until you click.</div>`;
+      <div class="hint">On: the Track Cannon table takes the place of the integrated tracklist. Off: the same table in a floating window.</div>
+      <label><input type="checkbox" id="tc-s-auto"> <span>Run automatically on the Tracklist tab</span></label>
+      <div class="hint">Matches as soon as you open the Tracklist tab (not before — the release group may not be set yet). Nothing is applied until you click.</div>`;
     document.body.appendChild(s);
     const r = anchor ? anchor.getBoundingClientRect() : { left: 60, bottom: 80 };
-    s.style.left = Math.min(r.left, window.innerWidth - 350) + 'px'; s.style.top = (r.bottom + 6) + 'px';
+    s.style.left = Math.min(r.left, window.innerWidth - 360) + 'px'; s.style.top = (r.bottom + 6) + 'px';
     const rep = s.querySelector('#tc-s-replace'), au = s.querySelector('#tc-s-auto');
     rep.checked = !!SETTINGS.replace; au.checked = !!SETTINGS.autoRun;
     rep.onchange = () => { SETTINGS.replace = rep.checked; saveSettings(); Log.info('replace =', SETTINGS.replace); applyMode(); };
@@ -288,62 +283,39 @@
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
 
-  /* ════════════════ FLOATING PANEL ════════════════ */
+  /* ── the one shared table ── */
   let MODEL = null;
-  async function openPanel() {
-    style();
-    let p = document.getElementById('tc-panel'); if (p) p.remove();
-    const lp = document.getElementById('tc-launch'); if (lp) lp.remove();
-    p = document.createElement('div'); p.id = 'tc-panel';
-    p.innerHTML = `<div id="tc-hdr"><b>🎯 Track Cannon</b><span class="meta" id="tc-status">matching…</span>
-        <button class="tc-icon" id="tc-gear" title="settings">⚙</button><button class="tc-icon" id="tc-close" title="close">✕</button></div>
-      <div id="tc-body"></div>
-      <div id="tc-foot"><span class="sp" id="tc-sum"></span>
-        <button class="tc-btn" id="tc-apply-conf">Apply confident</button>
-        <button class="tc-btn primary" id="tc-apply">Apply checked</button></div>`;
-    document.body.appendChild(p);
-    p.querySelector('#tc-close').onclick = () => p.remove();
-    p.querySelector('#tc-gear').onclick = e => openSettings(e.currentTarget);
-    MODEL = await buildModel((d, n) => { const st = p.querySelector('#tc-status'); if (st) st.textContent = `matching ${d}/${n}…`; });
-    renderPanelRows();
-    p.querySelector('#tc-apply-conf').onclick = () => { MODEL.tracks.forEach(t => applyTrack(t, 'confident')); afterApply('confident'); };
-    p.querySelector('#tc-apply').onclick = () => { MODEL.tracks.forEach(t => applyTrack(t, 'checked')); afterApply('checked'); };
-  }
-  function afterApply(mode) { Log.info('apply', mode); const st = document.getElementById('tc-status'); if (st) st.textContent = 'applied'; renderPanelRows(); }
+  let ACTIVE = {};   // { mode, tbody, statusEl }
+  const updateStatus = t => { if (ACTIVE.statusEl) ACTIVE.statusEl.textContent = t; };
+  const rerender = () => { if (ACTIVE.tbody) fillRows(ACTIVE.tbody); };
 
-  function renderPanelRows() {
-    const body = document.getElementById('tc-body'); if (!body) return;
-    body.innerHTML = ''; let confident = 0, unresolved = 0;
-    MODEL.tracks.forEach(t => {
-      t.slots.forEach(s => { if (s.status !== 'set') { unresolved++; if (s.status === 'rg' || s.status === 'high') confident++; } });
-      const row = document.createElement('div'); row.className = 'tc-row'; row.style.background = COLORS[rowConfidence(t)] || '#fff';
-      const head = document.createElement('div'); head.className = 'tc-rowhead';
-      head.innerHTML = `<span class="num">${t.number}</span><span class="ttl">${esc(t.title)}</span>`;
-      const orig = document.createElement('button'); orig.className = 'tc-btn mini'; orig.textContent = 'Original';
-      orig.onclick = () => { resetTrack(t); refreshEntry(t); renderPanelRows(); };
-      head.appendChild(orig); row.appendChild(head);
-      t.slots.forEach(s => row.appendChild(slotEl(t, s, false)));
-      body.appendChild(row);
+  function buildTable() {
+    const t = document.createElement('table'); t.className = 'tc-mirror';
+    t.innerHTML = `<colgroup>${COLS.map(c => `<col style="width:${colW(c.k, c.w)}px">`).join('')}</colgroup>` +
+      `<thead><tr>${COLS.map(c => `<th>${c.label}<span class="tc-resizer"></span></th>`).join('')}</tr></thead><tbody></tbody>`;
+    return t;
+  }
+  function wireResizers(table) {
+    const cols = [...table.querySelectorAll('col')];
+    [...table.querySelectorAll('th .tc-resizer')].forEach((rz, i) => {
+      rz.onmousedown = e => {
+        e.preventDefault(); e.stopPropagation();
+        const col = cols[i], startX = e.clientX, startW = col.offsetWidth || parseInt(col.style.width) || 100;
+        const mm = ev => { col.style.width = Math.max(36, startW + ev.clientX - startX) + 'px'; };
+        const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); SETTINGS.colWidths = SETTINGS.colWidths || {}; SETTINGS.colWidths[COLS[i].k] = parseInt(col.style.width); saveSettings(); };
+        document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
+      };
     });
-    const st = document.getElementById('tc-status'); if (st) st.textContent = `${unresolved} to resolve`;
-    const sum = document.getElementById('tc-sum'); if (sum) sum.textContent = `${MODEL.tracks.length} tracks · ${confident} confident`;
   }
-
-  // one artist slot as a flex line (shared by panel + mirror)
-  function slotEl(entry, s, mirror) {
-    const slot = document.createElement('div'); slot.className = mirror ? 'tc-aslot' : 'tc-slot';
-    if (mirror && s.joinPhrase != null && entry.slots.length > 1) slot.insertAdjacentHTML('beforeend', `<span class="join">${esc((s.joinPhrase || '').trim() || '·')}</span>`);
-    if (s.status === 'set') {
-      slot.insertAdjacentHTML('beforeend', (mirror ? '' : `<span class="tc-cred" style="min-width:115px;max-width:115px" title="${esc(s.creditedAs)}">${esc(s.creditedAs)}</span>`) +
-        `<span style="flex:1">${artistLink(s.gid, s.name || s.creditedAs)}</span>${badge('set')}`);
-      return slot;
-    }
+  function slotEl(entry, s) {
+    const slot = document.createElement('div'); slot.className = 'tc-aslot';
+    if (entry.slots.length > 1) slot.insertAdjacentHTML('beforeend', `<span class="join">${esc((s.joinPhrase || '').trim() || '·')}</span>`);
+    if (s.status === 'set') { slot.insertAdjacentHTML('beforeend', `<span class="aset">${artistLink(s.gid, s.name || s.creditedAs)}</span>${badge('set')}`); return slot; }
     const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!s.accept; cb.title = 'apply this slot';
-    cb.onchange = () => { s.accept = cb.checked; };
-    slot.appendChild(cb);
-    if (!mirror) slot.insertAdjacentHTML('beforeend', `<span class="tc-cred" title="${esc(s.creditedAs)}">${esc(s.creditedAs)}</span>`);
+    cb.onchange = () => { s.accept = cb.checked; }; slot.appendChild(cb);
+    slot.insertAdjacentHTML('beforeend', `<span class="cred" title="${esc(s.creditedAs)}">${esc(s.creditedAs)}</span>`);
     if (s.candidates && s.candidates.length) {
-      const sel = document.createElement('select'); sel.className = 'tc-sel';
+      const sel = document.createElement('select');
       sel.innerHTML = s.candidates.map((c, ci) => `<option value="${ci}"${c.gid === s.gid ? ' selected' : ''}>${esc(c.name)}${c.comment ? ' (' + esc(c.comment) + ')' : ''}${c.typeName ? ' · ' + c.typeName : ''}</option>`).join('');
       sel.onchange = () => { s.entity = s.candidates[+sel.value]; s.gid = s.entity.gid; s.name = s.entity.name; s.status = 'user'; s.accept = true; rerender(); };
       slot.appendChild(sel);
@@ -354,106 +326,110 @@
     slot.insertAdjacentHTML('beforeend', badge(s.status));
     return slot;
   }
-  function rerender() { if (document.getElementById('tc-mirror-wrap')) renderMirror(); else if (document.getElementById('tc-panel')) renderPanelRows(); }
-  function refreshEntry(entry) {
-    const live = liveNames(koTrack(entry.mi, entry.ti));
-    entry.slots.forEach((s, i) => { const a = live[i] && u(live[i].artist); const gid = a ? u(a.gid) : null; if (gid) { s.status = 'set'; s.gid = gid; s.name = u(a.name); } });
-  }
-
-  /* ════════════════ MIRROR TABLE ════════════════ */
-  function nativeTrackTables() { return [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
-  function hideNative(hide) { nativeTrackTables().forEach(t => { t.style.display = hide ? 'none' : ''; }); }
-
-  async function showMirror() {
-    style();
-    let wrap = document.getElementById('tc-mirror-wrap');
-    if (!wrap) {
-      wrap = document.createElement('div'); wrap.id = 'tc-mirror-wrap';
-      const tbl = nativeTrackTables()[0];
-      if (tbl && tbl.parentElement) tbl.parentElement.insertBefore(wrap, tbl);
-      else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
-    }
-    wrap.innerHTML = `<div id="tc-mirror-bar"><b>🎯 Track Cannon</b><span class="sp" id="tc-mstatus">matching…</span>
-      <button class="tc-btn mini" id="tc-mgear">⚙ settings</button>
-      <button class="tc-btn" id="tc-mconf">Apply confident</button></div><div id="tc-mirror-body"></div>`;
-    hideNative(true);
-    wrap.querySelector('#tc-mgear').onclick = e => openSettings(e.currentTarget);
-    wrap.querySelector('#tc-mconf').onclick = () => { MODEL.tracks.forEach(t => applyTrack(t, 'confident')); rebuildMirror(); };
-    MODEL = await buildModel((d, n) => { const st = document.getElementById('tc-mstatus'); if (st) st.textContent = `matching ${d}/${n}…`; });
-    renderMirror();
-  }
-  function hideMirror() { const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); hideNative(false); }
-  async function rebuildMirror() { MODEL = await buildModel(); renderMirror(); }
-
-  function renderMirror() {
-    const body = document.getElementById('tc-mirror-body'); if (!body) return;
-    let confident = 0, unresolved = 0;
-    const rows = [];
-    let lastMi = -1;
-    MODEL.tracks.forEach((t, idx) => {
-      if (t.mi !== lastMi && mediums().length > 1) { rows.push(`<tr><td class="tc-medhdr" colspan="7">Medium ${t.mi + 1}</td></tr>`); lastMi = t.mi; }
+  function fillRows(tbody) {
+    tbody.innerHTML = ''; let confident = 0, unresolved = 0, lastMi = -1; const multi = mediums().length > 1;
+    MODEL.tracks.forEach(t => {
+      if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
       t.slots.forEach(s => { if (s.status !== 'set') { unresolved++; if (s.status === 'rg' || s.status === 'high') confident++; } });
-      const tr = document.createElement('tr'); tr.style.background = COLORS[rowConfidence(t)] || '#fff'; tr.dataset.idx = idx;
-      tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span></td>
+      const tr = document.createElement('tr'); tr.style.background = COLORS[rowConfidence(t)] || '#fff';
+      tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span><span class="mv rv" title="revert this track">↺</span></td>
         <td class="c-num">${t.number}</td>
         <td class="c-title"><input class="t-title" value="${esc(t.title)}"></td>
         <td class="c-art"></td>
-        <td class="c-look"><button class="look" title="re-match this track">🔍</button></td>
         <td class="c-len"><input class="t-len" value="${esc(t.length)}"></td>
         <td class="c-x"><button class="rm" title="remove track">✕</button></td>`;
-      const art = tr.querySelector('.c-art'); t.slots.forEach(s => art.appendChild(slotEl(t, s, true)));
+      const art = tr.querySelector('.c-art'); t.slots.forEach(s => art.appendChild(slotEl(t, s)));
       tr.querySelector('.t-title').onchange = e => setTitle(t, e.target.value);
       tr.querySelector('.t-len').onchange = e => setLength(t, e.target.value);
-      tr.querySelector('.up').onclick = async () => { moveTrack(t, -1); await rebuildMirror(); };
-      tr.querySelector('.dn').onclick = async () => { moveTrack(t, +1); await rebuildMirror(); };
-      tr.querySelector('.rm').onclick = async () => { removeTrack(t); await rebuildMirror(); };
-      tr.querySelector('.look').onclick = async () => { await rematchTrack(t); renderMirror(); };
-      rows.push(tr);
+      tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };
+      tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
+      tr.querySelector('.rv').onclick = () => { resetTrack(t); refreshEntry(t); rerender(); };
+      tr.querySelector('.rm').onclick = () => { removeTrack(t); rebuild(); };
+      tbody.appendChild(tr);
     });
-    body.innerHTML = `<table class="tc-mirror"><thead><tr><th></th><th>#</th><th>Title</th><th>Artist</th><th></th><th>Length</th><th></th></tr></thead><tbody></tbody></table>`;
-    const tb = body.querySelector('tbody');
-    rows.forEach(r => { if (typeof r === 'string') tb.insertAdjacentHTML('beforeend', r); else tb.appendChild(r); });
-    const st = document.getElementById('tc-mstatus'); if (st) st.textContent = `${MODEL.tracks.length} tracks · ${unresolved} to resolve · ${confident} confident`;
+    updateStatus(`${MODEL.tracks.length} tracks · ${unresolved} to resolve · ${confident} confident`);
+  }
+  async function rebuild() { MODEL = await buildModel(); rerender(); if (ACTIVE.mode === 'mirror') hideNative(true); }
+  function doApply(mode) { if (!MODEL) return; MODEL.tracks.forEach(t => { applyTrack(t, mode); refreshEntry(t); }); rerender(); Log.info('apply', mode); }
+  function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track's artist to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(); }
+  function bindActions(host) {
+    host.querySelectorAll('[data-act]').forEach(b => {
+      const a = b.dataset.act;
+      b.onclick = () => { if (a === 'gear') openSettings(b); else if (a === 'close') { host.remove(); ACTIVE = {}; } else if (a === 'conf') doApply('confident'); else if (a === 'apply') doApply('checked'); else if (a === 'revert') revertAll(); };
+    });
+  }
+  const FOOTER = `<button class="tc-btn" data-act="conf">Apply confident</button><button class="tc-btn" data-act="revert">Revert all</button><button class="tc-btn primary" data-act="apply">Apply checked</button>`;
+
+  /* ── floating window (movable) ── */
+  function openPanel() {
+    style(); const ex = document.getElementById('tc-panel'); if (ex) ex.remove(); const l = document.getElementById('tc-launch'); if (l) l.remove();
+    const p = document.createElement('div'); p.id = 'tc-panel';
+    p.innerHTML = `<div id="tc-hdr">${ICON}<b>Track Cannon</b><span class="tc-status meta">matching…</span>
+        <button class="tc-icon" data-act="gear" title="settings">⚙</button><button class="tc-icon" data-act="close" title="close">✕</button></div>
+      <div id="tc-body"><div class="tc-tablewrap"></div></div>
+      <div id="tc-foot"><span class="sp"></span>${FOOTER}</div>`;
+    document.body.appendChild(p);
+    const table = buildTable(); p.querySelector('.tc-tablewrap').appendChild(table); wireResizers(table);
+    ACTIVE = { mode: 'float', tbody: table.querySelector('tbody'), statusEl: p.querySelector('.tc-status') };
+    const hdr = p.querySelector('#tc-hdr');
+    hdr.onmousedown = e => { if (e.target.closest('button')) return; const r = p.getBoundingClientRect(); const ox = e.clientX - r.left, oy = e.clientY - r.top; p.style.right = 'auto'; const mm = ev => { p.style.left = Math.max(0, ev.clientX - ox) + 'px'; p.style.top = Math.max(0, ev.clientY - oy) + 'px'; }; const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }; document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu); };
+    bindActions(p);
+    buildModel((d, n) => updateStatus(`matching ${d}/${n}…`)).then(m => { MODEL = m; fillRows(ACTIVE.tbody); });
+  }
+
+  /* ── in-page replacement ── */
+  function nativeTrackTables() { return [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
+  function hideNative(hide) { nativeTrackTables().forEach(t => { t.style.display = hide ? 'none' : ''; }); }
+  async function showMirror() {
+    style(); let wrap = document.getElementById('tc-mirror-wrap');
+    if (wrap) { hideNative(true); return; }
+    wrap = document.createElement('div'); wrap.id = 'tc-mirror-wrap';
+    const tbl = nativeTrackTables()[0];
+    if (tbl && tbl.parentElement) tbl.parentElement.insertBefore(wrap, tbl);
+    else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
+    wrap.innerHTML = `<div id="tc-bar">${ICON}<b>Track Cannon</b><span class="tc-status">matching…</span>${FOOTER}</div><div class="tc-tablewrap"></div>`;
     hideNative(true);
+    const table = buildTable(); wrap.querySelector('.tc-tablewrap').appendChild(table); wireResizers(table);
+    ACTIVE = { mode: 'mirror', tbody: table.querySelector('tbody'), statusEl: wrap.querySelector('.tc-status') };
+    bindActions(wrap);
+    MODEL = await buildModel((d, n) => updateStatus(`matching ${d}/${n}…`));
+    fillRows(ACTIVE.tbody); hideNative(true);
   }
-  async function rematchTrack(entry) {
-    const siblings = await loadSiblingMap();
-    const sib = siblings.get(fold(entry.title)) || null;
-    for (let i = 0; i < entry.slots.length; i++) {
-      const s = entry.slots[i]; if (s.status === 'set') continue;
-      const m = await matchSlot(s.creditedAs, sib && sib[i]);
-      Object.assign(s, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, accept: m.source === 'rg' || m.confidence === 'high' });
-    }
-  }
+  function hideMirror() { const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); hideNative(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
+  function applyMode() { if (SETTINGS.replace) { const p = document.getElementById('tc-panel'); if (p) { p.remove(); ACTIVE = {}; } showMirror(); } else hideMirror(); }
 
-  /* ── mode switching ── */
-  function applyMode() {
-    if (SETTINGS.replace) { const p = document.getElementById('tc-panel'); if (p) p.remove(); showMirror(); }
-    else { hideMirror(); }
-  }
-
-  /* ── entry points ── */
+  /* ── entry points + tab-aware auto-run ── */
   function injectButton() {
     if (document.getElementById('tc-btn')) return true;
     const anchor = [...document.querySelectorAll('button, input[type=button]')].find(b => /guess feat\. artists|guess case|reset track numbers/i.test(b.textContent || b.value || ''));
     if (!anchor || !anchor.parentElement) return false;
     style();
-    const btn = document.createElement('button'); btn.id = 'tc-btn'; btn.type = 'button'; btn.textContent = '🎯 Track Cannon';
-    btn.style.cssText = 'margin-left:8px;font-weight:bold';
-    btn.onclick = () => { if (SETTINGS.replace) { document.getElementById('tc-mirror-wrap') ? hideMirror() : showMirror(); } else openPanel(); };
-    const gear = document.createElement('button'); gear.id = 'tc-gear-btn'; gear.type = 'button'; gear.textContent = '⚙'; gear.title = 'Track Cannon settings';
-    gear.style.cssText = 'margin-left:4px'; gear.onclick = e => openSettings(e.currentTarget);
+    const btn = document.createElement('button'); btn.id = 'tc-btn'; btn.type = 'button'; btn.innerHTML = ICON + ' Track Cannon'; btn.style.cssText = 'margin-left:8px;font-weight:bold';
+    btn.onclick = () => { if (SETTINGS.replace) (document.getElementById('tc-mirror-wrap') ? hideMirror() : showMirror()); else openPanel(); };
+    const gear = document.createElement('button'); gear.id = 'tc-gear-btn'; gear.type = 'button'; gear.textContent = '⚙'; gear.title = 'Track Cannon settings'; gear.style.marginLeft = '4px';
+    gear.onclick = e => openSettings(e.currentTarget);
     anchor.parentElement.appendChild(btn); anchor.parentElement.appendChild(gear);
     Log.info('button injected next to tracklist tools');
     return true;
   }
   function ensureLauncher() {
     if (document.getElementById('tc-btn') || document.getElementById('tc-launch') || SETTINGS.replace) return;
-    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.textContent = '🎯 Track Cannon';
+    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.innerHTML = ICON + ' Track Cannon';
     b.onclick = () => SETTINGS.replace ? showMirror() : openPanel(); document.body.appendChild(b);
   }
+  function tracklistVisible() { const b = [...document.querySelectorAll('button')].find(x => /guess feat\. artists/i.test(x.textContent || '')); return !!(b && b.offsetParent !== null); }
+  let _tlPrev = false, _autoFloatDone = false;
+  function onEnterTracklist() {
+    injectButton();
+    if (SETTINGS.replace) showMirror();
+    else if (SETTINGS.autoRun && !_autoFloatDone) { _autoFloatDone = true; openPanel(); }
+  }
+  function watchTracklist() {
+    const tick = () => { const vis = tracklistVisible(); if (vis) injectButton(); if (vis && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab'); onEnterTracklist(); } else if (!vis && _tlPrev) _tlPrev = false; };
+    tick(); setInterval(tick, 700);
+  }
 
-  W.__trackCannon = { readTracklist, buildModel, applyTrack, resetTrack, removeTrack, moveTrack, searchArtist, openPanel, showMirror, hideMirror, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__trackCannon = { readTracklist, buildModel, applyTrack, resetTrack, removeTrack, moveTrack, searchArtist, openPanel, showMirror, hideMirror, revertAll, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
@@ -462,10 +438,7 @@
     snapshotOriginals();
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
-    injectButton(); ensureLauncher();
-    const mo = new MutationObserver(() => { if (injectButton()) { const l = document.getElementById('tc-launch'); if (l) l.remove(); } if (SETTINGS.replace && !document.getElementById('tc-mirror-wrap') && nativeTrackTables().length) showMirror(); });
-    mo.observe(document.body, { childList: true, subtree: true });
-    if (SETTINGS.replace) showMirror();
-    else if (SETTINGS.autoRun) openPanel();
+    ensureLauncher();
+    watchTracklist();   // auto-run waits until the Tracklist tab is actually shown
   })();
 })();

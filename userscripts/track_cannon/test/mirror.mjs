@@ -48,9 +48,9 @@ async function main() {
   await page.waitForFunction(() => !!window.__trackCannon, null, { timeout: 15000 });
   await page.locator('a, button', { hasText: /^Tracklist$/ }).first().click().catch(() => {});
 
-  // mirror should auto-render in replace mode; wait for its rows
-  await page.waitForSelector('.tc-mirror tbody tr', { timeout: 60000 });
-  await page.waitForFunction(() => /confident/.test(document.querySelector('#tc-mstatus')?.textContent || ''), null, { timeout: 60000 });
+  // mirror should auto-render once the Tracklist tab is shown; wait for its rows
+  await page.waitForSelector('#tc-mirror-wrap .tc-mirror tbody tr', { timeout: 60000 });
+  await page.waitForFunction(() => /confident/.test(document.querySelector('#tc-mirror-wrap .tc-status')?.textContent || ''), null, { timeout: 60000 });
   await page.waitForTimeout(400);
   const nativeHidden = await page.evaluate(() => [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')).every(t => t.style.display === 'none'));
   await page.locator('#tc-mirror-wrap').screenshot({ path: resolve(LOG_DIR, 'mirror.png') }).catch(() => page.screenshot({ path: resolve(LOG_DIR, 'mirror.png'), fullPage: true }));
@@ -59,7 +59,7 @@ async function main() {
   const trackCount = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().length; });
 
   // Apply confident on the clean model, then verify resolution
-  await page.locator('#tc-mconf').click();
+  await page.locator('#tc-mirror-wrap [data-act="conf"]').click();
   await page.waitForTimeout(900);
   const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
 

@@ -38,18 +38,23 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself
    the next time you open a release add/edit page (it still applies nothing until you click).
 
-## Two modes (⚙ settings)
+## Two modes (⚙ settings) — same table either way
 
-**`Replace MB track list`** switches between:
+It's the **same Track Cannon table** in both modes — columns laid out like MB's own
+(▲▼ reorder · ↺ revert-row · # · Title · Artist · Length · ✕), rows tinted by confidence, the artist
+matcher in the Artist column, multi-artist credits stacked with their join phrases, and resizable
+columns (drag a header edge; widths are remembered). **`Replace MB track list`** only changes where
+it lives:
 
-- **Off — floating panel** (default): a review panel sits beside the editor; you click 🎯, review,
-  Apply. MB's own tracklist is untouched.
-- **On — mirror table**: Track Cannon renders a table that *replaces* the integrated tracklist,
-  laid out like MB's own (▲▼ reorder, #, Title, Artist, 🔍, Length, ✕) with the artist matcher
-  built into the Artist column and rows tinted by confidence. Multi-artist credits stack with their
-  join phrases. Every structural action drives MB's real model — **reorder** (`moveTrackUp/Down`),
-  **remove** (`removeTrack`), **title/length** edits — so nothing diverges from the native editor,
-  and MB's own *Add release* button submits as usual. 🔍 re-matches a single track.
+- **Off — floating window** (default): the table floats beside the editor and can be dragged by its
+  header. MB's own tracklist stays untouched until you Apply.
+- **On — in place**: the table *replaces* the integrated tracklist.
+
+Either way, every structural action drives MB's real model — **reorder** (`moveTrackUp/Down`),
+**remove** (`removeTrack`), **Title/Length** edits — so nothing diverges from the native editor, and
+MB's own *Add release* button submits as usual. **Revert all** restores every track to its page-load
+state; **↺** does one track. Auto-run (if enabled) fires when you open the **Tracklist** tab, not
+before — the release group may not be set earlier.
 
 Track Cannon only fills the in-page editor. **You** review and press MusicBrainz's own
 *Add release* / *Enter edit* button — nothing is submitted on your behalf.
