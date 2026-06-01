@@ -1,0 +1,14 @@
+{
+  "name": "track-cannon-userscript",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Track Cannon — speed up per-track artist-credit resolution in the MusicBrainz release editor",
+  "scripts": {
+    "spike": "node test/spike.mjs",
+    "spike:headed": "node test/spike.mjs --headed"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}
