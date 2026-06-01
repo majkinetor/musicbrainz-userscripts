@@ -83,11 +83,12 @@ async function main() {
     const c0 = credCount();
     tc.addSlot(t);
     const c1 = credCount(); const slots1 = t.slots.length;
-    const cand = (await tc.searchArtist('CBC Band'))[0]; tc.pickArtist(t.slots[t.slots.length - 1], cand);
-    const c2 = credCount();
+    const newSlot = t.slots[t.slots.length - 1]; const credBefore = newSlot.creditedAs;
+    const cand = (await tc.searchArtist('CBC Band'))[0]; tc.pickArtist(newSlot, cand);
+    const c2 = credCount(); const credAfter = newSlot.creditedAs;
     tc.removeSlot(t, t.slots.length - 1);
     const c3 = credCount();
-    return { title: t.title.slice(0, 20), c0, c1, slots1, c2, c3 };
+    return { title: t.title.slice(0, 20), c0, c1, slots1, c2, c3, credBefore, credAfter, autofilled: !credBefore && credAfter === cand.name };
   });
   await page.locator('#tc-mirror-wrap').screenshot({ path: resolve(LOG_DIR, 'mirror-split.png') }).catch(() => {});
 
@@ -97,7 +98,7 @@ async function main() {
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
-  log('split/merge on', JSON.stringify(split.title), '— credit names:', split.c0, '→ +slot', split.c1, '→ +pick', split.c2, '→ -slot', split.c3);
+  log('split/merge on', JSON.stringify(split.title), '— credit names:', split.c0, '→ +slot', split.c1, '→ +pick', split.c2, '→ -slot', split.c3, '· credited-as auto-filled:', split.autofilled, '(' + JSON.stringify(split.credAfter) + ')');
   log('artifacts in', LOG_DIR);
   if (!HEADED) await ctx.close();
 }

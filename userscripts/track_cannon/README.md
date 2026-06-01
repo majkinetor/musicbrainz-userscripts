@@ -32,12 +32,12 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 3. There is **no apply phase** — confident matches (RG/HIGH) are written to the editor the moment
    matching finishes, and every later edit writes through immediately. Each artist is an **editable
    type-to-search field** (like MB's own): pre-filled with the best match, type to search MB live.
-   The small grey text above it is the **credited-as** title (also editable); the **person/group
-   icon** to its left links to the artist page; **↺** reverts that one field; the little combo on
-   the right is the **join phrase** to the next artist (`&`, `feat.`, … — editable with presets).
-   Creating a new artist is the **＋ Create …** row at the bottom of the search dropdown.
-   **＋ artist** under a track splits the credit into multiple artists; **✕** next to an artist
-   removes that slot (merge).
+   The small grey text above it is the **credited-as** title (also editable — left empty, it
+   auto-fills with the artist you pick); the **person/group icon** to its left links to the artist
+   page; right after the name is the **join-phrase** dropdown to the next artist (`&`, `feat.`, …);
+   then **↺** (revert this field) and **✕** (remove this artist / merge). Creating a new artist is
+   the **＋ Create …** row at the bottom of the search dropdown. **＋** on the last artist splits
+   the credit by adding another slot.
 4. **Revert all** restores the whole release to its page-load state; **↺** does one field.
    The toolbar — *When I pick an artist → apply to **all matching tracks** / **this track only*** —
    controls whether picking an artist also copies it to every other track credited to the same text.
