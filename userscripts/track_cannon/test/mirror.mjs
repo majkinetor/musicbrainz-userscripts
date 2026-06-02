@@ -111,6 +111,26 @@ async function main() {
   });
   log('column resize — 1px drag jump:', resize.jump + 'px (', resize.before, '→', resize.after, ')');
 
+  // "Resize columns" tool: Fit sizes Title to content, Centered balances Title≈Artist, Default resets
+  const colTool = await page.evaluate(async () => {
+    const u = v => (typeof v === 'function' ? v() : v);
+    const widthOf = k => { const c = document.querySelector(`.tc-medsec .tc-mirror colgroup col:nth-child(${['mv', 'num', 'title', 'art', 'len', 'badge'].indexOf(k) + 1})`); return c ? parseInt(c.style.width) || 0 : -1; };
+    document.querySelector('#tc-bar [data-act="menu"]').click(); await new Promise(r => setTimeout(r, 120));
+    const item = [...document.querySelectorAll('#tc-menu .tc-mi')].find(e => e.textContent === 'Resize columns'); item && item.click();
+    await new Promise(r => setTimeout(r, 120));
+    const btns = [...document.querySelectorAll('.tc-toolopts .tc-colbtn')].map(b => b.textContent);
+    const click = label => { const b = [...document.querySelectorAll('.tc-toolopts .tc-colbtn')].find(x => x.textContent === label); b && b.click(); };
+    click('Fit'); await new Promise(r => setTimeout(r, 60));
+    const fitTitle = widthOf('title'), fitSaved = u(window.__trackCannon.settings).colWidths.title;
+    click('Centered'); await new Promise(r => setTimeout(r, 60));
+    const balTitle = widthOf('title'), artW = document.querySelector('.tc-medsec .tc-mirror thead th:nth-child(4)').offsetWidth, balTh = document.querySelector('.tc-medsec .tc-mirror thead th:nth-child(3)').offsetWidth;
+    click('Default'); await new Promise(r => setTimeout(r, 60));
+    const defCleared = Object.keys(u(window.__trackCannon.settings).colWidths).length === 0, defTitle = widthOf('title');
+    return { btns, fitTitle, fitSaved, balTitle, balNearArt: Math.abs(balTh - artW) < 60, defCleared, defTitle };
+  });
+  log('resize-columns tool — buttons:', JSON.stringify(colTool.btns), '· Fit title→', colTool.fitTitle, '(saved', colTool.fitSaved + ')',
+    '· Centered title≈artist:', colTool.balNearArt, '(' + colTool.balTitle + ')', '· Default cleared:', colTool.defCleared, '→', colTool.defTitle);
+
   // no apply phase — confident matches auto-commit on load; verify they're written to the model
   const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
 
@@ -242,11 +262,13 @@ async function main() {
     const h = () => { const a = tbl.querySelector('.tc-aslot'); return a ? Math.round(a.getBoundingClientRect().height) : 0; };
     const cozyH = h();
     document.querySelector('#tc-bar [data-act="gear"]').click(); await new Promise(r => setTimeout(r, 80));
+    const help = document.querySelector('#tc-settings .tc-help');   // help button → README, opens in a new tab
+    const helpOk = !!help && /README\.md$/.test(help.getAttribute('href')) && help.target === '_blank';
     const lay = document.querySelector('#tc-s-layout'); lay.value = 'compact'; lay.dispatchEvent(new Event('change'));
     await new Promise(r => setTimeout(r, 80));
     const compactH = h(); const hasClass = tbl.classList.contains('compact');
     lay.value = 'cozy'; lay.dispatchEvent(new Event('change')); document.querySelector('#tc-bar [data-act="gear"]').click();   // restore
-    return { hasClass, cozyH, compactH, tighter: compactH > 0 && compactH < cozyH };
+    return { hasClass, cozyH, compactH, tighter: compactH > 0 && compactH < cozyH, helpOk };
   });
 
   // Add-tracks control: clicking ＋ drives MB's native add-tracks for the last medium
@@ -363,7 +385,7 @@ async function main() {
   log('format header tidy —', JSON.stringify(fmtTidy));
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows,
     '· new tracks blank (no inherited artist):', addTracks.newCredit.every(c => !c), JSON.stringify(addTracks.newCredit));
-  log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter);
+  log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter, '· settings help→README:', compact.helpOk);
   log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '· medium-combo opts:', multiMed.comboOpts, '· choice kept across tools (want "1"):', JSON.stringify(multiMed.comboKept), '· per-medium status:', JSON.stringify(multiMed.statuses), '·', JSON.stringify(multiMed.perMedium));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));

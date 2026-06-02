@@ -51,9 +51,11 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    The **last column** holds a centered **confidence badge** (`rg` / `name` / `user` / `set`).
    **↑/↓** jump to the same field in the previous/next row (in the search box this works once the
    artist is resolved — while you're searching, ↑/↓ still browse the results popup).
-4. Multi-artist credits stack as lines within the same track row. On row hover, the track actions
-   **↺** (revert the whole track — artists, title, #, length) and **✕** (remove the track) appear
-   over the badge column. **Revert all** resets the whole release to its page-load state. The
+4. Multi-artist credits stack as lines within the same track row. A track that **differs from its
+   page-load state** is marked with a **purple left border**; on row hover its track actions appear
+   over the badge column — **↺** (revert the whole track — artists, title, #, length; shown only when
+   there's something to revert) and **✕** (remove the track). Per-track **↺** reverts without
+   re-matching (like **Revert all**). **Revert all** resets the whole release to its page-load state. The
    **Artist** column header holds an *apply-to* dropdown — **all matching tracks** / **single
    track** — controlling whether a pick also copies to every track credited to the same text; when it
    does, the changed boxes **flash**, and (when more than one track changed) stay **outlined** until
@@ -82,13 +84,14 @@ capitalization warnings are hidden.
 
 Canon renders **one table per medium** (mirroring MB's layout): the global toolbar sits once at the
 top, then each medium shows its native **format header**, its **Canon table**, and an **Add _N_
-track(s) ＋** footer that drives MB's add-tracks for that medium. MB's **▼ collapse** toggle collapses
+track(s) ＋** footer that drives MB's add-tracks for that medium (new tracks come in **blank** — MB's
+habit of seeding them with the previous track's artist credit is undone). MB's **▼ collapse** toggle collapses
 that medium's Canon table too. **Adding or removing a whole medium** re-renders automatically, and the
 script works on a fresh `…/release/add` with **no tracks yet**. The unresolved count shows in
 the **Artist** header. Columns are resizable by dragging near a column border **in the header or any
 row** (widths remembered). **⚙** holds settings — **Row layout** (*Cozy* / *Compact* — Compact packs
 the rows tighter, close to MB's native density), **Auto-match artists on load**, **Alternate row
-colors** and **Show grid**.
+colors** and **Show grid** — plus a **? Help** button (top-right) that opens this README in a new tab.
 
 The table appears **instantly** (no wait): the tracklist renders right away and the artist matches
 fill in row-by-row as MusicBrainz responds. With **Auto-match** off, the table loads unmatched and
@@ -101,9 +104,12 @@ per-track **↺** (on hover) does one.
 
 The toolbar splits left/right. On the **left** is a **Tools** split-button: the **▾** picks a tool —
 **Track parser** · **Swap** (titles ↔ artists) · **Reset #** · **Guess feat.** · **Guess case** ·
-**Search and Replace** — and the *last tool you used* becomes the button's label and its default
-action (click it to run that tool again). Option-less tools fire on pick; tools with options
-(**Guess case**, **Search and Replace**) reveal their controls **inline to the right** of the button.
+**Search and Replace** · **Resize columns** — and the *last tool you used* becomes the button's label
+and its default action (click it to run that tool again). Option-less tools fire on pick; tools with options
+(**Guess case**, **Search and Replace**, **Resize columns**) reveal their controls **inline to the right** of the button.
+**Resize columns** offers **Fit** (size #, Title and Length to their content, Artist absorbs the slack),
+**Centered** (balance Title and Artist to equal width) and **Default** (reset to the default widths);
+the button itself runs **Fit**.
 The medium-scoped tools (**Track parser**, **Reset #**, **Swap**) act on one medium: with a single
 medium they just apply, and with several an inline **Medium** combo appears to pick the target (then
 click the Tools button to run).

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.193328
+// @version      2026.6.2.194230
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -378,6 +378,7 @@
   }
 
   /* ════════════════════════ UI ════════════════════════ */
+  const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md';
   const ICON = '<svg class="tc-ico" viewBox="0 0 36 30" width="26" height="22" aria-hidden="true" style="vertical-align:-6px">' +
     '<path d="M6 16 C6 11 9 10 13 10 L24 10 L24 18 L13 18 C9 18 6 17 6 16 Z" fill="#5f3ec0"/>' +
     '<polygon points="24,8.5 30,7 30,21 24,19.5" fill="#5f3ec0"/>' +
@@ -529,7 +530,10 @@
     .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:#444;margin-right:14px;max-width:140px}
     .tc-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .tc-toolopts{display:flex;align-items:center;gap:6px}
-    .tc-toolopts .tc-gco,.tc-toolopts .tc-sro{display:flex;align-items:center;gap:8px}
+    .tc-toolopts .tc-gco,.tc-toolopts .tc-sro,.tc-toolopts .tc-colso{display:flex;align-items:center;gap:8px}
+    .tc-colso{gap:4px}
+    .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid #bbb;border-radius:4px;background:#fff;cursor:pointer;color:#333}
+    .tc-colbtn:hover{background:#f0ecfa;border-color:#a98fe0}
     .tc-toolopts label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}
     .tc-toolopts input[type=text]{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:120px}
     .tc-toolopts input[type=text]::placeholder{color:#c2c2c2}
@@ -549,7 +553,9 @@
     .tc-mirror input.t-title.srflash{animation:tctitleflash 1.8s ease-out}
 
     #tc-settings{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 24px rgba(40,20,80,.3);padding:11px 13px;font:13px Arial;color:#222;width:340px}
-    #tc-settings h4{margin:0 0 9px;padding-bottom:8px;border-bottom:1px solid #e3dcf2;color:#563b8f;font-size:13px}
+    #tc-settings h4{display:flex;align-items:center;gap:6px;margin:0 0 9px;padding-bottom:8px;border-bottom:1px solid #e3dcf2;color:#563b8f;font-size:13px}
+    #tc-settings h4 .tc-help{margin-left:auto;font-size:12px;font-weight:normal;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
+    #tc-settings h4 .tc-help:hover{background:#f0ecfa}
     #tc-settings label{display:flex;gap:8px;align-items:flex-start;margin:7px 0;color:#333}
     #tc-settings .hint{color:#777;font-size:11px;margin:0 0 4px 24px}
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;background:#5f3ec0;color:#fff;border:none;border-radius:20px;padding:8px 14px;font:bold 13px Arial;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
@@ -565,7 +571,7 @@
   function openSettings(anchor) {
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
-    s.innerHTML = `<h4>${ICON} Track Cannon — settings</h4>
+    s.innerHTML = `<h4>${ICON} Track Cannon — settings<a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
       <label><span>Row layout</span><select id="tc-s-layout" style="margin-left:auto"><option value="cozy">Cozy</option><option value="compact">Compact</option></select></label>
       <label><input type="checkbox" id="tc-s-automatch"> <span>Auto-match artists on load</span></label>
       <div class="hint">Off: the table shows immediately but unmatched — use the <b>Match</b> button or search a field.</div>
@@ -695,6 +701,41 @@
       document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
     });
   }
+  // ── column sizing (the "Resize columns" tool) ── Artist stays the flexible filler; the rest get
+  // explicit widths in SETTINGS.colWidths and are pushed to every live table in place (no rebuild).
+  function applyColWidths() {
+    SETTINGS.colWidths = SETTINGS.colWidths || {};
+    document.querySelectorAll('.tc-mirror').forEach(table => {
+      const cols = [...table.querySelectorAll('colgroup col')];
+      COLS.forEach((c, i) => { if (!cols[i]) return; cols[i].style.width = c.k === 'art' ? '' : colW(c.k, c.w) + 'px'; });
+    });
+  }
+  function colsDefault() { SETTINGS.colWidths = {}; saveSettings(); applyColWidths(); Log.info('columns → default widths'); }
+  // fit each text column (#, Title, Length) to its widest content; Artist absorbs the slack
+  function colsFit() {
+    const tables = [...document.querySelectorAll('.tc-mirror')]; if (!tables.length) return;
+    SETTINGS.colWidths = SETTINGS.colWidths || {};
+    const probe = tables[0].querySelector('tbody input') || tables[0];
+    const cx = (colsFit._cv || (colsFit._cv = document.createElement('canvas'))).getContext('2d');
+    cx.font = getComputedStyle(probe).font || '13px sans-serif';
+    const PAD = { num: 22, title: 32, len: 22 }, CAP = { num: 90, title: 720, len: 90 };
+    ['num', 'title', 'len'].forEach(k => {
+      const def = COLS.find(c => c.k === k); let max = cx.measureText(def.label || '').width;
+      tables.forEach(t => t.querySelectorAll(`tbody td.c-${k} input`).forEach(inp => { max = Math.max(max, cx.measureText(inp.value || '').width); }));
+      SETTINGS.colWidths[k] = Math.min(CAP[k], Math.max(36, Math.round(max) + PAD[k]));
+    });
+    saveSettings(); applyColWidths(); Log.info('columns → fit content', JSON.stringify(SETTINGS.colWidths));
+  }
+  // "centered" / balanced: give Title and Artist an equal share of the row (Artist flexes to the other half)
+  function colsBalanced() {
+    const table = document.querySelector('.tc-mirror'); if (!table) return;
+    SETTINGS.colWidths = SETTINGS.colWidths || {};
+    const total = table.clientWidth || table.offsetWidth || 900;
+    const fixed = colW('mv', 32) + colW('num', 38) + colW('len', 52) + colW('badge', 56);
+    SETTINGS.colWidths.title = Math.max(160, Math.round((total - fixed) / 2));
+    saveSettings(); applyColWidths(); Log.info('columns → balanced (Title = Artist)', SETTINGS.colWidths.title);
+  }
+
   // picking an artist writes through immediately; in "all" mode it also copies to every other
   // track credited to the same text, committing each.
   function pickArtist(slot, c) {
@@ -976,6 +1017,7 @@
     else if (a === 'revert') revertAll();
     else if (a === 'guesscase') guessCaseAll();
     else if (a === 'guessfeat') guessFeatAll();
+    else if (a === 'cols') colsFit();   // the Columns button's default action is Fit
     else if (MEDIUM_TOOLS.has(a)) runMediumTool(a, 0);
   }
   function bindActions(host) {
@@ -986,7 +1028,7 @@
   }
 
   /* ── the Tools split-button: last-used tool is the button's label + default action; ▾ picks another ── */
-  const MENU = [{ act: 'parser', label: 'Track parser' }, { act: 'swap', label: 'Swap' }, { act: 'resetnum', label: 'Reset #' }, { sep: 1 }, { act: 'guessfeat', label: 'Guess feat.' }, { act: 'guesscase', label: 'Guess case' }, { act: 'sr', label: 'Search and Replace' }];
+  const MENU = [{ act: 'parser', label: 'Track parser' }, { act: 'swap', label: 'Swap' }, { act: 'resetnum', label: 'Reset #' }, { sep: 1 }, { act: 'guessfeat', label: 'Guess feat.' }, { act: 'guesscase', label: 'Guess case' }, { act: 'sr', label: 'Search and Replace' }, { sep: 1 }, { act: 'cols', label: 'Resize columns' }];
   const LABELS = Object.fromEntries(MENU.filter(m => !m.sep).map(m => [m.act, m.label]));
   const MEDIUM_TOOLS = new Set(['parser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick
@@ -1045,6 +1087,15 @@
       const run = () => srLive(find.value, rep.value, true);
       find.oninput = rep.oninput = run;
       box.append(find, rep); host.appendChild(box);
+    } else if (act === 'cols') {
+      const box = document.createElement('span'); box.className = 'tc-colso';
+      const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-colbtn'; b.textContent = label; b.title = title; b.onclick = fn; return b; };
+      box.append(
+        mk('Fit', 'size #, Title and Length to their content (Artist absorbs the slack)', colsFit),
+        mk('Centered', 'balance Title and Artist to equal width', colsBalanced),
+        mk('Default', 'reset every column to its default width', colsDefault),
+      );
+      host.appendChild(box);
     } else if (MEDIUM_TOOLS.has(act) && mediums().length > 1) {
       // which medium this tool acts on (only shown when there's more than one); the choice is shared
       // across all medium-scoped tools and the Tools button runs it
