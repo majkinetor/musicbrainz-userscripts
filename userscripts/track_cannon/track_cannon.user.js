@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.180718
+// @version      2026.6.2.181705
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -210,7 +210,7 @@
         done++; if (onProgress) onProgress(done, todo.length);
       }
       if (!isEditing()) rerender();
-    } finally { setMatching(false); }
+    } finally { setMatching(false); refreshStatus(); }   // set the final per-medium badges once the pass is done
   }
   // (re-)match every still-unmatched slot — the "Match" button / used when auto-match is off
   async function matchAll() { if (!MODEL) return; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && !s.committed) s._pending = true; })); await matchModel((d, n) => updateStatus(`matching ${d}/${n}…`)); }
@@ -322,7 +322,8 @@
     /* MB medium-format select made to read as plain text — click still opens the native dropdown */
     select.tc-fmt-flat{-webkit-appearance:none;-moz-appearance:none;appearance:none;border:1px solid transparent;background:transparent;font:bold 15px Arial;color:#222;padding:2px 5px;cursor:pointer}
     select.tc-fmt-flat:hover{background:#efeaf9;border-color:#d7ccef;border-radius:3px}
-    .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px}.tc-mirror .t-gc:hover{background:#ffefb8}
+    .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px;visibility:hidden}.tc-mirror .t-gc:hover{background:#ffefb8}
+    .tc-mirror tr:hover .t-gc{visibility:visible}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
     /* alternate row colors / grid (toggled in ⚙) */
     .tc-mirror.alt tbody tr:nth-child(even) td{background:#f6f4fb}
@@ -456,14 +457,27 @@
   const statusText = n => (n ? `⚠ ${n} unresolved!` : 'all matched');
   const setStatusSpan = (span, n) => { if (!span) return; span.textContent = statusText(n); span.classList.toggle('tc-unres', n > 0); };
   // disable the Match button while a match pass is running
-  function setMatching(on) { const b = document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]'); if (b) b.disabled = on; }
+  let _matching = false;
+  function setMatching(on) { _matching = on; const b = document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]'); if (b) b.disabled = on; }
   // re-fill every active tbody (per-medium sections in mirror mode, or the single panel table)
   const rerender = () => { if (ACTIVE.sections) ACTIVE.sections.forEach(s => fillRows(s.tbody, s.mi)); else if (ACTIVE.tbody) fillRows(ACTIVE.tbody); refreshStatus(); };
   // our rendered row for a track, wherever it lives (a per-medium section or the floating panel)
   const rowEl = (mi, ti) => document.querySelector(`.tc-medsec tr[data-tk="${mi}:${ti}"], #tc-panel tr[data-tk="${mi}:${ti}"]`);
+  // ↑/↓ : move to the same field in the previous/next row (same medium); returns true if it moved
+  function focusSameField(inp, dir) {
+    const row = inp.closest('tr[data-tk]'); if (!row) return false;
+    const rows = [...row.parentElement.querySelectorAll('tr[data-tk]')]; const dest = rows[rows.indexOf(row) + dir]; if (!dest) return false;
+    const sel = inp.classList.contains('t-num') ? '.t-num' : inp.classList.contains('t-title') ? '.t-title' : inp.classList.contains('t-len') ? '.t-len' : inp.classList.contains('tc-cred') ? '.tc-cred' : inp.classList.contains('nm') ? '.tc-search input.nm' : null;
+    if (!sel) return false;
+    const idx = Math.max(0, [...row.querySelectorAll(sel)].indexOf(inp));
+    const tgts = [...dest.querySelectorAll(sel)]; const t = tgts[Math.min(idx, tgts.length - 1)];
+    if (t) { t.focus(); if (t.select) t.select(); return true; }
+    return false;
+  }
+  function wireRowNav(inp) { inp.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { if (focusSameField(inp, 1)) e.preventDefault(); } else if (e.key === 'ArrowUp') { if (focusSameField(inp, -1)) e.preventDefault(); } }); }
   // show each medium's OWN unresolved count in its header (or the global count for the floating panel)
   function refreshStatus() {
-    if (!MODEL) return;
+    if (!MODEL || _matching) return;   // while a pass runs the headers show "matching d/n" — don't flicker the badge
     if (ACTIVE.sections) ACTIVE.sections.forEach(s => setStatusSpan(s.sec.querySelector('.tc-hstatus'), unresolvedIn(s.mi)));
     else document.querySelectorAll('#tc-panel .tc-hstatus').forEach(span => setStatusSpan(span, unresolvedIn(null)));
   }
@@ -626,10 +640,12 @@
       if (!inp.value.trim()) { close(); return; }   // nothing typed → don't search
       searching(); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250);
     };
+    // arrows browse the results popup WHILE searching; once the slot is resolved they move row-to-row instead
+    const browsing = () => pop && !slot.committed && list.length;
     inp.onkeydown = e => {
       if (e.key === 'Escape') { close(); inp.blur(); }
-      else if (e.key === 'ArrowDown' && pop) { hi = Math.min(list.length - 1, hi + 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
-      else if (e.key === 'ArrowUp' && pop) { hi = Math.max(0, hi - 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
+      else if (e.key === 'ArrowDown') { if (browsing()) { hi = Math.min(list.length - 1, hi + 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); } else { close(); if (focusSameField(inp, 1)) e.preventDefault(); } }
+      else if (e.key === 'ArrowUp') { if (browsing()) { hi = Math.max(0, hi - 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); } else { close(); if (focusSameField(inp, -1)) e.preventDefault(); } }
       else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) choose(c); }
     };
     inp.onblur = () => setTimeout(close, 160);   // keep whatever the user typed (no reset)
@@ -651,7 +667,7 @@
         touched.forEach(commitTrack);
         if (touched.size) { Log.info('propagated credited-as', JSON.stringify(newCred), '→', touched.size, 'track(s)'); rerender(); updateStatus(`credited-as set on ${touched.size + 1} matching tracks`); }
       }
-    }; enterBlurs(cred); line.appendChild(cred);
+    }; enterBlurs(cred); wireRowNav(cred); line.appendChild(cred);
     const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);
@@ -699,10 +715,10 @@
         gb.onclick = () => { restore(); applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); rerender(); };
         wrap.appendChild(gb);
       }
-      tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; enterBlurs(tin);
+      tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; enterBlurs(tin); wireRowNav(tin);
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
-      numIn.onchange = e => setNumber(t, e.target.value); enterBlurs(numIn);
-      lenIn.onchange = e => setLength(t, e.target.value); enterBlurs(lenIn);
+      numIn.onchange = e => setNumber(t, e.target.value); enterBlurs(numIn); wireRowNav(numIn);
+      lenIn.onchange = e => setLength(t, e.target.value); enterBlurs(lenIn); wireRowNav(lenIn);
       tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };
       tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
       tbody.appendChild(tr);

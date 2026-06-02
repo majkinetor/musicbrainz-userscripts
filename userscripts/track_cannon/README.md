@@ -44,6 +44,8 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
      inside the box,
    - on hover, **↵** adds another artist to the credit and **✕** removes that artist.
    The **last column** holds a centered **confidence badge** (`rg` / `name` / `user` / `set`).
+   **↑/↓** jump to the same field in the previous/next row (in the search box this works once the
+   artist is resolved — while you're searching, ↑/↓ still browse the results popup).
 4. Multi-artist credits stack as lines within the same track row. On row hover, the track actions
    **↺** (revert the whole track — artists, title, #, length) and **✕** (remove the track) appear
    over the badge column. **Revert all** resets the whole release to its page-load state. The
@@ -53,7 +55,7 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    your next pick, so you can review every place it landed. Editing a **Credited as** override
    propagates the same way (in *all matching tracks* mode).
 5. Title tools live in the **Tools** menu (using MusicBrainz's own functions): a title that differs
-   from its **Guess Case** form is highlighted amber with an **Aa** button to fix that one — like
+   from its **Guess Case** form is highlighted amber with an **Aa** button (shown on row hover) to fix that one — like
    MB's integrated guess case, **hovering the title** previews the guessed form (green) in place,
    **leaving** restores it, and **clicking Aa** applies it; **Guess case** fixes all titles (with
    language / *Keep uppercased* / *Uppercase Roman numerals* options inline); **Guess feat.** pulls

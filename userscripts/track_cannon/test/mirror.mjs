@@ -102,11 +102,34 @@ async function main() {
   await page.waitForTimeout(50); const hov = await readTitle();
   await page.locator('.tc-medsec .tc-mirror tbody tr').nth(2).locator('.t-num').hover();   // move away → restore
   await page.waitForTimeout(50); const left = await readTitle();
+  await row1.hover();   // Aa is hidden until row hover
   await row1.locator('.t-gc').click(); await page.waitForTimeout(100);
   const gc = await page.evaluate((s) => {
     const t = document.querySelector('.tc-medsec .tc-mirror tbody tr .t-title');
     return { hasDiff: s.hasDiff, guessed: s.guessed, after: t.value, stillDiff: t.classList.contains('diff'), hoverPreview: s.hov.val === s.guessed && s.hov.hi, leaveRestores: s.left.val === s.messy && !s.left.hi };
   }, { ...setup, hov, left });
+
+  // Aa button is hidden until row hover (like the other hover actions)
+  const aaHiddenDefault = await page.evaluate(() => { const g = document.querySelector('.tc-medsec .t-gc'); return g ? getComputedStyle(g).visibility : 'no-aa'; });
+  const gcTk = await page.evaluate(() => { const g = document.querySelector('.tc-medsec .t-gc'); return g ? g.closest('tr[data-tk]').dataset.tk : null; });
+  if (gcTk) await page.locator(`.tc-medsec tr[data-tk="${gcTk}"]`).hover();
+  const aaVisibleOnHover = await page.evaluate(() => { const g = document.querySelector('.tc-medsec .t-gc'); return g ? getComputedStyle(g).visibility : 'no-aa'; });
+
+  // ↑/↓ move to the same field in the adjacent row (search box moves rows when resolved, not over results)
+  const keysNav = await page.evaluate(async () => {
+    const rows = [...document.querySelectorAll('.tc-medsec .tc-mirror tbody tr[data-tk]')];
+    const press = (el, key) => el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+    const t1 = rows[0].querySelector('.t-title'); t1.focus(); press(t1, 'ArrowDown');
+    const titleDown = document.activeElement === rows[1].querySelector('.t-title');
+    const t2 = rows[1].querySelector('.t-title'); t2.focus(); press(t2, 'ArrowUp');
+    const titleUp = document.activeElement === rows[0].querySelector('.t-title');
+    const s1 = rows[0].querySelector('.tc-search input.nm'); s1.focus(); await new Promise(r => setTimeout(r, 60));   // resolved → focus shows candidates
+    press(s1, 'ArrowDown');
+    const searchDown = document.activeElement === rows[1].querySelector('.tc-search input.nm');
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();   // close any autocomplete popup
+    return { titleDown, titleUp, searchDown };
+  });
+  await page.waitForTimeout(250);   // let the autocomplete popup close before later clicks
 
   // editable # and length write through to the model
   const fields = await page.evaluate(async () => {
@@ -247,6 +270,8 @@ async function main() {
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
   log('guess case — diff:', gc.hasDiff, '· guessed:', JSON.stringify(gc.guessed), '· hover-preview:', gc.hoverPreview, '· leave-restores:', gc.leaveRestores, '· applied:', JSON.stringify(gc.after), '· stillDiff:', gc.stillDiff);
+  log('Aa on hover — default:', aaHiddenDefault, '· on row hover:', aaVisibleOnHover);
+  log('arrow row-nav — title ↓:', keysNav.titleDown, '· title ↑:', keysNav.titleUp, '· resolved search ↓:', keysNav.searchDown);
   log('match button — before:', matchBtn.before, '· during pass:', matchBtn.during, '· after:', matchBtn.after);
   log('tools — apply-mode in header:', tools.amInHeader, '(not in bar:', !tools.amInBar + ')', '· S&R label:', JSON.stringify(tools.toolLabel), 'live-changed:', tools.srChanged, 'status:', JSON.stringify(tools.srStatus), 'restored:', tools.restoredOk, '· Guess-case label:', JSON.stringify(tools.gcLabel), 'opts:', JSON.stringify(tools.gcOpts));
   log('edit # → "A1", length → "1:23" — model now:', JSON.stringify(fields));
