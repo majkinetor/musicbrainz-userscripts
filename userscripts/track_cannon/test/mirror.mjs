@@ -227,7 +227,13 @@ async function main() {
     await new Promise(r => setTimeout(r, 150));
     const combo = document.querySelector('.tc-toolopts .tc-medsel');
     const comboOpts = combo ? combo.querySelectorAll('option').length : 0;
-    return { before, after, sections: document.querySelectorAll('.tc-medsec').length, perMedium, toolsAllHidden, comboOpts, statuses };
+    // select Medium 2, switch to another medium-scoped tool, and confirm the choice is remembered
+    if (combo) { combo.value = '1'; combo.dispatchEvent(new Event('change')); }
+    document.querySelector('#tc-bar [data-act="menu"]').click(); await new Promise(r => setTimeout(r, 150));
+    const swp = [...document.querySelectorAll('#tc-menu .tc-mi')].find(e => e.textContent === 'Swap'); if (swp) swp.click();
+    await new Promise(r => setTimeout(r, 150));
+    const comboKept = (document.querySelector('.tc-toolopts .tc-medsel') || {}).value;
+    return { before, after, sections: document.querySelectorAll('.tc-medsec').length, perMedium, toolsAllHidden, comboOpts, comboKept, statuses };
   });
   await page.locator('#tracklist').screenshot({ path: resolve(LOG_DIR, 'mirror-multimedium.png') }).catch(() => {});
 
@@ -236,7 +242,7 @@ async function main() {
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
   log('format header tidy —', JSON.stringify(fmtTidy));
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows);
-  log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '· medium-combo opts:', multiMed.comboOpts, '· per-medium status:', JSON.stringify(multiMed.statuses), '·', JSON.stringify(multiMed.perMedium));
+  log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '· medium-combo opts:', multiMed.comboOpts, '· choice kept across tools (want "1"):', JSON.stringify(multiMed.comboKept), '· per-medium status:', JSON.stringify(multiMed.statuses), '·', JSON.stringify(multiMed.perMedium));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);

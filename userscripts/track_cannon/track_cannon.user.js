@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.180304
+// @version      2026.6.2.180718
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -390,6 +390,7 @@
     .tc-addbtn{width:22px;height:22px;border-radius:50%;border:none;background:#3aaf3a;color:#fff;font:bold 15px/1 Arial;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
     .tc-addbtn:hover{background:#2f9b2f}
     .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:#999;margin-left:12px;font-size:11px}
+    .tc-mirror th .tc-hstatus.tc-unres{font-style:normal;font-weight:bold;color:#fff;background:#d6342c;padding:1px 7px;border-radius:9px;font-size:11px}
     .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:#444;margin-right:14px;max-width:140px}
     .tc-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .tc-toolopts{display:flex;align-items:center;gap:6px}
@@ -450,9 +451,10 @@
   let MODEL = null;
   let ACTIVE = {};   // { mode, tbody, statusEl }
   // transient message (e.g. "matching d/n") shown in every table's Artist header
-  const updateStatus = t => { document.querySelectorAll('.tc-medsec .tc-hstatus, #tc-panel .tc-hstatus').forEach(e => { e.textContent = t; }); };
+  const updateStatus = t => { document.querySelectorAll('.tc-medsec .tc-hstatus, #tc-panel .tc-hstatus').forEach(e => { e.textContent = t; e.classList.remove('tc-unres'); }); };
   const unresolvedIn = mi => { let n = 0; MODEL.tracks.forEach(t => { if (mi != null && t.mi !== mi) return; t.slots.forEach(s => { if (!(s.status === 'set' || s.committed)) n++; }); }); return n; };
-  const statusText = n => (n ? `${n} unresolved` : 'all matched');
+  const statusText = n => (n ? `⚠ ${n} unresolved!` : 'all matched');
+  const setStatusSpan = (span, n) => { if (!span) return; span.textContent = statusText(n); span.classList.toggle('tc-unres', n > 0); };
   // disable the Match button while a match pass is running
   function setMatching(on) { const b = document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]'); if (b) b.disabled = on; }
   // re-fill every active tbody (per-medium sections in mirror mode, or the single panel table)
@@ -462,8 +464,8 @@
   // show each medium's OWN unresolved count in its header (or the global count for the floating panel)
   function refreshStatus() {
     if (!MODEL) return;
-    if (ACTIVE.sections) ACTIVE.sections.forEach(s => { const span = s.sec.querySelector('.tc-hstatus'); if (span) span.textContent = statusText(unresolvedIn(s.mi)); });
-    else updateStatus(statusText(unresolvedIn(null)));
+    if (ACTIVE.sections) ACTIVE.sections.forEach(s => setStatusSpan(s.sec.querySelector('.tc-hstatus'), unresolvedIn(s.mi)));
+    else document.querySelectorAll('#tc-panel .tc-hstatus').forEach(span => setStatusSpan(span, unresolvedIn(null)));
   }
 
   function buildTable() {
@@ -750,6 +752,8 @@
   const LABELS = Object.fromEntries(MENU.filter(m => !m.sep).map(m => [m.act, m.label]));
   const MEDIUM_TOOLS = new Set(['parser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick
+  let _toolMedium = 0;   // the medium chosen in the inline combo — shared across all medium-scoped tools
+  const toolMedium = () => Math.min(Math.max(0, _toolMedium), mediums().length - 1);
   function toolBtnEl() { return document.querySelector('#tc-bar [data-act="tool"], #tc-hdr [data-act="tool"]'); }
   function updateToolBtn() { const b = toolBtnEl(); if (b) b.textContent = SETTINGS.lastTool ? (LABELS[SETTINGS.lastTool] || 'Tools') : 'Tools'; }
   // hovering the "Guess case" tool button previews the guessed form on every differing title
@@ -767,12 +771,12 @@
     const act = SETTINGS.lastTool;
     if (!act) return openToolsMenu(toolBtnEl());
     if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'); if (f) f.focus(); return; }
-    if (MEDIUM_TOOLS.has(act)) { const sel = document.querySelector('.tc-toolopts .tc-medsel'); return runMediumTool(act, sel ? parseInt(sel.value, 10) : 0); }
+    if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium());
     runAction(act);
   }
   function pickTool(act) {
     SETTINGS.lastTool = act; saveSettings(); updateToolBtn(); renderToolOpts(); wireToolHover();
-    if (MEDIUM_TOOLS.has(act)) { if (mediums().length <= 1) runMediumTool(act, 0); }   // single medium → run now (no combo); multi → choose via the inline medium combo, then the Tools button
+    if (MEDIUM_TOOLS.has(act)) { if (mediums().length <= 1) runMediumTool(act, 0); }   // single medium → run now (no combo); multi → choose via the inline medium combo (shared across tools), then the Tools button
     else if (OPTLESS.has(act)) runAction(act);   // global option-less tools fire immediately
     else if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'); if (f) f.focus(); }
   }
@@ -803,9 +807,11 @@
       find.oninput = rep.oninput = run;
       box.append(find, rep); host.appendChild(box);
     } else if (MEDIUM_TOOLS.has(act) && mediums().length > 1) {
-      // which medium this tool acts on (only shown when there's more than one); the Tools button runs it
+      // which medium this tool acts on (only shown when there's more than one); the choice is shared
+      // across all medium-scoped tools and the Tools button runs it
       const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.title = 'which medium';
       mediums().forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = 'Medium ' + (i + 1); sel.appendChild(o); });
+      sel.value = String(toolMedium()); sel.onchange = () => { _toolMedium = parseInt(sel.value, 10) || 0; };
       host.appendChild(sel);
     }
   }
