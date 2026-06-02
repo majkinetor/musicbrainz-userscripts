@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.122553
+// @version      2026.6.2.124811
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -156,6 +156,7 @@
       }
       const te = { mi: t.mi, ti: t.ti, number: t.number, title: t.title, length: t.length, slots };
       te.slots.forEach(s => { s._entry = te; });
+      te.guessTitle = guessTitleStr(te);
       tracks.push(te);
       if (t.names.some(n => !n.artistGid)) { done++; if (onProgress) onProgress(done, todo.length); }
     }
@@ -191,6 +192,13 @@
   function setTitle(entry, v) { koTrack(entry.mi, entry.ti).name(v); }
   function setNumber(entry, v) { try { koTrack(entry.mi, entry.ti).number(v); } catch (e) { Log.warn('set number failed', v, e.message); } }
   function setLength(entry, v) { const t = koTrack(entry.mi, entry.ti); try { if (typeof t.formattedLength === 'function') t.formattedLength(v); else { const ed = getEditor(); const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) t.length(ms); } } catch (e) { Log.warn('set length failed', v, e.message); } }
+  // MB guess case: preview into track.previewName (no mutation) to detect the diff; click-type to apply
+  function guessTitleStr(entry) {
+    const ed = getEditor(), t = koTrack(entry.mi, entry.ti);
+    try { ed.guessCaseTrackName(t, { type: 'mouseenter', buttons: 0 }); const g = u(t.previewName); ed.guessCaseTrackName(t, { type: 'mouseleave' }); return (g == null) ? u(t.name) : g; }
+    catch (e) { return u(t.name); }
+  }
+  function applyGuessTitle(entry) { try { getEditor().guessCaseTrackName(koTrack(entry.mi, entry.ti), { type: 'click' }); } catch (e) { Log.warn('guess case failed', e.message); } }
 
   /* ── create artist ── */
   function guessSortName(name) {
@@ -230,6 +238,8 @@
   const badgeText = s => ({ rg: 'rg', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  // Enter in our inputs must not bubble to MB's form (it switches tabs); commit by blurring instead
+  const enterBlurs = el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); el.blur(); } });
   function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
   const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s.toUpperCase()}</span>`;
 
@@ -255,6 +265,9 @@
     .tc-mirror input.t-title,.tc-mirror input.t-len,.tc-mirror input.t-num{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:3px 2px}
     .tc-mirror input.t-len,.tc-mirror input.t-num{text-align:right;color:#666}
     .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:#bbb;background:#fff}
+    .tc-mirror .t-wrap{display:flex;align-items:center;gap:3px}.tc-mirror .t-wrap input.t-title{flex:1;min-width:0;width:auto}
+    .tc-mirror input.t-title.diff{background:#fff6da;border-color:#e7ce8a;border-radius:3px}
+    .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px}.tc-mirror .t-gc:hover{background:#ffefb8}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
     /* badge column: pills per artist line; on row hover the track ↺/✕ overlay it */
     .tc-bl{height:28px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-top:1px solid rgba(0,0,0,.05)}.tc-bl:first-child{border-top:none}
@@ -391,7 +404,7 @@
     commitTrack(slot._entry);
     const key = fold(slot.creditedAs); const changed = [slot]; const touched = new Set();
     if ((SETTINGS.applyMode || 'all') === 'all' && key) {   // don't mass-propagate from an empty credit
-      MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s === slot || s.status === 'set' || fold(s.creditedAs) !== key) return; s.entity = c; s.gid = c.gid; s.name = c.name; s.status = 'user'; s.committed = true; s._flash = true; if (!(s.creditedAs || '').trim()) s.creditedAs = c.name; touched.add(s._entry); changed.push(s); }));
+      MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s === slot || fold(s.creditedAs) !== key) return; s.entity = c; s.gid = c.gid; s.name = c.name; s.status = 'user'; s.committed = true; s._flash = true; if (!(s.creditedAs || '').trim()) s.creditedAs = c.name; touched.add(s._entry); changed.push(s); }));
       touched.forEach(commitTrack);
     }
     const copies = touched.size;
@@ -452,7 +465,7 @@
     const wrap = document.createElement('span'); wrap.className = 'tc-joinwrap';
     const inp = document.createElement('input'); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.title = 'join phrase to the next artist (editable; ▾ for presets)';
     const fit = () => { inp.size = Math.max(2, inp.value.length || 2); }; fit();
-    inp.oninput = fit; inp.onchange = () => { slot.joinPhrase = inp.value; commitTrack(entry); };
+    inp.oninput = fit; inp.onchange = () => { slot.joinPhrase = inp.value; commitTrack(entry); }; enterBlurs(inp);
     const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases';
     let pop = null; const close = () => { if (pop) { pop.remove(); pop = null; } };
     arrow.onclick = () => {
@@ -509,7 +522,7 @@
     // credited-as: shown empty when it's exactly the artist name (the name is the placeholder); only a real override shows
     const same = s.name && s.creditedAs === s.name;
     const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
-    cred.onchange = () => { const v = cred.value.trim(); s.creditedAs = v || (s.name || ''); if (s.creditedAs === s.name) cred.value = ''; commitTrack(entry); }; line.appendChild(cred);
+    cred.onchange = () => { const v = cred.value.trim(); s.creditedAs = v || (s.name || ''); if (s.creditedAs === s.name) cred.value = ''; commitTrack(entry); }; enterBlurs(cred); line.appendChild(cred);
     const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);
@@ -534,16 +547,25 @@
       const tr = document.createElement('tr'); tr.dataset.tk = t.mi + ':' + t.ti;
       tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span></td>
         <td class="c-num"><input class="t-num" value="${esc(t.number)}" title="track number"></td>
-        <td class="c-title"><input class="t-title" value="${esc(t.title)}"></td>
+        <td class="c-title"><div class="t-wrap"><input class="t-title" value="${esc(t.title)}"></div></td>
         <td class="c-art"></td>
         <td class="c-len"><input class="t-len" value="${esc(t.length)}"></td>
         <td class="c-badge"></td>`;
       const badgeCell = tr.querySelector('.c-badge'); const refreshBadges = () => renderBadgeCell(badgeCell, t);
       const art = tr.querySelector('.c-art'); t.slots.forEach((s, si) => art.appendChild(slotEl(t, s, si, refreshBadges)));
       refreshBadges();
-      tr.querySelector('.t-num').onchange = e => setNumber(t, e.target.value);
-      tr.querySelector('.t-title').onchange = e => setTitle(t, e.target.value);
-      tr.querySelector('.t-len').onchange = e => setLength(t, e.target.value);
+      // guess-case: highlight when the title differs from its guessed form; a per-title button applies it
+      const tin = tr.querySelector('.t-title'); const diff = t.guessTitle && t.guessTitle !== t.title;
+      if (diff) {
+        tin.classList.add('diff'); tin.title = 'Guess case → ' + t.guessTitle;
+        const gb = document.createElement('button'); gb.className = 't-gc'; gb.textContent = 'Aa'; gb.title = 'Guess case → ' + t.guessTitle;
+        gb.onclick = () => { applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); rerender(); };
+        tr.querySelector('.t-wrap').appendChild(gb);
+      }
+      tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; enterBlurs(tin);
+      const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
+      numIn.onchange = e => setNumber(t, e.target.value); enterBlurs(numIn);
+      lenIn.onchange = e => setLength(t, e.target.value); enterBlurs(lenIn);
       tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };
       tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
       tbody.appendChild(tr);
@@ -553,6 +575,13 @@
   async function loadAndRender(onProgress) { MODEL = await buildModel(onProgress); autoCommit(); fillRows(ACTIVE.tbody); if (ACTIVE.mode === 'mirror') syncNative(); }
   async function rebuild() { MODEL = await buildModel(); rerender(); if (ACTIVE.mode === 'mirror') syncNative(); }
   function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track's artist to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(); }
+  function guessCaseAll() { if (!MODEL) return; MODEL.tracks.forEach(t => { applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); }); rerender(); Log.info('guess case → all titles'); }
+  // integrated MB feature: pull "feat. X" out of titles into artist credits, then re-read + re-match
+  async function guessFeatAll() {
+    const ed = getEditor();
+    mediums().forEach(med => (u(med.tracks) || []).forEach(t => { try { ed.guessTrackFeatArtists(t); } catch (e) { try { ed.guessTrackFeatArtists(t, { type: 'click' }); } catch (e2) { Log.warn('guess feat failed', e2.message); } } }));
+    await loadAndRender(); Log.info('guessed feat artists from titles');
+  }
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
@@ -560,12 +589,15 @@
         if (a === 'gear') openSettings(b);
         else if (a === 'close') { host.remove(); ACTIVE = {}; }
         else if (a === 'revert') revertAll();
+        else if (a === 'guesscase') guessCaseAll();
+        else if (a === 'guessfeat') guessFeatAll();
         else if (a === 'toggleorig') { _showOriginal = !_showOriginal; syncNative(); b.textContent = _showOriginal ? 'Hide original' : 'Show original'; }
       };
     });
   }
-  const FOOTER_FLOAT = `<button class="tc-btn" data-act="revert">Revert all</button>`;
-  const FOOTER_MIRROR = `<button class="tc-btn" data-act="toggleorig">Show original</button><button class="tc-btn" data-act="revert">Revert all</button>`;
+  const TOOLS = `<button class="tc-btn" data-act="guesscase" title="MusicBrainz guess case on all track titles">Guess case</button><button class="tc-btn" data-act="guessfeat" title="pull “feat. X” out of titles into artist credits">Guess feat.</button>`;
+  const FOOTER_FLOAT = TOOLS + `<button class="tc-btn" data-act="revert">Revert all</button>`;
+  const FOOTER_MIRROR = TOOLS + `<button class="tc-btn" data-act="toggleorig">Show original</button><button class="tc-btn" data-act="revert">Revert all</button>`;
 
   /* ── floating window (movable) ── */
   function openPanel() {

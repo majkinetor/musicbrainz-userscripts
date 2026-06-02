@@ -51,7 +51,11 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    controls whether a pick also copies to every track credited to the same text; when it does, the
    changed boxes **flash**, and (when more than one track changed) stay **outlined** until your next
    pick, so you can review every place it landed.
-5. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
+5. Title tools (toolbar, using MusicBrainz's own functions): a title that differs from its
+   **Guess Case** form is highlighted amber with an **Aa** button to fix that one; **Guess case**
+   fixes all titles; **Guess feat.** pulls `feat. X` out of titles into artist credits (then
+   re-matches).
+6. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
    tab; save it there, then re-open the panel to match it.
 6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself
    the next time you open a release add/edit page (it still applies nothing until you click).

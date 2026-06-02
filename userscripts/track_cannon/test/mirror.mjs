@@ -61,6 +61,18 @@ async function main() {
   // no apply phase — confident matches auto-commit on load; verify they're written to the model
   const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
 
+  // guess case: messy title → diff highlight + per-title apply
+  const gc = await page.evaluate(async () => {
+    const sel = () => document.querySelector('#tc-mirror-wrap .tc-mirror tbody tr');
+    const tin = sel().querySelector('.t-title'); tin.value = 'the QUICK (brown) FOX feat. someone'; tin.dispatchEvent(new Event('change'));
+    await new Promise(r => setTimeout(r, 100));
+    const t2 = sel().querySelector('.t-title'); const hasDiff = t2.classList.contains('diff');
+    const btn = sel().querySelector('.t-gc'); const guessed = btn ? btn.title.replace('Guess case → ', '') : null;
+    if (btn) btn.click(); await new Promise(r => setTimeout(r, 100));
+    const after = sel().querySelector('.t-title').value; const stillDiff = sel().querySelector('.t-title').classList.contains('diff');
+    return { hasDiff, guessed, after, stillDiff };
+  });
+
   // editable # and length write through to the model
   const fields = await page.evaluate(async () => {
     const tc = window.__trackCannon, u = v => (typeof v === 'function' ? v() : v);
@@ -111,6 +123,7 @@ async function main() {
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
+  log('guess case — diff:', gc.hasDiff, '· guessed:', JSON.stringify(gc.guessed), '· applied:', JSON.stringify(gc.after), '· stillDiff:', gc.stillDiff);
   log('edit # → "A1", length → "1:23" — model now:', JSON.stringify(fields));
   log('split/merge on', JSON.stringify(split.title), '— credit names:', split.c0, '→ +slot', split.c1, '→ +pick', split.c2, '→ -slot', split.c3, '· credited-as auto-filled:', split.autofilled, '(' + JSON.stringify(split.credAfter) + ')');
   log('artifacts in', LOG_DIR);

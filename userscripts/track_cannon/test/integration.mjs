@@ -119,6 +119,17 @@ async function main() {
     return { ok: true, count: dup.length, allSame: dup.every(s => s.gid === dup[0].gid && s.committed), marked, domOutlined, clearedAfter };
   });
 
+  // propagation must also overwrite already-SET tracks with the same credit (the reported bug)
+  const setProp = await page.evaluate(async () => {
+    const tc = window.__trackCannon; tc.settings.applyMode = 'all';
+    const setSlots = []; tc.model.tracks.forEach(t => t.slots.forEach(s => { if (s.status === 'set') setSlots.push(s); }));
+    const by = {}; setSlots.forEach(s => { const k = s.creditedAs.toLowerCase(); (by[k] = by[k] || []).push(s); });
+    const dup = Object.values(by).find(a => a.length >= 2); if (!dup) return { ok: false };
+    const cand = (await tc.searchArtist(dup[0].creditedAs))[0]; tc.pickArtist(dup[0], cand);
+    await new Promise(r => setTimeout(r, 60));
+    return { ok: true, cred: dup[0].creditedAs, count: dup.length, allChanged: dup.every(s => s.gid === cand.gid && s.committed) };
+  });
+
   // no apply phase — confident matches auto-commit on load and picks commit immediately
   await page.waitForTimeout(800);
   const report = await page.evaluate(() => {
@@ -158,6 +169,7 @@ async function main() {
   log('focus a SET field (no typing) → search results:', JSON.stringify(setFocus));
   log('combo search → picked from pop (' + userCheck.popCount + ' results) · status=user:', userCheck.userStatus, '· green search bar:', userCheck.greenBar);
   log('propagation (all mode):', JSON.stringify(propCheck));
+  log('propagation across SET tracks:', JSON.stringify(setProp));
   log('unlink-on-type:', JSON.stringify(unlink));
   log('Original reset on track 1:', JSON.stringify(interactive.track0));
   // close the panel and capture the clean tracklist (the artist column, resolved/green)
