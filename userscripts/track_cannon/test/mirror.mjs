@@ -85,6 +85,18 @@ async function main() {
   const titles3 = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().slice(0, 3).map(t => u(t.name)); });
   const trackCount = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().length; });
 
+  // splittable credits (e.g. "A & B") get a highlighted credited-as field + a ⋔ button
+  const splittable = await page.evaluate(() => {
+    // ensure at least one multi-artist credit exists, then re-render via a harmless add/remove slot
+    const tc = window.__trackCannon, t = tc.model.tracks[0];
+    t.slots[0].creditedAs = 'Some One & Other Two'; t.slots[0].committed = false; t.slots[0].name = '';
+    tc.addSlot(t); tc.removeSlot(t, t.slots.length - 1);   // forces a rerender of our rows
+    const row = document.querySelector(`.tc-medsec tr[data-tk="${t.mi}:${t.ti}"]`);
+    const cred = row.querySelector('.tc-cred');
+    return { credHighlighted: cred.classList.contains('tc-splittable'), hasBtn: !!row.querySelector('.tc-splitb'), bg: getComputedStyle(cred).backgroundColor };
+  });
+  log('splittable credit — cred highlighted:', splittable.credHighlighted, '· ⋔ button:', splittable.hasBtn, '· bg:', splittable.bg);
+
   // no apply phase — confident matches auto-commit on load; verify they're written to the model
   const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.200150
+// @version      2026.6.2.201222
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -445,6 +445,8 @@
     .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px}
     .tc-cred::placeholder{color:#cfcfcf}
     .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
+    .tc-cred.tc-splittable{background:#fff3cf;border-color:#e7ce8a;border-radius:3px;color:#8a6d00}
+    .tc-cred.tc-splittable::placeholder{color:#caa64e}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
@@ -817,9 +819,10 @@
   // one artist = one aligned line: [credited-as][icon][green/white search bar][join][↵ hover][✕ hover]
   function slotEl(entry, s, idx, refreshBadges) {
     const line = document.createElement('div'); line.className = 'tc-aslot';
+    const splittable = splitArtistText(s.creditedAs || s.name || s.query || '').length > 1;   // looks like several artists → ⋔ available
     // credited-as: shown empty when it's exactly the artist name (the name is the placeholder); only a real override shows
     const same = s.name && s.creditedAs === s.name;
-    const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
+    const cred = document.createElement('input'); cred.className = 'tc-cred' + (splittable ? ' tc-splittable' : ''); cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = splittable ? 'looks like several artists — use ⋔ to split' : 'credited-as override (blank = same as the artist name)';
     cred.onchange = () => {
       const v = cred.value.trim(); const newCred = v || (s.name || ''); const oldKey = fold(s.creditedAs);
       s.creditedAs = newCred; if (s.creditedAs === s.name) cred.value = ''; commitTrack(entry);
@@ -844,7 +847,7 @@
     const acts = document.createElement('span'); acts.className = 'tc-acts';
     const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
     // ⋔ split: only when this credit looks like several artists (& / feat. / , …)
-    if (splitArtistText(s.creditedAs || s.name || s.query || '').length > 1) { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.title = 'split into separate artists (& / feat. …) and match'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
+    if (splittable) { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.title = 'split into separate artists (& / feat. …) and match'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
     if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x); }
     line.appendChild(acts);
     return line;
