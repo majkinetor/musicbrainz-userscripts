@@ -220,13 +220,14 @@ async function main() {
       return { mi: sec.dataset.mi, headerAbove: !!above, hasAdd: !!sec.querySelector('.tc-addbtn') };
     });
     const toolsAllHidden = [...document.querySelectorAll('[id="tracklist-tools"]')].every(t => t.style.display === 'none');
+    const statuses = [...document.querySelectorAll('.tc-medsec .tc-hstatus')].map(e => e.textContent);   // per-medium unresolved counts
     // a medium-scoped tool (Reset #) now shows an inline medium combo (one option per medium), and doesn't auto-run
     document.querySelector('#tc-bar [data-act="menu"]').click(); await new Promise(r => setTimeout(r, 150));
     const mi2 = [...document.querySelectorAll('#tc-menu .tc-mi')].find(e => e.textContent === 'Reset #'); if (mi2) mi2.click();
     await new Promise(r => setTimeout(r, 150));
     const combo = document.querySelector('.tc-toolopts .tc-medsel');
     const comboOpts = combo ? combo.querySelectorAll('option').length : 0;
-    return { before, after, sections: document.querySelectorAll('.tc-medsec').length, perMedium, toolsAllHidden, comboOpts };
+    return { before, after, sections: document.querySelectorAll('.tc-medsec').length, perMedium, toolsAllHidden, comboOpts, statuses };
   });
   await page.locator('#tracklist').screenshot({ path: resolve(LOG_DIR, 'mirror-multimedium.png') }).catch(() => {});
 
@@ -235,7 +236,7 @@ async function main() {
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
   log('format header tidy —', JSON.stringify(fmtTidy));
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows);
-  log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '· medium-combo opts:', multiMed.comboOpts, '·', JSON.stringify(multiMed.perMedium));
+  log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '· medium-combo opts:', multiMed.comboOpts, '· per-medium status:', JSON.stringify(multiMed.statuses), '·', JSON.stringify(multiMed.perMedium));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.173741
+// @version      2026.6.2.180304
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -449,16 +449,22 @@
   /* ── the one shared table ── */
   let MODEL = null;
   let ACTIVE = {};   // { mode, tbody, statusEl }
-  // status shows in every table's Artist header (one per medium in mirror mode, one in the panel)
-  const updateStatus = t => { document.querySelectorAll('#tc-mirror-wrap .tc-hstatus, #tc-panel .tc-hstatus').forEach(e => { e.textContent = t; }); };
+  // transient message (e.g. "matching d/n") shown in every table's Artist header
+  const updateStatus = t => { document.querySelectorAll('.tc-medsec .tc-hstatus, #tc-panel .tc-hstatus').forEach(e => { e.textContent = t; }); };
+  const unresolvedIn = mi => { let n = 0; MODEL.tracks.forEach(t => { if (mi != null && t.mi !== mi) return; t.slots.forEach(s => { if (!(s.status === 'set' || s.committed)) n++; }); }); return n; };
+  const statusText = n => (n ? `${n} unresolved` : 'all matched');
   // disable the Match button while a match pass is running
   function setMatching(on) { const b = document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]'); if (b) b.disabled = on; }
   // re-fill every active tbody (per-medium sections in mirror mode, or the single panel table)
   const rerender = () => { if (ACTIVE.sections) ACTIVE.sections.forEach(s => fillRows(s.tbody, s.mi)); else if (ACTIVE.tbody) fillRows(ACTIVE.tbody); refreshStatus(); };
   // our rendered row for a track, wherever it lives (a per-medium section or the floating panel)
   const rowEl = (mi, ti) => document.querySelector(`.tc-medsec tr[data-tk="${mi}:${ti}"], #tc-panel tr[data-tk="${mi}:${ti}"]`);
-  // recompute the (global) unresolved count and show it in every header — used after a live unlink too
-  function refreshStatus() { if (!MODEL) return; let n = 0; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (!(s.status === 'set' || s.committed)) n++; })); updateStatus(n ? `${n} unresolved` : 'all matched'); }
+  // show each medium's OWN unresolved count in its header (or the global count for the floating panel)
+  function refreshStatus() {
+    if (!MODEL) return;
+    if (ACTIVE.sections) ACTIVE.sections.forEach(s => { const span = s.sec.querySelector('.tc-hstatus'); if (span) span.textContent = statusText(unresolvedIn(s.mi)); });
+    else updateStatus(statusText(unresolvedIn(null)));
+  }
 
   function buildTable() {
     const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '');
