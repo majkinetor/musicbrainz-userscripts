@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.162731
+// @version      2026.6.2.165240
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -226,6 +226,17 @@
   let _selfEdit = false;   // true while WE mutate the tracklist, so the change-watcher ignores it
   function removeTrack(entry) { _selfEdit = true; try { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); } finally { _selfEdit = false; } Log.info('removed track', entry.number); }
   function moveTrack(entry, dir) { const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); _selfEdit = true; try { (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); } finally { _selfEdit = false; } }
+  // add N blank tracks to a medium by driving MB's own "Add tracks" control (the green ＋)
+  function addTracks(mi, n) {
+    const btns = [...document.querySelectorAll('button[data-click="addNewTracks"]')];
+    const inputs = [...document.querySelectorAll('input[data-bind*="addTrackCount"]')];
+    const btn = btns[mi] || btns[btns.length - 1]; const inp = inputs[mi] || inputs[inputs.length - 1];
+    if (!btn) { Log.warn('no native add-tracks button found'); return; }
+    _selfEdit = true;
+    try { if (inp) { inp.value = String(n); inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); } btn.click(); }
+    finally { _selfEdit = false; }
+    Log.info('added', n, 'track(s) to medium', mi + 1); scheduleSync();
+  }
   function setTitle(entry, v) { koTrack(entry.mi, entry.ti).name(v); }
   function setNumber(entry, v) { try { koTrack(entry.mi, entry.ti).number(v); } catch (e) { Log.warn('set number failed', v, e.message); } }
   function setLength(entry, v) { const t = koTrack(entry.mi, entry.ti); try { if (typeof t.formattedLength === 'function') t.formattedLength(v); else { const ed = getEditor(); const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) t.length(ms); } } catch (e) { Log.warn('set length failed', v, e.message); } }
@@ -372,6 +383,10 @@
     #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 2px}
     #tc-bar b{color:#563b8f}#tc-bar .sp{flex:1}
     .tc-tablewrap{overflow-x:auto}
+    .tc-addrow{padding:8px 4px;font-size:13px;color:#555;display:flex;align-items:center;gap:6px}
+    .tc-addrow input.tc-addn{width:54px;font:13px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px}
+    .tc-addbtn{width:22px;height:22px;border-radius:50%;border:none;background:#3aaf3a;color:#fff;font:bold 15px/1 Arial;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+    .tc-addbtn:hover{background:#2f9b2f}
     .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:#999;margin-left:12px;font-size:11px}
     .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:#444;margin-right:14px;max-width:140px}
     .tc-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -458,6 +473,12 @@
       am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); Log.info('applyMode =', am.value); };
       ['mousedown', 'mousemove', 'click'].forEach(ev => am.addEventListener(ev, e => e.stopPropagation()));   // don't let the column resizer hijack it
     }
+    // "Add N track(s)" control (drives MB's native add-tracks for the last medium)
+    const addrow = document.createElement('div'); addrow.className = 'tc-addrow';
+    addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" title="add blank tracks">＋</button>`;
+    const addn = addrow.querySelector('.tc-addn'), addbtn = addrow.querySelector('.tc-addbtn');
+    addbtn.onclick = () => addTracks(Math.max(0, mediums().length - 1), Math.max(1, parseInt(addn.value, 10) || 1));
+    container.appendChild(addrow);
     return table.querySelector('tbody');
   }
   // resize a column by dragging near its right border from ANY row (or the header)
@@ -714,6 +735,17 @@
   const OPTLESS = new Set(['parser', 'swap', 'resetnum', 'guessfeat']);   // these run on pick; the rest show inline options first
   function toolBtnEl() { return document.querySelector('#tc-bar [data-act="tool"], #tc-hdr [data-act="tool"]'); }
   function updateToolBtn() { const b = toolBtnEl(); if (b) b.textContent = SETTINGS.lastTool ? (LABELS[SETTINGS.lastTool] || 'Tools') : 'Tools'; }
+  // hovering the "Guess case" tool button previews the guessed form on every differing title
+  function previewAllGuess(on) {
+    if (!MODEL || !ACTIVE.tbody) return;
+    MODEL.tracks.forEach(t => {
+      if (!(t.guessTitle && t.guessTitle !== t.title)) return;
+      const row = ACTIVE.tbody.querySelector(`tr[data-tk="${t.mi}:${t.ti}"]`); if (!row) return;
+      const tin = row.querySelector('.t-title'); if (!tin || document.activeElement === tin) return;
+      if (on) { tin.value = t.guessTitle; tin.classList.add('gcpreview'); } else { tin.value = t.title; tin.classList.remove('gcpreview'); }
+    });
+  }
+  function wireToolHover() { const b = toolBtnEl(); if (!b) return; b.onmouseenter = b.onmouseleave = null; if (SETTINGS.lastTool === 'guesscase') { b.onmouseenter = () => previewAllGuess(true); b.onmouseleave = () => previewAllGuess(false); } }
   function runActiveTool() {
     const act = SETTINGS.lastTool;
     if (!act) return openToolsMenu(toolBtnEl());
@@ -721,7 +753,7 @@
     runAction(act);
   }
   function pickTool(act) {
-    SETTINGS.lastTool = act; saveSettings(); updateToolBtn(); renderToolOpts();
+    SETTINGS.lastTool = act; saveSettings(); updateToolBtn(); renderToolOpts(); wireToolHover();
     if (OPTLESS.has(act)) runAction(act);   // option-less tools fire immediately
     else if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'); if (f) f.focus(); }
   }
@@ -753,7 +785,7 @@
       box.append(find, rep); host.appendChild(box);
     }
   }
-  function initTools() { updateToolBtn(); renderToolOpts(); }
+  function initTools() { updateToolBtn(); renderToolOpts(); wireToolHover(); }
 
   // proxy MusicBrainz's own (hidden) Guess-case options so they actually affect its guessing
   function gcNative() {
@@ -805,41 +837,61 @@
   /* ── in-page replacement (the only mode) ── */
   let _showOriginal = false;
   function nativeTrackTables() { return [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
-  // the native tracklist = its tables + the #tracklist-tools button row + the Guess case fieldset; hide/show together
-  function nativeBits() { const els = nativeTrackTables(); const tools = document.getElementById('tracklist-tools'); if (tools) els.push(tools); els.push(...document.querySelectorAll('fieldset.guesscase, .guesscase')); return els; }
+  // the native tracklist = track tables + the #tracklist-tools row + the Guess-case fieldset + the
+  // miscapitalization warnings; hide/show together (the format header is lifted out, not hidden)
+  function nativeBits() {
+    const els = nativeTrackTables(); const tools = document.getElementById('tracklist-tools'); if (tools) els.push(tools);
+    els.push(...document.querySelectorAll('fieldset.guesscase, .guesscase, fieldset.advanced-medium .warning'));
+    return els;
+  }
   function setNativeHidden(hidden) { nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; }); }
-  // tidy MB's medium-format header to a minimal look — but ONLY once a format is chosen. With no
-  // format the full native header stays (Format: label, real combo, I don't know, help, error) so
-  // the user is still prompted to pick one (a format is required).
-  function setMediumTidy(fs, on) {
-    const fmt = fs.querySelector('[id^="medium-format"]'); if (!fmt) return;
+  // lift each medium's format header (table.advanced-format) to the top of our wrap so it reads above
+  // the table; remember where it came from to restore on hide. Hidden warnings/tables stay behind.
+  function liftFmtHeaders(wrap) {
+    const bar = wrap.querySelector('#tc-bar'); if (!bar) return;
+    document.querySelectorAll('table.advanced-format').forEach(h => { if (!h._tcHome) h._tcHome = { parent: h.parentElement, next: h.nextSibling }; wrap.insertBefore(h, bar); });
+  }
+  function dropFmtHeaders() { document.querySelectorAll('table.advanced-format').forEach(h => { if (h._tcHome) { try { h._tcHome.parent.insertBefore(h, h._tcHome.next); } catch (e) {} delete h._tcHome; } }); }
+  // tidy the format header to a minimal look — but ONLY once a format is chosen. With no format the
+  // full native header stays (Format: label, real combo, I don't know, help, error) so the user is
+  // still prompted to pick one. Move-up/down/remove buttons stay visible either way.
+  function setFmtTidy(tbl, on) {
+    const fmt = tbl.querySelector('[id^="medium-format"]'); if (!fmt) return;
     fmt.classList.toggle('tc-fmt-flat', on);
-    const lbl = fs.querySelector('td.format > label[for^="medium-format"]'); if (lbl) lbl.style.display = on ? 'none' : '';
-    const help = fs.querySelector('td.format a');
+    const lbl = tbl.querySelector('td.format > label[for^="medium-format"]'); if (lbl) lbl.style.display = on ? 'none' : '';
+    const help = tbl.querySelector('td.format a');
     if (help) {
       help.style.display = on ? 'none' : '';
       [help.previousSibling, help.nextSibling].forEach(n => { if (!n || n.nodeType !== 3) return; if (on) { if (!('_tcv' in n) && /[()]/.test(n.nodeValue)) n._tcv = n.nodeValue; if ('_tcv' in n) n.nodeValue = ''; } else if ('_tcv' in n) { n.nodeValue = n._tcv; delete n._tcv; } });   // the "( )" around (help)
     }
-    const moves = fs.querySelector('.advanced-format td.align-right.icon'); if (moves) moves.style.display = on ? 'none' : '';
-    const idk = fs.querySelector('td.format input[type=checkbox]'); const idkLbl = idk ? idk.closest('label') : null; if (idkLbl) idkLbl.style.display = on ? 'none' : '';
+    const idk = tbl.querySelector('td.format input[type=checkbox]'); const idkLbl = idk ? idk.closest('label') : null; if (idkLbl) idkLbl.style.display = on ? 'none' : '';
   }
-  function tidyMedium(fs) {
-    const fmt = fs.querySelector('[id^="medium-format"]'); if (!fmt) return;
-    const apply = () => setMediumTidy(fs, fmt.value !== '');   // minimise only when a format is selected
+  function tidyFmt(tbl) {
+    const fmt = tbl.querySelector('[id^="medium-format"]'); if (!fmt) return;
+    const apply = () => setFmtTidy(tbl, fmt.value !== '');   // minimise only when a format is selected
     if (!fmt._tcApply) { fmt._tcApply = apply; fmt.addEventListener('change', apply); }
     apply();
   }
-  function untidyMedium(fs) { setMediumTidy(fs, false); }
-  function tidyMediums() { document.querySelectorAll('fieldset.advanced-medium').forEach(tidyMedium); }
-  function untidyMediums() { document.querySelectorAll('fieldset.advanced-medium').forEach(untidyMedium); }
-  function syncNative() { setNativeHidden(!_showOriginal); if (_showOriginal) untidyMediums(); else tidyMediums(); }
+  function tidyMediums() { document.querySelectorAll('table.advanced-format').forEach(tidyFmt); }
+  function untidyMediums() { document.querySelectorAll('table.advanced-format').forEach(t => setFmtTidy(t, false)); }
+  function syncNative() {
+    setNativeHidden(!_showOriginal);
+    const wrap = document.getElementById('tc-mirror-wrap');
+    if (wrap && !_showOriginal) liftFmtHeaders(wrap); else dropFmtHeaders();
+    if (_showOriginal) untidyMediums(); else tidyMediums();
+  }
   // watch the live tracklist so Track parser (or any native structural change) refreshes our table
   let _subscribed = false, _syncTimer = null;
   function scheduleSync() { clearTimeout(_syncTimer); _syncTimer = setTimeout(() => { if (document.getElementById('tc-mirror-wrap')) loadAndRender(); }, 400); }
   function subscribeTracks() {
-    if (_subscribed) return; const rel = release(); if (!rel) return;
-    try { (u(rel.mediums) || []).forEach(med => { if (med.tracks && med.tracks.subscribe) med.tracks.subscribe(() => { if (!_selfEdit) scheduleSync(); }); }); _subscribed = true; Log.info('watching tracklist for external changes'); }
-    catch (e) { Log.warn('subscribe failed', e.message); }
+    const rel = release(); if (!rel) return;
+    const subMed = med => { if (!med || med._tcSub) return; if (med.tracks && med.tracks.subscribe) { med.tracks.subscribe(() => { if (!_selfEdit) scheduleSync(); }); med._tcSub = true; } };
+    try {
+      (u(rel.mediums) || []).forEach(subMed);
+      // watch the mediums list itself so adding/removing a medium re-renders + re-hides the new native bits
+      if (!_subscribed && rel.mediums && rel.mediums.subscribe) { rel.mediums.subscribe(() => { if (!_selfEdit) { (u(rel.mediums) || []).forEach(subMed); scheduleSync(); } }); }
+      _subscribed = true; Log.info('watching tracklist + mediums for external changes');
+    } catch (e) { Log.warn('subscribe failed', e.message); }
   }
   async function showMirror() {
     style(); let wrap = document.getElementById('tc-mirror-wrap');
@@ -855,7 +907,7 @@
     bindActions(wrap); initTools(); subscribeTracks();
     await loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
-  function hideMirror() { const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); setNativeHidden(false); untidyMediums(); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
+  function hideMirror() { dropFmtHeaders(); untidyMediums(); const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); setNativeHidden(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
 
   /* ── entry points ── */
   function ensureLauncher() {
@@ -879,7 +931,7 @@
     tick(); setInterval(tick, 500);
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, searchArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, addTracks, searchArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });

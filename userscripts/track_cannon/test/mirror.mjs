@@ -10,7 +10,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const PROFILE_DIR = resolve(HERE, '..', '..', '..', '.pw-profile');
 const SCRIPT_PATH = resolve(HERE, '..', 'track_cannon.user.js');
 const SEED_PATH = resolve(HERE, 'seed-saigon.local.json');
-const ORIGIN = 'https://musicbrainz.org';
+const ORIGIN = process.env.TC_ORIGIN || 'https://musicbrainz.org';
 const HEADED = process.argv.includes('--headed');
 const LOG_DIR = resolve(HERE, 'logs', 'mirror-' + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19));
 const log = (...a) => console.log('[mirror]', ...a);
@@ -55,22 +55,24 @@ async function main() {
   const nativeHidden = await page.evaluate(() => [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')).every(t => t.style.display === 'none'));
   const toolsHidden = await page.evaluate(() => { const t = document.getElementById('tracklist-tools'); return t ? t.style.display === 'none' : 'no-div'; });
   const guessHidden = await page.evaluate(() => { const g = document.querySelector('fieldset.guesscase, .guesscase'); return g ? g.style.display === 'none' : 'no-gc'; });
-  // medium-format header: minimal (select reads as text, label/help/moves/idk hidden) ONLY when a
-  // format is chosen; with no format the full native header stays so the user is prompted to pick one
+  // medium-format header is lifted above our table; minimal (text, label/help/idk hidden, but
+  // move buttons VISIBLE) when a format is chosen; full native header when none; warning hidden
   const fmtTidy = await page.evaluate(() => {
-    const fs = document.querySelector('fieldset.advanced-medium'); if (!fs) return { nofs: true };
-    const fmt = fs.querySelector('[id^="medium-format"]');
-    const lbl = fs.querySelector('td.format > label[for^="medium-format"]');
-    const help = fs.querySelector('td.format a');
-    const moves = fs.querySelector('.advanced-format td.align-right.icon');
-    const idkLbl = fs.querySelector('td.format input[type=checkbox]').closest('label');
+    const tbl = document.querySelector('table.advanced-format'); if (!tbl) return { notbl: true };
+    const fmt = tbl.querySelector('[id^="medium-format"]');
+    const lbl = tbl.querySelector('td.format > label[for^="medium-format"]');
+    const help = tbl.querySelector('td.format a');
+    const moves = tbl.querySelector('td.align-right.icon');
+    const idkLbl = tbl.querySelector('td.format input[type=checkbox]').closest('label');
+    const warn = document.querySelector('fieldset.advanced-medium .warning');
+    const lifted = !!tbl.closest('#tc-mirror-wrap');
     const set = which => { fmt.value = which; fmt.dispatchEvent(new Event('change')); };
     set(fmt.options[1].value);   // a real format → minimal
-    const withFmt = { flat: fmt.classList.contains('tc-fmt-flat'), labelHidden: lbl.style.display === 'none', helpHidden: help ? help.style.display === 'none' : 'no-help', movesHidden: moves ? moves.style.display === 'none' : 'no-moves', idkHidden: idkLbl.style.display === 'none' };
+    const withFmt = { flat: fmt.classList.contains('tc-fmt-flat'), labelHidden: lbl.style.display === 'none', helpHidden: help ? help.style.display === 'none' : 'no-help', movesVisible: moves ? moves.style.display !== 'none' : 'no-moves', idkHidden: idkLbl.style.display === 'none' };
     set('');                     // no format → full native header
     const noFmt = { notFlat: !fmt.classList.contains('tc-fmt-flat'), labelShown: lbl.style.display !== 'none', idkShown: idkLbl.style.display !== 'none' };
     set(fmt.options[1].value);   // restore a format
-    return { withFmt, noFmt };
+    return { lifted, warnHidden: warn ? warn.style.display === 'none' : 'no-warn', withFmt, noFmt };
   });
   // hideMirror reveals the native bits; re-show puts Canon back
   const shown = await page.evaluate(() => { window.__trackCannon.hideMirror(); const t = document.getElementById('tracklist-tools'); const tbl = [...document.querySelectorAll('table')].find(x => x.querySelector('tr.track')); return { tools: t ? t.style.display !== 'none' : null, table: tbl ? tbl.style.display !== 'none' : null }; });
@@ -145,6 +147,18 @@ async function main() {
     return { amInHeader, amInBar, toolLabel, srChanged: afterRep !== before0, srStatus, restored, restoredOk: restored === before0, gcLabel, gcOpts };
   });
 
+  // Add-tracks control: clicking ＋ drives MB's native add-tracks for the last medium
+  const addTracks = await page.evaluate(async () => {
+    const u = v => (typeof v === 'function' ? v() : v);
+    const med0 = () => u(u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks).length;
+    const before = med0();
+    const inp = document.querySelector('#tc-mirror-wrap .tc-addn'); inp.value = '2';
+    document.querySelector('#tc-mirror-wrap .tc-addbtn').click();
+    await new Promise(r => setTimeout(r, 700));   // scheduleSync (400ms) + render
+    const rows = document.querySelectorAll('#tc-mirror-wrap .tc-mirror tbody tr[data-tk]').length;
+    return { before, after: med0(), rows };
+  });
+
   // Match button is disabled for the duration of a match pass
   const matchBtn = await page.evaluate(async () => {
     const btn = document.querySelector('#tc-bar [data-act="match"]');
@@ -192,6 +206,7 @@ async function main() {
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
   log('format header tidy —', JSON.stringify(fmtTidy));
+  log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows);
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);

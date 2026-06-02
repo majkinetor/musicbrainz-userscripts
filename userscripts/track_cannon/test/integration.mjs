@@ -10,7 +10,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const PROFILE_DIR = resolve(HERE, '..', '..', '..', '.pw-profile');
 const SCRIPT_PATH = resolve(HERE, '..', 'track_cannon.user.js');
 const SEED_PATH = resolve(HERE, 'seed-saigon.local.json');
-const ORIGIN = 'https://musicbrainz.org';
+const ORIGIN = process.env.TC_ORIGIN || 'https://musicbrainz.org';
 const HEADED = process.argv.includes('--headed');
 const LOG_DIR = resolve(HERE, 'logs', 'int-' + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19));
 const log = (...a) => console.log('[integration]', ...a);

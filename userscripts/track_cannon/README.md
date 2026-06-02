@@ -67,9 +67,12 @@ Track Cannon **takes over the tracklist** as soon as a release add/edit page loa
 laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badge). MB's native tracklist —
 the table, its tools row **and** the Guess-case fieldset — is hidden while Canon is on; the floating
 **🎯 Track Cannon** button toggles Canon off/on (which reveals them). MB's **medium-format header**
-is tidied too: once a format is chosen it collapses to just the format name as text (click it to
-re-open the dropdown); with **no** format selected the full native header stays so you're still
-prompted to pick one. The unresolved count shows in
+is **lifted to sit above** the table and tidied: once a format is chosen it collapses to just the
+format name as text (click it to re-open the dropdown), keeping the medium move/remove buttons; with
+**no** format selected the full native header stays so you're still prompted to pick one. The
+capitalization warnings are hidden. An **Add _N_ track(s) ＋** control sits below the table (drives
+MB's own add-tracks); **adding or removing a whole medium** re-renders the table automatically, and
+the script works on a fresh `…/release/add` with **no tracks yet**. The unresolved count shows in
 the **Artist** header. Columns are resizable by dragging near a column border **in the header or any
 row** (widths remembered). **⚙** holds settings — **Auto-match artists on load**, **Alternate row
 colors** and **Show grid**.
