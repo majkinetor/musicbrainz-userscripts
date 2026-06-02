@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.160142
+// @version      2026.6.2.162228
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -308,6 +308,9 @@
     .tc-mirror .t-wrap{display:flex;align-items:center;gap:3px}.tc-mirror .t-wrap input.t-title{flex:1;min-width:0;width:auto}
     .tc-mirror input.t-title.diff{background:#fff6da;border-color:#e7ce8a;border-radius:3px}
     .tc-mirror input.t-title.gcpreview{background:#e3f6e3;border-color:#86c686;border-radius:3px}
+    /* MB medium-format select made to read as plain text — click still opens the native dropdown */
+    select.tc-fmt-flat{-webkit-appearance:none;-moz-appearance:none;appearance:none;border:1px solid transparent;background:transparent;font:bold 15px Arial;color:#222;padding:2px 5px;cursor:pointer}
+    select.tc-fmt-flat:hover{background:#efeaf9;border-color:#d7ccef;border-radius:3px}
     .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px}.tc-mirror .t-gc:hover{background:#ffefb8}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
     /* alternate row colors / grid (toggled in ⚙) */
@@ -378,11 +381,11 @@
     .tc-toolopts input[type=text]{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:120px}
     .tc-toolopts input[type=text]::placeholder{color:#c2c2c2}
     .tc-toolopts select{font:12px Arial;padding:1px}
+    /* the Tools split-button always keeps the bordered/filled button look (not flat) */
     .tc-split{display:inline-flex}
-    .tc-split .tc-btn{border-radius:3px 0 0 3px}
-    .tc-split .tc-caret{border-radius:0 3px 3px 0;padding:4px 7px}
-    .tc-split:hover .tc-btn{border-color:#bbb;background:linear-gradient(#fff,#eee)}
-    .tc-split:hover .tc-caret{border-left:1px solid #ccc}
+    .tc-split .tc-btn{border-radius:3px 0 0 3px;border-color:#bbb;background:linear-gradient(#fff,#eee)}
+    .tc-split .tc-caret{border-radius:0 3px 3px 0;padding:4px 7px;border-left:1px solid #ccc}
+    .tc-split .tc-btn:hover{background:linear-gradient(#fff,#e4e4e4)}
     .tc-menu{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;font:13px Arial;min-width:170px}
     .tc-menu .tc-mi{padding:6px 15px;cursor:pointer;color:#333;font-weight:bold}.tc-menu .tc-mi:hover{background:#ede9f6;color:#4b2e83}
     .tc-menu .tc-sep{border-top:1px solid #e6e0f2;margin:4px 0}
@@ -601,7 +604,17 @@
     // credited-as: shown empty when it's exactly the artist name (the name is the placeholder); only a real override shows
     const same = s.name && s.creditedAs === s.name;
     const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
-    cred.onchange = () => { const v = cred.value.trim(); s.creditedAs = v || (s.name || ''); if (s.creditedAs === s.name) cred.value = ''; commitTrack(entry); }; enterBlurs(cred); line.appendChild(cred);
+    cred.onchange = () => {
+      const v = cred.value.trim(); const newCred = v || (s.name || ''); const oldKey = fold(s.creditedAs);
+      s.creditedAs = newCred; if (s.creditedAs === s.name) cred.value = ''; commitTrack(entry);
+      // in "all" mode, copy the credited-as change to every other track that shared this credit
+      if ((SETTINGS.applyMode || 'all') === 'all' && oldKey) {
+        const touched = new Set();
+        MODEL.tracks.forEach(t => t.slots.forEach(os => { if (os === s || fold(os.creditedAs) !== oldKey) return; os.creditedAs = newCred; touched.add(os._entry); }));
+        touched.forEach(commitTrack);
+        if (touched.size) { Log.info('propagated credited-as', JSON.stringify(newCred), '→', touched.size, 'track(s)'); rerender(); updateStatus(`credited-as set on ${touched.size + 1} matching tracks`); }
+      }
+    }; enterBlurs(cred); line.appendChild(cred);
     const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);
@@ -791,7 +804,31 @@
   // the native tracklist = its tables + the #tracklist-tools button row + the Guess case fieldset; hide/show together
   function nativeBits() { const els = nativeTrackTables(); const tools = document.getElementById('tracklist-tools'); if (tools) els.push(tools); els.push(...document.querySelectorAll('fieldset.guesscase, .guesscase')); return els; }
   function setNativeHidden(hidden) { nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; }); }
-  function syncNative() { setNativeHidden(!_showOriginal); }
+  // tidy MB's medium-format header to a minimal look — but ONLY once a format is chosen. With no
+  // format the full native header stays (Format: label, real combo, I don't know, help, error) so
+  // the user is still prompted to pick one (a format is required).
+  function setMediumTidy(fs, on) {
+    const fmt = fs.querySelector('[id^="medium-format"]'); if (!fmt) return;
+    fmt.classList.toggle('tc-fmt-flat', on);
+    const lbl = fs.querySelector('td.format > label[for^="medium-format"]'); if (lbl) lbl.style.display = on ? 'none' : '';
+    const help = fs.querySelector('td.format a');
+    if (help) {
+      help.style.display = on ? 'none' : '';
+      [help.previousSibling, help.nextSibling].forEach(n => { if (!n || n.nodeType !== 3) return; if (on) { if (!('_tcv' in n) && /[()]/.test(n.nodeValue)) n._tcv = n.nodeValue; if ('_tcv' in n) n.nodeValue = ''; } else if ('_tcv' in n) { n.nodeValue = n._tcv; delete n._tcv; } });   // the "( )" around (help)
+    }
+    const moves = fs.querySelector('.advanced-format td.align-right.icon'); if (moves) moves.style.display = on ? 'none' : '';
+    const idk = fs.querySelector('td.format input[type=checkbox]'); const idkLbl = idk ? idk.closest('label') : null; if (idkLbl) idkLbl.style.display = on ? 'none' : '';
+  }
+  function tidyMedium(fs) {
+    const fmt = fs.querySelector('[id^="medium-format"]'); if (!fmt) return;
+    const apply = () => setMediumTidy(fs, fmt.value !== '');   // minimise only when a format is selected
+    if (!fmt._tcApply) { fmt._tcApply = apply; fmt.addEventListener('change', apply); }
+    apply();
+  }
+  function untidyMedium(fs) { setMediumTidy(fs, false); }
+  function tidyMediums() { document.querySelectorAll('fieldset.advanced-medium').forEach(tidyMedium); }
+  function untidyMediums() { document.querySelectorAll('fieldset.advanced-medium').forEach(untidyMedium); }
+  function syncNative() { setNativeHidden(!_showOriginal); if (_showOriginal) untidyMediums(); else tidyMediums(); }
   // watch the live tracklist so Track parser (or any native structural change) refreshes our table
   let _subscribed = false, _syncTimer = null;
   function scheduleSync() { clearTimeout(_syncTimer); _syncTimer = setTimeout(() => { if (document.getElementById('tc-mirror-wrap')) loadAndRender(); }, 400); }
@@ -814,7 +851,7 @@
     bindActions(wrap); initTools(); subscribeTracks();
     await loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
-  function hideMirror() { const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); setNativeHidden(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
+  function hideMirror() { const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); setNativeHidden(false); untidyMediums(); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
 
   /* ── entry points ── */
   function ensureLauncher() {

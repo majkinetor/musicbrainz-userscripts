@@ -55,6 +55,23 @@ async function main() {
   const nativeHidden = await page.evaluate(() => [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')).every(t => t.style.display === 'none'));
   const toolsHidden = await page.evaluate(() => { const t = document.getElementById('tracklist-tools'); return t ? t.style.display === 'none' : 'no-div'; });
   const guessHidden = await page.evaluate(() => { const g = document.querySelector('fieldset.guesscase, .guesscase'); return g ? g.style.display === 'none' : 'no-gc'; });
+  // medium-format header: minimal (select reads as text, label/help/moves/idk hidden) ONLY when a
+  // format is chosen; with no format the full native header stays so the user is prompted to pick one
+  const fmtTidy = await page.evaluate(() => {
+    const fs = document.querySelector('fieldset.advanced-medium'); if (!fs) return { nofs: true };
+    const fmt = fs.querySelector('[id^="medium-format"]');
+    const lbl = fs.querySelector('td.format > label[for^="medium-format"]');
+    const help = fs.querySelector('td.format a');
+    const moves = fs.querySelector('.advanced-format td.align-right.icon');
+    const idkLbl = fs.querySelector('td.format input[type=checkbox]').closest('label');
+    const set = which => { fmt.value = which; fmt.dispatchEvent(new Event('change')); };
+    set(fmt.options[1].value);   // a real format → minimal
+    const withFmt = { flat: fmt.classList.contains('tc-fmt-flat'), labelHidden: lbl.style.display === 'none', helpHidden: help ? help.style.display === 'none' : 'no-help', movesHidden: moves ? moves.style.display === 'none' : 'no-moves', idkHidden: idkLbl.style.display === 'none' };
+    set('');                     // no format → full native header
+    const noFmt = { notFlat: !fmt.classList.contains('tc-fmt-flat'), labelShown: lbl.style.display !== 'none', idkShown: idkLbl.style.display !== 'none' };
+    set(fmt.options[1].value);   // restore a format
+    return { withFmt, noFmt };
+  });
   // hideMirror reveals the native bits; re-show puts Canon back
   const shown = await page.evaluate(() => { window.__trackCannon.hideMirror(); const t = document.getElementById('tracklist-tools'); const tbl = [...document.querySelectorAll('table')].find(x => x.querySelector('tr.track')); return { tools: t ? t.style.display !== 'none' : null, table: tbl ? tbl.style.display !== 'none' : null }; });
   await page.evaluate(() => window.__trackCannon.showMirror());
@@ -172,6 +189,7 @@ async function main() {
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
+  log('format header tidy —', JSON.stringify(fmtTidy));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);

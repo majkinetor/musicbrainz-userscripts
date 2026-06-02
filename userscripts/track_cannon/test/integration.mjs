@@ -126,6 +126,19 @@ async function main() {
     return { ok: true, cred: dup[0].creditedAs, count: dup.length, allChanged: dup.every(s => s.gid === cand.gid && s.committed) };
   });
 
+  // editing "Credited as" propagates to every other track sharing that credit (all mode)
+  const credProp = await page.evaluate(async () => {
+    const tc = window.__trackCannon; tc.settings.applyMode = 'all';
+    const by = {}; tc.model.tracks.forEach(t => t.slots.forEach(s => { const k = (s.creditedAs || '').toLowerCase(); if (k) (by[k] = by[k] || []).push(s); }));
+    const dup = Object.values(by).find(a => a.length >= 2); if (!dup) return { ok: false };
+    const target = dup[0]; const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === target._entry.mi + ':' + target._entry.ti);
+    const cred = tr.querySelector('.tc-cred'); const newVal = 'XCredit ' + target.creditedAs;
+    cred.focus(); cred.value = newVal; cred.dispatchEvent(new Event('change'));
+    await new Promise(r => setTimeout(r, 80));
+    return { ok: true, count: dup.length, newVal, allChanged: dup.every(s => s.creditedAs === newVal) };
+  });
+  log('credited-as propagation:', JSON.stringify(credProp));
+
   // no apply phase — confident matches auto-commit on load and picks commit immediately
   await page.waitForTimeout(800);
   const report = await page.evaluate(() => {

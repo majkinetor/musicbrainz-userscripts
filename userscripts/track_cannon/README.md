@@ -50,7 +50,8 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    **Artist** column header holds an *apply-to* dropdown — **all matching tracks** / **single
    track** — controlling whether a pick also copies to every track credited to the same text; when it
    does, the changed boxes **flash**, and (when more than one track changed) stay **outlined** until
-   your next pick, so you can review every place it landed.
+   your next pick, so you can review every place it landed. Editing a **Credited as** override
+   propagates the same way (in *all matching tracks* mode).
 5. Title tools live in the **Tools** menu (using MusicBrainz's own functions): a title that differs
    from its **Guess Case** form is highlighted amber with an **Aa** button to fix that one — like
    MB's integrated guess case, **hovering** the button previews the guessed title (green) in place,
@@ -65,7 +66,10 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 Track Cannon **takes over the tracklist** as soon as a release add/edit page loads (no flash),
 laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badge). MB's native tracklist —
 the table, its tools row **and** the Guess-case fieldset — is hidden while Canon is on; the floating
-**🎯 Track Cannon** button toggles Canon off/on (which reveals them). The unresolved count shows in
+**🎯 Track Cannon** button toggles Canon off/on (which reveals them). MB's **medium-format header**
+is tidied too: once a format is chosen it collapses to just the format name as text (click it to
+re-open the dropdown); with **no** format selected the full native header stays so you're still
+prompted to pick one. The unresolved count shows in
 the **Artist** header. Columns are resizable by dragging near a column border **in the header or any
 row** (widths remembered). **⚙** holds settings — **Auto-match artists on load**, **Alternate row
 colors** and **Show grid**.
