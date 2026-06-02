@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.124811
+// @version      2026.6.2.131345
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -46,7 +46,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { try { return Object.assign({ replace: true, autoRun: false, colWidths: {}, applyMode: 'all' }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { replace: true, autoRun: false, colWidths: {}, applyMode: 'all' }; } }
+  function loadSettings() { try { return Object.assign({ colWidths: {}, applyMode: 'all', altRows: false, grid: false }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { colWidths: {}, applyMode: 'all', altRows: false, grid: false }; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -187,8 +187,9 @@
     try { if (typeof t.formattedLength === 'function') t.formattedLength(orig.length); } catch (e) {}
     Log.info('reset track', entry.number, 'to original (all cells)');
   }
-  function removeTrack(entry) { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); Log.info('removed track', entry.number); }
-  function moveTrack(entry, dir) { const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); }
+  let _selfEdit = false;   // true while WE mutate the tracklist, so the change-watcher ignores it
+  function removeTrack(entry) { _selfEdit = true; try { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); } finally { _selfEdit = false; } Log.info('removed track', entry.number); }
+  function moveTrack(entry, dir) { const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); _selfEdit = true; try { (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); } finally { _selfEdit = false; } }
   function setTitle(entry, v) { koTrack(entry.mi, entry.ti).name(v); }
   function setNumber(entry, v) { try { koTrack(entry.mi, entry.ti).number(v); } catch (e) { Log.warn('set number failed', v, e.message); } }
   function setLength(entry, v) { const t = koTrack(entry.mi, entry.ti); try { if (typeof t.formattedLength === 'function') t.formattedLength(v); else { const ed = getEditor(); const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) t.length(ms); } } catch (e) { Log.warn('set length failed', v, e.message); } }
@@ -255,11 +256,13 @@
     #tc-panel a,#tc-mirror-wrap a{color:#4800a0;text-decoration:none}#tc-panel a:hover,#tc-mirror-wrap a:hover{text-decoration:underline}
 
     .tc-mirror{table-layout:fixed;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff}
-    .tc-mirror th{position:relative;background:#eee;border-bottom:2px solid #ccc;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
+    .tc-mirror th{position:relative;background:#eee;border-bottom:2px solid #ccc;border-right:1px solid #cfcfcf;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
+    .tc-mirror th:last-child{border-right:none}
     .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:3px 6px;vertical-align:middle;overflow:hidden;background:#fff}
     .tc-mirror td.c-art,.tc-mirror td.c-badge{vertical-align:top}
     .tc-mirror td.c-badge{position:relative;padding:0;text-align:center}
-    .tc-mirror .tc-resizer{position:absolute;right:0;top:0;height:100%;width:7px;cursor:col-resize}
+    .tc-mirror .tc-resizer{position:absolute;right:-1px;top:0;height:100%;width:9px;cursor:col-resize;border-right:2px solid transparent}
+    .tc-mirror th:hover .tc-resizer,.tc-mirror .tc-resizer:hover{border-right-color:#5f3ec0}
     .tc-mirror .c-num{color:#888;font-variant-numeric:tabular-nums}
     .tc-mirror .c-mv{white-space:nowrap;text-align:center}
     .tc-mirror input.t-title,.tc-mirror input.t-len,.tc-mirror input.t-num{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:3px 2px}
@@ -269,16 +272,18 @@
     .tc-mirror input.t-title.diff{background:#fff6da;border-color:#e7ce8a;border-radius:3px}
     .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px}.tc-mirror .t-gc:hover{background:#ffefb8}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
+    /* alternate row colors / grid (toggled in ⚙) */
+    .tc-mirror.alt tbody tr:nth-child(even) td{background:#f6f4fb}
+    .tc-mirror.grid td{border-right:1px solid #ededed}.tc-mirror.grid td:last-child{border-right:none}
     /* badge column: pills per artist line; on row hover the track ↺/✕ overlay it */
-    .tc-bl{height:28px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-top:1px solid rgba(0,0,0,.05)}.tc-bl:first-child{border-top:none}
+    .tc-bl{height:28px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
     .tc-trackacts{position:absolute;inset:0;display:none;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,.93)}
     .tc-mirror tr:hover .tc-trackacts{display:flex}
     .tc-trackacts button{cursor:pointer;border:none;background:none;font-size:16px;line-height:1}
     .tc-trackacts .trev{color:#9a8fc0}.tc-trackacts .trev:hover{color:#5f3ec0}
     .tc-trackacts .rm{color:#c0392b;font-weight:bold}.tc-trackacts .rm:hover{color:#a02519}
-    /* one artist = one aligned fixed-height line: credited-as · icon · search box · acts */
-    .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box;border-top:1px solid rgba(0,0,0,.05)}
-    .tc-aslot:first-child{border-top:none}
+    /* one artist = one aligned fixed-height line: credited-as · icon · search box · acts (no line between artists) */
+    .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box}
     .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px}
     .tc-cred::placeholder{color:#cfcfcf}
     .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
@@ -339,22 +344,21 @@
     const s = document.createElement('style'); s.id = 'tc-css'; s.textContent = css; document.head.appendChild(s);
   }
 
-  /* ── settings popover (one place; reachable from the Canon interface) ── */
+  /* ── settings popover (view options) ── */
+  function applyViewClasses() { document.querySelectorAll('.tc-mirror').forEach(t => { t.classList.toggle('alt', !!SETTINGS.altRows); t.classList.toggle('grid', !!SETTINGS.grid); }); }
   function openSettings(anchor) {
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
-    s.innerHTML = `<h4>${ICON} Track Cannon — settings</h4>
-      <label><input type="checkbox" id="tc-s-replace"> <span>Replace MB track list</span></label>
-      <div class="hint">On: the Track Cannon table takes the place of the integrated tracklist. Off: the same table in a floating window you open with the button.</div>
-      <label><input type="checkbox" id="tc-s-auto"> <span>Auto-open the floating window on the Tracklist tab</span></label>
-      <div class="hint">Floating mode only. Opens the window when you reach the Tracklist tab (replace mode is always on).</div>`;
+    s.innerHTML = `<h4>${ICON} Track Cannon — view</h4>
+      <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
+      <label><input type="checkbox" id="tc-s-grid"> <span>Show grid</span></label>`;
     document.body.appendChild(s);
     const r = anchor ? anchor.getBoundingClientRect() : { left: 60, bottom: 80 };
-    s.style.left = Math.min(r.left, window.innerWidth - 360) + 'px'; s.style.top = (r.bottom + 6) + 'px';
-    const rep = s.querySelector('#tc-s-replace'), au = s.querySelector('#tc-s-auto');
-    rep.checked = !!SETTINGS.replace; au.checked = !!SETTINGS.autoRun;
-    rep.onchange = () => { SETTINGS.replace = rep.checked; saveSettings(); Log.info('replace =', SETTINGS.replace); applyMode(); };
-    au.onchange = () => { SETTINGS.autoRun = au.checked; saveSettings(); };
+    s.style.left = Math.min(r.left, window.innerWidth - 280) + 'px'; s.style.top = (r.bottom + 6) + 'px';
+    const alt = s.querySelector('#tc-s-alt'), grid = s.querySelector('#tc-s-grid');
+    alt.checked = !!SETTINGS.altRows; grid.checked = !!SETTINGS.grid;
+    alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
+    grid.onchange = () => { SETTINGS.grid = grid.checked; saveSettings(); applyViewClasses(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -366,7 +370,7 @@
   const rerender = () => { if (ACTIVE.tbody) fillRows(ACTIVE.tbody); };
 
   function buildTable() {
-    const t = document.createElement('table'); t.className = 'tc-mirror';
+    const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '');
     t.innerHTML = `<colgroup>${COLS.map(c => `<col style="width:${colW(c.k, c.w)}px">`).join('')}</colgroup>` +
       `<thead><tr>${COLS.map(c => `<th>${c.label}<span class="tc-resizer"></span></th>`).join('')}</tr></thead><tbody></tbody>`;
     return t;
@@ -582,6 +586,10 @@
     mediums().forEach(med => (u(med.tracks) || []).forEach(t => { try { ed.guessTrackFeatArtists(t); } catch (e) { try { ed.guessTrackFeatArtists(t, { type: 'click' }); } catch (e2) { Log.warn('guess feat failed', e2.message); } } }));
     await loadAndRender(); Log.info('guessed feat artists from titles');
   }
+  // swap titles ↔ artist credits (MB shows its own confirm if data would be lost)
+  async function swapTitlesArtists() { const ed = getEditor(); _selfEdit = true; try { mediums().forEach(m => { try { ed.swapTitlesWithArtists(m); } catch (e) { Log.warn('swap failed', e.message); } }); } finally { _selfEdit = false; } await loadAndRender(); Log.info('swapped titles ↔ artists'); }
+  function resetNumbersAll() { const ed = getEditor(); _selfEdit = true; try { mediums().forEach(m => { try { ed.resetTrackNumbers(m); } catch (e) { Log.warn('reset numbers failed', e.message); } }); } finally { _selfEdit = false; } rebuild(); }
+  function openParser() { const ed = getEditor(); try { ed.openTrackParser(mediums()[0]); } catch (e) { Log.warn('open parser failed', e.message); } }
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
@@ -591,20 +599,28 @@
         else if (a === 'revert') revertAll();
         else if (a === 'guesscase') guessCaseAll();
         else if (a === 'guessfeat') guessFeatAll();
+        else if (a === 'swap') swapTitlesArtists();
+        else if (a === 'resetnum') resetNumbersAll();
+        else if (a === 'parser') openParser();
         else if (a === 'toggleorig') { _showOriginal = !_showOriginal; syncNative(); b.textContent = _showOriginal ? 'Hide original' : 'Show original'; }
       };
     });
   }
-  const TOOLS = `<button class="tc-btn" data-act="guesscase" title="MusicBrainz guess case on all track titles">Guess case</button><button class="tc-btn" data-act="guessfeat" title="pull “feat. X” out of titles into artist credits">Guess feat.</button>`;
-  const FOOTER_FLOAT = TOOLS + `<button class="tc-btn" data-act="revert">Revert all</button>`;
-  const FOOTER_MIRROR = TOOLS + `<button class="tc-btn" data-act="toggleorig">Show original</button><button class="tc-btn" data-act="revert">Revert all</button>`;
+  const TOOLS = `<button class="tc-btn" data-act="guesscase" title="MusicBrainz guess case on all track titles">Guess case</button>`
+    + `<button class="tc-btn" data-act="guessfeat" title="pull “feat. X” out of titles into artist credits">Guess feat.</button>`
+    + `<button class="tc-btn" data-act="swap" title="swap track titles with artist credits">Swap</button>`
+    + `<button class="tc-btn" data-act="resetnum" title="reset track numbers to 1,2,3…">Reset #</button>`
+    + `<button class="tc-btn" data-act="parser" title="open MusicBrainz’s track parser (paste a tracklist)">Track parser</button>`;
+  const GEAR = `<button class="tc-btn" data-act="gear" title="view options">⚙</button>`;
+  const FOOTER_FLOAT = TOOLS + `<button class="tc-btn" data-act="revert">Revert all</button>` + GEAR;
+  const FOOTER_MIRROR = TOOLS + `<button class="tc-btn" data-act="toggleorig">Show original</button><button class="tc-btn" data-act="revert">Revert all</button>` + GEAR;
 
-  /* ── floating window (movable) ── */
+  /* ── floating window (kept for tests; the in-page table is the real UI) ── */
   function openPanel() {
     style(); const ex = document.getElementById('tc-panel'); if (ex) ex.remove(); const l = document.getElementById('tc-launch'); if (l) l.remove();
     const p = document.createElement('div'); p.id = 'tc-panel';
     p.innerHTML = `<div id="tc-hdr">${ICON}<b>Track Cannon</b><span class="tc-status meta">matching…</span>
-        <button class="tc-icon" data-act="gear" title="settings">⚙</button><button class="tc-icon" data-act="close" title="close">✕</button></div>
+        <button class="tc-icon" data-act="close" title="close">✕</button></div>
       <div id="tc-body"></div>
       <div id="tc-foot"><span class="sp"></span>${FOOTER_FLOAT}</div>`;
     document.body.appendChild(p);
@@ -616,58 +632,65 @@
     loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
 
-  /* ── in-page replacement ── */
+  /* ── in-page replacement (the only mode) ── */
   let _showOriginal = false;
   function nativeTrackTables() { return [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
   function hideNative(hide) { nativeTrackTables().forEach(t => { t.style.display = hide ? 'none' : ''; }); }
   function syncNative() { nativeTrackTables().forEach(t => { t.style.display = _showOriginal ? '' : 'none'; }); }
+  // hide the native tool buttons we replicate (Track parser stays — its dialog is what our button opens)
+  function hideNativeTools() { [...document.querySelectorAll('button, input[type=button]')].forEach(b => { if (b.closest('#tc-mirror-wrap') || b.closest('#tc-panel') || b.id === 'tc-btn' || b.id === 'tc-launch') return; if (/^(guess case|guess feat\. artists from track titles|swap track titles with artist credits|reset track numbers)$/i.test((b.textContent || b.value || '').trim())) b.style.display = 'none'; }); }
+  // watch the live tracklist so Track parser (or any native structural change) refreshes our table
+  let _subscribed = false, _syncTimer = null;
+  function scheduleSync() { clearTimeout(_syncTimer); _syncTimer = setTimeout(() => { if (document.getElementById('tc-mirror-wrap')) loadAndRender(); }, 400); }
+  function subscribeTracks() {
+    if (_subscribed) return; const rel = release(); if (!rel) return;
+    try { (u(rel.mediums) || []).forEach(med => { if (med.tracks && med.tracks.subscribe) med.tracks.subscribe(() => { if (!_selfEdit) scheduleSync(); }); }); _subscribed = true; Log.info('watching tracklist for external changes'); }
+    catch (e) { Log.warn('subscribe failed', e.message); }
+  }
   async function showMirror() {
     style(); let wrap = document.getElementById('tc-mirror-wrap');
-    if (wrap) { syncNative(); return; }
+    if (wrap) { syncNative(); hideNativeTools(); return; }
     wrap = document.createElement('div'); wrap.id = 'tc-mirror-wrap';
     const tbl = nativeTrackTables()[0];
     if (tbl && tbl.parentElement) tbl.parentElement.insertBefore(wrap, tbl);
     else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
     wrap.innerHTML = `<div id="tc-bar">${ICON}<b>Track Cannon</b><span class="tc-status">matching…</span>${FOOTER_MIRROR}</div><div class="tc-mount"></div>`;
-    syncNative();
+    syncNative(); hideNativeTools();
     const tbody = mountTable(wrap.querySelector('.tc-mount'));
     ACTIVE = { mode: 'mirror', tbody, statusEl: wrap.querySelector('.tc-status') };
-    bindActions(wrap);
+    bindActions(wrap); subscribeTracks();
     await loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
   function hideMirror() { const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); hideNative(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
-  function applyMode() { if (SETTINGS.replace) { const p = document.getElementById('tc-panel'); if (p) { p.remove(); ACTIVE = {}; } showMirror(); } else hideMirror(); }
 
-  /* ── entry points + tab-aware auto-run ── */
+  /* ── entry points ── */
   function injectButton() {
     if (document.getElementById('tc-btn')) return true;
-    const anchor = [...document.querySelectorAll('button, input[type=button]')].find(b => /guess feat\. artists|guess case|reset track numbers/i.test(b.textContent || b.value || ''));
+    const anchor = [...document.querySelectorAll('button, input[type=button]')].find(b => /track parser|reset track numbers/i.test(b.textContent || b.value || ''));
     if (!anchor || !anchor.parentElement) return false;
     style();
     const btn = document.createElement('button'); btn.id = 'tc-btn'; btn.type = 'button'; btn.innerHTML = ICON + ' Track Cannon'; btn.style.cssText = 'margin-left:8px;font-weight:bold';
-    btn.onclick = () => { if (SETTINGS.replace) (document.getElementById('tc-mirror-wrap') ? hideMirror() : showMirror()); else openPanel(); };
-    const gear = document.createElement('button'); gear.id = 'tc-gear-btn'; gear.type = 'button'; gear.textContent = '⚙'; gear.title = 'Track Cannon settings'; gear.style.marginLeft = '4px';
-    gear.onclick = e => openSettings(e.currentTarget);
-    anchor.parentElement.appendChild(btn); anchor.parentElement.appendChild(gear);
+    btn.onclick = () => (document.getElementById('tc-mirror-wrap') ? hideMirror() : showMirror());
+    anchor.parentElement.appendChild(btn);
     Log.info('button injected next to tracklist tools');
     return true;
   }
   function ensureLauncher() {
-    if (document.getElementById('tc-btn') || document.getElementById('tc-launch') || SETTINGS.replace) return;
+    if (document.getElementById('tc-btn') || document.getElementById('tc-launch')) return;
     style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.innerHTML = ICON + ' Track Cannon';
-    b.onclick = () => SETTINGS.replace ? showMirror() : openPanel(); document.body.appendChild(b);
+    b.onclick = () => (document.getElementById('tc-mirror-wrap') ? hideMirror() : showMirror()); document.body.appendChild(b);
   }
-  function tracklistVisible() { const b = [...document.querySelectorAll('button')].find(x => /guess feat\. artists/i.test(x.textContent || '')); return !!(b && b.offsetParent !== null); }
-  let _tlPrev = false, _autoFloatDone = false, _tlRefreshed = false;
+  function tracklistVisible() { const b = [...document.querySelectorAll('button')].find(x => /track parser/i.test(x.textContent || '')); return !!(b && b.offsetParent !== null); }
+  let _tlPrev = false, _tlRefreshed = false;
   function onEnterTracklist() {
-    injectButton();
-    if (SETTINGS.replace) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); } }   // re-match once the tab is up (RG may have been set)
-    else if (SETTINGS.autoRun && !_autoFloatDone) { _autoFloatDone = true; openPanel(); }
+    injectButton(); hideNativeTools();
+    if (!document.getElementById('tc-mirror-wrap')) showMirror();
+    else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); }   // re-match once the tab is up (RG may have been set)
   }
   function watchTracklist() {
     const tick = () => {
-      const vis = tracklistVisible(); if (vis) injectButton();
-      if (SETTINGS.replace && document.getElementById('tc-mirror-wrap') && !_showOriginal) syncNative();   // keep native hidden if MB re-renders
+      const vis = tracklistVisible(); if (vis) { injectButton(); hideNativeTools(); }
+      if (document.getElementById('tc-mirror-wrap') && !_showOriginal) syncNative();   // keep native hidden if MB re-renders
       if (vis && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab'); onEnterTracklist(); } else if (!vis && _tlPrev) _tlPrev = false;
     };
     tick(); setInterval(tick, 500);
@@ -678,12 +701,11 @@
   (async function main() {
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.err('MB.releaseEditor never became ready'); return; }
-    Log.info('editor ready · replace =', SETTINGS.replace, '· autoRun =', SETTINGS.autoRun);
+    Log.info('editor ready');
     snapshotOriginals();
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
-    // replacement mode: take over the table immediately (even before the tab is shown) so there's no flash
-    if (SETTINGS.replace) showMirror();
+    showMirror();   // always take over the tracklist immediately (no flash)
     ensureLauncher();
     watchTracklist();
   })();

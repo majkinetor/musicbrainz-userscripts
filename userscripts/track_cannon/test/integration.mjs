@@ -52,10 +52,9 @@ async function main() {
   const greenCount = () => page.evaluate(() => [...document.querySelectorAll('.artist-credit-editor input')].filter(i => /177, 235, 176/.test(getComputedStyle(i).backgroundColor)).length);
   const beforeGreen = await greenCount();
 
-  // ── drive the real UI: click the button, let the panel match, screenshot, Apply confident ──
-  log('opening Track Cannon panel via button…');
-  await page.waitForSelector('#tc-btn', { timeout: 30000 });
-  await page.locator('#tc-btn').click();
+  // ── drive the floating panel via the API (the in-page mirror is the default UI now) ──
+  log('opening Track Cannon floating panel…');
+  await page.evaluate(() => { window.__trackCannon.hideMirror(); window.__trackCannon.openPanel(); });
   await page.waitForSelector('#tc-panel .tc-mirror tbody tr', { timeout: 60000 });
   await page.waitForFunction(() => /to resolve/.test(document.querySelector('#tc-panel .tc-status')?.textContent || ''), null, { timeout: 60000 });
   await page.screenshot({ path: resolve(LOG_DIR, 'panel.png'), fullPage: true });
@@ -72,17 +71,14 @@ async function main() {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(150);
   // bug fix: focusing an already-resolved (set) field with NO typing must still search (not "no matches")
-  const setFocus = await page.evaluate(async () => {
-    const tc = window.__trackCannon;
-    const t = tc.model.tracks.find(t => t.slots.some(s => s.status === 'set')); if (!t) return { ok: false };
-    const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
-    const inp = tr && tr.querySelector('.tc-search input.nm'); if (!inp) return { ok: false };
-    const val = inp.value; const direct = (await tc.searchArtist(val)).length;
-    inp.focus(); await new Promise(r => setTimeout(r, 900));
-    const pop = document.querySelector('.tc-acpop'); const results = pop ? pop.querySelectorAll('.tc-acrow[data-i]').length : 0;
-    inp.blur(); return { ok: true, val, direct, results };
-  });
-  await page.keyboard.press('Escape').catch(() => {});
+  const setTk = await page.evaluate(() => { const t = window.__trackCannon.model.tracks.find(t => t.slots.some(s => s.status === 'set')); return t ? t.mi + ':' + t.ti : null; });
+  let setFocus = { ok: false };
+  if (setTk) {
+    await page.locator(`#tc-panel tr[data-tk="${setTk}"] .tc-search input.nm`).first().click();
+    await page.waitForSelector('.tc-acpop .tc-acrow[data-i]', { timeout: 8000 }).catch(() => {});
+    setFocus = { ok: true, results: await page.evaluate(() => { const p = document.querySelector('.tc-acpop'); return p ? p.querySelectorAll('.tc-acrow[data-i]').length : 0; }) };
+    await page.keyboard.press('Escape').catch(() => {});
+  }
   await page.waitForTimeout(150);
   // editable combo: focus an input → results pop appears → pick the 2nd → status becomes 'user' + purple
   const userCheck = await page.evaluate(async () => {

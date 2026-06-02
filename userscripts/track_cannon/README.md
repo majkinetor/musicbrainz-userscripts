@@ -55,27 +55,25 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    **Guess Case** form is highlighted amber with an **Aa** button to fix that one; **Guess case**
    fixes all titles; **Guess feat.** pulls `feat. X` out of titles into artist credits (then
    re-matches).
-6. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
-   tab; save it there, then re-open the panel to match it.
-6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself
-   the next time you open a release add/edit page (it still applies nothing until you click).
+7. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
+   tab; save it there, then re-open the field to match it.
 
-## Two modes (⚙ settings) — same table either way
+## The table
 
-It's the **same Track Cannon table** in both modes — columns laid out like MB's own
-(▲▼ reorder · ↺ revert-row · # · Title · Artist · Length · ✕), rows tinted by confidence, the artist
-matcher in the Artist column, multi-artist credits stacked with their join phrases, and resizable
-columns (drag a header edge; widths are remembered). **`Replace MB track list`** (on by default) only changes where it lives:
+Track Cannon **takes over the tracklist** as soon as a release add/edit page loads (no flash),
+laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badge). **Show original** toggles
+MB's native table back into view alongside; the **🎯 Track Cannon** button toggles the table off/on.
+Columns are resizable (drag a header edge; widths are remembered). **⚙** holds view options —
+**Alternate row colors** and **Show grid**.
 
-- **On — in place** (default): the table *replaces* the integrated tracklist, taking over as soon
-  as the page loads (no flash). **Show original** toggles MB's native table back into view alongside.
-- **Off — floating window**: the same table floats beside the editor, draggable by its header.
+Every structural action drives MB's real model — **reorder** (`moveTrackUp/Down`), **remove**
+(`removeTrack`), **Title/#/Length** edits — so nothing diverges from the native editor, and MB's own
+*Add release* button submits as usual. **Revert all** restores every track to its page-load state;
+per-track **↺** (on hover) does one.
 
-Either way, every structural action drives MB's real model — **reorder** (`moveTrackUp/Down`),
-**remove** (`removeTrack`), **Title/Length** edits — so nothing diverges from the native editor, and
-MB's own *Add release* button submits as usual. **Revert all** restores every track to its page-load
-state; **↺** does one track. Auto-run (if enabled) fires when you open the **Tracklist** tab, not
-before — the release group may not be set earlier.
+The toolbar exposes MusicBrainz's own bulk tools (the native buttons for these are hidden):
+**Guess case**, **Guess feat.**, **Swap** (titles ↔ artists) and **Reset #**. **Track parser** opens
+MB's parser; whatever it changes is picked up automatically (the table watches the live tracklist).
 
 Track Cannon only fills the in-page editor. **You** review and press MusicBrainz's own
 *Add release* / *Enter edit* button — nothing is submitted on your behalf.
