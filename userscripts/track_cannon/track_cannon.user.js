@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.220214
+// @version      2026.6.2.220737
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -399,7 +399,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md';
-  const VERSION = '2026.6.2.220214';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.2.220737';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const ICON = '<svg class="tc-ico" viewBox="0 0 36 30" width="26" height="22" aria-hidden="true" style="vertical-align:-6px">' +
     '<path d="M6 16 C6 11 9 10 13 10 L24 10 L24 18 L13 18 C9 18 6 17 6 16 Z" fill="#5f3ec0"/>' +
@@ -483,9 +483,6 @@
     .tc-trackacts .trev{color:#9a8fc0}.tc-trackacts .trev:hover{color:#5f3ec0}
     .tc-trackacts .rm{color:#c0392b;font-weight:bold}.tc-trackacts .rm:hover{color:#a02519}
     .tc-mirror tr.tc-changed td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}   /* a track that differs from its page-load state */
-    .tc-medwarn{margin:0 0 8px}   /* our copies of MB's real (non-capitalization) medium warnings */
-    .tc-medwarn .warning{margin:6px 0}
-    .tc-medwarn .warning label{display:flex;align-items:center;gap:6px;margin-top:6px}
     /* one artist = one aligned fixed-height line: credited-as · icon · search box · acts (no line between artists) */
     .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box}
     .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px}
@@ -1194,46 +1191,24 @@
   /* ── in-page replacement (the only mode) ── */
   let _showOriginal = false;
   function nativeTrackTables() { return [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
-  // a capitalization warning ("extra title information" / "incorrectly capitalized") — redundant with our
-  // integrated Guess Case (the amber Aa), so we don't surface it; everything else is mirrored (see reconcileWarnings)
-  const isCapWarn = w => /capitali[sz]/i.test(w.textContent || '');
-  // the native tracklist = track tables + the #tracklist-tools row + the Guess-case fieldset + every
-  // medium warning; hide/show together (the format header is lifted out, not hidden). Real warnings are
-  // hidden here but re-shown as our own copies in the Canon section so they survive whatever hides them.
+  // the capitalization warnings only — MB's "extra title information" / "incorrectly capitalized" notices
+  // are redundant with our integrated Guess Case (the amber Aa). Other medium warnings (e.g. the
+  // Digital-Media / packaging one) are real data-quality issues and stay visible.
+  function capitalizationWarnings() {
+    return [...document.querySelectorAll('fieldset.advanced-medium .warning')].filter(w => /capitali[sz]/i.test(w.textContent || ''));
+  }
+  // the native tracklist = track tables + the #tracklist-tools row + the Guess-case fieldset + the
+  // miscapitalization warnings; hide/show together (the format header is lifted out, not hidden)
   function nativeBits() {
     // every medium has its own tools row (MB reuses the id "tracklist-tools" — querySelectorAll gets them all);
     // hide native track tables by class too so an empty medium's header row doesn't linger
-    const warns = [...document.querySelectorAll('fieldset.advanced-medium .warning')].filter(w => !w.closest('.tc-medsec'));   // not our own mirrored clones (those live inside .tc-medsec)
-    return [...nativeTrackTables(), ...document.querySelectorAll('table.medium, [id="tracklist-tools"], fieldset.guesscase, .guesscase'), ...warns];
+    return [...nativeTrackTables(), ...document.querySelectorAll('table.medium, [id="tracklist-tools"], fieldset.guesscase, .guesscase'), ...capitalizationWarnings()];
   }
-  function setNativeHidden(hidden) { nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; }); }
-  // Mirror MB's real (non-capitalization) medium warnings into our Canon section, so they show even though
-  // the native ones are hidden — and reconcile each tick so a clone vanishes the moment MB drops the warning.
-  // The cloned confirm checkbox drives MB's real one, so confirming actually clears the warning.
-  function reconcileWarnings() {
-    const fsList = document.querySelectorAll('fieldset.advanced-medium');
-    document.querySelectorAll('.tc-medsec').forEach(sec => {
-      const fs = fsList[+sec.dataset.mi];
-      const reals = fs ? [...fs.querySelectorAll('.warning')].filter(w => !w.closest('.tc-medsec') && (w.textContent || '').trim() && !isCapWarn(w)) : [];
-      let host = sec.querySelector('.tc-medwarn');
-      if (!reals.length) { if (host) host.remove(); return; }
-      const sig = reals.map(w => w.textContent).join('§');
-      if (host && host.dataset.sig === sig) {   // same warnings → just keep the checkbox states in sync
-        [...host.children].forEach(c => { const r = reals[+c.dataset.idx]; if (!r) return; const cb = c.querySelector('input[type=checkbox]'), rcb = r.querySelector('input[type=checkbox]'); if (cb && rcb) cb.checked = rcb.checked; });
-        return;
-      }
-      if (!host) { host = document.createElement('div'); host.className = 'tc-medwarn'; sec.insertBefore(host, sec.firstChild); }
-      host.dataset.sig = sig; host.innerHTML = '';
-      reals.forEach((real, i) => {
-        const clone = real.cloneNode(true); clone.removeAttribute('style'); clone.dataset.idx = i;
-        clone.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
-        clone.querySelectorAll('[data-bind]').forEach(e => e.removeAttribute('data-bind'));
-        clone.querySelectorAll('.error, .field-error').forEach(e => e.remove());   // KO-bound error line — inert in a clone
-        const cb = clone.querySelector('input[type=checkbox]'), realCb = real.querySelector('input[type=checkbox]');
-        if (cb && realCb) { cb.checked = realCb.checked; cb.onchange = () => { if (realCb.checked !== cb.checked) { realCb.click(); realCb.dispatchEvent(new Event('change', { bubbles: true })); } }; }   // proxy → MB clears the warning
-        host.appendChild(clone);
-      });
-    });
+  function setNativeHidden(hidden) {
+    nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; });
+    // genuine (non-capitalization) medium warnings stay visible even in Canon — force them back on in case
+    // an earlier version (or MB) left them hidden
+    document.querySelectorAll('fieldset.advanced-medium .warning').forEach(w => { if (!/capitali[sz]/i.test(w.textContent || '')) w.style.display = ''; });
   }
   // mount one Canon section (its own table header + Add footer) per medium, placed right before that
   // medium's native track table — so MB's own format header stays naturally above it. Reconciled on
@@ -1278,11 +1253,7 @@
   }
   function tidyMediums() { document.querySelectorAll('table.advanced-format').forEach(tidyFmt); }
   function untidyMediums() { document.querySelectorAll('table.advanced-format').forEach(t => setFmtTidy(t, false)); }
-  function syncNative() {
-    setNativeHidden(!_showOriginal);
-    if (_showOriginal) { untidyMediums(); document.querySelectorAll('.tc-medwarn').forEach(h => h.remove()); }   // Original view shows MB's own warnings
-    else { tidyMediums(); reconcileWarnings(); }
-  }
+  function syncNative() { setNativeHidden(!_showOriginal); if (_showOriginal) untidyMediums(); else tidyMediums(); }
   // watch the live tracklist so Track parser (or any native structural change) refreshes our table
   let _subscribed = false, _syncTimer = null;
   function scheduleSync() { clearTimeout(_syncTimer); _syncTimer = setTimeout(() => { if (document.getElementById('tc-mirror-wrap')) loadAndRender(); }, 400); }

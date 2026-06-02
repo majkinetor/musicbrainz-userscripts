@@ -78,32 +78,17 @@ async function main() {
     set(fmt.options[1].value);   // restore a format
     return { aboveTable, warnHidden: warn ? warn.style.display === 'none' : 'no-cap-warn', withFmt, noFmt };
   });
-  // a real (non-capitalization) medium warning is mirrored into the Canon section: trigger MB's
-  // Digital-Media/packaging warning, then confirm via our clone's checkbox → it clears with MB's.
+  // a non-capitalization warning (e.g. the Digital-Media / packaging one) must stay VISIBLE in Canon
   const realWarn = await page.evaluate(async () => {
-    const u = v => (typeof v === 'function' ? v() : v);
-    const rel = window.MB.releaseEditor.rootField.release();
-    [['packaging', 1], ['packagingID', 1]].forEach(([k, v]) => { try { if (typeof rel[k] === 'function') rel[k](v); } catch (e) {} });   // non-None packaging
-    const med = u(rel.mediums)[0];
-    [['formatID', 12], ['format', 12]].forEach(([k, v]) => { try { if (typeof med[k] === 'function') med[k](v); } catch (e) {} });   // Digital Media → triggers the warning
-    await new Promise(r => setTimeout(r, 1300));
-    const sec = document.querySelector('.tc-medsec');
-    const isDigital = w => /Digital Media|packaging/i.test(w.textContent || '');
-    const origs = [...document.querySelectorAll('fieldset.advanced-medium .warning')].filter(w => !w.closest('.tc-medsec') && isDigital(w));
-    const origHidden = origs.length > 0 && origs.every(w => getComputedStyle(w).display === 'none');
-    const clone = sec && [...sec.querySelectorAll('.tc-medwarn .warning')].find(isDigital);
-    const cloneVisible = !!clone && getComputedStyle(clone).display !== 'none';
-    const capCloned = sec ? [...sec.querySelectorAll('.tc-medwarn .warning')].some(w => /capitali[sz]/i.test(w.textContent)) : false;
-    // confirming via our clone must drive MB's real checkbox (proxy)
-    let proxyDroveReal = 'no-clone';
-    const cb = clone && clone.querySelector('input[type=checkbox]');
-    const realCb = origs[0] && origs[0].querySelector('input[type=checkbox]');
-    if (cb && realCb) { const was = realCb.checked; cb.click(); await new Promise(r => setTimeout(r, 500)); proxyDroveReal = realCb.checked !== was; }
-    // and when MB drops the warning, our clone goes too — remove the format → warning gone → clone gone
-    [['formatID', null], ['format', null]].forEach(([k, v]) => { try { if (typeof med[k] === 'function') med[k](v); } catch (e) {} });
-    await new Promise(r => setTimeout(r, 900));
-    const cloneGoneAfterCondClears = !document.querySelector('.tc-medsec .tc-medwarn .warning');
-    return { ok: true, origHidden, cloneVisible, capCloned, proxyDroveReal, cloneGoneAfterCondClears };
+    const fs = document.querySelector('fieldset.advanced-medium'); if (!fs) return { ok: false };
+    const w = document.createElement('div'); w.className = 'warning'; w.id = 'tc-test-warn';
+    w.textContent = 'Warning: This medium format is set to “Digital Media”, but the packaging type is not “None”.';
+    fs.appendChild(w);
+    await new Promise(r => setTimeout(r, 700));   // let the sync watcher run setNativeHidden at least once
+    const el = document.getElementById('tc-test-warn');
+    const visible = !!el && getComputedStyle(el).display !== 'none';
+    if (el) el.remove();
+    return { ok: true, visible };
   });
   // hideMirror reveals the native bits; re-show puts Canon back
   const shown = await page.evaluate(() => { window.__trackCannon.hideMirror(); const t = document.getElementById('tracklist-tools'); const tbl = [...document.querySelectorAll('table')].find(x => x.querySelector('tr.track')); return { tools: t ? t.style.display !== 'none' : null, table: tbl ? tbl.style.display !== 'none' : null }; });
@@ -459,8 +444,7 @@ async function main() {
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
-  log('format header tidy —', JSON.stringify(fmtTidy), '· capitalization warn hidden:', fmtTidy.warnHidden);
-  log('mirrored warning — native hidden:', realWarn.origHidden, '· our clone shown:', realWarn.cloneVisible, '· capitalization NOT cloned:', !realWarn.capCloned, '· confirm drives MB checkbox:', realWarn.proxyDroveReal, '· clone vanishes when MB drops it:', realWarn.cloneGoneAfterCondClears);
+  log('format header tidy —', JSON.stringify(fmtTidy), '· capitalization warn hidden:', fmtTidy.warnHidden, '· real (packaging) warn shown:', realWarn.visible);
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows,
     '· new tracks blank (no inherited artist):', addTracks.newCredit.every(c => !c), JSON.stringify(addTracks.newCredit));
   log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter, '· settings help→README:', compact.helpOk, '· version shown:', compact.verOk, '(' + compact.ver + ')');
