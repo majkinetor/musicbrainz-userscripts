@@ -383,6 +383,22 @@ async function main() {
     return { before, after, afterCred };
   });
 
+  // "Show more…" in the search popup loads a larger page of results (a common term has well over 8 matches)
+  const showMore = await page.evaluate(async () => {
+    const inp = document.querySelector('.tc-medsec .tc-mirror tbody tr .tc-search input.nm');
+    if (!inp) return { ok: false };
+    inp.focus(); inp.value = 'john'; inp.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 1300));   // debounce (250ms) + fetch
+    const pop = () => document.querySelector('.tc-acpop');
+    const count = () => { const p = pop(); return p ? p.querySelectorAll('.tc-acrow[data-i]').length : 0; };
+    const before = count(), hadMore = !!(pop() && pop().querySelector('.tc-acmore'));
+    const more = pop() && pop().querySelector('.tc-acmore'); if (more) more.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 1500));   // re-fetch at the bigger limit
+    const after = count();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    return { ok: true, before, hadMore, after, grew: after > before };
+  });
+
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
@@ -404,6 +420,7 @@ async function main() {
   log('changed-track marker — has ↺ + border when changed:', changed.before?.hasRevert, '/', changed.before?.marked,
     '· after revert (no ↺/border/change):', !!(changed.after && !changed.after.hasRevert && !changed.after.marked && !changed.after.changed),
     '· credited-as edit re-flags instantly:', !!(changed.afterCred && changed.afterCred.marked && changed.afterCred.hasRevert));
+  log('search "Show more…" — results', showMore.before, '→', showMore.after, '· offered:', showMore.hadMore, '· grew:', showMore.grew);
   log('artifacts in', LOG_DIR);
   if (!HEADED) await ctx.close();
 }

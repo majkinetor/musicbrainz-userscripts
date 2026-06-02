@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.195800
+// @version      2026.6.2.200848
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -120,11 +120,12 @@
     catch (e) { Log.warn('fetch entity failed', gid, e.message); }
     return null;
   }
-  async function searchArtist(name) {
-    const k = fold(name); if (!k) return [];
+  async function searchArtist(name, limit) {
+    limit = limit || 8;
+    const k = fold(name) + '|' + limit; if (!fold(name)) return [];
     if (_cache.has(k)) return _cache.get(k);
     let list = [];
-    try { const j = await fetch(`${ORIGIN}/ws/js/artist?q=${encodeURIComponent(name)}&limit=8&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
+    try { const j = await fetch(`${ORIGIN}/ws/js/artist?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
     catch (e) { Log.warn('search failed:', name, e.message); }
     list = list.filter(c => c && (c.name || '').trim());   // drop the trailing empty placeholder entry
     _cache.set(k, list); return list;
@@ -506,6 +507,7 @@
     .tc-acrow .nm{font-weight:600;color:#222}.tc-acrow .cmt{color:#888;font-size:11px}
     .tc-acrow .tc-aka{color:#5a7;font-size:11px;font-style:italic}
     .tc-acrow.none{color:#888;font-style:italic;cursor:default}
+    .tc-acmore{justify-content:center;font-style:italic;color:#6f54c0;border-top:1px solid #e3dcf2;position:sticky;bottom:0;background:#faf8ff}
     .tc-acrow.exact{background:#dff3e5}.tc-acrow.exact .nm{color:#136b39}.tc-acrow.exact:hover,.tc-acrow.exact.hi{background:#cfeed9}
     .tc-toolbar{padding:5px 4px;font-size:12px;color:#555;display:flex;align-items:center;gap:6px}
     .tc-toolbar select{font:12px Arial;padding:1px}
@@ -869,27 +871,35 @@
   // attach the type-to-search autocomplete to an existing <input>
   function wireAutocomplete(inp, slot, refresh) {
     let pop = null, list = [], hi = -1, seq = 0, onScroll = null;
+    let curQuery = '', curLimit = 8;   // "Show more…" pagination: bump the limit and re-search
     const position = () => { if (!pop) return; const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(210, r.width) + 'px'; };
     const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop'; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); pop = null; } else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
     const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     const choose = c => { close(); pickArtist(slot, c); };
     const searching = () => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Searching…</div>`; position(); };
     const akaHtml = c => { const a = aliasStr(c); return a ? `<span class="tc-aka">“${esc(a)}”</span>` : ''; };
+    // a full page of results probably means there are more — offer "Show more…" (like MB's native popup)
+    const loadMore = () => { curLimit = curLimit >= 50 ? 100 : curLimit >= 25 ? 50 : 25; const my = ++seq; const more = pop && pop.querySelector('.tc-acmore'); if (more) more.textContent = 'Loading…'; searchArtist(curQuery, curLimit).then(res => { if (my === seq && document.activeElement === inp) showResults(res, curQuery); }); };
     const draw = arr => {
       ensure(); list = arr; const q = inp.value.trim() || slot.creditedAs;
       pop.innerHTML = arr.length ? arr.map((c, i) => `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
       [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
+      if (curQuery && arr.length >= curLimit && curLimit < 100) {   // likely more available → a clickable "Show more…" footer
+        const more = document.createElement('div'); more.className = 'tc-acrow tc-acmore'; more.textContent = 'Show more…';
+        more.onmousedown = e => { e.preventDefault(); loadMore(); };
+        pop.appendChild(more);
+      }
       position();
     };
     // patch in the full aliases (one WS2 search) without a full redraw, so it doesn't reset the keyboard highlight
     const patchAliases = arr => { if (!pop) return; arr.forEach((c, i) => { const a = aliasStr(c); if (!a) return; const row = pop.querySelector(`.tc-acrow[data-i="${i}"]`); if (!row) return; let sp = row.querySelector('.tc-aka'); if (!sp) { sp = document.createElement('span'); sp.className = 'tc-aka'; const nm = row.querySelector('.nm'); nm.parentNode.insertBefore(sp, nm.nextSibling); } sp.textContent = '“' + a + '”'; }); };
     const showResults = (arr, q) => { draw(arr); fetchAliases(q).then(map => { if (document.activeElement !== inp || !pop) return; arr.forEach(c => { if (map[c.gid] && map[c.gid].length) c.aliases = map[c.gid]; }); patchAliases(arr); }); };
-    const runSearch = q => { const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) showResults(res, q); }); };
+    const runSearch = q => { curQuery = q; curLimit = 8; const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) showResults(res, q); }); };
     // paste an MBID or a MusicBrainz /artist/<mbid> URL → resolve it straight to that artist. Gate on the
     // field value (not focus): a commit-rerender can steal focus before the fetch returns.
     const resolveByGid = async gid => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (mbidFrom(inp.value) !== gid) return; if (ent && ent.id) { close(); pickArtist(slot, ent); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };
     inp.onfocus = () => {
-      if (slot.committed && slot.candidates && slot.candidates.length) { showResults(slot.candidates, inp.value.trim() || slot.creditedAs || slot.name); return; }
+      if (slot.committed && slot.candidates && slot.candidates.length) { curQuery = inp.value.trim() || slot.creditedAs || slot.name; curLimit = 8; showResults(slot.candidates, curQuery); return; }
       const q = inp.value.trim() || (slot.creditedAs || '').trim(); if (q) runSearch(q); else close();   // empty → no dropdown
     };
     let tmr; inp.oninput = () => {
@@ -899,7 +909,7 @@
       // editing away from the matched artist un-links it: bar goes white, ＋ creates the typed name
       if (slot.committed && !sameName(inp.value, slot.name)) { slot.committed = false; slot.status = 'none'; slot.entity = null; slot.gid = null; commitTrack(slot._entry); if (refresh) refresh(); }
       if (!inp.value.trim()) { close(); return; }   // nothing typed → don't search
-      searching(); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) showResults(res, inp.value); }, 250);
+      searching(); const my = ++seq; tmr = setTimeout(async () => { curQuery = inp.value; curLimit = 8; const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) showResults(res, inp.value); }, 250);
     };
     // arrows browse the results popup WHILE searching; once the slot is resolved they move row-to-row instead
     const browsing = () => pop && !slot.committed && list.length;
