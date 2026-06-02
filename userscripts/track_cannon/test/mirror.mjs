@@ -279,11 +279,13 @@ async function main() {
     document.querySelector('#tc-bar [data-act="gear"]').click(); await new Promise(r => setTimeout(r, 80));
     const help = document.querySelector('#tc-settings .tc-help');   // help button → README, opens in a new tab
     const helpOk = !!help && /README\.md$/.test(help.getAttribute('href')) && help.target === '_blank';
+    const verEl = document.querySelector('#tc-settings .tc-ver');   // installed version shown in the header
+    const verOk = !!verEl && /^v\d{4}\.\d+\.\d+\.\d+$/.test(verEl.textContent.trim());
     const lay = document.querySelector('#tc-s-layout'); lay.value = 'compact'; lay.dispatchEvent(new Event('change'));
     await new Promise(r => setTimeout(r, 80));
     const compactH = h(); const hasClass = tbl.classList.contains('compact');
     lay.value = 'cozy'; lay.dispatchEvent(new Event('change')); document.querySelector('#tc-bar [data-act="gear"]').click();   // restore
-    return { hasClass, cozyH, compactH, tighter: compactH > 0 && compactH < cozyH, helpOk };
+    return { hasClass, cozyH, compactH, tighter: compactH > 0 && compactH < cozyH, helpOk, verOk, ver: verEl ? verEl.textContent.trim() : null };
   });
 
   // Add-tracks control: clicking ＋ drives MB's native add-tracks for the last medium
@@ -445,7 +447,7 @@ async function main() {
   log('format header tidy —', JSON.stringify(fmtTidy), '· capitalization warn hidden:', fmtTidy.warnHidden, '· real (packaging) warn shown:', realWarn.visible);
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows,
     '· new tracks blank (no inherited artist):', addTracks.newCredit.every(c => !c), JSON.stringify(addTracks.newCredit));
-  log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter, '· settings help→README:', compact.helpOk);
+  log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter, '· settings help→README:', compact.helpOk, '· version shown:', compact.verOk, '(' + compact.ver + ')');
   log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '· medium-combo opts:', multiMed.comboOpts, '· choice kept across tools (want "1"):', JSON.stringify(multiMed.comboKept), '· per-medium status:', JSON.stringify(multiMed.statuses), '·', JSON.stringify(multiMed.perMedium));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));

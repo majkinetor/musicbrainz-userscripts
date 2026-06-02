@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.211955
+// @version      2026.6.2.212640
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -399,6 +399,8 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md';
+  const VERSION = '2026.6.2.212640';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const ICON = '<svg class="tc-ico" viewBox="0 0 36 30" width="26" height="22" aria-hidden="true" style="vertical-align:-6px">' +
     '<path d="M6 16 C6 11 9 10 13 10 L24 10 L24 18 L13 18 C9 18 6 17 6 16 Z" fill="#5f3ec0"/>' +
     '<polygon points="24,8.5 30,7 30,21 24,19.5" fill="#5f3ec0"/>' +
@@ -575,6 +577,7 @@
 
     #tc-settings{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 24px rgba(40,20,80,.3);padding:11px 13px;font:13px Arial;color:#222;width:340px}
     #tc-settings h4{display:flex;align-items:center;gap:6px;margin:0 0 9px;padding-bottom:8px;border-bottom:1px solid #e3dcf2;color:#563b8f;font-size:13px}
+    #tc-settings h4 .tc-ver{font-size:11px;font-weight:normal;color:#999}
     #tc-settings h4 .tc-help{margin-left:auto;font-size:12px;font-weight:normal;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
     #tc-settings h4 .tc-help:hover{background:#f0ecfa}
     #tc-settings label{display:flex;gap:8px;align-items:flex-start;margin:7px 0;color:#333}
@@ -592,7 +595,7 @@
   function openSettings(anchor) {
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
-    s.innerHTML = `<h4>${ICON} Track Cannon — settings<a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
+    s.innerHTML = `<h4>${ICON} Track Cannon — settings <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
       <label><span>Row layout</span><select id="tc-s-layout" style="margin-left:auto"><option value="cozy">Cozy</option><option value="compact">Compact</option></select></label>
       <label><input type="checkbox" id="tc-s-automatch"> <span>Auto-match artists on load</span></label>
       <div class="hint">Off: the table shows immediately but unmatched — use the <b>Match</b> button or search a field.</div>
@@ -1200,7 +1203,12 @@
     // hide native track tables by class too so an empty medium's header row doesn't linger
     return [...nativeTrackTables(), ...document.querySelectorAll('table.medium, [id="tracklist-tools"], fieldset.guesscase, .guesscase'), ...capitalizationWarnings()];
   }
-  function setNativeHidden(hidden) { nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; }); }
+  function setNativeHidden(hidden) {
+    nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; });
+    // genuine (non-capitalization) medium warnings stay visible even in Canon — force them back on in case
+    // an earlier version (or MB) left them hidden
+    document.querySelectorAll('fieldset.advanced-medium .warning').forEach(w => { if (!/capitali[sz]/i.test(w.textContent || '')) w.style.display = ''; });
+  }
   // mount one Canon section (its own table header + Add footer) per medium, placed right before that
   // medium's native track table — so MB's own format header stays naturally above it. Reconciled on
   // every render so adding/removing a medium just works. Native collapse toggle hides our section too.
