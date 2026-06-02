@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.133405
+// @version      2026.6.2.134410
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -46,7 +46,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { try { return Object.assign({ colWidths: {}, applyMode: 'all', altRows: false, grid: false }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { colWidths: {}, applyMode: 'all', altRows: false, grid: false }; } }
+  function loadSettings() { try { return Object.assign({ colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true }; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -178,6 +178,39 @@
   }
   // on load, immediately write the confident matches (RG/HIGH) — that's the "no apply phase" behaviour
   function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high') { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
+  function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high') { s.committed = true; any = true; } }); if (any) commitTrack(t); }
+  // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
+  function buildShell() {
+    const tracks = readTracklist().map(t => {
+      const slots = t.names.map(n => n.artistGid
+        ? { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'set', entity: null, gid: n.artistGid, name: n.artistName, candidates: [], committed: true }
+        : { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _pending: true });
+      const te = { mi: t.mi, ti: t.ti, number: t.number, title: t.title, length: t.length, slots };
+      te.slots.forEach(s => { s._entry = te; }); te.guessTitle = guessTitleStr(te);
+      return te;
+    });
+    return { tracks };
+  }
+  // match the _pending slots, updating the table row-by-row as results come in
+  async function matchModel(onProgress) {
+    const isEditing = () => { const a = document.activeElement; return a && /^(INPUT|SELECT)$/.test(a.tagName) && (a.closest('#tc-mirror-wrap') || a.closest('#tc-panel')); };
+    const siblings = await loadSiblingMap();
+    const todo = MODEL.tracks.filter(t => t.slots.some(s => s._pending)); let done = 0;
+    for (const t of MODEL.tracks) {
+      if (!t.slots.some(s => s._pending)) continue;
+      const sib = siblings.get(fold(t.title)) || null;
+      for (let i = 0; i < t.slots.length; i++) {
+        const s = t.slots[i]; if (!s._pending) continue;
+        const m = await matchSlot(s.creditedAs, sib && sib[i]);
+        Object.assign(s, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
+      }
+      autoCommitTrack(t); if (!isEditing()) rerender();
+      done++; if (onProgress) onProgress(done, todo.length);
+    }
+    if (!isEditing()) rerender();
+  }
+  // (re-)match every still-unmatched slot — the "Match" button / used when auto-match is off
+  async function matchAll() { if (!MODEL) return; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && !s.committed) s._pending = true; })); await matchModel((d, n) => updateStatus(`matching ${d}/${n}…`)); }
   function resetTrack(entry) {
     const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig) return;
     const t = koTrack(entry.mi, entry.ti);
@@ -349,14 +382,17 @@
   function openSettings(anchor) {
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
-    s.innerHTML = `<h4>${ICON} Track Cannon — view</h4>
+    s.innerHTML = `<h4>${ICON} Track Cannon — settings</h4>
+      <label><input type="checkbox" id="tc-s-automatch"> <span>Auto-match artists on load</span></label>
+      <div class="hint">Off: the table shows immediately but unmatched — use the <b>Match</b> button or search a field.</div>
       <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
       <label><input type="checkbox" id="tc-s-grid"> <span>Show grid</span></label>`;
     document.body.appendChild(s);
     const r = anchor ? anchor.getBoundingClientRect() : { left: 60, bottom: 80 };
-    s.style.left = Math.min(r.left, window.innerWidth - 280) + 'px'; s.style.top = (r.bottom + 6) + 'px';
-    const alt = s.querySelector('#tc-s-alt'), grid = s.querySelector('#tc-s-grid');
-    alt.checked = !!SETTINGS.altRows; grid.checked = !!SETTINGS.grid;
+    s.style.left = Math.min(r.left, window.innerWidth - 300) + 'px'; s.style.top = (r.bottom + 6) + 'px';
+    const am = s.querySelector('#tc-s-automatch'), alt = s.querySelector('#tc-s-alt'), grid = s.querySelector('#tc-s-grid');
+    am.checked = SETTINGS.autoMatch !== false; alt.checked = !!SETTINGS.altRows; grid.checked = !!SETTINGS.grid;
+    am.onchange = () => { SETTINGS.autoMatch = am.checked; saveSettings(); };
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     grid.onchange = () => { SETTINGS.grid = grid.checked; saveSettings(); applyViewClasses(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
@@ -580,8 +616,14 @@
     });
     updateStatus(`${MODEL.tracks.length} tracks · ${committed} linked · ${unresolved} to resolve`);
   }
-  async function loadAndRender(onProgress) { MODEL = await buildModel(onProgress); autoCommit(); fillRows(ACTIVE.tbody); if (ACTIVE.mode === 'mirror') syncNative(); }
-  async function rebuild() { MODEL = await buildModel(); rerender(); if (ACTIVE.mode === 'mirror') syncNative(); }
+  async function loadAndRender(onProgress) {
+    MODEL = buildShell(); fillRows(ACTIVE.tbody); if (ACTIVE.mode === 'mirror') syncNative();   // show the table instantly
+    if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else updateStatus(`${MODEL.tracks.length} tracks · auto-match off — click Match or search a field`);
+  }
+  async function rebuild() {
+    MODEL = buildShell(); rerender(); if (ACTIVE.mode === 'mirror') syncNative();
+    if (SETTINGS.autoMatch !== false) await matchModel();
+  }
   function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track's artist to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(); }
   function guessCaseAll() { if (!MODEL) return; MODEL.tracks.forEach(t => { applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); }); rerender(); Log.info('guess case → all titles'); }
   // integrated MB feature: pull "feat. X" out of titles into artist credits, then re-read + re-match
@@ -600,6 +642,7 @@
       b.onclick = () => {
         if (a === 'gear') openSettings(b);
         else if (a === 'close') { host.remove(); ACTIVE = {}; }
+        else if (a === 'match') matchAll();
         else if (a === 'revert') revertAll();
         else if (a === 'guesscase') guessCaseAll();
         else if (a === 'guessfeat') guessFeatAll();
@@ -610,7 +653,8 @@
       };
     });
   }
-  const TOOLS = `<button class="tc-btn" data-act="guesscase" title="MusicBrainz guess case on all track titles">Guess case</button>`
+  const TOOLS = `<button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">Match</button>`
+    + `<button class="tc-btn" data-act="guesscase" title="MusicBrainz guess case on all track titles">Guess case</button>`
     + `<button class="tc-btn" data-act="guessfeat" title="pull “feat. X” out of titles into artist credits">Guess feat.</button>`
     + `<button class="tc-btn" data-act="swap" title="swap track titles with artist credits">Swap</button>`
     + `<button class="tc-btn" data-act="resetnum" title="reset track numbers to 1,2,3…">Reset #</button>`

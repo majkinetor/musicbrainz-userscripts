@@ -65,15 +65,19 @@ laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badg
 both the table **and** its tools row — is hidden while Canon is on; **Show original** reveals them
 again, and the floating **🎯 Track Cannon** button toggles Canon off/on entirely. Columns are
 resizable by dragging near a column border **in the header or any row** (widths are remembered).
-**⚙** holds view options — **Alternate row colors** and **Show grid**.
+**⚙** holds settings — **Auto-match artists on load**, **Alternate row colors** and **Show grid**.
+
+The table appears **instantly** (no wait): the tracklist renders right away and the artist matches
+fill in row-by-row as MusicBrainz responds. With **Auto-match** off, the table loads unmatched and
+you resolve on demand — click **Match** (toolbar) for the whole list, or just search a field.
 
 Every structural action drives MB's real model — **reorder** (`moveTrackUp/Down`), **remove**
 (`removeTrack`), **Title/#/Length** edits — so nothing diverges from the native editor, and MB's own
 *Add release* button submits as usual. **Revert all** restores every track to its page-load state;
 per-track **↺** (on hover) does one.
 
-The toolbar exposes MusicBrainz's own bulk tools: **Guess case**, **Guess feat.**, **Swap**
-(titles ↔ artists) and **Reset #**. **Track parser** opens MB's parser; whatever it changes is picked
+The toolbar: **Match** (search MB for the unmatched artists) plus MusicBrainz's own bulk tools —
+**Guess case**, **Guess feat.**, **Swap** (titles ↔ artists) and **Reset #**. **Track parser** opens MB's parser; whatever it changes is picked
 up automatically (the table watches the live tracklist).
 
 Track Cannon only fills the in-page editor. **You** review and press MusicBrainz's own

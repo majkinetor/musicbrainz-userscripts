@@ -55,8 +55,8 @@ async function main() {
   // ── drive the floating panel via the API (the in-page mirror is the default UI now) ──
   log('opening Track Cannon floating panel…');
   await page.evaluate(() => { window.__trackCannon.hideMirror(); window.__trackCannon.openPanel(); });
-  await page.waitForSelector('#tc-panel .tc-mirror tbody tr', { timeout: 60000 });
-  await page.waitForFunction(() => /to resolve/.test(document.querySelector('#tc-panel .tc-status')?.textContent || ''), null, { timeout: 60000 });
+  await page.waitForSelector('#tc-panel .tc-mirror tbody tr', { timeout: 60000 });   // shell renders instantly
+  await page.waitForFunction(() => { const m = window.__trackCannon.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });   // matching done
   await page.screenshot({ path: resolve(LOG_DIR, 'panel.png'), fullPage: true });
   // widen the panel so the capture is landscape and legible (display scales tall images down)
   await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '1180px'; p.style.maxWidth = 'none'; p.style.right = '12px'; p.style.maxHeight = '94vh'; } });

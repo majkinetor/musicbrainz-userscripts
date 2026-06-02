@@ -49,8 +49,8 @@ async function main() {
   await page.locator('a, button', { hasText: /^Tracklist$/ }).first().click().catch(() => {});
 
   // mirror should auto-render once the Tracklist tab is shown; wait for its rows
-  await page.waitForSelector('#tc-mirror-wrap .tc-mirror tbody tr', { timeout: 60000 });
-  await page.waitForFunction(() => /linked/.test(document.querySelector('#tc-mirror-wrap .tc-status')?.textContent || ''), null, { timeout: 60000 });
+  await page.waitForSelector('#tc-mirror-wrap .tc-mirror tbody tr', { timeout: 60000 });   // shell renders instantly
+  await page.waitForFunction(() => { const m = window.__trackCannon.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });   // matching done
   await page.waitForTimeout(600);
   const nativeHidden = await page.evaluate(() => [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')).every(t => t.style.display === 'none'));
   const toolsHidden = await page.evaluate(() => { const t = document.getElementById('tracklist-tools'); return t ? t.style.display === 'none' : 'no-div'; });
