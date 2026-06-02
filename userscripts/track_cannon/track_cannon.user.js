@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.192656
+// @version      2026.6.2.193242
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -540,7 +540,8 @@
       <label><input type="checkbox" id="tc-s-grid"> <span>Show grid</span></label>`;
     document.body.appendChild(s);
     const r = anchor ? anchor.getBoundingClientRect() : { left: 60, bottom: 80 };
-    s.style.left = Math.min(r.left, window.innerWidth - 300) + 'px'; s.style.top = (r.bottom + 6) + 'px';
+    // keep it fully on-screen — right-align to the gear if it would overflow (uses the real width)
+    s.style.left = Math.max(8, Math.min(r.right - s.offsetWidth, window.innerWidth - s.offsetWidth - 10)) + 'px'; s.style.top = (r.bottom + 6) + 'px';
     const am = s.querySelector('#tc-s-automatch'), alt = s.querySelector('#tc-s-alt'), grid = s.querySelector('#tc-s-grid'), lay = s.querySelector('#tc-s-layout');
     am.checked = SETTINGS.autoMatch !== false; alt.checked = !!SETTINGS.altRows; grid.checked = !!SETTINGS.grid; lay.value = SETTINGS.layout || 'cozy';
     am.onchange = () => { SETTINGS.autoMatch = am.checked; saveSettings(); };
