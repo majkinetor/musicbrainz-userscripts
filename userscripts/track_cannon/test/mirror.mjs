@@ -372,10 +372,17 @@ async function main() {
     if (!t) return { skipped: true };
     const tk = t.mi + ':' + t.ti, row = () => document.querySelector(`.tc-medsec tr[data-tk="${tk}"]`);
     const before = { hasRevert: !!row().querySelector('.trev'), marked: row().classList.contains('tc-changed') };
+    // a DIFFERENT matched track whose badge is a match source (rg / name / user, not "set") — reverting
+    // t must NOT collapse its badge to "set" (the reported bug)
+    const other = tc.model.tracks.find(x => x !== t && x.slots.some(s => s.committed && s.status && s.status !== 'set'));
+    const otherTk = other && other.mi + ':' + other.ti, otherStatusBefore = other && other.slots.find(s => s.committed && s.status !== 'set').status;
     tc.revertTrack(t);
     await new Promise(r => setTimeout(r, 120));
     const t2 = tc.model.tracks.find(x => x.mi + ':' + x.ti === tk);
-    const after = { changed: tc.trackChanged(t2), hasRevert: !!row().querySelector('.trev'), marked: row().classList.contains('tc-changed') };
+    const other2 = otherTk && tc.model.tracks.find(x => x.mi + ':' + x.ti === otherTk);
+    const otherStatusAfter = other2 && (other2.slots.find(s => s.committed) || {}).status;
+    const otherKept = !other || otherStatusAfter === otherStatusBefore;   // badge survived the rebuild
+    const after = { changed: tc.trackChanged(t2), hasRevert: !!row().querySelector('.trev'), marked: row().classList.contains('tc-changed'), otherStatusBefore, otherStatusAfter, otherKept };
     // editing the credited-as override must re-flag the row INSTANTLY (no rerender) — the reported bug
     const cred = row().querySelector('.tc-cred'); cred.value = 'Zzz Changed Credit'; cred.dispatchEvent(new Event('change', { bubbles: true }));
     await new Promise(r => setTimeout(r, 40));
@@ -419,7 +426,8 @@ async function main() {
   log('split/merge on', JSON.stringify(split.title), '— credit names:', split.c0, '→ +slot', split.c1, '→ +pick', split.c2, '→ -slot', split.c3, '· credited-as auto-filled:', split.autofilled, '(' + JSON.stringify(split.credAfter) + ')');
   log('changed-track marker — has ↺ + border when changed:', changed.before?.hasRevert, '/', changed.before?.marked,
     '· after revert (no ↺/border/change):', !!(changed.after && !changed.after.hasRevert && !changed.after.marked && !changed.after.changed),
-    '· credited-as edit re-flags instantly:', !!(changed.afterCred && changed.afterCred.marked && changed.afterCred.hasRevert));
+    '· credited-as edit re-flags instantly:', !!(changed.afterCred && changed.afterCred.marked && changed.afterCred.hasRevert),
+    '· other badge kept across revert (not →set):', changed.after?.otherKept, '(' + changed.after?.otherStatusBefore + '→' + changed.after?.otherStatusAfter + ')');
   log('search "Show more…" — results', showMore.before, '→', showMore.after, '· offered:', showMore.hadMore, '· grew:', showMore.grew);
   log('artifacts in', LOG_DIR);
   if (!HEADED) await ctx.close();

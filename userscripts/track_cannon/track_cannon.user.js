@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.200848
+// @version      2026.6.2.203100
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -272,10 +272,16 @@
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
   function buildShell() {
     snapshotMissing();   // capture page-load state for any lazily-loaded medium before matching touches it
+    // a rebuild re-reads the live model, where every linked artist looks identical — so without this we'd
+    // collapse all match badges (rg / name / user) back to "set". Carry the match source forward by gid.
+    const prevStatus = new Map();
+    if (MODEL && MODEL.tracks) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid && s.committed && s.status && s.status !== 'set') prevStatus.set(s.gid, { status: s.status, entity: s.entity, candidates: s.candidates }); }));
     const tracks = readTracklist().map(t => {
-      const slots = t.names.map(n => n.artistGid
-        ? { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'set', entity: null, gid: n.artistGid, name: n.artistName, candidates: [], committed: true }
-        : { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _pending: true });
+      const slots = t.names.map(n => {
+        if (!n.artistGid) return { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _pending: true };
+        const carry = prevStatus.get(n.artistGid);   // preserve rg / name / user across the rebuild; genuine page-load links stay "set"
+        return { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: carry ? carry.status : 'set', entity: carry ? carry.entity : null, gid: n.artistGid, name: n.artistName, candidates: carry ? (carry.candidates || []) : [], committed: true };
+      });
       const te = { mi: t.mi, ti: t.ti, number: t.number, title: t.title, length: t.length, slots };
       te.slots.forEach(s => { s._entry = te; }); te.guessTitle = guessTitleStr(te);
       return te;
