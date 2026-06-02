@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.154018
+// @version      2026.6.2.154339
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -281,9 +281,9 @@
     .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:#fff;white-space:nowrap}
     .tc-badge.rg{background:#1f8a4c}.tc-badge.set{background:#6c757d}.tc-badge.high{background:#2f6fd6}
     .tc-badge.low{background:#e0a800}.tc-badge.user{background:#6f42c1}.tc-badge.none{background:#c0392b}
-    .tc-btn{padding:4px 11px;border:1px solid #bbb;border-radius:3px;background:linear-gradient(#fff,#eee);cursor:pointer;font:13px Arial;color:#333}
-    .tc-btn:hover{background:linear-gradient(#fff,#e4e4e4)}
-    .tc-btn.primary{background:#5f3ec0;color:#fff;border-color:#4f33a3}.tc-btn.primary:hover{background:#553597}
+    .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}
+    .tc-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}
+    .tc-btn.primary{color:#5f3ec0;font-weight:bold}.tc-btn.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}
     .tc-btn.mini{padding:1px 6px;font-size:11px}
     .tc-icon{cursor:pointer;border:none;background:none;font-size:13px;padding:0 2px;color:#666}
     #tc-panel a,#tc-mirror-wrap a{color:#4800a0;text-decoration:none}#tc-panel a:hover,#tc-mirror-wrap a:hover{text-decoration:underline}
@@ -374,7 +374,9 @@
     .tc-toolopts select{font:12px Arial;padding:1px}
     .tc-split{display:inline-flex}
     .tc-split .tc-btn{border-radius:3px 0 0 3px}
-    .tc-split .tc-caret{border-radius:0 3px 3px 0;border-left:1px solid #4f33a3;padding:4px 7px}
+    .tc-split .tc-caret{border-radius:0 3px 3px 0;padding:4px 7px}
+    .tc-split:hover .tc-btn{border-color:#bbb;background:linear-gradient(#fff,#eee)}
+    .tc-split:hover .tc-caret{border-left:1px solid #ccc}
     .tc-menu{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;font:13px Arial;min-width:170px}
     .tc-menu .tc-mi{padding:6px 15px;cursor:pointer;color:#333;font-weight:bold}.tc-menu .tc-mi:hover{background:#ede9f6;color:#4b2e83}
     .tc-menu .tc-sep{border-top:1px solid #e6e0f2;margin:4px 0}
@@ -794,7 +796,7 @@
     const tbl = nativeTrackTables()[0];
     if (tbl && tbl.parentElement) tbl.parentElement.insertBefore(wrap, tbl);
     else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
-    wrap.innerHTML = `<div id="tc-bar">${ICON}<b>Track Cannon</b><span class="sp"></span>${BAR}</div><div class="tc-mount"></div>`;
+    wrap.innerHTML = `<div id="tc-bar">${BAR}</div><div class="tc-mount"></div>`;
     syncNative();
     const tbody = mountTable(wrap.querySelector('.tc-mount'));
     ACTIVE = { mode: 'mirror', tbody, statusEl: wrap.querySelector('.tc-hstatus') };
