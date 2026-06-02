@@ -95,6 +95,9 @@ The toolbar splits left/right. On the **left** is a **Tools** split-button: the 
 **Search and Replace** — and the *last tool you used* becomes the button's label and its default
 action (click it to run that tool again). Option-less tools fire on pick; tools with options
 (**Guess case**, **Search and Replace**) reveal their controls **inline to the right** of the button.
+The medium-scoped tools (**Track parser**, **Reset #**, **Swap**) act on one medium: with a single
+medium they just apply, and with several an inline **Medium** combo appears to pick the target (then
+click the Tools button to run).
 Search & Replace runs in **real time** — type in *search* / *replace* and titles update live (cleared
 *search* restores them); no apply step. On the **right** sit **Match** (search MB for the unmatched
 artists), **Revert all** and **⚙**. Track parser's changes are picked up automatically (the table

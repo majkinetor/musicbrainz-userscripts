@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.172615
+// @version      2026.6.2.173741
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -720,18 +720,17 @@
     mediums().forEach(med => (u(med.tracks) || []).forEach(t => { try { ed.guessTrackFeatArtists(t); } catch (e) { try { ed.guessTrackFeatArtists(t, { type: 'click' }); } catch (e2) { Log.warn('guess feat failed', e2.message); } } }));
     await loadAndRender(); Log.info('guessed feat artists from titles');
   }
-  // swap titles ↔ artist credits (MB shows its own confirm if data would be lost)
-  async function swapTitlesArtists() { const ed = getEditor(); _selfEdit = true; try { mediums().forEach(m => { try { ed.swapTitlesWithArtists(m); } catch (e) { Log.warn('swap failed', e.message); } }); } finally { _selfEdit = false; } await loadAndRender(); Log.info('swapped titles ↔ artists'); }
-  function resetNumbersAll() { const ed = getEditor(); _selfEdit = true; try { mediums().forEach(m => { try { ed.resetTrackNumbers(m); } catch (e) { Log.warn('reset numbers failed', e.message); } }); } finally { _selfEdit = false; } rebuild(); }
-  function openParser() { const ed = getEditor(); try { ed.openTrackParser(mediums()[0]); } catch (e) { Log.warn('open parser failed', e.message); } }
+  // medium-scoped tools — each acts on one medium (chosen via the inline medium combo)
+  async function swapMedium(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.swapTitlesWithArtists(m); } catch (e) { Log.warn('swap failed', e.message); } finally { _selfEdit = false; } await loadAndRender(); Log.info('swapped titles ↔ artists on medium', mi + 1); }
+  function resetNumbers(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.resetTrackNumbers(m); } catch (e) { Log.warn('reset numbers failed', e.message); } finally { _selfEdit = false; } rebuild(); }
+  function openParser(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.warn('open parser failed', e.message); } }
+  function runMediumTool(act, mi) { if (act === 'parser') openParser(mi); else if (act === 'resetnum') resetNumbers(mi); else if (act === 'swap') swapMedium(mi); }
   function runAction(a) {
     if (a === 'match') matchAll();
     else if (a === 'revert') revertAll();
     else if (a === 'guesscase') guessCaseAll();
     else if (a === 'guessfeat') guessFeatAll();
-    else if (a === 'swap') swapTitlesArtists();
-    else if (a === 'resetnum') resetNumbersAll();
-    else if (a === 'parser') openParser();
+    else if (MEDIUM_TOOLS.has(a)) runMediumTool(a, 0);
   }
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
@@ -743,7 +742,8 @@
   /* ── the Tools split-button: last-used tool is the button's label + default action; ▾ picks another ── */
   const MENU = [{ act: 'parser', label: 'Track parser' }, { act: 'swap', label: 'Swap' }, { act: 'resetnum', label: 'Reset #' }, { sep: 1 }, { act: 'guessfeat', label: 'Guess feat.' }, { act: 'guesscase', label: 'Guess case' }, { act: 'sr', label: 'Search and Replace' }];
   const LABELS = Object.fromEntries(MENU.filter(m => !m.sep).map(m => [m.act, m.label]));
-  const OPTLESS = new Set(['parser', 'swap', 'resetnum', 'guessfeat']);   // these run on pick; the rest show inline options first
+  const MEDIUM_TOOLS = new Set(['parser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
+  const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick
   function toolBtnEl() { return document.querySelector('#tc-bar [data-act="tool"], #tc-hdr [data-act="tool"]'); }
   function updateToolBtn() { const b = toolBtnEl(); if (b) b.textContent = SETTINGS.lastTool ? (LABELS[SETTINGS.lastTool] || 'Tools') : 'Tools'; }
   // hovering the "Guess case" tool button previews the guessed form on every differing title
@@ -761,11 +761,13 @@
     const act = SETTINGS.lastTool;
     if (!act) return openToolsMenu(toolBtnEl());
     if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'); if (f) f.focus(); return; }
+    if (MEDIUM_TOOLS.has(act)) { const sel = document.querySelector('.tc-toolopts .tc-medsel'); return runMediumTool(act, sel ? parseInt(sel.value, 10) : 0); }
     runAction(act);
   }
   function pickTool(act) {
     SETTINGS.lastTool = act; saveSettings(); updateToolBtn(); renderToolOpts(); wireToolHover();
-    if (OPTLESS.has(act)) runAction(act);   // option-less tools fire immediately
+    if (MEDIUM_TOOLS.has(act)) { if (mediums().length <= 1) runMediumTool(act, 0); }   // single medium → run now (no combo); multi → choose via the inline medium combo, then the Tools button
+    else if (OPTLESS.has(act)) runAction(act);   // global option-less tools fire immediately
     else if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'); if (f) f.focus(); }
   }
   function openToolsMenu(anchor) {
@@ -794,6 +796,11 @@
       const run = () => srLive(find.value, rep.value, true);
       find.oninput = rep.oninput = run;
       box.append(find, rep); host.appendChild(box);
+    } else if (MEDIUM_TOOLS.has(act) && mediums().length > 1) {
+      // which medium this tool acts on (only shown when there's more than one); the Tools button runs it
+      const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.title = 'which medium';
+      mediums().forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = 'Medium ' + (i + 1); sel.appendChild(o); });
+      host.appendChild(sel);
     }
   }
   function initTools() { updateToolBtn(); renderToolOpts(); wireToolHover(); }
