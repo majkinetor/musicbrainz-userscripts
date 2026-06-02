@@ -120,6 +120,17 @@ async function main() {
     return { amInHeader, amInBar, toolLabel, srChanged: afterRep !== before0, srStatus, restored, restoredOk: restored === before0, gcLabel, gcOpts };
   });
 
+  // Match button is disabled for the duration of a match pass
+  const matchBtn = await page.evaluate(async () => {
+    const btn = document.querySelector('#tc-bar [data-act="match"]');
+    const before = btn.disabled;
+    window.__trackCannon.model.tracks[0].slots[0]._pending = true;   // force the pass to actually do (and await) work
+    btn.click();
+    const during = btn.disabled;   // setMatching(true) runs synchronously at the pass start
+    await new Promise(res => { const iv = setInterval(() => { if (!btn.disabled) { clearInterval(iv); res(); } }, 60); });
+    return { before, during, after: btn.disabled };
+  });
+
   // exercise model-backed ops via the actual UI buttons (which rebuild the mirror)
   const before = await titles3();
   await page.locator('.tc-mirror tbody tr').first().locator('.dn').click();   // move row 1 down
@@ -159,6 +170,7 @@ async function main() {
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
   log('guess case — diff:', gc.hasDiff, '· guessed:', JSON.stringify(gc.guessed), '· applied:', JSON.stringify(gc.after), '· stillDiff:', gc.stillDiff);
+  log('match button — before:', matchBtn.before, '· during pass:', matchBtn.during, '· after:', matchBtn.after);
   log('tools — apply-mode in header:', tools.amInHeader, '(not in bar:', !tools.amInBar + ')', '· S&R label:', JSON.stringify(tools.toolLabel), 'live-changed:', tools.srChanged, 'status:', JSON.stringify(tools.srStatus), 'restored:', tools.restoredOk, '· Guess-case label:', JSON.stringify(tools.gcLabel), 'opts:', JSON.stringify(tools.gcOpts));
   log('edit # → "A1", length → "1:23" — model now:', JSON.stringify(fields));
   log('split/merge on', JSON.stringify(split.title), '— credit names:', split.c0, '→ +slot', split.c1, '→ +pick', split.c2, '→ -slot', split.c3, '· credited-as auto-filled:', split.autofilled, '(' + JSON.stringify(split.credAfter) + ')');

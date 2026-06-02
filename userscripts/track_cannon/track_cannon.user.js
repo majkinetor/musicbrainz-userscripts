@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.154339
+// @version      2026.6.2.154903
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -194,20 +194,23 @@
   // match the _pending slots, updating the table row-by-row as results come in
   async function matchModel(onProgress) {
     const isEditing = () => { const a = document.activeElement; return a && /^(INPUT|SELECT)$/.test(a.tagName) && (a.closest('#tc-mirror-wrap') || a.closest('#tc-panel')); };
-    const siblings = await loadSiblingMap();
-    const todo = MODEL.tracks.filter(t => t.slots.some(s => s._pending)); let done = 0;
-    for (const t of MODEL.tracks) {
-      if (!t.slots.some(s => s._pending)) continue;
-      const sib = siblings.get(fold(t.title)) || null;
-      for (let i = 0; i < t.slots.length; i++) {
-        const s = t.slots[i]; if (!s._pending) continue;
-        const m = await matchSlot(s.creditedAs, sib && sib[i]);
-        Object.assign(s, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
+    setMatching(true);
+    try {
+      const siblings = await loadSiblingMap();
+      const todo = MODEL.tracks.filter(t => t.slots.some(s => s._pending)); let done = 0;
+      for (const t of MODEL.tracks) {
+        if (!t.slots.some(s => s._pending)) continue;
+        const sib = siblings.get(fold(t.title)) || null;
+        for (let i = 0; i < t.slots.length; i++) {
+          const s = t.slots[i]; if (!s._pending) continue;
+          const m = await matchSlot(s.creditedAs, sib && sib[i]);
+          Object.assign(s, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
+        }
+        autoCommitTrack(t); if (!isEditing()) rerender();
+        done++; if (onProgress) onProgress(done, todo.length);
       }
-      autoCommitTrack(t); if (!isEditing()) rerender();
-      done++; if (onProgress) onProgress(done, todo.length);
-    }
-    if (!isEditing()) rerender();
+      if (!isEditing()) rerender();
+    } finally { setMatching(false); }
   }
   // (re-)match every still-unmatched slot — the "Match" button / used when auto-match is off
   async function matchAll() { if (!MODEL) return; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && !s.committed) s._pending = true; })); await matchModel((d, n) => updateStatus(`matching ${d}/${n}…`)); }
@@ -284,6 +287,7 @@
     .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}
     .tc-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}
     .tc-btn.primary{color:#5f3ec0;font-weight:bold}.tc-btn.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}
+    .tc-btn:disabled,.tc-btn:disabled:hover{color:#aaa;background:transparent;border-color:transparent;cursor:default;font-weight:normal}
     .tc-btn.mini{padding:1px 6px;font-size:11px}
     .tc-icon{cursor:pointer;border:none;background:none;font-size:13px;padding:0 2px;color:#666}
     #tc-panel a,#tc-mirror-wrap a{color:#4800a0;text-decoration:none}#tc-panel a:hover,#tc-mirror-wrap a:hover{text-decoration:underline}
@@ -424,6 +428,8 @@
   let MODEL = null;
   let ACTIVE = {};   // { mode, tbody, statusEl }
   const updateStatus = t => { if (ACTIVE.statusEl) ACTIVE.statusEl.textContent = t; };
+  // disable the Match button while a match pass is running
+  function setMatching(on) { const b = document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]'); if (b) b.disabled = on; }
   const rerender = () => { if (ACTIVE.tbody) fillRows(ACTIVE.tbody); };
   // update only the header count (no row rebuild) — used when a field unlinks live
   function refreshStatus() { if (!MODEL || !ACTIVE.statusEl) return; let n = 0; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (!(s.status === 'set' || s.committed)) n++; })); updateStatus(n ? `${n} unresolved` : 'all matched'); }
