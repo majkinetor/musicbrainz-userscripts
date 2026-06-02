@@ -162,10 +162,14 @@ async function main() {
     inp.focus(); inp.value = 'عمرو دياب'; inp.dispatchEvent(new Event('input'));   // Amr Diab (Arabic) — has a Latin alias
     await new Promise(r => setTimeout(r, 1700));
     const akas = [...document.querySelectorAll('.tc-acpop .tc-aka')].map(e => e.textContent);
-    inp.blur(); await new Promise(r => setTimeout(r, 220));
-    return { count: akas.length, sample: akas.slice(0, 3) };
+    // pick the first result → its alias should appear on the resolved bar, and survive a rebuild (delete)
+    const row0 = document.querySelector('.tc-acpop .tc-acrow[data-i="0"]'); if (row0) row0.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 250));
+    const find = () => { const r = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(x => x.dataset.tk === t.mi + ':' + t.ti); return r ? ((r.querySelector('.tc-bar-aka') || {}).textContent || '') : ''; };
+    const barAka = find();
+    return { count: akas.length, sample: akas.slice(0, 3), barAka };
   });
-  log('alias display — .tc-aka shown:', aliasCheck.count, JSON.stringify(aliasCheck.sample));
+  log('alias display — dropdown:', aliasCheck.count, JSON.stringify(aliasCheck.sample), '· resolved bar:', JSON.stringify(aliasCheck.barAka));
 
   // create-artist handshake: createArtist sets a token on the new tab, the "artist page" posts it back → inserted
   const createFlow = await page.evaluate(async () => {

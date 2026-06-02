@@ -171,6 +171,19 @@ async function main() {
     return { amInHeader, amInBar, toolLabel, srChanged: afterRep !== before0, srStatus, restored, restoredOk: restored === before0, gcLabel, gcOpts };
   });
 
+  // Compact layout (⚙ → Row layout) packs the rows tighter
+  const compact = await page.evaluate(async () => {
+    const tbl = document.querySelector('.tc-medsec .tc-mirror');
+    const h = () => { const a = tbl.querySelector('.tc-aslot'); return a ? Math.round(a.getBoundingClientRect().height) : 0; };
+    const cozyH = h();
+    document.querySelector('#tc-bar [data-act="gear"]').click(); await new Promise(r => setTimeout(r, 80));
+    const lay = document.querySelector('#tc-s-layout'); lay.value = 'compact'; lay.dispatchEvent(new Event('change'));
+    await new Promise(r => setTimeout(r, 80));
+    const compactH = h(); const hasClass = tbl.classList.contains('compact');
+    lay.value = 'cozy'; lay.dispatchEvent(new Event('change')); document.querySelector('#tc-bar [data-act="gear"]').click();   // restore
+    return { hasClass, cozyH, compactH, tighter: compactH > 0 && compactH < cozyH };
+  });
+
   // Add-tracks control: clicking ＋ drives MB's native add-tracks for the last medium
   const addTracks = await page.evaluate(async () => {
     const u = v => (typeof v === 'function' ? v() : v);
@@ -265,6 +278,7 @@ async function main() {
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
   log('format header tidy —', JSON.stringify(fmtTidy));
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows);
+  log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter);
   log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '· medium-combo opts:', multiMed.comboOpts, '· choice kept across tools (want "1"):', JSON.stringify(multiMed.comboKept), '· per-medium status:', JSON.stringify(multiMed.statuses), '·', JSON.stringify(multiMed.perMedium));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.190142
+// @version      2026.6.2.192656
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -46,8 +46,12 @@
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/\s+/g, ' ').trim();
   const sameName = (a, b) => fold(a) === fold(b);
   const MBID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-  // a bare MBID or a MusicBrainz /artist/<mbid> URL → the gid
-  function mbidFrom(v) { v = (v || '').trim(); if (new RegExp('^' + MBID_RE.source + '$', 'i').test(v)) return v.toLowerCase(); const m = v.match(new RegExp('musicbrainz\\.org/artist/(' + MBID_RE.source + ')', 'i')); return m ? m[1].toLowerCase() : null; }
+  // a MusicBrainz /artist/<mbid> URL, a bare MBID, or an MBID pasted anywhere in the text → the gid
+  function mbidFrom(v) {
+    v = (v || '').trim();
+    const url = v.match(new RegExp('musicbrainz\\.org/artist/(' + MBID_RE.source + ')', 'i')); if (url) return url[1].toLowerCase();
+    const m = v.match(new RegExp('(?:^|[\\s/])(' + MBID_RE.source + ')(?:[\\s/?#]|$)', 'i')); return m ? m[1].toLowerCase() : null;
+  }
 
   /* ── create-artist-in-a-tab → auto-insert (BroadcastChannel handshake, like the Discogs importer) ── */
   const ART_CHANNEL = ('BroadcastChannel' in W) ? new W.BroadcastChannel('track-cannon-artist') : null;
@@ -64,7 +68,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { try { return Object.assign({ colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, lastTool: '' }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, lastTool: '' }; } }
+  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, lastTool: '', layout: 'cozy' }; try { return Object.assign(d, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -119,13 +123,34 @@
   }
   // full alias arrays for display (the js search only carries primaryAlias, often empty). One WS2
   // search per query returns every result's aliases with locale — no per-artist fetch. Cached.
-  const _aliasCache = new Map();
+  const _aliasCache = new Map();        // query → { gid: aliases }
+  const _gidAliases = new Map();        // gid → aliases — survives table rebuilds (so the bar keeps its alias)
+  const cacheAliases = (gid, aks) => { if (gid && aks) _gidAliases.set(gid, aks); };
   async function fetchAliases(name) {
     const k = fold(name); if (!k) return {}; if (_aliasCache.has(k)) return _aliasCache.get(k);
     const map = {};
-    try { const w = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(name)}&limit=12&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); (w.artists || []).forEach(a => { map[a.id] = a.aliases || []; }); }
+    try { const w = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(name)}&limit=12&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); (w.artists || []).forEach(a => { map[a.id] = a.aliases || []; cacheAliases(a.id, a.aliases || []); }); }
     catch (e) { Log.warn('alias fetch failed', name, e.message); }
     _aliasCache.set(k, map); return map;
+  }
+  // aliases for already-resolved artists (existing releases / auto-matched) WITHOUT a fetch each —
+  // one batched WS2 query per ~90 gids (arid:g1 OR arid:g2 …), cached by gid
+  async function fetchAliasesByGids(gids) {
+    const uniq = [...new Set((gids || []).filter(g => g && !_gidAliases.has(g)))];
+    for (let i = 0; i < uniq.length; i += 90) {
+      const q = uniq.slice(i, i + 90).map(g => 'arid:' + g).join(' OR ');
+      try { const w = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(q)}&limit=100&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); (w.artists || []).forEach(a => cacheAliases(a.id, a.aliases || [])); }
+      catch (e) { Log.warn('batch alias fetch failed', e.message); }
+    }
+  }
+  const isEditingNow = () => { const a = document.activeElement; return a && /^(INPUT|SELECT)$/.test(a.tagName) && (a.closest('.tc-medsec') || a.closest('#tc-panel')); };
+  // batch-fetch aliases for every committed artist we don't have yet, then refresh the bars
+  async function enrichResolvedAliases() {
+    if (!MODEL) return;
+    const need = []; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.committed && s.gid && !_gidAliases.has(s.gid)) need.push(s.gid); }));
+    if (!need.length) return;
+    await fetchAliasesByGids(need);
+    if (!isEditingNow()) rerender();
   }
   // the alias(es) to show next to a result: the English-locale one(s) if present, otherwise the first
   // alias — joined with ", " and capped so it never gets too long
@@ -394,6 +419,13 @@
     /* alternate row colors / grid (toggled in ⚙) */
     .tc-mirror.alt tbody tr:nth-child(even) td{background:#f6f4fb}
     .tc-mirror.grid td{border-right:1px solid #ededed}.tc-mirror.grid td:last-child{border-right:none}
+    /* compact layout: pack rows tighter to fit more (closer to MB's native density) */
+    .tc-mirror.compact th{padding:2px 6px}
+    .tc-mirror.compact td{padding:0 6px}
+    .tc-mirror.compact .tc-aslot,.tc-mirror.compact .tc-bl{height:21px}
+    .tc-mirror.compact input.t-title,.tc-mirror.compact input.t-len,.tc-mirror.compact input.t-num{padding:0 2px;font-size:12px}
+    .tc-mirror.compact .tc-search{padding:0 5px}.tc-mirror.compact .tc-search .nm{padding:1px 0;font-size:12px}
+    .tc-mirror.compact .tc-cred{padding:0 4px}
     /* badge column: pills per artist line; on row hover the track ↺/✕ overlay it */
     .tc-bl{height:28px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
     .tc-trackacts{position:absolute;inset:0;display:none;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,.93)}
@@ -496,11 +528,12 @@
   }
 
   /* ── settings popover (view options) ── */
-  function applyViewClasses() { document.querySelectorAll('.tc-mirror').forEach(t => { t.classList.toggle('alt', !!SETTINGS.altRows); t.classList.toggle('grid', !!SETTINGS.grid); }); }
+  function applyViewClasses() { document.querySelectorAll('.tc-mirror').forEach(t => { t.classList.toggle('alt', !!SETTINGS.altRows); t.classList.toggle('grid', !!SETTINGS.grid); t.classList.toggle('compact', SETTINGS.layout === 'compact'); }); }
   function openSettings(anchor) {
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
     s.innerHTML = `<h4>${ICON} Track Cannon — settings</h4>
+      <label><span>Row layout</span><select id="tc-s-layout" style="margin-left:auto"><option value="cozy">Cozy</option><option value="compact">Compact</option></select></label>
       <label><input type="checkbox" id="tc-s-automatch"> <span>Auto-match artists on load</span></label>
       <div class="hint">Off: the table shows immediately but unmatched — use the <b>Match</b> button or search a field.</div>
       <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
@@ -508,11 +541,12 @@
     document.body.appendChild(s);
     const r = anchor ? anchor.getBoundingClientRect() : { left: 60, bottom: 80 };
     s.style.left = Math.min(r.left, window.innerWidth - 300) + 'px'; s.style.top = (r.bottom + 6) + 'px';
-    const am = s.querySelector('#tc-s-automatch'), alt = s.querySelector('#tc-s-alt'), grid = s.querySelector('#tc-s-grid');
-    am.checked = SETTINGS.autoMatch !== false; alt.checked = !!SETTINGS.altRows; grid.checked = !!SETTINGS.grid;
+    const am = s.querySelector('#tc-s-automatch'), alt = s.querySelector('#tc-s-alt'), grid = s.querySelector('#tc-s-grid'), lay = s.querySelector('#tc-s-layout');
+    am.checked = SETTINGS.autoMatch !== false; alt.checked = !!SETTINGS.altRows; grid.checked = !!SETTINGS.grid; lay.value = SETTINGS.layout || 'cozy';
     am.onchange = () => { SETTINGS.autoMatch = am.checked; saveSettings(); };
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     grid.onchange = () => { SETTINGS.grid = grid.checked; saveSettings(); applyViewClasses(); };
+    lay.onchange = () => { SETTINGS.layout = lay.value; saveSettings(); applyViewClasses(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -542,10 +576,13 @@
     const rows = [...row.parentElement.querySelectorAll('tr[data-tk]')]; const dest = rows[rows.indexOf(row) + dir]; if (!dest) return false;
     const sel = inp.classList.contains('t-num') ? '.t-num' : inp.classList.contains('t-title') ? '.t-title' : inp.classList.contains('t-len') ? '.t-len' : inp.classList.contains('tc-cred') ? '.tc-cred' : inp.classList.contains('nm') ? '.tc-search input.nm' : null;
     if (!sel) return false;
-    const idx = Math.max(0, [...row.querySelectorAll(sel)].indexOf(inp));
-    const tgts = [...dest.querySelectorAll(sel)]; const t = tgts[Math.min(idx, tgts.length - 1)];
-    if (t) { t.focus(); if (t.select) t.select(); return true; }
-    return false;
+    const idx = Math.max(0, [...row.querySelectorAll(sel)].indexOf(inp)); const destTk = dest.dataset.tk;
+    // committing the current field on blur can rebuild the rows, so blur FIRST, then focus the
+    // destination by re-querying the fresh DOM (retry next tick in case the rebuild is deferred)
+    inp.blur();
+    const go = () => { const d = document.querySelector(`.tc-medsec tr[data-tk="${destTk}"], #tc-panel tr[data-tk="${destTk}"]`); if (!d) return; const tgts = [...d.querySelectorAll(sel)]; const t = tgts[Math.min(idx, tgts.length - 1)]; if (t && document.activeElement !== t) { t.focus(); if (t.select) t.select(); } };
+    go(); setTimeout(go, 0);
+    return true;
   }
   function wireRowNav(inp) { inp.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { if (focusSameField(inp, 1)) e.preventDefault(); } else if (e.key === 'ArrowUp') { if (focusSameField(inp, -1)) e.preventDefault(); } }); }
   // show each medium's OWN unresolved count in its header (or the global count for the floating panel)
@@ -556,7 +593,7 @@
   }
 
   function buildTable() {
-    const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '');
+    const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '') + (SETTINGS.layout === 'compact' ? ' compact' : '');
     t.innerHTML = `<colgroup>${COLS.map(c => `<col style="width:${colW(c.k, c.w)}px">`).join('')}</colgroup>` +
       `<thead><tr>${COLS.map(c => `<th>${c.label}${c.k === 'art' ? '<span class="tc-hstatus"></span>' + AM_SELECT : ''}<span class="tc-resizer"></span></th>`).join('')}</tr></thead><tbody></tbody>`;
     return t;
@@ -604,6 +641,7 @@
   // track credited to the same text, committing each.
   function pickArtist(slot, c) {
     if (!c || !c.gid) return;
+    if (c.aliases) cacheAliases(c.gid, c.aliases);   // keep the chosen artist's aliases for the bar
     MODEL.tracks.forEach(t => t.slots.forEach(s => { delete s._marked; }));   // clear the previous selection's outlines
     slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.committed = true; slot.query = null; slot._flash = true;
     if (!(slot.creditedAs || '').trim()) slot.creditedAs = c.name;   // auto-fill the credited-as when the user hasn't set one
@@ -653,11 +691,16 @@
   }
   function revertTrack(entry) { resetTrack(entry); rebuild(); }
 
-  // ＋ create-button at the right end of the box (before the join), only when the slot is unmatched
+  // ＋ create-button at the right end of the box (before the join), only when the slot is unmatched;
+  // and the alias on the resolved bar — only while the slot stays committed (gone the moment you edit)
   function adorn(search, slot, inp) {
-    [...search.querySelectorAll('.mk')].forEach(e => e.remove());
+    [...search.querySelectorAll('.mk, .tc-bar-aka')].forEach(e => e.remove());
     search.classList.toggle('matched', !!slot.committed);
-    if (!slot.committed) { const ref = search.querySelector('.tc-joinwrap'); const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot); }; search.insertBefore(mk, ref); }
+    const ref = search.querySelector('.tc-joinwrap');
+    const aks = _gidAliases.get(slot.gid);
+    const aka = slot.committed ? aliasStr({ name: slot.name, aliases: aks || (slot.entity && slot.entity.aliases) || [], primaryAlias: slot.entity && slot.entity.primaryAlias }) : null;
+    if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = '“' + aka + '”'; al.title = aka; search.insertBefore(al, ref); }
+    if (!slot.committed) { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot); }; search.insertBefore(mk, ref); }
   }
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
   function renderBadgeCell(cell, track) {
@@ -723,7 +766,7 @@
     // arrows browse the results popup WHILE searching; once the slot is resolved they move row-to-row instead
     const browsing = () => pop && !slot.committed && list.length;
     inp.onkeydown = e => {
-      if (e.key === 'Escape') { close(); inp.blur(); }
+      if (e.key === 'Escape') { e.preventDefault(); close(); inp.focus(); }   // close the popup but keep the field focused, so the next ↓ navigates rows
       else if (e.key === 'ArrowDown') { if (browsing()) { hi = Math.min(list.length - 1, hi + 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); } else { close(); if (focusSameField(inp, 1)) e.preventDefault(); } }
       else if (e.key === 'ArrowUp') { if (browsing()) { hi = Math.max(0, hi - 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); } else { close(); if (focusSameField(inp, -1)) e.preventDefault(); } }
       else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) choose(c); }
@@ -752,10 +795,8 @@
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);
     const search = document.createElement('span'); search.className = 'tc-search';
-    const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…';
-    const aka = (s.committed && s.entity) ? aliasStr(s.entity) : null; inp.title = aka ? inp.value + ' — ' + aka : inp.value;
+    const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
     search.appendChild(inp);
-    if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = '“' + aka + '”'; al.title = aka; search.appendChild(al); }   // alias shown in the resolved bar too
     if (idx < entry.slots.length - 1) search.appendChild(joinControl(entry, s));   // join lives inside the box, right side
     adorn(search, s, inp); if (s._marked) search.classList.add('tc-marked'); if (s._flash) { search.classList.add('tc-flash'); delete s._flash; } line.appendChild(search);
     wireAutocomplete(inp, s, () => { adorn(search, s, inp); refreshBadges(); refreshStatus(); });
@@ -811,12 +852,14 @@
     if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); }   // (re)build per-medium tables + hide/tidy native
     rerender();   // show the tables instantly
     if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else updateStatus('auto-match off — click Match');
+    enrichResolvedAliases();   // batch-fetch aliases for resolved artists (existing releases too)
   }
   async function rebuild() {
     MODEL = buildShell();
     if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); }
     rerender();
     if (SETTINGS.autoMatch !== false) await matchModel();
+    enrichResolvedAliases();
   }
   function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track's artist to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(); }
   function guessCaseAll() { if (!MODEL) return; MODEL.tracks.forEach(t => { applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); }); rerender(); Log.info('guess case → all titles'); }

@@ -84,7 +84,8 @@ track(s) ＋** footer that drives MB's add-tracks for that medium. MB's **▼ co
 that medium's Canon table too. **Adding or removing a whole medium** re-renders automatically, and the
 script works on a fresh `…/release/add` with **no tracks yet**. The unresolved count shows in
 the **Artist** header. Columns are resizable by dragging near a column border **in the header or any
-row** (widths remembered). **⚙** holds settings — **Auto-match artists on load**, **Alternate row
+row** (widths remembered). **⚙** holds settings — **Row layout** (*Cozy* / *Compact* — Compact packs
+the rows tighter, close to MB's native density), **Auto-match artists on load**, **Alternate row
 colors** and **Show grid**.
 
 The table appears **instantly** (no wait): the tracklist renders right away and the artist matches
