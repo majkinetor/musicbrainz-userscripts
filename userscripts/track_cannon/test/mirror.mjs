@@ -54,10 +54,12 @@ async function main() {
   await page.waitForTimeout(600);
   const nativeHidden = await page.evaluate(() => [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')).every(t => t.style.display === 'none'));
   const toolsHidden = await page.evaluate(() => { const t = document.getElementById('tracklist-tools'); return t ? t.style.display === 'none' : 'no-div'; });
-  // Show original reveals the native table + the tools div, then hide again
-  await page.locator('#tc-mirror-wrap [data-act="toggleorig"]').click(); await page.waitForTimeout(200);
-  const shown = await page.evaluate(() => { const t = document.getElementById('tracklist-tools'); const tbl = [...document.querySelectorAll('table')].find(x => x.querySelector('tr.track')); return { tools: t ? t.style.display !== 'none' : null, table: tbl ? tbl.style.display !== 'none' : null }; });
-  await page.locator('#tc-mirror-wrap [data-act="toggleorig"]').click(); await page.waitForTimeout(200);
+  const guessHidden = await page.evaluate(() => { const g = document.querySelector('fieldset.guesscase, .guesscase'); return g ? g.style.display === 'none' : 'no-gc'; });
+  // hideMirror reveals the native bits; re-show puts Canon back
+  const shown = await page.evaluate(() => { window.__trackCannon.hideMirror(); const t = document.getElementById('tracklist-tools'); const tbl = [...document.querySelectorAll('table')].find(x => x.querySelector('tr.track')); return { tools: t ? t.style.display !== 'none' : null, table: tbl ? tbl.style.display !== 'none' : null }; });
+  await page.evaluate(() => window.__trackCannon.showMirror());
+  await page.waitForSelector('#tc-mirror-wrap .tc-mirror tbody tr', { timeout: 30000 });
+  await page.waitForFunction(() => { const m = window.__trackCannon.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });
   await page.locator('#tc-mirror-wrap').screenshot({ path: resolve(LOG_DIR, 'mirror.png') }).catch(() => page.screenshot({ path: resolve(LOG_DIR, 'mirror.png'), fullPage: true }));
 
   const titles3 = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().slice(0, 3).map(t => u(t.name)); });
@@ -124,7 +126,7 @@ async function main() {
 
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
-  log('native table hidden:', nativeHidden, '· tracklist-tools hidden:', toolsHidden, '· Show original reveals:', JSON.stringify(shown));
+  log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);

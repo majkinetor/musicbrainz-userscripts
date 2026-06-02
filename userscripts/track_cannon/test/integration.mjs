@@ -102,16 +102,16 @@ async function main() {
     const tc = window.__trackCannon; tc.settings.applyMode = 'all';
     const all = []; tc.model.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && s.entity) all.push(s); }));
     const byCred = {}; all.forEach(s => { const k = s.creditedAs.toLowerCase(); (byCred[k] = byCred[k] || []).push(s); });
-    const dup = Object.values(byCred).find(a => a.length >= 2);
+    const dup = Object.values(byCred).find(a => a.length >= 2 && (a[0].candidates[0] || a[0].entity));
     if (!dup) return { ok: false };
-    tc.pickArtist(dup[0], dup[0].candidates[0]); await new Promise(r => setTimeout(r, 60));
+    tc.pickArtist(dup[0], dup[0].candidates[0] || dup[0].entity); await new Promise(r => setTimeout(r, 60));
     const marked = dup.every(s => s._marked);
     const domOutlined = document.querySelectorAll('#tc-panel .tc-search.tc-marked').length;
     // next selection (a unique-credit slot, no propagation) must clear the outline
     const cnt = {}; all.forEach(s => { cnt[s.creditedAs.toLowerCase()] = (cnt[s.creditedAs.toLowerCase()] || 0) + 1; });
-    const single = all.find(s => cnt[s.creditedAs.toLowerCase()] === 1 && s.candidates && s.candidates[0]);
+    const single = all.find(s => cnt[s.creditedAs.toLowerCase()] === 1 && (s.candidates[0] || s.entity));
     let clearedAfter = null;
-    if (single) { tc.pickArtist(single, single.candidates[0]); await new Promise(r => setTimeout(r, 60)); clearedAfter = dup.every(s => !s._marked); }
+    if (single) { tc.pickArtist(single, single.candidates[0] || single.entity); await new Promise(r => setTimeout(r, 60)); clearedAfter = dup.every(s => !s._marked); }
     return { ok: true, count: dup.length, allSame: dup.every(s => s.gid === dup[0].gid && s.committed), marked, domOutlined, clearedAfter };
   });
 

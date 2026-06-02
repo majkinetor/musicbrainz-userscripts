@@ -62,10 +62,11 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 
 Track Cannon **takes over the tracklist** as soon as a release add/edit page loads (no flash),
 laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badge). MB's native tracklist —
-both the table **and** its tools row — is hidden while Canon is on; **Show original** reveals them
-again, and the floating **🎯 Track Cannon** button toggles Canon off/on entirely. Columns are
-resizable by dragging near a column border **in the header or any row** (widths are remembered).
-**⚙** holds settings — **Auto-match artists on load**, **Alternate row colors** and **Show grid**.
+the table, its tools row **and** the Guess-case fieldset — is hidden while Canon is on; the floating
+**🎯 Track Cannon** button toggles Canon off/on (which reveals them). The unresolved count shows in
+the **Artist** header. Columns are resizable by dragging near a column border **in the header or any
+row** (widths remembered). **⚙** holds settings — **Auto-match artists on load**, **Alternate row
+colors** and **Show grid**.
 
 The table appears **instantly** (no wait): the tracklist renders right away and the artist matches
 fill in row-by-row as MusicBrainz responds. With **Auto-match** off, the table loads unmatched and
@@ -76,9 +77,10 @@ Every structural action drives MB's real model — **reorder** (`moveTrackUp/Dow
 *Add release* button submits as usual. **Revert all** restores every track to its page-load state;
 per-track **↺** (on hover) does one.
 
-The toolbar: **Match** (search MB for the unmatched artists) plus MusicBrainz's own bulk tools —
-**Guess case**, **Guess feat.**, **Swap** (titles ↔ artists) and **Reset #**. **Track parser** opens MB's parser; whatever it changes is picked
-up automatically (the table watches the live tracklist).
+The toolbar is a **Match ▾** split-button: click **Match** to search MB for the unmatched artists;
+the **▾** opens a tools menu — **Track parser** · **Swap** (titles ↔ artists) · **Reset #** — and —
+**Guess feat.** · **Guess case** · **Search and Replace** (find/replace in titles; changed titles
+flash). Track parser's changes are picked up automatically (the table watches the live tracklist).
 
 Track Cannon only fills the in-page editor. **You** review and press MusicBrainz's own
 *Add release* / *Enter edit* button — nothing is submitted on your behalf.

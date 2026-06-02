@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.143326
+// @version      2026.6.2.150238
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -362,8 +362,20 @@
 
     #tc-mirror-wrap{margin:4px 0 10px}
     #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 2px}
-    #tc-bar b{color:#563b8f}#tc-bar .tc-status{flex:1;font-size:12px;color:#666}
+    #tc-bar b{color:#563b8f}#tc-bar .sp{flex:1}
     .tc-tablewrap{overflow-x:auto}
+    .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:#999;margin-left:12px;font-size:11px}
+    .tc-split{display:inline-flex}
+    .tc-split .tc-btn{border-radius:3px 0 0 3px}
+    .tc-split .tc-caret{border-radius:0 3px 3px 0;border-left:1px solid #4f33a3;padding:4px 7px}
+    .tc-menu{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;font:13px Arial;min-width:170px}
+    .tc-menu .tc-mi{padding:6px 15px;cursor:pointer;color:#333;font-weight:bold}.tc-menu .tc-mi:hover{background:#ede9f6;color:#4b2e83}
+    .tc-menu .tc-sep{border-top:1px solid #e6e0f2;margin:4px 0}
+    .tc-settings label{display:flex;gap:8px;align-items:center;margin:7px 0;color:#333}.tc-settings label.opt{font-size:12px}
+    .tc-settings input[type=text],.tc-settings #tc-sr-find,.tc-settings #tc-sr-rep{font:13px Arial;padding:3px 5px;border:1px solid #bbb;border-radius:3px}
+    .tc-settings .srrow{display:flex;align-items:center;gap:8px;margin-top:8px}.tc-settings .srrow span{flex:1;color:#777;font-size:12px}
+    @keyframes tctitleflash{0%{background:#fff3b0}100%{background:transparent}}
+    .tc-mirror input.t-title.srflash{animation:tctitleflash 1.8s ease-out}
 
     #tc-settings{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 24px rgba(40,20,80,.3);padding:11px 13px;font:13px Arial;color:#222;width:340px}
     #tc-settings h4{margin:0 0 8px;color:#563b8f;font-size:13px}
@@ -408,14 +420,14 @@
   function buildTable() {
     const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '');
     t.innerHTML = `<colgroup>${COLS.map(c => `<col style="width:${colW(c.k, c.w)}px">`).join('')}</colgroup>` +
-      `<thead><tr>${COLS.map(c => `<th>${c.label}<span class="tc-resizer"></span></th>`).join('')}</tr></thead><tbody></tbody>`;
+      `<thead><tr>${COLS.map(c => `<th>${c.label}${c.k === 'art' ? '<span class="tc-hstatus"></span>' : ''}<span class="tc-resizer"></span></th>`).join('')}</tr></thead><tbody></tbody>`;
     return t;
   }
   // toolbar (above the table) + table; returns the tbody. Shared by both modes.
   function mountTable(container) {
     container.innerHTML = '';
     const bar = document.createElement('div'); bar.className = 'tc-toolbar';
-    bar.innerHTML = `<span>When I pick an artist → apply to</span><select class="tc-applymode"><option value="all">all matching tracks</option><option value="single">this track only</option></select>`;
+    bar.innerHTML = `<span>Artist selection applies to</span><select class="tc-applymode"><option value="all">all matching tracks</option><option value="single">this track only</option></select>`;
     const am = bar.querySelector('.tc-applymode'); am.value = SETTINGS.applyMode || 'all';
     am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); Log.info('applyMode =', am.value); };
     container.appendChild(bar);
@@ -442,6 +454,7 @@
   // picking an artist writes through immediately; in "all" mode it also copies to every other
   // track credited to the same text, committing each.
   function pickArtist(slot, c) {
+    if (!c || !c.gid) return;
     MODEL.tracks.forEach(t => t.slots.forEach(s => { delete s._marked; }));   // clear the previous selection's outlines
     slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.committed = true; slot.query = null; slot._flash = true;
     if (!(slot.creditedAs || '').trim()) slot.creditedAs = c.name;   // auto-fill the credited-as when the user hasn't set one
@@ -600,6 +613,7 @@
       refreshBadges();
       // guess-case: highlight when the title differs from its guessed form; a per-title button applies it
       const tin = tr.querySelector('.t-title'); const diff = t.guessTitle && t.guessTitle !== t.title;
+      if (t._srFlash) { tin.classList.add('srflash'); delete t._srFlash; }   // flash titles changed by search & replace
       if (diff) {
         tin.classList.add('diff'); tin.title = 'Guess case → ' + t.guessTitle;
         const gb = document.createElement('button'); gb.className = 't-gc'; gb.textContent = 'Aa'; gb.title = 'Guess case → ' + t.guessTitle;
@@ -614,11 +628,11 @@
       tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
       tbody.appendChild(tr);
     });
-    updateStatus(`${MODEL.tracks.length} tracks · ${committed} linked · ${unresolved} to resolve`);
+    updateStatus(unresolved ? `${unresolved} unresolved` : 'all matched');
   }
   async function loadAndRender(onProgress) {
     MODEL = buildShell(); fillRows(ACTIVE.tbody); if (ACTIVE.mode === 'mirror') syncNative();   // show the table instantly
-    if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else updateStatus(`${MODEL.tracks.length} tracks · auto-match off — click Match or search a field`);
+    if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else updateStatus('auto-match off — click Match');
   }
   async function rebuild() {
     MODEL = buildShell(); rerender(); if (ACTIVE.mode === 'mirror') syncNative();
@@ -636,44 +650,68 @@
   async function swapTitlesArtists() { const ed = getEditor(); _selfEdit = true; try { mediums().forEach(m => { try { ed.swapTitlesWithArtists(m); } catch (e) { Log.warn('swap failed', e.message); } }); } finally { _selfEdit = false; } await loadAndRender(); Log.info('swapped titles ↔ artists'); }
   function resetNumbersAll() { const ed = getEditor(); _selfEdit = true; try { mediums().forEach(m => { try { ed.resetTrackNumbers(m); } catch (e) { Log.warn('reset numbers failed', e.message); } }); } finally { _selfEdit = false; } rebuild(); }
   function openParser() { const ed = getEditor(); try { ed.openTrackParser(mediums()[0]); } catch (e) { Log.warn('open parser failed', e.message); } }
+  function runAction(a) {
+    if (a === 'match') matchAll();
+    else if (a === 'revert') revertAll();
+    else if (a === 'guesscase') guessCaseAll();
+    else if (a === 'guessfeat') guessFeatAll();
+    else if (a === 'swap') swapTitlesArtists();
+    else if (a === 'resetnum') resetNumbersAll();
+    else if (a === 'parser') openParser();
+    else if (a === 'sr') openSearchReplace();
+  }
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
-      b.onclick = () => {
-        if (a === 'gear') openSettings(b);
-        else if (a === 'close') { host.remove(); ACTIVE = {}; }
-        else if (a === 'match') matchAll();
-        else if (a === 'revert') revertAll();
-        else if (a === 'guesscase') guessCaseAll();
-        else if (a === 'guessfeat') guessFeatAll();
-        else if (a === 'swap') swapTitlesArtists();
-        else if (a === 'resetnum') resetNumbersAll();
-        else if (a === 'parser') openParser();
-        else if (a === 'toggleorig') { _showOriginal = !_showOriginal; syncNative(); b.textContent = _showOriginal ? 'Hide original' : 'Show original'; }
-      };
+      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'gear') openSettings(b); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
     });
   }
-  const TOOLS = `<button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">Match</button>`
-    + `<button class="tc-btn" data-act="guesscase" title="MusicBrainz guess case on all track titles">Guess case</button>`
-    + `<button class="tc-btn" data-act="guessfeat" title="pull “feat. X” out of titles into artist credits">Guess feat.</button>`
-    + `<button class="tc-btn" data-act="swap" title="swap track titles with artist credits">Swap</button>`
-    + `<button class="tc-btn" data-act="resetnum" title="reset track numbers to 1,2,3…">Reset #</button>`
-    + `<button class="tc-btn" data-act="parser" title="open MusicBrainz’s track parser (paste a tracklist)">Track parser</button>`;
-  const GEAR = `<button class="tc-btn" data-act="gear" title="view options">⚙</button>`;
-  const FOOTER_FLOAT = TOOLS + `<button class="tc-btn" data-act="revert">Revert all</button>` + GEAR;
-  const FOOTER_MIRROR = TOOLS + `<button class="tc-btn" data-act="toggleorig">Show original</button><button class="tc-btn" data-act="revert">Revert all</button>` + GEAR;
+  // the Match ▾ dropdown menu
+  const MENU = [{ act: 'parser', label: 'Track parser' }, { act: 'swap', label: 'Swap' }, { act: 'resetnum', label: 'Reset #' }, { sep: 1 }, { act: 'guessfeat', label: 'Guess feat.' }, { act: 'guesscase', label: 'Guess case' }, { act: 'sr', label: 'Search and Replace' }];
+  function openToolsMenu(anchor) {
+    let m = document.getElementById('tc-menu'); if (m) { m.remove(); return; }
+    m = document.createElement('div'); m.id = 'tc-menu'; m.className = 'tc-menu';
+    m.innerHTML = MENU.map(it => it.sep ? '<div class="tc-sep"></div>' : `<div class="tc-mi" data-act="${it.act}">${it.label}</div>`).join('');
+    document.body.appendChild(m);
+    const r = anchor.getBoundingClientRect(); m.style.left = Math.min(r.left, window.innerWidth - 190) + 'px'; m.style.top = (r.bottom + 4) + 'px';
+    m.querySelectorAll('.tc-mi').forEach(el => el.onclick = () => { m.remove(); runAction(el.dataset.act); });
+    const off = e => { if (!m.contains(e.target) && e.target !== anchor) { m.remove(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
+  // search & replace in track titles, flashing the ones that change
+  function srRe(find, ci, g) { const e = find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); return new RegExp(e, (g ? 'g' : '') + (ci ? 'i' : '')); }
+  function searchReplaceTitles(find, replace, ci) {
+    if (!MODEL || !find) return 0; let n = 0;
+    MODEL.tracks.forEach(t => { const nt = t.title.replace(srRe(find, ci, true), replace); if (nt !== t.title) { setTitle(t, nt); t.title = nt; t.guessTitle = guessTitleStr(t); t._srFlash = true; n++; } });
+    rerender(); updateStatus(`${n} title${n !== 1 ? 's' : ''} replaced`); Log.info('search & replace →', n, 'titles'); return n;
+  }
+  function openSearchReplace() {
+    let d = document.getElementById('tc-sr'); if (d) { d.remove(); return; }
+    d = document.createElement('div'); d.id = 'tc-sr'; d.className = 'tc-settings';
+    d.innerHTML = `<h4>${ICON} Search &amp; replace — titles</h4>
+      <label>Find <input id="tc-sr-find" style="flex:1"></label>
+      <label>Replace <input id="tc-sr-rep" style="flex:1"></label>
+      <label class="opt"><input type="checkbox" id="tc-sr-ci" checked> <span>case-insensitive</span></label>
+      <div class="srrow"><span id="tc-sr-count"></span><button class="tc-btn" id="tc-sr-x">Close</button><button class="tc-btn primary" id="tc-sr-go">Replace</button></div>`;
+    document.body.appendChild(d); d.style.left = '60px'; d.style.top = '90px';
+    const find = d.querySelector('#tc-sr-find'), rep = d.querySelector('#tc-sr-rep'), ci = d.querySelector('#tc-sr-ci'), cnt = d.querySelector('#tc-sr-count');
+    const recount = () => { const f = find.value; cnt.textContent = (f && MODEL) ? MODEL.tracks.filter(t => srRe(f, ci.checked, false).test(t.title)).length + ' matching' : ''; };
+    find.oninput = recount; ci.onchange = recount; setTimeout(() => find.focus(), 0);
+    [find, rep].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); d.querySelector('#tc-sr-go').click(); } }));
+    d.querySelector('#tc-sr-go').onclick = () => { searchReplaceTitles(find.value, rep.value, ci.checked); recount(); };
+    d.querySelector('#tc-sr-x').onclick = () => d.remove();
+  }
+  const BAR = `<div class="tc-split"><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">Match</button><button class="tc-btn primary tc-caret" data-act="menu" title="more tools">▾</button></div>`
+    + `<button class="tc-btn" data-act="revert">Revert all</button><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
   function openPanel() {
     style(); const ex = document.getElementById('tc-panel'); if (ex) ex.remove(); const l = document.getElementById('tc-launch'); if (l) l.remove();
     const p = document.createElement('div'); p.id = 'tc-panel';
-    p.innerHTML = `<div id="tc-hdr">${ICON}<b>Track Cannon</b><span class="tc-status meta">matching…</span>
-        <button class="tc-icon" data-act="close" title="close">✕</button></div>
-      <div id="tc-body"></div>
-      <div id="tc-foot"><span class="sp"></span>${FOOTER_FLOAT}</div>`;
+    p.innerHTML = `<div id="tc-hdr">${ICON}<b>Track Cannon</b><span class="sp"></span>${BAR}<button class="tc-icon" data-act="close" title="close">✕</button></div>
+      <div id="tc-body"></div>`;
     document.body.appendChild(p);
     const tbody = mountTable(p.querySelector('#tc-body'));
-    ACTIVE = { mode: 'float', tbody, statusEl: p.querySelector('.tc-status') };
+    ACTIVE = { mode: 'float', tbody, statusEl: p.querySelector('.tc-hstatus') };
     const hdr = p.querySelector('#tc-hdr');
     hdr.onmousedown = e => { if (e.target.closest('button')) return; const r = p.getBoundingClientRect(); const ox = e.clientX - r.left, oy = e.clientY - r.top; p.style.right = 'auto'; const mm = ev => { p.style.left = Math.max(0, ev.clientX - ox) + 'px'; p.style.top = Math.max(0, ev.clientY - oy) + 'px'; }; const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }; document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu); };
     bindActions(p);
@@ -683,8 +721,8 @@
   /* ── in-page replacement (the only mode) ── */
   let _showOriginal = false;
   function nativeTrackTables() { return [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
-  // the native tracklist = its tables + the #tracklist-tools button row; hide/show them together
-  function nativeBits() { const els = nativeTrackTables(); const tools = document.getElementById('tracklist-tools'); if (tools) els.push(tools); return els; }
+  // the native tracklist = its tables + the #tracklist-tools button row + the Guess case fieldset; hide/show together
+  function nativeBits() { const els = nativeTrackTables(); const tools = document.getElementById('tracklist-tools'); if (tools) els.push(tools); els.push(...document.querySelectorAll('fieldset.guesscase, .guesscase')); return els; }
   function setNativeHidden(hidden) { nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; }); }
   function syncNative() { setNativeHidden(!_showOriginal); }
   // watch the live tracklist so Track parser (or any native structural change) refreshes our table
@@ -702,10 +740,10 @@
     const tbl = nativeTrackTables()[0];
     if (tbl && tbl.parentElement) tbl.parentElement.insertBefore(wrap, tbl);
     else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
-    wrap.innerHTML = `<div id="tc-bar">${ICON}<b>Track Cannon</b><span class="tc-status">matching…</span>${FOOTER_MIRROR}</div><div class="tc-mount"></div>`;
+    wrap.innerHTML = `<div id="tc-bar">${ICON}<b>Track Cannon</b><span class="sp"></span>${BAR}</div><div class="tc-mount"></div>`;
     syncNative();
     const tbody = mountTable(wrap.querySelector('.tc-mount'));
-    ACTIVE = { mode: 'mirror', tbody, statusEl: wrap.querySelector('.tc-status') };
+    ACTIVE = { mode: 'mirror', tbody, statusEl: wrap.querySelector('.tc-hstatus') };
     bindActions(wrap); subscribeTracks();
     await loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
