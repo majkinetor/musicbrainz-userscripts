@@ -47,14 +47,16 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 4. Multi-artist credits stack as lines within the same track row. On row hover, the track actions
    **↺** (revert the whole track — artists, title, #, length) and **✕** (remove the track) appear
    over the badge column. **Revert all** resets the whole release to its page-load state. The
-   **Artist** column header holds an *apply-to* dropdown — **all matching tracks** / **this track
-   only** — controlling whether a pick also copies to every track credited to the same text; when it
+   **Artist** column header holds an *apply-to* dropdown — **all matching tracks** / **single
+   track** — controlling whether a pick also copies to every track credited to the same text; when it
    does, the changed boxes **flash**, and (when more than one track changed) stay **outlined** until
    your next pick, so you can review every place it landed.
 5. Title tools live in the **Tools** menu (using MusicBrainz's own functions): a title that differs
-   from its **Guess Case** form is highlighted amber with an **Aa** button to fix that one; **Guess
-   case** fixes all titles (with language / *Keep uppercased* / *Uppercase Roman numerals* options
-   inline); **Guess feat.** pulls `feat. X` out of titles into artist credits (then re-matches).
+   from its **Guess Case** form is highlighted amber with an **Aa** button to fix that one — like
+   MB's integrated guess case, **hovering** the button previews the guessed title (green) in place,
+   **leaving** restores it, and **clicking** applies it; **Guess case** fixes all titles (with
+   language / *Keep uppercased* / *Uppercase Roman numerals* options inline); **Guess feat.** pulls
+   `feat. X` out of titles into artist credits (then re-matches).
 7. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
    tab; save it there, then re-open the field to match it.
 

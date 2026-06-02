@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.154903
+// @version      2026.6.2.160142
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -307,6 +307,7 @@
     .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:#bbb;background:#fff}
     .tc-mirror .t-wrap{display:flex;align-items:center;gap:3px}.tc-mirror .t-wrap input.t-title{flex:1;min-width:0;width:auto}
     .tc-mirror input.t-title.diff{background:#fff6da;border-color:#e7ce8a;border-radius:3px}
+    .tc-mirror input.t-title.gcpreview{background:#e3f6e3;border-color:#86c686;border-radius:3px}
     .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px}.tc-mirror .t-gc:hover{background:#ffefb8}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
     /* alternate row colors / grid (toggled in ⚙) */
@@ -375,6 +376,7 @@
     .tc-toolopts .tc-gco,.tc-toolopts .tc-sro{display:flex;align-items:center;gap:8px}
     .tc-toolopts label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}
     .tc-toolopts input[type=text]{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:120px}
+    .tc-toolopts input[type=text]::placeholder{color:#c2c2c2}
     .tc-toolopts select{font:12px Arial;padding:1px}
     .tc-split{display:inline-flex}
     .tc-split .tc-btn{border-radius:3px 0 0 3px}
@@ -441,7 +443,7 @@
     return t;
   }
   // the artist-selection-mode dropdown now lives in the Artist column header (right-aligned)
-  const AM_SELECT = `<select class="tc-applymode tc-hdr-am" title="when you pick an artist, apply it to…"><option value="all">all matching tracks</option><option value="single">this track only</option></select>`;
+  const AM_SELECT = `<select class="tc-applymode tc-hdr-am" title="when you pick an artist, apply it to…"><option value="all">all matching tracks</option><option value="single">single track</option></select>`;
   // table only (toolbar moved into the top bar); returns the tbody. Shared by both modes.
   function mountTable(container) {
     container.innerHTML = '';
@@ -637,7 +639,10 @@
       if (diff) {
         tin.classList.add('diff'); tin.title = 'Guess case → ' + t.guessTitle;
         const gb = document.createElement('button'); gb.className = 't-gc'; gb.textContent = 'Aa'; gb.title = 'Guess case → ' + t.guessTitle;
-        gb.onclick = () => { applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); rerender(); };
+        // like MB's integrated guess case: preview on hover, restore on leave, apply on click
+        gb.onmouseenter = () => { tin.value = t.guessTitle; tin.classList.add('gcpreview'); };
+        gb.onmouseleave = () => { tin.value = t.title; tin.classList.remove('gcpreview'); };
+        gb.onclick = () => { tin.classList.remove('gcpreview'); applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); rerender(); };
         tr.querySelector('.t-wrap').appendChild(gb);
       }
       tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; enterBlurs(tin);
@@ -814,7 +819,7 @@
   /* ── entry points ── */
   function ensureLauncher() {
     if (document.getElementById('tc-launch')) return;
-    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.innerHTML = ICON + ' Track Cannon'; b.title = 'toggle Track Cannon';
+    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.innerHTML = ICON; b.title = 'toggle Track Cannon';
     b.onclick = () => (document.getElementById('tc-mirror-wrap') ? hideMirror() : showMirror()); document.body.appendChild(b);
   }
   function tracklistVisible() { const p = document.getElementById('tracklist'); return !!(p && p.offsetParent !== null); }   // the Tracklist tab panel is shown

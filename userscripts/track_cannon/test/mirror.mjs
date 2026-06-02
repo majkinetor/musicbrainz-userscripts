@@ -75,9 +75,15 @@ async function main() {
     await new Promise(r => setTimeout(r, 100));
     const t2 = sel().querySelector('.t-title'); const hasDiff = t2.classList.contains('diff');
     const btn = sel().querySelector('.t-gc'); const guessed = btn ? btn.title.replace('Guess case → ', '') : null;
+    // MB-style: hover previews the guessed title (highlighted), leave restores it, click applies
+    const messy = sel().querySelector('.t-title').value;
+    btn.dispatchEvent(new Event('mouseenter')); await new Promise(r => setTimeout(r, 30));
+    const hoverVal = sel().querySelector('.t-title').value; const hoverHi = sel().querySelector('.t-title').classList.contains('gcpreview');
+    btn.dispatchEvent(new Event('mouseleave')); await new Promise(r => setTimeout(r, 30));
+    const leaveVal = sel().querySelector('.t-title').value; const leaveHi = sel().querySelector('.t-title').classList.contains('gcpreview');
     if (btn) btn.click(); await new Promise(r => setTimeout(r, 100));
     const after = sel().querySelector('.t-title').value; const stillDiff = sel().querySelector('.t-title').classList.contains('diff');
-    return { hasDiff, guessed, after, stillDiff };
+    return { hasDiff, guessed, after, stillDiff, hoverPreview: hoverVal === guessed && hoverHi, leaveRestores: leaveVal === messy && !leaveHi };
   });
 
   // editable # and length write through to the model
@@ -169,7 +175,7 @@ async function main() {
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
-  log('guess case — diff:', gc.hasDiff, '· guessed:', JSON.stringify(gc.guessed), '· applied:', JSON.stringify(gc.after), '· stillDiff:', gc.stillDiff);
+  log('guess case — diff:', gc.hasDiff, '· guessed:', JSON.stringify(gc.guessed), '· hover-preview:', gc.hoverPreview, '· leave-restores:', gc.leaveRestores, '· applied:', JSON.stringify(gc.after), '· stillDiff:', gc.stillDiff);
   log('match button — before:', matchBtn.before, '· during pass:', matchBtn.during, '· after:', matchBtn.after);
   log('tools — apply-mode in header:', tools.amInHeader, '(not in bar:', !tools.amInBar + ')', '· S&R label:', JSON.stringify(tools.toolLabel), 'live-changed:', tools.srChanged, 'status:', JSON.stringify(tools.srStatus), 'restored:', tools.restoredOk, '· Guess-case label:', JSON.stringify(tools.gcLabel), 'opts:', JSON.stringify(tools.gcOpts));
   log('edit # → "A1", length → "1:23" — model now:', JSON.stringify(fields));
