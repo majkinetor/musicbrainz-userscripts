@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.151324
+// @version      2026.6.2.154018
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -46,7 +46,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { try { return Object.assign({ colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true }; } }
+  function loadSettings() { try { return Object.assign({ colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, lastTool: '' }, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, lastTool: '' }; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -365,6 +365,13 @@
     #tc-bar b{color:#563b8f}#tc-bar .sp{flex:1}
     .tc-tablewrap{overflow-x:auto}
     .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:#999;margin-left:12px;font-size:11px}
+    .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:#444;margin-right:14px;max-width:140px}
+    .tc-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .tc-toolopts{display:flex;align-items:center;gap:6px}
+    .tc-toolopts .tc-gco,.tc-toolopts .tc-sro{display:flex;align-items:center;gap:8px}
+    .tc-toolopts label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}
+    .tc-toolopts input[type=text]{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:120px}
+    .tc-toolopts select{font:12px Arial;padding:1px}
     .tc-split{display:inline-flex}
     .tc-split .tc-btn{border-radius:3px 0 0 3px}
     .tc-split .tc-caret{border-radius:0 3px 3px 0;border-left:1px solid #4f33a3;padding:4px 7px}
@@ -422,19 +429,22 @@
   function buildTable() {
     const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '');
     t.innerHTML = `<colgroup>${COLS.map(c => `<col style="width:${colW(c.k, c.w)}px">`).join('')}</colgroup>` +
-      `<thead><tr>${COLS.map(c => `<th>${c.label}${c.k === 'art' ? '<span class="tc-hstatus"></span>' : ''}<span class="tc-resizer"></span></th>`).join('')}</tr></thead><tbody></tbody>`;
+      `<thead><tr>${COLS.map(c => `<th>${c.label}${c.k === 'art' ? '<span class="tc-hstatus"></span>' + AM_SELECT : ''}<span class="tc-resizer"></span></th>`).join('')}</tr></thead><tbody></tbody>`;
     return t;
   }
-  // toolbar (above the table) + table; returns the tbody. Shared by both modes.
+  // the artist-selection-mode dropdown now lives in the Artist column header (right-aligned)
+  const AM_SELECT = `<select class="tc-applymode tc-hdr-am" title="when you pick an artist, apply it to…"><option value="all">all matching tracks</option><option value="single">this track only</option></select>`;
+  // table only (toolbar moved into the top bar); returns the tbody. Shared by both modes.
   function mountTable(container) {
     container.innerHTML = '';
-    const bar = document.createElement('div'); bar.className = 'tc-toolbar';
-    bar.innerHTML = `<span>Artist selection applies to</span><select class="tc-applymode"><option value="all">all matching tracks</option><option value="single">this track only</option></select>`;
-    const am = bar.querySelector('.tc-applymode'); am.value = SETTINGS.applyMode || 'all';
-    am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); Log.info('applyMode =', am.value); };
-    container.appendChild(bar);
     const wrap = document.createElement('div'); wrap.className = 'tc-tablewrap'; container.appendChild(wrap);
     const table = buildTable(); wrap.appendChild(table); wireResizers(table);
+    const am = table.querySelector('.tc-applymode');
+    if (am) {
+      am.value = SETTINGS.applyMode || 'all';
+      am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); Log.info('applyMode =', am.value); };
+      ['mousedown', 'mousemove', 'click'].forEach(ev => am.addEventListener(ev, e => e.stopPropagation()));   // don't let the column resizer hijack it
+    }
     return table.querySelector('tbody');
   }
   // resize a column by dragging near its right border from ANY row (or the header)
@@ -660,49 +670,91 @@
     else if (a === 'swap') swapTitlesArtists();
     else if (a === 'resetnum') resetNumbersAll();
     else if (a === 'parser') openParser();
-    else if (a === 'sr') openSearchReplace();
   }
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
-      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'gear') openSettings(b); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
+      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'gear') openSettings(b); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
     });
   }
-  // the Match ▾ dropdown menu
+
+  /* ── the Tools split-button: last-used tool is the button's label + default action; ▾ picks another ── */
   const MENU = [{ act: 'parser', label: 'Track parser' }, { act: 'swap', label: 'Swap' }, { act: 'resetnum', label: 'Reset #' }, { sep: 1 }, { act: 'guessfeat', label: 'Guess feat.' }, { act: 'guesscase', label: 'Guess case' }, { act: 'sr', label: 'Search and Replace' }];
+  const LABELS = Object.fromEntries(MENU.filter(m => !m.sep).map(m => [m.act, m.label]));
+  const OPTLESS = new Set(['parser', 'swap', 'resetnum', 'guessfeat']);   // these run on pick; the rest show inline options first
+  function toolBtnEl() { return document.querySelector('#tc-bar [data-act="tool"], #tc-hdr [data-act="tool"]'); }
+  function updateToolBtn() { const b = toolBtnEl(); if (b) b.textContent = SETTINGS.lastTool ? (LABELS[SETTINGS.lastTool] || 'Tools') : 'Tools'; }
+  function runActiveTool() {
+    const act = SETTINGS.lastTool;
+    if (!act) return openToolsMenu(toolBtnEl());
+    if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'); if (f) f.focus(); return; }
+    runAction(act);
+  }
+  function pickTool(act) {
+    SETTINGS.lastTool = act; saveSettings(); updateToolBtn(); renderToolOpts();
+    if (OPTLESS.has(act)) runAction(act);   // option-less tools fire immediately
+    else if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'); if (f) f.focus(); }
+  }
   function openToolsMenu(anchor) {
     let m = document.getElementById('tc-menu'); if (m) { m.remove(); return; }
     m = document.createElement('div'); m.id = 'tc-menu'; m.className = 'tc-menu';
     m.innerHTML = MENU.map(it => it.sep ? '<div class="tc-sep"></div>' : `<div class="tc-mi" data-act="${it.act}">${it.label}</div>`).join('');
     document.body.appendChild(m);
     const r = anchor.getBoundingClientRect(); m.style.left = Math.min(r.left, window.innerWidth - 190) + 'px'; m.style.top = (r.bottom + 4) + 'px';
-    m.querySelectorAll('.tc-mi').forEach(el => el.onclick = () => { m.remove(); runAction(el.dataset.act); });
+    m.querySelectorAll('.tc-mi').forEach(el => el.onclick = () => { m.remove(); pickTool(el.dataset.act); });
     const off = e => { if (!m.contains(e.target) && e.target !== anchor) { m.remove(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
-  // search & replace in track titles, flashing the ones that change
+  // render the active tool's inline options to the right of the Tools button (if it has any)
+  function renderToolOpts() {
+    const host = document.querySelector('.tc-toolopts'); if (!host) return; host.innerHTML = '';
+    const act = SETTINGS.lastTool;
+    if (act === 'guesscase') {
+      const g = gcNative(); const box = document.createElement('span'); box.className = 'tc-gco';
+      if (g && g.lang) { const sel = g.lang.cloneNode(true); sel.className = 'tc-gc-lang'; sel.value = g.lang.value; sel.title = 'Guess Case language'; sel.onchange = () => { setNative(g.lang, sel.value); recomputeGuesses(); }; box.appendChild(sel); }
+      const mkChk = (text, el) => { const l = document.createElement('label'); const c = document.createElement('input'); c.type = 'checkbox'; c.checked = el ? el.checked : false; c.disabled = !el; c.onchange = () => { setNative(el, c.checked); recomputeGuesses(); }; l.append(c, document.createTextNode(' ' + text)); return l; };
+      if (g) { box.appendChild(mkChk('Keep uppercased', g.keepUC)); box.appendChild(mkChk('Uppercase Roman numerals', g.roman)); }
+      host.appendChild(box);
+    } else if (act === 'sr') {
+      srActivate(); const box = document.createElement('span'); box.className = 'tc-sro';
+      const find = document.createElement('input'); find.type = 'text'; find.className = 'tc-sr-find'; find.placeholder = 'search';
+      const rep = document.createElement('input'); rep.type = 'text'; rep.className = 'tc-sr-rep'; rep.placeholder = 'replace';
+      const run = () => srLive(find.value, rep.value, true);
+      find.oninput = rep.oninput = run;
+      box.append(find, rep); host.appendChild(box);
+    }
+  }
+  function initTools() { updateToolBtn(); renderToolOpts(); }
+
+  // proxy MusicBrainz's own (hidden) Guess-case options so they actually affect its guessing
+  function gcNative() {
+    const fs = document.querySelector('fieldset.guesscase, .guesscase'); if (!fs) return null;
+    const lang = fs.querySelector('select'); const checks = [...fs.querySelectorAll('input[type=checkbox]')];
+    const txt = c => ((c.closest('label') || {}).textContent || '').toLowerCase();
+    const keepUC = checks.find(c => txt(c).includes('keep') && txt(c).includes('uppercas')) || checks.find(c => txt(c).includes('keep')) || checks[0] || null;
+    const roman = checks.find(c => txt(c).includes('roman')) || checks[1] || null;
+    return { lang, keepUC, roman };
+  }
+  function setNative(el, val) { if (!el) return; if (el.tagName === 'SELECT') el.value = val; else el.checked = val; el.dispatchEvent(new Event('change', { bubbles: true })); }
+  function recomputeGuesses() { if (!MODEL) return; MODEL.tracks.forEach(t => { t.guessTitle = guessTitleStr(t); }); rerender(); }
+
+  // search & replace in titles — real-time, recomputed from a snapshot each keystroke (no apply, non-compounding)
   function srRe(find, ci, g) { const e = find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); return new RegExp(e, (g ? 'g' : '') + (ci ? 'i' : '')); }
-  function searchReplaceTitles(find, replace, ci) {
-    if (!MODEL || !find) return 0; let n = 0;
-    MODEL.tracks.forEach(t => { const nt = t.title.replace(srRe(find, ci, true), replace); if (nt !== t.title) { setTitle(t, nt); t.title = nt; t.guessTitle = guessTitleStr(t); t._srFlash = true; n++; } });
-    rerender(); updateStatus(`${n} title${n !== 1 ? 's' : ''} replaced`); Log.info('search & replace →', n, 'titles'); return n;
+  let _srSnap = null;
+  function srActivate() { _srSnap = MODEL ? MODEL.tracks.map(t => t.title) : []; }
+  function srLive(find, replace, ci) {
+    if (!MODEL) return; if (!_srSnap || _srSnap.length !== MODEL.tracks.length) srActivate(); let changed = 0;
+    MODEL.tracks.forEach((t, i) => {
+      const base = _srSnap[i] != null ? _srSnap[i] : t.title;
+      const nt = find ? base.replace(srRe(find, ci, true), replace) : base;
+      if (nt !== base) changed++;
+      if (nt !== t.title) { setTitle(t, nt); t.title = nt; t.guessTitle = guessTitleStr(t); }
+      t._srFlash = !!(find && nt !== base);
+    });
+    rerender(); updateStatus(changed ? `${changed} title${changed !== 1 ? 's' : ''} replaced` : '');
   }
-  function openSearchReplace() {
-    let d = document.getElementById('tc-sr'); if (d) { d.remove(); return; }
-    d = document.createElement('div'); d.id = 'tc-sr'; d.className = 'tc-settings';
-    d.innerHTML = `<h4>${ICON} Search &amp; replace — titles</h4>
-      <label>Find <input id="tc-sr-find" style="flex:1"></label>
-      <label>Replace <input id="tc-sr-rep" style="flex:1"></label>
-      <label class="opt"><input type="checkbox" id="tc-sr-ci" checked> <span>case-insensitive</span></label>
-      <div class="srrow"><span id="tc-sr-count"></span><button class="tc-btn" id="tc-sr-x">Close</button><button class="tc-btn primary" id="tc-sr-go">Replace</button></div>`;
-    document.body.appendChild(d); d.style.left = '60px'; d.style.top = '90px';
-    const find = d.querySelector('#tc-sr-find'), rep = d.querySelector('#tc-sr-rep'), ci = d.querySelector('#tc-sr-ci'), cnt = d.querySelector('#tc-sr-count');
-    const recount = () => { const f = find.value; cnt.textContent = (f && MODEL) ? MODEL.tracks.filter(t => srRe(f, ci.checked, false).test(t.title)).length + ' matching' : ''; };
-    find.oninput = recount; ci.onchange = recount; setTimeout(() => find.focus(), 0);
-    [find, rep].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); d.querySelector('#tc-sr-go').click(); } }));
-    d.querySelector('#tc-sr-go').onclick = () => { searchReplaceTitles(find.value, rep.value, ci.checked); recount(); };
-    d.querySelector('#tc-sr-x').onclick = () => d.remove();
-  }
-  const BAR = `<div class="tc-split"><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">Match</button><button class="tc-btn primary tc-caret" data-act="menu" title="more tools">▾</button></div>`
+
+  const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
+    + `<span class="sp"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">Match</button>`
     + `<button class="tc-btn" data-act="revert">Revert all</button><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
@@ -716,7 +768,7 @@
     ACTIVE = { mode: 'float', tbody, statusEl: p.querySelector('.tc-hstatus') };
     const hdr = p.querySelector('#tc-hdr');
     hdr.onmousedown = e => { if (e.target.closest('button')) return; const r = p.getBoundingClientRect(); const ox = e.clientX - r.left, oy = e.clientY - r.top; p.style.right = 'auto'; const mm = ev => { p.style.left = Math.max(0, ev.clientX - ox) + 'px'; p.style.top = Math.max(0, ev.clientY - oy) + 'px'; }; const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }; document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu); };
-    bindActions(p);
+    bindActions(p); initTools();
     loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
 
@@ -746,7 +798,7 @@
     syncNative();
     const tbody = mountTable(wrap.querySelector('.tc-mount'));
     ACTIVE = { mode: 'mirror', tbody, statusEl: wrap.querySelector('.tc-hstatus') };
-    bindActions(wrap); subscribeTracks();
+    bindActions(wrap); initTools(); subscribeTracks();
     await loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
   function hideMirror() { const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); setNativeHidden(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }

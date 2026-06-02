@@ -47,14 +47,14 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 4. Multi-artist credits stack as lines within the same track row. On row hover, the track actions
    **↺** (revert the whole track — artists, title, #, length) and **✕** (remove the track) appear
    over the badge column. **Revert all** resets the whole release to its page-load state. The
-   toolbar — *When I pick an artist → apply to **all matching tracks** / **this track only*** —
-   controls whether a pick also copies to every track credited to the same text; when it does, the
-   changed boxes **flash**, and (when more than one track changed) stay **outlined** until your next
-   pick, so you can review every place it landed.
-5. Title tools (toolbar, using MusicBrainz's own functions): a title that differs from its
-   **Guess Case** form is highlighted amber with an **Aa** button to fix that one; **Guess case**
-   fixes all titles; **Guess feat.** pulls `feat. X` out of titles into artist credits (then
-   re-matches).
+   **Artist** column header holds an *apply-to* dropdown — **all matching tracks** / **this track
+   only** — controlling whether a pick also copies to every track credited to the same text; when it
+   does, the changed boxes **flash**, and (when more than one track changed) stay **outlined** until
+   your next pick, so you can review every place it landed.
+5. Title tools live in the **Tools** menu (using MusicBrainz's own functions): a title that differs
+   from its **Guess Case** form is highlighted amber with an **Aa** button to fix that one; **Guess
+   case** fixes all titles (with language / *Keep uppercased* / *Uppercase Roman numerals* options
+   inline); **Guess feat.** pulls `feat. X` out of titles into artist credits (then re-matches).
 7. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
    tab; save it there, then re-open the field to match it.
 
@@ -77,10 +77,15 @@ Every structural action drives MB's real model — **reorder** (`moveTrackUp/Dow
 *Add release* button submits as usual. **Revert all** restores every track to its page-load state;
 per-track **↺** (on hover) does one.
 
-The toolbar is a **Match ▾** split-button: click **Match** to search MB for the unmatched artists;
-the **▾** opens a tools menu — **Track parser** · **Swap** (titles ↔ artists) · **Reset #** — and —
-**Guess feat.** · **Guess case** · **Search and Replace** (find/replace in titles; changed titles
-flash). Track parser's changes are picked up automatically (the table watches the live tracklist).
+The toolbar splits left/right. On the **left** is a **Tools** split-button: the **▾** picks a tool —
+**Track parser** · **Swap** (titles ↔ artists) · **Reset #** · **Guess feat.** · **Guess case** ·
+**Search and Replace** — and the *last tool you used* becomes the button's label and its default
+action (click it to run that tool again). Option-less tools fire on pick; tools with options
+(**Guess case**, **Search and Replace**) reveal their controls **inline to the right** of the button.
+Search & Replace runs in **real time** — type in *search* / *replace* and titles update live (cleared
+*search* restores them); no apply step. On the **right** sit **Match** (search MB for the unmatched
+artists), **Revert all** and **⚙**. Track parser's changes are picked up automatically (the table
+watches the live tracklist).
 
 Track Cannon only fills the in-page editor. **You** review and press MusicBrainz's own
 *Add release* / *Enter edit* button — nothing is submitted on your behalf.

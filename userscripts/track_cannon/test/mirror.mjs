@@ -92,6 +92,34 @@ async function main() {
     return { number: String(u(ko().number)), length: u(ko().formattedLength) };
   });
 
+  // Tools split-button: apply-mode moved into the Artist header; pick a tool → label + inline options;
+  // Search & Replace is real-time (no apply); guess-case options proxy MB's hidden settings.
+  const tools = await page.evaluate(async () => {
+    const pause = () => new Promise(r => setTimeout(r, 120));
+    const bar = document.querySelector('#tc-bar');
+    const amInHeader = !!document.querySelector('#tc-mirror-wrap .tc-mirror thead .tc-applymode');
+    const amInBar = !!bar.querySelector('.tc-applymode');
+    const pick = async label => { bar.querySelector('[data-act="menu"]').click(); await pause(); const mi = [...document.querySelectorAll('#tc-menu .tc-mi')].find(e => e.textContent === label); mi.click(); await pause(); };
+    // Search & Replace → real-time
+    await pick('Search and Replace');
+    const toolLabel = bar.querySelector('[data-act="tool"]').textContent;
+    const find = bar.querySelector('.tc-toolopts .tc-sr-find'), rep = bar.querySelector('.tc-toolopts .tc-sr-rep');
+    const before0 = document.querySelector('#tc-mirror-wrap .tc-mirror tbody .t-title').value;
+    find.value = before0.slice(0, 4); find.dispatchEvent(new Event('input'));
+    rep.value = 'ZZ'; rep.dispatchEvent(new Event('input'));
+    await pause();
+    const afterRep = document.querySelector('#tc-mirror-wrap .tc-mirror tbody .t-title').value;
+    const srStatus = document.querySelector('#tc-mirror-wrap .tc-hstatus').textContent;
+    find.value = ''; find.dispatchEvent(new Event('input')); await pause();   // clear → restore from snapshot
+    const restored = document.querySelector('#tc-mirror-wrap .tc-mirror tbody .t-title').value;
+    // Guess case → inline options present
+    await pick('Guess case');
+    const gcLabel = bar.querySelector('[data-act="tool"]').textContent;
+    const gco = bar.querySelector('.tc-toolopts .tc-gco');
+    const gcOpts = gco ? { lang: !!gco.querySelector('select'), checks: gco.querySelectorAll('input[type=checkbox]').length } : null;
+    return { amInHeader, amInBar, toolLabel, srChanged: afterRep !== before0, srStatus, restored, restoredOk: restored === before0, gcLabel, gcOpts };
+  });
+
   // exercise model-backed ops via the actual UI buttons (which rebuild the mirror)
   const before = await titles3();
   await page.locator('.tc-mirror tbody tr').first().locator('.dn').click();   // move row 1 down
@@ -131,6 +159,7 @@ async function main() {
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
   log('guess case — diff:', gc.hasDiff, '· guessed:', JSON.stringify(gc.guessed), '· applied:', JSON.stringify(gc.after), '· stillDiff:', gc.stillDiff);
+  log('tools — apply-mode in header:', tools.amInHeader, '(not in bar:', !tools.amInBar + ')', '· S&R label:', JSON.stringify(tools.toolLabel), 'live-changed:', tools.srChanged, 'status:', JSON.stringify(tools.srStatus), 'restored:', tools.restoredOk, '· Guess-case label:', JSON.stringify(tools.gcLabel), 'opts:', JSON.stringify(tools.gcOpts));
   log('edit # → "A1", length → "1:23" — model now:', JSON.stringify(fields));
   log('split/merge on', JSON.stringify(split.title), '— credit names:', split.c0, '→ +slot', split.c1, '→ +pick', split.c2, '→ -slot', split.c3, '· credited-as auto-filled:', split.autofilled, '(' + JSON.stringify(split.credAfter) + ')');
   log('artifacts in', LOG_DIR);
