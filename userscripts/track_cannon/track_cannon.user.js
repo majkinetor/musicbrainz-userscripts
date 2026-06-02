@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.194230
+// @version      2026.6.2.195800
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -83,15 +83,22 @@
   function liveNames(track) { const ac = u(track.artistCredit) || {}; return u(ac.names) || []; }
 
   const ORIGINALS = new Map();
+  const snapTrack = t => ({
+    title: u(t.name) || '', number: u(t.number), length: u(t.formattedLength) || '',
+    names: liveNames(t).map(n => ({ artist: u(n.artist) || { name: u(n.name) || '' }, creditedAs: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' })),
+  });
   function snapshotOriginals() {
     ORIGINALS.clear();
-    mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => {
-      ORIGINALS.set(mi + ':' + ti, {
-        title: u(t.name) || '', number: u(t.number), length: u(t.formattedLength) || '',
-        names: liveNames(t).map(n => ({ artist: u(n.artist) || { name: u(n.name) || '' }, creditedAs: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' })),
-      });
-    }));
+    mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => ORIGINALS.set(mi + ':' + ti, snapTrack(t))));
     Log.info('snapshot of', ORIGINALS.size, 'original tracks');
+  }
+  // MB lazy-loads each medium's tracks asynchronously, so the startup snapshot misses mediums that
+  // hadn't loaded yet. Capture the page-load state of any track that appears later — before matching
+  // writes to it — so change-tracking (the ↺ button + the changed-row border) works on every medium.
+  function snapshotMissing() {
+    let added = 0;
+    mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => { const k = mi + ':' + ti; if (!ORIGINALS.has(k)) { ORIGINALS.set(k, snapTrack(t)); added++; } }));
+    if (added) Log.info('snapshot +', added, 'newly loaded original track(s) →', ORIGINALS.size, 'total');
   }
 
   function readTracklist() {
@@ -263,6 +270,7 @@
   function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high') { s.committed = true; any = true; } }); if (any) commitTrack(t); }
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
   function buildShell() {
+    snapshotMissing();   // capture page-load state for any lazily-loaded medium before matching touches it
     const tracks = readTracklist().map(t => {
       const slots = t.names.map(n => n.artistGid
         ? { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'set', entity: null, gid: n.artistGid, name: n.artistName, candidates: [], committed: true }
@@ -840,11 +848,11 @@
     const row = cell.closest('tr'); if (row) row.classList.toggle('tc-changed', changed);   // mark the row (left border)
   }
   // join phrase: editable text that grows right-to-left, plus a ▾ that opens the presets list
-  function joinControl(entry, slot) {
+  function joinControl(entry, slot, refreshBadges) {
     const wrap = document.createElement('span'); wrap.className = 'tc-joinwrap';
     const inp = document.createElement('input'); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.title = 'join phrase to the next artist (editable; ▾ for presets)';
     const fit = () => { inp.size = Math.max(2, inp.value.length || 2); }; fit();
-    inp.oninput = fit; inp.onchange = () => { slot.joinPhrase = inp.value; commitTrack(entry); }; enterBlurs(inp);
+    inp.oninput = fit; inp.onchange = () => { slot.joinPhrase = inp.value; commitTrack(entry); if (refreshBadges) refreshBadges(); }; enterBlurs(inp);
     const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases';
     let pop = null; const close = () => { if (pop) { pop.remove(); pop = null; } };
     arrow.onclick = () => {
@@ -852,7 +860,7 @@
       pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
       pop.innerHTML = JOIN_OPTIONS.map(o => `<div class="tc-acrow" data-v="${esc(o.value)}"><span class="nm">${esc(o.label)}</span><span class="cmt">"${esc(o.value)}"</span></div>`).join('');
       document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
-      [...pop.querySelectorAll('[data-v]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); inp.value = row.dataset.v; fit(); slot.joinPhrase = inp.value; commitTrack(entry); close(); }; });
+      [...pop.querySelectorAll('[data-v]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); inp.value = row.dataset.v; fit(); slot.joinPhrase = inp.value; commitTrack(entry); if (refreshBadges) refreshBadges(); close(); }; });
       const off = e => { if (pop && !pop.contains(e.target) && e.target !== arrow) { close(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
     };
     wrap.appendChild(inp); wrap.appendChild(arrow);
@@ -924,6 +932,7 @@
         touched.forEach(commitTrack);
         if (touched.size) { Log.info('propagated credited-as', JSON.stringify(newCred), '→', touched.size, 'track(s)'); rerender(); toast(`credited-as — also set on ${touched.size} other track${touched.size > 1 ? 's' : ''}`); }
       }
+      refreshBadges();   // a credited-as edit changes the track → update the ↺ button + changed-row border now
     }; wireRowNav(cred); line.appendChild(cred);
     const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
@@ -931,7 +940,7 @@
     const search = document.createElement('span'); search.className = 'tc-search';
     const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
     search.appendChild(inp);
-    if (idx < entry.slots.length - 1) search.appendChild(joinControl(entry, s));   // join lives inside the box, right side
+    if (idx < entry.slots.length - 1) search.appendChild(joinControl(entry, s, refreshBadges));   // join lives inside the box, right side
     adorn(search, s, inp); if (s._marked) search.classList.add('tc-marked'); if (s._flash) { search.classList.add('tc-flash'); delete s._flash; } line.appendChild(search);
     wireAutocomplete(inp, s, () => { adorn(search, s, inp); refreshBadges(); refreshStatus(); });
     // fixed-width actions area (keeps all search boxes the same width); both reveal on row hover

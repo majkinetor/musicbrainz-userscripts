@@ -376,7 +376,11 @@ async function main() {
     await new Promise(r => setTimeout(r, 120));
     const t2 = tc.model.tracks.find(x => x.mi + ':' + x.ti === tk);
     const after = { changed: tc.trackChanged(t2), hasRevert: !!row().querySelector('.trev'), marked: row().classList.contains('tc-changed') };
-    return { before, after };
+    // editing the credited-as override must re-flag the row INSTANTLY (no rerender) — the reported bug
+    const cred = row().querySelector('.tc-cred'); cred.value = 'Zzz Changed Credit'; cred.dispatchEvent(new Event('change', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 40));
+    const afterCred = { marked: row().classList.contains('tc-changed'), hasRevert: !!row().querySelector('.trev') };
+    return { before, after, afterCred };
   });
 
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
@@ -398,7 +402,8 @@ async function main() {
   log('edit # → "A1", length → "1:23" — model now:', JSON.stringify(fields));
   log('split/merge on', JSON.stringify(split.title), '— credit names:', split.c0, '→ +slot', split.c1, '→ +pick', split.c2, '→ -slot', split.c3, '· credited-as auto-filled:', split.autofilled, '(' + JSON.stringify(split.credAfter) + ')');
   log('changed-track marker — has ↺ + border when changed:', changed.before?.hasRevert, '/', changed.before?.marked,
-    '· after revert (no ↺/border/change):', !!(changed.after && !changed.after.hasRevert && !changed.after.marked && !changed.after.changed));
+    '· after revert (no ↺/border/change):', !!(changed.after && !changed.after.hasRevert && !changed.after.marked && !changed.after.changed),
+    '· credited-as edit re-flags instantly:', !!(changed.afterCred && changed.afterCred.marked && changed.afterCred.hasRevert));
   log('artifacts in', LOG_DIR);
   if (!HEADED) await ctx.close();
 }
