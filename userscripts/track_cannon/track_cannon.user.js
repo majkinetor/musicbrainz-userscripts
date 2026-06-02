@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.003139
+// @version      2026.6.2.082344
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -181,7 +181,8 @@
   function removeTrack(entry) { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); Log.info('removed track', entry.number); }
   function moveTrack(entry, dir) { const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); }
   function setTitle(entry, v) { koTrack(entry.mi, entry.ti).name(v); }
-  function setLength(entry, v) { const ed = getEditor(); try { const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) koTrack(entry.mi, entry.ti).length(ms); } catch (e) { Log.warn('length parse failed', v, e.message); } }
+  function setNumber(entry, v) { try { koTrack(entry.mi, entry.ti).number(v); } catch (e) { Log.warn('set number failed', v, e.message); } }
+  function setLength(entry, v) { const t = koTrack(entry.mi, entry.ti); try { if (typeof t.formattedLength === 'function') t.formattedLength(v); else { const ed = getEditor(); const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) t.length(ms); } } catch (e) { Log.warn('set length failed', v, e.message); } }
 
   /* ── create artist ── */
   function guessSortName(name) {
@@ -217,7 +218,7 @@
   ];
 
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
-  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 26, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 360, label: 'Artist' }, { k: 'len', w: 56, label: 'Length' }, { k: 'x', w: 26, label: '' }];
+  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 360, label: 'Artist' }, { k: 'len', w: 56, label: 'Length' }, { k: 'x', w: 26, label: '' }];
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
@@ -238,11 +239,11 @@
     .tc-mirror th{position:relative;background:#e8e8e8;border-bottom:2px solid #ccc;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
     .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:3px 6px;vertical-align:middle;overflow:hidden}
     .tc-mirror .tc-resizer{position:absolute;right:0;top:0;height:100%;width:7px;cursor:col-resize}
-    .tc-mirror .c-num{text-align:right;color:#888;font-variant-numeric:tabular-nums}
+    .tc-mirror .c-num{color:#888;font-variant-numeric:tabular-nums}
     .tc-mirror .c-mv{white-space:nowrap;text-align:center}
-    .tc-mirror input.t-title,.tc-mirror input.t-len{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:3px 2px}
-    .tc-mirror input.t-len{text-align:right}
-    .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus{border-color:#bbb;background:#fff}
+    .tc-mirror input.t-title,.tc-mirror input.t-len,.tc-mirror input.t-num{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:3px 2px}
+    .tc-mirror input.t-len,.tc-mirror input.t-num{text-align:right;color:#666}
+    .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:#bbb;background:#fff}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
     .tc-mirror .rm{cursor:pointer;color:#c0392b;font-weight:bold;border:none;background:none;font-size:15px}
     /* one artist = two aligned rows: a credited-as title, then the field line */
@@ -463,12 +464,13 @@
       t.slots.forEach(s => { if (s.status === 'set' || s.committed) committed++; else unresolved++; });
       const tr = document.createElement('tr'); tr.style.background = COLORS[rowConfidence(t)] || '#fff'; tr.dataset.tk = t.mi + ':' + t.ti;
       tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span></td>
-        <td class="c-num">${t.number}</td>
+        <td class="c-num"><input class="t-num" value="${esc(t.number)}" title="track number"></td>
         <td class="c-title"><input class="t-title" value="${esc(t.title)}"></td>
         <td class="c-art"></td>
         <td class="c-len"><input class="t-len" value="${esc(t.length)}"></td>
         <td class="c-x"><button class="rm" title="remove track">✕</button></td>`;
       const art = tr.querySelector('.c-art'); t.slots.forEach((s, si) => art.appendChild(slotEl(t, s, si)));
+      tr.querySelector('.t-num').onchange = e => setNumber(t, e.target.value);
       tr.querySelector('.t-title').onchange = e => setTitle(t, e.target.value);
       tr.querySelector('.t-len').onchange = e => setLength(t, e.target.value);
       tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };

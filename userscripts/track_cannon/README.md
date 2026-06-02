@@ -37,7 +37,8 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    page; right after the name is the **join-phrase** dropdown to the next artist (`&`, `feat.`, …);
    then **↺** (revert this field) and **✕** (remove this artist / merge). Creating a new artist is
    the **＋ Create …** row at the bottom of the search dropdown. **＋** on the last artist splits
-   the credit by adding another slot.
+   the credit by adding another slot. The **#**, **Title** and **Length** cells are editable too
+   (`#` accepts vinyl-style values like `A1`); all write to the editor immediately.
 4. **Revert all** restores the whole release to its page-load state; **↺** does one field.
    The toolbar — *When I pick an artist → apply to **all matching tracks** / **this track only*** —
    controls whether picking an artist also copies it to every other track credited to the same text.

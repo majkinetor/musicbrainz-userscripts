@@ -61,6 +61,18 @@ async function main() {
   // no apply phase — confident matches auto-commit on load; verify they're written to the model
   const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
 
+  // editable # and length write through to the model
+  const fields = await page.evaluate(async () => {
+    const tc = window.__trackCannon, u = v => (typeof v === 'function' ? v() : v);
+    const t = tc.model.tracks[0];
+    const ko = () => u(u(u(window.MB.releaseEditor.rootField.release).mediums)[t.mi].tracks)[t.ti];
+    const row = document.querySelector(`tr[data-tk="${t.mi}:${t.ti}"]`);
+    const ni = row.querySelector('.t-num'); ni.value = 'A1'; ni.dispatchEvent(new Event('change'));
+    const li = row.querySelector('.t-len'); li.value = '1:23'; li.dispatchEvent(new Event('change'));
+    await new Promise(r => setTimeout(r, 120));
+    return { number: String(u(ko().number)), length: u(ko().formattedLength) };
+  });
+
   // exercise model-backed ops via the actual UI buttons (which rebuild the mirror)
   const before = await titles3();
   await page.locator('.tc-mirror tbody tr').first().locator('.dn').click();   // move row 1 down
@@ -98,6 +110,7 @@ async function main() {
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
+  log('edit # → "A1", length → "1:23" — model now:', JSON.stringify(fields));
   log('split/merge on', JSON.stringify(split.title), '— credit names:', split.c0, '→ +slot', split.c1, '→ +pick', split.c2, '→ -slot', split.c3, '· credited-as auto-filled:', split.autofilled, '(' + JSON.stringify(split.credAfter) + ')');
   log('artifacts in', LOG_DIR);
   if (!HEADED) await ctx.close();
