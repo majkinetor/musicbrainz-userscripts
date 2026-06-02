@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.131345
+// @version      2026.6.2.133405
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -387,16 +387,20 @@
     const table = buildTable(); wrap.appendChild(table); wireResizers(table);
     return table.querySelector('tbody');
   }
+  // resize a column by dragging near its right border from ANY row (or the header)
   function wireResizers(table) {
     const cols = [...table.querySelectorAll('col')];
-    [...table.querySelectorAll('th .tc-resizer')].forEach((rz, i) => {
-      rz.onmousedown = e => {
-        e.preventDefault(); e.stopPropagation();
-        const col = cols[i], startX = e.clientX, startW = col.offsetWidth || parseInt(col.style.width) || 100;
-        const mm = ev => { col.style.width = Math.max(36, startW + ev.clientX - startX) + 'px'; };
-        const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); SETTINGS.colWidths = SETTINGS.colWidths || {}; SETTINGS.colWidths[COLS[i].k] = parseInt(col.style.width); saveSettings(); };
-        document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
-      };
+    const TOL = 5;
+    const borderIdx = clientX => { const ths = table.querySelectorAll('thead th'); for (let i = 0; i < ths.length - 1; i++) { if (Math.abs(ths[i].getBoundingClientRect().right - clientX) <= TOL) return i; } return -1; };
+    let dragging = false;
+    table.addEventListener('mousemove', e => { if (!dragging) table.style.cursor = borderIdx(e.clientX) >= 0 ? 'col-resize' : ''; });
+    table.addEventListener('mousedown', e => {
+      const i = borderIdx(e.clientX); if (i < 0) return;
+      e.preventDefault(); dragging = true;
+      const col = cols[i], startX = e.clientX, startW = col.offsetWidth || parseInt(col.style.width) || 100;
+      const mm = ev => { col.style.width = Math.max(36, startW + ev.clientX - startX) + 'px'; };
+      const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); dragging = false; SETTINGS.colWidths = SETTINGS.colWidths || {}; SETTINGS.colWidths[COLS[i].k] = parseInt(col.style.width); saveSettings(); };
+      document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
     });
   }
   // picking an artist writes through immediately; in "all" mode it also copies to every other
@@ -635,10 +639,10 @@
   /* ── in-page replacement (the only mode) ── */
   let _showOriginal = false;
   function nativeTrackTables() { return [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
-  function hideNative(hide) { nativeTrackTables().forEach(t => { t.style.display = hide ? 'none' : ''; }); }
-  function syncNative() { nativeTrackTables().forEach(t => { t.style.display = _showOriginal ? '' : 'none'; }); }
-  // hide the native tool buttons we replicate (Track parser stays — its dialog is what our button opens)
-  function hideNativeTools() { [...document.querySelectorAll('button, input[type=button]')].forEach(b => { if (b.closest('#tc-mirror-wrap') || b.closest('#tc-panel') || b.id === 'tc-btn' || b.id === 'tc-launch') return; if (/^(guess case|guess feat\. artists from track titles|swap track titles with artist credits|reset track numbers)$/i.test((b.textContent || b.value || '').trim())) b.style.display = 'none'; }); }
+  // the native tracklist = its tables + the #tracklist-tools button row; hide/show them together
+  function nativeBits() { const els = nativeTrackTables(); const tools = document.getElementById('tracklist-tools'); if (tools) els.push(tools); return els; }
+  function setNativeHidden(hidden) { nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; }); }
+  function syncNative() { setNativeHidden(!_showOriginal); }
   // watch the live tracklist so Track parser (or any native structural change) refreshes our table
   let _subscribed = false, _syncTimer = null;
   function scheduleSync() { clearTimeout(_syncTimer); _syncTimer = setTimeout(() => { if (document.getElementById('tc-mirror-wrap')) loadAndRender(); }, 400); }
@@ -649,49 +653,38 @@
   }
   async function showMirror() {
     style(); let wrap = document.getElementById('tc-mirror-wrap');
-    if (wrap) { syncNative(); hideNativeTools(); return; }
+    if (wrap) { syncNative(); return; }
     wrap = document.createElement('div'); wrap.id = 'tc-mirror-wrap';
     const tbl = nativeTrackTables()[0];
     if (tbl && tbl.parentElement) tbl.parentElement.insertBefore(wrap, tbl);
     else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
     wrap.innerHTML = `<div id="tc-bar">${ICON}<b>Track Cannon</b><span class="tc-status">matching…</span>${FOOTER_MIRROR}</div><div class="tc-mount"></div>`;
-    syncNative(); hideNativeTools();
+    syncNative();
     const tbody = mountTable(wrap.querySelector('.tc-mount'));
     ACTIVE = { mode: 'mirror', tbody, statusEl: wrap.querySelector('.tc-status') };
     bindActions(wrap); subscribeTracks();
     await loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
-  function hideMirror() { const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); hideNative(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
+  function hideMirror() { const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); setNativeHidden(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
 
   /* ── entry points ── */
-  function injectButton() {
-    if (document.getElementById('tc-btn')) return true;
-    const anchor = [...document.querySelectorAll('button, input[type=button]')].find(b => /track parser|reset track numbers/i.test(b.textContent || b.value || ''));
-    if (!anchor || !anchor.parentElement) return false;
-    style();
-    const btn = document.createElement('button'); btn.id = 'tc-btn'; btn.type = 'button'; btn.innerHTML = ICON + ' Track Cannon'; btn.style.cssText = 'margin-left:8px;font-weight:bold';
-    btn.onclick = () => (document.getElementById('tc-mirror-wrap') ? hideMirror() : showMirror());
-    anchor.parentElement.appendChild(btn);
-    Log.info('button injected next to tracklist tools');
-    return true;
-  }
   function ensureLauncher() {
-    if (document.getElementById('tc-btn') || document.getElementById('tc-launch')) return;
-    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.innerHTML = ICON + ' Track Cannon';
+    if (document.getElementById('tc-launch')) return;
+    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.innerHTML = ICON + ' Track Cannon'; b.title = 'toggle Track Cannon';
     b.onclick = () => (document.getElementById('tc-mirror-wrap') ? hideMirror() : showMirror()); document.body.appendChild(b);
   }
-  function tracklistVisible() { const b = [...document.querySelectorAll('button')].find(x => /track parser/i.test(x.textContent || '')); return !!(b && b.offsetParent !== null); }
+  function tracklistVisible() { const p = document.getElementById('tracklist'); return !!(p && p.offsetParent !== null); }   // the Tracklist tab panel is shown
   let _tlPrev = false, _tlRefreshed = false;
   function onEnterTracklist() {
-    injectButton(); hideNativeTools();
     if (!document.getElementById('tc-mirror-wrap')) showMirror();
     else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); }   // re-match once the tab is up (RG may have been set)
+    ensureLauncher();
   }
   function watchTracklist() {
     const tick = () => {
-      const vis = tracklistVisible(); if (vis) { injectButton(); hideNativeTools(); }
-      if (document.getElementById('tc-mirror-wrap') && !_showOriginal) syncNative();   // keep native hidden if MB re-renders
-      if (vis && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab'); onEnterTracklist(); } else if (!vis && _tlPrev) _tlPrev = false;
+      const vis = tracklistVisible();
+      if (document.getElementById('tc-mirror-wrap')) syncNative();   // keep the native bits in their chosen state if MB re-renders
+      if (vis && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab'); onEnterTracklist(); } else if (!vis && _tlPrev) { _tlPrev = false; const l = document.getElementById('tc-launch'); if (l) l.remove(); }
     };
     tick(); setInterval(tick, 500);
   }
@@ -706,7 +699,6 @@
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
     showMirror();   // always take over the tracklist immediately (no flash)
-    ensureLauncher();
     watchTracklist();
   })();
 })();

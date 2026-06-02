@@ -61,19 +61,20 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 ## The table
 
 Track Cannon **takes over the tracklist** as soon as a release add/edit page loads (no flash),
-laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badge). **Show original** toggles
-MB's native table back into view alongside; the **🎯 Track Cannon** button toggles the table off/on.
-Columns are resizable (drag a header edge; widths are remembered). **⚙** holds view options —
-**Alternate row colors** and **Show grid**.
+laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badge). MB's native tracklist —
+both the table **and** its tools row — is hidden while Canon is on; **Show original** reveals them
+again, and the floating **🎯 Track Cannon** button toggles Canon off/on entirely. Columns are
+resizable by dragging near a column border **in the header or any row** (widths are remembered).
+**⚙** holds view options — **Alternate row colors** and **Show grid**.
 
 Every structural action drives MB's real model — **reorder** (`moveTrackUp/Down`), **remove**
 (`removeTrack`), **Title/#/Length** edits — so nothing diverges from the native editor, and MB's own
 *Add release* button submits as usual. **Revert all** restores every track to its page-load state;
 per-track **↺** (on hover) does one.
 
-The toolbar exposes MusicBrainz's own bulk tools (the native buttons for these are hidden):
-**Guess case**, **Guess feat.**, **Swap** (titles ↔ artists) and **Reset #**. **Track parser** opens
-MB's parser; whatever it changes is picked up automatically (the table watches the live tracklist).
+The toolbar exposes MusicBrainz's own bulk tools: **Guess case**, **Guess feat.**, **Swap**
+(titles ↔ artists) and **Reset #**. **Track parser** opens MB's parser; whatever it changes is picked
+up automatically (the table watches the live tracklist).
 
 Track Cannon only fills the in-page editor. **You** review and press MusicBrainz's own
 *Add release* / *Enter edit* button — nothing is submitted on your behalf.
