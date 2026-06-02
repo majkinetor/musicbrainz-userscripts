@@ -46,6 +46,9 @@ async function main() {
   log('editor ready');
   await page.addScriptTag({ content: scriptCode });
   await page.waitForFunction(() => !!window.__trackCannon, null, { timeout: 15000 });
+  // the editor opens on the Release-information tab — the Original/Track-Cannon toggle must NOT show there
+  await page.waitForTimeout(700);   // let the watcher tick once
+  const launchBeforeTracklist = await page.evaluate(() => !!document.getElementById('tc-launch'));
   await page.locator('a, button', { hasText: /^Tracklist$/ }).first().click().catch(() => {});
 
   // mirror should auto-render once the Tracklist tab is shown; wait for its rows
@@ -415,6 +418,15 @@ async function main() {
     return { confidence: m.confidence, source: m.source, exact };
   });
 
+  // launcher shows on Tracklist, disappears when you switch away, returns on the way back
+  const launchOnTracklist = await page.evaluate(() => !!document.getElementById('tc-launch'));
+  await page.locator('a, button', { hasText: /Edit Note/i }).first().click().catch(() => {});
+  await page.waitForTimeout(800);
+  const launchOffTracklist = await page.evaluate(() => !!document.getElementById('tc-launch'));
+  await page.locator('a, button', { hasText: /^Tracklist$/ }).first().click().catch(() => {});
+  await page.waitForTimeout(800);
+  const launchBack = await page.evaluate(() => !!document.getElementById('tc-launch'));
+
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
@@ -440,6 +452,8 @@ async function main() {
   log('search "Show more…" — results', showMore.before, '→', showMore.after, '· offered:', showMore.hadMore, '· grew:', showMore.grew);
   log('ambiguous same-name "Dansu" — exact matches:', ambiguous.exact, '· confidence:', ambiguous.confidence,
     '· not auto-high:', ambiguous.exact < 2 || ambiguous.confidence !== 'high');
+  log('launcher only on Tracklist — Info tab:', launchBeforeTracklist, '· Tracklist:', launchOnTracklist,
+    '· other tab:', launchOffTracklist, '· back on Tracklist:', launchBack);
   log('artifacts in', LOG_DIR);
   if (!HEADED) await ctx.close();
 }

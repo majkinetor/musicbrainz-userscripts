@@ -33,7 +33,7 @@ changed it) purple, **NONE** (nothing found) red. Multi-artist credits are match
 
 1. Open `…/release/add` or `…/release/<mbid>/edit`, go to the **Tracklist** tab.
 2. Click **🎯 Track Cannon** (next to *Guess feat. artists from track titles*; a floating launcher
-   also appears so it works from any tab).
+   also appears on the Tracklist tab).
 3. The table mirrors MB's tracklist on a **white background**; **#**, **Title** and **Length** are
    editable (`#` takes vinyl-style `A1`/`B2`). There is **no apply phase** — confident matches
    (RG / exact-name) are written to the editor the moment matching finishes, and every later edit
@@ -83,7 +83,8 @@ changed it) purple, **NONE** (nothing found) red. Multi-artist credits are match
 Track Cannon **takes over the tracklist** as soon as a release add/edit page loads (no flash),
 laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badge). MB's native tracklist —
 the table, its tools row **and** the Guess-case fieldset — is hidden while Canon is on; the floating
-**Original / Track Cannon** button (bottom-right) toggles Canon off/on (which reveals them). MB's **medium-format header**
+**Original / Track Cannon** button (bottom-right, shown only on the **Tracklist** tab) toggles Canon
+off/on (which reveals them). MB's **medium-format header**
 stays in place above each medium's table and is tidied: once a format is chosen it collapses to just
 the format name as text (click it to re-open the dropdown), keeping the medium move/remove buttons;
 with **no** format selected the full native header stays so you're still prompted to pick one. The

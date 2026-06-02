@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.204135
+// @version      2026.6.2.205754
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -1303,8 +1303,8 @@
     snapshotOriginals();
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
-    if (SETTINGS.lastView !== 'original') showMirror();   // take over the tracklist unless the user last chose the native editor
-    ensureLauncher();
+    if (SETTINGS.lastView !== 'original') showMirror();   // take over the tracklist (built inside the hidden #tracklist panel) unless the user last chose the native editor
+    if (tracklistVisible()) ensureLauncher();   // the toggle button belongs on the Tracklist tab only — the watcher adds/removes it as you switch tabs
     watchTracklist();
   })();
 })();
