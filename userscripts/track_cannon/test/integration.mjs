@@ -151,6 +151,19 @@ async function main() {
   });
   log('MBID paste → resolve:', JSON.stringify(mbidResolve));
 
+  // dropdown shows aliases (english if present, else first) fetched via one WS2 search
+  const aliasCheck = await page.evaluate(async () => {
+    const t = window.__trackCannon.model.tracks[2];
+    const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
+    const inp = tr.querySelector('.tc-search input.nm');
+    inp.focus(); inp.value = 'عمرو دياب'; inp.dispatchEvent(new Event('input'));   // Amr Diab (Arabic) — has a Latin alias
+    await new Promise(r => setTimeout(r, 1700));
+    const akas = [...document.querySelectorAll('.tc-acpop .tc-aka')].map(e => e.textContent);
+    inp.blur(); await new Promise(r => setTimeout(r, 220));
+    return { count: akas.length, sample: akas.slice(0, 3) };
+  });
+  log('alias display — .tc-aka shown:', aliasCheck.count, JSON.stringify(aliasCheck.sample));
+
   // create-artist handshake: createArtist sets a token on the new tab, the "artist page" posts it back → inserted
   const createFlow = await page.evaluate(async () => {
     const tc = window.__trackCannon, GID = '83d91898-7763-47d7-b03b-b92132375c47';

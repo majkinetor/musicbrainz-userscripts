@@ -41,8 +41,9 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
      it's **green when resolved** and **white when unmatched** (with a **＋** at the right to create
      the typed name on MB). Typing a new phrase un-links the artist (bar goes white) and keeps your
      text. You can also **paste an MBID or a MusicBrainz `/artist/<mbid>` URL** to link that artist
-     directly, and the dropdown shows each artist's **primary alias** (handy when the name is in
-     another script). The **join phrase** to the next artist (editable, right-aligned, `▾` opens
+     directly, and the dropdown shows each artist's **alias** — the English one if present, else the
+     first — (handy when the name is in another script; also shown on the resolved bar's tooltip).
+     The **join phrase** to the next artist (editable, right-aligned, `▾` opens
      presets) sits inside the box,
    - on hover, **↵** adds another artist to the credit and **✕** removes that artist.
    The **last column** holds a centered **confidence badge** (`rg` / `name` / `user` / `set`).

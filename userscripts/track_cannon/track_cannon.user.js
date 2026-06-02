@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.183601
+// @version      2026.6.2.184557
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -116,6 +116,29 @@
     catch (e) { Log.warn('search failed:', name, e.message); }
     list = list.filter(c => c && (c.name || '').trim());   // drop the trailing empty placeholder entry
     _cache.set(k, list); return list;
+  }
+  // full alias arrays for display (the js search only carries primaryAlias, often empty). One WS2
+  // search per query returns every result's aliases with locale — no per-artist fetch. Cached.
+  const _aliasCache = new Map();
+  async function fetchAliases(name) {
+    const k = fold(name); if (!k) return {}; if (_aliasCache.has(k)) return _aliasCache.get(k);
+    const map = {};
+    try { const w = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(name)}&limit=12&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); (w.artists || []).forEach(a => { map[a.id] = a.aliases || []; }); }
+    catch (e) { Log.warn('alias fetch failed', name, e.message); }
+    _aliasCache.set(k, map); return map;
+  }
+  // the alias(es) to show next to a result: the English-locale one(s) if present, otherwise the first
+  // alias — joined with ", " and capped so it never gets too long
+  function aliasStr(c) {
+    const name = c.name || '', aks = c.aliases || [], diff = s => s && fold(s) !== fold(name);
+    const en = aks.filter(a => /^en/i.test(a.locale || '') && diff(a.name)).sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0)).map(a => a.name);
+    let out = en;
+    if (!out.length) { const first = aks.find(a => diff(a.name)); out = first ? [first.name] : (diff(c.primaryAlias) ? [c.primaryAlias] : []); }
+    const seen = new Set(); out = out.filter(s => { const f = fold(s); if (!f || seen.has(f)) return false; seen.add(f); return true; });
+    if (!out.length) return null;
+    let s = out.join(', '); const MAX = 48;
+    if (s.length > MAX) { const cut = s.lastIndexOf(', ', MAX); s = (cut > 12 ? s.slice(0, cut) : s.slice(0, MAX - 1)) + '…'; }
+    return s;
   }
   async function fetchSiblings(rgGid) {
     const map = new Map();
@@ -260,7 +283,9 @@
     _selfEdit = true;
     try { if (inp) { inp.value = String(n); inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); } btn.click(); }
     finally { _selfEdit = false; }
-    Log.info('added', n, 'track(s) to medium', mi + 1); scheduleSync();
+    Log.info('added', n, 'track(s) to medium', mi + 1);
+    // refresh immediately (blank tracks need no matching) instead of the 400ms watcher + match pass
+    MODEL = buildShell(); if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); } rerender();
   }
   function setTitle(entry, v) { koTrack(entry.mi, entry.ti).name(v); }
   function setNumber(entry, v) { try { koTrack(entry.mi, entry.ti).number(v); } catch (e) { Log.warn('set number failed', v, e.message); } }
@@ -662,18 +687,22 @@
     const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     const choose = c => { close(); pickArtist(slot, c); };
     const searching = () => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Searching…</div>`; position(); };
+    const akaHtml = c => { const a = aliasStr(c); return a ? `<span class="tc-aka">“${esc(a)}”</span>` : ''; };
     const draw = arr => {
       ensure(); list = arr; const q = inp.value.trim() || slot.creditedAs;
-      pop.innerHTML = arr.length ? arr.map((c, i) => { const aka = (c.primaryAlias && fold(c.primaryAlias) !== fold(c.name)) ? `<span class="tc-aka">“${esc(c.primaryAlias)}”</span>` : ''; return `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${aka}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`; }).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
+      pop.innerHTML = arr.length ? arr.map((c, i) => `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
       [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
       position();
     };
-    const runSearch = q => { const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) draw(res); }); };
+    // patch in the full aliases (one WS2 search) without a full redraw, so it doesn't reset the keyboard highlight
+    const patchAliases = arr => { if (!pop) return; arr.forEach((c, i) => { const a = aliasStr(c); if (!a) return; const row = pop.querySelector(`.tc-acrow[data-i="${i}"]`); if (!row) return; let sp = row.querySelector('.tc-aka'); if (!sp) { sp = document.createElement('span'); sp.className = 'tc-aka'; const nm = row.querySelector('.nm'); nm.parentNode.insertBefore(sp, nm.nextSibling); } sp.textContent = '“' + a + '”'; }); };
+    const showResults = (arr, q) => { draw(arr); fetchAliases(q).then(map => { if (document.activeElement !== inp || !pop) return; arr.forEach(c => { if (map[c.gid] && map[c.gid].length) c.aliases = map[c.gid]; }); patchAliases(arr); }); };
+    const runSearch = q => { const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) showResults(res, q); }); };
     // paste an MBID or a MusicBrainz /artist/<mbid> URL → resolve it straight to that artist
     const resolveByGid = async gid => { ++seq; ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (document.activeElement !== inp) return; if (ent && ent.id) { close(); pickArtist(slot, ent); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };
     inp.onfocus = () => {
       inp.select();
-      if (slot.committed && slot.candidates && slot.candidates.length) { draw(slot.candidates); return; }
+      if (slot.committed && slot.candidates && slot.candidates.length) { showResults(slot.candidates, inp.value.trim() || slot.creditedAs || slot.name); return; }
       const q = inp.value.trim() || (slot.creditedAs || '').trim(); if (q) runSearch(q); else close();   // empty → no dropdown
     };
     let tmr; inp.oninput = () => {
@@ -683,7 +712,7 @@
       clearTimeout(tmr);
       const gid = mbidFrom(inp.value); if (gid) { resolveByGid(gid); return; }   // pasted an MBID / artist URL
       if (!inp.value.trim()) { close(); return; }   // nothing typed → don't search
-      searching(); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250);
+      searching(); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) showResults(res, inp.value); }, 250);
     };
     // arrows browse the results popup WHILE searching; once the slot is resolved they move row-to-row instead
     const browsing = () => pop && !slot.committed && list.length;
@@ -717,7 +746,8 @@
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);
     const search = document.createElement('span'); search.className = 'tc-search';
-    const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
+    const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…';
+    const aka = (s.committed && s.entity) ? aliasStr(s.entity) : null; inp.title = aka ? inp.value + ' — ' + aka : inp.value;   // alias on the resolved bar (hover)
     search.appendChild(inp);
     if (idx < entry.slots.length - 1) search.appendChild(joinControl(entry, s));   // join lives inside the box, right side
     adorn(search, s, inp); if (s._marked) search.classList.add('tc-marked'); if (s._flash) { search.classList.add('tc-flash'); delete s._flash; } line.appendChild(search);
