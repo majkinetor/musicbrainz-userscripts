@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.082344
+// @version      2026.6.2.103832
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -218,7 +218,8 @@
   ];
 
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
-  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 360, label: 'Artist' }, { k: 'len', w: 56, label: 'Length' }, { k: 'x', w: 26, label: '' }];
+  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'rev', w: 24, label: '' }, { k: 'x', w: 24, label: '' }];
+  const badgeText = s => ({ rg: 'rg', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
@@ -236,31 +237,38 @@
     #tc-panel a,#tc-mirror-wrap a{color:#4800a0;text-decoration:none}#tc-panel a:hover,#tc-mirror-wrap a:hover{text-decoration:underline}
 
     .tc-mirror{table-layout:fixed;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff}
-    .tc-mirror th{position:relative;background:#e8e8e8;border-bottom:2px solid #ccc;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
-    .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:3px 6px;vertical-align:middle;overflow:hidden}
+    .tc-mirror th{position:relative;background:#eee;border-bottom:2px solid #ccc;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
+    .tc-mirror td{border-bottom:1px solid #e2e2e2;border-right:1px solid #ededed;padding:3px 6px;vertical-align:middle;overflow:hidden;background:#fff}
+    .tc-mirror td.c-x,.tc-mirror td.c-rev{border-right:none}
     .tc-mirror .tc-resizer{position:absolute;right:0;top:0;height:100%;width:7px;cursor:col-resize}
     .tc-mirror .c-num{color:#888;font-variant-numeric:tabular-nums}
     .tc-mirror .c-mv{white-space:nowrap;text-align:center}
+    .tc-mirror .c-rev,.tc-mirror .c-x{text-align:center}
     .tc-mirror input.t-title,.tc-mirror input.t-len,.tc-mirror input.t-num{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:3px 2px}
     .tc-mirror input.t-len,.tc-mirror input.t-num{text-align:right;color:#666}
     .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:#bbb;background:#fff}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
-    .tc-mirror .rm{cursor:pointer;color:#c0392b;font-weight:bold;border:none;background:none;font-size:15px}
-    /* one artist = two aligned rows: a credited-as title, then the field line */
-    .tc-aslot{padding:3px 0;border-top:1px solid rgba(0,0,0,.06)}
+    .tc-mirror .trev,.tc-mirror .rm{cursor:pointer;border:none;background:none;font-size:14px;visibility:hidden}
+    .tc-mirror tr:hover .trev,.tc-mirror tr:hover .rm{visibility:visible}
+    .tc-mirror .trev{color:#9a8fc0}.tc-mirror .trev:hover{color:#5f3ec0}
+    .tc-mirror .rm{color:#c0392b;font-weight:bold}
+    /* one artist = one aligned line: credited-as · icon · colored search bar · join · ↵ (✕ on hover) */
+    .tc-aslot{display:flex;align-items:center;gap:5px;padding:2px 0;border-top:1px solid rgba(0,0,0,.05)}
     .tc-aslot:first-child{border-top:none}
-    .tc-cred{display:block;width:100%;box-sizing:border-box;font:11px Arial;color:#777;border:1px solid transparent;background:transparent;padding:1px 5px;margin-bottom:2px}
+    .tc-cred{flex:none;width:90px;text-align:right;box-sizing:border-box;font:11px Arial;color:#888;border:1px solid transparent;background:transparent;padding:1px 4px;border-right:1px solid #e6e6e6}
     .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
-    .tc-field{display:flex;align-items:center;gap:5px}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
-    .tc-acinput{flex:1 1 0;min-width:0;box-sizing:border-box;font:12px Arial;padding:3px 5px;border:1px solid #bbb;border-radius:3px;background:#fff}
-    .tc-acinput.empty{color:#a3361f}
-    .tc-rev{flex:none;cursor:pointer;color:#b3a9cf;border:none;background:none;font-size:13px;padding:0 1px}.tc-rev:hover{color:#6f42c1}
-    .tc-join{flex:none;width:62px;box-sizing:border-box;font:11px Arial;padding:1px 2px;border:1px solid #d2cae8;border-radius:3px;background:#faf9ff;color:#555}
-    .tc-join-sp{flex:none;width:62px}
-    .tc-slotx{flex:none;cursor:pointer;color:#d6a;border:none;background:none;font-size:12px;padding:0 1px}.tc-slotx:hover{color:#c0392b}
-    .tc-addbtn{flex:none;cursor:pointer;color:#1f8a4c;border:1px solid #bcdcc6;border-radius:3px;background:#f1faf3;font-size:12px;font-weight:bold;line-height:1;padding:1px 5px}.tc-addbtn:hover{background:#e2f3e7}
+    .tc-search{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:3px;border:1px solid #bbb;border-radius:3px;background:#fff;padding:0 4px}
+    .tc-search.matched{background:#e3f4e7;border-color:#bcdcc6}
+    .tc-search input{flex:1 1 0;min-width:0;border:none;background:transparent;font:12px Arial;padding:3px 1px;outline:none}
+    .tc-search .tag{flex:none;font:10px Arial;color:#788a7c}
+    .tc-search .mk{flex:none;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:14px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}
+    .tc-join{flex:none;max-width:78px;border:1px solid transparent;background:transparent;color:#777;font:italic 11px Arial;cursor:pointer;padding:1px 2px;border-radius:3px;-webkit-appearance:none;-moz-appearance:none;appearance:none}
+    .tc-join:hover{border-color:#cdbff0;background:#faf9ff;color:#444}
+    .tc-enter{flex:none;cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:13px;padding:0 2px}.tc-enter:hover{color:#5f3ec0}
+    .tc-slotx{flex:none;cursor:pointer;color:#cc6699;border:none;background:none;font-size:12px;padding:0 1px;visibility:hidden}
+    .tc-mirror tr:hover .tc-slotx{visibility:visible}
     .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
@@ -378,15 +386,21 @@
     commitTrack(entry); Log.info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
-  // split a credit: append an empty artist slot (defaulting the previous join to " & ")
+  const blankSlot = entry => ({ creditedAs: '', joinPhrase: '', status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _entry: entry });
+  function focusSlotInput(entry, idx) { const row = ACTIVE.tbody && ACTIVE.tbody.querySelector(`tr[data-tk="${entry.mi}:${entry.ti}"]`); if (row) { const ins = row.querySelectorAll('.tc-search input'); if (ins[idx]) ins[idx].focus(); } }
+  // split a credit: append an artist slot (the ＋ create-row / API uses this)
   function addSlot(entry) {
     const last = entry.slots[entry.slots.length - 1];
     if (last && !(last.joinPhrase || '').trim()) last.joinPhrase = ' & ';
-    const s = { creditedAs: '', joinPhrase: '', status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _entry: entry };
-    entry.slots.push(s); commitTrack(entry); rerender();
-    const row = ACTIVE.tbody && ACTIVE.tbody.querySelector(`tr[data-tk="${entry.mi}:${entry.ti}"]`);
-    if (row) { const ins = row.querySelectorAll('.tc-acinput'); if (ins.length) ins[ins.length - 1].focus(); }
+    entry.slots.push(blankSlot(entry)); commitTrack(entry); rerender(); focusSlotInput(entry, entry.slots.length - 1);
     Log.info('added artist slot to track', entry.number);
+  }
+  // ↵ : insert an artist slot right after this one
+  function addSlotAfter(entry, idx) {
+    if (!(entry.slots[idx].joinPhrase || '').trim()) entry.slots[idx].joinPhrase = ' & ';
+    const s = blankSlot(entry); s.joinPhrase = idx + 1 < entry.slots.length ? ' & ' : '';
+    entry.slots.splice(idx + 1, 0, s); commitTrack(entry); rerender(); focusSlotInput(entry, idx + 1);
+    Log.info('inserted artist slot after', idx, 'on track', entry.number);
   }
   // merge: remove an artist slot (clearing the trailing join on the new last slot)
   function removeSlot(entry, idx) {
@@ -395,11 +409,10 @@
     const last = entry.slots[entry.slots.length - 1]; if (last) last.joinPhrase = '';
     commitTrack(entry); rerender(); Log.info('removed artist slot', idx, 'from track', entry.number);
   }
+  function revertTrack(entry) { resetTrack(entry); rebuild(); }
 
-  // editable autocomplete input (type to search MB); the type icon + revert live outside it
-  function comboInput(entry, slot) {
-    const inp = document.createElement('input'); inp.className = 'tc-acinput' + (slot.gid ? '' : ' empty');
-    inp.value = slot.name || slot.creditedAs || ''; inp.title = inp.value; inp.placeholder = 'search artist…';
+  // attach the type-to-search autocomplete to an existing <input>
+  function wireAutocomplete(inp, slot) {
     let pop = null, list = [], hi = -1, seq = 0;
     const close = () => { if (pop) { pop.remove(); pop = null; hi = -1; } };
     const choose = c => { close(); pickArtist(slot, c); };
@@ -415,8 +428,7 @@
     inp.onfocus = () => {
       inp.select();
       if (slot.candidates && slot.candidates.length) { draw(slot.candidates); return; }
-      // already-resolved (edit pages) have no cached candidates → search the current text
-      const my = ++seq; const q = inp.value.trim() || slot.creditedAs;
+      const my = ++seq; const q = inp.value.trim() || slot.creditedAs;   // resolved/edit fields have no cached candidates
       if (q) searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) draw(res); }); else draw([]);
     };
     let tmr; inp.oninput = () => { clearTimeout(tmr); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250); };
@@ -426,48 +438,48 @@
       else if (e.key === 'ArrowUp' && pop) { hi = Math.max(0, hi - 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
       else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) choose(c); }
     };
-    inp.onblur = () => setTimeout(() => { close(); if (document.activeElement !== inp) inp.value = slot.name || slot.creditedAs || ''; }, 160);
-    return inp;
+    inp.onblur = () => setTimeout(() => { close(); if (document.activeElement !== inp) inp.value = slot.committed ? (slot.name || slot.creditedAs) : (slot.creditedAs || ''); }, 160);
   }
 
-  // one artist = a credited-as title row + a field line (icon-link · search · revert · join)
+  // one artist = one aligned line: [credited-as][icon][colored search bar: input + (badge|＋create)][join][↵][✕ on hover]
   function slotEl(entry, s, idx) {
-    const block = document.createElement('div'); block.className = 'tc-aslot';
-    const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = s.creditedAs || ''; cred.placeholder = 'credited as…'; cred.title = 'credited-as text (what appears in the credit)';
-    cred.onchange = () => { s.creditedAs = cred.value; commitTrack(entry); };
-    block.appendChild(cred);
-    const line = document.createElement('div'); line.className = 'tc-field';
+    const line = document.createElement('div'); line.className = 'tc-aslot';
+    const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = s.creditedAs || ''; cred.placeholder = 'credit…'; cred.title = 'credited-as text (what appears in the credit)';
+    cred.onchange = () => { s.creditedAs = cred.value; commitTrack(entry); }; line.appendChild(cred);
     const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);
-    line.appendChild(comboInput(entry, s));
-    const isLast = idx === entry.slots.length - 1;
-    // join phrase (to the next artist) sits right next to the name — a combo of common options
-    if (!isLast) {
+    // colored search bar (green when resolved, white when not)
+    const search = document.createElement('span'); search.className = 'tc-search' + (s.committed ? ' matched' : '');
+    const inp = document.createElement('input'); inp.value = s.committed ? (s.name || s.creditedAs) : (s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
+    search.appendChild(inp);
+    if (s.committed) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = badgeText(s); search.appendChild(tag); }
+    else { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || s.creditedAs); }; search.appendChild(mk); }
+    wireAutocomplete(inp, s); line.appendChild(search);
+    // join phrase to the next artist — looks like text, click to choose from common options
+    if (idx < entry.slots.length - 1) {
       const sel = document.createElement('select'); sel.className = 'tc-join'; sel.title = 'join phrase to the next artist';
       const cur = s.joinPhrase || ''; const opts = JOIN_OPTIONS.slice();
       if (!opts.some(o => o.value === cur)) opts.unshift({ label: cur.trim() || '(direct)', value: cur });
       sel.innerHTML = opts.map(o => `<option value="${esc(o.value)}"${o.value === cur ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
       sel.onchange = () => { s.joinPhrase = sel.value; commitTrack(entry); }; line.appendChild(sel);
-    } else line.insertAdjacentHTML('beforeend', '<span class="tc-join-sp"></span>');
-    line.insertAdjacentHTML('beforeend', badge(s.status));
-    const rev = document.createElement('button'); rev.className = 'tc-rev'; rev.textContent = '↺'; rev.title = 'revert this artist to the original'; rev.onclick = () => revertSlot(entry, idx); line.appendChild(rev);
+    }
+    const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); line.appendChild(add);
     if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); line.appendChild(x); }
-    if (isLast) { const add = document.createElement('button'); add.className = 'tc-addbtn'; add.textContent = '＋'; add.title = 'add another artist (split the credit)'; add.onclick = () => addSlot(entry); line.appendChild(add); }
-    block.appendChild(line);
-    return block;
+    return line;
   }
   function fillRows(tbody) {
     tbody.innerHTML = ''; let committed = 0, unresolved = 0, lastMi = -1; const multi = mediums().length > 1;
     MODEL.tracks.forEach(t => {
       if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
       t.slots.forEach(s => { if (s.status === 'set' || s.committed) committed++; else unresolved++; });
-      const tr = document.createElement('tr'); tr.style.background = COLORS[rowConfidence(t)] || '#fff'; tr.dataset.tk = t.mi + ':' + t.ti;
+      const tr = document.createElement('tr'); tr.dataset.tk = t.mi + ':' + t.ti;
       tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span></td>
         <td class="c-num"><input class="t-num" value="${esc(t.number)}" title="track number"></td>
         <td class="c-title"><input class="t-title" value="${esc(t.title)}"></td>
         <td class="c-art"></td>
         <td class="c-len"><input class="t-len" value="${esc(t.length)}"></td>
+        <td class="c-rev"><button class="trev" title="revert this track to the original">↺</button></td>
         <td class="c-x"><button class="rm" title="remove track">✕</button></td>`;
       const art = tr.querySelector('.c-art'); t.slots.forEach((s, si) => art.appendChild(slotEl(t, s, si)));
       tr.querySelector('.t-num').onchange = e => setNumber(t, e.target.value);
@@ -475,6 +487,7 @@
       tr.querySelector('.t-len').onchange = e => setLength(t, e.target.value);
       tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };
       tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
+      tr.querySelector('.trev').onclick = () => revertTrack(t);
       tr.querySelector('.rm').onclick = () => { removeTrack(t); rebuild(); };
       tbody.appendChild(tr);
     });

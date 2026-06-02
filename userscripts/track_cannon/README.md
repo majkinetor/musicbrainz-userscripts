@@ -29,19 +29,21 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
 1. Open `…/release/add` or `…/release/<mbid>/edit`, go to the **Tracklist** tab.
 2. Click **🎯 Track Cannon** (next to *Guess feat. artists from track titles*; a floating launcher
    also appears so it works from any tab).
-3. There is **no apply phase** — confident matches (RG/HIGH) are written to the editor the moment
-   matching finishes, and every later edit writes through immediately. Each artist is an **editable
-   type-to-search field** (like MB's own): pre-filled with the best match, type to search MB live.
-   The small grey text above it is the **credited-as** title (also editable — left empty, it
-   auto-fills with the artist you pick); the **person/group icon** to its left links to the artist
-   page; right after the name is the **join-phrase** dropdown to the next artist (`&`, `feat.`, …);
-   then **↺** (revert this field) and **✕** (remove this artist / merge). Creating a new artist is
-   the **＋ Create …** row at the bottom of the search dropdown. **＋** on the last artist splits
-   the credit by adding another slot. The **#**, **Title** and **Length** cells are editable too
-   (`#` accepts vinyl-style values like `A1`); all write to the editor immediately.
-4. **Revert all** restores the whole release to its page-load state; **↺** does one field.
-   The toolbar — *When I pick an artist → apply to **all matching tracks** / **this track only*** —
-   controls whether picking an artist also copies it to every other track credited to the same text.
+3. The table mirrors MB's tracklist on a **white background**; **#**, **Title** and **Length** are
+   editable (`#` takes vinyl-style `A1`/`B2`). There is **no apply phase** — confident matches
+   (RG / exact-name) are written to the editor the moment matching finishes, and every later edit
+   writes through immediately. Each artist line reads left-to-right:
+   - **credited-as** (grey, editable; left empty it auto-fills with the artist you pick),
+   - **person/group icon** (links to the artist page),
+   - the **search bar** — type to search MB live; it's **green when resolved** (with a small
+     `rg` / `name` / `user` / `set` tag inside) and **white when unmatched** (showing a **＋** to
+     create the artist on MB),
+   - the **join phrase** to the next artist — looks like text, click for the combo (`&`, `feat.`, …),
+   - **↵** to add another artist to the credit; on hover, **✕** removes that artist.
+4. Multi-artist credits stack as lines within the same track row. Per track (revealed on row hover):
+   **↺** reverts the whole track and **✕** removes it. **Revert all** resets the whole release to its
+   page-load state. The toolbar — *When I pick an artist → apply to **all matching tracks** / **this
+   track only*** — controls whether a pick also copies to every track credited to the same text.
 5. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
    tab; save it there, then re-open the panel to match it.
 6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself

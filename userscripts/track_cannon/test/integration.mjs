@@ -65,8 +65,8 @@ async function main() {
   await page.locator('#tc-panel').screenshot({ path: resolve(LOG_DIR, 'panel-only.png') }).catch(() => {});
   await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '720px'; p.style.maxWidth = '96vw'; } });
   // capture the type-to-search dropdown (with type icons) open
-  await page.locator('#tc-panel .tc-mirror tbody tr .tc-acinput').nth(2).click();
-  await page.locator('#tc-panel .tc-mirror tbody tr .tc-acinput').nth(2).fill('carol');
+  await page.locator('#tc-panel .tc-mirror tbody tr .tc-search input').nth(2).click();
+  await page.locator('#tc-panel .tc-mirror tbody tr .tc-search input').nth(2).fill('carol');
   await page.waitForSelector('.tc-acpop .tc-acrow', { timeout: 6000 }).catch(() => {});
   await page.waitForTimeout(400);
   await page.screenshot({ path: resolve(LOG_DIR, 'combo.png') });
@@ -77,17 +77,18 @@ async function main() {
     const tc = window.__trackCannon;
     const t = tc.model.tracks.find(t => t.slots.some(s => s.status === 'set')); if (!t) return { ok: false };
     const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
-    const inp = tr && tr.querySelector('.tc-acinput'); if (!inp) return { ok: false };
-    inp.focus(); await new Promise(r => setTimeout(r, 600));
+    const inp = tr && tr.querySelector('.tc-search input'); if (!inp) return { ok: false };
+    const val = inp.value; const direct = (await tc.searchArtist(val)).length;
+    inp.focus(); await new Promise(r => setTimeout(r, 900));
     const pop = document.querySelector('.tc-acpop'); const results = pop ? pop.querySelectorAll('.tc-acrow[data-i]').length : 0;
-    inp.blur(); return { ok: true, results };
+    inp.blur(); return { ok: true, val, direct, results };
   });
   await page.keyboard.press('Escape').catch(() => {});
   await page.waitForTimeout(150);
   // editable combo: focus an input → results pop appears → pick the 2nd → status becomes 'user' + purple
   const userCheck = await page.evaluate(async () => {
     const tc = window.__trackCannon;
-    const inputs = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr .tc-acinput')];
+    const inputs = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr .tc-search input')];
     let picked = false, popCount = 0;
     for (const inp of inputs) {
       inp.focus(); await new Promise(r => setTimeout(r, 60));
@@ -97,8 +98,8 @@ async function main() {
     }
     await new Promise(r => setTimeout(r, 80));
     const userStatus = tc.model.tracks.flatMap(x => x.slots).some(s => s.status === 'user');
-    const purpleRow = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].some(r => /233, 220, 251/.test(r.style.background));
-    return { picked, popCount, userStatus, purpleRow };
+    const greenBar = [...document.querySelectorAll('#tc-panel .tc-search.matched')].length > 0;
+    return { picked, popCount, userStatus, greenBar };
   });
 
   // propagation (all mode): picking an artist copies it to every track with the same credited text
@@ -138,7 +139,7 @@ async function main() {
     return out;
   });
   log('focus a SET field (no typing) → search results:', JSON.stringify(setFocus));
-  log('combo search → picked from pop (' + userCheck.popCount + ' results) · status=user:', userCheck.userStatus, '· purple row:', userCheck.purpleRow);
+  log('combo search → picked from pop (' + userCheck.popCount + ' results) · status=user:', userCheck.userStatus, '· green search bar:', userCheck.greenBar);
   log('propagation (all mode):', JSON.stringify(propCheck));
   log('Original reset on track 1:', JSON.stringify(interactive.track0));
   // close the panel and capture the clean tracklist (the artist column, resolved/green)

@@ -80,7 +80,8 @@ async function main() {
   await page.waitForTimeout(400);
   const afterMove = await titles3();
   const countBefore = await trackCount();
-  await page.locator('.tc-mirror tbody tr').last().locator('.rm').click();     // remove last row
+  const lastRow = page.locator('.tc-mirror tbody tr').last(); await lastRow.hover();   // ✕ reveals on hover
+  await lastRow.locator('.rm').click();     // remove last row
   await page.waitForTimeout(600);
   const countAfter = await trackCount();
   const ops = { before, afterMove, countBefore, countAfter };
