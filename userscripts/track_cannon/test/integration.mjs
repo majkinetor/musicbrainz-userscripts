@@ -149,8 +149,11 @@ async function main() {
     const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
     const inp = tr.querySelector('.tc-search input.nm');
     inp.focus(); inp.value = GID; inp.dispatchEvent(new Event('input'));
-    await new Promise(r => setTimeout(r, 1200));
-    return { gid: slot.gid, name: slot.name, committed: slot.committed, hasNumericId: !!(slot.entity && slot.entity.id), matched: slot.gid === GID };
+    await new Promise(r => setTimeout(r, 1300));
+    const u = v => (typeof v === 'function' ? v() : v);
+    const ko = u(u(u(window.MB.releaseEditor.rootField.release).mediums)[t.mi].tracks)[t.ti];
+    const ac = u(u(ko.artistCredit).names); const liveGid = ac && ac[0] ? u(u(ac[0].artist).gid) : null;
+    return { gid: tc.model.tracks[0].slots[0].gid, committed: tc.model.tracks[0].slots[0].committed, matched: tc.model.tracks[0].slots[0].gid === GID, wroteToMB: liveGid === GID };
   });
   log('MBID paste → resolve:', JSON.stringify(mbidResolve));
 

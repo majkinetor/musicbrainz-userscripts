@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.193242
+// @version      2026.6.2.194843
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -108,7 +108,8 @@
   // resolve an MBID to a full entity (incl. the numeric id needed for the credit write-back)
   async function fetchEntity(gid) {
     try { const j = await fetch(`${ORIGIN}/ws/js/entity/${gid}`, { headers: { Accept: 'application/json' } }).then(r => r.json());
-      if (j && j.gid) return { gid: j.gid, name: j.name, id: j.id, comment: j.comment, sortName: j.sort_name }; }
+      // return the WHOLE entity (like a search hit) so the credit write-back has every field it needs
+      if (j && j.gid) { if (!j.entityType) j.entityType = 'artist'; return j; } }
     catch (e) { Log.warn('fetch entity failed', gid, e.message); }
     return null;
   }
@@ -144,13 +145,19 @@
     }
   }
   const isEditingNow = () => { const a = document.activeElement; return a && /^(INPUT|SELECT)$/.test(a.tagName) && (a.closest('.tc-medsec') || a.closest('#tc-panel')); };
-  // batch-fetch aliases for every committed artist we don't have yet, then refresh the bars
+  // re-run adorn for every rendered slot (adds/updates the alias span) WITHOUT rebuilding rows — so it
+  // can't steal focus or detach the slot an in-flight edit is using
+  function refreshAdorns() {
+    if (!MODEL) return;
+    MODEL.tracks.forEach(t => { const row = rowEl(t.mi, t.ti); if (!row) return; const searches = row.querySelectorAll('.tc-search'); t.slots.forEach((s, i) => { const search = searches[i]; if (search) adorn(search, s, search.querySelector('.nm')); }); });
+  }
+  // batch-fetch aliases for every committed artist we don't have yet, then refresh the bars in place
   async function enrichResolvedAliases() {
     if (!MODEL) return;
     const need = []; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.committed && s.gid && !_gidAliases.has(s.gid)) need.push(s.gid); }));
     if (!need.length) return;
     await fetchAliasesByGids(need);
-    if (!isEditingNow()) rerender();
+    refreshAdorns();
   }
   // the alias(es) to show next to a result: the English-locale one(s) if present, otherwise the first
   // alias — joined with ", " and capped so it never gets too long
@@ -574,14 +581,16 @@
   // ↑/↓ : move to the same field in the previous/next row (same medium); returns true if it moved
   function focusSameField(inp, dir) {
     const row = inp.closest('tr[data-tk]'); if (!row) return false;
-    const rows = [...row.parentElement.querySelectorAll('tr[data-tk]')]; const dest = rows[rows.indexOf(row) + dir]; if (!dest) return false;
+    // all rows in order across every medium section (or the single panel table) — so ↑/↓ cross media
+    const rows = row.closest('#tc-panel') ? [...document.querySelectorAll('#tc-panel tr[data-tk]')] : [...document.querySelectorAll('.tc-medsec tr[data-tk]')];
+    const dest = rows[rows.indexOf(row) + dir]; if (!dest) return false;
     const sel = inp.classList.contains('t-num') ? '.t-num' : inp.classList.contains('t-title') ? '.t-title' : inp.classList.contains('t-len') ? '.t-len' : inp.classList.contains('tc-cred') ? '.tc-cred' : inp.classList.contains('nm') ? '.tc-search input.nm' : null;
     if (!sel) return false;
     const idx = Math.max(0, [...row.querySelectorAll(sel)].indexOf(inp)); const destTk = dest.dataset.tk;
     // committing the current field on blur can rebuild the rows, so blur FIRST, then focus the
     // destination by re-querying the fresh DOM (retry next tick in case the rebuild is deferred)
     inp.blur();
-    const go = () => { const d = document.querySelector(`.tc-medsec tr[data-tk="${destTk}"], #tc-panel tr[data-tk="${destTk}"]`); if (!d) return; const tgts = [...d.querySelectorAll(sel)]; const t = tgts[Math.min(idx, tgts.length - 1)]; if (t && document.activeElement !== t) { t.focus(); if (t.select) t.select(); } };
+    const go = () => { const d = document.querySelector(`.tc-medsec tr[data-tk="${destTk}"], #tc-panel tr[data-tk="${destTk}"]`); if (!d) return; const tgts = [...d.querySelectorAll(sel)]; const t = tgts[Math.min(idx, tgts.length - 1)]; if (t && document.activeElement !== t) { t.focus(); if (t.select && !t.classList.contains('nm')) t.select(); } };   // don't select-all the artist name field
     go(); setTimeout(go, 0);
     return true;
   }
@@ -748,19 +757,19 @@
     const patchAliases = arr => { if (!pop) return; arr.forEach((c, i) => { const a = aliasStr(c); if (!a) return; const row = pop.querySelector(`.tc-acrow[data-i="${i}"]`); if (!row) return; let sp = row.querySelector('.tc-aka'); if (!sp) { sp = document.createElement('span'); sp.className = 'tc-aka'; const nm = row.querySelector('.nm'); nm.parentNode.insertBefore(sp, nm.nextSibling); } sp.textContent = '“' + a + '”'; }); };
     const showResults = (arr, q) => { draw(arr); fetchAliases(q).then(map => { if (document.activeElement !== inp || !pop) return; arr.forEach(c => { if (map[c.gid] && map[c.gid].length) c.aliases = map[c.gid]; }); patchAliases(arr); }); };
     const runSearch = q => { const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) showResults(res, q); }); };
-    // paste an MBID or a MusicBrainz /artist/<mbid> URL → resolve it straight to that artist
-    const resolveByGid = async gid => { ++seq; ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (document.activeElement !== inp) return; if (ent && ent.id) { close(); pickArtist(slot, ent); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };
+    // paste an MBID or a MusicBrainz /artist/<mbid> URL → resolve it straight to that artist. Gate on the
+    // field value (not focus): a commit-rerender can steal focus before the fetch returns.
+    const resolveByGid = async gid => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (mbidFrom(inp.value) !== gid) return; if (ent && ent.id) { close(); pickArtist(slot, ent); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };
     inp.onfocus = () => {
-      inp.select();
       if (slot.committed && slot.candidates && slot.candidates.length) { showResults(slot.candidates, inp.value.trim() || slot.creditedAs || slot.name); return; }
       const q = inp.value.trim() || (slot.creditedAs || '').trim(); if (q) runSearch(q); else close();   // empty → no dropdown
     };
     let tmr; inp.oninput = () => {
       slot.query = inp.value;
+      clearTimeout(tmr);
+      const gid = mbidFrom(inp.value); if (gid) { resolveByGid(gid); return; }   // pasted an MBID / artist URL → resolve directly (pickArtist replaces whatever was there; no un-link needed)
       // editing away from the matched artist un-links it: bar goes white, ＋ creates the typed name
       if (slot.committed && !sameName(inp.value, slot.name)) { slot.committed = false; slot.status = 'none'; slot.entity = null; slot.gid = null; commitTrack(slot._entry); if (refresh) refresh(); }
-      clearTimeout(tmr);
-      const gid = mbidFrom(inp.value); if (gid) { resolveByGid(gid); return; }   // pasted an MBID / artist URL
       if (!inp.value.trim()) { close(); return; }   // nothing typed → don't search
       searching(); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) showResults(res, inp.value); }, 250);
     };
@@ -855,14 +864,15 @@
     if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else updateStatus('auto-match off — click Match');
     enrichResolvedAliases();   // batch-fetch aliases for resolved artists (existing releases too)
   }
-  async function rebuild() {
+  async function rebuild(noMatch) {
     MODEL = buildShell();
     if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); }
     rerender();
-    if (SETTINGS.autoMatch !== false) await matchModel();
+    if (!noMatch && SETTINGS.autoMatch !== false) await matchModel();
     enrichResolvedAliases();
   }
-  function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track's artist to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(); }
+  // revert to the page-load state, but DON'T auto-match (that only runs on startup) — Match is manual here
+  function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track's artist to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(true); }
   function guessCaseAll() { if (!MODEL) return; MODEL.tracks.forEach(t => { applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); }); rerender(); Log.info('guess case → all titles'); }
   // integrated MB feature: pull "feat. X" out of titles into artist credits, then re-read + re-match
   async function guessFeatAll() {
