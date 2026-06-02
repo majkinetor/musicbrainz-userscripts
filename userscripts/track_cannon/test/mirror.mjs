@@ -258,7 +258,11 @@ async function main() {
     document.querySelector('.tc-medsec .tc-addbtn').click();
     await new Promise(r => setTimeout(r, 700));   // scheduleSync (400ms) + render
     const rows = document.querySelectorAll('.tc-medsec .tc-mirror tbody tr[data-tk]').length;
-    return { before, after: med0(), rows };
+    // new tracks must be BLANK — MB seeds them with the previous track's artist credit; we clear it
+    const u2 = v => (typeof v === 'function' ? v() : v);
+    const tks = u2(u2(u2(window.MB.releaseEditor.rootField.release).mediums)[0].tracks);
+    const newCredit = tks.slice(-2).map(t => { const ac = u2(t.artistCredit) || {}; return (u2(ac.names) || []).map(n => u2(n.name) || (u2(n.artist) ? u2(u2(n.artist).name) : '')).join('').trim(); });
+    return { before, after: med0(), rows, newCredit };
   });
 
   // Match button is disabled for the duration of a match pass
@@ -338,11 +342,27 @@ async function main() {
   });
   await page.locator('#tracklist').screenshot({ path: resolve(LOG_DIR, 'mirror-multimedium.png') }).catch(() => {});
 
+  // changed tracks (differ from page-load) get the ↺ button + a left-border marker; unchanged don't —
+  // and reverting a track (no re-match) clears both. Runs LAST: revertTrack mutates a track destructively.
+  const changed = await page.evaluate(async () => {
+    const tc = window.__trackCannon;
+    const t = tc.model.tracks.find(x => tc.trackChanged(x));   // an auto-matched / edited (changed) track
+    if (!t) return { skipped: true };
+    const tk = t.mi + ':' + t.ti, row = () => document.querySelector(`.tc-medsec tr[data-tk="${tk}"]`);
+    const before = { hasRevert: !!row().querySelector('.trev'), marked: row().classList.contains('tc-changed') };
+    tc.revertTrack(t);
+    await new Promise(r => setTimeout(r, 120));
+    const t2 = tc.model.tracks.find(x => x.mi + ':' + x.ti === tk);
+    const after = { changed: tc.trackChanged(t2), hasRevert: !!row().querySelector('.trev'), marked: row().classList.contains('tc-changed') };
+    return { before, after };
+  });
+
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
   log('format header tidy —', JSON.stringify(fmtTidy));
-  log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows);
+  log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows,
+    '· new tracks blank (no inherited artist):', addTracks.newCredit.every(c => !c), JSON.stringify(addTracks.newCredit));
   log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter);
   log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '· medium-combo opts:', multiMed.comboOpts, '· choice kept across tools (want "1"):', JSON.stringify(multiMed.comboKept), '· per-medium status:', JSON.stringify(multiMed.statuses), '·', JSON.stringify(multiMed.perMedium));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
@@ -355,6 +375,8 @@ async function main() {
   log('tools — apply-mode in header:', tools.amInHeader, '(not in bar:', !tools.amInBar + ')', '· S&R label:', JSON.stringify(tools.toolLabel), 'live-changed:', tools.srChanged, 'status:', JSON.stringify(tools.srStatus), 'restored:', tools.restoredOk, '· Guess-case label:', JSON.stringify(tools.gcLabel), 'opts:', JSON.stringify(tools.gcOpts));
   log('edit # → "A1", length → "1:23" — model now:', JSON.stringify(fields));
   log('split/merge on', JSON.stringify(split.title), '— credit names:', split.c0, '→ +slot', split.c1, '→ +pick', split.c2, '→ -slot', split.c3, '· credited-as auto-filled:', split.autofilled, '(' + JSON.stringify(split.credAfter) + ')');
+  log('changed-track marker — has ↺ + border when changed:', changed.before?.hasRevert, '/', changed.before?.marked,
+    '· after revert (no ↺/border/change):', !!(changed.after && !changed.after.hasRevert && !changed.after.marked && !changed.after.changed));
   log('artifacts in', LOG_DIR);
   if (!HEADED) await ctx.close();
 }

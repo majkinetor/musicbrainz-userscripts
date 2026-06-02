@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.210907
+// @version      2026.6.2.193328
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -296,6 +296,20 @@
   }
   // (re-)match every still-unmatched slot — the "Match" button / used when auto-match is off
   async function matchAll() { if (!MODEL) return; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && !s.committed) s._pending = true; })); await matchModel((d, n) => updateStatus(`matching ${d}/${n}…`)); }
+  // has this track changed from its page-load state (title/#/length or any artist credit)?
+  function trackChanged(entry) {
+    const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig) return false;
+    const t = koTrack(entry.mi, entry.ti);
+    if ((u(t.name) || '') !== orig.title || String(u(t.number)) !== String(orig.number) || (u(t.formattedLength) || '') !== orig.length) return true;
+    if (entry.slots.length !== orig.names.length) return true;
+    for (let i = 0; i < entry.slots.length; i++) {
+      const s = entry.slots[i], o = orig.names[i];
+      const curGid = (s.committed && s.gid) ? s.gid : '';
+      const origGid = (o.artist && u(o.artist.gid)) || '';
+      if (curGid !== origGid || (s.creditedAs || '') !== (o.creditedAs || '') || (s.joinPhrase || '') !== (o.joinPhrase || '')) return true;
+    }
+    return false;
+  }
   function resetTrack(entry) {
     const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig) return;
     const t = koTrack(entry.mi, entry.ti);
@@ -314,9 +328,12 @@
     const inputs = [...document.querySelectorAll('input[data-bind*="addTrackCount"]')];
     const btn = btns[mi] || btns[btns.length - 1]; const inp = inputs[mi] || inputs[inputs.length - 1];
     if (!btn) { Log.warn('no native add-tracks button found'); return; }
+    const med = mediums()[mi]; const before = med ? (u(med.tracks) || []).length : 0;
     _selfEdit = true;
     try { if (inp) { inp.value = String(n); inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); } btn.click(); }
     finally { _selfEdit = false; }
+    // MB seeds each new track with the *previous* track's artist credit — clear it so new tracks are blank
+    if (med) { const tks = u(med.tracks) || []; for (let i = before; i < tks.length; i++) try { tks[i].artistCredit({ names: [{ artist: null, name: '', joinPhrase: '' }] }); } catch (e) {} }
     Log.info('added', n, 'track(s) to medium', mi + 1);
     // refresh immediately (blank tracks need no matching) instead of the 400ms watcher + match pass
     MODEL = buildShell(); if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); } rerender();
@@ -442,6 +459,7 @@
     .tc-trackacts button{cursor:pointer;border:none;background:none;font-size:16px;line-height:1}
     .tc-trackacts .trev{color:#9a8fc0}.tc-trackacts .trev:hover{color:#5f3ec0}
     .tc-trackacts .rm{color:#c0392b;font-weight:bold}.tc-trackacts .rm:hover{color:#a02519}
+    .tc-mirror tr.tc-changed td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}   /* a track that differs from its page-load state */
     /* one artist = one aligned fixed-height line: credited-as · icon · search box · acts (no line between artists) */
     .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box}
     .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px}
@@ -729,7 +747,7 @@
     const last = entry.slots[entry.slots.length - 1]; if (last) last.joinPhrase = '';
     commitTrack(entry); rerender(); Log.info('removed artist slot', idx, 'from track', entry.number);
   }
-  function revertTrack(entry) { resetTrack(entry); rebuild(); }
+  function revertTrack(entry) { resetTrack(entry); rebuild(true); }
 
   // parse a combined credit ("A feat. B & C") into [{name, sep}] — sep is the separator AFTER each name
   const SEP_RE = /\s*(\bfeat\.?|\bft\.?|\bfeaturing|&|\band\b|\bvs\.?|\bwith\b|×|・|,|;)\s*/gi;
@@ -773,10 +791,12 @@
   }
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
   function renderBadgeCell(cell, track) {
+    const changed = trackChanged(track);   // ↺ only makes sense (and only shows) when there's something to revert
     cell.innerHTML = track.slots.map(s => `<div class="tc-bl">${s.committed ? `<span class="tc-badge ${s.status}">${badgeText(s)}</span>` : ''}</div>`).join('')
-      + `<div class="tc-trackacts"><button class="trev" title="revert this track">↺</button><button class="rm" title="remove track">✕</button></div>`;
-    cell.querySelector('.trev').onclick = () => revertTrack(track);
+      + `<div class="tc-trackacts">${changed ? '<button class="trev" title="revert this track">↺</button>' : ''}<button class="rm" title="remove track">✕</button></div>`;
+    const trev = cell.querySelector('.trev'); if (trev) trev.onclick = () => revertTrack(track);
     cell.querySelector('.rm').onclick = () => { removeTrack(track); rebuild(); };
+    const row = cell.closest('tr'); if (row) row.classList.toggle('tc-changed', changed);   // mark the row (left border)
   }
   // join phrase: editable text that grows right-to-left, plus a ▾ that opens the presets list
   function joinControl(entry, slot) {
@@ -916,8 +936,8 @@
       }
       tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; wireRowNav(tin);
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
-      numIn.onchange = e => setNumber(t, e.target.value); wireRowNav(numIn);
-      lenIn.onchange = e => setLength(t, e.target.value); wireRowNav(lenIn);
+      numIn.onchange = e => { setNumber(t, e.target.value); refreshBadges(); }; wireRowNav(numIn);
+      lenIn.onchange = e => { setLength(t, e.target.value); refreshBadges(); }; wireRowNav(lenIn);
       tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };
       tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
       tbody.appendChild(tr);
@@ -1191,7 +1211,7 @@
     tick(); setInterval(tick, 500);
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
