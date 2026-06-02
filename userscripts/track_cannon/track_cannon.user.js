@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.134410
+// @version      2026.6.2.143326
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -335,7 +335,7 @@
     .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
     .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:10px;padding:0 1px;line-height:1}.tc-joinarrow:hover{color:#5f3ec0}
     .tc-joinpop .tc-acrow{justify-content:space-between;gap:14px}.tc-joinpop .cmt{color:#999}
-    .tc-acts{flex:none;width:44px;display:flex;align-items:center;justify-content:flex-end;gap:4px}
+    .tc-acts{flex:none;width:44px;display:flex;align-items:center;justify-content:flex-start;gap:4px;padding-left:4px}
     .tc-enter,.tc-slotx{cursor:pointer;border:none;background:none;padding:0 1px;visibility:hidden;line-height:1}
     .tc-enter{color:#7d6bc0;font-size:19px}.tc-enter:hover{color:#5f3ec0}
     .tc-slotx{color:#cc6699;font-size:13px}.tc-slotx:hover{color:#c0392b}
