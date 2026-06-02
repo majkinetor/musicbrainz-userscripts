@@ -2,6 +2,8 @@
 
 Speed up per-track **artist-credit resolution** in the MusicBrainz release editor.
 
+- [Install latest from Github](./track_cannon.user.js)
+
 When you add a release (especially via an import tool), each track's artist often arrives as
 plain **text with no MBID**. Linking them one by one — searching, picking, occasionally
 splitting `A feat. B` into two credits — is the slowest part of adding a release. Track Cannon
