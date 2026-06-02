@@ -159,6 +159,11 @@ async function main() {
     const titleDown = document.activeElement === rows[1].querySelector('.t-title');
     const t2 = rows[1].querySelector('.t-title'); t2.focus(); press(t2, 'ArrowUp');
     const titleUp = document.activeElement === rows[0].querySelector('.t-title');
+    // Enter → next field, Shift+Enter → prev (non-search fields)
+    const e1 = rows[0].querySelector('.t-title'); e1.focus(); press(e1, 'Enter');
+    const titleEnter = document.activeElement === rows[1].querySelector('.t-title');
+    const e2 = rows[1].querySelector('.t-title'); e2.focus(); e2.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', shiftKey: true, bubbles: true }));
+    const titleShiftEnter = document.activeElement === rows[0].querySelector('.t-title');
     const s1 = rows[0].querySelector('.tc-search input.nm'); s1.focus(); await new Promise(r => setTimeout(r, 60));   // resolved → focus shows candidates
     press(s1, 'ArrowDown');
     const searchDown = document.activeElement === rows[1].querySelector('.tc-search input.nm');
@@ -170,7 +175,7 @@ async function main() {
     press(ins[0], 'ArrowDown'); await new Promise(r => setTimeout(r, 60));
     const multiArtistDown = document.activeElement === mrow().querySelectorAll('.tc-search input.nm')[1];
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();   // close any autocomplete popup
-    return { titleDown, titleUp, searchDown, multiArtistDown };
+    return { titleDown, titleUp, searchDown, multiArtistDown, titleEnter, titleShiftEnter };
   });
   await page.waitForTimeout(250);   // let the autocomplete popup close before later clicks
 
@@ -345,7 +350,7 @@ async function main() {
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
   log('guess case — diff:', gc.hasDiff, '· guessed:', JSON.stringify(gc.guessed), '· hover-preview:', gc.hoverPreview, '· leave-restores:', gc.leaveRestores, '· applied:', JSON.stringify(gc.after), '· stillDiff:', gc.stillDiff);
   log('Aa on hover — default:', aaHiddenDefault, '· on row hover:', aaVisibleOnHover);
-  log('arrow row-nav — title ↓:', keysNav.titleDown, '· title ↑:', keysNav.titleUp, '· resolved search ↓:', keysNav.searchDown, '· multi-artist ↓ (same track):', keysNav.multiArtistDown);
+  log('arrow row-nav — title ↓:', keysNav.titleDown, '· title ↑:', keysNav.titleUp, '· resolved search ↓:', keysNav.searchDown, '· multi-artist ↓ (same track):', keysNav.multiArtistDown, '· Enter→next:', keysNav.titleEnter, '· Shift+Enter→prev:', keysNav.titleShiftEnter);
   log('match button — before:', matchBtn.before, '· during pass:', matchBtn.during, '· after:', matchBtn.after);
   log('tools — apply-mode in header:', tools.amInHeader, '(not in bar:', !tools.amInBar + ')', '· S&R label:', JSON.stringify(tools.toolLabel), 'live-changed:', tools.srChanged, 'status:', JSON.stringify(tools.srStatus), 'restored:', tools.restoredOk, '· Guess-case label:', JSON.stringify(tools.gcLabel), 'opts:', JSON.stringify(tools.gcOpts));
   log('edit # → "A1", length → "1:23" — model now:', JSON.stringify(fields));

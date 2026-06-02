@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.210308
+// @version      2026.6.2.210907
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -611,7 +611,14 @@
     go(); setTimeout(go, 0);
     return true;
   }
-  function wireRowNav(inp) { inp.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { if (focusSameField(inp, 1)) e.preventDefault(); } else if (e.key === 'ArrowUp') { if (focusSameField(inp, -1)) e.preventDefault(); } }); }
+  // ↓/Enter → next field, ↑/Shift+Enter → prev. NOT wired on the artist search box (Enter picks there).
+  function wireRowNav(inp) {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { if (focusSameField(inp, 1)) e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { if (focusSameField(inp, -1)) e.preventDefault(); }
+      else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); if (!focusSameField(inp, e.shiftKey ? -1 : 1)) inp.blur(); }   // move on; blur (commit) if at the edge
+    });
+  }
   // show each medium's OWN unresolved count in its header (or the global count for the floating panel)
   function refreshStatus() {
     if (!MODEL || _matching) return;   // while a pass runs the headers show "matching d/n" — don't flicker the badge
@@ -856,7 +863,7 @@
         touched.forEach(commitTrack);
         if (touched.size) { Log.info('propagated credited-as', JSON.stringify(newCred), '→', touched.size, 'track(s)'); rerender(); toast(`credited-as — also set on ${touched.size} other track${touched.size > 1 ? 's' : ''}`); }
       }
-    }; enterBlurs(cred); wireRowNav(cred); line.appendChild(cred);
+    }; wireRowNav(cred); line.appendChild(cred);
     const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);
@@ -907,10 +914,10 @@
         gb.onclick = () => { restore(); applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); rerender(); };
         wrap.appendChild(gb);
       }
-      tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; enterBlurs(tin); wireRowNav(tin);
+      tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; wireRowNav(tin);
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
-      numIn.onchange = e => setNumber(t, e.target.value); enterBlurs(numIn); wireRowNav(numIn);
-      lenIn.onchange = e => setLength(t, e.target.value); enterBlurs(lenIn); wireRowNav(lenIn);
+      numIn.onchange = e => setNumber(t, e.target.value); wireRowNav(numIn);
+      lenIn.onchange = e => setLength(t, e.target.value); wireRowNav(lenIn);
       tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };
       tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
       tbody.appendChild(tr);
