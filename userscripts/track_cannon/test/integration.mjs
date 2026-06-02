@@ -101,15 +101,22 @@ async function main() {
     return { picked, popCount, userStatus, greenBar };
   });
 
-  // propagation (all mode): picking an artist copies it to every track with the same credited text
-  const propCheck = await page.evaluate(() => {
+  // propagation (all mode): picking copies to every same-credit track, marks them, outline persists till next pick
+  const propCheck = await page.evaluate(async () => {
     const tc = window.__trackCannon; tc.settings.applyMode = 'all';
-    const slots = []; tc.model.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && s.entity) slots.push(s); }));
-    const byCred = {}; slots.forEach(s => { const k = s.creditedAs.toLowerCase(); (byCred[k] = byCred[k] || []).push(s); });
+    const all = []; tc.model.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && s.entity) all.push(s); }));
+    const byCred = {}; all.forEach(s => { const k = s.creditedAs.toLowerCase(); (byCred[k] = byCred[k] || []).push(s); });
     const dup = Object.values(byCred).find(a => a.length >= 2);
     if (!dup) return { ok: false };
-    const ent = dup[0].candidates[0]; tc.pickArtist(dup[0], ent);
-    return { ok: true, cred: dup[0].creditedAs, count: dup.length, allSame: dup.every(s => s.gid === ent.gid && s.committed) };
+    tc.pickArtist(dup[0], dup[0].candidates[0]); await new Promise(r => setTimeout(r, 60));
+    const marked = dup.every(s => s._marked);
+    const domOutlined = document.querySelectorAll('#tc-panel .tc-search.tc-marked').length;
+    // next selection (a unique-credit slot, no propagation) must clear the outline
+    const cnt = {}; all.forEach(s => { cnt[s.creditedAs.toLowerCase()] = (cnt[s.creditedAs.toLowerCase()] || 0) + 1; });
+    const single = all.find(s => cnt[s.creditedAs.toLowerCase()] === 1 && s.candidates && s.candidates[0]);
+    let clearedAfter = null;
+    if (single) { tc.pickArtist(single, single.candidates[0]); await new Promise(r => setTimeout(r, 60)); clearedAfter = dup.every(s => !s._marked); }
+    return { ok: true, count: dup.length, allSame: dup.every(s => s.gid === dup[0].gid && s.committed), marked, domOutlined, clearedAfter };
   });
 
   // no apply phase — confident matches auto-commit on load and picks commit immediately

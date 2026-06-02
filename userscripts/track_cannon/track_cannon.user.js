@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.121544
+// @version      2026.6.2.122553
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -276,6 +276,7 @@
     .tc-search.matched{background:#e3f4e7;border-color:#bcdcc6}
     @keyframes tcflash{0%{box-shadow:0 0 0 3px #e0a800}70%{box-shadow:0 0 0 3px #e0a800}100%{box-shadow:0 0 0 0 rgba(224,168,0,0)}}
     .tc-search.tc-flash{animation:tcflash 1.5s ease-out}
+    .tc-search.tc-marked{border:2px solid #e0a800}   /* persists when a pick changed several tracks */
     .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
     .tc-search .mk{flex:none;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}
     .tc-joinwrap{flex:none;display:flex;align-items:center;gap:0}
@@ -384,18 +385,19 @@
   // picking an artist writes through immediately; in "all" mode it also copies to every other
   // track credited to the same text, committing each.
   function pickArtist(slot, c) {
+    MODEL.tracks.forEach(t => t.slots.forEach(s => { delete s._marked; }));   // clear the previous selection's outlines
     slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.committed = true; slot.query = null; slot._flash = true;
     if (!(slot.creditedAs || '').trim()) slot.creditedAs = c.name;   // auto-fill the credited-as when the user hasn't set one
     commitTrack(slot._entry);
-    const key = fold(slot.creditedAs); let copies = 0;
+    const key = fold(slot.creditedAs); const changed = [slot]; const touched = new Set();
     if ((SETTINGS.applyMode || 'all') === 'all' && key) {   // don't mass-propagate from an empty credit
-      const touched = new Set();
-      MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s === slot || s.status === 'set' || fold(s.creditedAs) !== key) return; s.entity = c; s.gid = c.gid; s.name = c.name; s.status = 'user'; s.committed = true; s._flash = true; if (!(s.creditedAs || '').trim()) s.creditedAs = c.name; touched.add(s._entry); }));
-      touched.forEach(commitTrack); copies = touched.size;
-      if (copies) Log.info('propagated', c.name, '→', copies, 'other track(s) credited', JSON.stringify(slot.creditedAs));
+      MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s === slot || s.status === 'set' || fold(s.creditedAs) !== key) return; s.entity = c; s.gid = c.gid; s.name = c.name; s.status = 'user'; s.committed = true; s._flash = true; if (!(s.creditedAs || '').trim()) s.creditedAs = c.name; touched.add(s._entry); changed.push(s); }));
+      touched.forEach(commitTrack);
     }
+    const copies = touched.size;
+    if (copies) { changed.forEach(s => { s._marked = true; }); Log.info('propagated', c.name, '→', copies, 'other track(s) credited', JSON.stringify(slot.creditedAs)); }   // outline persists when >1 track changed
     rerender();
-    if (copies) updateStatus(`linked “${c.name}” — also set on ${copies} matching track${copies > 1 ? 's' : ''} (flashed)`);
+    if (copies) updateStatus(`linked “${c.name}” — also set on ${copies} matching track${copies > 1 ? 's' : ''} (flashed & outlined)`);
   }
   async function revertSlot(entry, i) {
     const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig || !orig.names[i]) return;
@@ -515,7 +517,7 @@
     const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
     search.appendChild(inp);
     if (idx < entry.slots.length - 1) search.appendChild(joinControl(entry, s));   // join lives inside the box, right side
-    adorn(search, s, inp); if (s._flash) { search.classList.add('tc-flash'); delete s._flash; } line.appendChild(search);
+    adorn(search, s, inp); if (s._marked) search.classList.add('tc-marked'); if (s._flash) { search.classList.add('tc-flash'); delete s._flash; } line.appendChild(search);
     wireAutocomplete(inp, s, () => { adorn(search, s, inp); refreshBadges(); });
     // fixed-width actions area (keeps all search boxes the same width); both reveal on row hover
     const acts = document.createElement('span'); acts.className = 'tc-acts';

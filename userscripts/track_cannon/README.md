@@ -49,7 +49,8 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    over the badge column. **Revert all** resets the whole release to its page-load state. The
    toolbar — *When I pick an artist → apply to **all matching tracks** / **this track only*** —
    controls whether a pick also copies to every track credited to the same text; when it does, the
-   changed boxes **flash** so you can see every place it landed.
+   changed boxes **flash**, and (when more than one track changed) stay **outlined** until your next
+   pick, so you can review every place it landed.
 5. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
    tab; save it there, then re-open the panel to match it.
 6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself
