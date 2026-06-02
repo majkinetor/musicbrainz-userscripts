@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.203100
+// @version      2026.6.2.204135
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -221,7 +221,12 @@
     if (!entity) {
       const top = candidates[0] || null;
       if (!top) return { entity: null, source: 'none', confidence: 'none', candidates: [] };
-      entity = top; confidence = sameName(top.name, creditedAs) ? 'high' : 'low';
+      entity = top;
+      // an exact name match is only high-confidence (and auto-committed) when it's UNAMBIGUOUS — when
+      // several artists share that exact name (e.g. three "Dansu"), there's no way to know which is
+      // right, so leave it 'low' for the user to pick rather than confidently linking the first.
+      const exact = candidates.filter(c => sameName(c.name, creditedAs));
+      confidence = (sameName(top.name, creditedAs) && exact.length === 1) ? 'high' : 'low';
     }
     return { entity, source, confidence, candidates: [entity, ...candidates.filter(c => c.gid !== entity.gid)] };
   }

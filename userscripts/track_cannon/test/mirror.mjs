@@ -406,6 +406,15 @@ async function main() {
     return { ok: true, before, hadMore, after, grew: after > before };
   });
 
+  // an exact name shared by several artists must NOT auto-resolve to high (the "Dansu" case) — it stays 'low'
+  const ambiguous = await page.evaluate(async () => {
+    const tc = window.__trackCannon;
+    const fold = s => (s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
+    const m = await tc.matchSlot('Dansu');
+    const exact = (m.candidates || []).filter(c => fold(c.name) === fold('Dansu')).length;
+    return { confidence: m.confidence, source: m.source, exact };
+  });
+
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
@@ -429,6 +438,8 @@ async function main() {
     '· credited-as edit re-flags instantly:', !!(changed.afterCred && changed.afterCred.marked && changed.afterCred.hasRevert),
     '· other badge kept across revert (not →set):', changed.after?.otherKept, '(' + changed.after?.otherStatusBefore + '→' + changed.after?.otherStatusAfter + ')');
   log('search "Show more…" — results', showMore.before, '→', showMore.after, '· offered:', showMore.hadMore, '· grew:', showMore.grew);
+  log('ambiguous same-name "Dansu" — exact matches:', ambiguous.exact, '· confidence:', ambiguous.confidence,
+    '· not auto-high:', ambiguous.exact < 2 || ambiguous.confidence !== 'high');
   log('artifacts in', LOG_DIR);
   if (!HEADED) await ctx.close();
 }

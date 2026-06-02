@@ -16,12 +16,15 @@ For every unresolved track it tries, in order:
    credits (with MBIDs) and matches by title — so it doesn't just *search*, it knows the
    *correct* artist. This is the highest-confidence source and resolves most VA compilations
    outright.
-2. **Name search** against MusicBrainz's artist index for anything siblings don't cover.
+2. **Name search** against MusicBrainz's artist index for anything siblings don't cover. An exact
+   name match is only taken as high-confidence when it's **unambiguous** — when several artists share
+   that exact name (e.g. three different "Dansu"), there's no way to know which is right, so it stays
+   **LOW** for you to pick rather than confidently linking the first one.
 
 Each suggestion is tagged and the whole row is tinted by confidence: **RG** (from a sibling
-release) and **SET** (already linked) are green, **HIGH** (exact diacritic-folded name match) blue,
-**LOW** (best guess — review it) yellow, **USER** (you changed it) purple, **NONE** (nothing found)
-red. Multi-artist credits are matched slot-by-slot and the original **join phrases**
+release) and **SET** (already linked) are green, **HIGH** (a *unique* exact diacritic-folded name
+match) blue, **LOW** (best guess, or an ambiguous same-name match — review it) yellow, **USER** (you
+changed it) purple, **NONE** (nothing found) red. Multi-artist credits are matched slot-by-slot and the original **join phrases**
 (`&`, `feat.`, `and`, …) and **credited-as** text are preserved.
 
 ## Usage
