@@ -65,7 +65,7 @@ async function main() {
   await page.locator('#tc-panel').screenshot({ path: resolve(LOG_DIR, 'panel-only.png') }).catch(() => {});
   await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '720px'; p.style.maxWidth = '96vw'; } });
   // capture the type-to-search dropdown open (focus a resolved field — shows results, no typing so it stays linked)
-  await page.locator('#tc-panel .tc-mirror tbody tr .tc-search input').nth(2).click();
+  await page.locator('#tc-panel .tc-mirror tbody tr .tc-search input.nm').nth(2).click();
   await page.waitForSelector('.tc-acpop .tc-acrow', { timeout: 6000 }).catch(() => {});
   await page.waitForTimeout(500);
   await page.screenshot({ path: resolve(LOG_DIR, 'combo.png') });
@@ -76,7 +76,7 @@ async function main() {
     const tc = window.__trackCannon;
     const t = tc.model.tracks.find(t => t.slots.some(s => s.status === 'set')); if (!t) return { ok: false };
     const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
-    const inp = tr && tr.querySelector('.tc-search input'); if (!inp) return { ok: false };
+    const inp = tr && tr.querySelector('.tc-search input.nm'); if (!inp) return { ok: false };
     const val = inp.value; const direct = (await tc.searchArtist(val)).length;
     inp.focus(); await new Promise(r => setTimeout(r, 900));
     const pop = document.querySelector('.tc-acpop'); const results = pop ? pop.querySelectorAll('.tc-acrow[data-i]').length : 0;
@@ -87,7 +87,7 @@ async function main() {
   // editable combo: focus an input → results pop appears → pick the 2nd → status becomes 'user' + purple
   const userCheck = await page.evaluate(async () => {
     const tc = window.__trackCannon;
-    const inputs = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr .tc-search input')];
+    const inputs = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr .tc-search input.nm')];
     let picked = false, popCount = 0;
     for (const inp of inputs) {
       inp.focus(); await new Promise(r => setTimeout(r, 60));
@@ -129,7 +129,7 @@ async function main() {
     const tc = window.__trackCannon;
     const t = tc.model.tracks.find(t => t.slots[0].committed && t.slots.length === 1);
     const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
-    const inp = tr.querySelector('.tc-search input'); const search = inp.closest('.tc-search');
+    const inp = tr.querySelector('.tc-search input.nm'); const search = inp.closest('.tc-search');
     inp.focus(); inp.value = 'Zzz Nonexistent Band'; inp.dispatchEvent(new Event('input'));
     await new Promise(r => setTimeout(r, 90));
     return { uncommitted: !t.slots[0].committed, query: t.slots[0].query, whiteBar: !search.classList.contains('matched'), hasPlus: !!search.querySelector('.mk') };

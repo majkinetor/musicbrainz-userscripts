@@ -36,12 +36,13 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    - **credited-as override** — shown blank when it's the same as the artist name (the name is a
      faint placeholder); type here only when the credit differs from the artist's name,
    - **person/group icon** (links to the artist page),
-   - the **search bar** (same width on every line) — type to search MB live (results highlight an
-     exact-name match); it's **green when resolved** and **white when unmatched**. Inside the bar,
-     after the name, sits a small pill badge (`rg` / `name` / `user` / `set`) or, when unmatched, a
-     **＋** to create the name on MB. Typing a new phrase un-links the artist (bar goes white) and
-     keeps your text. The **join phrase** to the next artist (editable, with presets `&`, `feat.`, …)
-     is right-aligned inside the same box,
+   - the **search bar** (same width on every line) — type to search MB live (shows *Searching…*
+     while it works, highlights an exact-name match, and the popup follows the field as you scroll);
+     it's **green when resolved** and **white when unmatched** (with a **＋** at the right to create
+     the typed name on MB). Typing a new phrase un-links the artist (bar goes white) and keeps your
+     text. The **join phrase** to the next artist (editable, right-aligned, `▾` opens presets) sits
+     inside the box,
+   - a **confidence badge** column (`rg` / `name` / `user` / `set`) follows the box,
    - on hover, **↵** adds another artist to the credit and **✕** removes that artist.
 4. Multi-artist credits stack as lines within the same track row. Per track (revealed on row hover):
    **↺** reverts the whole track (all cells — artists, title, #, length) and **✕** removes it.

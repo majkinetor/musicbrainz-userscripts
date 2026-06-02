@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.112807
+// @version      2026.6.2.114942
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -89,6 +89,7 @@
     let list = [];
     try { const j = await fetch(`${ORIGIN}/ws/js/artist?q=${encodeURIComponent(name)}&limit=8&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
     catch (e) { Log.warn('search failed:', name, e.message); }
+    list = list.filter(c => c && (c.name || '').trim());   // drop the trailing empty placeholder entry
     _cache.set(k, list); return list;
   }
   async function fetchSiblings(rgGid) {
@@ -266,14 +267,17 @@
     .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
-    /* one fixed-width search box per artist (so all lines align); name + pill badge + join all live inside */
-    .tc-search{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:5px;border:1px solid #bbb;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden;cursor:text}
+    /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
+    .tc-search{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:4px;border:1px solid #bbb;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden}
     .tc-search.matched{background:#e3f4e7;border-color:#bcdcc6}
-    .tc-search .nm{flex:0 1 auto;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
-    .tc-search .tag{flex:none;font:10px Arial;color:#5a7a62;border:1px solid #aaccb4;border-radius:9px;padding:0 7px;line-height:15px;background:#fff;white-space:nowrap}
+    .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
     .tc-search .mk{flex:none;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}
-    .tc-search .tc-join{flex:none;margin-left:auto;border:1px solid transparent;background:transparent;color:#888;font:italic 12px Arial;padding:1px 2px;border-radius:3px}
-    .tc-search .tc-join:hover,.tc-search .tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
+    .tc-joinwrap{flex:none;display:flex;align-items:center;gap:0}
+    .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:#777;font:italic 12px Arial;padding:1px 2px;border-radius:3px}
+    .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
+    .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:10px;padding:0 1px;line-height:1}.tc-joinarrow:hover{color:#5f3ec0}
+    .tc-joinpop .tc-acrow{justify-content:space-between;gap:14px}.tc-joinpop .cmt{color:#999}
+    .tc-bcol{flex:none;width:50px;text-align:left;white-space:nowrap}
     .tc-enter,.tc-slotx{flex:none;cursor:pointer;border:none;background:none;font-size:13px;padding:0 1px;visibility:hidden}
     .tc-enter{color:#9a8fc0}.tc-enter:hover{color:#5f3ec0}
     .tc-slotx{color:#cc6699;font-size:12px}.tc-slotx:hover{color:#c0392b}
@@ -313,7 +317,6 @@
   function style() {
     if (document.getElementById('tc-css')) return;
     const s = document.createElement('style'); s.id = 'tc-css'; s.textContent = css; document.head.appendChild(s);
-    const dl = document.createElement('datalist'); dl.id = 'tc-joins'; dl.innerHTML = JOIN_OPTIONS.map(o => `<option value="${esc(o.value)}">${esc(o.label)}</option>`).join(''); document.body.appendChild(dl);
   }
 
   /* ── settings popover (one place; reachable from the Canon interface) ── */
@@ -422,41 +425,58 @@
   }
   function revertTrack(entry) { resetTrack(entry); rebuild(); }
 
-  // inside the search box, after the name: a pill source-badge when resolved, or a ＋ create-button when not.
-  // inserted before the join (which is right-aligned), so order is: name · badge/＋ · join.
+  // ＋ create-button at the right end of the box (before the join), only when the slot is unmatched
   function adorn(search, slot, inp) {
-    [...search.querySelectorAll('.tag,.mk')].forEach(e => e.remove());
+    [...search.querySelectorAll('.mk')].forEach(e => e.remove());
     search.classList.toggle('matched', !!slot.committed);
-    const ref = search.querySelector('.tc-join');
-    let el;
-    if (slot.committed) { el = document.createElement('span'); el.className = 'tag'; el.textContent = badgeText(slot); }
-    else { el = document.createElement('button'); el.className = 'mk'; el.textContent = '＋'; el.title = 'create this artist on MusicBrainz'; el.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs); }; }
-    search.insertBefore(el, ref);
+    if (!slot.committed) { const ref = search.querySelector('.tc-joinwrap'); const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs); }; search.insertBefore(mk, ref); }
   }
-  const fitSize = inp => { inp.size = Math.max(4, (inp.value || '').length + 1); };
+  // confidence badge in its own column (after the box, so they align)
+  function renderBadge(el, slot) { el.innerHTML = slot.committed ? `<span class="tc-badge ${slot.status}">${badgeText(slot)}</span>` : ''; }
+  // join phrase: editable text that grows right-to-left, plus a ▾ that opens the presets list
+  function joinControl(entry, slot) {
+    const wrap = document.createElement('span'); wrap.className = 'tc-joinwrap';
+    const inp = document.createElement('input'); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.title = 'join phrase to the next artist (editable; ▾ for presets)';
+    const fit = () => { inp.size = Math.max(2, inp.value.length || 2); }; fit();
+    inp.oninput = fit; inp.onchange = () => { slot.joinPhrase = inp.value; commitTrack(entry); };
+    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases';
+    let pop = null; const close = () => { if (pop) { pop.remove(); pop = null; } };
+    arrow.onclick = () => {
+      if (pop) { close(); return; }
+      pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
+      pop.innerHTML = JOIN_OPTIONS.map(o => `<div class="tc-acrow" data-v="${esc(o.value)}"><span class="nm">${esc(o.label)}</span><span class="cmt">"${esc(o.value)}"</span></div>`).join('');
+      document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
+      [...pop.querySelectorAll('[data-v]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); inp.value = row.dataset.v; fit(); slot.joinPhrase = inp.value; commitTrack(entry); close(); }; });
+      const off = e => { if (pop && !pop.contains(e.target) && e.target !== arrow) { close(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
+    };
+    wrap.appendChild(inp); wrap.appendChild(arrow);
+    return wrap;
+  }
   // attach the type-to-search autocomplete to an existing <input>
   function wireAutocomplete(inp, slot, refresh) {
-    let pop = null, list = [], hi = -1, seq = 0;
-    const close = () => { if (pop) { pop.remove(); pop = null; hi = -1; } };
+    let pop = null, list = [], hi = -1, seq = 0, onScroll = null;
+    const position = () => { if (!pop) return; const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(210, r.width) + 'px'; };
+    const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop'; document.body.appendChild(pop); onScroll = () => position(); window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
+    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     const choose = c => { close(); pickArtist(slot, c); };
+    const searching = () => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Searching…</div>`; position(); };
     const draw = arr => {
-      close(); list = arr; pop = document.createElement('div'); pop.className = 'tc-acpop';
-      const q = inp.value.trim() || slot.creditedAs;
+      ensure(); list = arr; const q = inp.value.trim() || slot.creditedAs;
       pop.innerHTML = arr.length ? arr.map((c, i) => `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
-      document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(210, r.width) + 'px';
       [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
+      position();
     };
+    const runSearch = q => { const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) draw(res); }); };
     inp.onfocus = () => {
       inp.select();
       if (slot.committed && slot.candidates && slot.candidates.length) { draw(slot.candidates); return; }
-      const my = ++seq; const q = inp.value.trim() || slot.creditedAs;
-      if (q) searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) draw(res); }); else draw([]);
+      const q = inp.value.trim() || slot.creditedAs; if (q) runSearch(q); else draw([]);
     };
     let tmr; inp.oninput = () => {
-      slot.query = inp.value; fitSize(inp);
+      slot.query = inp.value;
       // editing away from the matched artist un-links it: bar goes white, ＋ creates the typed name
       if (slot.committed && !sameName(inp.value, slot.name)) { slot.committed = false; slot.status = 'none'; slot.entity = null; slot.gid = null; commitTrack(slot._entry); if (refresh) refresh(); }
-      clearTimeout(tmr); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250);
+      clearTimeout(tmr); searching(); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250);
     };
     inp.onkeydown = e => {
       if (e.key === 'Escape') { close(); inp.blur(); }
@@ -478,18 +498,12 @@
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);
     const search = document.createElement('span'); search.className = 'tc-search';
-    const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value; fitSize(inp);
+    const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
     search.appendChild(inp);
-    // join to the next artist lives INSIDE the box (right-aligned) so every search box is the same width
-    if (idx < entry.slots.length - 1) {
-      const j = document.createElement('input'); j.className = 'tc-join'; j.setAttribute('list', 'tc-joins'); j.value = s.joinPhrase || ''; j.title = 'join phrase to the next artist (editable)';
-      j.size = Math.max(2, (s.joinPhrase || '').length || 2); j.oninput = () => { j.size = Math.max(2, j.value.length || 2); };
-      j.onchange = () => { s.joinPhrase = j.value; commitTrack(entry); }; search.appendChild(j);
-    }
-    adorn(search, s, inp);
-    wireAutocomplete(inp, s, () => adorn(search, s, inp));
-    search.onclick = e => { if (e.target === search) inp.focus(); };
-    line.appendChild(search);
+    if (idx < entry.slots.length - 1) search.appendChild(joinControl(entry, s));   // join lives inside the box, right side
+    adorn(search, s, inp); line.appendChild(search);
+    const bcol = document.createElement('span'); bcol.className = 'tc-bcol'; renderBadge(bcol, s); line.appendChild(bcol);   // badge column (aligned)
+    wireAutocomplete(inp, s, () => { adorn(search, s, inp); renderBadge(bcol, s); });
     const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); line.appendChild(add);
     if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); line.appendChild(x); }
     return line;
