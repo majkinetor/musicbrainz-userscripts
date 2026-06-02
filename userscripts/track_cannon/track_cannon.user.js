@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.165240
+// @version      2026.6.2.171328
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -379,7 +379,8 @@
     #tc-foot{display:flex;align-items:center;gap:8px;padding:8px 11px;border-top:1px solid #d7ccef;background:#f6f4fb;border-radius:0 0 6px 6px}
     #tc-foot .sp{flex:1}
 
-    #tc-mirror-wrap{margin:4px 0 10px}
+    #tc-mirror-wrap{margin:4px 0 6px}
+    .tc-medsec{margin:2px 0 14px}
     #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 2px}
     #tc-bar b{color:#563b8f}#tc-bar .sp{flex:1}
     .tc-tablewrap{overflow-x:auto}
@@ -447,12 +448,16 @@
   /* ── the one shared table ── */
   let MODEL = null;
   let ACTIVE = {};   // { mode, tbody, statusEl }
-  const updateStatus = t => { if (ACTIVE.statusEl) ACTIVE.statusEl.textContent = t; };
+  // status shows in every table's Artist header (one per medium in mirror mode, one in the panel)
+  const updateStatus = t => { document.querySelectorAll('#tc-mirror-wrap .tc-hstatus, #tc-panel .tc-hstatus').forEach(e => { e.textContent = t; }); };
   // disable the Match button while a match pass is running
   function setMatching(on) { const b = document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]'); if (b) b.disabled = on; }
-  const rerender = () => { if (ACTIVE.tbody) fillRows(ACTIVE.tbody); };
-  // update only the header count (no row rebuild) — used when a field unlinks live
-  function refreshStatus() { if (!MODEL || !ACTIVE.statusEl) return; let n = 0; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (!(s.status === 'set' || s.committed)) n++; })); updateStatus(n ? `${n} unresolved` : 'all matched'); }
+  // re-fill every active tbody (per-medium sections in mirror mode, or the single panel table)
+  const rerender = () => { if (ACTIVE.sections) ACTIVE.sections.forEach(s => fillRows(s.tbody, s.mi)); else if (ACTIVE.tbody) fillRows(ACTIVE.tbody); refreshStatus(); };
+  // our rendered row for a track, wherever it lives (a per-medium section or the floating panel)
+  const rowEl = (mi, ti) => document.querySelector(`.tc-medsec tr[data-tk="${mi}:${ti}"], #tc-panel tr[data-tk="${mi}:${ti}"]`);
+  // recompute the (global) unresolved count and show it in every header — used after a live unlink too
+  function refreshStatus() { if (!MODEL) return; let n = 0; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (!(s.status === 'set' || s.committed)) n++; })); updateStatus(n ? `${n} unresolved` : 'all matched'); }
 
   function buildTable() {
     const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '');
@@ -462,22 +467,24 @@
   }
   // the artist-selection-mode dropdown now lives in the Artist column header (right-aligned)
   const AM_SELECT = `<select class="tc-applymode tc-hdr-am" title="when you pick an artist, apply it to…"><option value="all">all matching tracks</option><option value="single">single track</option></select>`;
-  // table only (toolbar moved into the top bar); returns the tbody. Shared by both modes.
-  function mountTable(container) {
+  // one Canon table for a single medium (its own header row + Add footer); returns the tbody.
+  // mi == null renders the whole release into one table (the floating panel).
+  function mountTable(container, mi) {
     container.innerHTML = '';
     const wrap = document.createElement('div'); wrap.className = 'tc-tablewrap'; container.appendChild(wrap);
     const table = buildTable(); wrap.appendChild(table); wireResizers(table);
     const am = table.querySelector('.tc-applymode');
     if (am) {
       am.value = SETTINGS.applyMode || 'all';
-      am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); Log.info('applyMode =', am.value); };
+      am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); document.querySelectorAll('.tc-applymode').forEach(s => { s.value = am.value; }); Log.info('applyMode =', am.value); };
       ['mousedown', 'mousemove', 'click'].forEach(ev => am.addEventListener(ev, e => e.stopPropagation()));   // don't let the column resizer hijack it
     }
-    // "Add N track(s)" control (drives MB's native add-tracks for the last medium)
+    // "Add N track(s)" footer — adds to THIS medium (or the last medium for the combined panel)
+    const target = (mi == null) ? Math.max(0, mediums().length - 1) : mi;
     const addrow = document.createElement('div'); addrow.className = 'tc-addrow';
     addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" title="add blank tracks">＋</button>`;
     const addn = addrow.querySelector('.tc-addn'), addbtn = addrow.querySelector('.tc-addbtn');
-    addbtn.onclick = () => addTracks(Math.max(0, mediums().length - 1), Math.max(1, parseInt(addn.value, 10) || 1));
+    addbtn.onclick = () => addTracks(target, Math.max(1, parseInt(addn.value, 10) || 1));
     container.appendChild(addrow);
     return table.querySelector('tbody');
   }
@@ -526,7 +533,7 @@
   }
 
   const blankSlot = entry => ({ creditedAs: '', joinPhrase: '', status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _entry: entry });
-  function focusSlotInput(entry, idx) { const row = ACTIVE.tbody && ACTIVE.tbody.querySelector(`tr[data-tk="${entry.mi}:${entry.ti}"]`); if (row) { const ins = row.querySelectorAll('.tc-search input.nm'); if (ins[idx]) ins[idx].focus(); } }
+  function focusSlotInput(entry, idx) { const row = rowEl(entry.mi, entry.ti); if (row) { const ins = row.querySelectorAll('.tc-search input.nm'); if (ins[idx]) ins[idx].focus(); } }
   // split a credit: append an artist slot (the ＋ create-row / API uses this)
   function addSlot(entry) {
     const last = entry.slots[entry.slots.length - 1];
@@ -652,11 +659,11 @@
     line.appendChild(acts);
     return line;
   }
-  function fillRows(tbody) {
-    tbody.innerHTML = ''; let committed = 0, unresolved = 0, lastMi = -1; const multi = mediums().length > 1;
-    MODEL.tracks.forEach(t => {
+  function fillRows(tbody, mi) {
+    tbody.innerHTML = ''; let lastMi = -1; const multi = mediums().length > 1 && mi == null;
+    const tracks = (mi == null) ? MODEL.tracks : MODEL.tracks.filter(t => t.mi === mi);
+    tracks.forEach(t => {
       if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
-      t.slots.forEach(s => { if (s.status === 'set' || s.committed) committed++; else unresolved++; });
       const tr = document.createElement('tr'); tr.dataset.tk = t.mi + ':' + t.ti;
       tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span></td>
         <td class="c-num"><input class="t-num" value="${esc(t.number)}" title="track number"></td>
@@ -691,14 +698,17 @@
       tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
       tbody.appendChild(tr);
     });
-    updateStatus(unresolved ? `${unresolved} unresolved` : 'all matched');
   }
   async function loadAndRender(onProgress) {
-    MODEL = buildShell(); fillRows(ACTIVE.tbody); if (ACTIVE.mode === 'mirror') syncNative();   // show the table instantly
+    MODEL = buildShell();
+    if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); }   // (re)build per-medium tables + hide/tidy native
+    rerender();   // show the tables instantly
     if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else updateStatus('auto-match off — click Match');
   }
   async function rebuild() {
-    MODEL = buildShell(); rerender(); if (ACTIVE.mode === 'mirror') syncNative();
+    MODEL = buildShell();
+    if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); }
+    rerender();
     if (SETTINGS.autoMatch !== false) await matchModel();
   }
   function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track's artist to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(); }
@@ -737,10 +747,10 @@
   function updateToolBtn() { const b = toolBtnEl(); if (b) b.textContent = SETTINGS.lastTool ? (LABELS[SETTINGS.lastTool] || 'Tools') : 'Tools'; }
   // hovering the "Guess case" tool button previews the guessed form on every differing title
   function previewAllGuess(on) {
-    if (!MODEL || !ACTIVE.tbody) return;
+    if (!MODEL) return;
     MODEL.tracks.forEach(t => {
       if (!(t.guessTitle && t.guessTitle !== t.title)) return;
-      const row = ACTIVE.tbody.querySelector(`tr[data-tk="${t.mi}:${t.ti}"]`); if (!row) return;
+      const row = rowEl(t.mi, t.ti); if (!row) return;
       const tin = row.querySelector('.t-title'); if (!tin || document.activeElement === tin) return;
       if (on) { tin.value = t.guessTitle; tin.classList.add('gcpreview'); } else { tin.value = t.title; tin.classList.remove('gcpreview'); }
     });
@@ -840,18 +850,32 @@
   // the native tracklist = track tables + the #tracklist-tools row + the Guess-case fieldset + the
   // miscapitalization warnings; hide/show together (the format header is lifted out, not hidden)
   function nativeBits() {
-    const els = nativeTrackTables(); const tools = document.getElementById('tracklist-tools'); if (tools) els.push(tools);
-    els.push(...document.querySelectorAll('fieldset.guesscase, .guesscase, fieldset.advanced-medium .warning'));
-    return els;
+    // every medium has its own tools row (MB reuses the id "tracklist-tools" — querySelectorAll gets them all);
+    // hide native track tables by class too so an empty medium's header row doesn't linger
+    return [...nativeTrackTables(), ...document.querySelectorAll('table.medium, [id="tracklist-tools"], fieldset.guesscase, .guesscase, fieldset.advanced-medium .warning')];
   }
   function setNativeHidden(hidden) { nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; }); }
-  // lift each medium's format header (table.advanced-format) to the top of our wrap so it reads above
-  // the table; remember where it came from to restore on hide. Hidden warnings/tables stay behind.
-  function liftFmtHeaders(wrap) {
-    const bar = wrap.querySelector('#tc-bar'); if (!bar) return;
-    document.querySelectorAll('table.advanced-format').forEach(h => { if (!h._tcHome) h._tcHome = { parent: h.parentElement, next: h.nextSibling }; wrap.insertBefore(h, bar); });
+  // mount one Canon section (its own table header + Add footer) per medium, placed right before that
+  // medium's native track table — so MB's own format header stays naturally above it. Reconciled on
+  // every render so adding/removing a medium just works. Native collapse toggle hides our section too.
+  function mountMediums() {
+    document.querySelectorAll('#tc-mirror-wrap-sec, .tc-medsec').forEach(s => s.remove());
+    ACTIVE.sections = [];
+    const fsList = document.querySelectorAll('fieldset.advanced-medium');
+    mediums().forEach((med, mi) => {
+      const fs = fsList[mi]; if (!fs) return;
+      const trackTbl = nativeTrackTables().find(t => fs.contains(t)) || fs.querySelector('table.medium');
+      const sec = document.createElement('div'); sec.className = 'tc-medsec'; sec.dataset.mi = mi;
+      const tbody = mountTable(sec, mi);
+      if (trackTbl && trackTbl.parentElement) trackTbl.parentElement.insertBefore(sec, trackTbl); else fs.appendChild(sec);
+      ACTIVE.sections.push({ mi, tbody, sec });
+      // native ▼ collapse hides our section too — subscribe once per medium; the fresh section reads current state
+      if (med.collapsed) {
+        if (med.collapsed.subscribe && !med._tcColSub) { med._tcColSub = true; med.collapsed.subscribe(() => { const s = document.querySelector(`.tc-medsec[data-mi="${mi}"]`); if (s) s.style.display = u(med.collapsed) ? 'none' : ''; }); }
+        sec.style.display = u(med.collapsed) ? 'none' : '';
+      }
+    });
   }
-  function dropFmtHeaders() { document.querySelectorAll('table.advanced-format').forEach(h => { if (h._tcHome) { try { h._tcHome.parent.insertBefore(h, h._tcHome.next); } catch (e) {} delete h._tcHome; } }); }
   // tidy the format header to a minimal look — but ONLY once a format is chosen. With no format the
   // full native header stays (Format: label, real combo, I don't know, help, error) so the user is
   // still prompted to pick one. Move-up/down/remove buttons stay visible either way.
@@ -874,12 +898,7 @@
   }
   function tidyMediums() { document.querySelectorAll('table.advanced-format').forEach(tidyFmt); }
   function untidyMediums() { document.querySelectorAll('table.advanced-format').forEach(t => setFmtTidy(t, false)); }
-  function syncNative() {
-    setNativeHidden(!_showOriginal);
-    const wrap = document.getElementById('tc-mirror-wrap');
-    if (wrap && !_showOriginal) liftFmtHeaders(wrap); else dropFmtHeaders();
-    if (_showOriginal) untidyMediums(); else tidyMediums();
-  }
+  function syncNative() { setNativeHidden(!_showOriginal); if (_showOriginal) untidyMediums(); else tidyMediums(); }
   // watch the live tracklist so Track parser (or any native structural change) refreshes our table
   let _subscribed = false, _syncTimer = null;
   function scheduleSync() { clearTimeout(_syncTimer); _syncTimer = setTimeout(() => { if (document.getElementById('tc-mirror-wrap')) loadAndRender(); }, 400); }
@@ -896,18 +915,17 @@
   async function showMirror() {
     style(); let wrap = document.getElementById('tc-mirror-wrap');
     if (wrap) { syncNative(); return; }
+    // the global toolbar sits once at the very top of the Tracklist panel; per-medium tables mount below
     wrap = document.createElement('div'); wrap.id = 'tc-mirror-wrap';
-    const tbl = nativeTrackTables()[0];
-    if (tbl && tbl.parentElement) tbl.parentElement.insertBefore(wrap, tbl);
+    const firstFs = document.querySelector('fieldset.advanced-medium');
+    if (firstFs && firstFs.parentElement) firstFs.parentElement.insertBefore(wrap, firstFs);
     else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
-    wrap.innerHTML = `<div id="tc-bar">${BAR}</div><div class="tc-mount"></div>`;
-    syncNative();
-    const tbody = mountTable(wrap.querySelector('.tc-mount'));
-    ACTIVE = { mode: 'mirror', tbody, statusEl: wrap.querySelector('.tc-hstatus') };
+    wrap.innerHTML = `<div id="tc-bar">${BAR}</div>`;
+    ACTIVE = { mode: 'mirror', sections: [] };
     bindActions(wrap); initTools(); subscribeTracks();
     await loadAndRender((d, n) => updateStatus(`matching ${d}/${n}…`));
   }
-  function hideMirror() { dropFmtHeaders(); untidyMediums(); const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); setNativeHidden(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
+  function hideMirror() { untidyMediums(); document.querySelectorAll('.tc-medsec').forEach(s => s.remove()); const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); setNativeHidden(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
 
   /* ── entry points ── */
   function ensureLauncher() {

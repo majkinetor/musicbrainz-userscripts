@@ -10,7 +10,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const PROFILE_DIR = resolve(HERE, '..', '..', '..', '.pw-profile');
 const SCRIPT_PATH = resolve(HERE, '..', 'track_cannon.user.js');
 const SEED_PATH = resolve(HERE, 'seed-saigon.local.json');
-const ORIGIN = process.env.TC_ORIGIN || 'https://musicbrainz.org';
+const ORIGIN = process.env.TC_ORIGIN || 'https://beta.musicbrainz.org';
 const HEADED = process.argv.includes('--headed');
 const LOG_DIR = resolve(HERE, 'logs', 'mirror-' + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19));
 const log = (...a) => console.log('[mirror]', ...a);
@@ -49,7 +49,7 @@ async function main() {
   await page.locator('a, button', { hasText: /^Tracklist$/ }).first().click().catch(() => {});
 
   // mirror should auto-render once the Tracklist tab is shown; wait for its rows
-  await page.waitForSelector('#tc-mirror-wrap .tc-mirror tbody tr', { timeout: 60000 });   // shell renders instantly
+  await page.waitForSelector('.tc-medsec .tc-mirror tbody tr', { timeout: 60000 });   // shell renders instantly
   await page.waitForFunction(() => { const m = window.__trackCannon.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });   // matching done
   await page.waitForTimeout(600);
   const nativeHidden = await page.evaluate(() => [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')).every(t => t.style.display === 'none'));
@@ -65,21 +65,22 @@ async function main() {
     const moves = tbl.querySelector('td.align-right.icon');
     const idkLbl = tbl.querySelector('td.format input[type=checkbox]').closest('label');
     const warn = document.querySelector('fieldset.advanced-medium .warning');
-    const lifted = !!tbl.closest('#tc-mirror-wrap');
+    const sec = document.querySelector('.tc-medsec');
+    const aboveTable = !!(sec && (tbl.compareDocumentPosition(sec) & Node.DOCUMENT_POSITION_FOLLOWING));   // our table follows the native format header
     const set = which => { fmt.value = which; fmt.dispatchEvent(new Event('change')); };
     set(fmt.options[1].value);   // a real format → minimal
     const withFmt = { flat: fmt.classList.contains('tc-fmt-flat'), labelHidden: lbl.style.display === 'none', helpHidden: help ? help.style.display === 'none' : 'no-help', movesVisible: moves ? moves.style.display !== 'none' : 'no-moves', idkHidden: idkLbl.style.display === 'none' };
     set('');                     // no format → full native header
     const noFmt = { notFlat: !fmt.classList.contains('tc-fmt-flat'), labelShown: lbl.style.display !== 'none', idkShown: idkLbl.style.display !== 'none' };
     set(fmt.options[1].value);   // restore a format
-    return { lifted, warnHidden: warn ? warn.style.display === 'none' : 'no-warn', withFmt, noFmt };
+    return { aboveTable, warnHidden: warn ? warn.style.display === 'none' : 'no-warn', withFmt, noFmt };
   });
   // hideMirror reveals the native bits; re-show puts Canon back
   const shown = await page.evaluate(() => { window.__trackCannon.hideMirror(); const t = document.getElementById('tracklist-tools'); const tbl = [...document.querySelectorAll('table')].find(x => x.querySelector('tr.track')); return { tools: t ? t.style.display !== 'none' : null, table: tbl ? tbl.style.display !== 'none' : null }; });
   await page.evaluate(() => window.__trackCannon.showMirror());
-  await page.waitForSelector('#tc-mirror-wrap .tc-mirror tbody tr', { timeout: 30000 });
+  await page.waitForSelector('.tc-medsec .tc-mirror tbody tr', { timeout: 30000 });
   await page.waitForFunction(() => { const m = window.__trackCannon.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });
-  await page.locator('#tc-mirror-wrap').screenshot({ path: resolve(LOG_DIR, 'mirror.png') }).catch(() => page.screenshot({ path: resolve(LOG_DIR, 'mirror.png'), fullPage: true }));
+  await page.locator('#tracklist').screenshot({ path: resolve(LOG_DIR, 'mirror.png') }).catch(() => page.screenshot({ path: resolve(LOG_DIR, 'mirror.png'), fullPage: true }));
 
   const titles3 = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().slice(0, 3).map(t => u(t.name)); });
   const trackCount = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().length; });
@@ -88,22 +89,22 @@ async function main() {
   const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
 
   // guess case: messy title → diff highlight, then REAL-mouse hover preview / leave restore / click apply
-  const row1 = page.locator('#tc-mirror-wrap .tc-mirror tbody tr').first();
+  const row1 = page.locator('.tc-medsec .tc-mirror tbody tr').first();
   const setup = await page.evaluate(async () => {
-    const tin = document.querySelector('#tc-mirror-wrap .tc-mirror tbody tr .t-title');
+    const tin = document.querySelector('.tc-medsec .tc-mirror tbody tr .t-title');
     tin.value = 'the QUICK (brown) FOX feat. someone'; tin.dispatchEvent(new Event('change'));
     await new Promise(r => setTimeout(r, 100));
-    const t2 = document.querySelector('#tc-mirror-wrap .tc-mirror tbody tr .t-title');
+    const t2 = document.querySelector('.tc-medsec .tc-mirror tbody tr .t-title');
     return { hasDiff: t2.classList.contains('diff'), messy: t2.value, guessed: (t2 || {}).title ? t2.title.replace('Guess case → ', '') : null };
   });
-  const readTitle = () => page.evaluate(() => { const t = document.querySelector('#tc-mirror-wrap .tc-mirror tbody tr .t-title'); return { val: t.value, hi: t.classList.contains('gcpreview') }; });
+  const readTitle = () => page.evaluate(() => { const t = document.querySelector('.tc-medsec .tc-mirror tbody tr .t-title'); return { val: t.value, hi: t.classList.contains('gcpreview') }; });
   await row1.locator('.t-wrap').hover();   // real hover over the title cell → preview
   await page.waitForTimeout(50); const hov = await readTitle();
-  await page.locator('#tc-mirror-wrap .tc-mirror tbody tr').nth(2).locator('.t-num').hover();   // move away → restore
+  await page.locator('.tc-medsec .tc-mirror tbody tr').nth(2).locator('.t-num').hover();   // move away → restore
   await page.waitForTimeout(50); const left = await readTitle();
   await row1.locator('.t-gc').click(); await page.waitForTimeout(100);
   const gc = await page.evaluate((s) => {
-    const t = document.querySelector('#tc-mirror-wrap .tc-mirror tbody tr .t-title');
+    const t = document.querySelector('.tc-medsec .tc-mirror tbody tr .t-title');
     return { hasDiff: s.hasDiff, guessed: s.guessed, after: t.value, stillDiff: t.classList.contains('diff'), hoverPreview: s.hov.val === s.guessed && s.hov.hi, leaveRestores: s.left.val === s.messy && !s.left.hi };
   }, { ...setup, hov, left });
 
@@ -124,21 +125,21 @@ async function main() {
   const tools = await page.evaluate(async () => {
     const pause = () => new Promise(r => setTimeout(r, 120));
     const bar = document.querySelector('#tc-bar');
-    const amInHeader = !!document.querySelector('#tc-mirror-wrap .tc-mirror thead .tc-applymode');
+    const amInHeader = !!document.querySelector('.tc-medsec .tc-mirror thead .tc-applymode');
     const amInBar = !!bar.querySelector('.tc-applymode');
     const pick = async label => { bar.querySelector('[data-act="menu"]').click(); await pause(); const mi = [...document.querySelectorAll('#tc-menu .tc-mi')].find(e => e.textContent === label); mi.click(); await pause(); };
     // Search & Replace → real-time
     await pick('Search and Replace');
     const toolLabel = bar.querySelector('[data-act="tool"]').textContent;
     const find = bar.querySelector('.tc-toolopts .tc-sr-find'), rep = bar.querySelector('.tc-toolopts .tc-sr-rep');
-    const before0 = document.querySelector('#tc-mirror-wrap .tc-mirror tbody .t-title').value;
+    const before0 = document.querySelector('.tc-medsec .tc-mirror tbody .t-title').value;
     find.value = before0.slice(0, 4); find.dispatchEvent(new Event('input'));
     rep.value = 'ZZ'; rep.dispatchEvent(new Event('input'));
     await pause();
-    const afterRep = document.querySelector('#tc-mirror-wrap .tc-mirror tbody .t-title').value;
-    const srStatus = document.querySelector('#tc-mirror-wrap .tc-hstatus').textContent;
+    const afterRep = document.querySelector('.tc-medsec .tc-mirror tbody .t-title').value;
+    const srStatus = document.querySelector('.tc-medsec .tc-hstatus').textContent;
     find.value = ''; find.dispatchEvent(new Event('input')); await pause();   // clear → restore from snapshot
-    const restored = document.querySelector('#tc-mirror-wrap .tc-mirror tbody .t-title').value;
+    const restored = document.querySelector('.tc-medsec .tc-mirror tbody .t-title').value;
     // Guess case → inline options present
     await pick('Guess case');
     const gcLabel = bar.querySelector('[data-act="tool"]').textContent;
@@ -152,10 +153,10 @@ async function main() {
     const u = v => (typeof v === 'function' ? v() : v);
     const med0 = () => u(u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks).length;
     const before = med0();
-    const inp = document.querySelector('#tc-mirror-wrap .tc-addn'); inp.value = '2';
-    document.querySelector('#tc-mirror-wrap .tc-addbtn').click();
+    const inp = document.querySelector('.tc-medsec .tc-addn'); inp.value = '2';
+    document.querySelector('.tc-medsec .tc-addbtn').click();
     await new Promise(r => setTimeout(r, 700));   // scheduleSync (400ms) + render
-    const rows = document.querySelectorAll('#tc-mirror-wrap .tc-mirror tbody tr[data-tk]').length;
+    const rows = document.querySelectorAll('.tc-medsec .tc-mirror tbody tr[data-tk]').length;
     return { before, after: med0(), rows };
   });
 
@@ -182,7 +183,7 @@ async function main() {
   await page.waitForTimeout(600);
   const countAfter = await trackCount();
   const ops = { before, afterMove, countBefore, countAfter };
-  await page.locator('#tc-mirror-wrap').screenshot({ path: resolve(LOG_DIR, 'mirror-after-ops.png') }).catch(() => {});
+  await page.locator('#tracklist').screenshot({ path: resolve(LOG_DIR, 'mirror-after-ops.png') }).catch(() => {});
 
   // split/merge: add an artist slot to a single-artist track, fill it, then remove it
   const split = await page.evaluate(async () => {
@@ -200,13 +201,35 @@ async function main() {
     const c3 = credCount();
     return { title: t.title.slice(0, 20), c0, c1, slots1, c2, c3, credBefore, credAfter, autofilled: !credBefore && credAfter === cand.name };
   });
-  await page.locator('#tc-mirror-wrap').screenshot({ path: resolve(LOG_DIR, 'mirror-split.png') }).catch(() => {});
+  await page.locator('#tracklist').screenshot({ path: resolve(LOG_DIR, 'mirror-split.png') }).catch(() => {});
+
+  // multi-medium: add a 2nd medium → each medium gets its OWN Canon table with format header above + Add footer
+  const multiMed = await page.evaluate(async () => {
+    const u = v => (typeof v === 'function' ? v() : v);
+    const before = u(u(window.MB.releaseEditor.rootField.release).mediums).length;
+    const open = [...document.querySelectorAll('button')].find(b => /add medium/i.test(b.textContent) && b.getAttribute('data-click') === 'open');
+    if (open) open.click(); await new Promise(r => setTimeout(r, 500));
+    const addBtn = [...document.querySelectorAll('button')].find(b => /add medium/i.test(b.textContent) && b.getAttribute('data-click') === 'addMedium');
+    if (addBtn) addBtn.click();
+    await new Promise(r => setTimeout(r, 1400));   // mediums.subscribe → scheduleSync(400) → re-render
+    const after = u(u(window.MB.releaseEditor.rootField.release).mediums).length;
+    const perMedium = [...document.querySelectorAll('.tc-medsec')].map(sec => {
+      const fs = sec.closest('fieldset.advanced-medium');
+      const hdr = fs ? fs.querySelector('table.advanced-format') : null;
+      const above = hdr && (hdr.compareDocumentPosition(sec) & Node.DOCUMENT_POSITION_FOLLOWING);
+      return { mi: sec.dataset.mi, headerAbove: !!above, hasAdd: !!sec.querySelector('.tc-addbtn') };
+    });
+    const toolsAllHidden = [...document.querySelectorAll('[id="tracklist-tools"]')].every(t => t.style.display === 'none');
+    return { before, after, sections: document.querySelectorAll('.tc-medsec').length, perMedium, toolsAllHidden };
+  });
+  await page.locator('#tracklist').screenshot({ path: resolve(LOG_DIR, 'mirror-multimedium.png') }).catch(() => {});
 
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
   log('format header tidy —', JSON.stringify(fmtTidy));
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows);
+  log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '·', JSON.stringify(multiMed.perMedium));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);

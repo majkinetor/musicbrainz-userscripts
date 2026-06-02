@@ -67,12 +67,16 @@ Track Cannon **takes over the tracklist** as soon as a release add/edit page loa
 laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badge). MB's native tracklist —
 the table, its tools row **and** the Guess-case fieldset — is hidden while Canon is on; the floating
 **🎯 Track Cannon** button toggles Canon off/on (which reveals them). MB's **medium-format header**
-is **lifted to sit above** the table and tidied: once a format is chosen it collapses to just the
-format name as text (click it to re-open the dropdown), keeping the medium move/remove buttons; with
-**no** format selected the full native header stays so you're still prompted to pick one. The
-capitalization warnings are hidden. An **Add _N_ track(s) ＋** control sits below the table (drives
-MB's own add-tracks); **adding or removing a whole medium** re-renders the table automatically, and
-the script works on a fresh `…/release/add` with **no tracks yet**. The unresolved count shows in
+stays in place above each medium's table and is tidied: once a format is chosen it collapses to just
+the format name as text (click it to re-open the dropdown), keeping the medium move/remove buttons;
+with **no** format selected the full native header stays so you're still prompted to pick one. The
+capitalization warnings are hidden.
+
+Canon renders **one table per medium** (mirroring MB's layout): the global toolbar sits once at the
+top, then each medium shows its native **format header**, its **Canon table**, and an **Add _N_
+track(s) ＋** footer that drives MB's add-tracks for that medium. MB's **▼ collapse** toggle collapses
+that medium's Canon table too. **Adding or removing a whole medium** re-renders automatically, and the
+script works on a fresh `…/release/add` with **no tracks yet**. The unresolved count shows in
 the **Artist** header. Columns are resizable by dragging near a column border **in the header or any
 row** (widths remembered). **⚙** holds settings — **Auto-match artists on load**, **Alternate row
 colors** and **Show grid**.
