@@ -87,8 +87,9 @@ the table, its tools row **and** the Guess-case fieldset — is hidden while Can
 off/on (which reveals them). MB's **medium-format header**
 stays in place above each medium's table and is tidied: once a format is chosen it collapses to just
 the format name as text (click it to re-open the dropdown), keeping the medium move/remove buttons;
-with **no** format selected the full native header stays so you're still prompted to pick one. The
-capitalization warnings are hidden.
+with **no** format selected the full native header stays so you're still prompted to pick one. Only
+MB's **capitalization** warnings are hidden (the integrated Guess Case / **Aa** replaces them); real
+data-quality warnings — e.g. the *Digital Media / packaging* mismatch — stay visible.
 
 Canon renders **one table per medium** (mirroring MB's layout): the global toolbar sits once at the
 top, then each medium shows its native **format header**, its **Canon table**, and an **Add _N_

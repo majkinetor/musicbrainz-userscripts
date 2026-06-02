@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.205754
+// @version      2026.6.2.211955
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -1187,12 +1187,18 @@
   /* ── in-page replacement (the only mode) ── */
   let _showOriginal = false;
   function nativeTrackTables() { return [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
+  // the capitalization warnings only — MB's "extra title information" / "incorrectly capitalized" notices
+  // are redundant with our integrated Guess Case (the amber Aa). Other medium warnings (e.g. the
+  // Digital-Media / packaging one) are real data-quality issues and stay visible.
+  function capitalizationWarnings() {
+    return [...document.querySelectorAll('fieldset.advanced-medium .warning')].filter(w => /capitali[sz]/i.test(w.textContent || ''));
+  }
   // the native tracklist = track tables + the #tracklist-tools row + the Guess-case fieldset + the
   // miscapitalization warnings; hide/show together (the format header is lifted out, not hidden)
   function nativeBits() {
     // every medium has its own tools row (MB reuses the id "tracklist-tools" — querySelectorAll gets them all);
     // hide native track tables by class too so an empty medium's header row doesn't linger
-    return [...nativeTrackTables(), ...document.querySelectorAll('table.medium, [id="tracklist-tools"], fieldset.guesscase, .guesscase, fieldset.advanced-medium .warning')];
+    return [...nativeTrackTables(), ...document.querySelectorAll('table.medium, [id="tracklist-tools"], fieldset.guesscase, .guesscase'), ...capitalizationWarnings()];
   }
   function setNativeHidden(hidden) { nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; }); }
   // mount one Canon section (its own table header + Add footer) per medium, placed right before that

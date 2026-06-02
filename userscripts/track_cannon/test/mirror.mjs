@@ -67,7 +67,7 @@ async function main() {
     const help = tbl.querySelector('td.format a');
     const moves = tbl.querySelector('td.align-right.icon');
     const idkLbl = tbl.querySelector('td.format input[type=checkbox]').closest('label');
-    const warn = document.querySelector('fieldset.advanced-medium .warning');
+    const warn = [...document.querySelectorAll('fieldset.advanced-medium .warning')].find(w => /capitali[sz]/i.test(w.textContent));   // a capitalization warning (Guess Case replaces these → hidden)
     const sec = document.querySelector('.tc-medsec');
     const aboveTable = !!(sec && (tbl.compareDocumentPosition(sec) & Node.DOCUMENT_POSITION_FOLLOWING));   // our table follows the native format header
     const set = which => { fmt.value = which; fmt.dispatchEvent(new Event('change')); };
@@ -76,7 +76,19 @@ async function main() {
     set('');                     // no format → full native header
     const noFmt = { notFlat: !fmt.classList.contains('tc-fmt-flat'), labelShown: lbl.style.display !== 'none', idkShown: idkLbl.style.display !== 'none' };
     set(fmt.options[1].value);   // restore a format
-    return { aboveTable, warnHidden: warn ? warn.style.display === 'none' : 'no-warn', withFmt, noFmt };
+    return { aboveTable, warnHidden: warn ? warn.style.display === 'none' : 'no-cap-warn', withFmt, noFmt };
+  });
+  // a non-capitalization warning (e.g. the Digital-Media / packaging one) must stay VISIBLE in Canon
+  const realWarn = await page.evaluate(async () => {
+    const fs = document.querySelector('fieldset.advanced-medium'); if (!fs) return { ok: false };
+    const w = document.createElement('div'); w.className = 'warning'; w.id = 'tc-test-warn';
+    w.textContent = 'Warning: This medium format is set to “Digital Media”, but the packaging type is not “None”.';
+    fs.appendChild(w);
+    await new Promise(r => setTimeout(r, 700));   // let the sync watcher run setNativeHidden at least once
+    const el = document.getElementById('tc-test-warn');
+    const visible = !!el && getComputedStyle(el).display !== 'none';
+    if (el) el.remove();
+    return { ok: true, visible };
   });
   // hideMirror reveals the native bits; re-show puts Canon back
   const shown = await page.evaluate(() => { window.__trackCannon.hideMirror(); const t = document.getElementById('tracklist-tools'); const tbl = [...document.querySelectorAll('table')].find(x => x.querySelector('tr.track')); return { tools: t ? t.style.display !== 'none' : null, table: tbl ? tbl.style.display !== 'none' : null }; });
@@ -430,7 +442,7 @@ async function main() {
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
-  log('format header tidy —', JSON.stringify(fmtTidy));
+  log('format header tidy —', JSON.stringify(fmtTidy), '· capitalization warn hidden:', fmtTidy.warnHidden, '· real (packaging) warn shown:', realWarn.visible);
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows,
     '· new tracks blank (no inherited artist):', addTracks.newCredit.every(c => !c), JSON.stringify(addTracks.newCredit));
   log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter, '· settings help→README:', compact.helpOk);
