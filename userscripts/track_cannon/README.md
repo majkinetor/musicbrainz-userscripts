@@ -42,13 +42,14 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
      the typed name on MB). Typing a new phrase un-links the artist (bar goes white) and keeps your
      text. The **join phrase** to the next artist (editable, right-aligned, `▾` opens presets) sits
      inside the box,
-   - a **confidence badge** column (`rg` / `name` / `user` / `set`) follows the box,
    - on hover, **↵** adds another artist to the credit and **✕** removes that artist.
-4. Multi-artist credits stack as lines within the same track row. Per track (revealed on row hover):
-   **↺** reverts the whole track (all cells — artists, title, #, length) and **✕** removes it.
-   **Revert all** resets the whole release to its page-load state. The toolbar — *When I pick an
-   artist → apply to **all matching tracks** / **this track only*** — controls whether a pick also
-   copies to every track credited to the same text.
+   The **last column** holds a centered **confidence badge** (`rg` / `name` / `user` / `set`).
+4. Multi-artist credits stack as lines within the same track row. On row hover, the track actions
+   **↺** (revert the whole track — artists, title, #, length) and **✕** (remove the track) appear
+   over the badge column. **Revert all** resets the whole release to its page-load state. The
+   toolbar — *When I pick an artist → apply to **all matching tracks** / **this track only*** —
+   controls whether a pick also copies to every track credited to the same text; when it does, the
+   changed boxes **flash** so you can see every place it landed.
 5. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
    tab; save it there, then re-open the panel to match it.
 6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself

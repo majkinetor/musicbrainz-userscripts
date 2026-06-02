@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.114942
+// @version      2026.6.2.121544
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -226,7 +226,7 @@
   ];
 
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
-  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'rev', w: 24, label: '' }, { k: 'x', w: 24, label: '' }];
+  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: '' }];
   const badgeText = s => ({ rg: 'rg', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
@@ -247,20 +247,24 @@
     .tc-mirror{table-layout:fixed;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff}
     .tc-mirror th{position:relative;background:#eee;border-bottom:2px solid #ccc;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
     .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:3px 6px;vertical-align:middle;overflow:hidden;background:#fff}
+    .tc-mirror td.c-art,.tc-mirror td.c-badge{vertical-align:top}
+    .tc-mirror td.c-badge{position:relative;padding:0;text-align:center}
     .tc-mirror .tc-resizer{position:absolute;right:0;top:0;height:100%;width:7px;cursor:col-resize}
     .tc-mirror .c-num{color:#888;font-variant-numeric:tabular-nums}
     .tc-mirror .c-mv{white-space:nowrap;text-align:center}
-    .tc-mirror .c-rev,.tc-mirror .c-x{text-align:center}
     .tc-mirror input.t-title,.tc-mirror input.t-len,.tc-mirror input.t-num{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;font:13px Arial;padding:3px 2px}
     .tc-mirror input.t-len,.tc-mirror input.t-num{text-align:right;color:#666}
     .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:#bbb;background:#fff}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
-    .tc-mirror .trev,.tc-mirror .rm{cursor:pointer;border:none;background:none;font-size:14px;visibility:hidden}
-    .tc-mirror tr:hover .trev,.tc-mirror tr:hover .rm{visibility:visible}
-    .tc-mirror .trev{color:#9a8fc0}.tc-mirror .trev:hover{color:#5f3ec0}
-    .tc-mirror .rm{color:#c0392b;font-weight:bold}
-    /* one artist = one aligned line: credited-as · icon · colored search bar · join · ↵ (✕ on hover) */
-    .tc-aslot{display:flex;align-items:center;gap:5px;padding:2px 0;border-top:1px solid rgba(0,0,0,.05)}
+    /* badge column: pills per artist line; on row hover the track ↺/✕ overlay it */
+    .tc-bl{height:28px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-top:1px solid rgba(0,0,0,.05)}.tc-bl:first-child{border-top:none}
+    .tc-trackacts{position:absolute;inset:0;display:none;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,.93)}
+    .tc-mirror tr:hover .tc-trackacts{display:flex}
+    .tc-trackacts button{cursor:pointer;border:none;background:none;font-size:16px;line-height:1}
+    .tc-trackacts .trev{color:#9a8fc0}.tc-trackacts .trev:hover{color:#5f3ec0}
+    .tc-trackacts .rm{color:#c0392b;font-weight:bold}.tc-trackacts .rm:hover{color:#a02519}
+    /* one artist = one aligned fixed-height line: credited-as · icon · search box · acts */
+    .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box;border-top:1px solid rgba(0,0,0,.05)}
     .tc-aslot:first-child{border-top:none}
     .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px}
     .tc-cred::placeholder{color:#cfcfcf}
@@ -270,6 +274,8 @@
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
     .tc-search{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:4px;border:1px solid #bbb;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden}
     .tc-search.matched{background:#e3f4e7;border-color:#bcdcc6}
+    @keyframes tcflash{0%{box-shadow:0 0 0 3px #e0a800}70%{box-shadow:0 0 0 3px #e0a800}100%{box-shadow:0 0 0 0 rgba(224,168,0,0)}}
+    .tc-search.tc-flash{animation:tcflash 1.5s ease-out}
     .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
     .tc-search .mk{flex:none;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}
     .tc-joinwrap{flex:none;display:flex;align-items:center;gap:0}
@@ -277,10 +283,10 @@
     .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
     .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:10px;padding:0 1px;line-height:1}.tc-joinarrow:hover{color:#5f3ec0}
     .tc-joinpop .tc-acrow{justify-content:space-between;gap:14px}.tc-joinpop .cmt{color:#999}
-    .tc-bcol{flex:none;width:50px;text-align:left;white-space:nowrap}
-    .tc-enter,.tc-slotx{flex:none;cursor:pointer;border:none;background:none;font-size:13px;padding:0 1px;visibility:hidden}
-    .tc-enter{color:#9a8fc0}.tc-enter:hover{color:#5f3ec0}
-    .tc-slotx{color:#cc6699;font-size:12px}.tc-slotx:hover{color:#c0392b}
+    .tc-acts{flex:none;width:44px;display:flex;align-items:center;justify-content:flex-end;gap:4px}
+    .tc-enter,.tc-slotx{cursor:pointer;border:none;background:none;padding:0 1px;visibility:hidden;line-height:1}
+    .tc-enter{color:#7d6bc0;font-size:19px}.tc-enter:hover{color:#5f3ec0}
+    .tc-slotx{color:#cc6699;font-size:13px}.tc-slotx:hover{color:#c0392b}
     .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx{visibility:visible}
     .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
@@ -378,17 +384,18 @@
   // picking an artist writes through immediately; in "all" mode it also copies to every other
   // track credited to the same text, committing each.
   function pickArtist(slot, c) {
-    slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.committed = true; slot.query = null;
+    slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.committed = true; slot.query = null; slot._flash = true;
     if (!(slot.creditedAs || '').trim()) slot.creditedAs = c.name;   // auto-fill the credited-as when the user hasn't set one
     commitTrack(slot._entry);
-    const key = fold(slot.creditedAs);
+    const key = fold(slot.creditedAs); let copies = 0;
     if ((SETTINGS.applyMode || 'all') === 'all' && key) {   // don't mass-propagate from an empty credit
       const touched = new Set();
-      MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s === slot || s.status === 'set' || fold(s.creditedAs) !== key) return; s.entity = c; s.gid = c.gid; s.name = c.name; s.status = 'user'; s.committed = true; if (!(s.creditedAs || '').trim()) s.creditedAs = c.name; touched.add(s._entry); }));
-      touched.forEach(commitTrack);
-      if (touched.size) Log.info('propagated', c.name, '→', touched.size, 'other track(s) credited', JSON.stringify(slot.creditedAs));
+      MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s === slot || s.status === 'set' || fold(s.creditedAs) !== key) return; s.entity = c; s.gid = c.gid; s.name = c.name; s.status = 'user'; s.committed = true; s._flash = true; if (!(s.creditedAs || '').trim()) s.creditedAs = c.name; touched.add(s._entry); }));
+      touched.forEach(commitTrack); copies = touched.size;
+      if (copies) Log.info('propagated', c.name, '→', copies, 'other track(s) credited', JSON.stringify(slot.creditedAs));
     }
     rerender();
+    if (copies) updateStatus(`linked “${c.name}” — also set on ${copies} matching track${copies > 1 ? 's' : ''} (flashed)`);
   }
   async function revertSlot(entry, i) {
     const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig || !orig.names[i]) return;
@@ -401,7 +408,7 @@
   }
 
   const blankSlot = entry => ({ creditedAs: '', joinPhrase: '', status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _entry: entry });
-  function focusSlotInput(entry, idx) { const row = ACTIVE.tbody && ACTIVE.tbody.querySelector(`tr[data-tk="${entry.mi}:${entry.ti}"]`); if (row) { const ins = row.querySelectorAll('.tc-search input'); if (ins[idx]) ins[idx].focus(); } }
+  function focusSlotInput(entry, idx) { const row = ACTIVE.tbody && ACTIVE.tbody.querySelector(`tr[data-tk="${entry.mi}:${entry.ti}"]`); if (row) { const ins = row.querySelectorAll('.tc-search input.nm'); if (ins[idx]) ins[idx].focus(); } }
   // split a credit: append an artist slot (the ＋ create-row / API uses this)
   function addSlot(entry) {
     const last = entry.slots[entry.slots.length - 1];
@@ -431,8 +438,13 @@
     search.classList.toggle('matched', !!slot.committed);
     if (!slot.committed) { const ref = search.querySelector('.tc-joinwrap'); const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs); }; search.insertBefore(mk, ref); }
   }
-  // confidence badge in its own column (after the box, so they align)
-  function renderBadge(el, slot) { el.innerHTML = slot.committed ? `<span class="tc-badge ${slot.status}">${badgeText(slot)}</span>` : ''; }
+  // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
+  function renderBadgeCell(cell, track) {
+    cell.innerHTML = track.slots.map(s => `<div class="tc-bl">${s.committed ? `<span class="tc-badge ${s.status}">${badgeText(s)}</span>` : ''}</div>`).join('')
+      + `<div class="tc-trackacts"><button class="trev" title="revert this track">↺</button><button class="rm" title="remove track">✕</button></div>`;
+    cell.querySelector('.trev').onclick = () => revertTrack(track);
+    cell.querySelector('.rm').onclick = () => { removeTrack(track); rebuild(); };
+  }
   // join phrase: editable text that grows right-to-left, plus a ▾ that opens the presets list
   function joinControl(entry, slot) {
     const wrap = document.createElement('span'); wrap.className = 'tc-joinwrap';
@@ -470,13 +482,15 @@
     inp.onfocus = () => {
       inp.select();
       if (slot.committed && slot.candidates && slot.candidates.length) { draw(slot.candidates); return; }
-      const q = inp.value.trim() || slot.creditedAs; if (q) runSearch(q); else draw([]);
+      const q = inp.value.trim() || (slot.creditedAs || '').trim(); if (q) runSearch(q); else close();   // empty → no dropdown
     };
     let tmr; inp.oninput = () => {
       slot.query = inp.value;
       // editing away from the matched artist un-links it: bar goes white, ＋ creates the typed name
       if (slot.committed && !sameName(inp.value, slot.name)) { slot.committed = false; slot.status = 'none'; slot.entity = null; slot.gid = null; commitTrack(slot._entry); if (refresh) refresh(); }
-      clearTimeout(tmr); searching(); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250);
+      clearTimeout(tmr);
+      if (!inp.value.trim()) { close(); return; }   // nothing typed → don't search
+      searching(); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250);
     };
     inp.onkeydown = e => {
       if (e.key === 'Escape') { close(); inp.blur(); }
@@ -488,7 +502,7 @@
   }
 
   // one artist = one aligned line: [credited-as][icon][green/white search bar][join][↵ hover][✕ hover]
-  function slotEl(entry, s, idx) {
+  function slotEl(entry, s, idx, refreshBadges) {
     const line = document.createElement('div'); line.className = 'tc-aslot';
     // credited-as: shown empty when it's exactly the artist name (the name is the placeholder); only a real override shows
     const same = s.name && s.creditedAs === s.name;
@@ -501,11 +515,13 @@
     const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
     search.appendChild(inp);
     if (idx < entry.slots.length - 1) search.appendChild(joinControl(entry, s));   // join lives inside the box, right side
-    adorn(search, s, inp); line.appendChild(search);
-    const bcol = document.createElement('span'); bcol.className = 'tc-bcol'; renderBadge(bcol, s); line.appendChild(bcol);   // badge column (aligned)
-    wireAutocomplete(inp, s, () => { adorn(search, s, inp); renderBadge(bcol, s); });
-    const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); line.appendChild(add);
-    if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); line.appendChild(x); }
+    adorn(search, s, inp); if (s._flash) { search.classList.add('tc-flash'); delete s._flash; } line.appendChild(search);
+    wireAutocomplete(inp, s, () => { adorn(search, s, inp); refreshBadges(); });
+    // fixed-width actions area (keeps all search boxes the same width); both reveal on row hover
+    const acts = document.createElement('span'); acts.className = 'tc-acts';
+    const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
+    if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x); }
+    line.appendChild(acts);
     return line;
   }
   function fillRows(tbody) {
@@ -519,16 +535,15 @@
         <td class="c-title"><input class="t-title" value="${esc(t.title)}"></td>
         <td class="c-art"></td>
         <td class="c-len"><input class="t-len" value="${esc(t.length)}"></td>
-        <td class="c-rev"><button class="trev" title="revert this track to the original">↺</button></td>
-        <td class="c-x"><button class="rm" title="remove track">✕</button></td>`;
-      const art = tr.querySelector('.c-art'); t.slots.forEach((s, si) => art.appendChild(slotEl(t, s, si)));
+        <td class="c-badge"></td>`;
+      const badgeCell = tr.querySelector('.c-badge'); const refreshBadges = () => renderBadgeCell(badgeCell, t);
+      const art = tr.querySelector('.c-art'); t.slots.forEach((s, si) => art.appendChild(slotEl(t, s, si, refreshBadges)));
+      refreshBadges();
       tr.querySelector('.t-num').onchange = e => setNumber(t, e.target.value);
       tr.querySelector('.t-title').onchange = e => setTitle(t, e.target.value);
       tr.querySelector('.t-len').onchange = e => setLength(t, e.target.value);
       tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };
       tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
-      tr.querySelector('.trev').onclick = () => revertTrack(t);
-      tr.querySelector('.rm').onclick = () => { removeTrack(t); rebuild(); };
       tbody.appendChild(tr);
     });
     updateStatus(`${MODEL.tracks.length} tracks · ${committed} linked · ${unresolved} to resolve`);
