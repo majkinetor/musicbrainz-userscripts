@@ -85,23 +85,25 @@ async function main() {
   // no apply phase — confident matches auto-commit on load; verify they're written to the model
   const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
 
-  // guess case: messy title → diff highlight + per-title apply
-  const gc = await page.evaluate(async () => {
-    const sel = () => document.querySelector('#tc-mirror-wrap .tc-mirror tbody tr');
-    const tin = sel().querySelector('.t-title'); tin.value = 'the QUICK (brown) FOX feat. someone'; tin.dispatchEvent(new Event('change'));
+  // guess case: messy title → diff highlight, then REAL-mouse hover preview / leave restore / click apply
+  const row1 = page.locator('#tc-mirror-wrap .tc-mirror tbody tr').first();
+  const setup = await page.evaluate(async () => {
+    const tin = document.querySelector('#tc-mirror-wrap .tc-mirror tbody tr .t-title');
+    tin.value = 'the QUICK (brown) FOX feat. someone'; tin.dispatchEvent(new Event('change'));
     await new Promise(r => setTimeout(r, 100));
-    const t2 = sel().querySelector('.t-title'); const hasDiff = t2.classList.contains('diff');
-    const btn = sel().querySelector('.t-gc'); const guessed = btn ? btn.title.replace('Guess case → ', '') : null;
-    // MB-style: hover previews the guessed title (highlighted), leave restores it, click applies
-    const messy = sel().querySelector('.t-title').value;
-    btn.dispatchEvent(new Event('mouseenter')); await new Promise(r => setTimeout(r, 30));
-    const hoverVal = sel().querySelector('.t-title').value; const hoverHi = sel().querySelector('.t-title').classList.contains('gcpreview');
-    btn.dispatchEvent(new Event('mouseleave')); await new Promise(r => setTimeout(r, 30));
-    const leaveVal = sel().querySelector('.t-title').value; const leaveHi = sel().querySelector('.t-title').classList.contains('gcpreview');
-    if (btn) btn.click(); await new Promise(r => setTimeout(r, 100));
-    const after = sel().querySelector('.t-title').value; const stillDiff = sel().querySelector('.t-title').classList.contains('diff');
-    return { hasDiff, guessed, after, stillDiff, hoverPreview: hoverVal === guessed && hoverHi, leaveRestores: leaveVal === messy && !leaveHi };
+    const t2 = document.querySelector('#tc-mirror-wrap .tc-mirror tbody tr .t-title');
+    return { hasDiff: t2.classList.contains('diff'), messy: t2.value, guessed: (t2 || {}).title ? t2.title.replace('Guess case → ', '') : null };
   });
+  const readTitle = () => page.evaluate(() => { const t = document.querySelector('#tc-mirror-wrap .tc-mirror tbody tr .t-title'); return { val: t.value, hi: t.classList.contains('gcpreview') }; });
+  await row1.locator('.t-wrap').hover();   // real hover over the title cell → preview
+  await page.waitForTimeout(50); const hov = await readTitle();
+  await page.locator('#tc-mirror-wrap .tc-mirror tbody tr').nth(2).locator('.t-num').hover();   // move away → restore
+  await page.waitForTimeout(50); const left = await readTitle();
+  await row1.locator('.t-gc').click(); await page.waitForTimeout(100);
+  const gc = await page.evaluate((s) => {
+    const t = document.querySelector('#tc-mirror-wrap .tc-mirror tbody tr .t-title');
+    return { hasDiff: s.hasDiff, guessed: s.guessed, after: t.value, stillDiff: t.classList.contains('diff'), hoverPreview: s.hov.val === s.guessed && s.hov.hi, leaveRestores: s.left.val === s.messy && !s.left.hi };
+  }, { ...setup, hov, left });
 
   // editable # and length write through to the model
   const fields = await page.evaluate(async () => {

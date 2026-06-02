@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.162228
+// @version      2026.6.2.162731
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -652,11 +652,15 @@
       if (diff) {
         tin.classList.add('diff'); tin.title = 'Guess case → ' + t.guessTitle;
         const gb = document.createElement('button'); gb.className = 't-gc'; gb.textContent = 'Aa'; gb.title = 'Guess case → ' + t.guessTitle;
-        // like MB's integrated guess case: preview on hover, restore on leave, apply on click
-        gb.onmouseenter = () => { tin.value = t.guessTitle; tin.classList.add('gcpreview'); };
-        gb.onmouseleave = () => { tin.value = t.title; tin.classList.remove('gcpreview'); };
-        gb.onclick = () => { tin.classList.remove('gcpreview'); applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); rerender(); };
-        tr.querySelector('.t-wrap').appendChild(gb);
+        const wrap = tr.querySelector('.t-wrap');
+        // like MB's integrated guess case: hovering the title cell previews the guessed name
+        // (highlighted), leaving restores it, clicking Aa applies it. Never preview while editing.
+        const preview = () => { if (document.activeElement !== tin) { tin.value = t.guessTitle; tin.classList.add('gcpreview'); } };
+        const restore = () => { tin.value = t.title; tin.classList.remove('gcpreview'); };
+        wrap.onmouseenter = preview; wrap.onmouseleave = () => { if (document.activeElement !== tin) restore(); };
+        tin.addEventListener('focus', restore);   // clicking in to edit shows the real title, not the preview
+        gb.onclick = () => { restore(); applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); rerender(); };
+        wrap.appendChild(gb);
       }
       tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; enterBlurs(tin);
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');

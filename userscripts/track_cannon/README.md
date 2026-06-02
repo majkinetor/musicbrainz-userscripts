@@ -54,8 +54,8 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    propagates the same way (in *all matching tracks* mode).
 5. Title tools live in the **Tools** menu (using MusicBrainz's own functions): a title that differs
    from its **Guess Case** form is highlighted amber with an **Aa** button to fix that one — like
-   MB's integrated guess case, **hovering** the button previews the guessed title (green) in place,
-   **leaving** restores it, and **clicking** applies it; **Guess case** fixes all titles (with
+   MB's integrated guess case, **hovering the title** previews the guessed form (green) in place,
+   **leaving** restores it, and **clicking Aa** applies it; **Guess case** fixes all titles (with
    language / *Keep uppercased* / *Uppercase Roman numerals* options inline); **Guess feat.** pulls
    `feat. X` out of titles into artist credits (then re-matches).
 7. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
