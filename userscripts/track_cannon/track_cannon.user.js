@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.111007
+// @version      2026.6.2.112807
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -266,13 +266,14 @@
     .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
-    .tc-search{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:3px;border:1px solid #bbb;border-radius:3px;background:#fff;padding:0 4px}
+    /* one fixed-width search box per artist (so all lines align); name + pill badge + join all live inside */
+    .tc-search{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:5px;border:1px solid #bbb;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden;cursor:text}
     .tc-search.matched{background:#e3f4e7;border-color:#bcdcc6}
-    .tc-search input{flex:1 1 0;min-width:0;border:none;background:transparent;font:12px Arial;padding:3px 1px;outline:none}
-    .tc-search .tag{flex:none;font:10px Arial;color:#788a7c}
-    .tc-search .mk{flex:none;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:14px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}
-    .tc-join{flex:none;width:auto;min-width:18px;border:1px solid transparent;background:transparent;color:#999;font:italic 11px Arial;padding:1px 2px;border-radius:3px}
-    .tc-join:hover,.tc-join:focus{border-color:#cdbff0;background:#faf9ff;color:#444}
+    .tc-search .nm{flex:0 1 auto;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
+    .tc-search .tag{flex:none;font:10px Arial;color:#5a7a62;border:1px solid #aaccb4;border-radius:9px;padding:0 7px;line-height:15px;background:#fff;white-space:nowrap}
+    .tc-search .mk{flex:none;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}
+    .tc-search .tc-join{flex:none;margin-left:auto;border:1px solid transparent;background:transparent;color:#888;font:italic 12px Arial;padding:1px 2px;border-radius:3px}
+    .tc-search .tc-join:hover,.tc-search .tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
     .tc-enter,.tc-slotx{flex:none;cursor:pointer;border:none;background:none;font-size:13px;padding:0 1px;visibility:hidden}
     .tc-enter{color:#9a8fc0}.tc-enter:hover{color:#5f3ec0}
     .tc-slotx{color:#cc6699;font-size:12px}.tc-slotx:hover{color:#c0392b}
@@ -421,13 +422,18 @@
   }
   function revertTrack(entry) { resetTrack(entry); rebuild(); }
 
-  // green search bar adornment: a small source tag when resolved, or a ＋ create-button when not
+  // inside the search box, after the name: a pill source-badge when resolved, or a ＋ create-button when not.
+  // inserted before the join (which is right-aligned), so order is: name · badge/＋ · join.
   function adorn(search, slot, inp) {
     [...search.querySelectorAll('.tag,.mk')].forEach(e => e.remove());
     search.classList.toggle('matched', !!slot.committed);
-    if (slot.committed) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = badgeText(slot); search.appendChild(tag); }
-    else { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs); }; search.appendChild(mk); }
+    const ref = search.querySelector('.tc-join');
+    let el;
+    if (slot.committed) { el = document.createElement('span'); el.className = 'tag'; el.textContent = badgeText(slot); }
+    else { el = document.createElement('button'); el.className = 'mk'; el.textContent = '＋'; el.title = 'create this artist on MusicBrainz'; el.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs); }; }
+    search.insertBefore(el, ref);
   }
+  const fitSize = inp => { inp.size = Math.max(4, (inp.value || '').length + 1); };
   // attach the type-to-search autocomplete to an existing <input>
   function wireAutocomplete(inp, slot, refresh) {
     let pop = null, list = [], hi = -1, seq = 0;
@@ -447,7 +453,7 @@
       if (q) searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) draw(res); }); else draw([]);
     };
     let tmr; inp.oninput = () => {
-      slot.query = inp.value;
+      slot.query = inp.value; fitSize(inp);
       // editing away from the matched artist un-links it: bar goes white, ＋ creates the typed name
       if (slot.committed && !sameName(inp.value, slot.name)) { slot.committed = false; slot.status = 'none'; slot.entity = null; slot.gid = null; commitTrack(slot._entry); if (refresh) refresh(); }
       clearTimeout(tmr); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250);
@@ -472,15 +478,18 @@
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);
     const search = document.createElement('span'); search.className = 'tc-search';
-    const inp = document.createElement('input'); inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
-    search.appendChild(inp); adorn(search, s, inp);
-    wireAutocomplete(inp, s, () => adorn(search, s, inp)); line.appendChild(search);
-    // join to the next artist — editable like credited-as (text that opens a combo of presets)
+    const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value; fitSize(inp);
+    search.appendChild(inp);
+    // join to the next artist lives INSIDE the box (right-aligned) so every search box is the same width
     if (idx < entry.slots.length - 1) {
       const j = document.createElement('input'); j.className = 'tc-join'; j.setAttribute('list', 'tc-joins'); j.value = s.joinPhrase || ''; j.title = 'join phrase to the next artist (editable)';
       j.size = Math.max(2, (s.joinPhrase || '').length || 2); j.oninput = () => { j.size = Math.max(2, j.value.length || 2); };
-      j.onchange = () => { s.joinPhrase = j.value; commitTrack(entry); }; line.appendChild(j);
+      j.onchange = () => { s.joinPhrase = j.value; commitTrack(entry); }; search.appendChild(j);
     }
+    adorn(search, s, inp);
+    wireAutocomplete(inp, s, () => adorn(search, s, inp));
+    search.onclick = e => { if (e.target === search) inp.focus(); };
+    line.appendChild(search);
     const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); line.appendChild(add);
     if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); line.appendChild(x); }
     return line;
