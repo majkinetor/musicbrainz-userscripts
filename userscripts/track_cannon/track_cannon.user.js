@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.150238
+// @version      2026.6.2.151324
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -416,6 +416,8 @@
   let ACTIVE = {};   // { mode, tbody, statusEl }
   const updateStatus = t => { if (ACTIVE.statusEl) ACTIVE.statusEl.textContent = t; };
   const rerender = () => { if (ACTIVE.tbody) fillRows(ACTIVE.tbody); };
+  // update only the header count (no row rebuild) — used when a field unlinks live
+  function refreshStatus() { if (!MODEL || !ACTIVE.statusEl) return; let n = 0; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (!(s.status === 'set' || s.committed)) n++; })); updateStatus(n ? `${n} unresolved` : 'all matched'); }
 
   function buildTable() {
     const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '');
@@ -588,7 +590,7 @@
     search.appendChild(inp);
     if (idx < entry.slots.length - 1) search.appendChild(joinControl(entry, s));   // join lives inside the box, right side
     adorn(search, s, inp); if (s._marked) search.classList.add('tc-marked'); if (s._flash) { search.classList.add('tc-flash'); delete s._flash; } line.appendChild(search);
-    wireAutocomplete(inp, s, () => { adorn(search, s, inp); refreshBadges(); });
+    wireAutocomplete(inp, s, () => { adorn(search, s, inp); refreshBadges(); refreshStatus(); });
     // fixed-width actions area (keeps all search boxes the same width); both reveal on row hover
     const acts = document.createElement('span'); acts.className = 'tc-acts';
     const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);

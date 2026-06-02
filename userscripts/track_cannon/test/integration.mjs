@@ -146,7 +146,8 @@ async function main() {
     const inp = tr.querySelector('.tc-search input.nm'); const search = inp.closest('.tc-search');
     inp.focus(); inp.value = 'Zzz Nonexistent Band'; inp.dispatchEvent(new Event('input'));
     await new Promise(r => setTimeout(r, 90));
-    return { uncommitted: !t.slots[0].committed, query: t.slots[0].query, whiteBar: !search.classList.contains('matched'), hasPlus: !!search.querySelector('.mk') };
+    const status = (document.querySelector('#tc-panel .tc-hstatus') || {}).textContent;
+    return { uncommitted: !t.slots[0].committed, query: t.slots[0].query, whiteBar: !search.classList.contains('matched'), hasPlus: !!search.querySelector('.mk'), status };
   });
 
   await page.screenshot({ path: resolve(LOG_DIR, 'after.png'), fullPage: true });
