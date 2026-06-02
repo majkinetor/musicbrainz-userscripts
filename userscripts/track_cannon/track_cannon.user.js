@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.202302
+// @version      2026.6.2.205524
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -68,7 +68,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, lastTool: '', layout: 'cozy' }; try { return Object.assign(d, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return d; } }
+  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, lastTool: '', layout: 'cozy', lastView: 'canon' }; try { return Object.assign(d, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -380,7 +380,7 @@
   ];
 
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
-  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 200, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: '' }];
+  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: '' }];
   const badgeText = s => ({ rg: 'rg', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
@@ -401,7 +401,7 @@
     .tc-icon{cursor:pointer;border:none;background:none;font-size:13px;padding:0 2px;color:#666}
     #tc-panel a,#tc-mirror-wrap a{color:#4800a0;text-decoration:none}#tc-panel a:hover,#tc-mirror-wrap a:hover{text-decoration:underline}
 
-    .tc-mirror{table-layout:fixed;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff}
+    .tc-mirror{table-layout:fixed;width:100%;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff}
     .tc-mirror th{position:relative;background:#eee;border-bottom:2px solid #ccc;border-right:1px solid #cfcfcf;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
     .tc-mirror th:last-child{border-right:none}
     .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:3px 6px;vertical-align:middle;overflow:hidden;background:#fff}
@@ -445,8 +445,8 @@
     .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px}
     .tc-cred::placeholder{color:#cfcfcf}
     .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
-    .tc-cred.tc-splittable{background:#fff3cf;border-color:#e7ce8a;border-radius:3px;color:#8a6d00}
-    .tc-cred.tc-splittable::placeholder{color:#caa64e}
+    .tc-aslot.tc-can-split .tc-cred{background:#fff3cf;border-color:#e7ce8a;border-radius:3px;color:#8a6d00}
+    .tc-aslot.tc-can-split .tc-cred::placeholder{color:#caa64e}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
@@ -467,6 +467,7 @@
     .tc-enter,.tc-slotx,.tc-splitb{cursor:pointer;border:none;background:none;padding:0 1px;visibility:hidden;line-height:1}
     .tc-enter{color:#7d6bc0;font-size:19px}.tc-enter:hover{color:#5f3ec0}
     .tc-splitb{color:#7d6bc0;font-size:16px;font-weight:bold}.tc-splitb:hover{color:#5f3ec0}
+    .tc-aslot:not(.tc-can-split) .tc-splitb{display:none}
     .tc-slotx{color:#cc6699;font-size:13px}.tc-slotx:hover{color:#c0392b}
     .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx,.tc-mirror tr:hover .tc-splitb{visibility:visible}
     .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
@@ -496,6 +497,8 @@
     #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 4px}
     #tc-bar b{color:#563b8f}#tc-bar .sp{flex:1}
     .tc-toast{flex:none;max-width:46%;color:#5f3ec0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+    .tc-globalstat{flex:none;font-size:12px;color:#999;font-style:italic;white-space:nowrap}
+    .tc-globalstat.tc-unres{font-style:normal;font-weight:bold;color:#fff;background:#d6342c;padding:1px 8px;border-radius:9px}
     .tc-tablewrap{overflow-x:auto}
     .tc-addrow{padding:8px 4px;font-size:13px;color:#555;display:flex;align-items:center;gap:6px}
     .tc-addrow input.tc-addn{width:54px;font:13px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px}
@@ -566,7 +569,9 @@
   let MODEL = null;
   let ACTIVE = {};   // { mode, tbody, statusEl }
   // transient message (e.g. "matching d/n") shown in every table's Artist header
-  const updateStatus = t => { document.querySelectorAll('.tc-medsec .tc-hstatus, #tc-panel .tc-hstatus').forEach(e => { e.textContent = t; e.classList.remove('tc-unres'); }); };
+  const updateStatus = t => { document.querySelectorAll('.tc-medsec .tc-hstatus, #tc-panel .tc-hstatus, .tc-globalstat').forEach(e => { e.textContent = t; e.classList.remove('tc-unres'); }); };
+  // the always-visible total in the toolbar (left of Match) — shows the release-wide unresolved count / progress
+  const setGlobalStat = n => { document.querySelectorAll('.tc-globalstat').forEach(e => { e.textContent = n ? statusText(n) : ''; e.classList.toggle('tc-unres', n > 0); }); };
   // transient action feedback (a pick propagated, S&R count, …) — lives in the toolbar so it never
   // overwrites a medium's unresolved badge; auto-clears
   let _toastTimer = null;
@@ -581,19 +586,26 @@
   const rerender = () => { if (ACTIVE.sections) ACTIVE.sections.forEach(s => fillRows(s.tbody, s.mi)); else if (ACTIVE.tbody) fillRows(ACTIVE.tbody); refreshStatus(); };
   // our rendered row for a track, wherever it lives (a per-medium section or the floating panel)
   const rowEl = (mi, ti) => document.querySelector(`.tc-medsec tr[data-tk="${mi}:${ti}"], #tc-panel tr[data-tk="${mi}:${ti}"]`);
-  // ↑/↓ : move to the same field in the previous/next row (same medium); returns true if it moved
+  // ↑/↓ : move to the same field in the prev/next ROW — but for the per-artist fields (search box,
+  // credited-as) walk EVERY line in document order, so multi-artist tracks and media boundaries are
+  // all included. Returns true if it moved.
   function focusSameField(inp, dir) {
-    const row = inp.closest('tr[data-tk]'); if (!row) return false;
-    // all rows in order across every medium section (or the single panel table) — so ↑/↓ cross media
-    const rows = row.closest('#tc-panel') ? [...document.querySelectorAll('#tc-panel tr[data-tk]')] : [...document.querySelectorAll('.tc-medsec tr[data-tk]')];
-    const dest = rows[rows.indexOf(row) + dir]; if (!dest) return false;
     const sel = inp.classList.contains('t-num') ? '.t-num' : inp.classList.contains('t-title') ? '.t-title' : inp.classList.contains('t-len') ? '.t-len' : inp.classList.contains('tc-cred') ? '.tc-cred' : inp.classList.contains('nm') ? '.tc-search input.nm' : null;
     if (!sel) return false;
-    const idx = Math.max(0, [...row.querySelectorAll(sel)].indexOf(inp)); const destTk = dest.dataset.tk;
-    // committing the current field on blur can rebuild the rows, so blur FIRST, then focus the
-    // destination by re-querying the fresh DOM (retry next tick in case the rebuild is deferred)
-    inp.blur();
-    const go = () => { const d = document.querySelector(`.tc-medsec tr[data-tk="${destTk}"], #tc-panel tr[data-tk="${destTk}"]`); if (!d) return; const tgts = [...d.querySelectorAll(sel)]; const t = tgts[Math.min(idx, tgts.length - 1)]; if (t && document.activeElement !== t) { t.focus(); if (t.select && !t.classList.contains('nm')) t.select(); } };   // don't select-all the artist name field
+    const scope = inp.closest('#tc-panel') ? '#tc-panel' : '.tc-medsec';
+    const all = [...document.querySelectorAll(`${scope} ${sel}`)];   // flat list across all rows/sections/artist lines
+    const cur = all.indexOf(inp); if (cur < 0) return false;
+    const dest = all[cur + dir]; if (!dest) return false;
+    // remember the destination by row + its slot index within that row (survives a commit-rebuild)
+    const destRow = dest.closest('tr[data-tk]'); const destTk = destRow ? destRow.dataset.tk : null;
+    const destIdx = destRow ? [...destRow.querySelectorAll(sel)].indexOf(dest) : 0; const destPos = cur + dir;
+    inp.blur();   // committing the current field on blur can rebuild the rows — focus AFTER, from the fresh DOM
+    const go = () => {
+      let t = null;
+      if (destTk) { const d = document.querySelector(`${scope} tr[data-tk="${destTk}"]`); if (d) { const xs = [...d.querySelectorAll(sel)]; t = xs[Math.min(destIdx, xs.length - 1)]; } }
+      if (!t) t = [...document.querySelectorAll(`${scope} ${sel}`)][destPos];
+      if (t && document.activeElement !== t) { t.focus(); if (t.select && !t.classList.contains('nm')) t.select(); }
+    };
     go(); setTimeout(go, 0);
     return true;
   }
@@ -603,12 +615,15 @@
     if (!MODEL || _matching) return;   // while a pass runs the headers show "matching d/n" — don't flicker the badge
     if (ACTIVE.sections) ACTIVE.sections.forEach(s => setStatusSpan(s.sec.querySelector('.tc-hstatus'), unresolvedIn(s.mi)));
     else document.querySelectorAll('#tc-panel .tc-hstatus').forEach(span => setStatusSpan(span, unresolvedIn(null)));
+    setGlobalStat(unresolvedIn(null));   // release-wide total in the toolbar
   }
 
   function buildTable() {
     const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '') + (SETTINGS.layout === 'compact' ? ' compact' : '');
-    t.innerHTML = `<colgroup>${COLS.map(c => `<col style="width:${colW(c.k, c.w)}px">`).join('')}</colgroup>` +
-      `<thead><tr>${COLS.map(c => `<th>${c.label}${c.k === 'art' ? '<span class="tc-hstatus"></span>' + AM_SELECT : ''}<span class="tc-resizer"></span></th>`).join('')}</tr></thead><tbody></tbody>`;
+    // the Artist column is the flexible filler (no fixed width) — it absorbs the slack so every OTHER
+    // column keeps its EXACT width (table-layout:fixed) and resizes 1:1 with the mouse (no jump)
+    t.innerHTML = `<colgroup>${COLS.map(c => c.k === 'art' ? '<col>' : `<col style="width:${colW(c.k, c.w)}px">`).join('')}</colgroup>` +
+      `<thead><tr>${COLS.map(c => `<th>${c.label}${c.k === 'art' ? '<span class="tc-hstatus"></span>' + AM_SELECT : ''}${c.k === 'art' ? '' : '<span class="tc-resizer"></span>'}</th>`).join('')}</tr></thead><tbody></tbody>`;
     return t;
   }
   // the artist-selection-mode dropdown now lives in the Artist column header (right-aligned)
@@ -638,13 +653,16 @@
   function wireResizers(table) {
     const cols = [...table.querySelectorAll('col')];
     const TOL = 5;
-    const borderIdx = clientX => { const ths = table.querySelectorAll('thead th'); for (let i = 0; i < ths.length - 1; i++) { if (Math.abs(ths[i].getBoundingClientRect().right - clientX) <= TOL) return i; } return -1; };
+    const borderIdx = clientX => { const ths = table.querySelectorAll('thead th'); for (let i = 0; i < ths.length - 1; i++) { if (COLS[i] && COLS[i].k === 'art') continue; if (Math.abs(ths[i].getBoundingClientRect().right - clientX) <= TOL) return i; } return -1; };
     let dragging = false;
     table.addEventListener('mousemove', e => { if (!dragging) table.style.cursor = borderIdx(e.clientX) >= 0 ? 'col-resize' : ''; });
     table.addEventListener('mousedown', e => {
       const i = borderIdx(e.clientX); if (i < 0) return;
       e.preventDefault(); dragging = true;
-      const col = cols[i], startX = e.clientX, startW = col.offsetWidth || parseInt(col.style.width) || 100;
+      // data columns have exact fixed widths (the spacer column absorbs slack), so the style width IS the
+      // rendered width — start from it and resize is 1:1 with no jump
+      const ths = [...table.querySelectorAll('thead th')];
+      const col = cols[i], startX = e.clientX, startW = parseInt(col.style.width) || (ths[i] && ths[i].offsetWidth) || 100;
       const mm = ev => { col.style.width = Math.max(36, startW + ev.clientX - startX) + 'px'; };
       const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); dragging = false; SETTINGS.colWidths = SETTINGS.colWidths || {}; SETTINGS.colWidths[COLS[i].k] = parseInt(col.style.width); saveSettings(); };
       document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
@@ -811,7 +829,7 @@
       if (e.key === 'Escape') { e.preventDefault(); close(); inp.focus(); }   // close the popup but keep the field focused, so the next ↓ navigates rows
       else if (e.key === 'ArrowDown') { if (browsing()) { hi = Math.min(list.length - 1, hi + 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); } else { close(); if (focusSameField(inp, 1)) e.preventDefault(); } }
       else if (e.key === 'ArrowUp') { if (browsing()) { hi = Math.max(0, hi - 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); } else { close(); if (focusSameField(inp, -1)) e.preventDefault(); } }
-      else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) choose(c); }
+      else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) { const entry = slot._entry, i = entry.slots.indexOf(slot); choose(c); focusSlotInput(entry, i); } }   // keep focus on the field after picking (so ↓ moves on)
     };
     inp.onblur = () => setTimeout(close, 160);   // keep whatever the user typed (no reset)
   }
@@ -819,10 +837,13 @@
   // one artist = one aligned line: [credited-as][icon][green/white search bar][join][↵ hover][✕ hover]
   function slotEl(entry, s, idx, refreshBadges) {
     const line = document.createElement('div'); line.className = 'tc-aslot';
-    const splittable = splitArtistText(s.creditedAs || s.name || s.query || '').length > 1;   // looks like several artists → ⋔ available
+    // "splittable" (several artists) drives both the credited-as highlight and the ⋔ button, via a line
+    // class that updates live as you edit
+    if (splitArtistText(s.creditedAs || s.name || s.query || '').length > 1) line.classList.add('tc-can-split');
     // credited-as: shown empty when it's exactly the artist name (the name is the placeholder); only a real override shows
     const same = s.name && s.creditedAs === s.name;
-    const cred = document.createElement('input'); cred.className = 'tc-cred' + (splittable ? ' tc-splittable' : ''); cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = splittable ? 'looks like several artists — use ⋔ to split' : 'credited-as override (blank = same as the artist name)';
+    const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
+    cred.oninput = () => line.classList.toggle('tc-can-split', splitArtistText(cred.value || s.name || '').length > 1);   // re-evaluate the highlight / ⋔ as you type
     cred.onchange = () => {
       const v = cred.value.trim(); const newCred = v || (s.name || ''); const oldKey = fold(s.creditedAs);
       s.creditedAs = newCred; if (s.creditedAs === s.name) cred.value = ''; commitTrack(entry);
@@ -847,7 +868,7 @@
     const acts = document.createElement('span'); acts.className = 'tc-acts';
     const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
     // ⋔ split: only when this credit looks like several artists (& / feat. / , …)
-    if (splittable) { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.title = 'split into separate artists (& / feat. …) and match'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
+    { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.title = 'split into separate artists (& / feat. …) and match'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
     if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x); }
     line.appendChild(acts);
     return line;
@@ -1035,7 +1056,7 @@
   }
 
   const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
-    + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">Match</button>`
+    + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-globalstat"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">Match</button>`
     + `<button class="tc-btn" data-act="revert">Revert all</button><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
@@ -1141,12 +1162,13 @@
     if (document.getElementById('tc-launch')) return;
     style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.title = 'toggle Track Cannon / original editor';
     const relabel = () => { b.textContent = document.getElementById('tc-mirror-wrap') ? 'Original' : 'Track Cannon'; };
-    b.onclick = () => { if (document.getElementById('tc-mirror-wrap')) hideMirror(); else showMirror(); relabel(); };
+    b.onclick = () => { if (document.getElementById('tc-mirror-wrap')) { hideMirror(); SETTINGS.lastView = 'original'; } else { showMirror(); SETTINGS.lastView = 'canon'; } saveSettings(); relabel(); };
     document.body.appendChild(b); relabel();
   }
   function tracklistVisible() { const p = document.getElementById('tracklist'); return !!(p && p.offsetParent !== null); }   // the Tracklist tab panel is shown
   let _tlPrev = false, _tlRefreshed = false;
   function onEnterTracklist() {
+    if (SETTINGS.lastView === 'original') { ensureLauncher(); return; }   // user last chose the native editor — leave it
     if (!document.getElementById('tc-mirror-wrap')) showMirror();
     else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); }   // re-match once the tab is up (RG may have been set)
     ensureLauncher();
@@ -1171,7 +1193,8 @@
     snapshotOriginals();
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
-    showMirror();   // always take over the tracklist immediately (no flash)
+    if (SETTINGS.lastView !== 'original') showMirror();   // take over the tracklist unless the user last chose the native editor
+    ensureLauncher();
     watchTracklist();
   })();
 })();

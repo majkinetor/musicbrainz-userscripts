@@ -62,7 +62,7 @@ async function main() {
   await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '1180px'; p.style.maxWidth = 'none'; p.style.right = '12px'; p.style.maxHeight = '94vh'; } });
   await page.waitForTimeout(150);
   await page.locator('#tc-panel').screenshot({ path: resolve(LOG_DIR, 'panel-only.png') }).catch(() => {});
-  await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '720px'; p.style.maxWidth = '96vw'; } });
+  await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '1040px'; p.style.maxWidth = '96vw'; } });   // wide enough that the flexible Artist column keeps the search box usable
   // capture the type-to-search dropdown open (focus a resolved field — shows results, no typing so it stays linked)
   await page.locator('#tc-panel .tc-mirror tbody tr .tc-search input.nm').nth(2).click();
   await page.waitForSelector('.tc-acpop .tc-acrow', { timeout: 6000 }).catch(() => {});

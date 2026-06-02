@@ -85,17 +85,41 @@ async function main() {
   const titles3 = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().slice(0, 3).map(t => u(t.name)); });
   const trackCount = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().length; });
 
-  // splittable credits (e.g. "A & B") get a highlighted credited-as field + a ⋔ button
+  // splittable credits (e.g. "A & B") highlight the credited-as field + show ⋔, and clear live on edit
   const splittable = await page.evaluate(() => {
-    // ensure at least one multi-artist credit exists, then re-render via a harmless add/remove slot
     const tc = window.__trackCannon, t = tc.model.tracks[0];
     t.slots[0].creditedAs = 'Some One & Other Two'; t.slots[0].committed = false; t.slots[0].name = '';
     tc.addSlot(t); tc.removeSlot(t, t.slots.length - 1);   // forces a rerender of our rows
     const row = document.querySelector(`.tc-medsec tr[data-tk="${t.mi}:${t.ti}"]`);
-    const cred = row.querySelector('.tc-cred');
-    return { credHighlighted: cred.classList.contains('tc-splittable'), hasBtn: !!row.querySelector('.tc-splitb'), bg: getComputedStyle(cred).backgroundColor };
+    const cred = row.querySelector('.tc-cred'); const line = cred.closest('.tc-aslot'); const btn = row.querySelector('.tc-splitb');
+    const on = { highlighted: line.classList.contains('tc-can-split'), btnShown: getComputedStyle(btn).display !== 'none', bg: getComputedStyle(cred).backgroundColor };
+    cred.value = 'ddddd'; cred.dispatchEvent(new Event('input'));   // edit to a single name → highlight + ⋔ go away live
+    const off = { highlighted: line.classList.contains('tc-can-split'), btnShown: getComputedStyle(btn).display !== 'none' };
+    return { on, off };
   });
-  log('splittable credit — cred highlighted:', splittable.credHighlighted, '· ⋔ button:', splittable.hasBtn, '· bg:', splittable.bg);
+  log('splittable credit — when multi:', JSON.stringify(splittable.on), '· after edit to single:', JSON.stringify(splittable.off));
+
+  // global unresolved total shows in the toolbar (left of Match), as a red badge when > 0
+  const gstat = await page.evaluate(() => {
+    const tc = window.__trackCannon, t = tc.model.tracks[1];
+    t.slots[0].committed = false; t.slots[0].gid = null; t.slots[0].status = 'none';
+    tc.addSlot(t); tc.removeSlot(t, t.slots.length - 1);   // benign rerender → refreshStatus
+    const el = document.querySelector('#tc-bar .tc-globalstat');
+    return { text: el ? el.textContent : 'missing', badge: el ? el.classList.contains('tc-unres') : false };
+  });
+  log('toolbar global status:', JSON.stringify(gstat.text), '· badge:', gstat.badge);
+
+  // column resize must not jump on grab — a 1px drag should change the width by ~1px, not ~1em
+  const resize = await page.evaluate(() => {
+    const table = document.querySelector('.tc-medsec .tc-mirror'); const th = [...table.querySelectorAll('thead th')][2];
+    const r = th.getBoundingClientRect(); const x = r.right, y = r.top + 5; const before = th.offsetWidth;
+    table.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: x + 1, clientY: y, bubbles: true }));
+    const after = th.offsetWidth;
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    return { before, after, jump: Math.abs(after - before) };
+  });
+  log('column resize — 1px drag jump:', resize.jump + 'px (', resize.before, '→', resize.after, ')');
 
   // no apply phase — confident matches auto-commit on load; verify they're written to the model
   const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
@@ -138,8 +162,15 @@ async function main() {
     const s1 = rows[0].querySelector('.tc-search input.nm'); s1.focus(); await new Promise(r => setTimeout(r, 60));   // resolved → focus shows candidates
     press(s1, 'ArrowDown');
     const searchDown = document.activeElement === rows[1].querySelector('.tc-search input.nm');
+    // multi-artist: ↓ from the 1st artist line goes to the 2nd line on the SAME track (not the next track)
+    const tc = window.__trackCannon; const t = tc.model.tracks[5]; t.slots.length = 1; tc.addSlot(t);
+    await new Promise(r => setTimeout(r, 80));
+    const mrow = () => document.querySelector(`.tc-medsec tr[data-tk="${t.mi}:${t.ti}"]`);
+    const ins = mrow().querySelectorAll('.tc-search input.nm'); ins[0].focus(); await new Promise(r => setTimeout(r, 40));
+    press(ins[0], 'ArrowDown'); await new Promise(r => setTimeout(r, 60));
+    const multiArtistDown = document.activeElement === mrow().querySelectorAll('.tc-search input.nm')[1];
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();   // close any autocomplete popup
-    return { titleDown, titleUp, searchDown };
+    return { titleDown, titleUp, searchDown, multiArtistDown };
   });
   await page.waitForTimeout(250);   // let the autocomplete popup close before later clicks
 
@@ -314,7 +345,7 @@ async function main() {
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
   log('guess case — diff:', gc.hasDiff, '· guessed:', JSON.stringify(gc.guessed), '· hover-preview:', gc.hoverPreview, '· leave-restores:', gc.leaveRestores, '· applied:', JSON.stringify(gc.after), '· stillDiff:', gc.stillDiff);
   log('Aa on hover — default:', aaHiddenDefault, '· on row hover:', aaVisibleOnHover);
-  log('arrow row-nav — title ↓:', keysNav.titleDown, '· title ↑:', keysNav.titleUp, '· resolved search ↓:', keysNav.searchDown);
+  log('arrow row-nav — title ↓:', keysNav.titleDown, '· title ↑:', keysNav.titleUp, '· resolved search ↓:', keysNav.searchDown, '· multi-artist ↓ (same track):', keysNav.multiArtistDown);
   log('match button — before:', matchBtn.before, '· during pass:', matchBtn.during, '· after:', matchBtn.after);
   log('tools — apply-mode in header:', tools.amInHeader, '(not in bar:', !tools.amInBar + ')', '· S&R label:', JSON.stringify(tools.toolLabel), 'live-changed:', tools.srChanged, 'status:', JSON.stringify(tools.srStatus), 'restored:', tools.restoredOk, '· Guess-case label:', JSON.stringify(tools.gcLabel), 'opts:', JSON.stringify(tools.gcOpts));
   log('edit # → "A1", length → "1:23" — model now:', JSON.stringify(fields));
