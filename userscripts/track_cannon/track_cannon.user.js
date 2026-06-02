@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.181705
+// @version      2026.6.2.183026
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -9,6 +9,8 @@
 // @match        https://musicbrainz.org/release/*/edit
 // @match        https://beta.musicbrainz.org/release/add
 // @match        https://beta.musicbrainz.org/release/*/edit
+// @match        https://musicbrainz.org/artist/*
+// @match        https://beta.musicbrainz.org/artist/*
 // @grant        none
 // @run-at       document-idle
 // ==/UserScript==
@@ -43,6 +45,22 @@
   const getEditor = () => { try { return W.MB && W.MB.releaseEditor; } catch (e) { return null; } };
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/\s+/g, ' ').trim();
   const sameName = (a, b) => fold(a) === fold(b);
+  const MBID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  // a bare MBID or a MusicBrainz /artist/<mbid> URL → the gid
+  function mbidFrom(v) { v = (v || '').trim(); if (new RegExp('^' + MBID_RE.source + '$', 'i').test(v)) return v.toLowerCase(); const m = v.match(new RegExp('musicbrainz\\.org/artist/(' + MBID_RE.source + ')', 'i')); return m ? m[1].toLowerCase() : null; }
+
+  /* ── create-artist-in-a-tab → auto-insert (BroadcastChannel handshake, like the Discogs importer) ── */
+  const ART_CHANNEL = ('BroadcastChannel' in W) ? new W.BroadcastChannel('track-cannon-artist') : null;
+  const PENDING_KEY = 'trackCannon.pendingArtist';
+  const _pendingCreates = new Map(); let _createSeq = 0;
+  if (ART_CHANNEL) ART_CHANNEL.addEventListener('message', e => {
+    const d = e.data; if (!d || d.type !== 'tc-artist-created') return;
+    const pend = _pendingCreates.get(d.token); if (!pend) return;
+    _pendingCreates.delete(d.token);
+    if (!d.gid) { Log.warn('artist created but no gid came back'); return; }
+    pickArtist(pend.slot, { gid: d.gid, name: d.name, id: d.id });
+    Log.info('inserted newly-created artist', JSON.stringify(d.name), 'into the table');
+  });
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
@@ -83,6 +101,13 @@
 
   /* ── search + siblings ── */
   const _cache = new Map();
+  // resolve an MBID to a full entity (incl. the numeric id needed for the credit write-back)
+  async function fetchEntity(gid) {
+    try { const j = await fetch(`${ORIGIN}/ws/js/entity/${gid}`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+      if (j && j.gid) return { gid: j.gid, name: j.name, id: j.id, comment: j.comment, sortName: j.sort_name }; }
+    catch (e) { Log.warn('fetch entity failed', gid, e.message); }
+    return null;
+  }
   async function searchArtist(name) {
     const k = fold(name); if (!k) return [];
     if (_cache.has(k)) return _cache.get(k);
@@ -255,9 +280,25 @@
     const p = n.split(/\s+/); if (p.length < 2) return n;
     const last = p.pop(); return last + ', ' + p.join(' ');
   }
-  function createArtist(name) {
+  // open MB's create-artist form; when it's saved, the new artist page posts the MBID back over the
+  // channel (handshake via sessionStorage token) and closes itself, and we drop it into the slot.
+  function createArtist(name, slot) {
     const url = `${ORIGIN}/artist/create?edit-artist.name=${encodeURIComponent(name)}&edit-artist.sort_name=${encodeURIComponent(guessSortName(name))}`;
-    Log.info('open MB create-artist for', JSON.stringify(name)); W.open(url, '_blank', 'noopener');
+    const tab = W.open(url, '_blank');   // NOT noopener — we set a token on the new tab's sessionStorage
+    if (tab && slot && ART_CHANNEL) {
+      const token = 'tc-' + Date.now() + '-' + (++_createSeq); _pendingCreates.set(token, { slot });
+      const trySet = () => { try { tab.sessionStorage.setItem(PENDING_KEY, token); } catch (e) { setTimeout(trySet, 50); } }; trySet();
+      Log.info('create-artist for', JSON.stringify(name), '— will auto-insert on save');
+    } else { Log.info('open MB create-artist for', JSON.stringify(name)); }
+  }
+  // runs on a freshly-saved /artist/<mbid> page opened by createArtist: post the MBID back, then close
+  function handleArtistPageCallback() {
+    const m = location.pathname.match(new RegExp('^/artist/(' + MBID_RE.source + ')', 'i')); if (!m) return false;
+    let token = null; try { token = sessionStorage.getItem(PENDING_KEY); } catch (e) {} if (!token) return false;
+    try { sessionStorage.removeItem(PENDING_KEY); } catch (e) {}
+    const gid = m[1].toLowerCase();
+    fetchEntity(gid).then(ent => { if (ART_CHANNEL) ART_CHANNEL.postMessage({ type: 'tc-artist-created', token, gid, id: ent ? ent.id : null, name: ent ? ent.name : '' }); setTimeout(() => { try { W.close(); } catch (e) {} }, 80); });
+    return true;
   }
 
   /* ════════════════════════ UI ════════════════════════ */
@@ -365,6 +406,7 @@
     .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
     .tc-acrow .tic{flex:none;width:17px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0}
     .tc-acrow .nm{font-weight:600;color:#222}.tc-acrow .cmt{color:#888;font-size:11px}
+    .tc-acrow .tc-aka{color:#5a7;font-size:11px;font-style:italic}
     .tc-acrow.none{color:#888;font-style:italic;cursor:default}
     .tc-acrow.exact{background:#dff3e5}.tc-acrow.exact .nm{color:#136b39}.tc-acrow.exact:hover,.tc-acrow.exact.hi{background:#cfeed9}
     .tc-toolbar{padding:5px 4px;font-size:12px;color:#555;display:flex;align-items:center;gap:6px}
@@ -584,7 +626,7 @@
   function adorn(search, slot, inp) {
     [...search.querySelectorAll('.mk')].forEach(e => e.remove());
     search.classList.toggle('matched', !!slot.committed);
-    if (!slot.committed) { const ref = search.querySelector('.tc-joinwrap'); const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs); }; search.insertBefore(mk, ref); }
+    if (!slot.committed) { const ref = search.querySelector('.tc-joinwrap'); const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot); }; search.insertBefore(mk, ref); }
   }
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
   function renderBadgeCell(cell, track) {
@@ -622,11 +664,13 @@
     const searching = () => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Searching…</div>`; position(); };
     const draw = arr => {
       ensure(); list = arr; const q = inp.value.trim() || slot.creditedAs;
-      pop.innerHTML = arr.length ? arr.map((c, i) => `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
+      pop.innerHTML = arr.length ? arr.map((c, i) => { const aka = (c.primaryAlias && fold(c.primaryAlias) !== fold(c.name)) ? `<span class="tc-aka">“${esc(c.primaryAlias)}”</span>` : ''; return `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${aka}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`; }).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
       [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
       position();
     };
     const runSearch = q => { const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) draw(res); }); };
+    // paste an MBID or a MusicBrainz /artist/<mbid> URL → resolve it straight to that artist
+    const resolveByGid = async gid => { ++seq; ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (document.activeElement !== inp) return; if (ent && ent.id) { close(); pickArtist(slot, ent); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };
     inp.onfocus = () => {
       inp.select();
       if (slot.committed && slot.candidates && slot.candidates.length) { draw(slot.candidates); return; }
@@ -637,6 +681,7 @@
       // editing away from the matched artist un-links it: bar goes white, ＋ creates the typed name
       if (slot.committed && !sameName(inp.value, slot.name)) { slot.committed = false; slot.status = 'none'; slot.entity = null; slot.gid = null; commitTrack(slot._entry); if (refresh) refresh(); }
       clearTimeout(tmr);
+      const gid = mbidFrom(inp.value); if (gid) { resolveByGid(gid); return; }   // pasted an MBID / artist URL
       if (!inp.value.trim()) { close(); return; }   // nothing typed → don't search
       searching(); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250);
     };
@@ -786,7 +831,8 @@
   function runActiveTool() {
     const act = SETTINGS.lastTool;
     if (!act) return openToolsMenu(toolBtnEl());
-    if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'); if (f) f.focus(); return; }
+    // clicking "Search and Replace" starts a fresh session: clear the fields and re-snapshot (prior replaces stay applied)
+    if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'), r = document.querySelector('.tc-toolopts .tc-sr-rep'); if (f) f.value = ''; if (r) r.value = ''; srActivate(); MODEL && MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender(); if (f) f.focus(); return; }
     if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium());
     runAction(act);
   }
@@ -966,8 +1012,10 @@
   /* ── entry points ── */
   function ensureLauncher() {
     if (document.getElementById('tc-launch')) return;
-    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.innerHTML = ICON; b.title = 'toggle Track Cannon';
-    b.onclick = () => (document.getElementById('tc-mirror-wrap') ? hideMirror() : showMirror()); document.body.appendChild(b);
+    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.title = 'toggle Track Cannon / original editor';
+    const relabel = () => { b.textContent = document.getElementById('tc-mirror-wrap') ? 'Original' : 'Track Cannon'; };
+    b.onclick = () => { if (document.getElementById('tc-mirror-wrap')) hideMirror(); else showMirror(); relabel(); };
+    document.body.appendChild(b); relabel();
   }
   function tracklistVisible() { const p = document.getElementById('tracklist'); return !!(p && p.offsetParent !== null); }   // the Tracklist tab panel is shown
   let _tlPrev = false, _tlRefreshed = false;
@@ -985,9 +1033,11 @@
     tick(); setInterval(tick, 500);
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, addTracks, searchArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
+    if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
+    if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) return;   // /artist/* (non-callback) just loads the channel listener
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.err('MB.releaseEditor never became ready'); return; }
     Log.info('editor ready');

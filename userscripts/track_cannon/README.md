@@ -40,8 +40,10 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
      while it works, highlights an exact-name match, and the popup follows the field as you scroll);
      it's **green when resolved** and **white when unmatched** (with a **＋** at the right to create
      the typed name on MB). Typing a new phrase un-links the artist (bar goes white) and keeps your
-     text. The **join phrase** to the next artist (editable, right-aligned, `▾` opens presets) sits
-     inside the box,
+     text. You can also **paste an MBID or a MusicBrainz `/artist/<mbid>` URL** to link that artist
+     directly, and the dropdown shows each artist's **primary alias** (handy when the name is in
+     another script). The **join phrase** to the next artist (editable, right-aligned, `▾` opens
+     presets) sits inside the box,
    - on hover, **↵** adds another artist to the credit and **✕** removes that artist.
    The **last column** holds a centered **confidence badge** (`rg` / `name` / `user` / `set`).
    **↑/↓** jump to the same field in the previous/next row (in the search box this works once the
@@ -61,14 +63,15 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    language / *Keep uppercased* / *Uppercase Roman numerals* options inline); **Guess feat.** pulls
    `feat. X` out of titles into artist credits (then re-matches).
 7. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
-   tab; save it there, then re-open the field to match it.
+   tab; **save it and the tab closes and the new artist drops into the field automatically**
+   (a `BroadcastChannel` handshake, like the Discogs importer — needs the script's `/artist/*` match).
 
 ## The table
 
 Track Cannon **takes over the tracklist** as soon as a release add/edit page loads (no flash),
 laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badge). MB's native tracklist —
 the table, its tools row **and** the Guess-case fieldset — is hidden while Canon is on; the floating
-**🎯 Track Cannon** button toggles Canon off/on (which reveals them). MB's **medium-format header**
+**Original / Track Cannon** button (bottom-right) toggles Canon off/on (which reveals them). MB's **medium-format header**
 stays in place above each medium's table and is tidied: once a format is chosen it collapses to just
 the format name as text (click it to re-open the dropdown), keeping the medium move/remove buttons;
 with **no** format selected the full native header stays so you're still prompted to pick one. The
@@ -101,7 +104,8 @@ The medium-scoped tools (**Track parser**, **Reset #**, **Swap**) act on one med
 medium they just apply, and with several an inline **Medium** combo appears to pick the target (then
 click the Tools button to run).
 Search & Replace runs in **real time** — type in *search* / *replace* and titles update live (cleared
-*search* restores them); no apply step. On the **right** sit **Match** (search MB for the unmatched
+*search* restores them); no apply step. Clicking **Search and Replace** again starts a fresh session
+(the fields clear and re-snapshot — earlier replacements stay applied). On the **right** sit **Match** (search MB for the unmatched
 artists), **Revert all** and **⚙**. Track parser's changes are picked up automatically (the table
 watches the live tracklist).
 

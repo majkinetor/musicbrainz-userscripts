@@ -139,6 +139,36 @@ async function main() {
   });
   log('credited-as propagation:', JSON.stringify(credProp));
 
+  // pasting an MBID into a search field resolves straight to that artist
+  const mbidResolve = await page.evaluate(async () => {
+    const tc = window.__trackCannon, GID = '83d91898-7763-47d7-b03b-b92132375c47';   // Pink Floyd
+    const t = tc.model.tracks[0]; const slot = t.slots[0];
+    const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
+    const inp = tr.querySelector('.tc-search input.nm');
+    inp.focus(); inp.value = GID; inp.dispatchEvent(new Event('input'));
+    await new Promise(r => setTimeout(r, 1200));
+    return { gid: slot.gid, name: slot.name, committed: slot.committed, hasNumericId: !!(slot.entity && slot.entity.id), matched: slot.gid === GID };
+  });
+  log('MBID paste → resolve:', JSON.stringify(mbidResolve));
+
+  // create-artist handshake: createArtist sets a token on the new tab, the "artist page" posts it back → inserted
+  const createFlow = await page.evaluate(async () => {
+    const tc = window.__trackCannon, GID = '83d91898-7763-47d7-b03b-b92132375c47';
+    const t = tc.model.tracks.find(x => x.slots.some(s => !s.committed)) || tc.model.tracks[1];
+    const slot = t.slots.find(s => !s.committed) || t.slots[0];
+    const store = {}; const fakeTab = { sessionStorage: { setItem: (k, v) => { store[k] = v; }, getItem: k => store[k] } };
+    const origOpen = window.open; window.open = () => fakeTab;
+    tc.createArtist('Some New Artist', slot);
+    window.open = origOpen;
+    await new Promise(r => setTimeout(r, 100));
+    const token = store['trackCannon.pendingArtist'];
+    const bc = new BroadcastChannel('track-cannon-artist');
+    bc.postMessage({ type: 'tc-artist-created', token, gid: GID, id: 191, name: 'Pink Floyd' });
+    await new Promise(r => setTimeout(r, 200));
+    return { gotToken: !!token, inserted: slot.gid === GID, committed: slot.committed, name: slot.name };
+  });
+  log('create-artist handshake:', JSON.stringify(createFlow));
+
   // no apply phase — confident matches auto-commit on load and picks commit immediately
   await page.waitForTimeout(800);
   const report = await page.evaluate(() => {
