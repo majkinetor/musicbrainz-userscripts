@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.205524
+// @version      2026.6.2.210308
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -204,9 +204,11 @@
     let candidates = await searchArtist(creditedAs);
     let entity = null, source = 'search', confidence = 'low';
     if (sib && sib.gid) {
-      let hit = candidates.find(c => c.gid === sib.gid);
-      if (!hit && !sameName(sib.name, creditedAs)) hit = (await searchArtist(sib.name)).find(c => c.gid === sib.gid);
-      if (hit) { entity = hit; source = 'rg'; confidence = 'high'; }
+      // the sibling release names the EXACT artist (gid) — use it. Prefer a search hit (richer data), but
+      // if the gid isn't in the results (ambiguous/duplicate name like "Eva", or a case-only difference
+      // vs the recording artist), resolve the gid directly so the RG match never gets lost.
+      let hit = candidates.find(c => c.gid === sib.gid) || (await fetchEntity(sib.gid));
+      if (hit && hit.gid) { entity = hit; source = 'rg'; confidence = 'high'; }
     }
     if (!entity) {
       const top = candidates[0] || null;
@@ -1182,7 +1184,7 @@
     tick(); setInterval(tick, 500);
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }

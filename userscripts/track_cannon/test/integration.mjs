@@ -192,6 +192,15 @@ async function main() {
   });
   log('create-artist handshake:', JSON.stringify(createFlow));
 
+  // RG match must use the sibling's EXACT gid even when search wouldn't surface it (the "Eva" bug:
+  // a duplicate/ambiguous name, or a case-only difference vs the recording artist)
+  const rgMatch = await page.evaluate(async () => {
+    const GID = '83d91898-7763-47d7-b03b-b92132375c47';   // Pink Floyd — NOT a result of searching "The Beatles"
+    const m = await window.__trackCannon.matchSlot('The Beatles', { gid: GID, name: 'PINK FLOYD' });
+    return { source: m.source, gid: m.entity && m.entity.gid, matched: m.entity && m.entity.gid === GID, hasId: !!(m.entity && m.entity.id) };
+  });
+  log('RG match via sibling gid (not in search):', JSON.stringify(rgMatch));
+
   // ⋔ split: a combined credit → one slot per artist, with join phrases, auto-matched, credited-as dropped
   const splitArtist = await page.evaluate(async () => {
     const tc = window.__trackCannon; tc.settings.autoMatch = true;

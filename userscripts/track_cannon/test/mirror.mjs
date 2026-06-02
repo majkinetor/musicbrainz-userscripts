@@ -99,16 +99,6 @@ async function main() {
   });
   log('splittable credit — when multi:', JSON.stringify(splittable.on), '· after edit to single:', JSON.stringify(splittable.off));
 
-  // global unresolved total shows in the toolbar (left of Match), as a red badge when > 0
-  const gstat = await page.evaluate(() => {
-    const tc = window.__trackCannon, t = tc.model.tracks[1];
-    t.slots[0].committed = false; t.slots[0].gid = null; t.slots[0].status = 'none';
-    tc.addSlot(t); tc.removeSlot(t, t.slots.length - 1);   // benign rerender → refreshStatus
-    const el = document.querySelector('#tc-bar .tc-globalstat');
-    return { text: el ? el.textContent : 'missing', badge: el ? el.classList.contains('tc-unres') : false };
-  });
-  log('toolbar global status:', JSON.stringify(gstat.text), '· badge:', gstat.badge);
-
   // column resize must not jump on grab — a 1px drag should change the width by ~1px, not ~1em
   const resize = await page.evaluate(() => {
     const table = document.querySelector('.tc-medsec .tc-mirror'); const th = [...table.querySelectorAll('thead th')][2];
@@ -123,6 +113,16 @@ async function main() {
 
   // no apply phase — confident matches auto-commit on load; verify they're written to the model
   const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
+
+  // global unresolved total shows in the toolbar (left of Match), as a red badge when > 0 (after the resolved check — it corrupts a slot)
+  const gstat = await page.evaluate(() => {
+    const tc = window.__trackCannon, t = tc.model.tracks[1];
+    t.slots[0].committed = false; t.slots[0].gid = null; t.slots[0].status = 'none';
+    tc.addSlot(t); tc.removeSlot(t, t.slots.length - 1);   // benign rerender → refreshStatus
+    const el = document.querySelector('#tc-bar .tc-globalstat');
+    return { text: el ? el.textContent : 'missing', badge: el ? el.classList.contains('tc-unres') : false };
+  });
+  log('toolbar global status:', JSON.stringify(gstat.text), '· badge:', gstat.badge);
 
   // guess case: messy title → diff highlight, then REAL-mouse hover preview / leave restore / click apply
   const row1 = page.locator('.tc-medsec .tc-mirror tbody tr').first();
