@@ -64,11 +64,10 @@ async function main() {
   await page.waitForTimeout(150);
   await page.locator('#tc-panel').screenshot({ path: resolve(LOG_DIR, 'panel-only.png') }).catch(() => {});
   await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '720px'; p.style.maxWidth = '96vw'; } });
-  // capture the type-to-search dropdown (with type icons) open
+  // capture the type-to-search dropdown open (focus a resolved field — shows results, no typing so it stays linked)
   await page.locator('#tc-panel .tc-mirror tbody tr .tc-search input').nth(2).click();
-  await page.locator('#tc-panel .tc-mirror tbody tr .tc-search input').nth(2).fill('carol');
   await page.waitForSelector('.tc-acpop .tc-acrow', { timeout: 6000 }).catch(() => {});
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(500);
   await page.screenshot({ path: resolve(LOG_DIR, 'combo.png') });
   await page.keyboard.press('Escape');
   await page.waitForTimeout(150);
@@ -125,6 +124,17 @@ async function main() {
   });
   const afterGreen = await greenCount();
 
+  // unlink-on-type: typing a non-matching phrase un-links the artist (white bar + ＋), keeping the text
+  const unlink = await page.evaluate(async () => {
+    const tc = window.__trackCannon;
+    const t = tc.model.tracks.find(t => t.slots[0].committed && t.slots.length === 1);
+    const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
+    const inp = tr.querySelector('.tc-search input'); const search = inp.closest('.tc-search');
+    inp.focus(); inp.value = 'Zzz Nonexistent Band'; inp.dispatchEvent(new Event('input'));
+    await new Promise(r => setTimeout(r, 90));
+    return { uncommitted: !t.slots[0].committed, query: t.slots[0].query, whiteBar: !search.classList.contains('matched'), hasPlus: !!search.querySelector('.mk') };
+  });
+
   await page.screenshot({ path: resolve(LOG_DIR, 'after.png'), fullPage: true });
 
   // ── verify Original (per-track) reset via the exposed API ──
@@ -141,6 +151,7 @@ async function main() {
   log('focus a SET field (no typing) → search results:', JSON.stringify(setFocus));
   log('combo search → picked from pop (' + userCheck.popCount + ' results) · status=user:', userCheck.userStatus, '· green search bar:', userCheck.greenBar);
   log('propagation (all mode):', JSON.stringify(propCheck));
+  log('unlink-on-type:', JSON.stringify(unlink));
   log('Original reset on track 1:', JSON.stringify(interactive.track0));
   // close the panel and capture the clean tracklist (the artist column, resolved/green)
   await page.locator('#tc-panel [data-act="close"]').click().catch(() => {});

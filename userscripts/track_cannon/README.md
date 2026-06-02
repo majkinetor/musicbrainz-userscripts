@@ -33,17 +33,20 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
    editable (`#` takes vinyl-style `A1`/`B2`). There is **no apply phase** — confident matches
    (RG / exact-name) are written to the editor the moment matching finishes, and every later edit
    writes through immediately. Each artist line reads left-to-right:
-   - **credited-as** (grey, editable; left empty it auto-fills with the artist you pick),
+   - **credited-as override** — shown blank when it's the same as the artist name (the name is a
+     faint placeholder); type here only when the credit differs from the artist's name,
    - **person/group icon** (links to the artist page),
-   - the **search bar** — type to search MB live; it's **green when resolved** (with a small
-     `rg` / `name` / `user` / `set` tag inside) and **white when unmatched** (showing a **＋** to
-     create the artist on MB),
-   - the **join phrase** to the next artist — looks like text, click for the combo (`&`, `feat.`, …),
-   - **↵** to add another artist to the credit; on hover, **✕** removes that artist.
+   - the **search bar** — type to search MB live (results highlight an exact-name match); it's
+     **green when resolved** (with a small `rg` / `name` / `user` / `set` tag inside) and **white
+     when unmatched**. Typing a new phrase un-links the artist (bar goes white) and keeps your text;
+     the **＋** then creates that name on MB,
+   - the **join phrase** to the next artist — editable text with presets (`&`, `feat.`, …),
+   - on hover, **↵** adds another artist to the credit and **✕** removes that artist.
 4. Multi-artist credits stack as lines within the same track row. Per track (revealed on row hover):
-   **↺** reverts the whole track and **✕** removes it. **Revert all** resets the whole release to its
-   page-load state. The toolbar — *When I pick an artist → apply to **all matching tracks** / **this
-   track only*** — controls whether a pick also copies to every track credited to the same text.
+   **↺** reverts the whole track (all cells — artists, title, #, length) and **✕** removes it.
+   **Revert all** resets the whole release to its page-load state. The toolbar — *When I pick an
+   artist → apply to **all matching tracks** / **this track only*** — controls whether a pick also
+   copies to every track credited to the same text.
 5. **+ Create** opens MusicBrainz's add-artist form prefilled (name + guessed sort-name) in a new
    tab; save it there, then re-open the panel to match it.
 6. **⚙ → Run automatically**: opt in and Track Cannon matches on load and opens the panel itself

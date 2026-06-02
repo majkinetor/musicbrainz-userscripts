@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.103832
+// @version      2026.6.2.111007
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -64,9 +64,12 @@
   function snapshotOriginals() {
     ORIGINALS.clear();
     mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => {
-      ORIGINALS.set(mi + ':' + ti, liveNames(t).map(n => ({ artist: u(n.artist) || { name: u(n.name) || '' }, creditedAs: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' })));
+      ORIGINALS.set(mi + ':' + ti, {
+        title: u(t.name) || '', number: u(t.number), length: u(t.formattedLength) || '',
+        names: liveNames(t).map(n => ({ artist: u(n.artist) || { name: u(n.name) || '' }, creditedAs: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' })),
+      });
     }));
-    Log.info('snapshot of', ORIGINALS.size, 'original track credits');
+    Log.info('snapshot of', ORIGINALS.size, 'original tracks');
   }
 
   function readTracklist() {
@@ -174,9 +177,13 @@
   // on load, immediately write the confident matches (RG/HIGH) — that's the "no apply phase" behaviour
   function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high') { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
   function resetTrack(entry) {
-    const orig = ORIGINALS.get(entry.mi + ':' + entry.ti);
-    if (orig) koTrack(entry.mi, entry.ti).artistCredit({ names: orig.map(o => ({ artist: o.artist, name: o.creditedAs, joinPhrase: o.joinPhrase })) });
-    Log.info('reset track', entry.number, 'to original');
+    const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig) return;
+    const t = koTrack(entry.mi, entry.ti);
+    t.artistCredit({ names: orig.names.map(o => ({ artist: o.artist, name: o.creditedAs, joinPhrase: o.joinPhrase })) });
+    try { t.name(orig.title); } catch (e) {}
+    try { t.number(orig.number); } catch (e) {}
+    try { if (typeof t.formattedLength === 'function') t.formattedLength(orig.length); } catch (e) {}
+    Log.info('reset track', entry.number, 'to original (all cells)');
   }
   function removeTrack(entry) { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); Log.info('removed track', entry.number); }
   function moveTrack(entry, dir) { const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); }
@@ -238,8 +245,7 @@
 
     .tc-mirror{table-layout:fixed;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff}
     .tc-mirror th{position:relative;background:#eee;border-bottom:2px solid #ccc;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
-    .tc-mirror td{border-bottom:1px solid #e2e2e2;border-right:1px solid #ededed;padding:3px 6px;vertical-align:middle;overflow:hidden;background:#fff}
-    .tc-mirror td.c-x,.tc-mirror td.c-rev{border-right:none}
+    .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:3px 6px;vertical-align:middle;overflow:hidden;background:#fff}
     .tc-mirror .tc-resizer{position:absolute;right:0;top:0;height:100%;width:7px;cursor:col-resize}
     .tc-mirror .c-num{color:#888;font-variant-numeric:tabular-nums}
     .tc-mirror .c-mv{white-space:nowrap;text-align:center}
@@ -255,7 +261,8 @@
     /* one artist = one aligned line: credited-as · icon · colored search bar · join · ↵ (✕ on hover) */
     .tc-aslot{display:flex;align-items:center;gap:5px;padding:2px 0;border-top:1px solid rgba(0,0,0,.05)}
     .tc-aslot:first-child{border-top:none}
-    .tc-cred{flex:none;width:90px;text-align:right;box-sizing:border-box;font:11px Arial;color:#888;border:1px solid transparent;background:transparent;padding:1px 4px;border-right:1px solid #e6e6e6}
+    .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px}
+    .tc-cred::placeholder{color:#cfcfcf}
     .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
@@ -264,17 +271,19 @@
     .tc-search input{flex:1 1 0;min-width:0;border:none;background:transparent;font:12px Arial;padding:3px 1px;outline:none}
     .tc-search .tag{flex:none;font:10px Arial;color:#788a7c}
     .tc-search .mk{flex:none;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:14px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}
-    .tc-join{flex:none;max-width:78px;border:1px solid transparent;background:transparent;color:#777;font:italic 11px Arial;cursor:pointer;padding:1px 2px;border-radius:3px;-webkit-appearance:none;-moz-appearance:none;appearance:none}
-    .tc-join:hover{border-color:#cdbff0;background:#faf9ff;color:#444}
-    .tc-enter{flex:none;cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:13px;padding:0 2px}.tc-enter:hover{color:#5f3ec0}
-    .tc-slotx{flex:none;cursor:pointer;color:#cc6699;border:none;background:none;font-size:12px;padding:0 1px;visibility:hidden}
-    .tc-mirror tr:hover .tc-slotx{visibility:visible}
+    .tc-join{flex:none;width:auto;min-width:18px;border:1px solid transparent;background:transparent;color:#999;font:italic 11px Arial;padding:1px 2px;border-radius:3px}
+    .tc-join:hover,.tc-join:focus{border-color:#cdbff0;background:#faf9ff;color:#444}
+    .tc-enter,.tc-slotx{flex:none;cursor:pointer;border:none;background:none;font-size:13px;padding:0 1px;visibility:hidden}
+    .tc-enter{color:#9a8fc0}.tc-enter:hover{color:#5f3ec0}
+    .tc-slotx{color:#cc6699;font-size:12px}.tc-slotx:hover{color:#c0392b}
+    .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx{visibility:visible}
     .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
     .tc-acrow .tic{flex:none;width:17px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0}
     .tc-acrow .nm{font-weight:600;color:#222}.tc-acrow .cmt{color:#888;font-size:11px}
-    .tc-acrow.none{color:#888;font-style:italic;cursor:default}.tc-acrow.create{color:#1f8a4c;font-weight:600;border-top:1px solid #eee}
+    .tc-acrow.none{color:#888;font-style:italic;cursor:default}
+    .tc-acrow.exact{background:#dff3e5}.tc-acrow.exact .nm{color:#136b39}.tc-acrow.exact:hover,.tc-acrow.exact.hi{background:#cfeed9}
     .tc-toolbar{padding:5px 4px;font-size:12px;color:#555;display:flex;align-items:center;gap:6px}
     .tc-toolbar select{font:12px Arial;padding:1px}
     .tc-medhdr{background:#dfd7f0;font-weight:bold;color:#4b3a82;padding:4px 8px}
@@ -303,6 +312,7 @@
   function style() {
     if (document.getElementById('tc-css')) return;
     const s = document.createElement('style'); s.id = 'tc-css'; s.textContent = css; document.head.appendChild(s);
+    const dl = document.createElement('datalist'); dl.id = 'tc-joins'; dl.innerHTML = JOIN_OPTIONS.map(o => `<option value="${esc(o.value)}">${esc(o.label)}</option>`).join(''); document.body.appendChild(dl);
   }
 
   /* ── settings popover (one place; reachable from the Canon interface) ── */
@@ -364,7 +374,7 @@
   // picking an artist writes through immediately; in "all" mode it also copies to every other
   // track credited to the same text, committing each.
   function pickArtist(slot, c) {
-    slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.committed = true;
+    slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.committed = true; slot.query = null;
     if (!(slot.creditedAs || '').trim()) slot.creditedAs = c.name;   // auto-fill the credited-as when the user hasn't set one
     commitTrack(slot._entry);
     const key = fold(slot.creditedAs);
@@ -377,12 +387,12 @@
     rerender();
   }
   async function revertSlot(entry, i) {
-    const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig || !orig[i]) return;
-    const slot = entry.slots[i];
-    slot.creditedAs = orig[i].creditedAs; slot.joinPhrase = orig[i].joinPhrase;
-    const a = u(orig[i].artist) || {}, gid = u(a.gid);
+    const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig || !orig.names[i]) return;
+    const on = orig.names[i], slot = entry.slots[i];
+    slot.creditedAs = on.creditedAs; slot.joinPhrase = on.joinPhrase; slot.query = null;
+    const a = u(on.artist) || {}, gid = u(a.gid);
     if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: { gid, name: u(a.name), id: u(a.id) }, candidates: [], committed: true });
-    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const m = await matchSlot(orig[i].creditedAs, sib && sib[i]); Object.assign(slot, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false }); }
+    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const m = await matchSlot(on.creditedAs, sib && sib[i]); Object.assign(slot, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false }); }
     commitTrack(entry); Log.info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
@@ -411,58 +421,65 @@
   }
   function revertTrack(entry) { resetTrack(entry); rebuild(); }
 
+  // green search bar adornment: a small source tag when resolved, or a ＋ create-button when not
+  function adorn(search, slot, inp) {
+    [...search.querySelectorAll('.tag,.mk')].forEach(e => e.remove());
+    search.classList.toggle('matched', !!slot.committed);
+    if (slot.committed) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = badgeText(slot); search.appendChild(tag); }
+    else { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs); }; search.appendChild(mk); }
+  }
   // attach the type-to-search autocomplete to an existing <input>
-  function wireAutocomplete(inp, slot) {
+  function wireAutocomplete(inp, slot, refresh) {
     let pop = null, list = [], hi = -1, seq = 0;
     const close = () => { if (pop) { pop.remove(); pop = null; hi = -1; } };
     const choose = c => { close(); pickArtist(slot, c); };
     const draw = arr => {
       close(); list = arr; pop = document.createElement('div'); pop.className = 'tc-acpop';
       const q = inp.value.trim() || slot.creditedAs;
-      pop.innerHTML = (arr.length ? arr.map((c, i) => `<div class="tc-acrow" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('') : `<div class="tc-acrow none">no matches</div>`)
-        + `<div class="tc-acrow create" data-create="1"><span class="tic">＋</span><span class="nm">Create “${esc(q)}” on MusicBrainz…</span></div>`;
+      pop.innerHTML = arr.length ? arr.map((c, i) => `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
       document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(210, r.width) + 'px';
       [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
-      pop.querySelector('[data-create]').onmousedown = e => { e.preventDefault(); close(); createArtist(inp.value.trim() || slot.creditedAs); };
     };
     inp.onfocus = () => {
       inp.select();
-      if (slot.candidates && slot.candidates.length) { draw(slot.candidates); return; }
-      const my = ++seq; const q = inp.value.trim() || slot.creditedAs;   // resolved/edit fields have no cached candidates
+      if (slot.committed && slot.candidates && slot.candidates.length) { draw(slot.candidates); return; }
+      const my = ++seq; const q = inp.value.trim() || slot.creditedAs;
       if (q) searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) draw(res); }); else draw([]);
     };
-    let tmr; inp.oninput = () => { clearTimeout(tmr); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250); };
+    let tmr; inp.oninput = () => {
+      slot.query = inp.value;
+      // editing away from the matched artist un-links it: bar goes white, ＋ creates the typed name
+      if (slot.committed && !sameName(inp.value, slot.name)) { slot.committed = false; slot.status = 'none'; slot.entity = null; slot.gid = null; commitTrack(slot._entry); if (refresh) refresh(); }
+      clearTimeout(tmr); const my = ++seq; tmr = setTimeout(async () => { const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) draw(res); }, 250);
+    };
     inp.onkeydown = e => {
       if (e.key === 'Escape') { close(); inp.blur(); }
       else if (e.key === 'ArrowDown' && pop) { hi = Math.min(list.length - 1, hi + 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
       else if (e.key === 'ArrowUp' && pop) { hi = Math.max(0, hi - 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); }
       else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) choose(c); }
     };
-    inp.onblur = () => setTimeout(() => { close(); if (document.activeElement !== inp) inp.value = slot.committed ? (slot.name || slot.creditedAs) : (slot.creditedAs || ''); }, 160);
+    inp.onblur = () => setTimeout(close, 160);   // keep whatever the user typed (no reset)
   }
 
-  // one artist = one aligned line: [credited-as][icon][colored search bar: input + (badge|＋create)][join][↵][✕ on hover]
+  // one artist = one aligned line: [credited-as][icon][green/white search bar][join][↵ hover][✕ hover]
   function slotEl(entry, s, idx) {
     const line = document.createElement('div'); line.className = 'tc-aslot';
-    const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = s.creditedAs || ''; cred.placeholder = 'credit…'; cred.title = 'credited-as text (what appears in the credit)';
-    cred.onchange = () => { s.creditedAs = cred.value; commitTrack(entry); }; line.appendChild(cred);
+    // credited-as: shown empty when it's exactly the artist name (the name is the placeholder); only a real override shows
+    const same = s.name && s.creditedAs === s.name;
+    const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
+    cred.onchange = () => { const v = cred.value.trim(); s.creditedAs = v || (s.name || ''); if (s.creditedAs === s.name) cred.value = ''; commitTrack(entry); }; line.appendChild(cred);
     const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);
-    // colored search bar (green when resolved, white when not)
-    const search = document.createElement('span'); search.className = 'tc-search' + (s.committed ? ' matched' : '');
-    const inp = document.createElement('input'); inp.value = s.committed ? (s.name || s.creditedAs) : (s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
-    search.appendChild(inp);
-    if (s.committed) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = badgeText(s); search.appendChild(tag); }
-    else { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || s.creditedAs); }; search.appendChild(mk); }
-    wireAutocomplete(inp, s); line.appendChild(search);
-    // join phrase to the next artist — looks like text, click to choose from common options
+    const search = document.createElement('span'); search.className = 'tc-search';
+    const inp = document.createElement('input'); inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
+    search.appendChild(inp); adorn(search, s, inp);
+    wireAutocomplete(inp, s, () => adorn(search, s, inp)); line.appendChild(search);
+    // join to the next artist — editable like credited-as (text that opens a combo of presets)
     if (idx < entry.slots.length - 1) {
-      const sel = document.createElement('select'); sel.className = 'tc-join'; sel.title = 'join phrase to the next artist';
-      const cur = s.joinPhrase || ''; const opts = JOIN_OPTIONS.slice();
-      if (!opts.some(o => o.value === cur)) opts.unshift({ label: cur.trim() || '(direct)', value: cur });
-      sel.innerHTML = opts.map(o => `<option value="${esc(o.value)}"${o.value === cur ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
-      sel.onchange = () => { s.joinPhrase = sel.value; commitTrack(entry); }; line.appendChild(sel);
+      const j = document.createElement('input'); j.className = 'tc-join'; j.setAttribute('list', 'tc-joins'); j.value = s.joinPhrase || ''; j.title = 'join phrase to the next artist (editable)';
+      j.size = Math.max(2, (s.joinPhrase || '').length || 2); j.oninput = () => { j.size = Math.max(2, j.value.length || 2); };
+      j.onchange = () => { s.joinPhrase = j.value; commitTrack(entry); }; line.appendChild(j);
     }
     const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); line.appendChild(add);
     if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); line.appendChild(x); }
