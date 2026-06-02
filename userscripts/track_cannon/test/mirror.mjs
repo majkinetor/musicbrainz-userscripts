@@ -183,6 +183,23 @@ async function main() {
     return { amInHeader, amInBar, toolLabel, srChanged: afterRep !== before0, srStatus, restored, restoredOk: restored === before0, gcLabel, gcOpts };
   });
 
+  // search popups must not pile up: a row rebuild closes any open popup (the bug was orphaned .tc-acpop)
+  const popups = await page.evaluate(async () => {
+    const find = i => [...document.querySelectorAll('.tc-medsec .tc-mirror tbody tr[data-tk]')][i].querySelector('.tc-search input.nm');
+    let maxOpen = 0;
+    for (let i = 0; i < 4; i++) {
+      const inp = find(i); inp.focus(); inp.value = 'rock' + i; inp.dispatchEvent(new Event('input'));
+      await new Promise(r => setTimeout(r, 350));
+      maxOpen = Math.max(maxOpen, document.querySelectorAll('.tc-acpop').length);
+      const t = window.__trackCannon.model.tracks[8]; window.__trackCannon.addSlot(t); window.__trackCannon.removeSlot(t, t.slots.length - 1);   // a rerender that used to orphan the popup
+      await new Promise(r => setTimeout(r, 120));
+    }
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    await new Promise(r => setTimeout(r, 250));
+    return { maxOpen, leftover: document.querySelectorAll('.tc-acpop').length };
+  });
+  log('search popups — max concurrent:', popups.maxOpen, '· leftover after rebuilds:', popups.leftover);
+
   // Compact layout (⚙ → Row layout) packs the rows tighter
   const compact = await page.evaluate(async () => {
     const tbl = document.querySelector('.tc-medsec .tc-mirror');

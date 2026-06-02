@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.201222
+// @version      2026.6.2.202302
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -273,7 +273,7 @@
   }
   // match the _pending slots, updating the table row-by-row as results come in
   async function matchModel(onProgress) {
-    const isEditing = () => { const a = document.activeElement; return a && /^(INPUT|SELECT)$/.test(a.tagName) && (a.closest('#tc-mirror-wrap') || a.closest('#tc-panel')); };
+    const isEditing = isEditingNow;   // don't rebuild rows (and orphan the search popup) while the user is in a field
     setMatching(true);
     try {
       const siblings = await loadSiblingMap();
@@ -774,7 +774,7 @@
   function wireAutocomplete(inp, slot, refresh) {
     let pop = null, list = [], hi = -1, seq = 0, onScroll = null;
     const position = () => { if (!pop) return; const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(210, r.width) + 'px'; };
-    const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop'; document.body.appendChild(pop); onScroll = () => position(); window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
+    const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop'; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); pop = null; } else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
     const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     const choose = c => { close(); pickArtist(slot, c); };
     const searching = () => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Searching…</div>`; position(); };
@@ -853,6 +853,7 @@
     return line;
   }
   function fillRows(tbody, mi) {
+    document.querySelectorAll('.tc-acpop').forEach(p => p.remove());   // rebuilding rows detaches inputs — drop any open search/join popups so they can't orphan
     tbody.innerHTML = ''; let lastMi = -1; const multi = mediums().length > 1 && mi == null;
     const tracks = (mi == null) ? MODEL.tracks : MODEL.tracks.filter(t => t.mi === mi);
     tracks.forEach(t => {
