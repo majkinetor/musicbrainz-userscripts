@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.171328
+// @version      2026.6.2.172615
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -379,9 +379,10 @@
     #tc-foot{display:flex;align-items:center;gap:8px;padding:8px 11px;border-top:1px solid #d7ccef;background:#f6f4fb;border-radius:0 0 6px 6px}
     #tc-foot .sp{flex:1}
 
-    #tc-mirror-wrap{margin:4px 0 6px}
+    /* the global toolbar stays pinned at the top while scrolling the tracklist */
+    #tc-mirror-wrap{margin:4px 0 6px;position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e3dcf2;box-shadow:0 3px 8px rgba(40,20,80,.07)}
     .tc-medsec{margin:2px 0 14px}
-    #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 2px}
+    #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 4px}
     #tc-bar b{color:#563b8f}#tc-bar .sp{flex:1}
     .tc-tablewrap{overflow-x:auto}
     .tc-addrow{padding:8px 4px;font-size:13px;color:#555;display:flex;align-items:center;gap:6px}
