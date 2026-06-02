@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.212640
+// @version      2026.6.2.214111
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -399,7 +399,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md';
-  const VERSION = '2026.6.2.212640';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.2.214111';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const ICON = '<svg class="tc-ico" viewBox="0 0 36 30" width="26" height="22" aria-hidden="true" style="vertical-align:-6px">' +
     '<path d="M6 16 C6 11 9 10 13 10 L24 10 L24 18 L13 18 C9 18 6 17 6 16 Z" fill="#5f3ec0"/>' +
@@ -578,7 +578,8 @@
     #tc-settings{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 24px rgba(40,20,80,.3);padding:11px 13px;font:13px Arial;color:#222;width:340px}
     #tc-settings h4{display:flex;align-items:center;gap:6px;margin:0 0 9px;padding-bottom:8px;border-bottom:1px solid #e3dcf2;color:#563b8f;font-size:13px}
     #tc-settings h4 .tc-ver{font-size:11px;font-weight:normal;color:#999}
-    #tc-settings h4 .tc-help{margin-left:auto;font-size:12px;font-weight:normal;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
+    #tc-settings h4{flex-wrap:wrap}
+    #tc-settings h4 .tc-help{margin-left:auto;flex:none;white-space:nowrap;font-size:12px;font-weight:normal;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
     #tc-settings h4 .tc-help:hover{background:#f0ecfa}
     #tc-settings label{display:flex;gap:8px;align-items:flex-start;margin:7px 0;color:#333}
     #tc-settings .hint{color:#777;font-size:11px;margin:0 0 4px 24px}
