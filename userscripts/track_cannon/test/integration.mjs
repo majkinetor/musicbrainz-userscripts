@@ -107,12 +107,15 @@ async function main() {
     tc.pickArtist(dup[0], dup[0].candidates[0] || dup[0].entity); await new Promise(r => setTimeout(r, 60));
     const marked = dup.every(s => s._marked);
     const domOutlined = document.querySelectorAll('#tc-panel .tc-search.tc-marked').length;
+    // the propagation message goes to the toast, NOT the header status (which keeps the count)
+    const toastMsg = (document.querySelector('#tc-panel .tc-toast') || {}).textContent || '';
+    const headerStatus = (document.querySelector('#tc-panel .tc-hstatus') || {}).textContent || '';
     // next selection (a unique-credit slot, no propagation) must clear the outline
     const cnt = {}; all.forEach(s => { cnt[s.creditedAs.toLowerCase()] = (cnt[s.creditedAs.toLowerCase()] || 0) + 1; });
     const single = all.find(s => cnt[s.creditedAs.toLowerCase()] === 1 && (s.candidates[0] || s.entity));
     let clearedAfter = null;
     if (single) { tc.pickArtist(single, single.candidates[0] || single.entity); await new Promise(r => setTimeout(r, 60)); clearedAfter = dup.every(s => !s._marked); }
-    return { ok: true, count: dup.length, allSame: dup.every(s => s.gid === dup[0].gid && s.committed), marked, domOutlined, clearedAfter };
+    return { ok: true, count: dup.length, allSame: dup.every(s => s.gid === dup[0].gid && s.committed), marked, domOutlined, clearedAfter, toastHasMsg: /other track/.test(toastMsg), headerIsStatus: !/other track/.test(headerStatus) };
   });
 
   // propagation must also overwrite already-SET tracks with the same credit (the reported bug)

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.184557
+// @version      2026.6.2.190142
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -415,6 +415,7 @@
     .tc-search.tc-flash{animation:tcflash 1.5s ease-out}
     .tc-search.tc-marked{border:2px solid #e0a800}   /* persists when a pick changed several tracks */
     .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
+    .tc-search .tc-bar-aka{flex:none;max-width:45%;color:#3a9d6a;font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
     .tc-search .mk{flex:none;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}
     .tc-joinwrap{flex:none;display:flex;align-items:center;gap:0}
     .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:#777;font:italic 12px Arial;padding:1px 2px;border-radius:3px}
@@ -452,6 +453,7 @@
     .tc-medsec{margin:2px 0 14px}
     #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 4px}
     #tc-bar b{color:#563b8f}#tc-bar .sp{flex:1}
+    .tc-toast{flex:none;max-width:46%;color:#5f3ec0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
     .tc-tablewrap{overflow-x:auto}
     .tc-addrow{padding:8px 4px;font-size:13px;color:#555;display:flex;align-items:center;gap:6px}
     .tc-addrow input.tc-addn{width:54px;font:13px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px}
@@ -520,6 +522,10 @@
   let ACTIVE = {};   // { mode, tbody, statusEl }
   // transient message (e.g. "matching d/n") shown in every table's Artist header
   const updateStatus = t => { document.querySelectorAll('.tc-medsec .tc-hstatus, #tc-panel .tc-hstatus').forEach(e => { e.textContent = t; e.classList.remove('tc-unres'); }); };
+  // transient action feedback (a pick propagated, S&R count, …) — lives in the toolbar so it never
+  // overwrites a medium's unresolved badge; auto-clears
+  let _toastTimer = null;
+  const toast = msg => { document.querySelectorAll('.tc-toast').forEach(e => { e.textContent = msg || ''; }); clearTimeout(_toastTimer); if (msg) _toastTimer = setTimeout(() => toast(''), 5000); };
   const unresolvedIn = mi => { let n = 0; MODEL.tracks.forEach(t => { if (mi != null && t.mi !== mi) return; t.slots.forEach(s => { if (!(s.status === 'set' || s.committed)) n++; }); }); return n; };
   const statusText = n => (n ? `⚠ ${n} unresolved!` : 'all matched');
   const setStatusSpan = (span, n) => { if (!span) return; span.textContent = statusText(n); span.classList.toggle('tc-unres', n > 0); };
@@ -610,7 +616,7 @@
     const copies = touched.size;
     if (copies) { changed.forEach(s => { s._marked = true; }); Log.info('propagated', c.name, '→', copies, 'other track(s) credited', JSON.stringify(slot.creditedAs)); }   // outline persists when >1 track changed
     rerender();
-    if (copies) updateStatus(`linked “${c.name}” — also set on ${copies} matching track${copies > 1 ? 's' : ''} (flashed & outlined)`);
+    if (copies) toast(`linked “${c.name}” — also set on ${copies} other track${copies > 1 ? 's' : ''}`);
   }
   async function revertSlot(entry, i) {
     const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig || !orig.names[i]) return;
@@ -739,7 +745,7 @@
         const touched = new Set();
         MODEL.tracks.forEach(t => t.slots.forEach(os => { if (os === s || fold(os.creditedAs) !== oldKey) return; os.creditedAs = newCred; touched.add(os._entry); }));
         touched.forEach(commitTrack);
-        if (touched.size) { Log.info('propagated credited-as', JSON.stringify(newCred), '→', touched.size, 'track(s)'); rerender(); updateStatus(`credited-as set on ${touched.size + 1} matching tracks`); }
+        if (touched.size) { Log.info('propagated credited-as', JSON.stringify(newCred), '→', touched.size, 'track(s)'); rerender(); toast(`credited-as — also set on ${touched.size} other track${touched.size > 1 ? 's' : ''}`); }
       }
     }; enterBlurs(cred); wireRowNav(cred); line.appendChild(cred);
     const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
@@ -747,8 +753,9 @@
     line.appendChild(ic);
     const search = document.createElement('span'); search.className = 'tc-search';
     const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…';
-    const aka = (s.committed && s.entity) ? aliasStr(s.entity) : null; inp.title = aka ? inp.value + ' — ' + aka : inp.value;   // alias on the resolved bar (hover)
+    const aka = (s.committed && s.entity) ? aliasStr(s.entity) : null; inp.title = aka ? inp.value + ' — ' + aka : inp.value;
     search.appendChild(inp);
+    if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = '“' + aka + '”'; al.title = aka; search.appendChild(al); }   // alias shown in the resolved bar too
     if (idx < entry.slots.length - 1) search.appendChild(joinControl(entry, s));   // join lives inside the box, right side
     adorn(search, s, inp); if (s._marked) search.classList.add('tc-marked'); if (s._flash) { search.classList.add('tc-flash'); delete s._flash; } line.appendChild(search);
     wireAutocomplete(inp, s, () => { adorn(search, s, inp); refreshBadges(); refreshStatus(); });
@@ -934,11 +941,11 @@
       if (nt !== t.title) { setTitle(t, nt); t.title = nt; t.guessTitle = guessTitleStr(t); }
       t._srFlash = !!(find && nt !== base);
     });
-    rerender(); updateStatus(changed ? `${changed} title${changed !== 1 ? 's' : ''} replaced` : '');
+    rerender(); toast(changed ? `${changed} title${changed !== 1 ? 's' : ''} replaced` : '');
   }
 
   const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
-    + `<span class="sp"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">Match</button>`
+    + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">Match</button>`
     + `<button class="tc-btn" data-act="revert">Revert all</button><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
