@@ -45,7 +45,9 @@ red. Multi-artist credits are matched slot-by-slot and the original **join phras
      first — (handy when the name is in another script; the alias is also shown on the resolved bar).
      The **join phrase** to the next artist (editable, right-aligned, `▾` opens
      presets) sits inside the box,
-   - on hover, **↵** adds another artist to the credit and **✕** removes that artist.
+   - on hover, **↵** adds another artist to the credit, **✕** removes that artist, and — when a credit
+     reads like several artists — **⋔** *splits* it on `&` / `feat.` / `,` … into one slot per artist
+     (preserving the join phrases), matches each (if auto-match is on) and drops the credited-as override.
    The **last column** holds a centered **confidence badge** (`rg` / `name` / `user` / `set`).
    **↑/↓** jump to the same field in the previous/next row (in the search box this works once the
    artist is resolved — while you're searching, ↑/↓ still browse the results popup).

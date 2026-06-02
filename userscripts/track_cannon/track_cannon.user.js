@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.194843
+// @version      2026.6.2.200150
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -461,11 +461,12 @@
     .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
     .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:10px;padding:0 1px;line-height:1}.tc-joinarrow:hover{color:#5f3ec0}
     .tc-joinpop .tc-acrow{justify-content:space-between;gap:14px}.tc-joinpop .cmt{color:#999}
-    .tc-acts{flex:none;width:44px;display:flex;align-items:center;justify-content:flex-start;gap:4px;padding-left:4px}
-    .tc-enter,.tc-slotx{cursor:pointer;border:none;background:none;padding:0 1px;visibility:hidden;line-height:1}
+    .tc-acts{flex:none;width:60px;display:flex;align-items:center;justify-content:flex-start;gap:4px;padding-left:4px}
+    .tc-enter,.tc-slotx,.tc-splitb{cursor:pointer;border:none;background:none;padding:0 1px;visibility:hidden;line-height:1}
     .tc-enter{color:#7d6bc0;font-size:19px}.tc-enter:hover{color:#5f3ec0}
+    .tc-splitb{color:#7d6bc0;font-size:16px;font-weight:bold}.tc-splitb:hover{color:#5f3ec0}
     .tc-slotx{color:#cc6699;font-size:13px}.tc-slotx:hover{color:#c0392b}
-    .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx{visibility:visible}
+    .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx,.tc-mirror tr:hover .tc-splitb{visibility:visible}
     .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
@@ -701,6 +702,35 @@
   }
   function revertTrack(entry) { resetTrack(entry); rebuild(); }
 
+  // parse a combined credit ("A feat. B & C") into [{name, sep}] — sep is the separator AFTER each name
+  const SEP_RE = /\s*(\bfeat\.?|\bft\.?|\bfeaturing|&|\band\b|\bvs\.?|\bwith\b|×|・|,|;)\s*/gi;
+  function splitArtistText(text) {
+    const parts = (text || '').split(SEP_RE); const out = [];
+    for (let i = 0; i < parts.length; i += 2) { const name = (parts[i] || '').trim(); if (name) out.push({ name, sep: parts[i + 1] || '' }); }
+    return out;
+  }
+  function normJoin(sep) {
+    const s = (sep || '').trim().toLowerCase(); if (!s) return ' & ';
+    if (s === '&') return ' & '; if (/^feat|^ft/.test(s)) return ' feat. '; if (s === 'and') return ' and ';
+    if (s === ',') return ', '; if (s === ';') return '; '; if (/^vs/.test(s)) return ' vs. ';
+    if (s === 'with') return ' with '; if (s === '×' || s === 'x') return ' × '; return ' ' + sep.trim() + ' ';
+  }
+  // ⋔ : split this slot's combined credit into one slot per artist, auto-match (if on), drop the credited-as override
+  async function splitSlot(entry, idx) {
+    const slot = entry.slots[idx];
+    const parts = splitArtistText(slot.creditedAs || slot.name || slot.query || '');
+    if (parts.length < 2) return;
+    const fresh = parts.map((p, i) => { const s = blankSlot(entry); s.creditedAs = p.name; s.joinPhrase = i < parts.length - 1 ? normJoin(p.sep) : ''; s._pending = true; return s; });
+    entry.slots.splice(idx, 1, ...fresh); entry.slots.forEach(s => { s._entry = entry; });
+    commitTrack(entry); rerender();
+    Log.info('split', JSON.stringify(slot.creditedAs || slot.name), '→', parts.map(p => p.name).join(' · '));
+    if (SETTINGS.autoMatch !== false) await matchModel();
+    else fresh.forEach(s => { delete s._pending; });
+    // remove the credited-as override on the matched parts (the artist name is the credit)
+    entry.slots.forEach(s => { if (s.committed && s.gid) s.creditedAs = ''; });
+    commitTrack(entry); rerender();
+  }
+
   // ＋ create-button at the right end of the box (before the join), only when the slot is unmatched;
   // and the alias on the resolved bar — only while the slot stays committed (gone the moment you edit)
   function adorn(search, slot, inp) {
@@ -813,6 +843,8 @@
     // fixed-width actions area (keeps all search boxes the same width); both reveal on row hover
     const acts = document.createElement('span'); acts.className = 'tc-acts';
     const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
+    // ⋔ split: only when this credit looks like several artists (& / feat. / , …)
+    if (splitArtistText(s.creditedAs || s.name || s.query || '').length > 1) { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.title = 'split into separate artists (& / feat. …) and match'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
     if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x); }
     line.appendChild(acts);
     return line;
@@ -1124,7 +1156,7 @@
     tick(); setInterval(tick, 500);
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }

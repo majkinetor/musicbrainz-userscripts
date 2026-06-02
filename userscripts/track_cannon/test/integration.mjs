@@ -192,6 +192,18 @@ async function main() {
   });
   log('create-artist handshake:', JSON.stringify(createFlow));
 
+  // ⋔ split: a combined credit → one slot per artist, with join phrases, auto-matched, credited-as dropped
+  const splitArtist = await page.evaluate(async () => {
+    const tc = window.__trackCannon; tc.settings.autoMatch = true;
+    const t = tc.model.tracks.find(x => x.slots.length === 1) || tc.model.tracks[0];
+    t.slots.length = 1; t.slots[0].creditedAs = 'CBC Band feat. Carol Kim & Elvis Phương';
+    tc.splitSlot(t, 0);
+    await new Promise(r => setTimeout(r, 2200));
+    const t2 = tc.model.tracks.find(x => x.mi === t.mi && x.ti === t.ti);
+    return { slots: t2.slots.length, names: t2.slots.map(s => s.name || s.creditedAs), joins: t2.slots.slice(0, -1).map(s => s.joinPhrase), matched: t2.slots.filter(s => s.gid).length, credsDropped: t2.slots.every(s => !(s.gid && s.creditedAs)) };
+  });
+  log('split artist:', JSON.stringify(splitArtist));
+
   // no apply phase — confident matches auto-commit on load and picks commit immediately
   await page.waitForTimeout(800);
   const report = await page.evaluate(() => {
