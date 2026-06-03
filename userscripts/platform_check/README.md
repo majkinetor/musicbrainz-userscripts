@@ -1,5 +1,7 @@
 # Platform check
 
+<img src="icon.svg" align="right" width="84" height="84" alt="MB Platform Check icon">
+
 Find URLs for a particular MusicBrainz release on online platforms, verify track counts, surface label / year / format alongside.
 
 - [Install latest from GitHub](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/platform_check/platform_check.user.js)
