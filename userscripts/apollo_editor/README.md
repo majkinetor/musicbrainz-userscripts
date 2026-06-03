@@ -1,4 +1,4 @@
-o# Apollo Editor <img src="icon.svg" align="left" width="48" height="48">
+# Apollo Editor <img src="icon.svg" align="left" width="48" height="48">
 
 UI and tools for advanced adding and editing of MusicBrainz release tracklist.
 
