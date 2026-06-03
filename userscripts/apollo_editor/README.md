@@ -1,10 +1,12 @@
-# Apollo Editor <img src="icon.svg" align="left" width="48" height="48" alt="Apollo Editor icon">
+# Apollo Editor <img src="icon.svg" align="left" width="48" height="48">
 
 UI and tools for advanced adding and editing of MusicBrainz release tracklist.
 
 - [Install latest from Github](./apollo_editor.user.js)
 
-![](./screenshot.png)
+<img width="1000" src="./screenshot.png" />
+
+https://github.com/user-attachments/assets/b668f472-c3cc-4487-913c-50ff1d950c5b
 
 When you add a release (especially via an import), each track's artist often arrives as plain **text with no MBID**. Linking them one by one — searching, picking, occasionally splitting `A feat. B` into two credits — is the slowest part of adding a release. Apollo Editor does the whole tracklist in one pass and lets you apply the confident matches with one click.
 
