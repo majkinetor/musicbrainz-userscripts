@@ -1,4 +1,4 @@
-# Track Cannon
+# Apollo Editor
 
 Speed up per-track **artist-credit resolution** in the MusicBrainz release editor.
 
@@ -6,7 +6,7 @@ Speed up per-track **artist-credit resolution** in the MusicBrainz release edito
 
 When you add a release (especially via an import tool), each track's artist often arrives as
 plain **text with no MBID**. Linking them one by one — searching, picking, occasionally
-splitting `A feat. B` into two credits — is the slowest part of adding a release. Track Cannon
+splitting `A feat. B` into two credits — is the slowest part of adding a release. Apollo Editor
 does the whole tracklist in one pass and lets you apply the confident matches with one click.
 
 ## How it resolves an artist
@@ -14,7 +14,7 @@ does the whole tracklist in one pass and lets you apply the confident matches wi
 For every unresolved track it tries, in order:
 
 1. **Sibling releases in the same release group.** Other versions of the same album usually
-   contain the same songs already credited to real artists. Track Cannon pulls their per-track
+   contain the same songs already credited to real artists. Apollo Editor pulls their per-track
    credits (with MBIDs) and matches by title — so it doesn't just *search*, it knows the
    *correct* artist. This is the highest-confidence source and resolves most VA compilations
    outright.
@@ -32,7 +32,7 @@ changed it) purple, **NONE** (nothing found) red. Multi-artist credits are match
 ## Usage
 
 1. Open `…/release/add` or `…/release/<mbid>/edit`, go to the **Tracklist** tab.
-2. Click **🎯 Track Cannon** (next to *Guess feat. artists from track titles*; a floating launcher
+2. Click **🚀 Apollo Editor** (next to *Guess feat. artists from track titles*; a floating launcher
    also appears on the Tracklist tab).
 3. The table mirrors MB's tracklist on a **white background**; **#**, **Title** and **Length** are
    editable (`#` takes vinyl-style `A1`/`B2`). There is **no apply phase** — confident matches
@@ -80,10 +80,10 @@ changed it) purple, **NONE** (nothing found) red. Multi-artist credits are match
 
 ## The table
 
-Track Cannon **takes over the tracklist** as soon as a release add/edit page loads (no flash),
+Apollo Editor **takes over the tracklist** as soon as a release add/edit page loads (no flash),
 laid out like MB's own (⠿ drag-reorder · # · Title · Artist · Length · badge). MB's native tracklist —
 the table, its tools row **and** the Guess-case fieldset — is hidden while Canon is on; the floating
-**Original / Track Cannon** button (bottom-right, shown only on the **Tracklist** tab) toggles Canon
+**Original / Apollo Editor** button (bottom-right, shown only on the **Tracklist** tab) toggles Canon
 off/on (which reveals them). MB's **medium-format header**
 stays in place above each medium's table and is tidied: once a format is chosen it collapses to just
 the format name as text (click it to re-open the dropdown), keeping the medium move/remove buttons;
@@ -131,7 +131,7 @@ Search & Replace runs in **real time** — type in *search* / *replace* and titl
 artists), **Revert all** and **⚙**. Track parser's changes are picked up automatically (the table
 watches the live tracklist).
 
-Track Cannon only fills the in-page editor. **You** review and press MusicBrainz's own
+Apollo Editor only fills the in-page editor. **You** review and press MusicBrainz's own
 *Add release* / *Enter edit* button — nothing is submitted on your behalf.
 
 ## Install

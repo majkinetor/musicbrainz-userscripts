@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name         Track Cannon
+// @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.3.062800
+// @version      2026.6.3.064906
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
+// @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
 // @match        https://musicbrainz.org/release/add
 // @match        https://musicbrainz.org/release/*/edit
@@ -30,7 +31,7 @@
   'use strict';
 
   const T0 = Date.now();
-  const TAG = '[TrackCannon]';
+  const TAG = '[ApolloEditor]';
   const tss = () => ((Date.now() - T0) / 1000).toFixed(3) + 's';
   const Log = {
     info: (...a) => console.info(TAG, tss(), ...a),
@@ -412,16 +413,15 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md';
-  const VERSION = '2026.6.3.062800';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.3.064906';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
-  const ICON = '<svg class="tc-ico" viewBox="0 0 36 30" width="26" height="22" aria-hidden="true" style="vertical-align:-6px">' +
-    '<path d="M6 16 C6 11 9 10 13 10 L24 10 L24 18 L13 18 C9 18 6 17 6 16 Z" fill="#5f3ec0"/>' +
-    '<polygon points="24,8.5 30,7 30,21 24,19.5" fill="#5f3ec0"/>' +
-    '<line x1="30" y1="7" x2="30" y2="21" stroke="#2a1a52" stroke-width="1.8"/>' +
-    '<circle cx="13" cy="20.5" r="6" fill="#3d2470"/><circle cx="13" cy="20.5" r="4.7" fill="none" stroke="#fff" stroke-width="1"/>' +
-    '<g stroke="#fff" stroke-width="0.9"><line x1="7.2" y1="20.5" x2="18.8" y2="20.5"/><line x1="13" y1="14.7" x2="13" y2="26.3"/><line x1="8.9" y1="16.4" x2="17.1" y2="24.6"/><line x1="8.9" y1="24.6" x2="17.1" y2="16.4"/></g>' +
-    '<circle cx="13" cy="20.5" r="1.7" fill="#fff"/>' +
-    '<text x="31" y="9" font-size="9" font-weight="bold" fill="#1f8a4c" font-family="Arial">♪</text></svg>';
+  // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
+  const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
+    '<path d="M13 22 L19 22 L16 30 Z" fill="#ff8c3b"/>' +                                   // flame (outer)
+    '<path d="M14.4 22 L17.6 22 L16 27 Z" fill="#ffd24a"/>' +                               // flame (inner)
+    '<path d="M12 18 L8 23.5 L12 22 Z" fill="#3d2470"/><path d="M20 18 L24 23.5 L20 22 Z" fill="#3d2470"/>' +   // fins
+    '<path d="M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z" fill="#5f3ec0"/>' +          // body + nose
+    '<circle cx="16" cy="12.5" r="3" fill="#cfe8ff" stroke="#2a1a52" stroke-width="1"/></svg>';                // window
 
   // outline person / group type icons (use currentColor so they take the link colour)
   const PERSON_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.4"/><path d="M5 20 C5 14.5 19 14.5 19 20"/></svg>';
@@ -615,7 +615,7 @@
   function openSettings(anchor) {
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
-    s.innerHTML = `<h4>${ICON} Track Cannon — settings <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
+    s.innerHTML = `<h4>${ICON} Apollo Editor — settings <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
       <label><span>Row layout</span><select id="tc-s-layout" style="margin-left:auto"><option value="cozy">Cozy</option><option value="compact">Compact</option></select></label>
       <label><input type="checkbox" id="tc-s-automatch"> <span>Auto-match artists on load</span></label>
       <div class="hint">Off: the table shows immediately but unmatched — use the <b>Match</b> button or search a field.</div>
@@ -1226,7 +1226,7 @@
   function openPanel() {
     style(); const ex = document.getElementById('tc-panel'); if (ex) ex.remove(); const l = document.getElementById('tc-launch'); if (l) l.remove();
     const p = document.createElement('div'); p.id = 'tc-panel';
-    p.innerHTML = `<div id="tc-hdr">${ICON}<b>Track Cannon</b><span class="sp"></span>${BAR}<button class="tc-icon" data-act="close" title="close">✕</button></div>
+    p.innerHTML = `<div id="tc-hdr">${ICON}<b>Apollo Editor</b><span class="sp"></span>${BAR}<button class="tc-icon" data-act="close" title="close">✕</button></div>
       <div id="tc-body"></div>`;
     document.body.appendChild(p);
     const tbody = mountTable(p.querySelector('#tc-body'));
@@ -1334,8 +1334,8 @@
   /* ── entry points ── */
   function ensureLauncher() {
     if (document.getElementById('tc-launch')) return;
-    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.title = 'toggle Track Cannon / original editor';
-    const relabel = () => { b.textContent = document.getElementById('tc-mirror-wrap') ? 'Original' : 'Track Cannon'; };
+    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.title = 'toggle Apollo Editor / original editor';
+    const relabel = () => { b.textContent = document.getElementById('tc-mirror-wrap') ? 'Original' : 'Apollo Editor'; };
     b.onclick = () => { if (document.getElementById('tc-mirror-wrap')) { hideMirror(); SETTINGS.lastView = 'original'; } else { showMirror(); SETTINGS.lastView = 'canon'; } saveSettings(); relabel(); };
     document.body.appendChild(b); relabel();
   }
