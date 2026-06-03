@@ -1,5 +1,7 @@
 # Import Discogs Credits
 
+<img src="icon.png" align="right" width="84" height="84" alt="Import Discogs Credits icon">
+
 UI for importing Discogs credits as MusicBrainz release relationships and few general import helpers.
 
 - [Install from Greasy Fork](https://greasyfork.org/en/scripts/578977-musicbrainz-import-discogs-credits)
