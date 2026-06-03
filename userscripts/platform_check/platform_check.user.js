@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.3.194023
+// @version      2026.6.3.203046
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -380,9 +380,13 @@ container.innerHTML = `
   #sidebar .online-search-box a img[src*="external"] { display: none !important; }
   .online-search-box .pc-icon-btn:hover { background: #ECECEC; color: #222; }
   /* platform brand glyph next to each provider name (toggle via "Show platform icons") */
-  .pc-plat-ico { display: inline-flex; align-items: center; flex: none; }
+  /* icons mode (toggle "Show platform icons"): the brand glyph REPLACES the ✓/×/~ text and carries the
+   * state — faded = not found · ring colour when found (blue = in MB, green = match, amber = mismatch). */
+  .pc-plat-ico { display: none; align-items: center; justify-content: center; flex: none; width: 20px; height: 20px; border-radius: 50%; box-sizing: border-box; }
   .pc-plat-ico svg { display: block; }
-  #mb-pc-panel.pc-no-plat-icons .pc-plat-ico { display: none; }
+  .pc-plat-ico.pc-plat-faded svg { filter: grayscale(1); opacity: .3; }
+  #mb-pc-panel.pc-icons-mode .pc-plat-ico { display: inline-flex; }
+  #mb-pc-panel.pc-icons-mode .pc-ico-slot { display: none; }
   /* Circled ✓ — applied when the platform URL came from an MB url-relationship
    * (existing rel), as distinct from a found-via-Wikidata/search result. Layered
    * on top of the colour-tint (green = fresh, steel-blue = cache hit). */
@@ -416,7 +420,7 @@ container.innerHTML = `
   <div id="row-${p}" style="display: flex; flex-direction: column; min-width: 0; overflow: hidden;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <span id="ico-${p}" class="pc-ico-slot" style="font-size: 11px; min-width: 14px; text-align: center; color: #888;">⚪</span>
-      <span class="pc-plat-ico" title="${PROVIDER_NAME[p]}">${PROVIDER_ICON[p] || ''}</span>
+      <span id="plat-${p}" class="pc-plat-ico" title="${PROVIDER_NAME[p]}">${PROVIDER_ICON[p] || ''}</span>
       <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; font-size: 12px; flex-grow: 1;">${PROVIDER_NAME[p]}</a>
       <span id="master-${p}" class="pc-master-slot" style="font-size: 11px; display: inline-block; min-width: 14px; text-align: center; cursor: default;"></span>
       <span id="val-${p}" style="font-size: 12px; font-weight: bold; font-family: monospace; color: #777; min-width: 20px; text-align: right;">—</span>
@@ -507,7 +511,7 @@ PROVIDER_ORDER.forEach(p => {
     if (providerRows[p]) providerRows[p].style.display = enabled ? 'flex' : 'none';
 });
 // platform brand icons (default on) — class on the panel hides them all via CSS
-container.classList.toggle('pc-no-plat-icons', !GM_getValue('pc:show-icons', true));
+container.classList.toggle('pc-icons-mode', GM_getValue('pc:show-icons', true));
 
 // Provider-reorder controls in the providers modal — drag-and-drop. Each row
 // is draggable; dragover on a sibling reorders via the cursor's Y-midpoint
@@ -597,7 +601,7 @@ document.getElementById('mb-provider-save-btn').addEventListener('click', () => 
     // "Show platform icons" — persist + apply live (no reload needed)
     const showIcons = document.getElementById('mb-show-icons').checked;
     GM_setValue('pc:show-icons', showIcons);
-    container.classList.toggle('pc-no-plat-icons', !showIcons);
+    container.classList.toggle('pc-icons-mode', showIcons);
     // Persist provider order from the modal's current row sequence. If the
     // order changed, reload — the sidebar's row container was rendered at
     // script init with the old order, and re-ordering in place would need
@@ -727,6 +731,19 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     ico.style.cursor = canAdd ? 'pointer' : '';
     ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB` : '';
     ico.onclick = canAdd ? () => addSingleUrl(p) : null;
+
+    // Icons-mode encoding (A+B): mirror the same state onto the brand glyph. Faded when not found;
+    // a coloured ring when found — blue = already in MB, green = match (✓), amber = mismatch (~).
+    const plat = document.getElementById(`plat-${p}`);
+    if (plat) {
+        const g = ico.textContent;
+        const ring = fromMbRels ? '#3b82c4' : g === '✓' ? '#1e9e4a' : g === '~' ? '#FF8C00' : '';
+        plat.classList.toggle('pc-plat-faded', !url);
+        plat.style.boxShadow = ring ? `0 0 0 2px ${ring}` : '';
+        plat.style.cursor = canAdd ? 'pointer' : 'default';
+        plat.onclick = canAdd ? () => addSingleUrl(p) : null;   // click-to-add works on the brand icon too
+        plat.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB` : (url ? a.title : `No ${PROVIDER_NAME[p]} URL found`);
+    }
 
     // Discogs gets a master state in the left slot. Other platforms have an
     // empty slot of the same width so the rows still align vertically.
@@ -1754,6 +1771,8 @@ function resetRows() {
         const meta = document.getElementById(`meta-${p}`);
         const a    = document.getElementById(`mb-online-${p}`);
         if (ico)  { ico.textContent = '⚪'; ico.style.color = '#888'; ico.style.fontWeight = 'normal'; ico.onclick = null; ico.style.cursor = ''; ico.classList.remove('pc-ico-circled'); }
+        const plat = document.getElementById(`plat-${p}`);
+        if (plat) { plat.classList.add('pc-plat-faded'); plat.style.boxShadow = ''; plat.onclick = null; plat.style.cursor = 'default'; }   // back to "not found" look
         if (val)  { val.textContent = '(-- tracks)'; val.style.color = '#777'; }
         if (meta) { meta.innerHTML = ''; }
         // Reset the anchor href to its search-fallback so parseMbFromDom on
