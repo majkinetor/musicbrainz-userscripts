@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.3.210714
+// @version      2026.6.3.214658
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -388,9 +388,10 @@ container.innerHTML = `
   .pc-plat-ico svg { display: block; }
   #mb-pc-panel.pc-icons-mode .pc-plat-ico { display: inline-flex; }
   #mb-pc-panel.pc-icons-mode .pc-ico-slot { display: none; }
-  /* in-MB marker — Circle or Glow (option "MB marker"); shown ONLY on in-MB rows */
-  #mb-pc-panel.pc-icons-mode.pc-mark-circle .pc-st-inmb .pc-plat-ico { border: 1px solid #3b82c4; }
-  #mb-pc-panel.pc-icons-mode.pc-mark-glow   .pc-st-inmb .pc-plat-ico { background: radial-gradient(circle, rgba(59,130,196,.6), rgba(59,130,196,0) 70%); }
+  /* in-MB marker (independent of match/mismatch) — Circle or Glow per the "MB marker" option */
+  #mb-pc-panel.pc-icons-mode.pc-mark-circle .pc-inmb .pc-plat-ico { border: 1px solid #3b82c4; }
+  #mb-pc-panel.pc-icons-mode.pc-mark-glow   .pc-inmb .pc-plat-ico { background: radial-gradient(circle, rgba(59,130,196,.6), rgba(59,130,196,0) 70%); }
+  /* presence — fades/grays the icon + name regardless of in-MB */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: #999 !important; }
   #mb-pc-panel.pc-icons-mode .pc-st-notfound .pc-plat-ico svg { filter: grayscale(1); opacity: .3; }  /* not found */
@@ -753,13 +754,16 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB` : '';
     ico.onclick = canAdd ? () => addSingleUrl(p) : null;
 
-    // Icons-mode encoding: tag the row with its state; CSS (gated by .pc-icons-mode) styles the brand
-    // glyph + name — ring = in MB · full colour = match · gray = found-but-mismatch · faint = not found.
+    // Icons-mode encoding — TWO INDEPENDENT dimensions:
+    //   presence (pc-st-*) drives the icon fade + name colour: match = full · mismatch = gray · notfound = faint
+    //   in-MB    (pc-inmb) draws the marker (circle/glow) — orthogonal, so an in-MB row still grays on a mismatch
     const row = document.getElementById(`row-${p}`);
     if (row) {
-        const state = !url ? 'notfound' : fromMbRels ? 'inmb' : ico.textContent === '~' ? 'mismatch' : 'match';
-        row.classList.remove('pc-st-notfound', 'pc-st-inmb', 'pc-st-mismatch', 'pc-st-match');
-        row.classList.add('pc-st-' + state);
+        const g = ico.textContent;   // '✓' match · '~' mismatch · '?' found-no-count · '×' not found
+        const presence = g === '×' ? 'notfound' : g === '~' ? 'mismatch' : 'match';
+        row.classList.remove('pc-st-notfound', 'pc-st-mismatch', 'pc-st-match');
+        row.classList.add('pc-st-' + presence);
+        row.classList.toggle('pc-inmb', fromMbRels);
     }
     const plat = document.getElementById(`plat-${p}`);
     if (plat) {
@@ -1797,8 +1801,8 @@ function resetRows() {
         const plat = document.getElementById(`plat-${p}`);
         if (plat) { plat.onclick = null; plat.style.cursor = 'default'; }
         const row = document.getElementById(`row-${p}`);
-        if (row) { row.classList.remove('pc-st-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); }   // back to "not found" look
-        if (val)  { val.textContent = '(-- tracks)'; val.style.color = '#777'; }
+        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); }   // back to "not found" look
+        if (val)  { val.textContent = '—'; val.style.color = '#BF616A'; }   // neutral dash while re-scanning (was the junky "(-- tracks)")
         if (meta) { meta.innerHTML = ''; }
         // Reset the anchor href to its search-fallback so parseMbFromDom on
         // a subsequent refresh doesn't see the previous /album/<id> result
