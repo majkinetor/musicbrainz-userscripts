@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.3.082843
+// @version      2026.6.3.185824
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -2261,8 +2261,23 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     const releaseCount = Object.keys(pendingRelease).length;
     const rgCount      = Object.keys(pendingRG).length;
     if (releaseCount + rgCount === 0) {
-        appendLog('System', `Inject: nothing to add — all OK URLs already in MB`, 'warn');
-        flashInfo(triggerBtn, 'Already in MB');
+        // Explain WHY nothing is queued instead of the misleading "all OK URLs already in MB" (#117):
+        //   • unmatched — a link WAS found but isn't a confirmed match (✓); shown as ~ / ? because its
+        //     track count / format differs from this release, so it's NOT added (and is NOT in MB)
+        //   • inMb      — a confirmed match exists but is already a relationship on the release
+        let unmatched = 0, inMb = 0;
+        for (const p of PROVIDER_ORDER) {
+            const c = cacheGet(mbid, p);
+            if (!c?.url) continue;
+            if (c.source === 'MB rels') inMb++; else unmatched++;   // not in MB but not queued ⇒ not a ✓ match
+        }
+        const msg = unmatched > 0
+            ? `Inject: nothing to add — ${unmatched} found link(s) aren't a confirmed match (✓) for this release (track count / format differs)${inMb ? `; ${inMb} already in MB` : ''}`
+            : inMb > 0
+                ? `Inject: nothing to add — all confirmed links are already in MB`
+                : `Inject: nothing to add — no new links found`;
+        appendLog('System', msg, 'warn');
+        flashInfo(triggerBtn, unmatched > 0 ? "Found links don't match" : inMb > 0 ? 'Already in MB' : 'Nothing to add');
         return;
     }
 
