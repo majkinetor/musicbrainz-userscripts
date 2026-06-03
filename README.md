@@ -1,10 +1,8 @@
 # musicbrainz-userscripts
 
-This repository contains userscripts to be used with [MusicBrainz](https://musicbrainz.org)
+This repository contains userscripts to be used with [MusicBrainz](https://musicbrainz.org). 
 
-## Scripts
-
-See each script's README for detailed instructions and screenshots:
+See each script's README for detailed instructions, screenshots and videos:
 
 [Apollo Editor](./userscripts/apollo_editor/README.md) <img src="./userscripts/apollo_editor/icon.svg" align="left" width="32"><br>
 UI and tools for advanced adding and editing of MusicBrainz release tracklist
