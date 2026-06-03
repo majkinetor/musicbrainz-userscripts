@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.3.185824
+// @version      2026.6.3.194023
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -360,6 +360,15 @@ function getProviderOrder() {
 const PROVIDER_ORDER = getProviderOrder();
 const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple Music' };
 const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C' };
+// Small brand glyphs shown next to each provider name (toggle: pc:show-icons). Spotify / Apple Music /
+// Bandcamp are the real marks; Deezer (equalizer) and Discogs (vinyl) are clean brand-coloured stand-ins.
+const PROVIDER_ICON = {
+  spotify:  '<svg viewBox="0 0 24 24" width="14" height="14" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>',
+  apple:    '<svg viewBox="0 0 24 24" width="14" height="14" fill="#FA243C"><path d="M23.997 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043A5.022 5.022 0 0 0 19.7.165a10.5 10.5 0 0 0-1.565-.15c-.04-.003-.083-.01-.124-.013H5.99c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4C2.006.91 1.042 1.83.477 3.16.285 3.61.185 4.085.114 4.568.058 4.96.026 5.353.014 5.748c0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.801.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 0 0 1.57-.1c.822-.106 1.596-.35 2.295-.81a5.046 5.046 0 0 0 1.88-2.207c.186-.42.293-.87.37-1.324.113-.675.138-1.358.137-2.04-.002-3.8 0-7.595-.003-11.393zm-6.423 3.99v5.712c0 .417-.058.827-.244 1.206-.29.59-.76.962-1.388 1.14-.35.1-.706.157-1.07.173-.95.042-1.773-.6-1.943-1.536-.142-.773.227-1.624 1.038-2.022.323-.16.67-.25 1.018-.324.378-.082.758-.153 1.134-.24.274-.063.457-.23.51-.516a.86.86 0 0 0 .02-.193v-5.443a.756.756 0 0 0-.02-.185c-.04-.16-.16-.26-.324-.258-.18.003-.36.033-.54.052l-1.198.135-2.224.25-1.97.222c-.184.02-.36.107-.477.27-.15.213-.213.45-.213.708l-.002 7.91c0 .306-.024.61-.118.905-.323 1.01-1.082 1.57-2.135 1.66-.43.038-.85-.013-1.247-.197-.795-.367-1.262-1.06-1.275-1.94.005-.823.4-1.494 1.1-1.866.355-.187.74-.272 1.135-.345l1.236-.232c.28-.056.444-.227.495-.51a.948.948 0 0 0 .02-.195V5.852c0-.143.012-.288.04-.428.07-.347.295-.575.65-.66.255-.062.51-.097.77-.13l2.34-.26 2.21-.246c.27-.03.54-.06.81-.087.347-.034.69.247.694.682z"/></svg>',
+  bandcamp: '<svg viewBox="0 0 24 24" width="14" height="14" fill="#629AA9"><path d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>',
+  deezer:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="#A238FF"><rect x="1" y="14" width="4" height="6" rx=".6"/><rect x="6.7" y="10" width="4" height="10" rx=".6"/><rect x="12.4" y="6" width="4" height="14" rx=".6"/><rect x="18.1" y="11" width="4" height="9" rx=".6"/></svg>',
+  discogs:  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#222" stroke-width="1.7"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2.1" fill="#222" stroke="none"/></svg>',
+};
 container.innerHTML = `
 <style>
   /* MB's site CSS marks any outbound link with a red external-link ::after icon
@@ -370,6 +379,10 @@ container.innerHTML = `
   #sidebar .online-search-box a img.external,
   #sidebar .online-search-box a img[src*="external"] { display: none !important; }
   .online-search-box .pc-icon-btn:hover { background: #ECECEC; color: #222; }
+  /* platform brand glyph next to each provider name (toggle via "Show platform icons") */
+  .pc-plat-ico { display: inline-flex; align-items: center; flex: none; }
+  .pc-plat-ico svg { display: block; }
+  #mb-pc-panel.pc-no-plat-icons .pc-plat-ico { display: none; }
   /* Circled ✓ — applied when the platform URL came from an MB url-relationship
    * (existing rel), as distinct from a found-via-Wikidata/search result. Layered
    * on top of the colour-tint (green = fresh, steel-blue = cache hit). */
@@ -403,6 +416,7 @@ container.innerHTML = `
   <div id="row-${p}" style="display: flex; flex-direction: column; min-width: 0; overflow: hidden;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <span id="ico-${p}" class="pc-ico-slot" style="font-size: 11px; min-width: 14px; text-align: center; color: #888;">⚪</span>
+      <span class="pc-plat-ico" title="${PROVIDER_NAME[p]}">${PROVIDER_ICON[p] || ''}</span>
       <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; font-size: 12px; flex-grow: 1;">${PROVIDER_NAME[p]}</a>
       <span id="master-${p}" class="pc-master-slot" style="font-size: 11px; display: inline-block; min-width: 14px; text-align: center; cursor: default;"></span>
       <span id="val-${p}" style="font-size: 12px; font-weight: bold; font-family: monospace; color: #777; min-width: 20px; text-align: right;">—</span>
@@ -464,6 +478,9 @@ providerModal.innerHTML = `
       <span style="font-weight: 500; flex-grow: 1;">${PROVIDER_NAME[p]}</span>
     </div>`).join('')}
   </div>
+  <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333; padding: 6px 8px; cursor: pointer; user-select: none;">
+    <input type="checkbox" id="mb-show-icons" style="margin: 0; width: 16px; height: 16px;"> Show platform icons
+  </label>
   <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
     <button id="mb-provider-cancel-btn" style="padding: 8px 16px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">Cancel</button>
     <button id="mb-provider-save-btn" style="padding: 8px 16px; background: #1DB954; border: none; border-radius: 4px; font-size: 13px; color: #FFF; cursor: pointer;">Save</button>
@@ -489,6 +506,8 @@ PROVIDER_ORDER.forEach(p => {
     const enabled = GM_getValue(`prov_${p}`, true);
     if (providerRows[p]) providerRows[p].style.display = enabled ? 'flex' : 'none';
 });
+// platform brand icons (default on) — class on the panel hides them all via CSS
+container.classList.toggle('pc-no-plat-icons', !GM_getValue('pc:show-icons', true));
 
 // Provider-reorder controls in the providers modal — drag-and-drop. Each row
 // is draggable; dragover on a sibling reorders via the cursor's Y-midpoint
@@ -565,6 +584,7 @@ for (const chip of logModal.querySelectorAll('.pc-log-chip')) {
 }
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     PROVIDER_ORDER.forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
+    document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
     providerModal.style.display = 'block';
 });
 document.getElementById('mb-provider-cancel-btn').addEventListener('click', closeAllModals);
@@ -574,6 +594,10 @@ document.getElementById('mb-provider-save-btn').addEventListener('click', () => 
         GM_setValue(`prov_${p}`, checked);
         if (providerRows[p]) providerRows[p].style.display = checked ? 'flex' : 'none';
     });
+    // "Show platform icons" — persist + apply live (no reload needed)
+    const showIcons = document.getElementById('mb-show-icons').checked;
+    GM_setValue('pc:show-icons', showIcons);
+    container.classList.toggle('pc-no-plat-icons', !showIcons);
     // Persist provider order from the modal's current row sequence. If the
     // order changed, reload — the sidebar's row container was rendered at
     // script init with the old order, and re-ordering in place would need
