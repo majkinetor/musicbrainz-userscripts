@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.5.30.121552
+// @version      2026.6.3.222342
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
+// @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
 // @match        https://musicbrainz.org/release/*/edit-relationships
 // @match        https://musicbrainz.org/artist/*
 // @match        https://musicbrainz.org/label/*
