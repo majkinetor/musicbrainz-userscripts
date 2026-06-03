@@ -1,4 +1,4 @@
-# Apollo Editor <img src="icon.svg" align="left" width="48" height="48">
+o# Apollo Editor <img src="icon.svg" align="left" width="48" height="48">
 
 UI and tools for advanced adding and editing of MusicBrainz release tracklist.
 
@@ -51,6 +51,6 @@ Native tools are hidden and moved to the single Tool button at the top of the ta
 Besides integrated tools, there are few new tools:
 
 1. **Search & Replace**<br>
-Search string withing track title and replace it. Clicking the button starts a fresh session with any existing para
+Search a string within track title and replace it. Clicking the button starts a fresh session with any existing parameters applied and cleared.
 1. **Resize Columns**<br>
 Options to set column sizes to several predefined variants - auto fit, centered, default
