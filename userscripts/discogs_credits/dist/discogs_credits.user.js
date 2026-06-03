@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.3.222342
+// @version      2026.6.4.001249
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -1256,7 +1256,7 @@
     Gottuv\u00E2dyam: null,
     Guimbri: null,
     Guitalele: null,
-    Guitar: null,
+    Guitar: "guitar",
     "Guitar Banjo": null,
     "Guitar Synthesizer": null,
     Guitarr\u00F3n: null,
@@ -1393,7 +1393,7 @@
     Zongora: null,
     Algoza: null,
     Alphorn: null,
-    "Alto Clarinet": null,
+    "Alto Clarinet": "alto clarinet",
     "Alto Flute": null,
     "Alto Horn": null,
     "Alto Recorder": null,
