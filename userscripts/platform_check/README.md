@@ -1,6 +1,4 @@
-# Platform check
-
-<img src="icon.svg" align="right" width="84" height="84" alt="MB Platform Check icon">
+# Platform check <img src="icon.svg" align="left" width="48">
 
 Find URLs for a particular MusicBrainz release on online platforms, verify track counts, surface label / year / format alongside.
 
