@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.3.215551
+// @version      2026.6.3.220436
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -426,7 +426,7 @@ container.innerHTML = `
 </div>
 <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px;">
   ${PROVIDER_ORDER.map(p => `
-  <div id="row-${p}" style="display: flex; flex-direction: column; min-width: 0; overflow: hidden;">
+  <div id="row-${p}" class="pc-st-notfound" style="display: flex; flex-direction: column; min-width: 0; overflow: hidden;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <span id="ico-${p}" class="pc-ico-slot" style="font-size: 11px; min-width: 14px; text-align: center; color: #888;">⚪</span>
       <span id="plat-${p}" class="pc-plat-ico" title="${PROVIDER_NAME[p]}">${PROVIDER_ICON[p] || ''}</span>
