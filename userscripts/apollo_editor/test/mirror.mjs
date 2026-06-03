@@ -67,7 +67,7 @@ async function main() {
     const help = tbl.querySelector('td.format a');
     const moves = tbl.querySelector('td.align-right.icon');
     const idkLbl = tbl.querySelector('td.format input[type=checkbox]').closest('label');
-    const warn = [...document.querySelectorAll('fieldset.advanced-medium .warning')].find(w => /capitali[sz]/i.test(w.textContent));   // a capitalization warning (Guess Case replaces these → hidden)
+    const warn = [...document.querySelectorAll('fieldset.advanced-medium .warning')].find(w => /capitali[sz]/i.test(w.textContent));   // a capitalization warning — must now be SHOWN (all MB warnings stay visible)
     const sec = document.querySelector('.tc-medsec');
     const aboveTable = !!(sec && (tbl.compareDocumentPosition(sec) & Node.DOCUMENT_POSITION_FOLLOWING));   // our table follows the native format header
     const set = which => { fmt.value = which; fmt.dispatchEvent(new Event('change')); };
@@ -76,7 +76,7 @@ async function main() {
     set('');                     // no format → full native header
     const noFmt = { notFlat: !fmt.classList.contains('tc-fmt-flat'), labelShown: lbl.style.display !== 'none', idkShown: idkLbl.style.display !== 'none' };
     set(fmt.options[1].value);   // restore a format
-    return { aboveTable, warnHidden: warn ? warn.style.display === 'none' : 'no-cap-warn', withFmt, noFmt };
+    return { aboveTable, capWarnShown: warn ? getComputedStyle(warn).display !== 'none' : 'no-cap-warn', withFmt, noFmt };
   });
   // a non-capitalization warning (e.g. the Digital-Media / packaging one) must stay VISIBLE in Canon
   const realWarn = await page.evaluate(async () => {
@@ -458,7 +458,7 @@ async function main() {
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
   log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
-  log('format header tidy —', JSON.stringify(fmtTidy), '· capitalization warn hidden:', fmtTidy.warnHidden, '· real (packaging) warn shown:', realWarn.visible);
+  log('format header tidy —', JSON.stringify(fmtTidy), '· capitalization warn SHOWN:', fmtTidy.capWarnShown, '· packaging warn shown:', realWarn.visible);
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows,
     '· new tracks blank (no inherited artist):', addTracks.newCredit.every(c => !c), JSON.stringify(addTracks.newCredit));
   log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter, '· settings help→README:', compact.helpOk, '· version shown:', compact.verOk, '(' + compact.ver + ')', '· Appearance section:', compact.appearSec, '· layout radios:', compact.radios);
