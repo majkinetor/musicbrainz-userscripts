@@ -1,6 +1,4 @@
-# ISRC Scout
-
-<img src="icon.svg" align="right" width="84" height="84" alt="ISRC Scout icon">
+# ISRC Scout <img src="icon.svg" align="left" width="48">
 
 Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads the release's existing ISRCs, lets you fill in the missing ones from several sources, and submits them straight to MusicBrainz.
 
