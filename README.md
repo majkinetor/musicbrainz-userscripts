@@ -6,6 +6,8 @@ This repository contains userscripts to be used with [MusicBrainz](https://music
 
 See each script's README for detailed instructions and screenshots:
 
+1. [Apollo Editor](./userscripts/apollo_editor/README.md)<br>
+UI and tools for advanced adding and editing of MusicBrainz release tracklist.
 1. [Import Discogs Credits](./userscripts/discogs_credits/README.md)<br>
 UI for importing Discogs credits as MusicBrainz release relationships and few general import helpers.
 1. [Platform Check](./userscripts/platform_check/README.md)<br>
