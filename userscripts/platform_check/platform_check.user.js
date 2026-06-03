@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.3.205608
+// @version      2026.6.3.210714
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -383,12 +383,14 @@ container.innerHTML = `
    * state via a per-row class (pc-st-*): RING = already in MB (the only thing a ring means) · full colour =
    * clean match · GRAY icon+name = found but track-count mismatch · faint = not found. Match vs mismatch is
    * also on the right via the count colour. */
-  /* every brand glyph sits in a neutral 1px gray circle frame; in-MB turns the frame blue */
-  .pc-plat-ico { display: none; align-items: center; justify-content: center; flex: none; width: 22px; height: 22px; border-radius: 50%; box-sizing: border-box; border: 1px solid gray; }
+  /* fixed-size box (keeps names aligned); NO frame by default — only in-MB draws a blue circle */
+  .pc-plat-ico { display: none; align-items: center; justify-content: center; flex: none; width: 22px; height: 22px; border-radius: 50%; box-sizing: border-box; }
   .pc-plat-ico svg { display: block; }
   #mb-pc-panel.pc-icons-mode .pc-plat-ico { display: inline-flex; }
   #mb-pc-panel.pc-icons-mode .pc-ico-slot { display: none; }
-  #mb-pc-panel.pc-icons-mode .pc-st-inmb    .pc-plat-ico { border-color: #3b82c4; }      /* blue frame = in MB */
+  /* in-MB marker — Circle or Glow (option "MB marker"); shown ONLY on in-MB rows */
+  #mb-pc-panel.pc-icons-mode.pc-mark-circle .pc-st-inmb .pc-plat-ico { border: 1px solid #3b82c4; }
+  #mb-pc-panel.pc-icons-mode.pc-mark-glow   .pc-st-inmb .pc-plat-ico { background: radial-gradient(circle, rgba(59,130,196,.6), rgba(59,130,196,0) 70%); }
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: #999 !important; }
   #mb-pc-panel.pc-icons-mode .pc-st-notfound .pc-plat-ico svg { filter: grayscale(1); opacity: .3; }  /* not found */
@@ -491,6 +493,11 @@ providerModal.innerHTML = `
   <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333; padding: 6px 8px; cursor: pointer; user-select: none;">
     <input type="checkbox" id="mb-show-icons" style="margin: 0; width: 16px; height: 16px;"> Show platform icons
   </label>
+  <div style="display: flex; align-items: center; gap: 14px; font-size: 13px; color: #333; padding: 2px 8px 6px 8px;">
+    <span>MB marker:</span>
+    <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="circle" style="margin: 0;"> Circle</label>
+    <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="glow" style="margin: 0;"> Glow</label>
+  </div>
   <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
     <button id="mb-provider-cancel-btn" style="padding: 8px 16px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">Cancel</button>
     <button id="mb-provider-save-btn" style="padding: 8px 16px; background: #1DB954; border: none; border-radius: 4px; font-size: 13px; color: #FFF; cursor: pointer;">Save</button>
@@ -518,6 +525,7 @@ PROVIDER_ORDER.forEach(p => {
 });
 // platform brand icons (default on) — class on the panel hides them all via CSS
 container.classList.toggle('pc-icons-mode', GM_getValue('pc:show-icons', true));
+container.classList.add(GM_getValue('pc:mb-marker', 'circle') === 'glow' ? 'pc-mark-glow' : 'pc-mark-circle');   // how the in-MB marker is drawn
 
 // Provider-reorder controls in the providers modal — drag-and-drop. Each row
 // is draggable; dragover on a sibling reorders via the cursor's Y-midpoint
@@ -595,6 +603,8 @@ for (const chip of logModal.querySelectorAll('.pc-log-chip')) {
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     PROVIDER_ORDER.forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
     document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
+    const marker = GM_getValue('pc:mb-marker', 'circle');
+    providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => { r.checked = r.value === marker; });
     providerModal.style.display = 'block';
 });
 document.getElementById('mb-provider-cancel-btn').addEventListener('click', closeAllModals);
@@ -608,6 +618,11 @@ document.getElementById('mb-provider-save-btn').addEventListener('click', () => 
     const showIcons = document.getElementById('mb-show-icons').checked;
     GM_setValue('pc:show-icons', showIcons);
     container.classList.toggle('pc-icons-mode', showIcons);
+    // "MB marker" — circle vs glow
+    const marker = (providerModal.querySelector('input[name="mb-marker"]:checked') || {}).value || 'circle';
+    GM_setValue('pc:mb-marker', marker);
+    container.classList.toggle('pc-mark-glow', marker === 'glow');
+    container.classList.toggle('pc-mark-circle', marker !== 'glow');
     // Persist provider order from the modal's current row sequence. If the
     // order changed, reload — the sidebar's row container was rendered at
     // script init with the old order, and re-ordering in place would need
