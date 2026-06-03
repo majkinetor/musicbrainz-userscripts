@@ -55,7 +55,15 @@ async function main() {
   await page.waitForSelector('.tc-medsec .tc-mirror tbody tr', { timeout: 60000 });   // shell renders instantly
   await page.waitForFunction(() => { const m = window.__trackCannon.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });   // matching done
   await page.waitForTimeout(600);
-  const nativeHidden = await page.evaluate(() => [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')).every(t => t.style.display === 'none'));
+  // Apollo hides the native tracklist tables WITHIN the Tracklist tab only (not e.g. the Recordings-tab
+  // recording-associations table — issue #114). Also assert a tr.track table OUTSIDE #tracklist is untouched.
+  const nativeHidden = await page.evaluate(() => { const tl = document.getElementById('tracklist'); return [...tl.querySelectorAll('table')].filter(t => t.querySelector('tr.track')).every(t => t.style.display === 'none'); });
+  const outsideUntouched = await page.evaluate(() => {
+    const tl = document.getElementById('tracklist');
+    // a tr.track table that is NOT inside #tracklist must NOT be display:none'd by Apollo
+    const outside = [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track') && (!tl || !tl.contains(t)));
+    return outside.length === 0 ? 'none-present' : outside.every(t => t.style.display !== 'none');
+  });
   const toolsHidden = await page.evaluate(() => { const t = document.getElementById('tracklist-tools'); return t ? t.style.display === 'none' : 'no-div'; });
   const guessHidden = await page.evaluate(() => { const g = document.querySelector('fieldset.guesscase, .guesscase'); return g ? g.style.display === 'none' : 'no-gc'; });
   // medium-format header is lifted above our table; minimal (text, label/help/idk hidden, but
@@ -457,7 +465,7 @@ async function main() {
 
   await writeFile(resolve(LOG_DIR, 'console.log'), cons.join('\n'));
   await writeFile(resolve(LOG_DIR, 'ops.json'), JSON.stringify({ ops, resolved, nativeHidden }, null, 2));
-  log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· hideMirror reveals:', JSON.stringify(shown));
+  log('hidden — table:', nativeHidden, '· tools:', toolsHidden, '· guesscase:', guessHidden, '· outside-#tracklist untouched (#114):', outsideUntouched, '· hideMirror reveals:', JSON.stringify(shown));
   log('format header tidy —', JSON.stringify(fmtTidy), '· capitalization warn SHOWN:', fmtTidy.capWarnShown, '· packaging warn shown:', realWarn.visible);
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows,
     '· new tracks blank (no inherited artist):', addTracks.newCredit.every(c => !c), JSON.stringify(addTracks.newCredit));

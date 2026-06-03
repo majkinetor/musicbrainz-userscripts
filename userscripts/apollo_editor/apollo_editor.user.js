@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.3.074904
+// @version      2026.6.3.164058
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -413,7 +413,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.3.074904';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.3.164058';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1247,14 +1247,15 @@
 
   /* ── in-page replacement (the only mode) ── */
   let _showOriginal = false;
-  function nativeTrackTables() { return [...document.querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
+  function nativeTrackTables(root) { return [...(root || document).querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
   // the native tracklist = track tables + the #tracklist-tools row + the Guess-case fieldset; hide/show
   // together (the format header is lifted out, not hidden). MB's medium WARNINGS are NOT hidden — every
   // one (capitalization, Digital-Media/packaging, …) stays visible above the Canon table.
   function nativeBits() {
-    // every medium has its own tools row (MB reuses the id "tracklist-tools" — querySelectorAll gets them all);
-    // hide native track tables by class too so an empty medium's header row doesn't linger
-    return [...nativeTrackTables(), ...document.querySelectorAll('table.medium, [id="tracklist-tools"], fieldset.guesscase, .guesscase')];
+    // SCOPE to the Tracklist tab only — the Recordings tab has its own track table (recording associations)
+    // that we must NOT hide (issue #114). every medium has its own tools row (MB reuses id "tracklist-tools").
+    const tl = document.getElementById('tracklist'); if (!tl) return [];
+    return [...nativeTrackTables(tl), ...tl.querySelectorAll('table.medium, [id="tracklist-tools"], fieldset.guesscase, .guesscase')];
   }
   function setNativeHidden(hidden) {
     nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; });
