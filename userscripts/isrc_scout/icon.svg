@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <title>ISRC Scout</title>
+  <rect width="128" height="128" rx="28" fill="#f3eefc"/>
+  <path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#e3d8f7"/>
+  <g fill="none" stroke="#6f42c1" stroke-width="6">
+    <circle cx="64" cy="64" r="40"/>
+    <circle cx="64" cy="64" r="26" stroke-width="4" stroke="#b9a3e8"/>
+    <circle cx="64" cy="64" r="13" stroke-width="4" stroke="#b9a3e8"/>
+  </g>
+  <line x1="64" y1="64" x2="64" y2="24" stroke="#6f42c1" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="86" cy="50" r="7" fill="#4b2e83"/>
+</svg>

@@ -1,5 +1,7 @@
 # ISRC Scout
 
+<img src="icon.svg" align="right" width="84" height="84" alt="ISRC Scout icon">
+
 Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads the release's existing ISRCs, lets you fill in the missing ones from several sources, and submits them straight to MusicBrainz.
 
 - [Install latest from GitHub](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/isrc_scout/isrc_scout.user.js)
