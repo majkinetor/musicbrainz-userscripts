@@ -315,18 +315,29 @@ async function main() {
     return { before, during, after: btn.disabled };
   });
 
-  // exercise model-backed ops via the actual UI buttons (which rebuild the mirror)
+  // reorder by DRAG (replaces the old ▲▼): drag row 1 down to 3rd place — a multi-step move in one gesture
   const before = await titles3();
-  await page.locator('.tc-mirror tbody tr').first().locator('.dn').click();   // move row 1 down
-  await page.waitForSelector('.tc-mirror tbody tr', { timeout: 30000 });
-  await page.waitForTimeout(400);
+  const noOldButtons = await page.evaluate(() => !document.querySelector('.tc-mirror .mv'));   // ▲▼ buttons are gone
+  await page.evaluate(async () => {
+    const rows = [...document.querySelectorAll('.tc-medsec .tc-mirror tbody tr[data-tk]')];
+    const src = rows[0], dst = rows[2]; const dt = new DataTransfer();
+    const handle = src.querySelector('.tc-drag');
+    handle.dispatchEvent(new DragEvent('dragstart', { dataTransfer: dt, bubbles: true }));
+    const r = dst.getBoundingClientRect();
+    dst.dispatchEvent(new DragEvent('dragover', { dataTransfer: dt, bubbles: true, clientY: r.bottom - 2 }));   // lower half → drop after
+    dst.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, clientY: r.bottom - 2 }));
+    handle.dispatchEvent(new DragEvent('dragend', { dataTransfer: dt, bubbles: true }));
+  });
+  await page.waitForSelector('.tc-medsec .tc-mirror tbody tr', { timeout: 30000 });
+  await page.waitForTimeout(600);
   const afterMove = await titles3();
+  const draggedToThird = afterMove[2] === before[0];   // row 1's title landed in 3rd place
   const countBefore = await trackCount();
   const lastRow = page.locator('.tc-mirror tbody tr').last(); await lastRow.hover();   // ✕ reveals on hover
   await lastRow.locator('.rm').click();     // remove last row
   await page.waitForTimeout(600);
   const countAfter = await trackCount();
-  const ops = { before, afterMove, countBefore, countAfter };
+  const ops = { before, afterMove, countBefore, countAfter, draggedToThird, noOldButtons };
   await page.locator('#tracklist').screenshot({ path: resolve(LOG_DIR, 'mirror-after-ops.png') }).catch(() => {});
 
   // split/merge: add an artist slot to a single-artist track, fill it, then remove it
@@ -450,7 +461,7 @@ async function main() {
   log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter, '· settings help→README:', compact.helpOk, '· version shown:', compact.verOk, '(' + compact.ver + ')');
   log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '· medium-combo opts:', multiMed.comboOpts, '· choice kept across tools (want "1"):', JSON.stringify(multiMed.comboKept), '· per-medium status:', JSON.stringify(multiMed.statuses), '·', JSON.stringify(multiMed.perMedium));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
-  log('move 1↓ (UI ▼) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '));
+  log('drag-reorder (row 1 → 3rd) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '), '· landed 3rd:', ops.draggedToThird, '· ▲▼ removed:', ops.noOldButtons);
   log('remove last (UI ✕) — count:', ops.countBefore, '→', ops.countAfter);
   log('guess case — diff:', gc.hasDiff, '· guessed:', JSON.stringify(gc.guessed), '· hover-preview:', gc.hoverPreview, '· leave-restores:', gc.leaveRestores, '· applied:', JSON.stringify(gc.after), '· stillDiff:', gc.stillDiff);
   log('Aa on hover — default:', aaHiddenDefault, '· on row hover:', aaVisibleOnHover);

@@ -81,7 +81,7 @@ changed it) purple, **NONE** (nothing found) red. Multi-artist credits are match
 ## The table
 
 Track Cannon **takes over the tracklist** as soon as a release add/edit page loads (no flash),
-laid out like MB's own (▲▼ reorder · # · Title · Artist · Length · badge). MB's native tracklist —
+laid out like MB's own (⠿ drag-reorder · # · Title · Artist · Length · badge). MB's native tracklist —
 the table, its tools row **and** the Guess-case fieldset — is hidden while Canon is on; the floating
 **Original / Track Cannon** button (bottom-right, shown only on the **Tracklist** tab) toggles Canon
 off/on (which reveals them). MB's **medium-format header**
@@ -106,7 +106,10 @@ The table appears **instantly** (no wait): the tracklist renders right away and 
 fill in row-by-row as MusicBrainz responds. With **Auto-match** off, the table loads unmatched and
 you resolve on demand — click **Match** (toolbar) for the whole list, or just search a field.
 
-Every structural action drives MB's real model — **reorder** (`moveTrackUp/Down`), **remove**
+Reorder tracks by **dragging the ⠿ handle** (first column) anywhere within a medium — drop song 5 at
+the top in one gesture instead of clicking up five times. The move rides on MB's own up/down steps
+(`moveTrackUp/Down`) so the editor never diverges; dragging is **within a medium only** (cross-medium
+drops are ignored). Every structural action drives MB's real model — **reorder**, **remove**
 (`removeTrack`), **Title/#/Length** edits — so nothing diverges from the native editor, and MB's own
 *Add release* button submits as usual. **Revert all** restores every track to its page-load state;
 per-track **↺** (on hover) does one.

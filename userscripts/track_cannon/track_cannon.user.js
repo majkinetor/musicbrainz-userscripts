@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Track Cannon
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.2.220737
+// @version      2026.6.3.062800
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md
@@ -342,6 +342,19 @@
   let _selfEdit = false;   // true while WE mutate the tracklist, so the change-watcher ignores it
   function removeTrack(entry) { _selfEdit = true; try { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); } finally { _selfEdit = false; } Log.info('removed track', entry.number); }
   function moveTrack(entry, dir) { const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); _selfEdit = true; try { (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); } finally { _selfEdit = false; } }
+  // move a track to a target index WITHIN its medium by stepping MB's own up/down ops — never touches the
+  // model array directly, so the editor can't diverge (drag-to-reorder rides on this)
+  function moveTrackToIndex(entry, destTi) {
+    const ed = getEditor(), t = koTrack(entry.mi, entry.ti); const n = (u(mediums()[entry.mi].tracks) || []).length;
+    destTi = Math.max(0, Math.min(n - 1, destTi)); let cur = entry.ti;
+    if (cur === destTi) return false;
+    _selfEdit = true;
+    try { while (cur > destTi) { ed.moveTrackUp.call(ed, t); cur--; } while (cur < destTi) { ed.moveTrackDown.call(ed, t); cur++; } }
+    catch (e) { Log.warn('move-to-index failed', e.message); }
+    finally { _selfEdit = false; }
+    Log.info('moved track', entry.number, 'from', entry.ti, '→', destTi, 'in medium', entry.mi + 1);
+    return true;
+  }
   // add N blank tracks to a medium by driving MB's own "Add tracks" control (the green ＋)
   function addTracks(mi, n) {
     const btns = [...document.querySelectorAll('button[data-click="addNewTracks"]')];
@@ -399,7 +412,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/track_cannon/README.md';
-  const VERSION = '2026.6.2.220737';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.3.062800';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const ICON = '<svg class="tc-ico" viewBox="0 0 36 30" width="26" height="22" aria-hidden="true" style="vertical-align:-6px">' +
     '<path d="M6 16 C6 11 9 10 13 10 L24 10 L24 18 L13 18 C9 18 6 17 6 16 Z" fill="#5f3ec0"/>' +
@@ -465,6 +478,12 @@
     .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px;visibility:hidden}.tc-mirror .t-gc:hover{background:#ffefb8}
     .tc-mirror tr:hover .t-gc{visibility:visible}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
+    /* drag-to-reorder: ⠿ handle + drop indicators (a purple line at the row edge you'll drop against) */
+    .tc-mirror .tc-drag{cursor:grab;color:#b3a3dd;font-size:15px;line-height:1;padding:0 3px;user-select:none}
+    .tc-mirror .tc-drag:hover{color:#5f3ec0}.tc-mirror .tc-drag:active{cursor:grabbing}
+    .tc-mirror tr.tc-dragging td{opacity:.45}
+    .tc-mirror tr.tc-drop-before td{box-shadow:inset 0 2px 0 #5f3ec0}
+    .tc-mirror tr.tc-drop-after td{box-shadow:inset 0 -2px 0 #5f3ec0}
     /* alternate row colors / grid (toggled in ⚙) */
     .tc-mirror.alt tbody tr:nth-child(even) td{background:#f6f4fb}
     .tc-mirror.grid td{border-right:1px solid #ededed}.tc-mirror.grid td:last-child{border-right:none}
@@ -977,14 +996,45 @@
     line.appendChild(acts);
     return line;
   }
+  // drag-to-reorder WITHIN a medium: grab the ⠿ handle and drop a track anywhere in its medium. The actual
+  // move rides on MB's own up/down ops (moveTrackToIndex), so the editor never diverges. Cross-medium drops
+  // are ignored (same-medium only). Replaces the old ▲▼ buttons.
+  let _drag = null;   // { mi, ti } of the row being dragged
+  const clearDropMarks = tb => tb && tb.querySelectorAll('.tc-drop-before,.tc-drop-after').forEach(r => r.classList.remove('tc-drop-before', 'tc-drop-after'));
+  const dropAfter = (tr, clientY) => { const r = tr.getBoundingClientRect(); return (clientY - r.top) > r.height / 2; };
+  function wireDragReorder(tr, t) {
+    const handle = tr.querySelector('.tc-drag');
+    if (handle) {
+      handle.addEventListener('dragstart', e => {
+        _drag = { mi: t.mi, ti: t.ti }; e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', t.mi + ':' + t.ti); } catch (x) {}
+        try { e.dataTransfer.setDragImage(tr, 18, 12); } catch (x) {}
+        tr.classList.add('tc-dragging');
+      });
+      handle.addEventListener('dragend', () => { tr.classList.remove('tc-dragging'); clearDropMarks(tr.parentElement); _drag = null; });
+    }
+    tr.addEventListener('dragover', e => {
+      if (!_drag || _drag.mi !== t.mi) return;   // same medium only
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      clearDropMarks(tr.parentElement); tr.classList.add(dropAfter(tr, e.clientY) ? 'tc-drop-after' : 'tc-drop-before');
+    });
+    tr.addEventListener('dragleave', () => tr.classList.remove('tc-drop-before', 'tc-drop-after'));
+    tr.addEventListener('drop', e => {
+      if (!_drag || _drag.mi !== t.mi) return;
+      e.preventDefault();
+      const fromTi = _drag.ti, gap = t.ti + (dropAfter(tr, e.clientY) ? 1 : 0), dest = gap > fromTi ? gap - 1 : gap;
+      clearDropMarks(tr.parentElement); _drag = null;
+      if (moveTrackToIndex({ mi: t.mi, ti: fromTi, number: fromTi + 1 }, dest)) rebuild();
+    });
+  }
   function fillRows(tbody, mi) {
     document.querySelectorAll('.tc-acpop').forEach(p => p.remove());   // rebuilding rows detaches inputs — drop any open search/join popups so they can't orphan
     tbody.innerHTML = ''; let lastMi = -1; const multi = mediums().length > 1 && mi == null;
     const tracks = (mi == null) ? MODEL.tracks : MODEL.tracks.filter(t => t.mi === mi);
     tracks.forEach(t => {
       if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
-      const tr = document.createElement('tr'); tr.dataset.tk = t.mi + ':' + t.ti;
-      tr.innerHTML = `<td class="c-mv"><span class="mv up" title="move up">▲</span><span class="mv dn" title="move down">▼</span></td>
+      const tr = document.createElement('tr'); tr.dataset.tk = t.mi + ':' + t.ti; tr.dataset.mi = t.mi; tr.dataset.ti = t.ti;
+      tr.innerHTML = `<td class="c-mv"><span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span></td>
         <td class="c-num"><input class="t-num" value="${esc(t.number)}" title="track number"></td>
         <td class="c-title"><div class="t-wrap"><input class="t-title" value="${esc(t.title)}"></div></td>
         <td class="c-art"></td>
@@ -1013,8 +1063,7 @@
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
       numIn.onchange = e => { setNumber(t, e.target.value); refreshBadges(); }; wireRowNav(numIn);
       lenIn.onchange = e => { setLength(t, e.target.value); refreshBadges(); }; wireRowNav(lenIn);
-      tr.querySelector('.up').onclick = () => { moveTrack(t, -1); rebuild(); };
-      tr.querySelector('.dn').onclick = () => { moveTrack(t, +1); rebuild(); };
+      wireDragReorder(tr, t);
       tbody.appendChild(tr);
     });
   }
