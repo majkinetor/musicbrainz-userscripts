@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.3.065344
+// @version      2026.6.3.072201
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -413,7 +413,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.3.065344';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.3.072201';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -602,6 +602,11 @@
     #tc-settings h4 .tc-help:hover{background:#f0ecfa}
     #tc-settings label{display:flex;gap:8px;align-items:flex-start;margin:7px 0;color:#333}
     #tc-settings .hint{color:#777;font-size:11px;margin:0 0 4px 24px}
+    #tc-settings .tc-s-sec{font-weight:bold;color:#333;margin:12px 0 5px}
+    #tc-settings .tc-s-group{padding-left:8px}
+    #tc-settings .tc-s-row{display:flex;align-items:center;gap:12px;margin:7px 0;color:#333}
+    #tc-settings .tc-s-rad{display:inline-flex;align-items:center;gap:4px;margin:0;font-weight:normal;cursor:pointer}
+    #tc-settings .tc-s-row input[type=radio]{margin:0}
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;background:#5f3ec0;color:#fff;border:none;border-radius:20px;padding:8px 14px;font:bold 13px Arial;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
     #tc-btn,#tc-gear-btn{vertical-align:middle}
   `;
@@ -615,22 +620,25 @@
   function openSettings(anchor) {
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
-    s.innerHTML = `<h4>${ICON} Apollo Editor — settings <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
-      <label><span>Row layout</span><select id="tc-s-layout" style="margin-left:auto"><option value="cozy">Cozy</option><option value="compact">Compact</option></select></label>
-      <label><input type="checkbox" id="tc-s-automatch"> <span>Auto-match artists on load</span></label>
-      <div class="hint">Off: the table shows immediately but unmatched — use the <b>Match</b> button or search a field.</div>
-      <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
-      <label><input type="checkbox" id="tc-s-grid"> <span>Show grid</span></label>`;
+    s.innerHTML = `<h4>${ICON} Apollo Editor <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
+      <label title="Off: the table shows unmatched immediately — use the Match button or search a field."><input type="checkbox" id="tc-s-automatch"> <span>Auto-match artists on load</span></label>
+      <div class="tc-s-sec">Appearance</div>
+      <div class="tc-s-group">
+        <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
+        <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
+        <label><input type="checkbox" id="tc-s-grid"> <span>Show grid</span></label>
+      </div>`;
     document.body.appendChild(s);
     const r = anchor ? anchor.getBoundingClientRect() : { left: 60, bottom: 80 };
     // keep it fully on-screen — right-align to the gear if it would overflow (uses the real width)
     s.style.left = Math.max(8, Math.min(r.right - s.offsetWidth, window.innerWidth - s.offsetWidth - 10)) + 'px'; s.style.top = (r.bottom + 6) + 'px';
-    const am = s.querySelector('#tc-s-automatch'), alt = s.querySelector('#tc-s-alt'), grid = s.querySelector('#tc-s-grid'), lay = s.querySelector('#tc-s-layout');
-    am.checked = SETTINGS.autoMatch !== false; alt.checked = !!SETTINGS.altRows; grid.checked = !!SETTINGS.grid; lay.value = SETTINGS.layout || 'cozy';
+    const am = s.querySelector('#tc-s-automatch'), alt = s.querySelector('#tc-s-alt'), grid = s.querySelector('#tc-s-grid');
+    am.checked = SETTINGS.autoMatch !== false; alt.checked = !!SETTINGS.altRows; grid.checked = !!SETTINGS.grid;
+    const curLayout = SETTINGS.layout || 'cozy';
+    s.querySelectorAll('input[name="tc-s-layout"]').forEach(rb => { rb.checked = rb.value === curLayout; rb.onchange = () => { if (rb.checked) { SETTINGS.layout = rb.value; saveSettings(); applyViewClasses(); } }; });
     am.onchange = () => { SETTINGS.autoMatch = am.checked; saveSettings(); };
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     grid.onchange = () => { SETTINGS.grid = grid.checked; saveSettings(); applyViewClasses(); };
-    lay.onchange = () => { SETTINGS.layout = lay.value; saveSettings(); applyViewClasses(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }

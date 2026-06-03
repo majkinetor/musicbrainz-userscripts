@@ -281,11 +281,14 @@ async function main() {
     const helpOk = !!help && /README\.md$/.test(help.getAttribute('href')) && help.target === '_blank';
     const verEl = document.querySelector('#tc-settings .tc-ver');   // installed version shown in the header
     const verOk = !!verEl && /^v\d{4}\.\d+\.\d+\.\d+$/.test(verEl.textContent.trim());
-    const lay = document.querySelector('#tc-s-layout'); lay.value = 'compact'; lay.dispatchEvent(new Event('change'));
+    const appearSec = [...document.querySelectorAll('#tc-settings .tc-s-sec')].some(e => /appearance/i.test(e.textContent));   // section header
+    const setLayout = v => { const rb = document.querySelector(`#tc-settings input[name="tc-s-layout"][value="${v}"]`); rb.checked = true; rb.dispatchEvent(new Event('change', { bubbles: true })); };
+    const radios = document.querySelectorAll('#tc-settings input[name="tc-s-layout"]').length;   // row layout is radios now, not a select
+    setLayout('compact');
     await new Promise(r => setTimeout(r, 80));
     const compactH = h(); const hasClass = tbl.classList.contains('compact');
-    lay.value = 'cozy'; lay.dispatchEvent(new Event('change')); document.querySelector('#tc-bar [data-act="gear"]').click();   // restore
-    return { hasClass, cozyH, compactH, tighter: compactH > 0 && compactH < cozyH, helpOk, verOk, ver: verEl ? verEl.textContent.trim() : null };
+    setLayout('cozy'); document.querySelector('#tc-bar [data-act="gear"]').click();   // restore
+    return { hasClass, cozyH, compactH, tighter: compactH > 0 && compactH < cozyH, helpOk, verOk, ver: verEl ? verEl.textContent.trim() : null, appearSec, radios };
   });
 
   // Add-tracks control: clicking ＋ drives MB's native add-tracks for the last medium
@@ -458,7 +461,7 @@ async function main() {
   log('format header tidy —', JSON.stringify(fmtTidy), '· capitalization warn hidden:', fmtTidy.warnHidden, '· real (packaging) warn shown:', realWarn.visible);
   log('add tracks (＋2) — tracks:', addTracks.before, '→', addTracks.after, '· rows now:', addTracks.rows,
     '· new tracks blank (no inherited artist):', addTracks.newCredit.every(c => !c), JSON.stringify(addTracks.newCredit));
-  log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter, '· settings help→README:', compact.helpOk, '· version shown:', compact.verOk, '(' + compact.ver + ')');
+  log('compact layout — class:', compact.hasClass, '· row height', compact.cozyH + 'px →', compact.compactH + 'px · tighter:', compact.tighter, '· settings help→README:', compact.helpOk, '· version shown:', compact.verOk, '(' + compact.ver + ')', '· Appearance section:', compact.appearSec, '· layout radios:', compact.radios);
   log('multi-medium — mediums:', multiMed.before, '→', multiMed.after, '· sections:', multiMed.sections, '· all tools hidden:', multiMed.toolsAllHidden, '· medium-combo opts:', multiMed.comboOpts, '· choice kept across tools (want "1"):', JSON.stringify(multiMed.comboKept), '· per-medium status:', JSON.stringify(multiMed.statuses), '·', JSON.stringify(multiMed.perMedium));
   log('auto-committed on load — resolved slots:', resolved.res + '/' + resolved.slots);
   log('drag-reorder (row 1 → 3rd) — before:', ops.before.join(' | '), '→ after:', ops.afterMove.join(' | '), '· landed 3rd:', ops.draggedToThird, '· ▲▼ removed:', ops.noOldButtons);

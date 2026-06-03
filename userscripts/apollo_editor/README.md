@@ -1,5 +1,7 @@
 # Apollo Editor
 
+<img src="icon.svg" align="right" width="84" height="84" alt="Apollo Editor icon">
+
 Speed up per-track **artist-credit resolution** in the MusicBrainz release editor.
 
 - [Install latest from Github](./apollo_editor.user.js)

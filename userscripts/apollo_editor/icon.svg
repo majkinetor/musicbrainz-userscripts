@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="128" height="128">
+  <title>Apollo Editor</title>
+  <path d="M13 22 L19 22 L16 30 Z" fill="#ff8c3b"/>
+  <path d="M14.4 22 L17.6 22 L16 27 Z" fill="#ffd24a"/>
+  <path d="M12 18 L8 23.5 L12 22 Z" fill="#3d2470"/>
+  <path d="M20 18 L24 23.5 L20 22 Z" fill="#3d2470"/>
+  <path d="M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z" fill="#5f3ec0"/>
+  <circle cx="16" cy="12.5" r="3" fill="#cfe8ff" stroke="#2a1a52" stroke-width="1"/>
+</svg>
