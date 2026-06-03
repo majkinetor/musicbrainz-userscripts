@@ -1,6 +1,6 @@
 # musicbrainz-userscripts
 
-This repository contains userscripts to be used with [MusicBrainz](https://musicbrainz.org). 
+This repository contains [userscripts](https://musicbrainz.org/doc/Guides/Userscripts) to be used with [MusicBrainz](https://musicbrainz.org). 
 
 See each script's README for detailed instructions, screenshots and videos:
 
