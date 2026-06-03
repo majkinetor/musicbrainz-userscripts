@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.1.120816
+// @version      2026.6.3.192703
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.6.1.120816';
+  const SCRIPT_VERSION = '2026.6.3.192703';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -1003,6 +1003,20 @@
   function getEditNote() {
     const ta = modal.querySelector('#ii-note-text');
     return (noteEdited && ta.value.trim()) ? ta.value.trim() : defaultNote();
+  }
+  // a "Remove ISRC" edit must NOT say "Added 0 ISRCs" — build a deletion-appropriate note
+  function defaultRemovalNote(recs, total) {
+    const isrcs = recs.flatMap(([, v]) => v.isrcs);
+    return [
+      noteHeader(),
+      '',
+      'Release: ' + MB_ROOT + '/release/' + mbid,
+      'Removed ' + total + ' ISRC' + (total === 1 ? '' : 's') + ' from ' + recs.length + ' recording' + (recs.length === 1 ? '' : 's') + (isrcs.length ? ': ' + isrcs.join(', ') : ''),
+    ].join('\n');
+  }
+  function getRemovalNote(recs, total) {
+    const ta = modal.querySelector('#ii-note-text');
+    return (noteEdited && ta.value.trim()) ? ta.value.trim() : defaultRemovalNote(recs, total);   // respect a hand-edited note
   }
   function refreshDeleteBtn() {
     const n = tbody.querySelectorAll('.ii-ex-del:checked').length;
@@ -2226,7 +2240,7 @@
     if (!total) return;
     if (!Auth.isAuthorized()) { /* deletion uses the session cookie, not OAuth — no auth needed, but warn if not logged in is handled by the request itself */ }
     if (!confirm('Submit "Remove ISRC" edits for ' + total + ' ISRC' + (total === 1 ? '' : 's') + ' across ' + recs.length + ' recording' + (recs.length === 1 ? '' : 's') + '?\n\nUses your logged-in MusicBrainz session. Unlike additions, ISRC removals are NOT auto-applied — they go to the edit queue for voting, so the ISRCs stay listed (shown ⏳ pending) until the edits pass. Track them under 🕓 My ISRC edits.')) return;
-    const note = getEditNote();
+    const note = getRemovalNote(recs, total);
     const btn = modal.querySelector('#ii-delete');
     btn.disabled = true;
     Log.info('Submitting Remove-ISRC edits for ' + total + ' ISRC(s) across ' + recs.length + ' recording(s)');
