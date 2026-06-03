@@ -1046,7 +1046,7 @@
         </div>
         <div class="ii-help">
           Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
-          One time, ever; no app registration. If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
+          If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
         </div>
       </div>
 
