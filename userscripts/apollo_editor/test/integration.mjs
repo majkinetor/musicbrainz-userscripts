@@ -8,7 +8,7 @@ import { dirname, resolve } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PROFILE_DIR = resolve(HERE, '..', '..', '..', '.pw-profile');
-const SCRIPT_PATH = resolve(HERE, '..', 'track_cannon.user.js');
+const SCRIPT_PATH = resolve(HERE, '..', 'apollo_editor.user.js');
 const SEED_PATH = resolve(HERE, 'seed-saigon.local.json');
 const ORIGIN = process.env.TC_ORIGIN || 'https://beta.musicbrainz.org';
 const HEADED = process.argv.includes('--headed');

@@ -2,7 +2,7 @@
 
 Speed up per-track **artist-credit resolution** in the MusicBrainz release editor.
 
-- [Install latest from Github](./track_cannon.user.js)
+- [Install latest from Github](./apollo_editor.user.js)
 
 When you add a release (especially via an import tool), each track's artist often arrives as
 plain **text with no MBID**. Linking them one by one — searching, picking, occasionally
@@ -137,12 +137,12 @@ Apollo Editor only fills the in-page editor. **You** review and press MusicBrain
 ## Install
 
 Install a userscript manager (Tampermonkey / Violentmonkey), then install the raw
-`track_cannon.user.js`. Matches `musicbrainz.org` and `beta.musicbrainz.org` release add/edit pages.
+`apollo_editor.user.js`. Matches `musicbrainz.org` and `beta.musicbrainz.org` release add/edit pages.
 
 ## Development
 
 ```
-cd userscripts/track_cannon
+cd userscripts/apollo_editor
 npm install
 node test/integration.mjs          # headless end-to-end: seed → match → apply → verify
 node test/integration.mjs --headed # watch it run
