@@ -1,8 +1,10 @@
-# Apollo Editor <img src="icon.svg" align="left" width="48" height="48" alt="Apollo Editor icon"> 
+# Apollo Editor <img src="icon.svg" align="left" width="48" height="48" alt="Apollo Editor icon">
 
 UI and tools for advanced adding and editing of MusicBrainz release tracklist.
 
 - [Install latest from Github](./apollo_editor.user.js)
+
+![](./screenshot.png)
 
 When you add a release (especially via an import), each track's artist often arrives as plain **text with no MBID**. Linking them one by one — searching, picking, occasionally splitting `A feat. B` into two credits — is the slowest part of adding a release. Apollo Editor does the whole tracklist in one pass and lets you apply the confident matches with one click.
 
@@ -20,7 +22,7 @@ When you add a release (especially via an import), each track's artist often arr
 1. Keyboard navigation
 1. Highlighting of rows that are changed, need attention (tool output, artist split)
 1. Apply artist/credited as changes to single track or all matching tracks
-1. Switch at any time to original table or apollo editor 
+1. Switch at any time to original table or apollo editor
 1. Clean look & feel
 
 ### Matching
@@ -42,7 +44,7 @@ Each match is tagged:
 
 ## Tools
 
-Native tools are hidden and moved to the single Tool button at the top of the table that stays always visible. All tools can be accessed via button's menu and the last one used becomes default one. If the tool has parameters, they are shown next to the button. Parameterless tools fire on pick. 
+Native tools are hidden and moved to the single Tool button at the top of the table that stays always visible. All tools can be accessed via button's menu and the last one used becomes default one. If the tool has parameters, they are shown next to the button. Parameterless tools fire on pick.
 
 Besides integrated tools, there are few new tools:
 
@@ -50,4 +52,3 @@ Besides integrated tools, there are few new tools:
 Search string withing track title and replace it. Clicking the button starts a fresh session with any existing para
 1. **Resize Columns**<br>
 Options to set column sizes to several predefined variants - auto fit, centered, default
-
