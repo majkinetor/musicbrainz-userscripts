@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.3.214658
+// @version      2026.6.3.215551
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -1379,10 +1379,14 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
             appendLog(label, `API search failed`, 'error');
         }
         if (!releaseUrl) {
-            const fallback = await searchWeb(`site:discogs.com release ${artist} ${album}`, u => /www\.discogs\.com\/release\/\d+/.test(u) || /www\.discogs\.com\/.*\/release\/\d+/.test(u), label);
-            if (fallback) {
-                releaseUrl = fallback;
-                const m = fallback.match(/\/release\/(\d+)/);
+            // searchWeb returns an ARRAY of filtered candidate URLs (not a single string). The old code
+            // did `if (fallback) { fallback.match(...) }` — but `[]` is truthy, so an empty result threw a
+            // TypeError that aborted the whole scan before the not-found render below. Take the first hit.
+            const candidates = await searchWeb(`site:discogs.com release ${artist} ${album}`, u => /www\.discogs\.com\/release\/\d+/.test(u) || /www\.discogs\.com\/.*\/release\/\d+/.test(u), label);
+            const hit = candidates[0];
+            if (hit) {
+                releaseUrl = hit;
+                const m = hit.match(/\/release\/(\d+)/);
                 if (m) releaseId = m[1];
                 source = 'web search';
             }
