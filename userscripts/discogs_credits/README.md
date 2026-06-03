@@ -1,4 +1,4 @@
-# Import Discogs Credits <img src="icon.png" align="left" width="48" height="48" alt="Import Discogs Credits icon">
+# Import Discogs Credits <img src="icon.png" align="left" width="48">
 
 UI for importing Discogs credits as MusicBrainz release relationships and few general import helpers.
 
@@ -53,7 +53,7 @@ Move appropriate release-level credits down to all recordings (instruments, voca
 Single-row-per-entity table for confirming Discogs ↔ MusicBrainz matches before dispatch.
 
 **Row state** is conveyed by colors:
-- ⚪ auto match 
+- ⚪ auto match
 - 🟢 user selected
 - 🟡 name differs - resolved via URL but the MB name doesn't match Discogs (user should verify)
 - 🔴 needs attention - not resolved
