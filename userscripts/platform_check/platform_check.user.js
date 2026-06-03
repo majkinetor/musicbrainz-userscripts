@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.3.203046
+// @version      2026.6.3.203908
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -379,14 +379,19 @@ container.innerHTML = `
   #sidebar .online-search-box a img.external,
   #sidebar .online-search-box a img[src*="external"] { display: none !important; }
   .online-search-box .pc-icon-btn:hover { background: #ECECEC; color: #222; }
-  /* platform brand glyph next to each provider name (toggle via "Show platform icons") */
   /* icons mode (toggle "Show platform icons"): the brand glyph REPLACES the ✓/×/~ text and carries the
-   * state — faded = not found · ring colour when found (blue = in MB, green = match, amber = mismatch). */
+   * state via a per-row class (pc-st-*): RING = already in MB (the only thing a ring means) · full colour =
+   * clean match · GRAY icon+name = found but track-count mismatch · faint = not found. Match vs mismatch is
+   * also on the right via the count colour. */
   .pc-plat-ico { display: none; align-items: center; justify-content: center; flex: none; width: 20px; height: 20px; border-radius: 50%; box-sizing: border-box; }
   .pc-plat-ico svg { display: block; }
-  .pc-plat-ico.pc-plat-faded svg { filter: grayscale(1); opacity: .3; }
   #mb-pc-panel.pc-icons-mode .pc-plat-ico { display: inline-flex; }
   #mb-pc-panel.pc-icons-mode .pc-ico-slot { display: none; }
+  #mb-pc-panel.pc-icons-mode .pc-st-inmb    .pc-plat-ico { box-shadow: 0 0 0 2px #3b82c4; }      /* ring = in MB */
+  #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
+  #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: #999 !important; }
+  #mb-pc-panel.pc-icons-mode .pc-st-notfound .pc-plat-ico svg { filter: grayscale(1); opacity: .3; }  /* not found */
+  #mb-pc-panel.pc-icons-mode .pc-st-notfound a[id^="mb-online"] { color: #9aa !important; opacity: .6; }
   /* Circled ✓ — applied when the platform URL came from an MB url-relationship
    * (existing rel), as distinct from a found-via-Wikidata/search result. Layered
    * on top of the colour-tint (green = fresh, steel-blue = cache hit). */
@@ -732,14 +737,16 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB` : '';
     ico.onclick = canAdd ? () => addSingleUrl(p) : null;
 
-    // Icons-mode encoding (A+B): mirror the same state onto the brand glyph. Faded when not found;
-    // a coloured ring when found — blue = already in MB, green = match (✓), amber = mismatch (~).
+    // Icons-mode encoding: tag the row with its state; CSS (gated by .pc-icons-mode) styles the brand
+    // glyph + name — ring = in MB · full colour = match · gray = found-but-mismatch · faint = not found.
+    const row = document.getElementById(`row-${p}`);
+    if (row) {
+        const state = !url ? 'notfound' : fromMbRels ? 'inmb' : ico.textContent === '~' ? 'mismatch' : 'match';
+        row.classList.remove('pc-st-notfound', 'pc-st-inmb', 'pc-st-mismatch', 'pc-st-match');
+        row.classList.add('pc-st-' + state);
+    }
     const plat = document.getElementById(`plat-${p}`);
     if (plat) {
-        const g = ico.textContent;
-        const ring = fromMbRels ? '#3b82c4' : g === '✓' ? '#1e9e4a' : g === '~' ? '#FF8C00' : '';
-        plat.classList.toggle('pc-plat-faded', !url);
-        plat.style.boxShadow = ring ? `0 0 0 2px ${ring}` : '';
         plat.style.cursor = canAdd ? 'pointer' : 'default';
         plat.onclick = canAdd ? () => addSingleUrl(p) : null;   // click-to-add works on the brand icon too
         plat.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB` : (url ? a.title : `No ${PROVIDER_NAME[p]} URL found`);
@@ -1772,7 +1779,9 @@ function resetRows() {
         const a    = document.getElementById(`mb-online-${p}`);
         if (ico)  { ico.textContent = '⚪'; ico.style.color = '#888'; ico.style.fontWeight = 'normal'; ico.onclick = null; ico.style.cursor = ''; ico.classList.remove('pc-ico-circled'); }
         const plat = document.getElementById(`plat-${p}`);
-        if (plat) { plat.classList.add('pc-plat-faded'); plat.style.boxShadow = ''; plat.onclick = null; plat.style.cursor = 'default'; }   // back to "not found" look
+        if (plat) { plat.onclick = null; plat.style.cursor = 'default'; }
+        const row = document.getElementById(`row-${p}`);
+        if (row) { row.classList.remove('pc-st-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); }   // back to "not found" look
         if (val)  { val.textContent = '(-- tracks)'; val.style.color = '#777'; }
         if (meta) { meta.innerHTML = ''; }
         // Reset the anchor href to its search-fallback so parseMbFromDom on
