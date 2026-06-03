@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.3.204350
+// @version      2026.6.3.205608
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -383,12 +383,12 @@ container.innerHTML = `
    * state via a per-row class (pc-st-*): RING = already in MB (the only thing a ring means) · full colour =
    * clean match · GRAY icon+name = found but track-count mismatch · faint = not found. Match vs mismatch is
    * also on the right via the count colour. */
-  /* container is bigger than the 14px glyph so the in-MB ring clears the icon's corners (no overflow) */
-  .pc-plat-ico { display: none; align-items: center; justify-content: center; flex: none; width: 24px; height: 24px; border-radius: 50%; box-sizing: border-box; }
+  /* every brand glyph sits in a neutral 1px gray circle frame; in-MB turns the frame blue */
+  .pc-plat-ico { display: none; align-items: center; justify-content: center; flex: none; width: 22px; height: 22px; border-radius: 50%; box-sizing: border-box; border: 1px solid gray; }
   .pc-plat-ico svg { display: block; }
   #mb-pc-panel.pc-icons-mode .pc-plat-ico { display: inline-flex; }
   #mb-pc-panel.pc-icons-mode .pc-ico-slot { display: none; }
-  #mb-pc-panel.pc-icons-mode .pc-st-inmb    .pc-plat-ico { box-shadow: 0 0 0 1px #3b82c4; }      /* ring = in MB */
+  #mb-pc-panel.pc-icons-mode .pc-st-inmb    .pc-plat-ico { border-color: #3b82c4; }      /* blue frame = in MB */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: #999 !important; }
   #mb-pc-panel.pc-icons-mode .pc-st-notfound .pc-plat-ico svg { filter: grayscale(1); opacity: .3; }  /* not found */
