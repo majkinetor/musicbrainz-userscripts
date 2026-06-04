@@ -91,7 +91,18 @@ export function guessSortName(name) {
 export function flattenTracklist(tracklist) {
     if (!Array.isArray(tracklist)) return [];
     return tracklist.flatMap(t => {
-        if (t?.type_ === 'index' && Array.isArray(t.sub_tracks)) return t.sub_tracks;
+        if (t?.type_ === 'index' && Array.isArray(t.sub_tracks)) {
+            // Credits on the index/heading itself (e.g. a classical movement group
+            // crediting Conductor / Orchestra / soloist once for all its movements)
+            // apply to every contained track. Push the parent's extraartists down
+            // onto each sub_track — otherwise they're dropped and the whole group
+            // imports with zero per-track credits. #122
+            const parentExtra = Array.isArray(t.extraartists) ? t.extraartists : [];
+            if (!parentExtra.length) return t.sub_tracks;
+            return t.sub_tracks.map(st => Object.assign({}, st, {
+                extraartists: [...(Array.isArray(st.extraartists) ? st.extraartists : []), ...parentExtra],
+            }));
+        }
         return [t];
     });
 }

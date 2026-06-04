@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.4.001249
+// @version      2026.6.4.094507
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -1654,7 +1654,13 @@
   function flattenTracklist(tracklist) {
     if (!Array.isArray(tracklist)) return [];
     return tracklist.flatMap((t) => {
-      if (t?.type_ === "index" && Array.isArray(t.sub_tracks)) return t.sub_tracks;
+      if (t?.type_ === "index" && Array.isArray(t.sub_tracks)) {
+        const parentExtra = Array.isArray(t.extraartists) ? t.extraartists : [];
+        if (!parentExtra.length) return t.sub_tracks;
+        return t.sub_tracks.map((st) => Object.assign({}, st, {
+          extraartists: [...Array.isArray(st.extraartists) ? st.extraartists : [], ...parentExtra]
+        }));
+      }
       return [t];
     });
   }
