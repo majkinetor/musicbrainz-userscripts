@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.3.192703
+// @version      2026.6.4.095702
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.6.3.192703';
+  const SCRIPT_VERSION = '2026.6.4.095702';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -2350,7 +2350,9 @@
   btn.id = 'ii-btn';
   btn.type = 'button';
   btn.innerHTML =
-    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+    // ISRC Scout's own radar/target logo (monochrome via currentColor so it reads
+    // white on the purple/pink button), replacing the generic magnifying glass.
+    '<svg width="14" height="14" viewBox="0 0 128 128" fill="none" stroke="currentColor" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="currentColor" opacity=".35" stroke="none"/><g stroke-width="8"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="6"/><circle cx="64" cy="64" r="13" stroke-width="6"/></g><line x1="64" y1="64" x2="64" y2="24" stroke-width="8" stroke-linecap="round"/><circle cx="86" cy="50" r="9" fill="currentColor" stroke="none"/></svg>' +
     'ISRC <span class="ii-status" id="ii-btn-status">⏳</span>';
   btn.addEventListener('click', openModal);
 
@@ -2362,7 +2364,11 @@
     updateBtnStatus();           // in case the release already loaded before the button injected
     return true;
   }
+  // Only the release *overview* page (`/release/<mbid>`) — not its subpages
+  // (/edit, /edit-relationships, /aliases, /tags, …) which also match `release/*`.
+  const IS_OVERVIEW = /^\/release\/[a-f0-9-]{36}\/?$/.test(location.pathname);
   whenDomReady(() => {
+    if (!IS_OVERVIEW) return;
     if (!injectButton()) {
       const obs = new MutationObserver(() => { if (injectButton()) obs.disconnect(); });
       obs.observe(document.documentElement, { childList: true, subtree: true });
@@ -2384,9 +2390,11 @@
     }
   }
 
-  // initial status fetch (also primes RELEASE for the modal)
-  fetchRelease().then(updateBtnStatus).catch(() => {
-    const s = document.getElementById('ii-btn-status'); if (s) s.textContent = '?';
-  });
+  // initial status fetch (also primes RELEASE for the modal) — overview page only
+  if (IS_OVERVIEW) {
+    fetchRelease().then(updateBtnStatus).catch(() => {
+      const s = document.getElementById('ii-btn-status'); if (s) s.textContent = '?';
+    });
+  }
 
 })();
