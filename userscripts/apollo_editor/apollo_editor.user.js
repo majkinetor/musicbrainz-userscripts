@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.183753
+// @version      2026.6.4.184529
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.183753';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.184529';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1495,6 +1495,12 @@
       '.tc-rectbl tr.tc-recmed td{background:#f3f0fa;font-weight:600;color:#4b2e83}',
       '.tc-rectbl .c-n{color:#999;text-align:right;width:26px}',
       '.tc-rectbl .c-sep{width:20px;text-align:center}',
+      // group header (Track | Recording) + a vertical divider down the middle so the two halves read clearly
+      '.tc-rectbl .tc-grouphd th{padding:5px 7px 3px;border-bottom:none;font-size:11px;font-weight:700;letter-spacing:.04em}',
+      '.tc-rectbl .tc-grp{text-align:center;border-radius:5px 5px 0 0}',
+      '.tc-rectbl .tc-grp-l{background:#eef3fb;color:#2c5d9b}',
+      '.tc-rectbl .tc-grp-r{background:#f1ecf9;color:#5b3fa0}',
+      '.tc-rectbl th.c-sep,.tc-rectbl td.c-sep{border-left:1px solid #e6e0f2;border-right:1px solid #e6e0f2}',
       '.tc-rectbl .c-len{color:#555;white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right;width:48px}',
       '.tc-rectbl .c-sugg{color:#6f42c1;text-align:center;width:34px}',
       '.tc-rectbl .tc-tkt{font-weight:600}',
@@ -1549,8 +1555,10 @@
     const unset = rows.filter(r => !r.recGid && !r.isNew).length;
     wrap.innerHTML =
       (unset ? '<div class="tc-recbar"><span class="tc-recwarn">⚠ ' + unset + ' track' + (unset === 1 ? '' : 's') + ' without a recording</span></div>' : '') +
-      '<table class="tc-rectbl"><thead><tr><th class="c-n">#</th><th>Track</th><th>Artist</th><th class="c-len">Len</th>' +
-        '<th class="c-sep"></th><th>Recording</th><th>Artist</th><th class="c-len">Len</th></tr></thead><tbody></tbody></table>';
+      '<table class="tc-rectbl"><thead>' +
+        '<tr class="tc-grouphd"><th colspan="4" class="tc-grp tc-grp-l">Track</th><th class="c-sep"></th><th colspan="3" class="tc-grp tc-grp-r">Recording</th></tr>' +
+        '<tr><th class="c-n">#</th><th>Title</th><th>Artist</th><th class="c-len">Len</th>' +
+        '<th class="c-sep"></th><th>Title</th><th>Artist</th><th class="c-len">Len</th></tr></thead><tbody></tbody></table>';
     const tb = wrap.querySelector('tbody');
     let lastMi = -1;
     rows.forEach(r => {
