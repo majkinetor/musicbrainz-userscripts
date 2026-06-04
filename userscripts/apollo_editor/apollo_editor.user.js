@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.162740
+// @version      2026.6.4.164159
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.162740';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.164159';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1462,6 +1462,9 @@
         mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackLen: u(t.length),
         isNew: typeof t.hasNewRecording === 'function' ? !!u(t.hasNewRecording) : false,
         recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recArtist: rec ? acText(u(rec.artistCredit)) : null, recLen: rec ? u(rec.length) : null,
+        // submit-flags: when on, the recording's title/artist will be overwritten with the track's on submit
+        copyTitle: typeof t.updateRecordingTitle === 'function' ? !!u(t.updateRecordingTitle) : false,
+        copyArtist: typeof t.updateRecordingArtist === 'function' ? !!u(t.updateRecordingArtist) : false,
         suggCount: sugg.length, diffs, conf: rec ? recConfidence(t, rec, diffs) : null,
       });
     }));
@@ -1487,6 +1490,9 @@
       '.tc-rectbl .tc-tkt{font-weight:600}',
       '.tc-rectbl .tc-rec-none{color:#c0392b}.tc-rectbl .tc-rec-new{color:#2c7a51}',
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
+      '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
+      '.tc-rectbl td.tc-clickable{cursor:pointer}',
+      '.tc-rectbl td.tc-clickable:hover{outline:1px solid #9cc6ab;outline-offset:-1px}',
       '.tc-rectbl .tc-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}',
       '.tc-rectbl tr.tc-recrow:hover td{background:#fafaff}',
       // hide the native recording table from the first paint (no flash) and let our table use the
@@ -1511,7 +1517,13 @@
     rows.forEach(r => {
       if (multi && r.mi !== lastMi) { lastMi = r.mi; const mr = document.createElement('tr'); mr.className = 'tc-recmed'; mr.innerHTML = '<td colspan="9">Medium ' + (r.mi + 1) + '</td>'; tb.appendChild(mr); }
       const d = r.diffs || {};
-      const recName = r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? esc(r.recName) : '<span class="tc-rec-none">— none —</span>';
+      // recording title / artist cells: when the copy-flag is on, preview the track value the
+      // recording will become (green); otherwise show the recording's own value (red if it differs).
+      const titleCell = r.copyTitle ? '→ ' + esc(r.title || '')
+        : r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? esc(r.recName) : '<span class="tc-rec-none">— none —</span>';
+      const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') : esc(r.recArtist || '');
+      const tCls = r.copyTitle ? 'tc-copy' : (d.title ? 'tc-diff' : '');
+      const aCls = r.copyArtist ? 'tc-copy' : (d.artist ? 'tc-diff' : '');
       const tr = document.createElement('tr'); tr.className = 'tc-recrow';
       tr.innerHTML =
         '<td class="c-n">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
@@ -1519,17 +1531,39 @@
         '<td>' + esc(r.trackArtist || '') + '</td>' +
         '<td class="c-len">' + fmtMs(r.trackLen) + '</td>' +
         '<td class="c-sep"><span class="tc-dot"></span></td>' +
-        '<td class="' + (d.title ? 'tc-diff' : '') + '">' + recName + '</td>' +
-        '<td class="' + (d.artist ? 'tc-diff' : '') + '">' + esc(r.recArtist || '') + '</td>' +
+        '<td class="tc-reccell ' + tCls + '" data-f="title">' + titleCell + '</td>' +
+        '<td class="tc-reccell ' + aCls + '" data-f="artist">' + artistCell + '</td>' +
         '<td class="c-len ' + (d.len ? 'tc-diff' : '') + '">' + fmtMs(r.recLen) + '</td>' +
         '<td class="c-sugg">' + (r.suggCount || '') + '</td>';
       const dot = tr.querySelector('.tc-dot');
       if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
       else if (r.recGid) { dot.style.background = '#86c686'; dot.title = 'matches the track'; }
       else dot.style.visibility = 'hidden';
+      // click a recording title/artist cell to copy the track value onto the recording (on submit);
+      // left = this track, right = all tracks. Only meaningful when an existing recording is linked.
+      if (r.recGid) tr.querySelectorAll('.tc-reccell').forEach(cell => {
+        const f = cell.dataset.f, on = f === 'title' ? r.copyTitle : r.copyArtist;
+        cell.classList.add('tc-clickable');
+        cell.title = (on ? 'will copy the track ' + f + ' to the recording on submit — click to undo' : 'click to copy the track ' + f + ' onto the recording (right-click: all tracks)');
+        cell.onclick = () => { setCopy(f, r, !on); rerenderRec(); };
+        cell.oncontextmenu = e => { e.preventDefault(); setCopyAll(f); rerenderRec(); };
+      });
       tb.appendChild(tr);
     });
   }
+  // submit-flag setters (per track / all tracks) + a light re-render of the recordings table
+  function setCopy(field, entry, on) {
+    try { const t = koTrack(entry.mi, entry.ti); if (field === 'title') t.updateRecordingTitle(on); else t.updateRecordingArtist(on); }
+    catch (e) { Log.warn('set copy ' + field + ' failed', e.message); }
+  }
+  function setCopyAll(field) {
+    const rows = readRecordings().filter(r => r.recGid);
+    const flag = field === 'title' ? 'copyTitle' : 'copyArtist';
+    const allOn = rows.length && rows.every(r => r[flag]);   // toggle: if every row is already on, turn all off
+    rows.forEach(r => setCopy(field, r, !allOn));
+    Log.info((allOn ? 'cleared' : 'set') + ' copy-' + field + ' on all ' + rows.length + ' recording(s)');
+  }
+  function rerenderRec() { const w = document.getElementById('tc-recwrap'); if (w) renderRecMirror(w); }
   // the Recordings tab panel (#recordings) — check the PANEL not the inner table (we hide the table)
   function recordingsVisible() { const p = document.getElementById('recordings'); return !!(p && p.offsetParent !== null); }
   // hide the native recording-assignment table and render the Apollo comparison table in its place.
