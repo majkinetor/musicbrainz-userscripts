@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.215000
+// @version      2026.6.4.220000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.215000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.220000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -456,6 +456,7 @@
     .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}
     .tc-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}
     .tc-btn.primary{color:#5f3ec0;font-weight:bold}.tc-btn.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}
+    .tc-tbsep{width:1px;height:18px;background:#ddd;flex:none;margin:0 2px}   /* vertical divider before the Match cluster, shared by both toolbars */
     .tc-btn:disabled,.tc-btn:disabled:hover{color:#aaa;background:transparent;border-color:transparent;cursor:default;font-weight:normal}
     .tc-btn.mini{padding:1px 6px;font-size:11px}
     .tc-icon{cursor:pointer;border:none;background:none;font-size:13px;padding:0 2px;color:#666}
@@ -1264,7 +1265,7 @@
   }
 
   const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
-    + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-globalstat"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">Match</button>`
+    + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-globalstat"></span><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
     + `<button class="tc-btn" data-act="revert">Revert all</button><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
@@ -1492,11 +1493,14 @@
       '#tc-recwrap .tc-recwarn{color:#b00;font-weight:600}',
       // consistent with the Tracklist tab toolbar (#tc-bar / .tc-btn): same bar spacing, button look, inputs
       '#tc-recwrap .tc-rec-tb{display:flex;align-items:center;gap:8px;padding:6px 4px;flex-wrap:wrap}',
-      '#tc-recwrap .tc-rec-tb button{padding:4px 11px;border:1px solid #bbb;border-radius:3px;background:linear-gradient(#fff,#eee);cursor:pointer;font:13px Arial;color:#444}#tc-recwrap .tc-rec-tb button:hover{background:linear-gradient(#fff,#e4e4e4)}',
+      '#tc-recwrap .tc-rec-tb .sp{flex:1}',   // flex spacer: Clear hugs the left, the Match cluster hugs the right (mirrors #tc-bar)
+      // flat buttons that match the Tracklist tab's .tc-btn (transparent until hover); Match keeps the bold-purple primary look
+      '#tc-recwrap .tc-rec-tb button{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}#tc-recwrap .tc-rec-tb button:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}',
+      '#tc-recwrap .tc-rec-tb button.primary{color:#5f3ec0;font-weight:bold}#tc-recwrap .tc-rec-tb button.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}',
       '#tc-recwrap .tc-rec-tbl{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}',
       '#tc-recwrap .tc-rec-ignore{font:12px Arial;padding:1px;width:auto;max-width:150px}',
       '#tc-recwrap .tc-rec-amstart{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:46px}',
-      '#tc-recwrap .tc-rec-amstatus{color:#6f42c1;font-size:12px}#tc-recwrap .tc-rec-tb .tc-recwarn{margin-left:auto}',
+      '#tc-recwrap .tc-rec-amstatus{color:#6f42c1;font-size:12px}',
       '.tc-rectbl .tc-recname{position:relative}',
       '.tc-rectbl .tc-rec-rev{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:none;background:#fff;cursor:pointer;color:#7d6bc0;font-size:15px;line-height:1;visibility:hidden;padding:1px 4px;border-radius:3px}',
       '.tc-rectbl tr.tc-recrow:hover .tc-rec-rev{visibility:visible}.tc-rectbl .tc-rec-rev:hover{color:#5f3ec0;background:#ede9f6}',
@@ -1570,13 +1574,15 @@
   function renderRecMirror(wrap) {
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
-        '<button class="tc-rec-am" type="button">⚡ Match</button>' +
-        '<label class="tc-rec-tbl">ignore below <select class="tc-rec-ignore"><option value="low">low</option><option value="vlow">very low</option><option value="xlow">extremely low</option><option value="nothing">nothing</option></select></label>' +
+        '<button class="tc-rec-clear" type="button" title="set every track to a new recording">Clear</button>' +
+        '<span class="sp"></span>' +
+        '<label class="tc-rec-tbl">ignore at <select class="tc-rec-ignore"><option value="low">low</option><option value="vlow">very low</option><option value="xlow">extremely low</option><option value="nothing">nothing</option></select></label>' +
         '<label class="tc-rec-tbl">from track <input class="tc-rec-amstart" type="number" min="1" value="1"></label>' +
-        '<button class="tc-rec-clear" type="button" title="set every track to a new recording">Clear all</button>' +
-        '<button class="tc-rec-revall" type="button" title="revert every recording to its page-load state">Revert all</button>' +
         '<span class="tc-rec-amstatus"></span>' +
         '<span class="tc-recwarn"></span>' +
+        '<span class="tc-tbsep"></span>' +
+        '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions">⚡ Match</button>' +
+        '<button class="tc-rec-revall" type="button" title="revert every recording to its page-load state">Revert all</button>' +
       '</div>' +
       '<table class="tc-rectbl">' +
         '<colgroup><col style="width:2.5%"><col style="width:25.5%"><col style="width:18%"><col style="width:4%"><col style="width:2%"><col style="width:26%"><col style="width:18%"><col style="width:4%"></colgroup>' +
