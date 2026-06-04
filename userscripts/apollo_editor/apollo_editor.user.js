@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.171419
+// @version      2026.6.4.172710
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.171419';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.172710';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -987,10 +987,13 @@
     };
     // arrows browse the results popup WHILE searching; once the slot is resolved they move row-to-row instead
     const browsing = () => pop && !slot.committed && list.length;
+    // highlight the row at index `hi` and keep it on screen (the popup scrolls, so a selection past the
+    // last visible row was going off-screen) — #128-adjacent nav fix
+    const hiliteRow = () => { const rows = [...pop.querySelectorAll('[data-i]')]; rows.forEach((r, i) => r.classList.toggle('hi', i === hi)); const cur = rows[hi]; if (cur) cur.scrollIntoView({ block: 'nearest' }); };
     inp.onkeydown = e => {
       if (e.key === 'Escape') { e.preventDefault(); close(); inp.focus(); }   // close the popup but keep the field focused, so the next ↓ navigates rows
-      else if (e.key === 'ArrowDown') { if (browsing()) { hi = Math.min(list.length - 1, hi + 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); } else { close(); if (focusSameField(inp, 1)) e.preventDefault(); } }
-      else if (e.key === 'ArrowUp') { if (browsing()) { hi = Math.max(0, hi - 1); [...pop.querySelectorAll('[data-i]')].forEach((r, i) => r.classList.toggle('hi', i === hi)); e.preventDefault(); } else { close(); if (focusSameField(inp, -1)) e.preventDefault(); } }
+      else if (e.key === 'ArrowDown') { if (browsing()) { hi = Math.min(list.length - 1, hi + 1); hiliteRow(); e.preventDefault(); } else { close(); if (focusSameField(inp, 1)) e.preventDefault(); } }
+      else if (e.key === 'ArrowUp') { if (browsing()) { hi = Math.max(0, hi - 1); hiliteRow(); e.preventDefault(); } else { close(); if (focusSameField(inp, -1)) e.preventDefault(); } }
       else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) { const entry = slot._entry, i = entry.slots.indexOf(slot); choose(c); focusSlotInput(entry, i); } }   // keep focus on the field after picking (so ↓ moves on)
     };
     inp.onblur = () => setTimeout(close, 160);   // keep whatever the user typed (no reset)
