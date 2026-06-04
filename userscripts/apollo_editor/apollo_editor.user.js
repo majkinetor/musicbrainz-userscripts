@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.192424
+// @version      2026.6.4.192804
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.192424';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.192804';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1490,12 +1490,13 @@
       '#tc-recwrap .tc-recbar{display:flex;align-items:center;gap:8px;padding:2px 2px 8px;font-weight:600}',
       '#tc-recwrap .tc-recbar .tc-ico{vertical-align:-5px}',
       '#tc-recwrap .tc-recwarn{color:#b00;font-weight:600}',
-      '#tc-recwrap .tc-rec-tb{display:flex;align-items:center;gap:10px;padding:4px 2px 8px;flex-wrap:wrap}',
-      '#tc-recwrap .tc-rec-am{cursor:pointer;border:1px solid #4b2e83;background:#6f42c1;color:#fff;border-radius:5px;padding:4px 11px;font:600 12px Arial}#tc-recwrap .tc-rec-am:hover{background:#5a32a3}',
-      '#tc-recwrap .tc-rec-tbl{color:#555;font-size:12px}#tc-recwrap .tc-rec-ignore{font:12px Arial;padding:2px;width:auto;max-width:150px}',
-      '#tc-recwrap .tc-rec-amstart{width:46px;font:12px Arial;padding:2px 3px}',
+      // consistent with the Tracklist tab toolbar (#tc-bar / .tc-btn): same bar spacing, button look, inputs
+      '#tc-recwrap .tc-rec-tb{display:flex;align-items:center;gap:8px;padding:6px 4px;flex-wrap:wrap}',
+      '#tc-recwrap .tc-rec-tb button{padding:4px 11px;border:1px solid #bbb;border-radius:3px;background:linear-gradient(#fff,#eee);cursor:pointer;font:13px Arial;color:#444}#tc-recwrap .tc-rec-tb button:hover{background:linear-gradient(#fff,#e4e4e4)}',
+      '#tc-recwrap .tc-rec-tbl{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}',
+      '#tc-recwrap .tc-rec-ignore{font:12px Arial;padding:1px;width:auto;max-width:150px}',
+      '#tc-recwrap .tc-rec-amstart{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:46px}',
       '#tc-recwrap .tc-rec-amstatus{color:#6f42c1;font-size:12px}#tc-recwrap .tc-rec-tb .tc-recwarn{margin-left:auto}',
-      '#tc-recwrap .tc-rec-clear,#tc-recwrap .tc-rec-revall{cursor:pointer;border:1px solid #ccc;background:#f3f3f3;color:#555;border-radius:5px;padding:4px 9px;font:12px Arial}#tc-recwrap .tc-rec-clear:hover,#tc-recwrap .tc-rec-revall:hover{background:#e8e8e8}',
       '.tc-rectbl .tc-recname{position:relative}',
       '.tc-rectbl .tc-rec-rev{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:none;background:#fff;cursor:pointer;color:#7d6bc0;font-size:15px;line-height:1;visibility:hidden;padding:1px 4px;border-radius:3px}',
       '.tc-rectbl tr.tc-recrow:hover .tc-rec-rev{visibility:visible}.tc-rectbl .tc-rec-rev:hover{color:#5f3ec0;background:#ede9f6}',
