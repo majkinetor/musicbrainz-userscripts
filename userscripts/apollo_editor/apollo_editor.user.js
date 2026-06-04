@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.174259
+// @version      2026.6.4.175943
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.174259';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.175943';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1507,7 +1507,9 @@
       '.tc-recpop .tc-rpk-name{font-weight:600;color:#222}',
       '.tc-recpop .tc-rpk-cmt{color:#888;font-size:11px}',
       '.tc-recpop .tc-rpk-len{margin-left:auto;color:#666;font-variant-numeric:tabular-nums;white-space:nowrap}',
-      '.tc-recpop .tc-rpk-sub{color:#777;font-size:11px}.tc-recpop .tc-rpk-rel{color:#6f54c0}',
+      '.tc-recpop .tc-rpk-by{color:#555;font-size:11px}',
+      '.tc-recpop .tc-rpk-on{color:#777;font-size:11px}',
+      '.tc-recpop .tc-rpk-isrc{color:#9a8fb5;font-size:11px;font-family:Consolas,monospace}',
       '.tc-recpop .tc-rpk-empty{padding:8px 10px;color:#999;font-style:italic}',
       // hide the native recording table from the first paint (no flash) and let our table use the
       // full width instead of MB's .half-width column (#119)
@@ -1591,11 +1593,12 @@
   async function searchRecordings(q) {
     q = (q || '').trim(); if (!q) return [];
     try {
-      const j = await fetch(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+      const j = await fetch(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
       return (j.recordings || []).map(r => ({
         gid: r.id, name: r.title, length: r.length || null,
         artist: (r['artist-credit'] || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''),
         releases: [...new Set((r.releases || []).map(rl => rl.title).filter(Boolean))],
+        isrcs: r.isrcs || [],
         comment: r.disambiguation || '',
       }));
     } catch (e) { Log.warn('recording search failed', e.message); return []; }
@@ -1606,19 +1609,31 @@
     catch (e) { Log.warn('build recording entity failed', e.message); return null; }
   }
   function pickRecording(entry, data) {
+    if (!data) return;
     const ent = recEntityFrom(data); if (!ent) return;
     try { koTrack(entry.mi, entry.ti).setRecordingValue(ent); Log.info('linked recording', JSON.stringify(data.name), '→ track', entry.number); }
     catch (e) { Log.warn('setRecordingValue failed', e.message); }
     closeRecPop(); rerenderRec();
   }
+  // pull display data off a suggestion entity (releases live in appearsOn.results; isrcs may be objects)
+  function suggData(s) {
+    const e = u(s); const ap = u(e.appearsOn);
+    const rels = ap && ap.results ? ap.results.map(r => u(r.name) || r.name).filter(Boolean) : [];
+    const isrcs = (u(e.isrcs) || []).map(x => typeof x === 'string' ? x : (x && (x.isrc || u(x.isrc)))).filter(Boolean);
+    return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), releases: [...new Set(rels)], isrcs };
+  }
+  // a picker result row — mirrors the native list: title + length, by artist, appears on, ISRCs
   function recRowHtml(data) {
-    const len = data.length ? fmtMs(data.length) : '';
-    const relsArr = data.releases || []; const rels = relsArr.slice(0, 3).join(', ') + (relsArr.length > 3 ? ', …' : '');
+    const relsArr = data.releases || []; const rels = relsArr.slice(0, 4).join(', ') + (relsArr.length > 4 ? ', …' : '');
+    const isrcs = (data.isrcs || []).slice(0, 4).join(', ');
     return '<div class="tc-rpk-row" data-gid="' + esc(data.gid) + '">' +
       '<div class="tc-rpk-main"><span class="tc-rpk-name">' + esc(data.name || '') + '</span>' +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
-        '<span class="tc-rpk-len">' + len + '</span></div>' +
-      '<div class="tc-rpk-sub">' + esc(data.artist || '') + (rels ? ' · <span class="tc-rpk-rel">' + esc(rels) + '</span>' : '') + '</div></div>';
+        '<span class="tc-rpk-len">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
+      (data.artist ? '<div class="tc-rpk-by">by ' + esc(data.artist) + '</div>' : '') +
+      (rels ? '<div class="tc-rpk-on">appears on: ' + esc(rels) + '</div>' : '') +
+      (isrcs ? '<div class="tc-rpk-isrc">ISRCs: ' + esc(isrcs) + '</div>' : '') +
+      '</div>';
   }
   function openRecPicker(entry, anchor) {
     recStyle(); closeRecPop();
@@ -1627,15 +1642,33 @@
     pop.style.left = Math.max(6, Math.min(r.right - 390, window.innerWidth - 396)) + 'px';
     pop.style.top = (r.bottom + 4) + 'px';
     const ko = koTrack(entry.mi, entry.ti);
-    const sugg = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []).map(s => { const e = u(s); return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), releases: [] }; });
+    const data = {};
     pop.innerHTML =
       '<div class="tc-rpk-hd">Recording for <b>' + esc(u(ko.name) || '') + '</b></div>' +
       '<input class="tc-rpk-q" type="text" placeholder="search recordings by name…">' +
-      (sugg.length ? '<div class="tc-rpk-sec">suggestions</div><div class="tc-rpk-list tc-rpk-sugg">' + sugg.map(recRowHtml).join('') + '</div>' : '') +
+      '<div class="tc-rpk-sec tc-rpk-suggsec">suggestions</div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
       '<div class="tc-rpk-sec">search results</div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
-    const data = {}; sugg.forEach(s => { data[s.gid] = s; });
-    pop.querySelectorAll('.tc-rpk-sugg .tc-rpk-row').forEach(row => { row.onclick = () => pickRecording(entry, data[row.dataset.gid]); });
-    const q = pop.querySelector('.tc-rpk-q'), resBox = pop.querySelector('.tc-rpk-res');
+    const q = pop.querySelector('.tc-rpk-q'), suggBox = pop.querySelector('.tc-rpk-sugg'), resBox = pop.querySelector('.tc-rpk-res');
+    const wire = box => box.querySelectorAll('.tc-rpk-row').forEach(row => { row.onclick = () => pickRecording(entry, data[row.dataset.gid]); });
+    // suggestions are lazy in MB — render what's there, else trigger findRecordingSuggestions and poll
+    const renderSugg = () => {
+      const list = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []).map(suggData);
+      list.forEach(s => { data[s.gid] = s; });
+      if (!list.length) return false;
+      suggBox.innerHTML = list.map(recRowHtml).join(''); wire(suggBox); return true;
+    };
+    if (!renderSugg()) {
+      try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.warn('findRecordingSuggestions failed', e.message); }
+      let tries = 0;
+      const poll = () => {
+        if (!_recPop) return;
+        const loading = typeof ko.loadingSuggestedRecordings === 'function' ? u(ko.loadingSuggestedRecordings) : false;
+        if (!loading && renderSugg()) { rerenderRec(); return; }   // also refresh the ⊕ count on the row
+        if (!loading && tries > 3) { suggBox.innerHTML = '<div class="tc-rpk-empty">no suggestions</div>'; return; }
+        if (++tries < 40) setTimeout(poll, 250);
+      };
+      setTimeout(poll, 250);
+    }
     q.value = u(ko.name) || '';
     let seq = 0, tmr = null;
     const runSearch = async () => {
@@ -1645,7 +1678,7 @@
       if (my !== seq || !_recPop) return;
       results.forEach(rr => { data[rr.gid] = rr; });
       resBox.innerHTML = results.length ? results.map(recRowHtml).join('') : '<div class="tc-rpk-empty">no matches</div>';
-      resBox.querySelectorAll('.tc-rpk-row').forEach(row => { row.onclick = () => pickRecording(entry, data[row.dataset.gid]); });
+      wire(resBox);
     };
     q.oninput = () => { clearTimeout(tmr); tmr = setTimeout(runSearch, 300); };
     q.focus(); q.select(); runSearch();
