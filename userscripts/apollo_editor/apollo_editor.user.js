@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.104119
+// @version      2026.6.4.111702
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -42,7 +42,6 @@
 
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
   const ORIGIN = location.origin;
-  const IS_ADD = /^\/release\/add\b/.test(location.pathname);   // add-release page vs editing an existing release (#125)
   const u = v => { try { return typeof v === 'function' ? v() : v; } catch (e) { return undefined; } };
   const getEditor = () => { try { return W.MB && W.MB.releaseEditor; } catch (e) { return null; } };
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -342,11 +341,15 @@
     Log.info('reset track', entry.number, 'to original (all cells)');
   }
   let _selfEdit = false;   // true while WE mutate the tracklist, so the change-watcher ignores it
-  function removeTrack(entry) { _selfEdit = true; try { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); } finally { _selfEdit = false; } Log.info('removed track', entry.number); }
-  function moveTrack(entry, dir) { const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); _selfEdit = true; try { (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); } finally { _selfEdit = false; } }
+  // a medium with a CD disc ID (TOC) has a fixed track count — native MB locks adding/removing/
+  // reordering its tracks. Mirror that so Apollo never silently corrupts the disc-ID association. #125
+  function mediumLocked(mi) { try { const m = mediums()[mi]; return !!(m && typeof m.hasToc === 'function' && m.hasToc()); } catch (e) { return false; } }
+  function removeTrack(entry) { if (mediumLocked(entry.mi)) { Log.info('medium', entry.mi + 1, 'disc-ID locked — remove blocked'); return; } _selfEdit = true; try { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); } finally { _selfEdit = false; } Log.info('removed track', entry.number); }
+  function moveTrack(entry, dir) { if (mediumLocked(entry.mi)) { Log.info('medium', entry.mi + 1, 'disc-ID locked — move blocked'); return; } const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); _selfEdit = true; try { (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); } finally { _selfEdit = false; } }
   // move a track to a target index WITHIN its medium by stepping MB's own up/down ops — never touches the
   // model array directly, so the editor can't diverge (drag-to-reorder rides on this)
   function moveTrackToIndex(entry, destTi) {
+    if (mediumLocked(entry.mi)) { Log.info('medium', entry.mi + 1, 'disc-ID locked — reorder blocked'); return false; }
     const ed = getEditor(), t = koTrack(entry.mi, entry.ti); const n = (u(mediums()[entry.mi].tracks) || []).length;
     destTi = Math.max(0, Math.min(n - 1, destTi)); let cur = entry.ti;
     if (cur === destTi) return false;
@@ -359,6 +362,7 @@
   }
   // add N blank tracks to a medium by driving MB's own "Add tracks" control (the green ＋)
   function addTracks(mi, n) {
+    if (mediumLocked(mi)) { Log.info('medium', mi + 1, 'disc-ID locked — add blocked'); return; }
     const btns = [...document.querySelectorAll('button[data-click="addNewTracks"]')];
     const inputs = [...document.querySelectorAll('input[data-bind*="addTrackCount"]')];
     const btn = btns[mi] || btns[btns.length - 1]; const inp = inputs[mi] || inputs[inputs.length - 1];
@@ -414,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.104119';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.111702';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -730,10 +734,11 @@
       ['mousedown', 'mousemove', 'click'].forEach(ev => am.addEventListener(ev, e => e.stopPropagation()));   // don't let the column resizer hijack it
     }
     // "Add N track(s)" footer — adds to THIS medium (or the last medium for the combined panel).
-    // Native MB only offers add-tracks on /release/add, not when editing an existing release
-    // (the native control we drive doesn't exist there either), so only show it in add mode. #125
-    if (IS_ADD) {
-      const target = (mi == null) ? Math.max(0, mediums().length - 1) : mi;
+    // Mirror native MB: a medium locked by a CD disc ID has a fixed track count and offers no
+    // add-tracks control, so only show the footer when the target medium can actually take new
+    // tracks — i.e. "if add tracks exists in the original, it exists in Apollo". #125
+    const target = (mi == null) ? Math.max(0, mediums().length - 1) : mi;
+    if (!mediumLocked(target)) {
       const addrow = document.createElement('div'); addrow.className = 'tc-addrow';
       addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" title="add blank tracks">＋</button>`;
       const addn = addrow.querySelector('.tc-addn'), addbtn = addrow.querySelector('.tc-addbtn');
@@ -893,10 +898,11 @@
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
   function renderBadgeCell(cell, track) {
     const changed = trackChanged(track);   // ↺ only makes sense (and only shows) when there's something to revert
+    const locked = mediumLocked(track.mi);   // disc-ID medium: no remove button (#125)
     cell.innerHTML = track.slots.map(s => `<div class="tc-bl">${s.committed ? `<span class="tc-badge ${s.status}">${badgeText(s)}</span>` : ''}</div>`).join('')
-      + `<div class="tc-trackacts">${changed ? '<button class="trev" title="revert this track">↺</button>' : ''}<button class="rm" title="remove track">✕</button></div>`;
+      + `<div class="tc-trackacts">${changed ? '<button class="trev" title="revert this track">↺</button>' : ''}${locked ? '' : '<button class="rm" title="remove track">✕</button>'}</div>`;
     const trev = cell.querySelector('.trev'); if (trev) trev.onclick = () => revertTrack(track);
-    cell.querySelector('.rm').onclick = () => { removeTrack(track); rebuild(); };
+    const rm = cell.querySelector('.rm'); if (rm) rm.onclick = () => { removeTrack(track); rebuild(); };
     const row = cell.closest('tr'); if (row) row.classList.toggle('tc-changed', changed);   // mark the row (left border)
   }
   // join phrase: editable text that grows right-to-left, plus a ▾ that opens the presets list
@@ -1050,7 +1056,8 @@
     tracks.forEach(t => {
       if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
       const tr = document.createElement('tr'); tr.dataset.tk = t.mi + ':' + t.ti; tr.dataset.mi = t.mi; tr.dataset.ti = t.ti;
-      tr.innerHTML = `<td class="c-mv"><span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span></td>
+      const locked = mediumLocked(t.mi);   // disc-ID medium: no reorder handle (#125)
+      tr.innerHTML = `<td class="c-mv">${locked ? '' : '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>'}</td>
         <td class="c-num"><input class="t-num" value="${esc(t.number)}" title="track number"></td>
         <td class="c-title"><div class="t-wrap"><input class="t-title" value="${esc(t.title)}"></div></td>
         <td class="c-art"></td>
