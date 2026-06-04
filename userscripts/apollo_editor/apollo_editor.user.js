@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.020000
+// @version      2026.6.5.021500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.020000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.021500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1586,7 +1586,9 @@
       '.tc-recpop{position:fixed;z-index:100003;width:410px;overflow:auto;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 8px 28px rgba(40,20,80,.28);font:12px Arial}',
       '.tc-recpop .tc-rpk-hd{position:sticky;top:0;z-index:1}',
       '.tc-recpop .tc-rpk-hd{padding:7px 10px;background:#f3f0fa;border-bottom:1px solid #e3def2;border-radius:6px 6px 0 0}',
-      '.tc-recpop .tc-rpk-cur{padding:6px 10px;border-bottom:1px solid #eee;color:#444;display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
+      '.tc-recpop .tc-rpk-curwrap{border-bottom:1px solid #eee}',   // one separator under the whole current-recording group
+      '.tc-recpop .tc-rpk-cur{padding:6px 10px 3px;color:#444;display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
+      '.tc-recpop .tc-rpk-curactions{display:flex;padding:2px 10px 7px}',   // "+ new recording" sits below appears-on, right-aligned
       '.tc-recpop .tc-rpk-curlbl{color:#999;font-size:11px}.tc-recpop .tc-rpk-curlen{color:#888;font-variant-numeric:tabular-nums}',
       '.tc-recpop .tc-rpk-curnone{color:#c0392b}.tc-recpop .tc-rpk-newcur{color:#2c7a51}',
       '.tc-recpop .tc-rpk-newbtn{margin-left:auto;cursor:pointer;border:1px solid #bcdcc6;background:#eef7f0;color:#1f7a44;border-radius:4px;padding:2px 7px;font:11px Arial}.tc-recpop .tc-rpk-newbtn:hover{background:#e0f0e6}',
@@ -1607,7 +1609,7 @@
       // header subtitle = the song (track) artist + length; current-recording artist + its full appears-on
       '.tc-recpop .tc-rpk-hdby{color:#6a6a6a;font-weight:normal}.tc-recpop .tc-rpk-hdlen{color:#888;font-weight:normal;font-variant-numeric:tabular-nums}',
       '.tc-recpop .tc-rpk-curby{color:#555;font-size:12px}',
-      '.tc-recpop .tc-rpk-curon{padding:3px 10px 7px;border-bottom:1px solid #eee;color:#777;font-size:11px}',
+      '.tc-recpop .tc-rpk-curon{padding:0 10px 4px;color:#777;font-size:11px}',
       '.tc-recpop .tc-rpk-isrc{color:#9a8fb5;font-size:11px;font-family:Consolas,monospace}',
       '.tc-recpop .tc-rpk-fdiff{background:#ffecec;color:#b00;border-radius:2px;padding:0 2px}',
       '.tc-recpop .tc-rpk-empty{padding:8px 10px;color:#999;font-style:italic}',
@@ -1943,9 +1945,11 @@
       '<div class="tc-rpk-hd"><b>' + esc(u(ko.name) || '') + '</b>' +
         (trackArtist ? '<span class="tc-rpk-hdby"> · ' + esc(trackArtist) + '</span>' : '') +
         (trackLen ? '<span class="tc-rpk-hdlen"> · ' + fmtMs(trackLen) + '</span>' : '') + '</div>' +
-      '<div class="tc-rpk-cur">' + curHtml +
-        (isNew ? '' : ' <button class="tc-rpk-newbtn" title="create a brand-new recording for this track instead of reusing one">＋ new recording</button>') + '</div>' +
-      (curGid ? '<div class="tc-rpk-curon">appears on: <span class="tc-rpk-curon-list">…</span></div>' : '') +
+      '<div class="tc-rpk-curwrap">' +
+        '<div class="tc-rpk-cur">' + curHtml + '</div>' +
+        (curGid ? '<div class="tc-rpk-curon">appears on: <span class="tc-rpk-curon-list">…</span></div>' : '') +
+        (isNew ? '' : '<div class="tc-rpk-curactions"><button class="tc-rpk-newbtn" title="create a brand-new recording for this track instead of reusing one">＋ new recording</button></div>') +
+      '</div>' +
       (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
