@@ -275,6 +275,60 @@ try {
     Log-Line "    -> WARN: merge search failed: $($_.Exception.Message)"
 }
 
+# =====================================================================
+# Pass 3: deterministic assigned-issue detection (independent of GH notifications)
+# =====================================================================
+# GitHub is unreliable about emitting a notification when an issue is
+# created-and-assigned to the bot in one action -- #117 / #119 / #120 / #122
+# were all silently missed (the `/notifications` inbox returned 0 threads for
+# the whole window the assignment existed; GH only materialized the thread
+# hours later, after unrelated activity bumped it). Mirror the merge pass:
+# query the Search API directly for OPEN issues assigned to the bot, updated
+# since `lastPolled`, and surface any not already seen as kind='event'
+# reason='assigned'. The `updated:>=` bound keeps the query scoped while the
+# stable `issue-assign#N` dedupe key fires the assignment exactly once (later
+# comments on the same thread are the comment path's job). A rare double-
+# announce is possible if GH *also* belatedly delivers the assign
+# notification on another tick -- acceptable; far better than missing it.
+$assignSinceText = $sinceText
+if (-not $assignSinceText) {
+    $assignSinceText = (Get-Date).ToUniversalTime().AddHours(-1).ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture)
+}
+$assignQuery = "repo:$mergeRepo is:issue is:open assignee:$botLogin updated:>=$assignSinceText"
+$assignUrl   = 'https://api.github.com/search/issues?q=' + [System.Uri]::EscapeDataString($assignQuery)
+Log-Line "  GET $assignUrl"
+try {
+    $aresp = Invoke-WebRequest -Uri $assignUrl -Headers $headers -UseBasicParsing -ErrorAction Stop
+    $astatus = [int]$aresp.StatusCode
+    $abody = if ($aresp.Content) { $aresp.Content | ConvertFrom-Json } else { $null }
+    $assigned = @()
+    if ($abody -and $abody.items) { foreach ($it in $abody.items) { $assigned += $it } }
+    Log-Line "    -> HTTP $astatus, $($assigned.Count) open issue(s) assigned to $botLogin since $assignSinceText"
+    foreach ($iss in $assigned) {
+        $issNum   = '#' + [string]$iss.number
+        $issTitle = $iss.title
+        $assignKey = "issue-assign${issNum}"
+        Log-Line "  $issNum '$issTitle'  (updated=$($iss.updated_at))"
+        if ($state.seenComments -contains $assignKey) {
+            Log-Line '    -> skip: already seen (dedupe)'
+            continue
+        }
+        Log-Line "    -> ACTIONABLE (event): assigned"
+        $actionable += [pscustomobject]@{
+            kind       = 'event'
+            number     = $issNum
+            title      = $issTitle
+            author     = $iss.user.login
+            type       = 'Issue'
+            reason     = 'assigned'
+            url        = $iss.html_url
+            commentUrl = $assignKey
+        }
+    }
+} catch {
+    Log-Line "    -> WARN: assigned-issue search failed: $($_.Exception.Message)"
+}
+
 Log-Line "  result: $($notifs.Count) unread, $($actionable.Count) actionable"
 if ($actionable.Count -gt 0) {
     # One-line summary of every actionable item:
