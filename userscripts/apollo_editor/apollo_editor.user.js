@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.111702
+// @version      2026.6.4.161020
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.111702';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.161020';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -526,7 +526,7 @@
     .tc-search.tc-flash{animation:tcflash 1.5s ease-out}
     .tc-search.tc-marked{border:2px solid #e0a800}   /* persists when a pick changed several tracks */
     .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
-    .tc-search .tc-bar-aka{flex:none;max-width:45%;color:#3a9d6a;font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+    .tc-search .tc-bar-aka{flex:0 1 auto;min-width:0;max-width:55%;margin-left:2px;color:#9bb8a8;font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
     .tc-search .mk{flex:none;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}
     .tc-joinwrap{flex:none;display:flex;align-items:center;gap:0}
     .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:#777;font:italic 900 12px Arial;padding:1px 2px;border-radius:3px}
@@ -545,7 +545,7 @@
     .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
     .tc-acrow .tic{flex:none;width:17px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0}
     .tc-acrow .nm{font-weight:600;color:#222}.tc-acrow .cmt{color:#888;font-size:11px}
-    .tc-acrow .tc-aka{color:#5a7;font-size:11px;font-style:italic}
+    .tc-acrow .tc-aka{color:#9bb8a8;font-size:11px;font-style:italic}
     .tc-acrow.none{color:#888;font-style:italic;cursor:default}
     .tc-acmore{justify-content:center;font-style:italic;color:#6f54c0;border-top:1px solid #e3dcf2;position:sticky;bottom:0;background:#faf8ff}
     .tc-acrow.exact{background:#dff3e5}.tc-acrow.exact .nm{color:#136b39}.tc-acrow.exact:hover,.tc-acrow.exact.hi{background:#cfeed9}
@@ -806,6 +806,7 @@
   function pickArtist(slot, c) {
     if (!c || !c.gid) return;
     if (c.aliases) cacheAliases(c.gid, c.aliases);   // keep the chosen artist's aliases for the bar
+    else if (!_gidAliases.has(c.gid)) fetchAliasesByGids([c.gid]).then(() => refreshAdorns());   // alias not loaded yet (fast pick / "Show more" result) — fetch + show it without re-searching #128
     MODEL.tracks.forEach(t => t.slots.forEach(s => { delete s._marked; }));   // clear the previous selection's outlines
     slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.committed = true; slot.query = null; slot._flash = true;
     if (!(slot.creditedAs || '').trim()) slot.creditedAs = c.name;   // auto-fill the credited-as when the user hasn't set one
@@ -892,7 +893,11 @@
     const ref = search.querySelector('.tc-joinwrap');
     const aks = _gidAliases.get(slot.gid);
     const aka = slot.committed ? aliasStr({ name: slot.name, aliases: aks || (slot.entity && slot.entity.aliases) || [], primaryAlias: slot.entity && slot.entity.primaryAlias }) : null;
-    if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = '“' + aka + '”'; al.title = aka; search.insertBefore(al, ref); }
+    // when matched, size the name field to its content so the alias sits right after it on the LEFT
+    // (instead of being pushed to the far right by a full-width field); reset when unmatched. #128
+    if (slot.committed) { inp.style.flex = '0 1 auto'; inp.size = Math.max(3, String(slot.name || inp.value || '').length + 1); }
+    else { inp.style.flex = ''; inp.removeAttribute('size'); }
+    if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = aka; al.title = aka; search.insertBefore(al, ref); }
     if (!slot.committed) { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot); }; search.insertBefore(mk, ref); }
   }
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
@@ -933,7 +938,7 @@
     const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     const choose = c => { close(); pickArtist(slot, c); };
     const searching = () => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Searching…</div>`; position(); };
-    const akaHtml = c => { const a = aliasStr(c); return a ? `<span class="tc-aka">“${esc(a)}”</span>` : ''; };
+    const akaHtml = c => { const a = aliasStr(c); return a ? `<span class="tc-aka">${esc(a)}</span>` : ''; };
     // a full page of results probably means there are more — offer "Show more…" (like MB's native popup)
     const loadMore = () => { curLimit = curLimit >= 50 ? 100 : curLimit >= 25 ? 50 : 25; const my = ++seq; const more = pop && pop.querySelector('.tc-acmore'); if (more) more.textContent = 'Loading…'; searchArtist(curQuery, curLimit).then(res => { if (my === seq && document.activeElement === inp) showResults(res, curQuery); }); };
     const draw = arr => {
@@ -948,8 +953,18 @@
       position();
     };
     // patch in the full aliases (one WS2 search) without a full redraw, so it doesn't reset the keyboard highlight
-    const patchAliases = arr => { if (!pop) return; arr.forEach((c, i) => { const a = aliasStr(c); if (!a) return; const row = pop.querySelector(`.tc-acrow[data-i="${i}"]`); if (!row) return; let sp = row.querySelector('.tc-aka'); if (!sp) { sp = document.createElement('span'); sp.className = 'tc-aka'; const nm = row.querySelector('.nm'); nm.parentNode.insertBefore(sp, nm.nextSibling); } sp.textContent = '“' + a + '”'; }); };
-    const showResults = (arr, q) => { draw(arr); fetchAliases(q).then(map => { if (document.activeElement !== inp || !pop) return; arr.forEach(c => { if (map[c.gid] && map[c.gid].length) c.aliases = map[c.gid]; }); patchAliases(arr); }); };
+    const patchAliases = arr => { if (!pop) return; arr.forEach((c, i) => { const a = aliasStr(c); if (!a) return; const row = pop.querySelector(`.tc-acrow[data-i="${i}"]`); if (!row) return; let sp = row.querySelector('.tc-aka'); if (!sp) { sp = document.createElement('span'); sp.className = 'tc-aka'; const nm = row.querySelector('.nm'); nm.parentNode.insertBefore(sp, nm.nextSibling); } sp.textContent = a; }); };
+    const showResults = (arr, q) => {
+      draw(arr);
+      // Fetch aliases for the EXACT result gids (batched, limit 100) — not the old by-name query
+      // capped at 12, which left every "Show more" result past the 12th with no alias. Caches into
+      // _gidAliases so a pick (and the resolved bar) get the alias too. #128
+      fetchAliasesByGids(arr.map(c => c.gid)).then(() => {
+        if (document.activeElement !== inp || !pop) return;
+        arr.forEach(c => { const a = _gidAliases.get(c.gid); if (a && a.length) c.aliases = a; });
+        patchAliases(arr);
+      });
+    };
     const runSearch = q => { curQuery = q; curLimit = 8; const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) showResults(res, q); }); };
     // paste an MBID or a MusicBrainz /artist/<mbid> URL → resolve it straight to that artist. Gate on the
     // field value (not focus): a commit-rerender can steal focus before the fetch returns.
