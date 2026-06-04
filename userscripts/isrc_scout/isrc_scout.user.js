@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.095702
+// @version      2026.6.4.124738
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -89,7 +89,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.6.4.095702';
+  const SCRIPT_VERSION = '2026.6.4.124738';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -128,22 +128,37 @@
   /* ═══════════════════════════════════════════════════════════════════════
      GENERIC HTTP (GM_xmlhttpRequest promisified)
   ═══════════════════════════════════════════════════════════════════════ */
+  const _inflight = new Set();   // live GM requests, so batched SoundExchange work can be aborted (#127)
   function http(opts) {
     const t0 = Date.now();
     const tag = (opts.method || 'GET') + ' ' + shortUrl(opts.url);
     Log.net('→ ' + tag);
     return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest(Object.assign({
+      const entry = { url: opts.url, handle: null };
+      const done = () => _inflight.delete(entry);
+      entry.handle = GM_xmlhttpRequest(Object.assign({
         timeout: 20000,
         onload: r => {
+          done();
           const ms = Date.now() - t0;
           if (r.status >= 200 && r.status < 300) Log.net('← ' + r.status + ' ' + tag + ' (' + ms + 'ms)');
           else Log.warn('← ' + r.status + ' ' + tag + ' (' + ms + 'ms) ' + String(r.responseText || '').replace(/\s+/g, ' ').slice(0, 160));
           resolve(r);
         },
-        onerror:   () => { Log.err('✗ network ' + tag); reject(new Error('network error')); },
-        ontimeout: () => { Log.err('✗ timeout ' + tag); reject(new Error('timeout')); },
+        onerror:   () => { done(); Log.err('✗ network ' + tag); reject(new Error('network error')); },
+        ontimeout: () => { done(); Log.err('✗ timeout ' + tag); reject(new Error('timeout')); },
+        onabort:   () => { done(); reject(new Error('aborted')); },
       }, opts));
+      _inflight.add(entry);
+    });
+  }
+  // Abort in-flight GM requests whose URL contains `urlSubstr` (cancels batched SoundExchange work). #127
+  function abortInflight(urlSubstr) {
+    [..._inflight].forEach(e => {
+      if (!urlSubstr || (e.url && e.url.indexOf(urlSubstr) !== -1)) {
+        try { e.handle && e.handle.abort && e.handle.abort(); } catch (x) {}
+        _inflight.delete(e);
+      }
     });
   }
   const gmGet  = (url, headers) => http({ method: 'GET',  url, headers: headers || {} });
@@ -838,6 +853,10 @@
       }).then(r => {
         if (r.status === 0) throw new Error('blocked (SX returned 0 — connection refused?)');
         if (r.status === 401 || r.status === 403) { Log.warn('SX ' + r.status + ' — refreshing token'); return refreshToken().then(t => doReq(t)); }
+        // 429 = rate limited. The body isn't JSON, so without this it fell through to the
+        // generic "SX parse error" below — masking the real cause. Surface a typed error so
+        // callers can stop the batch and show the right message. #126
+        if (r.status === 429) { const e = new Error('SoundExchange rate limit (HTTP 429)'); e.rateLimited = true; throw e; }
         let p; try { p = JSON.parse(r.responseText); } catch (e) { throw new Error('SX parse error'); }
         return dedupe(p.recordings || p.results || p.data || (Array.isArray(p) ? p : []));
       });
@@ -1255,6 +1274,7 @@
     }
   }
   function closeModal() {
+    abortSxWork('window closed');            // don't leave batched SX requests running in the background (#127)
     overlay.classList.remove('open');
     modal.classList.remove('open');
   }
@@ -1396,7 +1416,10 @@
         (rel ? '<br><span class="ii-lookup-rel">' + esc(rel) + '</span>' : '');
       el.title = [f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ') + (rel ? '  |  ' + rel : '');
       Log.info('SX lookup ' + isrc + ': ' + (good ? 'match' : cls === 'warn' ? 'length mismatch' : 'MISMATCH') + ' "' + f.title + '" — ' + f.artist);
-    }).catch(e => { el.className = 'ii-lookup err'; el.textContent = '✗ lookup failed'; Log.err('SX lookup ' + isrc + ' failed: ' + e.message); });
+    }).catch(e => {
+      if (e && e.rateLimited) { el.className = 'ii-lookup err'; el.textContent = '⚠ rate-limited'; throw e; }   // let pumpVerify stop the queue (#126)
+      el.className = 'ii-lookup err'; el.textContent = '✗ lookup failed'; Log.err('SX lookup ' + isrc + ' failed: ' + e.message);
+    });
   }
 
   // SoundExchange verification queue — bulk fills (Deezer / Spotify / paste) route
@@ -1429,15 +1452,18 @@
   async function pumpVerify() {
     if (_vq.running) return;
     _vq.running = true;
+    const myEpoch = _sxEpoch;   // bumped by abortSxWork / a 429 → this loop bails (#126/#127)
     try {
       while (_vq.items.length) {
+        if (myEpoch !== _sxEpoch) return;                                 // cancelled (clear / close / rate-limit)
         if (_vq.done >= SX_BATCH_LIMIT) { showVerifyPauses(); return; }
         const { idx, isrc } = _vq.items.shift();
         const t = RELEASE.tracks[idx];
         // skip if the field no longer holds this value (user changed it meanwhile)
         if (!t || !isValidIsrc(isrc) || normalizeIsrc(t.pending) !== normalizeIsrc(isrc)) continue;
         const cached = !!_isrcLookupCache[isrc];   // primed SX rows → no request, no pacing/cap
-        try { await lookupIsrc(idx, isrc); } catch (e) {}
+        try { await lookupIsrc(idx, isrc); } catch (e) { if (e && e.rateLimited) { sxRateLimited(); return; } }
+        if (myEpoch !== _sxEpoch) return;                                 // cancelled while the request was in flight
         if (!cached) { _vq.done++; if (_vq.items.length && _vq.done < SX_BATCH_LIMIT) await sleep(BATCH_DELAY); }
       }
     } finally {
@@ -1481,7 +1507,7 @@
   }
 
   function clearPending() {
-    _vq.items = []; _vq.done = 0;            // drop any queued SX verifications
+    abortSxWork('clear entered');            // cancel queued verifications + the bulk SX search (#127)
     RELEASE.tracks.forEach((t, i) => { t.pending = ''; t.source = ''; const inp = rowInput(i); if (inp) { inp.value = ''; validateInput(inp, t); } });
     tbody.querySelectorAll('.ii-cands').forEach(c => c.innerHTML = '');
     tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.title = ''; l.onclick = null; });
@@ -1911,7 +1937,29 @@
 
   // SoundExchange batch state — we search at most SX_BATCH_LIMIT tracks at a time
   // so SX doesn't block us; the rest show a "not loaded" message you click to continue.
-  let _sxTodo = [], _sxCursor = 0, _sxMatched = 0, _sxFilled = 0, _sxRunning = false;
+  let _sxTodo = [], _sxCursor = 0, _sxMatched = 0, _sxFilled = 0, _sxRunning = false, _sxEpoch = 0;
+  // Cancel ALL batched SoundExchange work — queued verifications and the bulk search — and abort any
+  // in-flight SX request. Bumping the epoch makes the running loops bail at their next checkpoint. #127
+  function abortSxWork(reason) {
+    _sxEpoch++;
+    _vq.items = []; _vq.done = 0; _vq.running = false;
+    _sxTodo = []; _sxCursor = 0; _sxRunning = false;
+    _deferredVerify.clear(); _deferVerify = false;
+    abortInflight('soundexchange');
+    const btn = modal && modal.querySelector('#ii-sx-all'); if (btn) btn.disabled = false;
+    if (progEl) { progEl.textContent = ''; progEl.classList.remove('err'); }
+    if (reason) Log.info('SoundExchange: cancelled all queued work (' + reason + ')');
+  }
+  // SoundExchange rate-limited us (HTTP 429): stop the bulk run and surface it in the toolbar. #126
+  function sxRateLimited() {
+    _sxEpoch++;                              // stop the running loops — don't issue any more requests
+    _sxRunning = false; _vq.running = false;
+    abortInflight('soundexchange');
+    const btn = modal && modal.querySelector('#ii-sx-all'); if (btn) btn.disabled = false;
+    if (progEl) { progEl.textContent = '⚠ SoundExchange rate-limited (HTTP 429) — paused; wait a minute and retry'; progEl.classList.add('err'); }
+    toast('SoundExchange rate-limited (429) — stopped. Wait a minute and retry.', 'err');
+    Log.warn('SoundExchange rate-limited (429) — bulk search stopped');
+  }
 
   function runSxAll() {
     const tracks = RELEASE.tracks;
@@ -1940,8 +1988,10 @@
   async function processNextSxBatch() {
     if (_sxRunning) return;
     _sxRunning = true;
+    const myEpoch = _sxEpoch;   // a clear / close / 429 bumps this → bail without writing stale results (#126/#127)
     const btn = modal.querySelector('#ii-sx-all');
     btn.disabled = true;
+    if (progEl) progEl.classList.remove('err');   // clear any prior rate-limit warning on a fresh run
     const tracks = RELEASE.tracks;
     const batch = _sxTodo.slice(_sxCursor, _sxCursor + SX_BATCH_LIMIT);
     // clear any "not loaded" placeholders on the tracks we're about to search
@@ -1952,6 +2002,7 @@
       progEl.textContent = 'SoundExchange ' + (_sxCursor + n + 1) + '/' + _sxTodo.length;
       try {
         const rows = await SX.apiSearch(t.title, t.artist, 0, 10, sxExact);
+        if (myEpoch !== _sxEpoch) return;                  // cancelled (clear / close) while in flight
         renderCands(i, rows);
         const best = rows.find(r => SX.classify(SX.fields(r), t.title, t.artist, t.dur, RELEASE.releaseYear) === 'best');
         const bestIsrc = best && SX.fields(best).isrc;
@@ -1963,12 +2014,23 @@
         Log.info('SX #' + (t.number || t.trackPos) + ' "' + t.title + '": ' + rows.length + ' result(s)' +
           (bestIsrc ? ', best ' + bestIsrc + (t.existing.includes(bestIsrc) ? ' (already in MB)' : '') : ', no confident match'));
       } catch (e) {
+        if (myEpoch !== _sxEpoch) return;                  // cancelled while in flight
+        if (e && e.rateLimited) {
+          // SoundExchange 429 → stop the whole bulk run; leave the unsearched rows (incl. this one)
+          // as click-to-retry placeholders, and surface the cause in the toolbar. #126
+          _sxCursor += n;
+          const left = _sxTodo.length - _sxCursor;
+          if (left > 0) _sxTodo.slice(_sxCursor).forEach(j => sxPlaceholder(j, left));
+          sxRateLimited();
+          return;
+        }
         renderCands(i, []);
         Log.err('SX #' + (t.number || t.trackPos) + ' "' + t.title + '" failed: ' + e.message);
       }
       n++;
       updateSummary();
       if (n < batch.length) await sleep(BATCH_DELAY);
+      if (myEpoch !== _sxEpoch) return;                    // cancelled during the pacing delay
     }
     _sxCursor += batch.length;
     const remaining = _sxTodo.length - _sxCursor;
