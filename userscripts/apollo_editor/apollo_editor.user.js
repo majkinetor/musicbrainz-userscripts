@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.220000
+// @version      2026.6.4.221500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.220000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.221500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1899,7 +1899,8 @@
     q.title = 'free-form — raw MB query, e.g. isrc:USXXX… or artist:"…"';
     // auto-query for THIS track. Narrow = title + artist + a ±10s length window (precise). Relaxed
     // ("show all") = title only, ignoring artist & length — for classical, covers, re-recordings. #119
-    let relax = false;
+    // the relaxed/narrow choice is remembered (SETTINGS) so it carries across picker opens and reloads.
+    let relax = !!SETTINGS.recRelax;
     const esq = s => String(s || '').replace(/(["\\])/g, '\\$1');
     const autoQuery = () => {
       const title = u(ko.name), artist = acText(u(ko.artistCredit)), len = u(ko.length);
@@ -1920,11 +1921,17 @@
       resBox.innerHTML = results.length ? results.map(d => recRowHtml(d, ctx)).join('') : '<div class="tc-rpk-empty">no matches</div>';
       wire(resBox);
     };
-    // "show all" toggles relaxed mode and re-runs the track-derived search (independent of any manual edit)
+    // "show all" toggles relaxed mode and re-runs the track-derived search (independent of any manual edit).
+    // the button is painted from the remembered state on open, and the toggle persists it. #119
     const relaxBtn = pop.querySelector('.tc-rpk-relax');
-    if (relaxBtn) relaxBtn.onclick = () => {
-      relax = !relax; relaxBtn.classList.toggle('on', relax); relaxBtn.textContent = relax ? 'narrow' : 'show all';
+    const paintRelax = () => {
+      if (!relaxBtn) return;
+      relaxBtn.classList.toggle('on', relax); relaxBtn.textContent = relax ? 'narrow' : 'show all';
       relaxBtn.title = relax ? 'back to a precise search (title + artist + ±10s length)' : 'relaxed search — show all recordings with this title, ignoring artist & length';
+    };
+    paintRelax();
+    if (relaxBtn) relaxBtn.onclick = () => {
+      relax = !relax; SETTINGS.recRelax = relax; saveSettings(); paintRelax();
       runSearch(autoQuery(), !relax);
     };
     // once the user edits the box, search their raw text (free Lucene); the initial run is the auto query
