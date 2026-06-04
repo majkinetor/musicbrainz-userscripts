@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.233000
+// @version      2026.6.4.234500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.233000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.234500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1491,16 +1491,16 @@
       '#tc-recwrap .tc-recbar{display:flex;align-items:center;gap:8px;padding:2px 2px 8px;font-weight:600}',
       '#tc-recwrap .tc-recbar .tc-ico{vertical-align:-5px}',
       '#tc-recwrap .tc-recwarn{color:#b00;font-weight:600}',
-      // consistent with the Tracklist tab toolbar (#tc-bar / .tc-btn): same bar spacing, button look, inputs
-      '#tc-recwrap .tc-rec-tb{display:flex;align-items:center;gap:8px;padding:6px 4px;flex-wrap:wrap}',
+      // consistent with the Tracklist tab toolbar (#tc-bar / .tc-btn): same bar spacing, button look, inputs.
+      // sticky at the top while the table scrolls (mirrors #tc-mirror-wrap) so it stays reachable on big releases.
+      '#tc-recwrap .tc-rec-tb{display:flex;align-items:center;gap:8px;padding:6px 4px;flex-wrap:wrap;position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e3dcf2;box-shadow:0 3px 8px rgba(40,20,80,.07)}',
       '#tc-recwrap .tc-rec-tb .sp{flex:1}',   // flex spacer: Clear hugs the left, the Match cluster hugs the right (mirrors #tc-bar)
       // flat buttons that match the Tracklist tab's .tc-btn (transparent until hover); Match keeps the bold-purple primary look
       '#tc-recwrap .tc-rec-tb button{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}#tc-recwrap .tc-rec-tb button:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}',
       '#tc-recwrap .tc-rec-tb button.primary{color:#5f3ec0;font-weight:bold}#tc-recwrap .tc-rec-tb button.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}',
       '#tc-recwrap .tc-rec-tbl{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}',
       '#tc-recwrap .tc-rec-ignore{font:12px Arial;padding:1px;width:auto;max-width:150px}',
-      '#tc-recwrap .tc-rec-amstart{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:46px}',
-      '#tc-recwrap .tc-rec-amstatus{color:#6f42c1;font-size:12px}',
+      '#tc-recwrap .tc-rec-amstatus{color:#6f42c1;font-size:12px;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:4px}',
       '.tc-rectbl .tc-recname{position:relative}',
       '.tc-rectbl .tc-rec-rev{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:none;background:#fff;cursor:pointer;color:#7d6bc0;font-size:15px;line-height:1;visibility:hidden;padding:1px 4px;border-radius:3px}',
       '.tc-rectbl tr.tc-recrow:hover .tc-rec-rev{visibility:visible}.tc-rectbl .tc-rec-rev:hover{color:#5f3ec0;background:#ede9f6}',
@@ -1575,10 +1575,8 @@
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
         '<button class="tc-rec-clear" type="button" title="set every track to a new recording">Clear</button>' +
-        '<span class="sp"></span>' +
+        '<span class="tc-rec-amstatus"></span>' +   // flexible filler: its text changes absorb here, never reflowing the bar
         '<label class="tc-rec-tbl">ignore at <select class="tc-rec-ignore"><option value="low">🟡 low</option><option value="vlow">🟠 very low</option><option value="xlow">🔴 extremely low</option><option value="nothing">⚪ nothing</option></select></label>' +
-        '<label class="tc-rec-tbl">from track <input class="tc-rec-amstart" type="number" min="1" value="1"></label>' +
-        '<span class="tc-rec-amstatus"></span>' +
         '<span class="tc-recwarn"></span>' +
         '<span class="tc-tbsep"></span>' +
         '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions">⚡ Match</button>' +
@@ -1664,10 +1662,9 @@
     const wrap = document.getElementById('tc-recwrap');
     const setStatus = t => { const e = wrap && wrap.querySelector('.tc-rec-amstatus'); if (e) e.textContent = t; };
     const maxLevel = REC_IGNORE[SETTINGS.recIgnore || 'vlow'];
-    const startNum = parseInt((wrap && wrap.querySelector('.tc-rec-amstart') || {}).value, 10) || 1;
     let linked = 0, considered = 0;
     try {
-      const todo = readRecordings().filter(r => !r.recGid && (r.number == null || Number(r.number) >= startNum));
+      const todo = readRecordings().filter(r => !r.recGid);
       for (let i = 0; i < todo.length; i++) {
         const r = todo[i]; considered++;
         setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '…');
@@ -1741,7 +1738,7 @@
   }
   function _recPopOutside(e) { if (_recPop && !_recPop.contains(e.target)) closeRecPop(); }
   function _recPopKey(e) { if (e.key === 'Escape') closeRecPop(); }
-  // dock the picker as a tall panel against the right edge of the table, using the full viewport height.
+  // dock the picker as a tall panel against the left edge of the table, using the full viewport height.
   // once the user drags it (header), leave its position alone. #119
   function _recPopReposition() {
     if (!_recPop) return;
@@ -1754,8 +1751,8 @@
       return;
     }
     const wrap = document.getElementById('tc-recwrap'); const wr = wrap ? wrap.getBoundingClientRect() : null;
-    const right = wr ? wr.right : window.innerWidth - M;
-    _recPop.style.left = Math.round(Math.max(M, Math.min(right - W, window.innerWidth - W - M))) + 'px';
+    const left = wr ? wr.left : M;
+    _recPop.style.left = Math.round(Math.max(M, Math.min(left, window.innerWidth - W - M))) + 'px';
     const top = Math.round(Math.max(M, Math.min(wr ? wr.top : 60, window.innerHeight - 240)));
     _recPop.style.top = top + 'px';
     _recPop.style.maxHeight = (window.innerHeight - top - M) + 'px';
