@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.192804
+// @version      2026.6.4.213500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.192804';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.213500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1534,7 +1534,8 @@
       '.tc-rectbl tr.tc-recrow:hover td{background:#fafaff}',
       '.tc-rectbl .tc-recpick{cursor:pointer;border:1px solid #d6cdec;background:#f6f3fc;color:#6f42c1;border-radius:4px;padding:1px 6px;font:11px Arial;white-space:nowrap}',
       '.tc-rectbl .tc-recpick:hover{background:#ece5f8}',
-      '.tc-recpop{position:fixed;z-index:100003;width:390px;max-height:70vh;overflow:auto;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 8px 28px rgba(40,20,80,.28);font:12px Arial}',
+      '.tc-recpop{position:fixed;z-index:100003;width:410px;overflow:auto;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 8px 28px rgba(40,20,80,.28);font:12px Arial}',
+      '.tc-recpop .tc-rpk-hd{position:sticky;top:0;z-index:1}',
       '.tc-recpop .tc-rpk-hd{padding:7px 10px;background:#f3f0fa;border-bottom:1px solid #e3def2;border-radius:6px 6px 0 0}',
       '.tc-recpop .tc-rpk-cur{padding:6px 10px;border-bottom:1px solid #eee;color:#444;display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
       '.tc-recpop .tc-rpk-curlbl{color:#999;font-size:11px}.tc-recpop .tc-rpk-curlen{color:#888;font-variant-numeric:tabular-nums}',
@@ -1723,25 +1724,38 @@
   }
 
   /* ── recording picker (#119 P2.2): suggestions + search-by-name → setRecordingValue ── */
-  let _recPop = null, _recPopAnchor = null;
+  let _recPop = null, _recPopAnchor = null, _recPopMoved = false;
   function closeRecPop() {
     if (!_recPop) return;
-    _recPop.remove(); _recPop = null; _recPopAnchor = null;
+    _recPop.remove(); _recPop = null; _recPopAnchor = null; _recPopMoved = false;
     document.removeEventListener('mousedown', _recPopOutside, true); document.removeEventListener('keydown', _recPopKey, true);
     window.removeEventListener('scroll', _recPopReposition, true); window.removeEventListener('resize', _recPopReposition);
   }
   function _recPopOutside(e) { if (_recPop && !_recPop.contains(e.target)) closeRecPop(); }
   function _recPopKey(e) { if (e.key === 'Escape') closeRecPop(); }
-  // keep the popover next to its row as the page scrolls, and fit it in the viewport (flip up / cap height)
+  // dock the picker as a tall panel against the right edge of the table, using the full viewport height.
+  // once the user drags it (header), leave its position alone. #119
   function _recPopReposition() {
-    if (!_recPop || !_recPopAnchor) return;
-    const r = _recPopAnchor.getBoundingClientRect();
-    if (r.bottom < 0 || r.top > window.innerHeight) { closeRecPop(); return; }   // row scrolled out of view → close
-    const W = _recPop.offsetWidth || 390, M = 8;
-    _recPop.style.left = Math.max(M, Math.min(r.right - W, window.innerWidth - W - M)) + 'px';
-    const below = window.innerHeight - r.bottom - M, above = r.top - M;
-    if (below >= 220 || below >= above) { _recPop.style.top = (r.bottom + 4) + 'px'; _recPop.style.maxHeight = Math.max(160, below) + 'px'; }
-    else { const h = Math.min(_recPop.scrollHeight, above); _recPop.style.maxHeight = Math.max(160, above) + 'px'; _recPop.style.top = Math.max(M, r.top - 4 - h) + 'px'; }
+    if (!_recPop || _recPopMoved) return;
+    const M = 10, W = _recPop.offsetWidth || 410;
+    const wrap = document.getElementById('tc-recwrap'); const wr = wrap ? wrap.getBoundingClientRect() : null;
+    const right = wr ? wr.right : window.innerWidth - M;
+    _recPop.style.left = Math.round(Math.max(M, Math.min(right - W, window.innerWidth - W - M))) + 'px';
+    const top = Math.round(Math.max(M, Math.min(wr ? wr.top : 60, window.innerHeight - 240)));
+    _recPop.style.top = top + 'px';
+    _recPop.style.maxHeight = (window.innerHeight - top - M) + 'px';
+  }
+  // drag the picker by its header
+  function _recPopDrag(hd) {
+    hd.style.cursor = 'move';
+    hd.addEventListener('mousedown', e => {
+      if (e.target.closest('button, a, input')) return;
+      e.preventDefault(); _recPopMoved = true;
+      const r = _recPop.getBoundingClientRect(), ox = e.clientX - r.left, oy = e.clientY - r.top;
+      const mm = ev => { _recPop.style.left = Math.max(0, Math.min(ev.clientX - ox, window.innerWidth - 40)) + 'px'; _recPop.style.top = Math.max(0, Math.min(ev.clientY - oy, window.innerHeight - 40)) + 'px'; };
+      const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); };
+      document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
+    });
   }
   async function searchRecordings(q) {
     q = (q || '').trim(); if (!q) return [];
@@ -1843,7 +1857,8 @@
     const newBtn = pop.querySelector('.tc-rpk-newbtn'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
     const ctEl = pop.querySelector('.tc-rpk-ct'); if (ctEl) ctEl.onchange = () => { setCopy('title', entry, ctEl.checked); rerenderRec(); };
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
-    _recPopReposition();   // place it now the content (and height) exist
+    _recPopDrag(pop.querySelector('.tc-rpk-hd'));   // header is the drag handle
+    _recPopReposition();   // dock it right + tall now the content (and height) exist
     const q = pop.querySelector('.tc-rpk-q'), suggBox = pop.querySelector('.tc-rpk-sugg'), resBox = pop.querySelector('.tc-rpk-res');
     const wire = box => box.querySelectorAll('.tc-rpk-row').forEach(row => { row.onclick = () => pickRecording(entry, data[row.dataset.gid]); });
     // suggestions are lazy in MB — render what's there, else trigger findRecordingSuggestions and poll
