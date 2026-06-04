@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.175943
+// @version      2026.6.4.182025
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.175943';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.182025';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1670,18 +1670,31 @@
       setTimeout(poll, 250);
     }
     q.value = u(ko.name) || '';
+    q.title = 'free-form — raw MB query, e.g. isrc:USXXX… or artist:"…"';
+    // smart auto-query for THIS track: title + artist + a ±10s length window; falls back to title-only
+    // (e.g. classical, where the recording artist differs from the track artist) — #119
+    const smartQuery = () => {
+      const esq = s => String(s || '').replace(/(["\\])/g, '\\$1');
+      const title = u(ko.name), artist = acText(u(ko.artistCredit)), len = u(ko.length);
+      let qy = 'recording:"' + esq(title) + '"';
+      if (artist) qy += ' AND artist:"' + esq(artist) + '"';
+      if (len) qy += ' AND dur:[' + Math.max(0, len - 10000) + ' TO ' + (len + 10000) + ']';
+      return qy;
+    };
     let seq = 0, tmr = null;
-    const runSearch = async () => {
-      const my = ++seq; const val = q.value;
+    const runSearch = async (query, fallbackTitle) => {
+      const my = ++seq;
       resBox.innerHTML = '<div class="tc-rpk-empty">searching…</div>';
-      const results = await searchRecordings(val);
+      let results = await searchRecordings(query);
+      if (fallbackTitle && !results.length) results = await searchRecordings(u(ko.name) || '');   // smart query too tight → broaden
       if (my !== seq || !_recPop) return;
       results.forEach(rr => { data[rr.gid] = rr; });
       resBox.innerHTML = results.length ? results.map(recRowHtml).join('') : '<div class="tc-rpk-empty">no matches</div>';
       wire(resBox);
     };
-    q.oninput = () => { clearTimeout(tmr); tmr = setTimeout(runSearch, 300); };
-    q.focus(); q.select(); runSearch();
+    // once the user edits the box, search their raw text (free Lucene); the initial run is the smart query
+    q.oninput = () => { clearTimeout(tmr); tmr = setTimeout(() => runSearch(q.value, false), 300); };
+    q.focus(); q.select(); runSearch(smartQuery(), true);
     setTimeout(() => { document.addEventListener('mousedown', _recPopOutside, true); document.addEventListener('keydown', _recPopKey, true); }, 0);
   }
   // the Recordings tab panel (#recordings) — check the PANEL not the inner table (we hide the table)
