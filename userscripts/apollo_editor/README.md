@@ -2,7 +2,7 @@
 
 UI and tools for advanced adding and editing of MusicBrainz release tracklist.
 
-- [Install latest from Github](./apollo_editor.user.js)
+- Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/apollo_editor/apollo_editor.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/apollo_editor/apollo_editor.user.js)
 
 <img width="1000" src="./screenshot.png" />
 
