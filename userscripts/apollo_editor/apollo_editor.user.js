@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.152548
+// @version      2026.6.4.155119
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.152548';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.155119';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1371,73 +1371,96 @@
   }
   function hideMirror() { untidyMediums(); document.querySelectorAll('.tc-medsec').forEach(s => s.remove()); const w = document.getElementById('tc-mirror-wrap'); if (w) w.remove(); setNativeHidden(false); if (ACTIVE.mode === 'mirror') ACTIVE = {}; }
 
-  /* ── entry points ── */
+  /* ── entry points: ONE Original/Apollo toggle, applied to whichever editor tab you're on (#119) ── */
+  function apolloOn() { return SETTINGS.lastView !== 'original'; }
+  function relabelLauncher() { const b = document.getElementById('tc-launch'); if (b) b.textContent = apolloOn() ? 'Original' : 'Apollo Editor'; }
+  // apply the current view to whichever managed tab is visible (Tracklist and/or Recordings)
+  function applyView() {
+    if (tracklistVisible()) { if (apolloOn()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); } else hideMirror(); }
+    if (recordingsVisible()) { if (apolloOn()) showRecMirror(); else hideRecMirror(); }
+    relabelLauncher();
+  }
   function ensureLauncher() {
-    if (document.getElementById('tc-launch')) return;
-    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.title = 'toggle Apollo Editor / original editor';
-    const relabel = () => { b.textContent = document.getElementById('tc-mirror-wrap') ? 'Original' : 'Apollo Editor'; };
-    b.onclick = () => { if (document.getElementById('tc-mirror-wrap')) { hideMirror(); SETTINGS.lastView = 'original'; } else { showMirror(); SETTINGS.lastView = 'canon'; } saveSettings(); relabel(); };
-    document.body.appendChild(b); relabel();
+    if (document.getElementById('tc-launch')) { relabelLauncher(); return; }
+    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.title = 'toggle Apollo / original editor (this tab)';
+    b.onclick = () => { SETTINGS.lastView = apolloOn() ? 'original' : 'canon'; saveSettings(); applyView(); };
+    document.body.appendChild(b); relabelLauncher();
   }
   function tracklistVisible() { const p = document.getElementById('tracklist'); return !!(p && p.offsetParent !== null); }   // the Tracklist tab panel is shown
-  let _tlPrev = false, _tlRefreshed = false;
-  function onEnterTracklist() {
-    if (SETTINGS.lastView === 'original') { ensureLauncher(); return; }   // user last chose the native editor — leave it
-    if (!document.getElementById('tc-mirror-wrap')) showMirror();
-    else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); }   // re-match once the tab is up (RG may have been set)
-    ensureLauncher();
-  }
-  function watchTracklist() {
+  let _tlPrev = false, _recPrev = false, _tlRefreshed = false;
+  // single watcher for both managed tabs; the one launcher persists across them and is removed elsewhere
+  function watchTabs() {
     const tick = () => {
-      const vis = tracklistVisible();
-      if (document.getElementById('tc-mirror-wrap')) syncNative();   // keep the native bits in their chosen state if MB re-renders
-      if (vis && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab'); onEnterTracklist(); } else if (!vis && _tlPrev) { _tlPrev = false; const l = document.getElementById('tc-launch'); if (l) l.remove(); }
+      const tl = tracklistVisible(), rec = recordingsVisible();
+      if (document.getElementById('tc-mirror-wrap')) syncNative();   // keep native tracklist bits in their chosen state if MB re-renders
+      if (tl && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab');
+        if (apolloOn()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); } } }
+      else if (!tl && _tlPrev) { _tlPrev = false; }
+      if (rec && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); if (apolloOn()) showRecMirror(); }
+      else if (!rec && _recPrev) { _recPrev = false; }
+      if (tl || rec) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }
     };
     tick(); setInterval(tick, 500);
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
-     RECORDING MATCHER (#119) — Recordings tab.  WIP — Phase 1: read-only preview.
-     Drives MB's native recording association (setRecordingValue / suggestedRecordings /
-     updateRecordingTitle|Artist) in later phases; for now it just surfaces each track's
-     current recording + confidence so the model/render/confidence are proven.
+     RECORDING MATCHER (#119) — Recordings tab.  WIP — Phase 1: in-page comparison view.
+     Takes over the native recording-assignment table (toggle via the shared Original/Apollo
+     button) and shows track vs recording (title / artist / length) with a confidence colour and
+     per-field diff highlight. Drives MB's recording association (setRecordingValue /
+     suggestedRecordings / updateRecordingTitle|Artist); row actions land in P2.
   ═══════════════════════════════════════════════════════════════════════ */
-  // Confidence of the linked recording vs the track, ported from the "Quick Recording Match"
-  // reference: null = perfect (green), else low / vlow / xlow (yellow / orange / red). Title &
-  // artist use MB's own diff flags; length is compared in ms.
+  // artist-credit display text (the recording AC has no .text() helper, so build it from names)
+  function acText(ac) {
+    if (!ac) return '';
+    try { if (typeof ac.text === 'function') { const t = ac.text(); if (t) return t; } } catch (e) {}
+    const names = u(ac.names) || [];
+    return names.map(n => (u(n.name) || (n.artist && u(u(n.artist).name)) || '') + (u(n.joinPhrase) || '')).join('');
+  }
+  // per-field diff between a track and its recording: title/artist via MB's own flags, length in ms
+  function recFieldDiffs(track, rec) {
+    let title = false, artist = false;
+    try { if (typeof track.titleDiffersFromRecording === 'function') title = !!track.titleDiffersFromRecording(); } catch (e) {}
+    try { if (typeof track.artistDiffersFromRecording === 'function') artist = !!track.artistDiffersFromRecording(); } catch (e) {}
+    const tLen = u(track.length), rLen = rec ? u(rec.length) : null;
+    const lenDiff = (tLen && rLen) ? Math.abs(tLen - rLen) : 0;
+    return { title, artist, lenDiff, len: lenDiff > 0 };
+  }
+  // Confidence ported from "Quick Recording Match": null = perfect (green), else low / vlow / xlow
+  // (yellow / orange / red), graded by how many fields differ and by how far the length is off.
   const REC_CONF = {
     low:  { c: '#fff176', label: 'low confidence' },
     vlow: { c: '#ffb74d', label: 'very low confidence' },
     xlow: { c: '#d32f2f', label: 'extremely low confidence' },
   };
-  function recConfidence(track, rec) {
+  function recConfidence(track, rec, d) {
     if (!rec || !u(rec.gid)) return null;
+    d = d || recFieldDiffs(track, rec);
     const diffs = [];
-    try { if (typeof track.titleDiffersFromRecording === 'function' && track.titleDiffersFromRecording()) diffs.push('title'); } catch (e) {}
-    try { if (typeof track.artistDiffersFromRecording === 'function' && track.artistDiffersFromRecording()) diffs.push('artist'); } catch (e) {}
-    const tLen = u(track.length), rLen = u(rec.length);
-    const lenDiff = (tLen && rLen) ? Math.abs(tLen - rLen) : 0;
-    if (lenDiff > 0) diffs.push('length ' + Math.round(lenDiff / 1000) + 's');
+    if (d.title) diffs.push('title');
+    if (d.artist) diffs.push('artist');
+    if (d.lenDiff > 0) diffs.push('length ' + Math.round(d.lenDiff / 1000) + 's');
     let level = null;
-    if (diffs.length >= 3 && lenDiff > 10000) level = 'xlow';
-    else if (lenDiff > 15000) level = 'vlow';
-    else if (diffs.length >= 2 && lenDiff <= 15000) level = 'vlow';
-    else if (diffs.length === 1 || lenDiff > 3000) level = 'low';
+    if (diffs.length >= 3 && d.lenDiff > 10000) level = 'xlow';
+    else if (d.lenDiff > 15000) level = 'vlow';
+    else if (diffs.length >= 2 && d.lenDiff <= 15000) level = 'vlow';
+    else if (diffs.length === 1 || d.lenDiff > 3000) level = 'low';
     if (!level) return null;
     return { level, color: REC_CONF[level].c, label: REC_CONF[level].label, diffs };
   }
   const fmtMs = ms => (ms || ms === 0) ? (Math.floor(Math.round(ms / 1000) / 60) + ':' + String(Math.round(ms / 1000) % 60).padStart(2, '0')) : '';
-  // read each track's recording association + confidence + suggestion count (read-only model for now)
+  // read each track's recording association + the data needed to compare them side by side
   function readRecordings() {
     const out = [];
     mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => {
       const rec = u(t.recording);
       const sugg = (typeof t.suggestedRecordings === 'function' ? (u(t.suggestedRecordings) || []) : []);
+      const diffs = rec ? recFieldDiffs(t, rec) : null;
       out.push({
-        mi, ti, number: u(t.number), title: u(t.name), trackLen: u(t.length),
+        mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackLen: u(t.length),
         isNew: typeof t.hasNewRecording === 'function' ? !!u(t.hasNewRecording) : false,
-        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recLen: rec ? u(rec.length) : null,
-        suggCount: sugg.length, conf: recConfidence(t, rec),
+        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recArtist: rec ? acText(u(rec.artistCredit)) : null, recLen: rec ? u(rec.length) : null,
+        suggCount: sugg.length, diffs, conf: rec ? recConfidence(t, rec, diffs) : null,
       });
     }));
     return out;
@@ -1447,79 +1470,77 @@
     if (_recStyled) return; _recStyled = true;
     const s = document.createElement('style');
     s.textContent = [
-      '#tc-rec-launch{position:fixed;right:12px;bottom:12px;z-index:99998;padding:7px 12px;border:1px solid #4b2e83;border-radius:6px;background:#6f42c1;color:#fff;font:600 12px system-ui,Arial;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)}',
-      '#tc-rec-launch:hover{background:#5a32a3}',
-      '#tc-recpanel{position:fixed;right:12px;top:58px;width:680px;max-width:96vw;max-height:86vh;overflow:auto;z-index:99999;background:#fff;border:1px solid #c9c2dd;border-radius:9px;box-shadow:0 8px 30px rgba(0,0,0,.22);font:13px/1.45 system-ui,Arial}',
-      '#tc-rec-hdr{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#f3f0fa;border-bottom:1px solid #e3def2;border-radius:9px 9px 0 0;position:sticky;top:0;cursor:move}',
-      '#tc-rec-hdr b{font-size:13px}#tc-rec-hdr .tc-rec-sub{color:#8a7fae;font-size:11px}#tc-rec-hdr .sp{flex:1}',
-      '#tc-rec-hdr .tc-icon{border:none;background:none;cursor:pointer;font-size:14px;color:#666}',
-      '#tc-rec-body{padding:8px 10px}',
-      '.tc-rec-warn{margin:0 0 8px;padding:6px 9px;background:#fff6da;border:1px solid #e7ce8a;border-radius:5px;color:#7a5d00;font-weight:600}',
-      'table.tc-rectbl{border-collapse:collapse;width:100%}',
-      '.tc-rectbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ddd;padding:3px 6px}',
-      '.tc-rectbl td{padding:3px 6px;border-bottom:1px solid #f0f0f0;vertical-align:top}',
-      '.tc-rec-num{color:#999;text-align:right;width:28px}',
-      '.tc-rec-title{font-weight:600}',
-      '.tc-rec-len{color:#666;white-space:nowrap;font-variant-numeric:tabular-nums}',
-      '.tc-rec-sugg{color:#6f42c1;text-align:center;width:38px}',
-      '.tc-rec-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px;border:1px solid rgba(0,0,0,.15)}',
-      '.tc-rec-none{color:#c0392b}.tc-rec-new{color:#2c7a51}',
+      '#tc-recwrap{margin:4px 0 12px;font:13px/1.4 system-ui,Arial}',
+      '#tc-recwrap .tc-recbar{display:flex;align-items:center;gap:8px;padding:2px 2px 8px;font-weight:600}',
+      '#tc-recwrap .tc-recbar .tc-ico{vertical-align:-5px}',
+      '#tc-recwrap .tc-recwarn{color:#b00;font-weight:600}',
+      'table.tc-rectbl{border-collapse:collapse;width:100%;background:#fff}',
+      '.tc-rectbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ccc;padding:4px 7px;white-space:nowrap}',
+      '.tc-rectbl td{padding:4px 7px;border-bottom:1px solid #eee;vertical-align:top}',
+      '.tc-rectbl tr.tc-recmed td{background:#f3f0fa;font-weight:600;color:#4b2e83}',
+      '.tc-rectbl .c-n{color:#999;text-align:right;width:26px}',
+      '.tc-rectbl .c-sep{width:20px;text-align:center}',
+      '.tc-rectbl .c-len{color:#555;white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right;width:48px}',
+      '.tc-rectbl .c-sugg{color:#6f42c1;text-align:center;width:34px}',
+      '.tc-rectbl .tc-tkt{font-weight:600}',
+      '.tc-rectbl .tc-rec-none{color:#c0392b}.tc-rectbl .tc-rec-new{color:#2c7a51}',
+      '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
+      '.tc-rectbl .tc-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}',
+      '.tc-rectbl tr.tc-recrow:hover td{background:#fafaff}',
     ].join('\n');
     document.head.appendChild(s);
   }
-  function renderRecTable(container, rows) {
+  function renderRecMirror(wrap) {
+    const rows = readRecordings();
+    const multi = mediums().length > 1;
     const unset = rows.filter(r => !r.recGid && !r.isNew).length;
-    container.innerHTML =
-      (unset ? '<div class="tc-rec-warn">⚠ ' + unset + ' track' + (unset === 1 ? '' : 's') + ' without a recording</div>' : '') +
-      '<table class="tc-rectbl"><thead><tr><th>#</th><th>Track</th><th>Recording</th><th>Len</th><th title="suggestions">⊕</th></tr></thead><tbody></tbody></table>';
-    const tb = container.querySelector('tbody');
+    wrap.innerHTML =
+      '<div class="tc-recbar">' + ICON + '<span>Apollo Recordings</span>' +
+        (unset ? '<span class="tc-recwarn">⚠ ' + unset + ' track' + (unset === 1 ? '' : 's') + ' without a recording</span>' : '') + '</div>' +
+      '<table class="tc-rectbl"><thead><tr><th class="c-n">#</th><th>Track</th><th>Artist</th><th class="c-len">Len</th>' +
+        '<th class="c-sep"></th><th>Recording</th><th>Artist</th><th class="c-len">Len</th><th class="c-sugg" title="suggestions">⊕</th></tr></thead><tbody></tbody></table>';
+    const tb = wrap.querySelector('tbody');
+    let lastMi = -1;
     rows.forEach(r => {
-      const tr = document.createElement('tr');
-      const recCell = r.isNew ? '<span class="tc-rec-new">＋ new recording</span>'
-        : r.recName ? esc(r.recName)
-        : '<span class="tc-rec-none">— none —</span>';
-      tr.innerHTML = '<td class="tc-rec-num">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
-        '<td class="tc-rec-title">' + esc(r.title || '') + '</td>' +
-        '<td class="tc-rec-name"><span class="tc-rec-dot"></span>' + recCell + '</td>' +
-        '<td class="tc-rec-len">' + fmtMs(r.recLen) + '</td>' +
-        '<td class="tc-rec-sugg">' + (r.suggCount || '') + '</td>';
-      const dot = tr.querySelector('.tc-rec-dot');
+      if (multi && r.mi !== lastMi) { lastMi = r.mi; const mr = document.createElement('tr'); mr.className = 'tc-recmed'; mr.innerHTML = '<td colspan="9">Medium ' + (r.mi + 1) + '</td>'; tb.appendChild(mr); }
+      const d = r.diffs || {};
+      const recName = r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? esc(r.recName) : '<span class="tc-rec-none">— none —</span>';
+      const tr = document.createElement('tr'); tr.className = 'tc-recrow';
+      tr.innerHTML =
+        '<td class="c-n">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
+        '<td class="tc-tkt">' + esc(r.title || '') + '</td>' +
+        '<td>' + esc(r.trackArtist || '') + '</td>' +
+        '<td class="c-len">' + fmtMs(r.trackLen) + '</td>' +
+        '<td class="c-sep"><span class="tc-dot"></span></td>' +
+        '<td class="' + (d.title ? 'tc-diff' : '') + '">' + recName + '</td>' +
+        '<td class="' + (d.artist ? 'tc-diff' : '') + '">' + esc(r.recArtist || '') + '</td>' +
+        '<td class="c-len ' + (d.len ? 'tc-diff' : '') + '">' + fmtMs(r.recLen) + '</td>' +
+        '<td class="c-sugg">' + (r.suggCount || '') + '</td>';
+      const dot = tr.querySelector('.tc-dot');
       if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
       else if (r.recGid) { dot.style.background = '#86c686'; dot.title = 'matches the track'; }
-      else { dot.style.visibility = 'hidden'; }
+      else dot.style.visibility = 'hidden';
       tb.appendChild(tr);
     });
   }
-  function openRecPanel() {
+  // the Recordings tab panel (#recordings) — check the PANEL not the inner table (we hide the table)
+  function recordingsVisible() { const p = document.getElementById('recordings'); return !!(p && p.offsetParent !== null); }
+  // hide the native recording-assignment table and render the Apollo comparison table in its place.
+  // Both read/write the same MB model, so toggling Original/Apollo lets you work in either view (#119).
+  function showRecMirror() {
     recStyle();
-    const ex = document.getElementById('tc-recpanel'); if (ex) { ex.remove(); return; }   // toggle off
-    const p = document.createElement('div'); p.id = 'tc-recpanel';
-    p.innerHTML = '<div id="tc-rec-hdr">' + ICON + '<b>Apollo Recordings</b><span class="tc-rec-sub">preview</span><span class="sp"></span><button class="tc-icon" data-recact="close" title="close">✕</button></div><div id="tc-rec-body"></div>';
-    document.body.appendChild(p);
-    renderRecTable(p.querySelector('#tc-rec-body'), readRecordings());
-    p.querySelector('[data-recact="close"]').onclick = () => p.remove();
-    const hdr = p.querySelector('#tc-rec-hdr');
-    hdr.onmousedown = e => { if (e.target.closest('button')) return; const r = p.getBoundingClientRect(); const ox = e.clientX - r.left, oy = e.clientY - r.top; p.style.right = 'auto'; const mm = ev => { p.style.left = Math.max(0, ev.clientX - ox) + 'px'; p.style.top = Math.max(0, ev.clientY - oy) + 'px'; }; const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }; document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu); };
+    const tbl = document.getElementById('track-recording-assignation'); if (!tbl) return;
+    let wrap = document.getElementById('tc-recwrap');
+    if (!wrap) { wrap = document.createElement('div'); wrap.id = 'tc-recwrap'; tbl.parentElement.insertBefore(wrap, tbl); }
+    tbl.style.display = 'none';
+    renderRecMirror(wrap);
   }
-  // the Recordings tab shows the native #track-recording-assignation table — add our launcher there
-  function recordingsVisible() { const el = document.getElementById('track-recording-assignation'); return !!(el && el.offsetParent !== null); }
-  function ensureRecLauncher() {
-    if (document.getElementById('tc-rec-launch')) return;
-    recStyle(); const b = document.createElement('button'); b.id = 'tc-rec-launch'; b.textContent = '🎙 Apollo Recordings';
-    b.title = 'open the Apollo recording matcher (preview)'; b.onclick = openRecPanel;
-    document.body.appendChild(b);
-  }
-  let _recPrev = false;
-  function watchRecordings() {
-    const tick = () => {
-      const vis = recordingsVisible();
-      if (vis && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); ensureRecLauncher(); }
-      else if (!vis && _recPrev) { _recPrev = false; ['tc-rec-launch', 'tc-recpanel'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); }); }
-    };
-    tick(); setInterval(tick, 500);
+  function hideRecMirror() {
+    const w = document.getElementById('tc-recwrap'); if (w) w.remove();
+    const tbl = document.getElementById('track-recording-assignation'); if (tbl) tbl.style.display = '';
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, openRecPanel, recordingsVisible, recConfidence, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
@@ -1530,9 +1551,9 @@
     snapshotOriginals();
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
-    if (SETTINGS.lastView !== 'original') showMirror();   // take over the tracklist (built inside the hidden #tracklist panel) unless the user last chose the native editor
-    if (tracklistVisible()) ensureLauncher();   // the toggle button belongs on the Tracklist tab only — the watcher adds/removes it as you switch tabs
-    watchTracklist();
-    watchRecordings();   // #119 — surface the recording matcher on the Recordings tab
+    if (apolloOn()) showMirror();   // pre-build the tracklist takeover inside the (possibly hidden) #tracklist panel
+    applyView();                    // apply the chosen view to whichever tab is initially visible (tracklist and/or recordings)
+    if (tracklistVisible() || recordingsVisible()) ensureLauncher();   // one toggle, present on both managed tabs
+    watchTabs();                    // #119 — single watcher drives the tracklist + recordings takeovers + the shared toggle
   })();
 })();
