@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.010000
+// @version      2026.6.5.011500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.010000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.011500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1437,6 +1437,9 @@
     const a = acArtistGids(u(track.artistCredit)), b = acArtistGids(rec ? u(rec.artistCredit) : null);
     return a.length > 0 && a.length === b.length && a.every((g, i) => g === b[i]);
   }
+  // lengths within one second are treated as identical: MB lengths jitter and a sub-second gap shows as
+  // the same (or a confusingly off-by-one) mm:ss on screen — not a real mismatch. #119
+  const REC_LEN_TOL = 1000;
   // per-field diff between a track and its recording: title/artist via MB's own flags, length in ms
   function recFieldDiffs(track, rec) {
     let title = false, artist = false;
@@ -1446,7 +1449,8 @@
     // let it drag the match confidence down; it's still the right recording. #119
     if (artist && sameArtistEntities(track, rec)) artist = false;
     const tLen = u(track.length), rLen = rec ? u(rec.length) : null;
-    const lenDiff = (tLen && rLen) ? Math.abs(tLen - rLen) : 0;
+    let lenDiff = (tLen && rLen) ? Math.abs(tLen - rLen) : 0;
+    if (lenDiff < REC_LEN_TOL) lenDiff = 0;   // ignore sub-second jitter
     return { title, artist, lenDiff, len: lenDiff > 0 };
   }
   // Confidence ported from "Quick Recording Match": null = perfect (green), else low / vlow / xlow
@@ -1677,7 +1681,8 @@
   const REC_IGNORE = { nothing: 3, xlow: 2, vlow: 1, low: 0 };   // value = the worst level still auto-linked
   function recConfLevel(data, ctx) {
     if (!ctx) return 0;
-    let n = 0; const lenDiff = (data.length && ctx.length) ? Math.abs(data.length - ctx.length) : 0;
+    let n = 0; let lenDiff = (data.length && ctx.length) ? Math.abs(data.length - ctx.length) : 0;
+    if (lenDiff < REC_LEN_TOL) lenDiff = 0;   // ignore sub-second jitter
     if (data.name && ctx.title && fold(data.name) !== fold(ctx.title)) n++;
     if (data.artist && ctx.artist && fold(data.artist) !== fold(ctx.artist)) n++;
     if (lenDiff > 0) n++;
@@ -1881,7 +1886,7 @@
     // highlight the fields that differ from the track, like the table does
     const dT = ctx && data.name && ctx.title && fold(data.name) !== fold(ctx.title);
     const dA = ctx && data.artist && ctx.artist && fold(data.artist) !== fold(ctx.artist);
-    const dL = !!(ctx && data.length && ctx.length && Math.abs(data.length - ctx.length) > 0);
+    const dL = !!(ctx && data.length && ctx.length && Math.abs(data.length - ctx.length) >= REC_LEN_TOL);
     return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
       '<div class="tc-rpk-main"><span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + esc(data.name || '') + '</span>' +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
