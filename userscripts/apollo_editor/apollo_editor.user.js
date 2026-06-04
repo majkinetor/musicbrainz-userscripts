@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.190153
+// @version      2026.6.4.190708
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.190153';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.190708';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1491,9 +1491,13 @@
       '#tc-recwrap .tc-recwarn{color:#b00;font-weight:600}',
       '#tc-recwrap .tc-rec-tb{display:flex;align-items:center;gap:10px;padding:4px 2px 8px;flex-wrap:wrap}',
       '#tc-recwrap .tc-rec-am{cursor:pointer;border:1px solid #4b2e83;background:#6f42c1;color:#fff;border-radius:5px;padding:4px 11px;font:600 12px Arial}#tc-recwrap .tc-rec-am:hover{background:#5a32a3}',
-      '#tc-recwrap .tc-rec-tbl{color:#555;font-size:12px}#tc-recwrap .tc-rec-ignore{font:12px Arial;padding:2px}',
+      '#tc-recwrap .tc-rec-tbl{color:#555;font-size:12px}#tc-recwrap .tc-rec-ignore{font:12px Arial;padding:2px;width:auto;max-width:150px}',
       '#tc-recwrap .tc-rec-amstart{width:46px;font:12px Arial;padding:2px 3px}',
       '#tc-recwrap .tc-rec-amstatus{color:#6f42c1;font-size:12px}#tc-recwrap .tc-rec-tb .tc-recwarn{margin-left:auto}',
+      '#tc-recwrap .tc-rec-clear,#tc-recwrap .tc-rec-revall{cursor:pointer;border:1px solid #ccc;background:#f3f3f3;color:#555;border-radius:5px;padding:4px 9px;font:12px Arial}#tc-recwrap .tc-rec-clear:hover,#tc-recwrap .tc-rec-revall:hover{background:#e8e8e8}',
+      '.tc-rectbl .tc-recname{position:relative}',
+      '.tc-rectbl .tc-rec-rev{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:none;background:#fff;cursor:pointer;color:#7d6bc0;font-size:15px;line-height:1;visibility:hidden;padding:1px 4px;border-radius:3px}',
+      '.tc-rectbl tr.tc-recrow:hover .tc-rec-rev{visibility:visible}.tc-rectbl .tc-rec-rev:hover{color:#5f3ec0;background:#ede9f6}',
       'table.tc-rectbl{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed}',
       '.tc-rectbl td{overflow-wrap:anywhere}',
       '.tc-rectbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ccc;padding:4px 7px;white-space:nowrap}',
@@ -1545,6 +1549,7 @@
       '.tc-recpop .tc-rpk-by{color:#555;font-size:11px}',
       '.tc-recpop .tc-rpk-on{color:#777;font-size:11px}',
       '.tc-recpop .tc-rpk-isrc{color:#9a8fb5;font-size:11px;font-family:Consolas,monospace}',
+      '.tc-recpop .tc-rpk-fdiff{background:#ffecec;color:#b00;border-radius:2px;padding:0 2px}',
       '.tc-recpop .tc-rpk-empty{padding:8px 10px;color:#999;font-style:italic}',
       // hide the native recording table from the first paint (no flash) and let our table use the
       // full width instead of MB's .half-width column (#119)
@@ -1561,9 +1566,11 @@
     const unset = rows.filter(r => !r.recGid && !r.isNew).length;
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
-        '<button class="tc-rec-am" type="button">⚡ Auto-match</button>' +
+        '<button class="tc-rec-am" type="button">⚡ Match</button>' +
         '<label class="tc-rec-tbl">ignore below <select class="tc-rec-ignore"><option value="low">low</option><option value="vlow">very low</option><option value="xlow">extremely low</option><option value="nothing">nothing</option></select></label>' +
         '<label class="tc-rec-tbl">from track <input class="tc-rec-amstart" type="number" min="1" value="1"></label>' +
+        '<button class="tc-rec-clear" type="button" title="set every track to a new recording">Clear all</button>' +
+        '<button class="tc-rec-revall" type="button" title="revert every recording to its page-load state">Revert all</button>' +
         '<span class="tc-rec-amstatus"></span>' +
         (unset ? '<span class="tc-recwarn">⚠ ' + unset + ' without a recording</span>' : '') +
       '</div>' +
@@ -1602,11 +1609,18 @@
       const nameCell = tr.querySelector('.tc-recname');
       nameCell.classList.add('tc-clickable'); nameCell.title = 'change recording — suggestions / search';
       nameCell.onclick = () => openRecPicker(r, nameCell);
+      if (recChangedFromOrig(r.mi, r.ti)) {   // per-row revert ↺ (single), shown on hover when changed
+        const rev = document.createElement('button'); rev.className = 'tc-rec-rev'; rev.textContent = '↺'; rev.title = 'revert to the original recording';
+        rev.onclick = e => { e.stopPropagation(); revertRecording(r); };
+        nameCell.appendChild(rev);
+      }
       tb.appendChild(tr);
     });
-    // wire the auto-match toolbar
+    // wire the toolbar
     const sel = wrap.querySelector('.tc-rec-ignore'); if (sel) { sel.value = SETTINGS.recIgnore || 'vlow'; sel.onchange = () => { SETTINGS.recIgnore = sel.value; saveSettings(); }; }
     const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
+    const clrBtn = wrap.querySelector('.tc-rec-clear'); if (clrBtn) clrBtn.onclick = () => clearAllRecordings();
+    const revBtn = wrap.querySelector('.tc-rec-revall'); if (revBtn) revBtn.onclick = () => revertAllRecordings();
   }
   // confidence level of a candidate vs the track: 0 match · 1 low · 2 very low · 3 extremely low
   const REC_IGNORE = { nothing: 3, xlow: 2, vlow: 1, low: 0 };   // value = the worst level still auto-linked
@@ -1669,6 +1683,33 @@
     Log.info((allOn ? 'cleared' : 'set') + ' copy-' + field + ' on all ' + rows.length + ' recording(s)');
   }
   function rerenderRec() { const w = document.getElementById('tc-recwrap'); if (w) renderRecMirror(w); }
+
+  /* ── original-recording snapshot for revert + clear-all (#119) ── */
+  const _recOrig = new Map(); let _recSnapped = false;
+  function snapshotRecOriginals() {
+    if (_recSnapped) return; _recSnapped = true;
+    mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => {
+      const r = u(t.recording);
+      _recOrig.set(mi + ':' + ti, { entity: r, gid: r ? u(r.gid) : null, isNew: typeof t.hasNewRecording === 'function' ? !!u(t.hasNewRecording) : false });
+    }));
+  }
+  function _restoreRec(entry, o) {
+    const ko = koTrack(entry.mi, entry.ti);
+    try { if (o.isNew) ko.hasNewRecording(true); else if (o.entity) ko.setRecordingValue(o.entity); } catch (e) { Log.warn('revert recording failed', e.message); }
+  }
+  function recChangedFromOrig(mi, ti) {
+    const o = _recOrig.get(mi + ':' + ti); if (!o) return false;
+    const ko = koTrack(mi, ti), r = u(ko.recording);
+    const curGid = r ? u(r.gid) : null, curNew = typeof ko.hasNewRecording === 'function' ? !!u(ko.hasNewRecording) : false;
+    return curGid !== o.gid || curNew !== o.isNew;
+  }
+  function revertRecording(entry) { const o = _recOrig.get(entry.mi + ':' + entry.ti); if (o) { _restoreRec(entry, o); rerenderRec(); Log.info('reverted recording for track', entry.ti + 1); } }
+  function revertAllRecordings() { _recOrig.forEach((o, key) => { const p = key.split(':'); _restoreRec({ mi: +p[0], ti: +p[1] }, o); }); rerenderRec(); Log.info('reverted all recordings to the page-load state'); }
+  function clearAllRecordings() {
+    if (!W.confirm('Set every track to a NEW recording (clear all existing recording links)?')) return;
+    mediums().forEach(med => (u(med.tracks) || []).forEach(t => { try { t.hasNewRecording(true); } catch (e) {} }));
+    rerenderRec(); Log.info('cleared all recording links → new recordings');
+  }
 
   /* ── recording picker (#119 P2.2): suggestions + search-by-name → setRecordingValue ── */
   let _recPop = null, _recPopAnchor = null;
@@ -1749,11 +1790,15 @@
   function recRowHtml(data, ctx) {
     const relsArr = data.releases || []; const rels = relsArr.slice(0, 4).join(', ') + (relsArr.length > 4 ? ', …' : '');
     const isrcs = (data.isrcs || []).slice(0, 4).join(', ');
+    // highlight the fields that differ from the track, like the table does
+    const dT = ctx && data.name && ctx.title && fold(data.name) !== fold(ctx.title);
+    const dA = ctx && data.artist && ctx.artist && fold(data.artist) !== fold(ctx.artist);
+    const dL = !!(ctx && data.length && ctx.length && Math.abs(data.length - ctx.length) > 0);
     return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
-      '<div class="tc-rpk-main"><span class="tc-rpk-name">' + esc(data.name || '') + '</span>' +
+      '<div class="tc-rpk-main"><span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + esc(data.name || '') + '</span>' +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
-        '<span class="tc-rpk-len">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
-      (data.artist ? '<div class="tc-rpk-by">by ' + esc(data.artist) + '</div>' : '') +
+        '<span class="tc-rpk-len' + (dL ? ' tc-rpk-fdiff' : '') + '">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
+      (data.artist ? '<div class="tc-rpk-by' + (dA ? ' tc-rpk-fdiff' : '') + '">by ' + esc(data.artist) + '</div>' : '') +
       (rels ? '<div class="tc-rpk-on">appears on: ' + esc(rels) + '</div>' : '') +
       (isrcs ? '<div class="tc-rpk-isrc">ISRCs: ' + esc(isrcs) + '</div>' : '') +
       '</div>';
@@ -1843,7 +1888,7 @@
   // hide the native recording-assignment table and render the Apollo comparison table in its place.
   // Both read/write the same MB model, so toggling Original/Apollo lets you work in either view (#119).
   function showRecMirror() {
-    recStyle();
+    recStyle(); snapshotRecOriginals();   // capture the page-load recording associations once, for revert
     const tbl = document.getElementById('track-recording-assignation'); if (!tbl) return;
     let wrap = document.getElementById('tc-recwrap');
     if (!wrap) { wrap = document.createElement('div'); wrap.id = 'tc-recwrap'; tbl.parentElement.insertBefore(wrap, tbl); }
