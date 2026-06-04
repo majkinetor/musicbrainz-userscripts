@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.013000
+// @version      2026.6.5.014500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -69,7 +69,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, autoMatchRec: false, lastTool: '', layout: 'cozy', lastView: 'canon' }; try { return Object.assign(d, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return d; } }
+  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, lastTool: '', layout: 'cozy', lastView: 'canon' }; try { return Object.assign(d, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.013000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.014500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -616,6 +616,8 @@
     #tc-settings .tc-s-row{display:flex;align-items:center;gap:12px;margin:7px 0;color:#333}
     #tc-settings .tc-s-rad{display:inline-flex;align-items:center;gap:4px;margin:0;font-weight:normal;cursor:pointer}
     #tc-settings .tc-s-row input[type=radio]{margin:0}
+    #tc-settings #tc-s-lentol{width:48px;font:13px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px}
+    #tc-settings .tc-s-row.lentol{gap:7px}
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;background:#5f3ec0;color:#fff;border:none;border-radius:20px;padding:8px 14px;font:bold 13px Arial;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
     #tc-btn,#tc-gear-btn{vertical-align:middle}
   `;
@@ -635,6 +637,11 @@
         <label title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> <span>Tracklist</span></label>
         <label title="Recordings tab: auto-match unset recordings to MusicBrainz suggestions on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> <span>Recordings</span></label>
       </div>
+      <div class="tc-s-sec">Recording match</div>
+      <div class="tc-s-group">
+        <div class="tc-s-row lentol" title="A length difference up to this many seconds counts as a match (not a length mismatch)."><span>Length tolerance</span><input type="number" id="tc-s-lentol" min="0" max="60" step="1"> <span>seconds</span></div>
+        <label title="Treat a case / accent / spacing-only difference in title or artist as a match (recommended)."><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
+      </div>
       <div class="tc-s-sec">Appearance</div>
       <div class="tc-s-group">
         <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
@@ -651,6 +658,11 @@
     s.querySelectorAll('input[name="tc-s-layout"]').forEach(rb => { rb.checked = rb.value === curLayout; rb.onchange = () => { if (rb.checked) { SETTINGS.layout = rb.value; saveSettings(); applyViewClasses(); } }; });
     am.onchange = () => { SETTINGS.autoMatch = am.checked; saveSettings(); };
     amRec.onchange = () => { SETTINGS.autoMatchRec = amRec.checked; saveSettings(); };
+    const lentol = s.querySelector('#tc-s-lentol'), igc = s.querySelector('#tc-s-ignorecase');
+    lentol.value = SETTINGS.recLenTol != null ? SETTINGS.recLenTol : 5; igc.checked = SETTINGS.recIgnoreCase !== false;
+    const refreshRec = () => { try { if (document.getElementById('tc-recwrap')) rerenderRec(); } catch (e) {} };   // live-update the table
+    lentol.onchange = () => { const v = Math.max(0, Math.min(60, parseInt(lentol.value, 10) || 0)); SETTINGS.recLenTol = v; lentol.value = v; saveSettings(); refreshRec(); };
+    igc.onchange = () => { SETTINGS.recIgnoreCase = igc.checked; saveSettings(); refreshRec(); };
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     grid.onchange = () => { SETTINGS.grid = grid.checked; saveSettings(); applyViewClasses(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
@@ -1437,14 +1449,17 @@
     const a = acArtistGids(u(track.artistCredit)), b = acArtistGids(rec ? u(rec.artistCredit) : null);
     return a.length > 0 && a.length === b.length && a.every((g, i) => g === b[i]);
   }
-  // a length gap up to this many seconds is treated as identical (MB lengths jitter; small diffs aren't a
-  // real mismatch). Measured in WHOLE on-screen seconds so rows that LOOK the same get the same verdict. #119
-  const REC_LEN_TOL = 5000;
+  // a length gap up to SETTINGS.recLenTol seconds (default 5) is treated as identical (MB lengths jitter).
+  // Measured in WHOLE on-screen seconds so rows that LOOK the same get the same verdict. #119
+  function recLenTolMs() { return (SETTINGS.recLenTol != null ? SETTINGS.recLenTol : 5) * 1000; }
   function recLenGap(a, b) {
     if (!a || !b) return 0;
     const gap = Math.abs(Math.round(a / 1000) - Math.round(b / 1000)) * 1000;   // gap in whole displayed seconds
-    return gap <= REC_LEN_TOL ? 0 : gap;
+    return gap <= recLenTolMs() ? 0 : gap;
   }
+  // title/artist equality used for matching. With "ignore casing" on (default), a case/accent/spacing-only
+  // difference counts as equal (fold); off = exact text. #119
+  function recNameEq(a, b) { return SETTINGS.recIgnoreCase !== false ? fold(a) === fold(b) : String(a || '') === String(b || ''); }
   // per-field diff between a track and its recording: title/artist via MB's own flags, length in ms
   function recFieldDiffs(track, rec) {
     let title = false, artist = false;
@@ -1453,6 +1468,9 @@
     // a "credited as" (same artist entity, different credit name) is NOT a real artist mismatch — don't
     // let it drag the match confidence down; it's still the right recording. #119
     if (artist && sameArtistEntities(track, rec)) artist = false;
+    // a casing-only (cosmetic) difference is not a real mismatch when "ignore casing" is on
+    if (title && recNameEq(u(track.name), rec ? u(rec.name) : '')) title = false;
+    if (artist && recNameEq(acText(u(track.artistCredit)), acText(rec ? u(rec.artistCredit) : null))) artist = false;
     const lenDiff = recLenGap(u(track.length), rec ? u(rec.length) : null);
     return { title, artist, lenDiff, len: lenDiff > 0 };
   }
@@ -1685,8 +1703,8 @@
   function recConfLevel(data, ctx) {
     if (!ctx) return 0;
     let n = 0; const lenDiff = recLenGap(data.length, ctx.length);
-    if (data.name && ctx.title && fold(data.name) !== fold(ctx.title)) n++;
-    if (data.artist && ctx.artist && fold(data.artist) !== fold(ctx.artist)) n++;
+    if (data.name && ctx.title && !recNameEq(data.name, ctx.title)) n++;
+    if (data.artist && ctx.artist && !recNameEq(data.artist, ctx.artist)) n++;
     if (lenDiff > 0) n++;
     if (n >= 3 && lenDiff > 10000) return 3;
     if (lenDiff > 15000) return 2;
@@ -1886,8 +1904,8 @@
     const rels = relLinksHtml(data.releases, 6);
     const isrcs = (data.isrcs || []).slice(0, 4).join(', ');
     // highlight the fields that differ from the track, like the table does
-    const dT = ctx && data.name && ctx.title && fold(data.name) !== fold(ctx.title);
-    const dA = ctx && data.artist && ctx.artist && fold(data.artist) !== fold(ctx.artist);
+    const dT = ctx && data.name && ctx.title && !recNameEq(data.name, ctx.title);
+    const dA = ctx && data.artist && ctx.artist && !recNameEq(data.artist, ctx.artist);
     const dL = !!(ctx && recLenGap(data.length, ctx.length) > 0);
     return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
       '<div class="tc-rpk-main"><span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + esc(data.name || '') + '</span>' +
