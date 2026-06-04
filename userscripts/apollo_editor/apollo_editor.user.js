@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.173118
+// @version      2026.6.4.174259
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.173118';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.174259';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1495,6 +1495,20 @@
       '.tc-rectbl td.tc-clickable:hover{outline:1px solid #9cc6ab;outline-offset:-1px}',
       '.tc-rectbl .tc-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}',
       '.tc-rectbl tr.tc-recrow:hover td{background:#fafaff}',
+      '.tc-rectbl .tc-recpick{cursor:pointer;border:1px solid #d6cdec;background:#f6f3fc;color:#6f42c1;border-radius:4px;padding:1px 6px;font:11px Arial;white-space:nowrap}',
+      '.tc-rectbl .tc-recpick:hover{background:#ece5f8}',
+      '.tc-recpop{position:fixed;z-index:100003;width:390px;max-height:70vh;overflow:auto;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 8px 28px rgba(40,20,80,.28);font:12px Arial}',
+      '.tc-recpop .tc-rpk-hd{padding:7px 10px;background:#f3f0fa;border-bottom:1px solid #e3def2;border-radius:6px 6px 0 0}',
+      '.tc-recpop .tc-rpk-q{width:calc(100% - 16px);margin:8px;padding:5px 7px;border:1px solid #c9c2dd;border-radius:4px;font:12px Arial;box-sizing:border-box}',
+      '.tc-recpop .tc-rpk-sec{padding:3px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#999;background:#faf8ff}',
+      '.tc-recpop .tc-rpk-row{padding:5px 10px;cursor:pointer;border-bottom:1px solid #f1edf9}',
+      '.tc-recpop .tc-rpk-row:hover{background:#ede9f6}',
+      '.tc-recpop .tc-rpk-main{display:flex;align-items:baseline;gap:6px}',
+      '.tc-recpop .tc-rpk-name{font-weight:600;color:#222}',
+      '.tc-recpop .tc-rpk-cmt{color:#888;font-size:11px}',
+      '.tc-recpop .tc-rpk-len{margin-left:auto;color:#666;font-variant-numeric:tabular-nums;white-space:nowrap}',
+      '.tc-recpop .tc-rpk-sub{color:#777;font-size:11px}.tc-recpop .tc-rpk-rel{color:#6f54c0}',
+      '.tc-recpop .tc-rpk-empty{padding:8px 10px;color:#999;font-style:italic}',
       // hide the native recording table from the first paint (no flash) and let our table use the
       // full width instead of MB's .half-width column (#119)
       'body.tc-rec-on #track-recording-assignation{display:none!important}',
@@ -1534,7 +1548,7 @@
         '<td class="tc-reccell ' + tCls + '" data-f="title">' + titleCell + '</td>' +
         '<td class="tc-reccell ' + aCls + '" data-f="artist">' + artistCell + '</td>' +
         '<td class="c-len ' + (d.len ? 'tc-diff' : '') + '">' + fmtMs(r.recLen) + '</td>' +
-        '<td class="c-sugg">' + (r.suggCount || '') + '</td>';
+        '<td class="c-sugg"><button class="tc-recpick" title="change recording — suggestions / search">' + (r.suggCount ? r.suggCount + '&nbsp;▾' : '▾') + '</button></td>';
       const dot = tr.querySelector('.tc-dot');
       if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
       else if (r.recGid) { dot.style.background = '#86c686'; dot.title = 'matches the track'; }
@@ -1550,6 +1564,7 @@
         cell.onclick = () => { setCopy(f, r, !on); rerenderRec(); };
         cell.oncontextmenu = e => { e.preventDefault(); setCopyAll(f); rerenderRec(); };
       });
+      const pickBtn = tr.querySelector('.tc-recpick'); if (pickBtn) pickBtn.onclick = e => { e.stopPropagation(); openRecPicker(r, pickBtn); };
       tb.appendChild(tr);
     });
   }
@@ -1567,6 +1582,75 @@
     Log.info((allOn ? 'cleared' : 'set') + ' copy-' + field + ' on all ' + rows.length + ' recording(s)');
   }
   function rerenderRec() { const w = document.getElementById('tc-recwrap'); if (w) renderRecMirror(w); }
+
+  /* ── recording picker (#119 P2.2): suggestions + search-by-name → setRecordingValue ── */
+  let _recPop = null;
+  function closeRecPop() { if (_recPop) { _recPop.remove(); _recPop = null; document.removeEventListener('mousedown', _recPopOutside, true); document.removeEventListener('keydown', _recPopKey, true); } }
+  function _recPopOutside(e) { if (_recPop && !_recPop.contains(e.target)) closeRecPop(); }
+  function _recPopKey(e) { if (e.key === 'Escape') closeRecPop(); }
+  async function searchRecordings(q) {
+    q = (q || '').trim(); if (!q) return [];
+    try {
+      const j = await fetch(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+      return (j.recordings || []).map(r => ({
+        gid: r.id, name: r.title, length: r.length || null,
+        artist: (r['artist-credit'] || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''),
+        releases: [...new Set((r.releases || []).map(rl => rl.title).filter(Boolean))],
+        comment: r.disambiguation || '',
+      }));
+    } catch (e) { Log.warn('recording search failed', e.message); return []; }
+  }
+  function recEntityFrom(data) {
+    if (data.entity) return data.entity;
+    try { return W.MB.entity({ entityType: 'recording', gid: data.gid, name: data.name, length: data.length || null }, 'recording'); }
+    catch (e) { Log.warn('build recording entity failed', e.message); return null; }
+  }
+  function pickRecording(entry, data) {
+    const ent = recEntityFrom(data); if (!ent) return;
+    try { koTrack(entry.mi, entry.ti).setRecordingValue(ent); Log.info('linked recording', JSON.stringify(data.name), '→ track', entry.number); }
+    catch (e) { Log.warn('setRecordingValue failed', e.message); }
+    closeRecPop(); rerenderRec();
+  }
+  function recRowHtml(data) {
+    const len = data.length ? fmtMs(data.length) : '';
+    const relsArr = data.releases || []; const rels = relsArr.slice(0, 3).join(', ') + (relsArr.length > 3 ? ', …' : '');
+    return '<div class="tc-rpk-row" data-gid="' + esc(data.gid) + '">' +
+      '<div class="tc-rpk-main"><span class="tc-rpk-name">' + esc(data.name || '') + '</span>' +
+        (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
+        '<span class="tc-rpk-len">' + len + '</span></div>' +
+      '<div class="tc-rpk-sub">' + esc(data.artist || '') + (rels ? ' · <span class="tc-rpk-rel">' + esc(rels) + '</span>' : '') + '</div></div>';
+  }
+  function openRecPicker(entry, anchor) {
+    recStyle(); closeRecPop();
+    const pop = document.createElement('div'); pop.className = 'tc-recpop'; _recPop = pop; document.body.appendChild(pop);
+    const r = anchor.getBoundingClientRect();
+    pop.style.left = Math.max(6, Math.min(r.right - 390, window.innerWidth - 396)) + 'px';
+    pop.style.top = (r.bottom + 4) + 'px';
+    const ko = koTrack(entry.mi, entry.ti);
+    const sugg = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []).map(s => { const e = u(s); return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), releases: [] }; });
+    pop.innerHTML =
+      '<div class="tc-rpk-hd">Recording for <b>' + esc(u(ko.name) || '') + '</b></div>' +
+      '<input class="tc-rpk-q" type="text" placeholder="search recordings by name…">' +
+      (sugg.length ? '<div class="tc-rpk-sec">suggestions</div><div class="tc-rpk-list tc-rpk-sugg">' + sugg.map(recRowHtml).join('') + '</div>' : '') +
+      '<div class="tc-rpk-sec">search results</div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
+    const data = {}; sugg.forEach(s => { data[s.gid] = s; });
+    pop.querySelectorAll('.tc-rpk-sugg .tc-rpk-row').forEach(row => { row.onclick = () => pickRecording(entry, data[row.dataset.gid]); });
+    const q = pop.querySelector('.tc-rpk-q'), resBox = pop.querySelector('.tc-rpk-res');
+    q.value = u(ko.name) || '';
+    let seq = 0, tmr = null;
+    const runSearch = async () => {
+      const my = ++seq; const val = q.value;
+      resBox.innerHTML = '<div class="tc-rpk-empty">searching…</div>';
+      const results = await searchRecordings(val);
+      if (my !== seq || !_recPop) return;
+      results.forEach(rr => { data[rr.gid] = rr; });
+      resBox.innerHTML = results.length ? results.map(recRowHtml).join('') : '<div class="tc-rpk-empty">no matches</div>';
+      resBox.querySelectorAll('.tc-rpk-row').forEach(row => { row.onclick = () => pickRecording(entry, data[row.dataset.gid]); });
+    };
+    q.oninput = () => { clearTimeout(tmr); tmr = setTimeout(runSearch, 300); };
+    q.focus(); q.select(); runSearch();
+    setTimeout(() => { document.addEventListener('mousedown', _recPopOutside, true); document.addEventListener('keydown', _recPopKey, true); }, 0);
+  }
   // the Recordings tab panel (#recordings) — check the PANEL not the inner table (we hide the table)
   function recordingsVisible() { const p = document.getElementById('recordings'); return !!(p && p.offsetParent !== null); }
   // hide the native recording-assignment table and render the Apollo comparison table in its place.
