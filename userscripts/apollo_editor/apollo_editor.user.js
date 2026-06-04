@@ -1396,7 +1396,130 @@
     tick(); setInterval(tick, 500);
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  /* ═══════════════════════════════════════════════════════════════════════
+     RECORDING MATCHER (#119) — Recordings tab.  WIP — Phase 1: read-only preview.
+     Drives MB's native recording association (setRecordingValue / suggestedRecordings /
+     updateRecordingTitle|Artist) in later phases; for now it just surfaces each track's
+     current recording + confidence so the model/render/confidence are proven.
+  ═══════════════════════════════════════════════════════════════════════ */
+  // Confidence of the linked recording vs the track, ported from the "Quick Recording Match"
+  // reference: null = perfect (green), else low / vlow / xlow (yellow / orange / red). Title &
+  // artist use MB's own diff flags; length is compared in ms.
+  const REC_CONF = {
+    low:  { c: '#fff176', label: 'low confidence' },
+    vlow: { c: '#ffb74d', label: 'very low confidence' },
+    xlow: { c: '#d32f2f', label: 'extremely low confidence' },
+  };
+  function recConfidence(track, rec) {
+    if (!rec || !u(rec.gid)) return null;
+    const diffs = [];
+    try { if (typeof track.titleDiffersFromRecording === 'function' && track.titleDiffersFromRecording()) diffs.push('title'); } catch (e) {}
+    try { if (typeof track.artistDiffersFromRecording === 'function' && track.artistDiffersFromRecording()) diffs.push('artist'); } catch (e) {}
+    const tLen = u(track.length), rLen = u(rec.length);
+    const lenDiff = (tLen && rLen) ? Math.abs(tLen - rLen) : 0;
+    if (lenDiff > 0) diffs.push('length ' + Math.round(lenDiff / 1000) + 's');
+    let level = null;
+    if (diffs.length >= 3 && lenDiff > 10000) level = 'xlow';
+    else if (lenDiff > 15000) level = 'vlow';
+    else if (diffs.length >= 2 && lenDiff <= 15000) level = 'vlow';
+    else if (diffs.length === 1 || lenDiff > 3000) level = 'low';
+    if (!level) return null;
+    return { level, color: REC_CONF[level].c, label: REC_CONF[level].label, diffs };
+  }
+  const fmtMs = ms => (ms || ms === 0) ? (Math.floor(Math.round(ms / 1000) / 60) + ':' + String(Math.round(ms / 1000) % 60).padStart(2, '0')) : '';
+  // read each track's recording association + confidence + suggestion count (read-only model for now)
+  function readRecordings() {
+    const out = [];
+    mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => {
+      const rec = u(t.recording);
+      const sugg = (typeof t.suggestedRecordings === 'function' ? (u(t.suggestedRecordings) || []) : []);
+      out.push({
+        mi, ti, number: u(t.number), title: u(t.name), trackLen: u(t.length),
+        isNew: typeof t.hasNewRecording === 'function' ? !!u(t.hasNewRecording) : false,
+        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recLen: rec ? u(rec.length) : null,
+        suggCount: sugg.length, conf: recConfidence(t, rec),
+      });
+    }));
+    return out;
+  }
+  let _recStyled = false;
+  function recStyle() {
+    if (_recStyled) return; _recStyled = true;
+    const s = document.createElement('style');
+    s.textContent = [
+      '#tc-rec-launch{position:fixed;right:12px;bottom:12px;z-index:99998;padding:7px 12px;border:1px solid #4b2e83;border-radius:6px;background:#6f42c1;color:#fff;font:600 12px system-ui,Arial;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)}',
+      '#tc-rec-launch:hover{background:#5a32a3}',
+      '#tc-recpanel{position:fixed;right:12px;top:58px;width:680px;max-width:96vw;max-height:86vh;overflow:auto;z-index:99999;background:#fff;border:1px solid #c9c2dd;border-radius:9px;box-shadow:0 8px 30px rgba(0,0,0,.22);font:13px/1.45 system-ui,Arial}',
+      '#tc-rec-hdr{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#f3f0fa;border-bottom:1px solid #e3def2;border-radius:9px 9px 0 0;position:sticky;top:0;cursor:move}',
+      '#tc-rec-hdr b{font-size:13px}#tc-rec-hdr .tc-rec-sub{color:#8a7fae;font-size:11px}#tc-rec-hdr .sp{flex:1}',
+      '#tc-rec-hdr .tc-icon{border:none;background:none;cursor:pointer;font-size:14px;color:#666}',
+      '#tc-rec-body{padding:8px 10px}',
+      '.tc-rec-warn{margin:0 0 8px;padding:6px 9px;background:#fff6da;border:1px solid #e7ce8a;border-radius:5px;color:#7a5d00;font-weight:600}',
+      'table.tc-rectbl{border-collapse:collapse;width:100%}',
+      '.tc-rectbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ddd;padding:3px 6px}',
+      '.tc-rectbl td{padding:3px 6px;border-bottom:1px solid #f0f0f0;vertical-align:top}',
+      '.tc-rec-num{color:#999;text-align:right;width:28px}',
+      '.tc-rec-title{font-weight:600}',
+      '.tc-rec-len{color:#666;white-space:nowrap;font-variant-numeric:tabular-nums}',
+      '.tc-rec-sugg{color:#6f42c1;text-align:center;width:38px}',
+      '.tc-rec-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px;border:1px solid rgba(0,0,0,.15)}',
+      '.tc-rec-none{color:#c0392b}.tc-rec-new{color:#2c7a51}',
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+  function renderRecTable(container, rows) {
+    const unset = rows.filter(r => !r.recGid && !r.isNew).length;
+    container.innerHTML =
+      (unset ? '<div class="tc-rec-warn">⚠ ' + unset + ' track' + (unset === 1 ? '' : 's') + ' without a recording</div>' : '') +
+      '<table class="tc-rectbl"><thead><tr><th>#</th><th>Track</th><th>Recording</th><th>Len</th><th title="suggestions">⊕</th></tr></thead><tbody></tbody></table>';
+    const tb = container.querySelector('tbody');
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      const recCell = r.isNew ? '<span class="tc-rec-new">＋ new recording</span>'
+        : r.recName ? esc(r.recName)
+        : '<span class="tc-rec-none">— none —</span>';
+      tr.innerHTML = '<td class="tc-rec-num">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
+        '<td class="tc-rec-title">' + esc(r.title || '') + '</td>' +
+        '<td class="tc-rec-name"><span class="tc-rec-dot"></span>' + recCell + '</td>' +
+        '<td class="tc-rec-len">' + fmtMs(r.recLen) + '</td>' +
+        '<td class="tc-rec-sugg">' + (r.suggCount || '') + '</td>';
+      const dot = tr.querySelector('.tc-rec-dot');
+      if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
+      else if (r.recGid) { dot.style.background = '#86c686'; dot.title = 'matches the track'; }
+      else { dot.style.visibility = 'hidden'; }
+      tb.appendChild(tr);
+    });
+  }
+  function openRecPanel() {
+    recStyle();
+    const ex = document.getElementById('tc-recpanel'); if (ex) { ex.remove(); return; }   // toggle off
+    const p = document.createElement('div'); p.id = 'tc-recpanel';
+    p.innerHTML = '<div id="tc-rec-hdr">' + ICON + '<b>Apollo Recordings</b><span class="tc-rec-sub">preview</span><span class="sp"></span><button class="tc-icon" data-recact="close" title="close">✕</button></div><div id="tc-rec-body"></div>';
+    document.body.appendChild(p);
+    renderRecTable(p.querySelector('#tc-rec-body'), readRecordings());
+    p.querySelector('[data-recact="close"]').onclick = () => p.remove();
+    const hdr = p.querySelector('#tc-rec-hdr');
+    hdr.onmousedown = e => { if (e.target.closest('button')) return; const r = p.getBoundingClientRect(); const ox = e.clientX - r.left, oy = e.clientY - r.top; p.style.right = 'auto'; const mm = ev => { p.style.left = Math.max(0, ev.clientX - ox) + 'px'; p.style.top = Math.max(0, ev.clientY - oy) + 'px'; }; const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }; document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu); };
+  }
+  // the Recordings tab shows the native #track-recording-assignation table — add our launcher there
+  function recordingsVisible() { const el = document.getElementById('track-recording-assignation'); return !!(el && el.offsetParent !== null); }
+  function ensureRecLauncher() {
+    if (document.getElementById('tc-rec-launch')) return;
+    recStyle(); const b = document.createElement('button'); b.id = 'tc-rec-launch'; b.textContent = '🎙 Apollo Recordings';
+    b.title = 'open the Apollo recording matcher (preview)'; b.onclick = openRecPanel;
+    document.body.appendChild(b);
+  }
+  let _recPrev = false;
+  function watchRecordings() {
+    const tick = () => {
+      const vis = recordingsVisible();
+      if (vis && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); ensureRecLauncher(); }
+      else if (!vis && _recPrev) { _recPrev = false; ['tc-rec-launch', 'tc-recpanel'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); }); }
+    };
+    tick(); setInterval(tick, 500);
+  }
+
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, openRecPanel, recordingsVisible, recConfidence, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
@@ -1410,5 +1533,6 @@
     if (SETTINGS.lastView !== 'original') showMirror();   // take over the tracklist (built inside the hidden #tracklist panel) unless the user last chose the native editor
     if (tracklistVisible()) ensureLauncher();   // the toggle button belongs on the Tracklist tab only — the watcher adds/removes it as you switch tabs
     watchTracklist();
+    watchRecordings();   // #119 — surface the recording matcher on the Recordings tab
   })();
 })();
