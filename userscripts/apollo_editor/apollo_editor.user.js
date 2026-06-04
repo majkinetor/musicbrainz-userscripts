@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.190708
+// @version      2026.6.4.191541
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.190708';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.191541';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1560,10 +1560,9 @@
     ].join('\n');
     document.head.appendChild(s);
   }
+  // build the toolbar + table shell once; the body is (re)rendered separately so a re-render during
+  // auto-match updates rows live without rebuilding/resetting the toolbar. #119
   function renderRecMirror(wrap) {
-    const rows = readRecordings();
-    const multi = mediums().length > 1;
-    const unset = rows.filter(r => !r.recGid && !r.isNew).length;
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
         '<button class="tc-rec-am" type="button">⚡ Match</button>' +
@@ -1572,7 +1571,7 @@
         '<button class="tc-rec-clear" type="button" title="set every track to a new recording">Clear all</button>' +
         '<button class="tc-rec-revall" type="button" title="revert every recording to its page-load state">Revert all</button>' +
         '<span class="tc-rec-amstatus"></span>' +
-        (unset ? '<span class="tc-recwarn">⚠ ' + unset + ' without a recording</span>' : '') +
+        '<span class="tc-recwarn"></span>' +
       '</div>' +
       '<table class="tc-rectbl">' +
         '<colgroup><col style="width:2.5%"><col style="width:25.5%"><col style="width:18%"><col style="width:4%"><col style="width:2%"><col style="width:26%"><col style="width:18%"><col style="width:4%"></colgroup>' +
@@ -1580,7 +1579,22 @@
         '<tr class="tc-grouphd"><th colspan="4" class="tc-grp tc-grp-l">Track</th><th class="c-sep"></th><th colspan="3" class="tc-grp tc-grp-r">Recording</th></tr>' +
         '<tr><th class="c-n">#</th><th>Title</th><th>Artist</th><th class="c-len">Len</th>' +
         '<th class="c-sep"></th><th>Title</th><th>Artist</th><th class="c-len">Len</th></tr></thead><tbody></tbody></table>';
-    const tb = wrap.querySelector('tbody');
+    // wire the toolbar (once)
+    const sel = wrap.querySelector('.tc-rec-ignore'); if (sel) { sel.value = SETTINGS.recIgnore || 'vlow'; sel.onchange = () => { SETTINGS.recIgnore = sel.value; saveSettings(); }; }
+    const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
+    const clrBtn = wrap.querySelector('.tc-rec-clear'); if (clrBtn) clrBtn.onclick = () => clearAllRecordings();
+    const revBtn = wrap.querySelector('.tc-rec-revall'); if (revBtn) revBtn.onclick = () => revertAllRecordings();
+    renderRecBody(wrap);
+  }
+  // (re)render just the rows + the unset-count — leaves the toolbar (status/inputs) untouched
+  function renderRecBody(wrap) {
+    wrap = wrap || document.getElementById('tc-recwrap'); if (!wrap) return;
+    const tb = wrap.querySelector('tbody'); if (!tb) return;
+    const rows = readRecordings();
+    const multi = mediums().length > 1;
+    const unset = rows.filter(r => !r.recGid && !r.isNew).length;
+    const warn = wrap.querySelector('.tc-recwarn'); if (warn) warn.textContent = unset ? '⚠ ' + unset + ' without a recording' : '';
+    tb.innerHTML = '';
     let lastMi = -1;
     rows.forEach(r => {
       if (multi && r.mi !== lastMi) { lastMi = r.mi; const mr = document.createElement('tr'); mr.className = 'tc-recmed'; mr.innerHTML = '<td colspan="8">Medium ' + (r.mi + 1) + '</td>'; tb.appendChild(mr); }
@@ -1616,11 +1630,6 @@
       }
       tb.appendChild(tr);
     });
-    // wire the toolbar
-    const sel = wrap.querySelector('.tc-rec-ignore'); if (sel) { sel.value = SETTINGS.recIgnore || 'vlow'; sel.onchange = () => { SETTINGS.recIgnore = sel.value; saveSettings(); }; }
-    const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
-    const clrBtn = wrap.querySelector('.tc-rec-clear'); if (clrBtn) clrBtn.onclick = () => clearAllRecordings();
-    const revBtn = wrap.querySelector('.tc-rec-revall'); if (revBtn) revBtn.onclick = () => revertAllRecordings();
   }
   // confidence level of a candidate vs the track: 0 match · 1 low · 2 very low · 3 extremely low
   const REC_IGNORE = { nothing: 3, xlow: 2, vlow: 1, low: 0 };   // value = the worst level still auto-linked
@@ -1660,7 +1669,7 @@
         }
         if (!sugg.length) continue;
         const best = suggData(sugg[0]);
-        if (recConfLevel(best, ctx) <= maxLevel) { try { ko.setRecordingValue(recEntityFrom(best)); linked++; } catch (e) { Log.warn('auto-match set failed', e.message); } }
+        if (recConfLevel(best, ctx) <= maxLevel) { try { ko.setRecordingValue(recEntityFrom(best)); linked++; renderRecBody(); } catch (e) { Log.warn('auto-match set failed', e.message); } }
       }
     } finally {
       _autoMatching = false;
@@ -1682,7 +1691,7 @@
     rows.forEach(r => setCopy(field, r, !allOn));
     Log.info((allOn ? 'cleared' : 'set') + ' copy-' + field + ' on all ' + rows.length + ' recording(s)');
   }
-  function rerenderRec() { const w = document.getElementById('tc-recwrap'); if (w) renderRecMirror(w); }
+  function rerenderRec() { renderRecBody(); }   // body only — keeps the toolbar (status / inputs) intact
 
   /* ── original-recording snapshot for revert + clear-all (#119) ── */
   const _recOrig = new Map(); let _recSnapped = false;
