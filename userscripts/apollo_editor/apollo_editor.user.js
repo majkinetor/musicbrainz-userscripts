@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.213500
+// @version      2026.6.4.215000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.213500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.215000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1542,7 +1542,9 @@
       '.tc-recpop .tc-rpk-curnone{color:#c0392b}.tc-recpop .tc-rpk-newcur{color:#2c7a51}',
       '.tc-recpop .tc-rpk-newbtn{margin-left:auto;cursor:pointer;border:1px solid #bcdcc6;background:#eef7f0;color:#1f7a44;border-radius:4px;padding:2px 7px;font:11px Arial}.tc-recpop .tc-rpk-newbtn:hover{background:#e0f0e6}',
       '.tc-recpop .tc-rpk-q{width:calc(100% - 16px);margin:8px;padding:5px 7px;border:1px solid #c9c2dd;border-radius:4px;font:12px Arial;box-sizing:border-box}',
-      '.tc-recpop .tc-rpk-sec{padding:3px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#999;background:#faf8ff}',
+      '.tc-recpop .tc-rpk-sec{display:flex;align-items:center;justify-content:space-between;padding:3px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#999;background:#faf8ff}',
+      '.tc-recpop .tc-rpk-relax{text-transform:none;letter-spacing:0;border:1px solid #cfc6e6;background:#fff;color:#6f42c1;border-radius:4px;padding:1px 7px;font:10px Arial;cursor:pointer}',
+      '.tc-recpop .tc-rpk-relax:hover{background:#f1ecfa}.tc-recpop .tc-rpk-relax.on{background:#6f42c1;color:#fff;border-color:#6f42c1}',
       '.tc-recpop .tc-rpk-row{padding:5px 10px;cursor:pointer;border-bottom:1px solid #f1edf9}',
       '.tc-recpop .tc-rpk-row:hover{background:#ede9f6}',
       '.tc-recpop .tc-rpk-main{display:flex;align-items:baseline;gap:6px}',
@@ -1724,10 +1726,10 @@
   }
 
   /* ── recording picker (#119 P2.2): suggestions + search-by-name → setRecordingValue ── */
-  let _recPop = null, _recPopAnchor = null, _recPopMoved = false;
+  let _recPop = null, _recPopAnchor = null, _recPopPos = null;   // _recPopPos persists a dragged location across reopens
   function closeRecPop() {
     if (!_recPop) return;
-    _recPop.remove(); _recPop = null; _recPopAnchor = null; _recPopMoved = false;
+    _recPop.remove(); _recPop = null; _recPopAnchor = null;   // keep _recPopPos — a moved panel stays put on the next row click
     document.removeEventListener('mousedown', _recPopOutside, true); document.removeEventListener('keydown', _recPopKey, true);
     window.removeEventListener('scroll', _recPopReposition, true); window.removeEventListener('resize', _recPopReposition);
   }
@@ -1736,8 +1738,15 @@
   // dock the picker as a tall panel against the right edge of the table, using the full viewport height.
   // once the user drags it (header), leave its position alone. #119
   function _recPopReposition() {
-    if (!_recPop || _recPopMoved) return;
+    if (!_recPop) return;
     const M = 10, W = _recPop.offsetWidth || 410;
+    if (_recPopPos) {   // user dragged it once — keep that spot (clamped into view), only refresh the height
+      const left = Math.round(Math.max(M, Math.min(_recPopPos.left, window.innerWidth - W - M)));
+      const top = Math.round(Math.max(M, Math.min(_recPopPos.top, window.innerHeight - 60)));
+      _recPop.style.left = left + 'px'; _recPop.style.top = top + 'px';
+      _recPop.style.maxHeight = (window.innerHeight - top - M) + 'px';
+      return;
+    }
     const wrap = document.getElementById('tc-recwrap'); const wr = wrap ? wrap.getBoundingClientRect() : null;
     const right = wr ? wr.right : window.innerWidth - M;
     _recPop.style.left = Math.round(Math.max(M, Math.min(right - W, window.innerWidth - W - M))) + 'px';
@@ -1750,9 +1759,9 @@
     hd.style.cursor = 'move';
     hd.addEventListener('mousedown', e => {
       if (e.target.closest('button, a, input')) return;
-      e.preventDefault(); _recPopMoved = true;
+      e.preventDefault();
       const r = _recPop.getBoundingClientRect(), ox = e.clientX - r.left, oy = e.clientY - r.top;
-      const mm = ev => { _recPop.style.left = Math.max(0, Math.min(ev.clientX - ox, window.innerWidth - 40)) + 'px'; _recPop.style.top = Math.max(0, Math.min(ev.clientY - oy, window.innerHeight - 40)) + 'px'; };
+      const mm = ev => { const left = Math.max(0, Math.min(ev.clientX - ox, window.innerWidth - 40)), top = Math.max(0, Math.min(ev.clientY - oy, window.innerHeight - 40)); _recPopPos = { left, top }; _recPop.style.left = left + 'px'; _recPop.style.top = top + 'px'; };
       const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); };
       document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
     });
@@ -1853,7 +1862,7 @@
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
       '<input class="tc-rpk-q" type="text" placeholder="search recordings by name…">' +
       '<div class="tc-rpk-sec tc-rpk-suggsec">suggestions</div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
-      '<div class="tc-rpk-sec">search results</div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
+      '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" title="relaxed search — show all recordings with this title, ignoring artist &amp; length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
     const newBtn = pop.querySelector('.tc-rpk-newbtn'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
     const ctEl = pop.querySelector('.tc-rpk-ct'); if (ctEl) ctEl.onchange = () => { setCopy('title', entry, ctEl.checked); rerenderRec(); };
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
@@ -1882,12 +1891,14 @@
     }
     q.value = u(ko.name) || '';
     q.title = 'free-form — raw MB query, e.g. isrc:USXXX… or artist:"…"';
-    // smart auto-query for THIS track: title + artist + a ±10s length window; falls back to title-only
-    // (e.g. classical, where the recording artist differs from the track artist) — #119
-    const smartQuery = () => {
-      const esq = s => String(s || '').replace(/(["\\])/g, '\\$1');
+    // auto-query for THIS track. Narrow = title + artist + a ±10s length window (precise). Relaxed
+    // ("show all") = title only, ignoring artist & length — for classical, covers, re-recordings. #119
+    let relax = false;
+    const esq = s => String(s || '').replace(/(["\\])/g, '\\$1');
+    const autoQuery = () => {
       const title = u(ko.name), artist = acText(u(ko.artistCredit)), len = u(ko.length);
       let qy = 'recording:"' + esq(title) + '"';
+      if (relax) return qy;
       if (artist) qy += ' AND artist:"' + esq(artist) + '"';
       if (len) qy += ' AND dur:[' + Math.max(0, len - 10000) + ' TO ' + (len + 10000) + ']';
       return qy;
@@ -1903,9 +1914,16 @@
       resBox.innerHTML = results.length ? results.map(d => recRowHtml(d, ctx)).join('') : '<div class="tc-rpk-empty">no matches</div>';
       wire(resBox);
     };
-    // once the user edits the box, search their raw text (free Lucene); the initial run is the smart query
+    // "show all" toggles relaxed mode and re-runs the track-derived search (independent of any manual edit)
+    const relaxBtn = pop.querySelector('.tc-rpk-relax');
+    if (relaxBtn) relaxBtn.onclick = () => {
+      relax = !relax; relaxBtn.classList.toggle('on', relax); relaxBtn.textContent = relax ? 'narrow' : 'show all';
+      relaxBtn.title = relax ? 'back to a precise search (title + artist + ±10s length)' : 'relaxed search — show all recordings with this title, ignoring artist & length';
+      runSearch(autoQuery(), !relax);
+    };
+    // once the user edits the box, search their raw text (free Lucene); the initial run is the auto query
     q.oninput = () => { clearTimeout(tmr); tmr = setTimeout(() => runSearch(q.value, false), 300); };
-    q.focus(); q.select(); runSearch(smartQuery(), true);
+    q.focus(); q.select(); runSearch(autoQuery(), !relax);
     _recPopReposition();
     setTimeout(() => { document.addEventListener('mousedown', _recPopOutside, true); document.addEventListener('keydown', _recPopKey, true); window.addEventListener('scroll', _recPopReposition, true); window.addEventListener('resize', _recPopReposition); }, 0);
   }
@@ -1923,6 +1941,7 @@
   }
   function hideRecMirror() {
     document.body.classList.remove('tc-rec-on');
+    closeRecPop(); _recPopPos = null;   // drop any dragged location so the next visit docks fresh
     const w = document.getElementById('tc-recwrap'); if (w) w.remove();
   }
 
