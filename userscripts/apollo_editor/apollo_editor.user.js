@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.155119
+// @version      2026.6.4.161914
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.155119';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.161914';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1376,6 +1376,8 @@
   function relabelLauncher() { const b = document.getElementById('tc-launch'); if (b) b.textContent = apolloOn() ? 'Original' : 'Apollo Editor'; }
   // apply the current view to whichever managed tab is visible (Tracklist and/or Recordings)
   function applyView() {
+    recStyle();   // make sure the recordings CSS (incl. the native-table hide rule) exists up front
+    document.body.classList.toggle('tc-rec-on', apolloOn());   // hide the native recordings table whenever Apollo is on, so switching to that tab never flashes it (#119)
     if (tracklistVisible()) { if (apolloOn()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); } else hideMirror(); }
     if (recordingsVisible()) { if (apolloOn()) showRecMirror(); else hideRecMirror(); }
     relabelLauncher();
@@ -1487,6 +1489,10 @@
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
       '.tc-rectbl .tc-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}',
       '.tc-rectbl tr.tc-recrow:hover td{background:#fafaff}',
+      // hide the native recording table from the first paint (no flash) and let our table use the
+      // full width instead of MB's .half-width column (#119)
+      'body.tc-rec-on #track-recording-assignation{display:none!important}',
+      'body.tc-rec-on #recordings .half-width{max-width:none!important;width:auto!important}',
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -1495,8 +1501,7 @@
     const multi = mediums().length > 1;
     const unset = rows.filter(r => !r.recGid && !r.isNew).length;
     wrap.innerHTML =
-      '<div class="tc-recbar">' + ICON + '<span>Apollo Recordings</span>' +
-        (unset ? '<span class="tc-recwarn">⚠ ' + unset + ' track' + (unset === 1 ? '' : 's') + ' without a recording</span>' : '') + '</div>' +
+      (unset ? '<div class="tc-recbar"><span class="tc-recwarn">⚠ ' + unset + ' track' + (unset === 1 ? '' : 's') + ' without a recording</span></div>' : '') +
       '<table class="tc-rectbl"><thead><tr><th class="c-n">#</th><th>Track</th><th>Artist</th><th class="c-len">Len</th>' +
         '<th class="c-sep"></th><th>Recording</th><th>Artist</th><th class="c-len">Len</th><th class="c-sugg" title="suggestions">⊕</th></tr></thead><tbody></tbody></table>';
     const tb = wrap.querySelector('tbody');
@@ -1532,12 +1537,12 @@
     const tbl = document.getElementById('track-recording-assignation'); if (!tbl) return;
     let wrap = document.getElementById('tc-recwrap');
     if (!wrap) { wrap = document.createElement('div'); wrap.id = 'tc-recwrap'; tbl.parentElement.insertBefore(wrap, tbl); }
-    tbl.style.display = 'none';
+    document.body.classList.add('tc-rec-on');   // CSS hides the native table + widens the column (no flash)
     renderRecMirror(wrap);
   }
   function hideRecMirror() {
+    document.body.classList.remove('tc-rec-on');
     const w = document.getElementById('tc-recwrap'); if (w) w.remove();
-    const tbl = document.getElementById('track-recording-assignation'); if (tbl) tbl.style.display = '';
   }
 
   W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
