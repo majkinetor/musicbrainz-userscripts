@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.234500
+// @version      2026.6.4.235500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.234500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.235500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1557,6 +1557,12 @@
       '.tc-recpop .tc-rpk-len{margin-left:auto;color:#666;font-variant-numeric:tabular-nums;white-space:nowrap}',
       '.tc-recpop .tc-rpk-by{color:#555;font-size:11px}',
       '.tc-recpop .tc-rpk-on{color:#777;font-size:11px}',
+      '.tc-recpop .tc-rpk-on a,.tc-recpop .tc-rpk-curon a{color:#2c5d9b;text-decoration:none}.tc-recpop .tc-rpk-on a:hover,.tc-recpop .tc-rpk-curon a:hover{text-decoration:underline}',
+      '.tc-recpop .tc-rpk-more{color:#999;font-style:italic}',
+      // header subtitle = the song (track) artist + length; current-recording artist + its full appears-on
+      '.tc-recpop .tc-rpk-hdby{color:#6a6a6a;font-weight:normal}.tc-recpop .tc-rpk-hdlen{color:#888;font-weight:normal;font-variant-numeric:tabular-nums}',
+      '.tc-recpop .tc-rpk-curby{color:#555;font-size:12px}',
+      '.tc-recpop .tc-rpk-curon{padding:3px 10px 7px;border-bottom:1px solid #eee;color:#777;font-size:11px}',
       '.tc-recpop .tc-rpk-isrc{color:#9a8fb5;font-size:11px;font-family:Consolas,monospace}',
       '.tc-recpop .tc-rpk-fdiff{background:#ffecec;color:#b00;border-radius:2px;padding:0 2px}',
       '.tc-recpop .tc-rpk-empty{padding:8px 10px;color:#999;font-style:italic}',
@@ -1777,7 +1783,7 @@
         gid: r.id, name: r.title, length: r.length || null,
         artist: (r['artist-credit'] || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''),
         ac: r['artist-credit'] || [],   // raw credit, so the linked recording keeps its artist on screen
-        releases: [...new Set((r.releases || []).map(rl => rl.title).filter(Boolean))],
+        releases: (() => { const seen = new Set(), out = []; (r.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); out.push({ name: rl.title, gid: rl.id }); } }); return out; })(),
         isrcs: r.isrcs || [],
         comment: r.disambiguation || '',
       }));
@@ -1813,19 +1819,31 @@
   // pull display data off a suggestion entity (releases live in appearsOn.results; isrcs may be objects)
   function suggData(s) {
     const e = u(s); const ap = u(e.appearsOn);
-    const rels = ap && ap.results ? ap.results.map(r => u(r.name) || r.name).filter(Boolean) : [];
+    const rels = []; const seen = new Set();
+    if (ap && ap.results) ap.results.forEach(r => { const name = u(r.name) || r.name, gid = u(r.gid) || r.gid; const k = gid || name; if (name && !seen.has(k)) { seen.add(k); rels.push({ name, gid }); } });
     const isrcs = (u(e.isrcs) || []).map(x => typeof x === 'string' ? x : (x && (x.isrc || u(x.isrc)))).filter(Boolean);
-    return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), releases: [...new Set(rels)], isrcs };
+    return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), releases: rels, isrcs };
   }
   // confidence of a picker result vs the track that opened the picker (same scheme as the table dot)
   function resultConfClass(data, ctx) {
     if (!ctx) return '';
     return ' tc-conf-' + ['match', 'low', 'vlow', 'xlow'][recConfLevel(data, ctx)];
   }
+  // render "appears on" releases as links (each {name,gid}); plain strings tolerated for safety.
+  // cap = max links shown before a "+N more" tail (0 = show all). #119
+  function relLinksHtml(relsArr, cap) {
+    const arr = relsArr || []; const shown = cap ? arr.slice(0, cap) : arr;
+    const html = shown.map(rl => {
+      const o = rl && typeof rl === 'object' ? rl : { name: rl };
+      return o.gid ? '<a href="' + ORIGIN + '/release/' + esc(o.gid) + '" target="_blank" rel="noopener">' + esc(o.name) + '</a>' : esc(o.name);
+    }).join(', ');
+    const extra = arr.length - shown.length;
+    return html + (extra > 0 ? ' <span class="tc-rpk-more">+' + extra + ' more</span>' : '');
+  }
   // a picker result row — mirrors the native list: title + length, by artist, appears on, ISRCs;
   // left-border colour = confidence vs the track
   function recRowHtml(data, ctx) {
-    const relsArr = data.releases || []; const rels = relsArr.slice(0, 4).join(', ') + (relsArr.length > 4 ? ', …' : '');
+    const rels = relLinksHtml(data.releases, 6);
     const isrcs = (data.isrcs || []).slice(0, 4).join(', ');
     // highlight the fields that differ from the track, like the table does
     const dT = ctx && data.name && ctx.title && fold(data.name) !== fold(ctx.title);
@@ -1836,7 +1854,7 @@
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
         '<span class="tc-rpk-len' + (dL ? ' tc-rpk-fdiff' : '') + '">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
       (data.artist ? '<div class="tc-rpk-by' + (dA ? ' tc-rpk-fdiff' : '') + '">by ' + esc(data.artist) + '</div>' : '') +
-      (rels ? '<div class="tc-rpk-on">appears on: ' + esc(rels) + '</div>' : '') +
+      (rels ? '<div class="tc-rpk-on">appears on: ' + rels + '</div>' : '') +
       (isrcs ? '<div class="tc-rpk-isrc">ISRCs: ' + esc(isrcs) + '</div>' : '') +
       '</div>';
   }
@@ -1849,17 +1867,25 @@
     // the currently-linked recording (or "new recording" if that's flagged)
     const curRec = u(ko.recording);
     const isNew = typeof ko.hasNewRecording === 'function' && !!u(ko.hasNewRecording);
+    const curGid = !isNew && curRec ? u(curRec.gid) : null;
+    const curArtist = curRec ? acText(u(curRec.artistCredit)) : '';
     const curHtml = isNew
       ? '<span class="tc-rpk-newcur">＋ new recording (created on submit)</span>'
-      : (curRec && u(curRec.gid))
-        ? '<a href="' + ORIGIN + '/recording/' + esc(u(curRec.gid)) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>' + (u(curRec.length) ? ' <span class="tc-rpk-curlen">' + fmtMs(u(curRec.length)) + '</span>' : '')
+      : curGid
+        ? '<a href="' + ORIGIN + '/recording/' + esc(curGid) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>'
+          + (u(curRec.length) ? ' <span class="tc-rpk-curlen">' + fmtMs(u(curRec.length)) + '</span>' : '')
+          + (curArtist ? ' <span class="tc-rpk-curby">by ' + esc(curArtist) + '</span>' : '')
         : '<span class="tc-rpk-curnone">— none —</span>';
+    const trackArtist = ctx.artist, trackLen = u(ko.length);
     const dd = entry.diffs || {};
     const showCopyT = !isNew && (dd.title || entry.copyTitle), showCopyA = !isNew && (dd.artist || entry.copyArtist);
     pop.innerHTML =
-      '<div class="tc-rpk-hd">Recording for <b>' + esc(u(ko.name) || '') + '</b></div>' +
+      '<div class="tc-rpk-hd"><b>' + esc(u(ko.name) || '') + '</b>' +
+        (trackArtist ? '<span class="tc-rpk-hdby"> · ' + esc(trackArtist) + '</span>' : '') +
+        (trackLen ? '<span class="tc-rpk-hdlen"> · ' + fmtMs(trackLen) + '</span>' : '') + '</div>' +
       '<div class="tc-rpk-cur">' + curHtml +
         (isNew ? '' : ' <button class="tc-rpk-newbtn" title="create a brand-new recording for this track instead of reusing one">＋ new recording</button>') + '</div>' +
+      (curGid ? '<div class="tc-rpk-curon">appears on: <span class="tc-rpk-curon-list">…</span></div>' : '') +
       (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
@@ -1869,6 +1895,16 @@
     const newBtn = pop.querySelector('.tc-rpk-newbtn'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
     const ctEl = pop.querySelector('.tc-rpk-ct'); if (ctEl) ctEl.onchange = () => { setCopy('title', entry, ctEl.checked); rerenderRec(); };
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
+    // fill the current recording's full "appears on" (all releases, linkable) — not in the page model, so fetch it
+    if (curGid) {
+      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=releases', { headers: { Accept: 'application/json' } })
+        .then(r => r.json()).then(j => {
+          if (!_recPop) return; const el = pop.querySelector('.tc-rpk-curon-list'); if (!el) return;
+          const seen = new Set(), rels = [];
+          (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); rels.push({ name: rl.title, gid: rl.id }); } });
+          el.innerHTML = rels.length ? relLinksHtml(rels, 0) : '—';
+        }).catch(() => {});
+    }
     _recPopDrag(pop.querySelector('.tc-rpk-hd'));   // header is the drag handle
     _recPopReposition();   // dock it right + tall now the content (and height) exist
     const q = pop.querySelector('.tc-rpk-q'), suggBox = pop.querySelector('.tc-rpk-sugg'), resBox = pop.querySelector('.tc-rpk-res');
