@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.184529
+// @version      2026.6.4.184901
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.184529';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.184901';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1489,6 +1489,11 @@
       '#tc-recwrap .tc-recbar{display:flex;align-items:center;gap:8px;padding:2px 2px 8px;font-weight:600}',
       '#tc-recwrap .tc-recbar .tc-ico{vertical-align:-5px}',
       '#tc-recwrap .tc-recwarn{color:#b00;font-weight:600}',
+      '#tc-recwrap .tc-rec-tb{display:flex;align-items:center;gap:10px;padding:4px 2px 8px;flex-wrap:wrap}',
+      '#tc-recwrap .tc-rec-am{cursor:pointer;border:1px solid #4b2e83;background:#6f42c1;color:#fff;border-radius:5px;padding:4px 11px;font:600 12px Arial}#tc-recwrap .tc-rec-am:hover{background:#5a32a3}',
+      '#tc-recwrap .tc-rec-tbl{color:#555;font-size:12px}#tc-recwrap .tc-rec-ignore{font:12px Arial;padding:2px}',
+      '#tc-recwrap .tc-rec-amstart{width:46px;font:12px Arial;padding:2px 3px}',
+      '#tc-recwrap .tc-rec-amstatus{color:#6f42c1;font-size:12px}#tc-recwrap .tc-rec-tb .tc-recwarn{margin-left:auto}',
       'table.tc-rectbl{border-collapse:collapse;width:100%;background:#fff}',
       '.tc-rectbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ccc;padding:4px 7px;white-space:nowrap}',
       '.tc-rectbl td{padding:4px 7px;border-bottom:1px solid #eee;vertical-align:top}',
@@ -1554,7 +1559,13 @@
     const multi = mediums().length > 1;
     const unset = rows.filter(r => !r.recGid && !r.isNew).length;
     wrap.innerHTML =
-      (unset ? '<div class="tc-recbar"><span class="tc-recwarn">⚠ ' + unset + ' track' + (unset === 1 ? '' : 's') + ' without a recording</span></div>' : '') +
+      '<div class="tc-rec-tb">' +
+        '<button class="tc-rec-am" type="button">⚡ Auto-match</button>' +
+        '<label class="tc-rec-tbl">ignore below <select class="tc-rec-ignore"><option value="low">low</option><option value="vlow">very low</option><option value="xlow">extremely low</option><option value="nothing">nothing</option></select></label>' +
+        '<label class="tc-rec-tbl">from track <input class="tc-rec-amstart" type="number" min="1" value="1"></label>' +
+        '<span class="tc-rec-amstatus"></span>' +
+        (unset ? '<span class="tc-recwarn">⚠ ' + unset + ' without a recording</span>' : '') +
+      '</div>' +
       '<table class="tc-rectbl"><thead>' +
         '<tr class="tc-grouphd"><th colspan="4" class="tc-grp tc-grp-l">Track</th><th class="c-sep"></th><th colspan="3" class="tc-grp tc-grp-r">Recording</th></tr>' +
         '<tr><th class="c-n">#</th><th>Title</th><th>Artist</th><th class="c-len">Len</th>' +
@@ -1590,6 +1601,56 @@
       nameCell.onclick = () => openRecPicker(r, nameCell);
       tb.appendChild(tr);
     });
+    // wire the auto-match toolbar
+    const sel = wrap.querySelector('.tc-rec-ignore'); if (sel) { sel.value = SETTINGS.recIgnore || 'vlow'; sel.onchange = () => { SETTINGS.recIgnore = sel.value; saveSettings(); }; }
+    const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
+  }
+  // confidence level of a candidate vs the track: 0 match · 1 low · 2 very low · 3 extremely low
+  const REC_IGNORE = { nothing: 3, xlow: 2, vlow: 1, low: 0 };   // value = the worst level still auto-linked
+  function recConfLevel(data, ctx) {
+    if (!ctx) return 0;
+    let n = 0; const lenDiff = (data.length && ctx.length) ? Math.abs(data.length - ctx.length) : 0;
+    if (data.name && ctx.title && fold(data.name) !== fold(ctx.title)) n++;
+    if (data.artist && ctx.artist && fold(data.artist) !== fold(ctx.artist)) n++;
+    if (lenDiff > 0) n++;
+    if (n >= 3 && lenDiff > 10000) return 3;
+    if (lenDiff > 15000) return 2;
+    if (n >= 2 && lenDiff <= 15000) return 2;
+    if (n === 1 || lenDiff > 3000) return 1;
+    return 0;
+  }
+  // Auto-match: for each UNSET track from the chosen start, load MB's suggestions and link the top one
+  // when its confidence clears the "ignore below" threshold. Already-linked tracks are left untouched. #119
+  let _autoMatching = false;
+  async function autoMatchRecordings() {
+    if (_autoMatching) return; _autoMatching = true;
+    const wrap = document.getElementById('tc-recwrap');
+    const setStatus = t => { const e = wrap && wrap.querySelector('.tc-rec-amstatus'); if (e) e.textContent = t; };
+    const maxLevel = REC_IGNORE[SETTINGS.recIgnore || 'vlow'];
+    const startNum = parseInt((wrap && wrap.querySelector('.tc-rec-amstart') || {}).value, 10) || 1;
+    let linked = 0, considered = 0;
+    try {
+      const todo = readRecordings().filter(r => !r.recGid && (r.number == null || Number(r.number) >= startNum));
+      for (let i = 0; i < todo.length; i++) {
+        const r = todo[i]; considered++;
+        setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '…');
+        const ko = koTrack(r.mi, r.ti);
+        const ctx = { title: r.title, artist: r.trackArtist, length: r.trackLen };
+        let sugg = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []);
+        if (!sugg.length) {
+          try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {}
+          for (let t = 0; t < 28; t++) { await new Promise(z => setTimeout(z, 250)); const loading = typeof ko.loadingSuggestedRecordings === 'function' ? u(ko.loadingSuggestedRecordings) : false; sugg = u(ko.suggestedRecordings) || []; if (!loading && sugg.length) break; if (!loading && t >= 3) break; }
+        }
+        if (!sugg.length) continue;
+        const best = suggData(sugg[0]);
+        if (recConfLevel(best, ctx) <= maxLevel) { try { ko.setRecordingValue(recEntityFrom(best)); linked++; } catch (e) { Log.warn('auto-match set failed', e.message); } }
+      }
+    } finally {
+      _autoMatching = false;
+      rerenderRec();
+      const w = document.getElementById('tc-recwrap'); const e = w && w.querySelector('.tc-rec-amstatus'); if (e) e.textContent = 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's');
+      Log.info('auto-match: linked', linked, 'of', considered, 'unset tracks');
+    }
   }
   // submit-flag setters (per track / all tracks) + a light re-render of the recordings table
   function setCopy(field, entry, on) {
@@ -1652,16 +1713,7 @@
   // confidence of a picker result vs the track that opened the picker (same scheme as the table dot)
   function resultConfClass(data, ctx) {
     if (!ctx) return '';
-    let n = 0; const lenDiff = (data.length && ctx.length) ? Math.abs(data.length - ctx.length) : 0;
-    if (data.name && ctx.title && fold(data.name) !== fold(ctx.title)) n++;
-    if (data.artist && ctx.artist && fold(data.artist) !== fold(ctx.artist)) n++;
-    if (lenDiff > 0) n++;
-    let lvl = 'match';
-    if (n >= 3 && lenDiff > 10000) lvl = 'xlow';
-    else if (lenDiff > 15000) lvl = 'vlow';
-    else if (n >= 2 && lenDiff <= 15000) lvl = 'vlow';
-    else if (n === 1 || lenDiff > 3000) lvl = 'low';
-    return ' tc-conf-' + lvl;
+    return ' tc-conf-' + ['match', 'low', 'vlow', 'xlow'][recConfLevel(data, ctx)];
   }
   // a picker result row — mirrors the native list: title + length, by artist, appears on, ISRCs;
   // left-border colour = confidence vs the track
