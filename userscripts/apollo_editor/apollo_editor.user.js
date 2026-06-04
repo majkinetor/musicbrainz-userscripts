@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.182025
+// @version      2026.6.4.183201
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.182025';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.183201';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1499,6 +1499,10 @@
       '.tc-rectbl .tc-recpick:hover{background:#ece5f8}',
       '.tc-recpop{position:fixed;z-index:100003;width:390px;max-height:70vh;overflow:auto;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 8px 28px rgba(40,20,80,.28);font:12px Arial}',
       '.tc-recpop .tc-rpk-hd{padding:7px 10px;background:#f3f0fa;border-bottom:1px solid #e3def2;border-radius:6px 6px 0 0}',
+      '.tc-recpop .tc-rpk-cur{padding:6px 10px;border-bottom:1px solid #eee;color:#444;display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
+      '.tc-recpop .tc-rpk-curlbl{color:#999;font-size:11px}.tc-recpop .tc-rpk-curlen{color:#888;font-variant-numeric:tabular-nums}',
+      '.tc-recpop .tc-rpk-curnone{color:#c0392b}.tc-recpop .tc-rpk-newcur{color:#2c7a51}',
+      '.tc-recpop .tc-rpk-newbtn{margin-left:auto;cursor:pointer;border:1px solid #bcdcc6;background:#eef7f0;color:#1f7a44;border-radius:4px;padding:2px 7px;font:11px Arial}.tc-recpop .tc-rpk-newbtn:hover{background:#e0f0e6}',
       '.tc-recpop .tc-rpk-q{width:calc(100% - 16px);margin:8px;padding:5px 7px;border:1px solid #c9c2dd;border-radius:4px;font:12px Arial;box-sizing:border-box}',
       '.tc-recpop .tc-rpk-sec{padding:3px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#999;background:#faf8ff}',
       '.tc-recpop .tc-rpk-row{padding:5px 10px;cursor:pointer;border-bottom:1px solid #f1edf9}',
@@ -1615,6 +1619,12 @@
     catch (e) { Log.warn('setRecordingValue failed', e.message); }
     closeRecPop(); rerenderRec();
   }
+  // "Add a new recording" — native binds this to the per-track hasNewRecording observable (#119)
+  function pickNewRecording(entry) {
+    try { koTrack(entry.mi, entry.ti).hasNewRecording(true); Log.info('new recording for track', entry.number); }
+    catch (e) { Log.warn('hasNewRecording failed', e.message); }
+    closeRecPop(); rerenderRec();
+  }
   // pull display data off a suggestion entity (releases live in appearsOn.results; isrcs may be objects)
   function suggData(s) {
     const e = u(s); const ap = u(e.appearsOn);
@@ -1643,11 +1653,22 @@
     pop.style.top = (r.bottom + 4) + 'px';
     const ko = koTrack(entry.mi, entry.ti);
     const data = {};
+    // the currently-linked recording (or "new recording" if that's flagged)
+    const curRec = u(ko.recording);
+    const isNew = typeof ko.hasNewRecording === 'function' && !!u(ko.hasNewRecording);
+    const curHtml = isNew
+      ? '<span class="tc-rpk-newcur">＋ new recording (created on submit)</span>'
+      : (curRec && u(curRec.gid))
+        ? '<a href="' + ORIGIN + '/recording/' + esc(u(curRec.gid)) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>' + (u(curRec.length) ? ' <span class="tc-rpk-curlen">' + fmtMs(u(curRec.length)) + '</span>' : '')
+        : '<span class="tc-rpk-curnone">— none —</span>';
     pop.innerHTML =
       '<div class="tc-rpk-hd">Recording for <b>' + esc(u(ko.name) || '') + '</b></div>' +
+      '<div class="tc-rpk-cur"><span class="tc-rpk-curlbl">current:</span> ' + curHtml +
+        (isNew ? '' : ' <button class="tc-rpk-newbtn" title="create a brand-new recording for this track instead of reusing one">＋ new recording</button>') + '</div>' +
       '<input class="tc-rpk-q" type="text" placeholder="search recordings by name…">' +
       '<div class="tc-rpk-sec tc-rpk-suggsec">suggestions</div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
       '<div class="tc-rpk-sec">search results</div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
+    const newBtn = pop.querySelector('.tc-rpk-newbtn'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
     const q = pop.querySelector('.tc-rpk-q'), suggBox = pop.querySelector('.tc-rpk-sugg'), resBox = pop.querySelector('.tc-rpk-res');
     const wire = box => box.querySelectorAll('.tc-rpk-row').forEach(row => { row.onclick = () => pickRecording(entry, data[row.dataset.gid]); });
     // suggestions are lazy in MB — render what's there, else trigger findRecordingSuggestions and poll
