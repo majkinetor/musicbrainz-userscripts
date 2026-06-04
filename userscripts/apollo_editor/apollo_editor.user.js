@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.103303
+// @version      2026.6.4.104119
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -42,6 +42,7 @@
 
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
   const ORIGIN = location.origin;
+  const IS_ADD = /^\/release\/add\b/.test(location.pathname);   // add-release page vs editing an existing release (#125)
   const u = v => { try { return typeof v === 'function' ? v() : v; } catch (e) { return undefined; } };
   const getEditor = () => { try { return W.MB && W.MB.releaseEditor; } catch (e) { return null; } };
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -413,7 +414,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.103303';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.104119';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -728,13 +729,17 @@
       am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); document.querySelectorAll('.tc-applymode').forEach(s => { s.value = am.value; }); Log.info('applyMode =', am.value); };
       ['mousedown', 'mousemove', 'click'].forEach(ev => am.addEventListener(ev, e => e.stopPropagation()));   // don't let the column resizer hijack it
     }
-    // "Add N track(s)" footer — adds to THIS medium (or the last medium for the combined panel)
-    const target = (mi == null) ? Math.max(0, mediums().length - 1) : mi;
-    const addrow = document.createElement('div'); addrow.className = 'tc-addrow';
-    addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" title="add blank tracks">＋</button>`;
-    const addn = addrow.querySelector('.tc-addn'), addbtn = addrow.querySelector('.tc-addbtn');
-    addbtn.onclick = () => addTracks(target, Math.max(1, parseInt(addn.value, 10) || 1));
-    container.appendChild(addrow);
+    // "Add N track(s)" footer — adds to THIS medium (or the last medium for the combined panel).
+    // Native MB only offers add-tracks on /release/add, not when editing an existing release
+    // (the native control we drive doesn't exist there either), so only show it in add mode. #125
+    if (IS_ADD) {
+      const target = (mi == null) ? Math.max(0, mediums().length - 1) : mi;
+      const addrow = document.createElement('div'); addrow.className = 'tc-addrow';
+      addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" title="add blank tracks">＋</button>`;
+      const addn = addrow.querySelector('.tc-addn'), addbtn = addrow.querySelector('.tc-addbtn');
+      addbtn.onclick = () => addTracks(target, Math.max(1, parseInt(addn.value, 10) || 1));
+      container.appendChild(addrow);
+    }
     return table.querySelector('tbody');
   }
   // resize a column by dragging near its right border from ANY row (or the header)
