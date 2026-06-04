@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.183201
+// @version      2026.6.4.183753
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.183201';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.183753';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1451,6 +1451,16 @@
     return { level, color: REC_CONF[level].c, label: REC_CONF[level].label, diffs };
   }
   const fmtMs = ms => (ms || ms === 0) ? (Math.floor(Math.round(ms / 1000) / 60) + ':' + String(Math.round(ms / 1000) % 60).padStart(2, '0')) : '';
+  // artist-credit rendered as links to each artist's page (joined by their join phrases)
+  function acLinks(ac) {
+    const names = u(ac && ac.names) || [];
+    if (!names.length) return '';
+    return names.map(n => {
+      const nm = u(n.name) || (n.artist && u(u(n.artist).name)) || '';
+      const gid = n.artist && u(u(n.artist).gid);
+      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm)) + esc(u(n.joinPhrase) || '');
+    }).join('');
+  }
   // read each track's recording association + the data needed to compare them side by side
   function readRecordings() {
     const out = [];
@@ -1459,9 +1469,9 @@
       const sugg = (typeof t.suggestedRecordings === 'function' ? (u(t.suggestedRecordings) || []) : []);
       const diffs = rec ? recFieldDiffs(t, rec) : null;
       out.push({
-        mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackLen: u(t.length),
+        mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit)), trackLen: u(t.length),
         isNew: typeof t.hasNewRecording === 'function' ? !!u(t.hasNewRecording) : false,
-        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recArtist: rec ? acText(u(rec.artistCredit)) : null, recLen: rec ? u(rec.length) : null,
+        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit)) : '', recLen: rec ? u(rec.length) : null,
         // submit-flags: when on, the recording's title/artist will be overwritten with the track's on submit
         copyTitle: typeof t.updateRecordingTitle === 'function' ? !!u(t.updateRecordingTitle) : false,
         copyArtist: typeof t.updateRecordingArtist === 'function' ? !!u(t.updateRecordingArtist) : false,
@@ -1493,6 +1503,15 @@
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl td.tc-clickable{cursor:pointer}',
       '.tc-rectbl td.tc-clickable:hover{outline:1px solid #9cc6ab;outline-offset:-1px}',
+      '.tc-rectbl td a{color:#2c5d9b;text-decoration:none}.tc-rectbl td a:hover{text-decoration:underline}',
+      '.tc-rectbl .tc-recname{font-weight:600}',
+      '.tc-recpop .tc-rpk-copy{padding:5px 10px;border-bottom:1px solid #eee;display:flex;flex-direction:column;gap:3px;background:#fbfaff}',
+      '.tc-recpop .tc-rpk-copy label{cursor:pointer;color:#444;font-size:11px;display:flex;align-items:center;gap:5px}',
+      '.tc-recpop .tc-rpk-row{border-left:3px solid transparent}',
+      '.tc-recpop .tc-rpk-row.tc-conf-match{border-left-color:#86c686}',
+      '.tc-recpop .tc-rpk-row.tc-conf-low{border-left-color:#fff176}',
+      '.tc-recpop .tc-rpk-row.tc-conf-vlow{border-left-color:#ffb74d}',
+      '.tc-recpop .tc-rpk-row.tc-conf-xlow{border-left-color:#d32f2f}',
       '.tc-rectbl .tc-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}',
       '.tc-rectbl tr.tc-recrow:hover td{background:#fafaff}',
       '.tc-rectbl .tc-recpick{cursor:pointer;border:1px solid #d6cdec;background:#f6f3fc;color:#6f42c1;border-radius:4px;padding:1px 6px;font:11px Arial;white-space:nowrap}',
@@ -1531,46 +1550,36 @@
     wrap.innerHTML =
       (unset ? '<div class="tc-recbar"><span class="tc-recwarn">⚠ ' + unset + ' track' + (unset === 1 ? '' : 's') + ' without a recording</span></div>' : '') +
       '<table class="tc-rectbl"><thead><tr><th class="c-n">#</th><th>Track</th><th>Artist</th><th class="c-len">Len</th>' +
-        '<th class="c-sep"></th><th>Recording</th><th>Artist</th><th class="c-len">Len</th><th class="c-sugg" title="suggestions">⊕</th></tr></thead><tbody></tbody></table>';
+        '<th class="c-sep"></th><th>Recording</th><th>Artist</th><th class="c-len">Len</th></tr></thead><tbody></tbody></table>';
     const tb = wrap.querySelector('tbody');
     let lastMi = -1;
     rows.forEach(r => {
-      if (multi && r.mi !== lastMi) { lastMi = r.mi; const mr = document.createElement('tr'); mr.className = 'tc-recmed'; mr.innerHTML = '<td colspan="9">Medium ' + (r.mi + 1) + '</td>'; tb.appendChild(mr); }
+      if (multi && r.mi !== lastMi) { lastMi = r.mi; const mr = document.createElement('tr'); mr.className = 'tc-recmed'; mr.innerHTML = '<td colspan="8">Medium ' + (r.mi + 1) + '</td>'; tb.appendChild(mr); }
       const d = r.diffs || {};
-      // recording title / artist cells: when the copy-flag is on, preview the track value the
-      // recording will become (green); otherwise show the recording's own value (red if it differs).
+      // recording name: click to open the picker. Artists are links. When a copy-to-match flag is set
+      // (from the picker), the cell previews the track value the recording will become (green). #119
       const titleCell = r.copyTitle ? '→ ' + esc(r.title || '')
         : r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? esc(r.recName) : '<span class="tc-rec-none">— none —</span>';
-      const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') : esc(r.recArtist || '');
+      const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') : (r.recArtistHtml || '');
       const tCls = r.copyTitle ? 'tc-copy' : (d.title ? 'tc-diff' : '');
       const aCls = r.copyArtist ? 'tc-copy' : (d.artist ? 'tc-diff' : '');
       const tr = document.createElement('tr'); tr.className = 'tc-recrow';
       tr.innerHTML =
         '<td class="c-n">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
         '<td class="tc-tkt">' + esc(r.title || '') + '</td>' +
-        '<td>' + esc(r.trackArtist || '') + '</td>' +
+        '<td>' + (r.trackArtistHtml || '') + '</td>' +
         '<td class="c-len">' + fmtMs(r.trackLen) + '</td>' +
         '<td class="c-sep"><span class="tc-dot"></span></td>' +
-        '<td class="tc-reccell ' + tCls + '" data-f="title">' + titleCell + '</td>' +
-        '<td class="tc-reccell ' + aCls + '" data-f="artist">' + artistCell + '</td>' +
-        '<td class="c-len ' + (d.len ? 'tc-diff' : '') + '">' + fmtMs(r.recLen) + '</td>' +
-        '<td class="c-sugg"><button class="tc-recpick" title="change recording — suggestions / search">' + (r.suggCount ? r.suggCount + '&nbsp;▾' : '▾') + '</button></td>';
+        '<td class="tc-recname ' + tCls + '">' + titleCell + '</td>' +
+        '<td class="' + aCls + '">' + artistCell + '</td>' +
+        '<td class="c-len ' + (d.len ? 'tc-diff' : '') + '">' + fmtMs(r.recLen) + '</td>';
       const dot = tr.querySelector('.tc-dot');
       if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
       else if (r.recGid) { dot.style.background = '#86c686'; dot.title = 'matches the track'; }
       else dot.style.visibility = 'hidden';
-      // click a recording title/artist cell to copy the track value onto the recording (on submit);
-      // left = this track, right = all tracks. Only meaningful when the field actually DIFFERS (or is
-      // already flagged, so you can undo) and an existing recording is linked — matching cells aren't clickable.
-      if (r.recGid) tr.querySelectorAll('.tc-reccell').forEach(cell => {
-        const f = cell.dataset.f, on = f === 'title' ? r.copyTitle : r.copyArtist, differs = f === 'title' ? !!d.title : !!d.artist;
-        if (!differs && !on) return;   // recording already matches the track — nothing to copy
-        cell.classList.add('tc-clickable');
-        cell.title = (on ? 'will copy the track ' + f + ' to the recording on submit — click to undo' : 'click to copy the track ' + f + ' onto the recording (right-click: all differing tracks)');
-        cell.onclick = () => { setCopy(f, r, !on); rerenderRec(); };
-        cell.oncontextmenu = e => { e.preventDefault(); setCopyAll(f); rerenderRec(); };
-      });
-      const pickBtn = tr.querySelector('.tc-recpick'); if (pickBtn) pickBtn.onclick = e => { e.stopPropagation(); openRecPicker(r, pickBtn); };
+      const nameCell = tr.querySelector('.tc-recname');
+      nameCell.classList.add('tc-clickable'); nameCell.title = 'change recording — suggestions / search';
+      nameCell.onclick = () => openRecPicker(r, nameCell);
       tb.appendChild(tr);
     });
   }
@@ -1632,11 +1641,26 @@
     const isrcs = (u(e.isrcs) || []).map(x => typeof x === 'string' ? x : (x && (x.isrc || u(x.isrc)))).filter(Boolean);
     return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), releases: [...new Set(rels)], isrcs };
   }
-  // a picker result row — mirrors the native list: title + length, by artist, appears on, ISRCs
-  function recRowHtml(data) {
+  // confidence of a picker result vs the track that opened the picker (same scheme as the table dot)
+  function resultConfClass(data, ctx) {
+    if (!ctx) return '';
+    let n = 0; const lenDiff = (data.length && ctx.length) ? Math.abs(data.length - ctx.length) : 0;
+    if (data.name && ctx.title && fold(data.name) !== fold(ctx.title)) n++;
+    if (data.artist && ctx.artist && fold(data.artist) !== fold(ctx.artist)) n++;
+    if (lenDiff > 0) n++;
+    let lvl = 'match';
+    if (n >= 3 && lenDiff > 10000) lvl = 'xlow';
+    else if (lenDiff > 15000) lvl = 'vlow';
+    else if (n >= 2 && lenDiff <= 15000) lvl = 'vlow';
+    else if (n === 1 || lenDiff > 3000) lvl = 'low';
+    return ' tc-conf-' + lvl;
+  }
+  // a picker result row — mirrors the native list: title + length, by artist, appears on, ISRCs;
+  // left-border colour = confidence vs the track
+  function recRowHtml(data, ctx) {
     const relsArr = data.releases || []; const rels = relsArr.slice(0, 4).join(', ') + (relsArr.length > 4 ? ', …' : '');
     const isrcs = (data.isrcs || []).slice(0, 4).join(', ');
-    return '<div class="tc-rpk-row" data-gid="' + esc(data.gid) + '">' +
+    return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
       '<div class="tc-rpk-main"><span class="tc-rpk-name">' + esc(data.name || '') + '</span>' +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
         '<span class="tc-rpk-len">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
@@ -1653,6 +1677,7 @@
     pop.style.top = (r.bottom + 4) + 'px';
     const ko = koTrack(entry.mi, entry.ti);
     const data = {};
+    const ctx = { title: u(ko.name), artist: acText(u(ko.artistCredit)), length: u(ko.length) };   // for result confidence colouring
     // the currently-linked recording (or "new recording" if that's flagged)
     const curRec = u(ko.recording);
     const isNew = typeof ko.hasNewRecording === 'function' && !!u(ko.hasNewRecording);
@@ -1661,14 +1686,21 @@
       : (curRec && u(curRec.gid))
         ? '<a href="' + ORIGIN + '/recording/' + esc(u(curRec.gid)) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>' + (u(curRec.length) ? ' <span class="tc-rpk-curlen">' + fmtMs(u(curRec.length)) + '</span>' : '')
         : '<span class="tc-rpk-curnone">— none —</span>';
+    const dd = entry.diffs || {};
+    const showCopyT = !isNew && (dd.title || entry.copyTitle), showCopyA = !isNew && (dd.artist || entry.copyArtist);
     pop.innerHTML =
       '<div class="tc-rpk-hd">Recording for <b>' + esc(u(ko.name) || '') + '</b></div>' +
       '<div class="tc-rpk-cur"><span class="tc-rpk-curlbl">current:</span> ' + curHtml +
         (isNew ? '' : ' <button class="tc-rpk-newbtn" title="create a brand-new recording for this track instead of reusing one">＋ new recording</button>') + '</div>' +
+      (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
+        (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
+        (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
       '<input class="tc-rpk-q" type="text" placeholder="search recordings by name…">' +
       '<div class="tc-rpk-sec tc-rpk-suggsec">suggestions</div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
       '<div class="tc-rpk-sec">search results</div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
     const newBtn = pop.querySelector('.tc-rpk-newbtn'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
+    const ctEl = pop.querySelector('.tc-rpk-ct'); if (ctEl) ctEl.onchange = () => { setCopy('title', entry, ctEl.checked); rerenderRec(); };
+    const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
     const q = pop.querySelector('.tc-rpk-q'), suggBox = pop.querySelector('.tc-rpk-sugg'), resBox = pop.querySelector('.tc-rpk-res');
     const wire = box => box.querySelectorAll('.tc-rpk-row').forEach(row => { row.onclick = () => pickRecording(entry, data[row.dataset.gid]); });
     // suggestions are lazy in MB — render what's there, else trigger findRecordingSuggestions and poll
@@ -1676,7 +1708,7 @@
       const list = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []).map(suggData);
       list.forEach(s => { data[s.gid] = s; });
       if (!list.length) return false;
-      suggBox.innerHTML = list.map(recRowHtml).join(''); wire(suggBox); return true;
+      suggBox.innerHTML = list.map(d => recRowHtml(d, ctx)).join(''); wire(suggBox); return true;
     };
     if (!renderSugg()) {
       try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.warn('findRecordingSuggestions failed', e.message); }
@@ -1710,7 +1742,7 @@
       if (fallbackTitle && !results.length) results = await searchRecordings(u(ko.name) || '');   // smart query too tight → broaden
       if (my !== seq || !_recPop) return;
       results.forEach(rr => { data[rr.gid] = rr; });
-      resBox.innerHTML = results.length ? results.map(recRowHtml).join('') : '<div class="tc-rpk-empty">no matches</div>';
+      resBox.innerHTML = results.length ? results.map(d => recRowHtml(d, ctx)).join('') : '<div class="tc-rpk-empty">no matches</div>';
       wire(resBox);
     };
     // once the user edits the box, search their raw text (free Lucene); the initial run is the smart query
