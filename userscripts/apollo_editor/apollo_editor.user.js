@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.000100
+// @version      2026.6.5.001500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.000100';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.001500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1514,6 +1514,7 @@
       '.tc-rectbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ccc;padding:4px 7px;white-space:nowrap}',
       '.tc-rectbl td{padding:4px 7px;border-bottom:1px solid #eee;vertical-align:top}',
       '.tc-rectbl tr.tc-recmed td{background:#f3f0fa;font-weight:600;color:#4b2e83}',
+      '.tc-rectbl tr.tc-recchanged td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}',   // changed-row marker, like the Tracklist tab',
       '.tc-rectbl .c-n{color:#999;text-align:right;width:26px}',
       '.tc-rectbl .c-sep{width:20px;text-align:center}',
       // group header (Track | Recording) + a vertical divider down the middle so the two halves read clearly
@@ -1626,7 +1627,8 @@
       const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') : (r.recArtistHtml || '');
       const tCls = r.copyTitle ? 'tc-copy' : (d.title ? 'tc-diff' : '');
       const aCls = r.copyArtist ? 'tc-copy' : (d.artist ? 'tc-diff' : '');
-      const tr = document.createElement('tr'); tr.className = 'tc-recrow';
+      const changed = recChangedFromOrig(r.mi, r.ti);   // differs from the page-load recording
+      const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : '');
       tr.innerHTML =
         '<td class="c-n">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
         '<td class="tc-tkt">' + esc(r.title || '') + '</td>' +
@@ -1643,7 +1645,7 @@
       const nameCell = tr.querySelector('.tc-recname');
       nameCell.classList.add('tc-clickable'); nameCell.title = 'change recording — suggestions / search';
       nameCell.onclick = () => openRecPicker(r, nameCell);
-      if (recChangedFromOrig(r.mi, r.ti)) {   // per-row revert ↺ (single), shown on hover when changed
+      if (changed) {   // per-row revert ↺ (single), shown on hover when changed
         const rev = document.createElement('button'); rev.className = 'tc-rec-rev'; rev.textContent = '↺'; rev.title = 'revert to the original recording';
         rev.onclick = e => { e.stopPropagation(); revertRecording(r); };
         nameCell.appendChild(rev);
@@ -1749,7 +1751,8 @@
   }
   function _recPopOutside(e) { if (_recPop && !_recPop.contains(e.target)) closeRecPop(); }
   function _recPopKey(e) { if (e.key === 'Escape') closeRecPop(); }
-  // dock the picker as a tall panel against the left edge of the table, using the full viewport height.
+  // dock the picker as a tall panel whose RIGHT edge aligns with the status-circle column (so it sits
+  // over the Track half, not far off to the side), using the full viewport height.
   // once the user drags it (header), leave its position alone. #119
   function _recPopReposition() {
     if (!_recPop) return;
@@ -1762,7 +1765,9 @@
       return;
     }
     const wrap = document.getElementById('tc-recwrap'); const wr = wrap ? wrap.getBoundingClientRect() : null;
-    const left = wr ? wr.left : M;
+    const sep = wrap && wrap.querySelector('td.c-sep, th.c-sep');   // the status-circle column
+    // align the popup's right edge with the status circles; fall back to the wrap's left edge
+    let left = sep ? sep.getBoundingClientRect().left - W : (wr ? wr.left : M);
     _recPop.style.left = Math.round(Math.max(M, Math.min(left, window.innerWidth - W - M))) + 'px';
     const top = Math.round(Math.max(M, Math.min(wr ? wr.top : 60, window.innerHeight - 240)));
     _recPop.style.top = top + 'px';
@@ -1913,7 +1918,9 @@
     _recPopDrag(pop.querySelector('.tc-rpk-hd'));   // header is the drag handle
     _recPopReposition();   // dock it right + tall now the content (and height) exist
     const q = pop.querySelector('.tc-rpk-q'), suggBox = pop.querySelector('.tc-rpk-sugg'), resBox = pop.querySelector('.tc-rpk-res');
-    const wire = box => box.querySelectorAll('.tc-rpk-row').forEach(row => { row.onclick = () => pickRecording(entry, data[row.dataset.gid]); });
+    // click a row to pick it — but a click on a link (release / artist) inside the row just follows the
+    // link (new tab) and leaves the picker open; it must NOT pick + close the window. #119
+    const wire = box => box.querySelectorAll('.tc-rpk-row').forEach(row => { row.onclick = e => { if (e.target.closest('a')) return; pickRecording(entry, data[row.dataset.gid]); }; });
     // de-dupe: a recording already shown under SUGGESTIONS is not repeated in SEARCH RESULTS below (#119)
     const suggGids = new Set();
     let lastResults = [];
