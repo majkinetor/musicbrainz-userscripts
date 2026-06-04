@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.185522
+// @version      2026.6.4.190153
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.185522';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.190153';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1671,10 +1671,26 @@
   function rerenderRec() { const w = document.getElementById('tc-recwrap'); if (w) renderRecMirror(w); }
 
   /* ── recording picker (#119 P2.2): suggestions + search-by-name → setRecordingValue ── */
-  let _recPop = null;
-  function closeRecPop() { if (_recPop) { _recPop.remove(); _recPop = null; document.removeEventListener('mousedown', _recPopOutside, true); document.removeEventListener('keydown', _recPopKey, true); } }
+  let _recPop = null, _recPopAnchor = null;
+  function closeRecPop() {
+    if (!_recPop) return;
+    _recPop.remove(); _recPop = null; _recPopAnchor = null;
+    document.removeEventListener('mousedown', _recPopOutside, true); document.removeEventListener('keydown', _recPopKey, true);
+    window.removeEventListener('scroll', _recPopReposition, true); window.removeEventListener('resize', _recPopReposition);
+  }
   function _recPopOutside(e) { if (_recPop && !_recPop.contains(e.target)) closeRecPop(); }
   function _recPopKey(e) { if (e.key === 'Escape') closeRecPop(); }
+  // keep the popover next to its row as the page scrolls, and fit it in the viewport (flip up / cap height)
+  function _recPopReposition() {
+    if (!_recPop || !_recPopAnchor) return;
+    const r = _recPopAnchor.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > window.innerHeight) { closeRecPop(); return; }   // row scrolled out of view → close
+    const W = _recPop.offsetWidth || 390, M = 8;
+    _recPop.style.left = Math.max(M, Math.min(r.right - W, window.innerWidth - W - M)) + 'px';
+    const below = window.innerHeight - r.bottom - M, above = r.top - M;
+    if (below >= 220 || below >= above) { _recPop.style.top = (r.bottom + 4) + 'px'; _recPop.style.maxHeight = Math.max(160, below) + 'px'; }
+    else { const h = Math.min(_recPop.scrollHeight, above); _recPop.style.maxHeight = Math.max(160, above) + 'px'; _recPop.style.top = Math.max(M, r.top - 4 - h) + 'px'; }
+  }
   async function searchRecordings(q) {
     q = (q || '').trim(); if (!q) return [];
     try {
@@ -1682,6 +1698,7 @@
       return (j.recordings || []).map(r => ({
         gid: r.id, name: r.title, length: r.length || null,
         artist: (r['artist-credit'] || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''),
+        ac: r['artist-credit'] || [],   // raw credit, so the linked recording keeps its artist on screen
         releases: [...new Set((r.releases || []).map(rl => rl.title).filter(Boolean))],
         isrcs: r.isrcs || [],
         comment: r.disambiguation || '',
@@ -1689,9 +1706,18 @@
     } catch (e) { Log.warn('recording search failed', e.message); return []; }
   }
   function recEntityFrom(data) {
-    if (data.entity) return data.entity;
-    try { return W.MB.entity({ entityType: 'recording', gid: data.gid, name: data.name, length: data.length || null }, 'recording'); }
-    catch (e) { Log.warn('build recording entity failed', e.message); return null; }
+    if (data.entity) return data.entity;   // suggestions are already full MB entities
+    try {
+      const spec = { entityType: 'recording', gid: data.gid, name: data.name, length: data.length || null };
+      // build the artist credit from the WS2 result so the recording shows its artist (not blank). #119
+      if (data.ac && data.ac.length) {
+        spec.artistCredit = { names: data.ac.map(a => ({
+          name: a.name || (a.artist && a.artist.name) || '', joinPhrase: a.joinphrase || '',
+          artist: W.MB.entity({ entityType: 'artist', gid: a.artist && a.artist.id, name: a.artist && a.artist.name }, 'artist'),
+        })) };
+      }
+      return W.MB.entity(spec, 'recording');
+    } catch (e) { Log.warn('build recording entity failed', e.message); return null; }
   }
   function pickRecording(entry, data) {
     if (!data) return;
@@ -1734,10 +1760,7 @@
   }
   function openRecPicker(entry, anchor) {
     recStyle(); closeRecPop();
-    const pop = document.createElement('div'); pop.className = 'tc-recpop'; _recPop = pop; document.body.appendChild(pop);
-    const r = anchor.getBoundingClientRect();
-    pop.style.left = Math.max(6, Math.min(r.right - 390, window.innerWidth - 396)) + 'px';
-    pop.style.top = (r.bottom + 4) + 'px';
+    const pop = document.createElement('div'); pop.className = 'tc-recpop'; _recPop = pop; _recPopAnchor = anchor; document.body.appendChild(pop);
     const ko = koTrack(entry.mi, entry.ti);
     const data = {};
     const ctx = { title: u(ko.name), artist: acText(u(ko.artistCredit)), length: u(ko.length) };   // for result confidence colouring
@@ -1753,7 +1776,7 @@
     const showCopyT = !isNew && (dd.title || entry.copyTitle), showCopyA = !isNew && (dd.artist || entry.copyArtist);
     pop.innerHTML =
       '<div class="tc-rpk-hd">Recording for <b>' + esc(u(ko.name) || '') + '</b></div>' +
-      '<div class="tc-rpk-cur"><span class="tc-rpk-curlbl">current:</span> ' + curHtml +
+      '<div class="tc-rpk-cur">' + curHtml +
         (isNew ? '' : ' <button class="tc-rpk-newbtn" title="create a brand-new recording for this track instead of reusing one">＋ new recording</button>') + '</div>' +
       (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
@@ -1764,6 +1787,7 @@
     const newBtn = pop.querySelector('.tc-rpk-newbtn'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
     const ctEl = pop.querySelector('.tc-rpk-ct'); if (ctEl) ctEl.onchange = () => { setCopy('title', entry, ctEl.checked); rerenderRec(); };
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
+    _recPopReposition();   // place it now the content (and height) exist
     const q = pop.querySelector('.tc-rpk-q'), suggBox = pop.querySelector('.tc-rpk-sugg'), resBox = pop.querySelector('.tc-rpk-res');
     const wire = box => box.querySelectorAll('.tc-rpk-row').forEach(row => { row.onclick = () => pickRecording(entry, data[row.dataset.gid]); });
     // suggestions are lazy in MB — render what's there, else trigger findRecordingSuggestions and poll
@@ -1811,7 +1835,8 @@
     // once the user edits the box, search their raw text (free Lucene); the initial run is the smart query
     q.oninput = () => { clearTimeout(tmr); tmr = setTimeout(() => runSearch(q.value, false), 300); };
     q.focus(); q.select(); runSearch(smartQuery(), true);
-    setTimeout(() => { document.addEventListener('mousedown', _recPopOutside, true); document.addEventListener('keydown', _recPopKey, true); }, 0);
+    _recPopReposition();
+    setTimeout(() => { document.addEventListener('mousedown', _recPopOutside, true); document.addEventListener('keydown', _recPopKey, true); window.addEventListener('scroll', _recPopReposition, true); window.addEventListener('resize', _recPopReposition); }, 0);
   }
   // the Recordings tab panel (#recordings) — check the PANEL not the inner table (we hide the table)
   function recordingsVisible() { const p = document.getElementById('recordings'); return !!(p && p.offsetParent !== null); }
