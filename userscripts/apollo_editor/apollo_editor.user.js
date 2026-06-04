@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.4.102108
+// @version      2026.6.4.103303
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -413,7 +413,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.4.102108';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.4.103303';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -477,6 +477,9 @@
     select.tc-fmt-flat:hover{background:#efeaf9;border-color:#d7ccef;border-radius:3px}
     .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px;visibility:hidden}.tc-mirror .t-gc:hover{background:#ffefb8}
     .tc-mirror tr:hover .t-gc{visibility:visible}
+    .tc-mirror input.t-title.hasfeat{background:#eaf1fb;border-color:#9bbbe0;border-radius:3px}
+    .tc-mirror .t-feat{flex:none;cursor:pointer;border:1px solid #9bbbe0;background:#eaf1fb;color:#2c5d9b;font:bold 12px Arial;border-radius:3px;padding:0 4px;line-height:16px;visibility:hidden}.tc-mirror .t-feat:hover{background:#d6e4f7}
+    .tc-mirror tr:hover .t-feat{visibility:visible}
     .tc-mirror .mv{cursor:pointer;color:#6f54c0;font-size:12px;padding:0 1px}
     /* drag-to-reorder: ⠿ handle + drop indicators (a purple line at the row edge you'll drop against) */
     .tc-mirror .tc-drag{cursor:grab;color:#b3a3dd;font-size:15px;line-height:1;padding:0 3px;user-select:none}
@@ -1069,6 +1072,16 @@
         gb.oncontextmenu = e => { e.preventDefault(); restore(); guessCaseAll(); };
         wrap.appendChild(gb);
       }
+      // featured-artist split: flag titles carrying "feat./ft./featuring" and offer the split inline,
+      // mirroring [Aa] — click ⋔ splits this track, right-click splits all (#124)
+      if (FEAT_RE.test(t.title)) {
+        tin.classList.add('hasfeat'); if (!tin.title) tin.title = 'Title has a featured artist';
+        const fb = document.createElement('button'); fb.className = 't-feat'; fb.textContent = '⋔';
+        fb.title = 'Split featured artist out of the title into the artist credit\n(right-click: split all tracks)';
+        fb.onclick = () => guessFeatTrack(t);
+        fb.oncontextmenu = e => { e.preventDefault(); guessFeatAll(); };
+        tr.querySelector('.t-wrap').appendChild(fb);
+      }
       tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; wireRowNav(tin);
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
       numIn.onchange = e => { setNumber(t, e.target.value); refreshBadges(); }; wireRowNav(numIn);
@@ -1094,11 +1107,21 @@
   // revert to the page-load state, but DON'T auto-match (that only runs on startup) — Match is manual here
   function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track to what it was when the page loaded?")) return; MODEL.tracks.forEach(resetTrack); rebuild(true); }
   function guessCaseAll() { if (!MODEL) return; MODEL.tracks.forEach(t => { applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); }); rerender(); Log.info('guess case → all titles'); }
+  // titles carrying a featured-artist credit ("Foo feat. X", "ft.", "featuring") — detect so the
+  // row can flag them and offer the split inline (#124). Needs a space/bracket/start before the
+  // marker and whitespace/bracket/end after, so words like "soft"/"feats"/"drift" don't trip it.
+  const FEAT_RE = /(?:^|[\s([])(?:feat|ft|featuring)\.?(?=[\s)\]]|$)/i;
   // integrated MB feature: pull "feat. X" out of titles into artist credits, then re-read + re-match
   async function guessFeatAll() {
     const ed = getEditor();
     mediums().forEach(med => (u(med.tracks) || []).forEach(t => { try { ed.guessTrackFeatArtists(t); } catch (e) { try { ed.guessTrackFeatArtists(t, { type: 'click' }); } catch (e2) { Log.warn('guess feat failed', e2.message); } } }));
     await loadAndRender(); Log.info('guessed feat artists from titles');
+  }
+  // single-track variant — fired by the per-track ⋔ split button (#124)
+  async function guessFeatTrack(entry) {
+    const ed = getEditor(), t = koTrack(entry.mi, entry.ti);
+    try { ed.guessTrackFeatArtists(t); } catch (e) { try { ed.guessTrackFeatArtists(t, { type: 'click' }); } catch (e2) { Log.warn('guess feat failed', e2.message); } }
+    await loadAndRender(); Log.info('guessed feat artists for track', entry.number);
   }
   // medium-scoped tools — each acts on one medium (chosen via the inline medium combo)
   async function swapMedium(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.swapTitlesWithArtists(m); } catch (e) { Log.warn('swap failed', e.message); } finally { _selfEdit = false; } await loadAndRender(); Log.info('swapped titles ↔ artists on medium', mi + 1); }
