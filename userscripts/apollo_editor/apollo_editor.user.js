@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.260000
+// @version      2026.6.5.270000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.260000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.270000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2571,8 +2571,11 @@
     body.tc-ri-on #external-links-editor .favicon{transform:scale(1.45);transform-origin:center}
     body.tc-ri-on #external-links-editor tr.external-link-item > td:last-child{flex:1;min-width:0}
     body.tc-ri-on #external-links-editor a.url{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
-    /* hover edit/remove icons removed — favicon click edits the URL, right-click a type edits the type */
-    body.tc-ri-on #external-links-editor td.link-actions{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
+    /* hover edit/remove icons removed — favicon click edits the URL, right-click a type edits the type.
+       link-actions -> display:contents so one native button can be selectively revealed; the rest stay in
+       the DOM (display:none) and remain clickable via our JS proxies */
+    body.tc-ri-on #external-links-editor td.link-actions{display:contents}
+    body.tc-ri-on #external-links-editor td.link-actions > button{display:none}
     /* type combos line — each relationship-item is inline so they sit on one line under the URL */
     body.tc-ri-on #external-links-editor tr.relationship-item{display:inline-flex;align-items:center;vertical-align:middle;padding:0 0 7px}
     body.tc-ri-on #external-links-editor tr.external-link-item + tr.relationship-item{margin-left:39px}   /* favicon(30)+gap(9) → align with URL */
@@ -2587,11 +2590,10 @@
     /* editable type dropdowns — strip MB's box skin, keep just the text + native caret */
     body.tc-ri-on #external-links-editor select{font-size:12px;color:#5a3e94;background:transparent;background-image:none;border:none;border-radius:0;box-shadow:none;padding:0 2px;height:auto;margin:0;max-width:240px;width:auto;cursor:pointer}
     body.tc-ri-on #external-links-editor select:hover{color:#3a2d5c}
-    /* a small per-type delete button (injected) — only shown when the link has more than one type */
-    body.tc-ri-on #external-links-editor .tc-type-del{display:none;border:none;background:transparent;color:#c66;cursor:pointer;font-size:13px;line-height:1;padding:0 2px;margin-left:5px;opacity:.55}
-    body.tc-ri-on #external-links-editor .tc-type-del:hover{opacity:1;color:#d32f2f}
-    body.tc-ri-on #external-links-editor tr.relationship-item:has(+ tr.relationship-item) .tc-type-del,
-    body.tc-ri-on #external-links-editor tr.relationship-item + tr.relationship-item .tc-type-del{display:inline-flex}
+    /* surface MB's native per-type remove (it renders this only when a link has more than one type) as a
+       small delete next to the combo; the whole-link remove on the URL row stays hidden */
+    body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{display:inline-flex;align-items:center;order:9;margin-left:6px;opacity:.5;transform:scale(.85);transition:opacity .12s}
+    body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]:hover{opacity:1}
     /* video attribute → a compact box, no "video" caption */
     body.tc-ri-on #external-links-editor label.video,
     body.tc-ri-on #external-links-editor label:has(> input[type=checkbox]){font-size:0;margin-left:6px;display:inline-flex;align-items:center;cursor:pointer}
