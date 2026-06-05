@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.120000
+// @version      2026.6.5.160000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -666,6 +666,7 @@
       <div class="tc-s-group tc-s-top">
         <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Replace Tracklist on start</span></label>
         <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Replace Recordings on start</span></label>
+        <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Replace header and footer</span></label>
       </div>
       <div class="tc-s-sec">Matching</div>
       <div class="tc-s-group">
@@ -709,10 +710,11 @@
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     gridcols.onchange = () => { SETTINGS.gridCols = gridcols.checked; saveSettings(); applyViewClasses(); };
     gridrows.onchange = () => { SETTINGS.gridRows = gridrows.checked; saveSettings(); applyViewClasses(); };
-    const repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec');
-    repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false;
+    const repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), cnav = s.querySelector('#tc-s-compactnav');
+    repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; cnav.checked = SETTINGS.compactNav !== false;
     repltl.onchange = () => { SETTINGS.replaceTracklist = repltl.checked; _tlMirror = repltl.checked; saveSettings(); applyView(); };
     replrec.onchange = () => { SETTINGS.replaceRecordings = replrec.checked; _recMirror = replrec.checked; saveSettings(); applyView(); };
+    cnav.onchange = () => { SETTINGS.compactNav = cnav.checked; saveSettings(); applyNav(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -1257,7 +1259,7 @@
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
-      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'empty the title, artist and length of every track', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
+      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'unselect every track artist, keeping the credited-as text (titles and lengths kept)', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
     });
   }
   // a small one-off dropdown (e.g. the ▾ next to "Revert all"); items: {label, title?, onClick}
@@ -1277,13 +1279,17 @@
   // Tracklist "Clear all": empty the title, artist credit and length of every track (with confirm)
   function clearAllTracks() {
     if (!MODEL) return;
-    if (!W.confirm('Empty the title, artist and length of EVERY track? (does not submit)')) return;
+    if (!W.confirm('Unselect the artist of EVERY track? (the credited-as text, titles and lengths are kept; does not submit)')) return;
     MODEL.tracks.forEach(t => {
-      try { const ko = koTrack(t.mi, t.ti); ko.name(''); } catch (e) {}
-      try { setLength({ mi: t.mi, ti: t.ti }, ''); } catch (e) {}
-      try { const ko = koTrack(t.mi, t.ti); const ac = u(ko.artistCredit); ko.artistCredit(Object.assign({}, ac, { names: [{ name: '', artist: null, joinPhrase: '' }] })); } catch (e) {}
+      try {
+        const ko = koTrack(t.mi, t.ti); const names = u(u(ko.artistCredit).names) || [];
+        // keep each credit's display text (the credited-as name, or the artist's name if none) but drop the
+        // selected entity — turning a matched artist back into unmatched text (artist: bare {name}), ready
+        // to re-match. Mirrors how commitTrack writes an unresolved slot.
+        ko.artistCredit({ names: names.map(n => { const text = u(n.name) || (n.artist && u(u(n.artist).name)) || ''; return { artist: { name: text }, name: text, joinPhrase: u(n.joinPhrase) || '' }; }) });
+      } catch (e) {}
     });
-    Log.info('cleared all track fields'); loadAndRender();
+    Log.info('cleared all track artist selections (kept credited-as text)'); rebuild(true);   // no re-match, or it would instantly re-link the kept text
   }
 
   /* ── the Tools split-button: last-used tool is the button's label + default action; ▾ picks another ── */
@@ -1538,9 +1544,12 @@
       if (tl && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab');
         if (tlWant()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); } } else hideMirror(); }
       else if (!tl && _tlPrev) { _tlPrev = false; }
-      if (rec && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); if (recWant()) showRecMirror(); else hideRecMirror(); }
+      if (rec && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); }
       else if (!rec && _recPrev) { _recPrev = false; }
+      // mount as soon as the (lazily-built) native table exists — retry each tick so there's no native flash
+      if (rec) { if (recWant()) { if (!document.getElementById('tc-recwrap')) showRecMirror(); } else hideRecMirror(); }
       if (tl || rec) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }
+      if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); }   // keep compact nav alive + synced
     };
     tick(); setInterval(tick, 500);
   }
@@ -1693,7 +1702,7 @@
       '#tc-recwrap .tc-rec-split{display:inline-flex}#tc-recwrap .tc-rec-revcaret{padding:4px 6px;color:#7d6bc0}',
       '#tc-recwrap .tc-rec-tb button.primary{color:#5f3ec0;font-weight:bold}#tc-recwrap .tc-rec-tb button.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}',
       '#tc-recwrap .tc-rec-tbl{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}',
-      '#tc-recwrap .tc-rec-ignore{font:12px Arial;padding:1px;width:auto;max-width:150px}',
+      '#tc-recwrap .tc-rec-cutoff{font:12px Arial;padding:1px;width:auto;max-width:150px}',
       '#tc-recwrap .tc-rec-amstatus{color:#6f42c1;font-size:12px;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:4px}',
       '.tc-rectbl .tc-recname{position:relative}',
       '.tc-rectbl .tc-rec-rev{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:none;background:#fff;cursor:pointer;color:#7d6bc0;font-size:15px;line-height:1;visibility:hidden;padding:1px 4px;border-radius:3px}',
@@ -1798,7 +1807,7 @@
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
         '<span class="tc-rec-amstatus"></span>' +   // flexible filler: its text changes absorb here, never reflowing the bar
-        '<label class="tc-rec-tbl">Ignore at <select class="tc-rec-ignore"><option value="low">🟡 low</option><option value="vlow">🟠 very low</option><option value="xlow">🔴 extremely low</option><option value="nothing">⚪ nothing</option></select></label>' +
+        '<label class="tc-rec-tbl" title="Auto-match only links a recording when its confidence is at or above this level; anything lower is left unmatched.">Cutoff <select class="tc-rec-cutoff"><option value="exact">🔵 exact</option><option value="match">🟢 match</option><option value="low">🟡 low</option><option value="vlow">🟠 very low</option><option value="xlow">🔴 extremely low</option></select></label>' +
         '<span class="tc-recwarn"></span>' +
         '<span class="tc-tbsep"></span>' +
         '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions">⚡ Match</button>' +
@@ -1812,7 +1821,7 @@
         '<tr><th class="c-n">#</th><th>Title</th><th>Artist</th><th class="c-len">Length</th>' +
         '<th class="c-sep"></th><th>Title</th><th>Artist</th><th class="c-len">Length</th></tr></thead><tbody></tbody></table>';
     // wire the toolbar (once)
-    const sel = wrap.querySelector('.tc-rec-ignore'); if (sel) { sel.value = SETTINGS.recIgnore || 'vlow'; sel.onchange = () => { SETTINGS.recIgnore = sel.value; saveSettings(); }; }
+    const sel = wrap.querySelector('.tc-rec-cutoff'); if (sel) { sel.value = SETTINGS.recCutoff || 'low'; sel.onchange = () => { SETTINGS.recCutoff = sel.value; saveSettings(); }; }
     const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
     const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [{ label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings }, { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings }]);
     const gearBtn = wrap.querySelector('.tc-rec-gear'); if (gearBtn) gearBtn.onclick = () => openSettings(gearBtn);   // same settings dialog as the Tracklist tab
@@ -1865,7 +1874,11 @@
     });
   }
   // confidence level of a candidate vs the track: 0 match · 1 low · 2 very low · 3 extremely low
-  const REC_IGNORE = { nothing: 3, xlow: 2, vlow: 1, low: 0 };   // value = the worst level still auto-linked
+  // "Cutoff" = the LOWEST confidence still auto-linked; anything below it is left unmatched. Levels run
+  // best→worst: exact(blue) 0 · match/green 1 · low 2 · very low 3 · extremely low 4. A candidate links
+  // when its combined level ≤ the chosen cutoff. #119
+  const CUTOFF = { exact: 0, match: 1, low: 2, vlow: 3, xlow: 4 };
+  function recComboLevel(d, ctx) { return recExactMatch(d, ctx) ? 0 : recConfLevel(d, ctx) + 1; }   // fold exact/green into one ladder with the lower bands
   function recConfLevel(data, ctx) {
     if (!ctx) return 0;
     let n = 0; const lenDiff = recLenGap(data.length, ctx.length);
@@ -1885,7 +1898,7 @@
     if (_autoMatching) return; _autoMatching = true;
     const wrap = document.getElementById('tc-recwrap');
     const setStatus = t => { const e = wrap && wrap.querySelector('.tc-rec-amstatus'); if (e) e.textContent = t; };
-    const maxLevel = REC_IGNORE[SETTINGS.recIgnore || 'vlow'];
+    const maxLevel = CUTOFF[SETTINGS.recCutoff || 'low'];
     let linked = 0, considered = 0;
     try {
       // ONE request: pull the whole release group's recordings, index by normalised title, match locally
@@ -1902,8 +1915,8 @@
         const ctx = { title: r.title, artist: r.trackArtist, length: r.trackLen };
         // best candidate from the local RG pool (normalised-title match; fuzzy scan if a Title tolerance is set).
         // lower confidence level wins; within the same level, an EXACT (no-tolerance) match is preferred. #119
-        let best = null, bestLevel = Infinity, bestExact = false;
-        const consider = d => { const lvl = recConfLevel(d, ctx), ex = recExactMatch(d, ctx); if (lvl < bestLevel || (lvl === bestLevel && ex && !bestExact)) { bestLevel = lvl; best = d; bestExact = ex; } };
+        let best = null, bestLevel = Infinity;
+        const consider = d => { const lvl = recComboLevel(d, ctx); if (lvl < bestLevel) { bestLevel = lvl; best = d; } };   // lower combined level (exact < green < low < …) wins
         let cands = byTitle.get(recFold(r.title)) || [];
         if (!cands.length && (SETTINGS.recTitleTol || 0) > 0 && pool.length) cands = pool.filter(p => recTitleEq(p.name, r.title));
         cands.forEach(consider);
@@ -1914,7 +1927,7 @@
             try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {}
             for (let t = 0; t < 28; t++) { await new Promise(z => setTimeout(z, 250)); const loading = typeof ko.loadingSuggestedRecordings === 'function' ? u(ko.loadingSuggestedRecordings) : false; sugg = u(ko.suggestedRecordings) || []; if (!loading && sugg.length) break; if (!loading && t >= 3) break; }
           }
-          for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0 && bestExact) break; }
+          for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; }   // 0 = exact, can't do better
         }
         if (best && bestLevel <= maxLevel) { try { ko.setRecordingValue(recEntityFrom(best)); linked++; renderRecBody(); } catch (e) { Log.warn('auto-match set failed', e.message); } }
       }
@@ -2265,7 +2278,147 @@
     const w = document.getElementById('tc-recwrap'); if (w) w.remove();
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  /* ═══════════════════════════════════════════════════════════════════════
+     COMPACT NAVIGATION — hide the native editor's step-tab row + footer and
+     relocate them compactly: a segmented step switcher (Release | Tracklist |
+     Recordings | ⊟ Edit note) on the right of the entity-tab row, the wizard
+     buttons (Cancel / Prev / Next / Finish) top-right by the title, and
+     "Add medium" at the right of the tracklist table. Everything is a proxy to
+     the still-present (visually-hidden) native control, so MB's wizard is
+     untouched and the feature reverts cleanly when toggled off.
+  ═══════════════════════════════════════════════════════════════════════ */
+  function navOn() { return SETTINGS.compactNav !== false; }
+  const DIFF_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.1"/><line x1="5" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.1"/><line x1="5" y1="8.6" x2="11" y2="8.6" stroke="currentColor" stroke-width="1.1"/><line x1="5" y1="11.2" x2="8.5" y2="11.2" stroke="currentColor" stroke-width="1.1"/></svg>';
+  const STEP_DEFS = [
+    { key: 'information', label: 'Release', title: 'Release information' },
+    { key: 'tracklist', label: 'Tracklist', title: 'Tracklist' },
+    { key: 'recordings', label: 'Recordings', title: 'Recordings' },
+    { key: 'edit-note', diff: true, title: 'Edit note — review changes & add an edit note' }
+  ];
+  // only the submit button is kept (Cancel/Prev/Next are reachable via the entity tabs / step switcher);
+  // it shows ONLY when there are pending changes. Both forms are mirrored — whichever MB renders.
+  const WIZ_DEFS = [
+    { id: 'enter', label: '✓ Enter edit', cls: 'tc-wiz-enter', find: f => f.querySelector('#enter-edit') || [...f.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent)) },
+    { id: 'finish', label: '✓ Finish', cls: 'tc-wiz-finish', find: f => [...f.querySelectorAll('button')].find(b => /^\s*finish\s*$/i.test(b.textContent)) }
+  ];
+  function hasChanges() { try { const re = W.MB && W.MB.releaseEditor; return !!(re && typeof re.allowsSubmission === 'function' && re.allowsSubmission()); } catch (e) { return false; } }
+  function editorEl() { return document.getElementById('release-editor'); }
+  function stepNavEl() { const e = editorEl(); return e && e.querySelector(':scope > ul.ui-tabs-nav'); }
+  function navFooterEl() { const e = editorEl(); return e && e.querySelector(':scope > div.buttons'); }
+  function stepLink(key) { const n = stepNavEl(); return n && n.querySelector('a[href="#' + key + '"]'); }
+  function activeStepKey() { const n = stepNavEl(); const a = n && n.querySelector('li.ui-tabs-active a'); return a ? (a.getAttribute('href') || '').slice(1) : ''; }
+  function vis(el) { return !!(el && el.style.display !== 'none' && !el.disabled); }   // native inline display reflects MB's per-step show/hide
+
+  let _navStyled = false;
+  function navStyle() {
+    if (_navStyled) return; _navStyled = true;
+    const css = `
+    .tc-nav-vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0!important}
+    .tc-nav-steps{display:inline-flex;align-items:stretch;border:1px solid #c9bce0;border-radius:7px;overflow:hidden;background:#fff;font-family:Arial,Helvetica,sans-serif}
+    .tc-nav-step{font:600 13px Arial;padding:5px 14px;border:none;border-right:1px solid #e6def5;background:#fff;color:#5a3e94;cursor:pointer;line-height:1.5;white-space:nowrap}
+    .tc-nav-step:last-child{border-right:none}
+    .tc-nav-step:hover{background:#f3f0fb}
+    .tc-nav-step.active{background:#6a4d9a;color:#fff}
+    .tc-nav-step.tc-nav-diff{display:flex;align-items:center;padding:5px 10px}
+    .tc-nav-step.tc-nav-diff svg{width:15px;height:15px;display:block}
+    .tabs.tc-nav-sticky{position:sticky;top:0;background:#fff;z-index:20}   /* freeze the nav row when scrolling */
+    /* with the step-tab row hidden, strip the editor's jQuery-UI frame + the panel's top padding so no empty box is left */
+    #release-editor.tc-nav-on{margin-top:0;padding:0;border:none;background:none;box-shadow:none}
+    #release-editor.tc-nav-on > .ui-tabs-panel{padding-top:0;border:none}
+    #tc-nav-steps-wrap{position:absolute;right:0;bottom:6px;z-index:5}
+    #tc-nav-right{display:flex;align-items:center;gap:10px}
+    #tc-nav-wiz{display:inline-flex;align-items:center;gap:2px}
+    .tc-nav-wbtn{font:13px Arial;padding:3px 9px;border:1px solid transparent;background:none;border-radius:5px;cursor:pointer;color:#555;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+    .tc-nav-wbtn:hover{background:#f4f4f4;border-color:#d2d2d2}
+    .tc-nav-wbtn.tc-wiz-finish,.tc-nav-wbtn.tc-wiz-enter{color:#2f7a45;font-weight:600}
+    .tc-nav-wbtn.tc-wiz-finish:hover,.tc-nav-wbtn.tc-wiz-enter:hover{background:#e6f3ea;border-color:#a9d2b6}
+    .tc-addmed{font:13px Arial;padding:4px 12px;border:1px solid #d6cdec;background:#fff;color:#6a4d9a;border-radius:5px;cursor:pointer;margin-left:auto}
+    .tc-addmed:hover{background:#f3f0fb}`;
+    const s = document.createElement('style'); s.id = 'tc-nav-style'; s.textContent = css; document.head.appendChild(s);
+  }
+  // build (once) the switcher + Finish button as one right-side group on the entity-tab row (frozen on top)
+  function buildNav() {
+    navStyle();
+    if (document.getElementById('tc-nav-steps-wrap') || document.getElementById('tc-nav-addbar')) return;   // already built
+    // step switcher
+    const steps = document.createElement('div'); steps.className = 'tc-nav-steps'; steps.id = 'tc-nav-steps';
+    STEP_DEFS.forEach(d => {
+      const b = document.createElement('button'); b.className = 'tc-nav-step' + (d.diff ? ' tc-nav-diff' : ''); b.dataset.step = d.key;
+      b.innerHTML = d.diff ? DIFF_ICON : d.label; b.title = d.title;
+      b.onclick = () => { const l = stepLink(d.key); if (l) l.click(); setTimeout(syncNav, 40); };
+      steps.appendChild(b);
+    });
+    // submit button (Finish / Enter edit)
+    const wiz = document.createElement('div'); wiz.id = 'tc-nav-wiz';
+    WIZ_DEFS.forEach(d => {
+      const b = document.createElement('button'); b.className = 'tc-nav-wbtn ' + d.cls; b.dataset.wiz = d.id; b.textContent = d.label;
+      b.onclick = () => { const f = navFooterEl(); const nat = f && d.find(f); if (nat) nat.click(); setTimeout(syncNav, 40); };
+      wiz.appendChild(b);
+    });
+    const right = document.createElement('div'); right.id = 'tc-nav-right'; right.append(wiz, steps);
+    // host: the entity-tab row when editing an existing release (sticky); else a bar atop the editor
+    const tabs = document.querySelector('#page > .tabs, .tabs');
+    if (tabs) { tabs.classList.add('tc-nav-sticky'); const w = document.createElement('div'); w.id = 'tc-nav-steps-wrap'; w.appendChild(right); tabs.appendChild(w); }
+    else { const ed = editorEl(); if (ed) { const bar = document.createElement('div'); bar.id = 'tc-nav-addbar'; bar.style.cssText = 'display:flex;justify-content:flex-end;margin:0 0 6px'; bar.appendChild(right); ed.insertBefore(bar, ed.firstChild); } }
+  }
+  // keep the proxies in sync with the native state each tick
+  function syncNav() {
+    if (!navOn()) return;
+    const active = activeStepKey();
+    document.querySelectorAll('#tc-nav-steps .tc-nav-step').forEach(b => b.classList.toggle('active', b.dataset.step === active));
+    const f = navFooterEl();
+    const changed = hasChanges();   // the submit button appears only when there are pending changes
+    WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.style.display = (vis(nat) && changed) ? '' : 'none'; });
+    updateStickyOffsets();
+  }
+  // stack the sticky Apollo toolbars BELOW the frozen entity-tab row (both default to top:0 and would
+  // otherwise overlap, hiding the pinned tab row). The row height is dynamic, so measure it each sync.
+  function updateStickyOffsets() {
+    const tabs = document.querySelector('.tabs.tc-nav-sticky');
+    const h = (navOn() && tabs) ? tabs.offsetHeight : 0;
+    const w = document.getElementById('tc-mirror-wrap'); if (w) w.style.top = h ? h + 'px' : '';
+    const r = document.querySelector('#tc-recwrap .tc-rec-tb'); if (r) r.style.top = h ? h + 'px' : '';
+  }
+  // the native "Add medium" OPENER — it lives in the editor footer (present on the Tracklist step) and
+  // opens MB's add-medium parser dialog. (NB: the button inside #add-medium-dialog is the dialog's commit
+  // button, disabled until tracks are parsed — proxying that one does nothing.)
+  function nativeAddMediumBtn() {
+    const f = navFooterEl(); let b = f && [...f.querySelectorAll('button')].find(x => /add medium/i.test(x.textContent));
+    if (b) return b;
+    const tl = document.getElementById('tracklist'); return tl ? [...tl.querySelectorAll('button')].find(x => /add medium/i.test(x.textContent) && !x.closest('#add-medium-dialog')) : null;
+  }
+  // move "Add medium" to the right end of the Apollo tracklist (opposite "Add tracks"), proxying the native opener
+  function relocateAddMedium() {
+    const nat = nativeAddMediumBtn();
+    const want = navOn() && document.getElementById('tc-mirror-wrap') && nat;
+    if (!want) { const p = document.getElementById('tc-addmed'); if (p) p.remove(); return; }
+    if (document.getElementById('tc-addmed')) return;          // proxy already placed (the add-row may rebuild → re-add then)
+    const btn = document.createElement('button'); btn.id = 'tc-addmed'; btn.className = 'tc-addmed'; btn.title = 'add a new medium'; btn.textContent = '＋ Add medium';
+    btn.onclick = () => { const n = nativeAddMediumBtn(); if (n) n.click(); };
+    const rows = document.querySelectorAll('.tc-medsec .tc-addrow'); const host = rows[rows.length - 1];
+    if (host) host.appendChild(btn);                            // far right of the last medium's add-tracks row
+    else { const secs = document.querySelectorAll('.tc-medsec'); const last = secs[secs.length - 1]; if (last) { const row = document.createElement('div'); row.className = 'tc-addrow'; row.appendChild(btn); last.appendChild(row); } }   // locked last medium → own right-aligned row
+  }
+  function applyNav() {
+    if (!editorEl()) return;
+    if (navOn()) {
+      buildNav();
+      editorEl().classList.add('tc-nav-on');
+      const sn = stepNavEl(); if (sn) sn.classList.add('tc-nav-vh');
+      const f = navFooterEl(); if (f) f.classList.add('tc-nav-vh');
+      syncNav();
+    } else {
+      editorEl().classList.remove('tc-nav-on');
+      const sn = stepNavEl(); if (sn) sn.classList.remove('tc-nav-vh');
+      const f = navFooterEl(); if (f) f.classList.remove('tc-nav-vh');
+      const tabs = document.querySelector('#page > .tabs, .tabs'); if (tabs) tabs.classList.remove('tc-nav-sticky');
+      ['tc-nav-steps-wrap', 'tc-nav-addbar'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); });
+    }
+    relocateAddMedium();
+    updateStickyOffsets();
+  }
+
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
@@ -2277,8 +2430,13 @@
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
     if (tlWant()) showMirror();   // pre-build the tracklist takeover inside the (possibly hidden) #tracklist panel
+    // pre-hide the native recordings table right after edit is entered (recStyle's `body.tc-rec-on` rule
+    // applies even before MB lazily builds the table), and pre-mount the Apollo table if it already exists —
+    // so switching to Recordings shows the Apollo view with no flash of the native assignment table. #119
+    if (recWant()) { recStyle(); document.body.classList.add('tc-rec-on'); showRecMirror(); }
     applyView();                    // apply the chosen view to whichever tab is initially visible (tracklist and/or recordings)
     if (tracklistVisible() || recordingsVisible()) ensureLauncher();   // one toggle, present on both managed tabs
+    applyNav();                     // compact navigation — hide native step-tabs + footer, relocate compactly
     watchTabs();                    // #119 — single watcher drives the tracklist + recordings takeovers + the shared toggle
   })();
 })();

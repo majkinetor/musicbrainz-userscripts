@@ -12,7 +12,20 @@ The userscript runs on `musicbrainz.org/release/*` and tries to locate each rele
 
 Once a URL is settled, the script fetches the platform's metadata (track count, year, label, format where available) and shows it alongside the MB-side numbers so you can see at a glance whether a candidate looks right. Results are cached per release so revisiting a page does no outbound traffic until you click ↻.
 
-Platforms with ✓ marker have link result. If the marker is circled, the link is already in the MB's URL relationships.
+Link availability is determined by the icon and text color:
+
+1. Color - link is found
+1. Gray - link is found but details do not match
+1. Faded - link is not found
+1. Circled - link exists in MB relationships
+
+Mouse click works as follows:
+
+1. **Left click**<br>
+    1. Title - Open link if found, open search for provider if not found (use [↗] button in the footer to open all)
+    1. Icon - Add link to the MB relationships (use [+] button in the footer to add all)
+1. **Right click**<br>
+    1. Title - Open search for provider
 
 ## Supported platforms
 
@@ -29,6 +42,8 @@ Discogs has few specifics:
 1. It is **format-aware** — for example, when MB release format has type CD, the first attempt tries to find CD release on Discogs, so a vinyl Discogs entry doesn't shadow an existing CD one; if that returns nothing, the script retries without the format filter.
 1. It checks if any master release on Discogs is present as link on MB's release group.
 
+
+
 ## Features
 
 - Info about MB's release year, format and label and track number in the header
@@ -36,7 +51,7 @@ Discogs has few specifics:
     - `+` click - batch insert all links that have `✓` marker
     - `✓`click - insert only particular link next to the marker
     - On the edit page it fills the **edit note** (script name/version + the links added) and shows a small confirmation next to the *External links* heading — then you review and click **Enter edit**.
-- **Open all found** (`↗`, next to `+`): opens each found platform page that isn't already in MB (non-circled links, plus the Discogs master if not yet added) in its own new tab.
+- **Open all found** (`↗`): opens each found platform page that isn't already in MB (non-circled links, plus the Discogs master if not yet added) in its own new tab. **NOTE**: Watch for browser blocking multiple pop-ups!
 - **Options**:
     - Toggle usage of each supported platform independently
     - Reorder providers
