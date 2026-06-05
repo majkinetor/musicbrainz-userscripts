@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.220000
+// @version      2026.6.5.230000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.220000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.230000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2551,9 +2551,9 @@
 
     /* ---- two-column layout: form on the left, external links lifted into the (now-used) right column ---- */
     body.tc-ri-on #information{display:flex;gap:30px;align-items:flex-start}
-    body.tc-ri-on #information > div.half-width{flex:1 1 0;min-width:0;max-width:680px;width:auto}
+    body.tc-ri-on #information > div.half-width{flex:0 1 620px;min-width:0;width:auto}   /* form keeps its natural width */
     body.tc-ri-on #information > div.documentation{display:none}   /* the contextual help text — replaced by the links column */
-    body.tc-ri-on #tc-ri-rightcol{flex:0 0 410px;max-width:410px}
+    body.tc-ri-on #tc-ri-rightcol{flex:1 1 auto;min-width:0}       /* links take the remaining horizontal space */
     body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0}
 
     /* ---- tidy the external-links table into a clean list ---- */
@@ -2562,25 +2562,27 @@
     body.tc-ri-on #external-links-editor tr.external-link-item{display:flex;align-items:center;gap:8px;padding:7px 6px 3px;border-radius:6px}
     body.tc-ri-on #external-links-editor tr.external-link-item:hover{background:#f6f4fb}
     body.tc-ri-on #external-links-editor tr.external-link-item > td{padding:0;border:none;vertical-align:middle}
-    body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:18px;text-align:center}
+    body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:18px;text-align:center;cursor:pointer}   /* favicon → edit URL */
     body.tc-ri-on #external-links-editor tr.external-link-item > td:last-child{flex:1;min-width:0}
     body.tc-ri-on #external-links-editor a.url{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
-    /* edit/remove icons: hidden until the row is hovered */
+    /* edit/remove icons: faint, revealed on row hover, full-strength only on direct hover */
     body.tc-ri-on #external-links-editor td.link-actions{flex:none;order:9;display:flex;gap:5px;opacity:0;transition:opacity .12s}
     body.tc-ri-on #external-links-editor tr.external-link-item:hover td.link-actions,
-    body.tc-ri-on #external-links-editor tr.external-link-item:focus-within td.link-actions{opacity:1}
+    body.tc-ri-on #external-links-editor tr.external-link-item:focus-within td.link-actions{opacity:.45}
+    body.tc-ri-on #external-links-editor td.link-actions:hover{opacity:1}
     /* the type row -> a small chip indented under its URL */
     body.tc-ri-on #external-links-editor tr.relationship-item{display:flex;align-items:center;gap:6px;padding:0 6px 7px 26px}
     body.tc-ri-on #external-links-editor tr.relationship-item > td{padding:0;border:none;flex:0 0 auto}
     body.tc-ri-on #external-links-editor tr.relationship-item > td:first-child{display:none}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content{display:inline-flex;align-items:center;width:auto}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content > label:first-child{display:none}   /* the "Type:" caption */
-    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:inline-flex;align-items:center;width:auto;font-size:11px;color:#5a3e94;background:#efeaf9;border:1px solid #ddd2f0;border-radius:10px;padding:1px 9px;font-weight:normal}
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:inline-flex;align-items:center;width:auto;font-size:11px;color:#5a3e94;background:#efeaf9;border:1px solid #ddd2f0;border-radius:10px;padding:1px 9px;font-weight:normal;cursor:pointer}   /* chip → edit type */
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name:hover{background:#e4d9f7;border-color:#cdb8ec}
     /* editable type dropdowns (links whose type is selectable) — flatten MB's grey gradient skin to a clean control */
     body.tc-ri-on #external-links-editor select{font-size:12px;color:#3a2d5c;background:#f3eefb;background-image:none;border:1px solid #d6c8ef;border-radius:8px;box-shadow:none;padding:2px 8px;height:auto;margin:1px 0;max-width:240px;width:auto}
     body.tc-ri-on #external-links-editor select:hover{border-color:#b69be6;background:#ede4fa}
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions{order:9;opacity:0;transition:opacity .12s}
-    body.tc-ri-on #external-links-editor tr.relationship-item:hover td.link-actions{opacity:1}
+    body.tc-ri-on #external-links-editor tr.relationship-item:hover td.link-actions{opacity:.45}
     /* hide MB's inline "Add another relationship" row — the single paste field at the bottom is the only adder we keep */
     body.tc-ri-on #external-links-editor tr.add-relationship{display:none}
     /* the "add another link" input row */
@@ -2618,8 +2620,32 @@
     });
     return [...out];
   }
+  // clicking the favicon edits the URL (edit1); clicking the type chip edits the relationship type (edit2).
+  // Both proxy to MB's own (hover-hidden) pencil buttons so the native editor bubble does the actual work.
+  let _riClicksWired = false;
+  function wireLinkClicks() {
+    if (_riClicksWired) return; _riClicksWired = true;
+    document.addEventListener('click', e => {
+      if (!document.body.classList.contains('tc-ri-on')) return;
+      const ext = document.getElementById('external-links-editor');
+      if (!ext || !ext.contains(e.target)) return;
+      if (e.target.closest('a,button,input,select,textarea')) return;   // let real controls/links work
+      const chip = e.target.closest('.relationship-name');               // chip → edit type
+      if (chip) {
+        const btn = chip.closest('tr.relationship-item')?.querySelector('button.edit-item');
+        if (btn) { e.preventDefault(); e.stopPropagation(); btn.click(); }
+        return;
+      }
+      const linkRow = e.target.closest('tr.external-link-item');         // favicon → edit URL
+      if (linkRow && e.target.closest('td:first-child')) {
+        const btn = linkRow.querySelector('button.edit-item');
+        if (btn) { e.preventDefault(); e.stopPropagation(); btn.click(); }
+      }
+    }, true);
+  }
   function applyReleaseInfo() {
     riStyle();
+    wireLinkClicks();
     if (riWant()) {
       _apolloUsed = true;
       document.body.classList.add('tc-ri-on');
