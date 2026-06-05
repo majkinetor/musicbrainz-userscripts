@@ -73,15 +73,6 @@ A *Credited as* values on track and recording don't influence matching.
 
 The *Ignore at* option in the recording toolbar sets the confidence at which auto-match will stop linking recordings.
 
-### Matching options
-
-Setup matching options in ⚙ → Matching:
-
-- **Length tolerance** (seconds) — a length gap within N seconds counts as a match. Use `0` for exact.
-- **Title tolerance** (characters) — allow up to N differing characters in the title (edit distance) and still call it a match. Use `0` for exact.
-- **Ignore casing** — case / accent / spacing-only differences don't count.
-- **Ignore punctuation** — `&` → `and`, brackets, quotes, dashes and dots are stripped before comparing.
-
 ## Tools
 
 Native tools are hidden and moved to the single **Tool** button at the top of the table that stays always visible. All tools are reachable from the button's menu and the last one used becomes the default. Tools with parameters show them next to the button; parameterless tools fire on pick.
@@ -107,15 +98,25 @@ Opened using the **⚙** button on the [toolbar](#toolbar).
 
 Settings are saved in the browser (localStorage) and persist across releases.
 
-### Replace … on start
+### Replace on start
 
-On page load, swaps the native table editor for the Apollo table. The **Original / Apollo** button still toggles it anytime — this only sets the *initial* state.
+If any of the following options is on, script replaces the native tables for the Apollo versions and replaces other native UI elements.
 
-### Matching
+- Replace Tracklist on start
+- Replace Recordings on start
+- Replace header and footer
+
+The **Original / Apollo** button still toggles tables anytime — setting only influences the *initial* state.
+
+### Matching options
 
 | Option | Default | What it does |
 |---|---|---|
-| **Auto-match on start**| On<br>Off | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads|
+| **Auto-match on start**| On<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads|
+|**Length tolerance**|5| Allow a length gap within N seconds (use `0` for exact)|
+|**Title tolerance**|1| Allow up to N differing characters in the title (use `0` for exact)|
+|**Ignore casing** |On|Case / accent / spacing-only differences don't count|
+|**Ignore punctuation**|On| *& → and*, brackets, quotes, dashes and dots are stripped before comparing|
 
 ### Appearance
 
