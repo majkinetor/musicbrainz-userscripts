@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.070000
+// @version      2026.6.5.073000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.070000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.073000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1797,22 +1797,30 @@
     const maxLevel = REC_IGNORE[SETTINGS.recIgnore || 'vlow'];
     let linked = 0, considered = 0;
     try {
+      // ONE request: pull the whole release group's recordings, index by folded title, match locally
+      let byTitle = new Map();
+      try {
+        const rel = release(); const rg = rel && u(rel.releaseGroup); const rgGid = rg && u(rg.gid);
+        if (rgGid) { setStatus('loading release-group recordings…'); const pool = await fetchRgRecordings(rgGid); pool.forEach(p => { const k = fold(p.name); if (!byTitle.has(k)) byTitle.set(k, []); byTitle.get(k).push(p); }); }
+      } catch (e) { Log.warn('RG pool load failed', e.message); }
       const todo = readRecordings().filter(r => !r.recGid);
       for (let i = 0; i < todo.length; i++) {
         const r = todo[i]; considered++;
         setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '…');
         const ko = koTrack(r.mi, r.ti);
         const ctx = { title: r.title, artist: r.trackArtist, length: r.trackLen };
-        let sugg = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []);
-        if (!sugg.length) {
-          try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {}
-          for (let t = 0; t < 28; t++) { await new Promise(z => setTimeout(z, 250)); const loading = typeof ko.loadingSuggestedRecordings === 'function' ? u(ko.loadingSuggestedRecordings) : false; sugg = u(ko.suggestedRecordings) || []; if (!loading && sugg.length) break; if (!loading && t >= 3) break; }
-        }
-        if (!sugg.length) continue;
-        // rank ALL suggestions by confidence and take the best (lowest level) — MB's ordering sometimes
-        // puts a worse match (wrong artist / off length) on top. Ties keep MB's order (first wins). #119
+        // best candidate from the local RG pool (same-title recordings), ranked by confidence
         let best = null, bestLevel = Infinity;
-        for (let s = 0; s < sugg.length; s++) { const d = suggData(sugg[s]); const lvl = recConfLevel(d, ctx); if (lvl < bestLevel) { bestLevel = lvl; best = d; if (lvl === 0) break; } }
+        (byTitle.get(fold(r.title)) || []).forEach(d => { const lvl = recConfLevel(d, ctx); if (lvl < bestLevel) { bestLevel = lvl; best = d; } });
+        // only fall back to MB's per-track lookup (network) when the pool had nothing good enough
+        if (!best || bestLevel > maxLevel) {
+          let sugg = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []);
+          if (!sugg.length) {
+            try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {}
+            for (let t = 0; t < 28; t++) { await new Promise(z => setTimeout(z, 250)); const loading = typeof ko.loadingSuggestedRecordings === 'function' ? u(ko.loadingSuggestedRecordings) : false; sugg = u(ko.suggestedRecordings) || []; if (!loading && sugg.length) break; if (!loading && t >= 3) break; }
+          }
+          for (let s = 0; s < sugg.length; s++) { const d = suggData(sugg[s]); const lvl = recConfLevel(d, ctx); if (lvl < bestLevel) { bestLevel = lvl; best = d; if (lvl === 0) break; } }
+        }
         if (best && bestLevel <= maxLevel) { try { ko.setRecordingValue(recEntityFrom(best)); linked++; renderRecBody(); } catch (e) { Log.warn('auto-match set failed', e.message); } }
       }
     } finally {
@@ -1908,18 +1916,33 @@
       document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
     });
   }
+  // a WS2 recording → the flat shape used by the picker / matcher (gid, name, length, artist text + raw ac, …)
+  function mapWsRec(r) {
+    return {
+      gid: r.id, name: r.title, length: r.length || null,
+      artist: (r['artist-credit'] || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''),
+      ac: r['artist-credit'] || [],   // raw credit, so the linked recording keeps its artist on screen
+      releases: (() => { const seen = new Set(), out = []; (r.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); out.push({ name: rl.title, gid: rl.id }); } }); return out; })(),
+      isrcs: r.isrcs || [],
+      comment: r.disambiguation || '',
+    };
+  }
+  // every recording in a release group, fetched ONCE (paginated) — the pool auto-match matches against
+  // locally, so a full release matches with ~one request instead of a per-track lookup each. #119
+  async function fetchRgRecordings(rgGid) {
+    const out = []; let offset = 0;
+    for (let page = 0; page < 12; page++) {
+      let j; try { j = await fetch(`${ORIGIN}/ws/2/recording?query=rgid:${encodeURIComponent(rgGid)}&fmt=json&limit=100&offset=${offset}&inc=artist-credits+releases+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json()); } catch (e) { Log.warn('RG recordings fetch failed', e.message); break; }
+      (j.recordings || []).forEach(r => out.push(mapWsRec(r)));
+      offset += 100; if (!(j.recordings || []).length || offset >= (j.count || 0)) break;
+    }
+    return out;
+  }
   async function searchRecordings(q) {
     q = (q || '').trim(); if (!q) return [];
     try {
       const j = await fetch(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
-      return (j.recordings || []).map(r => ({
-        gid: r.id, name: r.title, length: r.length || null,
-        artist: (r['artist-credit'] || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''),
-        ac: r['artist-credit'] || [],   // raw credit, so the linked recording keeps its artist on screen
-        releases: (() => { const seen = new Set(), out = []; (r.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); out.push({ name: rl.title, gid: rl.id }); } }); return out; })(),
-        isrcs: r.isrcs || [],
-        comment: r.disambiguation || '',
-      }));
+      return (j.recordings || []).map(mapWsRec);
     } catch (e) { Log.warn('recording search failed', e.message); return []; }
   }
   function recEntityFrom(data) {
