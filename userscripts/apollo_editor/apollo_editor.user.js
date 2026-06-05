@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.043000
+// @version      2026.6.5.050000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -69,7 +69,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, lastTool: '', layout: 'normal', lastView: 'canon' }; try { return Object.assign(d, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return d; } }
+  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, grid: false, replaceTracklist: true, replaceRecordings: true, autoMatch: true, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, lastTool: '', layout: 'normal', lastView: 'canon' }; try { return Object.assign(d, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.043000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.050000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -628,6 +628,8 @@
     #tc-settings .hint{color:#777;font-size:11px;margin:0 0 4px 24px}
     #tc-settings .tc-s-sec{font-weight:bold;color:#333;margin:12px 0 5px}
     #tc-settings .tc-s-group{padding-left:8px}
+    #tc-settings .tc-s-sub{font-weight:bold;color:#444;margin:0}
+    #tc-settings div.tc-s-sub{margin:8px 0 3px}
     #tc-settings .tc-s-row{display:flex;align-items:center;gap:12px;margin:7px 0;color:#333}
     #tc-settings .tc-s-rad{display:inline-flex;align-items:center;gap:4px;margin:0;font-weight:normal;cursor:pointer}
     #tc-settings .tc-s-row input[type=radio]{margin:0}
@@ -653,15 +655,19 @@
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
     s.innerHTML = `<h4>${ICON} Apollo Editor <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
-      <div class="tc-s-sec">Auto-match on load</div>
+      <div class="tc-s-sec">Features</div>
       <div class="tc-s-group">
-        <label title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> <span>Tracklist</span></label>
-        <label title="Recordings tab: auto-match unset recordings to MusicBrainz suggestions on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> <span>Recordings</span></label>
+        <label title="Replace the native Tracklist editor with the Apollo table (when Apollo is on)."><input type="checkbox" id="tc-s-repltl"> <span>Replace Tracklist</span></label>
+        <label title="Replace the native Recordings editor with the Apollo table (when Apollo is on)."><input type="checkbox" id="tc-s-replrec"> <span>Replace Recordings</span></label>
       </div>
-      <div class="tc-s-sec">Recording match</div>
+      <div class="tc-s-sec">Matching</div>
       <div class="tc-s-group">
-        <div class="tc-s-row lentol" title="A length difference up to this many seconds counts as a match (not a length mismatch)."><span>Length tolerance</span><input type="number" id="tc-s-lentol" min="0" max="60" step="1"> <span>seconds</span></div>
-        <label title="Treat a case / accent / spacing-only difference in title or artist as a match (recommended)."><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
+        <div class="tc-s-row"><b class="tc-s-sub">Auto-match on load</b><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label></div>
+        <div class="tc-s-sub">Recording</div>
+        <div class="tc-s-group">
+          <div class="tc-s-row lentol" title="A length difference up to this many seconds counts as a match (not a length mismatch)."><span>Length tolerance</span><input type="number" id="tc-s-lentol" min="0" max="60" step="1"> <span>seconds</span></div>
+          <label title="Treat a case / accent / spacing-only difference in title or artist as a match (recommended)."><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
+        </div>
       </div>
       <div class="tc-s-sec">Appearance</div>
       <div class="tc-s-group">
@@ -686,6 +692,10 @@
     igc.onchange = () => { SETTINGS.recIgnoreCase = igc.checked; saveSettings(); refreshRec(); };
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     grid.onchange = () => { SETTINGS.grid = grid.checked; saveSettings(); applyViewClasses(); };
+    const repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec');
+    repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false;
+    repltl.onchange = () => { SETTINGS.replaceTracklist = repltl.checked; saveSettings(); applyView(); };
+    replrec.onchange = () => { SETTINGS.replaceRecordings = replrec.checked; saveSettings(); applyView(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -1423,13 +1433,16 @@
 
   /* ── entry points: ONE Original/Apollo toggle, applied to whichever editor tab you're on (#119) ── */
   function apolloOn() { return SETTINGS.lastView !== 'original'; }
+  // per-tab "Replace …" feature toggles gate each takeover (only meaningful while Apollo is on)
+  function replaceTL() { return apolloOn() && SETTINGS.replaceTracklist !== false; }
+  function replaceRec() { return apolloOn() && SETTINGS.replaceRecordings !== false; }
   function relabelLauncher() { const b = document.getElementById('tc-launch'); if (b) b.textContent = apolloOn() ? 'Original' : 'Apollo Editor'; }
   // apply the current view to whichever managed tab is visible (Tracklist and/or Recordings)
   function applyView() {
     recStyle();   // make sure the recordings CSS (incl. the native-table hide rule) exists up front
-    document.body.classList.toggle('tc-rec-on', apolloOn());   // hide the native recordings table whenever Apollo is on, so switching to that tab never flashes it (#119)
-    if (tracklistVisible()) { if (apolloOn()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); } else hideMirror(); }
-    if (recordingsVisible()) { if (apolloOn()) showRecMirror(); else hideRecMirror(); }
+    document.body.classList.toggle('tc-rec-on', replaceRec());   // hide the native recordings table only when we replace it (#119)
+    if (tracklistVisible()) { if (replaceTL()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); } else hideMirror(); }
+    if (recordingsVisible()) { if (replaceRec()) showRecMirror(); else hideRecMirror(); }
     relabelLauncher();
   }
   function ensureLauncher() {
@@ -1447,9 +1460,9 @@
       if (document.getElementById('tc-mirror-wrap')) syncNative();   // keep native tracklist bits in their chosen state if MB re-renders
       if (tl && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab');
         // apply the CURRENT toggle state — a toggle on another tab must take effect here too
-        if (apolloOn()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); } } else hideMirror(); }
+        if (replaceTL()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); } } else hideMirror(); }
       else if (!tl && _tlPrev) { _tlPrev = false; }
-      if (rec && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); if (apolloOn()) showRecMirror(); else hideRecMirror(); }
+      if (rec && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); if (replaceRec()) showRecMirror(); else hideRecMirror(); }
       else if (!rec && _recPrev) { _recPrev = false; }
       if (tl || rec) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }
     };
