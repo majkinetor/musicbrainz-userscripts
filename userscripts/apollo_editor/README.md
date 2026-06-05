@@ -4,7 +4,7 @@ UI and tools for advanced adding and editing of a MusicBrainz release.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/apollo_editor/apollo_editor.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/apollo_editor/apollo_editor.user.js)
 
-<img width="500" src="./screenshot.png" /> <img width="500" src="./screenshot2.png" />
+<img width="800" src="./screenshot.png" /> <img width="800" src="./screenshot2.png" />
 
 https://github.com/user-attachments/assets/b668f472-c3cc-4487-913c-50ff1d950c5b
 
