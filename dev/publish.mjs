@@ -105,8 +105,8 @@ function releaseBody(groups, changed, tag, sha) {
     lines.push(`## ${name}`, '');
     if (changed.has(dir) && path) lines.push(`[Install (stable, pinned)](${raw(sha, path)})`, '');   // only scripts whose code changed get an install link
     else lines.push('_No binary change this release; issues recorded only._', '');
-    if (g && g.features.length) { lines.push('### Features', ''); g.features.forEach(i => lines.push(`- ${i.title} (#${i.number})`)); lines.push(''); }
-    if (g && g.fixes.length) { lines.push('### Fixes', ''); g.fixes.forEach(i => lines.push(`- ${i.title} (#${i.number})`)); lines.push(''); }
+    if (g && g.features.length) { lines.push('### Features', ''); g.features.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
+    if (g && g.fixes.length) { lines.push('### Fixes', ''); g.fixes.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
   }
   return lines.join('\n');
 }
@@ -132,6 +132,16 @@ function main() {
     const { file, content } = updateChangelog(g, tag);
     edits.push({ file, content });
     console.log(changelogSection(g, tag).split('\n').map(l => '   ' + l).join('\n'));
+  }
+  // bump each linked (changed) script's @version to the release date — a script edited days before the
+  // release would otherwise ship a stale-dated version that differs from the tag.
+  for (const dir of changed) {
+    const path = userJsPath(dir); if (!path) continue;
+    const file = resolve(ROOT, path), cur = readFileSync(file, 'utf8');
+    const cm = cur.match(/@version\s+(\S+)/), curV = cm ? cm[1] : '?';
+    if (curV === tag) continue;
+    edits.push({ file, content: cur.replace(/(\/\/\s*@version\s+)\S+/, `$1${tag}`) });
+    console.log(`--- bump ${dir} @version ${curV} → ${tag}`);
   }
 
   if (!YES) {
