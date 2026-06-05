@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.030000
+// @version      2026.6.5.031500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.030000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.031500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -467,7 +467,8 @@
     .tc-mirror th{position:relative;background:transparent;border-bottom:1px solid #ccc;text-align:left;padding:4px 7px;font-size:11px;font-weight:normal;color:#777;overflow:hidden}
     .tc-mirror th:last-child{border-right:none}
     .tc-mirror td{border-bottom:1px solid #eee;padding:4px 7px;vertical-align:middle;overflow:hidden;background:#fff}
-    .tc-mirror td.c-art,.tc-mirror td.c-badge{vertical-align:top}
+    .tc-mirror td.c-art{vertical-align:top;padding-top:0;padding-bottom:0}   /* green matched boxes touch row-to-row (no white gap) */
+    .tc-mirror td.c-badge{vertical-align:top}
     .tc-mirror td.c-badge{position:relative;padding:0;text-align:center}
     .tc-mirror .tc-resizer{position:absolute;right:-1px;top:0;height:100%;width:9px;cursor:col-resize;border-right:2px solid transparent}
     .tc-mirror th:hover .tc-resizer,.tc-mirror .tc-resizer:hover{border-right-color:#5f3ec0}
@@ -523,7 +524,7 @@
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
-    .tc-search{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:4px;border:1px solid #bbb;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden}
+    .tc-search{flex:1 1 0;min-width:0;align-self:stretch;display:flex;align-items:center;gap:4px;border:1px solid #bbb;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden}
     .tc-search.matched{background:#e3f4e7;border-color:#bcdcc6}
     @keyframes tcflash{0%{box-shadow:0 0 0 3px #e0a800}70%{box-shadow:0 0 0 3px #e0a800}100%{box-shadow:0 0 0 0 rgba(224,168,0,0)}}
     .tc-search.tc-flash{animation:tcflash 1.5s ease-out}
@@ -1563,6 +1564,9 @@
       // density layouts (same names as the Tracklist tab): compact tighter, cozy airier, normal = default
       '.tc-rectbl.compact th{padding:2px 7px}.tc-rectbl.compact td{padding:1px 7px}',
       '.tc-rectbl.cozy th{padding:7px 7px}.tc-rectbl.cozy td{padding:8px 7px}',
+      // grid option: column separators on both tables
+      '.tc-rectbl.grid td,.tc-rectbl.grid th{border-right:1px solid #ededed}.tc-rectbl.grid td:last-child,.tc-rectbl.grid th:last-child{border-right:none}',
+      '.tc-rectbl.alt tbody tr.tc-recrow:nth-of-type(even) td{background:#f6f4fb}',
       '.tc-rectbl tr.tc-recmed td{background:#f3f0fa;font-weight:600;color:#4b2e83}',
       '.tc-rectbl tr.tc-recchanged td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}',   // changed-row marker, like the Tracklist tab',
       '.tc-rectbl .c-n{color:#999;text-align:right;width:26px}',
@@ -1653,7 +1657,7 @@
         '<button class="tc-rec-revall" type="button" title="revert every recording to its page-load state">Revert all</button>' +
         '<button class="tc-rec-gear" type="button" title="settings">⚙</button>' +
       '</div>' +
-      '<table class="tc-rectbl ' + (SETTINGS.layout || 'normal') + '">' +
+      '<table class="tc-rectbl ' + (SETTINGS.layout || 'normal') + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '') + '">' +
         '<colgroup><col style="width:2.5%"><col style="width:25.5%"><col style="width:18%"><col style="width:4%"><col style="width:2%"><col style="width:26%"><col style="width:18%"><col style="width:4%"></colgroup>' +
         '<thead>' +
         '<tr class="tc-grouphd"><th colspan="4" class="tc-grp tc-grp-l">Track</th><th class="c-sep"></th><th colspan="3" class="tc-grp tc-grp-r">Recording</th></tr>' +
