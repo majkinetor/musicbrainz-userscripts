@@ -79,7 +79,7 @@ The *Cutoff* option in the recording toolbar sets the acceptable confidence.
 |---|---|---|
 | **Change** | all matching tracks | Apply edit/selection to just the edited track or propagate to every track with the same credit |
 | **⚡ Match** | — | Match all still-unresolved track artists or recordings (used when *Auto-match on start* is off)|
-| **▾** | — | **↺ Revert all** — every track back to page-load state<br>**✕ Clear all** — empty all artists in tracklist or set new recrodings|
+| **▾** | — | **↺ Revert all** — every track back to page-load state<br>**✕ Clear all** — empty all artists in tracklist or set new recordings|
 | **Tool** | last used | A single always-visible button holding all the tools. The last tool used becomes the default |
 | **Cutoff** | 🟠 very low | Matches only records at or above the chosen confidence level and leave other unmatched |
 
