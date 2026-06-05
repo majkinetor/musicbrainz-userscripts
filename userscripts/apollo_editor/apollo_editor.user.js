@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.073000
+// @version      2026.6.5.080000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.073000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.080000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1222,8 +1222,32 @@
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
-      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'gear') openSettings(b); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
+      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '✕ Clear all', title: 'empty the title, artist and length of every track', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
     });
+  }
+  // a small one-off dropdown (e.g. the ▾ next to "Revert all"); items: {label, title?, onClick}
+  function openMiniMenu(anchor, items) {
+    document.querySelectorAll('.tc-menu.tc-mini').forEach(m => m.remove());
+    const m = document.createElement('div'); m.className = 'tc-menu tc-mini';
+    m.innerHTML = items.map((it, i) => `<div class="tc-mi" data-i="${i}"${it.title ? ` title="${esc(it.title)}"` : ''}>${esc(it.label)}</div>`).join('');
+    document.body.appendChild(m);
+    const r = anchor.getBoundingClientRect();
+    m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px';
+    m.style.top = Math.min(r.bottom + 4, window.innerHeight - m.offsetHeight - 8) + 'px';
+    m.querySelectorAll('.tc-mi').forEach(el => el.onclick = () => { const it = items[+el.dataset.i]; m.remove(); it.onClick(); });
+    const off = e => { if (!m.contains(e.target) && e.target !== anchor) { m.remove(); document.removeEventListener('mousedown', off, true); } };
+    setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+  }
+  // Tracklist "Clear all": empty the title, artist credit and length of every track (with confirm)
+  function clearAllTracks() {
+    if (!MODEL) return;
+    if (!W.confirm('Empty the title, artist and length of EVERY track? (does not submit)')) return;
+    MODEL.tracks.forEach(t => {
+      try { const ko = koTrack(t.mi, t.ti); ko.name(''); } catch (e) {}
+      try { setLength({ mi: t.mi, ti: t.ti }, ''); } catch (e) {}
+      try { const ko = koTrack(t.mi, t.ti); const ac = u(ko.artistCredit); ko.artistCredit(Object.assign({}, ac, { names: [{ name: '', artist: null, joinPhrase: '' }] })); } catch (e) {}
+    });
+    Log.info('cleared all track fields'); loadAndRender();
   }
 
   /* ── the Tools split-button: last-used tool is the button's label + default action; ▾ picks another ── */
@@ -1336,7 +1360,7 @@
 
   const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
     + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-globalstat"></span><label class="tc-am-lbl">Change ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
-    + `<button class="tc-btn" data-act="revert">Revert all</button><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
+    + `<div class="tc-split"><button class="tc-btn" data-act="revert">Revert all</button><button class="tc-btn tc-caret" data-act="revertmenu" title="more">▾</button></div><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
   function openPanel() {
@@ -1602,6 +1626,7 @@
       '#tc-recwrap .tc-rec-tb .sp{flex:1}',   // flex spacer: Clear hugs the left, the Match cluster hugs the right (mirrors #tc-bar)
       // flat buttons that match the Tracklist tab's .tc-btn (transparent until hover); Match keeps the bold-purple primary look
       '#tc-recwrap .tc-rec-tb button{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}#tc-recwrap .tc-rec-tb button:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}',
+      '#tc-recwrap .tc-rec-split{display:inline-flex}#tc-recwrap .tc-rec-revcaret{padding:4px 6px;color:#7d6bc0}',
       '#tc-recwrap .tc-rec-tb button.primary{color:#5f3ec0;font-weight:bold}#tc-recwrap .tc-rec-tb button.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}',
       '#tc-recwrap .tc-rec-tbl{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}',
       '#tc-recwrap .tc-rec-ignore{font:12px Arial;padding:1px;width:auto;max-width:150px}',
@@ -1704,13 +1729,12 @@
   function renderRecMirror(wrap) {
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
-        '<button class="tc-rec-clear" type="button" title="set every track to a new recording">Clear</button>' +
         '<span class="tc-rec-amstatus"></span>' +   // flexible filler: its text changes absorb here, never reflowing the bar
         '<label class="tc-rec-tbl">ignore at <select class="tc-rec-ignore"><option value="low">🟡 low</option><option value="vlow">🟠 very low</option><option value="xlow">🔴 extremely low</option><option value="nothing">⚪ nothing</option></select></label>' +
         '<span class="tc-recwarn"></span>' +
         '<span class="tc-tbsep"></span>' +
         '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions">⚡ Match</button>' +
-        '<button class="tc-rec-revall" type="button" title="revert every recording to its page-load state">Revert all</button>' +
+        '<span class="tc-rec-split"><button class="tc-rec-revall" type="button" title="revert every recording to its page-load state">Revert all</button><button class="tc-rec-revcaret" type="button" title="more">▾</button></span>' +
         '<button class="tc-rec-gear" type="button" title="settings">⚙</button>' +
       '</div>' +
       '<table class="tc-rectbl ' + (SETTINGS.layout || 'normal') + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.gridCols ? ' gridcols' : '') + (SETTINGS.gridRows !== false ? ' gridrows' : '') + '">' +
@@ -1722,8 +1746,8 @@
     // wire the toolbar (once)
     const sel = wrap.querySelector('.tc-rec-ignore'); if (sel) { sel.value = SETTINGS.recIgnore || 'vlow'; sel.onchange = () => { SETTINGS.recIgnore = sel.value; saveSettings(); }; }
     const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
-    const clrBtn = wrap.querySelector('.tc-rec-clear'); if (clrBtn) clrBtn.onclick = () => clearAllRecordings();
     const revBtn = wrap.querySelector('.tc-rec-revall'); if (revBtn) revBtn.onclick = () => revertAllRecordings();
+    const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [{ label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings }]);
     const gearBtn = wrap.querySelector('.tc-rec-gear'); if (gearBtn) gearBtn.onclick = () => openSettings(gearBtn);   // same settings dialog as the Tracklist tab
     renderRecBody(wrap);
   }
