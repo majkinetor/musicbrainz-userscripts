@@ -104,7 +104,6 @@ function releaseBody(groups, changed, tag, sha) {
     const name = (g && g.name) || (path && scriptDisplayName(path)) || dir;
     lines.push(`## ${name}`, '');
     if (changed.has(dir) && path) lines.push(`[Install (stable, pinned)](${raw(sha, path)})`, '');   // only scripts whose code changed get an install link
-    else lines.push('_No binary change this release; issues recorded only._', '');
     if (g && g.features.length) { lines.push('### Features', ''); g.features.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
     if (g && g.fixes.length) { lines.push('### Fixes', ''); g.fixes.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
   }
