@@ -12,7 +12,12 @@ The userscript runs on `musicbrainz.org/release/*` and tries to locate each rele
 
 Once a URL is settled, the script fetches the platform's metadata (track count, year, label, format where available) and shows it alongside the MB-side numbers so you can see at a glance whether a candidate looks right. Results are cached per release so revisiting a page does no outbound traffic until you click ↻.
 
-Platforms with ✓ marker have link result. If the marker is circled, the link is already in the MB's URL relationships.
+Link availability is determined by the icon and text color:
+
+1. Color - link is found
+1. Gray - link is found but details do not match
+1. Faded - link is not found
+1. Circled - link exists in MB relationships
 
 ## Supported platforms
 
@@ -28,6 +33,8 @@ Discogs has few specifics:
 
 1. It is **format-aware** — for example, when MB release format has type CD, the first attempt tries to find CD release on Discogs, so a vinyl Discogs entry doesn't shadow an existing CD one; if that returns nothing, the script retries without the format filter.
 1. It checks if any master release on Discogs is present as link on MB's release group.
+
+
 
 ## Features
 
