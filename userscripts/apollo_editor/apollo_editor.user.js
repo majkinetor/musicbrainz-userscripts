@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.290000
+// @version      2026.6.5.300000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.290000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.300000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2602,8 +2602,13 @@
        delete after the type+video; the whole-link remove on the URL row stays hidden */
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{display:inline-flex;align-items:center;order:9;margin-left:6px;opacity:.5;transform:scale(.85);transition:opacity .12s}
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]:hover{opacity:1}
-    /* hide MB's inline "Add another relationship" row — the single paste field at the bottom is the only adder we keep */
-    body.tc-ri-on #external-links-editor tr.add-relationship{display:none}
+    /* MB's "Add another relationship" (only present on some links) — keep it, inline at the end of the type list, as a small + */
+    body.tc-ri-on #external-links-editor tr.add-relationship{display:inline-flex;align-items:center;vertical-align:middle;margin-left:14px;padding:0 0 4px}
+    body.tc-ri-on #external-links-editor tr.add-relationship > td{padding:0;border:none}
+    body.tc-ri-on #external-links-editor tr.add-relationship > td:empty{display:none}
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item{font-size:0;border:none;background:transparent;cursor:pointer;padding:0;margin:0;line-height:1}
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item::before{content:"＋ type";font-size:11px;color:#2a8a55}
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover::before{text-decoration:underline}
     /* the "add another link" input row */
     body.tc-ri-on #external-links-editor tr.external-link-item .value.with-button input{width:100%}`;
     const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
