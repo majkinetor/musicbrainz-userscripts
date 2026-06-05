@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5
+// @version      2026.6.5.190000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1652,10 +1652,12 @@
   }
   // Confidence ported from "Quick Recording Match": null = perfect (green), else low / vlow / xlow
   // (yellow / orange / red), graded by how many fields differ and by how far the length is off.
+  // single source of truth for the confidence colors — used by the row dots AND the Cutoff picker
+  const CONF_COLOR = { exact: '#2f6fd6', tolerance: '#86c686', near: '#fff176', low: '#ffb74d', vlow: '#d32f2f' };
   const REC_CONF = {   // the colored bands below exact/tolerance (keys = display names)
-    near: { c: '#fff176', label: 'near' },
-    low:  { c: '#ffb74d', label: 'low' },
-    vlow: { c: '#d32f2f', label: 'very low' },
+    near: { c: CONF_COLOR.near, label: 'near' },
+    low:  { c: CONF_COLOR.low, label: 'low' },
+    vlow: { c: CONF_COLOR.vlow, label: 'very low' },
   };
   function recConfidence(track, rec, d) {
     if (!rec || !u(rec.gid)) return null;
@@ -1695,8 +1697,15 @@
       const exact = !!(rec && fold(u(t.name)) === fold(u(rec.name))
         && (!u(t.length) || !u(rec.length) || Math.round(u(t.length) / 1000) === Math.round(u(rec.length) / 1000))
         && (sameArtistEntities(t, rec) || fold(acText(u(t.artistCredit))) === fold(acText(u(rec.artistCredit)))));
+      // which fields a green (within-tolerance) match still differs on — for the dot tooltip
+      const tolDiffs = [];
+      if (rec) {
+        if (fold(u(t.name)) !== fold(u(rec.name))) tolDiffs.push('title');
+        if (u(t.length) && u(rec.length) && Math.round(u(t.length) / 1000) !== Math.round(u(rec.length) / 1000)) tolDiffs.push('length ' + Math.round(Math.abs(u(t.length) - u(rec.length)) / 1000) + 's');
+        if (!(sameArtistEntities(t, rec) || fold(acText(u(t.artistCredit))) === fold(acText(u(rec.artistCredit))))) tolDiffs.push('artist');
+      }
       out.push({
-        exact,
+        exact, tolDiffs,
         mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit)), trackLen: u(t.length),
         isNew: typeof t.hasNewRecording === 'function' ? !!u(t.hasNewRecording) : false,
         recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit)) : '', recLen: rec ? u(rec.length) : null,
@@ -1727,7 +1736,13 @@
       '#tc-recwrap .tc-rec-tb button.primary{color:#5f3ec0;font-weight:bold}#tc-recwrap .tc-rec-tb button.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}',
       '#tc-recwrap .tc-rec-tbl{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555;font-family:"Bitstream Vera Sans",Verdana,Arial,sans-serif}',
       '#tc-recwrap .tc-rec-tbl b{color:#563b8f}',   // bold label word in MB purple, matching #tc-bar b on the Tracklist toolbar
-      '#tc-recwrap .tc-rec-cutoff{font:12px Arial;padding:1px;width:auto;max-width:150px}',
+      '#tc-recwrap .tc-cutoff{display:inline-flex;align-items:center;gap:6px;border:1px solid #cfcfcf;border-radius:14px;padding:2px 9px;cursor:pointer;font:12px Arial;background:#fff;user-select:none}',
+      '#tc-recwrap .tc-cutoff:hover{border-color:#b3b3b3}',
+      '.tc-cutoff-dot,.tc-cutoff-menu .dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.18);flex:none}',
+      '#tc-recwrap .tc-cutoff-caret{color:#999;font-size:10px}',
+      '.tc-cutoff-menu{position:fixed;z-index:100002;background:#fff;border:1px solid #ccc;border-radius:7px;box-shadow:0 8px 24px rgba(40,20,80,.22);padding:4px;font:13px Arial}',
+      '.tc-cutoff-menu .mi{display:flex;align-items:center;gap:9px;padding:5px 11px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;color:#333}',
+      '.tc-cutoff-menu .mi:hover,.tc-cutoff-menu .mi.sel{background:#f0ecfa}',
       '#tc-recwrap .tc-rec-amstatus{color:#6f42c1;font-size:12px;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:4px}',
       '.tc-rectbl .tc-recname{position:relative}',
       '.tc-rectbl .tc-rec-rev{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:none;background:#fff;cursor:pointer;color:#7d6bc0;font-size:15px;line-height:1;visibility:hidden;padding:1px 4px;border-radius:3px}',
@@ -1832,7 +1847,7 @@
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
         '<span class="tc-rec-amstatus"></span>' +   // flexible filler: its text changes absorb here, never reflowing the bar
-        '<label class="tc-rec-tbl" title="Auto-match only links a recording when its confidence is at or above this level; anything lower is left unmatched."><b>Cutoff</b> <select class="tc-rec-cutoff"><option value="exact">🔵 exact</option><option value="tolerance">🟢 tolerance</option><option value="near">🟡 near</option><option value="low">🟠 low</option><option value="vlow">🔴 very low</option></select></label>' +
+        '<label class="tc-rec-tbl" title="Auto-match only links a recording when its confidence is at or above this level; anything lower is left unmatched."><b>Cutoff</b> <span class="tc-cutoff" tabindex="0"><span class="tc-cutoff-dot"></span><span class="tc-cutoff-lbl"></span><span class="tc-cutoff-caret">▾</span></span></label>' +
         '<span class="tc-recwarn"></span>' +
         '<span class="tc-tbsep"></span>' +
         '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions">⚡ Match</button>' +
@@ -1846,11 +1861,31 @@
         '<tr><th class="c-n">#</th><th>Title</th><th>Artist</th><th class="c-len">Length</th>' +
         '<th class="c-sep"></th><th>Title</th><th>Artist</th><th class="c-len">Length</th></tr></thead><tbody></tbody></table>';
     // wire the toolbar (once)
-    const sel = wrap.querySelector('.tc-rec-cutoff'); if (sel) { sel.value = SETTINGS.recCutoff || 'near'; sel.onchange = () => { SETTINGS.recCutoff = sel.value; saveSettings(); }; }
+    wireCutoff(wrap);
     const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
     const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [{ label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings }, { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings }]);
     const gearBtn = wrap.querySelector('.tc-rec-gear'); if (gearBtn) gearBtn.onclick = () => openSettings(gearBtn);   // same settings dialog as the Tracklist tab
     renderRecBody(wrap);
+  }
+  // custom Cutoff picker — a colored-dot dropdown that uses the SAME hex palette as the row dots
+  // (a native <select> can't show the exact colors, only emoji approximations)
+  function wireCutoff(wrap) {
+    const host = wrap.querySelector('.tc-cutoff'); if (!host) return;
+    const dotEl = host.querySelector('.tc-cutoff-dot'), lblEl = host.querySelector('.tc-cutoff-lbl');
+    const OPTS = [['exact', 'exact'], ['tolerance', 'tolerance'], ['near', 'near'], ['low', 'low'], ['vlow', 'very low']];
+    const paint = () => { const v = SETTINGS.recCutoff || 'near'; const o = OPTS.find(x => x[0] === v) || OPTS[2]; dotEl.style.background = CONF_COLOR[v]; lblEl.textContent = o[1]; };
+    paint();
+    host.onclick = () => {
+      document.querySelectorAll('.tc-cutoff-menu').forEach(m => m.remove());
+      const cur = SETTINGS.recCutoff || 'near';
+      const m = document.createElement('div'); m.className = 'tc-cutoff-menu';
+      m.innerHTML = OPTS.map(([v, l]) => `<div class="mi${v === cur ? ' sel' : ''}" data-v="${v}"><span class="dot" style="background:${CONF_COLOR[v]}"></span>${l}</div>`).join('');
+      document.body.appendChild(m);
+      const r = host.getBoundingClientRect(); m.style.left = r.left + 'px'; m.style.top = (r.bottom + 3) + 'px';
+      m.querySelectorAll('.mi').forEach(it => it.onmousedown = e => { e.preventDefault(); SETTINGS.recCutoff = it.dataset.v; saveSettings(); paint(); m.remove(); });
+      const off = e => { if (!m.contains(e.target) && !host.contains(e.target)) { m.remove(); document.removeEventListener('mousedown', off); } };
+      setTimeout(() => document.addEventListener('mousedown', off), 0);
+    };
   }
   // (re)render just the rows + the unset-count — leaves the toolbar (status/inputs) untouched
   function renderRecBody(wrap) {
@@ -1870,8 +1905,9 @@
       const titleCell = r.copyTitle ? '→ ' + esc(r.title || '')
         : r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? esc(r.recName) : '<span class="tc-rec-none">— none —</span>';
       const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') : (r.recArtistHtml || '');
-      const tCls = r.copyTitle ? 'tc-copy' : (d.title ? 'tc-diff' : '');
-      const aCls = r.copyArtist ? 'tc-copy' : (d.artist ? 'tc-diff' : '');
+      const tolHas = f => (r.tolDiffs || []).some(x => x === f || x.startsWith(f));   // within-tolerance diffs highlight the cells too
+      const tCls = r.copyTitle ? 'tc-copy' : (d.title || tolHas('title') ? 'tc-diff' : '');
+      const aCls = r.copyArtist ? 'tc-copy' : (d.artist || tolHas('artist') ? 'tc-diff' : '');
       const changed = recChangedFromOrig(r.mi, r.ti);   // differs from the page-load recording
       const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : '');
       tr.innerHTML =
@@ -1882,10 +1918,10 @@
         '<td class="c-sep"><span class="tc-dot"></span></td>' +
         '<td class="tc-recname ' + tCls + '">' + titleCell + '</td>' +
         '<td class="' + aCls + '">' + artistCell + '</td>' +
-        '<td class="c-len ' + (d.len ? 'tc-diff' : '') + '">' + fmtMs(r.recLen) + '</td>';
+        '<td class="c-len ' + (d.len || tolHas('length') ? 'tc-diff' : '') + '">' + fmtMs(r.recLen) + '</td>';
       const dot = tr.querySelector('.tc-dot');
       if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
-      else if (r.recGid) { dot.style.background = r.exact ? '#2f6fd6' : '#86c686'; dot.title = r.exact ? 'exact match' : 'matches the track (within tolerance)'; }
+      else if (r.recGid) { dot.style.background = r.exact ? CONF_COLOR.exact : CONF_COLOR.tolerance; dot.title = r.exact ? 'Exact match' : 'Tolerance match' + (r.tolDiffs && r.tolDiffs.length ? ' (' + r.tolDiffs.join(', ') + ')' : ''); }
       else dot.style.visibility = 'hidden';
       const nameCell = tr.querySelector('.tc-recname');
       nameCell.classList.add('tc-clickable'); nameCell.title = 'change recording — suggestions / search';
