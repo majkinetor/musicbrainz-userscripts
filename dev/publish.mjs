@@ -97,7 +97,7 @@ function updateChangelog(group, tag) {
 }
 
 function releaseBody(groups, changed, tag, sha) {
-  const lines = [`# ${tag}`, ''];
+  const lines = [];   // no leading "# <tag>" — GitHub already shows the release title
   const dirs = [...new Set([...changed, ...Object.keys(groups)])].sort();
   for (const dir of dirs) {
     const g = groups[dir]; const path = (g && g.path) || userJsPath(dir);
