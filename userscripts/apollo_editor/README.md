@@ -39,13 +39,13 @@ It replaces the native **Tracklist** and **Recordings** editors with two clean, 
 
 ## Matching
 
-Apollo can automatically match unresolved **artists** and **recordings**. Both work the same way: a *Match* button, a per-row **confidence**, and the single best candidate applied automatically while anything uncertain is left out. If _Auto-match on start_ is enabled in the [settings](#matching-1), matching will be automatically started on entering add/edit release page.
+Apollo can automatically match unresolved **artists** and **recordings**. Both work the same way: a *Match* button, a per-row **confidence**, and the single best candidate applied automatically while anything uncertain is left out. If _Auto-match on start_ is enabled in the [settings](#matching-options), matching will be automatically started on entering add/edit release page.
 
 ### Artist matching
 
 Apollo resolves each unmatched track artist in two stages, in order:
 
-1. Sibling releases (same release group) — it pulls the per-track credits (with MBIDs) from other versions of the album and matches by track title. Other editions usually credit the same songs to the same artists, so this resolves most cases at the highest confidence — especially various-artists compilations.
+1. Sibling releases from same release group — it pulls the per-track credits (with MBIDs) from other versions of the album and matches by track title. Other editions usually credit the same songs to the same artists, so this resolves most cases at the highest confidence — especially various-artists compilations.
 2. Name search — for anything siblings don't cover, it searches the MusicBrainz artist index by the credited name. An exact name is taken as high-confidence only when it's unambiguous; artists that share exact name are left out.
 
 Each resolved artist is tagged by how it matched (release-group, name, pre-existing, or manual).
@@ -53,11 +53,11 @@ Each resolved artist is tagged by how it matched (release-group, name, pre-exist
 **Confidence levels**:
 
 1. 🟢 Green colored artist box means the artist was matched confidently (release-group or unambiguous exact name).
-1. ⚪ White search box — unresolved or low-confidence, left for user to pick; these are what the "N unresolved" counter counts and what clicking that badge jumps to.
+1. ⚪ White search box means artist is unresolved or low-confidence, for user to pick; these are what the "N unresolved" counter counts and what clicking that badge jumps to.
 
 ### Recording matching
 
-Apollo fetches **every recording in the release group in one request**, indexes them by title, and matches each track **locally** — choosing the highest-confidence candidate (title + artist + length). It only falls back to a per-track MusicBrainz lookup for the few tracks the release group can't satisfy. A full release therefore matches in roughly one fetch rather than one request per track.
+Apollo fetches **every recording in the release group in one request**, indexes them by title, and matches each track **locally** — choosing the highest-confidence candidate (title + artist + length). It only falls back to a per-track MusicBrainz lookup for the tracks the release group can't satisfy. A full release therefore matches in roughly one fetch rather than one request per track.
 
 A *Credited as* values on track and recording don't influence matching.
 
@@ -66,14 +66,24 @@ A *Credited as* values on track and recording don't influence matching.
 | Color |     Meaning      |                               Description                               |
 | :---: | ---------------- | ----------------------------------------------------------------------- |
 |   🔵   | Exact            | All fields are the same                                                 |
-|   🟢   | Within tolerance | Matches within tolerance defined in Options                             |
+|   🟢   | Within tolerance | Matches within tolerance defined in [settings](#matching-options)       |
 |   🟡   | Low              | A single field differs, or the length gap is 3–15s (a near-miss)        |
 |   🟠   | Very low         | Two fields differ or the length gap alone is >15s (substantially wrong) |
 |   🔴   | Extremely low    | All three differ and the length gap is >10s (almost certainly wrong)    |
 
-The *Ignore at* option in the recording toolbar sets the confidence at which auto-match will stop linking recordings.
+The *Cutoff* option in the recording toolbar sets the acceptable confidence.
 
-## Tools
+## Toolbar
+
+| Control | Default | What it does |
+|---|---|---|
+| **Change** | all matching tracks | Apply edit/selection to just the edited track or propagate to every track with the same credit |
+| **⚡ Match** | — | Match all still-unresolved track artists or recordings (used when *Auto-match on start* is off)|
+| **▾** | — | **↺ Revert all** — every track back to page-load state<br>**✕ Clear all** — empty artist of every track|
+| **Tool** | last used | A single always-visible button holding all the tools. The last tool used becomes the default |
+| **Cutoff** | 🟠 very low | Matches only records at or above the chosen confidence level and leave other unmatched |
+
+### Tools
 
 Native tools are hidden and moved to the single **Tool** button at the top of the table that stays always visible. All tools are reachable from the button's menu and the last one used becomes the default. Tools with parameters show them next to the button; parameterless tools fire on pick.
 
@@ -81,16 +91,6 @@ Besides the integrated tools, there are a few new ones:
 
 - **Search & Replace** — search a string within track titles and replace it. Clicking the button starts a fresh session with any existing parameters applied and cleared.
 - **Resize Columns** — set column sizes to predefined variants (auto-fit, centered, default).
-
-## Toolbar
-
-| Control | Default | What it does |
-|---|---|---|
-| **Change** | all matching tracks | Apply edit/selection to just the edited track or propagate to every track with the same credit |
-| **⚡ Match** | — | Match all still-unresolved track artists or recordings (used when *Auto-match on start* is off). |
-| **▾** | — | **↺ Revert all** — every track back to page-load state<br>**✕ Clear all** — empty artist of every track|
-| **Tool** | last used | A single always-visible button holding all the tools. The last tool used becomes the default; tools with parameters show them inline. |
-| **Cutoff** | 🟠 very low | Matches only records at or above the chosen confidence level and leave other unmatched |
 
 ## Settings
 
@@ -136,4 +136,4 @@ These are remembered automatically as you use the UI:
 - **Column widths** — drag a column border to resize; reset/auto-fit via the **Resize Columns** tool.
 - **Suggestions collapsed** — the picker remembers whether its *suggestions* section is collapsed.
 - **Last tool used** — becomes the default action of the **Tool** button.
-- **Apply mode**, **Ignore at**, and all dialog options above — saved on change.
+- **Apply mode**, **Cuttoff**, and all dialog options above — saved on change.
