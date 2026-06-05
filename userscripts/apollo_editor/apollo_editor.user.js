@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.220000
+// @version      2026.6.5.230000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -908,6 +908,23 @@
     rerender();
     if (copies) toast(`linked “${c.name}” — also set on ${copies} other track${copies > 1 ? 's' : ''}`);
   }
+  // Ctrl/Cmd-click a search result → set that artist on EVERY still-unresolved slot (bulk-fill, e.g. a
+  // various-artists comp that's actually one artist). Resolved (green) slots are left untouched.
+  function pickArtistAllUnresolved(c) {
+    if (!c || !c.gid || !MODEL) return;
+    if (c.aliases) cacheAliases(c.gid, c.aliases); else if (!_gidAliases.has(c.gid)) fetchAliasesByGids([c.gid]).then(() => refreshAdorns());
+    MODEL.tracks.forEach(t => t.slots.forEach(s => { delete s._marked; }));
+    const touched = new Set(); let n = 0;
+    MODEL.tracks.forEach(t => t.slots.forEach(s => {
+      if (s.committed) return;   // skip already-resolved slots
+      Object.assign(s, { entity: c, gid: c.gid, name: c.name, status: 'user', committed: true, query: null, _flash: true, _marked: true });
+      if (!(s.creditedAs || '').trim()) s.creditedAs = c.name;
+      touched.add(s._entry); n++;
+    }));
+    touched.forEach(commitTrack);
+    rerender();
+    toast(n ? `linked “${c.name}” on ${n} unresolved track${n > 1 ? 's' : ''}` : 'no unresolved tracks');
+  }
   async function revertSlot(entry, i) {
     const orig = ORIGINALS.get(entry.mi + ':' + entry.ti); if (!orig || !orig.names[i]) return;
     const on = orig.names[i], slot = entry.slots[i];
@@ -1034,7 +1051,7 @@
     const draw = arr => {
       ensure(); list = arr; const q = inp.value.trim() || slot.creditedAs;
       pop.innerHTML = arr.length ? arr.map((c, i) => `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
-      [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
+      [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.title = 'click to set · Ctrl-click to set on all unresolved tracks'; row.onmousedown = e => { e.preventDefault(); const c = arr[+row.dataset.i]; if (e.ctrlKey || e.metaKey) { close(); pickArtistAllUnresolved(c); } else choose(c); }; });
       if (curQuery && arr.length >= curLimit && curLimit < 100) {   // likely more available → a clickable "Show more…" footer
         const more = document.createElement('div'); more.className = 'tc-acrow tc-acmore'; more.textContent = 'Show more…';
         more.onmousedown = e => { e.preventDefault(); loadMore(); };
@@ -1058,7 +1075,7 @@
     const runSearch = q => { curQuery = q; curLimit = 8; const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) showResults(res, q); }); };
     // paste an MBID or a MusicBrainz /artist/<mbid> URL → resolve it straight to that artist. Gate on the
     // field value (not focus): a commit-rerender can steal focus before the fetch returns.
-    const resolveByGid = async gid => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (mbidFrom(inp.value) !== gid) return; if (ent && ent.id) { close(); pickArtist(slot, ent); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };
+    const resolveByGid = async gid => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (mbidFrom(inp.value) !== gid) return; if (ent && ent.id) { const entry = slot._entry, i = entry.slots.indexOf(slot); close(); pickArtist(slot, ent); focusSlotInput(entry, i); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };   // refocus the (re-rendered) field so keyboard nav keeps working after a paste
     inp.onfocus = () => {
       if (slot.committed && slot.candidates && slot.candidates.length) { curQuery = inp.value.trim() || slot.creditedAs || slot.name; curLimit = 8; showResults(slot.candidates, curQuery); return; }
       const q = inp.value.trim() || (slot.creditedAs || '').trim(); if (q) runSearch(q); else close();   // empty → no dropdown

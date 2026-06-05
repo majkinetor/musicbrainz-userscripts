@@ -17,6 +17,8 @@ It replaces the native **Tracklist** and **Recordings** editors with two clean, 
 - **Tracklist editor**
     - Artist picker with confidence highlight
         - Option to change all appearances of selected artist (or its *Credited as* field) with highlight
+        - **Ctrl-click** a search result to set that artist on **all unresolved tracks**
+        - Paste an MBID or a MusicBrainz artist URL to resolve straight to that artist
     - Split artist with join-phrase selector
     - Artist aliases in search results and in selection
     - Icon representing artist type and direct link
