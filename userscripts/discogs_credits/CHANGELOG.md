@@ -1,5 +1,14 @@
 # Import Discogs Credits Changelog
 
+## [2026.6.5](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.5)
+
+### Fixes
+
+1. Credits aren't recognised with "indexed" Discogs tracks (classical music) ([#122](https://github.com/majkinetor/musicbrainz-userscripts/issues/122))
+1. Instrument mislinked: "Guitar" ([#121](https://github.com/majkinetor/musicbrainz-userscripts/issues/121))
+1. Instrument mislinked: "Alto Clarinet" ([#120](https://github.com/majkinetor/musicbrainz-userscripts/issues/120))
+1. Credit isn't recognized for classsical music release ([#112](https://github.com/majkinetor/musicbrainz-userscripts/issues/112))
+
 ## [2026.5.29](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.5.29)
 
 ### Features
