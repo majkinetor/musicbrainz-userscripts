@@ -29,7 +29,7 @@ It replaces the native **Tracklist** and **Recordings** editors with two clean, 
 
 Apollo matches in two places — track **artists** (Tracklist tab) and track **recordings** (Recordings tab). Both work the same way: a **Match** button (or _Auto-match on start_ in the settings), a per-row **confidence dot**, and the single best candidate applied automatically while anything uncertain is left for you.
 
-**Confidence** is shown by the dot colour: 🟢 matches → 🟡 low → 🟠 very low → 🔴 extremely low, graded by how many fields differ (title, artist, length) and how far off the length is. The **ignore below** selector sets the worst confidence auto-match will still link (e.g. _very low_ links anything better, _nothing_ links everything). All the differences are softened by the matching options below, so a cosmetic difference doesn't drop the confidence.
+**Confidence** is shown by the dot colour: 🔵 exact → 🟢 matches (within tolerance) → 🟡 low → 🟠 very low → 🔴 extremely low, graded by how many fields differ (title, artist, length) and how far off the length is. An **exact** match is one that needs none of the relaxation options below — it's the ideal candidate and auto-match prefers it; 🟢 means it matched only thanks to a tolerance. The **ignore below** selector sets the worst confidence auto-match will still link (e.g. _very low_ links anything better, _nothing_ links everything).
 
 ### Track artists (Tracklist)
 

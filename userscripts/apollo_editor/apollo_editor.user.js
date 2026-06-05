@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.103000
+// @version      2026.6.5.110000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.103000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.110000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1572,12 +1572,12 @@
   }
   // title equality: normalised, then within the "Title tolerance" edit distance (0 = exact)
   function recTitleEq(a, b) { const x = recFold(a), y = recFold(b); if (x === y) return true; const tol = SETTINGS.recTitleTol || 0; return tol > 0 && recLev(x, y) <= tol; }
-  // an IDEAL match: title/length match with NO tolerance used (normalisation still applies), artist equal —
-  // distinguished from a tolerance-assisted match and preferred by auto-match. #119
+  // an IDEAL match: title/length/artist match WITHOUT any relaxation option (ignore-punctuation, title or
+  // length tolerance) — only case/accent folding. Preferred by auto-match and shown distinctly. #119
   function recExactMatch(data, ctx) {
     if (!ctx) return false;
-    const titleEq = !data.name || !ctx.title || recFold(data.name) === recFold(ctx.title);
-    const artistEq = !data.artist || !ctx.artist || recNameEq(data.artist, ctx.artist);
+    const titleEq = !data.name || !ctx.title || fold(data.name) === fold(ctx.title);
+    const artistEq = !data.artist || !ctx.artist || fold(data.artist) === fold(ctx.artist);
     const lenEq = !data.length || !ctx.length || Math.round(data.length / 1000) === Math.round(ctx.length / 1000);
     return titleEq && artistEq && lenEq;
   }
@@ -1635,9 +1635,11 @@
       const rec = u(t.recording);
       const sugg = (typeof t.suggestedRecordings === 'function' ? (u(t.suggestedRecordings) || []) : []);
       const diffs = rec ? recFieldDiffs(t, rec) : null;
-      // ideal/exact match: a full match where NO tolerance was needed (title equal w/o edit distance,
-      // length to the same on-screen second). A credited-as artist (not flagged) still counts as exact. #119
-      const exact = !!(rec && diffs && !diffs.title && !diffs.artist && recFold(u(t.name)) === recFold(u(rec.name)) && (!u(t.length) || !u(rec.length) || Math.round(u(t.length) / 1000) === Math.round(u(rec.length) / 1000)));
+      // ideal/exact match: title + length match with NO relaxation option used (fold only, no punctuation/
+      // edit-distance/length tolerance). A credited-as artist (same entity) still counts as exact. #119
+      const exact = !!(rec && fold(u(t.name)) === fold(u(rec.name))
+        && (!u(t.length) || !u(rec.length) || Math.round(u(t.length) / 1000) === Math.round(u(rec.length) / 1000))
+        && (sameArtistEntities(t, rec) || fold(acText(u(t.artistCredit))) === fold(acText(u(rec.artistCredit)))));
       out.push({
         exact,
         mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit)), trackLen: u(t.length),
@@ -1731,6 +1733,9 @@
       '.tc-recpop .tc-rpk-qnew{flex:none;cursor:pointer;border:1px solid #bcdcc6;background:#eef7f0;color:#1f7a44;border-radius:4px;font:bold 16px Arial;line-height:1;padding:0 10px}.tc-recpop .tc-rpk-qnew:hover{background:#e0f0e6}',
       '.tc-recpop .tc-rpk-hdby a{color:#2c5d9b;text-decoration:none}.tc-recpop .tc-rpk-hdby a:hover{text-decoration:underline}',
       '.tc-recpop .tc-rpk-sec{display:flex;align-items:center;justify-content:space-between;padding:3px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#999;background:#faf8ff}',
+      '.tc-recpop .tc-rpk-suggsec{cursor:pointer;user-select:none}.tc-recpop .tc-rpk-suggsec:hover{color:#6f42c1}',
+      '.tc-recpop .tc-rpk-caret{display:inline-block;font-size:9px;transition:transform .1s}',
+      '.tc-recpop.tc-sugg-collapsed .tc-rpk-sugg{display:none}.tc-recpop.tc-sugg-collapsed .tc-rpk-caret{transform:rotate(-90deg)}',
       '.tc-recpop .tc-rpk-relax{text-transform:none;letter-spacing:0;border:1px solid #cfc6e6;background:#fff;color:#6f42c1;border-radius:4px;padding:1px 7px;font:10px Arial;cursor:pointer}',
       '.tc-recpop .tc-rpk-relax:hover{background:#f1ecfa}.tc-recpop .tc-rpk-relax.on{background:#6f42c1;color:#fff;border-color:#6f42c1}',
       '.tc-recpop .tc-rpk-row{padding:5px 10px;cursor:pointer;border-bottom:1px solid #f1edf9}',
@@ -2117,7 +2122,7 @@
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
       '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" placeholder="search recordings by name…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
-      '<div class="tc-rpk-sec tc-rpk-suggsec">suggestions</div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
+      '<div class="tc-rpk-sec tc-rpk-suggsec" title="click to collapse / expand"><span>suggestions <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
       '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" title="relaxed search — show all recordings with this title, ignoring artist &amp; length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
     const newBtn = pop.querySelector('.tc-rpk-qnew'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
     const ctEl = pop.querySelector('.tc-rpk-ct'); if (ctEl) ctEl.onchange = () => { setCopy('title', entry, ctEl.checked); rerenderRec(); };
@@ -2135,6 +2140,10 @@
     _recPopDrag(pop.querySelector('.tc-rpk-hd'));   // header is the drag handle
     _recPopReposition();   // dock it right + tall now the content (and height) exist
     const q = pop.querySelector('.tc-rpk-q'), suggBox = pop.querySelector('.tc-rpk-sugg'), resBox = pop.querySelector('.tc-rpk-res');
+    // collapsible suggestions — click the header to fold it away and see search results immediately (remembered)
+    const suggSec = pop.querySelector('.tc-rpk-suggsec');
+    const applySuggCollapse = () => pop.classList.toggle('tc-sugg-collapsed', !!SETTINGS.recSuggCollapsed);
+    if (suggSec) { applySuggCollapse(); suggSec.onclick = () => { SETTINGS.recSuggCollapsed = !SETTINGS.recSuggCollapsed; saveSettings(); applySuggCollapse(); _recPopReposition(); }; }
     // click a row to pick it — but a click on a link (release / artist) inside the row just follows the
     // link (new tab) and leaves the picker open; it must NOT pick + close the window. #119
     const wire = box => box.querySelectorAll('.tc-rpk-row').forEach(row => { row.onclick = e => { if (e.target.closest('a')) return; pickRecording(entry, data[row.dataset.gid]); }; });
