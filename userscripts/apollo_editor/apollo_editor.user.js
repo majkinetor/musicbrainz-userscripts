@@ -643,7 +643,11 @@
     #tc-settings .tc-s-row input[type=radio]{margin:0}
     #tc-settings #tc-s-lentol{width:48px;font:13px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px}
     #tc-settings .tc-s-row.lentol{gap:7px}
-    #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;background:#5f3ec0;color:#fff;border:none;border-radius:20px;padding:8px 14px;font:bold 13px Arial;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
+    #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;display:inline-flex;align-items:stretch;background:#5f3ec0;color:#fff;border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
+    #tc-launch .tc-launch-lbl{padding:8px 13px;cursor:pointer}
+    #tc-launch .tc-launch-lbl:hover{background:rgba(255,255,255,.13)}
+    #tc-launch .tc-launch-gear{padding:8px 11px;cursor:pointer;font-size:14px;display:flex;align-items:center;border-left:1px solid rgba(255,255,255,.28)}
+    #tc-launch .tc-launch-gear:hover{background:rgba(255,255,255,.13)}
     #tc-btn,#tc-gear-btn{vertical-align:middle}
   `;
   function style() {
@@ -1427,7 +1431,7 @@
 
   const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
     + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
-    + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
+    + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
   function openPanel() {
@@ -1545,7 +1549,7 @@
   function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
   function curWant() { return recordingsVisible() ? recWant() : releaseInfoVisible() ? riWant() : tlWant(); }   // Apollo state of the current tab
   function apolloOn() { return curWant(); }
-  function relabelLauncher() { const b = document.getElementById('tc-launch'); if (b) b.textContent = curWant() ? 'Original' : 'Apollo Editor'; }
+  function relabelLauncher() { const lbl = document.querySelector('#tc-launch .tc-launch-lbl'); if (lbl) lbl.textContent = curWant() ? 'Original' : 'Apollo Editor'; }
   // show/hide each visible managed tab's mirror per its want
   function applyView() {
     recStyle();   // make sure the recordings CSS (incl. the native-table hide rule) exists up front
@@ -1556,13 +1560,17 @@
   }
   function ensureLauncher() {
     if (document.getElementById('tc-launch')) { relabelLauncher(); return; }
-    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.title = 'toggle Apollo / original editor (this tab)';
-    b.onclick = () => {   // toggle only the visible tab — works regardless of the "replace on start" settings
+    style(); const b = document.createElement('div'); b.id = 'tc-launch';
+    const lbl = document.createElement('span'); lbl.className = 'tc-launch-lbl'; lbl.title = 'toggle Apollo / original editor (this tab)';
+    lbl.onclick = () => {   // toggle only the visible tab — works regardless of the "replace on start" settings
       if (recordingsVisible()) _recMirror = !recWant();
       else if (releaseInfoVisible()) _riMirror = !riWant();
       else if (tracklistVisible()) _tlMirror = !tlWant();
       applyView();
     };
+    const gear = document.createElement('span'); gear.className = 'tc-launch-gear'; gear.textContent = '⚙'; gear.title = 'Apollo Editor settings';
+    gear.onclick = () => openSettings(gear);   // the one settings entry point — gear removed from the toolbars
+    b.append(lbl, gear);
     document.body.appendChild(b); relabelLauncher();
   }
   function tracklistVisible() { const p = document.getElementById('tracklist'); return !!(p && p.offsetParent !== null); }   // the Tracklist tab panel is shown
@@ -1860,7 +1868,7 @@
         '<span class="tc-tbsep"></span>' +
         '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions">⚡ Match</button>' +
         '<button class="tc-rec-revcaret" type="button" title="revert / clear all">▾</button>' +
-        '<button class="tc-rec-gear" type="button" title="settings">⚙</button>' +
+        '' +   /* gear moved to the Apollo launcher */
       '</div>' +
       '<table class="tc-rectbl ' + (SETTINGS.layout || 'normal') + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.gridCols ? ' gridcols' : '') + (SETTINGS.gridRows !== false ? ' gridrows' : '') + '">' +
         '<colgroup><col style="width:2.5%"><col style="width:25.5%"><col style="width:18%"><col style="width:4%"><col style="width:2%"><col style="width:26%"><col style="width:18%"><col style="width:4%"></colgroup>' +
@@ -1872,7 +1880,6 @@
     wireCutoff(wrap);
     const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
     const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [{ label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings }, { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings }]);
-    const gearBtn = wrap.querySelector('.tc-rec-gear'); if (gearBtn) gearBtn.onclick = () => openSettings(gearBtn);   // same settings dialog as the Tracklist tab
     renderRecBody(wrap);
   }
   // custom Cutoff picker — a colored-dot dropdown that uses the SAME hex palette as the row dots
@@ -2530,38 +2537,41 @@
     if (_riStyled) return; _riStyled = true;
     const css = `
     body.tc-ri-on .tc-ri-helphidden{display:none!important}
-    /* external links: hide the inline "?" help icons, reveal the remove button on hover only */
-    body.tc-ri-on #external-links-editor .tooltip-wrapper,
-    body.tc-ri-on #external-links-editor .icon.help{display:none!important}
+    /* hide the inline "?" help / info icons + guidance across the whole Release-information panel */
+    body.tc-ri-on #information .tooltip-wrapper,
+    body.tc-ri-on #information .icon.help,
+    body.tc-ri-on #information span.img.help,
+    body.tc-ri-on #information .inline-help,
+    body.tc-ri-on #information a.help,
+    body.tc-ri-on #information .bubble,
+    body.tc-ri-on #information .guidance,
+    body.tc-ri-on #information .guidance-popover{display:none!important}
+    /* external links: reveal the remove button on hover only */
     body.tc-ri-on #external-links-editor .relationship-item button.remove-button{opacity:0;transition:opacity .12s}
     body.tc-ri-on #external-links-editor .relationship-item:hover button.remove-button,
-    body.tc-ri-on #external-links-editor .relationship-item:focus-within button.remove-button{opacity:1}
-    #tc-ri-gear{position:absolute;top:4px;right:6px;z-index:6;cursor:pointer;color:#777;font-size:16px;border:none;background:none;padding:2px 6px}
-    #tc-ri-gear:hover{color:#5f3ec0}`;
+    body.tc-ri-on #external-links-editor .relationship-item:focus-within button.remove-button{opacity:1}`;
     const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
   }
-  // MB's contextual guidance box (the grey bubble that updates per focused field) — match by its content
-  function nativeHelpBubble() {
-    return [...document.querySelectorAll('#release-editor div, #page > div')].find(e => /style guidelines|is the release.?s name/i.test(e.textContent || '') && e.querySelector('a') && e.children.length < 10 && getComputedStyle(e).position === 'absolute');
-  }
-  function ensureRiGear() {
-    if (document.getElementById('tc-ri-gear')) return;
-    const panel = document.getElementById('information'); if (!panel) return;
-    const g = document.createElement('button'); g.id = 'tc-ri-gear'; g.type = 'button'; g.textContent = '⚙'; g.title = 'Apollo Editor settings';
-    g.onclick = () => openSettings(g);
-    panel.style.position = 'relative'; panel.appendChild(g);
+  // MB's contextual guidance box(es) — anything outside #information that's just the style-guidelines help
+  // (the in-panel ones are hidden by CSS via #information .bubble/.guidance)
+  function nativeHelpBubbles() {
+    const out = new Set();
+    document.querySelectorAll('#release-editor .bubble, #release-editor .guidance, #release-editor .guidance-popover, #page .bubble').forEach(e => out.add(e));
+    [...document.querySelectorAll('#page div')].forEach(e => {
+      if (e.offsetParent === null || document.getElementById('information')?.contains(e)) return;
+      if (e.querySelector('a[href*="style"]') && (e.textContent || '').length < 400 && !e.querySelector('input,select,table,fieldset,h2')) out.add(e);
+    });
+    return [...out];
   }
   function applyReleaseInfo() {
     riStyle();
     if (riWant()) {
       _apolloUsed = true;
       document.body.classList.add('tc-ri-on');
-      const bub = nativeHelpBubble(); if (bub) bub.classList.add('tc-ri-helphidden');
-      ensureRiGear();
+      nativeHelpBubbles().forEach(b => b.classList.add('tc-ri-helphidden'));
     } else {
       document.body.classList.remove('tc-ri-on');
       document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));
-      const g = document.getElementById('tc-ri-gear'); if (g) g.remove();
     }
   }
 
