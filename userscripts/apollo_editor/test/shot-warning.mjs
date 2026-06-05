@@ -35,7 +35,7 @@ async function main() {
   }
   await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootField.release().mediums().length; } catch { return false; } }, null, { timeout: 120000 });
   await page.addScriptTag({ content: scriptCode });
-  await page.waitForFunction(() => !!window.__trackCannon, null, { timeout: 15000 });
+  await page.waitForFunction(() => !!window.__apolloEditor, null, { timeout: 15000 });
   // also trigger the Digital-Media / packaging warning for a second, distinct warning box
   await page.evaluate(() => {
     const u = v => (typeof v === 'function' ? v() : v);

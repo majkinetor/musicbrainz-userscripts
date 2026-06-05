@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.210000
+// @version      2026.6.5.220000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -55,8 +55,8 @@
   }
 
   /* ── create-artist-in-a-tab → auto-insert (BroadcastChannel handshake, like the Discogs importer) ── */
-  const ART_CHANNEL = ('BroadcastChannel' in W) ? new W.BroadcastChannel('track-cannon-artist') : null;
-  const PENDING_KEY = 'trackCannon.pendingArtist';
+  const ART_CHANNEL = ('BroadcastChannel' in W) ? new W.BroadcastChannel('apollo-editor-artist') : null;
+  const PENDING_KEY = 'apolloEditor.pendingArtist';
   const _pendingCreates = new Map(); let _createSeq = 0;
   if (ART_CHANNEL) ART_CHANNEL.addEventListener('message', e => {
     const d = e.data; if (!d || d.type !== 'tc-artist-created') return;
@@ -68,8 +68,8 @@
   });
 
   /* ── settings ── */
-  const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceTracklist: true, replaceRecordings: true, autoMatch: true, autoMatchRec: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, lastTool: '', layout: 'normal', lastView: 'canon' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  const SKEY = 'apolloEditor.settings.v1';
+  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceTracklist: true, replaceRecordings: true, autoMatch: true, autoMatchRec: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -802,7 +802,7 @@
     am.value = SETTINGS.applyMode || 'all';
     am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); document.querySelectorAll('.tc-applymode').forEach(s => { s.value = am.value; }); Log.info('applyMode =', am.value); };
   }
-  // one Canon table for a single medium (its own header row + Add footer); returns the tbody.
+  // one Apollo table for a single medium (its own header row + Add footer); returns the tbody.
   // mi == null renders the whole release into one table (the floating panel).
   function mountTable(container, mi) {
     container.innerHTML = '';
@@ -1205,7 +1205,13 @@
       tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; wireRowNav(tin);
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
       numIn.onchange = e => { setNumber(t, e.target.value); refreshBadges(); }; wireRowNav(numIn);
-      lenIn.onchange = e => { setLength(t, e.target.value); refreshBadges(); }; wireRowNav(lenIn);
+      lenIn.onchange = e => {
+        let v = e.target.value.trim();
+        if (v) { const ed = getEditor(); const ms = ed && ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : NaN; if (ms == null || isNaN(ms)) v = ''; }   // invalid (letters/garbage) → delete; valid shorthand like "111" is kept (MB normalizes it to 1:11)
+        setLength(t, v);
+        try { const ko = koTrack(t.mi, t.ti); const norm = typeof ko.formattedLength === 'function' ? (u(ko.formattedLength()) || '') : v; e.target.value = norm; t.length = norm; } catch (err) { e.target.value = v; t.length = v; }   // reflect MB's normalized value back into the cell immediately
+        refreshBadges();
+      }; wireRowNav(lenIn);
       wireDragReorder(tr, t);
       tbody.appendChild(tr);
     });
@@ -1424,7 +1430,7 @@
   function nativeTrackTables(root) { return [...(root || document).querySelectorAll('table')].filter(t => t.querySelector('tr.track')); }
   // the native tracklist = track tables + the #tracklist-tools row + the Guess-case fieldset; hide/show
   // together (the format header is lifted out, not hidden). MB's medium WARNINGS are NOT hidden — every
-  // one (capitalization, Digital-Media/packaging, …) stays visible above the Canon table.
+  // one (capitalization, Digital-Media/packaging, …) stays visible above the Apollo table.
   function nativeBits() {
     // SCOPE to the Tracklist tab only — the Recordings tab has its own track table (recording associations)
     // that we must NOT hide (issue #114). every medium has its own tools row (MB reuses id "tracklist-tools").
@@ -1433,10 +1439,10 @@
   }
   function setNativeHidden(hidden) {
     nativeBits().forEach(el => { el.style.display = hidden ? 'none' : ''; });
-    // keep ALL real medium warnings visible even in Canon (force them back on in case a prior version or MB left one hidden)
+    // keep ALL real medium warnings visible even in Apollo (force them back on in case a prior version or MB left one hidden)
     document.querySelectorAll('fieldset.advanced-medium .warning').forEach(w => { w.style.display = ''; });
   }
-  // mount one Canon section (its own table header + Add footer) per medium, placed right before that
+  // mount one Apollo section (its own table header + Add footer) per medium, placed right before that
   // medium's native track table — so MB's own format header stays naturally above it. Reconciled on
   // every render so adding/removing a medium just works. Native collapse toggle hides our section too.
   function mountMediums() {
@@ -1629,10 +1635,10 @@
   }
   // Confidence ported from "Quick Recording Match": null = perfect (green), else low / vlow / xlow
   // (yellow / orange / red), graded by how many fields differ and by how far the length is off.
-  const REC_CONF = {
-    low:  { c: '#fff176', label: 'low confidence' },
-    vlow: { c: '#ffb74d', label: 'very low confidence' },
-    xlow: { c: '#d32f2f', label: 'extremely low confidence' },
+  const REC_CONF = {   // the colored bands below exact/tolerance (keys = display names)
+    near: { c: '#fff176', label: 'near' },
+    low:  { c: '#ffb74d', label: 'low' },
+    vlow: { c: '#d32f2f', label: 'very low' },
   };
   function recConfidence(track, rec, d) {
     if (!rec || !u(rec.gid)) return null;
@@ -1642,10 +1648,10 @@
     if (d.artist) diffs.push('artist');
     if (d.lenDiff > 0) diffs.push('length ' + Math.round(d.lenDiff / 1000) + 's');
     let level = null;
-    if (diffs.length >= 3 && d.lenDiff > 10000) level = 'xlow';
-    else if (d.lenDiff > 15000) level = 'vlow';
-    else if (diffs.length >= 2 && d.lenDiff <= 15000) level = 'vlow';
-    else if (diffs.length === 1 || d.lenDiff > 3000) level = 'low';
+    if (diffs.length >= 3 && d.lenDiff > 10000) level = 'vlow';
+    else if (d.lenDiff > 15000) level = 'low';
+    else if (diffs.length >= 2 && d.lenDiff <= 15000) level = 'low';
+    else if (diffs.length === 1 || d.lenDiff > 3000) level = 'near';
     if (!level) return null;
     return { level, color: REC_CONF[level].c, label: REC_CONF[level].label, diffs };
   }
@@ -1744,10 +1750,10 @@
       '.tc-recpop .tc-rpk-copy label{cursor:pointer;color:#444;font-size:11px;display:flex;align-items:center;gap:5px}',
       '.tc-recpop .tc-rpk-row{border-left:3px solid transparent}',
       '.tc-recpop .tc-rpk-row.tc-conf-exact{border-left-color:#2f6fd6}',
-      '.tc-recpop .tc-rpk-row.tc-conf-match{border-left-color:#86c686}',
-      '.tc-recpop .tc-rpk-row.tc-conf-low{border-left-color:#fff176}',
-      '.tc-recpop .tc-rpk-row.tc-conf-vlow{border-left-color:#ffb74d}',
-      '.tc-recpop .tc-rpk-row.tc-conf-xlow{border-left-color:#d32f2f}',
+      '.tc-recpop .tc-rpk-row.tc-conf-tolerance{border-left-color:#86c686}',
+      '.tc-recpop .tc-rpk-row.tc-conf-near{border-left-color:#fff176}',
+      '.tc-recpop .tc-rpk-row.tc-conf-low{border-left-color:#ffb74d}',
+      '.tc-recpop .tc-rpk-row.tc-conf-vlow{border-left-color:#d32f2f}',
       '.tc-rectbl .tc-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}',
       '.tc-rectbl tr.tc-recrow:hover td{background:#fafaff}',
       '.tc-rectbl .tc-recpick{cursor:pointer;border:1px solid #d6cdec;background:#f6f3fc;color:#6f42c1;border-radius:4px;padding:1px 6px;font:11px Arial;white-space:nowrap}',
@@ -1809,7 +1815,7 @@
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
         '<span class="tc-rec-amstatus"></span>' +   // flexible filler: its text changes absorb here, never reflowing the bar
-        '<label class="tc-rec-tbl" title="Auto-match only links a recording when its confidence is at or above this level; anything lower is left unmatched."><b>Cutoff</b> <select class="tc-rec-cutoff"><option value="exact">🔵 exact</option><option value="match">🟢 match</option><option value="low">🟡 low</option><option value="vlow">🟠 very low</option><option value="xlow">🔴 extremely low</option></select></label>' +
+        '<label class="tc-rec-tbl" title="Auto-match only links a recording when its confidence is at or above this level; anything lower is left unmatched."><b>Cutoff</b> <select class="tc-rec-cutoff"><option value="exact">🔵 exact</option><option value="tolerance">🟢 tolerance</option><option value="near">🟡 near</option><option value="low">🟠 low</option><option value="vlow">🔴 very low</option></select></label>' +
         '<span class="tc-recwarn"></span>' +
         '<span class="tc-tbsep"></span>' +
         '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions">⚡ Match</button>' +
@@ -1823,7 +1829,7 @@
         '<tr><th class="c-n">#</th><th>Title</th><th>Artist</th><th class="c-len">Length</th>' +
         '<th class="c-sep"></th><th>Title</th><th>Artist</th><th class="c-len">Length</th></tr></thead><tbody></tbody></table>';
     // wire the toolbar (once)
-    const sel = wrap.querySelector('.tc-rec-cutoff'); if (sel) { sel.value = SETTINGS.recCutoff || 'low'; sel.onchange = () => { SETTINGS.recCutoff = sel.value; saveSettings(); }; }
+    const sel = wrap.querySelector('.tc-rec-cutoff'); if (sel) { sel.value = SETTINGS.recCutoff || 'near'; sel.onchange = () => { SETTINGS.recCutoff = sel.value; saveSettings(); }; }
     const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
     const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [{ label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings }, { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings }]);
     const gearBtn = wrap.querySelector('.tc-rec-gear'); if (gearBtn) gearBtn.onclick = () => openSettings(gearBtn);   // same settings dialog as the Tracklist tab
@@ -1875,11 +1881,11 @@
       tb.appendChild(tr);
     });
   }
-  // confidence level of a candidate vs the track: 0 match · 1 low · 2 very low · 3 extremely low
+  // confidence level of a candidate vs the track: 0 tolerance(green) · 1 near · 2 low · 3 very low
   // "Cutoff" = the LOWEST confidence still auto-linked; anything below it is left unmatched. Levels run
-  // best→worst: exact(blue) 0 · match/green 1 · low 2 · very low 3 · extremely low 4. A candidate links
+  // best→worst: exact(blue) 0 · tolerance(green) 1 · near 2 · low 3 · very low 4. A candidate links
   // when its combined level ≤ the chosen cutoff. #119
-  const CUTOFF = { exact: 0, match: 1, low: 2, vlow: 3, xlow: 4 };
+  const CUTOFF = { exact: 0, tolerance: 1, near: 2, low: 3, vlow: 4 };
   function recComboLevel(d, ctx) { return recExactMatch(d, ctx) ? 0 : recConfLevel(d, ctx) + 1; }   // fold exact/green into one ladder with the lower bands
   function recConfLevel(data, ctx) {
     if (!ctx) return 0;
@@ -1900,7 +1906,7 @@
     if (_autoMatching) return; _autoMatching = true;
     const wrap = document.getElementById('tc-recwrap');
     const setStatus = t => { const e = wrap && wrap.querySelector('.tc-rec-amstatus'); if (e) e.textContent = t; };
-    const maxLevel = CUTOFF[SETTINGS.recCutoff || 'low'];
+    const maxLevel = CUTOFF[SETTINGS.recCutoff || 'near'];
     let linked = 0, considered = 0;
     try {
       // ONE request: pull the whole release group's recordings, index by normalised title, match locally
@@ -1918,7 +1924,7 @@
         // best candidate from the local RG pool (normalised-title match; fuzzy scan if a Title tolerance is set).
         // lower confidence level wins; within the same level, an EXACT (no-tolerance) match is preferred. #119
         let best = null, bestLevel = Infinity;
-        const consider = d => { const lvl = recComboLevel(d, ctx); if (lvl < bestLevel) { bestLevel = lvl; best = d; } };   // lower combined level (exact < green < low < …) wins
+        const consider = d => { const lvl = recComboLevel(d, ctx); if (lvl < bestLevel) { bestLevel = lvl; best = d; } };   // lower combined level (exact < tolerance < near < …) wins
         let cands = byTitle.get(recFold(r.title)) || [];
         if (!cands.length && (SETTINGS.recTitleTol || 0) > 0 && pool.length) cands = pool.filter(p => recTitleEq(p.name, r.title));
         cands.forEach(consider);
@@ -2095,7 +2101,7 @@
     if (!ctx) return '';
     const lvl = recConfLevel(data, ctx);
     if (lvl === 0 && recExactMatch(data, ctx)) return ' tc-conf-exact';   // ideal: blue left border
-    return ' tc-conf-' + ['match', 'low', 'vlow', 'xlow'][lvl];
+    return ' tc-conf-' + ['tolerance', 'near', 'low', 'vlow'][lvl];
   }
   // render "appears on" releases as links (each {name,gid}); plain strings tolerated for safety.
   // cap = max links shown before a "+N more" tail (0 = show all). #119
@@ -2455,7 +2461,7 @@
     }, true);   // capture phase: runs before MB reads the textarea for submission
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, ensureApolloEditNote, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, ensureApolloEditNote, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }

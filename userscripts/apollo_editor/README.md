@@ -66,10 +66,10 @@ A *Credited as* values on track and recording don't influence matching.
 | Color |     Meaning      |                               Description                               |
 | :---: | ---------------- | ----------------------------------------------------------------------- |
 |   🔵   | Exact            | All fields are the same                                                 |
-|   🟢   | Within tolerance | Matches within tolerance defined in [settings](#matching-options)       |
-|   🟡   | Low              | A single field differs, or the length gap is 3–15s (a near-miss)        |
-|   🟠   | Very low         | Two fields differ or the length gap alone is >15s (substantially wrong) |
-|   🔴   | Extremely low    | All three differ and the length gap is >10s (almost certainly wrong)    |
+|   🟢   | Tolerance        | Matches within tolerance defined in [settings](#matching-options)       |
+|   🟡   | Near             | A single field differs, or the length gap is 3–15s (a near-miss)        |
+|   🟠   | Low              | Two fields differ or the length gap alone is >15s (substantially wrong) |
+|   🔴   | Very low         | All three differ and the length gap is >10s (almost certainly wrong)    |
 
 The *Cutoff* option in the recording toolbar sets the acceptable confidence.
 
@@ -81,7 +81,7 @@ The *Cutoff* option in the recording toolbar sets the acceptable confidence.
 | **⚡ Match** | — | Match all still-unresolved track artists or recordings (used when *Auto-match on start* is off)|
 | **▾** | — | **↺ Revert all** — every track back to page-load state<br>**✕ Clear all** — empty all artists in tracklist or set new recordings|
 | **Tool** | last used | A single always-visible button holding all the tools. The last tool used becomes the default |
-| **Cutoff** | 🟠 very low | Matches only records at or above the chosen confidence level and leave other unmatched |
+| **Cutoff** | 🟡 near | Matches only records at or above the chosen confidence level and leave other unmatched |
 
 ### Tools
 

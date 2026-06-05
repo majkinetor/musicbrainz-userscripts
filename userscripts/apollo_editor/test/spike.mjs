@@ -110,7 +110,7 @@ async function main() {
         const a0 = names[0] ? u(names[0].artist) : null;
         out.artistKeys = a0 ? Object.keys(a0) : null;
       }
-      out.tracklist = (w.__trackCannon && w.__trackCannon.readTracklist()) || null;
+      out.tracklist = (w.__apolloEditor && w.__apolloEditor.readTracklist()) || null;
       out.ok = true;
     } catch (e) { out.error = String(e && (e.stack || e.message)); }
     return out;

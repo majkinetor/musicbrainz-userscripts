@@ -16,8 +16,8 @@ async function check(ctx, scriptCode, mbid, label) {
   await page.goto(`${ORIGIN}/release/${mbid}/edit`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => { try { const ms = window.MB.releaseEditor.rootField.release().mediums(); return ms.length && ms.some(m => m.tracks().length); } catch { return false; } }, null, { timeout: 120000 });
   await page.addScriptTag({ content: scriptCode });
-  await page.waitForFunction(() => !!window.__trackCannon, null, { timeout: 15000 });
-  await page.evaluate(() => { window.__trackCannon.hideMirror(); window.__trackCannon.openPanel(); });
+  await page.waitForFunction(() => !!window.__apolloEditor, null, { timeout: 15000 });
+  await page.evaluate(() => { window.__apolloEditor.hideMirror(); window.__apolloEditor.openPanel(); });
   await page.waitForSelector('#tc-panel .tc-mirror tbody tr', { timeout: 60000 });
   await page.waitForTimeout(600);
   const r = await page.evaluate(() => {
@@ -31,7 +31,7 @@ async function check(ctx, scriptCode, mbid, label) {
       removeButtons: p.querySelectorAll('.tc-trackacts .rm').length,
       rows: p.querySelectorAll('.tc-mirror tbody tr[data-tk]').length,
       // guards: calling the API on a locked medium must no-op
-      addBlocked: (() => { const before = u(med0.tracks()).length; try { window.__trackCannon.addTracks(0, 1); } catch (e) {} return u(med0.tracks()).length === before; })(),
+      addBlocked: (() => { const before = u(med0.tracks()).length; try { window.__apolloEditor.addTracks(0, 1); } catch (e) {} return u(med0.tracks()).length === before; })(),
     };
   });
   await page.close();

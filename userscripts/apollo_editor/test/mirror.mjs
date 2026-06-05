@@ -45,7 +45,7 @@ async function main() {
   await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootField.release().mediums().length; } catch { return false; } }, null, { timeout: 120000 });
   log('editor ready');
   await page.addScriptTag({ content: scriptCode });
-  await page.waitForFunction(() => !!window.__trackCannon, null, { timeout: 15000 });
+  await page.waitForFunction(() => !!window.__apolloEditor, null, { timeout: 15000 });
   // the editor opens on the Release-information tab — the Original/Track-Cannon toggle must NOT show there
   await page.waitForTimeout(700);   // let the watcher tick once
   const launchBeforeTracklist = await page.evaluate(() => !!document.getElementById('tc-launch'));
@@ -53,7 +53,7 @@ async function main() {
 
   // mirror should auto-render once the Tracklist tab is shown; wait for its rows
   await page.waitForSelector('.tc-medsec .tc-mirror tbody tr', { timeout: 60000 });   // shell renders instantly
-  await page.waitForFunction(() => { const m = window.__trackCannon.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });   // matching done
+  await page.waitForFunction(() => { const m = window.__apolloEditor.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });   // matching done
   await page.waitForTimeout(600);
   // Apollo hides the native tracklist tables WITHIN the Tracklist tab only (not e.g. the Recordings-tab
   // recording-associations table — issue #114). Also assert a tr.track table OUTSIDE #tracklist is untouched.
@@ -99,10 +99,10 @@ async function main() {
     return { ok: true, visible };
   });
   // hideMirror reveals the native bits; re-show puts Canon back
-  const shown = await page.evaluate(() => { window.__trackCannon.hideMirror(); const t = document.getElementById('tracklist-tools'); const tbl = [...document.querySelectorAll('table')].find(x => x.querySelector('tr.track')); return { tools: t ? t.style.display !== 'none' : null, table: tbl ? tbl.style.display !== 'none' : null }; });
-  await page.evaluate(() => window.__trackCannon.showMirror());
+  const shown = await page.evaluate(() => { window.__apolloEditor.hideMirror(); const t = document.getElementById('tracklist-tools'); const tbl = [...document.querySelectorAll('table')].find(x => x.querySelector('tr.track')); return { tools: t ? t.style.display !== 'none' : null, table: tbl ? tbl.style.display !== 'none' : null }; });
+  await page.evaluate(() => window.__apolloEditor.showMirror());
   await page.waitForSelector('.tc-medsec .tc-mirror tbody tr', { timeout: 30000 });
-  await page.waitForFunction(() => { const m = window.__trackCannon.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });
+  await page.waitForFunction(() => { const m = window.__apolloEditor.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });
   await page.locator('#tracklist').screenshot({ path: resolve(LOG_DIR, 'mirror.png') }).catch(() => page.screenshot({ path: resolve(LOG_DIR, 'mirror.png'), fullPage: true }));
 
   const titles3 = () => page.evaluate(() => { const u = v => (typeof v === 'function' ? v() : v); return u(u(window.MB.releaseEditor.rootField.release).mediums)[0].tracks().slice(0, 3).map(t => u(t.name)); });
@@ -110,7 +110,7 @@ async function main() {
 
   // splittable credits (e.g. "A & B") highlight the credited-as field + show ⋔, and clear live on edit
   const splittable = await page.evaluate(() => {
-    const tc = window.__trackCannon, t = tc.model.tracks[0];
+    const tc = window.__apolloEditor, t = tc.model.tracks[0];
     t.slots[0].creditedAs = 'Some One & Other Two'; t.slots[0].committed = false; t.slots[0].name = '';
     tc.addSlot(t); tc.removeSlot(t, t.slots.length - 1);   // forces a rerender of our rows
     const row = document.querySelector(`.tc-medsec tr[data-tk="${t.mi}:${t.ti}"]`);
@@ -144,22 +144,22 @@ async function main() {
     const btns = [...document.querySelectorAll('.tc-toolopts .tc-colbtn')].map(b => b.textContent);
     const click = label => { const b = [...document.querySelectorAll('.tc-toolopts .tc-colbtn')].find(x => x.textContent === label); b && b.click(); };
     click('Fit'); await new Promise(r => setTimeout(r, 60));
-    const fitTitle = widthOf('title'), fitSaved = u(window.__trackCannon.settings).colWidths.title;
+    const fitTitle = widthOf('title'), fitSaved = u(window.__apolloEditor.settings).colWidths.title;
     click('Centered'); await new Promise(r => setTimeout(r, 60));
     const balTitle = widthOf('title'), artW = document.querySelector('.tc-medsec .tc-mirror thead th:nth-child(4)').offsetWidth, balTh = document.querySelector('.tc-medsec .tc-mirror thead th:nth-child(3)').offsetWidth;
     click('Default'); await new Promise(r => setTimeout(r, 60));
-    const defCleared = Object.keys(u(window.__trackCannon.settings).colWidths).length === 0, defTitle = widthOf('title');
+    const defCleared = Object.keys(u(window.__apolloEditor.settings).colWidths).length === 0, defTitle = widthOf('title');
     return { btns, fitTitle, fitSaved, balTitle, balNearArt: Math.abs(balTh - artW) < 60, defCleared, defTitle };
   });
   log('resize-columns tool — buttons:', JSON.stringify(colTool.btns), '· Fit title→', colTool.fitTitle, '(saved', colTool.fitSaved + ')',
     '· Centered title≈artist:', colTool.balNearArt, '(' + colTool.balTitle + ')', '· Default cleared:', colTool.defCleared, '→', colTool.defTitle);
 
   // no apply phase — confident matches auto-commit on load; verify they're written to the model
-  const resolved = await page.evaluate(() => { const tl = window.__trackCannon.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
+  const resolved = await page.evaluate(() => { const tl = window.__apolloEditor.readTracklist(); const slots = tl.reduce((n, t) => n + t.names.length, 0); const res = tl.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0); return { slots, res }; });
 
   // global unresolved total shows in the toolbar (left of Match), as a red badge when > 0 (after the resolved check — it corrupts a slot)
   const gstat = await page.evaluate(() => {
-    const tc = window.__trackCannon, t = tc.model.tracks[1];
+    const tc = window.__apolloEditor, t = tc.model.tracks[1];
     t.slots[0].committed = false; t.slots[0].gid = null; t.slots[0].status = 'none';
     tc.addSlot(t); tc.removeSlot(t, t.slots.length - 1);   // benign rerender → refreshStatus
     const el = document.querySelector('#tc-bar .tc-globalstat');
@@ -211,7 +211,7 @@ async function main() {
     press(s1, 'ArrowDown');
     const searchDown = document.activeElement === rows[1].querySelector('.tc-search input.nm');
     // multi-artist: ↓ from the 1st artist line goes to the 2nd line on the SAME track (not the next track)
-    const tc = window.__trackCannon; const t = tc.model.tracks[5]; t.slots.length = 1; tc.addSlot(t);
+    const tc = window.__apolloEditor; const t = tc.model.tracks[5]; t.slots.length = 1; tc.addSlot(t);
     await new Promise(r => setTimeout(r, 80));
     const mrow = () => document.querySelector(`.tc-medsec tr[data-tk="${t.mi}:${t.ti}"]`);
     const ins = mrow().querySelectorAll('.tc-search input.nm'); ins[0].focus(); await new Promise(r => setTimeout(r, 40));
@@ -224,7 +224,7 @@ async function main() {
 
   // editable # and length write through to the model
   const fields = await page.evaluate(async () => {
-    const tc = window.__trackCannon, u = v => (typeof v === 'function' ? v() : v);
+    const tc = window.__apolloEditor, u = v => (typeof v === 'function' ? v() : v);
     const t = tc.model.tracks[0];
     const ko = () => u(u(u(window.MB.releaseEditor.rootField.release).mediums)[t.mi].tracks)[t.ti];
     const row = document.querySelector(`tr[data-tk="${t.mi}:${t.ti}"]`);
@@ -270,7 +270,7 @@ async function main() {
       const inp = find(i); inp.focus(); inp.value = 'rock' + i; inp.dispatchEvent(new Event('input'));
       await new Promise(r => setTimeout(r, 350));
       maxOpen = Math.max(maxOpen, document.querySelectorAll('.tc-acpop').length);
-      const t = window.__trackCannon.model.tracks[8]; window.__trackCannon.addSlot(t); window.__trackCannon.removeSlot(t, t.slots.length - 1);   // a rerender that used to orphan the popup
+      const t = window.__apolloEditor.model.tracks[8]; window.__apolloEditor.addSlot(t); window.__apolloEditor.removeSlot(t, t.slots.length - 1);   // a rerender that used to orphan the popup
       await new Promise(r => setTimeout(r, 120));
     }
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
@@ -319,7 +319,7 @@ async function main() {
   const matchBtn = await page.evaluate(async () => {
     const btn = document.querySelector('#tc-bar [data-act="match"]');
     const before = btn.disabled;
-    window.__trackCannon.model.tracks[0].slots[0]._pending = true;   // force the pass to actually do (and await) work
+    window.__apolloEditor.model.tracks[0].slots[0]._pending = true;   // force the pass to actually do (and await) work
     btn.click();
     const during = btn.disabled;   // setMatching(true) runs synchronously at the pass start
     await new Promise(res => { const iv = setInterval(() => { if (!btn.disabled) { clearInterval(iv); res(); } }, 60); });
@@ -353,7 +353,7 @@ async function main() {
 
   // split/merge: add an artist slot to a single-artist track, fill it, then remove it
   const split = await page.evaluate(async () => {
-    const tc = window.__trackCannon, u = v => (typeof v === 'function' ? v() : v);
+    const tc = window.__apolloEditor, u = v => (typeof v === 'function' ? v() : v);
     const t = tc.model.tracks.find(t => t.slots.length === 1);
     const trackKo = () => u(u(u(window.MB.releaseEditor.rootField.release).mediums)[t.mi].tracks)[t.ti];
     const credCount = () => (u(u(trackKo().artistCredit).names) || []).length;
@@ -406,7 +406,7 @@ async function main() {
   // changed tracks (differ from page-load) get the ↺ button + a left-border marker; unchanged don't —
   // and reverting a track (no re-match) clears both. Runs LAST: revertTrack mutates a track destructively.
   const changed = await page.evaluate(async () => {
-    const tc = window.__trackCannon;
+    const tc = window.__apolloEditor;
     const t = tc.model.tracks.find(x => tc.trackChanged(x));   // an auto-matched / edited (changed) track
     if (!t) return { skipped: true };
     const tk = t.mi + ':' + t.ti, row = () => document.querySelector(`.tc-medsec tr[data-tk="${tk}"]`);
@@ -447,7 +447,7 @@ async function main() {
 
   // an exact name shared by several artists must NOT auto-resolve to high (the "Dansu" case) — it stays 'low'
   const ambiguous = await page.evaluate(async () => {
-    const tc = window.__trackCannon;
+    const tc = window.__apolloEditor;
     const fold = s => (s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
     const m = await tc.matchSlot('Dansu');
     const exact = (m.candidates || []).filter(c => fold(c.name) === fold('Dansu')).length;

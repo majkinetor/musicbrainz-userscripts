@@ -44,7 +44,7 @@ async function main() {
   await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootField.release().mediums().length; } catch { return false; } }, null, { timeout: 120000 });
   log('editor ready');
   await page.addScriptTag({ content: scriptCode });
-  await page.waitForFunction(() => !!window.__trackCannon, null, { timeout: 15000 });
+  await page.waitForFunction(() => !!window.__apolloEditor, null, { timeout: 15000 });
 
   // switch to the Tracklist tab so the artist fields are visible
   await page.locator('a, button', { hasText: /^Tracklist$/ }).first().click().catch(() => {});
@@ -54,9 +54,9 @@ async function main() {
 
   // ── drive the floating panel via the API (the in-page mirror is the default UI now) ──
   log('opening Track Cannon floating panel…');
-  await page.evaluate(() => { window.__trackCannon.hideMirror(); window.__trackCannon.openPanel(); });
+  await page.evaluate(() => { window.__apolloEditor.hideMirror(); window.__apolloEditor.openPanel(); });
   await page.waitForSelector('#tc-panel .tc-mirror tbody tr', { timeout: 60000 });   // shell renders instantly
-  await page.waitForFunction(() => { const m = window.__trackCannon.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });   // matching done
+  await page.waitForFunction(() => { const m = window.__apolloEditor.model; return m && m.tracks.length && m.tracks.every(t => t.slots.every(s => !s._pending)); }, null, { timeout: 60000 });   // matching done
   await page.screenshot({ path: resolve(LOG_DIR, 'panel.png'), fullPage: true });
   // widen the panel so the capture is landscape and legible (display scales tall images down)
   await page.evaluate(() => { const p = document.getElementById('tc-panel'); if (p) { p.style.width = '1180px'; p.style.maxWidth = 'none'; p.style.right = '12px'; p.style.maxHeight = '94vh'; } });
@@ -71,7 +71,7 @@ async function main() {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(150);
   // bug fix: focusing an already-resolved (set) field with NO typing must still search (not "no matches")
-  const setTk = await page.evaluate(() => { const t = window.__trackCannon.model.tracks.find(t => t.slots.some(s => s.status === 'set')); return t ? t.mi + ':' + t.ti : null; });
+  const setTk = await page.evaluate(() => { const t = window.__apolloEditor.model.tracks.find(t => t.slots.some(s => s.status === 'set')); return t ? t.mi + ':' + t.ti : null; });
   let setFocus = { ok: false };
   if (setTk) {
     await page.locator(`#tc-panel tr[data-tk="${setTk}"] .tc-search input.nm`).first().click();
@@ -82,7 +82,7 @@ async function main() {
   await page.waitForTimeout(150);
   // editable combo: focus an input → results pop appears → pick the 2nd → status becomes 'user' + purple
   const userCheck = await page.evaluate(async () => {
-    const tc = window.__trackCannon;
+    const tc = window.__apolloEditor;
     const inputs = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr .tc-search input.nm')];
     let picked = false, popCount = 0;
     for (const inp of inputs) {
@@ -99,7 +99,7 @@ async function main() {
 
   // propagation (all mode): picking copies to every same-credit track, marks them, outline persists till next pick
   const propCheck = await page.evaluate(async () => {
-    const tc = window.__trackCannon; tc.settings.applyMode = 'all';
+    const tc = window.__apolloEditor; tc.settings.applyMode = 'all';
     const all = []; tc.model.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && s.entity) all.push(s); }));
     const byCred = {}; all.forEach(s => { const k = s.creditedAs.toLowerCase(); (byCred[k] = byCred[k] || []).push(s); });
     const dup = Object.values(byCred).find(a => a.length >= 2 && (a[0].candidates[0] || a[0].entity));
@@ -120,7 +120,7 @@ async function main() {
 
   // propagation must also overwrite already-SET tracks with the same credit (the reported bug)
   const setProp = await page.evaluate(async () => {
-    const tc = window.__trackCannon; tc.settings.applyMode = 'all';
+    const tc = window.__apolloEditor; tc.settings.applyMode = 'all';
     const setSlots = []; tc.model.tracks.forEach(t => t.slots.forEach(s => { if (s.status === 'set') setSlots.push(s); }));
     const by = {}; setSlots.forEach(s => { const k = s.creditedAs.toLowerCase(); (by[k] = by[k] || []).push(s); });
     const dup = Object.values(by).find(a => a.length >= 2); if (!dup) return { ok: false };
@@ -131,7 +131,7 @@ async function main() {
 
   // editing "Credited as" propagates to every other track sharing that credit (all mode)
   const credProp = await page.evaluate(async () => {
-    const tc = window.__trackCannon; tc.settings.applyMode = 'all';
+    const tc = window.__apolloEditor; tc.settings.applyMode = 'all';
     const by = {}; tc.model.tracks.forEach(t => t.slots.forEach(s => { const k = (s.creditedAs || '').toLowerCase(); if (k) (by[k] = by[k] || []).push(s); }));
     const dup = Object.values(by).find(a => a.length >= 2); if (!dup) return { ok: false };
     const target = dup[0]; const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === target._entry.mi + ':' + target._entry.ti);
@@ -144,7 +144,7 @@ async function main() {
 
   // pasting an MBID into a search field resolves straight to that artist
   const mbidResolve = await page.evaluate(async () => {
-    const tc = window.__trackCannon, GID = '83d91898-7763-47d7-b03b-b92132375c47';   // Pink Floyd
+    const tc = window.__apolloEditor, GID = '83d91898-7763-47d7-b03b-b92132375c47';   // Pink Floyd
     const t = tc.model.tracks[0]; const slot = t.slots[0];
     const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
     const inp = tr.querySelector('.tc-search input.nm');
@@ -159,7 +159,7 @@ async function main() {
 
   // dropdown shows aliases (english if present, else first) fetched via one WS2 search
   const aliasCheck = await page.evaluate(async () => {
-    const t = window.__trackCannon.model.tracks[2];
+    const t = window.__apolloEditor.model.tracks[2];
     const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
     const inp = tr.querySelector('.tc-search input.nm');
     inp.focus(); inp.value = 'عمرو دياب'; inp.dispatchEvent(new Event('input'));   // Amr Diab (Arabic) — has a Latin alias
@@ -176,7 +176,7 @@ async function main() {
 
   // create-artist handshake: createArtist sets a token on the new tab, the "artist page" posts it back → inserted
   const createFlow = await page.evaluate(async () => {
-    const tc = window.__trackCannon, GID = '83d91898-7763-47d7-b03b-b92132375c47';
+    const tc = window.__apolloEditor, GID = '83d91898-7763-47d7-b03b-b92132375c47';
     const t = tc.model.tracks.find(x => x.slots.some(s => !s.committed)) || tc.model.tracks[1];
     const slot = t.slots.find(s => !s.committed) || t.slots[0];
     const store = {}; const fakeTab = { sessionStorage: { setItem: (k, v) => { store[k] = v; }, getItem: k => store[k] } };
@@ -196,14 +196,14 @@ async function main() {
   // a duplicate/ambiguous name, or a case-only difference vs the recording artist)
   const rgMatch = await page.evaluate(async () => {
     const GID = '83d91898-7763-47d7-b03b-b92132375c47';   // Pink Floyd — NOT a result of searching "The Beatles"
-    const m = await window.__trackCannon.matchSlot('The Beatles', { gid: GID, name: 'PINK FLOYD' });
+    const m = await window.__apolloEditor.matchSlot('The Beatles', { gid: GID, name: 'PINK FLOYD' });
     return { source: m.source, gid: m.entity && m.entity.gid, matched: m.entity && m.entity.gid === GID, hasId: !!(m.entity && m.entity.id) };
   });
   log('RG match via sibling gid (not in search):', JSON.stringify(rgMatch));
 
   // ⋔ split: a combined credit → one slot per artist, with join phrases, auto-matched, credited-as dropped
   const splitArtist = await page.evaluate(async () => {
-    const tc = window.__trackCannon; tc.settings.autoMatch = true;
+    const tc = window.__apolloEditor; tc.settings.autoMatch = true;
     const t = tc.model.tracks.find(x => x.slots.length === 1) || tc.model.tracks[0];
     t.slots.length = 1; t.slots[0].creditedAs = 'CBC Band feat. Carol Kim & Elvis Phương';
     tc.splitSlot(t, 0);
@@ -216,7 +216,7 @@ async function main() {
   // no apply phase — confident matches auto-commit on load and picks commit immediately
   await page.waitForTimeout(800);
   const report = await page.evaluate(() => {
-    const tc = window.__trackCannon;
+    const tc = window.__apolloEditor;
     const after = tc.readTracklist();
     const slots = after.reduce((n, t) => n + t.names.length, 0);
     const resolvedSlots = after.reduce((n, t) => n + t.names.filter(x => x.artistGid).length, 0);
@@ -227,7 +227,7 @@ async function main() {
 
   // unlink-on-type: typing a non-matching phrase un-links the artist (white bar + ＋), keeping the text
   const unlink = await page.evaluate(async () => {
-    const tc = window.__trackCannon;
+    const tc = window.__apolloEditor;
     const t = tc.model.tracks.find(t => t.slots[0].committed && t.slots.length === 1);
     const tr = [...document.querySelectorAll('#tc-panel .tc-mirror tbody tr')].find(r => r.dataset.tk === t.mi + ':' + t.ti);
     const inp = tr.querySelector('.tc-search input.nm'); const search = inp.closest('.tc-search');
@@ -241,7 +241,7 @@ async function main() {
 
   // ── verify Original (per-track) reset via the exposed API ──
   const interactive = await page.evaluate(() => {
-    const tc = window.__trackCannon;
+    const tc = window.__apolloEditor;
     const out = {};
     const r0 = tc.model.tracks[0];
     const before = tc.readTracklist().find(x => x.mi === r0.mi && x.ti === r0.ti);

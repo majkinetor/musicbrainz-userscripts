@@ -21,13 +21,13 @@ await page.goto(`${ORIGIN}/release/${MBID}/edit`, { waitUntil: 'domcontentloaded
 if (page.url().includes('/login')) { console.error('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
 await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootField.release().mediums()[0].tracks().length; } catch { return false; } }, null, { timeout: 120000 });
 await page.addScriptTag({ content: await readFile(SCRIPT_PATH, 'utf8') });
-await page.waitForFunction(() => !!window.__trackCannon, null, { timeout: 15000 });
+await page.waitForFunction(() => !!window.__apolloEditor, null, { timeout: 15000 });
 await page.locator('a, button, li', { hasText: /^Recordings$/ }).first().click().catch(() => {});
 await page.waitForSelector('#tc-recwrap .tc-rectbl tbody tr', { timeout: 15000 });
 await page.waitForTimeout(500);
 
 const taken = await page.evaluate(() => {
-  const rows = window.__trackCannon.readRecordings();
+  const rows = window.__apolloEditor.readRecordings();
   const wrap = document.getElementById('tc-recwrap');
   const native = document.getElementById('track-recording-assignation');
   const trs = [...wrap.querySelectorAll('.tc-rectbl tbody tr.tc-recrow')];
