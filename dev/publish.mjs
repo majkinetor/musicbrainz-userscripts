@@ -79,6 +79,7 @@ function changelogSection(group, tag) {
   let s = `## [${tag}](${tagUrl(tag)})\n`;
   if (group.features.length) s += `\n### Features\n\n${list(group.features)}\n`;
   if (group.fixes.length) s += `\n### Fixes\n\n${list(group.fixes)}\n`;
+  if (!group.features.length && !group.fixes.length) s += `\n- Small improvements\n`;   // changed, but no tracked issues
   return s;
 }
 function updateChangelog(group, tag) {
@@ -106,6 +107,7 @@ function releaseBody(groups, changed, tag, sha) {
     if (changed.has(dir) && path) lines.push(`[Install (stable, pinned)](${raw(sha, path)})`, '');   // only scripts whose code changed get an install link
     if (g && g.features.length) { lines.push('### Features', ''); g.features.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
     if (g && g.fixes.length) { lines.push('### Fixes', ''); g.fixes.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
+    if (g && !g.features.length && !g.fixes.length) { lines.push('- Small improvements', ''); }   // changed, but no tracked issues
   }
   return lines.join('\n');
 }
@@ -115,6 +117,8 @@ function main() {
   tryRun(() => git('fetch', 'github', 'main', 'stable', '--quiet'));
   const { groups, included } = collectIssues();
   const changed = changedScripts();
+  // a changed script with no tracked issues still gets a changelog + release entry ("Small improvements")
+  for (const dir of changed) { if (!groups[dir]) { const path = userJsPath(dir); groups[dir] = { dir, name: (path && scriptDisplayName(path)) || dir, path, features: [], fixes: [] }; } }
   const dirs = [...new Set([...Object.keys(groups), ...changed])];
   if (!dirs.length) { console.log('Nothing to publish: no unreleased issues and no changed scripts.'); return; }
   const tag = todayTag();
