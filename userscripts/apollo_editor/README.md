@@ -131,10 +131,12 @@ Applied to **both** tables (Tracklist and Recordings).
 
 ## Keyboard 
 
-1. Down, `<ENTER`> - focus cell in the next row
-2. Up, SHIFT+`<ENTER`> - focus cell in the previous row
-3. Tab - focus cell in the next column
-4. SHIFT+Tab - focus cell in the previous column
+|         Key         |            Description            |
+| ------------------- | --------------------------------- |
+| Down, \<ENTER\>     | focus cell in the next row        |
+| Up, SHIFT+\<ENTER\> | focus cell in the previous row    |
+| Tab                 | focus cell in the next column     |
+| SHIFT+Tab           | focus cell in the previous column |
 
 ## Persistence
 
