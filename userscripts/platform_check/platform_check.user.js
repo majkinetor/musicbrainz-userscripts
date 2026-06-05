@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.3.220436
+// @version      2026.6.5.120000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -415,7 +415,6 @@ container.innerHTML = `
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
-      <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/platform_check#readme" target="_blank" rel="noopener" title="Open Platform Check README" style="color: #999; text-decoration: none; font-size: 10px; font-weight: bold; border: 1px solid #CCC; border-radius: 50%; width: 13px; height: 13px; line-height: 11px; text-align: center; display: inline-block; box-sizing: border-box;">?</a>
     </div>
     <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
   </div>
@@ -481,8 +480,12 @@ providerModal.id = 'mb-provider-modal-overlay';
 providerModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 100000; font-family: sans-serif;';
 providerModal.innerHTML = `
 <div id="mb-provider-modal-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: #FFF; padding: 24px; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid #DDD;">
-  <h2 style="margin: 0 0 12px 0; font-size: 18px;">Enable providers</h2>
-  <p style="font-size: 13px; color: #555; margin: 0 0 16px 0;">Toggle which services to query. All results come from public endpoints — no API keys required.</p>
+  <div style="display: flex; align-items: baseline; gap: 8px; border-bottom: 1px solid #EEE; padding-bottom: 10px;">
+    <h2 style="margin: 0; font-size: 18px; color: #FF8C00;">Platform Check</h2>
+    <span title="installed script version" style="font-size: 11px; color: #999; font-weight: normal;">v${(typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?'}</span>
+    <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/platform_check#readme" target="_blank" rel="noopener" title="Open the README in a new tab" style="margin-left: auto; font-size: 12px; font-weight: bold; color: #1DB954; text-decoration: none; border: 1px solid #cfe9d6; border-radius: 4px; padding: 1px 8px;">? Help</a>
+  </div>
+  <p style="font-size: 13px; color: #555; margin: 10px 0 16px 0;">Toggle which services to query. All results come from public endpoints — no API keys required.</p>
   <div id="mb-provider-list" style="margin-bottom: 14px;">
   ${PROVIDER_ORDER.map(p => `
     <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; margin-bottom: 4px; font-size: 13px; padding: 6px 8px; border-radius: 4px; background: #FAFAFA; border: 1px solid transparent; cursor: grab; user-select: none;">
