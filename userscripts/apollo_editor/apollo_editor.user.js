@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.021500
+// @version      2026.6.5.030000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -69,7 +69,7 @@
 
   /* ── settings ── */
   const SKEY = 'trackCannon.settings.v1';
-  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, lastTool: '', layout: 'cozy', lastView: 'canon' }; try { return Object.assign(d, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return d; } }
+  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, grid: false, autoMatch: true, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, lastTool: '', layout: 'normal', lastView: 'canon' }; try { return Object.assign(d, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.021500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.030000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -463,9 +463,10 @@
     #tc-panel a,#tc-mirror-wrap a{color:#4800a0;text-decoration:none}#tc-panel a:hover,#tc-mirror-wrap a:hover{text-decoration:underline}
 
     .tc-mirror{table-layout:fixed;width:100%;border-collapse:collapse;font:13px Arial,Helvetica,sans-serif;background:#fff}
-    .tc-mirror th{position:relative;background:#eee;border-bottom:2px solid #ccc;border-right:1px solid #cfcfcf;text-align:left;padding:4px 6px;font-size:12px;color:#333;overflow:hidden}
+    /* clean "normal" look, shared with the Recordings table: light header, no column fill/borders, soft row rule */
+    .tc-mirror th{position:relative;background:transparent;border-bottom:1px solid #ccc;text-align:left;padding:4px 7px;font-size:11px;font-weight:normal;color:#777;overflow:hidden}
     .tc-mirror th:last-child{border-right:none}
-    .tc-mirror td{border-bottom:1px solid #e2e2e2;padding:3px 6px;vertical-align:middle;overflow:hidden;background:#fff}
+    .tc-mirror td{border-bottom:1px solid #eee;padding:4px 7px;vertical-align:middle;overflow:hidden;background:#fff}
     .tc-mirror td.c-art,.tc-mirror td.c-badge{vertical-align:top}
     .tc-mirror td.c-badge{position:relative;padding:0;text-align:center}
     .tc-mirror .tc-resizer{position:absolute;right:-1px;top:0;height:100%;width:9px;cursor:col-resize;border-right:2px solid transparent}
@@ -496,7 +497,8 @@
     /* alternate row colors / grid (toggled in ⚙) */
     .tc-mirror.alt tbody tr:nth-child(even) td{background:#f6f4fb}
     .tc-mirror.grid td{border-right:1px solid #ededed}.tc-mirror.grid td:last-child{border-right:none}
-    /* compact layout: pack rows tighter to fit more (closer to MB's native density) */
+    /* density layouts: compact (tight) · normal (default, shared with Recordings) · cozy (airy) */
+    .tc-mirror.cozy th{padding:7px 7px}.tc-mirror.cozy td{padding:8px 7px}
     .tc-mirror.compact th{padding:2px 6px}
     .tc-mirror.compact td{padding:0 6px}
     .tc-mirror.compact .tc-aslot,.tc-mirror.compact .tc-bl{height:21px}
@@ -627,7 +629,13 @@
   }
 
   /* ── settings popover (view options) ── */
-  function applyViewClasses() { document.querySelectorAll('.tc-mirror').forEach(t => { t.classList.toggle('alt', !!SETTINGS.altRows); t.classList.toggle('grid', !!SETTINGS.grid); t.classList.toggle('compact', SETTINGS.layout === 'compact'); }); }
+  function applyViewClasses() {
+    const layout = SETTINGS.layout || 'normal';
+    document.querySelectorAll('.tc-mirror, .tc-rectbl').forEach(t => {   // both tables share the layout/alt/grid options
+      t.classList.toggle('alt', !!SETTINGS.altRows); t.classList.toggle('grid', !!SETTINGS.grid);
+      t.classList.remove('compact', 'cozy', 'normal'); t.classList.add(layout);
+    });
+  }
   function openSettings(anchor) {
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
@@ -644,7 +652,7 @@
       </div>
       <div class="tc-s-sec">Appearance</div>
       <div class="tc-s-group">
-        <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
+        <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="normal"> normal</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
         <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
         <label><input type="checkbox" id="tc-s-grid"> <span>Show grid</span></label>
       </div>`;
@@ -654,7 +662,7 @@
     s.style.left = Math.max(8, Math.min(r.right - s.offsetWidth, window.innerWidth - s.offsetWidth - 10)) + 'px'; s.style.top = (r.bottom + 6) + 'px';
     const am = s.querySelector('#tc-s-automatch'), amRec = s.querySelector('#tc-s-automatchrec'), alt = s.querySelector('#tc-s-alt'), grid = s.querySelector('#tc-s-grid');
     am.checked = SETTINGS.autoMatch !== false; amRec.checked = !!SETTINGS.autoMatchRec; alt.checked = !!SETTINGS.altRows; grid.checked = !!SETTINGS.grid;
-    const curLayout = SETTINGS.layout || 'cozy';
+    const curLayout = SETTINGS.layout || 'normal';
     s.querySelectorAll('input[name="tc-s-layout"]').forEach(rb => { rb.checked = rb.value === curLayout; rb.onchange = () => { if (rb.checked) { SETTINGS.layout = rb.value; saveSettings(); applyViewClasses(); } }; });
     am.onchange = () => { SETTINGS.autoMatch = am.checked; saveSettings(); };
     amRec.onchange = () => { SETTINGS.autoMatchRec = amRec.checked; saveSettings(); };
@@ -730,7 +738,7 @@
   }
 
   function buildTable() {
-    const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '') + (SETTINGS.layout === 'compact' ? ' compact' : '');
+    const t = document.createElement('table'); t.className = 'tc-mirror' + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.grid ? ' grid' : '') + ' ' + (SETTINGS.layout || 'normal');
     // the Artist column is the flexible filler (no fixed width) — it absorbs the slack so every OTHER
     // column keeps its EXACT width (table-layout:fixed) and resizes 1:1 with the mouse (no jump)
     t.innerHTML = `<colgroup>${COLS.map(c => c.k === 'art' ? '<col>' : `<col style="width:${colW(c.k, c.w)}px">`).join('')}</colgroup>` +
@@ -1552,6 +1560,9 @@
       '.tc-rectbl td{overflow-wrap:anywhere}',
       '.tc-rectbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ccc;padding:4px 7px;white-space:nowrap}',
       '.tc-rectbl td{padding:4px 7px;border-bottom:1px solid #eee;vertical-align:top}',
+      // density layouts (same names as the Tracklist tab): compact tighter, cozy airier, normal = default
+      '.tc-rectbl.compact th{padding:2px 7px}.tc-rectbl.compact td{padding:1px 7px}',
+      '.tc-rectbl.cozy th{padding:7px 7px}.tc-rectbl.cozy td{padding:8px 7px}',
       '.tc-rectbl tr.tc-recmed td{background:#f3f0fa;font-weight:600;color:#4b2e83}',
       '.tc-rectbl tr.tc-recchanged td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}',   // changed-row marker, like the Tracklist tab',
       '.tc-rectbl .c-n{color:#999;text-align:right;width:26px}',
@@ -1642,7 +1653,7 @@
         '<button class="tc-rec-revall" type="button" title="revert every recording to its page-load state">Revert all</button>' +
         '<button class="tc-rec-gear" type="button" title="settings">⚙</button>' +
       '</div>' +
-      '<table class="tc-rectbl">' +
+      '<table class="tc-rectbl ' + (SETTINGS.layout || 'normal') + '">' +
         '<colgroup><col style="width:2.5%"><col style="width:25.5%"><col style="width:18%"><col style="width:4%"><col style="width:2%"><col style="width:26%"><col style="width:18%"><col style="width:4%"></colgroup>' +
         '<thead>' +
         '<tr class="tc-grouphd"><th colspan="4" class="tc-grp tc-grp-l">Track</th><th class="c-sep"></th><th colspan="3" class="tc-grp tc-grp-r">Recording</th></tr>' +
