@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.160000
+// @version      2026.6.5.170000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1494,6 +1494,7 @@
     } catch (e) { Log.warn('subscribe failed', e.message); }
   }
   async function showMirror() {
+    _apolloUsed = true;
     style(); let wrap = document.getElementById('tc-mirror-wrap');
     if (wrap) { syncNative(); return; }
     // the global toolbar sits once at the very top of the Tracklist panel; per-medium tables mount below
@@ -2262,6 +2263,7 @@
   // hide the native recording-assignment table and render the Apollo comparison table in its place.
   // Both read/write the same MB model, so toggling Original/Apollo lets you work in either view (#119).
   function showRecMirror() {
+    _apolloUsed = true;
     recStyle(); snapshotRecOriginals();   // capture the page-load recording associations once, for revert
     const tbl = document.getElementById('track-recording-assignation'); if (!tbl) return;
     let wrap = document.getElementById('tc-recwrap');
@@ -2418,7 +2420,28 @@
     updateStickyOffsets();
   }
 
-  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  /* ── edit note: credit Apollo when it's used, appended to the bottom (keep import-script notes) ── */
+  let _apolloUsed = false;   // set true once a tracklist/recordings mirror is shown — i.e. Apollo is in use
+  function ensureApolloEditNote() {
+    if (!_apolloUsed) return;
+    const ta = document.getElementById('edit-note-text'); if (!ta) return;   // MB's plain edit-note textarea (name=edit_note)
+    const cur = ta.value || '';
+    if (/Apollo Editor/i.test(cur)) return;   // already credited — don't duplicate
+    const note = 'Edited with Apollo Editor v' + scriptVersion() + ' — ' + HELP_URL;
+    const kept = cur.replace(/\s+$/, '');     // keep any existing note (import scripts etc.), append below
+    ta.value = kept ? kept + '\n' + note : note;
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  // append the note the moment the user submits — by then any import-script note is already present
+  function watchSubmit() {
+    document.addEventListener('click', e => {
+      const b = e.target && e.target.closest && e.target.closest('button'); if (!b) return;
+      const f = navFooterEl(); if (f && f.contains(b) && /^\s*(finish|enter edit)\s*$/i.test(b.textContent || '')) ensureApolloEditNote();
+    }, true);   // capture phase: runs before MB reads the textarea for submission
+  }
+
+  W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, ensureApolloEditNote, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
@@ -2437,6 +2460,7 @@
     applyView();                    // apply the chosen view to whichever tab is initially visible (tracklist and/or recordings)
     if (tracklistVisible() || recordingsVisible()) ensureLauncher();   // one toggle, present on both managed tabs
     applyNav();                     // compact navigation — hide native step-tabs + footer, relocate compactly
+    watchSubmit();                  // append an Apollo credit to the edit note on submit (keeps existing notes)
     watchTabs();                    // #119 — single watcher drives the tracklist + recordings takeovers + the shared toggle
   })();
 })();
