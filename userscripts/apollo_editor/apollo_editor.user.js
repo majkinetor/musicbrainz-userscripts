@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.190000
+// @version      2026.6.5.200000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -69,7 +69,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceTracklist: true, replaceRecordings: true, autoMatch: true, autoMatchRec: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, autoMatch: true, autoMatchRec: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -664,6 +664,7 @@
     s = document.createElement('div'); s.id = 'tc-settings';
     s.innerHTML = `<h4>${ICON} Apollo Editor <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
       <div class="tc-s-group tc-s-top">
+        <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Replace Release information</span></label>
         <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Replace Tracklist on start</span></label>
         <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Replace Recordings on start</span></label>
         <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Replace header and footer</span></label>
@@ -710,8 +711,9 @@
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     gridcols.onchange = () => { SETTINGS.gridCols = gridcols.checked; saveSettings(); applyViewClasses(); };
     gridrows.onchange = () => { SETTINGS.gridRows = gridrows.checked; saveSettings(); applyViewClasses(); };
-    const repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), cnav = s.querySelector('#tc-s-compactnav');
-    repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; cnav.checked = SETTINGS.compactNav !== false;
+    const replri = s.querySelector('#tc-s-replri'), repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), cnav = s.querySelector('#tc-s-compactnav');
+    replri.checked = SETTINGS.replaceReleaseInfo !== false; repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; cnav.checked = SETTINGS.compactNav !== false;
+    replri.onchange = () => { SETTINGS.replaceReleaseInfo = replri.checked; _riMirror = replri.checked; saveSettings(); applyView(); };
     repltl.onchange = () => { SETTINGS.replaceTracklist = repltl.checked; _tlMirror = repltl.checked; saveSettings(); applyView(); };
     replrec.onchange = () => { SETTINGS.replaceRecordings = replrec.checked; _recMirror = replrec.checked; saveSettings(); applyView(); };
     cnav.onchange = () => { SETTINGS.compactNav = cnav.checked; saveSettings(); applyNav(); };
@@ -1536,16 +1538,20 @@
   // each managed tab tracks whether its Apollo mirror is shown. It INITIALISES from the persisted
   // "Replace … on start" setting; the Original/Apollo launcher then toggles it transiently, per tab —
   // so the launcher always works even when a "replace on start" option is off. #119
-  let _tlMirror, _recMirror;
+  let _tlMirror, _recMirror, _riMirror;
   function tlWant() { if (_tlMirror === undefined) _tlMirror = SETTINGS.replaceTracklist !== false; return _tlMirror; }
   function recWant() { if (_recMirror === undefined) _recMirror = SETTINGS.replaceRecordings !== false; return _recMirror; }
-  function apolloOn() { return recordingsVisible() ? recWant() : tlWant(); }   // "is Apollo on, on the current tab"
-  function relabelLauncher() { const b = document.getElementById('tc-launch'); if (b) b.textContent = (recordingsVisible() ? recWant() : tlWant()) ? 'Original' : 'Apollo Editor'; }
+  function riWant() { if (_riMirror === undefined) _riMirror = SETTINGS.replaceReleaseInfo !== false; return _riMirror; }
+  function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
+  function curWant() { return recordingsVisible() ? recWant() : releaseInfoVisible() ? riWant() : tlWant(); }   // Apollo state of the current tab
+  function apolloOn() { return curWant(); }
+  function relabelLauncher() { const b = document.getElementById('tc-launch'); if (b) b.textContent = curWant() ? 'Original' : 'Apollo Editor'; }
   // show/hide each visible managed tab's mirror per its want
   function applyView() {
     recStyle();   // make sure the recordings CSS (incl. the native-table hide rule) exists up front
     if (tracklistVisible()) { if (tlWant()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); } else hideMirror(); }
     if (recordingsVisible()) { if (recWant()) showRecMirror(); else hideRecMirror(); }
+    if (releaseInfoVisible()) applyReleaseInfo();
     relabelLauncher();
   }
   function ensureLauncher() {
@@ -1553,6 +1559,7 @@
     style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.title = 'toggle Apollo / original editor (this tab)';
     b.onclick = () => {   // toggle only the visible tab — works regardless of the "replace on start" settings
       if (recordingsVisible()) _recMirror = !recWant();
+      else if (releaseInfoVisible()) _riMirror = !riWant();
       else if (tracklistVisible()) _tlMirror = !tlWant();
       applyView();
     };
@@ -1572,7 +1579,8 @@
       else if (!rec && _recPrev) { _recPrev = false; }
       // mount as soon as the (lazily-built) native table exists — retry each tick so there's no native flash
       if (rec) { if (recWant()) { if (!document.getElementById('tc-recwrap')) showRecMirror(); } else hideRecMirror(); }
-      if (tl || rec) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }
+      if (releaseInfoVisible()) applyReleaseInfo();
+      if (tl || rec || releaseInfoVisible()) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }
       if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); }   // keep compact nav alive + synced
     };
     tick(); setInterval(tick, 500);
@@ -2436,7 +2444,8 @@
       b.classList.toggle('active', b.dataset.step === active);
       const link = stepLink(b.dataset.step), li = link && link.closest('li');   // mirror MB's native tab state
       const dis = !!(li && li.classList.contains('ui-state-disabled'));
-      const err = !!(li && li.classList.contains('error-tab'));
+      const panel = document.getElementById(b.dataset.step);   // MB sets error-tab for some errors but not link errors — also scan the panel for a visible field-error
+      const err = !!((li && li.classList.contains('error-tab')) || (panel && panel.querySelector('.field-error[data-visible="1"]')));
       b.disabled = dis; b.classList.toggle('tc-nav-disabled', dis); b.classList.toggle('tc-nav-warn', err);
       b.title = (dis && link && link.title) ? link.title : (b.dataset.baseTitle || b.title);   // disabled → MB's "enter all track info…" hint
     });
@@ -2514,7 +2523,49 @@
     }, true);   // capture phase: runs before MB reads the textarea for submission
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, ensureApolloEditNote, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  /* ── Release information takeover (#129): tidy the first tab — hide the help bubble, clean the
+        external links, and add an Apollo gear. Toggled by the shared Original/Apollo button. ── */
+  let _riStyled = false;
+  function riStyle() {
+    if (_riStyled) return; _riStyled = true;
+    const css = `
+    body.tc-ri-on .tc-ri-helphidden{display:none!important}
+    /* external links: hide the inline "?" help icons, reveal the remove button on hover only */
+    body.tc-ri-on #external-links-editor .tooltip-wrapper,
+    body.tc-ri-on #external-links-editor .icon.help{display:none!important}
+    body.tc-ri-on #external-links-editor .relationship-item button.remove-button{opacity:0;transition:opacity .12s}
+    body.tc-ri-on #external-links-editor .relationship-item:hover button.remove-button,
+    body.tc-ri-on #external-links-editor .relationship-item:focus-within button.remove-button{opacity:1}
+    #tc-ri-gear{position:absolute;top:4px;right:6px;z-index:6;cursor:pointer;color:#777;font-size:16px;border:none;background:none;padding:2px 6px}
+    #tc-ri-gear:hover{color:#5f3ec0}`;
+    const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
+  }
+  // MB's contextual guidance box (the grey bubble that updates per focused field) — match by its content
+  function nativeHelpBubble() {
+    return [...document.querySelectorAll('#release-editor div, #page > div')].find(e => /style guidelines|is the release.?s name/i.test(e.textContent || '') && e.querySelector('a') && e.children.length < 10 && getComputedStyle(e).position === 'absolute');
+  }
+  function ensureRiGear() {
+    if (document.getElementById('tc-ri-gear')) return;
+    const panel = document.getElementById('information'); if (!panel) return;
+    const g = document.createElement('button'); g.id = 'tc-ri-gear'; g.type = 'button'; g.textContent = '⚙'; g.title = 'Apollo Editor settings';
+    g.onclick = () => openSettings(g);
+    panel.style.position = 'relative'; panel.appendChild(g);
+  }
+  function applyReleaseInfo() {
+    riStyle();
+    if (riWant()) {
+      _apolloUsed = true;
+      document.body.classList.add('tc-ri-on');
+      const bub = nativeHelpBubble(); if (bub) bub.classList.add('tc-ri-helphidden');
+      ensureRiGear();
+    } else {
+      document.body.classList.remove('tc-ri-on');
+      document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));
+      const g = document.getElementById('tc-ri-gear'); if (g) g.remove();
+    }
+  }
+
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
