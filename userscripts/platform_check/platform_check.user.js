@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MB Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.5.120000
+// @version      2026.6.5.130000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -415,8 +415,8 @@ container.innerHTML = `
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
+      <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
     </div>
-    <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
   </div>
   <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 2px;">
     <span id="mb-mb-subtitle" style="font-size: 10px; color: #999; line-height: 1.2; flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
