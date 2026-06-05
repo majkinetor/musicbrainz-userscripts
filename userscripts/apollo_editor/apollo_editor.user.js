@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.140000
+// @version      2026.6.5.150000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1259,7 +1259,7 @@
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
-      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'clear the artist of every track (titles and lengths are kept)', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
+      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'unselect every track artist, keeping the credited-as text (titles and lengths kept)', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
     });
   }
   // a small one-off dropdown (e.g. the ▾ next to "Revert all"); items: {label, title?, onClick}
@@ -1279,11 +1279,17 @@
   // Tracklist "Clear all": empty the title, artist credit and length of every track (with confirm)
   function clearAllTracks() {
     if (!MODEL) return;
-    if (!W.confirm('Clear the artist of EVERY track? (titles and lengths are kept; does not submit)')) return;
+    if (!W.confirm('Unselect the artist of EVERY track? (the credited-as text, titles and lengths are kept; does not submit)')) return;
     MODEL.tracks.forEach(t => {
-      try { const ko = koTrack(t.mi, t.ti); const ac = u(ko.artistCredit); ko.artistCredit(Object.assign({}, ac, { names: [{ name: '', artist: null, joinPhrase: '' }] })); } catch (e) {}
+      try {
+        const ko = koTrack(t.mi, t.ti); const names = u(u(ko.artistCredit).names) || [];
+        // keep each credit's display text (the credited-as name, or the artist's name if none) but drop the
+        // selected entity — turning a matched artist back into unmatched text (artist: bare {name}), ready
+        // to re-match. Mirrors how commitTrack writes an unresolved slot.
+        ko.artistCredit({ names: names.map(n => { const text = u(n.name) || (n.artist && u(u(n.artist).name)) || ''; return { artist: { name: text }, name: text, joinPhrase: u(n.joinPhrase) || '' }; }) });
+      } catch (e) {}
     });
-    Log.info('cleared all track artists'); loadAndRender();
+    Log.info('cleared all track artist selections (kept credited-as text)'); rebuild(true);   // no re-match, or it would instantly re-link the kept text
   }
 
   /* ── the Tools split-button: last-used tool is the button's label + default action; ▾ picks another ── */
@@ -2361,6 +2367,15 @@
     const f = navFooterEl();
     const changed = hasChanges();   // the submit button appears only when there are pending changes
     WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.style.display = (vis(nat) && changed) ? '' : 'none'; });
+    updateStickyOffsets();
+  }
+  // stack the sticky Apollo toolbars BELOW the frozen entity-tab row (both default to top:0 and would
+  // otherwise overlap, hiding the pinned tab row). The row height is dynamic, so measure it each sync.
+  function updateStickyOffsets() {
+    const tabs = document.querySelector('.tabs.tc-nav-sticky');
+    const h = (navOn() && tabs) ? tabs.offsetHeight : 0;
+    const w = document.getElementById('tc-mirror-wrap'); if (w) w.style.top = h ? h + 'px' : '';
+    const r = document.querySelector('#tc-recwrap .tc-rec-tb'); if (r) r.style.top = h ? h + 'px' : '';
   }
   // the native "Add medium" OPENER — it lives in the editor footer (present on the Tracklist step) and
   // opens MB's add-medium parser dialog. (NB: the button inside #add-medium-dialog is the dialog's commit
@@ -2398,6 +2413,7 @@
       ['tc-nav-steps-wrap', 'tc-nav-addbar'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); });
     }
     relocateAddMedium();
+    updateStickyOffsets();
   }
 
   W.__trackCannon = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
