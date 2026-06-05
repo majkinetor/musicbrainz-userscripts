@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.130000
+// @version      2026.6.5.140000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -2287,14 +2287,13 @@
     { key: 'recordings', label: 'Recordings', title: 'Recordings' },
     { key: 'edit-note', diff: true, title: 'Edit note — review changes & add an edit note' }
   ];
-  // native wizard buttons live in #release-editor > div.buttons; mirror each one's visibility
+  // only the submit button is kept (Cancel/Prev/Next are reachable via the entity tabs / step switcher);
+  // it shows ONLY when there are pending changes. Both forms are mirrored — whichever MB renders.
   const WIZ_DEFS = [
-    { id: 'cancel', label: '✕ Cancel', cls: 'tc-wiz-cancel', find: f => f.querySelector('button.negative') },
-    { id: 'prev', label: '← Prev', cls: 'tc-wiz-prev', find: f => [...f.querySelectorAll('button')].find(b => /previous/i.test(b.textContent)) },
-    { id: 'next', label: 'Next →', cls: 'tc-wiz-next', find: f => [...f.querySelectorAll('button')].find(b => /^\s*next/i.test(b.textContent)) },
     { id: 'enter', label: '✓ Enter edit', cls: 'tc-wiz-enter', find: f => f.querySelector('#enter-edit') || [...f.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent)) },
     { id: 'finish', label: '✓ Finish', cls: 'tc-wiz-finish', find: f => [...f.querySelectorAll('button')].find(b => /^\s*finish\s*$/i.test(b.textContent)) }
   ];
+  function hasChanges() { try { const re = W.MB && W.MB.releaseEditor; return !!(re && typeof re.allowsSubmission === 'function' && re.allowsSubmission()); } catch (e) { return false; } }
   function editorEl() { return document.getElementById('release-editor'); }
   function stepNavEl() { const e = editorEl(); return e && e.querySelector(':scope > ul.ui-tabs-nav'); }
   function navFooterEl() { const e = editorEl(); return e && e.querySelector(':scope > div.buttons'); }
@@ -2314,49 +2313,45 @@
     .tc-nav-step.active{background:#6a4d9a;color:#fff}
     .tc-nav-step.tc-nav-diff{display:flex;align-items:center;padding:5px 10px}
     .tc-nav-step.tc-nav-diff svg{width:15px;height:15px;display:block}
+    .tabs.tc-nav-sticky{position:sticky;top:0;background:#fff;z-index:20}   /* freeze the nav row when scrolling */
+    /* with the step-tab row hidden, strip the editor's jQuery-UI frame + the panel's top padding so no empty box is left */
+    #release-editor.tc-nav-on{margin-top:0;padding:0;border:none;background:none;box-shadow:none}
+    #release-editor.tc-nav-on > .ui-tabs-panel{padding-top:0;border:none}
     #tc-nav-steps-wrap{position:absolute;right:0;bottom:6px;z-index:5}
-    #tc-nav-wiz{display:inline-flex;align-items:center;gap:2px;position:absolute;right:0;top:4px;z-index:6}
-    #tc-nav-wiz.tc-wiz-intabs{top:auto;bottom:calc(100% + 3px)}   /* sit just above the entity-tab row */
+    #tc-nav-right{display:flex;align-items:center;gap:10px}
+    #tc-nav-wiz{display:inline-flex;align-items:center;gap:2px}
     .tc-nav-wbtn{font:13px Arial;padding:3px 9px;border:1px solid transparent;background:none;border-radius:5px;cursor:pointer;color:#555;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
     .tc-nav-wbtn:hover{background:#f4f4f4;border-color:#d2d2d2}
     .tc-nav-wbtn.tc-wiz-finish,.tc-nav-wbtn.tc-wiz-enter{color:#2f7a45;font-weight:600}
     .tc-nav-wbtn.tc-wiz-finish:hover,.tc-nav-wbtn.tc-wiz-enter:hover{background:#e6f3ea;border-color:#a9d2b6}
-    .tc-nav-wbtn.tc-wiz-cancel{color:#c0392b}
-    .tc-nav-wbtn.tc-wiz-cancel:hover{background:#fbeceb;border-color:#e0b4b0}
     .tc-addmed{font:13px Arial;padding:4px 12px;border:1px solid #d6cdec;background:#fff;color:#6a4d9a;border-radius:5px;cursor:pointer;margin-left:auto}
     .tc-addmed:hover{background:#f3f0fb}`;
     const s = document.createElement('style'); s.id = 'tc-nav-style'; s.textContent = css; document.head.appendChild(s);
   }
-  // build (once) the switcher + wizard button bars and place them
+  // build (once) the switcher + Finish button as one right-side group on the entity-tab row (frozen on top)
   function buildNav() {
     navStyle();
+    if (document.getElementById('tc-nav-steps-wrap') || document.getElementById('tc-nav-addbar')) return;   // already built
     // step switcher
-    if (!document.getElementById('tc-nav-steps')) {
-      const steps = document.createElement('div'); steps.className = 'tc-nav-steps'; steps.id = 'tc-nav-steps';
-      STEP_DEFS.forEach(d => {
-        const b = document.createElement('button'); b.className = 'tc-nav-step' + (d.diff ? ' tc-nav-diff' : ''); b.dataset.step = d.key;
-        b.innerHTML = d.diff ? DIFF_ICON : d.label; b.title = d.title;
-        b.onclick = () => { const l = stepLink(d.key); if (l) l.click(); setTimeout(syncNav, 40); };
-        steps.appendChild(b);
-      });
-      // host: right of the entity-tab row when editing an existing release; else a bar atop the editor
-      const tabs = document.querySelector('#page > .tabs, .tabs');
-      if (tabs) { tabs.style.position = 'relative'; const w = document.createElement('div'); w.id = 'tc-nav-steps-wrap'; w.appendChild(steps); tabs.appendChild(w); }
-      else { const ed = editorEl(); if (ed) { const bar = document.createElement('div'); bar.id = 'tc-nav-addbar'; bar.style.cssText = 'text-align:right;margin:0 0 6px'; bar.appendChild(steps); ed.insertBefore(bar, ed.firstChild); } }
-    }
-    // wizard buttons (top-right of the page header)
-    if (!document.getElementById('tc-nav-wiz')) {
-      const wiz = document.createElement('div'); wiz.id = 'tc-nav-wiz';
-      WIZ_DEFS.forEach(d => {
-        const b = document.createElement('button'); b.className = 'tc-nav-wbtn ' + d.cls; b.dataset.wiz = d.id; b.textContent = d.label;
-        b.onclick = () => { const f = navFooterEl(); const nat = f && d.find(f); if (nat) nat.click(); setTimeout(syncNav, 40); };
-        wiz.appendChild(b);
-      });
-      const page = document.getElementById('page') || document.getElementById('content');
-      const tabsHost = document.querySelector('#page > .tabs, .tabs');
-      const host = tabsHost || page;
-      if (host) { host.style.position = 'relative'; host.appendChild(wiz); wiz.classList.toggle('tc-wiz-intabs', !!tabsHost); }
-    }
+    const steps = document.createElement('div'); steps.className = 'tc-nav-steps'; steps.id = 'tc-nav-steps';
+    STEP_DEFS.forEach(d => {
+      const b = document.createElement('button'); b.className = 'tc-nav-step' + (d.diff ? ' tc-nav-diff' : ''); b.dataset.step = d.key;
+      b.innerHTML = d.diff ? DIFF_ICON : d.label; b.title = d.title;
+      b.onclick = () => { const l = stepLink(d.key); if (l) l.click(); setTimeout(syncNav, 40); };
+      steps.appendChild(b);
+    });
+    // submit button (Finish / Enter edit)
+    const wiz = document.createElement('div'); wiz.id = 'tc-nav-wiz';
+    WIZ_DEFS.forEach(d => {
+      const b = document.createElement('button'); b.className = 'tc-nav-wbtn ' + d.cls; b.dataset.wiz = d.id; b.textContent = d.label;
+      b.onclick = () => { const f = navFooterEl(); const nat = f && d.find(f); if (nat) nat.click(); setTimeout(syncNav, 40); };
+      wiz.appendChild(b);
+    });
+    const right = document.createElement('div'); right.id = 'tc-nav-right'; right.append(wiz, steps);
+    // host: the entity-tab row when editing an existing release (sticky); else a bar atop the editor
+    const tabs = document.querySelector('#page > .tabs, .tabs');
+    if (tabs) { tabs.classList.add('tc-nav-sticky'); const w = document.createElement('div'); w.id = 'tc-nav-steps-wrap'; w.appendChild(right); tabs.appendChild(w); }
+    else { const ed = editorEl(); if (ed) { const bar = document.createElement('div'); bar.id = 'tc-nav-addbar'; bar.style.cssText = 'display:flex;justify-content:flex-end;margin:0 0 6px'; bar.appendChild(right); ed.insertBefore(bar, ed.firstChild); } }
   }
   // keep the proxies in sync with the native state each tick
   function syncNav() {
@@ -2364,17 +2359,22 @@
     const active = activeStepKey();
     document.querySelectorAll('#tc-nav-steps .tc-nav-step').forEach(b => b.classList.toggle('active', b.dataset.step === active));
     const f = navFooterEl();
-    WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.style.display = vis(nat) ? '' : 'none'; });
+    const changed = hasChanges();   // the submit button appears only when there are pending changes
+    WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.style.display = (vis(nat) && changed) ? '' : 'none'; });
   }
-  // the native "Add medium" button (in the #tracklist panel's .buttons)
-  function nativeAddMediumBtn() { const tl = document.getElementById('tracklist'); if (!tl) return null; return [...tl.querySelectorAll('button')].find(b => /add medium/i.test(b.textContent)); }
-  // move "Add medium" to the right end of the Apollo tracklist (opposite "Add tracks"), proxying the native button
+  // the native "Add medium" OPENER — it lives in the editor footer (present on the Tracklist step) and
+  // opens MB's add-medium parser dialog. (NB: the button inside #add-medium-dialog is the dialog's commit
+  // button, disabled until tracks are parsed — proxying that one does nothing.)
+  function nativeAddMediumBtn() {
+    const f = navFooterEl(); let b = f && [...f.querySelectorAll('button')].find(x => /add medium/i.test(x.textContent));
+    if (b) return b;
+    const tl = document.getElementById('tracklist'); return tl ? [...tl.querySelectorAll('button')].find(x => /add medium/i.test(x.textContent) && !x.closest('#add-medium-dialog')) : null;
+  }
+  // move "Add medium" to the right end of the Apollo tracklist (opposite "Add tracks"), proxying the native opener
   function relocateAddMedium() {
     const nat = nativeAddMediumBtn();
-    const natBox = nat ? nat.closest('.buttons') : null;
     const want = navOn() && document.getElementById('tc-mirror-wrap') && nat;
-    if (!want) { if (natBox) natBox.classList.remove('tc-nav-vh'); const p = document.getElementById('tc-addmed'); if (p) p.remove(); return; }
-    if (natBox) natBox.classList.add('tc-nav-vh');             // hide the native button (still clicked via the proxy)
+    if (!want) { const p = document.getElementById('tc-addmed'); if (p) p.remove(); return; }
     if (document.getElementById('tc-addmed')) return;          // proxy already placed (the add-row may rebuild → re-add then)
     const btn = document.createElement('button'); btn.id = 'tc-addmed'; btn.className = 'tc-addmed'; btn.title = 'add a new medium'; btn.textContent = '＋ Add medium';
     btn.onclick = () => { const n = nativeAddMediumBtn(); if (n) n.click(); };
@@ -2386,13 +2386,16 @@
     if (!editorEl()) return;
     if (navOn()) {
       buildNav();
+      editorEl().classList.add('tc-nav-on');
       const sn = stepNavEl(); if (sn) sn.classList.add('tc-nav-vh');
       const f = navFooterEl(); if (f) f.classList.add('tc-nav-vh');
       syncNav();
     } else {
+      editorEl().classList.remove('tc-nav-on');
       const sn = stepNavEl(); if (sn) sn.classList.remove('tc-nav-vh');
       const f = navFooterEl(); if (f) f.classList.remove('tc-nav-vh');
-      ['tc-nav-steps-wrap', 'tc-nav-addbar', 'tc-nav-wiz'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); });
+      const tabs = document.querySelector('#page > .tabs, .tabs'); if (tabs) tabs.classList.remove('tc-nav-sticky');
+      ['tc-nav-steps-wrap', 'tc-nav-addbar'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); });
     }
     relocateAddMedium();
   }
