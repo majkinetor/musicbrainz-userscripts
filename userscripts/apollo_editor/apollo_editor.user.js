@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.210000
+// @version      2026.6.5.220000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.210000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.220000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2544,9 +2544,10 @@
     body.tc-ri-on #information span.img.help,
     body.tc-ri-on #information .inline-help,
     body.tc-ri-on #information a.help,
-    body.tc-ri-on #information .bubble,
     body.tc-ri-on #information .guidance,
-    body.tc-ri-on #information .guidance-popover{display:none!important}
+    body.tc-ri-on #information .guidance-popover,
+    /* hide help bubbles only — never a functional editor bubble (URL cleanup, add/edit link) */
+    body.tc-ri-on #information .bubble:not(:has(input,button,select,textarea)){display:none!important}
 
     /* ---- two-column layout: form on the left, external links lifted into the (now-used) right column ---- */
     body.tc-ri-on #information{display:flex;gap:30px;align-items:flex-start}
@@ -2575,6 +2576,9 @@
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content{display:inline-flex;align-items:center;width:auto}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content > label:first-child{display:none}   /* the "Type:" caption */
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:inline-flex;align-items:center;width:auto;font-size:11px;color:#5a3e94;background:#efeaf9;border:1px solid #ddd2f0;border-radius:10px;padding:1px 9px;font-weight:normal}
+    /* editable type dropdowns (links whose type is selectable) — flatten MB's grey gradient skin to a clean control */
+    body.tc-ri-on #external-links-editor select{font-size:12px;color:#3a2d5c;background:#f3eefb;background-image:none;border:1px solid #d6c8ef;border-radius:8px;box-shadow:none;padding:2px 8px;height:auto;margin:1px 0;max-width:240px;width:auto}
+    body.tc-ri-on #external-links-editor select:hover{border-color:#b69be6;background:#ede4fa}
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions{order:9;opacity:0;transition:opacity .12s}
     body.tc-ri-on #external-links-editor tr.relationship-item:hover td.link-actions{opacity:1}
     /* hide MB's inline "Add another relationship" row — the single paste field at the bottom is the only adder we keep */
@@ -2606,10 +2610,11 @@
   // (the in-panel ones are hidden by CSS via #information .bubble/.guidance)
   function nativeHelpBubbles() {
     const out = new Set();
-    document.querySelectorAll('#release-editor .bubble, #release-editor .guidance, #release-editor .guidance-popover, #page .bubble').forEach(e => out.add(e));
+    const isHelp = e => !e.querySelector('input,button,select,textarea');   // a functional editor bubble (URL cleanup, add/edit link) has controls — never hide it
+    document.querySelectorAll('#release-editor .bubble, #release-editor .guidance, #release-editor .guidance-popover, #page .bubble').forEach(e => { if (isHelp(e)) out.add(e); });
     [...document.querySelectorAll('#page div')].forEach(e => {
       if (e.offsetParent === null || document.getElementById('information')?.contains(e)) return;
-      if (e.querySelector('a[href*="style"]') && (e.textContent || '').length < 400 && !e.querySelector('input,select,table,fieldset,h2')) out.add(e);
+      if (e.querySelector('a[href*="style"]') && (e.textContent || '').length < 400 && !e.querySelector('input,button,select,textarea,table,fieldset,h2')) out.add(e);
     });
     return [...out];
   }
