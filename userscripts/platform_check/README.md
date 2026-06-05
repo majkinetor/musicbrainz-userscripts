@@ -19,6 +19,14 @@ Link availability is determined by the icon and text color:
 1. Faded - link is not found
 1. Circled - link exists in MB relationships
 
+Mouse click works as follows:
+
+1. **Left click**<br>
+    1. Title - Open link if found, open search for provider if not found (use [↗] button in the footer to open all)
+    1. Icon - Add link to the MB relationships (use [+] button in the footer to add all)
+1. **Right click**<br>
+    1. Title - Open search for provider
+
 ## Supported platforms
 
 |  Platform   |                    Search source                    |          Track verify          | Wikidata cross-ref |
@@ -43,7 +51,7 @@ Discogs has few specifics:
     - `+` click - batch insert all links that have `✓` marker
     - `✓`click - insert only particular link next to the marker
     - On the edit page it fills the **edit note** (script name/version + the links added) and shows a small confirmation next to the *External links* heading — then you review and click **Enter edit**.
-- **Open all found** (`↗`, next to `+`): opens each found platform page that isn't already in MB (non-circled links, plus the Discogs master if not yet added) in its own new tab.
+- **Open all found** (`↗`): opens each found platform page that isn't already in MB (non-circled links, plus the Discogs master if not yet added) in its own new tab. **NOTE**: Watch for browser blocking multiple pop-ups!
 - **Options**:
     - Toggle usage of each supported platform independently
     - Reorder providers

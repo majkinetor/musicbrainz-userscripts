@@ -1544,8 +1544,10 @@
       if (tl && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab');
         if (tlWant()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); else if (!_tlRefreshed) { _tlRefreshed = true; loadAndRender(); } } else hideMirror(); }
       else if (!tl && _tlPrev) { _tlPrev = false; }
-      if (rec && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); if (recWant()) showRecMirror(); else hideRecMirror(); }
+      if (rec && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); }
       else if (!rec && _recPrev) { _recPrev = false; }
+      // mount as soon as the (lazily-built) native table exists — retry each tick so there's no native flash
+      if (rec) { if (recWant()) { if (!document.getElementById('tc-recwrap')) showRecMirror(); } else hideRecMirror(); }
       if (tl || rec) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }
       if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); }   // keep compact nav alive + synced
     };
@@ -2428,6 +2430,10 @@
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
     if (tlWant()) showMirror();   // pre-build the tracklist takeover inside the (possibly hidden) #tracklist panel
+    // pre-hide the native recordings table right after edit is entered (recStyle's `body.tc-rec-on` rule
+    // applies even before MB lazily builds the table), and pre-mount the Apollo table if it already exists —
+    // so switching to Recordings shows the Apollo view with no flash of the native assignment table. #119
+    if (recWant()) { recStyle(); document.body.classList.add('tc-rec-on'); showRecMirror(); }
     applyView();                    // apply the chosen view to whichever tab is initially visible (tracklist and/or recordings)
     if (tracklistVisible() || recordingsVisible()) ensureLauncher();   // one toggle, present on both managed tabs
     applyNav();                     // compact navigation — hide native step-tabs + footer, relocate compactly
