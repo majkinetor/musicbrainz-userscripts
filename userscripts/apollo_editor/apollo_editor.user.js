@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.100000
+// @version      2026.6.5.103000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.100000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.103000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -721,8 +721,15 @@
   let ACTIVE = {};   // { mode, tbody, statusEl }
   // transient message (e.g. "matching d/n") shown in every table's Artist header
   const updateStatus = t => { document.querySelectorAll('.tc-medsec .tc-hstatus, #tc-panel .tc-hstatus, .tc-globalstat').forEach(e => { e.textContent = t; e.classList.remove('tc-unres'); }); };
-  // the always-visible total in the toolbar (left of Match) — shows the release-wide unresolved count / progress
-  const setGlobalStat = n => { document.querySelectorAll('.tc-globalstat').forEach(e => { e.textContent = n ? statusText(n) : ''; e.classList.toggle('tc-unres', n > 0); }); };
+  // scroll to + focus the first unresolved artist search box (the white, non-matched one)
+  function focusFirstUnresolved() {
+    const box = document.querySelector('.tc-mirror .tc-search:not(.matched)'); if (!box) return;
+    box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    (box.querySelector('input.nm') || box).focus();
+  }
+  // the always-visible total in the toolbar (left of Match) — shows the release-wide unresolved count / progress;
+  // when there are unresolved artists the badge is clickable and jumps to the first one
+  const setGlobalStat = n => { document.querySelectorAll('.tc-globalstat').forEach(e => { e.textContent = n ? statusText(n) : ''; e.classList.toggle('tc-unres', n > 0); e.onclick = n > 0 ? focusFirstUnresolved : null; e.style.cursor = n > 0 ? 'pointer' : ''; e.title = n > 0 ? 'jump to the first unresolved artist' : ''; }); };
   // transient action feedback (a pick propagated, S&R count, …) — lives in the toolbar so it never
   // overwrites a medium's unresolved badge; auto-clears
   let _toastTimer = null;
@@ -1367,7 +1374,7 @@
 
   const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
     + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-globalstat"></span><label class="tc-am-lbl">Change ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
-    + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">Revert / Clear ▾</button><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
+    + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
   function openPanel() {
@@ -1764,11 +1771,11 @@
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
         '<span class="tc-rec-amstatus"></span>' +   // flexible filler: its text changes absorb here, never reflowing the bar
-        '<label class="tc-rec-tbl">ignore at <select class="tc-rec-ignore"><option value="low">🟡 low</option><option value="vlow">🟠 very low</option><option value="xlow">🔴 extremely low</option><option value="nothing">⚪ nothing</option></select></label>' +
+        '<label class="tc-rec-tbl">Ignore at <select class="tc-rec-ignore"><option value="low">🟡 low</option><option value="vlow">🟠 very low</option><option value="xlow">🔴 extremely low</option><option value="nothing">⚪ nothing</option></select></label>' +
         '<span class="tc-recwarn"></span>' +
         '<span class="tc-tbsep"></span>' +
         '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions">⚡ Match</button>' +
-        '<button class="tc-rec-revcaret" type="button" title="revert / clear all">Revert / Clear ▾</button>' +
+        '<button class="tc-rec-revcaret" type="button" title="revert / clear all">▾</button>' +
         '<button class="tc-rec-gear" type="button" title="settings">⚙</button>' +
       '</div>' +
       '<table class="tc-rectbl ' + (SETTINGS.layout || 'normal') + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.gridCols ? ' gridcols' : '') + (SETTINGS.gridRows !== false ? ' gridrows' : '') + '">' +
