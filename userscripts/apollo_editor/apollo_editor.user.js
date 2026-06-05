@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.200000
+// @version      2026.6.5.210000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.110000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.210000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2533,6 +2533,7 @@
   /* ── Release information takeover (#129): tidy the first tab — hide the help bubble, clean the
         external links, and add an Apollo gear. Toggled by the shared Original/Apollo button. ── */
   let _riStyled = false;
+  let _riExtFs = null;          // the External-links <fieldset>, remembered so we can move it back
   function riStyle() {
     if (_riStyled) return; _riStyled = true;
     const css = `
@@ -2546,11 +2547,60 @@
     body.tc-ri-on #information .bubble,
     body.tc-ri-on #information .guidance,
     body.tc-ri-on #information .guidance-popover{display:none!important}
-    /* external links: reveal the remove button on hover only */
-    body.tc-ri-on #external-links-editor .relationship-item button.remove-button{opacity:0;transition:opacity .12s}
-    body.tc-ri-on #external-links-editor .relationship-item:hover button.remove-button,
-    body.tc-ri-on #external-links-editor .relationship-item:focus-within button.remove-button{opacity:1}`;
+
+    /* ---- two-column layout: form on the left, external links lifted into the (now-used) right column ---- */
+    body.tc-ri-on #information{display:flex;gap:30px;align-items:flex-start}
+    body.tc-ri-on #information > div.half-width{flex:1 1 0;min-width:0;max-width:680px;width:auto}
+    body.tc-ri-on #information > div.documentation{display:none}   /* the contextual help text — replaced by the links column */
+    body.tc-ri-on #tc-ri-rightcol{flex:0 0 410px;max-width:410px}
+    body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0}
+
+    /* ---- tidy the external-links table into a clean list ---- */
+    body.tc-ri-on #external-links-editor,
+    body.tc-ri-on #external-links-editor > tbody{display:block}
+    body.tc-ri-on #external-links-editor tr.external-link-item{display:flex;align-items:center;gap:8px;padding:7px 6px 3px;border-radius:6px}
+    body.tc-ri-on #external-links-editor tr.external-link-item:hover{background:#f6f4fb}
+    body.tc-ri-on #external-links-editor tr.external-link-item > td{padding:0;border:none;vertical-align:middle}
+    body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:18px;text-align:center}
+    body.tc-ri-on #external-links-editor tr.external-link-item > td:last-child{flex:1;min-width:0}
+    body.tc-ri-on #external-links-editor a.url{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+    /* edit/remove icons: hidden until the row is hovered */
+    body.tc-ri-on #external-links-editor td.link-actions{flex:none;order:9;display:flex;gap:5px;opacity:0;transition:opacity .12s}
+    body.tc-ri-on #external-links-editor tr.external-link-item:hover td.link-actions,
+    body.tc-ri-on #external-links-editor tr.external-link-item:focus-within td.link-actions{opacity:1}
+    /* the type row -> a small chip indented under its URL */
+    body.tc-ri-on #external-links-editor tr.relationship-item{display:flex;align-items:center;gap:6px;padding:0 6px 7px 26px}
+    body.tc-ri-on #external-links-editor tr.relationship-item > td{padding:0;border:none;flex:0 0 auto}
+    body.tc-ri-on #external-links-editor tr.relationship-item > td:first-child{display:none}
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content{display:inline-flex;align-items:center;width:auto}
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content > label:first-child{display:none}   /* the "Type:" caption */
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:inline-flex;align-items:center;width:auto;font-size:11px;color:#5a3e94;background:#efeaf9;border:1px solid #ddd2f0;border-radius:10px;padding:1px 9px;font-weight:normal}
+    body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions{order:9;opacity:0;transition:opacity .12s}
+    body.tc-ri-on #external-links-editor tr.relationship-item:hover td.link-actions{opacity:1}
+    /* hide MB's inline "Add another relationship" row — the single paste field at the bottom is the only adder we keep */
+    body.tc-ri-on #external-links-editor tr.add-relationship{display:none}
+    /* the "add another link" input row */
+    body.tc-ri-on #external-links-editor tr.external-link-item .value.with-button input{width:100%}`;
     const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
+  }
+  // move the External-links fieldset into a dedicated right column (or back home when Apollo is off).
+  // Only the server-rendered <fieldset> wrapper is moved — React's editor root inside it is untouched.
+  function relocateLinks(on) {
+    const panel = document.getElementById('information'); if (!panel) return;
+    const half = panel.querySelector(':scope > div.half-width'); if (!half) return;
+    if (!_riExtFs || !_riExtFs.isConnected) {
+      const ext = document.getElementById('external-links-editor');
+      _riExtFs = ext ? ext.closest('fieldset') : null;
+    }
+    const fs = _riExtFs; if (!fs) return;
+    if (on) {
+      let col = panel.querySelector(':scope > #tc-ri-rightcol');
+      if (!col) { col = document.createElement('div'); col.id = 'tc-ri-rightcol'; panel.appendChild(col); }
+      if (fs.parentElement !== col) { if (!fs._tcHome) fs._tcHome = { parent: fs.parentElement, next: fs.nextElementSibling }; col.appendChild(fs); }
+    } else if (fs._tcHome && fs.parentElement !== fs._tcHome.parent) {
+      fs._tcHome.parent.insertBefore(fs, fs._tcHome.next && fs._tcHome.next.isConnected ? fs._tcHome.next : null);
+      const col = panel.querySelector(':scope > #tc-ri-rightcol'); if (col && !col.children.length) col.remove();
+    }
   }
   // MB's contextual guidance box(es) — anything outside #information that's just the style-guidelines help
   // (the in-panel ones are hidden by CSS via #information .bubble/.guidance)
@@ -2568,8 +2618,10 @@
     if (riWant()) {
       _apolloUsed = true;
       document.body.classList.add('tc-ri-on');
+      relocateLinks(true);
       nativeHelpBubbles().forEach(b => b.classList.add('tc-ri-helphidden'));
     } else {
+      relocateLinks(false);
       document.body.classList.remove('tc-ri-on');
       document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));
     }
