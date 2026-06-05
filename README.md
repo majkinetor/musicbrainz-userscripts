@@ -5,10 +5,10 @@ This repository contains [userscripts](https://musicbrainz.org/doc/Guides/Usersc
 See each script's README for detailed instructions, screenshots and videos:
 
 [Apollo Editor](./userscripts/apollo_editor/README.md) <img src="./userscripts/apollo_editor/icon.svg" align="left" width="32"><br>
-UI and tools for advanced adding and editing of MusicBrainz release tracklist
+UI and tools for advanced adding and editing of MusicBrainz release
 
 [Import Discogs Credits](./userscripts/discogs_credits/README.md)<img src="./userscripts/discogs_credits/icon.png" align="left" width="32"><br>
-UI for importing Discogs credits as MusicBrainz release relationships and few general import helpers
+UI for importing Discogs credits as release relationships and few general import helpers
 
 [ISRC Scout](./userscripts/isrc_scout/README.md)<img src="./userscripts/isrc_scout/icon.svg" align="left" width="32"><br>
 Reads the release's existing ISRCs and fill in the missing ones from several sources
