@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.320000
+// @version      2026.6.5.330000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.320000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.330000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2560,11 +2560,13 @@
     body.tc-ri-on #tc-ri-rightcol{flex:1 1 auto;min-width:0}       /* links take the remaining horizontal space */
     body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0}
 
-    /* ---- tidy the external-links table: each link is a block — URL line, then its type combos inline beneath ---- */
-    body.tc-ri-on #external-links-editor,
-    body.tc-ri-on #external-links-editor > tbody{display:block}
-    /* URL line — its own (block-level) line */
-    body.tc-ri-on #external-links-editor tr.external-link-item{display:flex;align-items:center;gap:9px;padding:7px 6px 0;border-radius:6px;position:relative}
+    /* ---- tidy the external-links table: each link is a block — URL line, then its type combos inline beneath.
+       The editor gets a 45px left padding so the type combos (and any wrapped lines) hang-indent under the URL
+       text; the URL rows pull back by the same 45px so the favicon stays at the left edge. ---- */
+    body.tc-ri-on #external-links-editor{display:block}
+    body.tc-ri-on #external-links-editor > tbody{display:block;padding-left:45px}
+    /* URL line — its own (block-level) line, pulled back so the favicon sits at the column's left edge */
+    body.tc-ri-on #external-links-editor tr.external-link-item{display:flex;align-items:center;gap:9px;padding:7px 6px 0;margin-left:-45px;border-radius:6px;position:relative}
     body.tc-ri-on #external-links-editor tr.external-link-item:hover{background:#f6f4fb}
     body.tc-ri-on #external-links-editor tr.external-link-item > td{padding:0;border:none}
     body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:context-menu;position:relative;top:6px}   /* larger favicon → right-click to edit URL; nudged down to sit between the two lines */
@@ -2579,10 +2581,11 @@
     body.tc-ri-on #external-links-editor tr.external-link-item td.link-actions > button.remove-item{display:inline-flex;align-items:center;order:9;margin:0 2px 0 8px;transform:scale(.85);opacity:0;transition:opacity .12s}
     body.tc-ri-on #external-links-editor tr.external-link-item:hover td.link-actions > button.remove-item{opacity:.5}
     body.tc-ri-on #external-links-editor tr.external-link-item td.link-actions > button.remove-item:hover{opacity:1}
-    /* type combos line — each relationship-item is inline so they sit on one line under the URL, pulled up close to it */
-    body.tc-ri-on #external-links-editor tr.relationship-item{display:inline-flex;align-items:center;vertical-align:middle;padding:0 0 4px;margin-top:-2px;position:relative}
-    body.tc-ri-on #external-links-editor tr.external-link-item + tr.relationship-item{margin-left:45px}   /* padding(6)+favicon(30)+gap(9) → align with URL text */
-    body.tc-ri-on #external-links-editor tr.relationship-item + tr.relationship-item{margin-left:16px}    /* gap between combos on the same line */
+    /* type combos line — each relationship-item is inline so they sit on one line under the URL; the editor's
+       45px hang-indent aligns the first combo (and wrapped lines) with the URL text, gap via right margin */
+    body.tc-ri-on #external-links-editor tr.relationship-item{display:inline-flex;align-items:center;vertical-align:middle;padding:0 0 4px;margin:-2px 16px 0 0;position:relative}
+    /* a freshly-added empty type (rel-add) carries a long "select a link type" error — give it its own full line */
+    body.tc-ri-on #external-links-editor tr.relationship-item:has(.rel-add){display:flex;flex-wrap:wrap;align-items:center;width:100%;margin-right:0}
     body.tc-ri-on #external-links-editor tr.relationship-item > td{padding:0;border:none}
     body.tc-ri-on #external-links-editor tr.relationship-item > td:first-child{display:none}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content{display:inline-flex;align-items:center;width:auto}
@@ -2606,11 +2609,12 @@
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{display:inline-flex;align-items:center;order:9;margin-left:6px;opacity:.5;transform:scale(.85);transition:opacity .12s}
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]:hover{opacity:1}
     /* MB's "Add another relationship" (only present on some links) — keep it, inline at the end of the type list, as a small + */
-    body.tc-ri-on #external-links-editor tr.add-relationship{display:inline-flex;align-items:center;vertical-align:middle;margin-left:14px;padding:0 0 4px}
+    body.tc-ri-on #external-links-editor tr.add-relationship{display:inline-flex;align-items:center;vertical-align:middle;margin:0;padding:0 0 4px}
     body.tc-ri-on #external-links-editor tr.add-relationship > td{padding:0;border:none}
     body.tc-ri-on #external-links-editor tr.add-relationship > td:empty{display:none}
-    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item{font-size:0;width:22px;height:22px;border-radius:50%;border:1px solid #d6cdec;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;margin:0;line-height:1}
-    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item::before{content:"＋";font:bold 15px/1 Arial;color:#9a8fc0}
+    /* the [+] is sized to match the per-type [x] remove (≈14px) */
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item{font-size:0;width:15px;height:15px;border-radius:50%;border:1px solid #d6cdec;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;margin:0;line-height:1}
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item::before{content:"＋";font:bold 11px/1 Arial;color:#9a8fc0}
     body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover{background:#f0ecfa;border-color:#b9a4e0}
     body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover::before{color:#6f42c1}
     /* the "add another link" input row */
