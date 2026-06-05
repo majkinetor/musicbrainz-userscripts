@@ -129,6 +129,13 @@ Applied to **both** tables (Tracklist and Recordings).
 | **Show grid → columns** | Off | Vertical separators between columns. |
 | **Show grid → rows** | On | Horizontal lines between tracks. |
 
+## Keyboard 
+
+1. Down, `<ENTER`> - focus cell in the next row
+2. Up, SHIFT+`<ENTER`> - focus cell in the previous row
+3. Tab - focus cell in the next column
+4. SHIFT+Tab - focus cell in the previous column
+
 ## Persistence
 
 These are remembered automatically as you use the UI:
