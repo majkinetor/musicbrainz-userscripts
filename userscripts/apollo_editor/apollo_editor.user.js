@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.200000
+// @version      2026.6.5.210000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -2324,6 +2324,11 @@
     .tc-nav-step.active{background:#6a4d9a;color:#fff}
     .tc-nav-step.tc-nav-diff{display:flex;align-items:center;padding:5px 10px}
     .tc-nav-step.tc-nav-diff svg{width:15px;height:15px;display:block}
+    /* mirror MB's native tab states: disabled (e.g. Recordings until the tracklist is complete) + error-tab (validation warnings) */
+    .tc-nav-step:disabled,.tc-nav-step.tc-nav-disabled{opacity:.45;cursor:not-allowed;color:#9a8fb5;background:#fff}
+    .tc-nav-step.tc-nav-warn{background:#fde3e3;color:#c0392b}
+    .tc-nav-step.tc-nav-warn.active{background:#f3c4c4;color:#992318}
+    .tc-nav-step.tc-nav-warn::before{content:"⚠";margin-right:5px}
     .tabs.tc-nav-sticky{position:sticky;top:0;background:#fff;z-index:20}   /* freeze the nav row when scrolling */
     /* with the step-tab row hidden, strip the editor's jQuery-UI frame + the panel's top padding so no empty box is left */
     #release-editor.tc-nav-on{margin-top:0;padding:0;border:none;background:none;box-shadow:none}
@@ -2346,7 +2351,7 @@
     // step switcher
     const steps = document.createElement('div'); steps.className = 'tc-nav-steps'; steps.id = 'tc-nav-steps';
     STEP_DEFS.forEach(d => {
-      const b = document.createElement('button'); b.className = 'tc-nav-step' + (d.diff ? ' tc-nav-diff' : ''); b.dataset.step = d.key;
+      const b = document.createElement('button'); b.className = 'tc-nav-step' + (d.diff ? ' tc-nav-diff' : ''); b.dataset.step = d.key; b.dataset.baseTitle = d.title;
       b.innerHTML = d.diff ? DIFF_ICON : d.label; b.title = d.title;
       b.onclick = () => { const l = stepLink(d.key); if (l) l.click(); setTimeout(syncNav, 40); };
       steps.appendChild(b);
@@ -2362,13 +2367,20 @@
     // host: the entity-tab row when editing an existing release (sticky); else a bar atop the editor
     const tabs = document.querySelector('#page > .tabs, .tabs');
     if (tabs) { tabs.classList.add('tc-nav-sticky'); const w = document.createElement('div'); w.id = 'tc-nav-steps-wrap'; w.appendChild(right); tabs.appendChild(w); }
-    else { const ed = editorEl(); if (ed) { const bar = document.createElement('div'); bar.id = 'tc-nav-addbar'; bar.style.cssText = 'display:flex;justify-content:flex-end;margin:0 0 6px'; bar.appendChild(right); ed.insertBefore(bar, ed.firstChild); } }
+    else { const ed = editorEl(); if (ed) { const bar = document.createElement('div'); bar.id = 'tc-nav-addbar'; bar.style.cssText = 'display:flex;justify-content:flex-end;margin:0 0 6px;position:sticky;top:0;z-index:20;background:#fff;padding:4px 0'; bar.appendChild(right); ed.insertBefore(bar, ed.firstChild); } }   // Add-release page has no entity-tab row → this bar is the frozen header
   }
   // keep the proxies in sync with the native state each tick
   function syncNav() {
     if (!navOn()) return;
     const active = activeStepKey();
-    document.querySelectorAll('#tc-nav-steps .tc-nav-step').forEach(b => b.classList.toggle('active', b.dataset.step === active));
+    document.querySelectorAll('#tc-nav-steps .tc-nav-step').forEach(b => {
+      b.classList.toggle('active', b.dataset.step === active);
+      const link = stepLink(b.dataset.step), li = link && link.closest('li');   // mirror MB's native tab state
+      const dis = !!(li && li.classList.contains('ui-state-disabled'));
+      const err = !!(li && li.classList.contains('error-tab'));
+      b.disabled = dis; b.classList.toggle('tc-nav-disabled', dis); b.classList.toggle('tc-nav-warn', err);
+      b.title = (dis && link && link.title) ? link.title : (b.dataset.baseTitle || b.title);   // disabled → MB's "enter all track info…" hint
+    });
     const f = navFooterEl();
     const changed = hasChanges();   // the submit button appears only when there are pending changes
     WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.style.display = (vis(nat) && changed) ? '' : 'none'; });
@@ -2377,7 +2389,7 @@
   // stack the sticky Apollo toolbars BELOW the frozen entity-tab row (both default to top:0 and would
   // otherwise overlap, hiding the pinned tab row). The row height is dynamic, so measure it each sync.
   function updateStickyOffsets() {
-    const tabs = document.querySelector('.tabs.tc-nav-sticky');
+    const tabs = document.querySelector('.tabs.tc-nav-sticky') || document.getElementById('tc-nav-addbar');   // edit page → entity-tab row; add page → the add-bar
     const h = (navOn() && tabs) ? tabs.offsetHeight : 0;
     const w = document.getElementById('tc-mirror-wrap'); if (w) w.style.top = h ? h + 'px' : '';
     const r = document.querySelector('#tc-recwrap .tc-rec-tb'); if (r) r.style.top = h ? h + 'px' : '';
