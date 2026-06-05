@@ -154,7 +154,7 @@ function main() {
 
   // EXECUTE
   if (git('rev-parse', '--abbrev-ref', 'HEAD') !== 'main') throw new Error('publish --yes must be run on `main`');
-  if (git('status', '--porcelain')) throw new Error('working tree not clean');
+  if (git('status', '--porcelain', '--untracked-files=no')) throw new Error('working tree has uncommitted changes');
   for (const e of edits) writeFileSync(e.file, e.content);
   git('add', ...edits.map(e => e.file));
   git('commit', '-m', `changelog: release ${tag}`);
