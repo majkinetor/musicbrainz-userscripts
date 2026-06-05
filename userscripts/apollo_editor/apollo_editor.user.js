@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.110000
+// @version      2026.6.5.120000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -630,7 +630,8 @@
     #tc-settings h4{flex-wrap:wrap}
     #tc-settings h4 .tc-help{margin-left:auto;flex:none;white-space:nowrap;font-size:12px;font-weight:normal;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
     #tc-settings h4 .tc-help:hover{background:#f0ecfa}
-    #tc-settings label{display:flex;gap:8px;align-items:flex-start;margin:7px 0;color:#333}
+    #tc-settings label{display:flex;gap:8px;align-items:center;margin:7px 0;color:#333}
+    #tc-settings label input[type=checkbox]{margin:0;flex:none}
     #tc-settings .hint{color:#777;font-size:11px;margin:0 0 4px 24px}
     #tc-settings .tc-s-sec{font-weight:bold;color:#333;margin:12px 0 5px}
     #tc-settings .tc-s-group{padding-left:8px}
