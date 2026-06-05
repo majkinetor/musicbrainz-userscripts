@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.270000
+// @version      2026.6.5.280000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.270000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.280000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2564,41 +2564,42 @@
     body.tc-ri-on #external-links-editor,
     body.tc-ri-on #external-links-editor > tbody{display:block}
     /* URL line — its own (block-level) line */
-    body.tc-ri-on #external-links-editor tr.external-link-item{display:flex;align-items:center;gap:9px;padding:8px 6px 1px;border-radius:6px}
+    body.tc-ri-on #external-links-editor tr.external-link-item{display:flex;align-items:center;gap:9px;padding:7px 6px 0;border-radius:6px;position:relative}
     body.tc-ri-on #external-links-editor tr.external-link-item:hover{background:#f6f4fb}
     body.tc-ri-on #external-links-editor tr.external-link-item > td{padding:0;border:none}
-    body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;top:9px}   /* larger favicon → edit URL; nudged down to centre between the two lines */
+    body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:context-menu;position:relative;top:6px}   /* larger favicon → right-click to edit URL; nudged down to sit between the two lines */
     body.tc-ri-on #external-links-editor .favicon{transform:scale(1.45);transform-origin:center}
     body.tc-ri-on #external-links-editor tr.external-link-item > td:last-child{flex:1;min-width:0}
     body.tc-ri-on #external-links-editor a.url{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
-    /* hover edit/remove icons removed — favicon click edits the URL, right-click a type edits the type.
-       link-actions -> display:contents so one native button can be selectively revealed; the rest stay in
-       the DOM (display:none) and remain clickable via our JS proxies */
+    /* hover edit/remove icons removed. link-actions -> display:contents; the edit pencils are kept in the DOM
+       (positioned, invisible) so our JS proxy clicks still anchor MB's editor popup near the link instead of 0,0 */
     body.tc-ri-on #external-links-editor td.link-actions{display:contents}
-    body.tc-ri-on #external-links-editor td.link-actions > button{display:none}
-    /* type combos line — each relationship-item is inline so they sit on one line under the URL */
-    body.tc-ri-on #external-links-editor tr.relationship-item{display:inline-flex;align-items:center;vertical-align:middle;padding:0 0 7px}
-    body.tc-ri-on #external-links-editor tr.external-link-item + tr.relationship-item{margin-left:39px}   /* favicon(30)+gap(9) → align with URL */
+    body.tc-ri-on #external-links-editor td.link-actions > button.edit-item{position:absolute;left:6px;top:8px;width:18px;height:18px;opacity:0;pointer-events:none;margin:0;padding:0}
+    body.tc-ri-on #external-links-editor tr.external-link-item td.link-actions > button.remove-item{display:none}   /* whole-link remove hidden */
+    /* type combos line — each relationship-item is inline so they sit on one line under the URL, pulled up close to it */
+    body.tc-ri-on #external-links-editor tr.relationship-item{display:inline-flex;align-items:center;vertical-align:middle;padding:0 0 4px;margin-top:-2px;position:relative}
+    body.tc-ri-on #external-links-editor tr.external-link-item + tr.relationship-item{margin-left:45px}   /* padding(6)+favicon(30)+gap(9) → align with URL text */
     body.tc-ri-on #external-links-editor tr.relationship-item + tr.relationship-item{margin-left:16px}    /* gap between combos on the same line */
     body.tc-ri-on #external-links-editor tr.relationship-item > td{padding:0;border:none}
     body.tc-ri-on #external-links-editor tr.relationship-item > td:first-child{display:none}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content{display:inline-flex;align-items:center;width:auto}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content > label:first-child{display:none}   /* the "Type:" caption */
     /* type shown as plain text (no badge), aligned with the URL; right-click opens its editor */
-    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:inline-flex;align-items:center;width:auto;font-size:12px;color:#5a3e94;background:transparent;border:none;border-radius:0;padding:0;font-weight:normal;cursor:context-menu}
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:inline-flex;align-items:center;width:auto;font-size:12px;color:#5a3e94;background:transparent;border:none;border-radius:0;padding:0;font-weight:normal;cursor:context-menu;order:0}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name:hover{color:#3a2d5c}
     /* editable type dropdowns — strip MB's box skin, keep just the text + native caret */
     body.tc-ri-on #external-links-editor select{font-size:12px;color:#5a3e94;background:transparent;background-image:none;border:none;border-radius:0;box-shadow:none;padding:0 2px;height:auto;margin:0;max-width:240px;width:auto;cursor:pointer}
     body.tc-ri-on #external-links-editor select:hover{color:#3a2d5c}
-    /* surface MB's native per-type remove (it renders this only when a link has more than one type) as a
-       small delete next to the combo; the whole-link remove on the URL row stays hidden */
+    /* row order on a type combo: [type] [video] [remove] */
+    /* video attribute → a compact checkbox (no "video" caption), placed after the type */
+    body.tc-ri-on #external-links-editor label.video,
+    body.tc-ri-on #external-links-editor tr.relationship-item label:has(> input[type=checkbox]){font-size:0;order:5;margin-left:6px;display:inline-flex;align-items:center;cursor:pointer}
+    body.tc-ri-on #external-links-editor label.video input,
+    body.tc-ri-on #external-links-editor tr.relationship-item label:has(> input[type=checkbox]) input{margin:0}
+    /* surface MB's native per-type remove (rendered only when a link has more than one type) as the small
+       delete after the type+video; the whole-link remove on the URL row stays hidden */
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{display:inline-flex;align-items:center;order:9;margin-left:6px;opacity:.5;transform:scale(.85);transition:opacity .12s}
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]:hover{opacity:1}
-    /* video attribute → a compact box, no "video" caption */
-    body.tc-ri-on #external-links-editor label.video,
-    body.tc-ri-on #external-links-editor label:has(> input[type=checkbox]){font-size:0;margin-left:6px;display:inline-flex;align-items:center;cursor:pointer}
-    body.tc-ri-on #external-links-editor label.video input,
-    body.tc-ri-on #external-links-editor label:has(> input[type=checkbox]) input{margin:0}
     /* hide MB's inline "Add another relationship" row — the single paste field at the bottom is the only adder we keep */
     body.tc-ri-on #external-links-editor tr.add-relationship{display:none}
     /* the "add another link" input row */
@@ -2641,25 +2642,22 @@
   let _riClicksWired = false;
   function wireLinkClicks() {
     if (_riClicksWired) return; _riClicksWired = true;
-    document.addEventListener('click', e => {                            // left-click favicon → edit URL (edit1)
+    // right-click the favicon → edit URL; right-click a type → edit type. Both proxy to MB's own pencil button.
+    document.addEventListener('contextmenu', e => {
       if (!document.body.classList.contains('tc-ri-on')) return;
       const ext = document.getElementById('external-links-editor');
       if (!ext || !ext.contains(e.target)) return;
-      if (e.target.closest('a,button,input,select,textarea')) return;   // let real controls/links work
-      const linkRow = e.target.closest('tr.external-link-item');
-      if (linkRow && e.target.closest('td:first-child')) {
-        const btn = linkRow.querySelector('button.edit-item');
-        if (btn) { e.preventDefault(); e.stopPropagation(); btn.click(); }
+      const type = e.target.closest('.relationship-name, .relationship-content, select.link-type');
+      if (type) {
+        const btn = type.closest('tr.relationship-item')?.querySelector('button.edit-item');
+        if (btn) { e.preventDefault(); btn.click(); }
+        return;
       }
-    }, true);
-    document.addEventListener('contextmenu', e => {                      // right-click type → edit type (edit2)
-      if (!document.body.classList.contains('tc-ri-on')) return;
-      const ext = document.getElementById('external-links-editor');
-      if (!ext || !ext.contains(e.target)) return;
-      const t = e.target.closest('.relationship-name, .relationship-content, select.link-type');
-      if (!t) return;
-      const btn = t.closest('tr.relationship-item')?.querySelector('button.edit-item');
-      if (btn) { e.preventDefault(); btn.click(); }
+      const linkRow = e.target.closest('tr.external-link-item');
+      if (linkRow && e.target.closest('td:first-child')) {              // the favicon cell
+        const btn = linkRow.querySelector('button.edit-item');
+        if (btn) { e.preventDefault(); btn.click(); }
+      }
     });
   }
   function applyReleaseInfo() {
