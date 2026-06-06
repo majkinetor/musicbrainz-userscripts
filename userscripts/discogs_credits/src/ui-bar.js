@@ -452,7 +452,7 @@ export function insertDiscogsBar(discogsUrl) {
             // title= via makeSelect, which is what the user sees as the
             // baseline.
             const HOVER_DELAY_MS = 1000;
-            let _showTimer;
+            let _showTimer, _hideTimer;
             lbl.addEventListener('mouseenter', () => {
                 clearTimeout(_showTimer);
                 _showTimer = setTimeout(() => {
@@ -473,10 +473,16 @@ export function insertDiscogsBar(discogsUrl) {
                     // Aim the arrow at the toggle's actual centre, not the
                     // tooltip's centre (they diverge once edge-clamping kicks in).
                     tip.style.setProperty('--arrow-x', `${centerX - x}px`);
+                    // Safety net: a `position:fixed` tooltip can get orphaned if the
+                    // bar re-renders or another element covers the toggle so `mouseleave`
+                    // never fires — leaving it stuck on screen. Always auto-hide it.
+                    clearTimeout(_hideTimer);
+                    _hideTimer = setTimeout(() => tip.classList.remove('discogs-tooltip-visible'), 4000);
                 }, HOVER_DELAY_MS);
             });
             lbl.addEventListener('mouseleave', () => {
                 clearTimeout(_showTimer);
+                clearTimeout(_hideTimer);
                 tip.classList.remove('discogs-tooltip-visible');
             });
         }
@@ -484,6 +490,7 @@ export function insertDiscogsBar(discogsUrl) {
             e.preventDefault();
             cb.checked = !cb.checked;
             lbl.classList.toggle('active', cb.checked);
+            document.querySelectorAll('.discogs-tooltip-visible').forEach(t => t.classList.remove('discogs-tooltip-visible'));   // clicking dismisses any lingering tooltip
         });
         _optsHost.appendChild(lbl);
         return cb;

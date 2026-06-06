@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.6.184103
+// @version      2026.6.6.233032
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -4305,7 +4305,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         lbl.appendChild(tip);
         const TIP_W = 220, TIP_MARGIN = 6, EDGE_PAD = 8;
         const HOVER_DELAY_MS = 1e3;
-        let _showTimer;
+        let _showTimer, _hideTimer;
         lbl.addEventListener("mouseenter", () => {
           clearTimeout(_showTimer);
           _showTimer = setTimeout(() => {
@@ -4322,10 +4322,13 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             tip.style.top = fitsAbove ? `${above}px` : `${r.bottom + TIP_MARGIN}px`;
             tip.classList.toggle("below", !fitsAbove);
             tip.style.setProperty("--arrow-x", `${centerX - x}px`);
+            clearTimeout(_hideTimer);
+            _hideTimer = setTimeout(() => tip.classList.remove("discogs-tooltip-visible"), 4e3);
           }, HOVER_DELAY_MS);
         });
         lbl.addEventListener("mouseleave", () => {
           clearTimeout(_showTimer);
+          clearTimeout(_hideTimer);
           tip.classList.remove("discogs-tooltip-visible");
         });
       }
@@ -4333,6 +4336,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         e.preventDefault();
         cb.checked = !cb.checked;
         lbl.classList.toggle("active", cb.checked);
+        document.querySelectorAll(".discogs-tooltip-visible").forEach((t) => t.classList.remove("discogs-tooltip-visible"));
       });
       _optsHost.appendChild(lbl);
       return cb;
