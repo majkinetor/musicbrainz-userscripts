@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.6.000000
+// @version      2026.6.6.020000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.6.000000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.6.020000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1584,7 +1584,7 @@
       if (rec && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); }
       else if (!rec && _recPrev) { _recPrev = false; }
       // mount as soon as the (lazily-built) native table exists — retry each tick so there's no native flash
-      if (rec) { if (recWant()) { if (!document.getElementById('tc-recwrap')) showRecMirror(); } else hideRecMirror(); }
+      if (rec) { if (recWant()) { if (!document.getElementById('tc-recwrap')) showRecMirror(); else if (recSig() !== _lastRecSig) rerenderRec(); } else hideRecMirror(); }   // re-render when MB mutates a recording externally (e.g. cleared on a title edit)
       if (releaseInfoVisible()) applyReleaseInfo();
       if (editorEl()) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }   // #135: the switch shows on every tab
       if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); }   // keep compact nav alive + synced
@@ -1739,7 +1739,7 @@
       '#tc-recwrap{margin:4px 0 12px;font:13px/1.4 system-ui,Arial}',
       '#tc-recwrap .tc-recbar{display:flex;align-items:center;gap:8px;padding:2px 2px 8px;font-weight:600}',
       '#tc-recwrap .tc-recbar .tc-ico{vertical-align:-5px}',
-      '#tc-recwrap .tc-recwarn{color:#b00;font-weight:600}',
+      '#tc-recwrap .tc-recwarn{color:#b00;font-weight:600}#tc-recwrap .tc-recwarn:hover{text-decoration:underline;cursor:pointer}',
       // consistent with the Tracklist tab toolbar (#tc-bar / .tc-btn): same bar spacing, button look, inputs.
       // sticky at the top while the table scrolls (mirrors #tc-mirror-wrap) so it stays reachable on big releases.
       '#tc-recwrap .tc-rec-tb{display:flex;align-items:center;gap:8px;padding:6px 4px;flex-wrap:wrap;position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e3dcf2;box-shadow:0 3px 8px rgba(40,20,80,.07)}',
@@ -1901,6 +1901,27 @@
       setTimeout(() => document.addEventListener('mousedown', off), 0);
     };
   }
+  // lightweight fingerprint of the live recording state. The tab watcher compares
+  // it each tick so the mirror re-renders when MB changes a recording externally —
+  // e.g. it clears a track's recording after the track title is edited — instead of
+  // only updating on our own picker actions (stale-row bug).
+  let _lastRecSig = '';
+  function recSig() {
+    let s = '';
+    mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => {
+      const rec = u(t.recording); const gid = rec ? (u(rec.gid) || '') : '';
+      const isNew = (typeof t.hasNewRecording === 'function' && u(t.hasNewRecording)) ? 'N' : '';
+      s += mi + ':' + ti + ':' + gid + ':' + isNew + ':' + (u(t.name) || '') + '|';
+    }));
+    return s;
+  }
+  // jump from the toolbar "N without a recording" to the first such track's picker
+  function openFirstUnsetPicker(row) {
+    const wrap = document.getElementById('tc-recwrap'); if (!wrap || !row) return;
+    const tr = wrap.querySelector('tbody tr.tc-recrow[data-mi="' + row.mi + '"][data-ti="' + row.ti + '"]');
+    if (tr) tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    openRecPicker(row, (tr && tr.querySelector('.tc-recname')) || wrap.querySelector('.tc-recwarn'));
+  }
   // (re)render just the rows + the unset-count — leaves the toolbar (status/inputs) untouched
   function renderRecBody(wrap) {
     wrap = wrap || document.getElementById('tc-recwrap'); if (!wrap) return;
@@ -1908,7 +1929,13 @@
     const rows = readRecordings();
     const multi = mediums().length > 1;
     const unset = rows.filter(r => !r.recGid && !r.isNew).length;
-    const warn = wrap.querySelector('.tc-recwarn'); if (warn) warn.textContent = unset ? '⚠ ' + unset + ' without a recording' : '';
+    const firstUnset = rows.find(r => !r.recGid && !r.isNew);
+    const warn = wrap.querySelector('.tc-recwarn');
+    if (warn) {
+      warn.textContent = unset ? '⚠ ' + unset + ' without a recording' : '';
+      warn.onclick = (unset && firstUnset) ? () => openFirstUnsetPicker(firstUnset) : null;   // #139 follow-up: jump to the first unset track's picker
+      warn.title = unset ? 'jump to the first track without a recording' : '';
+    }
     tb.innerHTML = '';
     let lastMi = -1;
     rows.forEach(r => {
@@ -1923,7 +1950,7 @@
       const tCls = r.copyTitle ? 'tc-copy' : (d.title || tolHas('title') ? 'tc-diff' : '');
       const aCls = r.copyArtist ? 'tc-copy' : (d.artist || tolHas('artist') ? 'tc-diff' : '');
       const changed = recChangedFromOrig(r.mi, r.ti);   // differs from the page-load recording
-      const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : '');
+      const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : ''); tr.dataset.mi = r.mi; tr.dataset.ti = r.ti;
       tr.innerHTML =
         '<td class="c-n">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
         '<td class="tc-tkt">' + esc(r.title || '') + '</td>' +
@@ -1947,6 +1974,7 @@
       }
       tb.appendChild(tr);
     });
+    _lastRecSig = recSig();   // mark the state this render reflects, so the tick only re-renders on real changes
   }
   // confidence level of a candidate vs the track: 0 tolerance(green) · 1 near · 2 low · 3 very low
   // "Cutoff" = the LOWEST confidence still auto-linked; anything below it is left unmatched. Levels run
