@@ -213,8 +213,17 @@ export function insertDiscogsBar(discogsUrl) {
             background: #e8771d;
         }
         .discogs-output { padding: 0.5rem 0.75rem 0.25rem; }
+        .discogs-output.empty { display: none; }   /* no log yet → hide the whole section (#142) */
         .discogs-output .summary { margin: 0 0 0.25rem; font-size: 0.88rem; color: #555; }
         .discogs-output .logs { margin: 0; padding-left: 1.2rem; font-size: 0.83rem; }
+        /* collapsible log (#142) */
+        .discogs-log-hd { cursor: pointer; user-select: none; font-size: 0.78rem; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.1rem 0; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .discogs-log-hd:hover { color: #555; }
+        .discogs-log-caret { display: inline-block; transition: transform 0.12s; font-size: 0.7rem; }
+        .discogs-output.collapsed .discogs-log-caret { transform: rotate(-90deg); }
+        /* collapsed: hide the summary + verbose log lines, but KEEP the review-table panel visible */
+        .discogs-output.collapsed .discogs-log-body > .summary,
+        .discogs-output.collapsed .discogs-log-body .logs > li:not(.discogs-review-panel-li) { display: none; }
         /* ── Progress / sticky bar ── */
         .discogs-bar.is-importing .discogs-bar-row1 {
             position: fixed;
@@ -583,7 +592,25 @@ export function insertDiscogsBar(discogsUrl) {
 
     // Output area
     const outputDiv = document.createElement('div');
-    outputDiv.className = 'discogs-output';
+    outputDiv.className = 'discogs-output empty';   // hidden until the first import writes a log
+    // Collapsible log (#142): a clickable header toggles the verbose log; the
+    // state is remembered. The review table (a child of the log) stays visible
+    // even when collapsed, so collapsing never hides the review UI.
+    const LOG_COLLAPSE_KEY = 'discogs-importer-log-collapsed';
+    const logHd = document.createElement('div');
+    logHd.className = 'discogs-log-hd';
+    logHd.innerHTML = '<span class="discogs-log-caret">▾</span> Log';
+    logHd.title = 'Collapse / expand the import log';
+    const logBody = document.createElement('div');
+    logBody.className = 'discogs-log-body';
+    outputDiv.append(logHd, logBody);
+    const applyLogCollapse = () => outputDiv.classList.toggle('collapsed', localStorage.getItem(LOG_COLLAPSE_KEY) === '1');
+    try { applyLogCollapse(); } catch (e) {}
+    logHd.addEventListener('click', () => {
+        const collapsed = !outputDiv.classList.contains('collapsed');
+        outputDiv.classList.toggle('collapsed', collapsed);
+        try { localStorage.setItem(LOG_COLLAPSE_KEY, collapsed ? '1' : '0'); } catch (e) {}
+    });
 
     importBtn.addEventListener('click', () => {
         importBtn.disabled = true;
@@ -604,9 +631,10 @@ export function insertDiscogsBar(discogsUrl) {
         setLogContainer(_logs);
         _summary = document.createElement('p');
         _summary.className = 'summary';
-        outputDiv.innerHTML = '';
-        outputDiv.appendChild(_summary);
-        outputDiv.appendChild(_logs);
+        logBody.innerHTML = '';
+        logBody.appendChild(_summary);
+        logBody.appendChild(_logs);
+        outputDiv.classList.remove('empty');   // there's a log now → reveal the header
 
         // Two "Copy log" variants:
         //   - "Copy log"           — full output, includes the raw Discogs JSON block
