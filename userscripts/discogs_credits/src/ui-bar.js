@@ -62,18 +62,42 @@ export function insertDiscogsBar(discogsUrl) {
             display: flex;
             align-items: center;
             gap: 0.6rem;
+            row-gap: 0.4rem;
+            flex-wrap: wrap;
             padding: 0.5rem 0.75rem;
             background: #fdf8f0;
             border-bottom: 1px solid #eeddb0;
         }
+        /* inline options strip in the single bar (#139) */
+        .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+        .discogs-opts-btn { font-size: 0.8rem; color: #555; background: #fffdf7; border: 1px solid #d8c8a0; border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .discogs-opts-btn:hover { border-color: #e8771d; color: #333; }
+        .discogs-opts-caret { color: #999; font-size: 0.7rem; }
+        /* "Options ▾" popover (Dedup toggles) */
+        .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: #fff; border: 1px solid #d8c8a0; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
+        .discogs-opts-panel.open { display: flex; }
+        .discogs-opts-panel .discogs-opts-panel-hd { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #999; font-weight: 600; }
+        /* "Copy log ▾" dropdown in the right group */
+        .discogs-copylog-slot { display: inline-flex; }
+        .discogs-copylog-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
+        .discogs-copylog-btn:hover { border-color: #999; }
+        .discogs-copylog-caret { color: #999; font-size: 0.7rem; }
+        .discogs-copylog-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; background: #fff; border: 1px solid #ccc; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.25rem; min-width: 11rem; }
+        .discogs-copylog-menu.open { display: flex; }
+        .discogs-copylog-item { text-align: left; font-size: 0.8rem; color: #333; background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
+        .discogs-copylog-item:hover { background: #f0ecfa; }
         .discogs-bar img.discogs-logo {
             height: 20px;
             width: auto;
             flex-shrink: 0;
             opacity: 0.85;
         }
+        .discogs-bar .discogs-source-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
+        .discogs-bar .discogs-source-icon:hover .discogs-logo { opacity: 1; }
         .discogs-bar .discogs-source {
-            flex: 1;
+            flex: 0 1 auto;
+            max-width: 20rem;
             font-size: 0.82rem;
             color: #555;
             min-width: 0;
@@ -81,6 +105,45 @@ export function insertDiscogsBar(discogsUrl) {
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        /* Slot in the always-visible header that hosts the review "Start import"
+           button + unresolved message (#139). Content-sized; the right cluster's
+           margin-left:auto does the pushing so the link/help stay right even when
+           this slot is empty (initial state). */
+        .discogs-bar-action {
+            flex: 0 1 auto;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .discogs-bar-action:empty { display: none; }
+        /* Discogs logo + source link + Help — pinned to the right edge. */
+        .discogs-bar-right {
+            margin-left: auto;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-width: 0;
+        }
+        /* During the review wait the import isn't running, so the "Importing…"
+           button + percentage are redundant — hide them; they reappear while a
+           real import phase (preflight / dispatch) is active (#139). */
+        .discogs-bar.is-reviewing .discogs-import-btn,
+        .discogs-bar.is-reviewing #discogs-progress-pct { display: none !important; }   /* !important: the % span carries an inline display set by JS */
+        .discogs-bar-action .discogs-issue-note {
+            font-size: 0.85rem;
+            color: #7a5c00;
+            min-width: 7.5rem;   /* reserve space so the bar doesn't reflow as the count appears / changes (#139) */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .discogs-bar-action .discogs-issue-note.clickable {
+            cursor: pointer;
+            text-decoration: underline dotted;
+        }
+        .discogs-bar-action .discogs-issue-note.clickable:hover { color: #a06000; }
         .discogs-bar .discogs-source a {
             color: #e8771d;
             text-decoration: none;
@@ -273,16 +336,47 @@ export function insertDiscogsBar(discogsUrl) {
     row1.appendChild(importBtn);
     row1.appendChild(progressPct);
 
+    // Action slot — the review "Start import" button + unresolved message get
+    // mounted here (by showReviewTable) so they live in the always-visible
+    // header instead of below the table where you must scroll to reach them
+    // (#139). Empty (and hidden) until a review is in progress.
+    const actionSlot = document.createElement('div');
+    actionSlot.className = 'discogs-bar-action';
+    row1.appendChild(actionSlot);
+
+    // Inline options live in the single bar now (#139). The option toggles +
+    // "Create works" go straight in here; the secondary Dedup toggles fold into
+    // an "Options ▾" popover built below. `_optsHost` is the current append
+    // target for makeCheckbox/makeSelect (defaults to this strip).
+    const optsWrap = document.createElement('div');
+    optsWrap.className = 'discogs-bar-opts';
+    row1.appendChild(optsWrap);
+    let _optsHost = optsWrap;
+
+    // Right-aligned cluster: Discogs logo (the clickable source link) + Copy log + Help.
+    // `margin-left:auto` (CSS) keeps it pinned to the right edge. The full URL text was
+    // dropped to save space — the logo itself links to the Discogs release now (#139).
+    const rightGroup = document.createElement('div');
+    rightGroup.className = 'discogs-bar-right';
+
+    const logoLink = document.createElement('a');
+    logoLink.href = discogsUrl;
+    logoLink.target = '_blank';
+    logoLink.rel = 'noopener noreferrer nofollow';
+    logoLink.className = 'discogs-source-icon';
+    logoLink.title = discogsUrl;   // hover shows the full Discogs URL
     const logo = document.createElement('img');
     logo.src = DISCOGS_LOGO_URL;
     logo.className = 'discogs-logo';
     logo.alt = 'Discogs';
-    row1.appendChild(logo);
+    logoLink.appendChild(logo);
+    rightGroup.appendChild(logoLink);
 
-    const sourceSpan = document.createElement('span');
-    sourceSpan.className = 'discogs-source';
-    sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
-    row1.appendChild(sourceSpan);
+    // Copy-log slot — populated after an import runs with a "Copy log ▾" dropdown
+    // (full / without-JSON). Empty until then. Sits left of Help on the right (#139).
+    const copyLogSlot = document.createElement('div');
+    copyLogSlot.className = 'discogs-copylog-slot';
+    rightGroup.appendChild(copyLogSlot);
 
     // Documentation link on the far-right side of row1 (#90). URL falls
     // back the same way `buildEditNote` resolves it: the manager-injected
@@ -295,21 +389,17 @@ export function insertDiscogsBar(discogsUrl) {
     docsLink.href = docsHref;
     docsLink.target = '_blank';
     docsLink.rel = 'noopener noreferrer nofollow';
-    docsLink.textContent = '📖 Documentation';
+    docsLink.textContent = '? Help';   // consistent with the other userscripts (#139)
     docsLink.title = 'Open the script\'s README in a new tab';
     docsLink.style.cssText = 'flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;';
-    row1.appendChild(docsLink);
+    rightGroup.appendChild(docsLink);
+
+    row1.appendChild(rightGroup);
 
     bar.appendChild(row1);
 
-    // ── Row 2: option toggles ─────────────────────────────────────────────────
-    const row2 = document.createElement('div');
-    row2.className = 'discogs-bar-row2';
-
-    const optsLabel = document.createElement('span');
-    optsLabel.className = 'discogs-opts-label';
-    optsLabel.textContent = 'Options:';
-    row2.appendChild(optsLabel);
+    // ── Options (inline in the single bar — #139). No "Options:" label: the
+    //    toggles are self-evident and the "Options ▾" popover already names itself.
 
     function makeCheckbox(labelText, checkedByDefault, tooltipText) {
         const lbl = document.createElement('label');
@@ -373,7 +463,7 @@ export function insertDiscogsBar(discogsUrl) {
             cb.checked = !cb.checked;
             lbl.classList.toggle('active', cb.checked);
         });
-        row2.appendChild(lbl);
+        _optsHost.appendChild(lbl);
         return cb;
     }
 
@@ -400,7 +490,7 @@ export function insertDiscogsBar(discogsUrl) {
         });
         if (tooltipText) wrap.title = tooltipText;
         wrap.appendChild(sel);
-        row2.appendChild(wrap);
+        _optsHost.appendChild(wrap);
         return sel;
     }
 
@@ -440,14 +530,37 @@ export function insertDiscogsBar(discogsUrl) {
     // already there" against MB's pre-existing state. The third part of
     // #62 — editable "Credited as" per entity — lives in the review
     // table, not as a checkbox.
-    const dedupSep = document.createElement('span');
-    dedupSep.textContent = 'Dedup:';
-    dedupSep.style.cssText = 'margin:0 0.2rem 0 0.6rem;color:#888;font-size:0.85rem;font-weight:600;';
-    row2.appendChild(dedupSep);
+    // The secondary Dedup toggles fold into an "Options ▾" popover to keep the
+    // single bar compact (#139).
+    const optsBtn = document.createElement('button');
+    optsBtn.type = 'button';
+    optsBtn.className = 'discogs-opts-btn';
+    optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">▾</span>';
+    optsBtn.title = 'Deduplication options';
+    const optsPanel = document.createElement('div');
+    optsPanel.className = 'discogs-opts-panel';
+    const dedupHd = document.createElement('div');
+    dedupHd.className = 'discogs-opts-panel-hd';
+    dedupHd.textContent = 'Deduplication';
+    optsPanel.appendChild(dedupHd);
+    _optsHost = optsPanel;   // the next two toggles land inside the popover
     const dedupeEqCb  = makeCheckbox('Equivalence sets',  bv('dedupeEquivalenceSets', true),
         'Skip a role when an equivalent role already exists on the target (writer ≡ composer).');
     const dedupeDupCb = makeCheckbox('Duplicate roles',   bv('dedupeDuplicateRoles', true),
         'Skip adding a role when the target already has the same role (regardless of task / dates / attributes).');
+    _optsHost = optsWrap;    // back to the inline strip
+    optsWrap.appendChild(optsBtn);
+    document.body.appendChild(optsPanel);   // floating; positioned when opened
+    optsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = optsPanel.classList.toggle('open');
+        if (!open) return;
+        const r = optsBtn.getBoundingClientRect();
+        optsPanel.style.left = Math.max(8, Math.min(r.left, window.innerWidth - optsPanel.offsetWidth - 8)) + 'px';
+        optsPanel.style.top = (r.bottom + 4) + 'px';
+        const off = ev => { if (!optsPanel.contains(ev.target) && ev.target !== optsBtn && !optsBtn.contains(ev.target)) { optsPanel.classList.remove('open'); document.removeEventListener('mousedown', off); } };
+        setTimeout(() => document.addEventListener('mousedown', off), 0);
+    });
 
     const saveOpts = () => {
         try { localStorage.setItem(OPTS_KEY, JSON.stringify({
@@ -460,8 +573,6 @@ export function insertDiscogsBar(discogsUrl) {
     [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener('change', saveOpts);
-
-    bar.appendChild(row2);
 
     // ── Progress bar ──────────────────────────────────────────────────────────
     // `_showBar` / `_hideBar` (module-level, imported from progress-bar.js)
@@ -612,23 +723,37 @@ export function insertDiscogsBar(discogsUrl) {
             }
         }
 
-        const copyLogBtn = document.createElement('button');
-        copyLogBtn.textContent = 'Copy log';
-        copyLogBtn.title = 'Copy the full import log (incl. raw Discogs JSON)';
-        copyLogBtn.style.cssText = 'font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-left:auto;flex-shrink:0;';
-        copyLogBtn.addEventListener('click', () => {
-            copyToClipboard(buildCopyText({ skipDiscogsJson: false }), copyLogBtn, 'Copy log');
-        });
-        row2.appendChild(copyLogBtn);
-
-        const copyLogNoJsonBtn = document.createElement('button');
-        copyLogNoJsonBtn.textContent = 'Copy log (no JSON)';
-        copyLogNoJsonBtn.title = 'Copy the log without the raw Discogs JSON block — small enough to fit in a GitHub issue';
-        copyLogNoJsonBtn.style.cssText = 'font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;flex-shrink:0;';
-        copyLogNoJsonBtn.addEventListener('click', () => {
-            copyToClipboard(buildCopyText({ skipDiscogsJson: true }), copyLogNoJsonBtn, 'Copy log (no JSON)');
-        });
-        row2.appendChild(copyLogNoJsonBtn);
+        // "Copy log ▾" dropdown — full log / without-JSON, mounted in the bar's
+        // right group (#139). Built once; the menu floats and is positioned on open.
+        if (!copyLogSlot.childElementCount) {
+            const copyLogBtn = document.createElement('button');
+            copyLogBtn.type = 'button';
+            copyLogBtn.className = 'discogs-copylog-btn';
+            copyLogBtn.innerHTML = 'Copy log <span class="discogs-copylog-caret">▾</span>';
+            copyLogBtn.title = 'Copy the import log';
+            const copyLogMenu = document.createElement('div');
+            copyLogMenu.className = 'discogs-copylog-menu';
+            const mkItem = (label, title, skip) => {
+                const it = document.createElement('button');
+                it.type = 'button'; it.className = 'discogs-copylog-item'; it.textContent = label; it.title = title;
+                it.addEventListener('click', () => copyToClipboard(buildCopyText({ skipDiscogsJson: skip }), it, label));
+                return it;
+            };
+            copyLogMenu.appendChild(mkItem('Copy log', 'Copy the full import log (incl. raw Discogs JSON)', false));
+            copyLogMenu.appendChild(mkItem('Copy log without JSON', 'Copy the log without the raw Discogs JSON block — small enough to fit in a GitHub issue', true));
+            copyLogSlot.appendChild(copyLogBtn);
+            document.body.appendChild(copyLogMenu);
+            copyLogBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const open = copyLogMenu.classList.toggle('open');
+                if (!open) return;
+                const r = copyLogBtn.getBoundingClientRect();
+                copyLogMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - copyLogMenu.offsetWidth - 8)) + 'px';
+                copyLogMenu.style.top = (r.bottom + 4) + 'px';
+                const off = ev => { if (!copyLogMenu.contains(ev.target) && !copyLogBtn.contains(ev.target)) { copyLogMenu.classList.remove('open'); document.removeEventListener('mousedown', off); } };
+                setTimeout(() => document.addEventListener('mousedown', off), 0);
+            });
+        }
 
         // Expose progress update hook for `dispatchAllRelationships` to call
         // — currently only the `pct >= 100` branch matters; the status-text
@@ -667,6 +792,7 @@ export function insertDiscogsBar(discogsUrl) {
             importBtn.textContent = 'Import from Discogs';
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
+            bar.classList.remove('is-reviewing');   // #139: safety — clear if the flow ended during review
             setTimeout(() => {
                 bar.classList.remove('is-importing');
                 _hideBar();
@@ -908,7 +1034,15 @@ function runImport(discogsUrl, getOpts) {
             return runPreflight().then(allResults => {
                 annotateRoles(allResults);
                 capturedResults = allResults;
+                // #139: the review wait isn't an active import phase — hide the
+                // "Importing…" button + percentage while the user reviews.
+                document.querySelector('.discogs-bar')?.classList.add('is-reviewing');
                 return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
+                    // Mount the Start-import button + unresolved message in the
+                    // always-visible header rather than below the table (#139).
+                    // Resolved via the DOM (there's one bar) — `runImport` is a
+                    // separate function from the bar builder that owns the slot.
+                    headerSlot: document.querySelector('.discogs-bar-action'),
                     // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
                     // every entity via MB API. Used when a cached MBID is stale.
                     onRefresh: () => runPreflight(true).then(freshResults => {
@@ -920,6 +1054,9 @@ function runImport(discogsUrl, getOpts) {
             })
                 .then(confirmedMap => {
                     capturedConfirmedMap = confirmedMap;
+                    // #139: dispatch is starting — a real import phase again, so
+                    // restore the "Importing…" button + percentage.
+                    document.querySelector('.discogs-bar')?.classList.remove('is-reviewing');
                     // Bulk-write confirmed entries to IDB. Inline writes in
                     // `setRowResolved` (review-table) and `resolveEntity`
                     // (preflight) already persist as each entity resolves

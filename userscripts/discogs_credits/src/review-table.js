@@ -31,6 +31,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
     // re-runs preflight with `bypassIdb=true` and returns the fresh results.
     // The review table exposes a "🔄 Refresh from MB" button that calls it.
     const onRefresh = opts?.onRefresh || null;
+    // `opts.headerSlot` — a container in the always-visible bar header where the
+    // Start-import button + unresolved message are mounted, so the user doesn't
+    // have to scroll past the table to reach them (#139). Falls back to a footer
+    // row under the table when absent.
+    const headerSlot = opts?.headerSlot || null;
 
     // Pre-load missing names into a Map — IDB first, then MB WS2 fetch.
     const _preloadedNames = new Map();
@@ -74,6 +79,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         // into the IDB `entity_cache` via `writeIdbRecord`. No separate
         // localStorage layer.
         const rowState = new Map();
+        // Per-entity search input, so the header's "N unresolved" message can
+        // focus the first still-unresolved row (#139). Keyed like `rowState`.
+        const rowSearchInputs = new Map();
+        const keyOf = r => r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
 
         const attentionCount = allResults.filter(r => r.type === 'attention').length;
         const mismatchCount  = allResults.filter(r => {
@@ -294,8 +303,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 refreshBtn.disabled = true;
                 refreshBtn.textContent = '🔄 Refreshing…';
                 (panelLi || panel).remove();
+                if (headerSlot) headerSlot.replaceChildren();   // #139: cleared, repopulated by the recursive render
                 onRefresh().then(freshResults => {
-                    showReviewTable(freshResults, rolesMap, companiesRolesMap, { onRefresh })
+                    showReviewTable(freshResults, rolesMap, companiesRolesMap, { onRefresh, headerSlot })
                         .then(confirmedMap => resolve(confirmedMap));
                 });
             });
@@ -607,6 +617,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             searchInput.type = 'text';
             searchInput.value = displayName;
             searchInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid #bbb;border-radius:3px;';
+            rowSearchInputs.set(_entityKey, searchInput);   // #139: header "N unresolved" jumps here
             const searchBtn = document.createElement('button');
             searchBtn.textContent = '\uD83D\uDD0D';
             searchBtn.title = 'Search MusicBrainz';
@@ -1251,22 +1262,39 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         importBtn.style.cssText = 'border:none;padding:0.4rem 1.1rem;border-radius:0.3rem;cursor:pointer;font-weight:bold;font-size:0.95rem;';
 
         const issueNote = document.createElement('span');
+        issueNote.className = 'discogs-issue-note';
         issueNote.style.cssText = 'font-size:0.85rem;color:#7a5c00;';
+
+        // #139: clicking the "N unresolved" message scrolls to and focuses the
+        // first still-unresolved row's search box \u2014 same idea as the apollo
+        // tracklist's "N unresolved" jump.
+        function focusFirstUnresolved() {
+            const first = allResults.find(r => !rowState.get(keyOf(r))?.confirmed);
+            if (!first) return;
+            const input = rowSearchInputs.get(keyOf(first));
+            if (!input) return;
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            try { input.focus({ preventScroll: true }); } catch { input.focus(); }
+            input.select?.();
+        }
+        issueNote.addEventListener('click', focusFirstUnresolved);
 
         function updateImportBtn() {
             const unresolved = [...rowState.values()].filter(s => !s.confirmed).length;
-            const mismatch   = [...rowState.values()].filter(s => s.confirmed && s.mbName &&
-                s.mbName.toLowerCase().trim() !== s.mbUrl).length; // rough check
             if (unresolved === 0) {
                 importBtn.textContent = 'Start import \u2192';
                 importBtn.style.background = '#2ecc40';
                 importBtn.style.color = '#fff';
                 issueNote.textContent = '';
+                issueNote.classList.remove('clickable');
+                issueNote.removeAttribute('title');
             } else {
                 importBtn.textContent = `Start import anyway \u2192`;
                 importBtn.style.background = '#e0a800';
                 importBtn.style.color = '#fff';
-                issueNote.textContent = `\u26a0 ${unresolved} artist(s) unresolved \u2014 they will be skipped`;
+                issueNote.textContent = `\u26a0 ${unresolved} unresolved`;
+                issueNote.classList.add('clickable');
+                issueNote.title = 'Jump to the first unresolved entity \u2014 these will be skipped on import';
             }
         }
         updateImportBtn();
@@ -1372,12 +1400,20 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // overrides each rel's `entity1_credit` when present.
             confirmedMap.creditOverrides = creditOverrides;
             (panelLi || panel).remove();
+            if (headerSlot) headerSlot.replaceChildren();   // #139: clear the header action slot once dispatch starts
             resolve(confirmedMap);
         });
 
-        btnRow.appendChild(importBtn);
-        btnRow.appendChild(issueNote);
-        panel.appendChild(btnRow);
+        // #139: mount the Start-import button + unresolved message in the
+        // always-visible header (`headerSlot`) instead of below the table.
+        // Fall back to a footer row under the table when no slot was provided.
+        if (headerSlot) {
+            headerSlot.replaceChildren(importBtn, issueNote);
+        } else {
+            btnRow.appendChild(importBtn);
+            btnRow.appendChild(issueNote);
+            panel.appendChild(btnRow);
+        }
 
         const panelLi = document.createElement('li');
         panelLi.style.cssText = 'list-style:none;margin:0;padding:0;';
