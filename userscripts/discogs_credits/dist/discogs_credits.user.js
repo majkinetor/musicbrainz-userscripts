@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.6.175254
+// @version      2026.6.6.175556
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -4112,8 +4112,17 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             background: #e8771d;
         }
         .discogs-output { padding: 0.5rem 0.75rem 0.25rem; }
+        .discogs-output.empty { display: none; }   /* no log yet \u2192 hide the whole section (#142) */
         .discogs-output .summary { margin: 0 0 0.25rem; font-size: 0.88rem; color: #555; }
         .discogs-output .logs { margin: 0; padding-left: 1.2rem; font-size: 0.83rem; }
+        /* collapsible log (#142) */
+        .discogs-log-hd { cursor: pointer; user-select: none; font-size: 0.78rem; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.1rem 0; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .discogs-log-hd:hover { color: #555; }
+        .discogs-log-caret { display: inline-block; transition: transform 0.12s; font-size: 0.7rem; }
+        .discogs-output.collapsed .discogs-log-caret { transform: rotate(-90deg); }
+        /* collapsed: hide the summary + verbose log lines, but KEEP the review-table panel visible */
+        .discogs-output.collapsed .discogs-log-body > .summary,
+        .discogs-output.collapsed .discogs-log-body .logs > li:not(.discogs-review-panel-li) { display: none; }
         /* \u2500\u2500 Progress / sticky bar \u2500\u2500 */
         .discogs-bar.is-importing .discogs-bar-row1 {
             position: fixed;
@@ -4412,7 +4421,28 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
-    outputDiv.className = "discogs-output";
+    outputDiv.className = "discogs-output empty";
+    const LOG_COLLAPSE_KEY = "discogs-importer-log-collapsed";
+    const logHd = document.createElement("div");
+    logHd.className = "discogs-log-hd";
+    logHd.innerHTML = '<span class="discogs-log-caret">\u25BE</span> Log';
+    logHd.title = "Collapse / expand the import log";
+    const logBody = document.createElement("div");
+    logBody.className = "discogs-log-body";
+    outputDiv.append(logHd, logBody);
+    const applyLogCollapse = () => outputDiv.classList.toggle("collapsed", localStorage.getItem(LOG_COLLAPSE_KEY) === "1");
+    try {
+      applyLogCollapse();
+    } catch (e) {
+    }
+    logHd.addEventListener("click", () => {
+      const collapsed = !outputDiv.classList.contains("collapsed");
+      outputDiv.classList.toggle("collapsed", collapsed);
+      try {
+        localStorage.setItem(LOG_COLLAPSE_KEY, collapsed ? "1" : "0");
+      } catch (e) {
+      }
+    });
     importBtn.addEventListener("click", () => {
       importBtn.disabled = true;
       importBtn.textContent = "Importing\u2026";
@@ -4430,9 +4460,10 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       setLogContainer(_logs2);
       _summary = document.createElement("p");
       _summary.className = "summary";
-      outputDiv.innerHTML = "";
-      outputDiv.appendChild(_summary);
-      outputDiv.appendChild(_logs2);
+      logBody.innerHTML = "";
+      logBody.appendChild(_summary);
+      logBody.appendChild(_logs2);
+      outputDiv.classList.remove("empty");
       function buildCopyText({ skipDiscogsJson }) {
         function htmlToMd(el) {
           function nodeToMd(node) {
