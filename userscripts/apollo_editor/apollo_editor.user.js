@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.420000
+// @version      2026.6.5.430000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.420000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.430000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2368,6 +2368,7 @@
   const DIFF_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.1"/><line x1="5" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.1"/><line x1="5" y1="8.6" x2="11" y2="8.6" stroke="currentColor" stroke-width="1.1"/><line x1="5" y1="11.2" x2="8.5" y2="11.2" stroke="currentColor" stroke-width="1.1"/></svg>';
   const STEP_DEFS = [
     { key: 'information', label: 'Release', title: 'Release information' },
+    { key: 'duplicates-tab', label: 'Duplicates', title: 'Release duplicates' },   // Add-release only; hidden when its native tab is absent
     { key: 'tracklist', label: 'Tracklist', title: 'Tracklist' },
     { key: 'recordings', label: 'Recordings', title: 'Recordings' },
     { key: 'edit-note', diff: true, title: 'Edit note — review changes & add an edit note' }
@@ -2450,6 +2451,8 @@
     document.querySelectorAll('#tc-nav-steps .tc-nav-step').forEach(b => {
       b.classList.toggle('active', b.dataset.step === active);
       const link = stepLink(b.dataset.step), li = link && link.closest('li');   // mirror MB's native tab state
+      if (!link) { b.style.display = 'none'; return; }   // step's native tab not present on this page (e.g. Duplicates exists only on Add)
+      b.style.display = '';
       const dis = !!(li && li.classList.contains('ui-state-disabled'));
       const panel = document.getElementById(b.dataset.step);   // MB sets error-tab for some errors but not link errors — also scan the panel for a visible field-error
       const err = !!((li && li.classList.contains('error-tab')) || (panel && panel.querySelector('.field-error[data-visible="1"]')));
