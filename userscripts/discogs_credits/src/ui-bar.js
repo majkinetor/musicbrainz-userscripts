@@ -83,16 +83,31 @@ export function insertDiscogsBar(discogsUrl) {
             white-space: nowrap;
         }
         /* Slot in the always-visible header that hosts the review "Start import"
-           button + unresolved message (#139). flex:1 takes the middle space, so
-           the Discogs logo/link + Documentation get pushed to the right edge. */
+           button + unresolved message (#139). Content-sized; the right cluster's
+           margin-left:auto does the pushing so the link/help stay right even when
+           this slot is empty (initial state). */
         .discogs-bar-action {
-            flex: 1 1 auto;
+            flex: 0 1 auto;
             min-width: 0;
             display: flex;
             align-items: center;
             gap: 0.6rem;
         }
         .discogs-bar-action:empty { display: none; }
+        /* Discogs logo + source link + Help — pinned to the right edge. */
+        .discogs-bar-right {
+            margin-left: auto;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-width: 0;
+        }
+        /* During the review wait the import isn't running, so the "Importing…"
+           button + percentage are redundant — hide them; they reappear while a
+           real import phase (preflight / dispatch) is active (#139). */
+        .discogs-bar.is-reviewing .discogs-import-btn,
+        .discogs-bar.is-reviewing #discogs-progress-pct { display: none !important; }   /* !important: the % span carries an inline display set by JS */
         .discogs-bar-action .discogs-issue-note {
             font-size: 0.85rem;
             color: #7a5c00;
@@ -306,16 +321,22 @@ export function insertDiscogsBar(discogsUrl) {
     actionSlot.className = 'discogs-bar-action';
     row1.appendChild(actionSlot);
 
+    // Right-aligned cluster: Discogs logo + source link + Help. `margin-left:auto`
+    // (CSS) keeps it pinned to the right edge whether or not the action slot has
+    // content — so the link/help don't drift left in the initial state (#139).
+    const rightGroup = document.createElement('div');
+    rightGroup.className = 'discogs-bar-right';
+
     const logo = document.createElement('img');
     logo.src = DISCOGS_LOGO_URL;
     logo.className = 'discogs-logo';
     logo.alt = 'Discogs';
-    row1.appendChild(logo);
+    rightGroup.appendChild(logo);
 
     const sourceSpan = document.createElement('span');
     sourceSpan.className = 'discogs-source';
     sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
-    row1.appendChild(sourceSpan);
+    rightGroup.appendChild(sourceSpan);
 
     // Documentation link on the far-right side of row1 (#90). URL falls
     // back the same way `buildEditNote` resolves it: the manager-injected
@@ -328,10 +349,12 @@ export function insertDiscogsBar(discogsUrl) {
     docsLink.href = docsHref;
     docsLink.target = '_blank';
     docsLink.rel = 'noopener noreferrer nofollow';
-    docsLink.textContent = '📖 Documentation';
+    docsLink.textContent = '? Help';   // consistent with the other userscripts (#139)
     docsLink.title = 'Open the script\'s README in a new tab';
     docsLink.style.cssText = 'flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;';
-    row1.appendChild(docsLink);
+    rightGroup.appendChild(docsLink);
+
+    row1.appendChild(rightGroup);
 
     bar.appendChild(row1);
 
@@ -700,6 +723,7 @@ export function insertDiscogsBar(discogsUrl) {
             importBtn.textContent = 'Import from Discogs';
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
+            bar.classList.remove('is-reviewing');   // #139: safety — clear if the flow ended during review
             setTimeout(() => {
                 bar.classList.remove('is-importing');
                 _hideBar();
@@ -941,6 +965,9 @@ function runImport(discogsUrl, getOpts) {
             return runPreflight().then(allResults => {
                 annotateRoles(allResults);
                 capturedResults = allResults;
+                // #139: the review wait isn't an active import phase — hide the
+                // "Importing…" button + percentage while the user reviews.
+                document.querySelector('.discogs-bar')?.classList.add('is-reviewing');
                 return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
                     // Mount the Start-import button + unresolved message in the
                     // always-visible header rather than below the table (#139).
@@ -958,6 +985,9 @@ function runImport(discogsUrl, getOpts) {
             })
                 .then(confirmedMap => {
                     capturedConfirmedMap = confirmedMap;
+                    // #139: dispatch is starting — a real import phase again, so
+                    // restore the "Importing…" button + percentage.
+                    document.querySelector('.discogs-bar')?.classList.remove('is-reviewing');
                     // Bulk-write confirmed entries to IDB. Inline writes in
                     // `setRowResolved` (review-table) and `resolveEntity`
                     // (preflight) already persist as each entity resolves

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.6.163320
+// @version      2026.6.6.164641
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3982,16 +3982,31 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             white-space: nowrap;
         }
         /* Slot in the always-visible header that hosts the review "Start import"
-           button + unresolved message (#139). flex:1 takes the middle space, so
-           the Discogs logo/link + Documentation get pushed to the right edge. */
+           button + unresolved message (#139). Content-sized; the right cluster's
+           margin-left:auto does the pushing so the link/help stay right even when
+           this slot is empty (initial state). */
         .discogs-bar-action {
-            flex: 1 1 auto;
+            flex: 0 1 auto;
             min-width: 0;
             display: flex;
             align-items: center;
             gap: 0.6rem;
         }
         .discogs-bar-action:empty { display: none; }
+        /* Discogs logo + source link + Help \u2014 pinned to the right edge. */
+        .discogs-bar-right {
+            margin-left: auto;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-width: 0;
+        }
+        /* During the review wait the import isn't running, so the "Importing\u2026"
+           button + percentage are redundant \u2014 hide them; they reappear while a
+           real import phase (preflight / dispatch) is active (#139). */
+        .discogs-bar.is-reviewing .discogs-import-btn,
+        .discogs-bar.is-reviewing #discogs-progress-pct { display: none !important; }   /* !important: the % span carries an inline display set by JS */
         .discogs-bar-action .discogs-issue-note {
             font-size: 0.85rem;
             color: #7a5c00;
@@ -4189,24 +4204,27 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     const actionSlot = document.createElement("div");
     actionSlot.className = "discogs-bar-action";
     row1.appendChild(actionSlot);
+    const rightGroup = document.createElement("div");
+    rightGroup.className = "discogs-bar-right";
     const logo = document.createElement("img");
     logo.src = DISCOGS_LOGO_URL;
     logo.className = "discogs-logo";
     logo.alt = "Discogs";
-    row1.appendChild(logo);
+    rightGroup.appendChild(logo);
     const sourceSpan = document.createElement("span");
     sourceSpan.className = "discogs-source";
     sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
-    row1.appendChild(sourceSpan);
+    rightGroup.appendChild(sourceSpan);
     const docsHref = typeof GM_info !== "undefined" && (GM_info?.script?.homepageURL || GM_info?.script?.homepage) || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
     const docsLink = document.createElement("a");
     docsLink.href = docsHref;
     docsLink.target = "_blank";
     docsLink.rel = "noopener noreferrer nofollow";
-    docsLink.textContent = "\u{1F4D6} Documentation";
+    docsLink.textContent = "? Help";
     docsLink.title = "Open the script's README in a new tab";
     docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;";
-    row1.appendChild(docsLink);
+    rightGroup.appendChild(docsLink);
+    row1.appendChild(rightGroup);
     bar.appendChild(row1);
     const row2 = document.createElement("div");
     row2.className = "discogs-bar-row2";
@@ -4489,6 +4507,7 @@ ${lines}
         setTimeout(() => {
           progressPct.style.display = "none";
         }, 2e3);
+        bar.classList.remove("is-reviewing");
         setTimeout(() => {
           bar.classList.remove("is-importing");
           _hideBar();
@@ -4669,6 +4688,7 @@ ${lines}
       return runPreflight().then((allResults) => {
         annotateRoles(allResults);
         capturedResults = allResults;
+        document.querySelector(".discogs-bar")?.classList.add("is-reviewing");
         return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
           // Mount the Start-import button + unresolved message in the
           // always-visible header rather than below the table (#139).
@@ -4685,6 +4705,7 @@ ${lines}
         });
       }).then((confirmedMap) => {
         capturedConfirmedMap = confirmedMap;
+        document.querySelector(".discogs-bar")?.classList.remove("is-reviewing");
         const cachePromises = [];
         confirmedMap.forEach((mbUrl, resourceUrl) => {
           const key = parseDiscogsUrl(resourceUrl)?.key;
