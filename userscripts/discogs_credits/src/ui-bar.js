@@ -19,6 +19,7 @@ import { writeIdbRecord }                 from './storage.js';
 import {
     log,
     setLogContainer,
+    setReviewContainer,
 }                                        from './log.js';
 import { _showBar, _hideBar }             from './progress-bar.js';
 import {
@@ -221,9 +222,10 @@ export function insertDiscogsBar(discogsUrl) {
         .discogs-log-hd:hover { color: #555; }
         .discogs-log-caret { display: inline-block; transition: transform 0.12s; font-size: 0.7rem; }
         .discogs-output.collapsed .discogs-log-caret { transform: rotate(-90deg); }
-        /* collapsed: hide the summary + verbose log lines, but KEEP the review-table panel visible */
-        .discogs-output.collapsed .discogs-log-body > .summary,
-        .discogs-output.collapsed .discogs-log-body .logs > li:not(.discogs-review-panel-li) { display: none; }
+        /* collapsed: hide the whole log body in one rule (fast). The review panel
+           lives in .discogs-review-slot, outside the body, so it stays visible. */
+        .discogs-output.collapsed .discogs-log-body { display: none; }
+        .discogs-review-slot:not(:empty) { margin: 0.2rem 0; }
         /* ── Progress / sticky bar ── */
         .discogs-bar.is-importing .discogs-bar-row1 {
             position: fixed;
@@ -601,9 +603,15 @@ export function insertDiscogsBar(discogsUrl) {
     logHd.className = 'discogs-log-hd';
     logHd.innerHTML = '<span class="discogs-log-caret">▾</span> Log';
     logHd.title = 'Collapse / expand the import log';
+    // The review-table panel lives in its own slot OUTSIDE the collapsible body,
+    // so collapsing never hides the review UI and the collapse can hide the whole
+    // body in one go (fast) instead of per-line (#142).
+    const reviewSlot = document.createElement('div');
+    reviewSlot.className = 'discogs-review-slot';
     const logBody = document.createElement('div');
     logBody.className = 'discogs-log-body';
-    outputDiv.append(logHd, logBody);
+    outputDiv.append(logHd, reviewSlot, logBody);
+    setReviewContainer(reviewSlot);
     const applyLogCollapse = () => outputDiv.classList.toggle('collapsed', localStorage.getItem(LOG_COLLAPSE_KEY) === '1');
     try { applyLogCollapse(); } catch (e) {}
     logHd.addEventListener('click', () => {
@@ -707,7 +715,10 @@ export function insertDiscogsBar(discogsUrl) {
                 }
                 const _md = nodeToMd(el); return _md.startsWith('\n\n') || _md.endsWith('\n\n') ? _md : _md.replace(/^\n/, '').replace(/\n$/, '');
             }
-            const lines = [..._logs.querySelectorAll('li')].map(li => {
+            // The review panel now lives outside the log (#142); include it so a
+            // mid-review copy still substitutes its static table (nitpick #2 on #87).
+            const _panel = document.querySelector('.discogs-review-slot .discogs-review-panel-li');
+            const lines = [...(_panel ? [_panel] : []), ..._logs.querySelectorAll('li')].map(li => {
                 // Swap the interactive review-panel `<li>` for the static
                 // markdown-table form when copying mid-review (nitpick #2 on
                 // #87). `review-table.js` stashes a `_buildStaticTableLi`
