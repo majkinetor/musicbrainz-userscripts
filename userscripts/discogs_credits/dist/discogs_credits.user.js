@@ -1,18 +1,14 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.4.113907
+// @version      2026.6.6.152603
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
-// @match        https://musicbrainz.org/release/*/edit-relationships
-// @match        https://musicbrainz.org/artist/*
-// @match        https://musicbrainz.org/label/*
-// @match        https://musicbrainz.org/place/*
-// @match        https://beta.musicbrainz.org/release/*/edit-relationships
-// @match        https://beta.musicbrainz.org/artist/*
-// @match        https://beta.musicbrainz.org/label/*
-// @match        https://beta.musicbrainz.org/place/*
+// @match        https://*.musicbrainz.org/release/*/edit-relationships
+// @match        https://*.musicbrainz.org/artist/*
+// @match        https://*.musicbrainz.org/label/*
+// @match        https://*.musicbrainz.org/place/*
 // @license      MIT
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
