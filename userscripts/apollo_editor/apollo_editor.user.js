@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.6.000000
+// @version      2026.6.6.010000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.6.000000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.6.010000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2394,6 +2394,14 @@
     { id: 'enter', label: '✓ Enter edit', cls: 'tc-wiz-enter', find: f => f.querySelector('#enter-edit') || [...f.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent)) },
     { id: 'finish', label: '✓ Finish', cls: 'tc-wiz-finish', find: f => [...f.querySelectorAll('button')].find(b => /^\s*finish\s*$/i.test(b.textContent)) }
   ];
+  // Right-side paginators (#140) — proxy MB's native footer Cancel / Previous / Next.
+  // MB data-binds their visibility (Prev hidden on the first step, Next on the last),
+  // mirrored in syncNav via `vis(nat)`. Cancel carries the native `.negative` class.
+  const PAGE_DEFS = [
+    { id: 'cancel', label: '✕ Cancel', cls: 'tc-wiz-cancel', find: f => f.querySelector('button.negative') || [...f.querySelectorAll('button')].find(b => /^\s*cancel\s*$/i.test(b.textContent)) },
+    { id: 'prev',   label: '‹ Prev',   cls: 'tc-wiz-prev',   find: f => [...f.querySelectorAll('button')].find(b => /previous/i.test(b.textContent)) },
+    { id: 'next',   label: 'Next ›',   cls: 'tc-wiz-next',   find: f => [...f.querySelectorAll('button')].find(b => /^\s*next\s*»?\s*$/i.test(b.textContent)) }
+  ];
   function hasChanges() { try { const re = W.MB && W.MB.releaseEditor; return !!(re && typeof re.allowsSubmission === 'function' && re.allowsSubmission()); } catch (e) { return false; } }
   function editorEl() { return document.getElementById('release-editor'); }
   function stepNavEl() { const e = editorEl(); return e && e.querySelector(':scope > ul.ui-tabs-nav'); }
@@ -2434,13 +2442,25 @@
     .tc-nav-wbtn.tc-wiz-finish,.tc-nav-wbtn.tc-wiz-enter{color:#2f7a45;font-weight:600}
     .tc-nav-wbtn.tc-wiz-finish:hover,.tc-nav-wbtn.tc-wiz-enter:hover{background:#e6f3ea;border-color:#a9d2b6}
     .tc-addmed{font:13px Arial;padding:4px 12px;border:1px solid #d6cdec;background:#fff;color:#6a4d9a;border-radius:5px;cursor:pointer;margin-left:auto}
-    .tc-addmed:hover{background:#f3f0fb}`;
+    .tc-addmed:hover{background:#f3f0fb}
+    /* #140 — full-width nav bar: step switcher + Finish on the left, Cancel/Prev/Next paginators on the right */
+    #tc-nav-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:#fff;padding:5px 2px 6px;border-bottom:1px solid #e6def5;margin-bottom:6px}
+    #tc-nav-left{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
+    #tc-nav-pager{display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
+    .tc-nav-wbtn.tc-wiz-cancel{color:#c0392b}
+    .tc-nav-wbtn.tc-wiz-cancel:hover{background:#fdecec;border-color:#e6b3b3}
+    .tc-nav-wbtn.tc-wiz-prev,.tc-nav-wbtn.tc-wiz-next{color:#5a3e94;font-weight:600;border-color:#d6cdec;background:#f6f3fc}
+    .tc-nav-wbtn.tc-wiz-prev:hover,.tc-nav-wbtn.tc-wiz-next:hover{background:#ece5f8;border-color:#b9a4e0}`;
     const s = document.createElement('style'); s.id = 'tc-nav-style'; s.textContent = css; document.head.appendChild(s);
   }
-  // build (once) the switcher + Finish button as one right-side group on the entity-tab row (frozen on top)
+  // build (once) the full-width nav bar at the top of the editor (#140):
+  //   left  → step switcher (Release | Tracklist | Recordings | ⊟) + Finish/Enter
+  //   right → Cancel / Prev / Next paginators
+  // Everything proxies the still-present (visually-hidden) native control.
   function buildNav() {
     navStyle();
-    if (document.getElementById('tc-nav-steps-wrap') || document.getElementById('tc-nav-addbar')) return;   // already built
+    if (document.getElementById('tc-nav-bar')) return;   // already built
+    const ed = editorEl(); if (!ed) return;
     // step switcher
     const steps = document.createElement('div'); steps.className = 'tc-nav-steps'; steps.id = 'tc-nav-steps';
     STEP_DEFS.forEach(d => {
@@ -2449,18 +2469,23 @@
       b.onclick = () => { const l = stepLink(d.key); if (l) l.click(); setTimeout(syncNav, 40); };
       steps.appendChild(b);
     });
-    // submit button (Finish / Enter edit)
+    // submit button (Finish / Enter edit) — sits to the right of the switcher
     const wiz = document.createElement('div'); wiz.id = 'tc-nav-wiz';
     WIZ_DEFS.forEach(d => {
       const b = document.createElement('button'); b.className = 'tc-nav-wbtn ' + d.cls; b.dataset.wiz = d.id; b.textContent = d.label;
       b.onclick = () => { ensureApolloEditNote(); const f = navFooterEl(); const nat = f && d.find(f); if (nat) nat.click(); setTimeout(syncNav, 40); };   // #130: set the edit note on the compact-nav submit path too
       wiz.appendChild(b);
     });
-    const right = document.createElement('div'); right.id = 'tc-nav-right'; right.append(wiz, steps);
-    // host: the entity-tab row when editing an existing release (sticky); else a bar atop the editor
-    const tabs = document.querySelector('#page > .tabs, .tabs');
-    if (tabs) { tabs.classList.add('tc-nav-sticky'); const w = document.createElement('div'); w.id = 'tc-nav-steps-wrap'; w.appendChild(right); tabs.appendChild(w); }
-    else { const ed = editorEl(); if (ed) { const bar = document.createElement('div'); bar.id = 'tc-nav-addbar'; bar.style.cssText = 'display:flex;justify-content:flex-end;margin:0 0 6px;position:sticky;top:0;z-index:20;background:#fff;padding:4px 0'; bar.appendChild(right); ed.insertBefore(bar, ed.firstChild); } }   // Add-release page has no entity-tab row → this bar is the frozen header
+    // right-side paginators (Cancel / Prev / Next)
+    const pager = document.createElement('div'); pager.id = 'tc-nav-pager';
+    PAGE_DEFS.forEach(d => {
+      const b = document.createElement('button'); b.className = 'tc-nav-wbtn ' + d.cls; b.dataset.page = d.id; b.textContent = d.label;
+      b.onclick = () => { const f = navFooterEl(); const nat = f && d.find(f); if (nat) nat.click(); setTimeout(syncNav, 40); };
+      pager.appendChild(b);
+    });
+    const left = document.createElement('div'); left.id = 'tc-nav-left'; left.append(steps, wiz);
+    const bar = document.createElement('div'); bar.id = 'tc-nav-bar'; bar.append(left, pager);
+    ed.insertBefore(bar, ed.firstChild);   // a dedicated full-width row at the top of the editor (frozen on scroll)
   }
   // keep the proxies in sync with the native state each tick
   function syncNav() {
@@ -2480,12 +2505,14 @@
     const f = navFooterEl();
     const changed = hasChanges();   // the submit button appears only when there are pending changes
     WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.style.display = (vis(nat) && changed) ? '' : 'none'; });
+    // paginators mirror MB's native visibility directly (Prev hidden on the first step, Next on the last, Cancel always) (#140)
+    PAGE_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-pager [data-page="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.style.display = vis(nat) ? '' : 'none'; });
     updateStickyOffsets();
   }
   // stack the sticky Apollo toolbars BELOW the frozen entity-tab row (both default to top:0 and would
   // otherwise overlap, hiding the pinned tab row). The row height is dynamic, so measure it each sync.
   function updateStickyOffsets() {
-    const tabs = document.querySelector('.tabs.tc-nav-sticky') || document.getElementById('tc-nav-addbar');   // edit page → entity-tab row; add page → the add-bar
+    const tabs = document.getElementById('tc-nav-bar');   // #140: the full-width nav bar is the frozen header now
     const h = (navOn() && tabs) ? tabs.offsetHeight : 0;
     const w = document.getElementById('tc-mirror-wrap'); if (w) w.style.top = h ? h + 'px' : '';
     const r = document.querySelector('#tc-recwrap .tc-rec-tb'); if (r) r.style.top = h ? h + 'px' : '';
@@ -2523,7 +2550,7 @@
       const sn = stepNavEl(); if (sn) sn.classList.remove('tc-nav-vh');
       const f = navFooterEl(); if (f) f.classList.remove('tc-nav-vh');
       const tabs = document.querySelector('#page > .tabs, .tabs'); if (tabs) tabs.classList.remove('tc-nav-sticky');
-      ['tc-nav-steps-wrap', 'tc-nav-addbar'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); });
+      ['tc-nav-bar', 'tc-nav-steps-wrap', 'tc-nav-addbar'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); });
     }
     relocateAddMedium();
     updateStickyOffsets();
