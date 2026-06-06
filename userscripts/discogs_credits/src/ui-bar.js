@@ -62,10 +62,31 @@ export function insertDiscogsBar(discogsUrl) {
             display: flex;
             align-items: center;
             gap: 0.6rem;
+            row-gap: 0.4rem;
+            flex-wrap: wrap;
             padding: 0.5rem 0.75rem;
             background: #fdf8f0;
             border-bottom: 1px solid #eeddb0;
         }
+        /* inline options strip in the single bar (#139) */
+        .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+        .discogs-opts-btn { font-size: 0.8rem; color: #555; background: #fffdf7; border: 1px solid #d8c8a0; border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .discogs-opts-btn:hover { border-color: #e8771d; color: #333; }
+        .discogs-opts-caret { color: #999; font-size: 0.7rem; }
+        /* "Options ▾" popover (Dedup toggles) */
+        .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: #fff; border: 1px solid #d8c8a0; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
+        .discogs-opts-panel.open { display: flex; }
+        .discogs-opts-panel .discogs-opts-panel-hd { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #999; font-weight: 600; }
+        /* "Copy log ▾" dropdown in the right group */
+        .discogs-copylog-slot { display: inline-flex; }
+        .discogs-copylog-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
+        .discogs-copylog-btn:hover { border-color: #999; }
+        .discogs-copylog-caret { color: #999; font-size: 0.7rem; }
+        .discogs-copylog-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; background: #fff; border: 1px solid #ccc; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.25rem; min-width: 11rem; }
+        .discogs-copylog-menu.open { display: flex; }
+        .discogs-copylog-item { text-align: left; font-size: 0.8rem; color: #333; background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
+        .discogs-copylog-item:hover { background: #f0ecfa; }
         .discogs-bar img.discogs-logo {
             height: 20px;
             width: auto;
@@ -321,6 +342,15 @@ export function insertDiscogsBar(discogsUrl) {
     actionSlot.className = 'discogs-bar-action';
     row1.appendChild(actionSlot);
 
+    // Inline options live in the single bar now (#139). The option toggles +
+    // "Create works" go straight in here; the secondary Dedup toggles fold into
+    // an "Options ▾" popover built below. `_optsHost` is the current append
+    // target for makeCheckbox/makeSelect (defaults to this strip).
+    const optsWrap = document.createElement('div');
+    optsWrap.className = 'discogs-bar-opts';
+    row1.appendChild(optsWrap);
+    let _optsHost = optsWrap;
+
     // Right-aligned cluster: Discogs logo + source link + Help. `margin-left:auto`
     // (CSS) keeps it pinned to the right edge whether or not the action slot has
     // content — so the link/help don't drift left in the initial state (#139).
@@ -337,6 +367,12 @@ export function insertDiscogsBar(discogsUrl) {
     sourceSpan.className = 'discogs-source';
     sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
     rightGroup.appendChild(sourceSpan);
+
+    // Copy-log slot — populated after an import runs with a "Copy log ▾" dropdown
+    // (full / without-JSON). Empty until then. Sits left of Help on the right (#139).
+    const copyLogSlot = document.createElement('div');
+    copyLogSlot.className = 'discogs-copylog-slot';
+    rightGroup.appendChild(copyLogSlot);
 
     // Documentation link on the far-right side of row1 (#90). URL falls
     // back the same way `buildEditNote` resolves it: the manager-injected
@@ -358,14 +394,11 @@ export function insertDiscogsBar(discogsUrl) {
 
     bar.appendChild(row1);
 
-    // ── Row 2: option toggles ─────────────────────────────────────────────────
-    const row2 = document.createElement('div');
-    row2.className = 'discogs-bar-row2';
-
+    // ── Options (inline in the single bar — #139) ─────────────────────────────
     const optsLabel = document.createElement('span');
     optsLabel.className = 'discogs-opts-label';
     optsLabel.textContent = 'Options:';
-    row2.appendChild(optsLabel);
+    optsWrap.appendChild(optsLabel);
 
     function makeCheckbox(labelText, checkedByDefault, tooltipText) {
         const lbl = document.createElement('label');
@@ -429,7 +462,7 @@ export function insertDiscogsBar(discogsUrl) {
             cb.checked = !cb.checked;
             lbl.classList.toggle('active', cb.checked);
         });
-        row2.appendChild(lbl);
+        _optsHost.appendChild(lbl);
         return cb;
     }
 
@@ -456,7 +489,7 @@ export function insertDiscogsBar(discogsUrl) {
         });
         if (tooltipText) wrap.title = tooltipText;
         wrap.appendChild(sel);
-        row2.appendChild(wrap);
+        _optsHost.appendChild(wrap);
         return sel;
     }
 
@@ -496,14 +529,37 @@ export function insertDiscogsBar(discogsUrl) {
     // already there" against MB's pre-existing state. The third part of
     // #62 — editable "Credited as" per entity — lives in the review
     // table, not as a checkbox.
-    const dedupSep = document.createElement('span');
-    dedupSep.textContent = 'Dedup:';
-    dedupSep.style.cssText = 'margin:0 0.2rem 0 0.6rem;color:#888;font-size:0.85rem;font-weight:600;';
-    row2.appendChild(dedupSep);
+    // The secondary Dedup toggles fold into an "Options ▾" popover to keep the
+    // single bar compact (#139).
+    const optsBtn = document.createElement('button');
+    optsBtn.type = 'button';
+    optsBtn.className = 'discogs-opts-btn';
+    optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">▾</span>';
+    optsBtn.title = 'Deduplication options';
+    const optsPanel = document.createElement('div');
+    optsPanel.className = 'discogs-opts-panel';
+    const dedupHd = document.createElement('div');
+    dedupHd.className = 'discogs-opts-panel-hd';
+    dedupHd.textContent = 'Deduplication';
+    optsPanel.appendChild(dedupHd);
+    _optsHost = optsPanel;   // the next two toggles land inside the popover
     const dedupeEqCb  = makeCheckbox('Equivalence sets',  bv('dedupeEquivalenceSets', true),
         'Skip a role when an equivalent role already exists on the target (writer ≡ composer).');
     const dedupeDupCb = makeCheckbox('Duplicate roles',   bv('dedupeDuplicateRoles', true),
         'Skip adding a role when the target already has the same role (regardless of task / dates / attributes).');
+    _optsHost = optsWrap;    // back to the inline strip
+    optsWrap.appendChild(optsBtn);
+    document.body.appendChild(optsPanel);   // floating; positioned when opened
+    optsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = optsPanel.classList.toggle('open');
+        if (!open) return;
+        const r = optsBtn.getBoundingClientRect();
+        optsPanel.style.left = Math.max(8, Math.min(r.left, window.innerWidth - optsPanel.offsetWidth - 8)) + 'px';
+        optsPanel.style.top = (r.bottom + 4) + 'px';
+        const off = ev => { if (!optsPanel.contains(ev.target) && ev.target !== optsBtn && !optsBtn.contains(ev.target)) { optsPanel.classList.remove('open'); document.removeEventListener('mousedown', off); } };
+        setTimeout(() => document.addEventListener('mousedown', off), 0);
+    });
 
     const saveOpts = () => {
         try { localStorage.setItem(OPTS_KEY, JSON.stringify({
@@ -516,8 +572,6 @@ export function insertDiscogsBar(discogsUrl) {
     [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener('change', saveOpts);
-
-    bar.appendChild(row2);
 
     // ── Progress bar ──────────────────────────────────────────────────────────
     // `_showBar` / `_hideBar` (module-level, imported from progress-bar.js)
@@ -668,23 +722,37 @@ export function insertDiscogsBar(discogsUrl) {
             }
         }
 
-        const copyLogBtn = document.createElement('button');
-        copyLogBtn.textContent = 'Copy log';
-        copyLogBtn.title = 'Copy the full import log (incl. raw Discogs JSON)';
-        copyLogBtn.style.cssText = 'font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;margin-left:auto;flex-shrink:0;';
-        copyLogBtn.addEventListener('click', () => {
-            copyToClipboard(buildCopyText({ skipDiscogsJson: false }), copyLogBtn, 'Copy log');
-        });
-        row2.appendChild(copyLogBtn);
-
-        const copyLogNoJsonBtn = document.createElement('button');
-        copyLogNoJsonBtn.textContent = 'Copy log (no JSON)';
-        copyLogNoJsonBtn.title = 'Copy the log without the raw Discogs JSON block — small enough to fit in a GitHub issue';
-        copyLogNoJsonBtn.style.cssText = 'font-size:0.78rem;padding:0.15rem 0.5rem;cursor:pointer;flex-shrink:0;';
-        copyLogNoJsonBtn.addEventListener('click', () => {
-            copyToClipboard(buildCopyText({ skipDiscogsJson: true }), copyLogNoJsonBtn, 'Copy log (no JSON)');
-        });
-        row2.appendChild(copyLogNoJsonBtn);
+        // "Copy log ▾" dropdown — full log / without-JSON, mounted in the bar's
+        // right group (#139). Built once; the menu floats and is positioned on open.
+        if (!copyLogSlot.childElementCount) {
+            const copyLogBtn = document.createElement('button');
+            copyLogBtn.type = 'button';
+            copyLogBtn.className = 'discogs-copylog-btn';
+            copyLogBtn.innerHTML = 'Copy log <span class="discogs-copylog-caret">▾</span>';
+            copyLogBtn.title = 'Copy the import log';
+            const copyLogMenu = document.createElement('div');
+            copyLogMenu.className = 'discogs-copylog-menu';
+            const mkItem = (label, title, skip) => {
+                const it = document.createElement('button');
+                it.type = 'button'; it.className = 'discogs-copylog-item'; it.textContent = label; it.title = title;
+                it.addEventListener('click', () => copyToClipboard(buildCopyText({ skipDiscogsJson: skip }), it, label));
+                return it;
+            };
+            copyLogMenu.appendChild(mkItem('Copy log', 'Copy the full import log (incl. raw Discogs JSON)', false));
+            copyLogMenu.appendChild(mkItem('Copy log without JSON', 'Copy the log without the raw Discogs JSON block — small enough to fit in a GitHub issue', true));
+            copyLogSlot.appendChild(copyLogBtn);
+            document.body.appendChild(copyLogMenu);
+            copyLogBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const open = copyLogMenu.classList.toggle('open');
+                if (!open) return;
+                const r = copyLogBtn.getBoundingClientRect();
+                copyLogMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - copyLogMenu.offsetWidth - 8)) + 'px';
+                copyLogMenu.style.top = (r.bottom + 4) + 'px';
+                const off = ev => { if (!copyLogMenu.contains(ev.target) && !copyLogBtn.contains(ev.target)) { copyLogMenu.classList.remove('open'); document.removeEventListener('mousedown', off); } };
+                setTimeout(() => document.addEventListener('mousedown', off), 0);
+            });
+        }
 
         // Expose progress update hook for `dispatchAllRelationships` to call
         // — currently only the `pct >= 100` branch matters; the status-text
