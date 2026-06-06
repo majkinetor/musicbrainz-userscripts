@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.6.056000
+// @version      2026.6.6.057000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.6.056000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.6.057000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2485,10 +2485,12 @@
     .tc-nav-wbtn.tc-wiz-prev:not(:disabled):hover,.tc-nav-wbtn.tc-wiz-next:not(:disabled):hover{background:#ece5f8;border-color:#b9a4e0}
     /* #141 Zen editing — the nav-bar release title (shown only in zen) + hiding the page chrome */
     #tc-nav-title{display:none}
-    body.tc-zen-on #tc-nav-title{display:block;flex:1 1 0;min-width:0;text-align:center;font:13px Arial;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 14px}
-    #tc-nav-title a{color:#5a3e94;text-decoration:none;font-weight:600}#tc-nav-title a:hover{text-decoration:underline}
-    #tc-nav-title .tc-nav-title-by{color:#999;font-weight:normal;margin:0 2px}
-    #tc-nav-title .tc-nav-title-ver{color:#999;font-weight:normal;font-size:12px}
+    /* two lines (album / artist + versions), centred, tight so they fit the nav button height (#141) */
+    body.tc-zen-on #tc-nav-title{display:flex;flex-direction:column;justify-content:center;flex:1 1 0;min-width:0;text-align:center;line-height:1.15;padding:0 14px}
+    #tc-nav-title a{color:inherit;text-decoration:none}#tc-nav-title a:hover{text-decoration:underline}
+    #tc-nav-title .tc-nav-title-album{font:600 12px Arial;color:#5a3e94;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #tc-nav-title .tc-nav-title-artist{font:11px Arial;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #tc-nav-title .tc-nav-title-ver{color:#999}
     body.tc-zen-on .header,body.tc-zen-on .releaseheader,body.tc-zen-on #page > .tabs,body.tc-zen-on #footer{display:none!important}
     /* zen: drop the page's top spacing so the sticky nav bar pins flush to the top and doesn't drift on scroll (#141) */
     body.tc-zen-on #page{padding-top:0!important;margin-top:0!important}
@@ -2557,7 +2559,8 @@
     const rh = document.querySelector('.releaseheader');
     const va = rh && [...rh.querySelectorAll('a')].find(a => /version/i.test(a.textContent || ''));
     if (va) { const m = (va.textContent.match(/(\d+)/) || [])[1]; ver = ' <a href="' + esc(va.href) + '" target="_blank" rel="noopener" class="tc-nav-title-ver">(' + (m ? m + ' versions' : 'all versions') + ')</a>'; }
-    el.innerHTML = album + (artist ? ' <span class="tc-nav-title-by">by</span> ' + artist : '') + ver;
+    el.innerHTML = '<div class="tc-nav-title-album">' + album + '</div>'
+                 + '<div class="tc-nav-title-artist">' + artist + ver + '</div>';
   }
   // keep the proxies in sync with the native state each tick
   function syncNav() {
