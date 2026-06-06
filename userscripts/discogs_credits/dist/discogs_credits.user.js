@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.6.153808
+// @version      2026.6.6.163320
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2153,6 +2153,7 @@
     rolesMap = rolesMap || /* @__PURE__ */ new Map();
     companiesRolesMap = companiesRolesMap || /* @__PURE__ */ new Map();
     const onRefresh = opts?.onRefresh || null;
+    const headerSlot = opts?.headerSlot || null;
     const _preloadedNames = /* @__PURE__ */ new Map();
     const _nullNames = allResults.filter((r) => r.type === "resolved" && r.mbUrl && !r.mbName);
     for (const r of _nullNames) {
@@ -2187,6 +2188,8 @@
     }
     return new Promise((resolve) => {
       const rowState = /* @__PURE__ */ new Map();
+      const rowSearchInputs = /* @__PURE__ */ new Map();
+      const keyOf = (r) => r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
       const attentionCount = allResults.filter((r) => r.type === "attention").length;
       const mismatchCount = allResults.filter((r) => {
         if (r.type !== "resolved") return false;
@@ -2342,8 +2345,9 @@
           refreshBtn.disabled = true;
           refreshBtn.textContent = "\u{1F504} Refreshing\u2026";
           (panelLi || panel).remove();
+          if (headerSlot) headerSlot.replaceChildren();
           onRefresh().then((freshResults) => {
-            showReviewTable(freshResults, rolesMap, companiesRolesMap, { onRefresh }).then((confirmedMap) => resolve(confirmedMap));
+            showReviewTable(freshResults, rolesMap, companiesRolesMap, { onRefresh, headerSlot }).then((confirmedMap) => resolve(confirmedMap));
           });
         });
         heading.appendChild(refreshBtn);
@@ -2560,6 +2564,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         searchInput.type = "text";
         searchInput.value = displayName;
         searchInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid #bbb;border-radius:3px;";
+        rowSearchInputs.set(_entityKey, searchInput);
         const searchBtn = document.createElement("button");
         searchBtn.textContent = "\u{1F50D}";
         searchBtn.title = "Search MusicBrainz";
@@ -3058,20 +3063,38 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const importBtn = document.createElement("button");
       importBtn.style.cssText = "border:none;padding:0.4rem 1.1rem;border-radius:0.3rem;cursor:pointer;font-weight:bold;font-size:0.95rem;";
       const issueNote = document.createElement("span");
+      issueNote.className = "discogs-issue-note";
       issueNote.style.cssText = "font-size:0.85rem;color:#7a5c00;";
+      function focusFirstUnresolved() {
+        const first = allResults.find((r) => !rowState.get(keyOf(r))?.confirmed);
+        if (!first) return;
+        const input = rowSearchInputs.get(keyOf(first));
+        if (!input) return;
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+        try {
+          input.focus({ preventScroll: true });
+        } catch {
+          input.focus();
+        }
+        input.select?.();
+      }
+      issueNote.addEventListener("click", focusFirstUnresolved);
       function updateImportBtn() {
         const unresolved = [...rowState.values()].filter((s) => !s.confirmed).length;
-        const mismatch = [...rowState.values()].filter((s) => s.confirmed && s.mbName && s.mbName.toLowerCase().trim() !== s.mbUrl).length;
         if (unresolved === 0) {
           importBtn.textContent = "Start import \u2192";
           importBtn.style.background = "#2ecc40";
           importBtn.style.color = "#fff";
           issueNote.textContent = "";
+          issueNote.classList.remove("clickable");
+          issueNote.removeAttribute("title");
         } else {
           importBtn.textContent = `Start import anyway \u2192`;
           importBtn.style.background = "#e0a800";
           importBtn.style.color = "#fff";
           issueNote.textContent = `\u26A0 ${unresolved} artist(s) unresolved \u2014 they will be skipped`;
+          issueNote.classList.add("clickable");
+          issueNote.title = "Jump to the first unresolved entity";
         }
       }
       updateImportBtn();
@@ -3146,11 +3169,16 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         confirmedMap.totalEntities = allResults.length;
         confirmedMap.creditOverrides = creditOverrides;
         (panelLi || panel).remove();
+        if (headerSlot) headerSlot.replaceChildren();
         resolve(confirmedMap);
       });
-      btnRow.appendChild(importBtn);
-      btnRow.appendChild(issueNote);
-      panel.appendChild(btnRow);
+      if (headerSlot) {
+        headerSlot.replaceChildren(importBtn, issueNote);
+      } else {
+        btnRow.appendChild(importBtn);
+        btnRow.appendChild(issueNote);
+        panel.appendChild(btnRow);
+      }
       const panelLi = document.createElement("li");
       panelLi.style.cssText = "list-style:none;margin:0;padding:0;";
       panelLi.classList.add("discogs-review-panel-li");
@@ -3944,7 +3972,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             opacity: 0.85;
         }
         .discogs-bar .discogs-source {
-            flex: 1;
+            flex: 0 1 auto;
+            max-width: 20rem;
             font-size: 0.82rem;
             color: #555;
             min-width: 0;
@@ -3952,6 +3981,30 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        /* Slot in the always-visible header that hosts the review "Start import"
+           button + unresolved message (#139). flex:1 takes the middle space, so
+           the Discogs logo/link + Documentation get pushed to the right edge. */
+        .discogs-bar-action {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .discogs-bar-action:empty { display: none; }
+        .discogs-bar-action .discogs-issue-note {
+            font-size: 0.85rem;
+            color: #7a5c00;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .discogs-bar-action .discogs-issue-note.clickable {
+            cursor: pointer;
+            text-decoration: underline dotted;
+        }
+        .discogs-bar-action .discogs-issue-note.clickable:hover { color: #a06000; }
         .discogs-bar .discogs-source a {
             color: #e8771d;
             text-decoration: none;
@@ -4133,6 +4186,9 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
     row1.appendChild(importBtn);
     row1.appendChild(progressPct);
+    const actionSlot = document.createElement("div");
+    actionSlot.className = "discogs-bar-action";
+    row1.appendChild(actionSlot);
     const logo = document.createElement("img");
     logo.src = DISCOGS_LOGO_URL;
     logo.className = "discogs-logo";
@@ -4614,6 +4670,11 @@ ${lines}
         annotateRoles(allResults);
         capturedResults = allResults;
         return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
+          // Mount the Start-import button + unresolved message in the
+          // always-visible header rather than below the table (#139).
+          // Resolved via the DOM (there's one bar) — `runImport` is a
+          // separate function from the bar builder that owns the slot.
+          headerSlot: document.querySelector(".discogs-bar-action"),
           // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
           // every entity via MB API. Used when a cached MBID is stale.
           onRefresh: () => runPreflight(true).then((freshResults) => {

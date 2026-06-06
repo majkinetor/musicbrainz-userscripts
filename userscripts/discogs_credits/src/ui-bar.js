@@ -73,7 +73,8 @@ export function insertDiscogsBar(discogsUrl) {
             opacity: 0.85;
         }
         .discogs-bar .discogs-source {
-            flex: 1;
+            flex: 0 1 auto;
+            max-width: 20rem;
             font-size: 0.82rem;
             color: #555;
             min-width: 0;
@@ -81,6 +82,30 @@ export function insertDiscogsBar(discogsUrl) {
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        /* Slot in the always-visible header that hosts the review "Start import"
+           button + unresolved message (#139). flex:1 takes the middle space, so
+           the Discogs logo/link + Documentation get pushed to the right edge. */
+        .discogs-bar-action {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .discogs-bar-action:empty { display: none; }
+        .discogs-bar-action .discogs-issue-note {
+            font-size: 0.85rem;
+            color: #7a5c00;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .discogs-bar-action .discogs-issue-note.clickable {
+            cursor: pointer;
+            text-decoration: underline dotted;
+        }
+        .discogs-bar-action .discogs-issue-note.clickable:hover { color: #a06000; }
         .discogs-bar .discogs-source a {
             color: #e8771d;
             text-decoration: none;
@@ -272,6 +297,14 @@ export function insertDiscogsBar(discogsUrl) {
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;';
     row1.appendChild(importBtn);
     row1.appendChild(progressPct);
+
+    // Action slot — the review "Start import" button + unresolved message get
+    // mounted here (by showReviewTable) so they live in the always-visible
+    // header instead of below the table where you must scroll to reach them
+    // (#139). Empty (and hidden) until a review is in progress.
+    const actionSlot = document.createElement('div');
+    actionSlot.className = 'discogs-bar-action';
+    row1.appendChild(actionSlot);
 
     const logo = document.createElement('img');
     logo.src = DISCOGS_LOGO_URL;
@@ -909,6 +942,11 @@ function runImport(discogsUrl, getOpts) {
                 annotateRoles(allResults);
                 capturedResults = allResults;
                 return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
+                    // Mount the Start-import button + unresolved message in the
+                    // always-visible header rather than below the table (#139).
+                    // Resolved via the DOM (there's one bar) — `runImport` is a
+                    // separate function from the bar builder that owns the slot.
+                    headerSlot: document.querySelector('.discogs-bar-action'),
                     // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
                     // every entity via MB API. Used when a cached MBID is stale.
                     onRefresh: () => runPreflight(true).then(freshResults => {
