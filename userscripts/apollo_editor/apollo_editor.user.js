@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.540000
+// @version      2026.6.6.000000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.540000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.6.000000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -666,10 +666,10 @@
     s = document.createElement('div'); s.id = 'tc-settings';
     s.innerHTML = `<h4>${ICON} Apollo Editor <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
       <div class="tc-s-group tc-s-top">
-        <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Replace Release information</span></label>
-        <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Replace Tracklist on start</span></label>
-        <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Replace Recordings on start</span></label>
-        <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Replace header and footer</span></label>
+        <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
+        <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
+        <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
+        <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
       </div>
       <div class="tc-s-sec">Matching</div>
       <div class="tc-s-group">
@@ -1833,6 +1833,7 @@
       '.tc-recpop .tc-rpk-on{color:#777;font-size:11px}',
       '.tc-recpop .tc-rpk-on a,.tc-recpop .tc-rpk-curon a{color:#2c5d9b;text-decoration:none}.tc-recpop .tc-rpk-on a:hover,.tc-recpop .tc-rpk-curon a:hover{text-decoration:underline}',
       '.tc-recpop .tc-rpk-more{color:#999;font-style:italic}',
+      '.tc-recpop .tc-rpk-rgx{color:#888;font-size:10px;font-weight:600}',
       // header subtitle = the song (track) artist + length; current-recording artist + its full appears-on
       '.tc-recpop .tc-rpk-hdby{color:#6a6a6a;font-weight:normal}.tc-recpop .tc-rpk-hdlen{color:#888;font-weight:normal;font-variant-numeric:tabular-nums}',
       '.tc-recpop .tc-rpk-curby{color:#555;font-size:12px}',
@@ -2104,7 +2105,7 @@
       gid: r.id, name: r.title, length: r.length || null,
       artist: (r['artist-credit'] || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''),
       ac: r['artist-credit'] || [],   // raw credit, so the linked recording keeps its artist on screen
-      releases: (() => { const seen = new Set(), out = []; (r.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); out.push({ name: rl.title, gid: rl.id }); } }); return out; })(),
+      releases: (() => { const seen = new Set(), out = []; (r.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; out.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } }); return out; })(),
       isrcs: r.isrcs || [],
       comment: r.disambiguation || '',
     };
@@ -2114,7 +2115,7 @@
   async function fetchRgRecordings(rgGid) {
     const out = []; let offset = 0;
     for (let page = 0; page < 12; page++) {
-      let j; try { j = await fetch(`${ORIGIN}/ws/2/recording?query=rgid:${encodeURIComponent(rgGid)}&fmt=json&limit=100&offset=${offset}&inc=artist-credits+releases+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json()); } catch (e) { Log.warn('RG recordings fetch failed', e.message); break; }
+      let j; try { j = await fetch(`${ORIGIN}/ws/2/recording?query=rgid:${encodeURIComponent(rgGid)}&fmt=json&limit=100&offset=${offset}&inc=artist-credits+releases+release-groups+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json()); } catch (e) { Log.warn('RG recordings fetch failed', e.message); break; }
       (j.recordings || []).forEach(r => out.push(mapWsRec(r)));
       offset += 100; if (!(j.recordings || []).length || offset >= (j.count || 0)) break;
     }
@@ -2123,7 +2124,7 @@
   async function searchRecordings(q) {
     q = (q || '').trim(); if (!q) return [];
     try {
-      const j = await fetch(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+      const j = await fetch(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases+release-groups+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
       return (j.recordings || []).map(mapWsRec);
     } catch (e) { Log.warn('recording search failed', e.message); return []; }
   }
@@ -2158,7 +2159,7 @@
   function suggData(s) {
     const e = u(s); const ap = u(e.appearsOn);
     const rels = []; const seen = new Set();
-    if (ap && ap.results) ap.results.forEach(r => { const name = u(r.name) || r.name, gid = u(r.gid) || r.gid; const k = gid || name; if (name && !seen.has(k)) { seen.add(k); rels.push({ name, gid }); } });
+    if (ap && ap.results) ap.results.forEach(r => { const rr = u(r); const name = u(rr.name), gid = u(rr.gid); const rg = u(rr.releaseGroup); const k = gid || name; if (name && !seen.has(k)) { seen.add(k); rels.push({ name, gid, rgGid: rg ? u(rg.gid) : null, rgName: rg ? u(rg.name) : null }); } });
     const isrcs = (u(e.isrcs) || []).map(x => typeof x === 'string' ? x : (x && (x.isrc || u(x.isrc)))).filter(Boolean);
     return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), releases: rels, isrcs };
   }
@@ -2169,15 +2170,31 @@
     if (lvl === 0 && recExactMatch(data, ctx)) return ' tc-conf-exact';   // ideal: blue left border
     return ' tc-conf-' + ['tolerance', 'near', 'low', 'vlow'][lvl];
   }
-  // render "appears on" releases as links (each {name,gid}); plain strings tolerated for safety.
-  // cap = max links shown before a "+N more" tail (0 = show all). #119
+  // render "appears on" releases as links (each {name,gid,rgGid?,rgName?}); plain strings tolerated for safety.
+  // Releases of the SAME release group collapse to a single "RG ×N" link, like MB's own suggestions (#136).
+  // cap = max entries shown before a "+N more" tail (0 = show all). #119
   function relLinksHtml(relsArr, cap) {
-    const arr = relsArr || []; const shown = cap ? arr.slice(0, cap) : arr;
-    const html = shown.map(rl => {
+    const arr = relsArr || [];
+    // group by release group; releases with no RG info each stay their own entry (graceful fallback)
+    const groups = [], byRg = new Map();
+    arr.forEach(rl => {
       const o = rl && typeof rl === 'object' ? rl : { name: rl };
-      return o.gid ? '<a href="' + ORIGIN + '/release/' + esc(o.gid) + '" target="_blank" rel="noopener">' + esc(o.name) + '</a>' : esc(o.name);
+      const rgKey = o.rgGid || (o.rgName ? 'n:' + o.rgName : null);
+      if (rgKey && byRg.has(rgKey)) { byRg.get(rgKey).count++; return; }
+      const g = { rgGid: o.rgGid, rgName: o.rgName, name: o.name, gid: o.gid, count: 1 };
+      if (rgKey) byRg.set(rgKey, g);
+      groups.push(g);
+    });
+    const shown = cap ? groups.slice(0, cap) : groups;
+    const html = shown.map(g => {
+      if (g.count > 1) {   // multiple releases in this RG → link the RG title with a count
+        const label = esc(g.rgName || g.name);
+        const a = g.rgGid ? '<a href="' + ORIGIN + '/release-group/' + esc(g.rgGid) + '" target="_blank" rel="noopener">' + label + '</a>' : label;
+        return a + ' <span class="tc-rpk-rgx" title="' + g.count + ' releases in this release group">×' + g.count + '</span>';
+      }
+      return g.gid ? '<a href="' + ORIGIN + '/release/' + esc(g.gid) + '" target="_blank" rel="noopener">' + esc(g.name) + '</a>' : esc(g.name);
     }).join(', ');
-    const extra = arr.length - shown.length;
+    const extra = groups.length - shown.length;
     return html + (extra > 0 ? ' <span class="tc-rpk-more">+' + extra + ' more</span>' : '');
   }
   // a picker result row — mirrors the native list: title + length, by artist, appears on, ISRCs;
@@ -2238,11 +2255,11 @@
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
     // fill the current recording's full "appears on" (all releases, linkable) — not in the page model, so fetch it
     if (curGid) {
-      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=releases', { headers: { Accept: 'application/json' } })
+      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=releases+release-groups', { headers: { Accept: 'application/json' } })
         .then(r => r.json()).then(j => {
           if (!_recPop) return; const el = pop.querySelector('.tc-rpk-curon-list'); if (!el) return;
           const seen = new Set(), rels = [];
-          (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); rels.push({ name: rl.title, gid: rl.id }); } });
+          (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; rels.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } });
           el.innerHTML = rels.length ? relLinksHtml(rels, 0) : '—';
         }).catch(() => {});
     }
@@ -2564,7 +2581,7 @@
     body.tc-ri-on #information > div.half-width{flex:0 1 620px;min-width:0;width:auto}   /* form keeps its natural width */
     body.tc-ri-on #information > div.documentation{display:none}   /* the contextual help text — replaced by the links column */
     body.tc-ri-on #tc-ri-rightcol{flex:1 1 340px;min-width:300px;max-width:100%;box-sizing:border-box}  /* links take the remaining width, but wrap below the form when there isn't room for both; never wider than the row */
-    body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0;max-width:100%;box-sizing:border-box}
+    body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0;max-width:100%;min-width:0;box-sizing:border-box}   /* min-width:0 overrides a fieldset's intrinsic min-content width, else a long URL overflows the column (and the page) */
     body.tc-ri-on #tc-ri-rightcol #external-links-editor{max-width:100%;box-sizing:border-box}
 
     /* ---- external links as a grid: the URL row spans every column, the link's type combos flow into aligned
