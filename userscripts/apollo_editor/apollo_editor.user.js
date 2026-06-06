@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.440000
+// @version      2026.6.5.450000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.440000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.450000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2557,10 +2557,10 @@
     body.tc-ri-on .bubble:has(input,button,select,textarea){z-index:50}
 
     /* ---- two-column layout: form on the left, external links lifted into the (now-used) right column ---- */
-    body.tc-ri-on #information{display:flex;gap:30px;align-items:flex-start}
+    body.tc-ri-on #information{display:flex;flex-wrap:wrap;gap:14px 30px;align-items:flex-start}   /* wrap → links stack below the form on a narrow window instead of overlapping it */
     body.tc-ri-on #information > div.half-width{flex:0 1 620px;min-width:0;width:auto}   /* form keeps its natural width */
     body.tc-ri-on #information > div.documentation{display:none}   /* the contextual help text — replaced by the links column */
-    body.tc-ri-on #tc-ri-rightcol{flex:1 1 auto;min-width:0}       /* links take the remaining horizontal space */
+    body.tc-ri-on #tc-ri-rightcol{flex:1 1 340px;min-width:300px}  /* links take the remaining width, but wrap below the form when there isn't room for both */
     body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0}
 
     /* ---- external links as a grid: the URL row spans every column, the link's type combos flow into aligned
