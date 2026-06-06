@@ -104,7 +104,10 @@ function releaseBody(groups, changed, tag, sha) {
     const g = groups[dir]; const path = (g && g.path) || userJsPath(dir);
     const name = (g && g.name) || (path && scriptDisplayName(path)) || dir;
     lines.push(`## ${name}`, '');
-    if (changed.has(dir) && path) lines.push(`[Install (stable, pinned)](${raw(sha, path)})`, '');   // only scripts whose code changed get an install link
+    // only scripts whose code changed get install links — both the pinned link
+    // (frozen to this release's commit) and the non-pinned one (tracks `stable`,
+    // so the script manager auto-updates to future releases).
+    if (changed.has(dir) && path) lines.push(`[Install — pinned to this release](${raw(sha, path)}) | [Install — latest (auto-updates)](${raw('stable', path)})`, '');
     if (g && g.features.length) { lines.push('### Features', ''); g.features.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
     if (g && g.fixes.length) { lines.push('### Fixes', ''); g.fixes.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
     if (g && !g.features.length && !g.fixes.length) { lines.push('- Small improvements', ''); }   // changed, but no tracked issues
