@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.470000
+// @version      2026.6.5.480000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -12,7 +12,8 @@
 // @match        https://beta.musicbrainz.org/release/*/edit
 // @match        https://musicbrainz.org/artist/*
 // @match        https://beta.musicbrainz.org/artist/*
-// @grant        none
+// @grant        GM_xmlhttpRequest
+// @connect      *
 // @run-at       document-idle
 // ==/UserScript==
 
@@ -418,7 +419,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.470000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.480000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2630,7 +2631,21 @@
     body.tc-ri-on #external-links-editor input[placeholder^="Add another"]:hover{background-color:#f0ecfa;border-color:#b9a4e0}
     body.tc-ri-on #external-links-editor input[placeholder^="Add another"]::placeholder{color:transparent}   /* hide "Add another link" text inside the collapsed [+] */
     body.tc-ri-on #external-links-editor input[placeholder^="Add another"]:focus{width:100%;height:auto;padding:4px 7px;border:1px solid #999;border-radius:4px;background-color:#fff;background-image:none;color:#333;cursor:text}
-    body.tc-ri-on #external-links-editor input[placeholder^="Add another"]:focus::placeholder{color:#999}`;
+    body.tc-ri-on #external-links-editor input[placeholder^="Add another"]:focus::placeholder{color:#999}
+    /* ---- dead-link checker ---- */
+    #tc-ri-toolbar{position:absolute;right:10px;bottom:8px;display:flex;align-items:center;gap:8px;z-index:3}
+    #tc-ri-check{font:12px Arial;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid #d6cdec;border-radius:6px;background:#f6f3fc;color:#5a3e94;cursor:pointer}
+    #tc-ri-check:hover{background:#ece5f8;border-color:#b9a4e0}
+    #tc-ri-check:disabled{opacity:.6;cursor:default}
+    #tc-ri-check .tc-spin{width:12px;height:12px;border:2px solid #cdb8ec;border-top-color:#6f42c1;border-radius:50%;animation:tc-spin .7s linear infinite;display:none}
+    #tc-ri-check.busy .tc-spin{display:inline-block}
+    @keyframes tc-spin{to{transform:rotate(360deg)}}
+    #tc-ri-check-status{font:12px Arial;color:#777}
+    /* a dead link (4xx/5xx/unreachable): faded favicon + struck URL, like Platform Check's not-found state */
+    body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead .favicon{filter:grayscale(1);opacity:.45}
+    body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url{text-decoration:line-through;opacity:.55}
+    body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url::after{content:" ✖ " attr(data-tc-deadcode);color:#c0392b;font-size:11px;text-decoration:none;opacity:.9}
+    body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-ok a.url::after{content:" ✓";color:#2c7a45;font-size:11px;opacity:.7}`;
     const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
   }
   // move the External-links fieldset into a dedicated right column (or back home when Apollo is off).
@@ -2650,10 +2665,101 @@
       let col = panel.querySelector(':scope > #tc-ri-rightcol');
       if (!col) { col = document.createElement('div'); col.id = 'tc-ri-rightcol'; panel.appendChild(col); }
       if (fs.parentElement !== col) { if (!fs._tcHome) fs._tcHome = { parent: fs.parentElement, next: fs.nextElementSibling }; col.appendChild(fs); }
+      ensureCheckToolbar(col);
     } else if (fs._tcHome && fs.parentElement !== fs._tcHome.parent) {
       fs._tcHome.parent.insertBefore(fs, fs._tcHome.next && fs._tcHome.next.isConnected ? fs._tcHome.next : null);
       const col = panel.querySelector(':scope > #tc-ri-rightcol'); if (col && !col.children.length) col.remove();
     }
+  }
+  // ---- dead-link checker (#138): check each external link's HTTP status, fade the dead ones, and turn on
+  //      "This relationship has ended" for each of a dead link's relationship types ----
+  const _deadLinks = new Map();   // url -> { dead, code } — kept so marks survive React re-renders of the editor
+  const GMX = (typeof GM_xmlhttpRequest !== 'undefined' && GM_xmlhttpRequest) || (typeof GM !== 'undefined' && GM && GM.xmlHttpRequest) || null;
+  // HEAD (then GET on 405/403/0) → { status, dead }. dead = 4xx/5xx or unreachable.
+  function checkUrl(url) {
+    return new Promise(resolve => {
+      if (!GMX) { resolve({ status: null, dead: null }); return; }   // no GM (e.g. page-context) → unknown
+      let done = false; const fin = r => { if (!done) { done = true; resolve(r); } };
+      const req = method => { try { GMX({ method, url, timeout: 15000,
+        onload: r => { const s = r.status; if (method === 'HEAD' && (s === 405 || s === 501 || s === 403 || s === 0)) return req('GET'); fin({ status: s, dead: !s || s >= 400 }); },
+        onerror: () => method === 'HEAD' ? req('GET') : fin({ status: 0, dead: true }),
+        ontimeout: () => fin({ status: 0, dead: true }) }); } catch (e) { fin({ status: -1, dead: true }); } };
+      req('HEAD');
+    });
+  }
+  // each external-link row with a real URL, paired with its <a> and the relationship-item rows beneath it
+  function linkRows() {
+    const ext = document.getElementById('external-links-editor'); if (!ext) return [];
+    const rows = [...ext.querySelectorAll('tr')]; const out = [];
+    rows.forEach((r, i) => {
+      if (!r.classList.contains('external-link-item')) return;
+      const a = r.querySelector('a.url'); if (!a) return;   // skip the "add another link" input row
+      const rels = []; for (let k = i + 1; k < rows.length; k++) { const n = rows[k]; if (n.classList.contains('external-link-item')) break; if (n.classList.contains('relationship-item')) rels.push(n); }
+      out.push({ row: r, url: a.href, rels });
+    });
+    return out;
+  }
+  function markLinkRow(row, dead, code) {
+    row.classList.toggle('tc-link-dead', dead === true);
+    row.classList.toggle('tc-link-ok', dead === false);
+    const a = row.querySelector('a.url'); if (a) { if (dead && code) a.setAttribute('data-tc-deadcode', code); else a.removeAttribute('data-tc-deadcode'); }
+  }
+  function remarkDeadLinks() {   // re-apply marks after the React editor re-renders (called from the observer)
+    if (!_deadLinks.size) return;
+    linkRows().forEach(({ row, url }) => { const v = _deadLinks.get(url); if (v) markLinkRow(row, v.dead, v.code); });
+  }
+  // open a relationship's edit dialog, tick "This relationship has ended", click Done
+  function setRelEnded(relRow) {
+    return new Promise(resolve => {
+      const edit = relRow.querySelector('button.edit-item'); if (!edit) { resolve(false); return; }
+      edit.click();
+      setTimeout(() => {
+        const dlg = [...document.querySelectorAll('.dialog.popover,[role="dialog"],.bubble')].find(d => d.offsetParent !== null && /relationship has ended|has ended/i.test(d.textContent));
+        if (!dlg) { resolve(false); return; }
+        const cb = [...dlg.querySelectorAll('input[type=checkbox]')].find(c => /ended/i.test((c.closest('label') || c.parentElement || {}).textContent || ''));
+        if (cb && !cb.checked) cb.click();
+        const done = [...dlg.querySelectorAll('button')].find(b => /^\s*done\s*$/i.test(b.textContent));
+        setTimeout(() => { if (done) done.click(); resolve(!!cb); }, 70);
+      }, 240);
+    });
+  }
+  let _checking = false;
+  async function checkAllLinks(setEnded) {
+    if (_checking) return; _checking = true;
+    const btn = document.getElementById('tc-ri-check'), stat = document.getElementById('tc-ri-check-status');
+    const links = linkRows();
+    if (btn) { btn.classList.add('busy'); btn.disabled = true; }
+    if (stat) stat.textContent = 'checking ' + links.length + ' link(s)…';
+    let dead = 0, done = 0;
+    const queue = links.slice();
+    const worker = async () => { while (queue.length) {
+      const L = queue.shift();
+      const r = await checkUrl(L.url);
+      _deadLinks.set(L.url, { dead: r.dead, code: r.status });
+      markLinkRow(L.row, r.dead, r.status);
+      if (r.dead && setEnded) { for (const rel of L.rels) await setRelEnded(rel); }
+      if (r.dead) dead++;
+      done++; if (stat) stat.textContent = 'checked ' + done + '/' + links.length + (dead ? ' · ' + dead + ' dead' : '');
+    } };
+    await Promise.all([worker(), worker(), worker()]);
+    if (btn) { btn.classList.remove('busy'); btn.disabled = false; }
+    if (stat) stat.textContent = links.length ? (dead ? dead + ' dead link(s)' + (setEnded ? ' — marked “ended”' : '') : 'all ' + links.length + ' OK') : 'no links';
+    _checking = false;
+  }
+  // the "Check links" button + status, pinned at the bottom-right of the External-links box (across from the
+  // add-link [+]). Hidden when the release has no links yet. Lives in the fieldset wrapper, not the React editor.
+  function ensureCheckToolbar(col) {
+    const fs = _riExtFs && _riExtFs.isConnected ? _riExtFs : (col && col.querySelector('fieldset'));
+    if (!fs) return;
+    let bar = fs.querySelector(':scope > #tc-ri-toolbar');
+    if (!bar) {
+      fs.style.position = fs.style.position || 'relative';
+      bar = document.createElement('div'); bar.id = 'tc-ri-toolbar';
+      bar.innerHTML = '<span id="tc-ri-check-status"></span><button id="tc-ri-check" type="button" title="Check every external link for a dead/404 status. Dead links are faded and each of their relationship types is marked “This relationship has ended”."><span class="tc-spin"></span>⟳ Check links</button>';
+      bar.querySelector('#tc-ri-check').onclick = () => checkAllLinks(true);
+      fs.appendChild(bar);
+    }
+    bar.style.display = linkRows().length ? '' : 'none';   // no links → no button
   }
   // MB's contextual guidance box(es) — anything outside #information that's just the style-guidelines help
   // (the in-panel ones are hidden by CSS via #information .bubble/.guidance)
@@ -2711,6 +2817,8 @@
       ext.querySelectorAll('tr.relationship-item .error.field-error').forEach(e => {
         const t = (e.textContent || '').trim(); if (t && e.title !== t) e.title = t;
       });
+      remarkDeadLinks();   // re-apply dead-link fading after a re-render
+      ensureCheckToolbar();   // keep the Check-links button present + hidden when there are no links
     };
     _riOptObs?.disconnect(); apply();
     if (!_riOptObs) _riOptObs = new MutationObserver(() => { _riOptObs.disconnect(); apply(); _riOptObs.observe(ext, { childList: true, subtree: true }); });
@@ -2751,7 +2859,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
