@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.6.175556
+// @version      2026.6.6.182259
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -62,6 +62,13 @@
   }
   function getLogContainer() {
     return _logs;
+  }
+  var _review = null;
+  function setReviewContainer(el) {
+    _review = el;
+  }
+  function getReviewContainer() {
+    return _review || _logs;
   }
   function _emit(html, plainText) {
     if (!_logs) return;
@@ -3184,8 +3191,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       panelLi.classList.add("discogs-review-panel-li");
       panelLi._buildStaticTableLi = buildStaticTableLi;
       panelLi.appendChild(panel);
-      getLogContainer().appendChild(panelLi);
-      getLogContainer().scrollIntoView({ behavior: "smooth", block: "nearest" });
+      getReviewContainer().appendChild(panelLi);
+      panelLi.scrollIntoView({ behavior: "smooth", block: "nearest" });
       _hideBar();
     });
   }
@@ -4120,9 +4127,10 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         .discogs-log-hd:hover { color: #555; }
         .discogs-log-caret { display: inline-block; transition: transform 0.12s; font-size: 0.7rem; }
         .discogs-output.collapsed .discogs-log-caret { transform: rotate(-90deg); }
-        /* collapsed: hide the summary + verbose log lines, but KEEP the review-table panel visible */
-        .discogs-output.collapsed .discogs-log-body > .summary,
-        .discogs-output.collapsed .discogs-log-body .logs > li:not(.discogs-review-panel-li) { display: none; }
+        /* collapsed: hide the whole log body in one rule (fast). The review panel
+           lives in .discogs-review-slot, outside the body, so it stays visible. */
+        .discogs-output.collapsed .discogs-log-body { display: none; }
+        .discogs-review-slot:not(:empty) { margin: 0.2rem 0; }
         /* \u2500\u2500 Progress / sticky bar \u2500\u2500 */
         .discogs-bar.is-importing .discogs-bar-row1 {
             position: fixed;
@@ -4427,9 +4435,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     logHd.className = "discogs-log-hd";
     logHd.innerHTML = '<span class="discogs-log-caret">\u25BE</span> Log';
     logHd.title = "Collapse / expand the import log";
+    const reviewSlot = document.createElement("div");
+    reviewSlot.className = "discogs-review-slot";
     const logBody = document.createElement("div");
     logBody.className = "discogs-log-body";
-    outputDiv.append(logHd, logBody);
+    outputDiv.append(logHd, reviewSlot, logBody);
+    setReviewContainer(reviewSlot);
     const applyLogCollapse = () => outputDiv.classList.toggle("collapsed", localStorage.getItem(LOG_COLLAPSE_KEY) === "1");
     try {
       applyLogCollapse();
@@ -4511,7 +4522,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           const _md = nodeToMd(el);
           return _md.startsWith("\n\n") || _md.endsWith("\n\n") ? _md : _md.replace(/^\n/, "").replace(/\n$/, "");
         }
-        const lines = [..._logs2.querySelectorAll("li")].map((li) => {
+        const _panel = document.querySelector(".discogs-review-slot .discogs-review-panel-li");
+        const lines = [..._panel ? [_panel] : [], ..._logs2.querySelectorAll("li")].map((li) => {
           if (li.classList?.contains("discogs-review-panel-li") && typeof li._buildStaticTableLi === "function") {
             return htmlToMd(li._buildStaticTableLi());
           }

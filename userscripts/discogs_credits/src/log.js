@@ -28,6 +28,13 @@ export function getLogContainer() {
     return _logs;
 }
 
+// The review-table panel mounts here instead of inside the (collapsible) log,
+// so collapsing the log never hides the review UI (#142). Falls back to the log
+// container when unset.
+let _review = null;
+export function setReviewContainer(el) { _review = el; }
+export function getReviewContainer() { return _review || _logs; }
+
 function _emit(html, plainText) {
     if (!_logs) return;
     const li = document.createElement('li');
