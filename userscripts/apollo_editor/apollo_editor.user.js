@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.330000
+// @version      2026.6.5.340000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.330000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.340000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2710,7 +2710,26 @@
       relocateLinks(false);
       document.body.classList.remove('tc-ri-on');
       document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));
+      watchDocBubbles();
     }
+  }
+  // MB sizes its contextual help bubble to the documentation column's width once, and caches it. While Apollo
+  // hid that column (display:none → width 0) it caches width:0, so in the Original view the bubble renders ~24px
+  // wide and the text wraps one word per line ("scrambled"). Override the stale width to the real column width.
+  let _docBubObs = null;
+  function watchDocBubbles() {
+    const doc = document.querySelector('#information > div.documentation'); if (!doc) return;
+    const fix = () => {
+      if (document.body.classList.contains('tc-ri-on')) return;   // only the Original view is affected
+      const w = doc.clientWidth; if (w < 80) return;
+      doc.querySelectorAll('.bubble').forEach(b => {
+        if (b.offsetParent === null) return;
+        const cur = parseFloat(b.style.width) || b.getBoundingClientRect().width;
+        if (cur < w - 24) b.style.width = w + 'px';   // self-guarded: once set to w, no further change
+      });
+    };
+    if (!_docBubObs) { _docBubObs = new MutationObserver(fix); _docBubObs.observe(doc, { attributes: true, attributeFilter: ['style'], childList: true, subtree: true }); }
+    fix();
   }
 
   W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
