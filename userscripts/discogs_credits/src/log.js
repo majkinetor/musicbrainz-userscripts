@@ -28,9 +28,17 @@ export function getLogContainer() {
     return _logs;
 }
 
-function _emit(html, plainText) {
+// The review-table panel mounts here instead of inside the (collapsible) log,
+// so collapsing the log never hides the review UI (#142). Falls back to the log
+// container when unset.
+let _review = null;
+export function setReviewContainer(el) { _review = el; }
+export function getReviewContainer() { return _review || _logs; }
+
+function _emit(html, plainText, sev) {
     if (!_logs) return;
     const li = document.createElement('li');
+    if (sev) li.dataset.sev = sev;   // 'warn' / 'error' — lets the log toolbar filter by severity (#142)
     // HH:MM:SS prefix so per-step timings are visible. Styled muted/monospace so
     // it doesn't fight with the actual content for attention.
     const d = new Date();
@@ -63,8 +71,8 @@ function _emit(html, plainText) {
  */
 export const log = {
     info:  msg => _emit(msg, msg),
-    warn:  msg => _emit(`<span style="color:orange">WARN ${msg}</span>`, `WARN ${msg}`),
-    error: msg => _emit(`<span style="color:red">ERR ${msg}</span>`,     `ERR ${msg}`),
+    warn:  msg => _emit(`<span style="color:orange">WARN ${msg}</span>`, `WARN ${msg}`, 'warn'),
+    error: msg => _emit(`<span style="color:red">ERR ${msg}</span>`,     `ERR ${msg}`,  'error'),
 };
 
 // ── Debug log (issue #87) ───────────────────────────────────────────────────

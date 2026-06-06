@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.6.175254
+// @version      2026.6.6.184103
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -63,9 +63,17 @@
   function getLogContainer() {
     return _logs;
   }
-  function _emit(html, plainText) {
+  var _review = null;
+  function setReviewContainer(el) {
+    _review = el;
+  }
+  function getReviewContainer() {
+    return _review || _logs;
+  }
+  function _emit(html, plainText, sev) {
     if (!_logs) return;
     const li = document.createElement("li");
+    if (sev) li.dataset.sev = sev;
     const d = /* @__PURE__ */ new Date();
     const pad = (n) => String(n).padStart(2, "0");
     const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
@@ -78,8 +86,8 @@
   }
   var log = {
     info: (msg) => _emit(msg, msg),
-    warn: (msg) => _emit(`<span style="color:orange">WARN ${msg}</span>`, `WARN ${msg}`),
-    error: (msg) => _emit(`<span style="color:red">ERR ${msg}</span>`, `ERR ${msg}`)
+    warn: (msg) => _emit(`<span style="color:orange">WARN ${msg}</span>`, `WARN ${msg}`, "warn"),
+    error: (msg) => _emit(`<span style="color:red">ERR ${msg}</span>`, `ERR ${msg}`, "error")
   };
   var _debugUl = null;
   var _debugStartT = null;
@@ -3184,8 +3192,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       panelLi.classList.add("discogs-review-panel-li");
       panelLi._buildStaticTableLi = buildStaticTableLi;
       panelLi.appendChild(panel);
-      getLogContainer().appendChild(panelLi);
-      getLogContainer().scrollIntoView({ behavior: "smooth", block: "nearest" });
+      getReviewContainer().appendChild(panelLi);
+      panelLi.scrollIntoView({ behavior: "smooth", block: "nearest" });
       _hideBar();
     });
   }
@@ -3978,14 +3986,21 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         .discogs-opts-panel.open { display: flex; }
         .discogs-opts-panel .discogs-opts-panel-hd { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #999; font-weight: 600; }
         /* "Copy log \u25BE" dropdown in the right group */
-        .discogs-copylog-slot { display: inline-flex; }
-        .discogs-copylog-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
-        .discogs-copylog-btn:hover { border-color: #999; }
         .discogs-copylog-caret { color: #999; font-size: 0.7rem; }
-        .discogs-copylog-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; background: #fff; border: 1px solid #ccc; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.25rem; min-width: 11rem; }
-        .discogs-copylog-menu.open { display: flex; }
-        .discogs-copylog-item { text-align: left; font-size: 0.8rem; color: #333; background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
-        .discogs-copylog-item:hover { background: #f0ecfa; }
+        /* "Log \u25BE" header toggle button (#142) */
+        .discogs-logtoggle-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
+        .discogs-logtoggle-btn:hover { border-color: #999; }
+        .discogs-logtoggle-btn.active { background: #f0ecfa; border-color: #b9a4e0; color: #5a3e94; }
+        /* log panel toolbar: severity filter + copy buttons */
+        .discogs-log-toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.3rem 0 0.45rem; }
+        .discogs-log-filter { display: inline-flex; border: 1px solid #ddd; border-radius: 0.3rem; overflow: hidden; }
+        .discogs-log-filterbtn { font-size: 0.75rem; color: #666; background: #fff; border: none; border-right: 1px solid #eee; padding: 0.15rem 0.55rem; cursor: pointer; }
+        .discogs-log-filterbtn:last-child { border-right: none; }
+        .discogs-log-filterbtn:hover { background: #f6f3fc; }
+        .discogs-log-filterbtn.active { background: #5f3ec0; color: #fff; }
+        .discogs-log-copyslot { display: inline-flex; gap: 0.4rem; margin-left: auto; }
+        .discogs-log-copybtn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; white-space: nowrap; }
+        .discogs-log-copybtn:hover { border-color: #999; }
         .discogs-bar img.discogs-logo {
             height: 20px;
             width: auto;
@@ -4112,8 +4127,17 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             background: #e8771d;
         }
         .discogs-output { padding: 0.5rem 0.75rem 0.25rem; }
+        .discogs-output.empty { display: none; }   /* no log yet \u2192 hide the whole section (#142) */
         .discogs-output .summary { margin: 0 0 0.25rem; font-size: 0.88rem; color: #555; }
         .discogs-output .logs { margin: 0; padding-left: 1.2rem; font-size: 0.83rem; }
+        /* log panel hides behind the header "Log \u25BE" button (#142); the review
+           panel sits in .discogs-review-slot OUTSIDE the panel, always visible. */
+        .discogs-log-panel { display: none; }
+        .discogs-output.log-open .discogs-log-panel { display: block; }
+        .discogs-review-slot:not(:empty) { margin: 0.2rem 0; }
+        /* severity filter: show only warnings (warn+error) or errors */
+        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li:not([data-sev]) { display: none; }
+        .discogs-output[data-logfilter="error"] .discogs-log-body .logs > li:not([data-sev="error"]) { display: none; }
         /* \u2500\u2500 Progress / sticky bar \u2500\u2500 */
         .discogs-bar.is-importing .discogs-bar-row1 {
             position: fixed;
@@ -4245,9 +4269,13 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     logo.alt = "Discogs";
     logoLink.appendChild(logo);
     rightGroup.appendChild(logoLink);
-    const copyLogSlot = document.createElement("div");
-    copyLogSlot.className = "discogs-copylog-slot";
-    rightGroup.appendChild(copyLogSlot);
+    const logToggleBtn = document.createElement("button");
+    logToggleBtn.type = "button";
+    logToggleBtn.className = "discogs-logtoggle-btn";
+    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret">\u25BE</span>';
+    logToggleBtn.title = "Show / hide the import log";
+    logToggleBtn.style.display = "none";
+    rightGroup.appendChild(logToggleBtn);
     const docsHref = typeof GM_info !== "undefined" && (GM_info?.script?.homepageURL || GM_info?.script?.homepage) || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
     const docsLink = document.createElement("a");
     docsLink.href = docsHref;
@@ -4412,7 +4440,55 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
-    outputDiv.className = "discogs-output";
+    outputDiv.className = "discogs-output empty";
+    const LOG_OPEN_KEY = "discogs-importer-log-open";
+    const reviewSlot = document.createElement("div");
+    reviewSlot.className = "discogs-review-slot";
+    setReviewContainer(reviewSlot);
+    const logPanel = document.createElement("div");
+    logPanel.className = "discogs-log-panel";
+    const logToolbar = document.createElement("div");
+    logToolbar.className = "discogs-log-toolbar";
+    const logFilter = document.createElement("div");
+    logFilter.className = "discogs-log-filter";
+    [["all", "All"], ["warn", "\u26A0 Warnings"], ["error", "\u26D4 Errors"]].forEach(([f, label]) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "discogs-log-filterbtn" + (f === "all" ? " active" : "");
+      b.dataset.f = f;
+      b.textContent = label;
+      b.addEventListener("click", () => {
+        outputDiv.dataset.logfilter = f;
+        logFilter.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x.dataset.f === f));
+      });
+      logFilter.appendChild(b);
+    });
+    const logCopySlot = document.createElement("div");
+    logCopySlot.className = "discogs-log-copyslot";
+    logToolbar.append(logFilter, logCopySlot);
+    const logBody = document.createElement("div");
+    logBody.className = "discogs-log-body";
+    logPanel.append(logToolbar, logBody);
+    outputDiv.append(reviewSlot, logPanel);
+    outputDiv.dataset.logfilter = "all";
+    const applyLogOpen = () => {
+      const open = localStorage.getItem(LOG_OPEN_KEY) === "1";
+      outputDiv.classList.toggle("log-open", open);
+      logToggleBtn.classList.toggle("active", open);
+    };
+    try {
+      applyLogOpen();
+    } catch (e) {
+    }
+    logToggleBtn.addEventListener("click", () => {
+      const open = !outputDiv.classList.contains("log-open");
+      outputDiv.classList.toggle("log-open", open);
+      logToggleBtn.classList.toggle("active", open);
+      try {
+        localStorage.setItem(LOG_OPEN_KEY, open ? "1" : "0");
+      } catch (e) {
+      }
+    });
     importBtn.addEventListener("click", () => {
       importBtn.disabled = true;
       importBtn.textContent = "Importing\u2026";
@@ -4430,9 +4506,11 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       setLogContainer(_logs2);
       _summary = document.createElement("p");
       _summary.className = "summary";
-      outputDiv.innerHTML = "";
-      outputDiv.appendChild(_summary);
-      outputDiv.appendChild(_logs2);
+      logBody.innerHTML = "";
+      logBody.appendChild(_summary);
+      logBody.appendChild(_logs2);
+      outputDiv.classList.remove("empty");
+      logToggleBtn.style.display = "";
       function buildCopyText({ skipDiscogsJson }) {
         function htmlToMd(el) {
           function nodeToMd(node) {
@@ -4480,7 +4558,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           const _md = nodeToMd(el);
           return _md.startsWith("\n\n") || _md.endsWith("\n\n") ? _md : _md.replace(/^\n/, "").replace(/\n$/, "");
         }
-        const lines = [..._logs2.querySelectorAll("li")].map((li) => {
+        const _panel = document.querySelector(".discogs-review-slot .discogs-review-panel-li");
+        const lines = [..._panel ? [_panel] : [], ..._logs2.querySelectorAll("li")].map((li) => {
           if (li.classList?.contains("discogs-review-panel-li") && typeof li._buildStaticTableLi === "function") {
             return htmlToMd(li._buildStaticTableLi());
           }
@@ -4517,42 +4596,20 @@ ${lines}
           fallback();
         }
       }
-      if (!copyLogSlot.childElementCount) {
-        const copyLogBtn = document.createElement("button");
-        copyLogBtn.type = "button";
-        copyLogBtn.className = "discogs-copylog-btn";
-        copyLogBtn.innerHTML = 'Copy log <span class="discogs-copylog-caret">\u25BE</span>';
-        copyLogBtn.title = "Copy the import log";
-        const copyLogMenu = document.createElement("div");
-        copyLogMenu.className = "discogs-copylog-menu";
-        const mkItem = (label, title, skip) => {
-          const it = document.createElement("button");
-          it.type = "button";
-          it.className = "discogs-copylog-item";
-          it.textContent = label;
-          it.title = title;
-          it.addEventListener("click", () => copyToClipboard(buildCopyText({ skipDiscogsJson: skip }), it, label));
-          return it;
+      if (!logCopySlot.childElementCount) {
+        const mkCopy = (label, title, skip) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "discogs-log-copybtn";
+          b.textContent = label;
+          b.title = title;
+          b.addEventListener("click", () => copyToClipboard(buildCopyText({ skipDiscogsJson: skip }), b, label));
+          return b;
         };
-        copyLogMenu.appendChild(mkItem("Copy log", "Copy the full import log (incl. raw Discogs JSON)", false));
-        copyLogMenu.appendChild(mkItem("Copy log without JSON", "Copy the log without the raw Discogs JSON block \u2014 small enough to fit in a GitHub issue", true));
-        copyLogSlot.appendChild(copyLogBtn);
-        document.body.appendChild(copyLogMenu);
-        copyLogBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const open = copyLogMenu.classList.toggle("open");
-          if (!open) return;
-          const r = copyLogBtn.getBoundingClientRect();
-          copyLogMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - copyLogMenu.offsetWidth - 8)) + "px";
-          copyLogMenu.style.top = r.bottom + 4 + "px";
-          const off = (ev) => {
-            if (!copyLogMenu.contains(ev.target) && !copyLogBtn.contains(ev.target)) {
-              copyLogMenu.classList.remove("open");
-              document.removeEventListener("mousedown", off);
-            }
-          };
-          setTimeout(() => document.addEventListener("mousedown", off), 0);
-        });
+        logCopySlot.append(
+          mkCopy("Copy log", "Copy the full import log (incl. raw Discogs JSON)", false),
+          mkCopy("Copy without JSON", "Copy the log without the raw Discogs JSON block \u2014 small enough to fit in a GitHub issue", true)
+        );
       }
       bar._setProgress = (pct) => {
         if (pct !== null && pct >= 100) _hideBar();

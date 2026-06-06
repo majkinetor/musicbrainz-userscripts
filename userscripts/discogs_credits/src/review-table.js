@@ -8,7 +8,7 @@ import { readIdbRecord, writeIdbRecord }   from './storage.js';
 import { mbThrottle, fetchWithRetry }      from './api-mb.js';
 import { parseDiscogsUrl, getDiscogsEntityData } from './api-discogs.js';
 import { guessSortName }                   from './mappers.js';
-import { getLogContainer }                 from './log.js';
+import { getLogContainer, getReviewContainer } from './log.js';
 import { _hideBar }                        from './progress-bar.js';
 import { DISCOGS_CHANNEL, pageWindow }     from './constants.js';
 
@@ -1425,8 +1425,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         panelLi.classList.add('discogs-review-panel-li');
         panelLi._buildStaticTableLi = buildStaticTableLi;
         panelLi.appendChild(panel);
-        getLogContainer().appendChild(panelLi);
-        getLogContainer().scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        getReviewContainer().appendChild(panelLi);   // #142: mount outside the collapsible log
+        panelLi.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         _hideBar();
     });
 }

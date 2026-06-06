@@ -19,6 +19,7 @@ import { writeIdbRecord }                 from './storage.js';
 import {
     log,
     setLogContainer,
+    setReviewContainer,
 }                                        from './log.js';
 import { _showBar, _hideBar }             from './progress-bar.js';
 import {
@@ -79,14 +80,21 @@ export function insertDiscogsBar(discogsUrl) {
         .discogs-opts-panel.open { display: flex; }
         .discogs-opts-panel .discogs-opts-panel-hd { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #999; font-weight: 600; }
         /* "Copy log ▾" dropdown in the right group */
-        .discogs-copylog-slot { display: inline-flex; }
-        .discogs-copylog-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
-        .discogs-copylog-btn:hover { border-color: #999; }
         .discogs-copylog-caret { color: #999; font-size: 0.7rem; }
-        .discogs-copylog-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; background: #fff; border: 1px solid #ccc; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.25rem; min-width: 11rem; }
-        .discogs-copylog-menu.open { display: flex; }
-        .discogs-copylog-item { text-align: left; font-size: 0.8rem; color: #333; background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
-        .discogs-copylog-item:hover { background: #f0ecfa; }
+        /* "Log ▾" header toggle button (#142) */
+        .discogs-logtoggle-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
+        .discogs-logtoggle-btn:hover { border-color: #999; }
+        .discogs-logtoggle-btn.active { background: #f0ecfa; border-color: #b9a4e0; color: #5a3e94; }
+        /* log panel toolbar: severity filter + copy buttons */
+        .discogs-log-toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.3rem 0 0.45rem; }
+        .discogs-log-filter { display: inline-flex; border: 1px solid #ddd; border-radius: 0.3rem; overflow: hidden; }
+        .discogs-log-filterbtn { font-size: 0.75rem; color: #666; background: #fff; border: none; border-right: 1px solid #eee; padding: 0.15rem 0.55rem; cursor: pointer; }
+        .discogs-log-filterbtn:last-child { border-right: none; }
+        .discogs-log-filterbtn:hover { background: #f6f3fc; }
+        .discogs-log-filterbtn.active { background: #5f3ec0; color: #fff; }
+        .discogs-log-copyslot { display: inline-flex; gap: 0.4rem; margin-left: auto; }
+        .discogs-log-copybtn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; white-space: nowrap; }
+        .discogs-log-copybtn:hover { border-color: #999; }
         .discogs-bar img.discogs-logo {
             height: 20px;
             width: auto;
@@ -213,8 +221,17 @@ export function insertDiscogsBar(discogsUrl) {
             background: #e8771d;
         }
         .discogs-output { padding: 0.5rem 0.75rem 0.25rem; }
+        .discogs-output.empty { display: none; }   /* no log yet → hide the whole section (#142) */
         .discogs-output .summary { margin: 0 0 0.25rem; font-size: 0.88rem; color: #555; }
         .discogs-output .logs { margin: 0; padding-left: 1.2rem; font-size: 0.83rem; }
+        /* log panel hides behind the header "Log ▾" button (#142); the review
+           panel sits in .discogs-review-slot OUTSIDE the panel, always visible. */
+        .discogs-log-panel { display: none; }
+        .discogs-output.log-open .discogs-log-panel { display: block; }
+        .discogs-review-slot:not(:empty) { margin: 0.2rem 0; }
+        /* severity filter: show only warnings (warn+error) or errors */
+        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li:not([data-sev]) { display: none; }
+        .discogs-output[data-logfilter="error"] .discogs-log-body .logs > li:not([data-sev="error"]) { display: none; }
         /* ── Progress / sticky bar ── */
         .discogs-bar.is-importing .discogs-bar-row1 {
             position: fixed;
@@ -372,11 +389,16 @@ export function insertDiscogsBar(discogsUrl) {
     logoLink.appendChild(logo);
     rightGroup.appendChild(logoLink);
 
-    // Copy-log slot — populated after an import runs with a "Copy log ▾" dropdown
-    // (full / without-JSON). Empty until then. Sits left of Help on the right (#139).
-    const copyLogSlot = document.createElement('div');
-    copyLogSlot.className = 'discogs-copylog-slot';
-    rightGroup.appendChild(copyLogSlot);
+    // "Log ▾" toggle button in the header (right side) — shows/hides the log panel
+    // below the bar, which holds the copy buttons + severity filter (#142). Hidden
+    // until the first import (no log to show yet).
+    const logToggleBtn = document.createElement('button');
+    logToggleBtn.type = 'button';
+    logToggleBtn.className = 'discogs-logtoggle-btn';
+    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret">▾</span>';
+    logToggleBtn.title = 'Show / hide the import log';
+    logToggleBtn.style.display = 'none';
+    rightGroup.appendChild(logToggleBtn);
 
     // Documentation link on the far-right side of row1 (#90). URL falls
     // back the same way `buildEditNote` resolves it: the manager-injected
@@ -583,7 +605,45 @@ export function insertDiscogsBar(discogsUrl) {
 
     // Output area
     const outputDiv = document.createElement('div');
-    outputDiv.className = 'discogs-output';
+    outputDiv.className = 'discogs-output empty';   // hidden until the first import writes a log
+    // Log lives behind the header "Log ▾" button (#142). The review-table panel
+    // sits in its own slot — ALWAYS visible, outside the toggled log panel — so
+    // hiding the log never hides the review UI.
+    const LOG_OPEN_KEY = 'discogs-importer-log-open';
+    const reviewSlot = document.createElement('div');
+    reviewSlot.className = 'discogs-review-slot';
+    setReviewContainer(reviewSlot);
+
+    const logPanel = document.createElement('div');
+    logPanel.className = 'discogs-log-panel';
+    // toolbar: severity filter (left) + copy buttons (right, populated on first import)
+    const logToolbar = document.createElement('div');
+    logToolbar.className = 'discogs-log-toolbar';
+    const logFilter = document.createElement('div');
+    logFilter.className = 'discogs-log-filter';
+    [['all', 'All'], ['warn', '⚠ Warnings'], ['error', '⛔ Errors']].forEach(([f, label]) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'discogs-log-filterbtn' + (f === 'all' ? ' active' : ''); b.dataset.f = f; b.textContent = label;
+        b.addEventListener('click', () => { outputDiv.dataset.logfilter = f; logFilter.querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.f === f)); });
+        logFilter.appendChild(b);
+    });
+    const logCopySlot = document.createElement('div');
+    logCopySlot.className = 'discogs-log-copyslot';
+    logToolbar.append(logFilter, logCopySlot);
+    const logBody = document.createElement('div');
+    logBody.className = 'discogs-log-body';
+    logPanel.append(logToolbar, logBody);
+    outputDiv.append(reviewSlot, logPanel);
+    outputDiv.dataset.logfilter = 'all';
+
+    const applyLogOpen = () => { const open = localStorage.getItem(LOG_OPEN_KEY) === '1'; outputDiv.classList.toggle('log-open', open); logToggleBtn.classList.toggle('active', open); };
+    try { applyLogOpen(); } catch (e) {}
+    logToggleBtn.addEventListener('click', () => {
+        const open = !outputDiv.classList.contains('log-open');
+        outputDiv.classList.toggle('log-open', open);
+        logToggleBtn.classList.toggle('active', open);
+        try { localStorage.setItem(LOG_OPEN_KEY, open ? '1' : '0'); } catch (e) {}
+    });
 
     importBtn.addEventListener('click', () => {
         importBtn.disabled = true;
@@ -604,9 +664,11 @@ export function insertDiscogsBar(discogsUrl) {
         setLogContainer(_logs);
         _summary = document.createElement('p');
         _summary.className = 'summary';
-        outputDiv.innerHTML = '';
-        outputDiv.appendChild(_summary);
-        outputDiv.appendChild(_logs);
+        logBody.innerHTML = '';
+        logBody.appendChild(_summary);
+        logBody.appendChild(_logs);
+        outputDiv.classList.remove('empty');   // there's a log now → reveal the section + the header Log button
+        logToggleBtn.style.display = '';
 
         // Two "Copy log" variants:
         //   - "Copy log"           — full output, includes the raw Discogs JSON block
@@ -679,7 +741,10 @@ export function insertDiscogsBar(discogsUrl) {
                 }
                 const _md = nodeToMd(el); return _md.startsWith('\n\n') || _md.endsWith('\n\n') ? _md : _md.replace(/^\n/, '').replace(/\n$/, '');
             }
-            const lines = [..._logs.querySelectorAll('li')].map(li => {
+            // The review panel now lives outside the log (#142); include it so a
+            // mid-review copy still substitutes its static table (nitpick #2 on #87).
+            const _panel = document.querySelector('.discogs-review-slot .discogs-review-panel-li');
+            const lines = [...(_panel ? [_panel] : []), ..._logs.querySelectorAll('li')].map(li => {
                 // Swap the interactive review-panel `<li>` for the static
                 // markdown-table form when copying mid-review (nitpick #2 on
                 // #87). `review-table.js` stashes a `_buildStaticTableLi`
@@ -723,36 +788,19 @@ export function insertDiscogsBar(discogsUrl) {
             }
         }
 
-        // "Copy log ▾" dropdown — full log / without-JSON, mounted in the bar's
-        // right group (#139). Built once; the menu floats and is positioned on open.
-        if (!copyLogSlot.childElementCount) {
-            const copyLogBtn = document.createElement('button');
-            copyLogBtn.type = 'button';
-            copyLogBtn.className = 'discogs-copylog-btn';
-            copyLogBtn.innerHTML = 'Copy log <span class="discogs-copylog-caret">▾</span>';
-            copyLogBtn.title = 'Copy the import log';
-            const copyLogMenu = document.createElement('div');
-            copyLogMenu.className = 'discogs-copylog-menu';
-            const mkItem = (label, title, skip) => {
-                const it = document.createElement('button');
-                it.type = 'button'; it.className = 'discogs-copylog-item'; it.textContent = label; it.title = title;
-                it.addEventListener('click', () => copyToClipboard(buildCopyText({ skipDiscogsJson: skip }), it, label));
-                return it;
+        // Copy buttons live in the log panel's toolbar now (#142): two plain
+        // buttons (full / without-JSON). Built once on the first import.
+        if (!logCopySlot.childElementCount) {
+            const mkCopy = (label, title, skip) => {
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'discogs-log-copybtn'; b.textContent = label; b.title = title;
+                b.addEventListener('click', () => copyToClipboard(buildCopyText({ skipDiscogsJson: skip }), b, label));
+                return b;
             };
-            copyLogMenu.appendChild(mkItem('Copy log', 'Copy the full import log (incl. raw Discogs JSON)', false));
-            copyLogMenu.appendChild(mkItem('Copy log without JSON', 'Copy the log without the raw Discogs JSON block — small enough to fit in a GitHub issue', true));
-            copyLogSlot.appendChild(copyLogBtn);
-            document.body.appendChild(copyLogMenu);
-            copyLogBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const open = copyLogMenu.classList.toggle('open');
-                if (!open) return;
-                const r = copyLogBtn.getBoundingClientRect();
-                copyLogMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - copyLogMenu.offsetWidth - 8)) + 'px';
-                copyLogMenu.style.top = (r.bottom + 4) + 'px';
-                const off = ev => { if (!copyLogMenu.contains(ev.target) && !copyLogBtn.contains(ev.target)) { copyLogMenu.classList.remove('open'); document.removeEventListener('mousedown', off); } };
-                setTimeout(() => document.addEventListener('mousedown', off), 0);
-            });
+            logCopySlot.append(
+                mkCopy('Copy log', 'Copy the full import log (incl. raw Discogs JSON)', false),
+                mkCopy('Copy without JSON', 'Copy the log without the raw Discogs JSON block — small enough to fit in a GitHub issue', true),
+            );
         }
 
         // Expose progress update hook for `dispatchAllRelationships` to call
