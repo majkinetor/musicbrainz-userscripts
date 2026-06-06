@@ -67,7 +67,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -715,9 +715,9 @@
     gridrows.onchange = () => { SETTINGS.gridRows = gridrows.checked; saveSettings(); applyViewClasses(); };
     const replri = s.querySelector('#tc-s-replri'), repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), cnav = s.querySelector('#tc-s-compactnav');
     replri.checked = SETTINGS.replaceReleaseInfo !== false; repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; cnav.checked = SETTINGS.compactNav !== false;
-    replri.onchange = () => { SETTINGS.replaceReleaseInfo = replri.checked; _riMirror = replri.checked; saveSettings(); applyView(); };
-    repltl.onchange = () => { SETTINGS.replaceTracklist = repltl.checked; _tlMirror = repltl.checked; saveSettings(); applyView(); };
-    replrec.onchange = () => { SETTINGS.replaceRecordings = replrec.checked; _recMirror = replrec.checked; saveSettings(); applyView(); };
+    replri.onchange = () => { SETTINGS.replaceReleaseInfo = replri.checked; saveSettings(); applyView(); };
+    repltl.onchange = () => { SETTINGS.replaceTracklist = repltl.checked; saveSettings(); applyView(); };
+    replrec.onchange = () => { SETTINGS.replaceRecordings = replrec.checked; saveSettings(); applyView(); };
     cnav.onchange = () => { SETTINGS.compactNav = cnav.checked; saveSettings(); applyNav(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
@@ -1540,14 +1540,16 @@
   // each managed tab tracks whether its Apollo mirror is shown. It INITIALISES from the persisted
   // "Replace … on start" setting; the Original/Apollo launcher then toggles it transiently, per tab —
   // so the launcher always works even when a "replace on start" option is off. #119
-  let _tlMirror, _recMirror, _riMirror;
-  function tlWant() { if (_tlMirror === undefined) _tlMirror = SETTINGS.replaceTracklist !== false; return _tlMirror; }
-  function recWant() { if (_recMirror === undefined) _recMirror = SETTINGS.replaceRecordings !== false; return _recMirror; }
-  function riWant() { if (_riMirror === undefined) _riMirror = SETTINGS.replaceReleaseInfo !== false; return _riMirror; }
+  // #135: the Apollo/Original switch is GLOBAL — one persisted flag toggles every feature on all tabs and stays
+  // until switched back. Each replace* setting still chooses which features Apollo takes over when it's enabled.
+  function apolloEnabled() { return SETTINGS.apolloEnabled !== false; }
+  function tlWant() { return apolloEnabled() && SETTINGS.replaceTracklist !== false; }
+  function recWant() { return apolloEnabled() && SETTINGS.replaceRecordings !== false; }
+  function riWant() { return apolloEnabled() && SETTINGS.replaceReleaseInfo !== false; }
   function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
-  function curWant() { return recordingsVisible() ? recWant() : releaseInfoVisible() ? riWant() : tlWant(); }   // Apollo state of the current tab
-  function apolloOn() { return curWant(); }
-  function relabelLauncher() { const lbl = document.querySelector('#tc-launch .tc-launch-lbl'); if (lbl) lbl.textContent = curWant() ? 'Original' : 'Apollo Editor'; }
+  function curWant() { return apolloEnabled(); }
+  function apolloOn() { return apolloEnabled(); }
+  function relabelLauncher() { const lbl = document.querySelector('#tc-launch .tc-launch-lbl'); if (lbl) lbl.textContent = apolloEnabled() ? 'Original' : 'Apollo Editor'; }
   // show/hide each visible managed tab's mirror per its want
   function applyView() {
     recStyle();   // make sure the recordings CSS (incl. the native-table hide rule) exists up front
@@ -1559,12 +1561,10 @@
   function ensureLauncher() {
     if (document.getElementById('tc-launch')) { relabelLauncher(); return; }
     style(); const b = document.createElement('div'); b.id = 'tc-launch';
-    const lbl = document.createElement('span'); lbl.className = 'tc-launch-lbl'; lbl.title = 'toggle Apollo / original editor (this tab)';
-    lbl.onclick = () => {   // toggle only the visible tab — works regardless of the "replace on start" settings
-      if (recordingsVisible()) _recMirror = !recWant();
-      else if (releaseInfoVisible()) _riMirror = !riWant();
-      else if (tracklistVisible()) _tlMirror = !tlWant();
-      applyView();
+    const lbl = document.createElement('span'); lbl.className = 'tc-launch-lbl'; lbl.title = 'Toggle Apollo / the original editor for ALL tabs — stays this way (across pages) until you switch back';
+    lbl.onclick = () => {   // GLOBAL toggle — flips Apollo for every tab/feature and persists across pages
+      SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
+      applyView(); applyNav();
     };
     const gear = document.createElement('span'); gear.className = 'tc-launch-gear'; gear.textContent = '⚙'; gear.title = 'Apollo Editor settings';
     gear.onclick = () => openSettings(gear);   // the one settings entry point — gear removed from the toolbars
@@ -1586,7 +1586,7 @@
       // mount as soon as the (lazily-built) native table exists — retry each tick so there's no native flash
       if (rec) { if (recWant()) { if (!document.getElementById('tc-recwrap')) showRecMirror(); } else hideRecMirror(); }
       if (releaseInfoVisible()) applyReleaseInfo();
-      if (tl || rec || releaseInfoVisible()) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }
+      if (editorEl()) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }   // #135: the switch shows on every tab
       if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); }   // keep compact nav alive + synced
     };
     tick(); setInterval(tick, 500);
@@ -2362,7 +2362,7 @@
      the still-present (visually-hidden) native control, so MB's wizard is
      untouched and the feature reverts cleanly when toggled off.
   ═══════════════════════════════════════════════════════════════════════ */
-  function navOn() { return SETTINGS.compactNav !== false; }
+  function navOn() { return SETTINGS.apolloEnabled !== false && SETTINGS.compactNav !== false; }   // compact nav is part of Apollo — off with the global switch
   const DIFF_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.1"/><line x1="5" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.1"/><line x1="5" y1="8.6" x2="11" y2="8.6" stroke="currentColor" stroke-width="1.1"/><line x1="5" y1="11.2" x2="8.5" y2="11.2" stroke="currentColor" stroke-width="1.1"/></svg>';
   const STEP_DEFS = [
     { key: 'information', label: 'Release', title: 'Release information' },
