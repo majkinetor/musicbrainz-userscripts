@@ -35,8 +35,9 @@ What a run does:
    label and a **`bug`** or **`enhancement`** label, and are **not** `skip changelog` / `wontfix`.
 2. Groups them per script (`enhancement` → *Features*, `bug` → *Fixes*) and prepends a dated section to
    each script's `CHANGELOG.md`.
-3. Determines which scripts' `.user.js` changed since `stable` — those get a stable install link in the
-   release (pinned to the merge commit). Scripts with issues but no code change are still changelogged.
+3. Determines which scripts' `.user.js` changed since `stable` — those get two install links in the
+   release: one **pinned** to the merge commit (frozen) and one tracking `stable` (**auto-updates** to
+   future releases). Scripts with issues but no code change are still changelogged.
 4. With `--yes`: commits the changelogs on `main`, merges `main → stable`, pushes both, creates the dated
    GitHub Release, and labels every included issue **`released`**.
 
