@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.6.152603
+// @version      2026.6.6.153808
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -1586,7 +1586,11 @@
     "Audio Generator": null,
     "Backing Band": null,
     Band: null,
-    Bass: null,
+    // Discogs "Bass" is generic (could be bass guitar, double bass, …) but MB
+    // has a generic "bass" instrument for exactly that case. Leaving it null
+    // dispatched a bare instrument rel with no instrument → "Missing instrument"
+    // on commit (#133). Map to MB's generic "bass".
+    Bass: "bass",
     "Brass Band": null,
     Bullroarer: null,
     "Concert Band": null,
