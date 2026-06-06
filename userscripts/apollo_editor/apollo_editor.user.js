@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.6.045000
+// @version      2026.6.6.055000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -67,7 +67,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: false }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.6.045000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.6.055000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -670,6 +670,7 @@
         <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
         <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
         <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
+        <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
       </div>
       <div class="tc-s-sec">Matching</div>
       <div class="tc-s-group">
@@ -713,12 +714,13 @@
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     gridcols.onchange = () => { SETTINGS.gridCols = gridcols.checked; saveSettings(); applyViewClasses(); };
     gridrows.onchange = () => { SETTINGS.gridRows = gridrows.checked; saveSettings(); applyViewClasses(); };
-    const replri = s.querySelector('#tc-s-replri'), repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), cnav = s.querySelector('#tc-s-compactnav');
-    replri.checked = SETTINGS.replaceReleaseInfo !== false; repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; cnav.checked = SETTINGS.compactNav !== false;
+    const replri = s.querySelector('#tc-s-replri'), repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), cnav = s.querySelector('#tc-s-compactnav'), zen = s.querySelector('#tc-s-zen');
+    replri.checked = SETTINGS.replaceReleaseInfo !== false; repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; cnav.checked = SETTINGS.compactNav !== false; zen.checked = !!SETTINGS.zenMode;
     replri.onchange = () => { SETTINGS.replaceReleaseInfo = replri.checked; saveSettings(); applyView(); };
     repltl.onchange = () => { SETTINGS.replaceTracklist = repltl.checked; saveSettings(); applyView(); };
     replrec.onchange = () => { SETTINGS.replaceRecordings = replrec.checked; saveSettings(); applyView(); };
-    cnav.onchange = () => { SETTINGS.compactNav = cnav.checked; saveSettings(); applyNav(); };
+    cnav.onchange = () => { SETTINGS.compactNav = cnav.checked; saveSettings(); applyNav(); applyZen(); };
+    zen.onchange = () => { SETTINGS.zenMode = zen.checked; saveSettings(); applyZen(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -1588,6 +1590,7 @@
       if (releaseInfoVisible()) applyReleaseInfo();
       if (editorEl()) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }   // #135: the switch shows on every tab
       if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); }   // keep compact nav alive + synced
+      applyZen();   // #141: keep zen state applied (and fill the nav title once the release model is ready)
     };
     tick(); setInterval(tick, 500);
   }
@@ -2479,7 +2482,17 @@
     .tc-nav-wbtn.tc-wiz-cancel{color:#c0392b}
     .tc-nav-wbtn.tc-wiz-cancel:not(:disabled):hover{background:#fdecec;border-color:#e6b3b3}
     .tc-nav-wbtn.tc-wiz-prev,.tc-nav-wbtn.tc-wiz-next{color:#5a3e94;font-weight:600;border-color:#d6cdec;background:#f6f3fc}
-    .tc-nav-wbtn.tc-wiz-prev:not(:disabled):hover,.tc-nav-wbtn.tc-wiz-next:not(:disabled):hover{background:#ece5f8;border-color:#b9a4e0}`;
+    .tc-nav-wbtn.tc-wiz-prev:not(:disabled):hover,.tc-nav-wbtn.tc-wiz-next:not(:disabled):hover{background:#ece5f8;border-color:#b9a4e0}
+    /* #141 Zen editing — the nav-bar release title (shown only in zen) + hiding the page chrome */
+    #tc-nav-title{display:none}
+    body.tc-zen-on #tc-nav-title{display:block;flex:1 1 0;min-width:0;text-align:center;font:13px Arial;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 14px}
+    #tc-nav-title a{color:#5a3e94;text-decoration:none;font-weight:600}#tc-nav-title a:hover{text-decoration:underline}
+    #tc-nav-title .tc-nav-title-by{color:#999;font-weight:normal;margin:0 2px}
+    #tc-nav-title .tc-nav-title-ver{color:#999;font-weight:normal;font-size:12px}
+    body.tc-zen-on .header,body.tc-zen-on .releaseheader,body.tc-zen-on #page > .tabs,body.tc-zen-on #footer{display:none!important}
+    /* zen: drop the page's top spacing so the sticky nav bar pins flush to the top and doesn't drift on scroll (#141) */
+    body.tc-zen-on #page{padding-top:0!important;margin-top:0!important}
+    body.tc-zen-on #page.fullwidth{padding-top:0!important;margin-top:0!important}`;
     const s = document.createElement('style'); s.id = 'tc-nav-style'; s.textContent = css; document.head.appendChild(s);
   }
   // build (once) the full-width nav bar at the top of the editor (#140):
@@ -2513,8 +2526,38 @@
       pager.appendChild(b);
     });
     const left = document.createElement('div'); left.id = 'tc-nav-left'; left.append(steps, wiz);
-    const bar = document.createElement('div'); bar.id = 'tc-nav-bar'; bar.append(left, pager);
+    const title = document.createElement('div'); title.id = 'tc-nav-title';   // #141 Zen: release title · artist · versions (shown only in zen)
+    const bar = document.createElement('div'); bar.id = 'tc-nav-bar'; bar.append(left, title, pager);
     ed.insertBefore(bar, ed.firstChild);   // a dedicated full-width row at the top of the editor (frozen on scroll)
+    fillNavTitle();
+  }
+  // Zen editing (#141): hide the site header, release header, entity tabs + footer,
+  // leaving just the Apollo nav bar (which gains the release title) and the editor.
+  function applyZen() {
+    const on = !!(SETTINGS.zenMode && navOn() && editorEl());
+    document.body.classList.toggle('tc-zen-on', on);
+    if (on) fillNavTitle();
+  }
+  // populate the nav-bar title: "<album> by <artist> (N versions)", all links —
+  // mirrors the native release header that zen hides. Cheap; only fills once.
+  function fillNavTitle() {
+    const el = document.getElementById('tc-nav-title'); if (!el) return;
+    let rel; try { rel = release(); } catch (e) { return; }
+    if (!rel) return;
+    const gid = u(rel.gid), name = u(rel.name) || '';
+    if (!name) return;
+    const artist = acLinks(u(rel.artistCredit)) || '';
+    // live-update: rebuild only when the title or artist actually changed (not every tick) (#141)
+    const sig = name + '' + artist;
+    if (el.dataset.sig === sig) return;
+    el.dataset.sig = sig;
+    const album = gid ? '<a href="' + ORIGIN + '/release/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
+    // version count — reuse the native release header's "see all versions" link
+    let ver = '';
+    const rh = document.querySelector('.releaseheader');
+    const va = rh && [...rh.querySelectorAll('a')].find(a => /version/i.test(a.textContent || ''));
+    if (va) { const m = (va.textContent.match(/(\d+)/) || [])[1]; ver = ' <a href="' + esc(va.href) + '" target="_blank" rel="noopener" class="tc-nav-title-ver">(' + (m ? m + ' versions' : 'all versions') + ')</a>'; }
+    el.innerHTML = album + (artist ? ' <span class="tc-nav-title-by">by</span> ' + artist : '') + ver;
   }
   // keep the proxies in sync with the native state each tick
   function syncNav() {
