@@ -134,7 +134,7 @@ export function insertDiscogsBar(discogsUrl) {
         .discogs-bar-action .discogs-issue-note {
             font-size: 0.85rem;
             color: #7a5c00;
-            min-width: 0;
+            min-width: 7.5rem;   /* reserve space so the bar doesn't reflow as the count appears / changes (#139) */
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -398,11 +398,8 @@ export function insertDiscogsBar(discogsUrl) {
 
     bar.appendChild(row1);
 
-    // ── Options (inline in the single bar — #139) ─────────────────────────────
-    const optsLabel = document.createElement('span');
-    optsLabel.className = 'discogs-opts-label';
-    optsLabel.textContent = 'Options:';
-    optsWrap.appendChild(optsLabel);
+    // ── Options (inline in the single bar — #139). No "Options:" label: the
+    //    toggles are self-evident and the "Options ▾" popover already names itself.
 
     function makeCheckbox(labelText, checkedByDefault, tooltipText) {
         const lbl = document.createElement('label');

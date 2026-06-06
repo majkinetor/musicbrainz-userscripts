@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.6.173848
+// @version      2026.6.6.175254
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -4033,7 +4033,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         .discogs-bar-action .discogs-issue-note {
             font-size: 0.85rem;
             color: #7a5c00;
-            min-width: 0;
+            min-width: 7.5rem;   /* reserve space so the bar doesn't reflow as the count appears / changes (#139) */
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -4259,10 +4259,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     rightGroup.appendChild(docsLink);
     row1.appendChild(rightGroup);
     bar.appendChild(row1);
-    const optsLabel = document.createElement("span");
-    optsLabel.className = "discogs-opts-label";
-    optsLabel.textContent = "Options:";
-    optsWrap.appendChild(optsLabel);
     function makeCheckbox(labelText, checkedByDefault, tooltipText) {
       const lbl = document.createElement("label");
       lbl.className = "discogs-toggle" + (checkedByDefault ? " active" : "");
