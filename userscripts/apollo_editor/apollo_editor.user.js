@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.6.050000
+// @version      2026.6.6.055000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.6.050000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.6.055000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2461,7 +2461,10 @@
     #tc-nav-title a{color:#5a3e94;text-decoration:none;font-weight:600}#tc-nav-title a:hover{text-decoration:underline}
     #tc-nav-title .tc-nav-title-by{color:#999;font-weight:normal;margin:0 2px}
     #tc-nav-title .tc-nav-title-ver{color:#999;font-weight:normal;font-size:12px}
-    body.tc-zen-on .header,body.tc-zen-on .releaseheader,body.tc-zen-on #page > .tabs,body.tc-zen-on #footer{display:none!important}`;
+    body.tc-zen-on .header,body.tc-zen-on .releaseheader,body.tc-zen-on #page > .tabs,body.tc-zen-on #footer{display:none!important}
+    /* zen: drop the page's top spacing so the sticky nav bar pins flush to the top and doesn't drift on scroll (#141) */
+    body.tc-zen-on #page{padding-top:0!important;margin-top:0!important}
+    body.tc-zen-on #page.fullwidth{padding-top:0!important;margin-top:0!important}`;
     const s = document.createElement('style'); s.id = 'tc-nav-style'; s.textContent = css; document.head.appendChild(s);
   }
   // build (once) the full-width nav bar at the top of the editor (#140):
@@ -2510,13 +2513,17 @@
   // populate the nav-bar title: "<album> by <artist> (N versions)", all links —
   // mirrors the native release header that zen hides. Cheap; only fills once.
   function fillNavTitle() {
-    const el = document.getElementById('tc-nav-title'); if (!el || el.innerHTML) return;
+    const el = document.getElementById('tc-nav-title'); if (!el) return;
     let rel; try { rel = release(); } catch (e) { return; }
     if (!rel) return;
     const gid = u(rel.gid), name = u(rel.name) || '';
     if (!name) return;
-    const album = gid ? '<a href="' + ORIGIN + '/release/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
     const artist = acLinks(u(rel.artistCredit)) || '';
+    // live-update: rebuild only when the title or artist actually changed (not every tick) (#141)
+    const sig = name + '' + artist;
+    if (el.dataset.sig === sig) return;
+    el.dataset.sig = sig;
+    const album = gid ? '<a href="' + ORIGIN + '/release/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
     // version count — reuse the native release header's "see all versions" link
     let ver = '';
     const rh = document.querySelector('.releaseheader');
