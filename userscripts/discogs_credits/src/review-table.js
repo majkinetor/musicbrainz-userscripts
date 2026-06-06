@@ -1292,9 +1292,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 importBtn.textContent = `Start import anyway \u2192`;
                 importBtn.style.background = '#e0a800';
                 importBtn.style.color = '#fff';
-                issueNote.textContent = `\u26a0 ${unresolved} artist(s) unresolved \u2014 they will be skipped`;
+                issueNote.textContent = `\u26a0 ${unresolved} unresolved`;
                 issueNote.classList.add('clickable');
-                issueNote.title = 'Jump to the first unresolved entity';
+                issueNote.title = 'Jump to the first unresolved entity \u2014 these will be skipped on import';
             }
         }
         updateImportBtn();

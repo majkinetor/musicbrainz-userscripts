@@ -93,6 +93,8 @@ export function insertDiscogsBar(discogsUrl) {
             flex-shrink: 0;
             opacity: 0.85;
         }
+        .discogs-bar .discogs-source-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
+        .discogs-bar .discogs-source-icon:hover .discogs-logo { opacity: 1; }
         .discogs-bar .discogs-source {
             flex: 0 1 auto;
             max-width: 20rem;
@@ -351,22 +353,24 @@ export function insertDiscogsBar(discogsUrl) {
     row1.appendChild(optsWrap);
     let _optsHost = optsWrap;
 
-    // Right-aligned cluster: Discogs logo + source link + Help. `margin-left:auto`
-    // (CSS) keeps it pinned to the right edge whether or not the action slot has
-    // content — so the link/help don't drift left in the initial state (#139).
+    // Right-aligned cluster: Discogs logo (the clickable source link) + Copy log + Help.
+    // `margin-left:auto` (CSS) keeps it pinned to the right edge. The full URL text was
+    // dropped to save space — the logo itself links to the Discogs release now (#139).
     const rightGroup = document.createElement('div');
     rightGroup.className = 'discogs-bar-right';
 
+    const logoLink = document.createElement('a');
+    logoLink.href = discogsUrl;
+    logoLink.target = '_blank';
+    logoLink.rel = 'noopener noreferrer nofollow';
+    logoLink.className = 'discogs-source-icon';
+    logoLink.title = discogsUrl;   // hover shows the full Discogs URL
     const logo = document.createElement('img');
     logo.src = DISCOGS_LOGO_URL;
     logo.className = 'discogs-logo';
     logo.alt = 'Discogs';
-    rightGroup.appendChild(logo);
-
-    const sourceSpan = document.createElement('span');
-    sourceSpan.className = 'discogs-source';
-    sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
-    rightGroup.appendChild(sourceSpan);
+    logoLink.appendChild(logo);
+    rightGroup.appendChild(logoLink);
 
     // Copy-log slot — populated after an import runs with a "Copy log ▾" dropdown
     // (full / without-JSON). Empty until then. Sits left of Help on the right (#139).

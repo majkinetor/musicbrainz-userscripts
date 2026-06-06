@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.6.173305
+// @version      2026.6.6.173848
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3092,9 +3092,9 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           importBtn.textContent = `Start import anyway \u2192`;
           importBtn.style.background = "#e0a800";
           importBtn.style.color = "#fff";
-          issueNote.textContent = `\u26A0 ${unresolved} artist(s) unresolved \u2014 they will be skipped`;
+          issueNote.textContent = `\u26A0 ${unresolved} unresolved`;
           issueNote.classList.add("clickable");
-          issueNote.title = "Jump to the first unresolved entity";
+          issueNote.title = "Jump to the first unresolved entity \u2014 these will be skipped on import";
         }
       }
       updateImportBtn();
@@ -3992,6 +3992,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             flex-shrink: 0;
             opacity: 0.85;
         }
+        .discogs-bar .discogs-source-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
+        .discogs-bar .discogs-source-icon:hover .discogs-logo { opacity: 1; }
         .discogs-bar .discogs-source {
             flex: 0 1 auto;
             max-width: 20rem;
@@ -4231,15 +4233,18 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     let _optsHost = optsWrap;
     const rightGroup = document.createElement("div");
     rightGroup.className = "discogs-bar-right";
+    const logoLink = document.createElement("a");
+    logoLink.href = discogsUrl;
+    logoLink.target = "_blank";
+    logoLink.rel = "noopener noreferrer nofollow";
+    logoLink.className = "discogs-source-icon";
+    logoLink.title = discogsUrl;
     const logo = document.createElement("img");
     logo.src = DISCOGS_LOGO_URL;
     logo.className = "discogs-logo";
     logo.alt = "Discogs";
-    rightGroup.appendChild(logo);
-    const sourceSpan = document.createElement("span");
-    sourceSpan.className = "discogs-source";
-    sourceSpan.innerHTML = `<a href="${discogsUrl}" target="_blank" rel="noopener noreferrer nofollow">${discogsUrl}</a>`;
-    rightGroup.appendChild(sourceSpan);
+    logoLink.appendChild(logo);
+    rightGroup.appendChild(logoLink);
     const copyLogSlot = document.createElement("div");
     copyLogSlot.className = "discogs-copylog-slot";
     rightGroup.appendChild(copyLogSlot);
