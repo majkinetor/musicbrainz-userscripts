@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.5.190000
+// @version      2026.6.5.420000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -69,7 +69,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceTracklist: true, replaceRecordings: true, autoMatch: true, autoMatchRec: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, autoMatch: true, autoMatchRec: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo' }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -418,7 +418,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.5.110000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.5.420000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -643,7 +643,11 @@
     #tc-settings .tc-s-row input[type=radio]{margin:0}
     #tc-settings #tc-s-lentol{width:48px;font:13px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px}
     #tc-settings .tc-s-row.lentol{gap:7px}
-    #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;background:#5f3ec0;color:#fff;border:none;border-radius:20px;padding:8px 14px;font:bold 13px Arial;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
+    #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;display:inline-flex;align-items:stretch;background:#5f3ec0;color:#fff;border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
+    #tc-launch .tc-launch-lbl{padding:8px 13px;cursor:pointer}
+    #tc-launch .tc-launch-lbl:hover{background:rgba(255,255,255,.13)}
+    #tc-launch .tc-launch-gear{padding:8px 11px;cursor:pointer;font-size:14px;display:flex;align-items:center;border-left:1px solid rgba(255,255,255,.28)}
+    #tc-launch .tc-launch-gear:hover{background:rgba(255,255,255,.13)}
     #tc-btn,#tc-gear-btn{vertical-align:middle}
   `;
   function style() {
@@ -664,6 +668,7 @@
     s = document.createElement('div'); s.id = 'tc-settings';
     s.innerHTML = `<h4>${ICON} Apollo Editor <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
       <div class="tc-s-group tc-s-top">
+        <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Replace Release information</span></label>
         <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Replace Tracklist on start</span></label>
         <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Replace Recordings on start</span></label>
         <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Replace header and footer</span></label>
@@ -710,8 +715,9 @@
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     gridcols.onchange = () => { SETTINGS.gridCols = gridcols.checked; saveSettings(); applyViewClasses(); };
     gridrows.onchange = () => { SETTINGS.gridRows = gridrows.checked; saveSettings(); applyViewClasses(); };
-    const repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), cnav = s.querySelector('#tc-s-compactnav');
-    repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; cnav.checked = SETTINGS.compactNav !== false;
+    const replri = s.querySelector('#tc-s-replri'), repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), cnav = s.querySelector('#tc-s-compactnav');
+    replri.checked = SETTINGS.replaceReleaseInfo !== false; repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; cnav.checked = SETTINGS.compactNav !== false;
+    replri.onchange = () => { SETTINGS.replaceReleaseInfo = replri.checked; _riMirror = replri.checked; saveSettings(); applyView(); };
     repltl.onchange = () => { SETTINGS.replaceTracklist = repltl.checked; _tlMirror = repltl.checked; saveSettings(); applyView(); };
     replrec.onchange = () => { SETTINGS.replaceRecordings = replrec.checked; _recMirror = replrec.checked; saveSettings(); applyView(); };
     cnav.onchange = () => { SETTINGS.compactNav = cnav.checked; saveSettings(); applyNav(); };
@@ -1425,7 +1431,7 @@
 
   const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
     + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
-    + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button><button class="tc-btn" data-act="gear" title="settings">⚙</button>`;
+    + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
   function openPanel() {
@@ -1536,26 +1542,35 @@
   // each managed tab tracks whether its Apollo mirror is shown. It INITIALISES from the persisted
   // "Replace … on start" setting; the Original/Apollo launcher then toggles it transiently, per tab —
   // so the launcher always works even when a "replace on start" option is off. #119
-  let _tlMirror, _recMirror;
+  let _tlMirror, _recMirror, _riMirror;
   function tlWant() { if (_tlMirror === undefined) _tlMirror = SETTINGS.replaceTracklist !== false; return _tlMirror; }
   function recWant() { if (_recMirror === undefined) _recMirror = SETTINGS.replaceRecordings !== false; return _recMirror; }
-  function apolloOn() { return recordingsVisible() ? recWant() : tlWant(); }   // "is Apollo on, on the current tab"
-  function relabelLauncher() { const b = document.getElementById('tc-launch'); if (b) b.textContent = (recordingsVisible() ? recWant() : tlWant()) ? 'Original' : 'Apollo Editor'; }
+  function riWant() { if (_riMirror === undefined) _riMirror = SETTINGS.replaceReleaseInfo !== false; return _riMirror; }
+  function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
+  function curWant() { return recordingsVisible() ? recWant() : releaseInfoVisible() ? riWant() : tlWant(); }   // Apollo state of the current tab
+  function apolloOn() { return curWant(); }
+  function relabelLauncher() { const lbl = document.querySelector('#tc-launch .tc-launch-lbl'); if (lbl) lbl.textContent = curWant() ? 'Original' : 'Apollo Editor'; }
   // show/hide each visible managed tab's mirror per its want
   function applyView() {
     recStyle();   // make sure the recordings CSS (incl. the native-table hide rule) exists up front
     if (tracklistVisible()) { if (tlWant()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); } else hideMirror(); }
     if (recordingsVisible()) { if (recWant()) showRecMirror(); else hideRecMirror(); }
+    if (releaseInfoVisible()) applyReleaseInfo();
     relabelLauncher();
   }
   function ensureLauncher() {
     if (document.getElementById('tc-launch')) { relabelLauncher(); return; }
-    style(); const b = document.createElement('button'); b.id = 'tc-launch'; b.title = 'toggle Apollo / original editor (this tab)';
-    b.onclick = () => {   // toggle only the visible tab — works regardless of the "replace on start" settings
+    style(); const b = document.createElement('div'); b.id = 'tc-launch';
+    const lbl = document.createElement('span'); lbl.className = 'tc-launch-lbl'; lbl.title = 'toggle Apollo / original editor (this tab)';
+    lbl.onclick = () => {   // toggle only the visible tab — works regardless of the "replace on start" settings
       if (recordingsVisible()) _recMirror = !recWant();
+      else if (releaseInfoVisible()) _riMirror = !riWant();
       else if (tracklistVisible()) _tlMirror = !tlWant();
       applyView();
     };
+    const gear = document.createElement('span'); gear.className = 'tc-launch-gear'; gear.textContent = '⚙'; gear.title = 'Apollo Editor settings';
+    gear.onclick = () => openSettings(gear);   // the one settings entry point — gear removed from the toolbars
+    b.append(lbl, gear);
     document.body.appendChild(b); relabelLauncher();
   }
   function tracklistVisible() { const p = document.getElementById('tracklist'); return !!(p && p.offsetParent !== null); }   // the Tracklist tab panel is shown
@@ -1572,7 +1587,8 @@
       else if (!rec && _recPrev) { _recPrev = false; }
       // mount as soon as the (lazily-built) native table exists — retry each tick so there's no native flash
       if (rec) { if (recWant()) { if (!document.getElementById('tc-recwrap')) showRecMirror(); } else hideRecMirror(); }
-      if (tl || rec) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }
+      if (releaseInfoVisible()) applyReleaseInfo();
+      if (tl || rec || releaseInfoVisible()) ensureLauncher(); else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }
       if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); }   // keep compact nav alive + synced
     };
     tick(); setInterval(tick, 500);
@@ -1757,7 +1773,7 @@
       '.tc-rectbl.cozy th{padding:7px 7px}.tc-rectbl.cozy td{padding:8px 7px}',
       // grid option: column separators on both tables
       '.tc-rectbl.gridcols td,.tc-rectbl.gridcols th{border-right:1px solid #ededed}.tc-rectbl.gridcols td:last-child,.tc-rectbl.gridcols th:last-child{border-right:none}',
-      '.tc-rectbl.alt tbody tr.tc-recrow:nth-of-type(even) td{background:#f6f4fb}',
+      '.tc-rectbl.alt tbody tr.tc-recrow:nth-of-type(even) td:not(.tc-diff):not(.tc-copy){background:#f6f4fb}',   // zebra skips highlighted cells so their colour always shows',
       '.tc-rectbl tr.tc-recmed td{background:#f3f0fa;font-weight:600;color:#4b2e83}',
       '.tc-rectbl tr.tc-recchanged td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}',   // changed-row marker, like the Tracklist tab',
       '.tc-rectbl .c-n{color:#999;text-align:right;width:26px}',
@@ -1787,7 +1803,7 @@
       '.tc-recpop .tc-rpk-row.tc-conf-low{border-left-color:#ffb74d}',
       '.tc-recpop .tc-rpk-row.tc-conf-vlow{border-left-color:#d32f2f}',
       '.tc-rectbl .tc-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}',
-      '.tc-rectbl tr.tc-recrow:hover td{background:#fafaff}',
+      '.tc-rectbl tr.tc-recrow:hover td:not(.tc-diff):not(.tc-copy){background:#fafaff}',
       '.tc-rectbl .tc-recpick{cursor:pointer;border:1px solid #d6cdec;background:#f6f3fc;color:#6f42c1;border-radius:4px;padding:1px 6px;font:11px Arial;white-space:nowrap}',
       '.tc-rectbl .tc-recpick:hover{background:#ece5f8}',
       '.tc-recpop{position:fixed;z-index:100003;width:410px;overflow:auto;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 8px 28px rgba(40,20,80,.28);font:12px Arial}',
@@ -1852,7 +1868,7 @@
         '<span class="tc-tbsep"></span>' +
         '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions">⚡ Match</button>' +
         '<button class="tc-rec-revcaret" type="button" title="revert / clear all">▾</button>' +
-        '<button class="tc-rec-gear" type="button" title="settings">⚙</button>' +
+        '' +   /* gear moved to the Apollo launcher */
       '</div>' +
       '<table class="tc-rectbl ' + (SETTINGS.layout || 'normal') + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.gridCols ? ' gridcols' : '') + (SETTINGS.gridRows !== false ? ' gridrows' : '') + '">' +
         '<colgroup><col style="width:2.5%"><col style="width:25.5%"><col style="width:18%"><col style="width:4%"><col style="width:2%"><col style="width:26%"><col style="width:18%"><col style="width:4%"></colgroup>' +
@@ -1864,7 +1880,6 @@
     wireCutoff(wrap);
     const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
     const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [{ label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings }, { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings }]);
-    const gearBtn = wrap.querySelector('.tc-rec-gear'); if (gearBtn) gearBtn.onclick = () => openSettings(gearBtn);   // same settings dialog as the Tracklist tab
     renderRecBody(wrap);
   }
   // custom Cutoff picker — a colored-dot dropdown that uses the SAME hex palette as the row dots
@@ -2436,7 +2451,8 @@
       b.classList.toggle('active', b.dataset.step === active);
       const link = stepLink(b.dataset.step), li = link && link.closest('li');   // mirror MB's native tab state
       const dis = !!(li && li.classList.contains('ui-state-disabled'));
-      const err = !!(li && li.classList.contains('error-tab'));
+      const panel = document.getElementById(b.dataset.step);   // MB sets error-tab for some errors but not link errors — also scan the panel for a visible field-error
+      const err = !!((li && li.classList.contains('error-tab')) || (panel && panel.querySelector('.field-error[data-visible="1"]')));
       b.disabled = dis; b.classList.toggle('tc-nav-disabled', dis); b.classList.toggle('tc-nav-warn', err);
       b.title = (dis && link && link.title) ? link.title : (b.dataset.baseTitle || b.title);   // disabled → MB's "enter all track info…" hint
     });
@@ -2514,7 +2530,220 @@
     }, true);   // capture phase: runs before MB reads the textarea for submission
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, ensureApolloEditNote, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  /* ── Release information takeover (#129): tidy the first tab — hide the help bubble, clean the
+        external links, and add an Apollo gear. Toggled by the shared Original/Apollo button. ── */
+  let _riStyled = false;
+  let _riExtFs = null;          // the External-links <fieldset>, remembered so we can move it back
+  function riStyle() {
+    if (_riStyled) return; _riStyled = true;
+    const css = `
+    body.tc-ri-on .tc-ri-helphidden{display:none!important}
+    /* hide the inline "?" help / info icons + guidance across the whole Release-information panel */
+    body.tc-ri-on #information .tooltip-wrapper,
+    body.tc-ri-on #information .icon.help,
+    body.tc-ri-on #information span.img.help,
+    body.tc-ri-on #information .inline-help,
+    body.tc-ri-on #information a.help,
+    body.tc-ri-on #information .guidance,
+    body.tc-ri-on #information .guidance-popover,
+    /* hide help bubbles only — never a functional editor bubble (URL cleanup, add/edit link) */
+    body.tc-ri-on #information .bubble:not(:has(input,button,select,textarea)){display:none!important}
+    /* MB's link-editor popups must clear our sticky compact-nav (z-index 20), else the first link's
+       popup opens under the nav bar and looks cut off */
+    body.tc-ri-on .dialog.popover,
+    body.tc-ri-on .bubble:has(input,button,select,textarea){z-index:50}
+
+    /* ---- two-column layout: form on the left, external links lifted into the (now-used) right column ---- */
+    body.tc-ri-on #information{display:flex;gap:30px;align-items:flex-start}
+    body.tc-ri-on #information > div.half-width{flex:0 1 620px;min-width:0;width:auto}   /* form keeps its natural width */
+    body.tc-ri-on #information > div.documentation{display:none}   /* the contextual help text — replaced by the links column */
+    body.tc-ri-on #tc-ri-rightcol{flex:1 1 auto;min-width:0}       /* links take the remaining horizontal space */
+    body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0}
+
+    /* ---- external links as a grid: the URL row spans every column, the link's type combos flow into aligned
+       columns beneath it, and "Add another relationship" (the [+]) lands in the last cell. ---- */
+    body.tc-ri-on #external-links-editor{display:block}
+    body.tc-ri-on #external-links-editor > tbody{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));column-gap:14px;row-gap:2px;padding-left:45px;align-items:center}
+    /* URL line spans all columns; pulled back so the favicon sits at the column's left edge */
+    body.tc-ri-on #external-links-editor tr.external-link-item{grid-column:1 / -1;display:flex;align-items:center;gap:9px;padding:7px 6px 1px;margin-left:-45px;border-radius:6px;position:relative}
+    body.tc-ri-on #external-links-editor tr.external-link-item:hover{background:#f6f4fb}
+    body.tc-ri-on #external-links-editor tr.external-link-item > td{padding:0;border:none}
+    body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:context-menu;position:relative;top:4px}   /* larger favicon → right-click to edit URL */
+    body.tc-ri-on #external-links-editor .favicon{transform:scale(1.45);transform-origin:center}
+    body.tc-ri-on #external-links-editor tr.external-link-item > td:last-child{flex:1;min-width:0}
+    body.tc-ri-on #external-links-editor a.url{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+    /* hover edit/remove icons removed. link-actions -> display:contents; the edit pencils are kept in the DOM
+       (positioned, invisible) so our JS proxy clicks still anchor MB's editor popup near the link instead of 0,0 */
+    body.tc-ri-on #external-links-editor td.link-actions{display:contents}
+    body.tc-ri-on #external-links-editor td.link-actions > button.edit-item{position:absolute;left:6px;top:8px;width:18px;height:18px;opacity:0;pointer-events:none;margin:0;padding:0}
+    /* whole-link remove ("Remove link") — revealed on URL-row hover at the right end (no layout shift) */
+    body.tc-ri-on #external-links-editor tr.external-link-item td.link-actions > button.remove-item{display:inline-flex;align-items:center;order:9;margin:0 2px 0 8px;transform:scale(.85);opacity:0;transition:opacity .12s}
+    body.tc-ri-on #external-links-editor tr.external-link-item:hover td.link-actions > button.remove-item{opacity:.5}
+    body.tc-ri-on #external-links-editor tr.external-link-item td.link-actions > button.remove-item:hover{opacity:1}
+    /* each type combo is one grid cell: [x] [type fills the cell] [video] [!] */
+    body.tc-ri-on #external-links-editor tr.relationship-item{display:flex;align-items:center;gap:5px;min-width:0;padding:0 0 1px;position:relative}
+    body.tc-ri-on #external-links-editor tr.relationship-item > td{padding:0;border:none}
+    body.tc-ri-on #external-links-editor tr.relationship-item > td:first-child{display:none}
+    /* the cell content is a 3-track grid [ type (1fr) | video | ! ] so the select always ends at the same x
+       and the carets line up across rows, whether or not a video checkbox / error badge is present */
+    body.tc-ri-on #external-links-editor tr.relationship-item > td:last-child{display:grid;grid-template-columns:minmax(0,1fr) 16px 18px;align-items:center;column-gap:2px;flex:1;min-width:0}
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content{grid-column:1;display:flex;align-items:center;min-width:0}
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content > label:first-child{display:none}   /* the "Type:" caption */
+    /* per-type remove [x] comes first in the cell */
+    body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{display:inline-flex;align-items:center;order:-1;margin:0;transform:scale(.85);opacity:.6;transition:opacity .12s;flex:none}
+    body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]:hover{opacity:1}
+    /* type text (committed) / select (editable) fills the cell */
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:flex;align-items:center;flex:1;min-width:0;font-size:12px;color:#5a3e94;background:transparent;border:none;border-radius:0;padding:0;font-weight:normal;cursor:context-menu}
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name:hover{color:#3a2d5c}
+    /* editable type dropdowns — appearance:none so the text starts flush at the cell edge; a custom caret keeps the affordance */
+    body.tc-ri-on #external-links-editor select{-webkit-appearance:none;-moz-appearance:none;appearance:none;font-size:12px;color:#5a3e94;background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='7'%20viewBox='0%200%2010%207'%3E%3Cpath%20d='M1%201l4%204%204-4'%20fill='none'%20stroke='%235a3e94'%20stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right center;border:none;border-radius:0;box-shadow:none;padding:0 15px 0 0;height:auto;margin:0;flex:1;min-width:0;width:100%;cursor:pointer}
+    body.tc-ri-on #external-links-editor select:hover{color:#3a2d5c}
+    /* video attribute → a compact checkbox (no "video" caption) */
+    body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container{grid-column:2;justify-self:start;display:inline-flex;align-items:center;margin:0}
+    body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container label{font-size:0;display:inline-flex;align-items:center;cursor:pointer}
+    body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input{margin:0}
+    /* error → a compact "!" badge (full text on hover via title) so it doesn't reflow the combos when it appears */
+    body.tc-ri-on #external-links-editor tr.relationship-item .error.field-error{grid-column:3;justify-self:start;font-size:0;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#fdecec;border:1px solid #f0c4c4;margin:0;cursor:help}
+    body.tc-ri-on #external-links-editor tr.relationship-item .error.field-error::before{content:"!";font:bold 11px/1 Arial;color:#d33}
+    /* "Add another relationship" (the [+]) — flows into the last grid cell; padding-left matches the per-type [x] inset so they line up */
+    body.tc-ri-on #external-links-editor tr.add-relationship{display:flex;align-items:center;margin:0;padding:0 0 0 6px}
+    body.tc-ri-on #external-links-editor tr.add-relationship > td{padding:0;border:none}
+    body.tc-ri-on #external-links-editor tr.add-relationship > td:empty{display:none}
+    body.tc-ri-on #external-links-editor tr.add-relationship td.add-item{display:inline-grid}   /* size the cell to the [+] button */
+    /* the [+] is a touch smaller than the per-type [x] remove */
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item{font-size:0;width:13px;height:13px;border-radius:50%;border:1px solid #d6cdec;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;margin:0;line-height:1}
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item::before{content:"＋";font:bold 9px/1 Arial;color:#9a8fc0}
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover{background:#f0ecfa;border-color:#b9a4e0}
+    body.tc-ri-on #external-links-editor tr.add-relationship button.add-item:hover::before{color:#6f42c1}
+    /* the "add another link" input row */
+    body.tc-ri-on #external-links-editor tr.external-link-item .value.with-button input{width:100%}
+    /* collapse the "Add another link" field into a [+] button that expands to a full input on click/focus */
+    body.tc-ri-on #external-links-editor input[placeholder^="Add another"]{box-sizing:border-box;width:22px;min-width:0;height:22px;padding:0;margin:2px 0;border:1px solid #d6cdec;border-radius:50%;background-color:transparent;color:transparent;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='11'%20height='11'%20viewBox='0%200%2011%2011'%3E%3Cpath%20d='M5.5%201v9M1%205.5h9'%20stroke='%239a8fc0'%20stroke-width='1.6'%20stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;transition:width .12s ease}
+    body.tc-ri-on #external-links-editor input[placeholder^="Add another"]:hover{background-color:#f0ecfa;border-color:#b9a4e0}
+    body.tc-ri-on #external-links-editor input[placeholder^="Add another"]::placeholder{color:transparent}   /* hide "Add another link" text inside the collapsed [+] */
+    body.tc-ri-on #external-links-editor input[placeholder^="Add another"]:focus{width:100%;height:auto;padding:4px 7px;border:1px solid #999;border-radius:4px;background-color:#fff;background-image:none;color:#333;cursor:text}
+    body.tc-ri-on #external-links-editor input[placeholder^="Add another"]:focus::placeholder{color:#999}`;
+    const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
+  }
+  // move the External-links fieldset into a dedicated right column (or back home when Apollo is off).
+  // Only the server-rendered <fieldset> wrapper is moved — React's editor root inside it is untouched.
+  function relocateLinks(on) {
+    const panel = document.getElementById('information'); if (!panel) return;
+    const half = panel.querySelector(':scope > div.half-width'); if (!half) return;
+    if (!_riExtFs || !_riExtFs.isConnected) {
+      // find the External-links fieldset by its editor table, or — while that's still loading — by its legend,
+      // so the section moves to the right column immediately instead of showing "Loading…" at the bottom
+      const ext = document.getElementById('external-links-editor');
+      _riExtFs = ext ? ext.closest('fieldset')
+        : [...half.querySelectorAll('fieldset')].find(f => /external links/i.test(f.querySelector('legend')?.textContent || ''));
+    }
+    const fs = _riExtFs; if (!fs) return;
+    if (on) {
+      let col = panel.querySelector(':scope > #tc-ri-rightcol');
+      if (!col) { col = document.createElement('div'); col.id = 'tc-ri-rightcol'; panel.appendChild(col); }
+      if (fs.parentElement !== col) { if (!fs._tcHome) fs._tcHome = { parent: fs.parentElement, next: fs.nextElementSibling }; col.appendChild(fs); }
+    } else if (fs._tcHome && fs.parentElement !== fs._tcHome.parent) {
+      fs._tcHome.parent.insertBefore(fs, fs._tcHome.next && fs._tcHome.next.isConnected ? fs._tcHome.next : null);
+      const col = panel.querySelector(':scope > #tc-ri-rightcol'); if (col && !col.children.length) col.remove();
+    }
+  }
+  // MB's contextual guidance box(es) — anything outside #information that's just the style-guidelines help
+  // (the in-panel ones are hidden by CSS via #information .bubble/.guidance)
+  function nativeHelpBubbles() {
+    const out = new Set();
+    const isHelp = e => !e.querySelector('input,button,select,textarea');   // a functional editor bubble (URL cleanup, add/edit link) has controls — never hide it
+    document.querySelectorAll('#release-editor .bubble, #release-editor .guidance, #release-editor .guidance-popover, #page .bubble').forEach(e => { if (isHelp(e)) out.add(e); });
+    [...document.querySelectorAll('#page div')].forEach(e => {
+      if (e.offsetParent === null || document.getElementById('information')?.contains(e)) return;
+      if (e.querySelector('a[href*="style"]') && (e.textContent || '').length < 400 && !e.querySelector('input,button,select,textarea,table,fieldset,h2')) out.add(e);
+    });
+    return [...out];
+  }
+  // clicking the favicon edits the URL (edit1); clicking the type chip edits the relationship type (edit2).
+  // Both proxy to MB's own (hover-hidden) pencil buttons so the native editor bubble does the actual work.
+  let _riClicksWired = false;
+  function wireLinkClicks() {
+    if (_riClicksWired) return; _riClicksWired = true;
+    // right-click the favicon → edit URL; right-click a type → edit type. Both proxy to MB's own pencil button.
+    document.addEventListener('contextmenu', e => {
+      if (!document.body.classList.contains('tc-ri-on')) return;
+      const ext = document.getElementById('external-links-editor');
+      if (!ext || !ext.contains(e.target)) return;
+      const type = e.target.closest('.relationship-name, .relationship-content, select.link-type');
+      if (type) {
+        const btn = type.closest('tr.relationship-item')?.querySelector('button.edit-item');
+        if (btn) { e.preventDefault(); btn.click(); }
+        return;
+      }
+      const linkRow = e.target.closest('tr.external-link-item');
+      if (linkRow && e.target.closest('td:first-child')) {              // the favicon cell
+        const btn = linkRow.querySelector('button.edit-item');
+        if (btn) { e.preventDefault(); btn.click(); }
+      }
+    });
+  }
+  // MB indents hierarchical link-type options with leading spaces ("  purchase for download"); the <select>
+  // shows the selected option *with* that indent, pushing the text right of the URL. Trim it (display only —
+  // MB keys on option.value, not text). A self-guarded observer re-trims when MB re-renders the options.
+  let _riOptObs = null;
+  function tidyLinkTypeOptions() {
+    const ext = document.getElementById('external-links-editor'); if (!ext) return;
+    const apply = () => {
+      // trim the leading-space indent MB puts on hierarchical link-type options so combos align with the URL
+      ext.querySelectorAll('select.link-type option').forEach(o => {
+        const t = o.textContent, tr = t.replace(/^\s+/, '').replace(/\s+$/, ''); if (tr !== t) o.textContent = tr;
+      });
+      // the attribute checkbox (e.g. "video") shows compactly with its caption hidden — surface the caption as a tooltip
+      ext.querySelectorAll('tr.relationship-item .attribute-container label').forEach(l => {
+        const cap = (l.textContent || '').trim(); if (!cap) return;
+        if (l.title !== cap) l.title = cap;
+        const cb = l.querySelector('input'); if (cb && cb.title !== cap) cb.title = cap;
+      });
+      // the error text is collapsed to a "!" badge — surface the full message as its tooltip
+      ext.querySelectorAll('tr.relationship-item .error.field-error').forEach(e => {
+        const t = (e.textContent || '').trim(); if (t && e.title !== t) e.title = t;
+      });
+    };
+    _riOptObs?.disconnect(); apply();
+    if (!_riOptObs) _riOptObs = new MutationObserver(() => { _riOptObs.disconnect(); apply(); _riOptObs.observe(ext, { childList: true, subtree: true }); });
+    _riOptObs.observe(ext, { childList: true, subtree: true });
+  }
+  function applyReleaseInfo() {
+    riStyle();
+    wireLinkClicks();
+    if (riWant()) {
+      _apolloUsed = true;
+      document.body.classList.add('tc-ri-on');
+      relocateLinks(true);
+      tidyLinkTypeOptions();
+      nativeHelpBubbles().forEach(b => b.classList.add('tc-ri-helphidden'));
+    } else {
+      relocateLinks(false);
+      document.body.classList.remove('tc-ri-on');
+      document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));
+      watchDocBubbles();
+    }
+  }
+  // MB sizes its contextual help bubble to the documentation column's width once, and caches it. While Apollo
+  // hid that column (display:none → width 0) it caches width:0, so in the Original view the bubble renders ~24px
+  // wide and the text wraps one word per line ("scrambled"). Override the stale width to the real column width.
+  let _docBubObs = null;
+  function watchDocBubbles() {
+    const doc = document.querySelector('#information > div.documentation'); if (!doc) return;
+    const fix = () => {
+      if (document.body.classList.contains('tc-ri-on')) return;   // only the Original view is affected
+      const w = doc.clientWidth; if (w < 80) return;
+      doc.querySelectorAll('.bubble').forEach(b => {
+        if (b.offsetParent === null) return;
+        const cur = parseFloat(b.style.width) || b.getBoundingClientRect().width;
+        if (cur < w - 24) b.style.width = w + 'px';   // self-guarded: once set to w, no further change
+      });
+    };
+    if (!_docBubObs) { _docBubObs = new MutationObserver(fix); _docBubObs.observe(doc, { attributes: true, attributeFilter: ['style'], childList: true, subtree: true }); }
+    fix();
+  }
+
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
