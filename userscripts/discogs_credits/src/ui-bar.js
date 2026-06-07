@@ -20,6 +20,8 @@ import {
     log,
     setLogContainer,
     setReviewContainer,
+    onLogCounts,
+    resetLogCounts,
 }                                        from './log.js';
 import { _showBar, _hideBar }             from './progress-bar.js';
 import {
@@ -45,6 +47,9 @@ import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
 
 let _logs;
 let _summary;
+// Raw Discogs JSON of the current run, stashed by `runImport` so the "Copy
+// Discogs" item in the Log ▾ menu can copy it (#118). Updated each import.
+let _discogsJson = null;
 
 export function insertDiscogsBar(discogsUrl) {
     // Inject styles
@@ -85,6 +90,12 @@ export function insertDiscogsBar(discogsUrl) {
         .discogs-logtoggle-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
         .discogs-logtoggle-btn:hover { border-color: #999; }
         .discogs-logtoggle-btn.active { background: #f0ecfa; border-color: #b9a4e0; color: #5a3e94; }
+        /* "Log ▾" dropdown menu (#118): show/hide + the three copy actions. */
+        .discogs-log-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; min-width: 11rem; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.3rem; font-family: inherit; }
+        .discogs-log-menu.open { display: flex; }
+        .discogs-log-menu button { text-align: left; font-size: 0.82rem; color: #444; background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
+        .discogs-log-menu button:hover { background: #f0ecfa; color: #333; }
+        .discogs-log-menu .discogs-log-menu-sep { height: 1px; background: #eee; margin: 0.25rem 0.2rem; padding: 0; }
         /* log panel toolbar: severity filter + copy buttons */
         .discogs-log-toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.3rem 0 0.45rem; }
         .discogs-log-filter { display: inline-flex; border: 1px solid #ddd; border-radius: 0.3rem; overflow: hidden; }
@@ -125,9 +136,50 @@ export function insertDiscogsBar(discogsUrl) {
             gap: 0.6rem;
         }
         .discogs-bar-action:empty { display: none; }
-        /* Discogs logo + source link + Help — pinned to the right edge. */
-        .discogs-bar-right {
+        /* Reserved message area (#118): badge + transient status, right-aligned
+           just left of the Discogs/Help/Log cluster. margin-left:auto pushes
+           it (and the right cluster after it) to the edge, leaving the gap up to
+           the "Options" button free for these messages. Collapses to nothing
+           when empty (hidden children don't count as flex items, so the gap
+           contributes no width). */
+        .discogs-bar-msgs {
             margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-width: 0;
+            flex-shrink: 1;
+        }
+        .discogs-bar-status {
+            font-size: 0.8rem;
+            color: #888;
+            max-width: 22rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        /* Count badges. Buttons so they can focus/open the log; styled as pills. */
+        .discogs-badge {
+            flex-shrink: 0;
+            font-size: 0.78rem;
+            font-weight: 600;
+            line-height: 1.2;
+            padding: 0.12rem 0.5rem;
+            border-radius: 2rem;
+            border: 1px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .discogs-badge-warn      { color: #8a4b00; background: #fff1d6; border-color: #f0c060; }
+        .discogs-badge-warn:hover{ background: #ffe7b8; }
+        .discogs-badge-err       { color: #9c1b1b; background: #fde2e2; border-color: #efa0a0; }
+        .discogs-badge-err:hover { background: #f9cccc; }
+        .discogs-badge-unresolved{ color: #6a4a86; background: #efe9fa; border-color: #c3aee6; }
+        .discogs-badge-unresolved:hover { background: #e4daf6; }
+        /* Discogs logo + Help + Log — pinned to the right edge (the msgs slot's
+           margin-left:auto does the pushing). */
+        .discogs-bar-right {
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -187,21 +239,23 @@ export function insertDiscogsBar(discogsUrl) {
             margin-right: 0.2rem;
             flex-shrink: 0;
         }
+        /* Borderless toggles (#118): no pill outline/background — the dot alone
+           signals on/off, matching the maintainer's mockup. */
         .discogs-toggle {
             display: inline-flex;
             align-items: center;
             gap: 0.35rem;
-            padding: 0.15rem 0.55rem 0.15rem 0.35rem;
-            border: 1px solid #d8c8a0;
+            padding: 0.15rem 0.4rem 0.15rem 0.2rem;
+            border: none;
             border-radius: 2rem;
-            background: #fffdf7;
+            background: transparent;
             cursor: pointer;
             font-size: 0.8rem;
             color: #555;
             user-select: none;
-            transition: background 0.12s, border-color 0.12s;
+            transition: color 0.12s;
         }
-        .discogs-toggle:hover { border-color: #e8771d; color: #333; }
+        .discogs-toggle:hover { color: #222; }
         .discogs-toggle input[type=checkbox] { display: none; }
         .discogs-toggle .discogs-toggle-dot {
             width: 14px; height: 14px;
@@ -212,8 +266,6 @@ export function insertDiscogsBar(discogsUrl) {
             transition: border-color 0.12s, background 0.12s;
         }
         .discogs-toggle.active {
-            background: #fff8ee;
-            border-color: #e8771d;
             color: #333;
         }
         .discogs-toggle.active .discogs-toggle-dot {
@@ -229,11 +281,20 @@ export function insertDiscogsBar(discogsUrl) {
         .discogs-log-panel { display: none; }
         .discogs-output.log-open .discogs-log-panel { display: block; }
         .discogs-review-slot:not(:empty) { margin: 0.2rem 0; }
-        /* severity filter: show only warnings (warn+error) or errors */
-        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li:not([data-sev]) { display: none; }
+        /* severity filter: show only warnings (warn+error) or errors. "skip"
+           lines (unresolved-entity skips, #118) are kept out of the Warnings
+           view so it matches the WARN badge count — they show under "All". */
+        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li:not([data-sev]),
+        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li[data-sev="skip"] { display: none; }
         .discogs-output[data-logfilter="error"] .discogs-log-body .logs > li:not([data-sev="error"]) { display: none; }
         /* ── Progress / sticky bar ── */
-        .discogs-bar.is-importing .discogs-bar-row1 {
+        /* Pinned during import (is-importing) AND kept pinned afterwards
+           (is-pinned, #118) so the WARN/ERR badge stays visible on top while the
+           user scrolls the staged edits below. overflow:hidden on .discogs-bar
+           rules out position:sticky, so we use fixed + an in-flow spacer that
+           reserves row1's height (see .discogs-sticky-spacer). */
+        .discogs-bar.is-importing .discogs-bar-row1,
+        .discogs-bar.is-pinned .discogs-bar-row1 {
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 9000;
@@ -241,6 +302,11 @@ export function insertDiscogsBar(discogsUrl) {
             border-bottom: 1px solid #eeddb0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+        /* Occupies row1's height in the flow while row1 is fixed, so the page
+           content below the bar doesn't jump up under it. Height set by JS. */
+        .discogs-sticky-spacer { display: none; }
+        .discogs-bar.is-importing .discogs-sticky-spacer,
+        .discogs-bar.is-pinned .discogs-sticky-spacer { display: block; }
         .discogs-progress-track {
             height: 5px;
             background: #eeddb0;
@@ -370,11 +436,54 @@ export function insertDiscogsBar(discogsUrl) {
     row1.appendChild(optsWrap);
     let _optsHost = optsWrap;
 
-    // Right-aligned cluster: Discogs logo (the clickable source link) + Copy log + Help.
-    // `margin-left:auto` (CSS) keeps it pinned to the right edge. The full URL text was
-    // dropped to save space — the logo itself links to the Discogs release now (#139).
+    // Reserved message area (#118). Sits between the "Options ▾" button and the
+    // right cluster (its `margin-left:auto` does the pushing). Holds the WARN/ERR
+    // + unresolved badge ("Log messages") and a transient status line ("System
+    // messages") shown while an import is running. Content-sized; collapses to
+    // zero width when empty so the right cluster stays pinned to the edge.
+    const msgSlot = document.createElement('div');
+    msgSlot.className = 'discogs-bar-msgs';
+
+    // System-message line: latest log line, shown only while importing.
+    const statusEl = document.createElement('span');
+    statusEl.className = 'discogs-bar-status';
+    statusEl.style.display = 'none';
+
+    // Badge pills. WARN (orange) and ERR (red) are tallied from the log; the
+    // "unresolved" pill is kept deliberately separate (amber, distinct glyph) so
+    // skipped-entity counts don't read as ordinary warnings (#118).
+    const warnPill = document.createElement('button');
+    warnPill.type = 'button';
+    warnPill.className = 'discogs-badge discogs-badge-warn';
+    warnPill.style.display = 'none';
+    warnPill.title = 'Show warnings in the log';
+    const errPill = document.createElement('button');
+    errPill.type = 'button';
+    errPill.className = 'discogs-badge discogs-badge-err';
+    errPill.style.display = 'none';
+    errPill.title = 'Show errors in the log';
+    const unresolvedPill = document.createElement('button');
+    unresolvedPill.type = 'button';
+    unresolvedPill.className = 'discogs-badge discogs-badge-unresolved';
+    unresolvedPill.style.display = 'none';
+    unresolvedPill.title = 'Entities not matched on MusicBrainz — skipped on import';
+
+    msgSlot.append(statusEl, warnPill, errPill, unresolvedPill);
+    row1.appendChild(msgSlot);
+
+    // Right-aligned cluster. Order (#118): "Log ▾" first, then the Discogs logo,
+    // then "? Help" — i.e. Log, Discogs, ? Help (per maintainer).
     const rightGroup = document.createElement('div');
     rightGroup.className = 'discogs-bar-right';
+
+    // "Log ▾" toggle. Shows/hides the log panel below the bar (copy buttons +
+    // severity filter, #142). Hidden until the first import (no log to show yet).
+    const logToggleBtn = document.createElement('button');
+    logToggleBtn.type = 'button';
+    logToggleBtn.className = 'discogs-logtoggle-btn';
+    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret">▾</span>';
+    logToggleBtn.title = 'Show / hide the import log';
+    logToggleBtn.style.display = 'none';
 
     const logoLink = document.createElement('a');
     logoLink.href = discogsUrl;
@@ -387,23 +496,10 @@ export function insertDiscogsBar(discogsUrl) {
     logo.className = 'discogs-logo';
     logo.alt = 'Discogs';
     logoLink.appendChild(logo);
-    rightGroup.appendChild(logoLink);
 
-    // "Log ▾" toggle button in the header (right side) — shows/hides the log panel
-    // below the bar, which holds the copy buttons + severity filter (#142). Hidden
-    // until the first import (no log to show yet).
-    const logToggleBtn = document.createElement('button');
-    logToggleBtn.type = 'button';
-    logToggleBtn.className = 'discogs-logtoggle-btn';
-    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret">▾</span>';
-    logToggleBtn.title = 'Show / hide the import log';
-    logToggleBtn.style.display = 'none';
-    rightGroup.appendChild(logToggleBtn);
-
-    // Documentation link on the far-right side of row1 (#90). URL falls
-    // back the same way `buildEditNote` resolves it: the manager-injected
-    // `@homepageURL`, then `@homepage`, then a hard-coded README.md link
-    // so the link works even if the userscript manager strips metadata.
+    // Documentation link (#90). URL falls back the same way `buildEditNote`
+    // resolves it: the manager-injected `@homepageURL`, then `@homepage`, then a
+    // hard-coded README.md link so it works even if the manager strips metadata.
     const docsHref = (typeof GM_info !== 'undefined' && (
         GM_info?.script?.homepageURL || GM_info?.script?.homepage
     )) || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md';
@@ -414,11 +510,26 @@ export function insertDiscogsBar(discogsUrl) {
     docsLink.textContent = '? Help';   // consistent with the other userscripts (#139)
     docsLink.title = 'Open the script\'s README in a new tab';
     docsLink.style.cssText = 'flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;';
-    rightGroup.appendChild(docsLink);
+
+    rightGroup.append(logToggleBtn, logoLink, docsLink);
 
     row1.appendChild(rightGroup);
 
     bar.appendChild(row1);
+
+    // Sticky spacer (#118). While row1 is position:fixed (during/after import)
+    // it leaves the document flow; this in-flow placeholder holds its height so
+    // the page content below the bar doesn't jump up under it. Height is set by
+    // `bar._pin()`, which also re-measures on resize and after the import (the
+    // header grows once the badge appears). Sits between row1 and the output.
+    const stickySpacer = document.createElement('div');
+    stickySpacer.className = 'discogs-sticky-spacer';
+    bar.appendChild(stickySpacer);
+    bar._pin = () => {
+        const h = row1.getBoundingClientRect().height;
+        if (h) stickySpacer.style.height = h + 'px';
+    };
+    window.addEventListener('resize', () => { if (bar.classList.contains('is-pinned')) bar._pin(); });
 
     // ── Options (inline in the single bar — #139). No "Options:" label: the
     //    toggles are self-evident and the "Options ▾" popover already names itself.
@@ -504,12 +615,13 @@ export function insertDiscogsBar(discogsUrl) {
     function makeSelect(labelText, initialValue, options, tooltipText) {
         const wrap = document.createElement('span');
         wrap.className = 'discogs-select-wrap';
-        wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:#555;padding:0.15rem 0.2rem 0.15rem 0.55rem;border:1px solid #d8c8a0;border-radius:2rem;background:#fffdf7;';
+        // Borderless to match the toggles (#118).
+        wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:#555;padding:0.15rem 0.2rem;border:none;background:transparent;';
         const lbl = document.createElement('span');
         lbl.textContent = labelText + ':';
         wrap.appendChild(lbl);
         const sel = document.createElement('select');
-        sel.style.cssText = 'font-size:0.8rem;padding:0.05rem 0.3rem;border:1px solid #d8c8a0;border-radius:1rem;background:#fff8ee;cursor:pointer;color:#333;font-weight:600;';
+        sel.style.cssText = 'font-size:0.8rem;padding:0.05rem 0.2rem;border:none;background:transparent;cursor:pointer;color:#333;font-weight:600;';
         options.forEach(opt => {
             const o = document.createElement('option');
             o.value = opt.value;
@@ -634,9 +746,9 @@ export function insertDiscogsBar(discogsUrl) {
         b.addEventListener('click', () => { outputDiv.dataset.logfilter = f; logFilter.querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.f === f)); });
         logFilter.appendChild(b);
     });
-    const logCopySlot = document.createElement('div');
-    logCopySlot.className = 'discogs-log-copyslot';
-    logToolbar.append(logFilter, logCopySlot);
+    // Copy buttons moved into the Log ▾ dropdown menu (#118); the toolbar keeps
+    // just the severity filter.
+    logToolbar.append(logFilter);
     const logBody = document.createElement('div');
     logBody.className = 'discogs-log-body';
     logPanel.append(logToolbar, logBody);
@@ -645,12 +757,91 @@ export function insertDiscogsBar(discogsUrl) {
 
     const applyLogOpen = () => { const open = localStorage.getItem(LOG_OPEN_KEY) === '1'; outputDiv.classList.toggle('log-open', open); logToggleBtn.classList.toggle('active', open); };
     try { applyLogOpen(); } catch (e) {}
-    logToggleBtn.addEventListener('click', () => {
-        const open = !outputDiv.classList.contains('log-open');
+    const setLogOpen = (open) => {
         outputDiv.classList.toggle('log-open', open);
         logToggleBtn.classList.toggle('active', open);
         try { localStorage.setItem(LOG_OPEN_KEY, open ? '1' : '0'); } catch (e) {}
+    };
+
+    // ── "Log ▾" dropdown menu (#118) ────────────────────────────────────────
+    // The caret now opens a small menu: show/hide the in-page log, plus the
+    // three copy actions (full log / log without JSON / raw Discogs JSON), which
+    // used to live as buttons inside the log toolbar.
+    const logMenu = document.createElement('div');
+    logMenu.className = 'discogs-log-menu';
+    const logMenuToggle = document.createElement('button');
+    logMenuToggle.type = 'button';
+    logMenuToggle.className = 'discogs-log-menu-toggle';
+    const logMenuSep = document.createElement('div');
+    logMenuSep.className = 'discogs-log-menu-sep';
+    const mkMenuItem = (label, title, fn) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.textContent = label; b.title = title;
+        b.addEventListener('click', () => fn(b, label));
+        return b;
+    };
+    const copyLogItem     = mkMenuItem('Copy log',          'Copy the full import log (incl. raw Discogs JSON)',                  (b, l) => bar._copy?.log(b, l));
+    const copyNoJsonItem  = mkMenuItem('Copy without JSON', 'Copy the log without the raw Discogs JSON block — fits in a GitHub issue', (b, l) => bar._copy?.noJson(b, l));
+    const copyDiscogsItem = mkMenuItem('Copy Discogs',      'Copy the raw Discogs JSON for this release',                          (b, l) => bar._copy?.discogs(b, l));
+    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem);
+    document.body.appendChild(logMenu);
+
+    logMenuToggle.addEventListener('click', () => {
+        setLogOpen(!outputDiv.classList.contains('log-open'));
+        logMenu.classList.remove('open');
     });
+
+    logToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = logMenu.classList.toggle('open');
+        if (!open) return;
+        logMenuToggle.textContent = outputDiv.classList.contains('log-open') ? 'Hide log' : 'Show log in page';
+        const r = logToggleBtn.getBoundingClientRect();
+        logMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - logMenu.offsetWidth - 8)) + 'px';
+        logMenu.style.top = (r.bottom + 4) + 'px';
+        const off = ev => { if (!logMenu.contains(ev.target) && ev.target !== logToggleBtn && !logToggleBtn.contains(ev.target)) { logMenu.classList.remove('open'); document.removeEventListener('mousedown', off); } };
+        setTimeout(() => document.addEventListener('mousedown', off), 0);
+    });
+
+    // ── Header badge wiring (#118) ──────────────────────────────────────────
+    // A badge click opens the log if it's collapsed, switches to the matching
+    // severity filter, and scrolls to the first line of that severity. The
+    // scroll offsets for the pinned (position:fixed) toolbar so the target line
+    // lands just below it instead of hidden behind it — `block:'nearest'` used
+    // to leave it under the fixed header, which read as "nothing happened".
+    function openLog(filter, scrollSel) {
+        const f = filter || 'all';
+        outputDiv.classList.add('log-open');          // switch the log open if it wasn't
+        logToggleBtn.classList.add('active');
+        try { localStorage.setItem(LOG_OPEN_KEY, '1'); } catch (e) {}
+        outputDiv.dataset.logfilter = f;              // select the right filter…
+        logFilter.querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.f === f));
+        // …then position the view on the first matching line (rAF so the now-
+        // visible panel has laid out before we measure).
+        requestAnimationFrame(() => {
+            const target = (scrollSel && logBody.querySelector(scrollSel)) || logPanel;
+            const headerH = bar.classList.contains('is-pinned') ? row1.getBoundingClientRect().height + 6 : 0;
+            const top = target.getBoundingClientRect().top + window.scrollY - headerH - 10;
+            window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        });
+    }
+    warnPill.addEventListener('click', () => openLog('warn',  'li[data-sev="warn"], li[data-sev="error"]'));
+    errPill.addEventListener('click', () => openLog('error', 'li[data-sev="error"]'));
+    unresolvedPill.addEventListener('click', () => openLog('all', 'li[data-sev="skip"]'));
+
+    // Live WARN/ERR tallies from the logger (#118). Pills hide at zero.
+    onLogCounts((w, e) => {
+        warnPill.textContent = `⚠ ${w}`;
+        warnPill.style.display = w > 0 ? '' : 'none';
+        errPill.textContent = `⛔ ${e}`;
+        errPill.style.display = e > 0 ? '' : 'none';
+    });
+    // Unresolved count is set once dispatch starts (runImport reads it off the
+    // confirmed map). Kept visually separate from the WARN pill (#118).
+    bar._setUnresolved = (n) => {
+        unresolvedPill.textContent = `⊘ ${n} unresolved`;
+        unresolvedPill.style.display = n > 0 ? '' : 'none';
+    };
 
     importBtn.addEventListener('click', () => {
         importBtn.disabled = true;
@@ -658,12 +849,19 @@ export function insertDiscogsBar(discogsUrl) {
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
 
-        // Show sticky progress bar
-        bar.classList.add('is-importing');
+        // Pin the toolbar for the import AND keep it pinned afterwards (#118).
+        bar.classList.add('is-importing', 'is-pinned');
+        bar._pin();
         _showBar();
         bar.scrollIntoView({ behavior: 'smooth', block: 'start' });
         bar._showProgress = () => { _showBar(); };
         requestAnimationFrame(bar._showProgress);
+
+        // Fresh run → zero the badge tallies + clear any prior status line (#118).
+        resetLogCounts();
+        bar._setUnresolved(0);
+        statusEl.textContent = '';
+        statusEl.style.display = 'none';
 
         // Fresh log/summary elements each run
         _logs = document.createElement('ul');
@@ -795,27 +993,26 @@ export function insertDiscogsBar(discogsUrl) {
             }
         }
 
-        // Copy buttons live in the log panel's toolbar now (#142): two plain
-        // buttons (full / without-JSON). Built once on the first import.
-        if (!logCopySlot.childElementCount) {
-            const mkCopy = (label, title, skip) => {
-                const b = document.createElement('button');
-                b.type = 'button'; b.className = 'discogs-log-copybtn'; b.textContent = label; b.title = title;
-                b.addEventListener('click', () => copyToClipboard(buildCopyText({ skipDiscogsJson: skip }), b, label));
-                return b;
-            };
-            logCopySlot.append(
-                mkCopy('Copy log', 'Copy the full import log (incl. raw Discogs JSON)', false),
-                mkCopy('Copy without JSON', 'Copy the log without the raw Discogs JSON block — small enough to fit in a GitHub issue', true),
-            );
-        }
+        // Expose the copy actions for the Log ▾ dropdown menu (#118). The menu is
+        // built at mount but only reachable after the first import (the Log button
+        // is hidden until then), so wiring the closures here is enough. `_discogsJson`
+        // is a module var set by `runImport`, read at click time.
+        bar._copy = {
+            log:     (item, label) => copyToClipboard(buildCopyText({ skipDiscogsJson: false }), item, label),
+            noJson:  (item, label) => copyToClipboard(buildCopyText({ skipDiscogsJson: true  }), item, label),
+            discogs: (item, label) => { if (_discogsJson) copyToClipboard(JSON.stringify(_discogsJson, null, 2), item, label); },
+        };
 
-        // Expose progress update hook for `dispatchAllRelationships` to call
-        // — currently only the `pct >= 100` branch matters; the status-text
-        // path landed in the marquee bar's tooltip but the real status now
-        // lives in the line-by-line log.
-        bar._setProgress = (pct) => {
+        // Expose progress update hook. `dispatchAllRelationships` pushes the
+        // percentage; the logger (`log.js`) pushes the latest plain-text line,
+        // which we surface in the header status slot so it's obvious work is
+        // happening in the background while the log is collapsed (#118 pt 5).
+        bar._setProgress = (pct, text) => {
             if (pct !== null && pct >= 100) _hideBar();
+            if (text && bar.classList.contains('is-importing')) {
+                statusEl.textContent = text;
+                statusEl.style.display = '';
+            }
         };
 
         // Re-show progress bar
@@ -849,8 +1046,14 @@ export function insertDiscogsBar(discogsUrl) {
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
             bar.classList.remove('is-reviewing');   // #139: safety — clear if the flow ended during review
             setTimeout(() => {
+                // Keep `is-pinned` — the toolbar stays on top after the import so
+                // the WARN/ERR badge remains visible (#118). Only the import-phase
+                // marquee + status line go away.
                 bar.classList.remove('is-importing');
                 _hideBar();
+                statusEl.textContent = '';
+                statusEl.style.display = 'none';
+                bar._pin();   // re-measure the spacer for the badge-bearing header height
             }, 2000);
             delete bar._setProgress;
         });
@@ -895,6 +1098,7 @@ function runImport(discogsUrl, getOpts) {
     const { processTracklist } = initial;
     return getDiscogsReleaseData(discogsUrl)
         .then(json => {
+            _discogsJson = json;   // #118: stash for the Log ▾ "Copy Discogs" item
             let artistRoles = rolesFromDiscogsArtists(json.extraartists?.filter(artist => !artist.tracks));
             // ── Raw Discogs JSON (collapsible, once per log session) ─────────────────
             if (!_logs._releaseInfoAdded) {
@@ -908,20 +1112,9 @@ function runImport(discogsUrl, getOpts) {
                 const pre = document.createElement('pre');
                 pre.style.cssText = 'max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;';
                 pre.textContent = JSON.stringify(json, null, 2);
-                const copyJsonBtn = document.createElement('button');
-                copyJsonBtn.textContent = 'Copy JSON';
-                copyJsonBtn.style.cssText = 'font-size:0.75rem;padding:0.1rem 0.4rem;cursor:pointer;margin-left:0.5rem;vertical-align:middle;';
-                copyJsonBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    navigator.clipboard.writeText(JSON.stringify(json, null, 2)).catch(() => {
-                        const ta = Object.assign(document.createElement('textarea'), { value: JSON.stringify(json, null, 2) });
-                        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-                    });
-                    copyJsonBtn.textContent = 'Copied!';
-                    setTimeout(() => { copyJsonBtn.textContent = 'Copy JSON'; }, 1500);
-                });
+                // "Copy JSON" button removed — copying the raw Discogs JSON moved
+                // to the Log ▾ menu's "Copy Discogs" item (#118).
                 li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${summary} — raw Discogs JSON</strong></summary></details>`;
-                li.querySelector('summary').appendChild(copyJsonBtn);
                 li.querySelector('details').appendChild(pre);
                 _logs.appendChild(li);
             }
@@ -1112,6 +1305,9 @@ function runImport(discogsUrl, getOpts) {
                     // #139: dispatch is starting — a real import phase again, so
                     // restore the "Importing…" button + percentage.
                     document.querySelector('.discogs-bar')?.classList.remove('is-reviewing');
+                    // Surface the count of entities the user left unresolved in
+                    // the header badge — kept separate from the WARN tally (#118).
+                    document.querySelector('.discogs-bar')?._setUnresolved?.(confirmedMap.unresolvedCount || 0);
                     // Bulk-write confirmed entries to IDB. Inline writes in
                     // `setRowResolved` (review-table) and `resolveEntity`
                     // (preflight) already persist as each entity resolves

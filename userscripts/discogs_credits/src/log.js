@@ -18,6 +18,28 @@
 
 let _logs = null;
 
+// ── WARN / ERR tallies (issue #118) ─────────────────────────────────────────
+// Per-import counts of warn/error log lines, surfaced as a badge in the bar
+// header so it's obvious how many problems the import hit even with the log
+// collapsed. Counts are session-scoped: `resetLogCounts()` is called at the
+// start of each import run (when the log container is recreated). A single
+// listener (the bar's badge renderer) is notified on every change.
+let _warn = 0, _err = 0;
+let _countListener = null;
+
+/** Register the badge renderer. Called once by ui-bar.js. */
+export function onLogCounts(fn) { _countListener = fn; }
+
+/** Current WARN / ERR tallies. */
+export function getLogCounts() { return { warn: _warn, error: _err }; }
+
+/** Zero the tallies (new import run) and notify the listener. */
+export function resetLogCounts() { _warn = 0; _err = 0; _notifyCounts(); }
+
+function _notifyCounts() {
+    if (_countListener) { try { _countListener(_warn, _err); } catch (e) {} }
+}
+
 /** Wire the logger to its <ul> container. Called by ui-bar.js at insertion time. */
 export function setLogContainer(el) {
     _logs = el;
@@ -39,6 +61,9 @@ function _emit(html, plainText, sev) {
     if (!_logs) return;
     const li = document.createElement('li');
     if (sev) li.dataset.sev = sev;   // 'warn' / 'error' — lets the log toolbar filter by severity (#142)
+    // Tally for the header badge (#118).
+    if (sev === 'warn')  { _warn++; _notifyCounts(); }
+    else if (sev === 'error') { _err++; _notifyCounts(); }
     // HH:MM:SS prefix so per-step timings are visible. Styled muted/monospace so
     // it doesn't fight with the actual content for attention.
     const d = new Date();
@@ -73,6 +98,11 @@ export const log = {
     info:  msg => _emit(msg, msg),
     warn:  msg => _emit(`<span style="color:orange">WARN ${msg}</span>`, `WARN ${msg}`, 'warn'),
     error: msg => _emit(`<span style="color:red">ERR ${msg}</span>`,     `ERR ${msg}`,  'error'),
+    // Entity skipped because it wasn't matched on MB in the review (#118). Kept
+    // OUT of the WARN tally — these are surfaced by the separate "N unresolved"
+    // badge, and the maintainer asked not to lump them with real warnings. Still
+    // rendered (muted amber) so the log shows exactly which roles were dropped.
+    skip:  msg => _emit(`<span style="color:#8a6d3b">SKIP ${msg}</span>`, `SKIP ${msg}`, 'skip'),
 };
 
 // ── Debug log (issue #87) ───────────────────────────────────────────────────

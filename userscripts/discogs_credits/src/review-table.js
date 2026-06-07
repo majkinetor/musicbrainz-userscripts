@@ -619,9 +619,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             searchInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid #bbb;border-radius:3px;';
             rowSearchInputs.set(_entityKey, searchInput);   // #139: header "N unresolved" jumps here
             const searchBtn = document.createElement('button');
-            searchBtn.textContent = '\uD83D\uDD0D';
+            searchBtn.type = 'button';
+            // Flat stroke magnifier (#118) \u2014 replaces the glossy \uD83D\uDD0D emoji on a
+            // beveled default button. currentColor so it inherits the muted grey.
+            searchBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>';
             searchBtn.title = 'Search MusicBrainz';
-            searchBtn.style.cssText = 'padding:0.15rem 0.35rem;cursor:pointer;';
+            searchBtn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;padding:0 0.45rem;cursor:pointer;color:#666;background:#fff;border:1px solid #bbb;border-radius:3px;';
             // Per #77 iter 3: search icon on the LEFT of the input.
             searchRow.appendChild(searchBtn);
             searchRow.appendChild(searchInput);
