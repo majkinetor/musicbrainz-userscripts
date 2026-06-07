@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7.110000
+// @version      2026.6.7.120000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.7.110000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.120000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2726,8 +2726,8 @@
     body.tc-ri-on #external-links-editor tr.external-link-item{grid-column:1 / -1;display:flex;align-items:center;gap:9px;padding:7px 6px 1px;margin-left:-45px;border-radius:6px;position:relative}
     body.tc-ri-on #external-links-editor tr.external-link-item:hover{background:#f6f4fb}
     body.tc-ri-on #external-links-editor tr.external-link-item > td{padding:0;border:none}
-    body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:context-menu;position:relative;overflow:hidden}   /* favicon cell — right-click to edit URL */
-    body.tc-ri-on #external-links-editor .favicon{transform:none;max-width:20px;max-height:20px}   /* native size = crisp (the 1.45× upscale blurred the sprite icons); cap so an oversized favicon (e.g. Discogs) can't overflow the cell (#143) */
+    body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:context-menu;position:relative;top:4px}   /* larger favicon → right-click to edit URL */
+    body.tc-ri-on #external-links-editor .favicon{transform:scale(1.45);transform-origin:center}   /* master's size — the 30px cell holds even the larger sprite boxes, so no overflow (#143) */
     body.tc-ri-on #external-links-editor tr.external-link-item > td:last-child{flex:1;min-width:0}
     body.tc-ri-on #external-links-editor a.url{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
     /* hover edit/remove icons removed. link-actions -> display:contents; the edit pencils are kept in the DOM
@@ -2746,14 +2746,18 @@
     /* the cell content is a 3-track grid [ type (1fr) | video | ! ] so the select always ends at the same x
        and the carets line up across rows, whether or not a video checkbox / error badge is present */
     body.tc-ri-on #external-links-editor tr.relationship-item > td:last-child{display:grid;grid-template-columns:minmax(0,1fr) 16px 18px;align-items:center;column-gap:2px;flex:1;min-width:0}
-    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content{grid-column:1;display:flex;align-items:center;min-width:0;flex-wrap:wrap;column-gap:5px}   /* a dated type ("stream for free (2111 – 3111)") wraps the date to a new line instead of overflowing (#143) */
-    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content > *{white-space:nowrap}   /* keep the type name and the date period each whole — no one-word-per-line squeeze (#143) */
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content{grid-column:1;display:flex;align-items:center;min-width:0}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content > label:first-child{display:none}   /* the "Type:" caption */
+    /* a relationship with a date period ("stream for free (1111-11-11 – 1112-11-11)") would be squeezed
+       one-word-per-line by the fixed 1fr type column. Let that row's type column grow to fit the whole
+       "type (begin – end)" on one line and push the attribute/+ to the right instead (#143). */
+    body.tc-ri-on #external-links-editor tr.relationship-item:has(.date-period) > td:last-child{grid-template-columns:max-content 16px 18px}
+    body.tc-ri-on #external-links-editor tr.relationship-item:has(.date-period) .relationship-name{white-space:nowrap}
     /* per-type remove [x] sits in the reserved left slot (absolute), so the type text starts at the same x with or without it */
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{display:inline-flex;align-items:center;position:absolute;left:0;top:50%;transform:translateY(-50%) scale(.85);margin:0;opacity:.6;transition:opacity .12s}
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]:hover{opacity:1}
     /* type text (committed) / select (editable) fills the cell */
-    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:flex;align-items:center;flex:0 1 auto;min-width:0;font-size:12px;color:#5a3e94;background:transparent;border:none;border-radius:0;padding:0;font-weight:normal;cursor:context-menu}   /* size to the type text so the date period sits beside it and wraps only when there's no room (#143) */
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:flex;align-items:center;flex:1;min-width:0;font-size:12px;color:#5a3e94;background:transparent;border:none;border-radius:0;padding:0;font-weight:normal;cursor:context-menu}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name:hover{color:#3a2d5c}
     /* editable type dropdowns — appearance:none so the text starts flush at the cell edge; a custom caret keeps the affordance */
     body.tc-ri-on #external-links-editor select{-webkit-appearance:none;-moz-appearance:none;appearance:none;font-size:12px;color:#5a3e94;background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='7'%20viewBox='0%200%2010%207'%3E%3Cpath%20d='M1%201l4%204%204-4'%20fill='none'%20stroke='%235a3e94'%20stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right center;border:none;border-radius:0;box-shadow:none;padding:0 15px 0 0;height:auto;margin:0;flex:1;min-width:0;width:100%;cursor:pointer}
