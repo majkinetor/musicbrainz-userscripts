@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7.125000
+// @version      2026.6.7.154600
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.7.125000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.154600';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1667,6 +1667,17 @@
     const lenDiff = recLenGap(u(track.length), rec ? u(rec.length) : null);
     return { title, artist, lenDiff, len: lenDiff > 0 };
   }
+  // Native MB's raw per-field "differs from recording" flag, UNfiltered by
+  // Apollo's tolerance / ignore-casing settings. This is what drives the
+  // native update checkboxes, so proxying it (rather than the cosmetically
+  // filtered recFieldDiffs) is the only way to be sure the copy is offered
+  // exactly when native offers it — e.g. casing-only title diffs. #146
+  function nativeDiffFlag(track, which) {
+    try {
+      const fn = which === 'title' ? track.titleDiffersFromRecording : track.artistDiffersFromRecording;
+      return typeof fn === 'function' ? !!fn.call(track) : false;
+    } catch (e) { return false; }
+  }
   // Confidence ported from "Quick Recording Match": null = perfect (green), else low / vlow / xlow
   // (yellow / orange / red), graded by how many fields differ and by how far the length is off.
   // single source of truth for the confidence colors — used by the row dots AND the Cutoff picker
@@ -1721,14 +1732,19 @@
         if (u(t.length) && u(rec.length) && Math.round(u(t.length) / 1000) !== Math.round(u(rec.length) / 1000)) tolDiffs.push('length ' + Math.round(Math.abs(u(t.length) - u(rec.length)) / 1000) + 's');
         if (!(sameArtistEntities(t, rec) || fold(acText(u(t.artistCredit))) === fold(acText(u(rec.artistCredit))))) tolDiffs.push('artist');
       }
+      const isNew = typeof t.hasNewRecording === 'function' ? !!u(t.hasNewRecording) : false;
+      // raw native diff flags (proxy the native update checkboxes), #146
+      const rawTitleDiff  = !!(rec && !isNew && nativeDiffFlag(t, 'title'));
+      const rawArtistDiff = !!(rec && !isNew && nativeDiffFlag(t, 'artist'));
       out.push({
         exact, tolDiffs,
         mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit)), trackLen: u(t.length),
-        isNew: typeof t.hasNewRecording === 'function' ? !!u(t.hasNewRecording) : false,
+        isNew,
         recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit)) : '', recLen: rec ? u(rec.length) : null,
         // submit-flags: when on, the recording's title/artist will be overwritten with the track's on submit
         copyTitle: typeof t.updateRecordingTitle === 'function' ? !!u(t.updateRecordingTitle) : false,
         copyArtist: typeof t.updateRecordingArtist === 'function' ? !!u(t.updateRecordingArtist) : false,
+        rawTitleDiff, rawArtistDiff,
         suggCount: sugg.length, diffs, conf: rec ? recConfidence(t, rec, diffs) : null,
       });
     }));
@@ -1791,6 +1807,8 @@
       '.tc-rectbl .tc-rec-none{color:#c0392b}.tc-rectbl .tc-rec-new{color:#2c7a51}',
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
+      '.tc-rectbl td.tc-updavail{box-shadow:inset 0 -2px 0 #cdb8f0}',   // native offers a copy (e.g. casing-only) — right-click to apply #146
+      '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
       '.tc-rectbl td.tc-clickable{cursor:pointer}',
       '.tc-rectbl td.tc-clickable:hover{outline:1px solid #9cc6ab;outline-offset:-1px}',
       '.tc-rectbl td a{color:#2c5d9b;text-decoration:none}.tc-rectbl td a:hover{text-decoration:underline}',
@@ -1882,7 +1900,35 @@
     wireCutoff(wrap);
     const amBtn = wrap.querySelector('.tc-rec-am'); if (amBtn) amBtn.onclick = () => autoMatchRecordings();
     const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [{ label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings }, { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings }]);
+    wireRecCellContextMenu(wrap);
     renderRecBody(wrap);
+  }
+  // Right-click a recording title/artist cell to toggle its "copy track value to
+  // the recording (on submit)" flag — the same flag the picker checkbox sets, but
+  // without opening the picker. Eligibility proxies the NATIVE update checkbox
+  // (nativeDiffFlag), so it works for casing-only diffs too. #146
+  //   plain  → just the clicked field on that row
+  //   Ctrl   → both fields (that have a diff) on the clicked row
+  //   Alt    → the clicked field down the whole column (every diffing row)
+  function wireRecCellContextMenu(wrap) {
+    const tbl = wrap.querySelector('.tc-rectbl'); if (!tbl) return;
+    const copyOn = (t, f) => f === 'title' ? !!u(t.updateRecordingTitle) : !!u(t.updateRecordingArtist);
+    const eligible = (t, f) => !!t && (nativeDiffFlag(t, f) || copyOn(t, f));
+    tbl.addEventListener('contextmenu', e => {
+      const tr = e.target.closest('tr.tc-recrow'); if (!tr) return;
+      const inTitle = !!e.target.closest('td.tc-recname');
+      const field = inTitle ? 'title' : (e.target.closest('td.tc-recartist') ? 'artist' : null);
+      if (!field) return;
+      const mi = +tr.dataset.mi, ti = +tr.dataset.ti, t0 = koTrack(mi, ti);
+      if (!eligible(t0, field)) return;   // no checkbox here → leave the native menu alone
+      e.preventDefault();
+      const target = !copyOn(t0, field);   // toggle based on the clicked cell's current state
+      const apply = (m, i, f) => { const t = koTrack(m, i); if (eligible(t, f)) setCopy(f, { mi: m, ti: i }, target); };
+      if (e.ctrlKey)      ['title', 'artist'].forEach(f => apply(mi, ti, f));
+      else if (e.altKey)  wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => apply(+row.dataset.mi, +row.dataset.ti, field));
+      else                apply(mi, ti, field);
+      rerenderRec();
+    });
   }
   // custom Cutoff picker — a colored-dot dropdown that uses the SAME hex palette as the row dots
   // (a native <select> can't show the exact colors, only emoji approximations)
@@ -1946,12 +1992,18 @@
       const d = r.diffs || {};
       // recording name: click to open the picker. Artists are links. When a copy-to-match flag is set
       // (from the picker), the cell previews the track value the recording will become (green). #119
-      const titleCell = r.copyTitle ? '→ ' + esc(r.title || '')
+      // when a copy flag is on, preview the track value AND keep the recording's
+      // original alongside it, struck through: "→ New (O̶r̶i̶g̶i̶n̶a̶l̶)". #146
+      const titleCell = r.copyTitle ? '→ ' + esc(r.title || '') + (r.recName ? ' (<s class="tc-rec-orig">' + esc(r.recName) + '</s>)' : '')
         : r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? esc(r.recName) : '<span class="tc-rec-none">— none —</span>';
-      const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') : (r.recArtistHtml || '');
+      const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') + (r.recArtist ? ' (<s class="tc-rec-orig">' + esc(r.recArtist) + '</s>)' : '') : (r.recArtistHtml || '');
       const tolHas = f => (r.tolDiffs || []).some(x => x === f || x.startsWith(f));   // within-tolerance diffs highlight the cells too
-      const tCls = r.copyTitle ? 'tc-copy' : (d.title || tolHas('title') ? 'tc-diff' : '');
-      const aCls = r.copyArtist ? 'tc-copy' : (d.artist || tolHas('artist') ? 'tc-diff' : '');
+      // tc-updavail: native offers a copy (e.g. a casing-only diff) that Apollo's
+      // tolerance/casing settings would otherwise treat as a match — a subtle cue
+      // that right-click will copy it. Real/tolerance diffs keep the red tc-diff. #146
+      const tCls = r.copyTitle ? 'tc-copy' : (d.title || tolHas('title') ? 'tc-diff' : (r.rawTitleDiff ? 'tc-updavail' : ''));
+      const aCls = r.copyArtist ? 'tc-copy' : (d.artist || tolHas('artist') ? 'tc-diff' : (r.rawArtistDiff ? 'tc-updavail' : ''));
+      const tElig = r.rawTitleDiff || r.copyTitle, aElig = r.rawArtistDiff || r.copyArtist;
       const changed = recChangedFromOrig(r.mi, r.ti);   // differs from the page-load recording
       const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : ''); tr.dataset.mi = r.mi; tr.dataset.ti = r.ti;
       tr.innerHTML =
@@ -1961,15 +2013,17 @@
         '<td class="c-len">' + fmtMs(r.trackLen) + '</td>' +
         '<td class="c-sep"><span class="tc-dot"></span></td>' +
         '<td class="tc-recname ' + tCls + '">' + titleCell + '</td>' +
-        '<td class="' + aCls + '">' + artistCell + '</td>' +
+        '<td class="tc-recartist ' + aCls + '">' + artistCell + '</td>' +
         '<td class="c-len ' + (d.len || tolHas('length') ? 'tc-diff' : '') + '">' + fmtMs(r.recLen) + '</td>';
       const dot = tr.querySelector('.tc-dot');
       if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
       else if (r.recGid) { dot.style.background = r.exact ? CONF_COLOR.exact : CONF_COLOR.tolerance; dot.title = r.exact ? 'Exact match' : 'Tolerance match' + (r.tolDiffs && r.tolDiffs.length ? ' (' + r.tolDiffs.join(', ') + ')' : ''); }
       else dot.style.visibility = 'hidden';
       const nameCell = tr.querySelector('.tc-recname');
-      nameCell.classList.add('tc-clickable'); nameCell.title = 'change recording — suggestions / search';
+      nameCell.classList.add('tc-clickable');
+      nameCell.title = 'change recording — suggestions / search' + (tElig ? '  ·  right-click: copy track title to recording (Ctrl: row · Alt: column)' : '');
       nameCell.onclick = () => openRecPicker(r, nameCell);
+      if (aElig) { const artCell = tr.querySelector('.tc-recartist'); if (artCell) artCell.title = 'right-click: copy track artist to recording (Ctrl: row · Alt: column)'; }
       if (changed) {   // per-row revert ↺ (single), shown on hover when changed
         const rev = document.createElement('button'); rev.className = 'tc-rec-rev'; rev.textContent = '↺'; rev.title = 'revert to the original recording';
         rev.onclick = e => { e.stopPropagation(); revertRecording(r); };
@@ -2265,8 +2319,10 @@
           + (curArtist ? ' <span class="tc-rpk-curby">by ' + esc(curArtist) + '</span>' : '')
         : '<span class="tc-rpk-curnone">— none —</span>';
     const trackArtist = ctx.artist, trackLen = u(ko.length);
-    const dd = entry.diffs || {};
-    const showCopyT = !isNew && (dd.title || entry.copyTitle), showCopyA = !isNew && (dd.artist || entry.copyArtist);
+    // Show the copy checkboxes whenever NATIVE MB offers them (rawTitleDiff /
+    // rawArtistDiff proxy the native update checkboxes), not just when Apollo's
+    // tolerance/casing-filtered diff fires — so casing-only diffs still offer it. #146
+    const showCopyT = !isNew && (entry.rawTitleDiff || entry.copyTitle), showCopyA = !isNew && (entry.rawArtistDiff || entry.copyArtist);
     pop.innerHTML =
       '<div class="tc-rpk-hd"><b>' + esc(u(ko.name) || '') + '</b>' +
         (trackArtist ? '<span class="tc-rpk-hdby"> · ' + acLinks(u(ko.artistCredit)) + '</span>' : '') +
