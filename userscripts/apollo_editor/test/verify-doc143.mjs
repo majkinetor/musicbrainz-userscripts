@@ -20,6 +20,9 @@ async function main() {
   await page.goto(`${ORIGIN}/release/${MBID}/edit`, { waitUntil: 'domcontentloaded' });
   if (page.url().includes('/login')) { console.error('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
   await page.waitForFunction(() => { try { return !!(window.MB && window.MB.releaseEditor && window.MB.releaseEditor.rootField.release()); } catch { return false; } }, null, { timeout: 120000 });
+  // wait until the release model has actually loaded its data (mediums + release group) — otherwise MB's
+  // bubbles have no "You selected" link. Generous timeout so a throttled load still settles.
+  await page.waitForFunction(() => { try { const r = window.MB.releaseEditor.rootField.release(); const rg = r.releaseGroup(); const g = rg && (typeof rg.gid === 'function' ? rg.gid() : rg.gid); return r.mediums().length > 0 && !!g; } catch { return false; } }, null, { timeout: 180000 }).catch(()=>{});
   await page.addScriptTag({ content: scriptCode });
   await page.waitForFunction(() => !!window.__apolloEditor, null, { timeout: 15000 });
   // Release Information tab
