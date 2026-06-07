@@ -82,6 +82,24 @@ const main = async () => {
     return { copyTitleNow: typeof t.updateRecordingTitle === 'function' ? !!u(t.updateRecordingTitle) : null, cellHtml: tc2.innerHTML, hasStrike: /tc-rec-orig/.test(tc2.innerHTML), hasArrow: tc2.textContent.includes('→') };
   });
   console.log('afterRightClick:', JSON.stringify(afterClick, null, 2));
+  console.log('  parensRemoved:', !/\(\s*<s/.test(afterClick.cellHtml) && !afterClick.cellHtml.includes('(<s'));
+
+  // A no-diff recording cell must SUPPRESS the native menu and do nothing (#146).
+  const noDiff = await page.evaluate(() => {
+    const u = v => (typeof v === 'function' ? v() : v);
+    const rows = [...document.querySelectorAll('#tc-recwrap tbody tr.tc-recrow')];
+    // find a row whose title does NOT differ from its recording
+    const ed = window.MB.releaseEditor; const tracks = [];
+    u(u(ed.rootField.release).mediums).forEach(m => u(m.tracks).forEach(t => tracks.push(t)));
+    let idx = -1; for (let i = 0; i < tracks.length; i++) { try { if (!tracks[i].titleDiffersFromRecording()) { idx = i; break; } } catch {} }
+    if (idx < 0) return { skipped: 'no matching row' };
+    const tc = rows[idx] && rows[idx].querySelector('td.tc-recname'); if (!tc) return { skipped: 'no cell' };
+    const before = !!u(tracks[idx].updateRecordingTitle);
+    const ev = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    const notCancelled = tc.dispatchEvent(ev);   // false ⇒ preventDefault was called
+    return { menuSuppressed: notCancelled === false, copyUnchanged: (!!u(tracks[idx].updateRecordingTitle)) === before };
+  });
+  console.log('noDiffCell:', JSON.stringify(noDiff, null, 2));
 
   // Clean element screenshot of the recordings table (row A = casing diff now copying
   // with struck original; row B = real diff in red) BEFORE opening the picker.

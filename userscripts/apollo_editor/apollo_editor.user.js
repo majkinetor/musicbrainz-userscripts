@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7.154600
+// @version      2026.6.7.161000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.7.154600';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.161000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1918,10 +1918,14 @@
       const tr = e.target.closest('tr.tc-recrow'); if (!tr) return;
       const inTitle = !!e.target.closest('td.tc-recname');
       const field = inTitle ? 'title' : (e.target.closest('td.tc-recartist') ? 'artist' : null);
-      if (!field) return;
-      const mi = +tr.dataset.mi, ti = +tr.dataset.ti, t0 = koTrack(mi, ti);
-      if (!eligible(t0, field)) return;   // no checkbox here → leave the native menu alone
+      if (!field) return;   // not a recording cell → leave the native menu
+      // On a recording title/artist cell ALWAYS suppress the native menu, even
+      // when there's no difference — toggling on some cells but popping the OS
+      // menu on others was confusing; just do nothing (no native menu) when
+      // there's no copy to offer. #146 (maintainer)
       e.preventDefault();
+      const mi = +tr.dataset.mi, ti = +tr.dataset.ti, t0 = koTrack(mi, ti);
+      if (!eligible(t0, field)) return;   // no copy available here → do nothing
       const target = !copyOn(t0, field);   // toggle based on the clicked cell's current state
       const apply = (m, i, f) => { const t = koTrack(m, i); if (eligible(t, f)) setCopy(f, { mi: m, ti: i }, target); };
       if (e.ctrlKey)      ['title', 'artist'].forEach(f => apply(mi, ti, f));
@@ -1994,9 +1998,9 @@
       // (from the picker), the cell previews the track value the recording will become (green). #119
       // when a copy flag is on, preview the track value AND keep the recording's
       // original alongside it, struck through: "→ New (O̶r̶i̶g̶i̶n̶a̶l̶)". #146
-      const titleCell = r.copyTitle ? '→ ' + esc(r.title || '') + (r.recName ? ' (<s class="tc-rec-orig">' + esc(r.recName) + '</s>)' : '')
+      const titleCell = r.copyTitle ? '→ ' + esc(r.title || '') + (r.recName ? ' <s class="tc-rec-orig">' + esc(r.recName) + '</s>' : '')
         : r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? esc(r.recName) : '<span class="tc-rec-none">— none —</span>';
-      const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') + (r.recArtist ? ' (<s class="tc-rec-orig">' + esc(r.recArtist) + '</s>)' : '') : (r.recArtistHtml || '');
+      const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') + (r.recArtist ? ' <s class="tc-rec-orig">' + esc(r.recArtist) + '</s>' : '') : (r.recArtistHtml || '');
       const tolHas = f => (r.tolDiffs || []).some(x => x === f || x.startsWith(f));   // within-tolerance diffs highlight the cells too
       // tc-updavail: native offers a copy (e.g. a casing-only diff) that Apollo's
       // tolerance/casing settings would otherwise treat as a match — a subtle cue
