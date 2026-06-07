@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7.195754
+// @version      2026.6.7.225236
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -423,7 +423,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.7.195754';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.225236';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -499,35 +499,38 @@
     select.tc-fmt-flat:hover{background:#efeaf9;border-color:#d7ccef;border-radius:3px}
     /* #154: theme the native medium header (legend · collapse · format · "Medium title" · move/remove)
        to match Apollo while the tracklist takeover is on. Scoped to body.tc-tl-on so the original look
-       returns the instant you switch back to the native editor. */
+       returns the instant you switch back to the native editor — AND every button rule is further scoped to
+       fieldset.advanced-medium, because tc-tl-on lives on <body> (stays on while you visit other tabs) and
+       remove-item / guesscase-title are generic classes that also exist on the Release-information tab
+       (external-link ✕, title Aa). Without the medium scope they leaked their glyphs onto that tab (#160). */
     body.tc-tl-on fieldset.advanced-medium{border:1px solid #e7e0f5;border-radius:8px;background:#fbfaff;margin:0 0 12px;padding:3px 12px 6px}
     body.tc-tl-on fieldset.advanced-medium > legend{font:700 12px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0!important;padding:0 6px;margin-left:2px}
     body.tc-tl-on table.advanced-format{width:100%;border-collapse:collapse;margin:0}
     body.tc-tl-on table.advanced-format > tbody > tr > td{padding:3px 5px;vertical-align:middle;border:none}
     body.tc-tl-on table.advanced-format td.format{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     /* the flat ▸ / ▾ icon buttons (collapse, move, remove) — drop MB's sprite, draw a themed glyph */
-    body.tc-tl-on button.icon.expand-medium,body.tc-tl-on button.icon.collapse-medium,
-    body.tc-tl-on button.icon.medium-up,body.tc-tl-on button.icon.medium-down,
-    body.tc-tl-on button.icon.remove-item{background:none!important;border:none;width:30px;height:28px;padding:0;margin:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:5px;color:#7d6bc0;font-size:18px;line-height:1}
+    body.tc-tl-on fieldset.advanced-medium button.icon.expand-medium,body.tc-tl-on fieldset.advanced-medium button.icon.collapse-medium,
+    body.tc-tl-on fieldset.advanced-medium button.icon.medium-up,body.tc-tl-on fieldset.advanced-medium button.icon.medium-down,
+    body.tc-tl-on fieldset.advanced-medium button.icon.remove-item{background:none!important;border:none;width:30px;height:28px;padding:0;margin:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:5px;color:#7d6bc0;font-size:18px;line-height:1}
     /* the triangle glyphs render small for their font-size — pump the arrows up so they read clearly (#154) */
-    body.tc-tl-on button.icon.expand-medium::before,body.tc-tl-on button.icon.collapse-medium::before,
-    body.tc-tl-on button.icon.medium-up::before,body.tc-tl-on button.icon.medium-down::before{font-size:21px}
-    body.tc-tl-on button.icon.expand-medium:hover,body.tc-tl-on button.icon.collapse-medium:hover,
-    body.tc-tl-on button.icon.medium-up:hover,body.tc-tl-on button.icon.medium-down:hover{background:#efeaf9;color:#5f3ec0}
-    body.tc-tl-on button.icon.expand-medium::before{content:'▸'}
-    body.tc-tl-on button.icon.collapse-medium::before{content:'▾'}
-    body.tc-tl-on button.icon.medium-up::before{content:'▴'}
-    body.tc-tl-on button.icon.medium-down::before{content:'▾'}
-    body.tc-tl-on button.icon.remove-item{color:#cc6699;margin-left:14px!important}
-    body.tc-tl-on button.icon.remove-item::before{content:'✕';font-weight:bold}
-    body.tc-tl-on button.icon.remove-item:hover{background:#fbe9f1;color:#c0392b}
+    body.tc-tl-on fieldset.advanced-medium button.icon.expand-medium::before,body.tc-tl-on fieldset.advanced-medium button.icon.collapse-medium::before,
+    body.tc-tl-on fieldset.advanced-medium button.icon.medium-up::before,body.tc-tl-on fieldset.advanced-medium button.icon.medium-down::before{font-size:21px}
+    body.tc-tl-on fieldset.advanced-medium button.icon.expand-medium:hover,body.tc-tl-on fieldset.advanced-medium button.icon.collapse-medium:hover,
+    body.tc-tl-on fieldset.advanced-medium button.icon.medium-up:hover,body.tc-tl-on fieldset.advanced-medium button.icon.medium-down:hover{background:#efeaf9;color:#5f3ec0}
+    body.tc-tl-on fieldset.advanced-medium button.icon.expand-medium::before{content:'▸'}
+    body.tc-tl-on fieldset.advanced-medium button.icon.collapse-medium::before{content:'▾'}
+    body.tc-tl-on fieldset.advanced-medium button.icon.medium-up::before{content:'▴'}
+    body.tc-tl-on fieldset.advanced-medium button.icon.medium-down::before{content:'▾'}
+    body.tc-tl-on fieldset.advanced-medium button.icon.remove-item{color:#cc6699;margin-left:14px!important}
+    body.tc-tl-on fieldset.advanced-medium button.icon.remove-item::before{content:'✕';font-weight:bold}
+    body.tc-tl-on fieldset.advanced-medium button.icon.remove-item:hover{background:#fbe9f1;color:#c0392b}
     /* "Medium title:" label + input + the Aa guess-case button */
     body.tc-tl-on table.advanced-format td.format > label[for^="medium-title"]{font:12px Arial;color:#8a7bb8;margin-left:6px}
     body.tc-tl-on input[id^="medium-title-"]{flex:1 1 220px;min-width:200px;border:1px solid #d6cdec;border-radius:4px;padding:3px 7px;font:13px Arial;background:#fff;box-shadow:none}
     body.tc-tl-on input[id^="medium-title-"]:focus{border-color:#8a72c8;outline:none}
-    body.tc-tl-on button.icon.guesscase-title{background:none!important;border:1px solid #d6cdec;border-radius:4px;width:auto;height:auto;min-width:0;padding:2px 7px;margin:0;cursor:pointer;color:#6f42c1;font:bold 11px Arial;line-height:1.4}
-    body.tc-tl-on button.icon.guesscase-title::before{content:'Aa'}
-    body.tc-tl-on button.icon.guesscase-title:hover{background:#efeaf9;border-color:#bcaae6;color:#5f3ec0}
+    body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title{background:none!important;border:1px solid #d6cdec;border-radius:4px;width:auto;height:auto;min-width:0;padding:2px 7px;margin:0;cursor:pointer;color:#6f42c1;font:bold 11px Arial;line-height:1.4}
+    body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title::before{content:'Aa'}
+    body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title:hover{background:#efeaf9;border-color:#bcaae6;color:#5f3ec0}
     .tc-mirror .t-gc{flex:none;cursor:pointer;border:1px solid #e7ce8a;background:#fff6da;color:#8a6d00;font:bold 10px Arial;border-radius:3px;padding:1px 4px;visibility:hidden}.tc-mirror .t-gc:hover{background:#ffefb8}
     .tc-mirror tr:hover .t-gc{visibility:visible}
     .tc-mirror input.t-title.hasfeat{background:#eaf1fb;border-color:#9bbbe0;border-radius:3px}
@@ -3073,8 +3076,11 @@
        never overflows into the neighbouring type (overlapping its remove ✗) (#143). */
     body.tc-ri-on #external-links-editor tr.relationship-item:has(.date-period){grid-column:span 2}
     body.tc-ri-on #external-links-editor tr.relationship-item:has(.date-period) .relationship-name{flex-wrap:wrap;white-space:nowrap;overflow:visible}   /* let a very long date wrap to a 2nd line inside the cell (not clipped) */
-    /* per-type remove [x] sits in the reserved left slot (absolute), so the type text starts at the same x with or without it */
-    body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{display:inline-flex;align-items:center;position:absolute;left:0;top:50%;transform:translateY(-50%) scale(.85);margin:0;opacity:.6;transition:opacity .12s}
+    /* per-type remove [x] sits in the reserved left slot (absolute), so the type text starts at the same x with or
+       without it. left:6px centres MB's native ✗ sprite (≈13.6px) on the same x as the "add another relationship"
+       [+] that wraps directly below it when the types stack — at left:0 the native sprite landed ~6px too far left
+       of the [+] (the old #154 flat glyph was wider, so it happened to line up). (#160) */
+    body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{display:inline-flex;align-items:center;position:absolute;left:6px;top:50%;transform:translateY(-50%) scale(.85);margin:0;opacity:.6;transition:opacity .12s}
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]:hover{opacity:1}
     /* type text (committed) / select (editable) fills the cell */
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:flex;align-items:center;flex:1;min-width:0;font-size:12px;color:#5a3e94;background:transparent;border:none;border-radius:0;padding:0;font-weight:normal;cursor:context-menu;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* keep the type on one line — never wrap it one-word-per-line as the column resizes (#143) */
@@ -3146,6 +3152,9 @@
       if (fs.parentElement !== col) { if (!fs._tcHome) fs._tcHome = { parent: fs.parentElement, next: fs.nextElementSibling }; col.appendChild(fs); }
       ensureCheckToolbar(col);
     } else if (fs._tcHome && fs.parentElement !== fs._tcHome.parent) {
+      // the Check-links toolbar is appended *inside* the fieldset, so it would travel home with it and orphan
+      // onto the native Release-information tab (#160) — drop it before moving the fieldset back
+      fs.querySelector(':scope > #tc-ri-toolbar')?.remove();
       fs._tcHome.parent.insertBefore(fs, fs._tcHome.next && fs._tcHome.next.isConnected ? fs._tcHome.next : null);
       const col = panel.querySelector(':scope > #tc-ri-rightcol'); if (col && !col.children.length) col.remove();
     }
