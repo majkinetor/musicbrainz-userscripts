@@ -39,14 +39,16 @@ await page.click('#ii-btn');
 await page.waitForSelector('#ii-modal.open', { timeout: 10000 });
 await page.waitForFunction(() => document.querySelectorAll('#ii-tbody tr[data-idx]').length > 0, null, { timeout: 30000 });
 
-// (A) [SX] button present per row
+// (A) [SX] button present per row, and DISABLED when the field is empty
 const sxBtns = await page.evaluate(() => document.querySelectorAll('#ii-tbody tr[data-idx] button.ii-sx').length);
 const rows   = await page.evaluate(() => document.querySelectorAll('#ii-tbody tr[data-idx]').length);
+const sxDisabledWhenEmpty = await page.evaluate(() => document.querySelector('#ii-tbody tr[data-idx] button.ii-sx').disabled);
 
-// (B) Typing a valid ISRC WITHOUT blur must NOT call SX
+// (B) Typing a valid ISRC WITHOUT blur must NOT call SX, but ENABLES [SX]
 await page.evaluate(() => { const inp = document.querySelector('#ii-tbody tr[data-idx] input.ii-input'); inp.focus(); inp.value = 'USRC17607830'; inp.dispatchEvent(new Event('input', { bubbles: true })); });
 await page.waitForTimeout(600);
 const callsAfterType = sxCalls;
+const sxEnabledWhenValid = await page.evaluate(() => !document.querySelector('#ii-tbody tr[data-idx] button.ii-sx').disabled);
 
 // (C) Blur → fires exactly one SX call → captcha recognised in the row bullet
 await page.evaluate(() => { document.querySelector('#ii-tbody tr[data-idx] input.ii-input').dispatchEvent(new Event('blur', { bubbles: true })); });
@@ -58,8 +60,17 @@ const state = await page.evaluate(() => ({
   progHasLink: !!document.querySelector('#ii-prog a'),
 }));
 
-console.log(JSON.stringify({ rows, sxBtns, callsAfterType, callsAfterBlur, state, pageErrors: perr }, null, 2));
-const pass = sxBtns === rows && callsAfterType === 0 && callsAfterBlur === 1 && /captcha/i.test(state.bullet) && /captcha/i.test(state.prog) && state.progHasLink && perr.length === 0;
+// (D) The [SX] button does a SINGLE by-ISRC fetch and does NOT open the refine panel
+const beforeBtn = sxCalls;
+await page.evaluate(() => document.querySelector('#ii-tbody tr[data-idx] button.ii-sx').click());
+await page.waitForTimeout(800);
+const sxBtnDelta = sxCalls - beforeBtn;
+const refinePanelOpen = await page.evaluate(() => { const p = document.getElementById('ii-sxpanel'); return !!(p && p.offsetParent !== null); });
+
+console.log(JSON.stringify({ rows, sxBtns, sxDisabledWhenEmpty, callsAfterType, sxEnabledWhenValid, callsAfterBlur, sxBtnDelta, refinePanelOpen, state, pageErrors: perr }, null, 2));
+const pass = sxBtns === rows && sxDisabledWhenEmpty === true && callsAfterType === 0 && sxEnabledWhenValid === true &&
+             callsAfterBlur === 1 && /captcha/i.test(state.bullet) && /captcha/i.test(state.prog) && state.progHasLink &&
+             sxBtnDelta === 1 && refinePanelOpen === false && perr.length === 0;
 console.log(pass ? 'PASS' : 'FAIL');
 await ctx.close();
 process.exit(pass ? 0 : 1);

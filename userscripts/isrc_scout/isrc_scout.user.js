@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7
+// @version      2026.6.7.1
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -87,7 +87,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.6.7';
+  const SCRIPT_VERSION = '2026.6.7.1';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -435,6 +435,8 @@
     .ii-sx { flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 7px; border: 1px solid #cfd8e3;
       border-radius: 4px; background: #eef3fb; cursor: pointer; color: #2c5d9b; font-family: monospace; }
     .ii-sx:hover { background: #dde8f7; color: #1b3f6e; }
+    .ii-sx:disabled { opacity: .4; cursor: default; }
+    .ii-sx:disabled:hover { background: #eef3fb; color: #2c5d9b; }
     .ii-cands { margin-top: 4px; display: flex; flex-direction: column; gap: 3px; width: auto; }
     .ii-cand { display: flex; align-items: flex-start; gap: 7px; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; cursor: pointer; font-size: 11px; background: #fff; }
@@ -1359,6 +1361,7 @@
         // Clear any stale bullet while editing; the SX check now fires on blur
         // (manual entry) or the row's [SX] button.
         const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; }
+        const sxb = tr.querySelector('.ii-sx'); if (sxb) sxb.disabled = !isValidIsrc(normalizeIsrc(input.value));   // #157: SX verifies only a valid ISRC
       });
       // Manual entry → verify on SoundExchange only when the field loses focus (#157).
       input.addEventListener('blur', () => {
@@ -1371,14 +1374,18 @@
         plusBtn.addEventListener('click', () => plusOne(idx));
         plusBtn.addEventListener('contextmenu', e => { e.preventDefault(); plusOneFillDown(idx); });
       }
-      // Explicit per-track SoundExchange trigger (#157): verify the entered ISRC,
-      // or — when the field is empty/invalid — open the refine panel to search.
+      // Explicit per-track SoundExchange trigger (#157): verify the ENTERED ISRC
+      // only — the single by-ISRC fetch the auto-call used to do. Metadata search
+      // stays on the separate "⚙ search SoundExchange…" entry, so the two don't
+      // overlap. Disabled when there's no valid ISRC to verify.
       const sxBtn = tr.querySelector('.ii-sx');
-      if (sxBtn) sxBtn.addEventListener('click', () => {
-        const v = normalizeIsrc(input.value);
-        if (v && isValidIsrc(v)) lookupIsrc(idx, v).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); });
-        else openSxPanel(idx);
-      });
+      if (sxBtn) {
+        sxBtn.disabled = !isValidIsrc(normalizeIsrc(input.value));
+        sxBtn.addEventListener('click', () => {
+          const v = normalizeIsrc(input.value);
+          if (v && isValidIsrc(v)) lookupIsrc(idx, v).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); });
+        });
+      }
       tbody.appendChild(tr);
       validateInput(input, t);
       // initial per-track entry point to the SoundExchange refine panel
@@ -1513,6 +1520,7 @@
     input.value = t.pending;
     input.dataset.autofill = '1';            // filled by a source — the on-input handler won't fire
     validateInput(input, t);
+    { const sxb = input.closest('tr')?.querySelector('.ii-sx'); if (sxb) sxb.disabled = !isValidIsrc(t.pending); }   // #157: keep [SX] enabled-state in sync after a fill
     // #157: do NOT auto-hit SoundExchange on fills. Deezer/Spotify/+1/paste fills
     // used to enqueue a per-track SX verify, which spammed SX (and double-hit it
     // during the bulk SX search). Now we only show the match bullet when the SX
