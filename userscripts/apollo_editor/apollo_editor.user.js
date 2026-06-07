@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7.173300
+// @version      2026.6.7.173400
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -423,7 +423,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.7.173300';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.173400';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -508,7 +508,10 @@
     /* the flat ▸ / ▾ icon buttons (collapse, move, remove) — drop MB's sprite, draw a themed glyph */
     body.tc-tl-on button.icon.expand-medium,body.tc-tl-on button.icon.collapse-medium,
     body.tc-tl-on button.icon.medium-up,body.tc-tl-on button.icon.medium-down,
-    body.tc-tl-on button.icon.remove-item{background:none!important;border:none;width:24px;height:22px;padding:0;margin:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:5px;color:#7d6bc0;font-size:13px;line-height:1}
+    body.tc-tl-on button.icon.remove-item{background:none!important;border:none;width:30px;height:28px;padding:0;margin:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:5px;color:#7d6bc0;font-size:18px;line-height:1}
+    /* the triangle glyphs render small for their font-size — pump the arrows up so they read clearly (#154) */
+    body.tc-tl-on button.icon.expand-medium::before,body.tc-tl-on button.icon.collapse-medium::before,
+    body.tc-tl-on button.icon.medium-up::before,body.tc-tl-on button.icon.medium-down::before{font-size:21px}
     body.tc-tl-on button.icon.expand-medium:hover,body.tc-tl-on button.icon.collapse-medium:hover,
     body.tc-tl-on button.icon.medium-up:hover,body.tc-tl-on button.icon.medium-down:hover{background:#efeaf9;color:#5f3ec0}
     body.tc-tl-on button.icon.expand-medium::before{content:'▸'}
