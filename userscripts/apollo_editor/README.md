@@ -31,6 +31,7 @@ It replaces the native **Tracklist** and **Recordings** editors with two clean, 
 - **Recordings editor**
     - Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row and inline highlighting of the fields that differ.
     - Recording picker with MusicBrainz suggestions, free-form search, linked "appears on" releases, confidence highlights
+    - **Right-click** a recording **Title**/**Artist** cell to copy the track's value down to the recording (on submit) — see [Updating recordings](#updating-recordings-titleartist)
 - **[Matching](#matching)**
     - Auto-match artists and recordings in one click
     - Release group consideration for quick and precise matching
@@ -75,6 +76,20 @@ A *Credited as* values on track and recording don't influence matching.
 |   🔴   | Very low         | All three differ and the length gap is >10s (almost certainly wrong)    |
 
 The *Cutoff* option in the recording toolbar sets the acceptable confidence.
+
+### Updating recordings (title/artist)
+
+When a track's title or artist differs from its linked recording, you can copy the track's value down to the recording (applied when you submit the release — the same as the native checkboxes). Right-click the recording-side **Title** or **Artist** cell:
+
+| Gesture | Action |
+|---|---|
+| **Right-click** | Toggle copy for that one cell |
+| **Ctrl + right-click** | Toggle both fields (that differ) on the row |
+| **Alt + right-click** | Toggle that field down the whole column (every differing row) |
+
+While a copy is on, the cell previews `→ New ` followed by the recording's ~~original~~ value, struck through. Cells that offer a copy carry a subtle underline; a real mismatch stays red.
+
+This mirrors MusicBrainz's **native** update checkboxes exactly — so a copy is offered whenever the native editor would show its checkbox, **including casing-only differences** that Apollo's match tolerance / *Ignore casing* setting would otherwise treat as a match. The tolerance settings still drive the confidence colouring; they no longer hide the copy. Right-clicking a recording cell with no difference does nothing (the browser's context menu is suppressed there).
 
 ## Toolbar
 
