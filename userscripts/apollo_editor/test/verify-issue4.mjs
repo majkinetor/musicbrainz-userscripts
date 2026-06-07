@@ -1,6 +1,5 @@
-// Verify #143: a dated external-link relationship takes the full grid row, so "type (begin – end)" fits
-// on one line, doesn't overlap the neighbouring type's remove-✗, and the ＋ / controls stay visible —
-// tested on a multi-type link (purchase for download + streaming page) in a narrowed column.
+// Verify #143: dated relationships span 2 cells (not the whole row), so multiple dated types share a
+// wide row; the type stays one line and a long date wraps inside the cell without overlapping neighbours.
 import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -14,7 +13,7 @@ const HEADED = process.argv.includes('--headed');
 const LOG = resolve(HERE, 'logs');
 async function main() {
   const scriptCode = await readFile(SCRIPT_PATH, 'utf8');
-  const ctx = await chromium.launchPersistentContext(PROFILE_DIR, { headless: !HEADED, viewport: { width: 1500, height: 1050 }, deviceScaleFactor: 2 });
+  const ctx = await chromium.launchPersistentContext(PROFILE_DIR, { headless: !HEADED, viewport: { width: 1700, height: 1050 }, deviceScaleFactor: 2 });
   const page = ctx.pages()[0] || await ctx.newPage();
   await page.goto(`${ORIGIN}/release/${MBID}/edit`, { waitUntil: 'domcontentloaded' });
   if (page.url().includes('/login')) { console.error('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
@@ -26,44 +25,45 @@ async function main() {
   await page.evaluate(() => { const t = [...document.querySelectorAll('a,button,li')].find(e => /^\s*release information\s*$/i.test(e.textContent || '')); if (t) (t.querySelector('a')||t).click(); });
   await page.waitForFunction(() => document.body.classList.contains('tc-ri-on'), null, { timeout: 15000 }).catch(()=>{});
   await page.waitForTimeout(700);
-  // narrow column so multi-type rows would otherwise collide
-  await page.addStyleTag({ content: '#tc-ri-rightcol{flex:0 0 470px !important;max-width:470px !important;min-width:470px !important}' });
-  await page.waitForTimeout(300);
 
-  // add year-month begin date to a "purchase for download" on a link that also has "streaming page"
-  await page.evaluate(() => {
-    const rel = [...document.querySelectorAll('#external-links-editor tr.relationship-item')].find(r => /purchase for download/i.test(r.textContent||'') && r.querySelector('button.edit-item'));
-    if (rel) rel.querySelector('button.edit-item').click();
-  });
-  await page.waitForTimeout(450);
-  const vis = page.locator('.dialog.popover, .bubble, [role="dialog"]').filter({ has: page.locator('input[name="period.begin_date.year"]') }).filter({ visible: true }).first();
-  for (const [n, v] of [['begin_date.year','1213'],['begin_date.month','01'],['end_date.year','1233']]) await vis.locator(`input[name="period.${n}"]`).fill(v).catch(()=>{});
-  await page.waitForTimeout(120);
-  await vis.locator('button').filter({ hasText: /^\s*Done\s*$/ }).first().click().catch(()=>{});
-  await page.waitForTimeout(700);
+  // add a date to BOTH types of a multi-type link (purchase for download + streaming page)
+  const addDateToNth = async (n, parts) => {
+    const ok = await page.evaluate((n) => {
+      const rels = [...document.querySelectorAll('#external-links-editor tr.relationship-item')].filter(r => r.querySelector('button.edit-item') && /purchase for download|streaming page/i.test(r.textContent||''));
+      // pick the nth distinct type within the apple link group (first link that has 2 such types)
+      if (rels[n]) { rels[n].querySelector('button.edit-item').click(); return true; } return false;
+    }, n);
+    if (!ok) return;
+    await page.waitForTimeout(450);
+    const vis = page.locator('.dialog.popover, .bubble, [role="dialog"]').filter({ has: page.locator('input[name="period.begin_date.year"]') }).filter({ visible: true }).first();
+    for (const [k, v] of Object.entries(parts)) await vis.locator(`input[name="period.${k}"]`).fill(v).catch(()=>{});
+    await page.waitForTimeout(120);
+    await vis.locator('button').filter({ hasText: /^\s*Done\s*$/ }).first().click().catch(()=>{});
+    await page.waitForTimeout(650);
+  };
+  await addDateToNth(0, { 'begin_date.year': '1111', 'begin_date.month':'11','begin_date.day':'11','end_date.year': '1112','end_date.month':'11','end_date.day':'11' });
+  await addDateToNth(1, { 'begin_date.year': '1233', 'end_date.year': '1234' });
 
   const res = await page.evaluate(() => {
-    const rectOf = e => { const r = e.getBoundingClientRect(); return { left: Math.round(r.left), right: Math.round(r.right), w: Math.round(r.width) }; };
-    const dated = [...document.querySelectorAll('#external-links-editor tr.relationship-item')].find(r => r.querySelector('.date-period'));
-    if (!dated) return 'no dated';
+    const rectOf = e => { const r = e.getBoundingClientRect(); return { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), w: Math.round(r.width) }; };
+    const dated = [...document.querySelectorAll('#external-links-editor tr.relationship-item')].filter(r => r.querySelector('.date-period'));
     const col = document.getElementById('tc-ri-rightcol');
-    const name = dated.querySelector('.relationship-name');
-    const lineH = parseFloat(getComputedStyle(name).lineHeight) || 16;
-    // the neighbouring relationship (same link) and any add-item +
-    const sibs = [...document.querySelectorAll('#external-links-editor tr.relationship-item')];
-    const plus = document.querySelector('#external-links-editor button.add-item');
+    const colR = col ? col.getBoundingClientRect().right : 1e9;
+    // overlap check: do any two dated rects on the same visual row intersect horizontally?
+    let overlap = false;
+    for (let i=0;i<dated.length;i++) for (let j=i+1;j<dated.length;j++){ const a=dated[i].getBoundingClientRect(), b=dated[j].getBoundingClientRect(); if (Math.abs(a.top-b.top)<6 && a.left < b.right && b.left < a.right) overlap = true; }
+    const tops = [...new Set(dated.map(d => Math.round(d.getBoundingClientRect().top)))];
     return {
-      datedGridColumn: getComputedStyle(dated).gridColumn,
-      datedRect: rectOf(dated), colRect: col ? rectOf(col) : null,
-      datedFitsColumn: col ? (dated.getBoundingClientRect().right <= col.getBoundingClientRect().right + 1) : null,
-      typeOneLine: name.getBoundingClientRect().height <= lineH * 1.6,
-      dpText: dated.querySelector('.date-period').textContent.trim(),
-      anyPlusVisible: plus ? (plus.getBoundingClientRect().width > 0 && plus.getBoundingClientRect().left < (col ? col.getBoundingClientRect().right : 1e9)) : 'no plus',
+      count: dated.length,
+      items: dated.map(d => ({ span: getComputedStyle(d).gridColumn, dp: d.querySelector('.date-period').textContent.trim(), rect: rectOf(d), fits: d.getBoundingClientRect().right <= colR + 1 })),
+      sameRow: tops.length < dated.length,   // at least two share a row
+      distinctRows: tops.length,
+      overlap,
       pageOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
     };
   });
   console.log('RESULT:', JSON.stringify(res, null, 2));
-  const col = await page.$('#tc-ri-rightcol'); if (col) await col.screenshot({ path: resolve(LOG, 'issue4c-narrow.png') }).catch(()=>{});
+  const col = await page.$('#tc-ri-rightcol'); if (col) await col.screenshot({ path: resolve(LOG, 'issue4d-share.png') }).catch(()=>{});
   if (!HEADED) await ctx.close();
 }
 main().catch(e => { console.error(e); process.exit(1); });
