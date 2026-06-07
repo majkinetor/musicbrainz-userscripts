@@ -39,36 +39,52 @@ await page.click('#ii-btn');
 await page.waitForSelector('#ii-modal.open', { timeout: 10000 });
 await page.waitForFunction(() => document.querySelectorAll('#ii-tbody tr[data-idx]').length > 0, null, { timeout: 30000 });
 
-// (A) [SX] button present per row, and DISABLED when the field is empty
+// (A) [SX] present per row; DISABLED on an empty field with NO existing ISRC;
+//     ENABLED on an empty field that HAS an existing ISRC (#157 latest).
 const sxBtns = await page.evaluate(() => document.querySelectorAll('#ii-tbody tr[data-idx] button.ii-sx').length);
 const rows   = await page.evaluate(() => document.querySelectorAll('#ii-tbody tr[data-idx]').length);
-const sxDisabledWhenEmpty = await page.evaluate(() => document.querySelector('#ii-tbody tr[data-idx] button.ii-sx').disabled);
+const sxDisabledWhenEmpty = await page.evaluate(() => {
+  const tr = [...document.querySelectorAll('#ii-tbody tr[data-idx]')].find(r => !r.querySelector('input.ii-input').value && !r.querySelector('.ii-existing samp'));
+  return tr ? tr.querySelector('button.ii-sx').disabled : 'no-row';
+});
+const sxEnabledForExisting = await page.evaluate(() => {
+  const tr = [...document.querySelectorAll('#ii-tbody tr[data-idx]')].find(r => !r.querySelector('input.ii-input').value && r.querySelector('.ii-existing samp'));
+  return tr ? !tr.querySelector('button.ii-sx').disabled : 'no-row';
+});
+// pick an empty, no-existing row for the typing test (so disabled→enabled is meaningful)
+const typeSel = await page.evaluate(() => {
+  const all = [...document.querySelectorAll('#ii-tbody tr[data-idx]')];
+  const tr = all.find(r => !r.querySelector('input.ii-input').value && !r.querySelector('.ii-existing samp')) || all[0];
+  return '#ii-tbody tr[data-idx="' + tr.dataset.idx + '"]';
+});
 
 // (B) Typing a valid ISRC WITHOUT blur must NOT call SX, but ENABLES [SX]
-await page.evaluate(() => { const inp = document.querySelector('#ii-tbody tr[data-idx] input.ii-input'); inp.focus(); inp.value = 'USRC17607830'; inp.dispatchEvent(new Event('input', { bubbles: true })); });
+await page.evaluate((sel) => { const inp = document.querySelector(sel + ' input.ii-input'); inp.focus(); inp.value = 'USRC17607830'; inp.dispatchEvent(new Event('input', { bubbles: true })); }, typeSel);
 await page.waitForTimeout(600);
 const callsAfterType = sxCalls;
-const sxEnabledWhenValid = await page.evaluate(() => !document.querySelector('#ii-tbody tr[data-idx] button.ii-sx').disabled);
+const sxEnabledWhenValid = await page.evaluate((sel) => !document.querySelector(sel + ' button.ii-sx').disabled, typeSel);
 
 // (C) Blur → fires exactly one SX call → captcha recognised in the row bullet
-await page.evaluate(() => { document.querySelector('#ii-tbody tr[data-idx] input.ii-input').dispatchEvent(new Event('blur', { bubbles: true })); });
+await page.evaluate((sel) => { document.querySelector(sel + ' input.ii-input').dispatchEvent(new Event('blur', { bubbles: true })); }, typeSel);
 await page.waitForTimeout(900);
 const callsAfterBlur = sxCalls;
-const state = await page.evaluate(() => ({
-  bullet: (document.querySelector('#ii-tbody tr[data-idx] .ii-lookup')?.textContent || '').trim(),
+const state = await page.evaluate((sel) => ({
+  bullet: (document.querySelector(sel + ' .ii-lookup')?.textContent || '').trim(),
   prog:   (document.getElementById('ii-prog')?.textContent || '').trim(),
   progHasLink: !!document.querySelector('#ii-prog a'),
-}));
+}), typeSel);
 
 // (D) The [SX] button does a SINGLE by-ISRC fetch and does NOT open the refine panel
 const beforeBtn = sxCalls;
-await page.evaluate(() => document.querySelector('#ii-tbody tr[data-idx] button.ii-sx').click());
+await page.evaluate((sel) => document.querySelector(sel + ' button.ii-sx').click(), typeSel);
 await page.waitForTimeout(800);
 const sxBtnDelta = sxCalls - beforeBtn;
 const refinePanelOpen = await page.evaluate(() => { const p = document.getElementById('ii-sxpanel'); return !!(p && p.offsetParent !== null); });
 
-console.log(JSON.stringify({ rows, sxBtns, sxDisabledWhenEmpty, callsAfterType, sxEnabledWhenValid, callsAfterBlur, sxBtnDelta, refinePanelOpen, state, pageErrors: perr }, null, 2));
-const pass = sxBtns === rows && sxDisabledWhenEmpty === true && callsAfterType === 0 && sxEnabledWhenValid === true &&
+console.log(JSON.stringify({ rows, sxBtns, sxDisabledWhenEmpty, sxEnabledForExisting, callsAfterType, sxEnabledWhenValid, callsAfterBlur, sxBtnDelta, refinePanelOpen, state, pageErrors: perr }, null, 2));
+const okDisabled  = sxDisabledWhenEmpty === true || sxDisabledWhenEmpty === 'no-row';
+const okExisting  = sxEnabledForExisting === true || sxEnabledForExisting === 'no-row';
+const pass = sxBtns === rows && okDisabled && okExisting && callsAfterType === 0 && sxEnabledWhenValid === true &&
              callsAfterBlur === 1 && /captcha/i.test(state.bullet) && /captcha/i.test(state.prog) && state.progHasLink &&
              sxBtnDelta === 1 && refinePanelOpen === false && perr.length === 0;
 console.log(pass ? 'PASS' : 'FAIL');
