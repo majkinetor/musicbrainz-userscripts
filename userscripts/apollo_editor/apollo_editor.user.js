@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7.170500
+// @version      2026.6.7.172000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -423,7 +423,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.7.170500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.172000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1805,6 +1805,11 @@
       '.tc-rectbl.gridcols td,.tc-rectbl.gridcols th{border-right:1px solid #ededed}.tc-rectbl.gridcols td:last-child,.tc-rectbl.gridcols th:last-child{border-right:none}',
       '.tc-rectbl.alt tbody tr.tc-recrow:nth-of-type(even) td:not(.tc-diff):not(.tc-copy){background:#f6f4fb}',   // zebra skips highlighted cells so their colour always shows',
       '.tc-rectbl tr.tc-recmed td{background:#f3f0fa;font-weight:600;color:#4b2e83}',
+      // collapsed-medium expand control (#149)
+      '.tc-rectbl tr.tc-recmed-coll td{padding:0}',
+      '.tc-rectbl .tc-recmed-exp{width:100%;text-align:left;border:none;background:#f3f0fa;color:#4b2e83;font:600 13px Arial;padding:7px 10px;cursor:pointer}',
+      '.tc-rectbl .tc-recmed-exp:hover{background:#ece5f7;color:#5f3ec0}',
+      '.tc-rectbl .tc-recmed-exp.loading{cursor:default;opacity:.7}',
       '.tc-rectbl tr.tc-recchanged td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}',   // changed-row marker, like the Tracklist tab',
       '.tc-rectbl .c-n{color:#999;text-align:right;width:34px;min-width:34px;white-space:nowrap}',
       '.tc-rectbl .c-sep{width:20px;text-align:center}',
@@ -1889,6 +1894,9 @@
       'body.tc-rec-on #recordings fieldset:has(#tc-recwrap){border:none!important;margin:0!important;padding:0!important}',
       'body.tc-rec-on #recordings fieldset:has(#tc-recwrap) > legend{display:none!important}',
       'body.tc-rec-on #recordings fieldset:has(#tc-recwrap) > table{display:none!important}',
+      // #149: hide every native per-medium "Edit" (load-tracks) button — Apollo
+      // renders all mediums collapsed and triggers the load itself on expand.
+      'body.tc-rec-on #recordings button[data-click="loadTracks"]{display:none!important}',
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -2005,9 +2013,46 @@
       warn.title = unset ? 'jump to the first track without a recording' : '';
     }
     tb.innerHTML = '';
-    let lastMi = -1;
-    rows.forEach(r => {
-      if (multi && r.mi !== lastMi) { lastMi = r.mi; const mr = document.createElement('tr'); mr.className = 'tc-recmed'; mr.innerHTML = '<td colspan="8">Medium ' + (r.mi + 1) + '</td>'; tb.appendChild(mr); }
+    // #149: iterate ALL mediums so collapsed ones still appear (with an expand
+    // control) instead of being silently dropped — previously only the medium MB
+    // had loaded showed up.
+    mediums().forEach((med, mi) => {
+      const collapsed = !mediumLoadedRec(med);
+      if (multi || collapsed) {
+        const mr = document.createElement('tr'); mr.className = 'tc-recmed' + (collapsed ? ' tc-recmed-coll' : ''); mr.dataset.mi = String(mi);
+        if (collapsed) {
+          const td = document.createElement('td'); td.colSpan = 8;
+          const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tc-recmed-exp';
+          btn.textContent = '▸ Medium ' + (mi + 1) + ' — load recordings';
+          btn.onclick = () => expandRecMedium(mi, btn);
+          td.appendChild(btn); mr.appendChild(td);
+        } else {
+          mr.innerHTML = '<td colspan="8">Medium ' + (mi + 1) + '</td>';
+        }
+        tb.appendChild(mr);
+      }
+      if (collapsed) return;   // no track rows until the user expands it
+      rows.forEach(r => { if (r.mi === mi) tb.appendChild(renderRecRow(r)); });
+    });
+    _lastRecSig = recSig();   // mark the state this render reflects, so the tick only re-renders on real changes
+  }
+  function mediumLoadedRec(med) { try { return typeof med.loaded === 'function' ? !!u(med.loaded) : true; } catch (e) { return true; } }
+  // #149: load a collapsed medium's recordings on demand — the native per-medium
+  // "Edit" button's loadTracks action (those buttons are hidden). loadTracks fetches
+  // async, so poll the model until the medium reports loaded, then re-render.
+  function expandRecMedium(mi, btn) {
+    const med = mediums()[mi]; if (!med) return;
+    if (btn) { btn.classList.add('loading'); btn.textContent = '⏳ Medium ' + (mi + 1) + ' — loading…'; }
+    try { if (typeof med.loadTracks === 'function') { Log.info('loading recordings for medium ' + (mi + 1)); med.loadTracks(); } }
+    catch (e) { Log.warn('loadTracks failed', e.message); }
+    let n = 0;
+    // loadTracks makes MB re-render the recordings panel, which can wipe our
+    // mounted table — so re-mount via showRecMirror (re-anchors to the now-loaded
+    // medium's table + re-renders) once the medium reports loaded. #149
+    const poll = () => { n++; if (mediumLoadedRec(med) || n > 75) { snapshotRecOriginals(); showRecMirror(); } else setTimeout(poll, 200); };
+    setTimeout(poll, 200);
+  }
+  function renderRecRow(r) {
       const d = r.diffs || {};
       // recording name: click to open the picker. Artists are links. When a copy-to-match flag is set
       // (from the picker), the cell previews the track value the recording will become (green). #119
@@ -2050,9 +2095,7 @@
         rev.onclick = e => { e.stopPropagation(); revertRecording(r); };
         nameCell.appendChild(rev);
       }
-      tb.appendChild(tr);
-    });
-    _lastRecSig = recSig();   // mark the state this render reflects, so the tick only re-renders on real changes
+      return tr;
   }
   // confidence level of a candidate vs the track: 0 tolerance(green) · 1 near · 2 low · 3 very low
   // "Cutoff" = the LOWEST confidence still auto-linked; anything below it is left unmatched. Levels run
@@ -2135,12 +2178,16 @@
   function rerenderRec() { renderRecBody(); }   // body only — keeps the toolbar (status / inputs) intact
 
   /* ── original-recording snapshot for revert + clear-all (#119) ── */
-  const _recOrig = new Map(); let _recSnapped = false;
+  const _recOrig = new Map();
+  // Additive: snapshots tracks not yet captured, keeping the earliest (page-load)
+  // baseline. Re-run safely after a collapsed medium is expanded (#149) so its
+  // newly-loaded tracks also get a revert baseline.
   function snapshotRecOriginals() {
-    if (_recSnapped) return; _recSnapped = true;
     mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => {
+      const key = mi + ':' + ti;
+      if (_recOrig.has(key)) return;
       const r = u(t.recording);
-      _recOrig.set(mi + ':' + ti, { entity: r, gid: r ? u(r.gid) : null, isNew: typeof t.hasNewRecording === 'function' ? !!u(t.hasNewRecording) : false });
+      _recOrig.set(key, { entity: r, gid: r ? u(r.gid) : null, isNew: typeof t.hasNewRecording === 'function' ? !!u(t.hasNewRecording) : false });
     }));
   }
   function _restoreRec(entry, o) {
@@ -2464,10 +2511,15 @@
   // Both read/write the same MB model, so toggling Original/Apollo lets you work in either view (#119).
   function showRecMirror() {
     _apolloUsed = true;
-    recStyle(); snapshotRecOriginals();   // capture the page-load recording associations once, for revert
-    const tbl = document.getElementById('track-recording-assignation'); if (!tbl) return;
+    recStyle(); snapshotRecOriginals();   // capture the page-load recording associations, for revert
+    // Anchor on a loaded medium's assignation table when present; otherwise (every
+    // medium collapsed, #149) mount into the recordings panel itself so we still
+    // render — each collapsed medium then shows an expand control.
+    const tbl = document.getElementById('track-recording-assignation');
+    const host = tbl ? tbl.parentElement : document.getElementById('recordings');
+    if (!host) return;
     let wrap = document.getElementById('tc-recwrap');
-    if (!wrap) { wrap = document.createElement('div'); wrap.id = 'tc-recwrap'; tbl.parentElement.insertBefore(wrap, tbl); }
+    if (!wrap) { wrap = document.createElement('div'); wrap.id = 'tc-recwrap'; host.insertBefore(wrap, tbl || host.firstChild); }
     document.body.classList.add('tc-rec-on');   // CSS hides the native table + widens the column (no flash)
     renderRecMirror(wrap);
     // optional: auto-match the Recordings tab on load (settings), once per page session
