@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.6
+// @version      2026.6.7
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -87,7 +87,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.6.6';
+  const SCRIPT_VERSION = '2026.6.7';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -431,6 +431,10 @@
       border-radius: 4px; background: #f8f9fa; cursor: pointer; color: #6c757d; font-family: monospace; }
     .ii-plus:hover { background: #e9ecef; color: #212529; }
     .ii-plus-hidden { visibility: hidden; }   /* reserve the slot on the first row so SX text still aligns */
+    /* explicit per-track SoundExchange trigger (#157), sits next to +1 */
+    .ii-sx { flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 7px; border: 1px solid #cfd8e3;
+      border-radius: 4px; background: #eef3fb; cursor: pointer; color: #2c5d9b; font-family: monospace; }
+    .ii-sx:hover { background: #dde8f7; color: #1b3f6e; }
     .ii-cands { margin-top: 4px; display: flex; flex-direction: column; gap: 3px; width: auto; }
     .ii-cand { display: flex; align-items: flex-start; gap: 7px; padding: 3px 7px; border: 1px solid #dee2e6;
       border-radius: 4px; cursor: pointer; font-size: 11px; background: #fff; }
@@ -856,6 +860,11 @@
         // callers can stop the batch and show the right message. #126
         if (r.status === 429) { const e = new Error('SoundExchange rate limit (HTTP 429)'); e.rateLimited = true; throw e; }
         let p; try { p = JSON.parse(r.responseText); } catch (e) { throw new Error('SX parse error'); }
+        // After too many requests SoundExchange serves a captcha: HTTP 202 with
+        // body {"searchCaptcha": true}. It's NOT an empty result — caching it as
+        // "not found" left rows permanently stuck. Surface a typed error so
+        // callers pause (like a rate limit) and prompt the user to solve it. #157
+        if (p && p.searchCaptcha) { const e = new Error('SoundExchange captcha'); e.captcha = true; throw e; }
         return dedupe(p.recordings || p.results || p.data || (Array.isArray(p) ? p : []));
       });
       return doReq(_token);
@@ -1331,6 +1340,7 @@
           '</div>' +
           // first track has no previous ISRC to increment — hide +1 but keep its slot so SX text stays aligned
           '<button class="ii-plus' + (idx === 0 ? ' ii-plus-hidden' : '') + '" title="Previous ISRC + 1  (right-click: fill the +1 sequence down to the last track, overwriting)">+1</button>' +
+          '<button class="ii-sx" type="button" title="Search this track on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist">SX</button>' +
           '<span class="ii-lookup"></span>' +
           '</div><div class="ii-cands"></div></td>';
       const input = tr.querySelector('.ii-input');
@@ -1345,16 +1355,30 @@
         input.dataset.autofill = '';
         validateInput(input, t);
         updateSummary();
-        // verify on SoundExchange as soon as a full ISRC is entered (cached)
+        // #157: don't hit SoundExchange on every keystroke (that spammed SX).
+        // Clear any stale bullet while editing; the SX check now fires on blur
+        // (manual entry) or the row's [SX] button.
+        const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; }
+      });
+      // Manual entry → verify on SoundExchange only when the field loses focus (#157).
+      input.addEventListener('blur', () => {
+        if (input.dataset.autofill === '1') return;   // filled by a source, not manual typing
         const v = normalizeIsrc(input.value);
-        if (v && isValidIsrc(v)) lookupIsrc(idx, v);
-        else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; } }
+        if (v && isValidIsrc(v)) lookupIsrc(idx, v).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); });
       });
       const plusBtn = tr.querySelector('.ii-plus');
       if (plusBtn && idx > 0) {   // first row's +1 is a hidden spacer — don't wire it
         plusBtn.addEventListener('click', () => plusOne(idx));
         plusBtn.addEventListener('contextmenu', e => { e.preventDefault(); plusOneFillDown(idx); });
       }
+      // Explicit per-track SoundExchange trigger (#157): verify the entered ISRC,
+      // or — when the field is empty/invalid — open the refine panel to search.
+      const sxBtn = tr.querySelector('.ii-sx');
+      if (sxBtn) sxBtn.addEventListener('click', () => {
+        const v = normalizeIsrc(input.value);
+        if (v && isValidIsrc(v)) lookupIsrc(idx, v).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); });
+        else openSxPanel(idx);
+      });
       tbody.appendChild(tr);
       validateInput(input, t);
       // initial per-track entry point to the SoundExchange refine panel
@@ -1415,7 +1439,7 @@
       el.title = [f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ') + (rel ? '  |  ' + rel : '');
       Log.info('SX lookup ' + isrc + ': ' + (good ? 'match' : cls === 'warn' ? 'length mismatch' : 'MISMATCH') + ' "' + f.title + '" — ' + f.artist);
     }).catch(e => {
-      if (e && e.rateLimited) { el.className = 'ii-lookup err'; el.textContent = '⚠ rate-limited'; throw e; }   // let pumpVerify stop the queue (#126)
+      if (e && (e.rateLimited || e.captcha)) { el.className = 'ii-lookup err'; el.textContent = e.captcha ? '⚠ captcha' : '⚠ rate-limited'; throw e; }   // let pumpVerify stop the queue (#126/#157)
       el.className = 'ii-lookup err'; el.textContent = '✗ lookup failed'; Log.err('SX lookup ' + isrc + ' failed: ' + e.message);
     });
   }
@@ -1460,7 +1484,7 @@
         // skip if the field no longer holds this value (user changed it meanwhile)
         if (!t || !isValidIsrc(isrc) || normalizeIsrc(t.pending) !== normalizeIsrc(isrc)) continue;
         const cached = !!_isrcLookupCache[isrc];   // primed SX rows → no request, no pacing/cap
-        try { await lookupIsrc(idx, isrc); } catch (e) { if (e && e.rateLimited) { sxRateLimited(); return; } }
+        try { await lookupIsrc(idx, isrc); } catch (e) { if (e && (e.rateLimited || e.captcha)) { sxBlocked(e); return; } }
         if (myEpoch !== _sxEpoch) return;                                 // cancelled while the request was in flight
         if (!cached) { _vq.done++; if (_vq.items.length && _vq.done < SX_BATCH_LIMIT) await sleep(BATCH_DELAY); }
       }
@@ -1489,15 +1513,17 @@
     input.value = t.pending;
     input.dataset.autofill = '1';            // filled by a source — the on-input handler won't fire
     validateInput(input, t);
-    // Verify whatever was just set (manual, +1, bulk, Deezer/Spotify, AND
-    // SoundExchange) so every filled value shows the match-check bullet. SX-sourced
-    // fills don't cost an extra request: renderCands / the panel prime _isrcLookupCache
-    // with the search row, so the by-ISRC lookup is served from cache. Routed through
-    // enqueueVerify so bulk imports stay serialized + capped.
-    if (isValidIsrc(t.pending)) {
-      if (_deferVerify) { _deferredVerify.add(idx); const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; } }
-      else enqueueVerify(idx, t.pending);
-    } else { const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; } }
+    // #157: do NOT auto-hit SoundExchange on fills. Deezer/Spotify/+1/paste fills
+    // used to enqueue a per-track SX verify, which spammed SX (and double-hit it
+    // during the bulk SX search). Now we only show the match bullet when the SX
+    // data is ALREADY cached — i.e. an SX-sourced pick, whose by-ISRC lookup is
+    // served from cache with no request (renderCands / the panel prime the cache).
+    // Everything else stays blank; verify it via the row [SX] button, by blurring
+    // a manual entry, or the bulk SoundExchange search.
+    const lk0 = rowLookup(idx);
+    if (isValidIsrc(t.pending) && _isrcLookupCache[t.pending]) {
+      enqueueVerify(idx, t.pending);   // cached → free
+    } else if (lk0) { lk0.className = 'ii-lookup'; lk0.textContent = ''; lk0.onclick = null; }
     if (flash) {
       const tr = input.closest('tr');
       tr.classList.remove('ii-row-fill'); void tr.offsetWidth; tr.classList.add('ii-row-fill');
@@ -1902,7 +1928,9 @@
       renderSxPanelResults(idx, rows);
     }).catch(e => {
       if (gen !== _sxPanelGen) return;
-      goBtn.disabled = false; stEl.className = 'ii-sxp-status err'; stEl.textContent = '⚠ ' + e.message; resEl.innerHTML = '';
+      goBtn.disabled = false; stEl.className = 'ii-sxp-status err'; resEl.innerHTML = '';
+      if (e && (e.rateLimited || e.captcha)) { stEl.textContent = e.captcha ? '⚠ captcha — resolve in browser, then retry' : '⚠ rate-limited — wait a minute'; sxBlocked(e); }
+      else stEl.textContent = '⚠ ' + e.message;
     });
   }
   function renderSxPanelResults(idx, rows) {
@@ -1948,15 +1976,32 @@
     if (progEl) { progEl.textContent = ''; progEl.classList.remove('err'); }
     if (reason) Log.info('SoundExchange: cancelled all queued work (' + reason + ')');
   }
-  // SoundExchange rate-limited us (HTTP 429): stop the bulk run and surface it in the toolbar. #126
-  function sxRateLimited() {
+  // SoundExchange blocked us — either a rate limit (HTTP 429) or a captcha (HTTP
+  // 202 {"searchCaptcha": true}, #157). Either way: stop the bulk run, abort
+  // in-flight requests, and surface the cause + how to recover in the toolbar.
+  // The captcha needs the user to solve it on SX's site, so we link there. #126/#157
+  function sxBlocked(err) {
     _sxEpoch++;                              // stop the running loops — don't issue any more requests
     _sxRunning = false; _vq.running = false;
     abortInflight('soundexchange');
     const btn = modal && modal.querySelector('#ii-sx-all'); if (btn) btn.disabled = false;
-    if (progEl) { progEl.textContent = '⚠ SoundExchange rate-limited (HTTP 429) — paused; wait a minute and retry'; progEl.classList.add('err'); }
-    toast('SoundExchange rate-limited (429) — stopped. Wait a minute and retry.', 'err');
-    Log.warn('SoundExchange rate-limited (429) — bulk search stopped');
+    if (err && err.captcha) {
+      if (progEl) {
+        progEl.classList.add('err');
+        progEl.textContent = '⚠ SoundExchange captcha — ';
+        const a = document.createElement('a');
+        a.href = SX_HOME; a.target = '_blank'; a.rel = 'noopener';
+        a.textContent = 'resolve captcha in browser to unblock ↗';
+        progEl.appendChild(a);
+        const tail = document.createElement('span'); tail.textContent = ', then retry'; progEl.appendChild(tail);
+      }
+      toast('SoundExchange captcha — resolve it in the browser, then retry.', 'err');
+      Log.warn('SoundExchange captcha (202 searchCaptcha) — bulk search stopped; resolve in browser to unblock');
+    } else {
+      if (progEl) { progEl.textContent = '⚠ SoundExchange rate-limited (HTTP 429) — paused; wait a minute and retry'; progEl.classList.add('err'); }
+      toast('SoundExchange rate-limited (429) — stopped. Wait a minute and retry.', 'err');
+      Log.warn('SoundExchange rate-limited (429) — bulk search stopped');
+    }
   }
 
   function runSxAll() {
@@ -2013,13 +2058,14 @@
           (bestIsrc ? ', best ' + bestIsrc + (t.existing.includes(bestIsrc) ? ' (already in MB)' : '') : ', no confident match'));
       } catch (e) {
         if (myEpoch !== _sxEpoch) return;                  // cancelled while in flight
-        if (e && e.rateLimited) {
-          // SoundExchange 429 → stop the whole bulk run; leave the unsearched rows (incl. this one)
-          // as click-to-retry placeholders, and surface the cause in the toolbar. #126
+        if (e && (e.rateLimited || e.captcha)) {
+          // SoundExchange 429 (rate limit) or 202 captcha → stop the whole bulk run;
+          // leave the unsearched rows (incl. this one) as click-to-retry placeholders,
+          // and surface the cause + recovery in the toolbar. #126/#157
           _sxCursor += n;
           const left = _sxTodo.length - _sxCursor;
           if (left > 0) _sxTodo.slice(_sxCursor).forEach(j => sxPlaceholder(j, left));
-          sxRateLimited();
+          sxBlocked(e);
           return;
         }
         renderCands(i, []);

@@ -30,8 +30,9 @@ The **Deezer** button has a **▾** menu to *import from a custom album URL* —
 ### Per-track helpers
 
 - **+1** — fill with the previous track's ISRC incremented by one.
+- **SX** — search this track on SoundExchange on demand: verifies the ISRC currently in the field, or — when the field is empty — opens the refine panel to search by title/artist.
 - Click any SoundExchange candidate to use it, or **⚙ refine search** to open a panel where you can tweak the title/artist/release + exact toggles. The panel has a **Search on SoundExchange ↗** link that runs the same query on the SoundExchange website.
-- Track titles link to the MB recording. **Any** value set in a field — typed, **+1**, or imported from Deezer / Spotify / SoundExchange — is verified on SoundExchange inline (cached) with the field-level match highlighting below. ISRCs duplicated across different recordings are flagged pink.
+- Track titles link to the MB recording. To avoid hammering SoundExchange (which now serves a captcha after too many requests), SoundExchange is **not** called automatically as you type or when values are imported from Deezer / Spotify / **+1**. A field is verified on SoundExchange only when you **blur a manually-typed ISRC**, press the row's **SX** button, or run the bulk **⟳ SoundExchange** search; values picked from a SoundExchange search still show their match instantly (from cache, no extra request). ISRCs duplicated across different recordings are flagged pink. If SoundExchange shows a captcha, the toolbar links you to solve it in the browser, then retry.
 
 #### Match checks & highlighting
 
