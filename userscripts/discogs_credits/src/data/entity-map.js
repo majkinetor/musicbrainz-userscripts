@@ -401,7 +401,12 @@ export const ENTITY_TYPE_MAP = {
     },
     Technician: {
         entityType: 'artist',
-        linkType: 'instruments technician',
+        // MB's link type is singular ("instrument technician"). The plural
+        // form here missed the exact-name match in resolveLinkTypeId, so the
+        // fuzzy contains-match collapsed "instruments technician" down to the
+        // bare "instrument" performance link type — turning a piano tuner /
+        // tech credit into an instrument performer. #155
+        linkType: 'instrument technician',
     },
     publisher: {
         entityType: 'artist',

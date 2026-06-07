@@ -128,11 +128,9 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         const done = added + skipped + failed;
         const est = Math.max(done + 1, companies.length + artistRoles.length + tracklistRels.length);
         const pct = Math.min(Math.round((done / est) * 99), 99);
-        const _pct = document.querySelector('#discogs-progress-pct');
-        if (_pct) _pct.textContent = pct + '%';
         // Push the actual fill width to the top-of-page progress bar
-        // (#82). Before this change the bar only animated marquee
-        // during the dispatch phase; only the inline % text moved.
+        // (#82). `_setProgressPct` also mirrors the value into the inline
+        // "NN%" header text (#151), so no separate text write is needed.
         try { _setProgressPct(pct); } catch (_) {}
     }
 

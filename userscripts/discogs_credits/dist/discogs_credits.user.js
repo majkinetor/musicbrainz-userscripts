@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.7.141733
+// @version      2026.6.7.143149
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -399,6 +399,8 @@
     const p = Math.max(0, Math.min(100, Number(pct) || 0));
     clearInterval(_pInterval);
     _pInterval = null;
+    const pctEl = document.getElementById("discogs-progress-pct");
+    if (pctEl) pctEl.textContent = Math.round(p) + "%";
     const fill = document.getElementById("discogs-pb-fill");
     if (!fill) return;
     fill.style.left = "0";
@@ -865,7 +867,12 @@
     },
     Technician: {
       entityType: "artist",
-      linkType: "instruments technician"
+      // MB's link type is singular ("instrument technician"). The plural
+      // form here missed the exact-name match in resolveLinkTypeId, so the
+      // fuzzy contains-match collapsed "instruments technician" down to the
+      // bare "instrument" performance link type — turning a piano tuner /
+      // tech credit into an instrument performer. #155
+      linkType: "instrument technician"
     },
     publisher: {
       entityType: "artist",
@@ -3424,8 +3431,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const done = added + skipped + failed;
       const est = Math.max(done + 1, companies.length + artistRoles.length + tracklistRels.length);
       const pct = Math.min(Math.round(done / est * 99), 99);
-      const _pct = document.querySelector("#discogs-progress-pct");
-      if (_pct) _pct.textContent = pct + "%";
       try {
         _setProgressPct(pct);
       } catch (_) {

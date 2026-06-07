@@ -66,6 +66,13 @@ export function _setProgressPct(pct) {
     const p = Math.max(0, Math.min(100, Number(pct) || 0));
     clearInterval(_pInterval);
     _pInterval = null;
+    // Keep the inline "NN%" text in the bar header in lock-step with the
+    // fill stripe. Without this, callers that only push percentages here
+    // (the preflight/prefetch phase) left the number frozen at its initial
+    // 0% while the stripe advanced — only the dispatch phase updated the
+    // text on its own. Centralising it means every caller mirrors. #151
+    const pctEl = document.getElementById('discogs-progress-pct');
+    if (pctEl) pctEl.textContent = Math.round(p) + '%';
     const fill = document.getElementById('discogs-pb-fill');
     if (!fill) return;
     fill.style.left = '0';
