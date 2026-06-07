@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7.161000
+// @version      2026.6.7.165200
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -385,6 +385,13 @@
     catch (e) { return u(t.name); }
   }
   function applyGuessTitle(entry) { try { getEditor().guessCaseTrackName(koTrack(entry.mi, entry.ti), { type: 'click' }); } catch (e) { Log.warn('guess case failed', e.message); } }
+  // Lazily get the absolute overlay that hosts a title cell's action buttons
+  // (Aa / ⋔), so they don't reserve flex width and shrink the input. #153
+  function tActions(wrap) {
+    let a = wrap.querySelector('.t-actions');
+    if (!a) { a = document.createElement('span'); a.className = 't-actions'; wrap.appendChild(a); }
+    return a;
+  }
 
   /* ── create artist ── */
   function guessSortName(name) {
@@ -416,7 +423,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.7.161000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.165200';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -478,7 +485,13 @@
     .tc-mirror input.t-len,.tc-mirror input.t-num{text-align:right;color:#666}
     .tc-mirror input.t-num{text-align:center}
     .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:#bbb;background:#fff}
-    .tc-mirror .t-wrap{display:flex;align-items:center;gap:3px}.tc-mirror .t-wrap input.t-title{flex:1;min-width:0;width:auto}
+    .tc-mirror .t-wrap{display:flex;align-items:center;gap:3px;position:relative}.tc-mirror .t-wrap input.t-title{flex:1;min-width:0;width:auto}
+    /* In-cell action buttons (Aa / ⋔) overlay the input's right edge instead of
+       sitting in the flex flow, so they don't reserve width and shrink the input —
+       otherwise "Fit" sizes the column to the text but the reserved button space
+       clips long titles. #153 */
+    .tc-mirror .t-actions{position:absolute;right:2px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:3px;pointer-events:none}
+    .tc-mirror .t-actions>*{pointer-events:auto}
     .tc-mirror input.t-title.diff{background:#fff6da;border-color:#e7ce8a;border-radius:3px}
     .tc-mirror input.t-title.gcpreview{background:#e3f6e3;border-color:#86c686;border-radius:3px}
     /* MB medium-format select made to read as plain text — click still opens the native dropdown */
@@ -1213,7 +1226,7 @@
         gb.onclick = () => { restore(); applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); rerender(); };
         // right-click the [Aa] runs guess case on every track (same as the Tools-menu action) — #123
         gb.oncontextmenu = e => { e.preventDefault(); restore(); guessCaseAll(); };
-        wrap.appendChild(gb);
+        tActions(wrap).appendChild(gb);
       }
       // featured-artist split: flag titles carrying "feat./ft./featuring" and offer the split inline,
       // mirroring [Aa] — click ⋔ splits this track, right-click splits all (#124)
@@ -1223,7 +1236,7 @@
         fb.title = 'Split featured artist out of the title into the artist credit\n(right-click: split all tracks)';
         fb.onclick = () => guessFeatTrack(t);
         fb.oncontextmenu = e => { e.preventDefault(); guessFeatAll(); };
-        tr.querySelector('.t-wrap').appendChild(fb);
+        tActions(tr.querySelector('.t-wrap')).appendChild(fb);
       }
       tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; wireRowNav(tin);
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
