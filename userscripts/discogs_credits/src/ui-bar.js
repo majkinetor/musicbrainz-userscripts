@@ -291,11 +291,11 @@ export function insertDiscogsBar(discogsUrl) {
         .discogs-log-panel { display: none; }
         .discogs-output.log-open .discogs-log-panel { display: block; }
         .discogs-review-slot:not(:empty) { margin: 0.2rem 0; }
-        /* severity filter: show only warnings (warn+error) or errors. "skip"
-           lines (unresolved-entity skips, #118) are kept out of the Warnings
-           view so it matches the WARN badge count — they show under "All". */
-        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li:not([data-sev]),
-        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li[data-sev="skip"] { display: none; }
+        /* severity filter: Warnings shows only warn lines, Errors only error
+           lines — each view matches its header badge count. "skip" lines
+           (unresolved-entity skips, #118) and info lines show only under
+           "All"; errors are NOT lumped into the Warnings view. */
+        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li:not([data-sev="warn"]) { display: none; }
         .discogs-output[data-logfilter="error"] .discogs-log-body .logs > li:not([data-sev="error"]) { display: none; }
         /* ── Progress / sticky bar ── */
         /* Pinned during import (is-importing) AND kept pinned afterwards
@@ -835,7 +835,7 @@ export function insertDiscogsBar(discogsUrl) {
             window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
         });
     }
-    warnPill.addEventListener('click', () => openLog('warn',  'li[data-sev="warn"], li[data-sev="error"]'));
+    warnPill.addEventListener('click', () => openLog('warn',  'li[data-sev="warn"]'));
     errPill.addEventListener('click', () => openLog('error', 'li[data-sev="error"]'));
     unresolvedPill.addEventListener('click', () => openLog('all', 'li[data-sev="skip"]'));
 

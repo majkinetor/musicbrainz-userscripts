@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.7
+// @version      2026.6.7.235946
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -4235,11 +4235,11 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         .discogs-log-panel { display: none; }
         .discogs-output.log-open .discogs-log-panel { display: block; }
         .discogs-review-slot:not(:empty) { margin: 0.2rem 0; }
-        /* severity filter: show only warnings (warn+error) or errors. "skip"
-           lines (unresolved-entity skips, #118) are kept out of the Warnings
-           view so it matches the WARN badge count \u2014 they show under "All". */
-        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li:not([data-sev]),
-        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li[data-sev="skip"] { display: none; }
+        /* severity filter: Warnings shows only warn lines, Errors only error
+           lines \u2014 each view matches its header badge count. "skip" lines
+           (unresolved-entity skips, #118) and info lines show only under
+           "All"; errors are NOT lumped into the Warnings view. */
+        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li:not([data-sev="warn"]) { display: none; }
         .discogs-output[data-logfilter="error"] .discogs-log-body .logs > li:not([data-sev="error"]) { display: none; }
         /* \u2500\u2500 Progress / sticky bar \u2500\u2500 */
         /* Pinned during import (is-importing) AND kept pinned afterwards
@@ -4691,7 +4691,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
       });
     }
-    warnPill.addEventListener("click", () => openLog("warn", 'li[data-sev="warn"], li[data-sev="error"]'));
+    warnPill.addEventListener("click", () => openLog("warn", 'li[data-sev="warn"]'));
     errPill.addEventListener("click", () => openLog("error", 'li[data-sev="error"]'));
     unresolvedPill.addEventListener("click", () => openLog("all", 'li[data-sev="skip"]'));
     onLogCounts((w, e) => {
