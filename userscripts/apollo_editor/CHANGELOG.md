@@ -1,5 +1,32 @@
 # Apollo Editor Changelog
 
+## [2026.6.7](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.7)
+
+### Features
+
+1. Beautification of  the tracklist medium header ([#154](https://github.com/majkinetor/musicbrainz-userscripts/issues/154))
+1. Search and replace regular expressions & templates ([#152](https://github.com/majkinetor/musicbrainz-userscripts/issues/152))
+1. Change order of artist credits ([#150](https://github.com/majkinetor/musicbrainz-userscripts/issues/150))
+1. Improvements in updating recordings artist/title ([#146](https://github.com/majkinetor/musicbrainz-userscripts/issues/146))
+1. Recordings disambiguation ([#144](https://github.com/majkinetor/musicbrainz-userscripts/issues/144))
+1. Beutification of Release info ([#143](https://github.com/majkinetor/musicbrainz-userscripts/issues/143))
+1. Zen editing ([#141](https://github.com/majkinetor/musicbrainz-userscripts/issues/141))
+1. Navbar improvement: hiden native menu, paginators, cancel button ([#140](https://github.com/majkinetor/musicbrainz-userscripts/issues/140))
+1. Dead link checker ([#138](https://github.com/majkinetor/musicbrainz-userscripts/issues/138))
+1. Auto match off by default ([#137](https://github.com/majkinetor/musicbrainz-userscripts/issues/137))
+1. "Appears on" deduplication ([#136](https://github.com/majkinetor/musicbrainz-userscripts/issues/136))
+1. Switch button improvements ([#135](https://github.com/majkinetor/musicbrainz-userscripts/issues/135))
+1. Release information redesign ([#129](https://github.com/majkinetor/musicbrainz-userscripts/issues/129))
+
+### Fixes
+
+1. Keep uppercased non-functional ([#156](https://github.com/majkinetor/musicbrainz-userscripts/issues/156))
+1. Tracklist columns fit doesn't factor in guess case buttons ([#153](https://github.com/majkinetor/musicbrainz-userscripts/issues/153))
+1. Collapsed medium recordings are not fully expanded ([#149](https://github.com/majkinetor/musicbrainz-userscripts/issues/149))
+1. Visiting tab after switching editor produces flicker of disabled UI ([#145](https://github.com/majkinetor/musicbrainz-userscripts/issues/145))
+1. Track numbers wrap in recordings table ([#131](https://github.com/majkinetor/musicbrainz-userscripts/issues/131))
+1. Edit note is often not set ([#130](https://github.com/majkinetor/musicbrainz-userscripts/issues/130))
+
 ## [2026.6.5](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.5)
 
 ### Features

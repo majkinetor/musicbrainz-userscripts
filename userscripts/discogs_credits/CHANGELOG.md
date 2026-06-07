@@ -1,5 +1,19 @@
 # Import Discogs Credits Changelog
 
+## [2026.6.7](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.7)
+
+### Features
+
+1. Collapsible log in the header ([#142](https://github.com/majkinetor/musicbrainz-userscripts/issues/142))
+1. Toolbar redesign ([#139](https://github.com/majkinetor/musicbrainz-userscripts/issues/139))
+1. Toolbar improvements: last log message, warnings/errors ([#118](https://github.com/majkinetor/musicbrainz-userscripts/issues/118))
+
+### Fixes
+
+1. Fuzzy match: "instruments technician" → "instrument" ([#155](https://github.com/majkinetor/musicbrainz-userscripts/issues/155))
+1. Percentage not working during prefetch phase ([#151](https://github.com/majkinetor/musicbrainz-userscripts/issues/151))
+1. Missing instrument ([#133](https://github.com/majkinetor/musicbrainz-userscripts/issues/133))
+
 ## [2026.6.5](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.5)
 
 ### Fixes
