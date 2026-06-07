@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7.172000
+// @version      2026.6.7.173200
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -423,7 +423,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.7.172000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.173200';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -564,13 +564,16 @@
     .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
     .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:10px;padding:0 1px;line-height:1}.tc-joinarrow:hover{color:#5f3ec0}
     .tc-joinpop .tc-acrow{justify-content:space-between;gap:14px}.tc-joinpop .cmt{color:#999}
-    .tc-acts{flex:none;width:60px;display:flex;align-items:center;justify-content:flex-start;gap:4px;padding-left:4px}
-    .tc-enter,.tc-slotx,.tc-splitb{cursor:pointer;border:none;background:none;padding:0 1px;visibility:hidden;line-height:1}
+    .tc-acts{flex:none;width:76px;display:flex;align-items:center;justify-content:flex-start;gap:4px;padding-left:4px}
+    .tc-enter,.tc-slotx,.tc-splitb,.tc-slotgrab{cursor:pointer;border:none;background:none;padding:0 1px;visibility:hidden;line-height:1}
     .tc-enter{color:#7d6bc0;font-size:19px}.tc-enter:hover{color:#5f3ec0}
     .tc-splitb{color:#7d6bc0;font-size:16px;font-weight:bold}.tc-splitb:hover{color:#5f3ec0}
     .tc-aslot:not(.tc-can-split) .tc-splitb{display:none}
+    .tc-slotgrab{cursor:grab;color:#9a8fb5;font-size:13px;user-select:none}.tc-slotgrab:hover{color:#5f3ec0}.tc-slotgrab:active{cursor:grabbing}   /* #150: drag to reorder this artist within the credit */
+    .tc-aslot.tc-slotdragging{opacity:.45}
+    .tc-aslot.tc-slotdrop-before{box-shadow:inset 0 2px 0 #5f3ec0}.tc-aslot.tc-slotdrop-after{box-shadow:inset 0 -2px 0 #5f3ec0}
     .tc-slotx{color:#cc6699;font-size:13px}.tc-slotx:hover{color:#c0392b}
-    .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx,.tc-mirror tr:hover .tc-splitb{visibility:visible}
+    .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx,.tc-mirror tr:hover .tc-splitb,.tc-mirror tr:hover .tc-slotgrab{visibility:visible}
     .tc-acpop{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:#ede9f6}
@@ -1158,10 +1161,42 @@
     const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
     // ⋔ split: only when this credit looks like several artists (& / feat. / , …)
     { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.title = 'split into separate artists (& / feat. …) and match'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
-    if (entry.slots.length > 1) { const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x); }
+    if (entry.slots.length > 1) {
+      const g = document.createElement('span'); g.className = 'tc-slotgrab'; g.textContent = '⠿'; g.draggable = true; g.title = 'drag to reorder this artist within the credit'; acts.appendChild(g);   // #150
+      const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x);
+    }
     line.appendChild(acts);
+    if (entry.slots.length > 1) wireSlotDrag(line, entry, idx);   // #150
     return line;
   }
+  // #150: reorder an artist within a track's credit by dragging its ⠿ handle onto another slot.
+  // Join phrases ("feat." / "&" / …) are positional separators that stay put as artists move through
+  // them — so "A feat. B" reordered reads "B feat. A", and the final position is always join-less.
+  function moveSlot(entry, from, to) {
+    const n = entry.slots.length;
+    if (from === to || from < 0 || to < 0 || from >= n || to >= n) return;
+    const joins = entry.slots.map(s => s.joinPhrase);
+    const [s] = entry.slots.splice(from, 1); entry.slots.splice(to, 0, s);
+    entry.slots.forEach((x, i) => { x.joinPhrase = i < n - 1 ? (joins[i] || ' & ') : ''; x._entry = entry; });
+    commitTrack(entry); rerender(); Log.info('reordered artist', from, '→', to, 'on track', entry.number);
+  }
+  let _slotDrag = null;   // { entry, from } of the artist slot being dragged
+  function wireSlotDrag(line, entry, idx) {
+    const handle = line.querySelector('.tc-slotgrab');
+    if (handle) {
+      handle.addEventListener('dragstart', e => { _slotDrag = { entry, from: idx }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'slot'); } catch (x) {} try { e.dataTransfer.setDragImage(line, 18, 12); } catch (x) {} line.classList.add('tc-slotdragging'); });
+      handle.addEventListener('dragend', () => { line.classList.remove('tc-slotdragging'); clearSlotDropMarks(line.parentElement); _slotDrag = null; });
+    }
+    const after = e => (e.clientY - line.getBoundingClientRect().top) > line.getBoundingClientRect().height / 2;
+    line.addEventListener('dragover', e => { if (!_slotDrag || _slotDrag.entry !== entry) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; clearSlotDropMarks(line.parentElement); line.classList.add(after(e) ? 'tc-slotdrop-after' : 'tc-slotdrop-before'); });
+    line.addEventListener('dragleave', () => line.classList.remove('tc-slotdrop-before', 'tc-slotdrop-after'));
+    line.addEventListener('drop', e => {
+      if (!_slotDrag || _slotDrag.entry !== entry) return;
+      e.preventDefault(); const from = _slotDrag.from, gap = idx + (after(e) ? 1 : 0), dest = gap > from ? gap - 1 : gap;
+      clearSlotDropMarks(line.parentElement); _slotDrag = null; moveSlot(entry, from, dest);
+    });
+  }
+  const clearSlotDropMarks = host => host && host.querySelectorAll('.tc-slotdrop-before,.tc-slotdrop-after').forEach(l => l.classList.remove('tc-slotdrop-before', 'tc-slotdrop-after'));
   // drag-to-reorder WITHIN a medium: grab the ⠿ handle and drop a track anywhere in its medium. The actual
   // move rides on MB's own up/down ops (moveTrackToIndex), so the editor never diverges. Cross-medium drops
   // are ignored (same-medium only). Replaces the old ▲▼ buttons.
