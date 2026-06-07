@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7.173400
+// @version      2026.6.7.173500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -67,7 +67,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -423,7 +423,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.7.173400';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.173500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -650,6 +650,27 @@
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid #bbb;border-radius:4px;background:#fff;cursor:pointer;color:#333}
     .tc-colbtn:hover{background:#f0ecfa;border-color:#a98fe0}
+    /* #152: Search & Replace — RE toggle, Templates button, invalid-regex flag, templates popup */
+    .tc-srbtn{cursor:pointer;border:1px solid #d6cdec;background:#fff;color:#6f42c1;font:bold 11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}
+    .tc-srbtn:hover{background:#efeaf9;border-color:#bcaae6}
+    .tc-srbtn.on{background:#6f42c1;color:#fff;border-color:#5f3ec0}
+    .tc-sr-find.tc-sr-bad{border-color:#d6342c!important;background:#fff1f0}
+    .tc-srtpl{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;min-width:460px;max-width:680px;max-height:70vh;overflow:auto}
+    .tc-srtpl-hd{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;padding:8px 12px;border-bottom:1px solid #ece7f6;position:sticky;top:0;background:#fff}
+    .tc-srtpl-empty{padding:12px;color:#999;font-style:italic}
+    .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr 26px 18px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
+    .tc-srtpl-row:hover{background:#f3f0fb}
+    .tc-srtpl-cap{cursor:default;font:700 10px Arial;letter-spacing:.04em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff}
+    .tc-srtpl-cap:hover{background:#faf8ff}
+    .tc-srtpl-nm{font-weight:600;color:#4b3a82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tc-srtpl-f,.tc-srtpl-r{font-family:'Courier New',monospace;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tc-srtpl-re{font:bold 10px Arial;color:#6f42c1;text-align:center}
+    .tc-srtpl-x{visibility:hidden;border:none;background:none;color:#cc6699;cursor:pointer;font-size:12px;padding:0;line-height:1}
+    .tc-srtpl-row:hover .tc-srtpl-x{visibility:visible}.tc-srtpl-x:hover{color:#c0392b}
+    .tc-srtpl-new{padding:9px 12px;border-top:1px solid #ece7f6;background:#faf8ff;position:sticky;bottom:0}
+    .tc-srtpl-newlbl{color:#777;margin-bottom:4px}
+    .tc-srtpl-name{width:100%;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:4px 7px;font:13px Arial}
+    .tc-srtpl-name:focus{border-color:#8a72c8;outline:none}
     .tc-toolopts label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}
     .tc-toolopts input[type=text]{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:120px}
     .tc-toolopts input[type=text]::placeholder{color:#c2c2c2}
@@ -1455,11 +1476,18 @@
       host.appendChild(box);
     } else if (act === 'sr') {
       srActivate(); const box = document.createElement('span'); box.className = 'tc-sro';
-      const find = document.createElement('input'); find.type = 'text'; find.className = 'tc-sr-find'; find.placeholder = 'search';
+      const find = document.createElement('input'); find.type = 'text'; find.className = 'tc-sr-find'; find.placeholder = srRegexOn() ? 'search (regex)' : 'search';
       const rep = document.createElement('input'); rep.type = 'text'; rep.className = 'tc-sr-rep'; rep.placeholder = 'replace';
       const run = () => srLive(find.value, rep.value, true);
       find.oninput = rep.oninput = run;
-      box.append(find, rep); host.appendChild(box);
+      // RE toggle — regular expressions in search + $N in replace (#152)
+      const re = document.createElement('button'); re.type = 'button'; re.className = 'tc-srbtn tc-sr-re' + (srRegexOn() ? ' on' : ''); re.textContent = 'RE';
+      re.title = 'Use regular expressions (search is a regex; $1, $<name> work in replace)';
+      re.onclick = () => { SETTINGS.srRegex = !srRegexOn(); saveSettings(); re.classList.toggle('on', srRegexOn()); find.placeholder = srRegexOn() ? 'search (regex)' : 'search'; run(); };
+      // Templates — save/load named patterns (#152)
+      const tpl = document.createElement('button'); tpl.type = 'button'; tpl.className = 'tc-srbtn tc-sr-tpl'; tpl.textContent = 'Templates ▾'; tpl.title = 'Save / load search-and-replace templates';
+      tpl.onclick = () => openSrTemplates(tpl, find, rep, re);
+      box.append(find, rep, re, tpl); host.appendChild(box);
     } else if (act === 'cols') {
       const box = document.createElement('span'); box.className = 'tc-colso';
       const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-colbtn'; b.textContent = label; b.title = title; b.onclick = fn; return b; };
@@ -1495,20 +1523,101 @@
   function setNative(el, val) { if (!el) return; if (el.type === 'checkbox') { if (el.checked !== val) el.click(); return; } el.value = val; el.dispatchEvent(new Event('change', { bubbles: true })); }
   function recomputeGuesses() { if (!MODEL) return; MODEL.tracks.forEach(t => { t.guessTitle = guessTitleStr(t); }); rerender(); }
 
-  // search & replace in titles — real-time, recomputed from a snapshot each keystroke (no apply, non-compounding)
-  function srRe(find, ci, g) { const e = find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); return new RegExp(e, (g ? 'g' : '') + (ci ? 'i' : '')); }
+  // search & replace in titles — real-time, recomputed from a snapshot each keystroke (no apply, non-compounding).
+  // #152: an "RE" toggle switches between literal matching and full regular expressions ($1, $<name>, …).
+  const srRegexOn = () => SETTINGS.srRegex === true;
+  // build the matcher. regex mode → raw pattern; literal mode → escape it. invalid regex returns null (no-op).
+  function srRe(find, ci, g) {
+    const flags = (g ? 'g' : '') + (ci ? 'i' : '');
+    try { return new RegExp(srRegexOn() ? find : find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags); }
+    catch (e) { return null; }
+  }
+  // in literal mode the replacement is literal too — escape `$` so "$1" inserts "$1", not a backref
+  const srRepl = replace => srRegexOn() ? replace : replace.replace(/\$/g, '$$$$');
   let _srSnap = null;
   function srActivate() { _srSnap = MODEL ? MODEL.tracks.map(t => t.title) : []; }
   function srLive(find, replace, ci) {
-    if (!MODEL) return; if (!_srSnap || _srSnap.length !== MODEL.tracks.length) srActivate(); let changed = 0;
+    if (!MODEL) return; if (!_srSnap || _srSnap.length !== MODEL.tracks.length) srActivate();
+    const re = find ? srRe(find, ci, true) : null;
+    const bad = !!(find && srRegexOn() && !re);   // invalid user regex — flag the field, change nothing
+    const findEl = document.querySelector('.tc-toolopts .tc-sr-find'); if (findEl) findEl.classList.toggle('tc-sr-bad', bad);
+    if (bad) { srRememberLast(find, replace); return; }
+    const repl = srRepl(replace); let changed = 0;
     MODEL.tracks.forEach((t, i) => {
       const base = _srSnap[i] != null ? _srSnap[i] : t.title;
-      const nt = find ? base.replace(srRe(find, ci, true), replace) : base;
+      const nt = re ? base.replace(re, repl) : base;
       if (nt !== base) changed++;
       if (nt !== t.title) { setTitle(t, nt); t.title = nt; t.guessTitle = guessTitleStr(t); }
       t._srFlash = !!(find && nt !== base);
     });
     rerender(); toast(changed ? `${changed} title${changed !== 1 ? 's' : ''} replaced` : '');
+    srRememberLast(find, replace);
+  }
+  // #152 — named search/replace templates, persisted in settings. "_Last" is a special auto-kept entry
+  // (the most recent pattern) that sorts first because "_" precedes letters.
+  function srTemplates() { if (!Array.isArray(SETTINGS.srTemplates)) SETTINGS.srTemplates = []; return SETTINGS.srTemplates; }
+  let _srLastTimer = null;
+  function srRememberLast(find, replace) {
+    if (!find) return;
+    const list = srTemplates(); const prev = list.find(t => t.name === '_Last');
+    if (prev && prev.find === find && prev.replace === replace && prev.re === srRegexOn()) return;
+    const ent = { name: '_Last', find, replace, re: srRegexOn() };
+    if (prev) Object.assign(prev, ent); else list.push(ent);
+    clearTimeout(_srLastTimer); _srLastTimer = setTimeout(saveSettings, 600);   // debounce the localStorage write across keystrokes
+  }
+  function srSaveTemplate(name, find, replace) {
+    name = (name || '').trim(); if (!name || !find) return false;
+    const list = srTemplates(); const ex = list.find(t => t.name === name);
+    const ent = { name, find, replace, re: srRegexOn() };
+    if (ex) Object.assign(ex, ent); else list.push(ent);
+    saveSettings(); return true;
+  }
+  function srRemoveTemplate(name) { SETTINGS.srTemplates = srTemplates().filter(t => t.name !== name); saveSettings(); }
+  // the Templates popup — sorted list (｢_Last｣ first), click a row to load+apply, ✕ to remove,
+  // and a "new template" section (shown only when the search field is non-empty). #152
+  let _srPop = null, _srPopOff = null;
+  function closeSrTemplates() { if (_srPop) { _srPop.remove(); _srPop = null; } if (_srPopOff) { document.removeEventListener('mousedown', _srPopOff, true); _srPopOff = null; } }
+  function openSrTemplates(anchor, findEl, repEl, reBtn) {
+    if (_srPop) { closeSrTemplates(); return; }
+    const pop = document.createElement('div'); pop.className = 'tc-srtpl'; _srPop = pop;
+    const loadTpl = t => {
+      findEl.value = t.find; repEl.value = t.replace; SETTINGS.srRegex = !!t.re; saveSettings();
+      if (reBtn) { reBtn.classList.toggle('on', !!t.re); findEl.placeholder = srRegexOn() ? 'search (regex)' : 'search'; }
+      srLive(findEl.value, repEl.value, true); closeSrTemplates(); findEl.focus();
+    };
+    const render = () => {
+      pop.innerHTML = '<div class="tc-srtpl-hd">Templates</div>';
+      const list = srTemplates().slice().sort((a, b) => a.name.localeCompare(b.name));
+      if (list.length) {
+        const cap = document.createElement('div'); cap.className = 'tc-srtpl-row tc-srtpl-cap';
+        cap.innerHTML = '<span>Name</span><span>Search</span><span>Replace</span><span>RE</span><span></span>';
+        pop.appendChild(cap);
+        list.forEach(t => {
+          const row = document.createElement('div'); row.className = 'tc-srtpl-row';
+          ['tc-srtpl-nm', 'tc-srtpl-f', 'tc-srtpl-r'].forEach((c, i) => { const s = document.createElement('span'); s.className = c; s.textContent = [t.name, t.find, t.replace][i]; s.title = [t.name, t.find, t.replace][i]; row.appendChild(s); });
+          const rec = document.createElement('span'); rec.className = 'tc-srtpl-re'; rec.textContent = t.re ? 'RE' : ''; row.appendChild(rec);
+          const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-srtpl-x'; x.textContent = '✕'; x.title = 'Remove this template';
+          x.onclick = e => { e.stopPropagation(); srRemoveTemplate(t.name); render(); };
+          row.appendChild(x);
+          row.onclick = () => loadTpl(t);
+          pop.appendChild(row);
+        });
+      } else { const e = document.createElement('div'); e.className = 'tc-srtpl-empty'; e.textContent = 'No saved templates yet.'; pop.appendChild(e); }
+      if (findEl.value.trim()) {   // offer to save the current pattern
+        const sec = document.createElement('div'); sec.className = 'tc-srtpl-new';
+        const lbl = document.createElement('div'); lbl.className = 'tc-srtpl-newlbl'; lbl.textContent = 'Enter name for new template'; sec.appendChild(lbl);
+        const nm = document.createElement('input'); nm.type = 'text'; nm.className = 'tc-srtpl-name'; nm.placeholder = 'My new template';
+        nm.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); if (srSaveTemplate(nm.value, findEl.value, repEl.value)) render(); } };
+        sec.appendChild(nm); pop.appendChild(sec); setTimeout(() => nm.focus(), 0);
+      }
+    };
+    render();
+    document.body.appendChild(pop);
+    const r = anchor.getBoundingClientRect();
+    pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - pop.offsetWidth - 8)) + 'px';
+    pop.style.top = (r.bottom + 4) + 'px';
+    _srPopOff = e => { if (!pop.contains(e.target) && e.target !== anchor) closeSrTemplates(); };
+    setTimeout(() => document.addEventListener('mousedown', _srPopOff, true), 0);
   }
 
   const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
