@@ -145,9 +145,12 @@ export function insertDiscogsBar(discogsUrl) {
         /* #139: grow to fill the gap between "Options" and the right cluster so the
            status message can use that whole width (right-aligned next to the cluster).
            flex:1 also keeps the right cluster pinned to the edge whether this is empty
-           or not — replacing the old margin-left:auto. */
+           or not — replacing the old margin-left:auto. Basis 0 (not auto) is essential:
+           with an auto basis a very long message's content width is used for row1's
+           wrap calculation and bumps the whole slot to a second row; basis 0 keeps it
+           on the line and the status just ellipsises inside it. */
         .discogs-bar-msgs {
-            flex: 1 1 auto;
+            flex: 1 1 0;
             justify-content: flex-end;
             display: flex;
             align-items: center;

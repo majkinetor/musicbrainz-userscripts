@@ -36,8 +36,12 @@ const measure = async (text) => page.evaluate((t) => {
   return { text: t, clientW: Math.round(r.width), scrollW: s.scrollWidth, ellipsized: s.scrollWidth > Math.ceil(r.width) + 1, leftOfStatus: Math.round(r.left), optsRight: optsR ? Math.round(optsR.right) : null };
 }, text);
 
-const longMsg = 'Already in MB: misc: The Rough Guide to the Music of the Sahara — performance, instruments and a very long trailing description that should clip';
+await measure('Already in MB: vocals');
+const baseH = await page.evaluate(() => Math.round(document.querySelector('.discogs-bar-row1').getBoundingClientRect().height));
+
+const longMsg = 'Already in MB: misc: The Rough Guide to the Music of the Sahara — performance, instruments and a VERY long trailing description '.repeat(3) + 'that should clip and never wrap to a second row';
 const longRes = await measure(longMsg);
+const longH = await page.evaluate(() => Math.round(document.querySelector('.discogs-bar-row1').getBoundingClientRect().height));
 await shot('i139-msg-long.png');
 
 const shortRes = await measure('Already in MB: vocals');
@@ -45,5 +49,6 @@ await shot('i139-msg-short.png');
 
 console.log('LONG :', JSON.stringify(longRes));
 console.log('SHORT:', JSON.stringify(shortRes));
+console.log('row1 height short=' + baseH + ' long=' + longH + '  ->', (longH <= baseH + 2 ? 'NO WRAP (pass)' : 'WRAPPED (FAIL)'));
 console.log('shots ->', OUT);
 await context.close();
