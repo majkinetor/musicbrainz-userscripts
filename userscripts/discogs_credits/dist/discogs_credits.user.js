@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.7.143149
+// @version      2026.6.7.150023
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -57,6 +57,25 @@
 
   // src/log.js
   var _logs = null;
+  var _warn = 0;
+  var _err = 0;
+  var _countListener = null;
+  function onLogCounts(fn) {
+    _countListener = fn;
+  }
+  function resetLogCounts() {
+    _warn = 0;
+    _err = 0;
+    _notifyCounts();
+  }
+  function _notifyCounts() {
+    if (_countListener) {
+      try {
+        _countListener(_warn, _err);
+      } catch (e) {
+      }
+    }
+  }
   function setLogContainer(el) {
     _logs = el;
   }
@@ -74,6 +93,13 @@
     if (!_logs) return;
     const li = document.createElement("li");
     if (sev) li.dataset.sev = sev;
+    if (sev === "warn") {
+      _warn++;
+      _notifyCounts();
+    } else if (sev === "error") {
+      _err++;
+      _notifyCounts();
+    }
     const d = /* @__PURE__ */ new Date();
     const pad = (n) => String(n).padStart(2, "0");
     const stamp = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
@@ -87,7 +113,12 @@
   var log = {
     info: (msg) => _emit(msg, msg),
     warn: (msg) => _emit(`<span style="color:orange">WARN ${msg}</span>`, `WARN ${msg}`, "warn"),
-    error: (msg) => _emit(`<span style="color:red">ERR ${msg}</span>`, `ERR ${msg}`, "error")
+    error: (msg) => _emit(`<span style="color:red">ERR ${msg}</span>`, `ERR ${msg}`, "error"),
+    // Entity skipped because it wasn't matched on MB in the review (#118). Kept
+    // OUT of the WARN tally — these are surfaced by the separate "N unresolved"
+    // badge, and the maintainer asked not to lump them with real warnings. Still
+    // rendered (muted amber) so the log shows exactly which roles were dropped.
+    skip: (msg) => _emit(`<span style="color:#8a6d3b">SKIP ${msg}</span>`, `SKIP ${msg}`, "skip")
   };
   var _debugUl = null;
   var _debugStartT = null;
@@ -3713,7 +3744,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         }
         const mbUrl = confirmedMbUrl(company);
         if (!mbUrl) {
-          log.warn(`Skipped ${company.name} \u2014 not resolved in review`);
+          log.skip(`Skipped ${company.name} \u2014 not resolved in review`);
           skipped++;
           tickProgress();
           continue;
@@ -3730,7 +3761,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
         const mbUrl = confirmedMbUrl(role.artist);
         if (!mbUrl) {
-          log.warn(`Skipped ${role.artist.name} (${role.linkType}) \u2014 not resolved in review`);
+          log.skip(`Skipped ${role.artist.name} (${role.linkType}) \u2014 not resolved in review`);
           skipped++;
           tickProgress();
           continue;
@@ -3748,7 +3779,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           for (const role of applicable) {
             const mbUrl = confirmedMbUrl(role.artist);
             if (!mbUrl) {
-              log.warn(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review`);
+              log.skip(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review`);
               continue;
             }
             const credit = role.artist.anv?.trim() || role.artist.name;
@@ -3882,7 +3913,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         for (const { role } of entries) {
           const mbUrl = confirmedMbUrl(role.artist);
           if (!mbUrl) {
-            log.warn(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
+            log.skip(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
             continue;
           }
           const credit = role.artist.anv?.trim() || role.artist.name;
@@ -3910,7 +3941,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
         const mbUrl = confirmedMbUrl(role.artist);
         if (!mbUrl) {
-          log.warn(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 not resolved in review`);
+          log.skip(`Skipped ${role.artist.name} on track ${role.track.position} \u2014 not resolved in review`);
           continue;
         }
         const recEntity = getRecordingEntity(role.track);
@@ -4036,9 +4067,50 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             gap: 0.6rem;
         }
         .discogs-bar-action:empty { display: none; }
-        /* Discogs logo + source link + Help \u2014 pinned to the right edge. */
-        .discogs-bar-right {
+        /* Reserved message area (#118): badge + transient status, right-aligned
+           just left of the Discogs/Help/Log cluster. margin-left:auto pushes
+           it (and the right cluster after it) to the edge, leaving the gap up to
+           the "Options" button free for these messages. Collapses to nothing
+           when empty (hidden children don't count as flex items, so the gap
+           contributes no width). */
+        .discogs-bar-msgs {
             margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-width: 0;
+            flex-shrink: 1;
+        }
+        .discogs-bar-status {
+            font-size: 0.8rem;
+            color: #888;
+            max-width: 22rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        /* Count badges. Buttons so they can focus/open the log; styled as pills. */
+        .discogs-badge {
+            flex-shrink: 0;
+            font-size: 0.78rem;
+            font-weight: 600;
+            line-height: 1.2;
+            padding: 0.12rem 0.5rem;
+            border-radius: 2rem;
+            border: 1px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .discogs-badge-warn      { color: #8a4b00; background: #fff1d6; border-color: #f0c060; }
+        .discogs-badge-warn:hover{ background: #ffe7b8; }
+        .discogs-badge-err       { color: #9c1b1b; background: #fde2e2; border-color: #efa0a0; }
+        .discogs-badge-err:hover { background: #f9cccc; }
+        .discogs-badge-unresolved{ color: #6a4a86; background: #efe9fa; border-color: #c3aee6; }
+        .discogs-badge-unresolved:hover { background: #e4daf6; }
+        /* Discogs logo + Help + Log \u2014 pinned to the right edge (the msgs slot's
+           margin-left:auto does the pushing). */
+        .discogs-bar-right {
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -4098,21 +4170,23 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             margin-right: 0.2rem;
             flex-shrink: 0;
         }
+        /* Borderless toggles (#118): no pill outline/background \u2014 the dot alone
+           signals on/off, matching the maintainer's mockup. */
         .discogs-toggle {
             display: inline-flex;
             align-items: center;
             gap: 0.35rem;
-            padding: 0.15rem 0.55rem 0.15rem 0.35rem;
-            border: 1px solid #d8c8a0;
+            padding: 0.15rem 0.4rem 0.15rem 0.2rem;
+            border: none;
             border-radius: 2rem;
-            background: #fffdf7;
+            background: transparent;
             cursor: pointer;
             font-size: 0.8rem;
             color: #555;
             user-select: none;
-            transition: background 0.12s, border-color 0.12s;
+            transition: color 0.12s;
         }
-        .discogs-toggle:hover { border-color: #e8771d; color: #333; }
+        .discogs-toggle:hover { color: #222; }
         .discogs-toggle input[type=checkbox] { display: none; }
         .discogs-toggle .discogs-toggle-dot {
             width: 14px; height: 14px;
@@ -4123,8 +4197,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             transition: border-color 0.12s, background 0.12s;
         }
         .discogs-toggle.active {
-            background: #fff8ee;
-            border-color: #e8771d;
             color: #333;
         }
         .discogs-toggle.active .discogs-toggle-dot {
@@ -4140,11 +4212,20 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         .discogs-log-panel { display: none; }
         .discogs-output.log-open .discogs-log-panel { display: block; }
         .discogs-review-slot:not(:empty) { margin: 0.2rem 0; }
-        /* severity filter: show only warnings (warn+error) or errors */
-        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li:not([data-sev]) { display: none; }
+        /* severity filter: show only warnings (warn+error) or errors. "skip"
+           lines (unresolved-entity skips, #118) are kept out of the Warnings
+           view so it matches the WARN badge count \u2014 they show under "All". */
+        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li:not([data-sev]),
+        .discogs-output[data-logfilter="warn"] .discogs-log-body .logs > li[data-sev="skip"] { display: none; }
         .discogs-output[data-logfilter="error"] .discogs-log-body .logs > li:not([data-sev="error"]) { display: none; }
         /* \u2500\u2500 Progress / sticky bar \u2500\u2500 */
-        .discogs-bar.is-importing .discogs-bar-row1 {
+        /* Pinned during import (is-importing) AND kept pinned afterwards
+           (is-pinned, #118) so the WARN/ERR badge stays visible on top while the
+           user scrolls the staged edits below. overflow:hidden on .discogs-bar
+           rules out position:sticky, so we use fixed + an in-flow spacer that
+           reserves row1's height (see .discogs-sticky-spacer). */
+        .discogs-bar.is-importing .discogs-bar-row1,
+        .discogs-bar.is-pinned .discogs-bar-row1 {
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 9000;
@@ -4152,6 +4233,11 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             border-bottom: 1px solid #eeddb0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+        /* Occupies row1's height in the flow while row1 is fixed, so the page
+           content below the bar doesn't jump up under it. Height set by JS. */
+        .discogs-sticky-spacer { display: none; }
+        .discogs-bar.is-importing .discogs-sticky-spacer,
+        .discogs-bar.is-pinned .discogs-sticky-spacer { display: block; }
         .discogs-progress-track {
             height: 5px;
             background: #eeddb0;
@@ -4260,6 +4346,28 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     optsWrap.className = "discogs-bar-opts";
     row1.appendChild(optsWrap);
     let _optsHost = optsWrap;
+    const msgSlot = document.createElement("div");
+    msgSlot.className = "discogs-bar-msgs";
+    const statusEl = document.createElement("span");
+    statusEl.className = "discogs-bar-status";
+    statusEl.style.display = "none";
+    const warnPill = document.createElement("button");
+    warnPill.type = "button";
+    warnPill.className = "discogs-badge discogs-badge-warn";
+    warnPill.style.display = "none";
+    warnPill.title = "Show warnings in the log";
+    const errPill = document.createElement("button");
+    errPill.type = "button";
+    errPill.className = "discogs-badge discogs-badge-err";
+    errPill.style.display = "none";
+    errPill.title = "Show errors in the log";
+    const unresolvedPill = document.createElement("button");
+    unresolvedPill.type = "button";
+    unresolvedPill.className = "discogs-badge discogs-badge-unresolved";
+    unresolvedPill.style.display = "none";
+    unresolvedPill.title = "Entities not matched on MusicBrainz \u2014 skipped on import";
+    msgSlot.append(statusEl, warnPill, errPill, unresolvedPill);
+    row1.appendChild(msgSlot);
     const rightGroup = document.createElement("div");
     rightGroup.className = "discogs-bar-right";
     const logoLink = document.createElement("a");
@@ -4274,13 +4382,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     logo.alt = "Discogs";
     logoLink.appendChild(logo);
     rightGroup.appendChild(logoLink);
-    const logToggleBtn = document.createElement("button");
-    logToggleBtn.type = "button";
-    logToggleBtn.className = "discogs-logtoggle-btn";
-    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret">\u25BE</span>';
-    logToggleBtn.title = "Show / hide the import log";
-    logToggleBtn.style.display = "none";
-    rightGroup.appendChild(logToggleBtn);
     const docsHref = typeof GM_info !== "undefined" && (GM_info?.script?.homepageURL || GM_info?.script?.homepage) || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
     const docsLink = document.createElement("a");
     docsLink.href = docsHref;
@@ -4290,8 +4391,25 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     docsLink.title = "Open the script's README in a new tab";
     docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;";
     rightGroup.appendChild(docsLink);
+    const logToggleBtn = document.createElement("button");
+    logToggleBtn.type = "button";
+    logToggleBtn.className = "discogs-logtoggle-btn";
+    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret">\u25BE</span>';
+    logToggleBtn.title = "Show / hide the import log";
+    logToggleBtn.style.display = "none";
+    rightGroup.appendChild(logToggleBtn);
     row1.appendChild(rightGroup);
     bar.appendChild(row1);
+    const stickySpacer = document.createElement("div");
+    stickySpacer.className = "discogs-sticky-spacer";
+    bar.appendChild(stickySpacer);
+    bar._pin = () => {
+      const h = row1.getBoundingClientRect().height;
+      if (h) stickySpacer.style.height = h + "px";
+    };
+    window.addEventListener("resize", () => {
+      if (bar.classList.contains("is-pinned")) bar._pin();
+    });
     function makeCheckbox(labelText, checkedByDefault, tooltipText) {
       const lbl = document.createElement("label");
       lbl.className = "discogs-toggle" + (checkedByDefault ? " active" : "");
@@ -4349,12 +4467,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     function makeSelect(labelText, initialValue, options, tooltipText) {
       const wrap = document.createElement("span");
       wrap.className = "discogs-select-wrap";
-      wrap.style.cssText = "display:inline-flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:#555;padding:0.15rem 0.2rem 0.15rem 0.55rem;border:1px solid #d8c8a0;border-radius:2rem;background:#fffdf7;";
+      wrap.style.cssText = "display:inline-flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:#555;padding:0.15rem 0.2rem;border:none;background:transparent;";
       const lbl = document.createElement("span");
       lbl.textContent = labelText + ":";
       wrap.appendChild(lbl);
       const sel = document.createElement("select");
-      sel.style.cssText = "font-size:0.8rem;padding:0.05rem 0.3rem;border:1px solid #d8c8a0;border-radius:1rem;background:#fff8ee;cursor:pointer;color:#333;font-weight:600;";
+      sel.style.cssText = "font-size:0.8rem;padding:0.05rem 0.2rem;border:none;background:transparent;cursor:pointer;color:#333;font-weight:600;";
       options.forEach((opt) => {
         const o = document.createElement("option");
         o.value = opt.value;
@@ -4498,18 +4616,48 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       } catch (e) {
       }
     });
+    function openLog(filter) {
+      outputDiv.classList.add("log-open");
+      logToggleBtn.classList.add("active");
+      try {
+        localStorage.setItem(LOG_OPEN_KEY, "1");
+      } catch (e) {
+      }
+      const f = filter || "all";
+      outputDiv.dataset.logfilter = f;
+      logFilter.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x.dataset.f === f));
+      outputDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    warnPill.addEventListener("click", () => openLog("warn"));
+    errPill.addEventListener("click", () => openLog("error"));
+    unresolvedPill.addEventListener("click", () => openLog("all"));
+    onLogCounts((w, e) => {
+      warnPill.textContent = `\u26A0 ${w}`;
+      warnPill.style.display = w > 0 ? "" : "none";
+      errPill.textContent = `\u26D4 ${e}`;
+      errPill.style.display = e > 0 ? "" : "none";
+    });
+    bar._setUnresolved = (n) => {
+      unresolvedPill.textContent = `\u2298 ${n} unresolved`;
+      unresolvedPill.style.display = n > 0 ? "" : "none";
+    };
     importBtn.addEventListener("click", () => {
       importBtn.disabled = true;
       importBtn.textContent = "Importing\u2026";
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
-      bar.classList.add("is-importing");
+      bar.classList.add("is-importing", "is-pinned");
+      bar._pin();
       _showBar();
       bar.scrollIntoView({ behavior: "smooth", block: "start" });
       bar._showProgress = () => {
         _showBar();
       };
       requestAnimationFrame(bar._showProgress);
+      resetLogCounts();
+      bar._setUnresolved(0);
+      statusEl.textContent = "";
+      statusEl.style.display = "none";
       _logs2 = document.createElement("ul");
       _logs2.className = "logs";
       setLogContainer(_logs2);
@@ -4620,8 +4768,12 @@ ${lines}
           mkCopy("Copy without JSON", "Copy the log without the raw Discogs JSON block \u2014 small enough to fit in a GitHub issue", true)
         );
       }
-      bar._setProgress = (pct) => {
+      bar._setProgress = (pct, text) => {
         if (pct !== null && pct >= 100) _hideBar();
+        if (text && bar.classList.contains("is-importing")) {
+          statusEl.textContent = text;
+          statusEl.style.display = "";
+        }
       };
       requestAnimationFrame(_showBar);
       const getOpts = () => ({
@@ -4650,6 +4802,9 @@ ${lines}
         setTimeout(() => {
           bar.classList.remove("is-importing");
           _hideBar();
+          statusEl.textContent = "";
+          statusEl.style.display = "none";
+          bar._pin();
         }, 2e3);
         delete bar._setProgress;
       });
@@ -4845,6 +5000,7 @@ ${lines}
       }).then((confirmedMap) => {
         capturedConfirmedMap = confirmedMap;
         document.querySelector(".discogs-bar")?.classList.remove("is-reviewing");
+        document.querySelector(".discogs-bar")?._setUnresolved?.(confirmedMap.unresolvedCount || 0);
         const cachePromises = [];
         confirmedMap.forEach((mbUrl, resourceUrl) => {
           const key = parseDiscogsUrl(resourceUrl)?.key;

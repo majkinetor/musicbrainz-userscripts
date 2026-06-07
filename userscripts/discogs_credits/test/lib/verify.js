@@ -379,7 +379,11 @@ export async function probeLinkTypesByPhrase(page, needles) {
 /** Get the Discogs URL the script auto-detected for this release (from the import bar). */
 export async function getDetectedDiscogsUrl(page) {
     return await page.evaluate(() => {
-        const a = document.querySelector('.discogs-bar .discogs-source a');
+        // Single-bar redesign (#139) made the source link the Discogs logo icon
+        // itself (`a.discogs-source-icon`); there's no `.discogs-source a` child
+        // anymore. Fall back to the old selector for safety.
+        const a = document.querySelector('.discogs-bar a.discogs-source-icon')
+               || document.querySelector('.discogs-bar .discogs-source a');
         return a?.href || null;
     });
 }

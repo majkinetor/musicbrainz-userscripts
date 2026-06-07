@@ -513,7 +513,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             // doesn't — and the user wins.
             const mbUrl = confirmedMbUrl(company);
             if (!mbUrl) {
-                log.warn(`Skipped ${company.name} — not resolved in review`);
+                log.skip(`Skipped ${company.name} — not resolved in review`);
                 skipped++; tickProgress(); continue;
             }
             const et = resolvedEt;
@@ -533,7 +533,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
 
             const mbUrl = confirmedMbUrl(role.artist);
             if (!mbUrl) {
-                log.warn(`Skipped ${role.artist.name} (${role.linkType}) — not resolved in review`);
+                log.skip(`Skipped ${role.artist.name} (${role.linkType}) — not resolved in review`);
                 skipped++; tickProgress(); continue;
             }
             const credit = role.artist.anv?.trim() || role.artist.name;
@@ -552,7 +552,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 for (const role of applicable) {
                     const mbUrl = confirmedMbUrl(role.artist);
                     if (!mbUrl) {
-                        log.warn(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review`);
+                        log.skip(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review`);
                         continue;
                     }
                     const credit = role.artist.anv?.trim() || role.artist.name;
@@ -734,7 +734,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             for (const { role } of entries) {
                 const mbUrl = confirmedMbUrl(role.artist);
                 if (!mbUrl) {
-                    log.warn(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
+                    log.skip(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
                     continue;
                 }
                 const credit = role.artist.anv?.trim() || role.artist.name;
@@ -765,7 +765,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
 
             const mbUrl = confirmedMbUrl(role.artist);
             if (!mbUrl) {
-                log.warn(`Skipped ${role.artist.name} on track ${role.track.position} — not resolved in review`);
+                log.skip(`Skipped ${role.artist.name} on track ${role.track.position} — not resolved in review`);
                 continue;
             }
 
