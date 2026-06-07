@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.6.060000
+// @version      2026.6.7.090000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.6.060000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.090000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2697,6 +2697,17 @@
     body.tc-ri-on #information .buttons button,body.tc-ri-on #information button.styled-button{font-size:12px}
     body.tc-ri-on #information .lookup-performed{background-color:#eef8ec!important}   /* soften MB's bright auto-fill green to a pale tint (#143) */
     body.tc-ri-on #information > div.documentation{display:none}   /* the contextual help text — replaced by the links column */
+    /* #143: on-demand help popover. The native field bubbles still carry the clickable link to the
+       *selected* entity ("You selected <a>…</a>"); we surface that next to the focused field instead of
+       the removed help column — without bringing back the verbose style-guide noise. (unscoped: the
+       element lives on <body>; visibility is gated by the .on class, only added while Apollo is on.) */
+    #tc-ri-help{position:fixed;z-index:9999;display:none;max-width:360px;width:max-content;background:#fff;border:1px solid #d6cdec;border-radius:7px;box-shadow:0 6px 22px rgba(60,40,110,.20);padding:9px 12px;font-size:12px;line-height:1.45;color:#444}
+    #tc-ri-help.on{display:block}
+    #tc-ri-help p{margin:0 0 5px}
+    #tc-ri-help p:last-child{margin-bottom:0}
+    #tc-ri-help a{color:#5f3ec0;text-decoration:none}
+    #tc-ri-help a:hover{text-decoration:underline}
+    #tc-ri-help .comment,#tc-ri-help .name-variation a[title]{color:#8a8a8a}
     body.tc-ri-on #tc-ri-rightcol{flex:1 1 340px;min-width:300px;max-width:100%;box-sizing:border-box}  /* links take the remaining width, but wrap below the form when there isn't room for both; never wider than the row */
     /* External links matches the form sections: no boxy border, same compact purple header (#143) */
     body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0;max-width:100%;min-width:0;box-sizing:border-box;border:none;padding:0}
@@ -2910,6 +2921,49 @@
     });
     return [...out];
   }
+  // #143: the help column is hidden, but MB keeps each field's native bubble populated — for the
+  // entity fields (release group / label / artist) that bubble holds "You selected <a>…</a>", the
+  // clickable link to the chosen entity. MB sets the focused field's bubble to inline display:block
+  // even while the column is hidden, so on focus we clone that selection message into a compact,
+  // on-theme popover beside the field. Generic style-guide bubbles (no entity link) stay hidden.
+  let _riHelpWired = false;
+  function wireHelpPopover() {
+    if (_riHelpWired) return; _riHelpWired = true;
+    let pop = null, hideT = null;
+    const ensurePop = () => {
+      if (pop && pop.isConnected) return pop;
+      pop = document.createElement('div'); pop.id = 'tc-ri-help';
+      pop.addEventListener('mouseenter', () => clearTimeout(hideT));   // keep open so the link is clickable
+      pop.addEventListener('mouseleave', hide);
+      document.body.appendChild(pop);
+      return pop;
+    };
+    function hide() { clearTimeout(hideT); hideT = setTimeout(() => { if (pop) pop.classList.remove('on'); }, 160); }
+    const showFor = (field) => {
+      const doc = document.querySelector('#information > div.documentation'); if (!doc) { hide(); return; }
+      // the focused field's bubble (MB flags it display:block) — only if it carries a selection link
+      const bub = [...doc.querySelectorAll('.bubble')].find(b => /display:\s*block/.test(b.getAttribute('style') || '')
+        && b.querySelector('a[href^="/release-group/"],a[href^="/label/"],a[href^="/artist/"]'));
+      if (!bub) { hide(); return; }
+      const p = ensurePop();
+      p.innerHTML = bub.innerHTML;   // the rendered "You selected …" message (knockout comment nodes render as nothing)
+      p.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
+      const r = field.getBoundingClientRect();
+      const w = Math.min(360, window.innerWidth - 16);
+      p.style.left = Math.round(Math.min(r.left, window.innerWidth - w - 8)) + 'px';
+      p.style.top = Math.round(r.bottom + 6) + 'px';
+      clearTimeout(hideT); p.classList.add('on');
+    };
+    document.addEventListener('focusin', e => {
+      if (!document.body.classList.contains('tc-ri-on')) return;
+      const info = document.getElementById('information'); if (!info || !info.contains(e.target)) return;
+      const field = e.target.closest('input,select,textarea'); if (!field) return;
+      setTimeout(() => { if (document.activeElement === field) showFor(field); }, 30);   // let MB pick the bubble first
+    });
+    document.addEventListener('focusout', e => {
+      const info = document.getElementById('information'); if (info && info.contains(e.target)) hide();
+    });
+  }
   // clicking the favicon edits the URL (edit1); clicking the type chip edits the relationship type (edit2).
   // Both proxy to MB's own (hover-hidden) pencil buttons so the native editor bubble does the actual work.
   let _riClicksWired = false;
@@ -2972,6 +3026,7 @@
   function applyReleaseInfo() {
     riStyle();
     wireLinkClicks();
+    wireHelpPopover();
     if (riWant()) {
       _apolloUsed = true;
       document.body.classList.add('tc-ri-on');
