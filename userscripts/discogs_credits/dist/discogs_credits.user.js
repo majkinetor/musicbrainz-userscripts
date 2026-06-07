@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.7.163327
+// @version      2026.6.7.182722
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -4086,41 +4086,48 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
            the "Options" button free for these messages. Collapses to nothing
            when empty (hidden children don't count as flex items, so the gap
            contributes no width). */
+        /* #139: grow to fill the gap between "Options" and the right cluster so the
+           status message can use that whole width (right-aligned next to the cluster).
+           flex:1 also keeps the right cluster pinned to the edge whether this is empty
+           or not \u2014 replacing the old margin-left:auto. */
         .discogs-bar-msgs {
-            margin-left: auto;
+            flex: 1 1 auto;
+            justify-content: flex-end;
             display: flex;
             align-items: center;
             gap: 0.4rem;
             min-width: 0;
-            flex-shrink: 1;
         }
+        /* #139: no fixed cap \u2014 the message takes the available space up to "Options"
+           and only ellipsises when it genuinely doesn't fit (flex-shrink + min-width:0). */
         .discogs-bar-status {
             font-size: 0.8rem;
             color: #888;
-            max-width: 22rem;
+            flex: 0 1 auto;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             min-width: 0;
         }
-        /* Count badges. Buttons so they can focus/open the log; styled as pills. */
+        /* Count badges. Buttons so they can focus/open the log; styled as pills.
+           Borderless + a touch larger per #139; the (deepened) fill carries them. */
         .discogs-badge {
             flex-shrink: 0;
-            font-size: 0.78rem;
+            font-size: 0.9rem;
             font-weight: 600;
             line-height: 1.2;
-            padding: 0.12rem 0.5rem;
+            padding: 0.2rem 0.7rem;
             border-radius: 2rem;
-            border: 1px solid transparent;
+            border: none;
             cursor: pointer;
             white-space: nowrap;
         }
-        .discogs-badge-warn      { color: #8a4b00; background: #fff1d6; border-color: #f0c060; }
-        .discogs-badge-warn:hover{ background: #ffe7b8; }
-        .discogs-badge-err       { color: #9c1b1b; background: #fde2e2; border-color: #efa0a0; }
-        .discogs-badge-err:hover { background: #f9cccc; }
-        .discogs-badge-unresolved{ color: #6a4a86; background: #efe9fa; border-color: #c3aee6; }
-        .discogs-badge-unresolved:hover { background: #e4daf6; }
+        .discogs-badge-warn      { color: #8a4b00; background: #ffe1a8; }
+        .discogs-badge-warn:hover{ background: #ffd68a; }
+        .discogs-badge-err       { color: #9c1b1b; background: #f9c9c9; }
+        .discogs-badge-err:hover { background: #f5b4b4; }
+        .discogs-badge-unresolved{ color: #6a4a86; background: #e3d8f5; }
+        .discogs-badge-unresolved:hover { background: #d6c6f0; }
         /* Discogs logo + Help + Log \u2014 pinned to the right edge (the msgs slot's
            margin-left:auto does the pushing). */
         .discogs-bar-right {
