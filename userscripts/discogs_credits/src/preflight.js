@@ -359,6 +359,16 @@ export async function resolveAll(entities, opts) {
             `${progressLabel}… ` +
             `<strong>${done}/${entities.length}</strong> done${checking}` +
             (remaining === 0 ? ' ✔' : ` (${remaining} remaining)`);
+        // Mirror this in-place progress onto the toolbar status line (#118). That
+        // line only saw NEW log emissions, so the live churn of this single,
+        // rewritten "Checking … N/M — checking X, Y" line never showed there —
+        // it looked stuck. Push a plain-text copy on every update.
+        try {
+            const plain = `${progressLabel}… ${done}/${entities.length} done`
+                + (inFlightNames.size ? ` — checking ${[...inFlightNames].join(', ')}` : '')
+                + (remaining === 0 ? ' ✔' : ` (${remaining} remaining)`);
+            document.querySelector('.discogs-bar')?._setProgress?.(null, plain);
+        } catch (_) {}
     }
 
     const delay = ms => new Promise(r => setTimeout(r, ms));

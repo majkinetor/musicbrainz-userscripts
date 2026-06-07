@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.7.151908
+// @version      2026.6.7.163327
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2148,6 +2148,11 @@
       const remaining = entities.length - done;
       const checking = inFlightNames.size ? ` \u2014 checking <em>${[...inFlightNames].join(", ")}</em>` : "";
       progressLi.innerHTML = `${progressLabel}\u2026 <strong>${done}/${entities.length}</strong> done${checking}` + (remaining === 0 ? " \u2714" : ` (${remaining} remaining)`);
+      try {
+        const plain = `${progressLabel}\u2026 ${done}/${entities.length} done` + (inFlightNames.size ? ` \u2014 checking ${[...inFlightNames].join(", ")}` : "") + (remaining === 0 ? " \u2714" : ` (${remaining} remaining)`);
+        document.querySelector(".discogs-bar")?._setProgress?.(null, plain);
+      } catch (_) {
+      }
     }
     const delay = (ms) => new Promise((r) => setTimeout(r, ms));
     const queue = entities.map((e, i) => ({ entity: e, index: i }));
