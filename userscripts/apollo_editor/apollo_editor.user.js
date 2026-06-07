@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.6.057000
+// @version      2026.6.7.125000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -416,7 +416,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.6.057000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.7.125000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2682,9 +2682,40 @@
     /* ---- two-column layout: form on the left, external links lifted into the (now-used) right column ---- */
     body.tc-ri-on #information{display:flex;flex-wrap:wrap;gap:14px 30px;align-items:flex-start;max-width:100%;box-sizing:border-box}   /* wrap → links stack below the form on a narrow window instead of overlapping it */
     body.tc-ri-on #information > div.half-width{flex:0 1 620px;min-width:0;width:auto}   /* form keeps its natural width */
+    /* ---- #143: compact, low-noise Release-info form, matching Apollo's purple ---- */
+    body.tc-ri-on #information > div.half-width fieldset{border:none;margin:0 0 12px;padding:0}        /* drop the boxy fieldset frames */
+    body.tc-ri-on #information > div.half-width legend{font:600 11px Arial;letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 4px;border-bottom:1px solid #ece7f6;width:100%;box-sizing:border-box}
+    body.tc-ri-on #information table.row-form{border-collapse:collapse;width:100%}
+    body.tc-ri-on #information table.row-form > tbody > tr > td{padding:2px 6px;vertical-align:middle}   /* tighter rows */
+    body.tc-ri-on #information table.row-form label{font-size:12px;color:#6a6a6a;font-weight:normal}
+    /* the original bolds only the Title + Artist labels among all the field captions — match that, keeping the
+       rest (and the checkbox labels) light so they aren't intrusive (#143) */
+    body.tc-ri-on #information table.row-form label[for="title"],
+    body.tc-ri-on #information table.row-form label[for="release-artist"]{font-weight:600;color:#4a4a4a}
+    body.tc-ri-on #information input[type=text],
+    body.tc-ri-on #information select,
+    body.tc-ri-on #information textarea{font-size:12px;padding:2px 6px;border:1px solid #d6cdec;border-radius:4px;box-shadow:none}   /* no background → MB's green auto-fill tint survives */
+    body.tc-ri-on #information input[type=text]:focus,
+    body.tc-ri-on #information select:focus,
+    body.tc-ri-on #information textarea:focus{border-color:#8a72c8;outline:none}
+    body.tc-ri-on #information .buttons button,body.tc-ri-on #information button.styled-button{font-size:12px}
+    body.tc-ri-on #information .lookup-performed{background-color:#eef8ec!important}   /* soften MB's bright auto-fill green to a pale tint (#143) */
     body.tc-ri-on #information > div.documentation{display:none}   /* the contextual help text — replaced by the links column */
+    /* #143: on-demand help popover. The native field bubbles still carry the clickable link to the
+       *selected* entity ("You selected <a>…</a>"); we surface that next to the focused field instead of
+       the removed help column — without bringing back the verbose style-guide noise. (unscoped: the
+       element lives on <body>; visibility is gated by the .on class, only added while Apollo is on.) */
+    #tc-ri-help{position:fixed;z-index:9999;display:none;max-width:360px;width:max-content;background:#fff;border:1px solid #d6cdec;border-radius:7px;box-shadow:0 6px 22px rgba(60,40,110,.20);padding:9px 12px;font-size:12px;line-height:1.45;color:#444}
+    #tc-ri-help.on{display:block}
+    #tc-ri-help p{margin:0 0 5px}
+    #tc-ri-help p:last-child{margin-bottom:0}
+    #tc-ri-help a{color:#5f3ec0;text-decoration:none}
+    #tc-ri-help a:hover{text-decoration:underline}
+    #tc-ri-help .comment,#tc-ri-help .name-variation a[title]{color:#8a8a8a}
     body.tc-ri-on #tc-ri-rightcol{flex:1 1 340px;min-width:300px;max-width:100%;box-sizing:border-box}  /* links take the remaining width, but wrap below the form when there isn't room for both; never wider than the row */
-    body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0;max-width:100%;min-width:0;box-sizing:border-box}   /* min-width:0 overrides a fieldset's intrinsic min-content width, else a long URL overflows the column (and the page) */
+    /* External links matches the form sections: no boxy border, same compact purple header (#143) */
+    body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0;max-width:100%;min-width:0;box-sizing:border-box;border:none;padding:0}
+    body.tc-ri-on #tc-ri-rightcol > fieldset > legend{font:600 11px Arial;letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 4px;border-bottom:1px solid #ece7f6;width:100%;box-sizing:border-box}
     body.tc-ri-on #tc-ri-rightcol #external-links-editor{max-width:100%;box-sizing:border-box}
 
     /* ---- external links as a grid: the URL row spans every column, the link's type combos flow into aligned
@@ -2696,7 +2727,7 @@
     body.tc-ri-on #external-links-editor tr.external-link-item:hover{background:#f6f4fb}
     body.tc-ri-on #external-links-editor tr.external-link-item > td{padding:0;border:none}
     body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:context-menu;position:relative;top:4px}   /* larger favicon → right-click to edit URL */
-    body.tc-ri-on #external-links-editor .favicon{transform:scale(1.45);transform-origin:center}
+    body.tc-ri-on #external-links-editor .favicon{transform:scale(1.45);transform-origin:center;margin-right:0}   /* master's size; drop MB's 4px margin-right that pushed the scaled icon off-centre and clipped it (#143) */
     body.tc-ri-on #external-links-editor tr.external-link-item > td:last-child{flex:1;min-width:0}
     body.tc-ri-on #external-links-editor a.url{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
     /* hover edit/remove icons removed. link-actions -> display:contents; the edit pencils are kept in the DOM
@@ -2717,11 +2748,17 @@
     body.tc-ri-on #external-links-editor tr.relationship-item > td:last-child{display:grid;grid-template-columns:minmax(0,1fr) 16px 18px;align-items:center;column-gap:2px;flex:1;min-width:0}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content{grid-column:1;display:flex;align-items:center;min-width:0}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content > label:first-child{display:none}   /* the "Type:" caption */
+    /* a relationship with a date period ("stream for free (1111-11-11 – 1112-11-11)") needs more room than
+       one 185px type cell, but not the whole row — span two cells so several dated types still share a wide
+       row. The type stays on one line; only a very long date wraps to a second line *inside* the cell, so it
+       never overflows into the neighbouring type (overlapping its remove ✗) (#143). */
+    body.tc-ri-on #external-links-editor tr.relationship-item:has(.date-period){grid-column:span 2}
+    body.tc-ri-on #external-links-editor tr.relationship-item:has(.date-period) .relationship-name{flex-wrap:wrap;white-space:nowrap;overflow:visible}   /* let a very long date wrap to a 2nd line inside the cell (not clipped) */
     /* per-type remove [x] sits in the reserved left slot (absolute), so the type text starts at the same x with or without it */
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{display:inline-flex;align-items:center;position:absolute;left:0;top:50%;transform:translateY(-50%) scale(.85);margin:0;opacity:.6;transition:opacity .12s}
     body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]:hover{opacity:1}
     /* type text (committed) / select (editable) fills the cell */
-    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:flex;align-items:center;flex:1;min-width:0;font-size:12px;color:#5a3e94;background:transparent;border:none;border-radius:0;padding:0;font-weight:normal;cursor:context-menu}
+    body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name{display:flex;align-items:center;flex:1;min-width:0;font-size:12px;color:#5a3e94;background:transparent;border:none;border-radius:0;padding:0;font-weight:normal;cursor:context-menu;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* keep the type on one line — never wrap it one-word-per-line as the column resizes (#143) */
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-name:hover{color:#3a2d5c}
     /* editable type dropdowns — appearance:none so the text starts flush at the cell edge; a custom caret keeps the affordance */
     body.tc-ri-on #external-links-editor select{-webkit-appearance:none;-moz-appearance:none;appearance:none;font-size:12px;color:#5a3e94;background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='7'%20viewBox='0%200%2010%207'%3E%3Cpath%20d='M1%201l4%204%204-4'%20fill='none'%20stroke='%235a3e94'%20stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right center;border:none;border-radius:0;box-shadow:none;padding:0 15px 0 0;height:auto;margin:0;flex:1;min-width:0;width:100%;cursor:pointer}
@@ -2894,6 +2931,53 @@
     });
     return [...out];
   }
+  // #143: the help column is hidden, but MB keeps each field's native bubble populated — for the
+  // entity fields (release group / label / artist) that bubble holds "You selected <a>…</a>", the
+  // clickable link to the chosen entity. MB sets the focused field's bubble to inline display:block
+  // even while the column is hidden, so on focus we clone that selection message into a compact,
+  // on-theme popover beside the field. Generic style-guide bubbles (no entity link) stay hidden.
+  let _riHelpWired = false;
+  function wireHelpPopover() {
+    if (_riHelpWired) return; _riHelpWired = true;
+    let pop = null, hideT = null;
+    const ensurePop = () => {
+      if (pop && pop.isConnected) return pop;
+      pop = document.createElement('div'); pop.id = 'tc-ri-help';
+      pop.addEventListener('mouseenter', () => clearTimeout(hideT));   // keep open so the link is clickable
+      pop.addEventListener('mouseleave', hide);
+      document.body.appendChild(pop);
+      return pop;
+    };
+    function hide() { clearTimeout(hideT); hideT = setTimeout(() => { if (pop) pop.classList.remove('on'); }, 160); }
+    const showFor = (field) => {
+      const doc = document.querySelector('#information > div.documentation'); if (!doc) { hide(); return; }
+      // the focused field's bubble (MB flags it display:block) — only if it carries a selection link
+      const bub = [...doc.querySelectorAll('.bubble')].find(b => /display:\s*block/.test(b.getAttribute('style') || '')
+        && b.querySelector('a[href^="/release-group/"],a[href^="/label/"],a[href^="/artist/"]'));
+      if (!bub) { hide(); return; }
+      const p = ensurePop();
+      p.innerHTML = bub.innerHTML;   // the rendered "You selected …" message (knockout comment nodes render as nothing)
+      p.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
+      const r = field.getBoundingClientRect();
+      const w = Math.min(360, window.innerWidth - 16);
+      // prefer to the right of the field (like MB's native bubble) so it never covers the field's own
+      // autocomplete dropdown; drop below, left-aligned, when there isn't room on the right
+      let left = r.right + 12, top = r.top;
+      if (left + w > window.innerWidth - 8) { left = Math.min(r.left, window.innerWidth - w - 8); top = r.bottom + 6; }
+      p.style.left = Math.round(Math.max(8, left)) + 'px';
+      p.style.top = Math.round(top) + 'px';
+      clearTimeout(hideT); p.classList.add('on');
+    };
+    document.addEventListener('focusin', e => {
+      if (!document.body.classList.contains('tc-ri-on')) return;
+      const info = document.getElementById('information'); if (!info || !info.contains(e.target)) return;
+      const field = e.target.closest('input,select,textarea'); if (!field) return;
+      setTimeout(() => { if (document.activeElement === field) showFor(field); }, 30);   // let MB pick the bubble first
+    });
+    document.addEventListener('focusout', e => {
+      const info = document.getElementById('information'); if (info && info.contains(e.target)) hide();
+    });
+  }
   // clicking the favicon edits the URL (edit1); clicking the type chip edits the relationship type (edit2).
   // Both proxy to MB's own (hover-hidden) pencil buttons so the native editor bubble does the actual work.
   let _riClicksWired = false;
@@ -2953,9 +3037,11 @@
     if (!_riOptObs) _riOptObs = new MutationObserver(() => { _riOptObs.disconnect(); apply(); _riOptObs.observe(ext, { childList: true, subtree: true }); });
     _riOptObs.observe(ext, { childList: true, subtree: true });
   }
+  let _riPrevOn = false;
   function applyReleaseInfo() {
     riStyle();
     wireLinkClicks();
+    wireHelpPopover();
     if (riWant()) {
       _apolloUsed = true;
       document.body.classList.add('tc-ri-on');
@@ -2963,12 +3049,21 @@
       tidyLinkTypeOptions();
       annotateLinkEditHints();
       nativeHelpBubbles().forEach(b => b.classList.add('tc-ri-helphidden'));
+      _riPrevOn = true;
     } else {
       relocateLinks(false);
       document.body.classList.remove('tc-ri-on');
       document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));
+      if (_riPrevOn) { _riPrevOn = false; resetDocBubbles(); }   // one-shot on switch → drop Apollo-era bubble geometry
       watchDocBubbles();
     }
+  }
+  // On switching Apollo→Original, any documentation bubble still flagged display:block carries the position
+  // MB computed while the column was hidden (left ~0), so it flashes mispositioned on the left until the user
+  // focuses a field. Hide the leftover bubbles inline (MB's own toggle); MB re-shows + repositions on next focus. (#143)
+  function resetDocBubbles() {
+    const doc = document.querySelector('#information > div.documentation'); if (!doc) return;
+    doc.querySelectorAll('.bubble').forEach(b => { if (/display:\s*block/.test(b.getAttribute('style') || '')) b.style.display = 'none'; });
   }
   // MB sizes its contextual help bubble to the documentation column's width once, and caches it. While Apollo
   // hid that column (display:none → width 0) it caches width:0, so in the Original view the bubble renders ~24px
