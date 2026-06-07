@@ -3,6 +3,7 @@
 UI and tools for advanced adding and editing of a MusicBrainz release.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/apollo_editor/apollo_editor.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/apollo_editor/apollo_editor.user.js)
+- [Changelog](./CHANGELOG.md)
 
 <img width="800" src="./screenshot.png" /> <img width="800" src="./screenshot2.png" />
 
