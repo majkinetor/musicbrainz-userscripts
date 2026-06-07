@@ -1,6 +1,6 @@
-// Verify #143 issue 4 (grow-and-push): a dated external-link relationship keeps "type (begin – end)"
-// on ONE line and grows the type cell to push the following controls right — in both a wide and a
-// moderately narrow column. Also screenshots so the favicon size revert can be eyeballed.
+// Verify #143: a dated external-link relationship takes the full grid row, so "type (begin – end)" fits
+// on one line, doesn't overlap the neighbouring type's remove-✗, and the ＋ / controls stay visible —
+// tested on a multi-type link (purchase for download + streaming page) in a narrowed column.
 import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -26,51 +26,44 @@ async function main() {
   await page.evaluate(() => { const t = [...document.querySelectorAll('a,button,li')].find(e => /^\s*release information\s*$/i.test(e.textContent || '')); if (t) (t.querySelector('a')||t).click(); });
   await page.waitForFunction(() => document.body.classList.contains('tc-ri-on'), null, { timeout: 15000 }).catch(()=>{});
   await page.waitForTimeout(700);
+  // narrow column so multi-type rows would otherwise collide
+  await page.addStyleTag({ content: '#tc-ri-rightcol{flex:0 0 470px !important;max-width:470px !important;min-width:470px !important}' });
+  await page.waitForTimeout(300);
 
-  // add a full begin+end date to a "stream for free" relationship (longest type, worst case)
+  // add year-month begin date to a "purchase for download" on a link that also has "streaming page"
   await page.evaluate(() => {
-    const rows = [...document.querySelectorAll('#external-links-editor tr.relationship-item')];
-    const rel = rows.find(r => /stream for free/i.test(r.textContent||'') && r.querySelector('button.edit-item')) || rows.find(r => r.querySelector('button.edit-item'));
+    const rel = [...document.querySelectorAll('#external-links-editor tr.relationship-item')].find(r => /purchase for download/i.test(r.textContent||'') && r.querySelector('button.edit-item'));
     if (rel) rel.querySelector('button.edit-item').click();
   });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(450);
   const vis = page.locator('.dialog.popover, .bubble, [role="dialog"]').filter({ has: page.locator('input[name="period.begin_date.year"]') }).filter({ visible: true }).first();
-  for (const [n, v] of [['period.begin_date.year','1111'],['period.begin_date.month','11'],['period.begin_date.day','11'],['period.end_date.year','1112'],['period.end_date.month','11'],['period.end_date.day','11']]) {
-    await vis.locator(`input[name="${n}"]`).fill(v).catch(()=>{});
-  }
-  await page.waitForTimeout(150);
+  for (const [n, v] of [['begin_date.year','1213'],['begin_date.month','01'],['end_date.year','1233']]) await vis.locator(`input[name="period.${n}"]`).fill(v).catch(()=>{});
+  await page.waitForTimeout(120);
   await vis.locator('button').filter({ hasText: /^\s*Done\s*$/ }).first().click().catch(()=>{});
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(700);
 
-  const measure = async (label) => {
-    const r = await page.evaluate(() => {
-      const rel = [...document.querySelectorAll('#external-links-editor tr.relationship-item')].find(r => r.querySelector('.date-period'));
-      if (!rel) return 'no dated rel';
-      const name = rel.querySelector('.relationship-name');
-      const dp = rel.querySelector('.date-period');
-      const col = document.getElementById('tc-ri-rightcol');
-      const lineH = parseFloat(getComputedStyle(name).lineHeight) || 16;
-      const attr = rel.querySelector('.attribute-container');
-      return {
-        nameH: Math.round(name.getBoundingClientRect().height), oneLine: name.getBoundingClientRect().height <= lineH * 1.6,
-        dpText: (dp.textContent||'').trim(),
-        col1W: getComputedStyle(rel.querySelector('td:last-child')).gridTemplateColumns,
-        attrLeft: attr ? Math.round(attr.getBoundingClientRect().left) : null,
-        nameRight: Math.round(name.getBoundingClientRect().right),
-        relRight: Math.round(rel.getBoundingClientRect().right),
-        colRight: col ? Math.round(col.getBoundingClientRect().right) : null,
-        docScrollW: document.documentElement.scrollWidth, winW: window.innerWidth,
-        pageOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
-      };
-    });
-    console.log(label, JSON.stringify(r));
-    const col = await page.$('#tc-ri-rightcol');
-    if (col) await col.screenshot({ path: resolve(LOG, `issue4b-${label}.png`) }).catch(()=>{});
-  };
-  await measure('wide');
-  await page.addStyleTag({ content: '#tc-ri-rightcol{flex:0 0 360px !important;max-width:360px !important;min-width:360px !important}' });
-  await page.waitForTimeout(300);
-  await measure('narrow');
+  const res = await page.evaluate(() => {
+    const rectOf = e => { const r = e.getBoundingClientRect(); return { left: Math.round(r.left), right: Math.round(r.right), w: Math.round(r.width) }; };
+    const dated = [...document.querySelectorAll('#external-links-editor tr.relationship-item')].find(r => r.querySelector('.date-period'));
+    if (!dated) return 'no dated';
+    const col = document.getElementById('tc-ri-rightcol');
+    const name = dated.querySelector('.relationship-name');
+    const lineH = parseFloat(getComputedStyle(name).lineHeight) || 16;
+    // the neighbouring relationship (same link) and any add-item +
+    const sibs = [...document.querySelectorAll('#external-links-editor tr.relationship-item')];
+    const plus = document.querySelector('#external-links-editor button.add-item');
+    return {
+      datedGridColumn: getComputedStyle(dated).gridColumn,
+      datedRect: rectOf(dated), colRect: col ? rectOf(col) : null,
+      datedFitsColumn: col ? (dated.getBoundingClientRect().right <= col.getBoundingClientRect().right + 1) : null,
+      typeOneLine: name.getBoundingClientRect().height <= lineH * 1.6,
+      dpText: dated.querySelector('.date-period').textContent.trim(),
+      anyPlusVisible: plus ? (plus.getBoundingClientRect().width > 0 && plus.getBoundingClientRect().left < (col ? col.getBoundingClientRect().right : 1e9)) : 'no plus',
+      pageOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+    };
+  });
+  console.log('RESULT:', JSON.stringify(res, null, 2));
+  const col = await page.$('#tc-ri-rightcol'); if (col) await col.screenshot({ path: resolve(LOG, 'issue4c-narrow.png') }).catch(()=>{});
   if (!HEADED) await ctx.close();
 }
 main().catch(e => { console.error(e); process.exit(1); });
