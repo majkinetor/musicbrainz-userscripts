@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.8.002000
+// @version      2026.6.8.003000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1021,18 +1021,16 @@
     if (c.aliases) cacheAliases(c.gid, c.aliases);   // keep the chosen artist's aliases for the bar
     else if (!_gidAliases.has(c.gid)) fetchAliasesByGids([c.gid]).then(() => refreshAdorns());   // alias not loaded yet (fast pick / "Show more" result) — fetch + show it without re-searching #128
     MODEL.tracks.forEach(t => t.slots.forEach(s => { delete s._marked; }));   // clear the previous selection's outlines
+    const entry = slot._entry, beforeKey = creditKey(entry);   // whole-credit snapshot BEFORE the pick (and credited-as auto-fill)
     slot.entity = c; slot.gid = c.gid; slot.name = c.name; slot.status = 'user'; slot.committed = true; slot.query = null; slot._flash = true;
     if (!(slot.creditedAs || '').trim()) slot.creditedAs = c.name;   // auto-fill the credited-as when the user hasn't set one
-    commitTrack(slot._entry);
-    const key = fold(slot.creditedAs); const changed = [slot]; const touched = new Set();
-    if ((SETTINGS.applyMode || 'all') === 'all' && key) {   // don't mass-propagate from an empty credit
-      MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s === slot || fold(s.creditedAs) !== key) return; s.entity = c; s.gid = c.gid; s.name = c.name; s.status = 'user'; s.committed = true; s._flash = true; if (!(s.creditedAs || '').trim()) s.creditedAs = c.name; touched.add(s._entry); changed.push(s); }));
-      touched.forEach(commitTrack);
-    }
-    const copies = touched.size;
-    if (copies) { changed.forEach(s => { s._marked = true; }); Log.info('propagated', c.name, '→', copies, 'other track(s) credited', JSON.stringify(slot.creditedAs)); }   // outline persists when >1 track changed
+    commitTrack(entry);
+    // whole-credit match, like MB's native "all matching tracks": copy this track's resulting
+    // credit (the picked artist included) to every other track that shared its credit string.
+    const copies = propagateCredit(entry, beforeKey);
+    if (copies) { slot._marked = true; Log.info('propagated', c.name, '→', copies, 'matching track(s)'); }
     rerender();
-    if (copies) toast(`linked “${c.name}” — also set on ${copies} other track${copies > 1 ? 's' : ''}`);
+    if (copies) toast(`linked “${c.name}” — also on ${copies} matching track${copies > 1 ? 's' : ''}`);
   }
   // Ctrl/Cmd-click a search result → set that artist on EVERY still-unresolved slot (bulk-fill, e.g. a
   // various-artists comp that's actually one artist). Resolved (green) slots are left untouched.
@@ -1063,26 +1061,71 @@
 
   const blankSlot = entry => ({ creditedAs: '', joinPhrase: '', status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _entry: entry });
   function focusSlotInput(entry, idx) { const row = rowEl(entry.mi, entry.ti); if (row) { const ins = row.querySelectorAll('.tc-search input.nm'); if (ins[idx]) ins[idx].focus(); } }
+  /* ── "all matching tracks" propagation (mirrors MB's native changeMatchingTrackArtists) ──
+     The match key is the WHOLE artist-credit string — each slot's as-credited text (its
+     credited-as, or the artist name when there's no override) + its join phrase, in order.
+     Linked-artist identity is ignored, exactly like MB's reduceArtistCredit. An empty credit
+     never propagates. Peers are re-derived per action; since every artist action propagates,
+     a matched group stays in lockstep through a multi-step edit (add slot → type → pick). */
+  const creditKey = entry => entry.slots.map(s => (s.creditedAs || s.name || '') + (s.joinPhrase || '')).join('');
+  function cloneSlots(src, destEntry) {
+    return src.slots.map(s => ({
+      creditedAs: s.creditedAs, joinPhrase: s.joinPhrase,
+      // committed+linked slots become 'user' so commitTrack writes our entity (not the peer's stale live one)
+      status: (s.committed && s.entity && s.status === 'set') ? 'user' : s.status,
+      entity: s.entity, gid: s.gid, name: s.name,
+      candidates: (s.candidates || []).slice(), committed: s.committed, query: s.query || null,
+      _entry: destEntry, _flash: true, _marked: true,
+    }));
+  }
+  // Apply `entry`'s resulting credit to every OTHER track whose credit string still equals
+  // `beforeKey` (its string before this edit). Returns how many peer tracks were changed.
+  function propagateCredit(entry, beforeKey) {
+    if ((SETTINGS.applyMode || 'all') !== 'all' || !beforeKey || !beforeKey.trim()) return 0;
+    MODEL.tracks.forEach(t => t.slots.forEach(s => { delete s._marked; }));   // clear the previous action's outline
+    let n = 0;
+    MODEL.tracks.forEach(t => { if (t === entry || creditKey(t) !== beforeKey) return; t.slots = cloneSlots(entry, t); commitTrack(t); n++; });
+    if (n) entry.slots.forEach(s => { s._marked = true; });
+    return n;
+  }
+  // Run a credit mutation on `entry`, commit it, then propagate to matching tracks. `liveRerender`
+  // false (text edits) skips the table rebuild when nothing propagated, so the field keeps focus.
+  function editCredit(entry, mutate, verb, liveRerender = true) {
+    const beforeKey = creditKey(entry);
+    mutate();
+    commitTrack(entry);
+    const n = propagateCredit(entry, beforeKey);
+    if (liveRerender || n) rerender();
+    Log.info(verb, 'on track', entry.number, n ? ('· +' + n + ' matching') : '');
+    if (n) toast(`${verb} — also on ${n} matching track${n > 1 ? 's' : ''}`);
+    return n;
+  }
+
   // split a credit: append an artist slot (the ＋ create-row / API uses this)
   function addSlot(entry) {
-    const last = entry.slots[entry.slots.length - 1];
-    if (last && !(last.joinPhrase || '').trim()) last.joinPhrase = ' & ';
-    entry.slots.push(blankSlot(entry)); commitTrack(entry); rerender(); focusSlotInput(entry, entry.slots.length - 1);
-    Log.info('added artist slot to track', entry.number);
+    editCredit(entry, () => {
+      const last = entry.slots[entry.slots.length - 1];
+      if (last && !(last.joinPhrase || '').trim()) last.joinPhrase = ' & ';
+      entry.slots.push(blankSlot(entry));
+    }, 'added artist slot');
+    focusSlotInput(entry, entry.slots.length - 1);
   }
   // ↵ : insert an artist slot right after this one
   function addSlotAfter(entry, idx) {
-    if (!(entry.slots[idx].joinPhrase || '').trim()) entry.slots[idx].joinPhrase = ' & ';
-    const s = blankSlot(entry); s.joinPhrase = idx + 1 < entry.slots.length ? ' & ' : '';
-    entry.slots.splice(idx + 1, 0, s); commitTrack(entry); rerender(); focusSlotInput(entry, idx + 1);
-    Log.info('inserted artist slot after', idx, 'on track', entry.number);
+    editCredit(entry, () => {
+      if (!(entry.slots[idx].joinPhrase || '').trim()) entry.slots[idx].joinPhrase = ' & ';
+      const s = blankSlot(entry); s.joinPhrase = idx + 1 < entry.slots.length ? ' & ' : '';
+      entry.slots.splice(idx + 1, 0, s);
+    }, 'inserted artist slot');
+    focusSlotInput(entry, idx + 1);
   }
   // merge: remove an artist slot (clearing the trailing join on the new last slot)
   function removeSlot(entry, idx) {
     if (entry.slots.length <= 1) return;
-    entry.slots.splice(idx, 1);
-    const last = entry.slots[entry.slots.length - 1]; if (last) last.joinPhrase = '';
-    commitTrack(entry); rerender(); Log.info('removed artist slot', idx, 'from track', entry.number);
+    editCredit(entry, () => {
+      entry.slots.splice(idx, 1);
+      const last = entry.slots[entry.slots.length - 1]; if (last) last.joinPhrase = '';
+    }, 'removed artist slot');
   }
   function revertTrack(entry) { resetTrack(entry); rebuild(true); }
 
@@ -1104,6 +1147,7 @@
     const slot = entry.slots[idx];
     const parts = splitArtistText(slot.creditedAs || slot.name || slot.query || '');
     if (parts.length < 2) return;
+    const beforeKey = creditKey(entry);   // snapshot before the split, for "all matching tracks"
     const fresh = parts.map((p, i) => { const s = blankSlot(entry); s.creditedAs = p.name; s.joinPhrase = i < parts.length - 1 ? normJoin(p.sep) : ''; s._pending = true; return s; });
     entry.slots.splice(idx, 1, ...fresh); entry.slots.forEach(s => { s._entry = entry; });
     commitTrack(entry); rerender();
@@ -1112,7 +1156,10 @@
     else fresh.forEach(s => { delete s._pending; });
     // remove the credited-as override on the matched parts (the artist name is the credit)
     entry.slots.forEach(s => { if (s.committed && s.gid) s.creditedAs = ''; });
-    commitTrack(entry); rerender();
+    commitTrack(entry);
+    const n = propagateCredit(entry, beforeKey);   // apply the finished split to every track that shared the old credit
+    rerender();
+    if (n) { Log.info('split — also on', n, 'matching track(s)'); toast(`split — also on ${n} matching track${n > 1 ? 's' : ''}`); }
   }
 
   // ＋ create-button at the right end of the box (before the join), only when the slot is unmatched;
@@ -1148,7 +1195,7 @@
     const wrap = document.createElement('span'); wrap.className = 'tc-joinwrap';
     const inp = document.createElement('input'); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.title = 'join phrase to the next artist (editable; ▾ for presets)';
     const fit = () => { inp.size = Math.max(2, inp.value.length || 2); }; fit();
-    inp.oninput = fit; inp.onchange = () => { slot.joinPhrase = inp.value; commitTrack(entry); if (refreshBadges) refreshBadges(); }; enterBlurs(inp);
+    inp.oninput = fit; inp.onchange = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); if (refreshBadges) refreshBadges(); }; enterBlurs(inp);
     const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases';
     let pop = null; const close = () => { if (pop) { pop.remove(); pop = null; } };
     arrow.onclick = () => {
@@ -1156,7 +1203,7 @@
       pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
       pop.innerHTML = JOIN_OPTIONS.map(o => `<div class="tc-acrow" data-v="${esc(o.value)}"><span class="nm">${esc(o.label)}</span><span class="cmt">"${esc(o.value)}"</span></div>`).join('');
       document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
-      [...pop.querySelectorAll('[data-v]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); inp.value = row.dataset.v; fit(); slot.joinPhrase = inp.value; commitTrack(entry); if (refreshBadges) refreshBadges(); close(); }; });
+      [...pop.querySelectorAll('[data-v]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); inp.value = row.dataset.v; fit(); editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); if (refreshBadges) refreshBadges(); close(); }; });
       const off = e => { if (pop && !pop.contains(e.target) && e.target !== arrow) { close(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
     };
     wrap.appendChild(inp); wrap.appendChild(arrow);
@@ -1240,15 +1287,9 @@
     const cred = document.createElement('input'); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
     cred.oninput = () => line.classList.toggle('tc-can-split', splitArtistText(cred.value || s.name || '').length > 1);   // re-evaluate the highlight / ⋔ as you type
     cred.onchange = () => {
-      const v = cred.value.trim(); const newCred = v || (s.name || ''); const oldKey = fold(s.creditedAs);
-      s.creditedAs = newCred; if (s.creditedAs === s.name) cred.value = ''; commitTrack(entry);
-      // in "all" mode, copy the credited-as change to every other track that shared this credit
-      if ((SETTINGS.applyMode || 'all') === 'all' && oldKey) {
-        const touched = new Set();
-        MODEL.tracks.forEach(t => t.slots.forEach(os => { if (os === s || fold(os.creditedAs) !== oldKey) return; os.creditedAs = newCred; touched.add(os._entry); }));
-        touched.forEach(commitTrack);
-        if (touched.size) { Log.info('propagated credited-as', JSON.stringify(newCred), '→', touched.size, 'track(s)'); rerender(); toast(`credited-as — also set on ${touched.size} other track${touched.size > 1 ? 's' : ''}`); }
-      }
+      const v = cred.value.trim(); const newCred = v || (s.name || '');
+      // whole-credit "all matching tracks" propagation (liveRerender=false → keep focus when nothing propagates)
+      editCredit(entry, () => { s.creditedAs = newCred; if (s.creditedAs === s.name) cred.value = ''; }, 'credited-as', false);
       refreshBadges();   // a credited-as edit changes the track → update the ↺ button + changed-row border now
     }; wireRowNav(cred); line.appendChild(cred);
     const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
@@ -1277,12 +1318,13 @@
   // Join phrases ("feat." / "&" / …) are positional separators that stay put as artists move through
   // them — so "A feat. B" reordered reads "B feat. A", and the final position is always join-less.
   function moveSlot(entry, from, to) {
-    const n = entry.slots.length;
-    if (from === to || from < 0 || to < 0 || from >= n || to >= n) return;
-    const joins = entry.slots.map(s => s.joinPhrase);
-    const [s] = entry.slots.splice(from, 1); entry.slots.splice(to, 0, s);
-    entry.slots.forEach((x, i) => { x.joinPhrase = i < n - 1 ? (joins[i] || ' & ') : ''; x._entry = entry; });
-    commitTrack(entry); rerender(); Log.info('reordered artist', from, '→', to, 'on track', entry.number);
+    const n0 = entry.slots.length;
+    if (from === to || from < 0 || to < 0 || from >= n0 || to >= n0) return;
+    editCredit(entry, () => {
+      const joins = entry.slots.map(s => s.joinPhrase);
+      const [s] = entry.slots.splice(from, 1); entry.slots.splice(to, 0, s);
+      entry.slots.forEach((x, i) => { x.joinPhrase = i < n0 - 1 ? (joins[i] || ' & ') : ''; x._entry = entry; });
+    }, 'reordered artist');
   }
   let _slotDrag = null;   // { entry, from } of the artist slot being dragged
   function wireSlotDrag(line, entry, idx) {
