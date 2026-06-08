@@ -3111,7 +3111,11 @@
        fields ~23px right of the fields above. Pin its label column to the same 150px the main
        form uses so the fields left-align with Title/Barcode, and make both fields fill the
        column so they're the same width and right-align with the rest. */
-    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr > td:first-child{width:150px}
+    /* :not(#external-links-editor) — MB's external-links editor is ALSO a
+       table.row-form inside the information fieldset; without the exclusion this
+       150px label-column width hit its favicon cell (normally 30px) and shoved
+       every link URL ~150px to the right, misaligning the icons. */
+    body.tc-ri-on #information fieldset.information table.row-form:not(#external-links-editor) > tbody > tr > td:first-child{width:150px}
     body.tc-ri-on #information fieldset.information textarea#annotation,
     body.tc-ri-on #information fieldset.information input#comment{width:100%!important;max-width:none!important;box-sizing:border-box}   /* MB pins the annotation textarea to 354px via an !important rule in its (cross-origin) stylesheet — override it so the field fills the column like the input */
     body.tc-ri-on #information .buttons button,body.tc-ri-on #information button.styled-button{font-size:12px}
