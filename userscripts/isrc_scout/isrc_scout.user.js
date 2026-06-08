@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.8
+// @version      2026.6.8.1
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -22,6 +22,7 @@
 // @connect      isrchunt.com
 // @connect      openapi.tidal.com
 // @connect      auth.tidal.com
+// @connect      volumo.com
 // @run-at       document-start
 // ==/UserScript==
 
@@ -150,7 +151,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.6.8';
+  const SCRIPT_VERSION = '2026.6.8.1';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -192,6 +193,7 @@
     sp: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>',
     bp: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10 8.2l6 3.8-6 3.8z"/></svg>',
     td: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>',
+    vo: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M7.5 8h2l2.5 5.5L14.5 8h2l-3.5 8h-2z"/></svg>',
   };
 
   const mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/)?.[1];
@@ -433,6 +435,7 @@
     .ii-tbtn.sp  { color: #1db954; border-color: #b6e5c6; }
     .ii-tbtn.bp  { color: #0a8754; border-color: #9fe0c2; }
     .ii-tbtn.td  { color: #1f2d3d; border-color: #b5c2d0; }
+    .ii-tbtn.vo  { color: #7c4dff; border-color: #cdbcff; }
     /* import-source buttons: independently show icon and/or text (⚙ Setup).
        Default = icons only (toolbar room); both can be on at once. */
     .ii-bico { display: none; line-height: 0; }
@@ -798,7 +801,7 @@
         });
       });
       const rels = data.relations || [];
-      let deezerId = null, spotifyId = null, beatportId = null, tidalId = null;
+      let deezerId = null, spotifyId = null, beatportId = null, tidalId = null, volumoId = null;
       rels.forEach(rel => {
         const u = rel.url && rel.url.resource;
         if (!u) return;
@@ -807,6 +810,7 @@
         if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))   deezerId  = m[1];
         if ((m = u.match(/beatport\.com\/release\/[^/]+\/(\d+)/)))       beatportId = m[1];
         if ((m = u.match(/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/))) tidalId = m[1];
+        if ((m = u.match(/volumo\.com\/album\/(\d+)/)))                  volumoId = m[1];   // id or leading ICPN
       });
       // THIS release's year — what the header shows AND what the SX "recording newer
       // than the release" check uses. Prefer the release's own date; only fall back to
@@ -830,11 +834,11 @@
       });
       Object.keys(pend).forEach(rid => { if (!tracks.some(t => t.recId === rid)) { delete pend[rid]; pendChanged = true; } });
       if (pendChanged) savePendingRemovals(pend);
-      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, beatportId, tidalId, releaseYear, artist };
+      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, beatportId, tidalId, volumoId, releaseYear, artist };
       Log.info('Release "' + RELEASE.title + '"' + (releaseYear ? ' (' + releaseYear + ')' : '') + ': ' + tracks.length + ' track(s), ' +
         tracks.filter(t => !t.existing.length).length + ' missing ISRC' +
         '; links: ' + [deezerId ? 'Deezer ' + deezerId : null, spotifyId ? 'Spotify ' + spotifyId : null,
-          beatportId ? 'Beatport ' + beatportId : null, tidalId ? 'Tidal ' + tidalId : null].filter(Boolean).join(', '));
+          beatportId ? 'Beatport ' + beatportId : null, tidalId ? 'Tidal ' + tidalId : null, volumoId ? 'Volumo ' + volumoId : null].filter(Boolean).join(', '));
       return RELEASE;
     });
   }
@@ -1285,6 +1289,43 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
+     VOLUMO  (clean unauthenticated JSON API — no Cloudflare/token; one call
+     per album returns every track's ISRC. Resolves from a Volumo URL only —
+     either an MB rel or the one Platform Check found; Scout never deals with
+     barcodes itself, that's Platform Check's job.)
+  ═══════════════════════════════════════════════════════════════════════ */
+  async function fetchVolumo(albumId, onProgress, onIsrc) {
+    if (onProgress) onProgress(0, 0);
+    const idStr = String(albumId);
+    // a 12–14-digit token is the ICPN (barcode) embedded in the canonical URL; a
+    // shorter one is the internal album id. Both endpoints return the same shape.
+    const path = idStr.length >= 12 ? '/album_by_icpn/' + idStr : '/albums/' + idStr;
+    const r = await gmGet('https://volumo.com/api/v1' + path, { 'Accept': 'application/json' });
+    if (r.status !== 200) throw new Error('Volumo ' + r.status + ' for album ' + albumId);
+    let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { throw new Error('Volumo: malformed JSON'); }
+    const a = Array.isArray(j) ? j[0] : (j && (j.album || j));
+    const list = (a && a.tracks) || [];
+    Log.info('Volumo album "' + ((a && a.title) || albumId) + '": ' + list.length + ' track(s)');
+    let n = 0;
+    list.forEach((t, i) => {
+      const mix = t.version && !/^original mix$/i.test(t.version) ? ' (' + t.version + ')' : '';
+      const e = {
+        isrc:   normalizeIsrc(t.isrc || ''),
+        title:  (t.title || '') + mix,
+        artist: ((t.artists || []).concat(t.featured_artists || [])).map(x => x && x.name).filter(Boolean).join(', '),
+        disc:   t.disc_number || 1,
+        pos:    t.number || t.track_number || (i + 1),
+        dur:    t.duration ? msToMmSs(t.duration) : '',
+      };
+      try { if (onIsrc && isValidIsrc(e.isrc)) onIsrc(e); } catch (err) { Log.warn('Volumo map hiccup for ' + e.isrc + ': ' + errText(err)); }
+      try { if (onProgress) onProgress(++n, list.length); } catch (err) {}
+    });
+    const withIsrc = list.filter(t => isValidIsrc(normalizeIsrc(t.isrc || ''))).length;
+    if (!withIsrc) throw new Error('Volumo album exposed no ISRCs');
+    return { total: list.length, next: null };
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
      EDITOR MODAL — DOM
   ═══════════════════════════════════════════════════════════════════════ */
   let overlay, modal, tbody, summaryEl, progEl, submitBtn;
@@ -1436,6 +1477,7 @@
         <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
         <span class="ii-split"><button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from the linked Beatport release"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button><button class="ii-tbtn bp ii-caret" id="ii-bp-menu" title="More — import from a custom Beatport URL / the one Platform Check found">▾</button></span>
         <span class="ii-split"><button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from the linked Tidal album"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button><button class="ii-tbtn td ii-caret" id="ii-td-menu" title="More — import from a custom Tidal URL / the one Platform Check found">▾</button></span>
+        <span class="ii-split"><button class="ii-tbtn vo" id="ii-vo-all" title="Import ISRCs from the linked Volumo release"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button><button class="ii-tbtn vo ii-caret" id="ii-vo-menu" title="More — import from a custom Volumo URL / the one Platform Check found">▾</button></span>
         <span class="ii-prog" id="ii-prog"></span>
         <span class="ii-tspacer"></span>
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear entered</button>
@@ -1556,9 +1598,11 @@
     modal.querySelector('#ii-sp-all').addEventListener('click', runSpotify);
     modal.querySelector('#ii-bp-all').addEventListener('click', runBeatport);
     modal.querySelector('#ii-td-all').addEventListener('click', runTidal);
+    modal.querySelector('#ii-vo-all').addEventListener('click', runVolumo);
     modal.querySelector('#ii-dz-menu').addEventListener('click', e => toggleSrcMenu('Deezer', e.currentTarget));
     modal.querySelector('#ii-bp-menu').addEventListener('click', e => toggleSrcMenu('Beatport', e.currentTarget));
     modal.querySelector('#ii-td-menu').addEventListener('click', e => toggleSrcMenu('Tidal', e.currentTarget));
+    modal.querySelector('#ii-vo-menu').addEventListener('click', e => toggleSrcMenu('Volumo', e.currentTarget));
     // Spotify has no ▾ menu: it imports via ISRC Hunt, which resolves the MB release
     // FROM the Spotify URL — a custom/not-in-MB URL can't work, so there's nothing to offer.
     document.getElementById('ii-src-go').addEventListener('click', submitSrcMenu);
@@ -1699,10 +1743,12 @@
     modal.querySelector('#ii-sp-all').disabled = !RELEASE.spotifyId;
     modal.querySelector('#ii-bp-all').disabled = !RELEASE.beatportId;
     modal.querySelector('#ii-td-all').disabled = !RELEASE.tidalId;
+    modal.querySelector('#ii-vo-all').disabled = !RELEASE.volumoId;
     modal.querySelector('#ii-dz-all').title = RELEASE.deezerId ? 'Import from Deezer' : 'No Deezer link on this release';
     modal.querySelector('#ii-sp-all').title = RELEASE.spotifyId ? 'Import from Spotify' : 'No Spotify link on this release';
     modal.querySelector('#ii-bp-all').title = RELEASE.beatportId ? 'Import from Beatport' : 'No Beatport link on this release (use ▾ for a custom URL)';
     modal.querySelector('#ii-td-all').title = RELEASE.tidalId ? 'Import from Tidal' : 'No Tidal link on this release (use ▾ for a custom URL)';
+    modal.querySelector('#ii-vo-all').title = RELEASE.volumoId ? 'Import from Volumo' : 'No Volumo link on this release (use ▾ for a custom URL / the one Platform Check found)';
 
     tbody.innerHTML = '';
     let lastMedium = null;
@@ -2598,12 +2644,20 @@
     try { await runStreamingSource('Tidal', RELEASE.tidalId, fetchTidal); }
     finally { btn.disabled = false; }
   }
+  async function runVolumo() {
+    if (!RELEASE.volumoId) { Log.warn('Volumo: no Volumo link on this release'); return; }
+    const btn = modal.querySelector('#ii-vo-all'); btn.disabled = true;
+    Log.info('Volumo: importing album ' + RELEASE.volumoId);
+    try { await runStreamingSource('Volumo', RELEASE.volumoId, fetchVolumo); }
+    finally { btn.disabled = false; }
+  }
   // Map a source label to its fetcher (used by the custom-URL + Platform-Check menus).
   function fetcherFor(source) {
     return source === 'Deezer'   ? fetchDeezer
          : source === 'Spotify'  ? fetchSpotify
          : source === 'Beatport' ? fetchBeatport
          : source === 'Tidal'    ? fetchTidal
+         : source === 'Volumo'   ? fetchVolumo
          : null;
   }
 
@@ -2643,6 +2697,7 @@
       : source === 'Spotify'  ? 'https://open.spotify.com/album/…  (or an album id)'
       : source === 'Beatport' ? 'https://www.beatport.com/release/name/123…  (or a release id)'
       : source === 'Tidal'    ? 'https://tidal.com/album/123…  (or an album id)'
+      : source === 'Volumo'   ? 'https://volumo.com/album/123…  (or an id / barcode)'
       : 'Paste album URL…';
     // show first so offsetWidth is measurable, then anchor under the caret that
     // opened it (menu is position:fixed on <body>), kept fully on-screen
@@ -2683,6 +2738,10 @@
     }
     if (source === 'Tidal') {
       const m = s.match(/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/);
+      return m ? m[1] : (/^\d+$/.test(s) ? s : null);
+    }
+    if (source === 'Volumo') {
+      const m = s.match(/volumo\.com\/album\/(\d+)/);   // id or leading ICPN in the canonical /album/{icpn}-{slug}
       return m ? m[1] : (/^\d+$/.test(s) ? s : null);
     }
     let m = s.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/) || s.match(/spotify:album:([A-Za-z0-9]+)/);

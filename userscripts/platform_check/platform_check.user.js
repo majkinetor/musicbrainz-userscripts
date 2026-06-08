@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.8
+// @version      2026.6.8.1
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -26,6 +26,7 @@
 // @connect      itunes.apple.com
 // @connect      openapi.tidal.com
 // @connect      auth.tidal.com
+// @connect      volumo.com
 // @connect      *
 // ==/UserScript==
 (function () {
@@ -344,7 +345,7 @@ const iconBtn = 'cursor: pointer; user-select: none; color: #666; padding: 2px 6
 // metadata source, then the streaming services, with Deezer last because it
 // has the worst catalogue coverage of the four. Users can override via the
 // providers panel (drag-and-drop) and the choice persists in pc:provider-order.
-const ALL_PROVIDERS = ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer', 'tidal', 'beatport'];
+const ALL_PROVIDERS = ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer', 'tidal', 'beatport', 'volumo'];
 function getProviderOrder() {
     const raw = GM_getValue('pc:provider-order', null);
     if (!raw) return ALL_PROVIDERS.slice();
@@ -357,8 +358,8 @@ function getProviderOrder() {
     } catch { return ALL_PROVIDERS.slice(); }
 }
 const PROVIDER_ORDER = getProviderOrder();
-const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple Music', tidal:'Tidal', beatport:'Beatport' };
-const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C', tidal:'#111',  beatport:'#0a8754' };
+const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple Music', tidal:'Tidal', beatport:'Beatport', volumo:'Volumo' };
+const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C', tidal:'#111',  beatport:'#0a8754', volumo:'#7c4dff' };
 // Small brand glyphs shown next to each provider name (toggle: pc:show-icons). Spotify / Apple Music /
 // Bandcamp are the real marks; Deezer (equalizer) and Discogs (vinyl) are clean brand-coloured stand-ins.
 const PROVIDER_ICON = {
@@ -370,6 +371,8 @@ const PROVIDER_ICON = {
   // Tidal: its mark is four interlocking diamonds; Beatport: brand-green disc with a play wedge (clean stand-ins).
   tidal:    '<svg viewBox="0 0 24 24" width="14" height="14" fill="#111"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>',
   beatport: '<svg viewBox="0 0 24 24" width="14" height="14" fill="#0a8754"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg>',
+  // Volumo: brand-violet disc with a "V" wedge (clean stand-in)
+  volumo:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="#7c4dff"><circle cx="12" cy="12" r="10"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>',
 };
 container.innerHTML = `
 <style>
@@ -454,11 +457,11 @@ logModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width
 // active (toggled = filter ON = entries hidden). State is per-session only;
 // not persisted because the natural workflow is "open log to investigate
 // one provider's behavior on this page".
-const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Beatport'];
+const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Beatport', 'Volumo'];
 const LOG_SOURCE_COLORS = {
     System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F',
     Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9', Deezer: '#A238FF', Apple: '#FA243C',
-    Tidal: '#CCC', Beatport: '#3AD17A',
+    Tidal: '#CCC', Beatport: '#3AD17A', Volumo: '#b39dff',
 };
 logModal.innerHTML = `
 <style>
@@ -1718,7 +1721,7 @@ async function fetchDeezerMeta(albumUrl) {
     } catch { return null; }
 }
 
-async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
+async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Deezer';
 
     const cached = cacheGet(mbid, 'deezer');
@@ -1726,10 +1729,26 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
         applyCachedRow('deezer', label, cached, mbTracks);
         return;
     }
-    if (cached && !cached.url && !existingUrl) {
+    if (cached && !cached.url && !existingUrl && !barcode) {
         appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('deezer', label, cached, mbTracks);
         return;
+    }
+
+    // Barcode-first: Deezer's `album/upc:<UPC>` is an exact match — no text-search
+    // ambiguity. Falls through to the artist+album search when there's no UPC hit.
+    if (!existingUrl && barcode) {
+        const br = await gmGet(`https://api.deezer.com/album/upc:${barcode}`);
+        let bd = null; try { bd = JSON.parse(br.responseText); } catch {}
+        if (bd && bd.id && !bd.error) {
+            const albumUrl = bd.link || `https://www.deezer.com/album/${bd.id}`;
+            appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
+            const meta = await fetchDeezerMeta(albumUrl);
+            cacheSet(mbid, 'deezer', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode' });
+            updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode' });
+            return;
+        }
+        appendLog(label, `Barcode ${barcode}: no UPC match — falling back to search`);
     }
 
     let albumUrl = existingUrl;
@@ -1826,7 +1845,7 @@ async function fetchAppleMeta(albumUrl) {
     } catch { return null; }
 }
 
-async function scanApple({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataAppleId }) {
+async function scanApple({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataAppleId, barcode }) {
     const label = 'Apple';
 
     const cached = cacheGet(mbid, 'apple');
@@ -1834,10 +1853,27 @@ async function scanApple({ artist, album, mbTracks, existingUrl, mbid, isVarious
         applyCachedRow('apple', label, cached, mbTracks);
         return;
     }
-    if (cached && !cached.url && !existingUrl) {
+    if (cached && !cached.url && !existingUrl && !barcode) {
         appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('apple', label, cached, mbTracks);
         return;
+    }
+
+    // Barcode-first: iTunes `lookup?upc=<UPC>` is an exact match. Falls through
+    // to the term search (and Wikidata) when there's no UPC hit.
+    if (!existingUrl && !wikidataAppleId && barcode) {
+        const br = await gmGet(`https://itunes.apple.com/lookup?upc=${barcode}&entity=album`);
+        let bd = null; try { bd = JSON.parse(br.responseText); } catch {}
+        const hit = bd && (bd.results || []).find(r => r.collectionViewUrl);
+        if (hit) {
+            const albumUrl = hit.collectionViewUrl.split('?')[0];
+            appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
+            const meta = await fetchAppleMeta(albumUrl);
+            cacheSet(mbid, 'apple', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode' });
+            updateRow('apple', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode' });
+            return;
+        }
+        appendLog(label, `Barcode ${barcode}: no UPC match — falling back to search`);
     }
 
     let albumUrl = existingUrl;
@@ -2035,6 +2071,57 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
     updateRow('beatport', { url, mbTracks, remoteTracks: null, source });
 }
 
+// ─── Volumo ─────────────────────────────────────────────────────────────────
+// Electronic-music store with a clean, unauthenticated JSON API
+// (volumo.com/api/v1) — no Cloudflare, no captcha, no token. A release lookup
+// returns the full tracklist (with ISRCs) in one call. We resolve by existing
+// MB rel → barcode (ICPN) → artist+album search. Canonical URL is
+// /album/{icpn}-{slug}; the /album/{id} form 308-redirects to it.
+const volumoSlug = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const volumoUrl  = a => a && a.icpn ? `https://volumo.com/album/${a.icpn}-${volumoSlug(a.title)}` : (a && a.id ? `https://volumo.com/album/${a.id}` : null);
+async function volumoApi(path) { const r = await gmGet('https://volumo.com/api/v1' + path); if (!r.ok) return null; try { const j = JSON.parse(r.responseText); return Array.isArray(j) ? j[0] : (j.album || j); } catch { return null; } }
+async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
+    const label = 'Volumo';
+    const cached = cacheGet(mbid, 'volumo');
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('volumo', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('volumo', label, cached, mbTracks); return; }
+
+    let a = null, source = null;
+    if (existingUrl) {
+        source = 'MB rels'; appendLog(label, `Using existing MB URL: ${existingUrl}`, 'ok');
+        const m = existingUrl.match(/\/album\/(\d{8,14})(?:-|$)/) || existingUrl.match(/\/album\/(\d+)/);
+        if (m) a = m[1].length >= 8 ? await volumoApi('/album_by_icpn/' + m[1]) : await volumoApi('/albums/' + m[1]);
+    } else if (barcode) {
+        a = await volumoApi('/album_by_icpn/' + barcode);
+        if (a) { source = 'barcode'; appendLog(label, `Barcode ${barcode} → album ${a.id} "${a.title}"`, 'ok'); }
+    }
+    if (!a && !existingUrl) {
+        const q = isVariousArtists ? album : `${artist} ${album}`;
+        const j = await gmGet(`https://volumo.com/api/v1/search?query=${encodeURIComponent(q)}&limit=10`);
+        let albums = [];
+        // Volumo returns each bucket as an array when populated, but an empty {} when there are no hits — coerce.
+        try { const ab = JSON.parse(j.responseText).albums; albums = Array.isArray(ab) ? ab : []; } catch {}
+        appendLog(label, `API search: ${albums.length} candidate(s)`);
+        let best = null;
+        for (const it of albums) {
+            const sc = scoreCandidate({ tracks: (it.tracks || []).length || null, title: it.title, artist: (it.artists || []).map(x => x.name).join(' ') }, mbTracks, album, artist, isVariousArtists);
+            if (!best || sc > best.score) best = { score: sc, a: it };
+            if (sc >= 150) break;
+        }
+        if (best && best.score >= 120) { a = best.a; source = 'API search'; appendLog(label, `Picked best (score=${best.score}): album ${a.id}`, best.score >= 150 ? 'ok' : 'warn'); }
+    }
+    if (!a) { cacheSet(mbid, 'volumo', { url: null, tracks: null, year: null, label: null, source: 'search' }); updateRow('volumo', { url: null, mbTracks, remoteTracks: null }); return; }
+    // search hits may omit the full tracklist — refetch by ICPN for an accurate count
+    if (!(a.tracks && a.tracks.length) && a.icpn) { const full = await volumoApi('/album_by_icpn/' + a.icpn); if (full) a = full; }
+    const tracks = (a.tracks || []).length || null;
+    const year = String(a.original_release_date || '').slice(0, 4) || null;
+    const lbl = a.recordlabel || a.record_label || a.label || null;
+    const url = volumoUrl(a);
+    appendLog(label, `Album: tracks=${tracks} title="${a.title}" year=${year || '?'}`, tracks ? 'ok' : 'warn');
+    cacheSet(mbid, 'volumo', { url, tracks, year, label: lbl, source });
+    updateRow('volumo', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+}
+
 // ─── Main entry ────────────────────────────────────────────────────────────
 const mbid = window.location.pathname.split('/')[2];
 if (!mbid || mbid.length < 10) {
@@ -2152,6 +2239,7 @@ function parseMbFromDom() {
             apple:         externalHrefs.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
             tidal:         externalHrefs.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
             beatport:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
+            volumo:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
             discogsMaster: externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
         };
 
@@ -2306,10 +2394,22 @@ function parseMbFromDom() {
             }
         }
 
+        // Barcode (UPC/EAN) — MB renders it as a "Barcode:" dt/dd, th/td, or in
+        // the sidebar text. Strip to digits. Used to resolve Volumo (and, as an
+        // exact match, Deezer/Apple) by UPC. Scraped from the page here; the WS2
+        // `data.barcode` is only a fallback (parseMbData).
+        let barcode = null;
+        for (const dt of document.querySelectorAll('dl.properties dt, dl dt, table th')) {
+            const dd = dt.nextElementSibling;
+            if (!dd) continue;
+            if (matchKey(dt, 'barcode')) { const m = (dd.textContent || '').replace(/\s+/g, '').match(/\d{8,14}/); if (m) { barcode = m[0]; break; } }
+        }
+        if (!barcode && sidebar) { const m = (sidebar.textContent || '').match(/Barcode:?\s*([\d\s]{8,})/i); if (m) barcode = m[1].replace(/\D/g, '') || null; }
+
         // Sanity gate: we need artist + album + at least one track row. Anything
         // less is an unrendered or unfamiliar layout — bail to API.
         if (!artist || !album || mbTracks < 1) return null;
-        return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel };
+        return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode };
     } catch (e) {
         appendLog('System', `parseMbFromDom threw: ${e.message}`, 'error');
         return null;
@@ -2346,16 +2446,18 @@ function parseMbData(data) {
         apple:         relUrls.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
         tidal:         relUrls.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
         beatport:      relUrls.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
+        volumo:        relUrls.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
         discogsMaster: relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
     };
     const format = data.media?.[0]?.format || null;
     const year   = data.date ? String(data.date).slice(0, 4) : null;
+    const barcode = String(data.barcode || '').replace(/\D/g, '') || null;   // WS2 fallback (DOM scrape preferred)
     const releaseLabel = (data['label-info'] || [])
         .map(li => li.label?.name)
         .filter(Boolean)
         .filter((v, i, a) => a.indexOf(v) === i)
         .join(', ') || null;
-    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel };
+    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode };
 }
 
 async function runScans() {
@@ -2402,7 +2504,7 @@ async function runScans() {
     // from a different tab and wants to jump back to MB without re-typing.
     appendLog('MusicBrainz', `Release: <a href="${MB_ORIGIN}/release/${mbid}" target="_blank" rel="noopener" style="color:#BA68C8;text-decoration:underline;">${MB_ORIGIN}/release/${mbid}</a>`);
 
-    const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel } = mbData;
+    const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode } = mbData;
     // Header subtitle: year · label · format (left-aligned), and the MB
     // track count right-aligned so it sits in the same column as the
     // platform vals below.
@@ -2481,6 +2583,7 @@ async function runScans() {
         apple:    `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`,
         tidal:    `https://tidal.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
         beatport: `https://www.beatport.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
+        volumo:   `https://volumo.com/search?query=${encodeURIComponent(`${artist} ${album}`)}`,
     };
     for (const [p, u] of Object.entries(searchUrls)) {
         const a = document.getElementById(`mb-online-${p}`);
@@ -2500,7 +2603,7 @@ async function runScans() {
         }
     }
 
-    const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format, existingDiscogsMaster: existing.discogsMaster || null };
+    const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format, barcode, existingDiscogsMaster: existing.discogsMaster || null };
     const tasks = [];
     if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify,  wikidataSpotifyId: wd?.spotifyId || null }));
     if (GM_getValue('prov_discogs',  true)) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
@@ -2509,6 +2612,7 @@ async function runScans() {
     if (GM_getValue('prov_apple',    true)) tasks.push(scanApple   ({ ...ctx, existingUrl: existing.apple,    wikidataAppleId: wd?.appleId || null }));
     if (GM_getValue('prov_tidal',    true)) tasks.push(scanTidal   ({ ...ctx, existingUrl: existing.tidal,    wikidataTidalId: wd?.tidalId || null }));
     if (GM_getValue('prov_beatport', true)) tasks.push(scanBeatport({ ...ctx, existingUrl: existing.beatport, wikidataBeatportId: wd?.beatportId || null }));
+    if (GM_getValue('prov_volumo',   true)) tasks.push(scanVolumo  ({ ...ctx, existingUrl: existing.volumo   }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
 }

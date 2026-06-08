@@ -1,5 +1,10 @@
 # Platform Check Changelog
 
+## [2026.6.8.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.8)
+
+- New provider **Volumo** — clean unauthenticated API; resolved via existing MB rel → **barcode** (`/album_by_icpn`) → artist+album search, with track-count verification ([#167](https://github.com/majkinetor/musicbrainz-userscripts/issues/167))
+- **Barcode-first matching**: the release barcode is now scraped from the MB page (WS2 as fallback) and used for an exact match on **Deezer** (`album/upc:`) and **Apple** (`lookup?upc=`) before their text search — and to resolve **Volumo**
+
 ## [2026.6.8](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.8)
 
 - New provider **Tidal** — resolved via existing MB rels, Wikidata (P4577), or the official Tidal search API (no user login)
