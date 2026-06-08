@@ -2434,7 +2434,7 @@ async function runScans() {
     // row uncircles and click-to-add re-enables. Without this, users who
     // hit a buggy build keep seeing every row as circled+unclickable until
     // they manually ↻ refresh.
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple']) {
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple', 'tidal', 'beatport']) {
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
         if (existing[p] === cached.url && cached.source !== 'MB rels') {
