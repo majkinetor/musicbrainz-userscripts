@@ -590,16 +590,22 @@
        ~96vw of a small viewport. The desktop header (title + tool buttons on
        ONE flex row) then squeezes the title into a one-word-wide column, and
        the fixed-width table (560px New-ISRC col) overflows horizontally.
-       Below ~700px we full-screen the modal, stack the header, turn every
-       track row into a full-width card, and let the toolbar/footer wrap.
+       Below ~700px we grow the modal, stack the header, turn every track row
+       into a full-width card, and let the toolbar/footer wrap.
        ────────────────────────────────────────────────────────────────── */
     @media (max-width: 700px) {
+      /* Keep the modal CENTERED (inherit the base left:50% + translateX). Do
+         NOT pin it to 0,0 / 100vw: on tablets where MusicBrainz's desktop
+         layout overflows a narrow layout-viewport, a position:fixed 100vw /
+         left:0 modal is sized to the layout viewport and lands in the top-left
+         corner instead of filling the screen. A centered 96vw × 96vh dialog
+         reads correctly everywhere. */
       #ii-modal {
-        top: 0 !important; left: 0 !important; right: 0 !important; transform: none !important;
-        width: 100vw !important; max-width: 100vw !important;
-        height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; }
+        top: 2vh !important;
+        width: 96vw !important; max-width: 96vw !important;
+        height: 96vh !important; max-height: 96vh !important; }
       @supports (height: 100dvh) {
-        #ii-modal { height: 100dvh !important; max-height: 100dvh !important; } }
+        #ii-modal { height: 96dvh !important; max-height: 96dvh !important; } }
 
       /* header: title gets its own row (subtitle truncates), tool buttons wrap
          below it, close pinned to the top-right corner */
@@ -1339,10 +1345,39 @@
     });
   }
 
+  // Some tablets render MusicBrainz's desktop layout wider than the browser's
+  // layout viewport, so the page overflows and the browser zooms-to-fit. A
+  // position:fixed modal is then sized/anchored to the (narrow) layout viewport
+  // and lands in a corner at ~64% width. Pin the modal + overlay to the VISUAL
+  // viewport instead — it reflects what's actually on screen (zoom scale +
+  // offset). CSS handles the normal case; this only engages on narrow viewports
+  // (where the mobile layout is active) and is a no-op without VisualViewport.
+  let _vvSync = null;
+  function pinModalToViewport() {
+    const vv = window.visualViewport;
+    if (!vv || !window.matchMedia('(max-width: 700px)').matches) { clearModalViewportPin(); return; }
+    const w = Math.min(vv.width * 0.96, 1080), h = vv.height * 0.96;
+    const set = (el, props) => { for (const k in props) el.style.setProperty(k, props[k], 'important'); };
+    set(overlay, { left: vv.offsetLeft + 'px', top: vv.offsetTop + 'px', width: vv.width + 'px', height: vv.height + 'px' });
+    set(modal, {
+      left: (vv.offsetLeft + (vv.width - w) / 2) + 'px', top: (vv.offsetTop + (vv.height - h) / 2) + 'px',
+      width: w + 'px', 'max-width': 'none', height: h + 'px', 'max-height': 'none', transform: 'none',
+    });
+  }
+  function clearModalViewportPin() {
+    ['left', 'top', 'width', 'max-width', 'height', 'max-height', 'transform'].forEach(p => modal.style.removeProperty(p));
+    ['left', 'top', 'width', 'height'].forEach(p => overlay.style.removeProperty(p));
+  }
   function openModal() {
     buildModal();
     overlay.classList.add('open');
     modal.classList.add('open');
+    pinModalToViewport();
+    if (window.visualViewport && !_vvSync) {
+      _vvSync = () => pinModalToViewport();
+      window.visualViewport.addEventListener('resize', _vvSync);
+      window.visualViewport.addEventListener('scroll', _vvSync);
+    }
     refreshAuthState();
     if (!RELEASE) {
       tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#adb5bd">Loading release…</td></tr>';
@@ -1355,6 +1390,12 @@
   }
   function closeModal() {
     abortSxWork('window closed');            // don't leave batched SX requests running in the background (#127)
+    if (_vvSync && window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', _vvSync);
+      window.visualViewport.removeEventListener('scroll', _vvSync);
+      _vvSync = null;
+    }
+    clearModalViewportPin();
     overlay.classList.remove('open');
     modal.classList.remove('open');
   }
