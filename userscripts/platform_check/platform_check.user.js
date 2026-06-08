@@ -2115,7 +2115,7 @@ async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariou
     if (!(a.tracks && a.tracks.length) && a.icpn) { const full = await volumoApi('/album_by_icpn/' + a.icpn); if (full) a = full; }
     const tracks = (a.tracks || []).length || null;
     const year = String(a.original_release_date || '').slice(0, 4) || null;
-    const lbl = a.recordlabel || a.record_label || a.label || null;
+    const lbl = a.recordlabel?.name || (typeof a.recordlabel === 'string' ? a.recordlabel : null);   // recordlabel is an object {id,name,…}
     const url = volumoUrl(a);
     appendLog(label, `Album: tracks=${tracks} title="${a.title}" year=${year || '?'}`, tracks ? 'ok' : 'warn');
     cacheSet(mbid, 'volumo', { url, tracks, year, label: lbl, source });
