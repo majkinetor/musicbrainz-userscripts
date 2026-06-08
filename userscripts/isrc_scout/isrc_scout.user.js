@@ -175,6 +175,15 @@
     country:  'US',
   };
 
+  // Brand glyphs for the import-source buttons (fill:currentColor → each inherits
+  // its button's brand colour). Toggled against text labels via ⚙ Setup.
+  const SRC_ICON = {
+    dz: '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><rect x="1" y="14" width="4" height="6" rx=".6"/><rect x="6.7" y="10" width="4" height="10" rx=".6"/><rect x="12.4" y="6" width="4" height="14" rx=".6"/><rect x="18.1" y="11" width="4" height="9" rx=".6"/></svg>',
+    sp: '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>',
+    bp: '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10 8.2l6 3.8-6 3.8z"/></svg>',
+    td: '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>',
+  };
+
   const mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/)?.[1];
   if (!mbid) return;
 
@@ -414,6 +423,11 @@
     .ii-tbtn.sp  { color: #1db954; border-color: #b6e5c6; }
     .ii-tbtn.bp  { color: #0a8754; border-color: #9fe0c2; }
     .ii-tbtn.td  { color: #1f2d3d; border-color: #b5c2d0; }
+    /* import-source buttons: icon ↔ text (⚙ Setup). Default = icons (toolbar room). */
+    .ii-bico { display: none; line-height: 0; }
+    .ii-bico svg { display: block; }
+    #ii-tools.ii-srcicons .ii-blabel { display: none; }
+    #ii-tools.ii-srcicons .ii-bico { display: inline-flex; align-items: center; }
     .ii-tbtn.primary { background: #198754; color: #fff; border-color: #198754; }
     .ii-tbtn.primary:hover { background: #157347; }
     .ii-tbtn.ghost { border-color: transparent; }
@@ -1353,6 +1367,11 @@
           Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
           If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
         </div>
+        <div style="margin-top:14px; padding-top:11px; border-top:1px solid #eee">
+          <label style="display:block; font-size:11.5px; color:#495057; margin-bottom:5px; font-weight:600">Import-source buttons</label>
+          <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; margin-right:16px; cursor:pointer"><input type="radio" name="ii-srcdisp" value="icons">Show icons</label>
+          <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; cursor:pointer"><input type="radio" name="ii-srcdisp" value="text">Show text</label>
+        </div>
       </div>
 
       <div class="ii-pane" id="ii-bulk-pane">
@@ -1396,10 +1415,10 @@
             <label><input type="checkbox" id="ii-ex-release">release</label>
           </span>
         </span>
-        <span class="ii-split"><button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from the linked Deezer album">Deezer</button><button class="ii-tbtn dz ii-caret" id="ii-dz-menu" title="More — import from a custom Deezer URL">▾</button></span>
-        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album">Spotify</button>
-        <span class="ii-split"><button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from the linked Beatport release">Beatport</button><button class="ii-tbtn bp ii-caret" id="ii-bp-menu" title="More — import from a custom Beatport URL / the one Platform Check found">▾</button></span>
-        <span class="ii-split"><button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from the linked Tidal album">Tidal</button><button class="ii-tbtn td ii-caret" id="ii-td-menu" title="More — import from a custom Tidal URL / the one Platform Check found">▾</button></span>
+        <span class="ii-split"><button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from the linked Deezer album"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button><button class="ii-tbtn dz ii-caret" id="ii-dz-menu" title="More — import from a custom Deezer URL">▾</button></span>
+        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
+        <span class="ii-split"><button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from the linked Beatport release"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button><button class="ii-tbtn bp ii-caret" id="ii-bp-menu" title="More — import from a custom Beatport URL / the one Platform Check found">▾</button></span>
+        <span class="ii-split"><button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from the linked Tidal album"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button><button class="ii-tbtn td ii-caret" id="ii-td-menu" title="More — import from a custom Tidal URL / the one Platform Check found">▾</button></span>
         <span class="ii-prog" id="ii-prog"></span>
         <span class="ii-tspacer"></span>
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear entered</button>
@@ -1493,6 +1512,21 @@
       cb.addEventListener('change', () => { sxExact[key] = cb.checked; saveSxExact(); refreshExactToggle(); Log.info('SX exact ' + key + ' = ' + cb.checked); });
     });
     refreshExactToggle();
+
+    // Import-source buttons: icons (default) vs text labels, persisted
+    const tools = modal.querySelector('#ii-tools');
+    const applySrcDisp = mode => tools.classList.toggle('ii-srcicons', mode !== 'text');
+    const srcDisp = store.get('src_btn_display', 'icons');
+    applySrcDisp(srcDisp);
+    modal.querySelectorAll('input[name="ii-srcdisp"]').forEach(r => {
+      r.checked = (r.value === srcDisp);
+      r.addEventListener('change', () => {
+        if (!r.checked) return;
+        store.set('src_btn_display', r.value);
+        applySrcDisp(r.value);
+        Log.info('Source buttons: ' + r.value);
+      });
+    });
 
     modal.querySelector('#ii-dz-all').addEventListener('click', runDeezer);
     modal.querySelector('#ii-sp-all').addEventListener('click', runSpotify);
