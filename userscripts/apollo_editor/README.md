@@ -11,14 +11,16 @@ https://github.com/user-attachments/assets/b668f472-c3cc-4487-913c-50ff1d950c5b
 
 When you add a release, each track's artist may be set as **plain text with no MBID**, and the recordings are unset. Linking them one by one — searching, picking, occasionally splitting *A feat. B* into two credits — is the slowest part of adding a release. Apollo Editor does the whole tracklist and recording set in one pass and lets you apply the confident matches with one click.
 
-It replaces the native **Tracklist** and **Recordings** editors with two clean, consistent tables. Each takeover is optional and you can flip back to the native editor at any time with the **Original / Apollo** button.
+It replaces the native **Tracklist** and **Recordings** editors with two clean, consistent tables. It also makes **Release Information** tab more functional by suppresing help bubbles and external icons moved to right column. 
+
+Each takeover is optional and you can flip back to the native editor at any time with the **Original / Apollo** switcher button.
 
 ## Features
 
 - **Tracklist editor**
     - Artist picker with confidence highlight
         - Option to change all appearances of selected artist (or its *Credited as* field) with highlight
-        - **Ctrl-click** a search result to set that artist on **all unresolved tracks**
+        - Ctrl-click a search result to set that artist on all unresolved tracks
         - Paste an MBID or a MusicBrainz artist URL to resolve straight to that artist
     - Split artist with join-phrase selector
     - Artist aliases in search results and in selection
@@ -31,15 +33,15 @@ It replaces the native **Tracklist** and **Recordings** editors with two clean, 
 - **Recordings editor**
     - Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row and inline highlighting of the fields that differ.
     - Recording picker with MusicBrainz suggestions, free-form search, linked "appears on" releases, confidence highlights
-    - **Right-click** a recording **Title**/**Artist** cell to copy the track's value down to the recording (on submit) — see [Updating recordings](#updating-recordings-titleartist)
+    - Right-click a recording Title/Artist cell to copy the track's value down to the recording (on submit) — see [Updating recordings](#updating-recordings-titleartist)
 - **[Matching](#matching)**
     - Auto-match artists and recordings in one click
     - Release group consideration for quick and precise matching
     - Configurable match tolerance — length (seconds), title (edit distance), ignore casing and punctuation
 - **[Toolbar](#toolbar)**
-    - Tools relocated to always-visible **Tool** button, with some new tools
+    - Tools relocated to always-visible _Tool_ button, with some new tools
     - Revert/Clear for a single track or the whole table
-- **[Customization](#settings)** — resizable columns, alternate row colors, grid, multiple layouts
+- **[Customization](#settings)** — resizable columns, alternate row colors, grid, multiple layouts, match tolerance
 
 ## Matching
 
@@ -112,19 +114,21 @@ Besides the integrated tools, there are a few new ones:
 
 ## Settings
 
-Opened using the **⚙** button on the [toolbar](#toolbar).
+Accessed using the **⚙** button on the interface switcher button **Original / Apollo**.
 
 Settings are saved in the browser (localStorage) and persist across releases.
 
-### Replace on start
+### Modify
 
-If any of the following options is on, script replaces the native tables for the Apollo versions and replaces other native UI elements.
+If any of the following options is on, script replaces the native interface elements for the Apollo versions:
 
-- Replace Tracklist on start
-- Replace Recordings on start
-- Replace header and footer
+- Modify Release Information
+- Modify Tracklist
+- Modify Recordings
+- Modify header and footer
+- Zen editing
 
-The **Original / Apollo** button still toggles tables anytime — setting only influences the *initial* state.
+All configured modifications are toggled on/off using the switcher button.
 
 ### Matching options
 
