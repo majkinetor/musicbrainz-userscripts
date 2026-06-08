@@ -921,6 +921,16 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
 // scan paths can keep MB's canonical value.
 function normalizeFormat(s) { return String(s || '').replace(/\bDigital\s*Media\b/i, 'Digital'); }
 
+// Strip leading copyright noise from a label string so the meta line doesn't
+// show the year twice (year · label). Handles ℗/© or "(P)/(C)", a BARE leading
+// year (Tidal often does "2026 Label" with no symbol), and repeated/stacked
+// prefixes ("℗ 2017 © 2017 Label"). Returns null when nothing's left.
+function stripCopyright(text) {
+    let t = String(text || '').trim(), prev;
+    do { prev = t; t = t.replace(/^\s*(?:[℗©]|\([pc]\))?\s*(?:19|20)\d{2}\s*/i, ''); } while (t !== prev);
+    return t.trim() || null;
+}
+
 // Apply Discogs master-state to the master slot. State shape:
 // { glyph: '✓'|'~'|'×', circled: bool, clickable: bool, title: str, addMasterUrl?: str }
 function applyMasterIcon(el, state) {
@@ -1839,7 +1849,7 @@ async function fetchAppleMeta(albumUrl) {
             tracks: a.trackCount ?? null,
             title:  a.collectionName || null,
             year:   a.releaseDate ? a.releaseDate.slice(0, 4) : null,
-            label:  a.copyright ? a.copyright.replace(/^[℗©]\s*\d{4}\s*/, '').trim() || null : null,
+            label:  stripCopyright(a.copyright),
             artist: a.artistName || null,
         };
     } catch { return null; }
@@ -1953,7 +1963,7 @@ async function fetchTidalAlbumMeta(albumId, token) {
     try {
         const a = JSON.parse(r.responseText)?.data?.attributes;
         if (!a) return null;
-        const lbl = a.copyright?.text ? a.copyright.text.replace(/^[℗©]\s*\d{4}\s*/, '').trim() || null : null;
+        const lbl = stripCopyright(a.copyright?.text);
         return { tracks: a.numberOfItems ?? null, title: a.title || null, year: a.releaseDate ? a.releaseDate.slice(0, 4) : null, label: lbl };
     } catch { return null; }
 }
