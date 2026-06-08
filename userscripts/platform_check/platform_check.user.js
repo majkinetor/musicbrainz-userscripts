@@ -1930,8 +1930,6 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
         applyCachedRow('tidal', label, cached, mbTracks); return;
     }
 
-    const token = await tidalToken();
-    if (!token) { updateRow('tidal', { url: null, mbTracks, remoteTracks: null }); return; }
     const idFromUrl = u => (String(u || '').match(/tidal\.com\/(?:browse\/)?album\/(\d+)/) || [])[1];
 
     let albumId = null, source = null;
@@ -1942,6 +1940,10 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
         albumId = wikidataTidalId; source = 'Wikidata';
         appendLog(label, `Wikidata answer: album ${albumId}`, 'ok');
     } else {
+        // Only the SEARCH path needs a token — an existing/Wikidata URL is shown
+        // (and circled, for MB rels) even if the token grant fails.
+        const token = await tidalToken();
+        if (!token) { updateRow('tidal', { url: null, mbTracks, remoteTracks: null }); return; }
         const q = isVariousArtists ? album : `${artist} ${album}`;
         const searchUrl = `${TIDAL.api}/searchResults/${encodeURIComponent(q)}?countryCode=${TIDAL.country}&include=albums`;
         appendLog(label, `API search: ${searchUrl}`);
@@ -1975,9 +1977,12 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
 
     if (!albumId) { updateRow('tidal', { url: null, mbTracks, remoteTracks: null }); return; }
     const albumUrl = `https://tidal.com/album/${albumId}`;
-    const meta = await fetchTidalAlbumMeta(albumId, token);
+    // Track-count/year/label are best-effort — needs a token, but its absence
+    // must NOT drop an existing/Wikidata link (it just stays count-unverified).
+    const metaTok = await tidalToken();
+    const meta = metaTok ? await fetchTidalAlbumMeta(albumId, metaTok) : null;
     if (meta) appendLog(label, `Album parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
-    else appendLog(label, `Detail fetch failed`, 'error');
+    else appendLog(label, `Detail unavailable (no token / fetch failed) — showing URL without track count`, 'warn');
     const tracks = meta?.tracks ?? null, year = meta?.year ?? null, lbl = meta?.label ?? null;
     cacheSet(mbid, 'tidal', { url: albumUrl, tracks, year, label: lbl, source });
     updateRow('tidal', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
@@ -1989,10 +1994,14 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
 // reliable resolver is Wikidata (P11312); an existing MB rel is used directly.
 // When neither is present we report "not found" rather than guessing. Track
 // count can't be verified (no fetch), so the row shows the link without a count.
-async function scanBeatport({ existingUrl, mbTracks, mbid, wikidataBeatportId }) {
+async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVariousArtists, wikidataBeatportId }) {
     const label = 'Beatport';
     const cached = cacheGet(mbid, 'beatport');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('beatport', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && !wikidataBeatportId) {
+        appendLog(label, `No match (cached — use ↻ to force a re-search)`, 'warn');
+        applyCachedRow('beatport', label, cached, mbTracks); return;
+    }
 
     let url = null, source = null;
     if (existingUrl) {
@@ -2002,10 +2011,24 @@ async function scanBeatport({ existingUrl, mbTracks, mbid, wikidataBeatportId })
         url = `https://www.beatport.com/release/-/${wikidataBeatportId}`; source = 'Wikidata';
         appendLog(label, `Wikidata answer: release ${wikidataBeatportId}`, 'ok');
     } else {
-        appendLog(label, `No match — Beatport is Cloudflare-walled (no API/search); only MB rels or Wikidata P11312 resolve it`, 'warn');
-        cacheSet(mbid, 'beatport', { url: null, tracks: null, year: null, label: null, source: 'none' });
-        updateRow('beatport', { url: null, mbTracks, remoteTracks: null });
-        return;
+        // Beatport's pages are Cloudflare-walled, so we can't fetch one to verify
+        // track count — but a release URL found via web search is still usable.
+        // Pick the hit whose slug best matches the album title; surface it as an
+        // UNVERIFIED match (no count check possible).
+        const q = `site:beatport.com/release/ ${searchTerms(artist)} ${searchTerms(album)}`;
+        const hits = await searchWeb(q, u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u), label, 5);
+        if (!hits.length) {
+            appendLog(label, `No match — no MB rel, no Wikidata P11312, no search hit`, 'warn');
+            cacheSet(mbid, 'beatport', { url: null, tracks: null, year: null, label: null, source: 'search' });
+            updateRow('beatport', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        const slugOf = u => decodeURIComponent((u.match(/\/release\/([^/]+)\//) || [])[1] || '').replace(/-/g, ' ');
+        let pick = hits[0];
+        for (const h of hits) { if (titleSimilar(slugOf(h), album)) { pick = h; break; } }
+        url = pick.split(/[?#]/)[0];
+        source = 'search';
+        appendLog(label, `Found via search (UNVERIFIED — Beatport blocks track-count checks): ${url}`, 'warn');
     }
     // remoteTracks intentionally null: the page can't be fetched to count tracks.
     cacheSet(mbid, 'beatport', { url, tracks: null, year: null, label: null, source });
@@ -2620,6 +2643,9 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
         if (cached.source === 'MB rels') continue;   // circled — already in MB, skip
+        // Only confirmed matches (✓). Skip '~' (track-count mismatch) and '?'
+        // (found-but-unverifiable, e.g. Beatport) — same bar as the + inject button.
+        if (document.getElementById(`ico-${p}`)?.textContent?.trim() !== '✓') continue;
         urls.push(cached.url);
     }
     // Discogs master: only if found and not already on the release-group (non-circled)
