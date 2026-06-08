@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.8.1
+// @version      2026.6.8.2
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -23,6 +23,7 @@
 // @connect      openapi.tidal.com
 // @connect      auth.tidal.com
 // @connect      volumo.com
+// @connect      api.beatport.com
 // @run-at       document-start
 // ==/UserScript==
 
@@ -151,7 +152,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.6.8.1';
+  const SCRIPT_VERSION = '2026.6.8.2';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -1187,8 +1188,57 @@
       return (o && Array.isArray(o.tracks)) ? o : null;
     } catch (e) { return null; }
   }
+
+  // Beatport official API — used only when the user has logged in via Platform Check
+  // (the token is shared through a musicbrainz.org localStorage key). When present it's
+  // a clean one-call fetch with no tab; otherwise we fall back to the tab-harvest below.
+  const BEATPORT = { clientId: '0GIvkCltVIuPkkwSJHp6NDb3s0potTjLBQr388Dd', api: 'https://api.beatport.com/v4', lsKey: 'mbtools:beatport' };
+  const bpRead  = () => { try { return JSON.parse(localStorage.getItem(BEATPORT.lsKey) || 'null'); } catch (e) { return null; } };
+  const bpWrite = t  => { try { t ? localStorage.setItem(BEATPORT.lsKey, JSON.stringify(t)) : localStorage.removeItem(BEATPORT.lsKey); } catch (e) {} };
+  async function beatportToken() {
+    const t = bpRead();
+    if (!t || !t.refresh_token) return null;
+    if (t.access_token && Date.now() < t.exp - 60000) return t.access_token;
+    const r = await gmPost(BEATPORT.api + '/auth/o/token/',
+      new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: BEATPORT.clientId }).toString(),
+      { 'Content-Type': 'application/x-www-form-urlencoded' });
+    let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { j = {}; }
+    if (!j.access_token) { Log.warn('Beatport: token refresh failed — re-login in Platform Check ⚙'); return null; }
+    bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token || t.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
+    return j.access_token;
+  }
+  // Returns track entries from the API, or null if not logged in / no usable data.
+  async function fetchBeatportApi(releaseId, onProgress, onIsrc) {
+    const tok = await beatportToken();
+    if (!tok) return null;
+    Log.info('Beatport: logged in — fetching release ' + releaseId + ' via the API (no tab)');
+    const r = await gmGet(BEATPORT.api + '/catalog/releases/' + releaseId + '/', { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' });
+    if (r.status !== 200) { Log.warn('Beatport API ' + r.status + ' for release ' + releaseId + ' — falling back to tab harvest'); return null; }
+    let d; try { d = JSON.parse(r.responseText || '{}'); } catch (e) { return null; }
+    const list = (d && d.tracks) || [];
+    if (!list.length) { Log.warn('Beatport API: release had no tracks — falling back to tab harvest'); return null; }
+    let withIsrc = 0;
+    list.forEach((t, i) => {
+      const mix = t.mix_name && !/^original mix$/i.test(t.mix_name) ? ' (' + t.mix_name + ')' : '';
+      const e = {
+        isrc:   normalizeIsrc(t.isrc || ''),
+        title:  (t.name || '') + mix,
+        artist: (t.artists || []).map(a => a && a.name).filter(Boolean).join(', '),
+        disc:   1,
+        pos:    t.number || (i + 1),
+        dur:    t.length || (t.length_ms ? msToMmSs(t.length_ms) : ''),
+      };
+      try { if (onIsrc && isValidIsrc(e.isrc)) { onIsrc(e); withIsrc++; } } catch (err) { Log.warn('Beatport map hiccup for ' + e.isrc + ': ' + errText(err)); }
+      try { if (onProgress) onProgress(i + 1, list.length); } catch (err) {}
+    });
+    Log.info('Beatport API: ' + withIsrc + '/' + list.length + ' track(s) carried an ISRC');
+    if (!withIsrc) return null;   // nothing usable → let the tab-harvest try
+    return { total: list.length, next: null };
+  }
   async function fetchBeatport(releaseId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
+    const viaApi = await fetchBeatportApi(releaseId, onProgress, onIsrc);   // logged-in fast path (no tab)
+    if (viaApi) return viaApi;
     let h = readBeatportHarvest(releaseId);
     if (h) {
       Log.info('Beatport: using harvested data for release ' + releaseId + ' (' + h.tracks.length + ' track(s))');

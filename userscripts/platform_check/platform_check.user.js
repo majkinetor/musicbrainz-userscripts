@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.8.1
+// @version      2026.6.8.2
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -27,6 +27,7 @@
 // @connect      openapi.tidal.com
 // @connect      auth.tidal.com
 // @connect      volumo.com
+// @connect      api.beatport.com
 // @connect      *
 // ==/UserScript==
 (function () {
@@ -524,6 +525,19 @@ providerModal.innerHTML = `
     <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="circle" style="margin: 0;"> Circle</label>
     <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="glow" style="margin: 0;"> Glow</label>
   </div>
+  <div id="mb-bp-acct" style="border-top: 1px solid #EEE; margin-top: 12px; padding-top: 12px;">
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333;">
+      <span style="font-weight: 600;">Beatport account</span>
+      <span id="mb-bp-status" style="font-size: 11px; color: #999; margin-left: auto;"></span>
+    </div>
+    <div style="font-size: 11px; color: #999; margin: 3px 0 7px;">Optional — enables <b>verified</b> Beatport matching (and the + insert) and lets ISRC Scout import Beatport ISRCs. Only the login token is stored, never your password.</div>
+    <div id="mb-bp-form" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+      <input id="mb-bp-user" type="text" placeholder="email / username" autocomplete="off" style="flex: 1 1 120px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
+      <input id="mb-bp-pass" type="password" placeholder="password" autocomplete="off" style="flex: 1 1 100px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
+      <button id="mb-bp-login" style="padding: 6px 12px; background: #0a8754; border: none; border-radius: 4px; color: #FFF; font-size: 12px; cursor: pointer;">Log in</button>
+    </div>
+    <button id="mb-bp-logout" style="display: none; padding: 5px 12px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 6px;">Sign out</button>
+  </div>
   <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
     <button id="mb-provider-cancel-btn" style="padding: 8px 16px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">Cancel</button>
     <button id="mb-provider-save-btn" style="padding: 8px 16px; background: #1DB954; border: none; border-radius: 4px; font-size: 13px; color: #FFF; cursor: pointer;">Save</button>
@@ -679,11 +693,31 @@ for (const chip of logModal.querySelectorAll('.pc-log-chip')) {
         }
     });
 }
+// Beatport-account UI state (logged in → show "Sign out"; logged out → show login form)
+function bpRefreshSetupUI(msg, isErr) {
+    const st = document.getElementById('mb-bp-status'), form = document.getElementById('mb-bp-form'), out = document.getElementById('mb-bp-logout');
+    if (!st) return;
+    const inOk = bpLoggedIn();
+    form.style.display = inOk ? 'none' : 'flex';
+    out.style.display = inOk ? 'inline-block' : 'none';
+    st.textContent = msg || (inOk ? 'signed in' : 'not signed in');
+    st.style.color = isErr ? '#BF616A' : (inOk ? '#0a8754' : '#999');
+}
+document.getElementById('mb-bp-login').addEventListener('click', async () => {
+    const u = document.getElementById('mb-bp-user').value.trim(), p = document.getElementById('mb-bp-pass').value;
+    if (!u || !p) { bpRefreshSetupUI('enter email + password', true); return; }
+    bpRefreshSetupUI('signing in…');
+    const r = await beatportLogin(u, p);
+    document.getElementById('mb-bp-pass').value = '';
+    bpRefreshSetupUI(r.ok ? 'signed in ✓ — ↻ to re-scan Beatport' : `failed: ${r.error}`, !r.ok);
+});
+document.getElementById('mb-bp-logout').addEventListener('click', () => { bpWrite(null); document.getElementById('mb-bp-user').value = ''; bpRefreshSetupUI('signed out'); });
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     PROVIDER_ORDER.forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
     document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
     const marker = GM_getValue('pc:mb-marker', 'circle');
     providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => { r.checked = r.value === marker; });
+    bpRefreshSetupUI();
     pcOpenModal(providerModal, provCardEl(), 440, false);
 });
 document.getElementById('mb-provider-cancel-btn').addEventListener('click', closeAllModals);
@@ -810,6 +844,58 @@ async function tidalToken() {
         _tidalTokExp = Date.now() + ((j.expires_in || 14400) * 1000);
         return _tidalTok;
     } catch (e) { appendLog('Tidal', `token JSON parse: ${e.message}`, 'error'); return null; }
+}
+
+// ── Beatport API auth (PKCE; token shared with ISRC Scout via musicbrainz.org localStorage) ──
+// Beatport's catalog API needs an OAuth2 Bearer. No app registration exists, but the web
+// app's *public* client_id + the user's own login (PKCE authorization_code) yields a token
+// that returns track counts — enabling verified matches and the + insert. We store ONLY the
+// tokens (never the password), renew silently via the refresh token, and share them with
+// ISRC Scout through a localStorage key on this origin (config/login lives here in PC).
+const BEATPORT = {
+    clientId: '0GIvkCltVIuPkkwSJHp6NDb3s0potTjLBQr388Dd',          // Beatport web-app client (public, from their docs JS)
+    redirect: 'https://api.beatport.com/v4/auth/o/post-message/',
+    api:      'https://api.beatport.com/v4',
+    store:    'mbtools:beatport',
+};
+const bpRead     = () => { try { return JSON.parse(localStorage.getItem(BEATPORT.store) || 'null'); } catch { return null; } };
+const bpWrite    = t  => { try { t ? localStorage.setItem(BEATPORT.store, JSON.stringify(t)) : localStorage.removeItem(BEATPORT.store); } catch {} };
+const bpLoggedIn = () => { const t = bpRead(); return !!(t && t.refresh_token); };
+const bpB64url   = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+async function bpPkce() { const v = bpB64url(crypto.getRandomValues(new Uint8Array(48))); const c = bpB64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v))); return { v, c }; }
+
+// Full login → token. Returns { ok } or { ok:false, error }. Used by PC's setup UI.
+async function beatportLogin(username, password) {
+    const lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { headers: { 'Content-Type': 'application/json' } });
+    if (!lr.ok) { let m = 'incorrect username or password'; try { const j = JSON.parse(lr.responseText); m = (typeof j === 'string' ? j : j.detail) || m; } catch {} return { ok: false, error: m }; }
+    const { v, c } = await bpPkce();
+    const au = `${BEATPORT.api}/auth/o/authorize/?response_type=code&client_id=${BEATPORT.clientId}&redirect_uri=${encodeURIComponent(BEATPORT.redirect)}&code_challenge=${c}&code_challenge_method=S256`;
+    const ar = await gmGet(au);   // GM follows the 302 to the post-message page; the code lands in finalUrl
+    const code = ((ar.finalUrl || '').match(/[?&#]code=([^&]+)/) || [])[1];
+    if (!code) return { ok: false, error: 'no authorization code returned' };
+    const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: BEATPORT.redirect, client_id: BEATPORT.clientId, code_verifier: v }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    let j; try { j = JSON.parse(tr.responseText); } catch { return { ok: false, error: 'token response parse failed' }; }
+    if (!j.access_token) return { ok: false, error: j.error_description || j.error || 'no access token' };
+    bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
+    appendLog('Beatport', `logged in (token scope: ${j.scope || '?'})`, 'ok');
+    return { ok: true };
+}
+// Valid access token, renewing via refresh_token when needed; null if not logged in / refresh failed.
+async function beatportToken() {
+    const t = bpRead();
+    if (!t || !t.refresh_token) return null;
+    if (t.access_token && Date.now() < t.exp - 60000) return t.access_token;
+    const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: BEATPORT.clientId }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    let j; try { j = JSON.parse(tr.responseText); } catch { j = {}; }
+    if (!j.access_token) { appendLog('Beatport', 'token refresh failed — log in again in ⚙ setup', 'warn'); return null; }
+    bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token || t.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
+    return j.access_token;
+}
+async function beatportApi(path) {
+    const tok = await beatportToken(); if (!tok) return null;
+    const r = await gmGet(`${BEATPORT.api}${path}`, { headers: { Authorization: `Bearer ${tok}` } });
+    if (!r.ok) { appendLog('Beatport', `API ${r.status} ${path}`, 'warn'); return null; }
+    try { return JSON.parse(r.responseText); } catch { return null; }
 }
 
 // ─── UI updater ────────────────────────────────────────────────────────────
@@ -2035,32 +2121,67 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
 }
 
 // ─── Beatport ─────────────────────────────────────────────────────────────────
-// Beatport is Cloudflare-walled — its release pages can't be fetched from a
-// GM_xmlhttpRequest, so there's no API search / page-verify path here. The one
-// reliable resolver is Wikidata (P11312); an existing MB rel is used directly.
-// When neither is present we report "not found" rather than guessing. Track
-// count can't be verified (no fetch), so the row shows the link without a count.
-async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVariousArtists, wikidataBeatportId }) {
+// Logged in (⚙ setup → Beatport account): the official API gives track counts, so
+// matches are VERIFIED (→ the + insert works) — resolved by barcode, then artist+album
+// search, and an existing MB-rel/Wikidata id is verified too. Not logged in: Beatport's
+// pages are Cloudflare-walled (unfetchable), so we fall back to MB rel → Wikidata (P11312)
+// → web search, surfaced UNVERIFIED (no track count).
+async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVariousArtists, wikidataBeatportId, barcode }) {
     const label = 'Beatport';
     const cached = cacheGet(mbid, 'beatport');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('beatport', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl && !wikidataBeatportId) {
+    if (cached && !cached.url && !existingUrl && !wikidataBeatportId && !bpLoggedIn()) {
         appendLog(label, `No match (cached — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('beatport', label, cached, mbTracks); return;
     }
 
-    let url = null, source = null;
-    if (existingUrl) {
-        url = existingUrl; source = 'MB rels';
-        appendLog(label, `Using existing MB URL: ${url}`, 'ok');
-    } else if (wikidataBeatportId) {
-        url = `https://www.beatport.com/release/-/${wikidataBeatportId}`; source = 'Wikidata';
-        appendLog(label, `Wikidata answer: release ${wikidataBeatportId}`, 'ok');
-    } else {
-        // Beatport's pages are Cloudflare-walled, so we can't fetch one to verify
-        // track count — but a release URL found via web search is still usable.
-        // Pick the hit whose slug best matches the album title; surface it as an
-        // UNVERIFIED match (no count check possible).
+    const idFromUrl = u => (String(u || '').match(/beatport\.com\/release\/[^/]+\/(\d+)/) || [])[1];
+    let relId  = existingUrl ? idFromUrl(existingUrl) : (wikidataBeatportId || null);
+    let url    = existingUrl || null;
+    let source = existingUrl ? 'MB rels' : (wikidataBeatportId ? 'Wikidata' : null);
+
+    // ── Authed: official API → verified track count ──
+    if (bpLoggedIn()) {
+        let rel = null;
+        if (!relId) {
+            if (barcode) {
+                const s = await beatportApi(`/catalog/search/?q=${encodeURIComponent(barcode)}&type=releases&per_page=5`);
+                rel = (s && (s.releases || []).find(r => String(r.upc) === String(barcode))) || null;
+                if (rel) { source = 'barcode'; appendLog(label, `Barcode ${barcode} → release ${rel.id} "${rel.name}"`, 'ok'); }
+            }
+            if (!rel) {
+                const q = isVariousArtists ? album : `${artist} ${album}`;
+                const s = await beatportApi(`/catalog/search/?q=${encodeURIComponent(q)}&type=releases&per_page=10`);
+                const cands = (s && s.releases) || [];
+                appendLog(label, `API search: ${cands.length} candidate(s)`);
+                let best = null;
+                for (const it of cands) {
+                    const sc = scoreCandidate({ tracks: it.track_count, title: it.name, artist: (it.artists || []).map(a => a.name).join(' ') }, mbTracks, album, artist, isVariousArtists);
+                    if (!best || sc > best.score) best = { score: sc, it };
+                    if (sc >= 150) break;
+                }
+                if (best && best.score >= 120) { rel = best.it; source = 'API search'; appendLog(label, `Picked best (score=${best.score}): release ${rel.id}`, best.score >= 150 ? 'ok' : 'warn'); }
+            }
+        }
+        // Verify via detail — covers an MB-rel / Wikidata id, and fills the count for a search hit.
+        const detail = rel || (relId ? await beatportApi(`/catalog/releases/${relId}/`) : null);
+        if (detail) {
+            const slug = detail.slug || (url && (url.match(/\/release\/([^/]+)\//) || [])[1]) || '-';
+            url = `https://www.beatport.com/release/${slug}/${detail.id}`;
+            const tracks = detail.track_count != null ? detail.track_count : ((detail.tracks || []).length || null);
+            const year = String(detail.new_release_date || detail.publish_date || '').slice(0, 4) || null;
+            const lbl = detail.label?.name || null;
+            appendLog(label, `Verified: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}`, tracks ? 'ok' : 'warn');
+            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source });
+            updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+            return;
+        }
+        // authed but the API found nothing & no rel id → fall through to the no-auth resolvers
+    }
+
+    // ── Not authed (or API miss): MB rel → Wikidata → web search, UNVERIFIED ──
+    if (!url && wikidataBeatportId) { url = `https://www.beatport.com/release/-/${wikidataBeatportId}`; source = 'Wikidata'; appendLog(label, `Wikidata answer: release ${wikidataBeatportId}`, 'ok'); }
+    if (!url) {
         const q = `site:beatport.com/release/ ${searchTerms(artist)} ${searchTerms(album)}`;
         const hits = await searchWeb(q, u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u), label, 5);
         if (!hits.length) {
@@ -2072,11 +2193,11 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
         const slugOf = u => decodeURIComponent((u.match(/\/release\/([^/]+)\//) || [])[1] || '').replace(/-/g, ' ');
         let pick = hits[0];
         for (const h of hits) { if (titleSimilar(slugOf(h), album)) { pick = h; break; } }
-        url = pick.split(/[?#]/)[0];
-        source = 'search';
-        appendLog(label, `Found via search (UNVERIFIED — Beatport blocks track-count checks): ${url}`, 'warn');
+        url = pick.split(/[?#]/)[0]; source = 'search';
+        appendLog(label, `Found via search (UNVERIFIED — log in via ⚙ for track-count verification): ${url}`, 'warn');
+    } else if (source === 'MB rels') {
+        appendLog(label, `Using existing MB URL: ${url}`, 'ok');
     }
-    // remoteTracks intentionally null: the page can't be fetched to count tracks.
     cacheSet(mbid, 'beatport', { url, tracks: null, year: null, label: null, source });
     updateRow('beatport', { url, mbTracks, remoteTracks: null, source });
 }
