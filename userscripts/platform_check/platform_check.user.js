@@ -589,12 +589,55 @@ container.classList.add(GM_getValue('pc:mb-marker', 'circle') === 'glow' ? 'pc-m
     }
 }
 
-const closeAllModals = () => { logModal.style.display = 'none'; providerModal.style.display = 'none'; };
+// Pin a modal to the VISUAL viewport on narrow/zoomed screens. On tablets where
+// MusicBrainz's desktop layout overflows the browser's layout viewport, the page
+// overflows and the browser zooms to fit; a position:fixed modal is then anchored
+// to the narrow layout viewport and lands in a corner. window.visualViewport
+// reflects what's actually on screen (zoom scale + offset), so we size the overlay
+// to it and centre the card within it. No-op on desktop / without VisualViewport.
+const logCardEl = () => document.getElementById('mb-log-modal-card');
+const provCardEl = () => document.getElementById('mb-provider-modal-card');
+let _pcActive = null, _pcVVSync = null;
+function pcPinModal(overlay, card, maxW, fill) {
+    const vv = window.visualViewport;
+    if (!vv || !window.matchMedia('(max-width: 640px)').matches) { pcUnpinModal(overlay, card); return; }
+    const imp = (el, o) => { for (const k in o) el.style.setProperty(k, o[k], 'important'); };
+    const w = Math.min(vv.width * 0.96, maxW), h = vv.height * 0.96;
+    imp(overlay, { left: vv.offsetLeft + 'px', top: vv.offsetTop + 'px', width: vv.width + 'px', height: vv.height + 'px', padding: '0' });
+    const c = { position: 'fixed', left: (vv.offsetLeft + vv.width / 2) + 'px', top: (vv.offsetTop + vv.height / 2) + 'px',
+        transform: 'translate(-50%, -50%)', margin: '0', 'max-width': 'none', width: w + 'px', 'max-height': h + 'px' };
+    if (fill) c.height = h + 'px';
+    imp(card, c);
+}
+function pcUnpinModal(overlay, card) {
+    ['left', 'top', 'width', 'height', 'padding'].forEach(p => overlay.style.removeProperty(p));
+    if (card) ['position', 'left', 'top', 'transform', 'margin', 'max-width', 'width', 'max-height', 'height'].forEach(p => card.style.removeProperty(p));
+}
+function pcOpenModal(overlay, card, maxW, fill) {
+    overlay.style.display = 'block';
+    _pcActive = { overlay, card, maxW, fill };
+    pcPinModal(overlay, card, maxW, fill);
+    if (window.visualViewport && !_pcVVSync) {
+        _pcVVSync = () => { if (_pcActive) pcPinModal(_pcActive.overlay, _pcActive.card, _pcActive.maxW, _pcActive.fill); };
+        window.visualViewport.addEventListener('resize', _pcVVSync);
+        window.visualViewport.addEventListener('scroll', _pcVVSync);
+    }
+}
+const closeAllModals = () => {
+    logModal.style.display = 'none'; providerModal.style.display = 'none';
+    if (_pcVVSync && window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', _pcVVSync);
+        window.visualViewport.removeEventListener('scroll', _pcVVSync);
+        _pcVVSync = null;
+    }
+    pcUnpinModal(logModal, logCardEl()); pcUnpinModal(providerModal, provCardEl());
+    _pcActive = null;
+};
 logModal.addEventListener('click', e => { if (!document.getElementById('mb-log-modal-card').contains(e.target)) closeAllModals(); });
 providerModal.addEventListener('click', e => { if (!document.getElementById('mb-provider-modal-card').contains(e.target)) closeAllModals(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModals(); });
 
-document.getElementById('mb-log-open-btn').addEventListener('click', () => { logModal.style.display = 'block'; });
+document.getElementById('mb-log-open-btn').addEventListener('click', () => { pcOpenModal(logModal, logCardEl(), 900, true); });
 
 // Provider-filter chips: exclusive selection. Click a chip → only that
 // source's entries remain visible (every other chip dims to .off). Click
@@ -622,7 +665,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
     const marker = GM_getValue('pc:mb-marker', 'circle');
     providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => { r.checked = r.value === marker; });
-    providerModal.style.display = 'block';
+    pcOpenModal(providerModal, provCardEl(), 440, false);
 });
 document.getElementById('mb-provider-cancel-btn').addEventListener('click', closeAllModals);
 document.getElementById('mb-provider-save-btn').addEventListener('click', () => {
