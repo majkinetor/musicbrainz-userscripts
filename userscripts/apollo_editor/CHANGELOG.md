@@ -1,5 +1,11 @@
 # Apollo Editor Changelog
 
+## [2026.6.8](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.8)
+
+### Fixes
+
+1. "This relationship has open edits" was invisible in the reformatted External links (the marker icon got clipped by the compact type cell). Now flagged with colour instead of an icon — an amber type label + a left accent bar on the affected URL/relationship row ([#169](https://github.com/majkinetor/musicbrainz-userscripts/issues/169))
+
 ## [2026.6.7](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.7)
 
 ### Features

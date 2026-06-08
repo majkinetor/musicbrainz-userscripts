@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.8.001633
+// @version      2026.6.8.002000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3195,6 +3195,18 @@
     /* error → a compact "!" badge (full text on hover via title) so it doesn't reflow the combos when it appears */
     body.tc-ri-on #external-links-editor tr.relationship-item .error.field-error{grid-column:3;justify-self:start;font-size:0;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#fdecec;border:1px solid #f0c4c4;margin:0;cursor:help}
     body.tc-ri-on #external-links-editor tr.relationship-item .error.field-error::before{content:"!";font:bold 11px/1 Arial;color:#d33}
+    /* #169: MB flags a relationship/URL with pending edits via a small <img class="info"
+       alt="This relationship has open edits."> that the compact type cell clips away. Rather
+       than re-fit the icon (alignment is fragile here), surface it with COLOUR — an amber type
+       label + a left accent bar on the row. Pure :has(), no layout shift (inset box-shadow). */
+    body.tc-ri-on #external-links-editor tr.relationship-item:has(img.info[alt*="open edits" i]){box-shadow:inset 2px 0 0 0 #e8920c}
+    body.tc-ri-on #external-links-editor tr.relationship-item:has(img.info[alt*="open edits" i]) .relationship-name,
+    body.tc-ri-on #external-links-editor tr.relationship-item:has(img.info[alt*="open edits" i]) select{color:#b26a00}
+    body.tc-ri-on #external-links-editor tr.relationship-item:has(img.info[alt*="open edits" i]) .relationship-name:hover,
+    body.tc-ri-on #external-links-editor tr.relationship-item:has(img.info[alt*="open edits" i]) select:hover{color:#8a5200}
+    /* same cue when the open edit is on the URL itself (pending add/remove of the link) */
+    body.tc-ri-on #external-links-editor tr.external-link-item:has(img.info[alt*="open edits" i]){box-shadow:inset 2px 0 0 0 #e8920c}
+    body.tc-ri-on #external-links-editor tr.external-link-item:has(img.info[alt*="open edits" i]) a.url{color:#b26a00}
     /* "Add another relationship" (the [+]) — flows into the last grid cell; padding-left matches the per-type [x] inset so they line up */
     body.tc-ri-on #external-links-editor tr.add-relationship{display:flex;align-items:center;margin:0;padding:0 0 0 6px}
     body.tc-ri-on #external-links-editor tr.add-relationship > td{padding:0;border:none}
