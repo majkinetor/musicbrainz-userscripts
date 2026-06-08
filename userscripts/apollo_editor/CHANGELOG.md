@@ -9,6 +9,7 @@
 ### Fixes
 
 1. "This relationship has open edits" was invisible in the reformatted External links (the marker icon got clipped by the compact type cell). Now flagged with colour instead of an icon — an amber type label + a left accent bar on the affected URL/relationship row ([#169](https://github.com/majkinetor/musicbrainz-userscripts/issues/169))
+1. No longer shows a random alias (e.g. `"Gold Diggers of 1937" Chorus`) for special-purpose artists like `[unknown]` — bracketed placeholder artists carry hundreds of junk aliases and now surface none ([#171](https://github.com/majkinetor/musicbrainz-userscripts/issues/171))
 
 ## [2026.6.7](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.7)
 
