@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.7
+// @version      2026.6.8
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -24,6 +24,8 @@
 // @connect      bandcamp.com
 // @connect      api.deezer.com
 // @connect      itunes.apple.com
+// @connect      openapi.tidal.com
+// @connect      auth.tidal.com
 // @connect      *
 // ==/UserScript==
 (function () {
@@ -342,7 +344,7 @@ const iconBtn = 'cursor: pointer; user-select: none; color: #666; padding: 2px 6
 // metadata source, then the streaming services, with Deezer last because it
 // has the worst catalogue coverage of the four. Users can override via the
 // providers panel (drag-and-drop) and the choice persists in pc:provider-order.
-const ALL_PROVIDERS = ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer'];
+const ALL_PROVIDERS = ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer', 'tidal', 'beatport'];
 function getProviderOrder() {
     const raw = GM_getValue('pc:provider-order', null);
     if (!raw) return ALL_PROVIDERS.slice();
@@ -355,8 +357,8 @@ function getProviderOrder() {
     } catch { return ALL_PROVIDERS.slice(); }
 }
 const PROVIDER_ORDER = getProviderOrder();
-const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple Music' };
-const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C' };
+const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple Music', tidal:'Tidal', beatport:'Beatport' };
+const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C', tidal:'#111',  beatport:'#0a8754' };
 // Small brand glyphs shown next to each provider name (toggle: pc:show-icons). Spotify / Apple Music /
 // Bandcamp are the real marks; Deezer (equalizer) and Discogs (vinyl) are clean brand-coloured stand-ins.
 const PROVIDER_ICON = {
@@ -365,6 +367,9 @@ const PROVIDER_ICON = {
   bandcamp: '<svg viewBox="0 0 24 24" width="14" height="14" fill="#629AA9"><path d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>',
   deezer:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="#A238FF"><rect x="1" y="14" width="4" height="6" rx=".6"/><rect x="6.7" y="10" width="4" height="10" rx=".6"/><rect x="12.4" y="6" width="4" height="14" rx=".6"/><rect x="18.1" y="11" width="4" height="9" rx=".6"/></svg>',
   discogs:  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#222" stroke-width="1.7"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2.1" fill="#222" stroke="none"/></svg>',
+  // Tidal: its mark is four interlocking diamonds; Beatport: brand-green disc with a play wedge (clean stand-ins).
+  tidal:    '<svg viewBox="0 0 24 24" width="14" height="14" fill="#111"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>',
+  beatport: '<svg viewBox="0 0 24 24" width="14" height="14" fill="#0a8754"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg>',
 };
 container.innerHTML = `
 <style>
@@ -449,10 +454,11 @@ logModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width
 // active (toggled = filter ON = entries hidden). State is per-session only;
 // not persisted because the natural workflow is "open log to investigate
 // one provider's behavior on this page".
-const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple'];
+const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Beatport'];
 const LOG_SOURCE_COLORS = {
     System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F',
     Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9', Deezer: '#A238FF', Apple: '#FA243C',
+    Tidal: '#CCC', Beatport: '#3AD17A',
 };
 logModal.innerHTML = `
 <style>
@@ -598,7 +604,15 @@ container.classList.add(GM_getValue('pc:mb-marker', 'circle') === 'glow' ? 'pc-m
 const logCardEl = () => document.getElementById('mb-log-modal-card');
 const provCardEl = () => document.getElementById('mb-provider-modal-card');
 let _pcActive = null, _pcVVSync = null;
+// The overlay + card keep their base layout (width:100vw, top/left, the card's
+// centering + width) in their INLINE cssText. Pinning overrides a subset of those
+// with !important, so unpinning must RESTORE the base — not removeProperty(), which
+// would also delete the base values that share the inline declaration (that bug
+// collapsed the modals to a corner on desktop, where pin no-ops straight through
+// unpin on the first open). So snapshot cssText once and restore it verbatim.
+function pcSnapshotBase(el) { if (el && el._pcBaseCss == null) el._pcBaseCss = el.style.cssText; }
 function pcPinModal(overlay, card, maxW, fill) {
+    pcSnapshotBase(overlay); pcSnapshotBase(card);
     const vv = window.visualViewport;
     if (!vv || !window.matchMedia('(max-width: 640px)').matches) { pcUnpinModal(overlay, card); return; }
     const imp = (el, o) => { for (const k in o) el.style.setProperty(k, o[k], 'important'); };
@@ -610,8 +624,8 @@ function pcPinModal(overlay, card, maxW, fill) {
     imp(card, c);
 }
 function pcUnpinModal(overlay, card) {
-    ['left', 'top', 'width', 'height', 'padding'].forEach(p => overlay.style.removeProperty(p));
-    if (card) ['position', 'left', 'top', 'transform', 'margin', 'max-width', 'width', 'max-height', 'height'].forEach(p => card.style.removeProperty(p));
+    if (overlay && overlay._pcBaseCss != null) overlay.style.cssText = overlay._pcBaseCss;
+    if (card && card._pcBaseCss != null) card.style.cssText = card._pcBaseCss;
 }
 function pcOpenModal(overlay, card, maxW, fill) {
     overlay.style.display = 'block';
@@ -624,13 +638,15 @@ function pcOpenModal(overlay, card, maxW, fill) {
     }
 }
 const closeAllModals = () => {
-    logModal.style.display = 'none'; providerModal.style.display = 'none';
     if (_pcVVSync && window.visualViewport) {
         window.visualViewport.removeEventListener('resize', _pcVVSync);
         window.visualViewport.removeEventListener('scroll', _pcVVSync);
         _pcVVSync = null;
     }
+    // restore the base cssText FIRST (it carries display:block from the snapshot),
+    // then force display:none last so the modal actually ends up hidden
     pcUnpinModal(logModal, logCardEl()); pcUnpinModal(providerModal, provCardEl());
+    logModal.style.display = 'none'; providerModal.style.display = 'none';
     _pcActive = null;
 };
 logModal.addEventListener('click', e => { if (!document.getElementById('mb-log-modal-card').contains(e.target)) closeAllModals(); });
@@ -752,6 +768,45 @@ function gmGet(url, { responseType, headers, timeout = 15000 } = {}) {
         if (responseType) opts.responseType = responseType;
         GM_xmlhttpRequest(opts);
     });
+}
+
+// POST counterpart of gmGet, used for the Tidal client-credentials token grant.
+function gmPost(url, data, { headers, timeout = 15000 } = {}) {
+    return new Promise((resolve) => {
+        const t0 = Date.now();
+        GM_xmlhttpRequest({
+            method: 'POST', url, data,
+            headers: { 'Accept-Language': 'en-US,en;q=0.9', ...headers },
+            timeout,
+            onload(res)  { resolve({ ok: res.status >= 200 && res.status < 400, status: res.status, responseText: res.responseText || '', ms: Date.now() - t0 }); },
+            onerror(err) { resolve({ ok: false, status: 0, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }); },
+            ontimeout()  { resolve({ ok: false, status: 0, responseText: '', error: 'timeout', ms: Date.now() - t0 }); },
+        });
+    });
+}
+
+// ─── Tidal API (client-credentials app token; baked-in shared installed app) ──
+const TIDAL = {
+    clientId:     'cRhhDJDpYXXBn82U',
+    clientSecret: 'K7UX40jDOZ5p4y4JMYZgoiwKi7jymTHWcLMb4gkewKs=',
+    tokenUrl: 'https://auth.tidal.com/v1/oauth2/token',
+    api:      'https://openapi.tidal.com/v2',
+    country:  'US',
+};
+let _tidalTok = null, _tidalTokExp = 0;
+async function tidalToken() {
+    if (_tidalTok && Date.now() < _tidalTokExp - 60000) return _tidalTok;
+    const basic = btoa(`${TIDAL.clientId}:${TIDAL.clientSecret}`);
+    const r = await gmPost(TIDAL.tokenUrl, 'grant_type=client_credentials',
+        { headers: { 'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' } });
+    if (!r.ok) { appendLog('Tidal', `token grant failed (${r.status})`, 'error'); return null; }
+    try {
+        const j = JSON.parse(r.responseText);
+        if (!j.access_token) { appendLog('Tidal', `token grant: no access_token`, 'error'); return null; }
+        _tidalTok = j.access_token;
+        _tidalTokExp = Date.now() + ((j.expires_in || 14400) * 1000);
+        return _tidalTok;
+    } catch (e) { appendLog('Tidal', `token JSON parse: ${e.message}`, 'error'); return null; }
 }
 
 // ─── UI updater ────────────────────────────────────────────────────────────
@@ -1157,13 +1212,15 @@ async function lookupWikidata(releaseGroupMbid, releaseMbid) {
     if (!releaseGroupMbid && !releaseMbid) return null;
     // Union of release-group and release lookups in one query — avoids two
     // round-trips when one or the other might be the indexed entity.
-    const sparql = `SELECT ?spotify ?apple ?allmusic WHERE {
+    const sparql = `SELECT ?spotify ?apple ?allmusic ?tidal ?beatport WHERE {
 ${releaseGroupMbid ? `  { ?item wdt:P436 "${releaseGroupMbid}" }`           : ''}
 ${releaseGroupMbid && releaseMbid ? '  UNION' : ''}
 ${releaseMbid      ? `  { ?item wdt:P5813 "${releaseMbid}" }`               : ''}
   OPTIONAL { ?item wdt:P2205 ?spotify }
   OPTIONAL { ?item wdt:P5121 ?apple }
   OPTIONAL { ?item wdt:P1729 ?allmusic }
+  OPTIONAL { ?item wdt:P4577 ?tidal }
+  OPTIONAL { ?item wdt:P11312 ?beatport }
 } LIMIT 5`;
     const url = `https://query.wikidata.org/sparql?query=${encodeURIComponent(sparql)}&format=json`;
     appendLog('Wikidata', `SPARQL lookup rg=${releaseGroupMbid || '-'} rel=${releaseMbid || '-'}`);
@@ -1179,13 +1236,15 @@ ${releaseMbid      ? `  { ?item wdt:P5813 "${releaseMbid}" }`               : ''
     }
     // Pick first binding that has any populated field; if multiple bindings
     // disagree (rare), trust the first row.
-    const b = bindings.find(r => r.spotify || r.apple || r.allmusic) || bindings[0];
+    const b = bindings.find(r => r.spotify || r.apple || r.allmusic || r.tidal || r.beatport) || bindings[0];
     const out = {
         spotifyId:  b.spotify?.value  || null,
         appleId:    b.apple?.value    || null,
         allmusicId: b.allmusic?.value || null,
+        tidalId:    b.tidal?.value    || null,
+        beatportId: b.beatport?.value || null,
     };
-    appendLog('Wikidata', `match: spotify=${out.spotifyId || '-'} apple=${out.appleId || '-'} allmusic=${out.allmusicId || '-'}`, 'ok');
+    appendLog('Wikidata', `match: spotify=${out.spotifyId || '-'} apple=${out.appleId || '-'} allmusic=${out.allmusicId || '-'} tidal=${out.tidalId || '-'} beatport=${out.beatportId || '-'}`, 'ok');
     return out;
 }
 
@@ -1845,6 +1904,137 @@ async function scanApple({ artist, album, mbTracks, existingUrl, mbid, isVarious
     updateRow('apple', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
+// ─── Tidal ──────────────────────────────────────────────────────────────────
+// Official API (JSON:API). All calls need an app token (client-credentials), so
+// catalog reads are anonymous to the user. Existing MB URL → Wikidata P4577 →
+// searchResults API. Each candidate album carries title + numberOfItems inline,
+// so scoring needs no per-candidate fetch (like Deezer); the picked album is
+// then fetched once for year/label.
+async function fetchTidalAlbumMeta(albumId, token) {
+    const r = await gmGet(`${TIDAL.api}/albums/${albumId}?countryCode=${TIDAL.country}`,
+        { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.api+json' } });
+    if (!r.ok) return null;
+    try {
+        const a = JSON.parse(r.responseText)?.data?.attributes;
+        if (!a) return null;
+        const lbl = a.copyright?.text ? a.copyright.text.replace(/^[℗©]\s*\d{4}\s*/, '').trim() || null : null;
+        return { tracks: a.numberOfItems ?? null, title: a.title || null, year: a.releaseDate ? a.releaseDate.slice(0, 4) : null, label: lbl };
+    } catch { return null; }
+}
+async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataTidalId }) {
+    const label = 'Tidal';
+    const cached = cacheGet(mbid, 'tidal');
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('tidal', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && !wikidataTidalId) {
+        appendLog(label, `No match (cached — use ↻ to force a re-search)`, 'warn');
+        applyCachedRow('tidal', label, cached, mbTracks); return;
+    }
+
+    const idFromUrl = u => (String(u || '').match(/tidal\.com\/(?:browse\/)?album\/(\d+)/) || [])[1];
+
+    let albumId = null, source = null;
+    if (existingUrl) {
+        albumId = idFromUrl(existingUrl); source = 'MB rels';
+        appendLog(label, `Using existing MB URL: ${existingUrl}`, 'ok');
+    } else if (wikidataTidalId) {
+        albumId = wikidataTidalId; source = 'Wikidata';
+        appendLog(label, `Wikidata answer: album ${albumId}`, 'ok');
+    } else {
+        // Only the SEARCH path needs a token — an existing/Wikidata URL is shown
+        // (and circled, for MB rels) even if the token grant fails.
+        const token = await tidalToken();
+        if (!token) { updateRow('tidal', { url: null, mbTracks, remoteTracks: null }); return; }
+        const q = isVariousArtists ? album : `${artist} ${album}`;
+        const searchUrl = `${TIDAL.api}/searchResults/${encodeURIComponent(q)}?countryCode=${TIDAL.country}&include=albums`;
+        appendLog(label, `API search: ${searchUrl}`);
+        const sr = await gmGet(searchUrl, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.api+json' } });
+        appendLog(label, `API search: status=${sr.status} ${sr.responseText.length}b in ${sr.ms}ms`);
+        if (!sr.ok) { cacheSet(mbid, 'tidal', { url: null, tracks: null, year: null, label: null, source: 'API search' }); updateRow('tidal', { url: null, mbTracks, remoteTracks: null }); return; }
+        let albums = [];
+        try {
+            const data = JSON.parse(sr.responseText);
+            const order = (data.data?.relationships?.albums?.data || []).map(d => d.id);
+            const byId = {};
+            (data.included || []).forEach(x => { if (x.type === 'albums') byId[x.id] = x.attributes || {}; });
+            albums = order.map(id => ({ id, attr: byId[id] })).filter(x => x.attr);
+        } catch (e) { appendLog(label, `API JSON parse error: ${e.message}`, 'error'); updateRow('tidal', { url: null, mbTracks, remoteTracks: null }); return; }
+        appendLog(label, `API search: ${albums.length} candidate(s)`);
+        let best = null;
+        for (const it of albums) {
+            const sc = scoreCandidate({ tracks: it.attr.numberOfItems, title: it.attr.title, artist: null }, mbTracks, album, artist, isVariousArtists);
+            appendLog(label, `  cand score=${sc}  tracks=${it.attr.numberOfItems ?? '?'}  title="${it.attr.title}"  id=${it.id}`);
+            if (!best || sc > best.score) best = { score: sc, id: it.id };
+            if (sc >= 150) break;
+        }
+        if (!best || best.score < 120) {
+            appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
+            cacheSet(mbid, 'tidal', { url: null, tracks: null, year: null, label: null, source: 'API search' });
+            updateRow('tidal', { url: null, mbTracks, remoteTracks: null }); return;
+        }
+        albumId = best.id; source = 'API search';
+        appendLog(label, `Picked best (score=${best.score}): album ${albumId}`, best.score >= 150 ? 'ok' : 'warn');
+    }
+
+    if (!albumId) { updateRow('tidal', { url: null, mbTracks, remoteTracks: null }); return; }
+    const albumUrl = `https://tidal.com/album/${albumId}`;
+    // Track-count/year/label are best-effort — needs a token, but its absence
+    // must NOT drop an existing/Wikidata link (it just stays count-unverified).
+    const metaTok = await tidalToken();
+    const meta = metaTok ? await fetchTidalAlbumMeta(albumId, metaTok) : null;
+    if (meta) appendLog(label, `Album parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
+    else appendLog(label, `Detail unavailable (no token / fetch failed) — showing URL without track count`, 'warn');
+    const tracks = meta?.tracks ?? null, year = meta?.year ?? null, lbl = meta?.label ?? null;
+    cacheSet(mbid, 'tidal', { url: albumUrl, tracks, year, label: lbl, source });
+    updateRow('tidal', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+}
+
+// ─── Beatport ─────────────────────────────────────────────────────────────────
+// Beatport is Cloudflare-walled — its release pages can't be fetched from a
+// GM_xmlhttpRequest, so there's no API search / page-verify path here. The one
+// reliable resolver is Wikidata (P11312); an existing MB rel is used directly.
+// When neither is present we report "not found" rather than guessing. Track
+// count can't be verified (no fetch), so the row shows the link without a count.
+async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVariousArtists, wikidataBeatportId }) {
+    const label = 'Beatport';
+    const cached = cacheGet(mbid, 'beatport');
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('beatport', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && !wikidataBeatportId) {
+        appendLog(label, `No match (cached — use ↻ to force a re-search)`, 'warn');
+        applyCachedRow('beatport', label, cached, mbTracks); return;
+    }
+
+    let url = null, source = null;
+    if (existingUrl) {
+        url = existingUrl; source = 'MB rels';
+        appendLog(label, `Using existing MB URL: ${url}`, 'ok');
+    } else if (wikidataBeatportId) {
+        url = `https://www.beatport.com/release/-/${wikidataBeatportId}`; source = 'Wikidata';
+        appendLog(label, `Wikidata answer: release ${wikidataBeatportId}`, 'ok');
+    } else {
+        // Beatport's pages are Cloudflare-walled, so we can't fetch one to verify
+        // track count — but a release URL found via web search is still usable.
+        // Pick the hit whose slug best matches the album title; surface it as an
+        // UNVERIFIED match (no count check possible).
+        const q = `site:beatport.com/release/ ${searchTerms(artist)} ${searchTerms(album)}`;
+        const hits = await searchWeb(q, u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u), label, 5);
+        if (!hits.length) {
+            appendLog(label, `No match — no MB rel, no Wikidata P11312, no search hit`, 'warn');
+            cacheSet(mbid, 'beatport', { url: null, tracks: null, year: null, label: null, source: 'search' });
+            updateRow('beatport', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        const slugOf = u => decodeURIComponent((u.match(/\/release\/([^/]+)\//) || [])[1] || '').replace(/-/g, ' ');
+        let pick = hits[0];
+        for (const h of hits) { if (titleSimilar(slugOf(h), album)) { pick = h; break; } }
+        url = pick.split(/[?#]/)[0];
+        source = 'search';
+        appendLog(label, `Found via search (UNVERIFIED — Beatport blocks track-count checks): ${url}`, 'warn');
+    }
+    // remoteTracks intentionally null: the page can't be fetched to count tracks.
+    cacheSet(mbid, 'beatport', { url, tracks: null, year: null, label: null, source });
+    updateRow('beatport', { url, mbTracks, remoteTracks: null, source });
+}
+
 // ─── Main entry ────────────────────────────────────────────────────────────
 const mbid = window.location.pathname.split('/')[2];
 if (!mbid || mbid.length < 10) {
@@ -1960,6 +2150,8 @@ function parseMbFromDom() {
             bandcamp:      externalHrefs.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
             deezer:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
             apple:         externalHrefs.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
+            tidal:         externalHrefs.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
+            beatport:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
             discogsMaster: externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
         };
 
@@ -2152,6 +2344,8 @@ function parseMbData(data) {
         bandcamp:      relUrls.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
         deezer:        relUrls.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
         apple:         relUrls.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
+        tidal:         relUrls.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
+        beatport:      relUrls.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
         discogsMaster: relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
     };
     const format = data.media?.[0]?.format || null;
@@ -2240,7 +2434,7 @@ async function runScans() {
     // row uncircles and click-to-add re-enables. Without this, users who
     // hit a buggy build keep seeing every row as circled+unclickable until
     // they manually ↻ refresh.
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple']) {
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple', 'tidal', 'beatport']) {
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
         if (existing[p] === cached.url && cached.source !== 'MB rels') {
@@ -2257,10 +2451,19 @@ async function runScans() {
     // independent data source curated by humans, and the cache may have been
     // written before Wikidata had this album indexed (or before the user
     // hit ↻ themselves).
+    // Wikidata also curates Tidal (P4577) and Beatport (P11312) IDs, so run it
+    // unless EVERY Wikidata-backed provider is already resolved. Beatport in
+    // particular has no other reliable resolver (it's Cloudflare-walled), so
+    // Wikidata is its primary path.
     const spotifyCache = cacheGet(mbid, 'spotify');
+    const spotifyKnown = !!(existing.spotify || spotifyCache?.url);
+    const tidalKnown    = !!(existing.tidal    || cacheGet(mbid, 'tidal')?.url);
+    const beatportKnown = !!(existing.beatport || cacheGet(mbid, 'beatport')?.url);
+    const tidalWanted    = GM_getValue('prov_tidal', true)    && !tidalKnown;
+    const beatportWanted = GM_getValue('prov_beatport', true) && !beatportKnown;
     let wd = null;
-    if (existing.spotify || spotifyCache?.url) {
-        appendLog('Wikidata', `skipped — Spotify URL already in ${existing.spotify ? 'MB rels' : 'cache'}`);
+    if (spotifyKnown && !tidalWanted && !beatportWanted) {
+        appendLog('Wikidata', `skipped — Spotify/Tidal/Beatport already resolved`);
     } else {
         wd = await lookupWikidata(releaseGroupMbid, mbid);
     }
@@ -2276,6 +2479,8 @@ async function runScans() {
         bandcamp: `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`,
         deezer:   `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
         apple:    `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`,
+        tidal:    `https://tidal.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
+        beatport: `https://www.beatport.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
     };
     for (const [p, u] of Object.entries(searchUrls)) {
         const a = document.getElementById(`mb-online-${p}`);
@@ -2302,6 +2507,8 @@ async function runScans() {
     if (GM_getValue('prov_bandcamp', true)) tasks.push(scanBandcamp({ ...ctx, existingUrl: existing.bandcamp }));
     if (GM_getValue('prov_deezer',   true)) tasks.push(scanDeezer  ({ ...ctx, existingUrl: existing.deezer   }));
     if (GM_getValue('prov_apple',    true)) tasks.push(scanApple   ({ ...ctx, existingUrl: existing.apple,    wikidataAppleId: wd?.appleId || null }));
+    if (GM_getValue('prov_tidal',    true)) tasks.push(scanTidal   ({ ...ctx, existingUrl: existing.tidal,    wikidataTidalId: wd?.tidalId || null }));
+    if (GM_getValue('prov_beatport', true)) tasks.push(scanBeatport({ ...ctx, existingUrl: existing.beatport, wikidataBeatportId: wd?.beatportId || null }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
 }
@@ -2436,6 +2643,9 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
         if (cached.source === 'MB rels') continue;   // circled — already in MB, skip
+        // Only confirmed matches (✓). Skip '~' (track-count mismatch) and '?'
+        // (found-but-unverifiable, e.g. Beatport) — same bar as the + inject button.
+        if (document.getElementById(`ico-${p}`)?.textContent?.trim() !== '✓') continue;
         urls.push(cached.url);
     }
     // Discogs master: only if found and not already on the release-group (non-circled)

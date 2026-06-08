@@ -36,11 +36,18 @@ Mouse click works as follows:
 | Spotify     | DuckDuckGo / Brave (`site:open.spotify.com/album/`) | `/embed/album/<id>` HTML parse | P2205              |
 | Apple Music | iTunes Search API (`itunes.apple.com/search`)       | iTunes Lookup API              | P5121              |
 | Deezer      | Deezer API (`api.deezer.com/search/album`)          | Deezer API album detail        | —                  |
+| Tidal       | Tidal API (`openapi.tidal.com` searchResults)       | Tidal API album detail         | P4577              |
+| Beatport    | Wikidata → DDG / Brave (`site:beatport.com/release/`) | — (unverifiable, see below)  | P11312             |
 
 Discogs has few specifics:
 
 1. It is **format-aware** — for example, when MB release format has type CD, the first attempt tries to find CD release on Discogs, so a vinyl Discogs entry doesn't shadow an existing CD one; if that returns nothing, the script retries without the format filter.
 1. It checks if any master release on Discogs is present as link on MB's release group.
+
+Tidal and Beatport specifics:
+
+1. **Tidal** uses the official API with a baked-in client-credentials app token (catalog access, **no user login**). Track count, year and label are verified like the other API providers.
+1. **Beatport** is **Cloudflare-walled**, so its pages can't be fetched to verify a track count. It resolves via an existing MB relationship, Wikidata (P11312), or a web-search hit (best slug-vs-title match) — but a search-found link is surfaced as an **unverified** match (`?`), and unverified rows are excluded from the `+` insert and `↗` open-all actions.
 
 
 
@@ -51,7 +58,7 @@ Discogs has few specifics:
     - `+` click - batch insert all links that have `✓` marker
     - `✓`click - insert only particular link next to the marker
     - On the edit page it fills the **edit note** (script name/version + the links added) and shows a small confirmation next to the *External links* heading — then you review and click **Enter edit**.
-- **Open all found** (`↗`): opens each found platform page that isn't already in MB (non-circled links, plus the Discogs master if not yet added) in its own new tab. **NOTE**: Watch for browser blocking multiple pop-ups!
+- **Open all found** (`↗`): opens each **confirmed** (`✓`) platform page that isn't already in MB in its own new tab (plus the Discogs master if not yet added). Track-count mismatches (`~`) and unverifiable links (`?`, e.g. Beatport) are skipped — same bar as the `+` insert. **NOTE**: Watch for browser blocking multiple pop-ups!
 - **Options**:
     - Toggle usage of each supported platform independently
     - Reorder providers

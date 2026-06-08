@@ -1,23 +1,27 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.7
-// @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
+// @version      2026.6.8
+// @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md
 // @match        https://*.musicbrainz.org/release/*
 // @match        https://*.musicbrainz.org/oauth2/oob*
+// @match        https://www.beatport.com/release/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
+// @grant        GM_openInTab
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
 // @connect      isrc-api.soundexchange.com
 // @connect      isrc.soundexchange.com
 // @connect      api.deezer.com
 // @connect      isrchunt.com
+// @connect      openapi.tidal.com
+// @connect      auth.tidal.com
 // @run-at       document-start
 // ==/UserScript==
 
@@ -83,11 +87,70 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
+     BEATPORT HARVESTER  (runs ON beatport.com)
+     Beatport is Cloudflare-walled, so a cross-origin GM_xmlhttpRequest from
+     MusicBrainz is always challenged. Instead, when the editor opens a release
+     in a brief background tab, THIS instance (matched on beatport.com) reads
+     the ISRCs straight out of the page's embedded __NEXT_DATA__ in real page
+     context — where Cloudflare is already satisfied — stashes them in shared
+     GM storage for the MB tab to pick up, then closes itself.
+  ═══════════════════════════════════════════════════════════════════════ */
+  if (/(^|\.)beatport\.com$/i.test(location.hostname)) {
+    const bpId = (location.pathname.match(/\/release\/[^/]+\/(\d+)/) || [])[1];
+    if (!bpId) return;
+    const grab = () => {
+      const el = document.getElementById('__NEXT_DATA__');
+      if (!el) return false;
+      let j; try { j = JSON.parse(el.textContent); } catch (e) { return false; }
+      const qs = (((j || {}).props || {}).pageProps || {}).dehydratedState;
+      const queries = (qs && qs.queries) || [];
+      let results = null;
+      for (const q of queries) {
+        const r = q && q.state && q.state.data && q.state.data.results;
+        if (Array.isArray(r) && r.length && ('isrc' in r[0])) { results = r; break; }
+      }
+      if (!results) return false;
+      const tracks = results.map((t, i) => {
+        const mix = t.mix_name && !/^original mix$/i.test(t.mix_name) ? ' (' + t.mix_name + ')' : '';
+        return {
+          isrc:   String(t.isrc || '').toUpperCase().replace(/[\s-]/g, ''),
+          title:  (t.name || '') + mix,
+          artist: (t.artists || []).map(a => a && a.name).filter(Boolean).join(', '),
+          disc:   1,
+          pos:    t.number || (i + 1),
+          dur:    t.length || '',
+        };
+      });
+      try { GM_setValue('beatport_harvest_' + bpId, { ts: Date.now(), tracks: tracks }); } catch (e) {}
+      return true;
+    };
+    const t0 = Date.now();
+    const tick = () => {
+      if (grab()) {
+        // Only self-close when the editor's background harvest opened this tab
+        // (it sets a per-release close flag first). A tab the USER opened — or
+        // one Platform Check's ↗/link opened — must stay put; we still harvest
+        // it (populating the cache) but leave it on screen.
+        try {
+          const flag = GM_getValue('beatport_close_' + bpId, 0);
+          if (flag && (Date.now() - flag < 120000)) { GM_deleteValue('beatport_close_' + bpId); window.close(); }
+        } catch (e) {}
+        return;
+      }
+      if (Date.now() - t0 > 90000) return;   // Cloudflare never cleared — give up silently
+      window.setTimeout(tick, 500);
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick, { once: true });
+    else tick();
+    return; // never run the MB editor on a Beatport page
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
      CONSTANTS
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.6.7.3';
+  const SCRIPT_VERSION = '2026.6.8';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
@@ -109,6 +172,26 @@
     tokenUrl: MB_ROOT + '/oauth2/token',
     redirect: 'urn:ietf:wg:oauth:2.0:oob',
     scope:    'submit_isrc',
+  };
+
+  // Baked-in Tidal API app. The client-credentials grant yields an app-level
+  // token with TIDAL Catalog access (no user login) — same "shared installed
+  // app" trust model as the MB OAuth app above.
+  const TIDAL = {
+    clientId:     'cRhhDJDpYXXBn82U',
+    clientSecret: 'K7UX40jDOZ5p4y4JMYZgoiwKi7jymTHWcLMb4gkewKs=',
+    tokenUrl: 'https://auth.tidal.com/v1/oauth2/token',
+    api:      'https://openapi.tidal.com/v2',
+    country:  'US',
+  };
+
+  // Brand glyphs for the import-source buttons (fill:currentColor → each inherits
+  // its button's brand colour). Toggled against text labels via ⚙ Setup.
+  const SRC_ICON = {
+    dz: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><rect x="1" y="14" width="4" height="6" rx=".6"/><rect x="6.7" y="10" width="4" height="10" rx=".6"/><rect x="12.4" y="6" width="4" height="14" rx=".6"/><rect x="18.1" y="11" width="4" height="9" rx=".6"/></svg>',
+    sp: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>',
+    bp: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10 8.2l6 3.8-6 3.8z"/></svg>',
+    td: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>',
   };
 
   const mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/)?.[1];
@@ -348,6 +431,15 @@
     .ii-tbtn.sx  { color: #6f42c1; border-color: #d6c7ee; }
     .ii-tbtn.dz  { color: #ef5466; border-color: #f5c2c8; }
     .ii-tbtn.sp  { color: #1db954; border-color: #b6e5c6; }
+    .ii-tbtn.bp  { color: #0a8754; border-color: #9fe0c2; }
+    .ii-tbtn.td  { color: #1f2d3d; border-color: #b5c2d0; }
+    /* import-source buttons: independently show icon and/or text (⚙ Setup).
+       Default = icons only (toolbar room); both can be on at once. */
+    .ii-bico { display: none; line-height: 0; }
+    .ii-bico svg { display: block; }
+    .ii-blabel { display: none; }
+    #ii-tools.ii-show-icons .ii-bico { display: inline-flex; align-items: center; }
+    #ii-tools.ii-show-text .ii-blabel { display: inline; }
     .ii-tbtn.primary { background: #198754; color: #fff; border-color: #198754; }
     .ii-tbtn.primary:hover { background: #157347; }
     .ii-tbtn.ghost { border-color: transparent; }
@@ -511,8 +603,18 @@
       white-space: pre-wrap; word-break: break-word; background: #0d1117; color: #c9d1d9;
       padding: 8px 10px; border-radius: 5px; max-height: 240px; overflow: auto; margin: 0; }
     #ii-log-pane h3 { display: flex; align-items: center; gap: 8px; }
-    .ii-sx-group { display: inline-flex; align-items: center; gap: 10px; padding: 3px 10px 3px 4px;
+    .ii-sx-group { display: inline-flex; align-items: center; gap: 7px; padding: 3px 8px 3px 4px;
       border: 1px solid #e0d7f2; background: #faf8fe; border-radius: 7px; }
+    /* collapsible "exact" toggle — collapsed by default so the toolbar stays compact */
+    .ii-exact-toggle { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; font-size: 11px;
+      font-weight: 600; color: #8a7bb0; background: #fff; border: 1px solid #e0d7f2; border-radius: 5px; cursor: pointer; }
+    .ii-exact-toggle:hover { background: #f3eefc; color: #6f42c1; }
+    .ii-exact-toggle .ii-exact-car { font-size: 9px; transition: transform .15s; }
+    .ii-sx-group:not(.collapsed) .ii-exact-toggle .ii-exact-car { transform: rotate(180deg); }
+    /* a filled dot on the toggle when any exact option is active while collapsed */
+    .ii-exact-toggle.on { color: #6f42c1; border-color: #c9b6ee; background: #f3eefc; }
+    .ii-exact-toggle.on::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #6f42c1; }
+    .ii-sx-group.collapsed .ii-exact-set { display: none; }
     .ii-exact-set { display: inline-flex; align-items: center; gap: 9px; font-size: 11px; color: #6c757d; }
     .ii-ex-all-lbl { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
     .ii-ex-all-lbl input { cursor: pointer; }
@@ -696,13 +798,15 @@
         });
       });
       const rels = data.relations || [];
-      let deezerId = null, spotifyId = null;
+      let deezerId = null, spotifyId = null, beatportId = null, tidalId = null;
       rels.forEach(rel => {
         const u = rel.url && rel.url.resource;
         if (!u) return;
         let m;
         if ((m = u.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/))) spotifyId = m[1];
         if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))   deezerId  = m[1];
+        if ((m = u.match(/beatport\.com\/release\/[^/]+\/(\d+)/)))       beatportId = m[1];
+        if ((m = u.match(/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/))) tidalId = m[1];
       });
       // THIS release's year — what the header shows AND what the SX "recording newer
       // than the release" check uses. Prefer the release's own date; only fall back to
@@ -726,10 +830,11 @@
       });
       Object.keys(pend).forEach(rid => { if (!tracks.some(t => t.recId === rid)) { delete pend[rid]; pendChanged = true; } });
       if (pendChanged) savePendingRemovals(pend);
-      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, releaseYear, artist };
+      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, beatportId, tidalId, releaseYear, artist };
       Log.info('Release "' + RELEASE.title + '"' + (releaseYear ? ' (' + releaseYear + ')' : '') + ': ' + tracks.length + ' track(s), ' +
         tracks.filter(t => !t.existing.length).length + ' missing ISRC' +
-        '; links: ' + (deezerId ? 'Deezer ' + deezerId : 'no Deezer') + ', ' + (spotifyId ? 'Spotify ' + spotifyId : 'no Spotify'));
+        '; links: ' + [deezerId ? 'Deezer ' + deezerId : null, spotifyId ? 'Spotify ' + spotifyId : null,
+          beatportId ? 'Beatport ' + beatportId : null, tidalId ? 'Tidal ' + tidalId : null].filter(Boolean).join(', '));
       return RELEASE;
     });
   }
@@ -1068,6 +1173,118 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
+     BEATPORT  (Cloudflare-walled → harvested in a brief tab; the harvester at
+     the top of the script fills GM storage, which we read back here.)
+  ═══════════════════════════════════════════════════════════════════════ */
+  function readBeatportHarvest(id) {
+    try {
+      const h = store.get('beatport_harvest_' + id, '');
+      const o = h ? (typeof h === 'string' ? JSON.parse(h) : h) : null;
+      return (o && Array.isArray(o.tracks)) ? o : null;
+    } catch (e) { return null; }
+  }
+  async function fetchBeatport(releaseId, onProgress, onIsrc) {
+    if (onProgress) onProgress(0, 0);
+    let h = readBeatportHarvest(releaseId);
+    if (h) {
+      Log.info('Beatport: using harvested data for release ' + releaseId + ' (' + h.tracks.length + ' track(s))');
+    } else {
+      Log.info('Beatport: opening release ' + releaseId + ' in a background tab to harvest ISRCs (Cloudflare blocks a direct fetch)');
+      store.del('beatport_harvest_' + releaseId);
+      // Tell the harvester (running in the tab we're about to open) that THIS
+      // tab is ours to close once it's done — so the harvester never closes a
+      // Beatport tab the user opened themselves.
+      store.set('beatport_close_' + releaseId, Date.now());
+      const url = 'https://www.beatport.com/release/-/' + releaseId;
+      let tab = null;
+      try {
+        tab = (typeof GM_openInTab === 'function')
+          ? GM_openInTab(url, { active: false, insert: true, setParent: true })
+          : window.open(url, '_blank');
+      } catch (e) { tab = window.open(url, '_blank'); }
+      const t0 = Date.now();
+      while (Date.now() - t0 < 60000) {
+        await sleep(500);
+        h = readBeatportHarvest(releaseId);
+        if (h) break;
+      }
+      try { if (tab && typeof tab.close === 'function') tab.close(); } catch (e) {}
+      store.del('beatport_close_' + releaseId);   // clear the flag whether we succeeded or timed out
+      if (!h) throw new Error('Beatport harvest timed out — the tab may have hit a Cloudflare check. Open the release on beatport.com once, then retry.');
+    }
+    const rows = h.tracks;
+    rows.forEach((e, i) => {
+      try { if (onIsrc && isValidIsrc(e.isrc)) onIsrc(e); } catch (err) { Log.warn('Beatport map hiccup for ' + e.isrc + ': ' + errText(err)); }
+      try { if (onProgress) onProgress(i + 1, rows.length); } catch (err) {}
+    });
+    const withIsrc = rows.filter(e => isValidIsrc(e.isrc)).length;
+    Log.info('Beatport: ' + withIsrc + '/' + rows.length + ' track(s) carried an ISRC');
+    if (!withIsrc) throw new Error('Beatport release exposed no ISRCs');
+    return { total: rows.length, next: null };
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     TIDAL  (official API; app token via client-credentials — no user login)
+  ═══════════════════════════════════════════════════════════════════════ */
+  async function tidalToken() {
+    const tok = store.get('tidal_token', ''), exp = store.get('tidal_token_exp', 0);
+    if (tok && Date.now() < exp - 60000) return tok;
+    const basic = btoa(TIDAL.clientId + ':' + TIDAL.clientSecret);
+    const r = await gmPost(TIDAL.tokenUrl, 'grant_type=client_credentials',
+      { 'Authorization': 'Basic ' + basic, 'Content-Type': 'application/x-www-form-urlencoded' });
+    const j = JSON.parse(r.responseText || '{}');
+    if (!j.access_token) throw new Error('Tidal auth failed (' + r.status + ')' + (j.error ? ': ' + j.error : ''));
+    store.set('tidal_token', j.access_token);
+    store.set('tidal_token_exp', Date.now() + ((j.expires_in || 14400) * 1000));
+    return j.access_token;
+  }
+  function isoDurToMmSs(iso) {
+    const m = String(iso || '').match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!m) return '';
+    const sec = (parseInt(m[1] || 0, 10) * 3600) + (parseInt(m[2] || 0, 10) * 60) + parseInt(m[3] || 0, 10);
+    return sec ? msToMmSs(sec * 1000) : '';
+  }
+  async function fetchTidal(albumId, onProgress, onIsrc) {
+    if (onProgress) onProgress(0, 0);
+    const token = await tidalToken();
+    const headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.api+json' };
+    let path = '/albums/' + albumId + '/relationships/items?countryCode=' + TIDAL.country + '&include=items';
+    const rows = [];
+    let guard = 0;
+    while (path && guard++ < 50) {
+      const r = await gmGet(TIDAL.api + path, headers);
+      if (r.status !== 200) throw new Error('Tidal ' + r.status + ' for album ' + albumId + (r.status === 404 ? ' (not found / region-locked)' : ''));
+      const j = JSON.parse(r.responseText || '{}');
+      const inc = {};
+      (j.included || []).forEach(x => { if (x.type === 'tracks') inc[x.id] = x.attributes || {}; });
+      (j.data || []).forEach(ref => {
+        const a = inc[ref.id] || {};
+        const meta = ref.meta || {};
+        const ver = a.version ? ' (' + a.version + ')' : '';
+        rows.push({
+          isrc:   normalizeIsrc(a.isrc || ''),
+          title:  (a.title || '') + ver,
+          artist: '',   // track artists need a second include; pos+disc mapping is enough for a full ordered tracklist
+          disc:   meta.volumeNumber || 1,
+          pos:    meta.trackNumber || (rows.length + 1),
+          dur:    isoDurToMmSs(a.duration),
+        });
+      });
+      const next = j.links && j.links.next;
+      path = next ? (next.charAt(0) === '/' ? next : '/' + next.replace(/^.*\/v2\//, '')) : null;
+    }
+    Log.info('Tidal album ' + albumId + ': ' + rows.length + ' track(s)');
+    let n = 0;
+    rows.forEach(e => {
+      try { if (onIsrc && isValidIsrc(e.isrc)) onIsrc(e); } catch (err) { Log.warn('Tidal map hiccup for ' + e.isrc + ': ' + errText(err)); }
+      try { if (onProgress) onProgress(++n, rows.length); } catch (err) {}
+    });
+    const withIsrc = rows.filter(e => isValidIsrc(e.isrc)).length;
+    if (!withIsrc) throw new Error('Tidal album exposed no ISRCs');
+    return { total: rows.length, next: null };
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
      EDITOR MODAL — DOM
   ═══════════════════════════════════════════════════════════════════════ */
   let overlay, modal, tbody, summaryEl, progEl, submitBtn;
@@ -1167,6 +1384,11 @@
           Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
           If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
         </div>
+        <div style="margin-top:14px; padding-top:11px; border-top:1px solid #eee">
+          <label style="display:block; font-size:11.5px; color:#495057; margin-bottom:5px; font-weight:600">Import-source buttons</label>
+          <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; margin-right:16px; cursor:pointer"><input type="checkbox" id="ii-show-icons">Show icons</label>
+          <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; cursor:pointer"><input type="checkbox" id="ii-show-text">Show text</label>
+        </div>
       </div>
 
       <div class="ii-pane" id="ii-bulk-pane">
@@ -1201,16 +1423,19 @@
       </div>
 
       <div id="ii-tools">
-        <span class="ii-sx-group">
+        <span class="ii-sx-group" id="ii-sx-group">
           <button class="ii-tbtn sx" id="ii-sx-all" title="Search every track on SoundExchange">⟳ SoundExchange</button>
-          <span class="ii-exact-set" title="Wrap the SoundExchange query in quotes for an exact match">
-            <label><input type="checkbox" id="ii-ex-title">exact title</label>
-            <label><input type="checkbox" id="ii-ex-artist">exact artist</label>
-            <label><input type="checkbox" id="ii-ex-release">exact release</label>
+          <button class="ii-exact-toggle" id="ii-exact-toggle" type="button" title="Exact-match options" aria-expanded="false">exact <span class="ii-exact-car">▾</span></button>
+          <span class="ii-exact-set" id="ii-exact-set" title="Wrap the SoundExchange query in quotes for an exact match">
+            <label><input type="checkbox" id="ii-ex-title">title</label>
+            <label><input type="checkbox" id="ii-ex-artist">artist</label>
+            <label><input type="checkbox" id="ii-ex-release">release</label>
           </span>
         </span>
-        <span class="ii-split"><button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from the linked Deezer album">Deezer</button><button class="ii-tbtn dz ii-caret" id="ii-dz-menu" title="More — import from a custom Deezer URL">▾</button></span>
-        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album">Spotify</button>
+        <span class="ii-split"><button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from the linked Deezer album"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button><button class="ii-tbtn dz ii-caret" id="ii-dz-menu" title="More — import from a custom Deezer URL">▾</button></span>
+        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
+        <span class="ii-split"><button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from the linked Beatport release"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button><button class="ii-tbtn bp ii-caret" id="ii-bp-menu" title="More — import from a custom Beatport URL / the one Platform Check found">▾</button></span>
+        <span class="ii-split"><button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from the linked Tidal album"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button><button class="ii-tbtn td ii-caret" id="ii-td-menu" title="More — import from a custom Tidal URL / the one Platform Check found">▾</button></span>
         <span class="ii-prog" id="ii-prog"></span>
         <span class="ii-tspacer"></span>
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear entered</button>
@@ -1277,16 +1502,63 @@
     });
     modal.querySelector('#ii-log-clear').addEventListener('click', () => Log.clear());
 
-    // SX exact toggles
+    // SX exact toggles + their collapsible container (collapsed state persisted)
+    const sxGroup = modal.querySelector('#ii-sx-group');
+    const exactToggle = modal.querySelector('#ii-exact-toggle');
+    // reflect "any exact option active" on the toggle, so it's visible even when collapsed
+    const refreshExactToggle = () => {
+      const anyOn = sxExact.title || sxExact.artist || sxExact.release;
+      exactToggle.classList.toggle('on', !!anyOn);
+      exactToggle.title = anyOn
+        ? 'Exact-match active: ' + ['title', 'artist', 'release'].filter(k => sxExact[k]).join(', ')
+        : 'Exact-match options';
+    };
+    const applyExactCollapsed = (collapsed) => {
+      sxGroup.classList.toggle('collapsed', collapsed);
+      exactToggle.setAttribute('aria-expanded', String(!collapsed));
+    };
+    applyExactCollapsed(store.get('sx_exact_collapsed', true));   // collapsed by default to keep the toolbar compact
+    exactToggle.addEventListener('click', () => {
+      const collapsed = !sxGroup.classList.contains('collapsed');
+      applyExactCollapsed(collapsed);
+      store.set('sx_exact_collapsed', collapsed);
+    });
     [['ii-ex-title', 'title'], ['ii-ex-artist', 'artist'], ['ii-ex-release', 'release']].forEach(([id, key]) => {
       const cb = modal.querySelector('#' + id);
       cb.checked = sxExact[key];
-      cb.addEventListener('change', () => { sxExact[key] = cb.checked; saveSxExact(); Log.info('SX exact ' + key + ' = ' + cb.checked); });
+      cb.addEventListener('change', () => { sxExact[key] = cb.checked; saveSxExact(); refreshExactToggle(); Log.info('SX exact ' + key + ' = ' + cb.checked); });
     });
+    refreshExactToggle();
+
+    // Import-source buttons: independently show icons and/or text labels
+    // (persisted; default icons-only). Never both off — re-check the last one.
+    const tools = modal.querySelector('#ii-tools');
+    const cbIcons = modal.querySelector('#ii-show-icons');
+    const cbText  = modal.querySelector('#ii-show-text');
+    const applySrcDisp = () => {
+      tools.classList.toggle('ii-show-icons', cbIcons.checked);
+      tools.classList.toggle('ii-show-text',  cbText.checked);
+    };
+    cbIcons.checked = store.get('src_show_icons', true);
+    cbText.checked  = store.get('src_show_text', false);
+    applySrcDisp();
+    const onSrcDispChange = changed => {
+      if (!cbIcons.checked && !cbText.checked) { changed.checked = true; }   // keep at least one visible
+      store.set('src_show_icons', cbIcons.checked);
+      store.set('src_show_text', cbText.checked);
+      applySrcDisp();
+      Log.info('Source buttons: icons=' + cbIcons.checked + ' text=' + cbText.checked);
+    };
+    cbIcons.addEventListener('change', () => onSrcDispChange(cbIcons));
+    cbText.addEventListener('change', () => onSrcDispChange(cbText));
 
     modal.querySelector('#ii-dz-all').addEventListener('click', runDeezer);
     modal.querySelector('#ii-sp-all').addEventListener('click', runSpotify);
+    modal.querySelector('#ii-bp-all').addEventListener('click', runBeatport);
+    modal.querySelector('#ii-td-all').addEventListener('click', runTidal);
     modal.querySelector('#ii-dz-menu').addEventListener('click', e => toggleSrcMenu('Deezer', e.currentTarget));
+    modal.querySelector('#ii-bp-menu').addEventListener('click', e => toggleSrcMenu('Beatport', e.currentTarget));
+    modal.querySelector('#ii-td-menu').addEventListener('click', e => toggleSrcMenu('Tidal', e.currentTarget));
     // Spotify has no ▾ menu: it imports via ISRC Hunt, which resolves the MB release
     // FROM the Spotify URL — a custom/not-in-MB URL can't work, so there's nothing to offer.
     document.getElementById('ii-src-go').addEventListener('click', submitSrcMenu);
@@ -1425,8 +1697,12 @@
       RELEASE.title ? '· ' + [RELEASE.title, RELEASE.releaseYear, RELEASE.artist].filter(Boolean).join(' · ') : '';
     modal.querySelector('#ii-dz-all').disabled = !RELEASE.deezerId;
     modal.querySelector('#ii-sp-all').disabled = !RELEASE.spotifyId;
+    modal.querySelector('#ii-bp-all').disabled = !RELEASE.beatportId;
+    modal.querySelector('#ii-td-all').disabled = !RELEASE.tidalId;
     modal.querySelector('#ii-dz-all').title = RELEASE.deezerId ? 'Import from Deezer' : 'No Deezer link on this release';
     modal.querySelector('#ii-sp-all').title = RELEASE.spotifyId ? 'Import from Spotify' : 'No Spotify link on this release';
+    modal.querySelector('#ii-bp-all').title = RELEASE.beatportId ? 'Import from Beatport' : 'No Beatport link on this release (use ▾ for a custom URL)';
+    modal.querySelector('#ii-td-all').title = RELEASE.tidalId ? 'Import from Tidal' : 'No Tidal link on this release (use ▾ for a custom URL)';
 
     tbody.innerHTML = '';
     let lastMedium = null;
@@ -2308,18 +2584,41 @@
     try { await runStreamingSource('Spotify', RELEASE.spotifyId, fetchSpotify); }
     finally { btn.disabled = false; }
   }
+  async function runBeatport() {
+    if (!RELEASE.beatportId) { Log.warn('Beatport: no Beatport link on this release'); return; }
+    const btn = modal.querySelector('#ii-bp-all'); btn.disabled = true;
+    Log.info('Beatport: importing release ' + RELEASE.beatportId);
+    try { await runStreamingSource('Beatport', RELEASE.beatportId, fetchBeatport); }
+    finally { btn.disabled = false; }
+  }
+  async function runTidal() {
+    if (!RELEASE.tidalId) { Log.warn('Tidal: no Tidal album link on this release'); return; }
+    const btn = modal.querySelector('#ii-td-all'); btn.disabled = true;
+    Log.info('Tidal: importing album ' + RELEASE.tidalId);
+    try { await runStreamingSource('Tidal', RELEASE.tidalId, fetchTidal); }
+    finally { btn.disabled = false; }
+  }
+  // Map a source label to its fetcher (used by the custom-URL + Platform-Check menus).
+  function fetcherFor(source) {
+    return source === 'Deezer'   ? fetchDeezer
+         : source === 'Spotify'  ? fetchSpotify
+         : source === 'Beatport' ? fetchBeatport
+         : source === 'Tidal'    ? fetchTidal
+         : null;
+  }
 
-  /* ── custom-URL menu (Deezer / Spotify "▾") — import from a pasted album URL,
-        even when the release has no such link ── */
+  /* ── custom-URL menu (Deezer / Beatport / Tidal "▾") — import from a pasted
+        album URL, OR from the URL Platform Check found, even when the release
+        has no such link in MB yet ── */
   let _srcMenuSource = null, _srcPcUrl = null;
   // If Platform Check (separate userscript) is on the page, read the URL it found
-  // for this source from its sidebar anchor (#mb-online-deezer / #mb-online-spotify).
+  // for this source from its sidebar anchor (#mb-online-<source>).
   function platformCheckUrl(source) {
-    const a = document.getElementById('mb-online-' + source.toLowerCase());
     // Spotify import goes through ISRC Hunt, which looks up the MB release BY the
-    // Spotify URL — so a found-but-not-yet-in-MB URL just errors ("No matching
-    // MusicBrainz release found"). The Platform Check shortcut only helps Deezer.
-    if (source !== 'Deezer') return null;
+    // Spotify URL — a found-but-not-yet-in-MB URL just errors. Deezer / Beatport /
+    // Tidal all import directly by album id, so a found URL is usable for them.
+    if (source === 'Spotify') return null;
+    const a = document.getElementById('mb-online-' + source.toLowerCase());
     if (!a) return null;                                    // Platform Check not installed
     const href = a.getAttribute('href') || '';
     if (!/^https?:\/\//.test(href)) return null;            // nothing found yet ('#')
@@ -2340,9 +2639,11 @@
     } else { pcBtn.style.display = 'none'; }
     const url = document.getElementById('ii-src-url');
     url.value = '';
-    url.placeholder = source === 'Deezer'
-      ? 'https://www.deezer.com/album/123…  (or an album id)'
-      : 'https://open.spotify.com/album/…  (or an album id)';
+    url.placeholder = source === 'Deezer'   ? 'https://www.deezer.com/album/123…  (or an album id)'
+      : source === 'Spotify'  ? 'https://open.spotify.com/album/…  (or an album id)'
+      : source === 'Beatport' ? 'https://www.beatport.com/release/name/123…  (or a release id)'
+      : source === 'Tidal'    ? 'https://tidal.com/album/123…  (or an album id)'
+      : 'Paste album URL…';
     // show first so offsetWidth is measurable, then anchor under the caret that
     // opened it (menu is position:fixed on <body>), kept fully on-screen
     menu.classList.add('open');
@@ -2359,7 +2660,7 @@
     const id = parseStreamingId(source, input);
     if (!id) { toast('Couldn\'t find a ' + source + ' album id in that URL', 'err'); Log.warn(source + ': unparseable URL "' + input + '"'); return; }
     Log.info(source + ': importing custom album ' + id);
-    await runStreamingSource(source, id, source === 'Deezer' ? fetchDeezer : fetchSpotify);
+    await runStreamingSource(source, id, fetcherFor(source));
   }
   async function importFromPlatformCheck() {
     const source = _srcMenuSource, url = _srcPcUrl;
@@ -2368,12 +2669,20 @@
     const id = parseStreamingId(source, url);
     if (!id) { toast('Couldn\'t parse Platform Check\'s ' + source + ' URL', 'err'); return; }
     Log.info(source + ': importing from Platform Check\'s URL ' + url + ' (album ' + id + ')');
-    await runStreamingSource(source, id, source === 'Deezer' ? fetchDeezer : fetchSpotify);
+    await runStreamingSource(source, id, fetcherFor(source));
   }
   function parseStreamingId(source, input) {
     const s = String(input || '').trim();
     if (source === 'Deezer') {
       const m = s.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/);
+      return m ? m[1] : (/^\d+$/.test(s) ? s : null);
+    }
+    if (source === 'Beatport') {
+      const m = s.match(/beatport\.com\/release\/[^/]+\/(\d+)/);
+      return m ? m[1] : (/^\d+$/.test(s) ? s : null);
+    }
+    if (source === 'Tidal') {
+      const m = s.match(/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/);
       return m ? m[1] : (/^\d+$/.test(s) ? s : null);
     }
     let m = s.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/) || s.match(/spotify:album:([A-Za-z0-9]+)/);
