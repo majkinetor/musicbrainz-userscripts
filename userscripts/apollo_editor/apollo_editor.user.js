@@ -718,6 +718,55 @@
     #tc-launch .tc-launch-gear{padding:8px 11px;cursor:pointer;font-size:14px;display:flex;align-items:center;border-left:1px solid rgba(255,255,255,.28)}
     #tc-launch .tc-launch-gear:hover{background:rgba(255,255,255,.13)}
     #tc-btn,#tc-gear-btn{vertical-align:middle}
+
+    /* ──────────────────────────────────────────────────────────────────
+       MOBILE / NARROW VIEWPORTS — Tracklist
+       MusicBrainz serves width=device-width, so the fixed-layout mirror
+       (Title 360px + #/len/badge ≈ 540px of fixed columns) overflows the
+       viewport and collapses the flexible Artist column to a few pixels —
+       the artist search box becomes unusable. Below ~700px each track
+       becomes a full-width card: #/title/length/match on the top line and
+       the artist credit(s) spanning the FULL width beneath. Hover-only
+       controls are revealed (touch screens have no hover).
+       820px covers phones and small tablets (the artist column only gets
+       comfortable above ~1000px desktop width).
+       ────────────────────────────────────────────────────────────────── */
+    @media (max-width: 820px) {
+      /* tools bar: wrap so "⚡ Match" never gets pushed off the edge */
+      #tc-bar{flex-wrap:wrap;gap:6px 8px}
+      #tc-bar > .sp{flex-basis:100%;height:0}   /* the spacer forces the Match cluster onto its own line */
+      .tc-am-lbl{white-space:normal}
+
+      .tc-tablewrap{overflow-x:visible}
+      .tc-mirror{display:block}
+      .tc-mirror > colgroup,.tc-mirror > thead{display:none}
+      .tc-mirror > tbody{display:block}
+      .tc-mirror > tbody > tr{display:grid;grid-template-columns:20px 34px 1fr 46px 30px;
+        align-items:center;column-gap:6px;row-gap:3px;padding:7px 8px;background:transparent}
+      .tc-mirror.gridrows > tbody > tr{border-bottom:1px solid #e0e0e0}
+      .tc-mirror > tbody > tr > td{display:block;padding:0;border:none!important;background:transparent;overflow:visible}
+      .tc-mirror td.c-mv{grid-column:1;grid-row:1}
+      .tc-mirror td.c-num{grid-column:2;grid-row:1}
+      .tc-mirror td.c-title{grid-column:3;grid-row:1}
+      .tc-mirror td.c-len{grid-column:4;grid-row:1}
+      .tc-mirror td.c-badge{grid-column:5;grid-row:1}
+      .tc-mirror td.c-art{grid-column:1 / -1;grid-row:2;width:auto}
+      .tc-mirror input.t-len{width:100%;text-align:right}
+      /* the medium header keeps its own full-width line */
+      .tc-mirror > tbody > tr:has(.tc-medhdr){display:block;padding:0}
+      .tc-mirror td.tc-medhdr{display:block}
+      /* zebra + changed-marker move to the row (cells are transparent now) */
+      .tc-mirror.alt > tbody > tr:nth-child(even){background:#f6f4fb}
+      .tc-mirror > tbody > tr.tc-changed{box-shadow:inset 3px 0 0 #5f3ec0}
+      .tc-mirror > tbody > tr.tc-changed td:first-child{box-shadow:none}
+      /* trim the fixed credited-as + actions so the search box gets the width */
+      .tc-cred{width:84px}
+      .tc-acts{width:auto;gap:3px;padding-left:3px}
+      /* touch = no hover: reveal the per-row / per-artist controls permanently */
+      .tc-mirror tr .t-gc,.tc-mirror tr .t-feat,
+      .tc-enter,.tc-splitb,.tc-slotgrab,.tc-slotx{visibility:visible}
+      .tc-aslot:not(.tc-can-split) .tc-splitb{display:none}
+    }
   `;
   function style() {
     if (document.getElementById('tc-css')) return;
@@ -2088,6 +2137,31 @@
       // #149: hide every native per-medium "Edit" (load-tracks) button — Apollo
       // renders all mediums collapsed and triggers the load itself on expand.
       'body.tc-rec-on #recordings button[data-click="loadTracks"]{display:none!important}',
+      // MOBILE: the side-by-side Track|Recording table (8 fixed-% columns)
+      // can't fit a phone — stack each comparison into a card: the track line
+      // (#, title, artist, length) on top, then the matched recording line
+      // beneath, marked by the confidence dot. #issue
+      '@media (max-width:820px){',
+      '  #tc-recwrap .tc-rec-tb{gap:5px 8px}',
+      '  .tc-rectbl{display:block}',
+      '  .tc-rectbl > colgroup,.tc-rectbl > thead{display:none}',
+      '  .tc-rectbl > tbody{display:block}',
+      '  .tc-rectbl > tbody > tr.tc-recrow{display:grid;grid-template-columns:20px 1fr auto;column-gap:7px;row-gap:1px;padding:8px 8px}',
+      '  .tc-rectbl.gridrows > tbody > tr.tc-recrow{border-bottom:1px solid #e0e0e0}',
+      '  .tc-rectbl > tbody > tr.tc-recrow > td{display:block;padding:0;border:none!important;background:transparent}',
+      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(1){grid-column:1;grid-row:1;text-align:left}',   // #
+      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(2){grid-column:2;grid-row:1;font-weight:600}',   // track title
+      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(3){grid-column:2;grid-row:2;color:#666;font-size:12px}',   // track artist
+      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(4){grid-column:3;grid-row:1;width:auto}',   // track length
+      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(5){grid-column:1;grid-row:3;text-align:center;padding-top:4px!important}',   // dot
+      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(6){grid-column:2;grid-row:3}',   // recording title
+      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(7){grid-column:2;grid-row:4;color:#666;font-size:12px}',   // recording artist
+      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(8){grid-column:3;grid-row:3;width:auto}',   // recording length
+      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(5),.tc-rectbl > tbody > tr.tc-recrow > td:nth-child(6),.tc-rectbl > tbody > tr.tc-recrow > td:nth-child(8){margin-top:3px;padding-top:4px;border-top:1px solid #eee!important}',
+      '  .tc-rectbl td.c-sep{border-left:none;border-right:none}',
+      '  .tc-rectbl tr.tc-recmed td,.tc-rectbl tr.tc-recmed-coll td{display:block}',
+      '  .tc-rectbl .tc-rec-rev{visibility:visible}',   // touch: no hover
+      '}',
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -2816,7 +2890,19 @@
     body.tc-zen-on .header,body.tc-zen-on .releaseheader,body.tc-zen-on #page > .tabs,body.tc-zen-on #footer{display:none!important}
     /* zen: drop the page's top spacing so the sticky nav bar pins flush to the top and doesn't drift on scroll (#141) */
     body.tc-zen-on #page{padding-top:0!important;margin-top:0!important}
-    body.tc-zen-on #page.fullwidth{padding-top:0!important;margin-top:0!important}`;
+    body.tc-zen-on #page.fullwidth{padding-top:0!important;margin-top:0!important}
+    /* MOBILE: the top nav bar wraps — step switcher + Finish on line 1, the
+       Cancel/Prev/Next paginators stay grouped, and (in zen) the release title
+       drops to its own full-width line so nothing gets squeezed or clipped. */
+    @media (max-width: 820px){
+      #tc-nav-bar{flex-wrap:wrap;gap:5px 8px;padding:5px 2px}
+      #tc-nav-left{flex:1 1 auto}
+      #tc-nav-pager{order:2}
+      .tc-nav-step,.tc-nav-wbtn{padding:3px 8px;font-size:12px}
+      body.tc-zen-on #tc-nav-title{order:3;flex:1 1 100%;text-align:left;padding:1px 2px 0}
+      body.tc-zen-on #tc-nav-title .tc-nav-title-album,
+      body.tc-zen-on #tc-nav-title .tc-nav-title-artist{white-space:normal}
+    }`;
     const s = document.createElement('style'); s.id = 'tc-nav-style'; s.textContent = css; document.head.appendChild(s);
   }
   // build (once) the full-width nav bar at the top of the editor (#140):
