@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.8.004000
+// @version      2026.6.8.005000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -168,13 +168,27 @@
   }
   // the alias(es) to show next to a result: the English-locale one(s) if present, otherwise the first
   // alias — joined with ", " and capped so it never gets too long
+  // MusicBrainz special-purpose artists carry hundreds of junk/locale aliases
+  // (e.g. [unknown] → '"Gold Diggers of 1937" Chorus'); never surface one as an AKA.
+  // Keyed by MBID, not a name pattern — not all are bracketed (Various Artists) and
+  // plenty of real artists DO use brackets. (#171, per @chaban-mb)
+  const SPECIAL_PURPOSE_ARTISTS = new Set([
+    '125ec42a-7229-4250-afc5-e057484327fe', // [unknown]
+    'f731ccc4-e22a-43af-a747-64213329e088', // [anonymous]
+    '33cf029c-63b0-41a0-9855-be2a3665fb3b', // [data]
+    '314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc', // [dialogue]
+    'eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61', // [no artist]
+    '9be7f096-97ec-4615-8957-8d40b5dcbc41', // [traditional]
+    '89ad4ac3-39f7-470e-963a-56509c546377', // Various Artists
+    '7e84f845-ac16-41fe-9ff8-df12eb32af55', // MusicBrainz Test Artist
+    '66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49', // [Disney]
+    'a0ef7e1d-44ff-4039-9435-7d5fefdeecc9', // [theatre]
+    '90068d37-bae7-4292-be4a-704c145bd616', // [church chimes]
+    '80a8851f-444c-4539-892b-ad2a49292aa9', // [language instruction]
+  ]);
   function aliasStr(c) {
-    const name = c.name || '';
-    // Special-purpose artists ([unknown], [anonymous], [data], [traditional], …) carry
-    // hundreds of junk/locale aliases (e.g. '"Gold Diggers of 1937" Chorus'); never surface
-    // one as an AKA. They're always named with surrounding brackets. (#171)
-    if (/^\[.+\]$/.test(name.trim())) return null;
-    const aks = c.aliases || [], diff = s => s && fold(s) !== fold(name);
+    if (c.gid && SPECIAL_PURPOSE_ARTISTS.has(c.gid)) return null;   // #171 — no AKA for special-purpose artists
+    const name = c.name || '', aks = c.aliases || [], diff = s => s && fold(s) !== fold(name);
     const en = aks.filter(a => /^en/i.test(a.locale || '') && diff(a.name)).sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0)).map(a => a.name);
     let out = en;
     if (!out.length) { const first = aks.find(a => diff(a.name)); out = first ? [first.name] : (diff(c.primaryAlias) ? [c.primaryAlias] : []); }
@@ -1174,7 +1188,7 @@
     search.classList.toggle('matched', !!slot.committed);
     const ref = search.querySelector('.tc-joinwrap');
     const aks = _gidAliases.get(slot.gid);
-    const aka = slot.committed ? aliasStr({ name: slot.name, aliases: aks || (slot.entity && slot.entity.aliases) || [], primaryAlias: slot.entity && slot.entity.primaryAlias }) : null;
+    const aka = slot.committed ? aliasStr({ gid: slot.gid, name: slot.name, aliases: aks || (slot.entity && slot.entity.aliases) || [], primaryAlias: slot.entity && slot.entity.primaryAlias }) : null;
     // when matched, size the name field to its content so the alias sits right after it on the LEFT
     // (instead of being pushed to the far right by a full-width field); reset when unmatched. #128
     if (slot.committed) { inp.style.flex = '0 1 auto'; inp.size = Math.max(3, String(slot.name || inp.value || '').length + 1); }
