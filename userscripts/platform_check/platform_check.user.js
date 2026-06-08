@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.8.2
+// @version      2026.6.8.3
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -1258,7 +1258,7 @@ function cacheSet(mbid, platform, entry) {
     GM_setValue(cacheKey(mbid, platform), JSON.stringify(entry));
 }
 function cacheClear(mbid) {
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple']) GM_setValue(cacheKey(mbid, p), null);
+    for (const p of ALL_PROVIDERS) GM_setValue(cacheKey(mbid, p), null);   // all providers — not a stale hardcoded subset (else ↻ leaves Tidal/Beatport/Volumo cached)
     GM_setValue(mbDataKey(mbid), null);
 }
 
@@ -2263,7 +2263,7 @@ if (!mbid || mbid.length < 10) {
 // Reset each platform row back to its initial ⚪ / -- state. Used by the
 // refresh button before re-running the scans.
 function resetRows() {
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple']) {
+    for (const p of ALL_PROVIDERS) {
         const ico = document.getElementById(`ico-${p}`);
         const val = document.getElementById(`val-${p}`);
         const meta = document.getElementById(`meta-${p}`);
@@ -2667,7 +2667,7 @@ async function runScans() {
     // row uncircles and click-to-add re-enables. Without this, users who
     // hit a buggy build keep seeing every row as circled+unclickable until
     // they manually ↻ refresh.
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'deezer', 'apple', 'tidal', 'beatport']) {
+    for (const p of ALL_PROVIDERS) {
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
         if (existing[p] === cached.url && cached.source !== 'MB rels') {
