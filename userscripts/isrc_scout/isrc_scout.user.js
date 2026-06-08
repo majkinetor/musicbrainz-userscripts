@@ -583,6 +583,73 @@
     .ii-sxp-foot { padding: 8px 13px; border-top: 1px solid #eee; background: #fbfbfd; flex-shrink: 0; }
     .ii-sxp-foot a { font-size: 11.5px; font-weight: 600; color: #6f42c1; text-decoration: none; }
     .ii-sxp-foot a:hover { text-decoration: underline; }
+
+    /* ──────────────────────────────────────────────────────────────────
+       MOBILE / NARROW VIEWPORTS
+       MusicBrainz serves width=device-width, so phones render the modal at
+       ~96vw of a small viewport. The desktop header (title + tool buttons on
+       ONE flex row) then squeezes the title into a one-word-wide column, and
+       the fixed-width table (560px New-ISRC col) overflows horizontally.
+       Below ~700px we full-screen the modal, stack the header, turn every
+       track row into a full-width card, and let the toolbar/footer wrap.
+       ────────────────────────────────────────────────────────────────── */
+    @media (max-width: 700px) {
+      #ii-modal {
+        top: 0 !important; left: 0 !important; right: 0 !important; transform: none !important;
+        width: 100vw !important; max-width: 100vw !important;
+        height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; }
+      @supports (height: 100dvh) {
+        #ii-modal { height: 100dvh !important; max-height: 100dvh !important; } }
+
+      /* header: title gets its own row (subtitle truncates), tool buttons wrap
+         below it, close pinned to the top-right corner */
+      #ii-hdr { flex-wrap: wrap; position: relative; padding: 10px 12px 8px; gap: 6px; }
+      #ii-hdr h2 { flex: 1 1 100%; font-size: 14px; padding-right: 30px; min-width: 0;
+        display: flex; align-items: center; }
+      #ii-hdr h2 em { white-space: nowrap; flex-shrink: 0; }
+      #ii-hdr .ii-sub { flex: 1 1 auto; min-width: 0; margin-left: 6px; font-size: 12px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #ii-hdr .ii-tbtn { font-size: 11px; padding: 4px 9px; }
+      #ii-close { position: absolute; top: 5px; right: 9px; font-size: 22px; padding: 2px 6px; }
+
+      /* toolbar: tighten, keep "Clear entered" pushed to the right */
+      #ii-tools { padding: 7px 12px; gap: 5px; }
+      .ii-exact-set { gap: 7px; }
+
+      /* table → one full-width card per track row (CSS-only, no DOM change) */
+      #ii-table { display: block; }
+      #ii-table thead, #ii-table colgroup { display: none; }
+      #ii-table tbody { display: block; }
+      #ii-table tr:not(.ii-medrow) {
+        display: grid; grid-template-columns: 24px 1fr auto; align-items: start;
+        column-gap: 8px; row-gap: 4px; padding: 9px 12px; border-bottom: 1px solid #e9ecef; }
+      #ii-table tr:not(.ii-medrow) > td { display: block; border: none !important; padding: 0; }
+      #ii-table .ii-pos { grid-column: 1; grid-row: 1; }
+      #ii-table tr > td:nth-child(2) { grid-column: 2; grid-row: 1; }            /* track  */
+      #ii-table .ii-track-dur { grid-column: 3; grid-row: 1; text-align: right; }
+      #ii-table .ii-existing { grid-column: 2 / 4; grid-row: 2; width: auto; }
+      #ii-table tr > td:nth-child(5) { grid-column: 2 / 4; grid-row: 3; }        /* New ISRC */
+      #ii-table tr.ii-medrow { display: block; }
+      #ii-table tr.ii-medrow td { display: block; }
+      /* paint the whole card (not just cells, which would leave striped gaps) */
+      #ii-table tr.ii-row-missing { background: #fff7e8; box-shadow: inset 3px 0 0 #f0ad4e; }
+      #ii-table tr.ii-row-missing > td { background: transparent; box-shadow: none; }
+      /* let the New-ISRC input grow to the card width; candidates span it */
+      .ii-input-box { flex: 1 1 auto; width: auto; min-width: 0; }
+      .ii-inwrap { flex-wrap: wrap; }
+      .ii-cands { width: 100%; }
+
+      /* footer wraps: summary on its own line, action buttons below it */
+      #ii-foot { height: auto; min-height: 52px; flex-wrap: wrap; padding: 8px 12px; gap: 6px; }
+      #ii-foot .ii-summary { flex: 1 1 100%; font-size: 11.5px; }
+      #ii-foot .ii-tbtn { font-size: 11px; padding: 6px 10px; flex: 0 1 auto; }
+      #ii-body { padding-bottom: 108px; }   /* clear the taller wrapped footer */
+
+      /* secondary panels: keep them on-screen */
+      .ii-srcmenu { width: auto !important; left: 3vw !important; right: 3vw !important; max-width: none !important; }
+      #ii-sxpanel { top: 2vh !important; left: 2vw !important; right: 2vw !important;
+        width: auto !important; max-width: none !important; max-height: 92vh !important; }
+    }
   `;
   // @run-at document-start (needed for the Spotify harvester) can fire before
   // <html>/<head> exist; the MB-side editor only needs the DOM, so defer to ready.
