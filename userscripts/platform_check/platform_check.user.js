@@ -459,6 +459,22 @@ logModal.innerHTML = `
   .pc-log-chip { display: inline-block; padding: 3px 9px; margin-right: 4px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; user-select: none; border: 1px solid #444; }
   .pc-log-chip.off { opacity: 0.35; background: transparent !important; color: #AAA !important; }
   ${LOG_SOURCES.map(s => `#mb-finder-log-panel.pc-hide-${s.toLowerCase()} [data-platform="${s.toLowerCase()}"] { display: none; }`).join('\n  ')}
+  /* MOBILE / NARROW VIEWPORTS — both Platform Check modals live on <body>, so
+     these rules are global. The log modal trims its 30px overlay padding and
+     wraps its header (title + Copy on top, source chips below) to use the full
+     width; the setup modal drops its fixed 420px width to fit a phone. */
+  @media (max-width: 640px) {
+    #mb-log-modal-overlay { padding: 8px !important; }
+    #mb-log-modal-card { max-width: 100% !important; height: 92vh !important; }
+    #mb-log-modal-card > div:first-child { flex-wrap: wrap !important; gap: 8px !important; }
+    #mb-log-filters { order: 3; flex-basis: 100% !important; flex-grow: 0 !important; }
+    #mb-modal-copy-btn { margin-left: auto; }
+    .pc-log-chip { margin-bottom: 4px; }
+
+    #mb-provider-modal-card { width: auto !important; left: 8px !important; right: 8px !important;
+      transform: translateY(-50%) !important; max-height: 92vh !important; overflow-y: auto !important;
+      padding: 18px !important; box-sizing: border-box !important; }
+  }
 </style>
 <div id="mb-log-modal-card" style="max-width: 900px; height: 85vh; margin: 0 auto; background: #1E1E1E; color: #FFF; border-radius: 8px; border: 1px solid #444; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
   <div style="padding: 10px 12px; background: #2D2D2D; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
