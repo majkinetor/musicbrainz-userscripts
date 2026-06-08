@@ -1,5 +1,11 @@
 # ISRC Scout Changelog
 
+## [2026.6.8.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.8)
+
+### Features
+
+1. New ISRC source **Volumo** — clean unauthenticated API (no Cloudflare/token); one call returns every track's ISRC. Resolves from a Volumo link only (an MB rel, or the one Platform Check found via barcode) — like the other link-based sources ([#167](https://github.com/majkinetor/musicbrainz-userscripts/issues/167))
+
 ## [2026.6.8](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.8)
 
 ### Features
