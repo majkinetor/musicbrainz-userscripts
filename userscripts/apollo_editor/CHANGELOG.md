@@ -1,16 +1,5 @@
 # Apollo Editor Changelog
 
-## [2026.6.8](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.8)
-
-### Features
-
-1. **"Change: all matching tracks" now applies to *every* artist action**, not just selecting an artist — adding a split, removing/merging, reordering, `⋔` split, credited-as and join-phrase edits all propagate to other tracks that share the same artist credit, mirroring MB's native exact-string behaviour (whole-credit match, linked-artist identity ignored). Switch to "single track" to edit just one ([#158](https://github.com/majkinetor/musicbrainz-userscripts/issues/158))
-
-### Fixes
-
-1. "This relationship has open edits" was invisible in the reformatted External links (the marker icon got clipped by the compact type cell). Now flagged with colour instead of an icon — an amber type label + a left accent bar on the affected URL/relationship row ([#169](https://github.com/majkinetor/musicbrainz-userscripts/issues/169))
-1. No longer shows a random alias (e.g. `"Gold Diggers of 1937" Chorus`) for special-purpose artists like `[unknown]` — the official special-purpose artists (matched by MBID, not by name) carry hundreds of junk aliases and now surface none ([#171](https://github.com/majkinetor/musicbrainz-userscripts/issues/171))
-
 ## [2026.6.7](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.7)
 
 ### Features
