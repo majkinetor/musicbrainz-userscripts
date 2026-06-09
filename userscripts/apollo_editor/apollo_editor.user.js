@@ -1,17 +1,18 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.8.005000
+// @version      2026.6.9.002500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md
 // @match        https://*.musicbrainz.org/release/add*
 // @match        https://*.musicbrainz.org/release/*/edit
+// @match        https://*.musicbrainz.org/release/*/edit_annotation
 // @match        https://*.musicbrainz.org/artist/*
 // @grant        GM_xmlhttpRequest
 // @connect      *
-// @run-at       document-idle
+// @run-at       document-start
 // ==/UserScript==
 
 /*
@@ -67,9 +68,18 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
+
+  // FOUC guard (we run at document-start): on the standalone Edit annotation page, hide the native form until our
+  // editor mounts (and removes #tc-anno-fouc), so the original interface never flashes. Skipped when off.
+  if (/\/release\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/edit_annotation/.test(location.pathname)
+      && SETTINGS.apolloEnabled !== false && SETTINGS.modifyAnnotation !== false) {
+    const s = document.createElement('style'); s.id = 'tc-anno-fouc'; s.textContent = '#content > form{visibility:hidden}';
+    (document.head || document.documentElement).appendChild(s);
+    setTimeout(() => document.getElementById('tc-anno-fouc')?.remove(), 6000);   // safety: never hide forever if the editor fails to mount
+  }
 
   function waitFor(check, { tries = 120, every = 500 } = {}) {
     return new Promise(res => { let n = 0; const t = () => { let v; try { v = check(); } catch (e) {} if (v) return res(v); if (++n >= tries) return res(null); setTimeout(t, every); }; t(); });
@@ -808,6 +818,7 @@
         <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
         <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
         <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
+        <label title="Edit the annotation as Markdown with a live preview, in the release editor's Additional information and on the standalone Edit annotation page."><input type="checkbox" id="tc-s-modanno"> <span>Modify annotations with Markdown</span></label>
         <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
         <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
       </div>
@@ -853,11 +864,12 @@
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     gridcols.onchange = () => { SETTINGS.gridCols = gridcols.checked; saveSettings(); applyViewClasses(); };
     gridrows.onchange = () => { SETTINGS.gridRows = gridrows.checked; saveSettings(); applyViewClasses(); };
-    const replri = s.querySelector('#tc-s-replri'), repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), cnav = s.querySelector('#tc-s-compactnav'), zen = s.querySelector('#tc-s-zen');
-    replri.checked = SETTINGS.replaceReleaseInfo !== false; repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; cnav.checked = SETTINGS.compactNav !== false; zen.checked = !!SETTINGS.zenMode;
+    const replri = s.querySelector('#tc-s-replri'), repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), modanno = s.querySelector('#tc-s-modanno'), cnav = s.querySelector('#tc-s-compactnav'), zen = s.querySelector('#tc-s-zen');
+    replri.checked = SETTINGS.replaceReleaseInfo !== false; repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; modanno.checked = SETTINGS.modifyAnnotation !== false; cnav.checked = SETTINGS.compactNav !== false; zen.checked = !!SETTINGS.zenMode;
     replri.onchange = () => { SETTINGS.replaceReleaseInfo = replri.checked; saveSettings(); applyView(); };
     repltl.onchange = () => { SETTINGS.replaceTracklist = repltl.checked; saveSettings(); applyView(); };
     replrec.onchange = () => { SETTINGS.replaceRecordings = replrec.checked; saveSettings(); applyView(); };
+    modanno.onchange = () => { SETTINGS.modifyAnnotation = modanno.checked; saveSettings(); applyView(); applyAnnotationPage(); };
     cnav.onchange = () => { SETTINGS.compactNav = cnav.checked; saveSettings(); applyNav(); applyZen(); };
     zen.onchange = () => { SETTINGS.zenMode = zen.checked; saveSettings(); applyZen(); };
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
@@ -1872,7 +1884,7 @@
     const lbl = document.createElement('span'); lbl.className = 'tc-launch-lbl'; lbl.title = 'Toggle Apollo / the original editor for ALL tabs — stays this way (across pages) until you switch back';
     lbl.onclick = () => {   // GLOBAL toggle — flips Apollo for every tab/feature and persists across pages
       SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
-      applyView(); applyNav();
+      applyView(); applyNav(); applyAnnotationPage();
     };
     const gear = document.createElement('span'); gear.className = 'tc-launch-gear'; gear.textContent = '⚙'; gear.title = 'Apollo Editor settings';
     gear.onclick = () => openSettings(gear);   // the one settings entry point — gear removed from the toolbars
@@ -3019,7 +3031,7 @@
     if (!name) return;
     const artist = acLinks(u(rel.artistCredit)) || '';
     // live-update: rebuild only when the title or artist actually changed (not every tick) (#141)
-    const sig = name + '' + artist;
+    const sig = name + '\x01' + artist;
     if (el.dataset.sig === sig) return;
     el.dataset.sig = sig;
     const album = gid ? '<a href="' + ORIGIN + '/release/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
@@ -3301,7 +3313,113 @@
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead .favicon{filter:grayscale(1);opacity:.45}
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url{text-decoration:line-through;opacity:.55}
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url::after{content:" ✖ " attr(data-tc-deadcode);color:#c0392b;font-size:11px;text-decoration:none;opacity:.9}
-    body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-ok a.url::after{content:" ✓";color:#2c7a45;font-size:11px;opacity:.7}`;
+    body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-ok a.url::after{content:" ✓";color:#2c7a45;font-size:11px;opacity:.7}
+    /* annotation editor: a bordered box wrapping the toolbar + (bigger) textarea + in-place preview */
+    body.tc-ri-on #tc-anno-wrap{border:1px solid #d6cdec;border-radius:7px;background:#fff;overflow:hidden;box-sizing:border-box}
+    #tc-anno-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 8px;background:#f6f3fc;border-bottom:1px solid #e7defa}
+    #tc-anno-bar button{font:12px Arial;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid #d6cdec;border-radius:6px;background:#fff;color:#5a3e94;cursor:pointer}
+    #tc-anno-bar button:hover{background:#ece5f8;border-color:#b9a4e0}
+    #tc-anno-bar button:disabled{opacity:.6;cursor:default}
+    #tc-anno-bar button.tc-anno-icon{padding:4px 8px;font-size:13px;line-height:1;font-weight:700}
+    #tc-anno-bar .tc-mk-ico{width:22px;height:14px;display:block}
+    #tc-anno-bar .tc-mk-mb{width:17px;height:17px;border-radius:3px}
+    #tc-anno-bar .tc-mk-sq{width:15px;height:15px}
+    /* maximize: the editor fills the viewport over a dimmed backdrop (Esc or the button restores it) */
+    body.tc-anno-max-open{overflow:hidden}
+    body.tc-anno-max-open::before{content:'';position:fixed;inset:0;background:rgba(30,20,55,.42);z-index:10000}
+    body.tc-ri-on #tc-anno-wrap.tc-anno-max{position:fixed;inset:14px;z-index:10001;display:flex;flex-direction:column;max-width:none;box-shadow:0 14px 50px rgba(35,20,70,.45)}
+    #tc-anno-wrap.tc-anno-max #tc-anno-body{flex:1 1 auto;min-height:0}
+    body.tc-ri-on #tc-anno-wrap.tc-anno-max textarea,#tc-anno-wrap.tc-anno-max #tc-anno-preview{min-height:0;height:auto}
+    #tc-anno-wrap.tc-anno-max #tc-anno-history{flex:1 1 auto;min-height:0;max-height:none}
+    #tc-anno-bar #tc-anno-help{width:25px;justify-content:center;color:#7a5fc0}
+    #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
+    #tc-anno-bar.tc-anno-hist-on #tc-anno-history-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
+    #tc-anno-bar.tc-anno-hist-on button:not(#tc-anno-history-btn):not(#tc-anno-max){opacity:.4;pointer-events:none}   /* History active → only History + maximize stay usable */
+    #tc-anno-status{font:italic 11px Arial;font-weight:normal;color:#8a7bb8;letter-spacing:0;text-transform:none}   /* shown next to the Annotation: label */
+    /* three toolbar groups: [Preview Clear]  [markup ?]      [History] (the 1:3 spacers place markup/? left-of-centre) */
+    #tc-anno-bar .tc-anno-sp1{flex:1 1 0;min-width:14px}
+    #tc-anno-bar .tc-anno-sp2{flex:3 1 0;min-width:14px}
+    /* editor body: the active textarea on the left; the live preview splits in on the right when toggled */
+    #tc-anno-body{display:flex;align-items:stretch;min-height:240px}
+    #tc-anno-edit{flex:1 1 0;min-width:0;display:flex;flex-direction:column}
+    body.tc-ri-on #tc-anno-wrap textarea{display:block;width:100%!important;max-width:none!important;min-height:240px;flex:1 1 auto;border:none!important;border-radius:0;padding:9px 11px;resize:vertical;box-shadow:none;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.55;tab-size:4}
+    /* standalone Edit annotation page: Changelog + Annotation rows stacked full-width with the label above */
+    body.tc-anno-page #content > form > .row:not(.no-label){display:block;margin:0 0 16px;max-width:1100px}
+    body.tc-anno-page #content > form > .row:not(.no-label) > label{display:block;width:auto;text-align:left;float:none;font:600 12px Arial;letter-spacing:.02em;color:#6a6a6a;margin:0 0 5px}
+    body.tc-anno-page #content > form > .row > input[type=text]{width:100%;max-width:680px;box-sizing:border-box;padding:5px 8px;border:1px solid #d6cdec;border-radius:5px}
+    body.tc-anno-page #content > form > fieldset.editnote{max-width:1100px}
+    /* fill the remaining viewport height (height is set per-resize in JS) */
+    body.tc-anno-page #tc-anno-wrap{display:flex;flex-direction:column}
+    body.tc-anno-page #tc-anno-wrap > #tc-anno-body,body.tc-anno-page #tc-anno-wrap > #tc-anno-history{flex:1 1 auto;min-height:0;max-height:none}
+    body.tc-anno-page #tc-anno-wrap textarea,body.tc-anno-page #tc-anno-wrap #tc-anno-preview{min-height:0}
+    /* Changelog row becomes [label above] then [input  +  Enter edit] side by side */
+    body.tc-anno-page #content > form > .row.tc-cl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+    body.tc-anno-page #content > form > .row.tc-cl-row > label{flex:1 1 100%;margin-bottom:4px}
+    body.tc-anno-page #content > form > .row.tc-cl-row > input[type=text]{flex:1 1 auto;width:auto;max-width:600px}
+    body.tc-anno-page #tc-anno-submit{flex:0 0 auto;font:600 13px Arial;padding:7px 18px;border:1px solid #2c7a45;border-radius:6px;background:#3aa55f;color:#fff;cursor:pointer}
+    body.tc-anno-page #tc-anno-submit:hover{background:#2c8a4d}
+    #tc-anno-preview{flex:1 1 0;min-width:0;min-height:240px;padding:10px 13px;background:#fff;border-left:1px solid #e7defa;font-size:13px;line-height:1.5;color:#333;overflow:auto;word-break:break-word;box-sizing:border-box}
+    #tc-anno-preview .tc-anno-empty{color:#999;font-style:italic}
+    #tc-anno-preview p{margin:0 0 8px}
+    #tc-anno-preview .tc-anno-h{margin:10px 0 6px;color:#3d2470;font-weight:700;line-height:1.25}
+    #tc-anno-preview h1.tc-anno-h{font-size:18px}
+    #tc-anno-preview h2.tc-anno-h{font-size:16px}
+    #tc-anno-preview h3.tc-anno-h,#tc-anno-preview h4.tc-anno-h,#tc-anno-preview h5.tc-anno-h,#tc-anno-preview h6.tc-anno-h{font-size:14px}
+    #tc-anno-preview .tc-anno-ul{margin:0 0 8px;padding-left:22px}
+    #tc-anno-preview .tc-anno-pre{margin:0 0 8px;padding:8px 10px;background:#f0ecf8;border-radius:4px;font-family:Consolas,monospace;font-size:12px;white-space:pre-wrap}
+    #tc-anno-preview hr{border:none;border-top:1px solid #cdbce8;margin:10px 0}
+    #tc-anno-preview a{color:#5f3ec0;text-decoration:none}
+    #tc-anno-preview a:hover{text-decoration:underline}
+    /* syntax help popover (hover the ? button) */
+    #tc-anno-help-pop{position:fixed;z-index:10000;display:none;width:370px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow-y:auto;background:#fff;border:1px solid #d6cdec;border-radius:8px;box-shadow:0 8px 26px rgba(60,40,110,.22);padding:10px 13px;font:12px Arial;color:#444;line-height:1.5}
+    #tc-anno-help-pop.on{display:block}
+    #tc-anno-help-pop table{border-collapse:collapse;margin:6px 0;width:100%}
+    #tc-anno-help-pop td{padding:2px 7px 2px 0;vertical-align:top}
+    #tc-anno-help-pop td:last-child{color:#777}
+    #tc-anno-help-pop code{background:#f0ecf8;border-radius:3px;padding:0 4px;font-family:Consolas,monospace;color:#5a3e94}
+    #tc-anno-help-pop .tc-help-dim{color:#999}
+    /* Disambiguation + Annotation span the full column with their label stacked ABOVE (not the 150px label
+       column). :has targets exactly those two rows, so the relocated External-links table is untouched. */
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment),
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation){display:block;width:100%;margin:0 0 14px}
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment) > td,
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td{display:block;width:100%!important;padding:0}
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment) > td:first-child,
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td:first-child{text-align:left!important;padding:0 0 4px}
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment) > td:first-child label,
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td:first-child label{display:block;width:auto;float:none;text-align:left!important;font:600 12px Arial;letter-spacing:.02em;color:#6a6a6a}
+    body.tc-ri-on #information fieldset.information input#comment{width:100%!important;max-width:none!important;box-sizing:border-box}
+    /* annotation History: the selected version rendered on the LEFT, user cards on the RIGHT */
+    #tc-anno-history{display:flex;min-height:240px;max-height:520px;overflow:hidden;box-sizing:border-box}
+    #tc-anno-history .tc-hist-view{flex:1 1 auto;order:1;overflow:auto;padding:11px 14px;font-size:13px;line-height:1.5;color:#333;word-break:break-word}
+    #tc-anno-history .tc-hist-list{flex:0 0 250px;order:2;overflow-y:auto;overflow-x:hidden;background:#faf8ff;border-left:1px solid #e7defa}
+    #tc-anno-history .tc-hist-card{display:flex;gap:9px;align-items:flex-start;width:100%;box-sizing:border-box;text-align:left;border:none;border-bottom:1px solid #efeafb;background:none;cursor:pointer;padding:9px 11px}
+    #tc-anno-history .tc-hist-card:hover{background:#f0ebfb}
+    #tc-anno-history .tc-hist-card.on{background:#ece5f8;box-shadow:inset -3px 0 0 #5f3ec0}
+    #tc-anno-history .tc-hist-av{width:30px;height:30px;border-radius:50%;flex:0 0 auto;object-fit:cover;background:#e7defa;border:1px solid #ddd}
+    #tc-anno-history .tc-hist-meta{display:flex;flex-direction:column;min-width:0;flex:1 1 auto;font:12px Arial}
+    #tc-anno-history .tc-hist-editor{font-weight:600;color:#3d2470}
+    #tc-anno-history .tc-hist-date{color:#777;font-size:11px}
+    #tc-anno-history .tc-hist-cl{color:#8a8a8a;font-style:italic;font-size:11px;margin-top:2px}
+    #tc-anno-history .tc-hist-cur{color:#2c7a45;font-style:normal}
+    #tc-anno-history .tc-hist-clmsg{color:#5a4a78;font-style:italic;font-size:11px;margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #tc-anno-history .tc-hist-revert{align-self:center;flex:0 0 auto;width:26px;height:26px;border:1px solid #d6cdec;border-radius:5px;background:#fff;color:#5a3e94;font-size:15px;line-height:1;cursor:pointer;opacity:0;transition:opacity .12s}
+    #tc-anno-history .tc-hist-card.on .tc-hist-revert,#tc-anno-history .tc-hist-card:hover .tc-hist-revert{opacity:1}   /* visible on the selected card, or any card on hover */
+    #tc-anno-history .tc-hist-revert:hover{background:#ece5f8;border-color:#b9a4e0}
+    #tc-anno-history .tc-hist-revert:disabled{opacity:.5;cursor:default}
+    #tc-anno-history .tc-hist-msg{color:#999;font-style:italic;font-size:12px;padding:6px 2px}
+    #tc-anno-history .tc-hist-bar{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap}
+    #tc-anno-history .tc-hist-use{font:12px Arial;padding:4px 11px;border:1px solid #b9a4e0;border-radius:6px;background:#f6f3fc;color:#5a3e94;cursor:pointer}
+    #tc-anno-history .tc-hist-use:hover{background:#ece5f8}
+    #tc-anno-history .tc-hist-vmeta{font:11px Arial;color:#888}
+    #tc-anno-history .tc-anno-rendered h1{font-size:18px;margin:8px 0 6px;color:#3d2470}
+    #tc-anno-history .tc-anno-rendered h2{font-size:16px;margin:8px 0 6px;color:#3d2470}
+    #tc-anno-history .tc-anno-rendered h3{font-size:14px;margin:8px 0 6px;color:#3d2470}
+    #tc-anno-history .tc-anno-rendered p{margin:0 0 8px}
+    #tc-anno-history .tc-anno-rendered ul{margin:0 0 8px;padding-left:22px}
+    #tc-anno-history .tc-anno-rendered a{color:#5f3ec0;text-decoration:none}
+    #tc-anno-history .tc-anno-rendered a:hover{text-decoration:underline}
+    #tc-anno-history .tc-anno-rendered .annotation-details,#tc-anno-history .tc-anno-rendered h2.annotation{display:none}`;
     const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
   }
   // move the External-links fieldset into a dedicated right column (or back home when Apollo is off).
@@ -3420,6 +3538,507 @@
     }
     bar.style.display = linkRows().length ? '' : 'none';   // no links → no button
   }
+
+  // ── Annotation editor: a small toolbar above the release annotation textarea, with a live
+  //    Preview (MB markup → HTML), Clear, and — inspired by kellnerd's annotationConverter — a
+  //    Markdown→MB converter and a WS2 "resolve names" action that labels bare MB entity URLs. ──
+  const ANNO_NAME_FIELD = { artist:'name', label:'name', area:'name', place:'name', instrument:'name',
+    series:'name', event:'name', genre:'name', 'release-group':'title', release:'title', recording:'title', work:'title' };
+  // release-group MUST precede release in the alternation (else "release" matches the prefix of "release-group/…")
+  const ANNO_ENTITY_RE = /https?:\/\/(?:beta\.)?musicbrainz\.org\/(artist|label|area|place|instrument|series|event|genre|release-group|release|recording|work)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  const _annoName = new Map();   // entity url → resolved display name (shared by Resolve-names + Preview)
+  const _annoEsc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // build nested <ul>/<ol> from a flat list of {level>=1, html, ordered} (MB nests by 4-space indentation;
+  // "a." marks an auto-numbered list, "*" a bullet list)
+  function bulletsToHtml(items) {
+    let out = '', depth = 0, openLi = false; const stack = [];
+    const open = ord => { const t = ord ? 'ol' : 'ul', c = ord ? 'tc-anno-ol' : 'tc-anno-ul'; out += `<${t} class="${c}">`; stack.push(t); };
+    const close = () => { out += `</${stack.pop()}>`; };
+    for (const it of items) {
+      const lvl = Math.max(1, it.level);
+      if (lvl > depth) { while (depth < lvl) { open(it.ordered); depth++; openLi = false; } }
+      else { if (openLi) { out += '</li>'; openLi = false; } while (depth > lvl) { close(); depth--; if (depth > 0) out += '</li>'; } }
+      out += '<li>' + it.html; openLi = true;
+    }
+    if (openLi) out += '</li>';
+    while (depth > 0) { close(); depth--; if (depth > 0) out += '</li>'; }
+    return out;
+  }
+  // MB annotation markup → HTML, replicating the documented subset (musicbrainz.org/doc/Annotation):
+  // ''italic'' '''bold''', = h1 = .. === h3 ===, [url] / [url|text] / bare-url links, ---- rule,
+  // (4n)-space "*" nested bullets, 8-space code, &#91;/&#93; literal brackets. Pure + sync (no network).
+  function annoToHtml(src) {
+    if (!src || !src.trim()) return '<span class="tc-anno-empty">(nothing to preview)</span>';
+    src = String(src).replace(/&#91;/g, '\x01').replace(/&#93;/g, '\x02');   // protect literal brackets
+    const inline = txt => {
+      let s = _annoEsc(txt);
+      const links = [];                                 // pull links out first so '' / ''' never touch a URL
+      const stash = html => '\x03' + (links.push(html) - 1) + '\x04';
+      // only http(s)/ftp are linkified (as MB does) — anything else (e.g. javascript:) renders as plain text
+      const anchor = (url, label) => { url = url.trim(); if (!/^(?:https?|ftp):\/\//i.test(url)) return null; const name = _annoName.get(url); return stash(`<a href="${_annoEsc(url)}" target="_blank" rel="noopener">${label != null ? label : (name ? _annoEsc(name) : _annoEsc(url))}</a>`); };
+      s = s.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => anchor(url, text ? _annoEsc(text) : null) ?? _annoEsc(_m));
+      s = s.replace(/\[([^\]|]+)\]/g, (_m, url) => anchor(url, null) ?? _annoEsc(_m));
+      s = s.replace(/(^|[\s(])((?:https?|ftp):\/\/[^\s<>]+[^\s<>.,;:!?)])/g, (_m, pre, url) => pre + (anchor(url, null) ?? _annoEsc(url)));
+      s = s.replace(/'''''(.+?)'''''/g, '<b><i>$1</i></b>').replace(/'''(.+?)'''/g, '<b>$1</b>').replace(/''(.+?)''/g, '<i>$1</i>');
+      s = s.replace(/\x03(\d+)\x04/g, (_m, i) => links[+i]);   // restore links
+      return s;
+    };
+    const lines = src.split(/\r?\n/), out = []; let i = 0;
+    while (i < lines.length) {
+      const ln = lines[i];
+      let m;
+      if (/^\s*$/.test(ln)) { i++; continue; }
+      if (/^-{4,}\s*$/.test(ln)) { out.push('<hr>'); i++; continue; }
+      if ((m = ln.match(/^(={1,6})\s*(.*?)\s*=*\s*$/)) && m[2]) { const n = Math.min(m[1].length, 6); out.push(`<h${n} class="tc-anno-h">${inline(m[2])}</h${n}>`); i++; continue; }
+      // lists BEFORE code: a "(4n)-space * " line is a level-n bullet, "(4n)-space a. " an auto-numbered item
+      // (MB nests by indentation); only 8-space lines that are NOT a list item are code.
+      if (/^ {4,}(?:\*|[a-z]\.)[ \t]+/i.test(ln)) { const items = []; let bm; while (i < lines.length && (bm = lines[i].match(/^( +)(\*|[a-z]\.)[ \t]+(.*)$/i))) { items.push({ level: Math.max(1, Math.floor(bm[1].length / 4)), ordered: bm[2] !== '*', html: inline(bm[3]) }); i++; } out.push(bulletsToHtml(items)); continue; }
+      if (/^ {8}/.test(ln)) { const buf = []; while (i < lines.length && /^ {8}/.test(lines[i]) && !/^ {4,}(?:\*|[a-z]\.)[ \t]/i.test(lines[i])) { buf.push(_annoEsc(lines[i].slice(8))); i++; } out.push('<pre class="tc-anno-pre">' + buf.join('\n') + '</pre>'); continue; }
+      const buf = [];   // a paragraph: consume the CURRENT line first (do-while → i ALWAYS advances, so an
+      do { buf.push(inline(lines[i])); i++; }                              // empty-title "=  =" heading can't spin forever),
+      while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^-{4,}\s*$/.test(lines[i]) && !/^={1,6}\s/.test(lines[i]) && !/^ {4,}(?:\*|[a-z]\.)[ \t]+/i.test(lines[i]) && !/^ {8}/.test(lines[i]));   // then following non-blank, non-block lines
+      out.push('<p>' + buf.join('<br>') + '</p>');
+    }
+    return out.join('').replace(/\x01/g, '[').replace(/\x02/g, ']');
+  }
+
+  // Markdown → MB annotation markup (kellnerd-inspired). Pure + sync.
+  function mdToAnno(src) {
+    if (!src) return src;
+    const urls = [], blocks = [];                      // protect URLs (* / _) and code blocks from the inline passes
+    const stashU = u => '\x05' + (urls.push(u) - 1) + '\x06';
+    const stashB = b => '\x07' + (blocks.push(b) - 1) + '\x08';
+    src = src.replace(/^```[^\n]*\n([\s\S]*?)\n```[ \t]*$/gm, (_m, code) => stashB(code.split('\n').map(l => '        ' + l).join('\n')));   // ```fenced``` → MB 8-space block
+    src = src.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text, url) => `[${stashU(url)}|${text}]`);   // [text](url) → [url|text]
+    src = src.replace(/(^|[\s(])((?:https?|ftp):\/\/[^\s<>]+)/g, (_m, pre, url) => pre + stashU(url));  // bare urls
+    src = src.replace(/\[([^\[\]]*)\]/g, (m, inner) => inner.includes('\x05') ? m : '&#91;' + inner + '&#93;');   // a non-link [x] → encoded brackets, so MB doesn't read it as a (broken) link
+    src = src.replace(/^(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$/gm, (_m, h, t) => { const n = Math.min(h.length, 3); const e = '='.repeat(n); return `${e} ${t} ${e}`; });
+    src = src.replace(/(\*\*|__)(.+?)\1/g, "'''$2'''");        // **bold** / __bold__
+    src = src.replace(/(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])/g, "''$1''");   // *italic*
+    src = src.replace(/(?<![_\w])_(?!\s)(.+?)(?<!\s)_(?![_\w])/g, "''$1''");     // _italic_
+    src = src.replace(/^[ \t]*(?:-{3,}|\*{3,}|_{3,})[ \t]*$/gm, '----');   // hr (before list rules, so --- isn't eaten)
+    src = src.replace(/^([ \t]*)\d+\.[ \t]+/gm, (_m, ind) => { const sp = ind.replace(/\t/g, '  ').length; return ' '.repeat((Math.floor(sp / 2) + 1) * 4) + 'a. '; });   // markdown numbered list → MB "a." (MB auto-numbers a., not 1.)
+    src = src.replace(/^([ \t]*)[-*+][ \t]+/gm, (_m, ind) => { const sp = ind.replace(/\t/g, '  ').length; return ' '.repeat((Math.floor(sp / 2) + 1) * 4) + '* '; });   // markdown bullet (2-space-per-level indent) → MB (4n)-space bullet
+    src = src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
+    return src.replace(/\x05(\d+)\x06/g, (_m, i) => urls[+i]);
+  }
+
+  // MB annotation markup → Markdown (reverse of mdToAnno; powers the Markdown toggle's "back" direction)
+  function annoToMd(src) {
+    if (!src) return src;
+    const blocks = [];                                 // pull MB code blocks out first so '''/'' inside them aren't touched
+    const stashB = b => '\x07' + (blocks.push(b) - 1) + '\x08';
+    src = src.replace(/(?:^ {8}(?! *(?:\*|[a-z]\.)[ \t]).*(?:\n|$))+/gim, m => { const trail = m.endsWith('\n') ? '\n' : ''; const code = m.replace(/\n$/, '').split('\n').map(l => l.slice(8)).join('\n'); return stashB('```\n' + code + '\n```') + trail; });   // MB 8-space block (not a nested list item) → ```fenced```
+    src = src.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => text ? `[${text}](${url})` : url);   // [url|text] → [text](url); [url|] (empty label) → bare url
+    src = src.replace(/\[((?:https?|ftp):\/\/[^\]|]+)\]/g, (_m, url) => url);                        // [url] → bare url
+    src = src.replace(/'''''(.+?)'''''/g, '***$1***').replace(/'''(.+?)'''/g, '**$1**').replace(/''(.+?)''/g, '*$1*');
+    src = src.replace(/^(={1,6})[ \t]*(.*?)[ \t]*=*[ \t]*$/gm, (_m, e, t) => '#'.repeat(e.length) + ' ' + t);  // = H = → # H
+    src = src.replace(/^( {4,})[a-z]\.[ \t]+/gim, (_m, ind) => '  '.repeat(Math.max(0, Math.floor(ind.length / 4) - 1)) + '1. ');   // MB "a." auto-numbered → markdown "1." numbered list
+    src = src.replace(/^( {4,})\*[ \t]+/gm, (_m, ind) => '  '.repeat(Math.max(0, Math.floor(ind.length / 4) - 1)) + '- ');   // MB (4n)-space bullet → markdown (2-space-per-level) bullet
+    src = src.replace(/^-{4,}[ \t]*$/gm, '---');                                                      // ---- → ---
+    src = src.replace(/&#91;/g, '[').replace(/&#93;/g, ']');                                          // decode literal brackets back to plain [ ] (literal in Markdown)
+    return src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
+  }
+
+  function annoReplaceAsync(str, re, fn) {   // async String.replace (kellnerd's replaceAsync)
+    const parts = []; let last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(str)) !== null) { parts.push(str.slice(last, m.index), fn(...m, m.index, str)); last = m.index + m[0].length; if (!re.global) break; }
+    parts.push(str.slice(last));
+    return Promise.all(parts).then(p => p.join(''));
+  }
+  async function annoLookupName(type, mbid, full) {   // WS2 entity name, cached
+    type = type.toLowerCase();
+    if (_annoName.has(full)) return _annoName.get(full);
+    try {
+      const r = await fetch(`${location.origin}/ws/2/${type}/${mbid}?fmt=json`, { headers: { Accept: 'application/json' } });
+      if (!r.ok) return null;
+      const j = await r.json(); const name = j[ANNO_NAME_FIELD[type] || 'name'];
+      if (name) { _annoName.set(full, name); return name; }
+      return null;
+    } catch { return null; }
+  }
+  // is this URL an MB entity URL? (tolerates a trailing path like /release/<mbid>/annotations) → {type,mbid}
+  function annoEntity(url) { const m = ANNO_ENTITY_RE.exec(url); ANNO_ENTITY_RE.lastIndex = 0; return m ? { type: m[1].toLowerCase(), mbid: m[2] } : null; }
+  // add the entity name to every MB entity link that doesn't already have one — handles MB [url] / [url|]
+  // and Markdown []()/bare URLs, in either editing mode. Links that already carry a label are left alone.
+  // Captures the URL first, THEN tests it for an entity, so trailing path segments don't break the match.
+  async function annoResolveNames(src, md) {   // md=true → emit Markdown links [Name](url); else MB links [url|Name]
+    const lbl = async (url) => { const e = annoEntity(url); return e ? await annoLookupName(e.type, e.mbid, url) : null; };
+    if (!md) src = await annoReplaceAsync(src, /\[([^\]|]+)\|?\]/g, async (m, url) => { url = url.trim(); const n = await lbl(url); return n ? `[${url}|${n}]` : m; });   // MB [url] / [url|]
+    src = await annoReplaceAsync(src, /\[\]\(([^)\s]+)\)/g, async (m, url) => { const n = await lbl(url); return n ? `[${n}](${url})` : m; });   // Markdown [](url)
+    // a bare URL (not already inside a [..] or (..) link) → named, in the active markup
+    src = await annoReplaceAsync(src, /(?<![\[(|])((?:https?|ftp):\/\/[^\s<>\]]+)/g, async (m, url) => { const n = await lbl(url); return n ? (md ? `[${n}](${url})` : `[${url}|${n}]`) : m; });
+    return src;
+  }
+
+  // annotation History: parse the /annotations page into a version list, and pull a single version's
+  // rendered annotation HTML from its "View this version" page (musicbrainz.org, same-origin fetch).
+  async function annoFetchHistory(mbid) {
+    const r = await fetch(`${location.origin}/release/${mbid}/annotations`, { credentials: 'same-origin' });
+    if (!r.ok) throw new Error('history ' + r.status);
+    const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+    const out = [];
+    doc.querySelectorAll('table tr').forEach(tr => {
+      const view = [...tr.querySelectorAll('a')].find(a => /this version/i.test(a.textContent || ''));
+      if (!view) return;
+      const ua = tr.querySelector('a[href^="/user/"]');
+      const editor = ua?.textContent.trim() || '';
+      const avatar = ua?.querySelector('img')?.getAttribute('src') || '';
+      const date = [...tr.querySelectorAll('td')].map(c => c.textContent.trim()).find(t => /\d{4}-\d{2}-\d{2}/.test(t)) || '';
+      const cl = (view.parentElement.textContent.match(/\(([^)]*)\)/) || [, ''])[1];
+      out.push({ editor, avatar, date, changelog: /no changelog/i.test(cl) ? '' : cl, url: view.getAttribute('href') });
+    });
+    return out;
+  }
+  async function annoFetchVersion(url) {
+    const r = await fetch(new URL(url, location.origin).href, { credentials: 'same-origin' });
+    if (!r.ok) throw new Error('version ' + r.status);
+    const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+    const body = doc.querySelector('.annotation-body');
+    return body ? body.innerHTML : '<em>(this version is empty)</em>';
+  }
+  // reconstruct MB markup from a rendered annotation's HTML (MB exposes no raw text per revision) — used to
+  // load a past version back into the editor. Lossy on exotic markup, faithful for the common elements.
+  function annoHtmlToMb(html) {
+    if (/this annotation is empty/i.test(html)) return '';
+    const root = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html').body.firstChild;
+    const inline = node => {
+      let s = '';
+      node.childNodes.forEach(n => {
+        if (n.nodeType === 3) s += n.textContent;
+        else if (n.nodeType === 1) {
+          const t = n.tagName.toLowerCase(), inner = inline(n);
+          if (t === 'strong' || t === 'b') s += "'''" + inner + "'''";
+          else if (t === 'em' || t === 'i') s += "''" + inner + "''";
+          else if (t === 'a') { const href = n.getAttribute('href') || ''; s += href ? `[${/^https?:\/\//i.test(href) ? href : location.origin + href}|${inner}]` : inner; }
+          else if (t === 'br') s += '\n';
+          else s += inner;
+        }
+      });
+      return s;
+    };
+    const lines = [];
+    const listWalk = (listNode, ordered, level) => {
+      [...listNode.children].forEach(li => {
+        if (li.tagName.toLowerCase() !== 'li') return;
+        const clone = li.cloneNode(true); clone.querySelectorAll(':scope > ul, :scope > ol').forEach(s => s.remove());
+        lines.push(' '.repeat(level * 4) + (ordered ? 'a. ' : '* ') + inline(clone).trim());
+        [...li.children].forEach(c => { const ct = c.tagName.toLowerCase(); if (ct === 'ul' || ct === 'ol') listWalk(c, ct === 'ol', level + 1); });
+      });
+    };
+    const walk = node => node.childNodes.forEach(n => {
+      if (n.nodeType === 3) { if (n.textContent.trim()) lines.push(n.textContent.trim(), ''); return; }
+      if (n.nodeType !== 1) return;
+      const t = n.tagName.toLowerCase();
+      if (/^h[1-6]$/.test(t)) { const e = '='.repeat(Math.min(+t[1], 3)); lines.push(`${e} ${inline(n).trim()} ${e}`, ''); }
+      else if (t === 'p') lines.push(inline(n).replace(/\n+$/, '').trim(), '');
+      else if (t === 'ul' || t === 'ol') { listWalk(n, t === 'ol', 1); lines.push(''); }
+      else if (t === 'pre') { inline(n).replace(/\n$/, '').split('\n').forEach(l => lines.push('        ' + l)); lines.push(''); }
+      else if (t === 'hr') lines.push('----', '');
+      else if (t === 'div' || t === 'blockquote') walk(n);
+      else { const x = inline(n).trim(); if (x) lines.push(x, ''); }
+    });
+    walk(root);
+    return lines.join('\n').replace(/\n{3,}/g, '\n\n').replace(/\n+$/, '');
+  }
+
+  // write into the annotation textarea so MB's model (knockout 'change' / React 'input') picks it up + dirties
+  function annoSet(ta, value) {
+    const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+    set.call(ta, value);
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  // Enter on a list line continues it (same indent+marker — bullet "*"/"-" or numbered "a."/"1."); an empty
+  // item ends the list. Pure → testable.
+  function annoContinueBullet(value, pos) {
+    const lineStart = value.lastIndexOf('\n', pos - 1) + 1;
+    let lineEnd = value.indexOf('\n', pos); if (lineEnd < 0) lineEnd = value.length;
+    const m = value.slice(lineStart, lineEnd).match(/^([ \t]*)([*+-]|\d+\.|[a-z]\.)([ \t]+)(.*)$/i);
+    if (!m) return null;
+    if (m[4].trim() === '') return { value: value.slice(0, lineStart) + value.slice(lineEnd), caret: lineStart };   // empty item → end list
+    const prefix = m[1] + m[2] + m[3];
+    return { value: value.slice(0, pos) + '\n' + prefix + value.slice(pos), caret: pos + 1 + prefix.length };
+  }
+  // Ctrl/Cmd+B/I: wrap the selection with `marker`, or — with no selection — surround the word under the cursor. Pure.
+  function annoWrap(value, selStart, selEnd, marker) {
+    let a = selStart, b = selEnd;
+    if (a === b) { while (a > 0 && /\w/.test(value[a - 1])) a--; while (b < value.length && /\w/.test(value[b])) b++; }
+    return { value: value.slice(0, a) + marker + value.slice(a, b) + marker + value.slice(b), selStart: a + marker.length, selEnd: b + marker.length };
+  }
+  // Tab on a selection cycles the lines through plain → bullet → numbered → bullet…; Shift+Tab (strip=true)
+  // removes any list marker. Pure → testable.
+  function annoListSelection(value, selStart, selEnd, raw, strip) {
+    let s = value.lastIndexOf('\n', selStart - 1) + 1;
+    let e = selEnd; if (e > s && value[e - 1] === '\n') e--;
+    let lineEnd = value.indexOf('\n', e); if (lineEnd < 0) lineEnd = value.length;
+    const block = value.slice(s, lineEnd);
+    const first = (block.split('\n').find(l => l.trim() !== '') || '').match(/^[ \t]*([-*+]|\d+\.|[a-z]\.)/i);
+    const ordered = !!(first && /[-*+]/.test(first[1]));   // currently bullets → switch to numbered; else → bullets
+    const repl = block.split('\n').map(ln => {
+      if (ln.trim() === '') return ln;
+      if (strip) return ln.replace(/^[ \t]*(?:[-*+]|\d+\.|[a-z]\.)[ \t]+/i, '');   // remove the list marker, keep the text
+      const txt = ln.replace(/^[ \t]*(?:[-*+]|\d+\.|[a-z]\.)?[ \t]*/i, '');   // drop leading ws + any existing marker
+      return raw ? (ordered ? '    a. ' : '    * ') + txt : (ordered ? '1. ' : '- ') + txt;
+    }).join('\n');
+    return { value: value.slice(0, s) + repl + value.slice(lineEnd), selStart: s, selEnd: s + repl.length };
+  }
+
+  // Wrap #annotation in a bordered editor box (toolbar + a Markdown editing surface + the raw MB field + an
+  // in-place preview). Markdown is the DEFAULT surface; the real #annotation field always holds MB markup (so
+  // saving is always correct) — Markdown edits are converted into it live. Mounted ONCE per #annotation node
+  // (the 500ms applyReleaseInfo poll must not rebuild it — that was the flicker).
+  const ANNO_MD_LOGO = '<svg class="tc-mk-ico" viewBox="0 0 208 128" aria-hidden="true"><rect width="198" height="118" x="5" y="5" rx="10" fill="none" stroke="currentColor" stroke-width="10"/><path fill="currentColor" d="M30 98V30h20l20 25 20-25h20v68H110V59L90 84 70 59v39zm125 0l-30-33h20V30h20v35h20z"/></svg>';
+  const ANNO_MAX_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+  const ANNO_MIN_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+  const ANNO_MB_LOGO = '<img class="tc-mk-ico tc-mk-mb" alt="MB" src="https://images.dwncdn.net/images/t_app-icon-s/p/c5c33b93-7347-46e3-a512-3decccb33d78/1678792153/2170_4-166444-imgingest-4209519771082272608.png">';
+  const ANNO_HELP_HTML =
+    '<b>Markdown</b> <span class="tc-help-dim">(converted to MusicBrainz markup on save)</span>' +
+    '<table>' +
+    '<tr><td><code>**bold**</code> <code>*italic*</code></td><td>bold / italic</td></tr>' +
+    '<tr><td><code># H1</code> <code>## H2</code> <code>### H3</code></td><td>headings</td></tr>' +
+    '<tr><td><code>- item</code></td><td>bullet list (indent 2 spaces to nest)</td></tr>' +
+    '<tr><td><code>1. item</code></td><td>numbered list (MB auto-numbers)</td></tr>' +
+    '<tr><td><code>[text](url)</code> · bare URL</td><td>link</td></tr>' +
+    '<tr><td><code>```code```</code></td><td>code block</td></tr>' +
+    '<tr><td><code>---</code></td><td>horizontal rule</td></tr>' +
+    '<tr><td><code>[x]</code></td><td>shown literally (auto-encoded)</td></tr>' +
+    '</table>' +
+    '<b>Shortcuts</b>' +
+    '<table>' +
+    '<tr><td><code>Ctrl/Cmd+B</code> / <code>+I</code></td><td>bold / italic (selection or word)</td></tr>' +
+    '<tr><td><code>Enter</code></td><td>continue the current list</td></tr>' +
+    '<tr><td><code>Tab</code></td><td>indent · on a selection → bullet list (Tab again → numbered, again → bullet…)</td></tr>' +
+    '<tr><td><code>Shift+Tab</code></td><td>on a selection → remove the list marker</td></tr>' +
+    '</table>' +
+    '<div class="tc-help-dim">A MusicBrainz entity URL (bare or <code>[]()</code>) gets its name added automatically.</div>';
+
+  function ensureAnnotationToolbar(taArg) {
+    const ta = taArg || document.getElementById('annotation'); if (!ta) return;   // the MB annotation field — always holds MB markup
+    if (ta._tcAnnoMounted && ta._tcAnnoMounted.isConnected) return;
+
+    const mbid = (location.pathname.match(/\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/|$)/) || [])[1];   // present on /release/<mbid>/edit, absent on /release/add
+    const wrap = document.createElement('div'); wrap.id = 'tc-anno-wrap';
+    const bar = document.createElement('div'); bar.id = 'tc-anno-bar';
+    bar.innerHTML =
+      '<button type="button" id="tc-anno-preview-btn" title="Toggle a live split preview — editor on the left, rendered annotation on the right">👁 Preview</button>' +
+      '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
+      '<span class="tc-anno-sp tc-anno-sp1"></span>' +
+      '<button type="button" id="tc-anno-md" class="tc-anno-icon" title="">' + ANNO_MD_LOGO + '</button>' +
+      '<button type="button" id="tc-anno-help" class="tc-anno-icon" title="Annotation syntax help" aria-label="Syntax help">?</button>' +
+      '<span class="tc-anno-sp tc-anno-sp2"></span>' +
+      '<button type="button" id="tc-anno-max" class="tc-anno-icon" title="Maximize the editor (Esc to restore)" aria-label="Maximize">' + ANNO_MAX_ICON + '</button>' +
+      (mbid ? '<button type="button" id="tc-anno-history-btn" title="Browse this annotation\'s previous versions and display any one">🕘 History</button>' : '');
+    const body = document.createElement('div'); body.id = 'tc-anno-body';
+    const editPane = document.createElement('div'); editPane.id = 'tc-anno-edit';
+    const md = document.createElement('textarea'); md.id = 'tc-anno-mdinput'; md.spellcheck = false;   // the Markdown editing surface
+    const prev = document.createElement('div'); prev.id = 'tc-anno-preview'; prev.style.display = 'none';
+    const hist = document.createElement('div'); hist.id = 'tc-anno-history'; hist.style.display = 'none';
+    const helpPop = document.createElement('div'); helpPop.id = 'tc-anno-help-pop'; helpPop.innerHTML = ANNO_HELP_HTML;
+    ta.parentNode.insertBefore(wrap, ta);
+    editPane.append(md, ta); body.append(editPane, prev); wrap.append(bar, body, hist, helpPop);
+    ta._tcAnnoMounted = wrap;
+
+    // the field's row — a <tr> in the release editor, a div.row on the standalone Edit annotation page
+    const annoRow = wrap.closest('tr, .row');
+    // release editor: put Disambiguation above Annotation (both already span the full column via CSS)
+    const commRow = document.getElementById('comment')?.closest('tr');
+    if (annoRow && commRow && commRow !== annoRow && annoRow.previousElementSibling !== commRow) annoRow.parentNode.insertBefore(commRow, annoRow);
+
+    // status messages appear next to the "Annotation:" label (not in the toolbar)
+    const statusEl = document.createElement('span'); statusEl.id = 'tc-anno-status';
+    const labelCell = annoRow?.querySelector('td:first-child label') || annoRow?.querySelector('td:first-child') || annoRow?.querySelector('label');
+    if (labelCell) labelCell.appendChild(statusEl);
+
+    const $ = id => bar.querySelector('#' + id);
+    const status = (msg, ms) => { statusEl.textContent = msg ? ' — ' + msg : ''; if (ms) setTimeout(() => { if (statusEl.textContent === ' — ' + msg) statusEl.textContent = ''; }, ms); };
+    // apply a new value as a minimal range edit via execCommand, so it joins the textarea's NATIVE undo stack
+    // (Ctrl+Z undoes Ctrl+B/I, Tab lists, Enter continuation, …). Falls back to the native setter if unsupported.
+    const editTa = (el, val, s, e2) => {
+      const old = el.value;
+      if (old !== val) {
+        let p = 0; const lim = Math.min(old.length, val.length);
+        while (p < lim && old[p] === val[p]) p++;
+        let so = old.length, sn = val.length;
+        while (so > p && sn > p && old[so - 1] === val[sn - 1]) { so--; sn--; }
+        const ins = val.slice(p, sn);
+        el.focus(); el.setSelectionRange(p, so);
+        let ok = false;
+        try { ok = ins ? document.execCommand('insertText', false, ins) : (so > p ? document.execCommand('delete') : true); } catch { ok = false; }
+        if (!ok || el.value !== val) { const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; set.call(el, val); el.dispatchEvent(new Event('input', { bubbles: true })); }   // fallback: no native undo, but correct
+      }
+      el.setSelectionRange(s, e2 == null ? s : e2);
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    const syncMdToField = () => annoSet(ta, mdToAnno(md.value));   // Markdown surface → MB field (keeps the model correct)
+    const activeEl = () => surface === 'raw' ? ta : md;
+
+    let surface = 'md', previewing = false, view = 'edit';   // surface: md|raw · previewing: split preview · view: edit|history
+    const renderPreview = () => { if (previewing && view === 'edit') prev.innerHTML = annoToHtml(ta.value); };
+    const apply = () => {
+      body.style.display = view === 'edit' ? 'flex' : 'none';
+      hist.style.display = view === 'history' ? '' : 'none';
+      md.style.display = surface === 'md' ? '' : 'none';
+      ta.style.display = surface === 'raw' ? '' : 'none';
+      prev.style.display = previewing && view === 'edit' ? '' : 'none';
+      bar.classList.toggle('tc-anno-prev-on', previewing);
+      bar.classList.toggle('tc-anno-hist-on', view === 'history');
+      const mdBtn = $('tc-anno-md');
+      mdBtn.innerHTML = surface === 'md' ? ANNO_MD_LOGO : ANNO_MB_LOGO;
+      mdBtn.title = surface === 'md' ? 'Editing as Markdown — click to edit the raw MusicBrainz markup' : 'Editing raw MusicBrainz markup — click to edit as Markdown';
+      renderPreview();
+    };
+
+    let previewT;
+    md.addEventListener('input', () => { if (surface === 'md') syncMdToField(); clearTimeout(previewT); previewT = setTimeout(renderPreview, 120); });
+    ta.addEventListener('input', () => { if (surface === 'raw') { clearTimeout(previewT); previewT = setTimeout(renderPreview, 120); } });
+    const wireKeys = el => el.addEventListener('keydown', e => {
+      const raw = el === ta;
+      if (e.key === 'Enter' && !e.shiftKey && el.selectionStart === el.selectionEnd) {
+        const r = annoContinueBullet(el.value, el.selectionStart);
+        if (r) { e.preventDefault(); editTa(el, r.value, r.caret); }
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        if (el.selectionStart !== el.selectionEnd) {   // Tab → bullet → numbered → bullet…; Shift+Tab → remove the list marker
+          const r = annoListSelection(el.value, el.selectionStart, el.selectionEnd, raw, e.shiftKey);
+          editTa(el, r.value, r.selStart, r.selEnd);
+        } else if (!e.shiftKey) { const p = el.selectionStart, v = el.value; editTa(el, v.slice(0, p) + '\t' + v.slice(p), p + 1); }   // plain Tab → insert a tab
+      } else if ((e.ctrlKey || e.metaKey) && !e.altKey && /^[biBI]$/.test(e.key)) {
+        e.preventDefault();
+        const bold = e.key.toLowerCase() === 'b';
+        const marker = raw ? (bold ? "'''" : "''") : (bold ? '**' : '*');
+        const r = annoWrap(el.value, el.selectionStart, el.selectionEnd, marker);
+        editTa(el, r.value, r.selStart, r.selEnd);
+      }
+    });
+    wireKeys(md); wireKeys(ta);
+
+    // auto-resolve unnamed MB entity links (no button) — on blur of the editing surface, and once on mount
+    let resolving = false;
+    const autoResolve = async (el) => {
+      if (resolving || !ANNO_ENTITY_RE.test(el.value)) return;
+      resolving = true; const before = el.value;
+      try { const after = await annoResolveNames(before, el === md); if (after !== before && el.value === before) { editTa(el, after, Math.min(el.selectionStart, after.length)); status('named entity links', 2000); } }
+      finally { resolving = false; }
+    };
+    md.addEventListener('blur', () => autoResolve(md));
+    ta.addEventListener('blur', () => autoResolve(ta));
+
+    $('tc-anno-preview-btn').onclick = () => { previewing = !previewing; apply(); };
+    $('tc-anno-md').onclick = () => { if (surface === 'md') syncMdToField(); surface = surface === 'md' ? 'raw' : 'md'; if (surface === 'md') md.value = annoToMd(ta.value); apply(); activeEl().focus(); };
+    $('tc-anno-clear').onclick = () => { md.value = ''; annoSet(ta, ''); renderPreview(); };
+    // maximize / restore the editor (fills the viewport)
+    const setMax = on => { wrap.classList.toggle('tc-anno-max', on); document.body.classList.toggle('tc-anno-max-open', on); if (on) wrap.style.height = ''; else if (wrap._tcFill) wrap._tcFill(); const b = $('tc-anno-max'); b.innerHTML = on ? ANNO_MIN_ICON : ANNO_MAX_ICON; b.title = on ? 'Restore the editor (Esc)' : 'Maximize the editor (Esc to restore)'; renderPreview(); };
+    $('tc-anno-max').onclick = () => setMax(!wrap.classList.contains('tc-anno-max'));
+    wrap.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('tc-anno-max')) { setMax(false); activeEl().focus(); } });
+
+    // hover-help popover
+    const help = $('tc-anno-help'); let helpHideT;
+    const showHelp = () => {
+      clearTimeout(helpHideT); helpPop.classList.add('on');
+      const r = help.getBoundingClientRect(), ph = helpPop.offsetHeight, pw = helpPop.offsetWidth;
+      const left = Math.max(8, Math.min(r.left, window.innerWidth - pw - 8));
+      let top = r.bottom + 6;
+      if (top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 6);   // flip above the button if it would overflow the bottom
+      if (top < 8) top = 8;
+      helpPop.style.left = Math.round(left) + 'px'; helpPop.style.top = Math.round(top) + 'px';
+    };
+    const hideHelp = () => { helpHideT = setTimeout(() => helpPop.classList.remove('on'), 180); };
+    help.addEventListener('mouseenter', showHelp); help.addEventListener('focus', showHelp);
+    help.addEventListener('mouseleave', hideHelp); help.addEventListener('blur', hideHelp);
+    helpPop.addEventListener('mouseenter', () => clearTimeout(helpHideT)); helpPop.addEventListener('mouseleave', hideHelp);
+
+    // History — version list as user cards on the RIGHT, the selected version rendered on the LEFT
+    const renderHistory = async () => {
+      hist.innerHTML = '<div class="tc-hist-msg">Loading history…</div>';
+      let versions; try { versions = await annoFetchHistory(mbid); } catch { hist.innerHTML = '<div class="tc-hist-msg">Failed to load history.</div>'; return; }
+      if (!versions.length) { hist.innerHTML = '<div class="tc-hist-msg">No annotation history yet.</div>'; return; }
+      hist.innerHTML = '<div class="tc-hist-view"><div class="tc-hist-msg">Select a version to display it.</div></div><div class="tc-hist-list"></div>';
+      const list = hist.querySelector('.tc-hist-list'), vw = hist.querySelector('.tc-hist-view');
+      versions.forEach((v, idx) => {
+        const card = document.createElement('div'); card.className = 'tc-hist-card'; card.tabIndex = 0;
+        card.innerHTML = (v.avatar ? `<img class="tc-hist-av" src="${_annoEsc(v.avatar)}" alt="">` : '<span class="tc-hist-av tc-hist-av0"></span>') +
+          `<span class="tc-hist-meta"><span class="tc-hist-editor">${_annoEsc(v.editor)}</span><span class="tc-hist-date">${_annoEsc(v.date)}</span>` +
+          (idx === 0 ? '<span class="tc-hist-cl tc-hist-cur">current</span>' : '') +
+          (v.changelog ? `<span class="tc-hist-cl tc-hist-clmsg" title="${_annoEsc(v.changelog)}">“${_annoEsc(v.changelog)}”</span>` : '') + '</span>' +
+          `<button type="button" class="tc-hist-revert" title="${idx === 0 ? 'Revert the editor to the saved version (discard unsaved changes made this session)' : 'Revert the editor to this version (reconstructed from the rendered version — review before submitting)'}">↶</button>`;
+        card.onclick = async (e) => {
+          if (e.target.closest('.tc-hist-revert')) return;
+          list.querySelectorAll('.tc-hist-card').forEach(c => c.classList.remove('on')); card.classList.add('on');
+          vw.innerHTML = '<div class="tc-hist-msg">Loading…</div>';
+          try { vw.innerHTML = '<div class="tc-anno-rendered">' + await annoFetchVersion(v.url) + '</div>'; }
+          catch { vw.innerHTML = '<div class="tc-hist-msg">Failed to load this version.</div>'; }
+        };
+        const revert = card.querySelector('.tc-hist-revert');
+        if (revert) revert.onclick = async (e) => {
+          e.stopPropagation(); revert.disabled = true;
+          try { const mb = annoHtmlToMb(await annoFetchVersion(v.url)); annoSet(ta, mb); md.value = annoToMd(ta.value); view = 'edit'; apply(); activeEl().focus(); status('reverted to ' + v.date + ' — review before submitting', 4000); }
+          catch { status('failed to load that version', 3000); } finally { revert.disabled = false; }
+        };
+        list.appendChild(card);
+      });
+    };
+    if ($('tc-anno-history-btn')) $('tc-anno-history-btn').onclick = () => { view = view === 'history' ? 'edit' : 'history'; apply(); if (view === 'history') renderHistory(); };
+
+    md.value = annoToMd(ta.value);   // seed the Markdown surface from existing MB markup (no annoSet → no spurious dirty)
+    apply();
+    setTimeout(() => autoResolve(activeEl()), 400);   // name any unnamed links already in the annotation
+  }
+
+  function annoWant() { return apolloEnabled() && SETTINGS.modifyAnnotation !== false; }   // global Apollo toggle + the "Modify annotations" setting
+  // tear the editor down and put the native textarea back (when the setting is turned off)
+  function unmountAnnotation(taArg) {
+    const ta = taArg || document.getElementById('annotation');
+    const wrap = ta && ta._tcAnnoMounted;
+    if (!wrap || !wrap.isConnected) { if (ta) ta._tcAnnoMounted = null; return; }
+    ta.style.display = ''; wrap.parentNode.insertBefore(ta, wrap); wrap.remove();
+    ta._tcAnnoMounted = null; document.getElementById('tc-anno-status')?.remove();
+  }
+  // standalone /release/<mbid>/edit_annotation page: mount our editor on the annotation field, move the
+  // Changelog above it (like Disambiguation in /edit). Gated by the same "Modify annotations" setting.
+  function applyAnnotationPage() {
+    if (!/\/release\/[0-9a-f-]{36}\/edit_annotation/.test(location.pathname)) return;
+    const ta = document.querySelector('textarea[name="edit-annotation.text"]'); if (!ta) return;
+    ensureLauncher();   // the floating Original / Apollo switcher + ⚙ settings, same as the release editor
+    const form = ta.closest('form'), hide = annoWant();
+    if (hide) {
+      document.body.classList.add('tc-ri-on', 'tc-anno-page');
+      if (!document.getElementById('tc-ri-style')) riStyle();
+      ensureAnnotationToolbar(ta);
+      const annoRow = (ta._tcAnnoMounted || ta).closest('.row'), clRow = document.querySelector('input[name="edit-annotation.changelog"]')?.closest('.row');
+      if (annoRow && clRow && clRow !== annoRow && annoRow.previousElementSibling !== clRow) annoRow.parentNode.insertBefore(clRow, annoRow);
+    } else { unmountAnnotation(ta); document.body.classList.remove('tc-anno-page'); }
+    // hide everything below the editor — the Edit note (the Change note already serves that role), the "Make all
+    // edits votable" row, the native Preview button, and MB's formatting guide — keeping only "Enter edit".
+    const annoRowEl = (ta._tcAnnoMounted || ta).closest('.row'), els = new Set();
+    const fh = [...document.querySelectorAll('#content h3')].find(h => /annotation formatting/i.test(h.textContent || ''));
+    if (fh) { els.add(fh); for (let n = fh.nextElementSibling; n; n = n.nextElementSibling) els.add(n); }   // the guide is the h3 + everything after it (NOT its parent, which is #content!)
+    [...document.querySelectorAll('#content h2')].forEach(h => { if (/^\s*edit note\s*$/i.test((h.textContent || '').trim())) { els.add(h); let n = h.nextElementSibling; while (n && n.tagName === 'P') { els.add(n); n = n.nextElementSibling; } } });
+    if (form && annoRowEl) { const kids = [...form.children], ai = kids.indexOf(annoRowEl); kids.forEach((ch, i) => { if (i > ai) els.add(ch); }); }   // everything below the editor, incl. the native buttons
+    els.forEach(el => { el.style.display = hide ? 'none' : ''; });
+    // our own "Enter edit" (the native one is hidden) — placed to the right of the Changelog input; just clicks
+    // the native submit so MB's flow runs
+    const clInput = document.querySelector('input[name="edit-annotation.changelog"]'), clRow = clInput?.closest('.row');
+    let sub = document.getElementById('tc-anno-submit');
+    if (hide && !sub && clInput) {
+      sub = document.createElement('button'); sub.id = 'tc-anno-submit'; sub.type = 'button'; sub.textContent = '✓ Enter edit';
+      sub.onclick = () => { const b = form && [...form.querySelectorAll('button, input[type=submit]')].find(x => x.id !== 'tc-anno-submit' && /enter edit/i.test((x.textContent || x.value || '').trim())); if (b) b.click(); };   // the NATIVE submit (not ourselves)
+      clInput.after(sub);
+    }
+    if (clRow) clRow.classList.toggle('tc-cl-row', hide);
+    if (sub) sub.style.display = hide ? '' : 'none';
+    document.getElementById('tc-anno-fouc')?.remove();   // reveal the (now transformed) form — no native flash
+    // make the editor fill the remaining viewport height (down to just above the footer)
+    const w = ta._tcAnnoMounted;
+    if (hide && w) {
+      if (!w._tcFill) { w._tcFill = () => { if (!w.isConnected || w.classList.contains('tc-anno-max')) { w.style.height = ''; return; } w.style.height = Math.max(300, window.innerHeight - w.getBoundingClientRect().top - 18) + 'px'; }; window.addEventListener('resize', w._tcFill); }
+      requestAnimationFrame(w._tcFill);
+    } else if (w && w._tcFill) w.style.height = '';
+  }
+
   // MB's contextual guidance box(es) — anything outside #information that's just the style-guidelines help
   // (the in-panel ones are hidden by CSS via #information .bubble/.guidance)
   function nativeHelpBubbles() {
@@ -3473,6 +4092,7 @@
       if (!document.body.classList.contains('tc-ri-on')) return;
       const info = document.getElementById('information'); if (!info || !info.contains(e.target)) return;
       const field = e.target.closest('input,select,textarea'); if (!field) return;
+      if (field.closest('#tc-anno-wrap')) { hide(); return; }   // the annotation editor isn't an entity field — no "You selected …" bubble
       setTimeout(() => { if (document.activeElement === field) showFor(field); }, 30);   // let MB pick the bubble first
     });
     document.addEventListener('focusout', e => {
@@ -3549,6 +4169,7 @@
       relocateLinks(true);
       tidyLinkTypeOptions();
       annotateLinkEditHints();
+      if (annoWant()) ensureAnnotationToolbar(); else unmountAnnotation();
       nativeHelpBubbles().forEach(b => b.classList.add('tc-ri-helphidden'));
       _riPrevOn = true;
     } else {
@@ -3589,6 +4210,11 @@
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
+    if (/^\/release\/[0-9a-f-]{36}\/edit_annotation/.test(location.pathname)) {   // standalone Edit annotation page (no releaseEditor)
+      const tryMount = () => { if (document.querySelector('textarea[name="edit-annotation.text"]')) { applyAnnotationPage(); return true; } return false; };
+      if (!tryMount()) { const t = setInterval(() => { if (tryMount()) clearInterval(t); }, 200); setTimeout(() => clearInterval(t), 8000); }
+      return;
+    }
     if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) return;   // /artist/* (non-callback) just loads the channel listener
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.err('MB.releaseEditor never became ready'); return; }
