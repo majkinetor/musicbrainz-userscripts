@@ -42,6 +42,9 @@ Each takeover is optional and you can flip back to the native editor at any time
     - Tools relocated to always-visible _Tool_ button, with some new tools
     - Revert/Clear for a single track or the whole table
 - **[Customization](#settings)** — resizable columns, alternate row colors, grid, multiple layouts, match tolerance
+- **Release Information** tab
+    - **Annotation editor** — a small toolbar above the annotation field with a live **Preview** that renders the markup exactly the way MusicBrainz will display it (headings, bold/italic, links, lists, rules), a **Clear** button, a **Markdown→MB** converter (links, bold, italic, headings, lists, rules — inspired by [kellnerd's annotationConverter](https://github.com/kellnerd/musicbrainz-scripts/blob/main/src/annotationConverter.js)), and **Resolve names** which replaces bare MusicBrainz entity URLs with `[url|Name]` links fetched from the API
+    - External links moved to a right column with a dead-link checker; right-click a favicon/type to edit it
 
 ## Matching
 

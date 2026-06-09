@@ -1,0 +1,70 @@
+// Unit test for the SHIPPED annotation helpers extract annoToHtml + mdToAnno from the
+// userscript by balanced braces and exercise the MB-markup render + the Markdown→MB conversion.
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+const HERE = dirname(fileURLToPath(import.meta.url));
+const src = await readFile(resolve(HERE, '..', 'apollo_editor.user.js'), 'utf8');
+
+function extract(name) {
+  const sig = `function ${name}(`;
+  const start = src.indexOf(sig);
+  if (start < 0) throw new Error('not found: ' + name);
+  let i = src.indexOf('{', start), depth = 0;
+  for (; i < src.length; i++) {
+    if (src[i] === '{') depth++;
+    else if (src[i] === '}') { depth--; if (depth === 0) { i++; break; } }
+  }
+  return src.slice(start, i);
+}
+
+const _annoEsc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const _annoName = new Map();
+const annoToHtml = new Function('_annoEsc', '_annoName', `${extract('annoToHtml')}; return annoToHtml;`)(_annoEsc, _annoName);
+const mdToAnno   = new Function(`${extract('mdToAnno')}; return mdToAnno;`)();
+
+let pass = 0, fail = 0;
+const check = (label, got, mustInclude, mustExclude = []) => {
+  const okIn = mustInclude.every(s => got.includes(s));
+  const okOut = mustExclude.every(s => !got.includes(s));
+  if (okIn && okOut) { pass++; console.log('  ok  ', label); }
+  else { fail++; console.log('  FAIL', label, '\n        got:', JSON.stringify(got), '\n        want all:', mustInclude, mustExclude.length ? '\n        want none: ' + JSON.stringify(mustExclude) : ''); }
+};
+const eq = (label, got, want) => { if (got === want) { pass++; console.log('  ok  ', label); } else { fail++; console.log('  FAIL', label, '\n        got: ', JSON.stringify(got), '\n        want:', JSON.stringify(want)); } };
+
+console.log('annoToHtml (MB markup → HTML):');
+check('bold + italic', annoToHtml("'''bold''' and ''italic''"), ['<b>bold</b>', '<i>italic</i>']);
+check('bold-italic 5-quote', annoToHtml("'''''both'''''"), ['<b><i>both</i></b>']);
+check('h1/h2/h3', annoToHtml('= One =\n== Two ==\n=== Three ==='), ['<h1 class="tc-anno-h">One</h1>', '<h2 class="tc-anno-h">Two</h2>', '<h3 class="tc-anno-h">Three</h3>']);
+check('labeled link', annoToHtml('see [https://example.com/x|the site]'), ['<a href="https://example.com/x" target="_blank" rel="noopener">the site</a>']);
+check('bare link', annoToHtml('visit https://example.com/page here'), ['<a href="https://example.com/page" target="_blank" rel="noopener">https://example.com/page</a>']);
+check('plain [url] link', annoToHtml('[https://example.com]'), ['<a href="https://example.com" target="_blank" rel="noopener">https://example.com</a>']);
+check('bullets', annoToHtml('    * one\n    * two'), ['<ul class="tc-anno-ul">', '<li>one</li>', '<li>two</li>']);
+check('hr', annoToHtml('a\n\n----\n\nb'), ['<hr>']);
+check('code block', annoToHtml('        code line'), ['<pre class="tc-anno-pre">code line</pre>']);
+check('html escaped', annoToHtml('a <script>x</script> & b'), ['&lt;script&gt;', '&amp; b'], ['<script>']);
+check('javascript: not linkified', annoToHtml('[javascript:alert(1)|click]'), ['[javascript:alert(1)|click]'], ['<a href="javascript']);
+check('literal brackets via entities', annoToHtml('use &#91;this&#93; literally'), ['use [this] literally'], ['<a ']);
+eq('apostrophe in prose untouched', annoToHtml("it's fine"), "<p>it's fine</p>");
+// '' inside a URL must not become italics (link is stashed before inline markup runs)
+check("quotes inside URL survive", annoToHtml("[https://e.com/a''b|x]"), ['href="https://e.com/a\'\'b"'], ['<i>']);
+// resolved-name cache: a bare entity URL shows the cached name as the link label
+_annoName.set('https://musicbrainz.org/artist/00000000-0000-0000-0000-000000000001', 'The Artist');
+check('cached entity name as label', annoToHtml('https://musicbrainz.org/artist/00000000-0000-0000-0000-000000000001'), ['>The Artist</a>']);
+
+console.log('\nmdToAnno (Markdown → MB markup):');
+eq('md link', mdToAnno('[the site](https://example.com/x)'), '[https://example.com/x|the site]');
+eq('bold **', mdToAnno('**strong**'), "'''strong'''");
+eq('bold __', mdToAnno('__strong__'), "'''strong'''");
+eq('italic *', mdToAnno('*soft*'), "''soft''");
+eq('italic _', mdToAnno('_soft_'), "''soft''");
+eq('heading ##', mdToAnno('## Section'), '== Section ==');
+eq('heading clamps to 3', mdToAnno('##### Deep'), '=== Deep ==='); // MB tops out at h3
+eq('bullet dash', mdToAnno('- item'), '    * item');
+eq('hr ---', mdToAnno('---'), '----');
+// a URL containing * or _ must not be italicised by the bold/italic passes (URL is protected)
+eq('url with underscores protected', mdToAnno('see https://e.com/a_b_c done'), 'see https://e.com/a_b_c done');
+eq('md link url with asterisks protected', mdToAnno('[x](https://e.com/a*b*c)'), '[https://e.com/a*b*c|x]');
+
+console.log(`\n${pass} passed, ${fail} failed`);
+process.exit(fail ? 1 : 0);

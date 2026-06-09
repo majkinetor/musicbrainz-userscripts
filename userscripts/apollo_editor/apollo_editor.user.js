@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.8.005000
+// @version      2026.6.9.000100
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3019,7 +3019,7 @@
     if (!name) return;
     const artist = acLinks(u(rel.artistCredit)) || '';
     // live-update: rebuild only when the title or artist actually changed (not every tick) (#141)
-    const sig = name + '' + artist;
+    const sig = name + '\x01' + artist;
     if (el.dataset.sig === sig) return;
     el.dataset.sig = sig;
     const album = gid ? '<a href="' + ORIGIN + '/release/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
@@ -3301,7 +3301,26 @@
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead .favicon{filter:grayscale(1);opacity:.45}
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url{text-decoration:line-through;opacity:.55}
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url::after{content:" ✖ " attr(data-tc-deadcode);color:#c0392b;font-size:11px;text-decoration:none;opacity:.9}
-    body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-ok a.url::after{content:" ✓";color:#2c7a45;font-size:11px;opacity:.7}`;
+    body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-ok a.url::after{content:" ✓";color:#2c7a45;font-size:11px;opacity:.7}
+    /* annotation editor: the toolbar above #annotation + the live preview pane below it */
+    #tc-anno-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 5px}
+    #tc-anno-bar button{font:12px Arial;display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border:1px solid #d6cdec;border-radius:6px;background:#f6f3fc;color:#5a3e94;cursor:pointer}
+    #tc-anno-bar button:hover{background:#ece5f8;border-color:#b9a4e0}
+    #tc-anno-bar button:disabled{opacity:.6;cursor:default}
+    #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
+    #tc-anno-status{font:12px Arial;color:#777;margin-left:2px}
+    #tc-anno-preview{margin:6px 0 2px;padding:9px 12px;border:1px solid #d6cdec;border-radius:6px;background:#faf8ff;font-size:13px;line-height:1.5;color:#333;max-height:340px;overflow:auto;word-break:break-word}
+    #tc-anno-preview .tc-anno-empty{color:#999;font-style:italic}
+    #tc-anno-preview p{margin:0 0 8px}
+    #tc-anno-preview .tc-anno-h{margin:10px 0 6px;color:#3d2470;font-weight:700;line-height:1.25}
+    #tc-anno-preview h1.tc-anno-h{font-size:18px}
+    #tc-anno-preview h2.tc-anno-h{font-size:16px}
+    #tc-anno-preview h3.tc-anno-h,#tc-anno-preview h4.tc-anno-h,#tc-anno-preview h5.tc-anno-h,#tc-anno-preview h6.tc-anno-h{font-size:14px}
+    #tc-anno-preview .tc-anno-ul{margin:0 0 8px;padding-left:22px}
+    #tc-anno-preview .tc-anno-pre{margin:0 0 8px;padding:8px 10px;background:#f0ecf8;border-radius:4px;font-family:Consolas,monospace;font-size:12px;white-space:pre-wrap}
+    #tc-anno-preview hr{border:none;border-top:1px solid #cdbce8;margin:10px 0}
+    #tc-anno-preview a{color:#5f3ec0;text-decoration:none}
+    #tc-anno-preview a:hover{text-decoration:underline}`;
     const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
   }
   // move the External-links fieldset into a dedicated right column (or back home when Apollo is off).
@@ -3420,6 +3439,126 @@
     }
     bar.style.display = linkRows().length ? '' : 'none';   // no links → no button
   }
+
+  // ── Annotation editor: a small toolbar above the release annotation textarea, with a live
+  //    Preview (MB markup → HTML), Clear, and — inspired by kellnerd's annotationConverter — a
+  //    Markdown→MB converter and a WS2 "resolve names" action that labels bare MB entity URLs. ──
+  const ANNO_NAME_FIELD = { artist:'name', label:'name', area:'name', place:'name', instrument:'name',
+    series:'name', event:'name', genre:'name', 'release-group':'title', release:'title', recording:'title', work:'title' };
+  // release-group MUST precede release in the alternation (else "release" matches the prefix of "release-group/…")
+  const ANNO_ENTITY_RE = /https?:\/\/(?:beta\.)?musicbrainz\.org\/(artist|label|area|place|instrument|series|event|genre|release-group|release|recording|work)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  const _annoName = new Map();   // entity url → resolved display name (shared by Resolve-names + Preview)
+  const _annoEsc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // MB annotation markup → HTML, replicating the documented subset (musicbrainz.org/doc/Annotation):
+  // ''italic'' '''bold''', = h1 = .. === h3 ===, [url] / [url|text] / bare-url links, ---- rule,
+  // 4-space "*" bullets, 8-space code, &#91;/&#93; literal brackets. Pure + sync (no network).
+  function annoToHtml(src) {
+    if (!src || !src.trim()) return '<span class="tc-anno-empty">(nothing to preview)</span>';
+    src = String(src).replace(/&#91;/g, '\x01').replace(/&#93;/g, '\x02');   // protect literal brackets
+    const inline = txt => {
+      let s = _annoEsc(txt);
+      const links = [];                                 // pull links out first so '' / ''' never touch a URL
+      const stash = html => '\x03' + (links.push(html) - 1) + '\x04';
+      // only http(s)/ftp are linkified (as MB does) — anything else (e.g. javascript:) renders as plain text
+      const anchor = (url, label) => { url = url.trim(); if (!/^(?:https?|ftp):\/\//i.test(url)) return null; const name = _annoName.get(url); return stash(`<a href="${_annoEsc(url)}" target="_blank" rel="noopener">${label != null ? label : (name ? _annoEsc(name) : _annoEsc(url))}</a>`); };
+      s = s.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => anchor(url, text ? _annoEsc(text) : null) ?? _annoEsc(_m));
+      s = s.replace(/\[([^\]|]+)\]/g, (_m, url) => anchor(url, null) ?? _annoEsc(_m));
+      s = s.replace(/(^|[\s(])((?:https?|ftp):\/\/[^\s<>]+[^\s<>.,;:!?)])/g, (_m, pre, url) => pre + (anchor(url, null) ?? _annoEsc(url)));
+      s = s.replace(/'''''(.+?)'''''/g, '<b><i>$1</i></b>').replace(/'''(.+?)'''/g, '<b>$1</b>').replace(/''(.+?)''/g, '<i>$1</i>');
+      s = s.replace(/\x03(\d+)\x04/g, (_m, i) => links[+i]);   // restore links
+      return s;
+    };
+    const lines = src.split(/\r?\n/), out = []; let i = 0;
+    while (i < lines.length) {
+      const ln = lines[i];
+      let m;
+      if (/^\s*$/.test(ln)) { i++; continue; }
+      if (/^-{4,}\s*$/.test(ln)) { out.push('<hr>'); i++; continue; }
+      if ((m = ln.match(/^(={1,6})\s*(.*?)\s*=*\s*$/)) && m[2]) { const n = Math.min(m[1].length, 6); out.push(`<h${n} class="tc-anno-h">${inline(m[2])}</h${n}>`); i++; continue; }
+      if (/^ {8}/.test(ln)) { const buf = []; while (i < lines.length && /^ {8}/.test(lines[i])) { buf.push(_annoEsc(lines[i].slice(8))); i++; } out.push('<pre class="tc-anno-pre">' + buf.join('\n') + '</pre>'); continue; }
+      if (/^ {4}\*\s+/.test(ln)) { const buf = []; while (i < lines.length && /^ {4}\*\s+/.test(lines[i])) { buf.push('<li>' + inline(lines[i].replace(/^ {4}\*\s+/, '')) + '</li>'); i++; } out.push('<ul class="tc-anno-ul">' + buf.join('') + '</ul>'); continue; }
+      const buf = [];   // a paragraph: consecutive non-blank, non-block lines joined with <br>
+      while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^-{4,}\s*$/.test(lines[i]) && !/^={1,6}\s/.test(lines[i]) && !/^ {4}\*\s+/.test(lines[i]) && !/^ {8}/.test(lines[i])) { buf.push(inline(lines[i])); i++; }
+      out.push('<p>' + buf.join('<br>') + '</p>');
+    }
+    return out.join('').replace(/\x01/g, '[').replace(/\x02/g, ']');
+  }
+
+  // Markdown → MB annotation markup (kellnerd-inspired). Pure + sync.
+  function mdToAnno(src) {
+    if (!src) return src;
+    const urls = [];                                   // protect URLs so * / _ inside them aren't italicised
+    const stash = u => '\x05' + (urls.push(u) - 1) + '\x06';
+    src = src.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text, url) => `[${stash(url)}|${text}]`);   // [text](url) → [url|text]
+    src = src.replace(/(^|[\s(])((?:https?|ftp):\/\/[^\s<>]+)/g, (_m, pre, url) => pre + stash(url));  // bare urls
+    src = src.replace(/^(#{1,6})\s+(.*?)\s*#*\s*$/gm, (_m, h, t) => { const n = Math.min(h.length, 3); const e = '='.repeat(n); return `${e} ${t} ${e}`; });
+    src = src.replace(/(\*\*|__)(.+?)\1/g, "'''$2'''");        // **bold** / __bold__
+    src = src.replace(/(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])/g, "''$1''");   // *italic*
+    src = src.replace(/(?<![_\w])_(?!\s)(.+?)(?<!\s)_(?![_\w])/g, "''$1''");     // _italic_
+    src = src.replace(/^\s*[-*+]\s+/gm, '    * ');             // - item → 4-space bullet
+    src = src.replace(/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/gm, '----');   // hr
+    return src.replace(/\x05(\d+)\x06/g, (_m, i) => urls[+i]);
+  }
+
+  function annoReplaceAsync(str, re, fn) {   // async String.replace (kellnerd's replaceAsync)
+    const parts = []; let last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(str)) !== null) { parts.push(str.slice(last, m.index), fn(...m, m.index, str)); last = m.index + m[0].length; if (!re.global) break; }
+    parts.push(str.slice(last));
+    return Promise.all(parts).then(p => p.join(''));
+  }
+  // resolve every bare MB entity URL (one not already a [url|label] link) to a [url|Name] via WS2
+  async function annoResolveNames(src) {
+    const re = new RegExp('(?<!\\[)' + ANNO_ENTITY_RE.source, 'gi');
+    return annoReplaceAsync(src, re, async (full, type, mbid) => {
+      type = type.toLowerCase();
+      if (_annoName.has(full)) return `[${full}|${_annoName.get(full)}]`;
+      try {
+        const r = await fetch(`${location.origin}/ws/2/${type}/${mbid}?fmt=json`, { headers: { Accept: 'application/json' } });
+        if (!r.ok) return full;
+        const j = await r.json(); const name = j[ANNO_NAME_FIELD[type] || 'name'];
+        if (!name) return full;
+        _annoName.set(full, name);
+        return `[${full}|${name}]`;
+      } catch { return full; }
+    });
+  }
+
+  // write into the annotation textarea so MB's model (knockout 'change' / React 'input') picks it up + dirties
+  function annoSet(ta, value) {
+    const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+    set.call(ta, value);
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function ensureAnnotationToolbar() {
+    const ta = document.getElementById('annotation'); if (!ta) return;
+    let bar = document.getElementById('tc-anno-bar');
+    if (bar && bar.isConnected && bar.nextElementSibling === ta && bar._ta === ta) return;   // already in place
+    if (bar) bar.remove();
+    bar = document.createElement('div'); bar.id = 'tc-anno-bar'; bar._ta = ta;
+    bar.innerHTML =
+      '<button type="button" id="tc-anno-preview-btn" title="Toggle a live preview of the annotation, rendered the way MusicBrainz will show it">👁 Preview</button>' +
+      '<button type="button" id="tc-anno-md" title="Convert Markdown in the annotation to MusicBrainz markup (links, bold, italic, headings, lists)">⇄ Markdown→MB</button>' +
+      '<button type="button" id="tc-anno-names" title="Replace bare MusicBrainz entity URLs with [url|Name] links, fetching each name from the API">🏷 Resolve names</button>' +
+      '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
+      '<span id="tc-anno-status"></span>';
+    ta.parentNode.insertBefore(bar, ta);
+    let prev = document.getElementById('tc-anno-preview');
+    if (!prev) { prev = document.createElement('div'); prev.id = 'tc-anno-preview'; }
+    ta.parentNode.insertBefore(prev, ta.nextSibling);
+    const status = (msg, ms) => { const s = document.getElementById('tc-anno-status'); if (!s) return; s.textContent = msg || ''; if (ms) setTimeout(() => { if (s.textContent === msg) s.textContent = ''; }, ms); };
+    const renderPreview = () => { if (prev.style.display === 'none') return; prev.innerHTML = annoToHtml(ta.value); };
+    document.getElementById('tc-anno-preview-btn').onclick = () => { const on = prev.style.display === 'none'; prev.style.display = on ? '' : 'none'; bar.classList.toggle('tc-anno-prev-on', on); if (on) renderPreview(); };
+    document.getElementById('tc-anno-md').onclick = () => { const before = ta.value, after = mdToAnno(before); if (after !== before) { annoSet(ta, after); status('converted Markdown', 2500); } else status('no Markdown found', 2500); renderPreview(); };
+    document.getElementById('tc-anno-names').onclick = async (e) => { const btn = e.currentTarget; btn.disabled = true; status('resolving names…'); try { const after = await annoResolveNames(ta.value); if (after !== ta.value) { annoSet(ta, after); status('names resolved', 2500); } else status('no bare entity URLs', 2500); renderPreview(); } finally { btn.disabled = false; } };
+    document.getElementById('tc-anno-clear').onclick = () => { if (!ta.value || confirm('Clear the entire annotation?')) { annoSet(ta, ''); renderPreview(); } };
+    if (!ta._tcAnnoWired) { ta._tcAnnoWired = true; let t; ta.addEventListener('input', () => { clearTimeout(t); t = setTimeout(renderPreview, 150); }); }
+    prev.style.display = 'none';
+  }
+
   // MB's contextual guidance box(es) — anything outside #information that's just the style-guidelines help
   // (the in-panel ones are hidden by CSS via #information .bubble/.guidance)
   function nativeHelpBubbles() {
@@ -3549,6 +3688,7 @@
       relocateLinks(true);
       tidyLinkTypeOptions();
       annotateLinkEditHints();
+      ensureAnnotationToolbar();
       nativeHelpBubbles().forEach(b => b.classList.add('tc-ri-helphidden'));
       _riPrevOn = true;
     } else {
