@@ -166,6 +166,27 @@ export async function fetchWithRetry(url, retries = 4) {
     return mbThrottle.fetchJson(url, retries);
 }
 
+// On-request (#132): the distinct relationship-type categories an artist already
+// has in MB (e.g. producer / mix / mastering / misc), so a reviewer can sanity-
+// check a credit against the artist's known roles. This is NOT free — it's an
+// extra throttled request per artist — so the review table calls it lazily, only
+// when the user clicks to check a row. One `limit=100` page surfaces the
+// categories for all but the most prolific artists (we don't paginate, to keep
+// the on-request cost to a single request). Session-cached per MBID; failures
+// are not cached. Returns `string[]` (possibly empty) or `null` on failure.
+const _relTypeCache = new Map();
+export async function fetchArtistRelTypes(mbid) {
+    if (!mbid) return null;
+    if (_relTypeCache.has(mbid)) return _relTypeCache.get(mbid);
+    const json = await mbThrottle.fetchJson(
+        `//musicbrainz.org/ws/2/artist/${mbid}?inc=recording-rels+release-rels+release-group-rels+work-rels&fmt=json&limit=100`
+    );
+    if (!json) return null;
+    const types = [...new Set((json.relations || []).map(r => r.type).filter(Boolean))].sort();
+    _relTypeCache.set(mbid, types);
+    return types;
+}
+
 /**
  * Probe `/ws/js/release/<mbid>?fmt=json&inc=rels` and return the Discogs URL
  * linked to the release (if any), else `null`. Used at import start to decide

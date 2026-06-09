@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.9.180447
+// @version      2026.6.9.194653
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -257,6 +257,18 @@
   })();
   async function fetchWithRetry(url, retries = 4) {
     return mbThrottle.fetchJson(url, retries);
+  }
+  var _relTypeCache = /* @__PURE__ */ new Map();
+  async function fetchArtistRelTypes(mbid) {
+    if (!mbid) return null;
+    if (_relTypeCache.has(mbid)) return _relTypeCache.get(mbid);
+    const json = await mbThrottle.fetchJson(
+      `//musicbrainz.org/ws/2/artist/${mbid}?inc=recording-rels+release-rels+release-group-rels+work-rels&fmt=json&limit=100`
+    );
+    if (!json) return null;
+    const types = [...new Set((json.relations || []).map((r) => r.type).filter(Boolean))].sort();
+    _relTypeCache.set(mbid, types);
+    return types;
   }
   function getDiscogsUrlForRelease(mbid) {
     const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
@@ -2520,6 +2532,52 @@
             rolesLine.appendChild(span);
           });
           tdDiscogs.appendChild(rolesLine);
+        }
+        if (entityType === "artist") {
+          const mbRolesLine = document.createElement("div");
+          mbRolesLine.style.cssText = "font-size:0.75rem;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;";
+          const trigger = document.createElement("a");
+          trigger.href = "#";
+          trigger.textContent = "MB roles \u25BE";
+          trigger.style.cssText = "color:#7a7a9a;text-decoration:none;cursor:pointer;";
+          trigger.title = "Fetch this artist's existing relationship types from MusicBrainz to compare with the Discogs role";
+          trigger.addEventListener("click", async (ev) => {
+            ev.preventDefault();
+            const st = rowState.get(_entityKey);
+            const curUrl = st?.mbUrl || r.mbUrl;
+            const mbid = (String(curUrl || "").split("/").pop() || "").replace(/[^a-f0-9-]/gi, "").slice(0, 36);
+            if (!mbid) {
+              trigger.textContent = "MB roles: (no MB artist selected)";
+              return;
+            }
+            trigger.textContent = "MB roles\u2026";
+            const types = await fetchArtistRelTypes(mbid);
+            mbRolesLine.innerHTML = "";
+            const label = document.createElement("span");
+            label.style.color = "#888";
+            if (!types) {
+              label.textContent = "MB roles: fetch failed";
+              label.style.color = "#a02020";
+              mbRolesLine.appendChild(label);
+              return;
+            }
+            if (!types.length) {
+              label.textContent = "MB roles: none";
+              mbRolesLine.appendChild(label);
+              return;
+            }
+            label.textContent = "MB roles: ";
+            mbRolesLine.appendChild(label);
+            mbRolesLine.title = types.join(", ");
+            types.forEach((t) => {
+              const c = document.createElement("span");
+              c.textContent = t;
+              c.style.cssText = "background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;margin-right:0.25rem;color:#4a4a77;font-size:0.7rem;";
+              mbRolesLine.appendChild(c);
+            });
+          });
+          mbRolesLine.appendChild(trigger);
+          tdDiscogs.appendChild(mbRolesLine);
         }
         const credLine = document.createElement("div");
         credLine.style.cssText = "display:flex;align-items:center;gap:0.3rem;margin-top:1rem;padding-top:0.25rem;max-width:280px;";
