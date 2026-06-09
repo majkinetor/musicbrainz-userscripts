@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.18
+// @version      2026.6.9.19
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -2309,16 +2309,23 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
 async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVariousArtists, wikidataBeatportId, barcode }) {
     const label = 'Beatport';
     const cached = cacheGet(mbid, 'beatport');
-    if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('beatport', label, cached, mbTracks); return; }
+    const idFromUrl = u => (String(u || '').match(/beatport\.com\/release\/[^/]+\/(\d+)/) || [])[1];
+    // A cached hit short-circuits — EXCEPT when we're now logged in and the
+    // cached entry was never track-count verified (e.g. a web-search result
+    // cached while logged out, tracks=null). In that case fall through to the
+    // authed API below to upgrade it to a verified match, reusing the cached
+    // URL's release id, instead of leaving it UNVERIFIED forever (#168).
+    const cachedUnverified = !!(cached?.url && cached.tracks == null && bpLoggedIn());
+    if (cached?.url && (!existingUrl || existingUrl === cached.url) && !cachedUnverified) { applyCachedRow('beatport', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl && !wikidataBeatportId && !bpLoggedIn()) {
         appendLog(label, `No match (cached — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('beatport', label, cached, mbTracks); return;
     }
+    if (cachedUnverified) appendLog(label, `Cached match is unverified — re-checking via API now that you're logged in`);
 
-    const idFromUrl = u => (String(u || '').match(/beatport\.com\/release\/[^/]+\/(\d+)/) || [])[1];
-    let relId  = existingUrl ? idFromUrl(existingUrl) : (wikidataBeatportId || null);
-    let url    = existingUrl || null;
-    let source = existingUrl ? 'MB rels' : (wikidataBeatportId ? 'Wikidata' : null);
+    let relId  = existingUrl ? idFromUrl(existingUrl) : (wikidataBeatportId || (cachedUnverified ? idFromUrl(cached.url) : null));
+    let url    = existingUrl || (cachedUnverified ? cached.url : null);
+    let source = existingUrl ? 'MB rels' : (wikidataBeatportId ? 'Wikidata' : (cachedUnverified ? (cached.source || 'cache') : null));
 
     // ── Authed: official API → verified track count ──
     if (bpLoggedIn()) {
