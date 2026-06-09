@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.12
+// @version      2026.6.9.13
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -12,6 +12,7 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_cookie
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
 // @connect      query.wikidata.org
@@ -973,12 +974,35 @@ const BEATPORT = {
     store:    'mbtools:beatport',
 };
 // Beatport's API runs Django CSRF protection that engages when the browser's
-// existing Beatport session cookie rides along (logged-in users): DRF then
-// authenticates via the cookie and enforces CSRF, which rejects the secure POST
-// for a missing/untrusted Origin & Referer. Django always trusts a request's
-// OWN origin, so we send the API's own origin (https://api.beatport.com) — a
-// foreign origin like www.beatport.com is NOT in the API's trusted set.
+// existing Beatport session cookie rides along — and GM_xmlhttpRequest shares
+// the browser cookie jar, so any lingering beatport.com session (from a prior
+// login on this browser, even if the user doesn't feel "logged in") triggers
+// it. The secure POST is then rejected unless three things line up:
+//   1. Origin must be a trusted origin. Django always trusts a request's OWN
+//      origin, so we send https://api.beatport.com (a foreign origin like
+//      www.beatport.com is NOT in the API's trusted set).
+//   2. Referer must likewise be on the trusted host.
+//   3. The csrftoken cookie value must be echoed back in the X-CSRFToken header.
+// (1)+(2) are static; (3) is read at call time via bpCsrfToken().
 const bpHeaders = () => ({ Referer: BEATPORT.origin + '/', Origin: BEATPORT.origin });
+
+// Read Beatport's `csrftoken` cookie so we can echo it in the X-CSRFToken
+// header (item 3 above). The cookie lives on beatport.com — not our page's
+// origin — so GM_cookie is required to read it cross-site. Returns '' when
+// there's no cookie (fresh browser never logged into Beatport → no session
+// cookie → Django doesn't enforce CSRF anyway, so the header isn't needed).
+function bpCsrfToken() {
+    return new Promise((resolve) => {
+        try {
+            const gc = (typeof GM_cookie !== 'undefined' && GM_cookie) ||
+                       (typeof GM !== 'undefined' && GM && GM.cookie) || null;
+            if (!gc || typeof gc.list !== 'function') return resolve('');
+            const done = (cookies, err) => resolve((!err && cookies && cookies[0] && cookies[0].value) || '');
+            const ret = gc.list({ url: 'https://api.beatport.com/', name: 'csrftoken' }, done);
+            if (ret && typeof ret.then === 'function') ret.then(cs => done(cs)).catch(() => resolve(''));
+        } catch { resolve(''); }
+    });
+}
 const bpRead     = () => { try { return JSON.parse(localStorage.getItem(BEATPORT.store) || 'null'); } catch { return null; } };
 const bpWrite    = t  => { try { t ? localStorage.setItem(BEATPORT.store, JSON.stringify(t)) : localStorage.removeItem(BEATPORT.store); } catch {} };
 const bpLoggedIn = () => { const t = bpRead(); return !!(t && t.refresh_token); };
@@ -987,7 +1011,8 @@ async function bpPkce() { const v = bpB64url(crypto.getRandomValues(new Uint8Arr
 
 // Full login → token. Returns { ok } or { ok:false, error }. Used by PC's setup UI.
 async function beatportLogin(username, password) {
-    const lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { headers: { 'Content-Type': 'application/json', ...bpHeaders() } });
+    const csrf = await bpCsrfToken();
+    const lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { headers: { 'Content-Type': 'application/json', ...bpHeaders(), ...(csrf ? { 'X-CSRFToken': csrf } : {}) } });
     if (!lr.ok) { let m = 'incorrect username or password'; try { const j = JSON.parse(lr.responseText); m = (typeof j === 'string' ? j : j.detail) || m; } catch {} return { ok: false, error: m }; }
     const { v, c } = await bpPkce();
     const au = `${BEATPORT.api}/auth/o/authorize/?response_type=code&client_id=${BEATPORT.clientId}&redirect_uri=${encodeURIComponent(BEATPORT.redirect)}&code_challenge=${c}&code_challenge_method=S256`;
