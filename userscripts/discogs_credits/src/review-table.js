@@ -15,6 +15,54 @@ import { DISCOGS_CHANNEL, pageWindow }     from './constants.js';
 // Session-level URL check cache (avoids localStorage key mismatches across sessions)
 const _urlCheckSessionCache = new Map();
 
+// Collapse an overflowing single-line row of role chips: keep the ones that
+// fit, hide the rest behind a clickable "+N" pill whose tooltip lists them all
+// (#132). `box` must be a flex, nowrap, overflow:hidden container with `chips`
+// already appended; measurement uses the box's *rendered* (clipped) width so it
+// adapts to whatever space the flex layout actually granted. Clicking "+N"
+// reveals every chip by letting the row wrap onto multiple lines.
+function fitRoleChips(box, chips, allTypes) {
+    if (!chips.length) return;
+    const GAP = 4; // ≈ 0.25rem inter-chip gap reserved for the "+N" pill
+    const more = document.createElement('span');
+    more.style.cssText = 'background:#dcdcec;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;color:#4a4a77;white-space:nowrap;cursor:pointer;flex:0 0 auto;';
+    more.title = allTypes.join(', ');
+    // Measure on the next frame so the header has finished settling (fonts,
+    // initial reflow) before deciding what fits. Hiding chips frees space the
+    // bold artist name then reclaims by un-wrapping — which shifts the
+    // remaining chips right and can re-clip them. So we re-measure after each
+    // hide and repeat until the row is stable; hiding is monotonic, so this
+    // converges in at most `chips.length` passes.
+    requestAnimationFrame(() => {
+        box.appendChild(more);
+        let visible = chips.length;
+        for (let pass = 0; pass <= chips.length; pass++) {
+            more.textContent = '+' + (chips.length - visible);
+            const boxRight = box.getBoundingClientRect().right;
+            // Reserve the pill's width only while something is actually hidden.
+            const reserve = visible < chips.length ? more.getBoundingClientRect().width + GAP : 0;
+            const limit = boxRight - reserve + 0.5;
+            let over = -1;
+            for (let i = 0; i < visible; i++) {
+                if (chips[i].getBoundingClientRect().right > limit) { over = i; break; }
+            }
+            if (over === -1) break; // stable — everything shown fits
+            for (let j = over; j < chips.length; j++) chips[j].style.display = 'none';
+            visible = over;
+        }
+        if (visible >= chips.length) { box.removeChild(more); return; }
+        more.textContent = '+' + (chips.length - visible);
+        more.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            box.style.flexWrap = 'wrap';
+            box.style.overflow = 'visible';
+            chips.forEach(c => { c.style.display = ''; });
+            if (more.parentNode) more.parentNode.removeChild(more);
+        });
+    });
+}
+
 /**
  * Unified artist review table shown after the pre-flight check.
  * ALL artists appear here — auto-resolved ones are pre-filled and editable,
@@ -672,14 +720,24 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     if (!types)        { label.textContent = 'MB roles: fetch failed'; label.style.color = '#a02020'; wrap.appendChild(label); return; }
                     if (!types.length) { label.textContent = 'MB roles: none'; wrap.appendChild(label); return; }
                     label.textContent = 'MB roles: ';
+                    label.style.whiteSpace = 'nowrap';
+                    label.style.flex = '0 0 auto';
                     wrap.appendChild(label);
                     wrap.title = types.join(', ');
-                    types.forEach(t => {
+                    // Chips live in a single-line, clipped box; overflow is
+                    // folded into a "+N" pill so a prolific artist's roles never
+                    // spill past the header / X button (#132).
+                    const chipsBox = document.createElement('span');
+                    chipsBox.style.cssText = 'display:flex;flex-wrap:nowrap;gap:0.25rem;min-width:0;overflow:hidden;';
+                    wrap.appendChild(chipsBox);
+                    const chips = types.map(t => {
                         const c = document.createElement('span');
                         c.textContent = t;
-                        c.style.cssText = 'background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;color:#4a4a77;white-space:nowrap;';
-                        wrap.appendChild(c);
+                        c.style.cssText = 'background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;color:#4a4a77;white-space:nowrap;flex:0 0 auto;';
+                        chipsBox.appendChild(c);
+                        return c;
                     });
+                    fitRoleChips(chipsBox, chips, types);
                 });
                 wrap.appendChild(trigger);
                 return wrap;
