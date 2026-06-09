@@ -117,6 +117,8 @@ await page.keyboard.press('Tab');
 check('Tab on selection → bullet list', (await page.inputValue('#tc-anno-mdinput')) === '- one\n- two', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
 await page.keyboard.press('Tab');
 check('Tab again → numbered list', (await page.inputValue('#tc-anno-mdinput')) === '1. one\n1. two', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
+await page.keyboard.press('Shift+Tab');
+check('Shift+Tab removes the list marker', (await page.inputValue('#tc-anno-mdinput')) === 'one\ntwo', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
 
 // 4. Bullet continuation on Enter (real keystrokes)
 await page.fill('#tc-anno-mdinput', '- one');

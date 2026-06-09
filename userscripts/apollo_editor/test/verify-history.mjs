@@ -36,6 +36,8 @@ check('selected row highlighted', await page.$('#tc-anno-history .tc-hist-card.o
 // the revert (↶) button lives inside non-current cards only
 check('current card has no revert button', await page.$('#tc-anno-history .tc-hist-card:first-child .tc-hist-revert') === null);
 check('older cards have an in-card revert button', await page.$('#tc-anno-history .tc-hist-card:not(:first-child) .tc-hist-revert') !== null);
+check('revert is right-aligned (meta grows to push it to the edge)', (await page.evaluate(() => { const m = document.querySelector('#tc-anno-history .tc-hist-card:not(:first-child) .tc-hist-meta'); return getComputedStyle(m).flexGrow; })) === '1');
+check('revert hidden by default, shown on .on/hover (CSS rule present)', await page.evaluate(() => [...document.styleSheets].some(ss => { try { return [...ss.cssRules].some(r => /tc-hist-card\.on .tc-hist-revert/.test(r.cssText)); } catch { return false; } })));
 const noGap = await page.evaluate(() => { const b = document.getElementById('tc-anno-history-btn'); return getComputedStyle(b).marginLeft === '0px' || getComputedStyle(b).marginLeft === 'auto' ? getComputedStyle(b).marginLeft : getComputedStyle(b).marginLeft; });
 check('History button is not pushed right (no auto margin)', (await page.evaluate(() => getComputedStyle(document.getElementById('tc-anno-history-btn')).marginLeft)) !== 'auto', 'marginLeft=' + noGap);
 await page.$eval('#tc-anno-wrap', e => e.scrollIntoView({ block: 'center' }));

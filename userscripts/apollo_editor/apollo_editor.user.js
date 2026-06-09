@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.001400
+// @version      2026.6.9.001500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3361,13 +3361,14 @@
     #tc-anno-history .tc-hist-card:hover{background:#f0ebfb}
     #tc-anno-history .tc-hist-card.on{background:#ece5f8;box-shadow:inset -3px 0 0 #5f3ec0}
     #tc-anno-history .tc-hist-av{width:30px;height:30px;border-radius:50%;flex:0 0 auto;object-fit:cover;background:#e7defa;border:1px solid #ddd}
-    #tc-anno-history .tc-hist-meta{display:flex;flex-direction:column;min-width:0;font:12px Arial}
+    #tc-anno-history .tc-hist-meta{display:flex;flex-direction:column;min-width:0;flex:1 1 auto;font:12px Arial}
     #tc-anno-history .tc-hist-editor{font-weight:600;color:#3d2470}
     #tc-anno-history .tc-hist-date{color:#777;font-size:11px}
     #tc-anno-history .tc-hist-cl{color:#8a8a8a;font-style:italic;font-size:11px;margin-top:2px}
     #tc-anno-history .tc-hist-cur{color:#2c7a45;font-style:normal}
     #tc-anno-history .tc-hist-clmsg{color:#5a4a78;font-style:italic;font-size:11px;margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    #tc-anno-history .tc-hist-revert{margin-left:auto;align-self:center;flex:0 0 auto;width:26px;height:26px;border:1px solid #d6cdec;border-radius:5px;background:#fff;color:#5a3e94;font-size:15px;line-height:1;cursor:pointer}
+    #tc-anno-history .tc-hist-revert{align-self:center;flex:0 0 auto;width:26px;height:26px;border:1px solid #d6cdec;border-radius:5px;background:#fff;color:#5a3e94;font-size:15px;line-height:1;cursor:pointer;opacity:0;transition:opacity .12s}
+    #tc-anno-history .tc-hist-card.on .tc-hist-revert,#tc-anno-history .tc-hist-card:hover .tc-hist-revert{opacity:1}   /* visible on the selected card, or any card on hover */
     #tc-anno-history .tc-hist-revert:hover{background:#ece5f8;border-color:#b9a4e0}
     #tc-anno-history .tc-hist-revert:disabled{opacity:.5;cursor:default}
     #tc-anno-history .tc-hist-msg{color:#999;font-style:italic;font-size:12px;padding:6px 2px}
@@ -3732,17 +3733,18 @@
     if (a === b) { while (a > 0 && /\w/.test(value[a - 1])) a--; while (b < value.length && /\w/.test(value[b])) b++; }
     return { value: value.slice(0, a) + marker + value.slice(a, b) + marker + value.slice(b), selStart: a + marker.length, selEnd: b + marker.length };
   }
-  // Tab on a selection: turn the selected lines into a bullet list (or, with Ctrl, a numbered list). Pure.
-  function annoListSelection(value, selStart, selEnd, raw) {
+  // Tab on a selection cycles the lines through plain → bullet → numbered → bullet…; Shift+Tab (strip=true)
+  // removes any list marker. Pure → testable.
+  function annoListSelection(value, selStart, selEnd, raw, strip) {
     let s = value.lastIndexOf('\n', selStart - 1) + 1;
     let e = selEnd; if (e > s && value[e - 1] === '\n') e--;
     let lineEnd = value.indexOf('\n', e); if (lineEnd < 0) lineEnd = value.length;
     const block = value.slice(s, lineEnd);
-    // cycle on repeated Tab: plain → bullet, bullet → numbered, numbered → bullet
     const first = (block.split('\n').find(l => l.trim() !== '') || '').match(/^[ \t]*([-*+]|\d+\.|[a-z]\.)/i);
     const ordered = !!(first && /[-*+]/.test(first[1]));   // currently bullets → switch to numbered; else → bullets
     const repl = block.split('\n').map(ln => {
       if (ln.trim() === '') return ln;
+      if (strip) return ln.replace(/^[ \t]*(?:[-*+]|\d+\.|[a-z]\.)[ \t]+/i, '');   // remove the list marker, keep the text
       const txt = ln.replace(/^[ \t]*(?:[-*+]|\d+\.|[a-z]\.)?[ \t]*/i, '');   // drop leading ws + any existing marker
       return raw ? (ordered ? '    a. ' : '    * ') + txt : (ordered ? '1. ' : '- ') + txt;
     }).join('\n');
@@ -3772,6 +3774,7 @@
     '<tr><td><code>Ctrl/Cmd+B</code> / <code>+I</code></td><td>bold / italic (selection or word)</td></tr>' +
     '<tr><td><code>Enter</code></td><td>continue the current list</td></tr>' +
     '<tr><td><code>Tab</code></td><td>indent · on a selection → bullet list (Tab again → numbered, again → bullet…)</td></tr>' +
+    '<tr><td><code>Shift+Tab</code></td><td>on a selection → remove the list marker</td></tr>' +
     '</table>' +
     '<div class="tc-help-dim">A MusicBrainz entity URL (bare or <code>[]()</code>) gets its name added automatically.</div>';
 
@@ -3841,10 +3844,10 @@
         if (r) { e.preventDefault(); editTa(el, r.value, r.caret); }
       } else if (e.key === 'Tab') {
         e.preventDefault();
-        if (el.selectionStart !== el.selectionEnd) {   // Tab on a selection → bullet list; Tab again → numbered; again → bullet…
-          const r = annoListSelection(el.value, el.selectionStart, el.selectionEnd, raw);
+        if (el.selectionStart !== el.selectionEnd) {   // Tab → bullet → numbered → bullet…; Shift+Tab → remove the list marker
+          const r = annoListSelection(el.value, el.selectionStart, el.selectionEnd, raw, e.shiftKey);
           editTa(el, r.value, r.selStart, r.selEnd);
-        } else { const p = el.selectionStart, v = el.value; editTa(el, v.slice(0, p) + '\t' + v.slice(p), p + 1); }   // plain Tab → insert a tab
+        } else if (!e.shiftKey) { const p = el.selectionStart, v = el.value; editTa(el, v.slice(0, p) + '\t' + v.slice(p), p + 1); }   // plain Tab → insert a tab
       } else if ((e.ctrlKey || e.metaKey) && !e.altKey && /^[biBI]$/.test(e.key)) {
         e.preventDefault();
         const bold = e.key.toLowerCase() === 'b';

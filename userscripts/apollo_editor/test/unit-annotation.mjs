@@ -135,6 +135,9 @@ eq('Tab again: bullet → numbered (md)', annoListSelection('- one\n- two', 0, 1
 eq('Tab again: numbered → bullet (md)', annoListSelection('1. one\n1. two', 0, 12, false).value, '- one\n- two');
 eq('Tab: plain → MB bullet (raw)', annoListSelection('one\ntwo', 0, 7, true).value, '    * one\n    * two');
 eq('Tab again: MB bullet → "a." (raw)', annoListSelection('    * one\n    * two', 0, 19, true).value, '    a. one\n    a. two');
+eq('Shift+Tab removes bullet markers', annoListSelection('- one\n- two', 0, 11, false, true).value, 'one\ntwo');
+eq('Shift+Tab removes numbered markers', annoListSelection('1. one\n2. two', 0, 13, false, true).value, 'one\ntwo');
+eq('Shift+Tab removes MB "a." markers (raw)', annoListSelection('    a. one\n    a. two', 0, 21, true, true).value, 'one\ntwo');
 
 console.log('\nannoWrap (Ctrl+B/I wrap selection or surround the word):');
 const wq = (label, val, s, e, mk, want) => { const r = annoWrap(val, s, e, mk); eq(label, r.value, want); };
