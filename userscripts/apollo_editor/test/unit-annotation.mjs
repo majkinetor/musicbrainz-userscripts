@@ -91,6 +91,7 @@ eq('nested bullets round-trip (MB→MD→MB)', mdToAnno(annoToMd('    * a\n     
 console.log('\nannoToMd (MB markup → Markdown, the toggle\'s "back" direction):');
 eq('link back', annoToMd('[https://example.com/x|the site]'), '[the site](https://example.com/x)');
 eq('plain [url] back', annoToMd('[https://example.com]'), 'https://example.com');
+eq('[url|] (empty label) back → bare url (not url(url))', annoToMd('[https://e.com/x/annotations|]'), 'https://e.com/x/annotations');
 eq('bold back', annoToMd("'''strong'''"), '**strong**');
 eq('italic back', annoToMd("''soft''"), '*soft*');
 eq('bold-italic back', annoToMd("'''''both'''''"), '***both***');
@@ -124,11 +125,11 @@ wq('cursor on whitespace inserts empty markers', 'a  b', 2, 2, '**', 'a **** b')
 // ── annoResolveNames: add the entity name to links that lack one (mocked WS2 fetch) ──
 console.log('\nannoResolveNames (add names to unnamed entity links):');
 const A_RE = /https?:\/\/(?:beta\.)?musicbrainz\.org\/(artist|label|area|place|instrument|series|event|genre|release-group|release|recording|work)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
-const A_FIELD = { artist: 'name', 'release-group': 'title' };
-const NAMES = { artist: 'The Artist', 'release-group': 'The Album' };
+const A_FIELD = { artist: 'name', 'release-group': 'title', release: 'title' };
+const NAMES = { artist: 'The Artist', 'release-group': 'The Album', release: 'The Release' };
 const fakeFetch = async (url) => { const m = url.match(/ws\/2\/([a-z-]+)\//); const type = m && m[1]; return { ok: !!type, json: async () => ({ [A_FIELD[type] || 'name']: NAMES[type] }) }; };
 const annoResolveNames = new Function('ANNO_ENTITY_RE', 'ANNO_NAME_FIELD', '_annoName', 'fetch', 'location',
-  `${extract('annoReplaceAsync')}\nasync ${extract('annoLookupName')}\nasync ${extract('annoResolveNames')}\nreturn annoResolveNames;`)(A_RE, A_FIELD, new Map(), fakeFetch, { origin: 'https://musicbrainz.org' });
+  `${extract('annoReplaceAsync')}\n${extract('annoEntity')}\nasync ${extract('annoLookupName')}\nasync ${extract('annoResolveNames')}\nreturn annoResolveNames;`)(A_RE, A_FIELD, new Map(), fakeFetch, { origin: 'https://musicbrainz.org' });
 const U1 = 'https://musicbrainz.org/artist/71616b46-65ae-4a95-96f9-bb792e284baa';
 const aeq = async (label, input, want) => { const got = await annoResolveNames(input); eq(label, got, want); };
 await aeq('bare entity URL', U1, `[${U1}|The Artist]`);
@@ -137,6 +138,11 @@ await aeq('MB [url|] (empty label)', `[${U1}|]`, `[${U1}|The Artist]`);
 await aeq('Markdown [](url) empty label', `[](${U1})`, `[The Artist](${U1})`);
 await aeq('MB link with existing label left alone', `[${U1}|Keep Me]`, `[${U1}|Keep Me]`);
 await aeq('Markdown link with text left alone', `[Keep Me](${U1})`, `[Keep Me](${U1})`);
+// entity URL with a trailing path (e.g. /annotations) must still resolve — the bug the user hit
+const UREL = 'https://musicbrainz.org/release/00000000-0000-0000-0000-000000000009/annotations';
+await aeq('MB [url|] with trailing path', `[${UREL}|]`, `[${UREL}|The Release]`);
+await aeq('Markdown [](url) with trailing path', `[](${UREL})`, `[The Release](${UREL})`);
+await aeq('bare entity URL with trailing path', UREL, `[${UREL}|The Release]`);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

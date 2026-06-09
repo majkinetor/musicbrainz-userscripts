@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.000600
+// @version      2026.6.9.000700
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3565,7 +3565,7 @@
     const blocks = [];                                 // pull MB code blocks out first so '''/'' inside them aren't touched
     const stashB = b => '\x07' + (blocks.push(b) - 1) + '\x08';
     src = src.replace(/(?:^ {8}(?! *\*[ \t]).*(?:\n|$))+/gm, m => { const trail = m.endsWith('\n') ? '\n' : ''; const code = m.replace(/\n$/, '').split('\n').map(l => l.slice(8)).join('\n'); return stashB('```\n' + code + '\n```') + trail; });   // MB 8-space block (not a nested bullet) → ```fenced```
-    src = src.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => `[${text || url}](${url})`);   // [url|text] → [text](url)
+    src = src.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => text ? `[${text}](${url})` : url);   // [url|text] → [text](url); [url|] (empty label) → bare url
     src = src.replace(/\[((?:https?|ftp):\/\/[^\]|]+)\]/g, (_m, url) => url);                        // [url] → bare url
     src = src.replace(/'''''(.+?)'''''/g, '***$1***').replace(/'''(.+?)'''/g, '**$1**').replace(/''(.+?)''/g, '*$1*');
     src = src.replace(/^(={1,6})[ \t]*(.*?)[ \t]*=*[ \t]*$/gm, (_m, e, t) => '#'.repeat(e.length) + ' ' + t);  // = H = → # H
@@ -3593,16 +3593,19 @@
       return null;
     } catch { return null; }
   }
+  // is this URL an MB entity URL? (tolerates a trailing path like /release/<mbid>/annotations) → {type,mbid}
+  function annoEntity(url) { const m = ANNO_ENTITY_RE.exec(url); ANNO_ENTITY_RE.lastIndex = 0; return m ? { type: m[1].toLowerCase(), mbid: m[2] } : null; }
   // add the entity name to every MB entity link that doesn't already have one — handles MB [url] / [url|]
   // and Markdown []()/bare URLs, in either editing mode. Links that already carry a label are left alone.
+  // Captures the URL first, THEN tests it for an entity, so trailing path segments don't break the match.
   async function annoResolveNames(src) {
-    const U = ANNO_ENTITY_RE.source;
+    const lbl = async (url) => { const e = annoEntity(url); return e ? await annoLookupName(e.type, e.mbid, url) : null; };
     // MB: [url] or [url|] (no/empty label) → [url|Name]
-    src = await annoReplaceAsync(src, new RegExp('\\[(' + U + ')\\|?\\]', 'gi'), async (m, url, type, mbid) => { const n = await annoLookupName(type, mbid, url); return n ? `[${url}|${n}]` : m; });
+    src = await annoReplaceAsync(src, /\[([^\]|]+)\|?\]/g, async (m, url) => { url = url.trim(); const n = await lbl(url); return n ? `[${url}|${n}]` : m; });
     // Markdown: [](url) (empty label) → [Name](url)
-    src = await annoReplaceAsync(src, new RegExp('\\[\\]\\((' + U + ')\\)', 'gi'), async (m, url, type, mbid) => { const n = await annoLookupName(type, mbid, url); return n ? `[${n}](${url})` : m; });
+    src = await annoReplaceAsync(src, /\[\]\(([^)\s]+)\)/g, async (m, url) => { const n = await lbl(url); return n ? `[${n}](${url})` : m; });
     // a bare URL (not already inside a [..] or (..) link) → [url|Name]
-    src = await annoReplaceAsync(src, new RegExp('(?<![\\[(|])(' + U + ')', 'gi'), async (m, url, type, mbid) => { const n = await annoLookupName(type, mbid, url); return n ? `[${url}|${n}]` : m; });
+    src = await annoReplaceAsync(src, /(?<![\[(|])((?:https?|ftp):\/\/[^\s<>\]]+)/g, async (m, url) => { const n = await lbl(url); return n ? `[${url}|${n}]` : m; });
     return src;
   }
 
