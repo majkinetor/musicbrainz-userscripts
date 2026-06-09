@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.001300
+// @version      2026.6.9.001400
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3314,8 +3314,10 @@
     #tc-anno-bar #tc-anno-help{width:25px;justify-content:center;color:#7a5fc0}
     #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-bar.tc-anno-hist-on #tc-anno-history-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
-    #tc-anno-status{font:12px Arial;color:#777;margin-left:2px}
-    /* all toolbar buttons in one contiguous group (no gap before History) */
+    #tc-anno-status{font:italic 11px Arial;font-weight:normal;color:#8a7bb8;letter-spacing:0;text-transform:none}   /* shown next to the Annotation: label */
+    /* three toolbar groups: [Preview Clear]  [markup ?]      [History] (the 1:3 spacers place markup/? left-of-centre) */
+    #tc-anno-bar .tc-anno-sp1{flex:1 1 0;min-width:14px}
+    #tc-anno-bar .tc-anno-sp2{flex:3 1 0;min-width:14px}
     /* editor body: the active textarea on the left; the live preview splits in on the right when toggled */
     #tc-anno-body{display:flex;align-items:stretch;min-height:240px}
     #tc-anno-edit{flex:1 1 0;min-width:0;display:flex;flex-direction:column}
@@ -3365,8 +3367,7 @@
     #tc-anno-history .tc-hist-cl{color:#8a8a8a;font-style:italic;font-size:11px;margin-top:2px}
     #tc-anno-history .tc-hist-cur{color:#2c7a45;font-style:normal}
     #tc-anno-history .tc-hist-clmsg{color:#5a4a78;font-style:italic;font-size:11px;margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    #tc-anno-history .tc-hist-revert{margin-left:auto;align-self:center;flex:0 0 auto;width:24px;height:24px;border:1px solid #d6cdec;border-radius:5px;background:#fff;color:#5a3e94;font-size:14px;line-height:1;cursor:pointer;opacity:0;transition:opacity .12s}
-    #tc-anno-history .tc-hist-card:hover .tc-hist-revert,#tc-anno-history .tc-hist-card:focus-within .tc-hist-revert{opacity:1}
+    #tc-anno-history .tc-hist-revert{margin-left:auto;align-self:center;flex:0 0 auto;width:26px;height:26px;border:1px solid #d6cdec;border-radius:5px;background:#fff;color:#5a3e94;font-size:15px;line-height:1;cursor:pointer}
     #tc-anno-history .tc-hist-revert:hover{background:#ece5f8;border-color:#b9a4e0}
     #tc-anno-history .tc-hist-revert:disabled{opacity:.5;cursor:default}
     #tc-anno-history .tc-hist-msg{color:#999;font-style:italic;font-size:12px;padding:6px 2px}
@@ -3784,9 +3785,10 @@
     bar.innerHTML =
       '<button type="button" id="tc-anno-preview-btn" title="Toggle a live split preview — editor on the left, rendered annotation on the right">👁 Preview</button>' +
       '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
+      '<span class="tc-anno-sp tc-anno-sp1"></span>' +
       '<button type="button" id="tc-anno-md" class="tc-anno-icon" title="">' + ANNO_MD_LOGO + '</button>' +
       '<button type="button" id="tc-anno-help" class="tc-anno-icon" title="Annotation syntax help" aria-label="Syntax help">?</button>' +
-      '<span id="tc-anno-status"></span>' +
+      '<span class="tc-anno-sp tc-anno-sp2"></span>' +
       (mbid ? '<button type="button" id="tc-anno-history-btn" title="Browse this annotation\'s previous versions and display any one">🕘 History</button>' : '');
     const body = document.createElement('div'); body.id = 'tc-anno-body';
     const editPane = document.createElement('div'); editPane.id = 'tc-anno-edit';
@@ -3802,8 +3804,13 @@
     const annoRow = wrap.closest('tr'), commRow = document.getElementById('comment')?.closest('tr');
     if (annoRow && commRow && commRow !== annoRow && annoRow.previousElementSibling !== commRow) annoRow.parentNode.insertBefore(commRow, annoRow);
 
+    // status messages appear next to the "Annotation:" label (not in the toolbar)
+    const statusEl = document.createElement('span'); statusEl.id = 'tc-anno-status';
+    const labelCell = annoRow?.querySelector('td:first-child label') || annoRow?.querySelector('td:first-child');
+    if (labelCell) labelCell.appendChild(statusEl);
+
     const $ = id => bar.querySelector('#' + id);
-    const status = (msg, ms) => { const s = $('tc-anno-status'); if (!s) return; s.textContent = msg || ''; if (ms) setTimeout(() => { if (s.textContent === msg) s.textContent = ''; }, ms); };
+    const status = (msg, ms) => { statusEl.textContent = msg ? ' — ' + msg : ''; if (ms) setTimeout(() => { if (statusEl.textContent === ' — ' + msg) statusEl.textContent = ''; }, ms); };
     const editTa = (el, val, s, e2) => { const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; set.call(el, val); el.setSelectionRange(s, e2 == null ? s : e2); el.dispatchEvent(new Event('input', { bubbles: true })); };
     const syncMdToField = () => annoSet(ta, mdToAnno(md.value));   // Markdown surface → MB field (keeps the model correct)
     const activeEl = () => surface === 'raw' ? ta : md;
