@@ -66,6 +66,9 @@ eq('hr ---', mdToAnno('---'), '----');
 // a URL containing * or _ must not be italicised by the bold/italic passes (URL is protected)
 eq('url with underscores protected', mdToAnno('see https://e.com/a_b_c done'), 'see https://e.com/a_b_c done');
 eq('md link url with asterisks protected', mdToAnno('[x](https://e.com/a*b*c)'), '[https://e.com/a*b*c|x]');
+eq('fenced code → 8-space block', mdToAnno('```\nline one\nline two\n```'), '        line one\n        line two');
+eq('fenced code with lang tag', mdToAnno('```js\nvar x = 1;\n```'), '        var x = 1;');
+eq('markup inside code is left literal', mdToAnno('```\n**not bold** [x](y)\n```'), '        **not bold** [x](y)');
 
 console.log('\nannoToMd (MB markup → Markdown, the toggle\'s "back" direction):');
 eq('link back', annoToMd('[https://example.com/x|the site]'), '[the site](https://example.com/x)');
@@ -76,11 +79,13 @@ eq('bold-italic back', annoToMd("'''''both'''''"), '***both***');
 eq('heading back', annoToMd('== Section =='), '## Section');
 eq('bullet back', annoToMd('    * item'), '- item');
 eq('hr back', annoToMd('----'), '---');
+eq('8-space block → fenced code', annoToMd('        line one\n        line two'), '```\nline one\nline two\n```');
+eq('markup inside MB code is left literal', annoToMd("        '''not bold''' [x|y]"), "```\n'''not bold''' [x|y]\n```");
 
 console.log('\nround-trips (toggle stability):');
-const rtMB = "= Notes =\nA '''bold''' and ''soft'' note, see [https://e.com/x|the label].\n    * one\n    * two\n----\ntail";
+const rtMB = "= Notes =\nA '''bold''' and ''soft'' note, see [https://e.com/x|the label].\n    * one\n    * two\n----\n        code here\ntail";
 eq('MB → MD → MB is stable', mdToAnno(annoToMd(rtMB)), rtMB);
-const rtMD = '## Notes\nA **bold** and *soft* note, see [the label](https://e.com/x).\n- one\n- two\n---\ntail';
+const rtMD = '## Notes\nA **bold** and *soft* note, see [the label](https://e.com/x).\n- one\n- two\n---\n```\ncode here\n```\ntail';
 eq('MD → MB → MD is stable', annoToMd(mdToAnno(rtMD)), rtMD);
 
 console.log(`\n${pass} passed, ${fail} failed`);

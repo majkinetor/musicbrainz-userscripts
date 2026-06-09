@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.000200
+// @version      2026.6.9.000300
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3492,29 +3492,35 @@
   // Markdown → MB annotation markup (kellnerd-inspired). Pure + sync.
   function mdToAnno(src) {
     if (!src) return src;
-    const urls = [];                                   // protect URLs so * / _ inside them aren't italicised
-    const stash = u => '\x05' + (urls.push(u) - 1) + '\x06';
-    src = src.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text, url) => `[${stash(url)}|${text}]`);   // [text](url) → [url|text]
-    src = src.replace(/(^|[\s(])((?:https?|ftp):\/\/[^\s<>]+)/g, (_m, pre, url) => pre + stash(url));  // bare urls
+    const urls = [], blocks = [];                      // protect URLs (* / _) and code blocks from the inline passes
+    const stashU = u => '\x05' + (urls.push(u) - 1) + '\x06';
+    const stashB = b => '\x07' + (blocks.push(b) - 1) + '\x08';
+    src = src.replace(/^```[^\n]*\n([\s\S]*?)\n```[ \t]*$/gm, (_m, code) => stashB(code.split('\n').map(l => '        ' + l).join('\n')));   // ```fenced``` → MB 8-space block
+    src = src.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text, url) => `[${stashU(url)}|${text}]`);   // [text](url) → [url|text]
+    src = src.replace(/(^|[\s(])((?:https?|ftp):\/\/[^\s<>]+)/g, (_m, pre, url) => pre + stashU(url));  // bare urls
     src = src.replace(/^(#{1,6})\s+(.*?)\s*#*\s*$/gm, (_m, h, t) => { const n = Math.min(h.length, 3); const e = '='.repeat(n); return `${e} ${t} ${e}`; });
     src = src.replace(/(\*\*|__)(.+?)\1/g, "'''$2'''");        // **bold** / __bold__
     src = src.replace(/(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])/g, "''$1''");   // *italic*
     src = src.replace(/(?<![_\w])_(?!\s)(.+?)(?<!\s)_(?![_\w])/g, "''$1''");     // _italic_
     src = src.replace(/^\s*[-*+]\s+/gm, '    * ');             // - item → 4-space bullet
     src = src.replace(/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/gm, '----');   // hr
+    src = src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
     return src.replace(/\x05(\d+)\x06/g, (_m, i) => urls[+i]);
   }
 
   // MB annotation markup → Markdown (reverse of mdToAnno; powers the Markdown toggle's "back" direction)
   function annoToMd(src) {
     if (!src) return src;
+    const blocks = [];                                 // pull MB code blocks out first so '''/'' inside them aren't touched
+    const stashB = b => '\x07' + (blocks.push(b) - 1) + '\x08';
+    src = src.replace(/(?:^ {8}.*(?:\n|$))+/gm, m => { const trail = m.endsWith('\n') ? '\n' : ''; const code = m.replace(/\n$/, '').split('\n').map(l => l.slice(8)).join('\n'); return stashB('```\n' + code + '\n```') + trail; });   // MB 8-space block → ```fenced```
     src = src.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => `[${text || url}](${url})`);   // [url|text] → [text](url)
     src = src.replace(/\[((?:https?|ftp):\/\/[^\]|]+)\]/g, (_m, url) => url);                        // [url] → bare url
     src = src.replace(/'''''(.+?)'''''/g, '***$1***').replace(/'''(.+?)'''/g, '**$1**').replace(/''(.+?)''/g, '*$1*');
     src = src.replace(/^(={1,6})\s*(.*?)\s*=*\s*$/gm, (_m, e, t) => '#'.repeat(e.length) + ' ' + t);  // = H = → # H
     src = src.replace(/^ {4}\*\s+/gm, '- ');                                                          // 4-space bullet → - item
     src = src.replace(/^-{4,}\s*$/gm, '---');                                                         // ---- → ---
-    return src;
+    return src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
   }
 
   function annoReplaceAsync(str, re, fn) {   // async String.replace (kellnerd's replaceAsync)
