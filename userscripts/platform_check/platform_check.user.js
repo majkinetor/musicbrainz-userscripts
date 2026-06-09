@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.2
+// @version      2026.6.9.3
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -436,24 +436,30 @@ container.innerHTML = `
   .pc-cell-val  { font-size: 12px; font-weight: bold; font-family: monospace; color: #777; text-align: right; }
   .pc-cell-master { font-size: 11px; min-width: 14px; }
 
-  /* 1-row — [icon] [name] [year] · [format] · [label] …→ [master][tracks] */
-  #mb-pc-panel.pc-layout-1row .pc-row {
-    display: flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden;
+  /* 1-row — the ENTIRE provider list is ONE grid (rows are display:contents, so
+     every cell becomes a grid item of .pc-rows). Columns are content-sized, so
+     they're as wide as their widest cell across all rows and line up as a true
+     table — an empty format still reserves its column, so labels start at the
+     same x whether or not a row has a format. Order: icon name year format label
+     master tracks. */
+  #mb-pc-panel.pc-layout-1row .pc-rows {
+    display: grid; align-items: center; column-gap: 6px; row-gap: 10px;
+    grid-template-columns: 22px max-content max-content max-content minmax(0,1fr) max-content max-content;
   }
-  #mb-pc-panel.pc-layout-1row .pc-meta        { display: contents; }
-  #mb-pc-panel.pc-layout-1row .pc-cell-name   { flex: 0 0 auto; }   /* full name, never clipped */
-  #mb-pc-panel.pc-layout-1row .pc-cell-year,
-  #mb-pc-panel.pc-layout-1row .pc-cell-format { flex: 0 0 auto; }
-  #mb-pc-panel.pc-layout-1row .pc-cell-label  { flex: 0 1 auto; min-width: 0; }   /* truncates first */
-  /* empty meta cells must not leave a flex-gap hole between the parts */
-  #mb-pc-panel.pc-layout-1row .pc-cell-year:empty,
-  #mb-pc-panel.pc-layout-1row .pc-cell-format:empty,
-  #mb-pc-panel.pc-layout-1row .pc-cell-label:empty { display: none; }
-  /* master state + track count pinned to the right edge */
-  #mb-pc-panel.pc-layout-1row .pc-cell-master { flex: 0 0 auto; min-width: 0; margin-left: auto; text-align: center; }
-  #mb-pc-panel.pc-layout-1row .pc-cell-val    { flex: 0 0 auto; }
+  #mb-pc-panel.pc-layout-1row .pc-row,
+  #mb-pc-panel.pc-layout-1row .pc-meta { display: contents; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-ico    { grid-column: 1; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-name   { grid-column: 2; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-year   { grid-column: 3; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-format { grid-column: 4; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-label  { grid-column: 5; min-width: 0; }   /* fills + truncates */
+  #mb-pc-panel.pc-layout-1row .pc-cell-master { grid-column: 6; text-align: center; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-val    { grid-column: 7; }
+  #mb-pc-panel.pc-layout-1row .pc-rows-sep    { grid-column: 1 / -1; border-bottom: 1px solid #EEE; }
 
   /* 2-row — legacy stacked look: name line, then a meta line below */
+  #mb-pc-panel.pc-layout-2row .pc-rows { display: flex; flex-direction: column; gap: 10px; }
+  #mb-pc-panel.pc-layout-2row .pc-rows-sep { border-bottom: 1px solid #EEE; }
   #mb-pc-panel.pc-layout-2row .pc-row {
     display: grid; align-items: center; column-gap: 4px;
     grid-template-columns: 22px minmax(0,1fr) auto 24px;
@@ -477,14 +483,16 @@ container.innerHTML = `
   /* MusicBrainz reference row: always visible mark + brand-violet name, no fade */
   #mb-pc-panel .pc-row-mb .pc-plat-ico { display: inline-flex; }
 </style>
-<div style="border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 6px;">
+<div style="margin-bottom: 6px;">
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
     </div>
   </div>
-  <div id="row-mb" class="pc-row pc-row-mb" style="margin-top: 4px;">
+</div>
+<div class="pc-rows" style="margin-bottom: 6px;">
+  <div id="row-mb" class="pc-row pc-row-mb">
     <span class="pc-cell-ico"><span class="pc-plat-ico" title="MusicBrainz">${MB_ICON}</span></span>
     <a id="mb-mb-name" class="pc-cell-name" href="${MB_ORIGIN}/release/" target="_blank" rel="noopener" style="color: #BA68C8;">MusicBrainz</a>
     <span class="pc-meta">
@@ -495,8 +503,7 @@ container.innerHTML = `
     <span class="pc-cell-master"></span>
     <span id="mb-mb-tracks" class="pc-cell-val" style="color: #FF8C00;"></span>
   </div>
-</div>
-<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px;">
+  <div class="pc-rows-sep"></div>
   ${PROVIDER_ORDER.map(p => `
   <div id="row-${p}" class="pc-row pc-st-notfound">
     <span class="pc-cell-ico">
