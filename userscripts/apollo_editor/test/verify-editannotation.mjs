@@ -49,7 +49,9 @@ check('Changelog field intact', await page.$('input[name="edit-annotation.change
 check('native "Annotation formatting" guide hidden', await page.evaluate(() => { const h = [...document.querySelectorAll('#content h3')].find(e => /annotation formatting/i.test(e.textContent)); return !h || !h.offsetParent; }));
 check('Edit note section hidden', !(await page.isVisible('textarea[name="edit-annotation.edit_note"]')));
 check('native buttons row (Preview / Enter edit) hidden', await page.evaluate(() => { const r = document.querySelector('#content form .row.buttons, #content form .row.no-label.buttons'); return !!r && (!r.offsetParent || getComputedStyle(r).display === 'none'); }));
-check('our own "Enter edit" button present + visible', await page.isVisible('#tc-anno-submit button'));
+check('our own "Enter edit" button present + visible', await page.isVisible('#tc-anno-submit'));
+check('Enter edit is in the Changelog row (right of the input)', await page.evaluate(() => { const s = document.getElementById('tc-anno-submit'), r = s && s.closest('.row'); return !!(r && r.querySelector('input[name="edit-annotation.changelog"]')); }));
+check('Apollo switcher (launcher) present on the page', await page.$('#tc-launch') !== null);
 
 await page.evaluate(() => window.scrollTo(0, 0));
 await page.screenshot({ path: resolve(HERE, 'logs', 'shot-editannotation.png') }).catch(() => {});

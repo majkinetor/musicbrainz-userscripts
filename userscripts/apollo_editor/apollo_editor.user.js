@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.002200
+// @version      2026.6.9.002300
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1875,7 +1875,7 @@
     const lbl = document.createElement('span'); lbl.className = 'tc-launch-lbl'; lbl.title = 'Toggle Apollo / the original editor for ALL tabs — stays this way (across pages) until you switch back';
     lbl.onclick = () => {   // GLOBAL toggle — flips Apollo for every tab/feature and persists across pages
       SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
-      applyView(); applyNav();
+      applyView(); applyNav(); applyAnnotationPage();
     };
     const gear = document.createElement('span'); gear.className = 'tc-launch-gear'; gear.textContent = '⚙'; gear.title = 'Apollo Editor settings';
     gear.onclick = () => openSettings(gear);   // the one settings entry point — gear removed from the toolbars
@@ -3339,9 +3339,12 @@
     body.tc-anno-page #content > form > .row:not(.no-label) > label{display:block;width:auto;text-align:left;float:none;font:600 12px Arial;letter-spacing:.02em;color:#6a6a6a;margin:0 0 5px}
     body.tc-anno-page #content > form > .row > input[type=text]{width:100%;max-width:680px;box-sizing:border-box;padding:5px 8px;border:1px solid #d6cdec;border-radius:5px}
     body.tc-anno-page #content > form > fieldset.editnote{max-width:1100px}
-    body.tc-anno-page #tc-anno-submit{margin:12px 0 24px;max-width:1100px}
-    body.tc-anno-page #tc-anno-submit button{font:600 13px Arial;padding:8px 20px;border:1px solid #2c7a45;border-radius:6px;background:#3aa55f;color:#fff;cursor:pointer}
-    body.tc-anno-page #tc-anno-submit button:hover{background:#2c8a4d}
+    /* Changelog row becomes [label above] then [input  +  Enter edit] side by side */
+    body.tc-anno-page #content > form > .row.tc-cl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+    body.tc-anno-page #content > form > .row.tc-cl-row > label{flex:1 1 100%;margin-bottom:4px}
+    body.tc-anno-page #content > form > .row.tc-cl-row > input[type=text]{flex:1 1 auto;width:auto;max-width:600px}
+    body.tc-anno-page #tc-anno-submit{flex:0 0 auto;font:600 13px Arial;padding:7px 18px;border:1px solid #2c7a45;border-radius:6px;background:#3aa55f;color:#fff;cursor:pointer}
+    body.tc-anno-page #tc-anno-submit:hover{background:#2c8a4d}
     #tc-anno-preview{flex:1 1 0;min-width:0;min-height:240px;padding:10px 13px;background:#fff;border-left:1px solid #e7defa;font-size:13px;line-height:1.5;color:#333;overflow:auto;word-break:break-word;box-sizing:border-box}
     #tc-anno-preview .tc-anno-empty{color:#999;font-style:italic}
     #tc-anno-preview p{margin:0 0 8px}
@@ -3972,7 +3975,7 @@
     setTimeout(() => autoResolve(activeEl()), 400);   // name any unnamed links already in the annotation
   }
 
-  function annoWant() { return SETTINGS.modifyAnnotation !== false; }   // the "Modify annotations with Markdown" setting
+  function annoWant() { return apolloEnabled() && SETTINGS.modifyAnnotation !== false; }   // global Apollo toggle + the "Modify annotations" setting
   // tear the editor down and put the native textarea back (when the setting is turned off)
   function unmountAnnotation(taArg) {
     const ta = taArg || document.getElementById('annotation');
@@ -3986,6 +3989,7 @@
   function applyAnnotationPage() {
     if (!/\/release\/[0-9a-f-]{36}\/edit_annotation/.test(location.pathname)) return;
     const ta = document.querySelector('textarea[name="edit-annotation.text"]'); if (!ta) return;
+    ensureLauncher();   // the floating Original / Apollo switcher + ⚙ settings, same as the release editor
     const form = ta.closest('form'), hide = annoWant();
     if (hide) {
       document.body.classList.add('tc-ri-on', 'tc-anno-page');
@@ -4002,14 +4006,16 @@
     [...document.querySelectorAll('#content h2')].forEach(h => { if (/^\s*edit note\s*$/i.test((h.textContent || '').trim())) { els.add(h); let n = h.nextElementSibling; while (n && n.tagName === 'P') { els.add(n); n = n.nextElementSibling; } } });
     if (form && annoRowEl) { const kids = [...form.children], ai = kids.indexOf(annoRowEl); kids.forEach((ch, i) => { if (i > ai) els.add(ch); }); }   // everything below the editor, incl. the native buttons
     els.forEach(el => { el.style.display = hide ? 'none' : ''; });
-    // our own "Enter edit" (the native one is hidden) — it just clicks the native submit so MB's flow runs
+    // our own "Enter edit" (the native one is hidden) — placed to the right of the Changelog input; just clicks
+    // the native submit so MB's flow runs
+    const clInput = document.querySelector('input[name="edit-annotation.changelog"]'), clRow = clInput?.closest('.row');
     let sub = document.getElementById('tc-anno-submit');
-    if (hide && !sub && annoRowEl) {
-      sub = document.createElement('div'); sub.id = 'tc-anno-submit';
-      sub.innerHTML = '<button type="button">✓ Enter edit</button>';
-      sub.firstChild.onclick = () => { const b = form && [...form.querySelectorAll('button, input[type=submit]')].find(x => /enter edit/i.test((x.textContent || x.value || '').trim())); if (b) b.click(); };
-      annoRowEl.after(sub);
+    if (hide && !sub && clInput) {
+      sub = document.createElement('button'); sub.id = 'tc-anno-submit'; sub.type = 'button'; sub.textContent = '✓ Enter edit';
+      sub.onclick = () => { const b = form && [...form.querySelectorAll('button, input[type=submit]')].find(x => /enter edit/i.test((x.textContent || x.value || '').trim())); if (b) b.click(); };
+      clInput.after(sub);
     }
+    if (clRow) clRow.classList.toggle('tc-cl-row', hide);
     if (sub) sub.style.display = hide ? '' : 'none';
   }
 
