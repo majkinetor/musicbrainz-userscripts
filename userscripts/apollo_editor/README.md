@@ -42,14 +42,9 @@ Each takeover is optional and you can flip back to the native editor at any time
     - Tools relocated to always-visible _Tool_ button, with some new tools
     - Revert/Clear for a single track or the whole table
 - **[Customization](#settings)** — resizable columns, alternate row colors, grid, multiple layouts, match tolerance
+- **[Annotation editor](#annotation-editor)** — edit the annotation as **Markdown** with a live preview, in the release editor's *Additional information* and on the standalone *Edit annotation* page. Toggle with the **Modify annotations with Markdown** setting.
 - **Release Information** tab
-    - **Annotation editor** — a bordered editor box that edits the annotation in **Markdown by default** (the underlying MusicBrainz field always holds MB markup, so saving stays correct). Monospace surface with **bullet continuation on Enter** (nested via indentation) and **Ctrl/Cmd+B / Ctrl/Cmd+I** for bold/italic — wrapping the selection, or surrounding the word under the cursor. Toolbar:
-        - **Preview** — a live **split** view: editor on the left, the annotation rendered (exactly the way MusicBrainz will show it — headings, bold/italic, links, **nested lists**, code, rules) updating in real time on the right.
-        - **markup toggle** (icon) — shows the current markup (Markdown logo / MB logo); click to switch between editing as Markdown and the raw MusicBrainz markup.
-        - **?** — hover for a syntax cheatsheet.
-        - **🕘 History** (right end, existing releases only) — lists the annotation's previous versions as user cards; select one to display its rendered annotation, with a **Replace editor with this version** action that loads it back into the editor (reconstructed from the rendered HTML, since MusicBrainz exposes no raw text per revision — review before submitting).
-        - **Clear**.
-        - **Unnamed MusicBrainz entity links are named automatically** (no button) — MB `[url]`/`[url|]`, Markdown `[]()`, or a bare URL get the entity name (fetched from the API) on edit. The Markdown ↔ MB conversion (inspired by [kellnerd's annotationConverter](https://github.com/kellnerd/musicbrainz-scripts/blob/main/src/annotationConverter.js)) covers links, bold/italic, headings, nested bullets, fenced ` ``` ` ↔ 8-space code, rules, and encodes a non-link `[x]` so MB doesn't read it as a broken link.
+    - The **annotation editor** (above) lives here, in *Additional information*.
     - External links moved to a right column with a dead-link checker; right-click a favicon/type to edit it
 
 ## Matching
@@ -121,6 +116,32 @@ Besides the integrated tools, there are a few new ones:
 - **Search & Replace** — search a string within track titles and replace it. Clicking the button starts a fresh session with any existing parameters applied and cleared.
 - **Resize Columns** — set column sizes to predefined variants (auto-fit, centered, default).
 
+## Annotation editor
+
+Edits the [annotation](https://musicbrainz.org/doc/Annotation) as **Markdown** with a live preview. It runs both in the release editor's *Additional information* section and on the standalone **Edit annotation** page (`/release/<mbid>/edit_annotation`), and is toggled by the **Modify annotations with Markdown** [setting](#modify).
+
+The editor edits in Markdown by default; the underlying MusicBrainz field always holds MB markup, so **saving is always correct**. The surface is monospace with `Tab`-aligned indentation.
+
+**Toolbar** — `[Preview] [Clear]  [markup] [?]  [maximize] [History]`:
+
+- **Preview** — a live **split** view: editor on the left, the annotation rendered (exactly the way MusicBrainz will show it — headings, bold/italic, links, **nested bullet & numbered lists**, code, rules) updating in real time on the right. Grounded against MusicBrainz's own preview.
+- **markup toggle** (icon) — shows the current markup (Markdown / MusicBrainz logo); click to switch between editing as Markdown and the raw MusicBrainz markup.
+- **?** — hover for a syntax + shortcut cheatsheet.
+- **maximize** — expand the editor to fill the screen (Esc restores).
+- **🕘 History** (existing releases only) — the annotation's previous versions as user cards (editor, date, changelog message); select one to display its rendered annotation, with a small **↶ revert** button that loads that version back into the editor (reconstructed from the rendered HTML — review before submitting).
+- **Clear**.
+
+**Editing**
+
+- **Unnamed MusicBrainz entity links are named automatically** — MB `[url]`/`[url|]`, Markdown `[]()`, or a bare URL get the entity name (fetched from the API).
+- **Enter** continues the current list; **Tab** on a selection makes a bullet list (Tab again → numbered, again → bullet…); **Shift+Tab** removes the list marker.
+- **Ctrl/Cmd+B / +I** bold/italic — wraps the selection, or surrounds the word under the cursor.
+- All edits are **undoable** (`Ctrl+Z`).
+
+The Markdown ↔ MB conversion (inspired by [kellnerd's annotationConverter](https://github.com/kellnerd/musicbrainz-scripts/blob/main/src/annotationConverter.js)) covers links, bold/italic, headings, nested bullet/numbered lists, fenced ` ``` ` ↔ 8‑space code, rules, and encodes a non‑link `[x]` so MusicBrainz doesn't read it as a broken link.
+
+On the standalone **Edit annotation** page the Changelog moves above the editor (like *Disambiguation* in `/edit`); the native Edit note, formatting guide and submit buttons are hidden in favour of a single **Enter edit** button.
+
 ## Settings
 
 Accessed using the **⚙** button on the interface switcher button **Original / Apollo**.
@@ -134,6 +155,7 @@ If any of the following options is on, script replaces the native interface elem
 - Modify Release Information
 - Modify Tracklist
 - Modify Recordings
+- Modify annotations with Markdown — the [annotation editor](#annotation-editor) (applies to both `/edit` and the standalone `/edit_annotation` page)
 - Modify header and footer
 - Zen editing
 
