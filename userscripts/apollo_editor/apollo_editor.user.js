@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.002400
+// @version      2026.6.9.002500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3931,7 +3931,7 @@
     $('tc-anno-md').onclick = () => { if (surface === 'md') syncMdToField(); surface = surface === 'md' ? 'raw' : 'md'; if (surface === 'md') md.value = annoToMd(ta.value); apply(); activeEl().focus(); };
     $('tc-anno-clear').onclick = () => { md.value = ''; annoSet(ta, ''); renderPreview(); };
     // maximize / restore the editor (fills the viewport)
-    const setMax = on => { wrap.classList.toggle('tc-anno-max', on); document.body.classList.toggle('tc-anno-max-open', on); const b = $('tc-anno-max'); b.innerHTML = on ? ANNO_MIN_ICON : ANNO_MAX_ICON; b.title = on ? 'Restore the editor (Esc)' : 'Maximize the editor (Esc to restore)'; renderPreview(); };
+    const setMax = on => { wrap.classList.toggle('tc-anno-max', on); document.body.classList.toggle('tc-anno-max-open', on); if (on) wrap.style.height = ''; else if (wrap._tcFill) wrap._tcFill(); const b = $('tc-anno-max'); b.innerHTML = on ? ANNO_MIN_ICON : ANNO_MAX_ICON; b.title = on ? 'Restore the editor (Esc)' : 'Maximize the editor (Esc to restore)'; renderPreview(); };
     $('tc-anno-max').onclick = () => setMax(!wrap.classList.contains('tc-anno-max'));
     wrap.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('tc-anno-max')) { setMax(false); activeEl().focus(); } });
 

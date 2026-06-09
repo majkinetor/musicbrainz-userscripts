@@ -60,6 +60,11 @@ check('our "Enter edit" triggers the native submit', await page.evaluate(() => {
 }));
 check('editor fills the viewport height', await page.evaluate(() => { const r = document.getElementById('tc-anno-wrap').getBoundingClientRect(); return r.bottom >= window.innerHeight - 40 && r.height > 300; }));
 check('FOUC guard removed after mount', await page.$('#tc-anno-fouc') === null);
+// maximize must fill the WHOLE viewport (the page fill-height inline style must not block it)
+await page.click('#tc-anno-max'); await page.waitForTimeout(150);
+check('maximized editor fills the whole viewport', await page.evaluate(() => { const r = document.getElementById('tc-anno-wrap').getBoundingClientRect(); return r.height >= window.innerHeight - 40 && r.bottom >= window.innerHeight - 40; }));
+await page.click('#tc-anno-max'); await page.waitForTimeout(150);
+check('restore returns to fill-height (not maximized)', await page.evaluate(() => !document.getElementById('tc-anno-wrap').classList.contains('tc-anno-max')));
 
 await page.evaluate(() => window.scrollTo(0, 0));
 await page.screenshot({ path: resolve(HERE, 'logs', 'shot-editannotation.png') }).catch(() => {});
