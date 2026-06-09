@@ -33,14 +33,28 @@ await page.click('#tc-anno-history .tc-hist-card');
 await page.waitForSelector('#tc-anno-history .tc-hist-view .tc-anno-rendered', { timeout: 15000 });
 check('selecting a version shows its rendered annotation', await page.$('#tc-anno-history .tc-hist-view .tc-anno-rendered') !== null);
 check('selected row highlighted', await page.$('#tc-anno-history .tc-hist-card.on') !== null);
+check('"Replace editor with this version" button present', await page.$('#tc-anno-history .tc-hist-use') !== null);
 await page.$eval('#tc-anno-wrap', e => e.scrollIntoView({ block: 'center' }));
 await page.locator('#tc-anno-wrap').screenshot({ path: resolve(HERE, 'logs', 'shot-history.png') }).catch(() => {});
-
-// History toggles back to the editor
+// History button toggles back to the editor
 await page.click('#tc-anno-history-btn');
 check('History toggles back to the Markdown surface', await page.isVisible('#tc-anno-mdinput'));
+// re-open, select, and use the version (auto-accept confirm) → editor view restored
+await page.click('#tc-anno-history-btn');
+await page.waitForSelector('#tc-anno-history .tc-hist-card', { timeout: 15000 });
+await page.click('#tc-anno-history .tc-hist-card');
+await page.waitForSelector('#tc-anno-history .tc-hist-use', { timeout: 15000 });
+page.once('dialog', d => d.accept());
+await page.click('#tc-anno-history .tc-hist-use');
+await page.waitForTimeout(200);
+check('using a version returns to the editor', await page.isVisible('#tc-anno-mdinput'));
 
-await page.screenshot({ path: resolve(HERE, 'logs', 'verify-history.png'), fullPage: false }).catch(() => {});
+// annoHtmlToMb reconstruction (inject the extracted function + a known rendered HTML)
+const src = await readFile(SCRIPT, 'utf8');
+const ext = (n) => { const s = src.indexOf('function ' + n + '('); let i = src.indexOf('{', s), d = 0; for (; i < src.length; i++) { if (src[i] === '{') d++; else if (src[i] === '}') { d--; if (!d) { i++; break; } } } return src.slice(s, i); };
+const mb = await page.evaluate(({ fn, html }) => { const f = new Function(fn + '; return annoHtmlToMb;')(); return f(html); }, { fn: ext('annoHtmlToMb'), html: '<h2>Title</h2><p>A <strong>bold</strong> and <em>soft</em> note with a <a href="https://e.com/x">link</a>.</p><ul><li>one</li><li>two<ul><li>sub</li></ul></li></ul><ol><li>first</li><li>second</li></ol>' });
+check('annoHtmlToMb reconstructs MB markup', mb.includes('== Title ==') && mb.includes("'''bold'''") && mb.includes("''soft''") && mb.includes('[https://e.com/x|link]') && mb.includes('\n    * one') && mb.includes('\n        * sub') && mb.includes('\n    a. first'), JSON.stringify(mb));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 await ctx.close();
 process.exit(fail ? 1 : 0);

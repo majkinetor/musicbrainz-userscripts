@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.001000
+// @version      2026.6.9.001100
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3366,6 +3366,10 @@
     #tc-anno-history .tc-hist-cl{color:#8a8a8a;font-style:italic;font-size:11px;margin-top:2px}
     #tc-anno-history .tc-hist-cur{color:#2c7a45;font-style:normal}
     #tc-anno-history .tc-hist-msg{color:#999;font-style:italic;font-size:12px;padding:6px 2px}
+    #tc-anno-history .tc-hist-bar{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap}
+    #tc-anno-history .tc-hist-use{font:12px Arial;padding:4px 11px;border:1px solid #b9a4e0;border-radius:6px;background:#f6f3fc;color:#5a3e94;cursor:pointer}
+    #tc-anno-history .tc-hist-use:hover{background:#ece5f8}
+    #tc-anno-history .tc-hist-vmeta{font:11px Arial;color:#888}
     #tc-anno-history .tc-anno-rendered h1{font-size:18px;margin:8px 0 6px;color:#3d2470}
     #tc-anno-history .tc-anno-rendered h2{font-size:16px;margin:8px 0 6px;color:#3d2470}
     #tc-anno-history .tc-anno-rendered h3{font-size:14px;margin:8px 0 6px;color:#3d2470}
@@ -3653,6 +3657,50 @@
     const body = doc.querySelector('.annotation-body');
     return body ? body.innerHTML : '<em>(this version is empty)</em>';
   }
+  // reconstruct MB markup from a rendered annotation's HTML (MB exposes no raw text per revision) — used to
+  // load a past version back into the editor. Lossy on exotic markup, faithful for the common elements.
+  function annoHtmlToMb(html) {
+    if (/this annotation is empty/i.test(html)) return '';
+    const root = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html').body.firstChild;
+    const inline = node => {
+      let s = '';
+      node.childNodes.forEach(n => {
+        if (n.nodeType === 3) s += n.textContent;
+        else if (n.nodeType === 1) {
+          const t = n.tagName.toLowerCase(), inner = inline(n);
+          if (t === 'strong' || t === 'b') s += "'''" + inner + "'''";
+          else if (t === 'em' || t === 'i') s += "''" + inner + "''";
+          else if (t === 'a') { const href = n.getAttribute('href') || ''; s += href ? `[${/^https?:\/\//i.test(href) ? href : location.origin + href}|${inner}]` : inner; }
+          else if (t === 'br') s += '\n';
+          else s += inner;
+        }
+      });
+      return s;
+    };
+    const lines = [];
+    const listWalk = (listNode, ordered, level) => {
+      [...listNode.children].forEach(li => {
+        if (li.tagName.toLowerCase() !== 'li') return;
+        const clone = li.cloneNode(true); clone.querySelectorAll(':scope > ul, :scope > ol').forEach(s => s.remove());
+        lines.push(' '.repeat(level * 4) + (ordered ? 'a. ' : '* ') + inline(clone).trim());
+        [...li.children].forEach(c => { const ct = c.tagName.toLowerCase(); if (ct === 'ul' || ct === 'ol') listWalk(c, ct === 'ol', level + 1); });
+      });
+    };
+    const walk = node => node.childNodes.forEach(n => {
+      if (n.nodeType === 3) { if (n.textContent.trim()) lines.push(n.textContent.trim(), ''); return; }
+      if (n.nodeType !== 1) return;
+      const t = n.tagName.toLowerCase();
+      if (/^h[1-6]$/.test(t)) { const e = '='.repeat(Math.min(+t[1], 3)); lines.push(`${e} ${inline(n).trim()} ${e}`, ''); }
+      else if (t === 'p') lines.push(inline(n).replace(/\n+$/, '').trim(), '');
+      else if (t === 'ul' || t === 'ol') { listWalk(n, t === 'ol', 1); lines.push(''); }
+      else if (t === 'pre') { inline(n).replace(/\n$/, '').split('\n').forEach(l => lines.push('        ' + l)); lines.push(''); }
+      else if (t === 'hr') lines.push('----', '');
+      else if (t === 'div' || t === 'blockquote') walk(n);
+      else { const x = inline(n).trim(); if (x) lines.push(x, ''); }
+    });
+    walk(root);
+    return lines.join('\n').replace(/\n{3,}/g, '\n\n').replace(/\n+$/, '');
+  }
 
   // write into the annotation textarea so MB's model (knockout 'change' / React 'input') picks it up + dirties
   function annoSet(ta, value) {
@@ -3831,8 +3879,17 @@
         card.onclick = async () => {
           list.querySelectorAll('.tc-hist-card').forEach(c => c.classList.remove('on')); card.classList.add('on');
           vw.innerHTML = '<div class="tc-hist-msg">Loading…</div>';
-          try { vw.innerHTML = '<div class="tc-anno-rendered">' + await annoFetchVersion(v.url) + '</div>'; }
-          catch { vw.innerHTML = '<div class="tc-hist-msg">Failed to load this version.</div>'; }
+          try {
+            const vhtml = await annoFetchVersion(v.url);
+            vw.innerHTML = '<div class="tc-hist-bar"><button type="button" class="tc-hist-use">↧ Replace editor with this version</button>' +
+              `<span class="tc-hist-vmeta">${_annoEsc(v.editor)} · ${_annoEsc(v.date)}${idx === 0 ? ' · current' : ''}</span></div>` +
+              '<div class="tc-anno-rendered">' + vhtml + '</div>';
+            vw.querySelector('.tc-hist-use').onclick = () => {
+              if (!confirm('Replace the current annotation with this version? (reconstructed from the rendered version — review before submitting)')) return;
+              annoSet(ta, annoHtmlToMb(vhtml)); md.value = annoToMd(ta.value);
+              view = 'edit'; apply(); activeEl().focus(); status('loaded version — review before submitting', 4000);
+            };
+          } catch { vw.innerHTML = '<div class="tc-hist-msg">Failed to load this version.</div>'; }
         };
         list.appendChild(card);
       });

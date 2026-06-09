@@ -47,7 +47,7 @@ Each takeover is optional and you can flip back to the native editor at any time
         - **Preview** — a live **split** view: editor on the left, the annotation rendered (exactly the way MusicBrainz will show it — headings, bold/italic, links, **nested lists**, code, rules) updating in real time on the right.
         - **markup toggle** (icon) — shows the current markup (Markdown logo / MB logo); click to switch between editing as Markdown and the raw MusicBrainz markup.
         - **?** — hover for a syntax cheatsheet.
-        - **🕘 History** (right end, existing releases only) — lists the annotation's previous versions as user cards; select one to display its rendered annotation.
+        - **🕘 History** (right end, existing releases only) — lists the annotation's previous versions as user cards; select one to display its rendered annotation, with a **Replace editor with this version** action that loads it back into the editor (reconstructed from the rendered HTML, since MusicBrainz exposes no raw text per revision — review before submitting).
         - **Clear**.
         - **Unnamed MusicBrainz entity links are named automatically** (no button) — MB `[url]`/`[url|]`, Markdown `[]()`, or a bare URL get the entity name (fetched from the API) on edit. The Markdown ↔ MB conversion (inspired by [kellnerd's annotationConverter](https://github.com/kellnerd/musicbrainz-scripts/blob/main/src/annotationConverter.js)) covers links, bold/italic, headings, nested bullets, fenced ` ``` ` ↔ 8-space code, rules, and encodes a non-link `[x]` so MB doesn't read it as a broken link.
     - External links moved to a right column with a dead-link checker; right-click a favicon/type to edit it
