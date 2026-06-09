@@ -59,14 +59,17 @@ const readModel = () => page.evaluate(() => { try { const r = window.MB.releaseE
 const vis = sel => page.isVisible(sel);
 check('toolbar + Markdown surface + raw field all inside the box',
   await page.$eval('#tc-anno-wrap #tc-anno-bar', () => true).catch(() => false) &&
-  await page.$eval('#tc-anno-wrap > textarea#tc-anno-mdinput', () => true).catch(() => false) &&
-  await page.$eval('#tc-anno-wrap > textarea#annotation', () => true).catch(() => false));
-check('4 toolbar buttons (no extras)', (await page.$$eval('#tc-anno-bar button', bs => bs.length)) === 4);
+  await page.$eval('#tc-anno-body #tc-anno-edit > textarea#tc-anno-mdinput', () => true).catch(() => false) &&
+  await page.$eval('#tc-anno-body #tc-anno-edit > textarea#annotation', () => true).catch(() => false));
+check('4 toolbar buttons (Preview, markup, help, Clear — no Resolve/History on add)', (await page.$$eval('#tc-anno-bar button', bs => bs.length)) === 4);
+check('no Resolve-names button (auto now)', await page.$('#tc-anno-names') === null);
+check('help (?) button present', await page.$('#tc-anno-help') !== null);
 check('Markdown surface is the default (visible); raw field hidden', (await vis('#tc-anno-mdinput')) && !(await vis('#annotation')));
+check('markup toggle shows the Markdown logo (svg) in md mode', await page.$('#tc-anno-md .tc-mk-ico') !== null && !(await page.$('#tc-anno-md .tc-mk-mb')));
 check('Markdown surface is monospace', /mono/i.test(await page.$eval('#tc-anno-mdinput', e => getComputedStyle(e).fontFamily)));
 check('editing surface is bigger (>=220px)', (await page.$eval('#tc-anno-mdinput', e => e.getBoundingClientRect().height)) >= 220);
 
-// NO FLICKER: mark the wrapper, wait past 3× the 500ms poll, assert it's the SAME node and still md mode
+// NO FLICKER
 await page.evaluate(() => { document.getElementById('tc-anno-wrap').dataset.tcMark = 'orig'; });
 await page.waitForTimeout(1700);
 check('wrapper not rebuilt across polls (no flicker)', (await page.$eval('#tc-anno-wrap', e => e.dataset.tcMark)) === 'orig');
@@ -74,28 +77,35 @@ check('still on the Markdown surface after polls', await vis('#tc-anno-mdinput')
 
 // 1. CORE INVARIANT: type Markdown → the real MB field + model hold MB markup
 await page.fill('#tc-anno-mdinput', '## Notes\n\n- a\n- b\n\nSee [the label](https://example.com/x).');
-await page.waitForTimeout(120);
+await page.waitForTimeout(150);
 const model1 = await readModel();
 check('Markdown → MB markup in the model (headings/bullets/link)',
   model1.includes('== Notes ==') && model1.includes('\n    * a\n    * b') && model1.includes('[https://example.com/x|the label]') && model1.includes('Notes ==\n\n    * a'),
   JSON.stringify(model1));
 
-// 2. toggle to raw MB markup view
+// 2. markup toggle (icon) → raw MB markup, then back
 await page.click('#tc-anno-md');
 check('toggle shows raw MB field', (await vis('#annotation')) && !(await vis('#tc-anno-mdinput')));
 check('raw field holds MB markup', (await page.inputValue('#annotation')).includes('== Notes =='));
-check('button relabels to "Markdown"', (await page.textContent('#tc-anno-md')).includes('Markdown'));
+check('markup toggle shows the MB logo in raw mode', await page.$('#tc-anno-md .tc-mk-mb') !== null);
 await page.click('#tc-anno-md');                       // back to Markdown surface
 check('back on Markdown surface', (await vis('#tc-anno-mdinput')) && (await page.inputValue('#tc-anno-mdinput')).includes('## Notes'));
 
-// 3. Preview swaps in place, rendered from the MB markup (nested? here flat) — h2 + bullets + link
+// 3. SPLIT Preview — editor stays visible, preview renders alongside and updates live
 await page.click('#tc-anno-preview-btn');
 await page.waitForTimeout(150);
-check('preview shown, both editors hidden', (await vis('#tc-anno-preview')) && !(await vis('#tc-anno-mdinput')) && !(await vis('#annotation')));
-const prevHtml = await page.$eval('#tc-anno-preview', e => e.innerHTML);
-check('preview rendered h2 + list + link', /<h2 class="tc-anno-h">Notes<\/h2>/.test(prevHtml) && /<li>a<\/li>/.test(prevHtml) && /<a href="https:\/\/example\.com\/x"/.test(prevHtml), prevHtml);
+check('split preview: editor AND preview both visible', (await vis('#tc-anno-preview')) && (await vis('#tc-anno-mdinput')));
+check('preview rendered h2 + list + link', /<h2 class="tc-anno-h">Notes<\/h2>/.test(await page.$eval('#tc-anno-preview', e => e.innerHTML)) && /<li>a<\/li>/.test(await page.$eval('#tc-anno-preview', e => e.innerHTML)));
+await page.fill('#tc-anno-mdinput', '### Live');     // edit while previewing
+await page.waitForTimeout(200);
+check('preview updates live as you type', /<h3 class="tc-anno-h">Live<\/h3>/.test(await page.$eval('#tc-anno-preview', e => e.innerHTML)));
 await page.click('#tc-anno-preview-btn');
-check('Markdown surface restored after preview', await vis('#tc-anno-mdinput'));
+check('preview off → editor still there', (await vis('#tc-anno-mdinput')) && !(await vis('#tc-anno-preview')));
+
+// 3b. help popover shows on hover
+await page.hover('#tc-anno-help');
+await page.waitForTimeout(150);
+check('help popover appears on hover', await vis('#tc-anno-help-pop'));
 
 // 4. Bullet continuation on Enter (real keystrokes)
 await page.fill('#tc-anno-mdinput', '- one');

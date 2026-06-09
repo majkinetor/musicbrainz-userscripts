@@ -24,15 +24,15 @@ check('5 buttons incl. History on an edit page', (await page.$$eval('#tc-anno-ba
 check('History button present', await page.$('#tc-anno-history-btn') !== null);
 
 await page.click('#tc-anno-history-btn');
-await page.waitForSelector('#tc-anno-history .tc-hist-row', { timeout: 15000 });
-const rows = await page.$$eval('#tc-anno-history .tc-hist-row', rs => rs.map(r => r.textContent));
+await page.waitForSelector('#tc-anno-history .tc-hist-card', { timeout: 15000 });
+const rows = await page.$$eval('#tc-anno-history .tc-hist-card', rs => rs.map(r => r.textContent));
 check('version list loaded (>=2 versions)', rows.length >= 2, JSON.stringify(rows));
 check('rows show a date', /\d{4}-\d{2}-\d{2}/.test(rows[0] || ''), rows[0]);
 
-await page.click('#tc-anno-history .tc-hist-row');
+await page.click('#tc-anno-history .tc-hist-card');
 await page.waitForSelector('#tc-anno-history .tc-hist-view .tc-anno-rendered', { timeout: 15000 });
 check('selecting a version shows its rendered annotation', await page.$('#tc-anno-history .tc-hist-view .tc-anno-rendered') !== null);
-check('selected row highlighted', await page.$('#tc-anno-history .tc-hist-row.on') !== null);
+check('selected row highlighted', await page.$('#tc-anno-history .tc-hist-card.on') !== null);
 await page.$eval('#tc-anno-wrap', e => e.scrollIntoView({ block: 'center' }));
 await page.locator('#tc-anno-wrap').screenshot({ path: resolve(HERE, 'logs', 'shot-history.png') }).catch(() => {});
 
