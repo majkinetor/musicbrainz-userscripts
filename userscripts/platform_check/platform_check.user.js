@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.6
+// @version      2026.6.9.7
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -426,7 +426,7 @@ container.innerHTML = `
    * edge. Names stay fully visible (they identify the row); the label is the
    * only thing that truncates (full text in its tooltip). 2-row keeps the
    * legacy stacked look (name line + meta line below). */
-  .pc-cell-ico  { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 22px; width: 22px; }
+  .pc-cell-ico  { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 22px; width: 22px; cursor: default; }
   .pc-cell-ico img { display: block; }
   .pc-cell-name { color: inherit; text-decoration: none; font-weight: 600; font-size: 12px;
                   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -446,7 +446,12 @@ container.innerHTML = `
     display: grid; align-items: center; column-gap: 6px; row-gap: 10px;
     grid-template-columns: 22px max-content max-content max-content minmax(0,1fr) max-content max-content;
   }
-  #mb-pc-panel.pc-layout-1row .pc-row,
+  /* each row is a subgrid box spanning all columns: it shares the parent's
+     column tracks (so cells still align as a table) AND is a single element,
+     so the whole row — gaps and empty cells included — is one click target. */
+  #mb-pc-panel.pc-layout-1row .pc-row {
+    display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center;
+  }
   #mb-pc-panel.pc-layout-1row .pc-meta { display: contents; }
   #mb-pc-panel.pc-layout-1row .pc-cell-ico    { grid-column: 1; }
   #mb-pc-panel.pc-layout-1row .pc-cell-name   { grid-column: 2; }
@@ -1069,6 +1074,15 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         row.classList.remove('pc-st-notfound', 'pc-st-mismatch', 'pc-st-match');
         row.classList.add('pc-st-' + presence);
         row.classList.toggle('pc-inmb', fromMbRels);
+        // Whole row opens the platform link (#173): clicking anywhere from after
+        // the icon to the track count works — including empty cells and the gaps
+        // between them — since the row is one box (subgrid). The icon keeps its
+        // own "add to MB" action, and the name <a> opens natively.
+        row.onclick = url ? (e) => {
+            if (e.target.closest('.pc-cell-ico') || e.target.closest('a')) return;
+            window.open(url, '_blank', 'noopener');
+        } : null;
+        row.style.cursor = url ? 'pointer' : '';
     }
     const plat = document.getElementById(`plat-${p}`);
     if (plat) {
@@ -1095,19 +1109,6 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // Meta cells: year · format · label, each its own grid cell so the columns
     // align across providers (1-row layout) — see setMetaCells.
     setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, year, format, label);
-
-    // The meta + track count also open the platform link (#173): with names
-    // hidden the name <a> is gone and the icon click is reserved for "add to
-    // MB", so the rest of the row has to carry the link.
-    const openLink = url ? () => window.open(url, '_blank', 'noopener') : null;
-    const linkTitle = url ? `Open ${PROVIDER_NAME[p]} page` : '';
-    for (const id of [`year-${p}`, `format-${p}`, `val-${p}`]) {
-        const el = document.getElementById(id);
-        if (el) { el.onclick = openLink; el.style.cursor = url ? 'pointer' : ''; el.title = linkTitle; }
-    }
-    // Label keeps its full-text tooltip (set in setMetaCells) but is clickable too.
-    const labelEl = document.getElementById(`label-${p}`);
-    if (labelEl) { labelEl.onclick = openLink; labelEl.style.cursor = url ? 'pointer' : ''; }
 }
 
 // Fill the three meta cells (year / format / label) for a row. The "·"
@@ -2399,10 +2400,9 @@ function resetRows() {
         const plat = document.getElementById(`plat-${p}`);
         if (plat) { plat.onclick = null; plat.style.cursor = 'default'; }
         const row = document.getElementById(`row-${p}`);
-        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); }   // back to "not found" look
-        if (val)  { val.textContent = '—'; val.style.color = '#BF616A'; val.onclick = null; val.style.cursor = ''; val.title = ''; }   // neutral dash while re-scanning
+        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); row.onclick = null; row.style.cursor = ''; }   // back to "not found" look
+        if (val)  { val.textContent = '—'; val.style.color = '#BF616A'; }   // neutral dash while re-scanning
         setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, null, null, null);
-        for (const id of [`year-${p}`, `format-${p}`, `label-${p}`]) { const el = document.getElementById(id); if (el) { el.onclick = null; el.style.cursor = ''; } }
         // Reset the anchor href to its search-fallback so parseMbFromDom on
         // a subsequent refresh doesn't see the previous /album/<id> result
         // as an "existing MB rel" — covered by the #mb-pc-panel exclusion
