@@ -69,6 +69,9 @@ eq('md link url with asterisks protected', mdToAnno('[x](https://e.com/a*b*c)'),
 eq('fenced code → 8-space block', mdToAnno('```\nline one\nline two\n```'), '        line one\n        line two');
 eq('fenced code with lang tag', mdToAnno('```js\nvar x = 1;\n```'), '        var x = 1;');
 eq('markup inside code is left literal', mdToAnno('```\n**not bold** [x](y)\n```'), '        **not bold** [x](y)');
+// the blank line between a heading and a following list must survive the conversion
+eq('blank line before a list is kept', mdToAnno('### step 1\n\n- 1\n- 2\n- 3'), '=== step 1 ===\n\n    * 1\n    * 2\n    * 3');
+eq('blank line after a heading is kept', annoToMd('=== step 1 ===\n\n    * 1\n    * 2'), '### step 1\n\n- 1\n- 2');
 
 console.log('\nannoToMd (MB markup → Markdown, the toggle\'s "back" direction):');
 eq('link back', annoToMd('[https://example.com/x|the site]'), '[the site](https://example.com/x)');
@@ -87,6 +90,23 @@ const rtMB = "= Notes =\nA '''bold''' and ''soft'' note, see [https://e.com/x|th
 eq('MB → MD → MB is stable', mdToAnno(annoToMd(rtMB)), rtMB);
 const rtMD = '## Notes\nA **bold** and *soft* note, see [the label](https://e.com/x).\n- one\n- two\n---\n```\ncode here\n```\ntail';
 eq('MD → MB → MD is stable', annoToMd(mdToAnno(rtMD)), rtMD);
+
+// ── annoResolveNames: add the entity name to links that lack one (mocked WS2 fetch) ──
+console.log('\nannoResolveNames (add names to unnamed entity links):');
+const A_RE = /https?:\/\/(?:beta\.)?musicbrainz\.org\/(artist|label|area|place|instrument|series|event|genre|release-group|release|recording|work)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+const A_FIELD = { artist: 'name', 'release-group': 'title' };
+const NAMES = { artist: 'The Artist', 'release-group': 'The Album' };
+const fakeFetch = async (url) => { const m = url.match(/ws\/2\/([a-z-]+)\//); const type = m && m[1]; return { ok: !!type, json: async () => ({ [A_FIELD[type] || 'name']: NAMES[type] }) }; };
+const annoResolveNames = new Function('ANNO_ENTITY_RE', 'ANNO_NAME_FIELD', '_annoName', 'fetch', 'location',
+  `${extract('annoReplaceAsync')}\nasync ${extract('annoLookupName')}\nasync ${extract('annoResolveNames')}\nreturn annoResolveNames;`)(A_RE, A_FIELD, new Map(), fakeFetch, { origin: 'https://musicbrainz.org' });
+const U1 = 'https://musicbrainz.org/artist/71616b46-65ae-4a95-96f9-bb792e284baa';
+const aeq = async (label, input, want) => { const got = await annoResolveNames(input); eq(label, got, want); };
+await aeq('bare entity URL', U1, `[${U1}|The Artist]`);
+await aeq('MB [url] (no label)', `[${U1}]`, `[${U1}|The Artist]`);
+await aeq('MB [url|] (empty label)', `[${U1}|]`, `[${U1}|The Artist]`);
+await aeq('Markdown [](url) empty label', `[](${U1})`, `[The Artist](${U1})`);
+await aeq('MB link with existing label left alone', `[${U1}|Keep Me]`, `[${U1}|Keep Me]`);
+await aeq('Markdown link with text left alone', `[Keep Me](${U1})`, `[Keep Me](${U1})`);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

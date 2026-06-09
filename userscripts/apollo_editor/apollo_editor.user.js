@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.000300
+// @version      2026.6.9.000400
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3308,6 +3308,7 @@
     #tc-anno-bar button{font:12px Arial;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid #d6cdec;border-radius:6px;background:#fff;color:#5a3e94;cursor:pointer}
     #tc-anno-bar button:hover{background:#ece5f8;border-color:#b9a4e0}
     #tc-anno-bar button:disabled{opacity:.6;cursor:default}
+    #tc-anno-bar button.tc-anno-icon{padding:3px 9px;font-size:14px;line-height:1}   /* icon-only (no label) buttons */
     #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-bar.tc-anno-md-on #tc-anno-md{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-status{font:12px Arial;color:#777;margin-left:2px}
@@ -3498,12 +3499,12 @@
     src = src.replace(/^```[^\n]*\n([\s\S]*?)\n```[ \t]*$/gm, (_m, code) => stashB(code.split('\n').map(l => '        ' + l).join('\n')));   // ```fenced``` → MB 8-space block
     src = src.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text, url) => `[${stashU(url)}|${text}]`);   // [text](url) → [url|text]
     src = src.replace(/(^|[\s(])((?:https?|ftp):\/\/[^\s<>]+)/g, (_m, pre, url) => pre + stashU(url));  // bare urls
-    src = src.replace(/^(#{1,6})\s+(.*?)\s*#*\s*$/gm, (_m, h, t) => { const n = Math.min(h.length, 3); const e = '='.repeat(n); return `${e} ${t} ${e}`; });
+    src = src.replace(/^(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$/gm, (_m, h, t) => { const n = Math.min(h.length, 3); const e = '='.repeat(n); return `${e} ${t} ${e}`; });
     src = src.replace(/(\*\*|__)(.+?)\1/g, "'''$2'''");        // **bold** / __bold__
     src = src.replace(/(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])/g, "''$1''");   // *italic*
     src = src.replace(/(?<![_\w])_(?!\s)(.+?)(?<!\s)_(?![_\w])/g, "''$1''");     // _italic_
-    src = src.replace(/^\s*[-*+]\s+/gm, '    * ');             // - item → 4-space bullet
-    src = src.replace(/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/gm, '----');   // hr
+    src = src.replace(/^[ \t]*[-*+][ \t]+/gm, '    * ');      // - item → 4-space bullet ([ \t] not \s, so a blank line above the list is kept)
+    src = src.replace(/^[ \t]*(?:-{3,}|\*{3,}|_{3,})[ \t]*$/gm, '----');   // hr
     src = src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
     return src.replace(/\x05(\d+)\x06/g, (_m, i) => urls[+i]);
   }
@@ -3517,9 +3518,9 @@
     src = src.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => `[${text || url}](${url})`);   // [url|text] → [text](url)
     src = src.replace(/\[((?:https?|ftp):\/\/[^\]|]+)\]/g, (_m, url) => url);                        // [url] → bare url
     src = src.replace(/'''''(.+?)'''''/g, '***$1***').replace(/'''(.+?)'''/g, '**$1**').replace(/''(.+?)''/g, '*$1*');
-    src = src.replace(/^(={1,6})\s*(.*?)\s*=*\s*$/gm, (_m, e, t) => '#'.repeat(e.length) + ' ' + t);  // = H = → # H
-    src = src.replace(/^ {4}\*\s+/gm, '- ');                                                          // 4-space bullet → - item
-    src = src.replace(/^-{4,}\s*$/gm, '---');                                                         // ---- → ---
+    src = src.replace(/^(={1,6})[ \t]*(.*?)[ \t]*=*[ \t]*$/gm, (_m, e, t) => '#'.repeat(e.length) + ' ' + t);  // = H = → # H
+    src = src.replace(/^ {4}\*[ \t]+/gm, '- ');                                                       // 4-space bullet → - item
+    src = src.replace(/^-{4,}[ \t]*$/gm, '---');                                                      // ---- → ---
     return src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
   }
 
@@ -3530,21 +3531,28 @@
     parts.push(str.slice(last));
     return Promise.all(parts).then(p => p.join(''));
   }
-  // resolve every bare MB entity URL (one not already a [url|label] link) to a [url|Name] via WS2
+  async function annoLookupName(type, mbid, full) {   // WS2 entity name, cached
+    type = type.toLowerCase();
+    if (_annoName.has(full)) return _annoName.get(full);
+    try {
+      const r = await fetch(`${location.origin}/ws/2/${type}/${mbid}?fmt=json`, { headers: { Accept: 'application/json' } });
+      if (!r.ok) return null;
+      const j = await r.json(); const name = j[ANNO_NAME_FIELD[type] || 'name'];
+      if (name) { _annoName.set(full, name); return name; }
+      return null;
+    } catch { return null; }
+  }
+  // add the entity name to every MB entity link that doesn't already have one — handles MB [url] / [url|]
+  // and Markdown []()/bare URLs, in either editing mode. Links that already carry a label are left alone.
   async function annoResolveNames(src) {
-    const re = new RegExp('(?<!\\[)' + ANNO_ENTITY_RE.source, 'gi');
-    return annoReplaceAsync(src, re, async (full, type, mbid) => {
-      type = type.toLowerCase();
-      if (_annoName.has(full)) return `[${full}|${_annoName.get(full)}]`;
-      try {
-        const r = await fetch(`${location.origin}/ws/2/${type}/${mbid}?fmt=json`, { headers: { Accept: 'application/json' } });
-        if (!r.ok) return full;
-        const j = await r.json(); const name = j[ANNO_NAME_FIELD[type] || 'name'];
-        if (!name) return full;
-        _annoName.set(full, name);
-        return `[${full}|${name}]`;
-      } catch { return full; }
-    });
+    const U = ANNO_ENTITY_RE.source;
+    // MB: [url] or [url|] (no/empty label) → [url|Name]
+    src = await annoReplaceAsync(src, new RegExp('\\[(' + U + ')\\|?\\]', 'gi'), async (m, url, type, mbid) => { const n = await annoLookupName(type, mbid, url); return n ? `[${url}|${n}]` : m; });
+    // Markdown: [](url) (empty label) → [Name](url)
+    src = await annoReplaceAsync(src, new RegExp('\\[\\]\\((' + U + ')\\)', 'gi'), async (m, url, type, mbid) => { const n = await annoLookupName(type, mbid, url); return n ? `[${n}](${url})` : m; });
+    // a bare URL (not already inside a [..] or (..) link) → [url|Name]
+    src = await annoReplaceAsync(src, new RegExp('(?<![\\[(|])(' + U + ')', 'gi'), async (m, url, type, mbid) => { const n = await annoLookupName(type, mbid, url); return n ? `[${url}|${n}]` : m; });
+    return src;
   }
 
   // write into the annotation textarea so MB's model (knockout 'change' / React 'input') picks it up + dirties
@@ -3567,7 +3575,7 @@
     bar.innerHTML =
       '<button type="button" id="tc-anno-preview-btn" title="Toggle a preview of the annotation, rendered the way MusicBrainz will show it">👁 Preview</button>' +
       '<button type="button" id="tc-anno-md" title="Toggle the annotation between MusicBrainz markup and Markdown — convert one way, click again to convert back">⇄ Markdown</button>' +
-      '<button type="button" id="tc-anno-names" title="Replace bare MusicBrainz entity URLs with [url|Name] links, fetching each name from the API">🏷 Resolve names</button>' +
+      '<button type="button" id="tc-anno-names" class="tc-anno-icon" title="Add the entity name to MusicBrainz entity links that have none (MB [url]/[url|] or Markdown []()/bare URL), fetching each name from the API">🏷</button>' +
       '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
       '<span id="tc-anno-status"></span>';
     const prev = document.createElement('div'); prev.id = 'tc-anno-preview'; prev.style.display = 'none';
@@ -3589,8 +3597,8 @@
       $('tc-anno-md').textContent = mdMode ? '⇄ MB markup' : '⇄ Markdown';
       status(mdMode ? 'editing as Markdown' : 'converted to MB markup', 2500);
     };
-    $('tc-anno-names').onclick = async (e) => { const btn = e.currentTarget; btn.disabled = true; status('resolving names…'); try { const after = await annoResolveNames(ta.value); if (after !== ta.value) { annoSet(ta, after); status('names resolved', 2500); } else status('no bare entity URLs', 2500); if (previewing) showPreview(true); } finally { btn.disabled = false; } };
-    $('tc-anno-clear').onclick = () => { if (!ta.value || confirm('Clear the entire annotation?')) { annoSet(ta, ''); if (previewing) showPreview(true); } };
+    $('tc-anno-names').onclick = async (e) => { const btn = e.currentTarget; btn.disabled = true; status('resolving names…'); try { const after = await annoResolveNames(ta.value); if (after !== ta.value) { annoSet(ta, after); status('names resolved', 2500); } else status('no unnamed entity links', 2500); if (previewing) showPreview(true); } finally { btn.disabled = false; } };
+    $('tc-anno-clear').onclick = () => { annoSet(ta, ''); if (previewing) showPreview(true); };
   }
 
   // MB's contextual guidance box(es) — anything outside #information that's just the style-guidelines help
