@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.001100
+// @version      2026.6.9.001200
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3365,6 +3365,7 @@
     #tc-anno-history .tc-hist-date{color:#777;font-size:11px}
     #tc-anno-history .tc-hist-cl{color:#8a8a8a;font-style:italic;font-size:11px;margin-top:2px}
     #tc-anno-history .tc-hist-cur{color:#2c7a45;font-style:normal}
+    #tc-anno-history .tc-hist-clmsg{color:#5a4a78;font-style:italic;font-size:11px;margin-top:2px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #tc-anno-history .tc-hist-msg{color:#999;font-style:italic;font-size:12px;padding:6px 2px}
     #tc-anno-history .tc-hist-bar{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap}
     #tc-anno-history .tc-hist-use{font:12px Arial;padding:4px 11px;border:1px solid #b9a4e0;border-radius:6px;background:#f6f3fc;color:#5a3e94;cursor:pointer}
@@ -3875,14 +3876,15 @@
         const card = document.createElement('button'); card.type = 'button'; card.className = 'tc-hist-card';
         card.innerHTML = (v.avatar ? `<img class="tc-hist-av" src="${_annoEsc(v.avatar)}" alt="">` : '<span class="tc-hist-av tc-hist-av0"></span>') +
           `<span class="tc-hist-meta"><span class="tc-hist-editor">${_annoEsc(v.editor)}</span><span class="tc-hist-date">${_annoEsc(v.date)}</span>` +
-          (v.changelog ? `<span class="tc-hist-cl">${_annoEsc(v.changelog)}</span>` : (idx === 0 ? '<span class="tc-hist-cl tc-hist-cur">current</span>' : '')) + '</span>';
+          (idx === 0 ? '<span class="tc-hist-cl tc-hist-cur">current</span>' : '') +
+          (v.changelog ? `<span class="tc-hist-cl tc-hist-clmsg" title="${_annoEsc(v.changelog)}">“${_annoEsc(v.changelog)}”</span>` : '') + '</span>';
         card.onclick = async () => {
           list.querySelectorAll('.tc-hist-card').forEach(c => c.classList.remove('on')); card.classList.add('on');
           vw.innerHTML = '<div class="tc-hist-msg">Loading…</div>';
           try {
             const vhtml = await annoFetchVersion(v.url);
             vw.innerHTML = '<div class="tc-hist-bar"><button type="button" class="tc-hist-use">↧ Replace editor with this version</button>' +
-              `<span class="tc-hist-vmeta">${_annoEsc(v.editor)} · ${_annoEsc(v.date)}${idx === 0 ? ' · current' : ''}</span></div>` +
+              `<span class="tc-hist-vmeta">${_annoEsc(v.editor)} · ${_annoEsc(v.date)}${idx === 0 ? ' · current' : ''}${v.changelog ? ' · “' + _annoEsc(v.changelog) + '”' : ''}</span></div>` +
               '<div class="tc-anno-rendered">' + vhtml + '</div>';
             vw.querySelector('.tc-hist-use').onclick = () => {
               if (!confirm('Replace the current annotation with this version? (reconstructed from the rendered version — review before submitting)')) return;

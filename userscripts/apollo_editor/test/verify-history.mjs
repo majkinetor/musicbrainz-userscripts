@@ -55,6 +55,17 @@ const ext = (n) => { const s = src.indexOf('function ' + n + '('); let i = src.i
 const mb = await page.evaluate(({ fn, html }) => { const f = new Function(fn + '; return annoHtmlToMb;')(); return f(html); }, { fn: ext('annoHtmlToMb'), html: '<h2>Title</h2><p>A <strong>bold</strong> and <em>soft</em> note with a <a href="https://e.com/x">link</a>.</p><ul><li>one</li><li>two<ul><li>sub</li></ul></li></ul><ol><li>first</li><li>second</li></ol>' });
 check('annoHtmlToMb reconstructs MB markup', mb.includes('== Title ==') && mb.includes("'''bold'''") && mb.includes("''soft''") && mb.includes('[https://e.com/x|link]') && mb.includes('\n    * one') && mb.includes('\n        * sub') && mb.includes('\n    a. first'), JSON.stringify(mb));
 
+// changelog parsing (mock the /annotations page) — one row with a changelog, one without
+const histRows = await page.evaluate(({ fn, html }) => {
+  const realFetch = window.fetch; window.fetch = async () => ({ ok: true, text: async () => html });
+  const f = new Function('async ' + fn + '; return annoFetchHistory;')();
+  return f('00000000-0000-0000-0000-000000000000').finally(() => { window.fetch = realFetch; });
+}, { fn: ext('annoFetchHistory'), html: '<table><tr><th>Editor</th></tr>' +
+  '<tr><td><a href="/user/bob"><img src="/av.png">bob</a></td><td>2026-06-09 10:39 UTC</td><td><a href="/release/x/annotation/123">View this version</a> (Testing change message)</td></tr>' +
+  '<tr><td><a href="/user/bob">bob</a></td><td>2026-06-09 10:37 UTC</td><td><a href="/release/x/annotation/122">View this version</a> (no changelog specified)</td></tr></table>' });
+check('changelog parsed from a history row', histRows[0]?.changelog === 'Testing change message', JSON.stringify(histRows));
+check('"no changelog specified" → empty', histRows[1]?.changelog === '', JSON.stringify(histRows));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 await ctx.close();
 process.exit(fail ? 1 : 0);
