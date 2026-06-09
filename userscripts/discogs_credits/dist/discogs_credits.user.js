@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.9.194653
+// @version      2026.6.9.200942
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2533,52 +2533,6 @@
           });
           tdDiscogs.appendChild(rolesLine);
         }
-        if (entityType === "artist") {
-          const mbRolesLine = document.createElement("div");
-          mbRolesLine.style.cssText = "font-size:0.75rem;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;";
-          const trigger = document.createElement("a");
-          trigger.href = "#";
-          trigger.textContent = "MB roles \u25BE";
-          trigger.style.cssText = "color:#7a7a9a;text-decoration:none;cursor:pointer;";
-          trigger.title = "Fetch this artist's existing relationship types from MusicBrainz to compare with the Discogs role";
-          trigger.addEventListener("click", async (ev) => {
-            ev.preventDefault();
-            const st = rowState.get(_entityKey);
-            const curUrl = st?.mbUrl || r.mbUrl;
-            const mbid = (String(curUrl || "").split("/").pop() || "").replace(/[^a-f0-9-]/gi, "").slice(0, 36);
-            if (!mbid) {
-              trigger.textContent = "MB roles: (no MB artist selected)";
-              return;
-            }
-            trigger.textContent = "MB roles\u2026";
-            const types = await fetchArtistRelTypes(mbid);
-            mbRolesLine.innerHTML = "";
-            const label = document.createElement("span");
-            label.style.color = "#888";
-            if (!types) {
-              label.textContent = "MB roles: fetch failed";
-              label.style.color = "#a02020";
-              mbRolesLine.appendChild(label);
-              return;
-            }
-            if (!types.length) {
-              label.textContent = "MB roles: none";
-              mbRolesLine.appendChild(label);
-              return;
-            }
-            label.textContent = "MB roles: ";
-            mbRolesLine.appendChild(label);
-            mbRolesLine.title = types.join(", ");
-            types.forEach((t) => {
-              const c = document.createElement("span");
-              c.textContent = t;
-              c.style.cssText = "background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;margin-right:0.25rem;color:#4a4a77;font-size:0.7rem;";
-              mbRolesLine.appendChild(c);
-            });
-          });
-          mbRolesLine.appendChild(trigger);
-          tdDiscogs.appendChild(mbRolesLine);
-        }
         const credLine = document.createElement("div");
         credLine.style.cssText = "display:flex;align-items:center;gap:0.3rem;margin-top:1rem;padding-top:0.25rem;max-width:280px;";
         const credLabel = document.createElement("label");
@@ -2686,6 +2640,53 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         tr.appendChild(tdMb);
         const tdAction = actionsLine;
         tbody.appendChild(tr);
+        function buildMbRolesEl() {
+          if (entityType !== "artist") return null;
+          const wrap = document.createElement("span");
+          wrap.style.cssText = "display:inline-flex;align-items:center;gap:0.25rem;margin-left:0.5rem;min-width:0;overflow:hidden;font-size:0.72rem;";
+          const trigger = document.createElement("a");
+          trigger.href = "#";
+          trigger.textContent = "MB roles \u25BE";
+          trigger.style.cssText = "color:#7a7a9a;text-decoration:none;cursor:pointer;white-space:nowrap;";
+          trigger.title = "Fetch this artist's existing MB relationship types to compare with the Discogs role";
+          trigger.addEventListener("click", async (ev) => {
+            ev.preventDefault();
+            const st = rowState.get(_entityKey);
+            const curUrl = st?.mbUrl || r.mbUrl;
+            const mbid = (String(curUrl || "").split("/").pop() || "").replace(/[^a-f0-9-]/gi, "").slice(0, 36);
+            if (!mbid) {
+              trigger.textContent = "MB roles: (none selected)";
+              return;
+            }
+            trigger.textContent = "MB roles\u2026";
+            const types = await fetchArtistRelTypes(mbid);
+            wrap.innerHTML = "";
+            const label = document.createElement("span");
+            label.style.color = "#888";
+            if (!types) {
+              label.textContent = "MB roles: fetch failed";
+              label.style.color = "#a02020";
+              wrap.appendChild(label);
+              return;
+            }
+            if (!types.length) {
+              label.textContent = "MB roles: none";
+              wrap.appendChild(label);
+              return;
+            }
+            label.textContent = "MB roles: ";
+            wrap.appendChild(label);
+            wrap.title = types.join(", ");
+            types.forEach((t) => {
+              const c = document.createElement("span");
+              c.textContent = t;
+              c.style.cssText = "background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;color:#4a4a77;white-space:nowrap;";
+              wrap.appendChild(c);
+            });
+          });
+          wrap.appendChild(trigger);
+          return wrap;
+        }
         function setRowResolved(a) {
           const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
           rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true, via: "user", fromCache: false });
@@ -2732,6 +2733,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           selRow.appendChild(selA);
           const viaBadge = makeViaBadge("user", false);
           if (viaBadge) selRow.appendChild(viaBadge);
+          const mbRolesEl = buildMbRolesEl();
+          if (mbRolesEl) selRow.appendChild(mbRolesEl);
           selRow.appendChild(undoBtn);
           candidateList.appendChild(selRow);
           renderActions(a);
@@ -3152,6 +3155,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           selRow.appendChild(selA);
           const viaBadge = makeViaBadge(r.logEntry?.via, r.logEntry?.fromCache);
           if (viaBadge) selRow.appendChild(viaBadge);
+          const mbRolesEl = buildMbRolesEl();
+          if (mbRolesEl) selRow.appendChild(mbRolesEl);
           selRow.appendChild(undoBtn);
           candidateList.appendChild(selRow);
           renderActions(fakeA);

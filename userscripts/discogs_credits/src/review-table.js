@@ -479,47 +479,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 tdDiscogs.appendChild(rolesLine);
             }
 
-            // MB role types (#132) — on request. Fetching an artist's existing
-            // relationship categories isn't free (one extra MB request/artist),
-            // so we don't load it during preflight; instead each artist row gets
-            // a lazy "MB roles" toggle that fetches + shows the categories
-            // (producer / mix / mastering / misc / …) when the reviewer clicks,
-            // so they can compare against the Discogs role above. Session-cached.
-            if (entityType === 'artist') {
-                const mbRolesLine = document.createElement('div');
-                mbRolesLine.style.cssText = 'font-size:0.75rem;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;';
-                const trigger = document.createElement('a');
-                trigger.href = '#';
-                trigger.textContent = 'MB roles ▾';
-                trigger.style.cssText = 'color:#7a7a9a;text-decoration:none;cursor:pointer;';
-                trigger.title = "Fetch this artist's existing relationship types from MusicBrainz to compare with the Discogs role";
-                trigger.addEventListener('click', async (ev) => {
-                    ev.preventDefault();
-                    const st = rowState.get(_entityKey);
-                    const curUrl = st?.mbUrl || r.mbUrl;
-                    const mbid = (String(curUrl || '').split('/').pop() || '').replace(/[^a-f0-9-]/gi, '').slice(0, 36);
-                    if (!mbid) { trigger.textContent = 'MB roles: (no MB artist selected)'; return; }
-                    trigger.textContent = 'MB roles…';
-                    const types = await fetchArtistRelTypes(mbid);
-                    mbRolesLine.innerHTML = '';
-                    const label = document.createElement('span');
-                    label.style.color = '#888';
-                    if (!types)            { label.textContent = 'MB roles: fetch failed'; label.style.color = '#a02020'; mbRolesLine.appendChild(label); return; }
-                    if (!types.length)     { label.textContent = 'MB roles: none'; mbRolesLine.appendChild(label); return; }
-                    label.textContent = 'MB roles: ';
-                    mbRolesLine.appendChild(label);
-                    mbRolesLine.title = types.join(', ');
-                    types.forEach(t => {
-                        const c = document.createElement('span');
-                        c.textContent = t;
-                        c.style.cssText = 'background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;margin-right:0.25rem;color:#4a4a77;font-size:0.7rem;';
-                        mbRolesLine.appendChild(c);
-                    });
-                });
-                mbRolesLine.appendChild(trigger);
-                tdDiscogs.appendChild(mbRolesLine);
-            }
-
             // ── "Credited as" editable input (issue #62) ──────────────────
             // The default value comes from `existingCreditByMbid` if MB
             // already has the entity on this release; otherwise the
@@ -682,6 +641,50 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             tbody.appendChild(tr);
 
             // ── Helpers ────────────────────────────────────────────────────────
+
+            // MB role types in the resolved header (#132), on request. Returns an
+            // inline "MB roles ▾" element appended to the green resolved header on
+            // the MB side; clicking it lazily fetches the artist's existing MB
+            // relationship categories (producer / mix / mastering / misc / …) and
+            // shows them as tags, so the reviewer can compare against the Discogs
+            // role. Lazy by design — fetching isn't free (one MB request/artist),
+            // so nothing loads until clicked; session-cached per MBID. Artists only.
+            function buildMbRolesEl() {
+                if (entityType !== 'artist') return null;
+                const wrap = document.createElement('span');
+                wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.25rem;margin-left:0.5rem;min-width:0;overflow:hidden;font-size:0.72rem;';
+                const trigger = document.createElement('a');
+                trigger.href = '#';
+                trigger.textContent = 'MB roles ▾';
+                trigger.style.cssText = 'color:#7a7a9a;text-decoration:none;cursor:pointer;white-space:nowrap;';
+                trigger.title = "Fetch this artist's existing MB relationship types to compare with the Discogs role";
+                trigger.addEventListener('click', async (ev) => {
+                    ev.preventDefault();
+                    const st = rowState.get(_entityKey);
+                    const curUrl = st?.mbUrl || r.mbUrl;
+                    const mbid = (String(curUrl || '').split('/').pop() || '').replace(/[^a-f0-9-]/gi, '').slice(0, 36);
+                    if (!mbid) { trigger.textContent = 'MB roles: (none selected)'; return; }
+                    trigger.textContent = 'MB roles…';
+                    const types = await fetchArtistRelTypes(mbid);
+                    wrap.innerHTML = '';
+                    const label = document.createElement('span');
+                    label.style.color = '#888';
+                    if (!types)        { label.textContent = 'MB roles: fetch failed'; label.style.color = '#a02020'; wrap.appendChild(label); return; }
+                    if (!types.length) { label.textContent = 'MB roles: none'; wrap.appendChild(label); return; }
+                    label.textContent = 'MB roles: ';
+                    wrap.appendChild(label);
+                    wrap.title = types.join(', ');
+                    types.forEach(t => {
+                        const c = document.createElement('span');
+                        c.textContent = t;
+                        c.style.cssText = 'background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;color:#4a4a77;white-space:nowrap;';
+                        wrap.appendChild(c);
+                    });
+                });
+                wrap.appendChild(trigger);
+                return wrap;
+            }
+
             function setRowResolved(a) {
                 // a = { id, name, disambiguation }
                 const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
@@ -737,6 +740,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // never `(cache)` (this is a fresh pick).
                 const viaBadge = makeViaBadge('user', false);
                 if (viaBadge) selRow.appendChild(viaBadge);
+                const mbRolesEl = buildMbRolesEl();
+                if (mbRolesEl) selRow.appendChild(mbRolesEl);
                 selRow.appendChild(undoBtn);
                 candidateList.appendChild(selRow);
 
@@ -1280,6 +1285,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // `(cache)` suffix when the resolution came from IDB.
                 const viaBadge = makeViaBadge(r.logEntry?.via, r.logEntry?.fromCache);
                 if (viaBadge) selRow.appendChild(viaBadge);
+                const mbRolesEl = buildMbRolesEl();
+                if (mbRolesEl) selRow.appendChild(mbRolesEl);
                 selRow.appendChild(undoBtn);
                 candidateList.appendChild(selRow);
                 renderActions(fakeA);
