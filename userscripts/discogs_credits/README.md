@@ -82,6 +82,8 @@ Name search and Discogs URL lookup run in parallel. Auto-resolution happens only
 🔄 button deletes the existing cache and resolves every entity against fresh MB data.
 - **Credited as**<br>
 Per-entity override input — sets `entity1_credit` on every dispatched rel for that entity. If entity already exists in relationships, the most common *credited as* value will be used. Contains two helper buttons [MB] and [D], used to set the value to MB or Discogs name quickly.
+- **MB roles**<br>
+Each artist's MB header carries an **MB roles** toggle. Clicking it fetches that artist's existing MusicBrainz relationship categories (e.g. `producer`, `mix`, `mastering`, `instrument`, …) and shows them as tags, so you can sanity-check the Discogs role on that row against the artist's known roles. On request only — nothing is fetched during preflight (one extra request per artist), and results are cached for the session.
 - **Preflight diagnostics**<br>
 Collapsed `<details>` block below the main log with per-worker / per-request trace. Useful when something feels slow.
 
