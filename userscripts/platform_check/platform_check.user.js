@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.1
+// @version      2026.6.9.2
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -376,8 +376,8 @@ const PROVIDER_ICON = {
   volumo:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="#7c4dff"><circle cx="12" cy="12" r="10"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>',
 };
 // MusicBrainz mark for the reference row (the release we're comparing platforms
-// against). Brand-violet stand-in; swap for the official MB logo if desired.
-const MB_ICON = '<svg viewBox="0 0 24 24" width="14" height="14"><rect width="24" height="24" rx="6" fill="#BA68C8"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg>';
+// against). Same logo image Apollo Editor uses for its MB/markdown toggle.
+const MB_ICON = '<img alt="MB" src="https://images.dwncdn.net/images/t_app-icon-s/p/c5c33b93-7347-46e3-a512-3decccb33d78/1678792153/2170_4-166444-imgingest-4209519771082272608.png" style="width:17px;height:17px;border-radius:3px;">';
 container.innerHTML = `
 <style>
   /* MB's site CSS marks any outbound link with a red external-link ::after icon
@@ -420,12 +420,14 @@ container.innerHTML = `
     display: inline-block;
   }
 
-  /* ── Row layout (issue #173): 1-row aligned grid vs 2-row stacked ───────────
-   * Every row shares ONE grid template, and the panel width is fixed, so the
-   * fr/fixed tracks resolve to identical pixel widths on every row — the
-   * year/format/label/tracks columns line up as an "invisible table" so a
-   * platform's metadata can be compared against MusicBrainz at a glance. */
-  .pc-cell-ico  { display: inline-flex; align-items: center; justify-content: flex-start; min-width: 0; }
+  /* ── Row layout (issue #173): compact 1-row vs 2-row stacked ───────────────
+   * 1-row packs each provider onto one line: full name, then year · format ·
+   * label flowing right after it, with the track count pinned to the right
+   * edge. Names stay fully visible (they identify the row); the label is the
+   * only thing that truncates (full text in its tooltip). 2-row keeps the
+   * legacy stacked look (name line + meta line below). */
+  .pc-cell-ico  { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 22px; width: 22px; }
+  .pc-cell-ico img { display: block; }
   .pc-cell-name { color: inherit; text-decoration: none; font-weight: 600; font-size: 12px;
                   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pc-cell-year, .pc-cell-format, .pc-cell-label {
@@ -434,24 +436,22 @@ container.innerHTML = `
   .pc-cell-val  { font-size: 12px; font-weight: bold; font-family: monospace; color: #777; text-align: right; }
   .pc-cell-master { font-size: 11px; min-width: 14px; }
 
-  /* 1-row — one aligned line per provider: [icon] [name] [year] [format] [label] [master] [tracks] */
+  /* 1-row — [icon] [name] [year] · [format] · [label] …→ [master][tracks] */
   #mb-pc-panel.pc-layout-1row .pc-row {
-    display: grid; align-items: center; column-gap: 4px;
-    grid-template-columns: 20px minmax(0,2.6fr) 32px 46px minmax(0,0.6fr) 12px 20px;
-  }
-  /* names hidden → the brand icon identifies the row, so reclaim the name
-     column and give it to the label (which otherwise truncates hardest). */
-  #mb-pc-panel.pc-layout-1row.pc-no-names .pc-row {
-    grid-template-columns: 20px 0px 32px 46px minmax(0,1fr) 12px 20px;
+    display: flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden;
   }
   #mb-pc-panel.pc-layout-1row .pc-meta        { display: contents; }
-  #mb-pc-panel.pc-layout-1row .pc-cell-ico    { grid-column: 1; }
-  #mb-pc-panel.pc-layout-1row .pc-cell-name   { grid-column: 2; }
-  #mb-pc-panel.pc-layout-1row .pc-cell-year   { grid-column: 3; }
-  #mb-pc-panel.pc-layout-1row .pc-cell-format { grid-column: 4; }
-  #mb-pc-panel.pc-layout-1row .pc-cell-label  { grid-column: 5; }
-  #mb-pc-panel.pc-layout-1row .pc-cell-master { grid-column: 6; text-align: center; }
-  #mb-pc-panel.pc-layout-1row .pc-cell-val    { grid-column: 7; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-name   { flex: 0 0 auto; }   /* full name, never clipped */
+  #mb-pc-panel.pc-layout-1row .pc-cell-year,
+  #mb-pc-panel.pc-layout-1row .pc-cell-format { flex: 0 0 auto; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-label  { flex: 0 1 auto; min-width: 0; }   /* truncates first */
+  /* empty meta cells must not leave a flex-gap hole between the parts */
+  #mb-pc-panel.pc-layout-1row .pc-cell-year:empty,
+  #mb-pc-panel.pc-layout-1row .pc-cell-format:empty,
+  #mb-pc-panel.pc-layout-1row .pc-cell-label:empty { display: none; }
+  /* master state + track count pinned to the right edge */
+  #mb-pc-panel.pc-layout-1row .pc-cell-master { flex: 0 0 auto; min-width: 0; margin-left: auto; text-align: center; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-val    { flex: 0 0 auto; }
 
   /* 2-row — legacy stacked look: name line, then a meta line below */
   #mb-pc-panel.pc-layout-2row .pc-row {
@@ -1103,8 +1103,10 @@ function setMetaCells(yearId, formatId, labelId, year, format, label) {
     const lEl = document.getElementById(labelId);
     const fmt = format ? normalizeFormat(format) : '';
     const hasY = !!year, hasF = !!fmt, hasL = !!label;
-    if (yEl) yEl.textContent = hasY ? (hasF || hasL ? `${year} ·` : `${year}`) : '';
-    if (fEl) fEl.textContent = hasF ? (hasL ? `${fmt} ·` : `${fmt}`) : '';
+    // 2-digit year to save space in the compact row (#173); full year in tooltip.
+    const y2 = hasY ? String(year).slice(-2) : '';
+    if (yEl) { yEl.textContent = hasY ? (hasF || hasL ? `${y2} ·` : y2) : ''; yEl.title = hasY ? String(year) : ''; }
+    if (fEl) fEl.textContent = hasF ? (hasL ? `${fmt} ·` : fmt) : '';
     if (lEl) { lEl.textContent = hasL ? label : ''; lEl.title = hasL ? label : ''; }
 }
 
