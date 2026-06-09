@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.13
+// @version      2026.6.9.14
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -1011,17 +1011,29 @@ async function bpPkce() { const v = bpB64url(crypto.getRandomValues(new Uint8Arr
 
 // Full login → token. Returns { ok } or { ok:false, error }. Used by PC's setup UI.
 async function beatportLogin(username, password) {
+    const gmCookieAvail = !!((typeof GM_cookie !== 'undefined' && GM_cookie) || (typeof GM !== 'undefined' && GM && GM.cookie));
     const csrf = await bpCsrfToken();
+    appendLog('Beatport', `login start — GM_cookie ${gmCookieAvail ? 'available' : 'NOT available (grant/manager missing)'}; csrftoken ${csrf ? `read (${csrf.length} chars), sending X-CSRFToken` : 'NOT found — no token header'}`, csrf ? 'info' : 'warn');
     const lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { headers: { 'Content-Type': 'application/json', ...bpHeaders(), ...(csrf ? { 'X-CSRFToken': csrf } : {}) } });
-    if (!lr.ok) { let m = 'incorrect username or password'; try { const j = JSON.parse(lr.responseText); m = (typeof j === 'string' ? j : j.detail) || m; } catch {} return { ok: false, error: m }; }
+    if (!lr.ok) {
+        let m = 'incorrect username or password';
+        try { const j = JSON.parse(lr.responseText); m = (typeof j === 'string' ? j : j.detail) || m; } catch {}
+        appendLog('Beatport', `login POST rejected — HTTP ${lr.status}: ${m}`, 'error');
+        return { ok: false, error: m };
+    }
+    appendLog('Beatport', `login POST ok (HTTP ${lr.status}) — requesting authorization code…`);
     const { v, c } = await bpPkce();
     const au = `${BEATPORT.api}/auth/o/authorize/?response_type=code&client_id=${BEATPORT.clientId}&redirect_uri=${encodeURIComponent(BEATPORT.redirect)}&code_challenge=${c}&code_challenge_method=S256`;
     const ar = await gmGet(au, { headers: bpHeaders() });   // GM follows the 302 to the post-message page; the code lands in finalUrl
     const code = ((ar.finalUrl || '').match(/[?&#]code=([^&]+)/) || [])[1];
-    if (!code) return { ok: false, error: 'no authorization code returned' };
+    if (!code) {
+        appendLog('Beatport', `authorize step returned no code — HTTP ${ar.status}, finalUrl ${ar.finalUrl ? `=${ar.finalUrl.slice(0, 80)}` : 'missing'}`, 'error');
+        return { ok: false, error: 'no authorization code returned' };
+    }
+    appendLog('Beatport', 'authorization code received — exchanging for token…');
     const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: BEATPORT.redirect, client_id: BEATPORT.clientId, code_verifier: v }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
-    let j; try { j = JSON.parse(tr.responseText); } catch { return { ok: false, error: 'token response parse failed' }; }
-    if (!j.access_token) return { ok: false, error: j.error_description || j.error || 'no access token' };
+    let j; try { j = JSON.parse(tr.responseText); } catch { appendLog('Beatport', `token exchange — unparseable response (HTTP ${tr.status})`, 'error'); return { ok: false, error: 'token response parse failed' }; }
+    if (!j.access_token) { const e = j.error_description || j.error || 'no access token'; appendLog('Beatport', `token exchange failed — ${e}`, 'error'); return { ok: false, error: e }; }
     bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
     appendLog('Beatport', `logged in (token scope: ${j.scope || '?'})`, 'ok');
     return { ok: true };
