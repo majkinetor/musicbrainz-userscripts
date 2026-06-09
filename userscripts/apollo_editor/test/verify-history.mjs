@@ -40,6 +40,10 @@ check('revert is right-aligned (meta grows to push it to the edge)', (await page
 check('revert hidden by default, shown on .on/hover (CSS rule present)', await page.evaluate(() => [...document.styleSheets].some(ss => { try { return [...ss.cssRules].some(r => /tc-hist-card\.on .tc-hist-revert/.test(r.cssText)); } catch { return false; } })));
 const noGap = await page.evaluate(() => { const b = document.getElementById('tc-anno-history-btn'); return getComputedStyle(b).marginLeft === '0px' || getComputedStyle(b).marginLeft === 'auto' ? getComputedStyle(b).marginLeft : getComputedStyle(b).marginLeft; });
 check('History button is not pushed right (no auto margin)', (await page.evaluate(() => getComputedStyle(document.getElementById('tc-anno-history-btn')).marginLeft)) !== 'auto', 'marginLeft=' + noGap);
+// select a non-current card so its revert shows, then screenshot
+await page.click('#tc-anno-history .tc-hist-card:not(:first-child)');
+await page.waitForTimeout(200);
+check('revert fully inside the list (not clipped / offscreen)', await page.evaluate(() => { const r = document.querySelector('#tc-anno-history .tc-hist-card.on .tc-hist-revert'); const l = document.querySelector('#tc-anno-history .tc-hist-list'); if (!r) return true; const rr = r.getBoundingClientRect(), lr = l.getBoundingClientRect(); return rr.right <= lr.right + 1; }));
 await page.$eval('#tc-anno-wrap', e => e.scrollIntoView({ block: 'center' }));
 await page.locator('#tc-anno-wrap').screenshot({ path: resolve(HERE, 'logs', 'shot-history.png') }).catch(() => {});
 // click an older card's revert (NO confirm) → editor restored with that version
