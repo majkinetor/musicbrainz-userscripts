@@ -22,6 +22,7 @@ const _annoEsc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/
 const _annoName = new Map();
 const annoToHtml = new Function('_annoEsc', '_annoName', `${extract('annoToHtml')}; return annoToHtml;`)(_annoEsc, _annoName);
 const mdToAnno   = new Function(`${extract('mdToAnno')}; return mdToAnno;`)();
+const annoToMd   = new Function(`${extract('annoToMd')}; return annoToMd;`)();
 
 let pass = 0, fail = 0;
 const check = (label, got, mustInclude, mustExclude = []) => {
@@ -65,6 +66,22 @@ eq('hr ---', mdToAnno('---'), '----');
 // a URL containing * or _ must not be italicised by the bold/italic passes (URL is protected)
 eq('url with underscores protected', mdToAnno('see https://e.com/a_b_c done'), 'see https://e.com/a_b_c done');
 eq('md link url with asterisks protected', mdToAnno('[x](https://e.com/a*b*c)'), '[https://e.com/a*b*c|x]');
+
+console.log('\nannoToMd (MB markup → Markdown, the toggle\'s "back" direction):');
+eq('link back', annoToMd('[https://example.com/x|the site]'), '[the site](https://example.com/x)');
+eq('plain [url] back', annoToMd('[https://example.com]'), 'https://example.com');
+eq('bold back', annoToMd("'''strong'''"), '**strong**');
+eq('italic back', annoToMd("''soft''"), '*soft*');
+eq('bold-italic back', annoToMd("'''''both'''''"), '***both***');
+eq('heading back', annoToMd('== Section =='), '## Section');
+eq('bullet back', annoToMd('    * item'), '- item');
+eq('hr back', annoToMd('----'), '---');
+
+console.log('\nround-trips (toggle stability):');
+const rtMB = "= Notes =\nA '''bold''' and ''soft'' note, see [https://e.com/x|the label].\n    * one\n    * two\n----\ntail";
+eq('MB → MD → MB is stable', mdToAnno(annoToMd(rtMB)), rtMB);
+const rtMD = '## Notes\nA **bold** and *soft* note, see [the label](https://e.com/x).\n- one\n- two\n---\ntail';
+eq('MD → MB → MD is stable', annoToMd(mdToAnno(rtMD)), rtMD);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

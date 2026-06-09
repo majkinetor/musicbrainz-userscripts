@@ -34,12 +34,13 @@ await page.fill('#annotation', [
   '',
   'Catalogue number: ABC-123',
 ].join('\n'));
+const clip = async () => { const b = await page.$eval('#tc-anno-wrap', e => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }); await page.evaluate(y => window.scrollTo(0, Math.max(0, y - 30)), b.y); const b2 = await page.$eval('#tc-anno-wrap', e => { const r = e.getBoundingClientRect(); return { x: Math.max(0, r.x - 8), y: Math.max(0, r.y - 8), width: Math.min(r.width + 16, 1090), height: r.height + 16 }; }); return b2; };
+// edit view (toolbar + bigger textarea holding MB markup)
+await page.waitForTimeout(150);
+await page.screenshot({ path: resolve(HERE, 'logs', 'shot-annotation-edit.png'), clip: await clip() });
+// preview view (swaps in place)
 await page.click('#tc-anno-preview-btn');
 await page.waitForTimeout(300);
-// clip the annotation fieldset (toolbar + textarea + preview)
-const box = await page.$eval('#annotation', e => { const fs = e.closest('fieldset') || e.parentElement; const r = fs.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; });
-await page.evaluate(b => window.scrollTo(0, Math.max(0, b.y - 40)), box);
-const box2 = await page.$eval('#annotation', e => { const fs = e.closest('fieldset') || e.parentElement; const r = fs.getBoundingClientRect(); return { x: Math.max(0, r.x - 8), y: Math.max(0, r.y - 8), width: Math.min(r.width + 16, 1090), height: r.height + 16 }; });
-await page.screenshot({ path: resolve(HERE, 'logs', 'shot-annotation.png'), clip: box2 });
-console.log('saved', resolve(HERE, 'logs', 'shot-annotation.png'));
+await page.screenshot({ path: resolve(HERE, 'logs', 'shot-annotation-preview.png'), clip: await clip() });
+console.log('saved edit + preview shots');
 await ctx.close();

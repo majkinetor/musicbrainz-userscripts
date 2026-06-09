@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.000100
+// @version      2026.6.9.000200
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3302,14 +3302,18 @@
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url{text-decoration:line-through;opacity:.55}
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-dead a.url::after{content:" ✖ " attr(data-tc-deadcode);color:#c0392b;font-size:11px;text-decoration:none;opacity:.9}
     body.tc-ri-on #external-links-editor tr.external-link-item.tc-link-ok a.url::after{content:" ✓";color:#2c7a45;font-size:11px;opacity:.7}
-    /* annotation editor: the toolbar above #annotation + the live preview pane below it */
-    #tc-anno-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 5px}
-    #tc-anno-bar button{font:12px Arial;display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border:1px solid #d6cdec;border-radius:6px;background:#f6f3fc;color:#5a3e94;cursor:pointer}
+    /* annotation editor: a bordered box wrapping the toolbar + (bigger) textarea + in-place preview */
+    body.tc-ri-on #information #tc-anno-wrap{border:1px solid #d6cdec;border-radius:7px;background:#fff;overflow:hidden;box-sizing:border-box}
+    #tc-anno-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 8px;background:#f6f3fc;border-bottom:1px solid #e7defa}
+    #tc-anno-bar button{font:12px Arial;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid #d6cdec;border-radius:6px;background:#fff;color:#5a3e94;cursor:pointer}
     #tc-anno-bar button:hover{background:#ece5f8;border-color:#b9a4e0}
     #tc-anno-bar button:disabled{opacity:.6;cursor:default}
     #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
+    #tc-anno-bar.tc-anno-md-on #tc-anno-md{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-status{font:12px Arial;color:#777;margin-left:2px}
-    #tc-anno-preview{margin:6px 0 2px;padding:9px 12px;border:1px solid #d6cdec;border-radius:6px;background:#faf8ff;font-size:13px;line-height:1.5;color:#333;max-height:340px;overflow:auto;word-break:break-word}
+    /* the textarea fills the box, borderless (the wrapper owns the frame) and noticeably taller */
+    body.tc-ri-on #information fieldset.information #tc-anno-wrap textarea#annotation{display:block;width:100%!important;min-height:230px;border:none!important;border-radius:0;padding:9px 11px;resize:vertical;box-shadow:none;box-sizing:border-box}
+    #tc-anno-preview{min-height:230px;padding:10px 13px;background:#fff;font-size:13px;line-height:1.5;color:#333;overflow:auto;word-break:break-word;box-sizing:border-box}
     #tc-anno-preview .tc-anno-empty{color:#999;font-style:italic}
     #tc-anno-preview p{margin:0 0 8px}
     #tc-anno-preview .tc-anno-h{margin:10px 0 6px;color:#3d2470;font-weight:700;line-height:1.25}
@@ -3501,6 +3505,18 @@
     return src.replace(/\x05(\d+)\x06/g, (_m, i) => urls[+i]);
   }
 
+  // MB annotation markup → Markdown (reverse of mdToAnno; powers the Markdown toggle's "back" direction)
+  function annoToMd(src) {
+    if (!src) return src;
+    src = src.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => `[${text || url}](${url})`);   // [url|text] → [text](url)
+    src = src.replace(/\[((?:https?|ftp):\/\/[^\]|]+)\]/g, (_m, url) => url);                        // [url] → bare url
+    src = src.replace(/'''''(.+?)'''''/g, '***$1***').replace(/'''(.+?)'''/g, '**$1**').replace(/''(.+?)''/g, '*$1*');
+    src = src.replace(/^(={1,6})\s*(.*?)\s*=*\s*$/gm, (_m, e, t) => '#'.repeat(e.length) + ' ' + t);  // = H = → # H
+    src = src.replace(/^ {4}\*\s+/gm, '- ');                                                          // 4-space bullet → - item
+    src = src.replace(/^-{4,}\s*$/gm, '---');                                                         // ---- → ---
+    return src;
+  }
+
   function annoReplaceAsync(str, re, fn) {   // async String.replace (kellnerd's replaceAsync)
     const parts = []; let last = 0, m;
     re.lastIndex = 0;
@@ -3533,30 +3549,42 @@
     ta.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
+  // Wrap #annotation in a bordered editor box (toolbar + textarea + in-place preview). Mounted ONCE per
+  // textarea node — the 500ms applyReleaseInfo poll must not rebuild it (that was the flicker). Only when
+  // MB swaps the textarea for a fresh node (no _tcAnnoMounted) do we wrap again.
   function ensureAnnotationToolbar() {
     const ta = document.getElementById('annotation'); if (!ta) return;
-    let bar = document.getElementById('tc-anno-bar');
-    if (bar && bar.isConnected && bar.nextElementSibling === ta && bar._ta === ta) return;   // already in place
-    if (bar) bar.remove();
-    bar = document.createElement('div'); bar.id = 'tc-anno-bar'; bar._ta = ta;
+    if (ta._tcAnnoMounted && ta._tcAnnoMounted.isConnected) return;
+
+    const wrap = document.createElement('div'); wrap.id = 'tc-anno-wrap';
+    const bar = document.createElement('div'); bar.id = 'tc-anno-bar';
     bar.innerHTML =
-      '<button type="button" id="tc-anno-preview-btn" title="Toggle a live preview of the annotation, rendered the way MusicBrainz will show it">👁 Preview</button>' +
-      '<button type="button" id="tc-anno-md" title="Convert Markdown in the annotation to MusicBrainz markup (links, bold, italic, headings, lists)">⇄ Markdown→MB</button>' +
+      '<button type="button" id="tc-anno-preview-btn" title="Toggle a preview of the annotation, rendered the way MusicBrainz will show it">👁 Preview</button>' +
+      '<button type="button" id="tc-anno-md" title="Toggle the annotation between MusicBrainz markup and Markdown — convert one way, click again to convert back">⇄ Markdown</button>' +
       '<button type="button" id="tc-anno-names" title="Replace bare MusicBrainz entity URLs with [url|Name] links, fetching each name from the API">🏷 Resolve names</button>' +
       '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
       '<span id="tc-anno-status"></span>';
-    ta.parentNode.insertBefore(bar, ta);
-    let prev = document.getElementById('tc-anno-preview');
-    if (!prev) { prev = document.createElement('div'); prev.id = 'tc-anno-preview'; }
-    ta.parentNode.insertBefore(prev, ta.nextSibling);
-    const status = (msg, ms) => { const s = document.getElementById('tc-anno-status'); if (!s) return; s.textContent = msg || ''; if (ms) setTimeout(() => { if (s.textContent === msg) s.textContent = ''; }, ms); };
-    const renderPreview = () => { if (prev.style.display === 'none') return; prev.innerHTML = annoToHtml(ta.value); };
-    document.getElementById('tc-anno-preview-btn').onclick = () => { const on = prev.style.display === 'none'; prev.style.display = on ? '' : 'none'; bar.classList.toggle('tc-anno-prev-on', on); if (on) renderPreview(); };
-    document.getElementById('tc-anno-md').onclick = () => { const before = ta.value, after = mdToAnno(before); if (after !== before) { annoSet(ta, after); status('converted Markdown', 2500); } else status('no Markdown found', 2500); renderPreview(); };
-    document.getElementById('tc-anno-names').onclick = async (e) => { const btn = e.currentTarget; btn.disabled = true; status('resolving names…'); try { const after = await annoResolveNames(ta.value); if (after !== ta.value) { annoSet(ta, after); status('names resolved', 2500); } else status('no bare entity URLs', 2500); renderPreview(); } finally { btn.disabled = false; } };
-    document.getElementById('tc-anno-clear').onclick = () => { if (!ta.value || confirm('Clear the entire annotation?')) { annoSet(ta, ''); renderPreview(); } };
-    if (!ta._tcAnnoWired) { ta._tcAnnoWired = true; let t; ta.addEventListener('input', () => { clearTimeout(t); t = setTimeout(renderPreview, 150); }); }
-    prev.style.display = 'none';
+    const prev = document.createElement('div'); prev.id = 'tc-anno-preview'; prev.style.display = 'none';
+    ta.parentNode.insertBefore(wrap, ta);
+    wrap.append(bar, ta, prev);          // the textarea moves inside the box, between the toolbar and the preview
+    ta._tcAnnoMounted = wrap;
+
+    const $ = id => bar.querySelector('#' + id);
+    const status = (msg, ms) => { const s = $('tc-anno-status'); if (!s) return; s.textContent = msg || ''; if (ms) setTimeout(() => { if (s.textContent === msg) s.textContent = ''; }, ms); };
+    let previewing = false, mdMode = false;   // mdMode: the textarea currently holds Markdown (not MB markup)
+    // preview swaps in place of the textarea; render the MB-markup form (convert from Markdown first if in mdMode)
+    const showPreview = on => { previewing = on; prev.style.display = on ? '' : 'none'; ta.style.display = on ? 'none' : ''; bar.classList.toggle('tc-anno-prev-on', on); if (on) prev.innerHTML = annoToHtml(mdMode ? mdToAnno(ta.value) : ta.value); };
+    $('tc-anno-preview-btn').onclick = () => showPreview(!previewing);
+    $('tc-anno-md').onclick = () => {
+      if (previewing) showPreview(false);
+      annoSet(ta, mdMode ? mdToAnno(ta.value) : annoToMd(ta.value));   // back to MB markup, or out to Markdown
+      mdMode = !mdMode;
+      bar.classList.toggle('tc-anno-md-on', mdMode);
+      $('tc-anno-md').textContent = mdMode ? '⇄ MB markup' : '⇄ Markdown';
+      status(mdMode ? 'editing as Markdown' : 'converted to MB markup', 2500);
+    };
+    $('tc-anno-names').onclick = async (e) => { const btn = e.currentTarget; btn.disabled = true; status('resolving names…'); try { const after = await annoResolveNames(ta.value); if (after !== ta.value) { annoSet(ta, after); status('names resolved', 2500); } else status('no bare entity URLs', 2500); if (previewing) showPreview(true); } finally { btn.disabled = false; } };
+    $('tc-anno-clear').onclick = () => { if (!ta.value || confirm('Clear the entire annotation?')) { annoSet(ta, ''); if (previewing) showPreview(true); } };
   }
 
   // MB's contextual guidance box(es) — anything outside #information that's just the style-guidelines help

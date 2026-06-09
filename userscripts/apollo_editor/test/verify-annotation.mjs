@@ -55,32 +55,46 @@ const modelPath = await page.evaluate(() => {
 log('annotation model accessor:', modelPath);
 const readModel = () => page.evaluate(() => { try { const r = window.MB.releaseEditor.rootField.release(); return typeof r.annotation === 'function' ? r.annotation() : r.annotation; } catch { return '<unreadable>'; } });
 
+check('toolbar inside #tc-anno-wrap box', await page.$eval('#tc-anno-wrap #tc-anno-bar', () => true).catch(() => false));
+check('textarea moved inside the box', await page.$eval('#tc-anno-wrap > textarea#annotation', () => true).catch(() => false));
 const btnCount = await page.$$eval('#tc-anno-bar button', bs => bs.length);
-check('4 toolbar buttons', btnCount === 4, 'got ' + btnCount);
+check('4 toolbar buttons (no extras)', btnCount === 4, 'got ' + btnCount);
+const taH = await page.$eval('#annotation', e => e.getBoundingClientRect().height);
+check('textarea is bigger (>=200px)', taH >= 200, 'height ' + Math.round(taH));
 
-// 1. type Markdown straight into the textarea, then convert
-await page.fill('#annotation', '## Notes\n\nSee [the label](https://example.com/x) and **bold** text.');
-await page.click('#tc-anno-md');
-const afterMd = await page.inputValue('#annotation');
-check('MD→MB transformed textarea', afterMd.includes('== Notes ==') && afterMd.includes('[https://example.com/x|the label]') && afterMd.includes("'''bold'''"), JSON.stringify(afterMd));
-const modelAfterMd = await readModel();
-check('MD→MB propagated to MB model', modelAfterMd === afterMd, 'model=' + JSON.stringify(modelAfterMd));
+// NO FLICKER: mark the wrapper, wait past 3× the 500ms applyReleaseInfo poll, assert it's the SAME node
+await page.evaluate(() => { document.getElementById('tc-anno-wrap').dataset.tcMark = 'orig'; });
+await page.waitForTimeout(1700);
+check('wrapper not rebuilt across polls (no flicker)', (await page.$eval('#tc-anno-wrap', e => e.dataset.tcMark)) === 'orig');
 
-// 2. Preview renders the markup
+// 1. Markdown TOGGLE — start in MB markup, toggle to Markdown, toggle back
+await page.fill('#annotation', "= Notes =\nA '''bold''' note, see [https://example.com/x|the label].");
+await page.click('#tc-anno-md');                                  // MB → Markdown
+const asMd = await page.inputValue('#annotation');
+check('toggle → Markdown', asMd.includes('# Notes') && asMd.includes('**bold**') && asMd.includes('[the label](https://example.com/x)'), JSON.stringify(asMd));
+check('button relabels to "MB markup"', (await page.textContent('#tc-anno-md')).includes('MB markup'));
+check('Markdown propagated to MB model', (await readModel()) === asMd);
+await page.click('#tc-anno-md');                                  // Markdown → MB
+const backToMb = await page.inputValue('#annotation');
+check('toggle back → MB markup', backToMb.includes('= Notes =') && backToMb.includes("'''bold'''") && backToMb.includes('[https://example.com/x|the label]'), JSON.stringify(backToMb));
+check('button relabels to "Markdown"', (await page.textContent('#tc-anno-md')).includes('Markdown'));
+
+// 2. Preview swaps IN PLACE: textarea hidden, preview shown; toggle back restores the textarea
 await page.click('#tc-anno-preview-btn');
-await page.waitForTimeout(200);
-const prevVisible = await page.isVisible('#tc-anno-preview');
+await page.waitForTimeout(150);
+check('preview shown', await page.isVisible('#tc-anno-preview'));
+check('textarea hidden while previewing', !(await page.isVisible('#annotation')));
 const prevHtml = await page.$eval('#tc-anno-preview', e => e.innerHTML);
-check('preview visible', prevVisible);
-check('preview rendered h2 + link + bold', /<h2 class="tc-anno-h">Notes<\/h2>/.test(prevHtml) && /<a href="https:\/\/example\.com\/x"/.test(prevHtml) && /<b>bold<\/b>/.test(prevHtml), prevHtml);
+check('preview rendered h1 + link + bold', /<h1 class="tc-anno-h">Notes<\/h1>/.test(prevHtml) && /<a href="https:\/\/example\.com\/x"/.test(prevHtml) && /<b>bold<\/b>/.test(prevHtml), prevHtml);
+await page.click('#tc-anno-preview-btn');
+await page.waitForTimeout(150);
+check('textarea restored after preview off', await page.isVisible('#annotation'));
 
 // 3. Clear empties textarea + model (dialog auto-accepted)
 await page.click('#tc-anno-clear');
 await page.waitForTimeout(150);
-const afterClear = await page.inputValue('#annotation');
-const modelAfterClear = await readModel();
-check('Clear emptied textarea', afterClear === '', JSON.stringify(afterClear));
-check('Clear propagated to MB model', modelAfterClear === '' , 'model=' + JSON.stringify(modelAfterClear));
+check('Clear emptied textarea', (await page.inputValue('#annotation')) === '');
+check('Clear propagated to MB model', (await readModel()) === '');
 
 await page.screenshot({ path: resolve(HERE, 'logs/verify-annotation.png'), fullPage: false }).catch(() => {});
 console.log(`\n${pass} passed, ${fail} failed`);
