@@ -42,7 +42,7 @@ Each takeover is optional and you can flip back to the native editor at any time
     - Tools relocated to always-visible _Tool_ button, with some new tools
     - Revert/Clear for a single track or the whole table
 - **[Customization](#settings)** — resizable columns, alternate row colors, grid, multiple layouts, match tolerance
-- **[Annotation editor](#annotation-editor)** — edit the annotation as **Markdown** with a live preview, in the release editor's *Additional information* and on the standalone *Edit annotation* page. Toggle with the **Modify annotations with Markdown** setting.
+- **[Annotation editor](#annotation-editor)** — edit the annotation as **Markdown** with a live preview, in the release editor's *Additional information* and on the standalone *Edit annotation* page.
 - **Release Information** tab
     - The **annotation editor** (above) lives here, in *Additional information*.
     - External links moved to a right column with a dead-link checker; right-click a favicon/type to edit it
@@ -120,16 +120,16 @@ Besides the integrated tools, there are a few new ones:
 
 Edits the [annotation](https://musicbrainz.org/doc/Annotation) as **Markdown** with a live preview. It runs both in the release editor's *Additional information* section and on the standalone **Edit annotation** page (`/release/<mbid>/edit_annotation`), and is toggled by the **Modify annotations with Markdown** [setting](#modify).
 
-The editor edits in Markdown by default; the underlying MusicBrainz field always holds MB markup, so **saving is always correct**. The surface is monospace with `Tab`-aligned indentation.
+Markdown format is selected by default; the underlying MusicBrainz field always holds MB markup, so **saving is always correct**.
 
 **Toolbar** — `[Preview] [Clear]  [markup] [?]  [maximize] [History]`:
 
-- **Preview** — a live **split** view: editor on the left, the annotation rendered (exactly the way MusicBrainz will show it — headings, bold/italic, links, **nested bullet & numbered lists**, code, rules) updating in real time on the right. Grounded against MusicBrainz's own preview.
-- **markup toggle** (icon) — shows the current markup (Markdown / MusicBrainz logo); click to switch between editing as Markdown and the raw MusicBrainz markup.
-- **?** — hover for a syntax + shortcut cheatsheet.
+- **Preview** — a live split view: editor on the left, the annotation rendered updating in real time on the right
+- **Clear** — remove all markup from text area
+- **markup** —  switch between editing as Markdown and the MusicBrainz markup.
+- **?** — hover for a syntax and shortcut cheatsheet.
 - **maximize** — expand the editor to fill the screen (Esc restores).
-- **🕘 History** (existing releases only) — the annotation's previous versions as user cards (editor, date, changelog message); select one to display its rendered annotation, with a small **↶ revert** button that loads that version back into the editor (reconstructed from the rendered HTML — review before submitting).
-- **Clear**.
+- **🕘 History** — the annotation's previous versions; select one to display its rendered annotation, with a **↶ revert** button that loads that version back into the editor wit markup reconstructed from the rendered HTML.
 
 **Editing**
 
@@ -138,9 +138,7 @@ The editor edits in Markdown by default; the underlying MusicBrainz field always
 - **Ctrl/Cmd+B / +I** bold/italic — wraps the selection, or surrounds the word under the cursor.
 - All edits are **undoable** (`Ctrl+Z`).
 
-The Markdown ↔ MB conversion (inspired by [kellnerd's annotationConverter](https://github.com/kellnerd/musicbrainz-scripts/blob/main/src/annotationConverter.js)) covers links, bold/italic, headings, nested bullet/numbered lists, fenced ` ``` ` ↔ 8‑space code, rules, and encodes a non‑link `[x]` so MusicBrainz doesn't read it as a broken link.
-
-On the standalone **Edit annotation** page the Changelog moves above the editor (like *Disambiguation* in `/edit`); the native Edit note, formatting guide and submit buttons are hidden in favour of a single **Enter edit** button.
+The Markdown ↔ MB conversion covers links, bold/italic, headings, nested bullet/numbered lists, fenced ` ``` ` ↔ 8‑space code, rules, and encodes a non‑link `[x]` so MusicBrainz doesn't read it as a broken link.
 
 ## Settings
 
