@@ -134,6 +134,16 @@ await page.fill('#tc-anno-mdinput', 'make bold');
 await page.$eval('#tc-anno-mdinput', e => e.setSelectionRange(5, 9));   // select "bold"
 await page.keyboard.press('Control+b');
 check('Ctrl+B wraps selection with **', (await page.inputValue('#tc-anno-mdinput')) === 'make **bold**', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
+// undo (Ctrl+Z) reverts the Ctrl+B — the edit is on the native undo stack
+await page.keyboard.press('Control+z');
+check('Ctrl+Z undoes Ctrl+B', (await page.inputValue('#tc-anno-mdinput')) === 'make bold', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
+// continuation/list edits are undoable too
+await page.fill('#tc-anno-mdinput', 'a\nb');
+await page.$eval('#tc-anno-mdinput', e => e.setSelectionRange(0, 3));
+await page.keyboard.press('Tab');
+check('Tab → bullet list', (await page.inputValue('#tc-anno-mdinput')) === '- a\n- b');
+await page.keyboard.press('Control+z');
+check('Ctrl+Z undoes the Tab list', (await page.inputValue('#tc-anno-mdinput')) === 'a\nb', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
 
 // 5b. Maximize fills the viewport; Esc restores
 await page.click('#tc-anno-max');
