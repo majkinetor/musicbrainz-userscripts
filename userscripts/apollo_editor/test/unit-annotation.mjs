@@ -25,6 +25,7 @@ const mdToAnno   = new Function(`${extract('mdToAnno')}; return mdToAnno;`)();
 const annoToMd   = new Function(`${extract('annoToMd')}; return annoToMd;`)();
 const annoContinueBullet = new Function(`${extract('annoContinueBullet')}; return annoContinueBullet;`)();
 const annoWrap   = new Function(`${extract('annoWrap')}; return annoWrap;`)();
+const annoListSelection = new Function(`${extract('annoListSelection')}; return annoListSelection;`)();
 
 let pass = 0, fail = 0;
 const check = (label, got, mustInclude, mustExclude = []) => {
@@ -47,6 +48,10 @@ check('bullets', annoToHtml('    * one\n    * two'), ['<ul class="tc-anno-ul">',
 eq('nested bullets render', annoToHtml('    * one\n    * two\n        * sub\n    * three'),
   '<ul class="tc-anno-ul"><li>one</li><li>two<ul class="tc-anno-ul"><li>sub</li></ul></li><li>three</li></ul>');
 check('8-space NON-bullet is still code', annoToHtml('        plain code'), ['<pre class="tc-anno-pre">plain code</pre>'], ['<li>']);
+// ordered lists: MB uses "a." (auto-numbered) — render <ol>; a literal "1." is NOT a list
+eq('ordered "a." list renders <ol>', annoToHtml('    a. one\n    a. two'), '<ol class="tc-anno-ol"><li>one</li><li>two</li></ol>');
+check('"1." is not an ordered list (literal)', annoToHtml('    1. one'), [], ['<ol', '<li>']);
+check('nested ordered under bullet', annoToHtml('    * a\n        a. b'), ['<ul class="tc-anno-ul"><li>a<ol class="tc-anno-ol"><li>b</li></ol></li></ul>']);
 // regression: an empty-title heading (what "# " in Markdown becomes) must NOT infinite-loop the renderer
 eq('empty-title heading does not hang', annoToHtml('=  ='), '<p>=  =</p>');
 eq('lone "= " does not hang', annoToHtml('= '), '<p>= </p>');
@@ -90,6 +95,9 @@ eq('blank line after a heading is kept', annoToMd('=== step 1 ===\n\n    * 1\n  
 // nested bullets convert both ways (markdown 2-space indent <-> MB 4-space level)
 eq('md nested bullet → MB', mdToAnno('- a\n  - b\n- c'), '    * a\n        * b\n    * c');
 eq('MB nested bullet → md', annoToMd('    * a\n        * b\n    * c'), '- a\n  - b\n- c');
+eq('md numbered → MB "a."', mdToAnno('1. one\n2. two'), '    a. one\n    a. two');
+eq('MB "a." → md numbered', annoToMd('    a. one\n    a. two'), '1. one\n1. two');
+eq('ordered list round-trip (MB→MD→MB)', mdToAnno(annoToMd('    a. x\n        a. y')), '    a. x\n        a. y');
 eq('nested bullets round-trip (MB→MD→MB)', mdToAnno(annoToMd('    * a\n        * b\n            * c')), '    * a\n        * b\n            * c');
 
 console.log('\nannoToMd (MB markup → Markdown, the toggle\'s "back" direction):');
@@ -117,7 +125,16 @@ cb('continue md bullet', '- one', 5, { value: '- one\n- ', caret: 8 });
 cb('continue MB bullet (keeps indent)', '    * one', 9, { value: '    * one\n    * ', caret: 16 });
 cb('continue nested bullet', '        * sub', 13, { value: '        * sub\n        * ', caret: 24 });
 cb('empty bullet ends the list', '- ', 2, { value: '', caret: 0 });
+cb('continue numbered list', '1. one', 6, { value: '1. one\n1. ', caret: 10 });
+cb('continue MB "a." list', '    a. one', 10, { value: '    a. one\n    a. ', caret: 18 });
 eq('non-bullet line → null', annoContinueBullet('hello', 5), null);
+
+console.log('\nannoListSelection (Tab on a selection → list):');
+eq('Tab → markdown bullet list', JSON.stringify(annoListSelection('one\ntwo', 0, 7, false, false)), JSON.stringify({ value: '- one\n- two', selStart: 0, selEnd: 11 }));
+eq('Ctrl+Tab → markdown numbered list', annoListSelection('one\ntwo', 0, 7, false, true).value, '1. one\n1. two');
+eq('Tab → MB bullet list (raw)', annoListSelection('one\ntwo', 0, 7, true, false).value, '    * one\n    * two');
+eq('Ctrl+Tab → MB "a." list (raw)', annoListSelection('one\ntwo', 0, 7, true, true).value, '    a. one\n    a. two');
+eq('re-listing strips the old marker', annoListSelection('- one\n- two', 0, 11, false, true).value, '1. one\n1. two');
 
 console.log('\nannoWrap (Ctrl+B/I wrap selection or surround the word):');
 const wq = (label, val, s, e, mk, want) => { const r = annoWrap(val, s, e, mk); eq(label, r.value, want); };
@@ -147,6 +164,10 @@ const UREL = 'https://musicbrainz.org/release/00000000-0000-0000-0000-0000000000
 await aeq('MB [url|] with trailing path', `[${UREL}|]`, `[${UREL}|The Release]`);
 await aeq('Markdown [](url) with trailing path', `[](${UREL})`, `[The Release](${UREL})`);
 await aeq('bare entity URL with trailing path', UREL, `[${UREL}|The Release]`);
+// Markdown mode: bare / [](url) MB URLs are named as Markdown links, not MB syntax
+const amd = async (label, input, want) => { const got = await annoResolveNames(input, true); eq(label, got, want); };
+await amd('md mode: bare MB url → [Name](url)', U1, `[The Artist](${U1})`);
+await amd('md mode: [](url) → [Name](url)', `[](${U1})`, `[The Artist](${U1})`);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

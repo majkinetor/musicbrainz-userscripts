@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.000900
+// @version      2026.6.9.001000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3315,6 +3315,7 @@
     #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-bar.tc-anno-hist-on #tc-anno-history-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-status{font:12px Arial;color:#777;margin-left:2px}
+    #tc-anno-md{margin-left:auto}            /* markup-toggle + help float to the middle */
     #tc-anno-history-btn{margin-left:auto}   /* History pinned to the right end of the toolbar */
     /* editor body: the active textarea on the left; the live preview splits in on the right when toggled */
     #tc-anno-body{display:flex;align-items:stretch;min-height:240px}
@@ -3502,17 +3503,20 @@
   const _annoName = new Map();   // entity url → resolved display name (shared by Resolve-names + Preview)
   const _annoEsc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-  // build nested <ul> from a flat list of {level>=1, html} (MB nests bullets by 4-space indentation)
+  // build nested <ul>/<ol> from a flat list of {level>=1, html, ordered} (MB nests by 4-space indentation;
+  // "a." marks an auto-numbered list, "*" a bullet list)
   function bulletsToHtml(items) {
-    let out = '', depth = 0, openLi = false;
+    let out = '', depth = 0, openLi = false; const stack = [];
+    const open = ord => { const t = ord ? 'ol' : 'ul', c = ord ? 'tc-anno-ol' : 'tc-anno-ul'; out += `<${t} class="${c}">`; stack.push(t); };
+    const close = () => { out += `</${stack.pop()}>`; };
     for (const it of items) {
       const lvl = Math.max(1, it.level);
-      if (lvl > depth) { while (depth < lvl) { out += '<ul class="tc-anno-ul">'; depth++; openLi = false; } }
-      else { if (openLi) { out += '</li>'; openLi = false; } while (depth > lvl) { out += '</ul>'; depth--; if (depth > 0) out += '</li>'; } }
+      if (lvl > depth) { while (depth < lvl) { open(it.ordered); depth++; openLi = false; } }
+      else { if (openLi) { out += '</li>'; openLi = false; } while (depth > lvl) { close(); depth--; if (depth > 0) out += '</li>'; } }
       out += '<li>' + it.html; openLi = true;
     }
     if (openLi) out += '</li>';
-    while (depth > 0) { out += '</ul>'; depth--; if (depth > 0) out += '</li>'; }
+    while (depth > 0) { close(); depth--; if (depth > 0) out += '</li>'; }
     return out;
   }
   // MB annotation markup → HTML, replicating the documented subset (musicbrainz.org/doc/Annotation):
@@ -3541,13 +3545,13 @@
       if (/^\s*$/.test(ln)) { i++; continue; }
       if (/^-{4,}\s*$/.test(ln)) { out.push('<hr>'); i++; continue; }
       if ((m = ln.match(/^(={1,6})\s*(.*?)\s*=*\s*$/)) && m[2]) { const n = Math.min(m[1].length, 6); out.push(`<h${n} class="tc-anno-h">${inline(m[2])}</h${n}>`); i++; continue; }
-      // bullets BEFORE code: a "(4n)-space * " line is a level-n bullet (MB nests by indentation); only
-      // 8-space lines that are NOT bullets are code.
-      if (/^ {4,}\*[ \t]+/.test(ln)) { const items = []; let bm; while (i < lines.length && (bm = lines[i].match(/^( +)\*[ \t]+(.*)$/))) { items.push({ level: Math.max(1, Math.floor(bm[1].length / 4)), html: inline(bm[2]) }); i++; } out.push(bulletsToHtml(items)); continue; }
-      if (/^ {8}/.test(ln)) { const buf = []; while (i < lines.length && /^ {8}/.test(lines[i]) && !/^ {4,}\*[ \t]/.test(lines[i])) { buf.push(_annoEsc(lines[i].slice(8))); i++; } out.push('<pre class="tc-anno-pre">' + buf.join('\n') + '</pre>'); continue; }
+      // lists BEFORE code: a "(4n)-space * " line is a level-n bullet, "(4n)-space a. " an auto-numbered item
+      // (MB nests by indentation); only 8-space lines that are NOT a list item are code.
+      if (/^ {4,}(?:\*|[a-z]\.)[ \t]+/i.test(ln)) { const items = []; let bm; while (i < lines.length && (bm = lines[i].match(/^( +)(\*|[a-z]\.)[ \t]+(.*)$/i))) { items.push({ level: Math.max(1, Math.floor(bm[1].length / 4)), ordered: bm[2] !== '*', html: inline(bm[3]) }); i++; } out.push(bulletsToHtml(items)); continue; }
+      if (/^ {8}/.test(ln)) { const buf = []; while (i < lines.length && /^ {8}/.test(lines[i]) && !/^ {4,}(?:\*|[a-z]\.)[ \t]/i.test(lines[i])) { buf.push(_annoEsc(lines[i].slice(8))); i++; } out.push('<pre class="tc-anno-pre">' + buf.join('\n') + '</pre>'); continue; }
       const buf = [];   // a paragraph: consume the CURRENT line first (do-while → i ALWAYS advances, so an
       do { buf.push(inline(lines[i])); i++; }                              // empty-title "=  =" heading can't spin forever),
-      while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^-{4,}\s*$/.test(lines[i]) && !/^={1,6}\s/.test(lines[i]) && !/^ {4,}\*[ \t]+/.test(lines[i]) && !/^ {8}/.test(lines[i]));   // then following non-blank, non-block lines
+      while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^-{4,}\s*$/.test(lines[i]) && !/^={1,6}\s/.test(lines[i]) && !/^ {4,}(?:\*|[a-z]\.)[ \t]+/i.test(lines[i]) && !/^ {8}/.test(lines[i]));   // then following non-blank, non-block lines
       out.push('<p>' + buf.join('<br>') + '</p>');
     }
     return out.join('').replace(/\x01/g, '[').replace(/\x02/g, ']');
@@ -3567,9 +3571,9 @@
     src = src.replace(/(\*\*|__)(.+?)\1/g, "'''$2'''");        // **bold** / __bold__
     src = src.replace(/(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])/g, "''$1''");   // *italic*
     src = src.replace(/(?<![_\w])_(?!\s)(.+?)(?<!\s)_(?![_\w])/g, "''$1''");     // _italic_
+    src = src.replace(/^[ \t]*(?:-{3,}|\*{3,}|_{3,})[ \t]*$/gm, '----');   // hr (before list rules, so --- isn't eaten)
+    src = src.replace(/^([ \t]*)\d+\.[ \t]+/gm, (_m, ind) => { const sp = ind.replace(/\t/g, '  ').length; return ' '.repeat((Math.floor(sp / 2) + 1) * 4) + 'a. '; });   // markdown numbered list → MB "a." (MB auto-numbers a., not 1.)
     src = src.replace(/^([ \t]*)[-*+][ \t]+/gm, (_m, ind) => { const sp = ind.replace(/\t/g, '  ').length; return ' '.repeat((Math.floor(sp / 2) + 1) * 4) + '* '; });   // markdown bullet (2-space-per-level indent) → MB (4n)-space bullet
-
-    src = src.replace(/^[ \t]*(?:-{3,}|\*{3,}|_{3,})[ \t]*$/gm, '----');   // hr
     src = src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
     return src.replace(/\x05(\d+)\x06/g, (_m, i) => urls[+i]);
   }
@@ -3579,11 +3583,12 @@
     if (!src) return src;
     const blocks = [];                                 // pull MB code blocks out first so '''/'' inside them aren't touched
     const stashB = b => '\x07' + (blocks.push(b) - 1) + '\x08';
-    src = src.replace(/(?:^ {8}(?! *\*[ \t]).*(?:\n|$))+/gm, m => { const trail = m.endsWith('\n') ? '\n' : ''; const code = m.replace(/\n$/, '').split('\n').map(l => l.slice(8)).join('\n'); return stashB('```\n' + code + '\n```') + trail; });   // MB 8-space block (not a nested bullet) → ```fenced```
+    src = src.replace(/(?:^ {8}(?! *(?:\*|[a-z]\.)[ \t]).*(?:\n|$))+/gim, m => { const trail = m.endsWith('\n') ? '\n' : ''; const code = m.replace(/\n$/, '').split('\n').map(l => l.slice(8)).join('\n'); return stashB('```\n' + code + '\n```') + trail; });   // MB 8-space block (not a nested list item) → ```fenced```
     src = src.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => text ? `[${text}](${url})` : url);   // [url|text] → [text](url); [url|] (empty label) → bare url
     src = src.replace(/\[((?:https?|ftp):\/\/[^\]|]+)\]/g, (_m, url) => url);                        // [url] → bare url
     src = src.replace(/'''''(.+?)'''''/g, '***$1***').replace(/'''(.+?)'''/g, '**$1**').replace(/''(.+?)''/g, '*$1*');
     src = src.replace(/^(={1,6})[ \t]*(.*?)[ \t]*=*[ \t]*$/gm, (_m, e, t) => '#'.repeat(e.length) + ' ' + t);  // = H = → # H
+    src = src.replace(/^( {4,})[a-z]\.[ \t]+/gim, (_m, ind) => '  '.repeat(Math.max(0, Math.floor(ind.length / 4) - 1)) + '1. ');   // MB "a." auto-numbered → markdown "1." numbered list
     src = src.replace(/^( {4,})\*[ \t]+/gm, (_m, ind) => '  '.repeat(Math.max(0, Math.floor(ind.length / 4) - 1)) + '- ');   // MB (4n)-space bullet → markdown (2-space-per-level) bullet
     src = src.replace(/^-{4,}[ \t]*$/gm, '---');                                                      // ---- → ---
     src = src.replace(/&#91;/g, '[').replace(/&#93;/g, ']');                                          // decode literal brackets back to plain [ ] (literal in Markdown)
@@ -3613,14 +3618,12 @@
   // add the entity name to every MB entity link that doesn't already have one — handles MB [url] / [url|]
   // and Markdown []()/bare URLs, in either editing mode. Links that already carry a label are left alone.
   // Captures the URL first, THEN tests it for an entity, so trailing path segments don't break the match.
-  async function annoResolveNames(src) {
+  async function annoResolveNames(src, md) {   // md=true → emit Markdown links [Name](url); else MB links [url|Name]
     const lbl = async (url) => { const e = annoEntity(url); return e ? await annoLookupName(e.type, e.mbid, url) : null; };
-    // MB: [url] or [url|] (no/empty label) → [url|Name]
-    src = await annoReplaceAsync(src, /\[([^\]|]+)\|?\]/g, async (m, url) => { url = url.trim(); const n = await lbl(url); return n ? `[${url}|${n}]` : m; });
-    // Markdown: [](url) (empty label) → [Name](url)
-    src = await annoReplaceAsync(src, /\[\]\(([^)\s]+)\)/g, async (m, url) => { const n = await lbl(url); return n ? `[${n}](${url})` : m; });
-    // a bare URL (not already inside a [..] or (..) link) → [url|Name]
-    src = await annoReplaceAsync(src, /(?<![\[(|])((?:https?|ftp):\/\/[^\s<>\]]+)/g, async (m, url) => { const n = await lbl(url); return n ? `[${url}|${n}]` : m; });
+    if (!md) src = await annoReplaceAsync(src, /\[([^\]|]+)\|?\]/g, async (m, url) => { url = url.trim(); const n = await lbl(url); return n ? `[${url}|${n}]` : m; });   // MB [url] / [url|]
+    src = await annoReplaceAsync(src, /\[\]\(([^)\s]+)\)/g, async (m, url) => { const n = await lbl(url); return n ? `[${n}](${url})` : m; });   // Markdown [](url)
+    // a bare URL (not already inside a [..] or (..) link) → named, in the active markup
+    src = await annoReplaceAsync(src, /(?<![\[(|])((?:https?|ftp):\/\/[^\s<>\]]+)/g, async (m, url) => { const n = await lbl(url); return n ? (md ? `[${n}](${url})` : `[${url}|${n}]`) : m; });
     return src;
   }
 
@@ -3659,13 +3662,14 @@
     ta.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  // Enter on a bullet line continues the list (same indent+marker); an empty bullet ends it. Pure → testable.
+  // Enter on a list line continues it (same indent+marker — bullet "*"/"-" or numbered "a."/"1."); an empty
+  // item ends the list. Pure → testable.
   function annoContinueBullet(value, pos) {
     const lineStart = value.lastIndexOf('\n', pos - 1) + 1;
     let lineEnd = value.indexOf('\n', pos); if (lineEnd < 0) lineEnd = value.length;
-    const m = value.slice(lineStart, lineEnd).match(/^([ \t]*)([*+-])([ \t]+)(.*)$/);
+    const m = value.slice(lineStart, lineEnd).match(/^([ \t]*)([*+-]|\d+\.|[a-z]\.)([ \t]+)(.*)$/i);
     if (!m) return null;
-    if (m[4].trim() === '') return { value: value.slice(0, lineStart) + value.slice(lineEnd), caret: lineStart };   // empty bullet → end list
+    if (m[4].trim() === '') return { value: value.slice(0, lineStart) + value.slice(lineEnd), caret: lineStart };   // empty item → end list
     const prefix = m[1] + m[2] + m[3];
     return { value: value.slice(0, pos) + '\n' + prefix + value.slice(pos), caret: pos + 1 + prefix.length };
   }
@@ -3674,6 +3678,18 @@
     let a = selStart, b = selEnd;
     if (a === b) { while (a > 0 && /\w/.test(value[a - 1])) a--; while (b < value.length && /\w/.test(value[b])) b++; }
     return { value: value.slice(0, a) + marker + value.slice(a, b) + marker + value.slice(b), selStart: a + marker.length, selEnd: b + marker.length };
+  }
+  // Tab on a selection: turn the selected lines into a bullet list (or, with Ctrl, a numbered list). Pure.
+  function annoListSelection(value, selStart, selEnd, raw, ordered) {
+    let s = value.lastIndexOf('\n', selStart - 1) + 1;
+    let e = selEnd; if (e > s && value[e - 1] === '\n') e--;
+    let lineEnd = value.indexOf('\n', e); if (lineEnd < 0) lineEnd = value.length;
+    const repl = value.slice(s, lineEnd).split('\n').map(ln => {
+      if (ln.trim() === '') return ln;
+      const txt = ln.replace(/^[ \t]*(?:[-*+]|\d+\.|[a-z]\.)?[ \t]*/i, '');   // drop leading ws + any existing marker
+      return raw ? (ordered ? '    a. ' : '    * ') + txt : (ordered ? '1. ' : '- ') + txt;
+    }).join('\n');
+    return { value: value.slice(0, s) + repl + value.slice(lineEnd), selStart: s, selEnd: s + repl.length };
   }
 
   // Wrap #annotation in a bordered editor box (toolbar + a Markdown editing surface + the raw MB field + an
@@ -3687,13 +3703,21 @@
     '<table>' +
     '<tr><td><code>**bold**</code> <code>*italic*</code></td><td>bold / italic</td></tr>' +
     '<tr><td><code># H1</code> <code>## H2</code> <code>### H3</code></td><td>headings</td></tr>' +
-    '<tr><td><code>- item</code></td><td>bullet (indent 2 spaces to nest)</td></tr>' +
+    '<tr><td><code>- item</code></td><td>bullet list (indent 2 spaces to nest)</td></tr>' +
+    '<tr><td><code>1. item</code></td><td>numbered list (MB auto-numbers)</td></tr>' +
     '<tr><td><code>[text](url)</code> · bare URL</td><td>link</td></tr>' +
     '<tr><td><code>```code```</code></td><td>code block</td></tr>' +
     '<tr><td><code>---</code></td><td>horizontal rule</td></tr>' +
     '<tr><td><code>[x]</code></td><td>shown literally (auto-encoded)</td></tr>' +
     '</table>' +
-    '<div class="tc-help-dim">A MusicBrainz entity URL gets its name added automatically. <b>Ctrl/Cmd+B/I</b> bold/italic; <b>Enter</b> continues a list.</div>';
+    '<b>Shortcuts</b>' +
+    '<table>' +
+    '<tr><td><code>Ctrl/Cmd+B</code> / <code>+I</code></td><td>bold / italic (selection or word)</td></tr>' +
+    '<tr><td><code>Enter</code></td><td>continue the current list</td></tr>' +
+    '<tr><td><code>Tab</code></td><td>indent · on a selection → bullet list</td></tr>' +
+    '<tr><td><code>Ctrl+Tab</code></td><td>selection → numbered list</td></tr>' +
+    '</table>' +
+    '<div class="tc-help-dim">A MusicBrainz entity URL (bare or <code>[]()</code>) gets its name added automatically.</div>';
 
   function ensureAnnotationToolbar() {
     const ta = document.getElementById('annotation'); if (!ta) return;   // the real MB field — always holds MB markup
@@ -3704,9 +3728,9 @@
     const bar = document.createElement('div'); bar.id = 'tc-anno-bar';
     bar.innerHTML =
       '<button type="button" id="tc-anno-preview-btn" title="Toggle a live split preview — editor on the left, rendered annotation on the right">👁 Preview</button>' +
+      '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
       '<button type="button" id="tc-anno-md" class="tc-anno-icon" title="">' + ANNO_MD_LOGO + '</button>' +
       '<button type="button" id="tc-anno-help" class="tc-anno-icon" title="Annotation syntax help" aria-label="Syntax help">?</button>' +
-      '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
       '<span id="tc-anno-status"></span>' +
       (mbid ? '<button type="button" id="tc-anno-history-btn" title="Browse this annotation\'s previous versions and display any one">🕘 History</button>' : '');
     const body = document.createElement('div'); body.id = 'tc-anno-body';
@@ -3749,12 +3773,19 @@
     md.addEventListener('input', () => { if (surface === 'md') syncMdToField(); clearTimeout(previewT); previewT = setTimeout(renderPreview, 120); });
     ta.addEventListener('input', () => { if (surface === 'raw') { clearTimeout(previewT); previewT = setTimeout(renderPreview, 120); } });
     const wireKeys = el => el.addEventListener('keydown', e => {
+      const raw = el === ta;
       if (e.key === 'Enter' && !e.shiftKey && el.selectionStart === el.selectionEnd) {
         const r = annoContinueBullet(el.value, el.selectionStart);
         if (r) { e.preventDefault(); editTa(el, r.value, r.caret); }
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        if (el.selectionStart !== el.selectionEnd) {   // Tab → bullet list of the selection; Ctrl+Tab → numbered
+          const r = annoListSelection(el.value, el.selectionStart, el.selectionEnd, raw, e.ctrlKey || e.metaKey);
+          editTa(el, r.value, r.selStart, r.selEnd);
+        } else { const p = el.selectionStart, v = el.value; editTa(el, v.slice(0, p) + '\t' + v.slice(p), p + 1); }   // plain Tab → insert a tab
       } else if ((e.ctrlKey || e.metaKey) && !e.altKey && /^[biBI]$/.test(e.key)) {
         e.preventDefault();
-        const bold = e.key.toLowerCase() === 'b', raw = el === ta;
+        const bold = e.key.toLowerCase() === 'b';
         const marker = raw ? (bold ? "'''" : "''") : (bold ? '**' : '*');
         const r = annoWrap(el.value, el.selectionStart, el.selectionEnd, marker);
         editTa(el, r.value, r.selStart, r.selEnd);
@@ -3767,7 +3798,7 @@
     const autoResolve = async (el) => {
       if (resolving || !ANNO_ENTITY_RE.test(el.value)) return;
       resolving = true; const before = el.value;
-      try { const after = await annoResolveNames(before); if (after !== before && el.value === before) { editTa(el, after, Math.min(el.selectionStart, after.length)); status('named entity links', 2000); } }
+      try { const after = await annoResolveNames(before, el === md); if (after !== before && el.value === before) { editTa(el, after, Math.min(el.selectionStart, after.length)); status('named entity links', 2000); } }
       finally { resolving = false; }
     };
     md.addEventListener('blur', () => autoResolve(md));
@@ -3866,6 +3897,7 @@
       if (!document.body.classList.contains('tc-ri-on')) return;
       const info = document.getElementById('information'); if (!info || !info.contains(e.target)) return;
       const field = e.target.closest('input,select,textarea'); if (!field) return;
+      if (field.closest('#tc-anno-wrap')) { hide(); return; }   // the annotation editor isn't an entity field — no "You selected …" bubble
       setTimeout(() => { if (document.activeElement === field) showFor(field); }, 30);   // let MB pick the bubble first
     });
     document.addEventListener('focusout', e => {
