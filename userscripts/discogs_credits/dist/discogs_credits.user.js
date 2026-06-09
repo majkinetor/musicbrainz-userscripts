@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.9.211203
+// @version      2026.6.9.212221
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3187,10 +3187,20 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const issueNote = document.createElement("span");
       issueNote.className = "discogs-issue-note";
       issueNote.style.cssText = "font-size:0.85rem;color:#7a5c00;";
-      function focusFirstUnresolved() {
-        const first = allResults.find((r) => !rowState.get(keyOf(r))?.confirmed);
-        if (!first) return;
-        const input = rowSearchInputs.get(keyOf(first));
+      let _jumpIdx = -1;
+      function jumpNextUnresolved() {
+        const n = allResults.length;
+        let found = -1;
+        for (let step = 1; step <= n; step++) {
+          const i = (_jumpIdx + step) % n;
+          if (!rowState.get(keyOf(allResults[i]))?.confirmed) {
+            found = i;
+            break;
+          }
+        }
+        if (found === -1) return;
+        _jumpIdx = found;
+        const input = rowSearchInputs.get(keyOf(allResults[found]));
         if (!input) return;
         input.scrollIntoView({ behavior: "smooth", block: "center" });
         try {
@@ -3200,7 +3210,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         }
         input.select?.();
       }
-      issueNote.addEventListener("click", focusFirstUnresolved);
+      issueNote.addEventListener("click", jumpNextUnresolved);
       function updateImportBtn() {
         const unresolved = [...rowState.values()].filter((s) => !s.confirmed).length;
         if (unresolved === 0) {
@@ -3216,7 +3226,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           importBtn.style.color = "#fff";
           issueNote.textContent = `\u26A0 ${unresolved} unresolved`;
           issueNote.classList.add("clickable");
-          issueNote.title = "Jump to the first unresolved entity \u2014 these will be skipped on import";
+          issueNote.title = "Jump to the next unresolved entity \u2014 click again to cycle through them; these will be skipped on import";
         }
       }
       updateImportBtn();

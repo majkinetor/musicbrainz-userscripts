@@ -1326,19 +1326,29 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         issueNote.className = 'discogs-issue-note';
         issueNote.style.cssText = 'font-size:0.85rem;color:#7a5c00;';
 
-        // #139: clicking the "N unresolved" message scrolls to and focuses the
-        // first still-unresolved row's search box \u2014 same idea as the apollo
-        // tracklist's "N unresolved" jump.
-        function focusFirstUnresolved() {
-            const first = allResults.find(r => !rowState.get(keyOf(r))?.confirmed);
-            if (!first) return;
-            const input = rowSearchInputs.get(keyOf(first));
+        // #139/#177: clicking the "N unresolved" message scrolls to and focuses
+        // the next still-unresolved row's search box. The first click lands on
+        // the first unresolved entity; each subsequent click advances to the
+        // next one, wrapping back to the first after the last \u2014 so the message
+        // doubles as a cycle-through-issues control. Already-resolved rows are
+        // skipped automatically (the cursor scans live `rowState`).
+        let _jumpIdx = -1;
+        function jumpNextUnresolved() {
+            const n = allResults.length;
+            let found = -1;
+            for (let step = 1; step <= n; step++) {
+                const i = (_jumpIdx + step) % n;
+                if (!rowState.get(keyOf(allResults[i]))?.confirmed) { found = i; break; }
+            }
+            if (found === -1) return; // everything resolved
+            _jumpIdx = found;
+            const input = rowSearchInputs.get(keyOf(allResults[found]));
             if (!input) return;
             input.scrollIntoView({ behavior: 'smooth', block: 'center' });
             try { input.focus({ preventScroll: true }); } catch { input.focus(); }
             input.select?.();
         }
-        issueNote.addEventListener('click', focusFirstUnresolved);
+        issueNote.addEventListener('click', jumpNextUnresolved);
 
         function updateImportBtn() {
             const unresolved = [...rowState.values()].filter(s => !s.confirmed).length;
@@ -1355,7 +1365,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 importBtn.style.color = '#fff';
                 issueNote.textContent = `\u26a0 ${unresolved} unresolved`;
                 issueNote.classList.add('clickable');
-                issueNote.title = 'Jump to the first unresolved entity \u2014 these will be skipped on import';
+                issueNote.title = 'Jump to the next unresolved entity \u2014 click again to cycle through them; these will be skipped on import';
             }
         }
         updateImportBtn();
