@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.9.205809
+// @version      2026.6.9.211203
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2212,48 +2212,6 @@
 
   // src/review-table.js
   var _urlCheckSessionCache = /* @__PURE__ */ new Map();
-  function fitRoleChips(box, chips, allTypes) {
-    if (!chips.length) return;
-    const GAP = 4;
-    const more = document.createElement("span");
-    more.style.cssText = "background:#dcdcec;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;color:#4a4a77;white-space:nowrap;cursor:pointer;flex:0 0 auto;";
-    more.title = allTypes.join(", ");
-    requestAnimationFrame(() => {
-      box.appendChild(more);
-      let visible = chips.length;
-      for (let pass = 0; pass <= chips.length; pass++) {
-        more.textContent = "+" + (chips.length - visible);
-        const boxRight = box.getBoundingClientRect().right;
-        const reserve = visible < chips.length ? more.getBoundingClientRect().width + GAP : 0;
-        const limit = boxRight - reserve + 0.5;
-        let over = -1;
-        for (let i = 0; i < visible; i++) {
-          if (chips[i].getBoundingClientRect().right > limit) {
-            over = i;
-            break;
-          }
-        }
-        if (over === -1) break;
-        for (let j = over; j < chips.length; j++) chips[j].style.display = "none";
-        visible = over;
-      }
-      if (visible >= chips.length) {
-        box.removeChild(more);
-        return;
-      }
-      more.textContent = "+" + (chips.length - visible);
-      more.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        box.style.flexWrap = "wrap";
-        box.style.overflow = "visible";
-        chips.forEach((c) => {
-          c.style.display = "";
-        });
-        if (more.parentNode) more.parentNode.removeChild(more);
-      });
-    });
-  }
   async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
     rolesMap = rolesMap || /* @__PURE__ */ new Map();
     companiesRolesMap = companiesRolesMap || /* @__PURE__ */ new Map();
@@ -2719,19 +2677,19 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             label.textContent = "MB roles: ";
             label.style.whiteSpace = "nowrap";
             label.style.flex = "0 0 auto";
+            wrap.style.alignItems = "flex-start";
+            wrap.style.overflow = "visible";
             wrap.appendChild(label);
             wrap.title = types.join(", ");
             const chipsBox = document.createElement("span");
-            chipsBox.style.cssText = "display:flex;flex-wrap:nowrap;gap:0.25rem;min-width:0;overflow:hidden;";
+            chipsBox.style.cssText = "display:flex;flex-wrap:wrap;gap:0.25rem;min-width:0;";
             wrap.appendChild(chipsBox);
-            const chips = types.map((t) => {
+            types.forEach((t) => {
               const c = document.createElement("span");
               c.textContent = t;
-              c.style.cssText = "background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;color:#4a4a77;white-space:nowrap;flex:0 0 auto;";
+              c.style.cssText = "background:#eaeaf5;border:1px solid #ccccdd;border-radius:0.7rem;padding:0 0.4rem;color:#4a4a77;white-space:nowrap;";
               chipsBox.appendChild(c);
-              return c;
             });
-            fitRoleChips(chipsBox, chips, types);
           });
           wrap.appendChild(trigger);
           return wrap;
