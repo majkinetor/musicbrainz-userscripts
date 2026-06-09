@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.10
+// @version      2026.6.9.11
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -969,8 +969,14 @@ const BEATPORT = {
     clientId: '0GIvkCltVIuPkkwSJHp6NDb3s0potTjLBQr388Dd',          // Beatport web-app client (public, from their docs JS)
     redirect: 'https://api.beatport.com/v4/auth/o/post-message/',
     api:      'https://api.beatport.com/v4',
+    web:      'https://www.beatport.com',
     store:    'mbtools:beatport',
 };
+// Beatport's API runs Django CSRF protection that rejects a secure POST with no
+// Referer ("CSRF Failed: Referer checking failed - no Referer."). GM_xmlhttpRequest
+// sends none by default, so we mimic the real web app: Referer + Origin on
+// www.beatport.com (matches the `.beatport.com` CSRF cookie domain).
+const bpHeaders = () => ({ Referer: BEATPORT.web + '/', Origin: BEATPORT.web });
 const bpRead     = () => { try { return JSON.parse(localStorage.getItem(BEATPORT.store) || 'null'); } catch { return null; } };
 const bpWrite    = t  => { try { t ? localStorage.setItem(BEATPORT.store, JSON.stringify(t)) : localStorage.removeItem(BEATPORT.store); } catch {} };
 const bpLoggedIn = () => { const t = bpRead(); return !!(t && t.refresh_token); };
@@ -979,14 +985,14 @@ async function bpPkce() { const v = bpB64url(crypto.getRandomValues(new Uint8Arr
 
 // Full login → token. Returns { ok } or { ok:false, error }. Used by PC's setup UI.
 async function beatportLogin(username, password) {
-    const lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { headers: { 'Content-Type': 'application/json' } });
+    const lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { headers: { 'Content-Type': 'application/json', ...bpHeaders() } });
     if (!lr.ok) { let m = 'incorrect username or password'; try { const j = JSON.parse(lr.responseText); m = (typeof j === 'string' ? j : j.detail) || m; } catch {} return { ok: false, error: m }; }
     const { v, c } = await bpPkce();
     const au = `${BEATPORT.api}/auth/o/authorize/?response_type=code&client_id=${BEATPORT.clientId}&redirect_uri=${encodeURIComponent(BEATPORT.redirect)}&code_challenge=${c}&code_challenge_method=S256`;
-    const ar = await gmGet(au);   // GM follows the 302 to the post-message page; the code lands in finalUrl
+    const ar = await gmGet(au, { headers: bpHeaders() });   // GM follows the 302 to the post-message page; the code lands in finalUrl
     const code = ((ar.finalUrl || '').match(/[?&#]code=([^&]+)/) || [])[1];
     if (!code) return { ok: false, error: 'no authorization code returned' };
-    const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: BEATPORT.redirect, client_id: BEATPORT.clientId, code_verifier: v }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: BEATPORT.redirect, client_id: BEATPORT.clientId, code_verifier: v }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
     let j; try { j = JSON.parse(tr.responseText); } catch { return { ok: false, error: 'token response parse failed' }; }
     if (!j.access_token) return { ok: false, error: j.error_description || j.error || 'no access token' };
     bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
@@ -998,7 +1004,7 @@ async function beatportToken() {
     const t = bpRead();
     if (!t || !t.refresh_token) return null;
     if (t.access_token && Date.now() < t.exp - 60000) return t.access_token;
-    const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: BEATPORT.clientId }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: BEATPORT.clientId }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
     let j; try { j = JSON.parse(tr.responseText); } catch { j = {}; }
     if (!j.access_token) { appendLog('Beatport', 'token refresh failed — log in again in ⚙ setup', 'warn'); return null; }
     bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token || t.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
