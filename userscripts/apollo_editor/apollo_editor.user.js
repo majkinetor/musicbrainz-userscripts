@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.000400
+// @version      2026.6.9.000500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3312,8 +3312,9 @@
     #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-bar.tc-anno-md-on #tc-anno-md{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-status{font:12px Arial;color:#777;margin-left:2px}
-    /* the textarea fills the box, borderless (the wrapper owns the frame) and noticeably taller */
-    body.tc-ri-on #information fieldset.information #tc-anno-wrap textarea#annotation{display:block;width:100%!important;min-height:230px;border:none!important;border-radius:0;padding:9px 11px;resize:vertical;box-shadow:none;box-sizing:border-box}
+    /* both editing surfaces (the Markdown input + the raw MB field) fill the box, borderless, taller, and
+       monospace + tab-size:4 so 4-space bullet indents and code align cleanly */
+    body.tc-ri-on #information fieldset.information #tc-anno-wrap textarea{display:block;width:100%!important;max-width:none!important;min-height:240px;border:none!important;border-radius:0;padding:9px 11px;resize:vertical;box-shadow:none;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.55;tab-size:4}
     #tc-anno-preview{min-height:230px;padding:10px 13px;background:#fff;font-size:13px;line-height:1.5;color:#333;overflow:auto;word-break:break-word;box-sizing:border-box}
     #tc-anno-preview .tc-anno-empty{color:#999;font-style:italic}
     #tc-anno-preview p{margin:0 0 8px}
@@ -3455,9 +3456,22 @@
   const _annoName = new Map();   // entity url → resolved display name (shared by Resolve-names + Preview)
   const _annoEsc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+  // build nested <ul> from a flat list of {level>=1, html} (MB nests bullets by 4-space indentation)
+  function bulletsToHtml(items) {
+    let out = '', depth = 0, openLi = false;
+    for (const it of items) {
+      const lvl = Math.max(1, it.level);
+      if (lvl > depth) { while (depth < lvl) { out += '<ul class="tc-anno-ul">'; depth++; openLi = false; } }
+      else { if (openLi) { out += '</li>'; openLi = false; } while (depth > lvl) { out += '</ul>'; depth--; if (depth > 0) out += '</li>'; } }
+      out += '<li>' + it.html; openLi = true;
+    }
+    if (openLi) out += '</li>';
+    while (depth > 0) { out += '</ul>'; depth--; if (depth > 0) out += '</li>'; }
+    return out;
+  }
   // MB annotation markup → HTML, replicating the documented subset (musicbrainz.org/doc/Annotation):
   // ''italic'' '''bold''', = h1 = .. === h3 ===, [url] / [url|text] / bare-url links, ---- rule,
-  // 4-space "*" bullets, 8-space code, &#91;/&#93; literal brackets. Pure + sync (no network).
+  // (4n)-space "*" nested bullets, 8-space code, &#91;/&#93; literal brackets. Pure + sync (no network).
   function annoToHtml(src) {
     if (!src || !src.trim()) return '<span class="tc-anno-empty">(nothing to preview)</span>';
     src = String(src).replace(/&#91;/g, '\x01').replace(/&#93;/g, '\x02');   // protect literal brackets
@@ -3481,10 +3495,12 @@
       if (/^\s*$/.test(ln)) { i++; continue; }
       if (/^-{4,}\s*$/.test(ln)) { out.push('<hr>'); i++; continue; }
       if ((m = ln.match(/^(={1,6})\s*(.*?)\s*=*\s*$/)) && m[2]) { const n = Math.min(m[1].length, 6); out.push(`<h${n} class="tc-anno-h">${inline(m[2])}</h${n}>`); i++; continue; }
-      if (/^ {8}/.test(ln)) { const buf = []; while (i < lines.length && /^ {8}/.test(lines[i])) { buf.push(_annoEsc(lines[i].slice(8))); i++; } out.push('<pre class="tc-anno-pre">' + buf.join('\n') + '</pre>'); continue; }
-      if (/^ {4}\*\s+/.test(ln)) { const buf = []; while (i < lines.length && /^ {4}\*\s+/.test(lines[i])) { buf.push('<li>' + inline(lines[i].replace(/^ {4}\*\s+/, '')) + '</li>'); i++; } out.push('<ul class="tc-anno-ul">' + buf.join('') + '</ul>'); continue; }
+      // bullets BEFORE code: a "(4n)-space * " line is a level-n bullet (MB nests by indentation); only
+      // 8-space lines that are NOT bullets are code.
+      if (/^ {4,}\*[ \t]+/.test(ln)) { const items = []; let bm; while (i < lines.length && (bm = lines[i].match(/^( +)\*[ \t]+(.*)$/))) { items.push({ level: Math.max(1, Math.floor(bm[1].length / 4)), html: inline(bm[2]) }); i++; } out.push(bulletsToHtml(items)); continue; }
+      if (/^ {8}/.test(ln)) { const buf = []; while (i < lines.length && /^ {8}/.test(lines[i]) && !/^ {4,}\*[ \t]/.test(lines[i])) { buf.push(_annoEsc(lines[i].slice(8))); i++; } out.push('<pre class="tc-anno-pre">' + buf.join('\n') + '</pre>'); continue; }
       const buf = [];   // a paragraph: consecutive non-blank, non-block lines joined with <br>
-      while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^-{4,}\s*$/.test(lines[i]) && !/^={1,6}\s/.test(lines[i]) && !/^ {4}\*\s+/.test(lines[i]) && !/^ {8}/.test(lines[i])) { buf.push(inline(lines[i])); i++; }
+      while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^-{4,}\s*$/.test(lines[i]) && !/^={1,6}\s/.test(lines[i]) && !/^ {4,}\*[ \t]+/.test(lines[i]) && !/^ {8}/.test(lines[i])) { buf.push(inline(lines[i])); i++; }
       out.push('<p>' + buf.join('<br>') + '</p>');
     }
     return out.join('').replace(/\x01/g, '[').replace(/\x02/g, ']');
@@ -3499,11 +3515,13 @@
     src = src.replace(/^```[^\n]*\n([\s\S]*?)\n```[ \t]*$/gm, (_m, code) => stashB(code.split('\n').map(l => '        ' + l).join('\n')));   // ```fenced``` → MB 8-space block
     src = src.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text, url) => `[${stashU(url)}|${text}]`);   // [text](url) → [url|text]
     src = src.replace(/(^|[\s(])((?:https?|ftp):\/\/[^\s<>]+)/g, (_m, pre, url) => pre + stashU(url));  // bare urls
+    src = src.replace(/\[([^\[\]]*)\]/g, (m, inner) => inner.includes('\x05') ? m : '&#91;' + inner + '&#93;');   // a non-link [x] → encoded brackets, so MB doesn't read it as a (broken) link
     src = src.replace(/^(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$/gm, (_m, h, t) => { const n = Math.min(h.length, 3); const e = '='.repeat(n); return `${e} ${t} ${e}`; });
     src = src.replace(/(\*\*|__)(.+?)\1/g, "'''$2'''");        // **bold** / __bold__
     src = src.replace(/(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])/g, "''$1''");   // *italic*
     src = src.replace(/(?<![_\w])_(?!\s)(.+?)(?<!\s)_(?![_\w])/g, "''$1''");     // _italic_
-    src = src.replace(/^[ \t]*[-*+][ \t]+/gm, '    * ');      // - item → 4-space bullet ([ \t] not \s, so a blank line above the list is kept)
+    src = src.replace(/^([ \t]*)[-*+][ \t]+/gm, (_m, ind) => { const sp = ind.replace(/\t/g, '  ').length; return ' '.repeat((Math.floor(sp / 2) + 1) * 4) + '* '; });   // markdown bullet (2-space-per-level indent) → MB (4n)-space bullet
+
     src = src.replace(/^[ \t]*(?:-{3,}|\*{3,}|_{3,})[ \t]*$/gm, '----');   // hr
     src = src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
     return src.replace(/\x05(\d+)\x06/g, (_m, i) => urls[+i]);
@@ -3514,13 +3532,14 @@
     if (!src) return src;
     const blocks = [];                                 // pull MB code blocks out first so '''/'' inside them aren't touched
     const stashB = b => '\x07' + (blocks.push(b) - 1) + '\x08';
-    src = src.replace(/(?:^ {8}.*(?:\n|$))+/gm, m => { const trail = m.endsWith('\n') ? '\n' : ''; const code = m.replace(/\n$/, '').split('\n').map(l => l.slice(8)).join('\n'); return stashB('```\n' + code + '\n```') + trail; });   // MB 8-space block → ```fenced```
+    src = src.replace(/(?:^ {8}(?! *\*[ \t]).*(?:\n|$))+/gm, m => { const trail = m.endsWith('\n') ? '\n' : ''; const code = m.replace(/\n$/, '').split('\n').map(l => l.slice(8)).join('\n'); return stashB('```\n' + code + '\n```') + trail; });   // MB 8-space block (not a nested bullet) → ```fenced```
     src = src.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => `[${text || url}](${url})`);   // [url|text] → [text](url)
     src = src.replace(/\[((?:https?|ftp):\/\/[^\]|]+)\]/g, (_m, url) => url);                        // [url] → bare url
     src = src.replace(/'''''(.+?)'''''/g, '***$1***').replace(/'''(.+?)'''/g, '**$1**').replace(/''(.+?)''/g, '*$1*');
     src = src.replace(/^(={1,6})[ \t]*(.*?)[ \t]*=*[ \t]*$/gm, (_m, e, t) => '#'.repeat(e.length) + ' ' + t);  // = H = → # H
-    src = src.replace(/^ {4}\*[ \t]+/gm, '- ');                                                       // 4-space bullet → - item
+    src = src.replace(/^( {4,})\*[ \t]+/gm, (_m, ind) => '  '.repeat(Math.max(0, Math.floor(ind.length / 4) - 1)) + '- ');   // MB (4n)-space bullet → markdown (2-space-per-level) bullet
     src = src.replace(/^-{4,}[ \t]*$/gm, '---');                                                      // ---- → ---
+    src = src.replace(/&#91;/g, '[').replace(/&#93;/g, ']');                                          // decode literal brackets back to plain [ ] (literal in Markdown)
     return src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
   }
 
@@ -3563,42 +3582,94 @@
     ta.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  // Wrap #annotation in a bordered editor box (toolbar + textarea + in-place preview). Mounted ONCE per
-  // textarea node — the 500ms applyReleaseInfo poll must not rebuild it (that was the flicker). Only when
-  // MB swaps the textarea for a fresh node (no _tcAnnoMounted) do we wrap again.
+  // Enter on a bullet line continues the list (same indent+marker); an empty bullet ends it. Pure → testable.
+  function annoContinueBullet(value, pos) {
+    const lineStart = value.lastIndexOf('\n', pos - 1) + 1;
+    let lineEnd = value.indexOf('\n', pos); if (lineEnd < 0) lineEnd = value.length;
+    const m = value.slice(lineStart, lineEnd).match(/^([ \t]*)([*+-])([ \t]+)(.*)$/);
+    if (!m) return null;
+    if (m[4].trim() === '') return { value: value.slice(0, lineStart) + value.slice(lineEnd), caret: lineStart };   // empty bullet → end list
+    const prefix = m[1] + m[2] + m[3];
+    return { value: value.slice(0, pos) + '\n' + prefix + value.slice(pos), caret: pos + 1 + prefix.length };
+  }
+  // Ctrl/Cmd+B/I: wrap the selection with `marker`, or — with no selection — surround the word under the cursor. Pure.
+  function annoWrap(value, selStart, selEnd, marker) {
+    let a = selStart, b = selEnd;
+    if (a === b) { while (a > 0 && /\w/.test(value[a - 1])) a--; while (b < value.length && /\w/.test(value[b])) b++; }
+    return { value: value.slice(0, a) + marker + value.slice(a, b) + marker + value.slice(b), selStart: a + marker.length, selEnd: b + marker.length };
+  }
+
+  // Wrap #annotation in a bordered editor box (toolbar + a Markdown editing surface + the raw MB field + an
+  // in-place preview). Markdown is the DEFAULT surface; the real #annotation field always holds MB markup (so
+  // saving is always correct) — Markdown edits are converted into it live. Mounted ONCE per #annotation node
+  // (the 500ms applyReleaseInfo poll must not rebuild it — that was the flicker).
   function ensureAnnotationToolbar() {
-    const ta = document.getElementById('annotation'); if (!ta) return;
+    const ta = document.getElementById('annotation'); if (!ta) return;   // the real MB field — always holds MB markup
     if (ta._tcAnnoMounted && ta._tcAnnoMounted.isConnected) return;
 
     const wrap = document.createElement('div'); wrap.id = 'tc-anno-wrap';
     const bar = document.createElement('div'); bar.id = 'tc-anno-bar';
     bar.innerHTML =
       '<button type="button" id="tc-anno-preview-btn" title="Toggle a preview of the annotation, rendered the way MusicBrainz will show it">👁 Preview</button>' +
-      '<button type="button" id="tc-anno-md" title="Toggle the annotation between MusicBrainz markup and Markdown — convert one way, click again to convert back">⇄ Markdown</button>' +
+      '<button type="button" id="tc-anno-md" title="Switch between editing as Markdown and the raw MusicBrainz markup">⇄ MB markup</button>' +
       '<button type="button" id="tc-anno-names" class="tc-anno-icon" title="Add the entity name to MusicBrainz entity links that have none (MB [url]/[url|] or Markdown []()/bare URL), fetching each name from the API">🏷</button>' +
       '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
       '<span id="tc-anno-status"></span>';
+    const md = document.createElement('textarea'); md.id = 'tc-anno-mdinput'; md.spellcheck = false;   // the Markdown editing surface
     const prev = document.createElement('div'); prev.id = 'tc-anno-preview'; prev.style.display = 'none';
     ta.parentNode.insertBefore(wrap, ta);
-    wrap.append(bar, ta, prev);          // the textarea moves inside the box, between the toolbar and the preview
+    wrap.append(bar, md, ta, prev);
     ta._tcAnnoMounted = wrap;
 
     const $ = id => bar.querySelector('#' + id);
     const status = (msg, ms) => { const s = $('tc-anno-status'); if (!s) return; s.textContent = msg || ''; if (ms) setTimeout(() => { if (s.textContent === msg) s.textContent = ''; }, ms); };
-    let previewing = false, mdMode = false;   // mdMode: the textarea currently holds Markdown (not MB markup)
-    // preview swaps in place of the textarea; render the MB-markup form (convert from Markdown first if in mdMode)
-    const showPreview = on => { previewing = on; prev.style.display = on ? '' : 'none'; ta.style.display = on ? 'none' : ''; bar.classList.toggle('tc-anno-prev-on', on); if (on) prev.innerHTML = annoToHtml(mdMode ? mdToAnno(ta.value) : ta.value); };
-    $('tc-anno-preview-btn').onclick = () => showPreview(!previewing);
-    $('tc-anno-md').onclick = () => {
-      if (previewing) showPreview(false);
-      annoSet(ta, mdMode ? mdToAnno(ta.value) : annoToMd(ta.value));   // back to MB markup, or out to Markdown
-      mdMode = !mdMode;
-      bar.classList.toggle('tc-anno-md-on', mdMode);
-      $('tc-anno-md').textContent = mdMode ? '⇄ MB markup' : '⇄ Markdown';
-      status(mdMode ? 'editing as Markdown' : 'converted to MB markup', 2500);
+    // set a textarea's value + caret and fire input (so the md→field sync, or MB's own model update, runs)
+    const editTa = (el, val, s, e2) => { const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; set.call(el, val); el.setSelectionRange(s, e2 == null ? s : e2); el.dispatchEvent(new Event('input', { bubbles: true })); };
+    const syncMdToField = () => annoSet(ta, mdToAnno(md.value));   // Markdown surface → MB field (keeps the model correct)
+
+    let mode = 'md', lastEdit = 'md';   // 'md' | 'raw' | 'preview'
+    const setMode = m => {
+      if (m !== 'preview') lastEdit = m;
+      mode = m;
+      md.style.display = m === 'md' ? '' : 'none';
+      ta.style.display = m === 'raw' ? '' : 'none';
+      prev.style.display = m === 'preview' ? '' : 'none';
+      bar.classList.toggle('tc-anno-prev-on', m === 'preview');
+      bar.classList.toggle('tc-anno-md-on', m === 'md');
+      $('tc-anno-md').textContent = m === 'raw' ? '⇄ Markdown' : '⇄ MB markup';
+      if (m === 'md') md.value = annoToMd(ta.value);                 // refresh the Markdown surface from the field
+      if (m === 'preview') { if (lastEdit === 'md') syncMdToField(); prev.innerHTML = annoToHtml(ta.value); }
     };
-    $('tc-anno-names').onclick = async (e) => { const btn = e.currentTarget; btn.disabled = true; status('resolving names…'); try { const after = await annoResolveNames(ta.value); if (after !== ta.value) { annoSet(ta, after); status('names resolved', 2500); } else status('no unnamed entity links', 2500); if (previewing) showPreview(true); } finally { btn.disabled = false; } };
-    $('tc-anno-clear').onclick = () => { annoSet(ta, ''); if (previewing) showPreview(true); };
+
+    md.addEventListener('input', () => { if (mode === 'md') syncMdToField(); });   // live Markdown → MB field
+    const wireKeys = el => el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey && el.selectionStart === el.selectionEnd) {
+        const r = annoContinueBullet(el.value, el.selectionStart);
+        if (r) { e.preventDefault(); editTa(el, r.value, r.caret); }
+      } else if ((e.ctrlKey || e.metaKey) && !e.altKey && /^[biBI]$/.test(e.key)) {
+        e.preventDefault();
+        const bold = e.key.toLowerCase() === 'b', raw = el === ta;
+        const marker = raw ? (bold ? "'''" : "''") : (bold ? '**' : '*');
+        const r = annoWrap(el.value, el.selectionStart, el.selectionEnd, marker);
+        editTa(el, r.value, r.selStart, r.selEnd);
+      }
+    });
+    wireKeys(md); wireKeys(ta);
+
+    const activeEl = () => mode === 'raw' ? ta : md;
+    $('tc-anno-preview-btn').onclick = () => setMode(mode === 'preview' ? lastEdit : 'preview');
+    $('tc-anno-md').onclick = () => { if (mode === 'preview') setMode(lastEdit); setMode(mode === 'raw' ? 'md' : 'raw'); };
+    $('tc-anno-names').onclick = async (e) => {
+      const btn = e.currentTarget; btn.disabled = true; status('resolving names…');
+      try { const el = activeEl(), before = el.value, after = await annoResolveNames(before);
+        if (after !== before) { editTa(el, after, el.selectionStart); status('names resolved', 2500); } else status('no unnamed entity links', 2500);
+        if (mode === 'preview') prev.innerHTML = annoToHtml(ta.value);
+      } finally { btn.disabled = false; }
+    };
+    $('tc-anno-clear').onclick = () => { md.value = ''; annoSet(ta, ''); if (mode === 'preview') prev.innerHTML = annoToHtml(''); };
+
+    md.value = annoToMd(ta.value);   // seed the Markdown surface from existing MB markup (no annoSet → no spurious dirty)
+    setMode('md');                    // Markdown is the default editing surface
   }
 
   // MB's contextual guidance box(es) — anything outside #information that's just the style-guidelines help

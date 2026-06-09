@@ -20,9 +20,11 @@ function extract(name) {
 
 const _annoEsc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const _annoName = new Map();
-const annoToHtml = new Function('_annoEsc', '_annoName', `${extract('annoToHtml')}; return annoToHtml;`)(_annoEsc, _annoName);
+const annoToHtml = new Function('_annoEsc', '_annoName', `${extract('bulletsToHtml')}\n${extract('annoToHtml')}; return annoToHtml;`)(_annoEsc, _annoName);
 const mdToAnno   = new Function(`${extract('mdToAnno')}; return mdToAnno;`)();
 const annoToMd   = new Function(`${extract('annoToMd')}; return annoToMd;`)();
+const annoContinueBullet = new Function(`${extract('annoContinueBullet')}; return annoContinueBullet;`)();
+const annoWrap   = new Function(`${extract('annoWrap')}; return annoWrap;`)();
 
 let pass = 0, fail = 0;
 const check = (label, got, mustInclude, mustExclude = []) => {
@@ -41,6 +43,10 @@ check('labeled link', annoToHtml('see [https://example.com/x|the site]'), ['<a h
 check('bare link', annoToHtml('visit https://example.com/page here'), ['<a href="https://example.com/page" target="_blank" rel="noopener">https://example.com/page</a>']);
 check('plain [url] link', annoToHtml('[https://example.com]'), ['<a href="https://example.com" target="_blank" rel="noopener">https://example.com</a>']);
 check('bullets', annoToHtml('    * one\n    * two'), ['<ul class="tc-anno-ul">', '<li>one</li>', '<li>two</li>']);
+// nested bullets: MB nests by 4-space-per-level indentation (8sp+* under the previous bullet)
+eq('nested bullets render', annoToHtml('    * one\n    * two\n        * sub\n    * three'),
+  '<ul class="tc-anno-ul"><li>one</li><li>two<ul class="tc-anno-ul"><li>sub</li></ul></li><li>three</li></ul>');
+check('8-space NON-bullet is still code', annoToHtml('        plain code'), ['<pre class="tc-anno-pre">plain code</pre>'], ['<li>']);
 check('hr', annoToHtml('a\n\n----\n\nb'), ['<hr>']);
 check('code block', annoToHtml('        code line'), ['<pre class="tc-anno-pre">code line</pre>']);
 check('html escaped', annoToHtml('a <script>x</script> & b'), ['&lt;script&gt;', '&amp; b'], ['<script>']);
@@ -66,12 +72,21 @@ eq('hr ---', mdToAnno('---'), '----');
 // a URL containing * or _ must not be italicised by the bold/italic passes (URL is protected)
 eq('url with underscores protected', mdToAnno('see https://e.com/a_b_c done'), 'see https://e.com/a_b_c done');
 eq('md link url with asterisks protected', mdToAnno('[x](https://e.com/a*b*c)'), '[https://e.com/a*b*c|x]');
+// a non-link [x] in Markdown must be encoded so MB doesn't read it as a broken link
+eq('non-link [x] encoded', mdToAnno('see [TODO] here'), 'see &#91;TODO&#93; here');
+eq('real md link is NOT encoded', mdToAnno('[text](https://e.com)'), '[https://e.com|text]');
+eq('encoded brackets decode back', annoToMd('see &#91;TODO&#93; here'), 'see [TODO] here');
+eq('[x] round-trips MD→MB→MD', annoToMd(mdToAnno('see [TODO] here')), 'see [TODO] here');
 eq('fenced code → 8-space block', mdToAnno('```\nline one\nline two\n```'), '        line one\n        line two');
 eq('fenced code with lang tag', mdToAnno('```js\nvar x = 1;\n```'), '        var x = 1;');
 eq('markup inside code is left literal', mdToAnno('```\n**not bold** [x](y)\n```'), '        **not bold** [x](y)');
 // the blank line between a heading and a following list must survive the conversion
 eq('blank line before a list is kept', mdToAnno('### step 1\n\n- 1\n- 2\n- 3'), '=== step 1 ===\n\n    * 1\n    * 2\n    * 3');
 eq('blank line after a heading is kept', annoToMd('=== step 1 ===\n\n    * 1\n    * 2'), '### step 1\n\n- 1\n- 2');
+// nested bullets convert both ways (markdown 2-space indent <-> MB 4-space level)
+eq('md nested bullet → MB', mdToAnno('- a\n  - b\n- c'), '    * a\n        * b\n    * c');
+eq('MB nested bullet → md', annoToMd('    * a\n        * b\n    * c'), '- a\n  - b\n- c');
+eq('nested bullets round-trip (MB→MD→MB)', mdToAnno(annoToMd('    * a\n        * b\n            * c')), '    * a\n        * b\n            * c');
 
 console.log('\nannoToMd (MB markup → Markdown, the toggle\'s "back" direction):');
 eq('link back', annoToMd('[https://example.com/x|the site]'), '[the site](https://example.com/x)');
@@ -90,6 +105,21 @@ const rtMB = "= Notes =\nA '''bold''' and ''soft'' note, see [https://e.com/x|th
 eq('MB → MD → MB is stable', mdToAnno(annoToMd(rtMB)), rtMB);
 const rtMD = '## Notes\nA **bold** and *soft* note, see [the label](https://e.com/x).\n- one\n- two\n---\n```\ncode here\n```\ntail';
 eq('MD → MB → MD is stable', annoToMd(mdToAnno(rtMD)), rtMD);
+
+console.log('\nannoContinueBullet (Enter continues / ends a bullet list):');
+const cb = (label, val, pos, want) => { const r = annoContinueBullet(val, pos); eq(label, r && r.value, want.value); if (want.caret != null) eq(label + ' caret', r && r.caret, want.caret); };
+cb('continue md bullet', '- one', 5, { value: '- one\n- ', caret: 8 });
+cb('continue MB bullet (keeps indent)', '    * one', 9, { value: '    * one\n    * ', caret: 16 });
+cb('continue nested bullet', '        * sub', 13, { value: '        * sub\n        * ', caret: 24 });
+cb('empty bullet ends the list', '- ', 2, { value: '', caret: 0 });
+eq('non-bullet line → null', annoContinueBullet('hello', 5), null);
+
+console.log('\nannoWrap (Ctrl+B/I wrap selection or surround the word):');
+const wq = (label, val, s, e, mk, want) => { const r = annoWrap(val, s, e, mk); eq(label, r.value, want); };
+wq('wrap a selection', 'hello world', 0, 5, '**', '**hello** world');
+wq('surround the word mid-cursor (no selection)', 'hello', 2, 2, '*', '*hello*');
+eq('wrap selects the inner text', JSON.stringify(annoWrap('hello', 2, 2, '*')), JSON.stringify({ value: '*hello*', selStart: 1, selEnd: 6 }));
+wq('cursor on whitespace inserts empty markers', 'a  b', 2, 2, '**', 'a **** b');
 
 // ── annoResolveNames: add the entity name to links that lack one (mocked WS2 fetch) ──
 console.log('\nannoResolveNames (add names to unnamed entity links):');

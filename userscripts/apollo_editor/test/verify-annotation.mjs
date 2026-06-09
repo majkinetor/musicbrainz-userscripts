@@ -40,8 +40,9 @@ log('editor ready');
 await page.addScriptTag({ content: scriptCode });
 await page.waitForFunction(() => !!window.__apolloEditor, null, { timeout: 15000 });
 
-// The Information tab is the default; wait for the annotation field + our toolbar to appear.
-await page.waitForSelector('#annotation', { timeout: 20000 });
+// The Information tab is the default; wait for the annotation field (attached, may be hidden) + our toolbar.
+await page.waitForSelector('#annotation', { state: 'attached', timeout: 20000 });
+await page.waitForSelector('#tc-anno-mdinput', { state: 'visible', timeout: 20000 });
 await page.waitForSelector('#tc-anno-bar', { timeout: 20000 });
 log('toolbar injected');
 
@@ -55,46 +56,65 @@ const modelPath = await page.evaluate(() => {
 log('annotation model accessor:', modelPath);
 const readModel = () => page.evaluate(() => { try { const r = window.MB.releaseEditor.rootField.release(); return typeof r.annotation === 'function' ? r.annotation() : r.annotation; } catch { return '<unreadable>'; } });
 
-check('toolbar inside #tc-anno-wrap box', await page.$eval('#tc-anno-wrap #tc-anno-bar', () => true).catch(() => false));
-check('textarea moved inside the box', await page.$eval('#tc-anno-wrap > textarea#annotation', () => true).catch(() => false));
-const btnCount = await page.$$eval('#tc-anno-bar button', bs => bs.length);
-check('4 toolbar buttons (no extras)', btnCount === 4, 'got ' + btnCount);
-const taH = await page.$eval('#annotation', e => e.getBoundingClientRect().height);
-check('textarea is bigger (>=200px)', taH >= 200, 'height ' + Math.round(taH));
+const vis = sel => page.isVisible(sel);
+check('toolbar + Markdown surface + raw field all inside the box',
+  await page.$eval('#tc-anno-wrap #tc-anno-bar', () => true).catch(() => false) &&
+  await page.$eval('#tc-anno-wrap > textarea#tc-anno-mdinput', () => true).catch(() => false) &&
+  await page.$eval('#tc-anno-wrap > textarea#annotation', () => true).catch(() => false));
+check('4 toolbar buttons (no extras)', (await page.$$eval('#tc-anno-bar button', bs => bs.length)) === 4);
+check('Markdown surface is the default (visible); raw field hidden', (await vis('#tc-anno-mdinput')) && !(await vis('#annotation')));
+check('Markdown surface is monospace', /mono/i.test(await page.$eval('#tc-anno-mdinput', e => getComputedStyle(e).fontFamily)));
+check('editing surface is bigger (>=220px)', (await page.$eval('#tc-anno-mdinput', e => e.getBoundingClientRect().height)) >= 220);
 
-// NO FLICKER: mark the wrapper, wait past 3× the 500ms applyReleaseInfo poll, assert it's the SAME node
+// NO FLICKER: mark the wrapper, wait past 3× the 500ms poll, assert it's the SAME node and still md mode
 await page.evaluate(() => { document.getElementById('tc-anno-wrap').dataset.tcMark = 'orig'; });
 await page.waitForTimeout(1700);
 check('wrapper not rebuilt across polls (no flicker)', (await page.$eval('#tc-anno-wrap', e => e.dataset.tcMark)) === 'orig');
+check('still on the Markdown surface after polls', await vis('#tc-anno-mdinput'));
 
-// 1. Markdown TOGGLE — start in MB markup, toggle to Markdown, toggle back
-await page.fill('#annotation', "= Notes =\nA '''bold''' note, see [https://example.com/x|the label].");
-await page.click('#tc-anno-md');                                  // MB → Markdown
-const asMd = await page.inputValue('#annotation');
-check('toggle → Markdown', asMd.includes('# Notes') && asMd.includes('**bold**') && asMd.includes('[the label](https://example.com/x)'), JSON.stringify(asMd));
-check('button relabels to "MB markup"', (await page.textContent('#tc-anno-md')).includes('MB markup'));
-check('Markdown propagated to MB model', (await readModel()) === asMd);
-await page.click('#tc-anno-md');                                  // Markdown → MB
-const backToMb = await page.inputValue('#annotation');
-check('toggle back → MB markup', backToMb.includes('= Notes =') && backToMb.includes("'''bold'''") && backToMb.includes('[https://example.com/x|the label]'), JSON.stringify(backToMb));
+// 1. CORE INVARIANT: type Markdown → the real MB field + model hold MB markup
+await page.fill('#tc-anno-mdinput', '## Notes\n\n- a\n- b\n\nSee [the label](https://example.com/x).');
+await page.waitForTimeout(120);
+const model1 = await readModel();
+check('Markdown → MB markup in the model (headings/bullets/link)',
+  model1.includes('== Notes ==') && model1.includes('\n    * a\n    * b') && model1.includes('[https://example.com/x|the label]') && model1.includes('Notes ==\n\n    * a'),
+  JSON.stringify(model1));
+
+// 2. toggle to raw MB markup view
+await page.click('#tc-anno-md');
+check('toggle shows raw MB field', (await vis('#annotation')) && !(await vis('#tc-anno-mdinput')));
+check('raw field holds MB markup', (await page.inputValue('#annotation')).includes('== Notes =='));
 check('button relabels to "Markdown"', (await page.textContent('#tc-anno-md')).includes('Markdown'));
+await page.click('#tc-anno-md');                       // back to Markdown surface
+check('back on Markdown surface', (await vis('#tc-anno-mdinput')) && (await page.inputValue('#tc-anno-mdinput')).includes('## Notes'));
 
-// 2. Preview swaps IN PLACE: textarea hidden, preview shown; toggle back restores the textarea
+// 3. Preview swaps in place, rendered from the MB markup (nested? here flat) — h2 + bullets + link
 await page.click('#tc-anno-preview-btn');
 await page.waitForTimeout(150);
-check('preview shown', await page.isVisible('#tc-anno-preview'));
-check('textarea hidden while previewing', !(await page.isVisible('#annotation')));
+check('preview shown, both editors hidden', (await vis('#tc-anno-preview')) && !(await vis('#tc-anno-mdinput')) && !(await vis('#annotation')));
 const prevHtml = await page.$eval('#tc-anno-preview', e => e.innerHTML);
-check('preview rendered h1 + link + bold', /<h1 class="tc-anno-h">Notes<\/h1>/.test(prevHtml) && /<a href="https:\/\/example\.com\/x"/.test(prevHtml) && /<b>bold<\/b>/.test(prevHtml), prevHtml);
+check('preview rendered h2 + list + link', /<h2 class="tc-anno-h">Notes<\/h2>/.test(prevHtml) && /<li>a<\/li>/.test(prevHtml) && /<a href="https:\/\/example\.com\/x"/.test(prevHtml), prevHtml);
 await page.click('#tc-anno-preview-btn');
-await page.waitForTimeout(150);
-check('textarea restored after preview off', await page.isVisible('#annotation'));
+check('Markdown surface restored after preview', await vis('#tc-anno-mdinput'));
 
-// 3. Clear empties textarea + model (dialog auto-accepted)
+// 4. Bullet continuation on Enter (real keystrokes)
+await page.fill('#tc-anno-mdinput', '- one');
+await page.click('#tc-anno-mdinput');
+await page.keyboard.press('End');
+await page.keyboard.press('Enter');
+await page.keyboard.type('two');
+check('Enter continues the bullet list', (await page.inputValue('#tc-anno-mdinput')) === '- one\n- two', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
+
+// 5. Ctrl+B wraps the selection (Markdown ** on the surface)
+await page.fill('#tc-anno-mdinput', 'make bold');
+await page.$eval('#tc-anno-mdinput', e => e.setSelectionRange(5, 9));   // select "bold"
+await page.keyboard.press('Control+b');
+check('Ctrl+B wraps selection with **', (await page.inputValue('#tc-anno-mdinput')) === 'make **bold**', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
+
+// 6. Clear empties both surfaces + model
 await page.click('#tc-anno-clear');
-await page.waitForTimeout(150);
-check('Clear emptied textarea', (await page.inputValue('#annotation')) === '');
-check('Clear propagated to MB model', (await readModel()) === '');
+await page.waitForTimeout(120);
+check('Clear emptied the surface + model', (await page.inputValue('#tc-anno-mdinput')) === '' && (await readModel()) === '');
 
 await page.screenshot({ path: resolve(HERE, 'logs/verify-annotation.png'), fullPage: false }).catch(() => {});
 console.log(`\n${pass} passed, ${fail} failed`);

@@ -19,18 +19,21 @@ if (await page.locator('h1', { hasText: /Confirm form submission/i }).count().ca
 await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootField.release().mediums().length; } catch { return false; } }, null, { timeout: 120000 });
 await page.addScriptTag({ content: scriptCode });
 await page.waitForFunction(() => !!window.__apolloEditor, null, { timeout: 15000 });
-await page.waitForSelector('#tc-anno-bar', { timeout: 20000 });
-await page.fill('#annotation', [
-  '= Release notes =',
+await page.waitForSelector('#tc-anno-mdinput', { state: 'visible', timeout: 20000 });
+// the default surface is Markdown — type Markdown (incl. a nested bullet)
+await page.fill('#tc-anno-mdinput', [
+  '## Release notes',
   '',
-  "This is a '''special''' edition with ''bonus'' tracks, mastered by [https://musicbrainz.org/artist/x|Bob Ludwig].",
+  'This is a **special** edition with *bonus* tracks, mastered by [Bob Ludwig](https://musicbrainz.org/artist/x).',
   '',
-  '    * Disc 1: the original album',
-  '    * Disc 2: bonus material',
+  '- Disc 1: the original album',
+  '- Disc 2: bonus material',
+  '  - bonus track A',
+  '  - bonus track B',
   '',
   'More info at https://example.com/release-info',
   '',
-  '----',
+  '---',
   '',
   'Catalogue number: ABC-123',
 ].join('\n'));
