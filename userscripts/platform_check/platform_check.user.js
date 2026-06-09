@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.4
+// @version      2026.6.9.6
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -1095,6 +1095,19 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // Meta cells: year · format · label, each its own grid cell so the columns
     // align across providers (1-row layout) — see setMetaCells.
     setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, year, format, label);
+
+    // The meta + track count also open the platform link (#173): with names
+    // hidden the name <a> is gone and the icon click is reserved for "add to
+    // MB", so the rest of the row has to carry the link.
+    const openLink = url ? () => window.open(url, '_blank', 'noopener') : null;
+    const linkTitle = url ? `Open ${PROVIDER_NAME[p]} page` : '';
+    for (const id of [`year-${p}`, `format-${p}`, `val-${p}`]) {
+        const el = document.getElementById(id);
+        if (el) { el.onclick = openLink; el.style.cursor = url ? 'pointer' : ''; el.title = linkTitle; }
+    }
+    // Label keeps its full-text tooltip (set in setMetaCells) but is clickable too.
+    const labelEl = document.getElementById(`label-${p}`);
+    if (labelEl) { labelEl.onclick = openLink; labelEl.style.cursor = url ? 'pointer' : ''; }
 }
 
 // Fill the three meta cells (year / format / label) for a row. The "·"
@@ -2387,8 +2400,9 @@ function resetRows() {
         if (plat) { plat.onclick = null; plat.style.cursor = 'default'; }
         const row = document.getElementById(`row-${p}`);
         if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); }   // back to "not found" look
-        if (val)  { val.textContent = '—'; val.style.color = '#BF616A'; }   // neutral dash while re-scanning (was the junky "(-- tracks)")
+        if (val)  { val.textContent = '—'; val.style.color = '#BF616A'; val.onclick = null; val.style.cursor = ''; val.title = ''; }   // neutral dash while re-scanning
         setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, null, null, null);
+        for (const id of [`year-${p}`, `format-${p}`, `label-${p}`]) { const el = document.getElementById(id); if (el) { el.onclick = null; el.style.cursor = ''; } }
         // Reset the anchor href to its search-fallback so parseMbFromDom on
         // a subsequent refresh doesn't see the previous /album/<id> result
         // as an "existing MB rel" — covered by the #mb-pc-panel exclusion
