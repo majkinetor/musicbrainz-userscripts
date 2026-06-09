@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.000800
+// @version      2026.6.9.000900
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3310,6 +3310,7 @@
     #tc-anno-bar button:disabled{opacity:.6;cursor:default}
     #tc-anno-bar button.tc-anno-icon{padding:4px 8px;font-size:13px;line-height:1;font-weight:700}
     #tc-anno-bar .tc-mk-ico{width:22px;height:14px;display:block}
+    #tc-anno-bar .tc-mk-mb{width:17px;height:17px;border-radius:3px}
     #tc-anno-bar #tc-anno-help{width:25px;justify-content:center;color:#7a5fc0}
     #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-bar.tc-anno-hist-on #tc-anno-history-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
@@ -3544,8 +3545,9 @@
       // 8-space lines that are NOT bullets are code.
       if (/^ {4,}\*[ \t]+/.test(ln)) { const items = []; let bm; while (i < lines.length && (bm = lines[i].match(/^( +)\*[ \t]+(.*)$/))) { items.push({ level: Math.max(1, Math.floor(bm[1].length / 4)), html: inline(bm[2]) }); i++; } out.push(bulletsToHtml(items)); continue; }
       if (/^ {8}/.test(ln)) { const buf = []; while (i < lines.length && /^ {8}/.test(lines[i]) && !/^ {4,}\*[ \t]/.test(lines[i])) { buf.push(_annoEsc(lines[i].slice(8))); i++; } out.push('<pre class="tc-anno-pre">' + buf.join('\n') + '</pre>'); continue; }
-      const buf = [];   // a paragraph: consecutive non-blank, non-block lines joined with <br>
-      while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^-{4,}\s*$/.test(lines[i]) && !/^={1,6}\s/.test(lines[i]) && !/^ {4,}\*[ \t]+/.test(lines[i]) && !/^ {8}/.test(lines[i])) { buf.push(inline(lines[i])); i++; }
+      const buf = [];   // a paragraph: consume the CURRENT line first (do-while → i ALWAYS advances, so an
+      do { buf.push(inline(lines[i])); i++; }                              // empty-title "=  =" heading can't spin forever),
+      while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^-{4,}\s*$/.test(lines[i]) && !/^={1,6}\s/.test(lines[i]) && !/^ {4,}\*[ \t]+/.test(lines[i]) && !/^ {8}/.test(lines[i]));   // then following non-blank, non-block lines
       out.push('<p>' + buf.join('<br>') + '</p>');
     }
     return out.join('').replace(/\x01/g, '[').replace(/\x02/g, ']');
@@ -3679,7 +3681,7 @@
   // saving is always correct) — Markdown edits are converted into it live. Mounted ONCE per #annotation node
   // (the 500ms applyReleaseInfo poll must not rebuild it — that was the flicker).
   const ANNO_MD_LOGO = '<svg class="tc-mk-ico" viewBox="0 0 208 128" aria-hidden="true"><rect width="198" height="118" x="5" y="5" rx="10" fill="none" stroke="currentColor" stroke-width="10"/><path fill="currentColor" d="M30 98V30h20l20 25 20-25h20v68H110V59L90 84 70 59v39zm125 0l-30-33h20V30h20v35h20z"/></svg>';
-  const ANNO_MB_LOGO = '<svg class="tc-mk-ico tc-mk-mb" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#BA478F"/><path fill="#fff" d="M9 9h3.4l3.6 6 3.6-6H23v14h-3.2v-8.6L16 20l-3.8-5.6V23H9z"/></svg>';
+  const ANNO_MB_LOGO = '<img class="tc-mk-ico tc-mk-mb" alt="MB" src="https://images.dwncdn.net/images/t_app-icon-s/p/c5c33b93-7347-46e3-a512-3decccb33d78/1678792153/2170_4-166444-imgingest-4209519771082272608.png">';
   const ANNO_HELP_HTML =
     '<b>Markdown</b> <span class="tc-help-dim">(converted to MusicBrainz markup on save)</span>' +
     '<table>' +

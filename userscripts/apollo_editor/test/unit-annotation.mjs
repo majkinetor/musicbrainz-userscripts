@@ -47,6 +47,10 @@ check('bullets', annoToHtml('    * one\n    * two'), ['<ul class="tc-anno-ul">',
 eq('nested bullets render', annoToHtml('    * one\n    * two\n        * sub\n    * three'),
   '<ul class="tc-anno-ul"><li>one</li><li>two<ul class="tc-anno-ul"><li>sub</li></ul></li><li>three</li></ul>');
 check('8-space NON-bullet is still code', annoToHtml('        plain code'), ['<pre class="tc-anno-pre">plain code</pre>'], ['<li>']);
+// regression: an empty-title heading (what "# " in Markdown becomes) must NOT infinite-loop the renderer
+eq('empty-title heading does not hang', annoToHtml('=  ='), '<p>=  =</p>');
+eq('lone "= " does not hang', annoToHtml('= '), '<p>= </p>');
+check('bullets + empty heading render (no hang)', annoToHtml('    * a\n        * b\n\n=  ='), ['<li>a<ul', '<li>b</li>', '<p>=  =</p>']);
 check('hr', annoToHtml('a\n\n----\n\nb'), ['<hr>']);
 check('code block', annoToHtml('        code line'), ['<pre class="tc-anno-pre">code line</pre>']);
 check('html escaped', annoToHtml('a <script>x</script> & b'), ['&lt;script&gt;', '&amp; b'], ['<script>']);
