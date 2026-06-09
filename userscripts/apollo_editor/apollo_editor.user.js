@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.002300
+// @version      2026.6.9.002400
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -12,7 +12,7 @@
 // @match        https://*.musicbrainz.org/artist/*
 // @grant        GM_xmlhttpRequest
 // @connect      *
-// @run-at       document-idle
+// @run-at       document-start
 // ==/UserScript==
 
 /*
@@ -71,6 +71,15 @@
   function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
+
+  // FOUC guard (we run at document-start): on the standalone Edit annotation page, hide the native form until our
+  // editor mounts (and removes #tc-anno-fouc), so the original interface never flashes. Skipped when off.
+  if (/\/release\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/edit_annotation/.test(location.pathname)
+      && SETTINGS.apolloEnabled !== false && SETTINGS.modifyAnnotation !== false) {
+    const s = document.createElement('style'); s.id = 'tc-anno-fouc'; s.textContent = '#content > form{visibility:hidden}';
+    (document.head || document.documentElement).appendChild(s);
+    setTimeout(() => document.getElementById('tc-anno-fouc')?.remove(), 6000);   // safety: never hide forever if the editor fails to mount
+  }
 
   function waitFor(check, { tries = 120, every = 500 } = {}) {
     return new Promise(res => { let n = 0; const t = () => { let v; try { v = check(); } catch (e) {} if (v) return res(v); if (++n >= tries) return res(null); setTimeout(t, every); }; t(); });
@@ -3339,6 +3348,10 @@
     body.tc-anno-page #content > form > .row:not(.no-label) > label{display:block;width:auto;text-align:left;float:none;font:600 12px Arial;letter-spacing:.02em;color:#6a6a6a;margin:0 0 5px}
     body.tc-anno-page #content > form > .row > input[type=text]{width:100%;max-width:680px;box-sizing:border-box;padding:5px 8px;border:1px solid #d6cdec;border-radius:5px}
     body.tc-anno-page #content > form > fieldset.editnote{max-width:1100px}
+    /* fill the remaining viewport height (height is set per-resize in JS) */
+    body.tc-anno-page #tc-anno-wrap{display:flex;flex-direction:column}
+    body.tc-anno-page #tc-anno-wrap > #tc-anno-body,body.tc-anno-page #tc-anno-wrap > #tc-anno-history{flex:1 1 auto;min-height:0;max-height:none}
+    body.tc-anno-page #tc-anno-wrap textarea,body.tc-anno-page #tc-anno-wrap #tc-anno-preview{min-height:0}
     /* Changelog row becomes [label above] then [input  +  Enter edit] side by side */
     body.tc-anno-page #content > form > .row.tc-cl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
     body.tc-anno-page #content > form > .row.tc-cl-row > label{flex:1 1 100%;margin-bottom:4px}
@@ -4012,11 +4025,18 @@
     let sub = document.getElementById('tc-anno-submit');
     if (hide && !sub && clInput) {
       sub = document.createElement('button'); sub.id = 'tc-anno-submit'; sub.type = 'button'; sub.textContent = '✓ Enter edit';
-      sub.onclick = () => { const b = form && [...form.querySelectorAll('button, input[type=submit]')].find(x => /enter edit/i.test((x.textContent || x.value || '').trim())); if (b) b.click(); };
+      sub.onclick = () => { const b = form && [...form.querySelectorAll('button, input[type=submit]')].find(x => x.id !== 'tc-anno-submit' && /enter edit/i.test((x.textContent || x.value || '').trim())); if (b) b.click(); };   // the NATIVE submit (not ourselves)
       clInput.after(sub);
     }
     if (clRow) clRow.classList.toggle('tc-cl-row', hide);
     if (sub) sub.style.display = hide ? '' : 'none';
+    document.getElementById('tc-anno-fouc')?.remove();   // reveal the (now transformed) form — no native flash
+    // make the editor fill the remaining viewport height (down to just above the footer)
+    const w = ta._tcAnnoMounted;
+    if (hide && w) {
+      if (!w._tcFill) { w._tcFill = () => { if (!w.isConnected || w.classList.contains('tc-anno-max')) { w.style.height = ''; return; } w.style.height = Math.max(300, window.innerHeight - w.getBoundingClientRect().top - 18) + 'px'; }; window.addEventListener('resize', w._tcFill); }
+      requestAnimationFrame(w._tcFill);
+    } else if (w && w._tcFill) w.style.height = '';
   }
 
   // MB's contextual guidance box(es) — anything outside #information that's just the style-guidelines help

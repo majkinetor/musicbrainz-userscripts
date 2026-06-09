@@ -52,6 +52,14 @@ check('native buttons row (Preview / Enter edit) hidden', await page.evaluate(()
 check('our own "Enter edit" button present + visible', await page.isVisible('#tc-anno-submit'));
 check('Enter edit is in the Changelog row (right of the input)', await page.evaluate(() => { const s = document.getElementById('tc-anno-submit'), r = s && s.closest('.row'); return !!(r && r.querySelector('input[name="edit-annotation.changelog"]')); }));
 check('Apollo switcher (launcher) present on the page', await page.$('#tc-launch') !== null);
+// our Enter edit must trigger the NATIVE submit (not itself) — verify via a guarded click (no real submit)
+check('our "Enter edit" triggers the native submit', await page.evaluate(() => {
+  const native = [...document.querySelectorAll('#content form button, #content form input[type=submit]')].find(b => b.id !== 'tc-anno-submit' && /enter edit/i.test((b.textContent || b.value || '').trim()));
+  let flag = false; if (native) native.addEventListener('click', e => { flag = true; e.preventDefault(); e.stopImmediatePropagation(); }, { capture: true, once: true });
+  document.getElementById('tc-anno-submit').click(); return flag;
+}));
+check('editor fills the viewport height', await page.evaluate(() => { const r = document.getElementById('tc-anno-wrap').getBoundingClientRect(); return r.bottom >= window.innerHeight - 40 && r.height > 300; }));
+check('FOUC guard removed after mount', await page.$('#tc-anno-fouc') === null);
 
 await page.evaluate(() => window.scrollTo(0, 0));
 await page.screenshot({ path: resolve(HERE, 'logs', 'shot-editannotation.png') }).catch(() => {});
