@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.7
+// @version      2026.6.9.8
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -1074,15 +1074,22 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         row.classList.remove('pc-st-notfound', 'pc-st-mismatch', 'pc-st-match');
         row.classList.add('pc-st-' + presence);
         row.classList.toggle('pc-inmb', fromMbRels);
-        // Whole row opens the platform link (#173): clicking anywhere from after
-        // the icon to the track count works — including empty cells and the gaps
-        // between them — since the row is one box (subgrid). The icon keeps its
-        // own "add to MB" action, and the name <a> opens natively.
-        row.onclick = url ? (e) => {
+        // Whole row is clickable (#173): anywhere from after the icon to the
+        // track count — empty cells and the gaps included (the row is one
+        // subgrid box). LEFT-click opens the found platform page, or the
+        // provider's SEARCH page when nothing was found (so even completely
+        // empty rows work); RIGHT-click always opens the SEARCH page for a
+        // manual check. Icon keeps "add to MB" and the name <a> opens natively
+        // (both excluded). searchUrl is read lazily so init order doesn't matter.
+        const rowOpen = (e, preferSearch) => {
             if (e.target.closest('.pc-cell-ico') || e.target.closest('a')) return;
-            window.open(url, '_blank', 'noopener');
-        } : null;
-        row.style.cursor = url ? 'pointer' : '';
+            const search = a.dataset.searchUrl || null;
+            const dest = preferSearch ? (search || url) : (url || search);
+            if (dest) { e.preventDefault(); window.open(dest, '_blank', 'noopener'); }
+        };
+        row.onclick       = (e) => rowOpen(e, false);
+        row.oncontextmenu = (e) => rowOpen(e, true);
+        row.style.cursor  = 'pointer';
     }
     const plat = document.getElementById(`plat-${p}`);
     if (plat) {
@@ -2400,7 +2407,7 @@ function resetRows() {
         const plat = document.getElementById(`plat-${p}`);
         if (plat) { plat.onclick = null; plat.style.cursor = 'default'; }
         const row = document.getElementById(`row-${p}`);
-        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); row.onclick = null; row.style.cursor = ''; }   // back to "not found" look
+        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); row.onclick = null; row.oncontextmenu = null; row.style.cursor = ''; }   // back to "not found" look
         if (val)  { val.textContent = '—'; val.style.color = '#BF616A'; }   // neutral dash while re-scanning
         setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, null, null, null);
         // Reset the anchor href to its search-fallback so parseMbFromDom on
