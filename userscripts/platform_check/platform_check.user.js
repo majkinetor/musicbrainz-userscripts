@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.11
+// @version      2026.6.9.12
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -969,14 +969,16 @@ const BEATPORT = {
     clientId: '0GIvkCltVIuPkkwSJHp6NDb3s0potTjLBQr388Dd',          // Beatport web-app client (public, from their docs JS)
     redirect: 'https://api.beatport.com/v4/auth/o/post-message/',
     api:      'https://api.beatport.com/v4',
-    web:      'https://www.beatport.com',
+    origin:   'https://api.beatport.com',
     store:    'mbtools:beatport',
 };
-// Beatport's API runs Django CSRF protection that rejects a secure POST with no
-// Referer ("CSRF Failed: Referer checking failed - no Referer."). GM_xmlhttpRequest
-// sends none by default, so we mimic the real web app: Referer + Origin on
-// www.beatport.com (matches the `.beatport.com` CSRF cookie domain).
-const bpHeaders = () => ({ Referer: BEATPORT.web + '/', Origin: BEATPORT.web });
+// Beatport's API runs Django CSRF protection that engages when the browser's
+// existing Beatport session cookie rides along (logged-in users): DRF then
+// authenticates via the cookie and enforces CSRF, which rejects the secure POST
+// for a missing/untrusted Origin & Referer. Django always trusts a request's
+// OWN origin, so we send the API's own origin (https://api.beatport.com) — a
+// foreign origin like www.beatport.com is NOT in the API's trusted set.
+const bpHeaders = () => ({ Referer: BEATPORT.origin + '/', Origin: BEATPORT.origin });
 const bpRead     = () => { try { return JSON.parse(localStorage.getItem(BEATPORT.store) || 'null'); } catch { return null; } };
 const bpWrite    = t  => { try { t ? localStorage.setItem(BEATPORT.store, JSON.stringify(t)) : localStorage.removeItem(BEATPORT.store); } catch {} };
 const bpLoggedIn = () => { const t = bpRead(); return !!(t && t.refresh_token); };
