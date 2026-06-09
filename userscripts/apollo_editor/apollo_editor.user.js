@@ -3326,7 +3326,18 @@
     #tc-anno-preview .tc-anno-pre{margin:0 0 8px;padding:8px 10px;background:#f0ecf8;border-radius:4px;font-family:Consolas,monospace;font-size:12px;white-space:pre-wrap}
     #tc-anno-preview hr{border:none;border-top:1px solid #cdbce8;margin:10px 0}
     #tc-anno-preview a{color:#5f3ec0;text-decoration:none}
-    #tc-anno-preview a:hover{text-decoration:underline}`;
+    #tc-anno-preview a:hover{text-decoration:underline}
+    /* Disambiguation + Annotation span the full column with their label stacked ABOVE (not the 150px label
+       column). :has targets exactly those two rows, so the relocated External-links table is untouched. */
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment),
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation){display:block;width:100%;margin:0 0 14px}
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment) > td,
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td{display:block;width:100%!important;padding:0}
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment) > td:first-child,
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td:first-child{text-align:left!important;padding:0 0 4px}
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment) > td:first-child label,
+    body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td:first-child label{display:block;width:auto;float:none;text-align:left!important;font:600 12px Arial;letter-spacing:.02em;color:#6a6a6a}
+    body.tc-ri-on #information fieldset.information input#comment{width:100%!important;max-width:none!important;box-sizing:border-box}`;
     const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
   }
   // move the External-links fieldset into a dedicated right column (or back home when Apollo is off).
@@ -3620,6 +3631,10 @@
     ta.parentNode.insertBefore(wrap, ta);
     wrap.append(bar, md, ta, prev);
     ta._tcAnnoMounted = wrap;
+
+    // put Disambiguation above Annotation (both already span the full column via CSS)
+    const annoRow = wrap.closest('tr'), commRow = document.getElementById('comment')?.closest('tr');
+    if (annoRow && commRow && commRow !== annoRow && annoRow.previousElementSibling !== commRow) annoRow.parentNode.insertBefore(commRow, annoRow);
 
     const $ = id => bar.querySelector('#' + id);
     const status = (msg, ms) => { const s = $('tc-anno-status'); if (!s) return; s.textContent = msg || ''; if (ms) setTimeout(() => { if (s.textContent === msg) s.textContent = ''; }, ms); };

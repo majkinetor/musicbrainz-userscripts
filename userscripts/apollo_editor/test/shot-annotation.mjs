@@ -20,6 +20,8 @@ await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootFiel
 await page.addScriptTag({ content: scriptCode });
 await page.waitForFunction(() => !!window.__apolloEditor, null, { timeout: 15000 });
 await page.waitForSelector('#tc-anno-mdinput', { state: 'visible', timeout: 20000 });
+// capture the whole "Additional information" section (empty) — Disambiguation above, both full width
+{ const fs = await page.$('#annotation'); const b = await page.evaluate(() => { const f = document.querySelector('#information fieldset.information'); const r = f.getBoundingClientRect(); return { x: Math.max(0, r.x - 8), y: Math.max(0, r.y - 30), width: Math.min(r.width + 16, 1180), height: Math.min(r.height + 50, 560) }; }); await page.evaluate(y => window.scrollTo(0, y), b.y); const b2 = await page.evaluate(() => { const f = document.querySelector('#information fieldset.information'); const r = f.getBoundingClientRect(); return { x: Math.max(0, r.x - 8), y: Math.max(0, r.y - 34), width: Math.min(r.width + 16, 1180), height: Math.min(r.height + 50, 560) }; }); await page.screenshot({ path: resolve(HERE, 'logs', 'shot-annotation-layout.png'), clip: b2 }); }
 // the default surface is Markdown — type Markdown (incl. a nested bullet)
 await page.fill('#tc-anno-mdinput', [
   '## Release notes',
