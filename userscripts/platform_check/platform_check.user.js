@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.16
+// @version      2026.6.9.17
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -988,13 +988,6 @@ const BEATPORT = {
 // trusts a request's own origin; www.beatport.com is NOT in its trusted set).
 const bpHeaders = () => ({ Referer: BEATPORT.origin + '/', Origin: BEATPORT.origin });
 
-// Pull a cookie value out of a raw GM responseHeaders string. GM_xmlhttpRequest
-// (unlike page fetch) exposes Set-Cookie, so on an `anonymous` request we can
-// capture the session it just minted and pass it on explicitly.
-function bpCookieFromHeaders(rawHeaders, name) {
-    const m = (rawHeaders || '').match(new RegExp(`set-cookie:\\s*${name}=([^;\\r\\n]+)`, 'i'));
-    return m ? m[1].trim() : '';
-}
 const bpRead     = () => { try { return JSON.parse(localStorage.getItem(BEATPORT.store) || 'null'); } catch { return null; } };
 const bpWrite    = t  => { try { t ? localStorage.setItem(BEATPORT.store, JSON.stringify(t)) : localStorage.removeItem(BEATPORT.store); } catch {} };
 const bpLoggedIn = () => { const t = bpRead(); return !!(t && t.refresh_token); };
@@ -1002,30 +995,35 @@ const bpB64url   = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).repl
 async function bpPkce() { const v = bpB64url(crypto.getRandomValues(new Uint8Array(48))); const c = bpB64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v))); return { v, c }; }
 
 // Full login → token. Returns { ok } or { ok:false, error }. Used by PC's setup UI.
-// Runs every step `anonymous` (no ambient browser cookies) and threads the
-// session it mints itself, so a lingering beatport.com session in the browser
-// can't trigger Django's CSRF check (see the bpHeaders note above).
+// Two cases, both ending at a non-anonymous authorize GET that consumes a
+// session cookie from the shared jar:
+//   • Fresh browser — the normal login POST mints that session in the jar.
+//   • Browser already holds a beatport.com session — that ambient cookie makes
+//     Django enforce CSRF on the login POST (which we can't satisfy: GM_cookie
+//     is domain-restricted and Set-Cookie is hidden on some managers). But the
+//     existing session is itself valid and is accepted by the authorize GET, so
+//     we just validate the typed credentials out-of-band (anonymous → no
+//     session → no CSRF) and reuse that session.
 async function beatportLogin(username, password) {
-    const lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { anonymous: true, headers: { 'Content-Type': 'application/json', ...bpHeaders() } });
+    let lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { headers: { 'Content-Type': 'application/json', ...bpHeaders() } });
+    if (!lr.ok && /csrf/i.test(lr.responseText || '')) {
+        appendLog('Beatport', 'login blocked by an existing browser Beatport session — validating credentials and reusing that session…');
+        lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { anonymous: true, headers: { 'Content-Type': 'application/json', ...bpHeaders() } });
+    }
     if (!lr.ok) {
         let m = 'incorrect username or password';
         try { const j = JSON.parse(lr.responseText); m = (typeof j === 'string' ? j : j.detail) || m; } catch {}
-        appendLog('Beatport', `login POST rejected — HTTP ${lr.status}: ${m}`, 'error');
+        appendLog('Beatport', `login rejected — HTTP ${lr.status}: ${m}`, 'error');
         return { ok: false, error: m };
     }
-    // Capture the fresh session minted by the login (anonymous → not stored in
-    // the jar, so we must read it from the response and pass it on explicitly).
-    const sessionid = bpCookieFromHeaders(lr.responseHeaders, 'sessionid');
-    const csrftoken = bpCookieFromHeaders(lr.responseHeaders, 'csrftoken');
-    const cookie = [sessionid && `sessionid=${sessionid}`, csrftoken && `csrftoken=${csrftoken}`].filter(Boolean).join('; ');
-    appendLog('Beatport', `login ok (HTTP ${lr.status}); session ${sessionid ? 'captured' : 'NOT in response headers'} — requesting authorization code…`, sessionid ? 'info' : 'warn');
+    appendLog('Beatport', `login ok (HTTP ${lr.status}) — requesting authorization code…`);
 
     const { v, c } = await bpPkce();
     const au = `${BEATPORT.api}/auth/o/authorize/?response_type=code&client_id=${BEATPORT.clientId}&redirect_uri=${encodeURIComponent(BEATPORT.redirect)}&code_challenge=${c}&code_challenge_method=S256`;
-    const ar = await gmGet(au, { anonymous: true, headers: { ...bpHeaders(), ...(cookie ? { Cookie: cookie } : {}) } });
+    const ar = await gmGet(au, { headers: bpHeaders() });   // non-anonymous: uses the jar session (fresh-from-login or existing browser)
     const code = ((ar.finalUrl || '').match(/[?&#]code=([^&]+)/) || [])[1];
     if (!code) {
-        appendLog('Beatport', `authorize step returned no code — HTTP ${ar.status}, finalUrl ${ar.finalUrl ? `=${ar.finalUrl.slice(0, 80)}` : 'missing'}`, 'error');
+        appendLog('Beatport', `authorize returned no code — HTTP ${ar.status}; no usable Beatport session in the browser. Log in at beatport.com in this browser, then retry.`, 'error');
         return { ok: false, error: 'no authorization code returned' };
     }
     appendLog('Beatport', 'authorization code received — exchanging for token…');
