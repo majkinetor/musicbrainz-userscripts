@@ -129,12 +129,12 @@ cb('continue numbered list', '1. one', 6, { value: '1. one\n1. ', caret: 10 });
 cb('continue MB "a." list', '    a. one', 10, { value: '    a. one\n    a. ', caret: 18 });
 eq('non-bullet line → null', annoContinueBullet('hello', 5), null);
 
-console.log('\nannoListSelection (Tab on a selection → list):');
-eq('Tab → markdown bullet list', JSON.stringify(annoListSelection('one\ntwo', 0, 7, false, false)), JSON.stringify({ value: '- one\n- two', selStart: 0, selEnd: 11 }));
-eq('Ctrl+Tab → markdown numbered list', annoListSelection('one\ntwo', 0, 7, false, true).value, '1. one\n1. two');
-eq('Tab → MB bullet list (raw)', annoListSelection('one\ntwo', 0, 7, true, false).value, '    * one\n    * two');
-eq('Ctrl+Tab → MB "a." list (raw)', annoListSelection('one\ntwo', 0, 7, true, true).value, '    a. one\n    a. two');
-eq('re-listing strips the old marker', annoListSelection('- one\n- two', 0, 11, false, true).value, '1. one\n1. two');
+console.log('\nannoListSelection (Tab on a selection cycles plain→bullet→numbered→bullet):');
+eq('Tab: plain → bullet (md)', JSON.stringify(annoListSelection('one\ntwo', 0, 7, false)), JSON.stringify({ value: '- one\n- two', selStart: 0, selEnd: 11 }));
+eq('Tab again: bullet → numbered (md)', annoListSelection('- one\n- two', 0, 11, false).value, '1. one\n1. two');
+eq('Tab again: numbered → bullet (md)', annoListSelection('1. one\n1. two', 0, 12, false).value, '- one\n- two');
+eq('Tab: plain → MB bullet (raw)', annoListSelection('one\ntwo', 0, 7, true).value, '    * one\n    * two');
+eq('Tab again: MB bullet → "a." (raw)', annoListSelection('    * one\n    * two', 0, 19, true).value, '    a. one\n    a. two');
 
 console.log('\nannoWrap (Ctrl+B/I wrap selection or surround the word):');
 const wq = (label, val, s, e, mk, want) => { const r = annoWrap(val, s, e, mk); eq(label, r.value, want); };

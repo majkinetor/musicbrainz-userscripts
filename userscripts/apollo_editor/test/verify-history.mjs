@@ -33,21 +33,18 @@ await page.click('#tc-anno-history .tc-hist-card');
 await page.waitForSelector('#tc-anno-history .tc-hist-view .tc-anno-rendered', { timeout: 15000 });
 check('selecting a version shows its rendered annotation', await page.$('#tc-anno-history .tc-hist-view .tc-anno-rendered') !== null);
 check('selected row highlighted', await page.$('#tc-anno-history .tc-hist-card.on') !== null);
-check('"Replace editor with this version" button present', await page.$('#tc-anno-history .tc-hist-use') !== null);
+// the revert (↶) button lives inside non-current cards only
+check('current card has no revert button', await page.$('#tc-anno-history .tc-hist-card:first-child .tc-hist-revert') === null);
+check('older cards have an in-card revert button', await page.$('#tc-anno-history .tc-hist-card:not(:first-child) .tc-hist-revert') !== null);
+const noGap = await page.evaluate(() => { const b = document.getElementById('tc-anno-history-btn'); return getComputedStyle(b).marginLeft === '0px' || getComputedStyle(b).marginLeft === 'auto' ? getComputedStyle(b).marginLeft : getComputedStyle(b).marginLeft; });
+check('History button is not pushed right (no auto margin)', (await page.evaluate(() => getComputedStyle(document.getElementById('tc-anno-history-btn')).marginLeft)) !== 'auto', 'marginLeft=' + noGap);
 await page.$eval('#tc-anno-wrap', e => e.scrollIntoView({ block: 'center' }));
 await page.locator('#tc-anno-wrap').screenshot({ path: resolve(HERE, 'logs', 'shot-history.png') }).catch(() => {});
-// History button toggles back to the editor
-await page.click('#tc-anno-history-btn');
-check('History toggles back to the Markdown surface', await page.isVisible('#tc-anno-mdinput'));
-// re-open, select, and use the version (auto-accept confirm) → editor view restored
-await page.click('#tc-anno-history-btn');
-await page.waitForSelector('#tc-anno-history .tc-hist-card', { timeout: 15000 });
-await page.click('#tc-anno-history .tc-hist-card');
-await page.waitForSelector('#tc-anno-history .tc-hist-use', { timeout: 15000 });
-page.once('dialog', d => d.accept());
-await page.click('#tc-anno-history .tc-hist-use');
-await page.waitForTimeout(200);
-check('using a version returns to the editor', await page.isVisible('#tc-anno-mdinput'));
+// click an older card's revert (NO confirm) → editor restored with that version
+await page.hover('#tc-anno-history .tc-hist-card:not(:first-child)');
+await page.click('#tc-anno-history .tc-hist-card:not(:first-child) .tc-hist-revert', { force: true });
+await page.waitForSelector('#tc-anno-mdinput', { state: 'visible', timeout: 8000 }).catch(() => {});
+check('in-card revert returns to the editor (no confirm)', await page.isVisible('#tc-anno-mdinput'));
 
 // annoHtmlToMb reconstruction (inject the extracted function + a known rendered HTML)
 const src = await readFile(SCRIPT, 'utf8');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.001200
+// @version      2026.6.9.001300
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3315,8 +3315,7 @@
     #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-bar.tc-anno-hist-on #tc-anno-history-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-status{font:12px Arial;color:#777;margin-left:2px}
-    #tc-anno-md{margin-left:auto}            /* markup-toggle + help float to the middle */
-    #tc-anno-history-btn{margin-left:auto}   /* History pinned to the right end of the toolbar */
+    /* all toolbar buttons in one contiguous group (no gap before History) */
     /* editor body: the active textarea on the left; the live preview splits in on the right when toggled */
     #tc-anno-body{display:flex;align-items:stretch;min-height:240px}
     #tc-anno-edit{flex:1 1 0;min-width:0;display:flex;flex-direction:column}
@@ -3334,7 +3333,7 @@
     #tc-anno-preview a{color:#5f3ec0;text-decoration:none}
     #tc-anno-preview a:hover{text-decoration:underline}
     /* syntax help popover (hover the ? button) */
-    #tc-anno-help-pop{position:fixed;z-index:10000;display:none;width:370px;max-width:calc(100vw - 16px);background:#fff;border:1px solid #d6cdec;border-radius:8px;box-shadow:0 8px 26px rgba(60,40,110,.22);padding:10px 13px;font:12px Arial;color:#444;line-height:1.5}
+    #tc-anno-help-pop{position:fixed;z-index:10000;display:none;width:370px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow-y:auto;background:#fff;border:1px solid #d6cdec;border-radius:8px;box-shadow:0 8px 26px rgba(60,40,110,.22);padding:10px 13px;font:12px Arial;color:#444;line-height:1.5}
     #tc-anno-help-pop.on{display:block}
     #tc-anno-help-pop table{border-collapse:collapse;margin:6px 0;width:100%}
     #tc-anno-help-pop td{padding:2px 7px 2px 0;vertical-align:top}
@@ -3365,7 +3364,11 @@
     #tc-anno-history .tc-hist-date{color:#777;font-size:11px}
     #tc-anno-history .tc-hist-cl{color:#8a8a8a;font-style:italic;font-size:11px;margin-top:2px}
     #tc-anno-history .tc-hist-cur{color:#2c7a45;font-style:normal}
-    #tc-anno-history .tc-hist-clmsg{color:#5a4a78;font-style:italic;font-size:11px;margin-top:2px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #tc-anno-history .tc-hist-clmsg{color:#5a4a78;font-style:italic;font-size:11px;margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #tc-anno-history .tc-hist-revert{margin-left:auto;align-self:center;flex:0 0 auto;width:24px;height:24px;border:1px solid #d6cdec;border-radius:5px;background:#fff;color:#5a3e94;font-size:14px;line-height:1;cursor:pointer;opacity:0;transition:opacity .12s}
+    #tc-anno-history .tc-hist-card:hover .tc-hist-revert,#tc-anno-history .tc-hist-card:focus-within .tc-hist-revert{opacity:1}
+    #tc-anno-history .tc-hist-revert:hover{background:#ece5f8;border-color:#b9a4e0}
+    #tc-anno-history .tc-hist-revert:disabled{opacity:.5;cursor:default}
     #tc-anno-history .tc-hist-msg{color:#999;font-style:italic;font-size:12px;padding:6px 2px}
     #tc-anno-history .tc-hist-bar{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap}
     #tc-anno-history .tc-hist-use{font:12px Arial;padding:4px 11px;border:1px solid #b9a4e0;border-radius:6px;background:#f6f3fc;color:#5a3e94;cursor:pointer}
@@ -3729,11 +3732,15 @@
     return { value: value.slice(0, a) + marker + value.slice(a, b) + marker + value.slice(b), selStart: a + marker.length, selEnd: b + marker.length };
   }
   // Tab on a selection: turn the selected lines into a bullet list (or, with Ctrl, a numbered list). Pure.
-  function annoListSelection(value, selStart, selEnd, raw, ordered) {
+  function annoListSelection(value, selStart, selEnd, raw) {
     let s = value.lastIndexOf('\n', selStart - 1) + 1;
     let e = selEnd; if (e > s && value[e - 1] === '\n') e--;
     let lineEnd = value.indexOf('\n', e); if (lineEnd < 0) lineEnd = value.length;
-    const repl = value.slice(s, lineEnd).split('\n').map(ln => {
+    const block = value.slice(s, lineEnd);
+    // cycle on repeated Tab: plain → bullet, bullet → numbered, numbered → bullet
+    const first = (block.split('\n').find(l => l.trim() !== '') || '').match(/^[ \t]*([-*+]|\d+\.|[a-z]\.)/i);
+    const ordered = !!(first && /[-*+]/.test(first[1]));   // currently bullets → switch to numbered; else → bullets
+    const repl = block.split('\n').map(ln => {
       if (ln.trim() === '') return ln;
       const txt = ln.replace(/^[ \t]*(?:[-*+]|\d+\.|[a-z]\.)?[ \t]*/i, '');   // drop leading ws + any existing marker
       return raw ? (ordered ? '    a. ' : '    * ') + txt : (ordered ? '1. ' : '- ') + txt;
@@ -3763,8 +3770,7 @@
     '<table>' +
     '<tr><td><code>Ctrl/Cmd+B</code> / <code>+I</code></td><td>bold / italic (selection or word)</td></tr>' +
     '<tr><td><code>Enter</code></td><td>continue the current list</td></tr>' +
-    '<tr><td><code>Tab</code></td><td>indent · on a selection → bullet list</td></tr>' +
-    '<tr><td><code>Ctrl+Tab</code></td><td>selection → numbered list</td></tr>' +
+    '<tr><td><code>Tab</code></td><td>indent · on a selection → bullet list (Tab again → numbered, again → bullet…)</td></tr>' +
     '</table>' +
     '<div class="tc-help-dim">A MusicBrainz entity URL (bare or <code>[]()</code>) gets its name added automatically.</div>';
 
@@ -3828,8 +3834,8 @@
         if (r) { e.preventDefault(); editTa(el, r.value, r.caret); }
       } else if (e.key === 'Tab') {
         e.preventDefault();
-        if (el.selectionStart !== el.selectionEnd) {   // Tab → bullet list of the selection; Ctrl+Tab → numbered
-          const r = annoListSelection(el.value, el.selectionStart, el.selectionEnd, raw, e.ctrlKey || e.metaKey);
+        if (el.selectionStart !== el.selectionEnd) {   // Tab on a selection → bullet list; Tab again → numbered; again → bullet…
+          const r = annoListSelection(el.value, el.selectionStart, el.selectionEnd, raw);
           editTa(el, r.value, r.selStart, r.selEnd);
         } else { const p = el.selectionStart, v = el.value; editTa(el, v.slice(0, p) + '\t' + v.slice(p), p + 1); }   // plain Tab → insert a tab
       } else if ((e.ctrlKey || e.metaKey) && !e.altKey && /^[biBI]$/.test(e.key)) {
@@ -3859,7 +3865,15 @@
 
     // hover-help popover
     const help = $('tc-anno-help'); let helpHideT;
-    const showHelp = () => { clearTimeout(helpHideT); const r = help.getBoundingClientRect(); helpPop.style.left = Math.round(Math.max(8, Math.min(r.left, window.innerWidth - 380))) + 'px'; helpPop.style.top = Math.round(r.bottom + 6) + 'px'; helpPop.classList.add('on'); };
+    const showHelp = () => {
+      clearTimeout(helpHideT); helpPop.classList.add('on');
+      const r = help.getBoundingClientRect(), ph = helpPop.offsetHeight, pw = helpPop.offsetWidth;
+      const left = Math.max(8, Math.min(r.left, window.innerWidth - pw - 8));
+      let top = r.bottom + 6;
+      if (top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 6);   // flip above the button if it would overflow the bottom
+      if (top < 8) top = 8;
+      helpPop.style.left = Math.round(left) + 'px'; helpPop.style.top = Math.round(top) + 'px';
+    };
     const hideHelp = () => { helpHideT = setTimeout(() => helpPop.classList.remove('on'), 180); };
     help.addEventListener('mouseenter', showHelp); help.addEventListener('focus', showHelp);
     help.addEventListener('mouseleave', hideHelp); help.addEventListener('blur', hideHelp);
@@ -3873,25 +3887,24 @@
       hist.innerHTML = '<div class="tc-hist-view"><div class="tc-hist-msg">Select a version to display it.</div></div><div class="tc-hist-list"></div>';
       const list = hist.querySelector('.tc-hist-list'), vw = hist.querySelector('.tc-hist-view');
       versions.forEach((v, idx) => {
-        const card = document.createElement('button'); card.type = 'button'; card.className = 'tc-hist-card';
+        const card = document.createElement('div'); card.className = 'tc-hist-card'; card.tabIndex = 0;
         card.innerHTML = (v.avatar ? `<img class="tc-hist-av" src="${_annoEsc(v.avatar)}" alt="">` : '<span class="tc-hist-av tc-hist-av0"></span>') +
           `<span class="tc-hist-meta"><span class="tc-hist-editor">${_annoEsc(v.editor)}</span><span class="tc-hist-date">${_annoEsc(v.date)}</span>` +
           (idx === 0 ? '<span class="tc-hist-cl tc-hist-cur">current</span>' : '') +
-          (v.changelog ? `<span class="tc-hist-cl tc-hist-clmsg" title="${_annoEsc(v.changelog)}">“${_annoEsc(v.changelog)}”</span>` : '') + '</span>';
-        card.onclick = async () => {
+          (v.changelog ? `<span class="tc-hist-cl tc-hist-clmsg" title="${_annoEsc(v.changelog)}">“${_annoEsc(v.changelog)}”</span>` : '') + '</span>' +
+          (idx === 0 ? '' : '<button type="button" class="tc-hist-revert" title="Revert the editor to this version (reconstructed from the rendered version — review before submitting)">↶</button>');
+        card.onclick = async (e) => {
+          if (e.target.closest('.tc-hist-revert')) return;
           list.querySelectorAll('.tc-hist-card').forEach(c => c.classList.remove('on')); card.classList.add('on');
           vw.innerHTML = '<div class="tc-hist-msg">Loading…</div>';
-          try {
-            const vhtml = await annoFetchVersion(v.url);
-            vw.innerHTML = '<div class="tc-hist-bar"><button type="button" class="tc-hist-use">↧ Replace editor with this version</button>' +
-              `<span class="tc-hist-vmeta">${_annoEsc(v.editor)} · ${_annoEsc(v.date)}${idx === 0 ? ' · current' : ''}${v.changelog ? ' · “' + _annoEsc(v.changelog) + '”' : ''}</span></div>` +
-              '<div class="tc-anno-rendered">' + vhtml + '</div>';
-            vw.querySelector('.tc-hist-use').onclick = () => {
-              if (!confirm('Replace the current annotation with this version? (reconstructed from the rendered version — review before submitting)')) return;
-              annoSet(ta, annoHtmlToMb(vhtml)); md.value = annoToMd(ta.value);
-              view = 'edit'; apply(); activeEl().focus(); status('loaded version — review before submitting', 4000);
-            };
-          } catch { vw.innerHTML = '<div class="tc-hist-msg">Failed to load this version.</div>'; }
+          try { vw.innerHTML = '<div class="tc-anno-rendered">' + await annoFetchVersion(v.url) + '</div>'; }
+          catch { vw.innerHTML = '<div class="tc-hist-msg">Failed to load this version.</div>'; }
+        };
+        const revert = card.querySelector('.tc-hist-revert');
+        if (revert) revert.onclick = async (e) => {
+          e.stopPropagation(); revert.disabled = true;
+          try { const mb = annoHtmlToMb(await annoFetchVersion(v.url)); annoSet(ta, mb); md.value = annoToMd(ta.value); view = 'edit'; apply(); activeEl().focus(); status('reverted to ' + v.date + ' — review before submitting', 4000); }
+          catch { status('failed to load that version', 3000); } finally { revert.disabled = false; }
         };
         list.appendChild(card);
       });

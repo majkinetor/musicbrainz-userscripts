@@ -106,6 +106,17 @@ check('preview off → editor still there', (await vis('#tc-anno-mdinput')) && !
 await page.hover('#tc-anno-help');
 await page.waitForTimeout(150);
 check('help popover appears on hover', await vis('#tc-anno-help-pop'));
+check('help popover stays on screen', await page.evaluate(() => { const r = document.getElementById('tc-anno-help-pop').getBoundingClientRect(); return r.bottom <= window.innerHeight + 1 && r.top >= -1; }));
+await page.mouse.move(10, 10); await page.waitForTimeout(250);
+
+// 3c. Tab on a selection cycles bullet → numbered (real keystrokes)
+await page.fill('#tc-anno-mdinput', 'one\ntwo');
+await page.click('#tc-anno-mdinput');
+await page.$eval('#tc-anno-mdinput', e => e.setSelectionRange(0, 7));
+await page.keyboard.press('Tab');
+check('Tab on selection → bullet list', (await page.inputValue('#tc-anno-mdinput')) === '- one\n- two', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
+await page.keyboard.press('Tab');
+check('Tab again → numbered list', (await page.inputValue('#tc-anno-mdinput')) === '1. one\n1. two', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
 
 // 4. Bullet continuation on Enter (real keystrokes)
 await page.fill('#tc-anno-mdinput', '- one');
