@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.9
+// @version      2026.6.9.10
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -526,10 +526,14 @@ container.innerHTML = `
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
-  <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add" style="${iconBtn}">+</span>
-  <span id="mb-openall-btn"     class="pc-icon-btn" title="Open found platform pages not yet in MB (non-circled) in new tabs" style="${iconBtn}">↗</span>
-  <span id="mb-token-setup-btn" class="pc-icon-btn" title="Provider toggles"                                  style="${iconBtn}">⚙</span>
-  <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log"                                    style="${iconBtn}">ⓘ</span>
+  <div style="display: flex; align-items: center; gap: 6px;">
+    <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add" style="${iconBtn}">+</span>
+    <span id="mb-openall-btn"     class="pc-icon-btn" title="Open found platform pages not yet in MB (non-circled) in new tabs" style="${iconBtn}">↗</span>
+  </div>
+  <div style="display: flex; align-items: center; gap: 6px;">
+    <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log" style="${iconBtn} font-size: 11px;">log</span>
+    <span id="mb-token-setup-btn" class="pc-icon-btn" title="Settings" style="${iconBtn}">⚙</span>
+  </div>
 </div>
 `;
 
@@ -583,7 +587,7 @@ logModal.innerHTML = `
 // Provider toggles
 const providerModal = document.createElement('div');
 providerModal.id = 'mb-provider-modal-overlay';
-providerModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 100000; font-family: sans-serif;';
+providerModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 100000; font-family: sans-serif;';
 providerModal.innerHTML = `
 <div id="mb-provider-modal-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: #FFF; padding: 24px; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid #DDD;">
   <div style="display: flex; align-items: baseline; gap: 8px; border-bottom: 1px solid #EEE; padding-bottom: 10px;">
@@ -594,9 +598,9 @@ providerModal.innerHTML = `
   <p style="font-size: 13px; color: #555; margin: 10px 0 16px 0;">Toggle which services to query. All results come from public endpoints — no API keys required.</p>
   <div id="mb-provider-list" style="margin-bottom: 14px;">
   ${PROVIDER_ORDER.map(p => `
-    <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; margin-bottom: 4px; font-size: 13px; padding: 6px 8px; border-radius: 4px; background: #FAFAFA; border: 1px solid transparent; cursor: grab; user-select: none;">
+    <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; margin-bottom: 2px; font-size: 13px; padding: 2px 8px; border-radius: 4px; background: #FAFAFA; border: 1px solid transparent; cursor: grab; user-select: none;">
       <span class="pc-prov-grip" style="color: #BBB; font-size: 14px; margin-right: 8px; letter-spacing: -2px;" title="Drag to reorder">⋮⋮</span>
-      <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 10px 0 0; width: 16px; height: 16px;">
+      <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 10px 0 0; width: 15px; height: 15px;">
       <span style="font-weight: 500; flex-grow: 1;">${PROVIDER_NAME[p]}</span>
     </div>`).join('')}
   </div>
@@ -632,8 +636,7 @@ providerModal.innerHTML = `
     <button id="mb-bp-logout" style="display: none; padding: 5px 12px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 6px;">Sign out</button>
   </div>
   <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
-    <button id="mb-provider-cancel-btn" style="padding: 8px 16px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">Cancel</button>
-    <button id="mb-provider-save-btn" style="padding: 8px 16px; background: #1DB954; border: none; border-radius: 4px; font-size: 13px; color: #FFF; cursor: pointer;">Save</button>
+    <button id="mb-provider-close-btn" style="padding: 8px 16px; background: #1DB954; border: none; border-radius: 4px; font-size: 13px; color: #FFF; cursor: pointer;">Close</button>
   </div>
 </div>`;
 
@@ -671,6 +674,15 @@ container.classList.add(GM_getValue('pc:mb-marker', 'circle') === 'glow' ? 'pc-m
 {
     let dragged = null;
     const list = providerModal.querySelector('#mb-provider-list');
+    // Persist the modal's current row order and reorder the sidebar rows LIVE —
+    // no page reload (#175). Moving the (display:contents) row divs reorders
+    // their cells in the grid; row-mb + the separator stay pinned at the top.
+    const commitProviderOrder = () => {
+        const order = [...list.querySelectorAll('.pc-prov-row')].map(r => r.dataset.provider);
+        GM_setValue('pc:provider-order', JSON.stringify(order));
+        const rowsContainer = container.querySelector('.pc-rows');
+        if (rowsContainer) order.forEach(p => { if (providerRows[p]) rowsContainer.appendChild(providerRows[p]); });
+    };
     for (const row of list.querySelectorAll('.pc-prov-row')) {
         row.addEventListener('dragstart', e => {
             dragged = row;
@@ -704,6 +716,7 @@ container.classList.add(GM_getValue('pc:mb-marker', 'circle') === 'glow' ? 'pc-m
             const rect = row.getBoundingClientRect();
             const after = e.clientY > rect.top + rect.height / 2;
             list.insertBefore(dragged, after ? row.nextSibling : row);
+            commitProviderOrder();
         });
     }
 }
@@ -819,44 +832,36 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     bpRefreshSetupUI();
     pcOpenModal(providerModal, provCardEl(), 440, false);
 });
-document.getElementById('mb-provider-cancel-btn').addEventListener('click', closeAllModals);
-document.getElementById('mb-provider-save-btn').addEventListener('click', () => {
-    PROVIDER_ORDER.forEach(p => {
-        const checked = document.getElementById(`mb-toggle-${p}`).checked;
-        GM_setValue(`prov_${p}`, checked);
-        if (providerRows[p]) providerRows[p].style.display = checked ? '' : 'none';   // '' → CSS grid/flex layout applies
+document.getElementById('mb-provider-close-btn').addEventListener('click', closeAllModals);
+// Real-time config (#175): each control applies + persists the instant it
+// changes — no Save button, no reload, and the sidebar updates live behind the
+// (now backdrop-free) settings card.
+PROVIDER_ORDER.forEach(p => {
+    document.getElementById(`mb-toggle-${p}`).addEventListener('change', e => {
+        GM_setValue(`prov_${p}`, e.target.checked);
+        if (providerRows[p]) providerRows[p].style.display = e.target.checked ? '' : 'none';
     });
-    // "Show platform icons" — persist + apply live (no reload needed)
-    const showIcons = document.getElementById('mb-show-icons').checked;
-    GM_setValue('pc:show-icons', showIcons);
-    container.classList.toggle('pc-icons-mode', showIcons);
-    // "Show platform names" — persist + apply live
-    const showNames = document.getElementById('mb-show-names').checked;
-    GM_setValue('pc:show-names', showNames);
-    container.classList.toggle('pc-no-names', !showNames);
-    // "Layout" — 1-row aligned grid vs 2-row stacked
+});
+document.getElementById('mb-show-icons').addEventListener('change', e => {
+    GM_setValue('pc:show-icons', e.target.checked);
+    container.classList.toggle('pc-icons-mode', e.target.checked);
+});
+document.getElementById('mb-show-names').addEventListener('change', e => {
+    GM_setValue('pc:show-names', e.target.checked);
+    container.classList.toggle('pc-no-names', !e.target.checked);
+});
+providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => r.addEventListener('change', () => {
     const layout = (providerModal.querySelector('input[name="mb-layout"]:checked') || {}).value || '1row';
     GM_setValue('pc:layout', layout);
     container.classList.toggle('pc-layout-1row', layout !== '2row');
     container.classList.toggle('pc-layout-2row', layout === '2row');
-    // "MB marker" — circle vs glow
+}));
+providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => r.addEventListener('change', () => {
     const marker = (providerModal.querySelector('input[name="mb-marker"]:checked') || {}).value || 'circle';
     GM_setValue('pc:mb-marker', marker);
     container.classList.toggle('pc-mark-glow', marker === 'glow');
     container.classList.toggle('pc-mark-circle', marker !== 'glow');
-    // Persist provider order from the modal's current row sequence. If the
-    // order changed, reload — the sidebar's row container was rendered at
-    // script init with the old order, and re-ordering in place would need
-    // careful DOM surgery for not much gain.
-    const newOrder = [...providerModal.querySelectorAll('.pc-prov-row')].map(r => r.dataset.provider);
-    const sameOrder = newOrder.length === PROVIDER_ORDER.length && newOrder.every((v, i) => v === PROVIDER_ORDER[i]);
-    if (!sameOrder) {
-        GM_setValue('pc:provider-order', JSON.stringify(newOrder));
-        location.reload();
-        return;
-    }
-    providerModal.style.display = 'none';
-});
+}));
 document.getElementById('mb-modal-copy-btn').addEventListener('click', async function () {
     // Firefox throws NS_ERROR_NOT_INITIALIZED from clipboard.writeText when
     // the document isn't focused. Fall back to a textarea + execCommand on
