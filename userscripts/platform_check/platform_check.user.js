@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.15
+// @version      2026.6.9.16
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -12,7 +12,6 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
-// @grant        GM_cookie
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
 // @connect      query.wikidata.org
@@ -894,7 +893,7 @@ function appendLog(platform, msg, kind = 'info') {
 appendLog('System', `Platform Check v${(typeof GM_info !== 'undefined' && GM_info.script?.version) || '?'} — startup`);
 
 // ─── GM_xmlhttpRequest wrapper that returns a Promise ──────────────────────
-function gmGet(url, { responseType, headers, timeout = 15000 } = {}) {
+function gmGet(url, { responseType, headers, timeout = 15000, anonymous } = {}) {
     return new Promise((resolve) => {
         const t0 = Date.now();
         const opts = {
@@ -911,28 +910,31 @@ function gmGet(url, { responseType, headers, timeout = 15000 } = {}) {
             timeout,
             onload(res) {
                 const ms = Date.now() - t0;
-                resolve({ ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', ms });
+                resolve({ ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', responseHeaders: res.responseHeaders || '', ms });
             },
             onerror(err)  { resolve({ ok: false, status: 0, finalUrl: url, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }); },
             ontimeout()   { resolve({ ok: false, status: 0, finalUrl: url, responseText: '', error: 'timeout', ms: Date.now() - t0 }); },
         };
         if (responseType) opts.responseType = responseType;
+        if (anonymous) opts.anonymous = true;   // omit the browser's ambient cookies
         GM_xmlhttpRequest(opts);
     });
 }
 
 // POST counterpart of gmGet, used for the Tidal client-credentials token grant.
-function gmPost(url, data, { headers, timeout = 15000 } = {}) {
+function gmPost(url, data, { headers, timeout = 15000, anonymous } = {}) {
     return new Promise((resolve) => {
         const t0 = Date.now();
-        GM_xmlhttpRequest({
+        const opts = {
             method: 'POST', url, data,
             headers: { 'Accept-Language': 'en-US,en;q=0.9', ...headers },
             timeout,
-            onload(res)  { resolve({ ok: res.status >= 200 && res.status < 400, status: res.status, responseText: res.responseText || '', ms: Date.now() - t0 }); },
+            onload(res)  { resolve({ ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', responseHeaders: res.responseHeaders || '', ms: Date.now() - t0 }); },
             onerror(err) { resolve({ ok: false, status: 0, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }); },
             ontimeout()  { resolve({ ok: false, status: 0, responseText: '', error: 'timeout', ms: Date.now() - t0 }); },
-        });
+        };
+        if (anonymous) opts.anonymous = true;
+        GM_xmlhttpRequest(opts);
     });
 }
 
@@ -973,60 +975,25 @@ const BEATPORT = {
     origin:   'https://api.beatport.com',
     store:    'mbtools:beatport',
 };
-// Beatport's API runs Django CSRF protection that engages when the browser's
-// existing Beatport session cookie rides along — and GM_xmlhttpRequest shares
-// the browser cookie jar, so any lingering beatport.com session (from a prior
-// login on this browser, even if the user doesn't feel "logged in") triggers
-// it. The secure POST is then rejected unless three things line up:
-//   1. Origin must be a trusted origin. Django always trusts a request's OWN
-//      origin, so we send https://api.beatport.com (a foreign origin like
-//      www.beatport.com is NOT in the API's trusted set).
-//   2. Referer must likewise be on the trusted host.
-//   3. The csrftoken cookie value must be echoed back in the X-CSRFToken header.
-// (1)+(2) are static; (3) is read at call time via bpCsrfToken().
+// Beatport's API runs Django CSRF protection that engages whenever a valid
+// beatport.com session cookie rides along. GM_xmlhttpRequest shares the browser
+// cookie jar, so any lingering beatport.com session (from a prior login on this
+// browser) makes Django session-authenticate the request and then demand a CSRF
+// token it can't supply — failing the login. Rather than read/echo that cookie
+// (GM_cookie is domain-restricted to the page origin on some managers and can't
+// see beatport.com at all), the login flow runs the requests `anonymous` (no
+// ambient cookies) and threads the fresh session it creates itself — so the
+// outcome never depends on the browser's existing Beatport state.
+// Static origin/referer still need to be the API's OWN origin (Django always
+// trusts a request's own origin; www.beatport.com is NOT in its trusted set).
 const bpHeaders = () => ({ Referer: BEATPORT.origin + '/', Origin: BEATPORT.origin });
 
-// Read Beatport's `csrftoken` cookie so we can echo it in the X-CSRFToken
-// header (item 3 above). The cookie lives on beatport.com — not our page's
-// origin — so GM_cookie is required to read it cross-site. Returns '' when
-// there's no cookie (fresh browser never logged into Beatport → no session
-// cookie → Django doesn't enforce CSRF anyway, so the header isn't needed).
-function bpCookieList(query) {
-    return new Promise((resolve) => {
-        try {
-            const gc = (typeof GM_cookie !== 'undefined' && GM_cookie) ||
-                       (typeof GM !== 'undefined' && GM && GM.cookie) || null;
-            if (!gc || typeof gc.list !== 'function') return resolve(null); // null = GM_cookie unavailable
-            const done = (cookies, err) => resolve((!err && Array.isArray(cookies)) ? cookies : []);
-            const ret = gc.list(query, done);
-            if (ret && typeof ret.then === 'function') ret.then(cs => done(cs)).catch(() => resolve([]));
-        } catch { resolve([]); }
-    });
-}
-// GM_cookie.list filtering differs across managers (the `{url, name}` form can
-// silently return nothing even when the cookie exists), so try progressively
-// broader queries and pick the csrftoken ourselves. Logs the cookie names it
-// actually sees so a failure is diagnosable.
-async function bpCsrfToken() {
-    const queries = [{ url: 'https://api.beatport.com/' }, { domain: 'api.beatport.com' }, { domain: 'beatport.com' }, {}];
-    const seen = new Set();
-    let gmAvailable = false;
-    for (const q of queries) {
-        const cookies = await bpCookieList(q);
-        if (cookies === null) break;            // GM_cookie not available at all
-        gmAvailable = true;
-        for (const c of cookies) {
-            seen.add(`${c.name}@${c.domain}`);
-            if (c.name === 'csrftoken' && c.value) {
-                appendLog('Beatport', `csrftoken found in cookie store (domain ${c.domain})`);
-                return c.value;
-            }
-        }
-    }
-    appendLog('Beatport', gmAvailable
-        ? `no csrftoken in cookie store. Cookies seen: ${seen.size ? [...seen].join(', ') : '(none)'}`
-        : 'GM_cookie unavailable — cannot read csrftoken', 'warn');
-    return '';
+// Pull a cookie value out of a raw GM responseHeaders string. GM_xmlhttpRequest
+// (unlike page fetch) exposes Set-Cookie, so on an `anonymous` request we can
+// capture the session it just minted and pass it on explicitly.
+function bpCookieFromHeaders(rawHeaders, name) {
+    const m = (rawHeaders || '').match(new RegExp(`set-cookie:\\s*${name}=([^;\\r\\n]+)`, 'i'));
+    return m ? m[1].trim() : '';
 }
 const bpRead     = () => { try { return JSON.parse(localStorage.getItem(BEATPORT.store) || 'null'); } catch { return null; } };
 const bpWrite    = t  => { try { t ? localStorage.setItem(BEATPORT.store, JSON.stringify(t)) : localStorage.removeItem(BEATPORT.store); } catch {} };
@@ -1035,28 +1002,34 @@ const bpB64url   = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).repl
 async function bpPkce() { const v = bpB64url(crypto.getRandomValues(new Uint8Array(48))); const c = bpB64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v))); return { v, c }; }
 
 // Full login → token. Returns { ok } or { ok:false, error }. Used by PC's setup UI.
+// Runs every step `anonymous` (no ambient browser cookies) and threads the
+// session it mints itself, so a lingering beatport.com session in the browser
+// can't trigger Django's CSRF check (see the bpHeaders note above).
 async function beatportLogin(username, password) {
-    const gmCookieAvail = !!((typeof GM_cookie !== 'undefined' && GM_cookie) || (typeof GM !== 'undefined' && GM && GM.cookie));
-    const csrf = await bpCsrfToken();
-    appendLog('Beatport', `login start — GM_cookie ${gmCookieAvail ? 'available' : 'NOT available (grant/manager missing)'}; csrftoken ${csrf ? `read (${csrf.length} chars), sending X-CSRFToken` : 'NOT found — no token header'}`, csrf ? 'info' : 'warn');
-    const lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { headers: { 'Content-Type': 'application/json', ...bpHeaders(), ...(csrf ? { 'X-CSRFToken': csrf } : {}) } });
+    const lr = await gmPost(`${BEATPORT.api}/auth/login/`, JSON.stringify({ username, password }), { anonymous: true, headers: { 'Content-Type': 'application/json', ...bpHeaders() } });
     if (!lr.ok) {
         let m = 'incorrect username or password';
         try { const j = JSON.parse(lr.responseText); m = (typeof j === 'string' ? j : j.detail) || m; } catch {}
         appendLog('Beatport', `login POST rejected — HTTP ${lr.status}: ${m}`, 'error');
         return { ok: false, error: m };
     }
-    appendLog('Beatport', `login POST ok (HTTP ${lr.status}) — requesting authorization code…`);
+    // Capture the fresh session minted by the login (anonymous → not stored in
+    // the jar, so we must read it from the response and pass it on explicitly).
+    const sessionid = bpCookieFromHeaders(lr.responseHeaders, 'sessionid');
+    const csrftoken = bpCookieFromHeaders(lr.responseHeaders, 'csrftoken');
+    const cookie = [sessionid && `sessionid=${sessionid}`, csrftoken && `csrftoken=${csrftoken}`].filter(Boolean).join('; ');
+    appendLog('Beatport', `login ok (HTTP ${lr.status}); session ${sessionid ? 'captured' : 'NOT in response headers'} — requesting authorization code…`, sessionid ? 'info' : 'warn');
+
     const { v, c } = await bpPkce();
     const au = `${BEATPORT.api}/auth/o/authorize/?response_type=code&client_id=${BEATPORT.clientId}&redirect_uri=${encodeURIComponent(BEATPORT.redirect)}&code_challenge=${c}&code_challenge_method=S256`;
-    const ar = await gmGet(au, { headers: bpHeaders() });   // GM follows the 302 to the post-message page; the code lands in finalUrl
+    const ar = await gmGet(au, { anonymous: true, headers: { ...bpHeaders(), ...(cookie ? { Cookie: cookie } : {}) } });
     const code = ((ar.finalUrl || '').match(/[?&#]code=([^&]+)/) || [])[1];
     if (!code) {
         appendLog('Beatport', `authorize step returned no code — HTTP ${ar.status}, finalUrl ${ar.finalUrl ? `=${ar.finalUrl.slice(0, 80)}` : 'missing'}`, 'error');
         return { ok: false, error: 'no authorization code returned' };
     }
     appendLog('Beatport', 'authorization code received — exchanging for token…');
-    const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: BEATPORT.redirect, client_id: BEATPORT.clientId, code_verifier: v }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
+    const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: BEATPORT.redirect, client_id: BEATPORT.clientId, code_verifier: v }).toString(), { anonymous: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
     let j; try { j = JSON.parse(tr.responseText); } catch { appendLog('Beatport', `token exchange — unparseable response (HTTP ${tr.status})`, 'error'); return { ok: false, error: 'token response parse failed' }; }
     if (!j.access_token) { const e = j.error_description || j.error || 'no access token'; appendLog('Beatport', `token exchange failed — ${e}`, 'error'); return { ok: false, error: e }; }
     bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
@@ -1068,7 +1041,7 @@ async function beatportToken() {
     const t = bpRead();
     if (!t || !t.refresh_token) return null;
     if (t.access_token && Date.now() < t.exp - 60000) return t.access_token;
-    const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: BEATPORT.clientId }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
+    const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: BEATPORT.clientId }).toString(), { anonymous: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
     let j; try { j = JSON.parse(tr.responseText); } catch { j = {}; }
     if (!j.access_token) { appendLog('Beatport', 'token refresh failed — log in again in ⚙ setup', 'warn'); return null; }
     bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token || t.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
