@@ -20,7 +20,7 @@ await page.waitForSelector('#tc-anno-bar', { timeout: 20000 });
 let pass = 0, fail = 0;
 const check = (l, ok, extra) => { if (ok) { pass++; console.log('  ok  ', l); } else { fail++; console.log('  FAIL', l, extra ?? ''); } };
 
-check('5 buttons incl. History on an edit page', (await page.$$eval('#tc-anno-bar button', b => b.length)) === 5);
+check('6 buttons incl. History on an edit page', (await page.$$eval('#tc-anno-bar button', b => b.length)) === 6);
 check('History button present', await page.$('#tc-anno-history-btn') !== null);
 
 await page.click('#tc-anno-history-btn');
