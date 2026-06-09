@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.001600
+// @version      2026.6.9.001700
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3311,6 +3311,14 @@
     #tc-anno-bar button.tc-anno-icon{padding:4px 8px;font-size:13px;line-height:1;font-weight:700}
     #tc-anno-bar .tc-mk-ico{width:22px;height:14px;display:block}
     #tc-anno-bar .tc-mk-mb{width:17px;height:17px;border-radius:3px}
+    #tc-anno-bar .tc-mk-sq{width:15px;height:15px}
+    /* maximize: the editor fills the viewport over a dimmed backdrop (Esc or the button restores it) */
+    body.tc-anno-max-open{overflow:hidden}
+    body.tc-anno-max-open::before{content:'';position:fixed;inset:0;background:rgba(30,20,55,.42);z-index:10000}
+    body.tc-ri-on #information #tc-anno-wrap.tc-anno-max{position:fixed;inset:14px;z-index:10001;display:flex;flex-direction:column;max-width:none;box-shadow:0 14px 50px rgba(35,20,70,.45)}
+    #tc-anno-wrap.tc-anno-max #tc-anno-body{flex:1 1 auto;min-height:0}
+    body.tc-ri-on #information fieldset.information #tc-anno-wrap.tc-anno-max textarea,#tc-anno-wrap.tc-anno-max #tc-anno-preview{min-height:0;height:auto}
+    #tc-anno-wrap.tc-anno-max #tc-anno-history{flex:1 1 auto;min-height:0;max-height:none}
     #tc-anno-bar #tc-anno-help{width:25px;justify-content:center;color:#7a5fc0}
     #tc-anno-bar.tc-anno-prev-on #tc-anno-preview-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
     #tc-anno-bar.tc-anno-hist-on #tc-anno-history-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
@@ -3756,6 +3764,8 @@
   // saving is always correct) — Markdown edits are converted into it live. Mounted ONCE per #annotation node
   // (the 500ms applyReleaseInfo poll must not rebuild it — that was the flicker).
   const ANNO_MD_LOGO = '<svg class="tc-mk-ico" viewBox="0 0 208 128" aria-hidden="true"><rect width="198" height="118" x="5" y="5" rx="10" fill="none" stroke="currentColor" stroke-width="10"/><path fill="currentColor" d="M30 98V30h20l20 25 20-25h20v68H110V59L90 84 70 59v39zm125 0l-30-33h20V30h20v35h20z"/></svg>';
+  const ANNO_MAX_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+  const ANNO_MIN_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
   const ANNO_MB_LOGO = '<img class="tc-mk-ico tc-mk-mb" alt="MB" src="https://images.dwncdn.net/images/t_app-icon-s/p/c5c33b93-7347-46e3-a512-3decccb33d78/1678792153/2170_4-166444-imgingest-4209519771082272608.png">';
   const ANNO_HELP_HTML =
     '<b>Markdown</b> <span class="tc-help-dim">(converted to MusicBrainz markup on save)</span>' +
@@ -3792,6 +3802,7 @@
       '<button type="button" id="tc-anno-md" class="tc-anno-icon" title="">' + ANNO_MD_LOGO + '</button>' +
       '<button type="button" id="tc-anno-help" class="tc-anno-icon" title="Annotation syntax help" aria-label="Syntax help">?</button>' +
       '<span class="tc-anno-sp tc-anno-sp2"></span>' +
+      '<button type="button" id="tc-anno-max" class="tc-anno-icon" title="Maximize the editor (Esc to restore)" aria-label="Maximize">' + ANNO_MAX_ICON + '</button>' +
       (mbid ? '<button type="button" id="tc-anno-history-btn" title="Browse this annotation\'s previous versions and display any one">🕘 History</button>' : '');
     const body = document.createElement('div'); body.id = 'tc-anno-body';
     const editPane = document.createElement('div'); editPane.id = 'tc-anno-edit';
@@ -3872,6 +3883,10 @@
     $('tc-anno-preview-btn').onclick = () => { previewing = !previewing; apply(); };
     $('tc-anno-md').onclick = () => { if (surface === 'md') syncMdToField(); surface = surface === 'md' ? 'raw' : 'md'; if (surface === 'md') md.value = annoToMd(ta.value); apply(); activeEl().focus(); };
     $('tc-anno-clear').onclick = () => { md.value = ''; annoSet(ta, ''); renderPreview(); };
+    // maximize / restore the editor (fills the viewport)
+    const setMax = on => { wrap.classList.toggle('tc-anno-max', on); document.body.classList.toggle('tc-anno-max-open', on); const b = $('tc-anno-max'); b.innerHTML = on ? ANNO_MIN_ICON : ANNO_MAX_ICON; b.title = on ? 'Restore the editor (Esc)' : 'Maximize the editor (Esc to restore)'; renderPreview(); };
+    $('tc-anno-max').onclick = () => setMax(!wrap.classList.contains('tc-anno-max'));
+    wrap.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('tc-anno-max')) { setMax(false); activeEl().focus(); } });
 
     // hover-help popover
     const help = $('tc-anno-help'); let helpHideT;

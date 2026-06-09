@@ -61,9 +61,10 @@ check('toolbar + Markdown surface + raw field all inside the box',
   await page.$eval('#tc-anno-wrap #tc-anno-bar', () => true).catch(() => false) &&
   await page.$eval('#tc-anno-body #tc-anno-edit > textarea#tc-anno-mdinput', () => true).catch(() => false) &&
   await page.$eval('#tc-anno-body #tc-anno-edit > textarea#annotation', () => true).catch(() => false));
-check('4 toolbar buttons (Preview, markup, help, Clear — no Resolve/History on add)', (await page.$$eval('#tc-anno-bar button', bs => bs.length)) === 4);
+check('5 toolbar buttons (Preview, Clear, markup, help, maximize — no Resolve/History on add)', (await page.$$eval('#tc-anno-bar button', bs => bs.length)) === 5);
 check('no Resolve-names button (auto now)', await page.$('#tc-anno-names') === null);
 check('help (?) button present', await page.$('#tc-anno-help') !== null);
+check('maximize button present', await page.$('#tc-anno-max') !== null);
 check('Markdown surface is the default (visible); raw field hidden', (await vis('#tc-anno-mdinput')) && !(await vis('#annotation')));
 check('markup toggle shows the Markdown logo (svg) in md mode', await page.$('#tc-anno-md .tc-mk-ico') !== null && !(await page.$('#tc-anno-md .tc-mk-mb')));
 check('Markdown surface is monospace', /mono/i.test(await page.$eval('#tc-anno-mdinput', e => getComputedStyle(e).fontFamily)));
@@ -133,6 +134,16 @@ await page.fill('#tc-anno-mdinput', 'make bold');
 await page.$eval('#tc-anno-mdinput', e => e.setSelectionRange(5, 9));   // select "bold"
 await page.keyboard.press('Control+b');
 check('Ctrl+B wraps selection with **', (await page.inputValue('#tc-anno-mdinput')) === 'make **bold**', JSON.stringify(await page.inputValue('#tc-anno-mdinput')));
+
+// 5b. Maximize fills the viewport; Esc restores
+await page.click('#tc-anno-max');
+await page.waitForTimeout(150);
+check('maximize → fixed full-viewport editor', await page.evaluate(() => { const w = document.getElementById('tc-anno-wrap'); return w.classList.contains('tc-anno-max') && getComputedStyle(w).position === 'fixed' && document.body.classList.contains('tc-anno-max-open'); }));
+const maxBox = await page.$eval('#tc-anno-wrap', e => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height }; });
+check('maximized editor is large', maxBox.w > 800 && maxBox.h > 500, JSON.stringify(maxBox));
+await page.click('#tc-anno-max');
+await page.waitForTimeout(150);
+check('clicking again restores', await page.evaluate(() => !document.getElementById('tc-anno-wrap').classList.contains('tc-anno-max')));
 
 // 6. Clear empties both surfaces + model
 await page.click('#tc-anno-clear');

@@ -47,5 +47,9 @@ await page.screenshot({ path: resolve(HERE, 'logs', 'shot-annotation-edit.png'),
 await page.click('#tc-anno-preview-btn');
 await page.waitForTimeout(300);
 await page.screenshot({ path: resolve(HERE, 'logs', 'shot-annotation-preview.png'), clip: await clip() });
-console.log('saved edit + preview shots');
+// maximized view (full viewport over a dimmed backdrop)
+await page.click('#tc-anno-max');
+await page.waitForTimeout(300);
+await page.screenshot({ path: resolve(HERE, 'logs', 'shot-annotation-max.png') });
+console.log('saved edit + preview + max shots');
 await ctx.close();
