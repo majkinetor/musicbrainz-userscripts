@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.14
+// @version      2026.6.9.15
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -991,17 +991,42 @@ const bpHeaders = () => ({ Referer: BEATPORT.origin + '/', Origin: BEATPORT.orig
 // origin — so GM_cookie is required to read it cross-site. Returns '' when
 // there's no cookie (fresh browser never logged into Beatport → no session
 // cookie → Django doesn't enforce CSRF anyway, so the header isn't needed).
-function bpCsrfToken() {
+function bpCookieList(query) {
     return new Promise((resolve) => {
         try {
             const gc = (typeof GM_cookie !== 'undefined' && GM_cookie) ||
                        (typeof GM !== 'undefined' && GM && GM.cookie) || null;
-            if (!gc || typeof gc.list !== 'function') return resolve('');
-            const done = (cookies, err) => resolve((!err && cookies && cookies[0] && cookies[0].value) || '');
-            const ret = gc.list({ url: 'https://api.beatport.com/', name: 'csrftoken' }, done);
-            if (ret && typeof ret.then === 'function') ret.then(cs => done(cs)).catch(() => resolve(''));
-        } catch { resolve(''); }
+            if (!gc || typeof gc.list !== 'function') return resolve(null); // null = GM_cookie unavailable
+            const done = (cookies, err) => resolve((!err && Array.isArray(cookies)) ? cookies : []);
+            const ret = gc.list(query, done);
+            if (ret && typeof ret.then === 'function') ret.then(cs => done(cs)).catch(() => resolve([]));
+        } catch { resolve([]); }
     });
+}
+// GM_cookie.list filtering differs across managers (the `{url, name}` form can
+// silently return nothing even when the cookie exists), so try progressively
+// broader queries and pick the csrftoken ourselves. Logs the cookie names it
+// actually sees so a failure is diagnosable.
+async function bpCsrfToken() {
+    const queries = [{ url: 'https://api.beatport.com/' }, { domain: 'api.beatport.com' }, { domain: 'beatport.com' }, {}];
+    const seen = new Set();
+    let gmAvailable = false;
+    for (const q of queries) {
+        const cookies = await bpCookieList(q);
+        if (cookies === null) break;            // GM_cookie not available at all
+        gmAvailable = true;
+        for (const c of cookies) {
+            seen.add(`${c.name}@${c.domain}`);
+            if (c.name === 'csrftoken' && c.value) {
+                appendLog('Beatport', `csrftoken found in cookie store (domain ${c.domain})`);
+                return c.value;
+            }
+        }
+    }
+    appendLog('Beatport', gmAvailable
+        ? `no csrftoken in cookie store. Cookies seen: ${seen.size ? [...seen].join(', ') : '(none)'}`
+        : 'GM_cookie unavailable — cannot read csrftoken', 'warn');
+    return '';
 }
 const bpRead     = () => { try { return JSON.parse(localStorage.getItem(BEATPORT.store) || 'null'); } catch { return null; } };
 const bpWrite    = t  => { try { t ? localStorage.setItem(BEATPORT.store, JSON.stringify(t)) : localStorage.removeItem(BEATPORT.store); } catch {} };
