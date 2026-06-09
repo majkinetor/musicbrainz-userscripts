@@ -28,6 +28,12 @@ await page.waitForSelector('#tc-anno-history .tc-hist-card', { timeout: 15000 })
 const rows = await page.$$eval('#tc-anno-history .tc-hist-card', rs => rs.map(r => r.textContent));
 check('version list loaded (>=2 versions)', rows.length >= 2, JSON.stringify(rows));
 check('rows show a date', /\d{4}-\d{2}-\d{2}/.test(rows[0] || ''), rows[0]);
+// while History is active, other toolbar buttons are inert — except History + maximize
+check('History active disables other buttons (except maximize)', await page.evaluate(() => {
+  const pe = id => getComputedStyle(document.getElementById(id)).pointerEvents;
+  return pe('tc-anno-preview-btn') === 'none' && pe('tc-anno-clear') === 'none' && pe('tc-anno-md') === 'none' && pe('tc-anno-help') === 'none'
+    && pe('tc-anno-max') !== 'none' && pe('tc-anno-history-btn') !== 'none';
+}));
 
 await page.click('#tc-anno-history .tc-hist-card');
 await page.waitForSelector('#tc-anno-history .tc-hist-view .tc-anno-rendered', { timeout: 15000 });
