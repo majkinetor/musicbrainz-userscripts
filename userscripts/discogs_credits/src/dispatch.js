@@ -5,7 +5,7 @@
 // deduplication against this session and against MB's existing rels.
 
 import { log }                  from './log.js';
-import { pageWindow, EQUIVALENCE_SETS } from './constants.js';
+import { pageWindow, EQUIVALENCE_SETS, SELECTORS } from './constants.js';
 import {
     mbThrottle,
     fetchMBEntity,
@@ -17,7 +17,7 @@ import {
     dispatchRelationship,
     buildAttributes,
 }                                       from './editor-state.js';
-import { buildEditNote }                from './edit-note.js';
+import { buildEditNote, combineEditNote } from './edit-note.js';
 import { ENTITY_TYPE_MAP }               from './data/entity-map.js';
 import { WORK_ONLY_ARTIST_RELS }         from './data/work-only-rels.js';
 import { _showBar, _setProgressPct }     from './progress-bar.js';
@@ -819,7 +819,11 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? '' : 's'}`
             : '';
         const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteDedupPart}, ${skipped} skipped, ${failed} failed`;
-        const note = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean));
+        const ourNote = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean));
+        // Preserve any note another script already wrote — append ours instead
+        // of overwriting (issue #174). Read the live textarea value as the base.
+        const existingNote = document.querySelector(SELECTORS.EditNote)?.value || '';
+        const note = combineEditNote(existingNote, ourNote);
         re.dispatch({ type: 'update-edit-note', editNote: note });
     } catch(e) { /* ignore */ }
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.9
+// @version      2026.6.9.180447
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3368,18 +3368,27 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
   // src/edit-note.js
   function buildEditNote(discogsUrl, opts, extraLines) {
     const s = GM_info.script;
-    const mbUrl = location.href.replace(/\/edit-relationships$/, "");
+    const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, "");
     const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
     const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
     const lines = [
       header,
       "",
       "Release URL: " + mbUrl,
-      "Discogs URL: " + discogsUrl
+      "Discogs URL: " + String(discogsUrl || "").split(/[?#]/)[0]
     ];
     if (opts) lines.push("Options: " + opts);
     if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
     return lines.join("\n");
+  }
+  function combineEditNote(existingNote, ourNote) {
+    const headerPrefix = GM_info.script.name + " v";
+    let base = String(existingNote || "");
+    const lines = base.split("\n");
+    const ourIdx = lines.findIndex((l) => l.startsWith(headerPrefix));
+    if (ourIdx !== -1) base = lines.slice(0, ourIdx).join("\n");
+    base = base.replace(/\s+$/, "");
+    return base ? base + "\n\n" + ourNote : ourNote;
   }
 
   // src/data/work-only-rels.js
@@ -3984,7 +3993,9 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const unresolvedLine = unresolvedCount > 0 ? `Unresolved: ${unresolvedCount} of ${totalEntities} entit${totalEntities === 1 ? "y" : "ies"} skipped in review` : null;
       const editNoteDedupPart = dedupedThisSession > 0 ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? "" : "s"}` : "";
       const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteDedupPart}, ${skipped} skipped, ${failed} failed`;
-      const note = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean));
+      const ourNote = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean));
+      const existingNote = document.querySelector(SELECTORS.EditNote)?.value || "";
+      const note = combineEditNote(existingNote, ourNote);
       re.dispatch({ type: "update-edit-note", editNote: note });
     } catch (e) {
     }
