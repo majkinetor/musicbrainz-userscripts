@@ -1,5 +1,18 @@
 # Apollo Editor Changelog
 
+## [2026.6.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.9)
+
+### Features
+
+1. Markdown in annotation ([#172](https://github.com/majkinetor/musicbrainz-userscripts/issues/172))
+1. Changing multiple artists on all tracks ([#158](https://github.com/majkinetor/musicbrainz-userscripts/issues/158))
+
+### Fixes
+
+1. Random alias displayed for [unknown] ([#171](https://github.com/majkinetor/musicbrainz-userscripts/issues/171))
+1. Open link edits are invisible in external links ([#169](https://github.com/majkinetor/musicbrainz-userscripts/issues/169))
+1. Release information tab modified despite setting being disabled ([#160](https://github.com/majkinetor/musicbrainz-userscripts/issues/160))
+
 ## [2026.6.7](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.7)
 
 ### Features

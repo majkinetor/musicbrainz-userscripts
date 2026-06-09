@@ -1,5 +1,13 @@
 # ISRC Scout Changelog
 
+## [2026.6.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.9)
+
+### Features
+
+1. Beatport API ([#168](https://github.com/majkinetor/musicbrainz-userscripts/issues/168))
+1. Support for Volumo ([#167](https://github.com/majkinetor/musicbrainz-userscripts/issues/167))
+1. Support for Tidal and Beatport ([#163](https://github.com/majkinetor/musicbrainz-userscripts/issues/163))
+
 ## [2026.6.7](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.7)
 
 ### Features
