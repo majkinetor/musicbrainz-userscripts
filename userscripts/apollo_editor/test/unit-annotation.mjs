@@ -26,6 +26,7 @@ const annoToMd   = new Function(`${extract('annoToMd')}; return annoToMd;`)();
 const annoContinueBullet = new Function(`${extract('annoContinueBullet')}; return annoContinueBullet;`)();
 const annoWrap   = new Function(`${extract('annoWrap')}; return annoWrap;`)();
 const annoListSelection = new Function(`${extract('annoListSelection')}; return annoListSelection;`)();
+const annoJoinBlock = new Function(`${extract('annoJoinBlock')}; return annoJoinBlock;`)();
 
 let pass = 0, fail = 0;
 const check = (label, got, mustInclude, mustExclude = []) => {
@@ -138,6 +139,20 @@ eq('Tab again: MB bullet → "a." (raw)', annoListSelection('    * one\n    * tw
 eq('Shift+Tab removes bullet markers', annoListSelection('- one\n- two', 0, 11, false, true).value, 'one\ntwo');
 eq('Shift+Tab removes numbered markers', annoListSelection('1. one\n2. two', 0, 13, false, true).value, 'one\ntwo');
 eq('Shift+Tab removes MB "a." markers (raw)', annoListSelection('    a. one\n    a. two', 0, 21, true, true).value, 'one\ntwo');
+
+console.log('\nannoJoinBlock (Join lines: selected lines / caret paragraph → one reflowed line):');
+const jq = (label, val, s, e, want, wantSel) => { const r = annoJoinBlock(val, s, e); eq(label, r.value, want); if (wantSel) eq(label + ' sel', JSON.stringify([r.selStart, r.selEnd]), JSON.stringify(wantSel)); };
+// a hard-wrapped paragraph selected whole → one line
+jq('join two selected lines', 'foo\nbar', 0, 7, 'foo bar', [0, 7]);
+jq('join collapses interior whitespace', 'foo   \n   bar', 0, 13, 'foo bar');
+jq('partial selection expands to whole lines', 'one\ntwo\nthree', 5, 9, 'one\ntwo three');
+// three Bandcamp-style credit lines selected → joined with single spaces, leading text preserved
+jq('join three lines', 'Bass – A\nDrums – B\nMixed – C', 0, 27, 'Bass – A Drums – B Mixed – C');
+// no selection → join just the paragraph at the caret, leaving neighbouring paragraphs intact
+jq('caret with no selection joins its paragraph only', '=== Head ===\n\nlong line one\nline two\nline three\n\nnext para', 20, 20, '=== Head ===\n\nlong line one line two line three\n\nnext para');
+jq('heading paragraph (one line) is unchanged', '=== Head ===\n\nbody', 2, 2, '=== Head ===\n\nbody');
+// selection that ends exactly at a line boundary must not swallow the following line
+jq('trailing-newline selection stays within its lines', 'a\nb\nc\nd', 0, 4, 'a b\nc\nd');
 
 console.log('\nannoWrap (Ctrl+B/I wrap selection or surround the word):');
 const wq = (label, val, s, e, mk, want) => { const r = annoWrap(val, s, e, mk); eq(label, r.value, want); };

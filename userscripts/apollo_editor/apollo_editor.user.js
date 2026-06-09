@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9
+// @version      2026.6.9.162350
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -452,7 +452,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.8.001633';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.9.162350';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -3786,6 +3786,24 @@
     }).join('\n');
     return { value: value.slice(0, s) + repl + value.slice(lineEnd), selStart: s, selEnd: s + repl.length };
   }
+  // "Join lines": collapse the selected lines — or, with no selection, the paragraph at the caret — into a
+  // single line, turning every interior newline into one space so hard-wrapped text (e.g. Bandcamp credits)
+  // reflows. Leaves blank-line paragraph boundaries as the natural edge of an empty selection. Pure → testable.
+  function annoJoinBlock(value, selStart, selEnd) {
+    let a, b;
+    if (selStart === selEnd) {   // no selection → expand to the run of non-blank lines around the caret
+      a = value.lastIndexOf('\n', selStart - 1) + 1;
+      while (a > 0) { const ps = value.lastIndexOf('\n', a - 2) + 1; if (!value.slice(ps, a - 1).trim()) break; a = ps; }
+      b = value.indexOf('\n', selEnd); if (b < 0) b = value.length;
+      while (b < value.length) { let ne = value.indexOf('\n', b + 1); if (ne < 0) ne = value.length; if (!value.slice(b + 1, ne).trim()) break; b = ne; }
+    } else {   // selection → expand to whole lines
+      a = value.lastIndexOf('\n', selStart - 1) + 1;
+      let e = selEnd; if (e > a && value[e - 1] === '\n') e--;
+      b = value.indexOf('\n', e); if (b < 0) b = value.length;
+    }
+    const joined = value.slice(a, b).replace(/[ \t]*\r?\n[ \t]*/g, ' ').replace(/[ \t]{2,}/g, ' ').replace(/^[ \t]+|[ \t]+$/g, '');
+    return { value: value.slice(0, a) + joined + value.slice(b), selStart: a, selEnd: a + joined.length };
+  }
 
   // Wrap #annotation in a bordered editor box (toolbar + a Markdown editing surface + the raw MB field + an
   // in-place preview). Markdown is the DEFAULT surface; the real #annotation field always holds MB markup (so
@@ -3793,6 +3811,8 @@
   // (the 500ms applyReleaseInfo poll must not rebuild it — that was the flicker).
   const ANNO_MD_LOGO = '<svg class="tc-mk-ico" viewBox="0 0 208 128" aria-hidden="true"><rect width="198" height="118" x="5" y="5" rx="10" fill="none" stroke="currentColor" stroke-width="10"/><path fill="currentColor" d="M30 98V30h20l20 25 20-25h20v68H110V59L90 84 70 59v39zm125 0l-30-33h20V30h20v35h20z"/></svg>';
   const ANNO_MAX_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+  // Join lines: two lines pulled together toward one (a downward merge between a top and bottom rule).
+  const ANNO_JOIN_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16"/><path d="M4 19h16"/><path d="M8 9l4 4 4-4"/></svg>';
   const ANNO_MIN_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
   const ANNO_MB_LOGO = '<img class="tc-mk-ico tc-mk-mb" alt="MB" src="https://images.dwncdn.net/images/t_app-icon-s/p/c5c33b93-7347-46e3-a512-3decccb33d78/1678792153/2170_4-166444-imgingest-4209519771082272608.png">';
   const ANNO_HELP_HTML =
@@ -3827,6 +3847,7 @@
       '<button type="button" id="tc-anno-preview-btn" title="Toggle a live split preview — editor on the left, rendered annotation on the right">👁 Preview</button>' +
       '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
       '<span class="tc-anno-sp tc-anno-sp1"></span>' +
+      '<button type="button" id="tc-anno-join" class="tc-anno-icon" title="Join lines — merge the selected lines into one, dropping the hard line breaks so the text reflows. With nothing selected, joins the paragraph at the cursor." aria-label="Join lines">' + ANNO_JOIN_ICON + '</button>' +
       '<button type="button" id="tc-anno-md" class="tc-anno-icon" title="">' + ANNO_MD_LOGO + '</button>' +
       '<button type="button" id="tc-anno-help" class="tc-anno-icon" title="Annotation syntax help" aria-label="Syntax help">?</button>' +
       '<span class="tc-anno-sp tc-anno-sp2"></span>' +
@@ -3930,6 +3951,8 @@
     $('tc-anno-preview-btn').onclick = () => { previewing = !previewing; apply(); };
     $('tc-anno-md').onclick = () => { if (surface === 'md') syncMdToField(); surface = surface === 'md' ? 'raw' : 'md'; if (surface === 'md') md.value = annoToMd(ta.value); apply(); activeEl().focus(); };
     $('tc-anno-clear').onclick = () => { md.value = ''; annoSet(ta, ''); renderPreview(); };
+    // Join lines: reflow the selected lines (or the caret's paragraph) into one — works on whichever surface is active
+    $('tc-anno-join').onclick = () => { const el = activeEl(); const r = annoJoinBlock(el.value, el.selectionStart, el.selectionEnd); editTa(el, r.value, r.selStart, r.selEnd); el.focus(); };
     // maximize / restore the editor (fills the viewport)
     const setMax = on => { wrap.classList.toggle('tc-anno-max', on); document.body.classList.toggle('tc-anno-max-open', on); if (on) wrap.style.height = ''; else if (wrap._tcFill) wrap._tcFill(); const b = $('tc-anno-max'); b.innerHTML = on ? ANNO_MIN_ICON : ANNO_MAX_ICON; b.title = on ? 'Restore the editor (Esc)' : 'Maximize the editor (Esc to restore)'; renderPreview(); };
     $('tc-anno-max').onclick = () => setMax(!wrap.classList.contains('tc-anno-max'));
@@ -4174,6 +4197,7 @@
       _riPrevOn = true;
     } else {
       relocateLinks(false);
+      unmountAnnotation();   // Apollo off → tear the annotation editor down too, so the field reverts to native (the toolbar must not linger)
       document.body.classList.remove('tc-ri-on');
       document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));
       if (_riPrevOn) { _riPrevOn = false; resetDocBubbles(); }   // one-shot on switch → drop Apollo-era bubble geometry
