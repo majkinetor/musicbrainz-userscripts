@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.000500
+// @version      2026.6.9.000600
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3337,7 +3337,28 @@
     body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td:first-child{text-align:left!important;padding:0 0 4px}
     body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #comment) > td:first-child label,
     body.tc-ri-on #information fieldset.information table.row-form > tbody > tr:has(> td #annotation) > td:first-child label{display:block;width:auto;float:none;text-align:left!important;font:600 12px Arial;letter-spacing:.02em;color:#6a6a6a}
-    body.tc-ri-on #information fieldset.information input#comment{width:100%!important;max-width:none!important;box-sizing:border-box}`;
+    body.tc-ri-on #information fieldset.information input#comment{width:100%!important;max-width:none!important;box-sizing:border-box}
+    /* annotation History: a version list on the left, the selected version's rendered annotation on the right */
+    #tc-anno-bar.tc-anno-hist-on #tc-anno-history-btn{background:#5f3ec0;color:#fff;border-color:#5f3ec0}
+    #tc-anno-history{display:flex;min-height:240px;max-height:520px;overflow:hidden;box-sizing:border-box}
+    #tc-anno-history .tc-hist-list{flex:0 0 230px;overflow:auto;background:#faf8ff;border-right:1px solid #e7defa}
+    #tc-anno-history .tc-hist-row{display:block;width:100%;text-align:left;border:none;border-bottom:1px solid #efeafb;background:none;cursor:pointer;padding:7px 11px;font:12px Arial;color:#444}
+    #tc-anno-history .tc-hist-row:hover{background:#f0ebfb}
+    #tc-anno-history .tc-hist-row.on{background:#ece5f8;box-shadow:inset 3px 0 0 #5f3ec0}
+    #tc-anno-history .tc-hist-date{display:block;font-weight:600;color:#3d2470}
+    #tc-anno-history .tc-hist-editor{color:#666}
+    #tc-anno-history .tc-hist-cl{display:block;color:#8a8a8a;font-style:italic;margin-top:2px}
+    #tc-anno-history .tc-hist-cur{color:#2c7a45;font-style:normal}
+    #tc-anno-history .tc-hist-view{flex:1 1 auto;overflow:auto;padding:11px 14px;font-size:13px;line-height:1.5;color:#333;word-break:break-word}
+    #tc-anno-history .tc-hist-msg{color:#999;font-style:italic;font-size:12px;padding:6px 2px}
+    #tc-anno-history .tc-anno-rendered h1{font-size:18px;margin:8px 0 6px;color:#3d2470}
+    #tc-anno-history .tc-anno-rendered h2{font-size:16px;margin:8px 0 6px;color:#3d2470}
+    #tc-anno-history .tc-anno-rendered h3{font-size:14px;margin:8px 0 6px;color:#3d2470}
+    #tc-anno-history .tc-anno-rendered p{margin:0 0 8px}
+    #tc-anno-history .tc-anno-rendered ul{margin:0 0 8px;padding-left:22px}
+    #tc-anno-history .tc-anno-rendered a{color:#5f3ec0;text-decoration:none}
+    #tc-anno-history .tc-anno-rendered a:hover{text-decoration:underline}
+    #tc-anno-history .tc-anno-rendered .annotation-details,#tc-anno-history .tc-anno-rendered h2.annotation{display:none}`;
     const s = document.createElement('style'); s.id = 'tc-ri-style'; s.textContent = css; document.head.appendChild(s);
   }
   // move the External-links fieldset into a dedicated right column (or back home when Apollo is off).
@@ -3585,6 +3606,31 @@
     return src;
   }
 
+  // annotation History: parse the /annotations page into a version list, and pull a single version's
+  // rendered annotation HTML from its "View this version" page (musicbrainz.org, same-origin fetch).
+  async function annoFetchHistory(mbid) {
+    const r = await fetch(`${location.origin}/release/${mbid}/annotations`, { credentials: 'same-origin' });
+    if (!r.ok) throw new Error('history ' + r.status);
+    const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+    const out = [];
+    doc.querySelectorAll('table tr').forEach(tr => {
+      const view = [...tr.querySelectorAll('a')].find(a => /this version/i.test(a.textContent || ''));
+      if (!view) return;
+      const editor = tr.querySelector('a[href^="/user/"]')?.textContent.trim() || '';
+      const date = [...tr.querySelectorAll('td')].map(c => c.textContent.trim()).find(t => /\d{4}-\d{2}-\d{2}/.test(t)) || '';
+      const cl = (view.parentElement.textContent.match(/\(([^)]*)\)/) || [, ''])[1];
+      out.push({ editor, date, changelog: /no changelog/i.test(cl) ? '' : cl, url: view.getAttribute('href') });
+    });
+    return out;
+  }
+  async function annoFetchVersion(url) {
+    const r = await fetch(new URL(url, location.origin).href, { credentials: 'same-origin' });
+    if (!r.ok) throw new Error('version ' + r.status);
+    const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+    const body = doc.querySelector('.annotation-body');
+    return body ? body.innerHTML : '<em>(this version is empty)</em>';
+  }
+
   // write into the annotation textarea so MB's model (knockout 'change' / React 'input') picks it up + dirties
   function annoSet(ta, value) {
     const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
@@ -3618,18 +3664,21 @@
     const ta = document.getElementById('annotation'); if (!ta) return;   // the real MB field — always holds MB markup
     if (ta._tcAnnoMounted && ta._tcAnnoMounted.isConnected) return;
 
+    const mbid = (location.pathname.match(/\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/|$)/) || [])[1];   // present on /release/<mbid>/edit, absent on /release/add
     const wrap = document.createElement('div'); wrap.id = 'tc-anno-wrap';
     const bar = document.createElement('div'); bar.id = 'tc-anno-bar';
     bar.innerHTML =
       '<button type="button" id="tc-anno-preview-btn" title="Toggle a preview of the annotation, rendered the way MusicBrainz will show it">👁 Preview</button>' +
       '<button type="button" id="tc-anno-md" title="Switch between editing as Markdown and the raw MusicBrainz markup">⇄ MB markup</button>' +
       '<button type="button" id="tc-anno-names" class="tc-anno-icon" title="Add the entity name to MusicBrainz entity links that have none (MB [url]/[url|] or Markdown []()/bare URL), fetching each name from the API">🏷</button>' +
+      (mbid ? '<button type="button" id="tc-anno-history-btn" title="Browse this annotation\'s previous versions and display any one">🕘 History</button>' : '') +
       '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
       '<span id="tc-anno-status"></span>';
     const md = document.createElement('textarea'); md.id = 'tc-anno-mdinput'; md.spellcheck = false;   // the Markdown editing surface
     const prev = document.createElement('div'); prev.id = 'tc-anno-preview'; prev.style.display = 'none';
+    const hist = document.createElement('div'); hist.id = 'tc-anno-history'; hist.style.display = 'none';
     ta.parentNode.insertBefore(wrap, ta);
-    wrap.append(bar, md, ta, prev);
+    wrap.append(bar, md, ta, prev, hist);
     ta._tcAnnoMounted = wrap;
 
     // put Disambiguation above Annotation (both already span the full column via CSS)
@@ -3644,13 +3693,15 @@
 
     let mode = 'md', lastEdit = 'md';   // 'md' | 'raw' | 'preview'
     const setMode = m => {
-      if (m !== 'preview') lastEdit = m;
+      if (m === 'md' || m === 'raw') lastEdit = m;   // remember the editing surface to return to from preview/history
       mode = m;
       md.style.display = m === 'md' ? '' : 'none';
       ta.style.display = m === 'raw' ? '' : 'none';
       prev.style.display = m === 'preview' ? '' : 'none';
+      hist.style.display = m === 'history' ? '' : 'none';
       bar.classList.toggle('tc-anno-prev-on', m === 'preview');
       bar.classList.toggle('tc-anno-md-on', m === 'md');
+      bar.classList.toggle('tc-anno-hist-on', m === 'history');
       $('tc-anno-md').textContent = m === 'raw' ? '⇄ Markdown' : '⇄ MB markup';
       if (m === 'md') md.value = annoToMd(ta.value);                 // refresh the Markdown surface from the field
       if (m === 'preview') { if (lastEdit === 'md') syncMdToField(); prev.innerHTML = annoToHtml(ta.value); }
@@ -3673,7 +3724,28 @@
 
     const activeEl = () => mode === 'raw' ? ta : md;
     $('tc-anno-preview-btn').onclick = () => setMode(mode === 'preview' ? lastEdit : 'preview');
-    $('tc-anno-md').onclick = () => { if (mode === 'preview') setMode(lastEdit); setMode(mode === 'raw' ? 'md' : 'raw'); };
+    $('tc-anno-md').onclick = () => { if (mode === 'preview' || mode === 'history') setMode(lastEdit); setMode(mode === 'raw' ? 'md' : 'raw'); };
+
+    const renderHistory = async () => {
+      hist.innerHTML = '<div class="tc-hist-msg">Loading history…</div>';
+      let versions; try { versions = await annoFetchHistory(mbid); } catch { hist.innerHTML = '<div class="tc-hist-msg">Failed to load history.</div>'; return; }
+      if (!versions.length) { hist.innerHTML = '<div class="tc-hist-msg">No annotation history yet.</div>'; return; }
+      hist.innerHTML = '<div class="tc-hist-list"></div><div class="tc-hist-view"><div class="tc-hist-msg">Select a version to display it.</div></div>';
+      const list = hist.querySelector('.tc-hist-list'), view = hist.querySelector('.tc-hist-view');
+      versions.forEach((v, idx) => {
+        const row = document.createElement('button'); row.type = 'button'; row.className = 'tc-hist-row';
+        row.innerHTML = `<span class="tc-hist-date">${_annoEsc(v.date)}</span><span class="tc-hist-editor">${_annoEsc(v.editor)}</span>` +
+          (v.changelog ? `<span class="tc-hist-cl">${_annoEsc(v.changelog)}</span>` : (idx === 0 ? '<span class="tc-hist-cl tc-hist-cur">current</span>' : ''));
+        row.onclick = async () => {
+          list.querySelectorAll('.tc-hist-row').forEach(r => r.classList.remove('on')); row.classList.add('on');
+          view.innerHTML = '<div class="tc-hist-msg">Loading…</div>';
+          try { view.innerHTML = '<div class="tc-anno-rendered">' + await annoFetchVersion(v.url) + '</div>'; }
+          catch { view.innerHTML = '<div class="tc-hist-msg">Failed to load this version.</div>'; }
+        };
+        list.appendChild(row);
+      });
+    };
+    if ($('tc-anno-history-btn')) $('tc-anno-history-btn').onclick = () => { if (mode === 'history') setMode(lastEdit); else { setMode('history'); renderHistory(); } };
     $('tc-anno-names').onclick = async (e) => {
       const btn = e.currentTarget; btn.disabled = true; status('resolving names…');
       try { const el = activeEl(), before = el.value, after = await annoResolveNames(before);
