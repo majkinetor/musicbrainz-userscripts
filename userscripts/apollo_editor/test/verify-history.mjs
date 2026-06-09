@@ -34,8 +34,7 @@ await page.waitForSelector('#tc-anno-history .tc-hist-view .tc-anno-rendered', {
 check('selecting a version shows its rendered annotation', await page.$('#tc-anno-history .tc-hist-view .tc-anno-rendered') !== null);
 check('selected row highlighted', await page.$('#tc-anno-history .tc-hist-card.on') !== null);
 // the revert (↶) button lives inside non-current cards only
-check('current card has no revert button', await page.$('#tc-anno-history .tc-hist-card:first-child .tc-hist-revert') === null);
-check('older cards have an in-card revert button', await page.$('#tc-anno-history .tc-hist-card:not(:first-child) .tc-hist-revert') !== null);
+check('every card has an in-card revert button (incl. current → discard session edits)', await page.evaluate(() => { const cards = [...document.querySelectorAll('#tc-anno-history .tc-hist-card')]; return cards.length > 0 && cards.every(c => c.querySelector('.tc-hist-revert')); }));
 check('revert is right-aligned (meta grows to push it to the edge)', (await page.evaluate(() => { const m = document.querySelector('#tc-anno-history .tc-hist-card:not(:first-child) .tc-hist-meta'); return getComputedStyle(m).flexGrow; })) === '1');
 check('revert hidden by default, shown on .on/hover (CSS rule present)', await page.evaluate(() => [...document.styleSheets].some(ss => { try { return [...ss.cssRules].some(r => /tc-hist-card\.on .tc-hist-revert/.test(r.cssText)); } catch { return false; } })));
 const noGap = await page.evaluate(() => { const b = document.getElementById('tc-anno-history-btn'); return getComputedStyle(b).marginLeft === '0px' || getComputedStyle(b).marginLeft === 'auto' ? getComputedStyle(b).marginLeft : getComputedStyle(b).marginLeft; });
