@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.1
+// @version      2026.6.9.9
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -359,7 +359,7 @@ function getProviderOrder() {
     } catch { return ALL_PROVIDERS.slice(); }
 }
 const PROVIDER_ORDER = getProviderOrder();
-const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple Music', tidal:'Tidal', beatport:'Beatport', volumo:'Volumo' };
+const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple', tidal:'Tidal', beatport:'Beatport', volumo:'Volumo' };
 const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C', tidal:'#111',  beatport:'#0a8754', volumo:'#7c4dff' };
 // Small brand glyphs shown next to each provider name (toggle: pc:show-icons). Spotify / Apple Music /
 // Bandcamp are the real marks; Deezer (equalizer) and Discogs (vinyl) are clean brand-coloured stand-ins.
@@ -375,6 +375,9 @@ const PROVIDER_ICON = {
   // Volumo: brand-violet disc with a "V" wedge (clean stand-in)
   volumo:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="#7c4dff"><circle cx="12" cy="12" r="10"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>',
 };
+// MusicBrainz mark for the reference row (the release we're comparing platforms
+// against). Same logo image Apollo Editor uses for its MB/markdown toggle.
+const MB_ICON = '<img alt="MB" src="https://images.dwncdn.net/images/t_app-icon-s/p/c5c33b93-7347-46e3-a512-3decccb33d78/1678792153/2170_4-166444-imgingest-4209519771082272608.png" style="width:17px;height:17px;border-radius:3px;">';
 container.innerHTML = `
 <style>
   /* MB's site CSS marks any outbound link with a red external-link ::after icon
@@ -416,30 +419,110 @@ container.innerHTML = `
     box-sizing: border-box;
     display: inline-block;
   }
+
+  /* ── Row layout (issue #173): compact 1-row vs 2-row stacked ───────────────
+   * 1-row packs each provider onto one line: full name, then year · format ·
+   * label flowing right after it, with the track count pinned to the right
+   * edge. Names stay fully visible (they identify the row); the label is the
+   * only thing that truncates (full text in its tooltip). 2-row keeps the
+   * legacy stacked look (name line + meta line below). */
+  .pc-cell-ico  { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 22px; width: 22px; cursor: default; }
+  .pc-cell-ico img { display: block; }
+  .pc-cell-name { color: inherit; text-decoration: none; font-weight: 600; font-size: 12px;
+                  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pc-cell-year, .pc-cell-format, .pc-cell-label {
+                  font-size: 10px; color: #999; font-family: sans-serif; white-space: nowrap; overflow: hidden; }
+  .pc-cell-label { text-overflow: ellipsis; min-width: 0; }
+  .pc-cell-val  { font-size: 12px; font-weight: bold; font-family: monospace; color: #777; text-align: right; }
+  .pc-cell-master { font-size: 11px; min-width: 14px; }
+
+  /* 1-row — the ENTIRE provider list is ONE grid (rows are display:contents, so
+     every cell becomes a grid item of .pc-rows). Columns are content-sized, so
+     they're as wide as their widest cell across all rows and line up as a true
+     table — an empty format still reserves its column, so labels start at the
+     same x whether or not a row has a format. Order: icon name year format label
+     master tracks. */
+  #mb-pc-panel.pc-layout-1row .pc-rows {
+    display: grid; align-items: center; column-gap: 6px; row-gap: 10px;
+    grid-template-columns: 22px max-content max-content max-content minmax(0,1fr) max-content max-content;
+  }
+  /* each row is a subgrid box spanning all columns: it shares the parent's
+     column tracks (so cells still align as a table) AND is a single element,
+     so the whole row — gaps and empty cells included — is one click target. */
+  #mb-pc-panel.pc-layout-1row .pc-row {
+    display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center;
+  }
+  #mb-pc-panel.pc-layout-1row .pc-meta { display: contents; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-ico    { grid-column: 1; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-name   { grid-column: 2; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-year   { grid-column: 3; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-format { grid-column: 4; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-label  { grid-column: 5; min-width: 0; }   /* fills + truncates */
+  #mb-pc-panel.pc-layout-1row .pc-cell-master { grid-column: 6; text-align: center; }
+  #mb-pc-panel.pc-layout-1row .pc-cell-val    { grid-column: 7; }
+  #mb-pc-panel.pc-layout-1row .pc-rows-sep    { grid-column: 1 / -1; border-bottom: 1px solid #EEE; }
+
+  /* 2-row — legacy stacked look: name line, then a meta line below */
+  #mb-pc-panel.pc-layout-2row .pc-rows { display: flex; flex-direction: column; gap: 10px; }
+  #mb-pc-panel.pc-layout-2row .pc-rows-sep { border-bottom: 1px solid #EEE; }
+  #mb-pc-panel.pc-layout-2row .pc-row {
+    display: grid; align-items: center; column-gap: 4px;
+    grid-template-columns: 22px minmax(0,1fr) auto 24px;
+  }
+  #mb-pc-panel.pc-layout-2row .pc-cell-ico    { grid-area: 1 / 1; }
+  #mb-pc-panel.pc-layout-2row .pc-cell-name   { grid-area: 1 / 2; }
+  #mb-pc-panel.pc-layout-2row .pc-cell-master { grid-area: 1 / 3; text-align: center; }
+  #mb-pc-panel.pc-layout-2row .pc-cell-val    { grid-area: 1 / 4; }
+  #mb-pc-panel.pc-layout-2row .pc-meta {
+    grid-column: 2 / -1; grid-row: 2; line-height: 1.2; padding-top: 0.3rem;
+    font-size: 10px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  }
+  #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-year,
+  #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-format,
+  #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-label { display: inline; }
+  #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-year:not(:empty),
+  #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-format:not(:empty) { margin-right: 4px; }
+
+  /* names toggle (pc:show-names) */
+  #mb-pc-panel.pc-no-names .pc-cell-name { display: none; }
+  /* MusicBrainz reference row: always visible mark + brand-violet name, no fade */
+  #mb-pc-panel .pc-row-mb .pc-plat-ico { display: inline-flex; }
 </style>
-<div style="border-bottom: 1px solid #EEE; padding-bottom: 4px; margin-bottom: 6px;">
+<div style="margin-bottom: 6px;">
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #666;">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
     </div>
   </div>
-  <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 2px;">
-    <span id="mb-mb-subtitle" style="font-size: 10px; color: #999; line-height: 1.2; flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
-    <span id="mb-mb-tracks" style="font-size: 11px; font-weight: bold; color: #FF8C00; font-family: monospace; min-width: 20px; text-align: right;"></span>
-  </div>
 </div>
-<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px;">
+<div class="pc-rows" style="margin-bottom: 6px;">
+  <div id="row-mb" class="pc-row pc-row-mb">
+    <span class="pc-cell-ico"><span class="pc-plat-ico" title="MusicBrainz">${MB_ICON}</span></span>
+    <a id="mb-mb-name" class="pc-cell-name" href="${MB_ORIGIN}/release/" target="_blank" rel="noopener" style="color: #BA68C8;">MusicBrainz</a>
+    <span class="pc-meta">
+      <span id="mb-mb-year"   class="pc-cell-year"></span>
+      <span id="mb-mb-format" class="pc-cell-format"></span>
+      <span id="mb-mb-label"  class="pc-cell-label"></span>
+    </span>
+    <span class="pc-cell-master"></span>
+    <span id="mb-mb-tracks" class="pc-cell-val" style="color: #FF8C00;"></span>
+  </div>
+  <div class="pc-rows-sep"></div>
   ${PROVIDER_ORDER.map(p => `
-  <div id="row-${p}" class="pc-st-notfound" style="display: flex; flex-direction: column; min-width: 0; overflow: hidden;">
-    <div style="display: flex; align-items: center; gap: 4px;">
-      <span id="ico-${p}" class="pc-ico-slot" style="font-size: 11px; min-width: 14px; text-align: center; color: #888;">⚪</span>
+  <div id="row-${p}" class="pc-row pc-st-notfound">
+    <span class="pc-cell-ico">
+      <span id="ico-${p}" class="pc-ico-slot" style="font-size: 11px; text-align: center; color: #888;">⚪</span>
       <span id="plat-${p}" class="pc-plat-ico" title="${PROVIDER_NAME[p]}">${PROVIDER_ICON[p] || ''}</span>
-      <a id="mb-online-${p}" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'}; text-decoration: none; font-weight: 600; font-size: 12px; flex-grow: 1;">${PROVIDER_NAME[p]}</a>
-      <span id="master-${p}" class="pc-master-slot" style="font-size: 11px; display: inline-block; min-width: 14px; text-align: center; cursor: default;"></span>
-      <span id="val-${p}" style="font-size: 12px; font-weight: bold; font-family: monospace; color: #777; min-width: 20px; text-align: right;">—</span>
-    </div>
-    <div id="meta-${p}" style="font-size: 10px; color: #999; font-family: sans-serif; line-height: 1.2; padding-top: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-width: 0;"></div>
+    </span>
+    <a id="mb-online-${p}" class="pc-cell-name" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || '#222'};">${PROVIDER_NAME[p]}</a>
+    <span class="pc-meta">
+      <span id="year-${p}"   class="pc-cell-year"></span>
+      <span id="format-${p}" class="pc-cell-format"></span>
+      <span id="label-${p}"  class="pc-cell-label"></span>
+    </span>
+    <span id="master-${p}" class="pc-master-slot pc-cell-master" style="cursor: default;"></span>
+    <span id="val-${p}" class="pc-cell-val">—</span>
   </div>`).join('')}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
@@ -517,9 +600,19 @@ providerModal.innerHTML = `
       <span style="font-weight: 500; flex-grow: 1;">${PROVIDER_NAME[p]}</span>
     </div>`).join('')}
   </div>
-  <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333; padding: 6px 8px; cursor: pointer; user-select: none;">
-    <input type="checkbox" id="mb-show-icons" style="margin: 0; width: 16px; height: 16px;"> Show platform icons
-  </label>
+  <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 6px 8px;">
+    <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #333; cursor: pointer; user-select: none;">
+      <input type="checkbox" id="mb-show-icons" style="margin: 0; width: 16px; height: 16px;"> Show icons
+    </label>
+    <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #333; cursor: pointer; user-select: none;">
+      <input type="checkbox" id="mb-show-names" style="margin: 0; width: 16px; height: 16px;"> Show names
+    </label>
+  </div>
+  <div style="display: flex; align-items: center; gap: 14px; font-size: 13px; color: #333; padding: 2px 8px;">
+    <span>Layout:</span>
+    <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="1row" style="margin: 0;"> 1 row</label>
+    <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="2row" style="margin: 0;"> 2 rows</label>
+  </div>
   <div style="display: flex; align-items: center; gap: 14px; font-size: 13px; color: #333; padding: 2px 8px 6px 8px;">
     <span>MB marker:</span>
     <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="circle" style="margin: 0;"> Circle</label>
@@ -561,10 +654,13 @@ const providerRows = Object.fromEntries(PROVIDER_ORDER.map(p => [p, document.get
 
 PROVIDER_ORDER.forEach(p => {
     const enabled = GM_getValue(`prov_${p}`, true);
-    if (providerRows[p]) providerRows[p].style.display = enabled ? 'flex' : 'none';
+    if (providerRows[p]) providerRows[p].style.display = enabled ? '' : 'none';   // '' → CSS grid layout applies
 });
 // platform brand icons (default on) — class on the panel hides them all via CSS
 container.classList.toggle('pc-icons-mode', GM_getValue('pc:show-icons', true));
+container.classList.toggle('pc-no-names', !GM_getValue('pc:show-names', false));   // names hidden by default (#173) — the brand icon identifies the row
+// row layout — 1-row aligned grid (default) vs 2-row stacked (issue #173)
+container.classList.add(GM_getValue('pc:layout', '1row') === '2row' ? 'pc-layout-2row' : 'pc-layout-1row');
 container.classList.add(GM_getValue('pc:mb-marker', 'circle') === 'glow' ? 'pc-mark-glow' : 'pc-mark-circle');   // how the in-MB marker is drawn
 
 // Provider-reorder controls in the providers modal — drag-and-drop. Each row
@@ -715,6 +811,9 @@ document.getElementById('mb-bp-logout').addEventListener('click', () => { bpWrit
 document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     PROVIDER_ORDER.forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
     document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
+    document.getElementById('mb-show-names').checked = GM_getValue('pc:show-names', false);
+    const layout = GM_getValue('pc:layout', '1row');
+    providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     const marker = GM_getValue('pc:mb-marker', 'circle');
     providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => { r.checked = r.value === marker; });
     bpRefreshSetupUI();
@@ -725,12 +824,21 @@ document.getElementById('mb-provider-save-btn').addEventListener('click', () => 
     PROVIDER_ORDER.forEach(p => {
         const checked = document.getElementById(`mb-toggle-${p}`).checked;
         GM_setValue(`prov_${p}`, checked);
-        if (providerRows[p]) providerRows[p].style.display = checked ? 'flex' : 'none';
+        if (providerRows[p]) providerRows[p].style.display = checked ? '' : 'none';   // '' → CSS grid/flex layout applies
     });
     // "Show platform icons" — persist + apply live (no reload needed)
     const showIcons = document.getElementById('mb-show-icons').checked;
     GM_setValue('pc:show-icons', showIcons);
     container.classList.toggle('pc-icons-mode', showIcons);
+    // "Show platform names" — persist + apply live
+    const showNames = document.getElementById('mb-show-names').checked;
+    GM_setValue('pc:show-names', showNames);
+    container.classList.toggle('pc-no-names', !showNames);
+    // "Layout" — 1-row aligned grid vs 2-row stacked
+    const layout = (providerModal.querySelector('input[name="mb-layout"]:checked') || {}).value || '1row';
+    GM_setValue('pc:layout', layout);
+    container.classList.toggle('pc-layout-1row', layout !== '2row');
+    container.classList.toggle('pc-layout-2row', layout === '2row');
     // "MB marker" — circle vs glow
     const marker = (providerModal.querySelector('input[name="mb-marker"]:checked') || {}).value || 'circle';
     GM_setValue('pc:mb-marker', marker);
@@ -910,7 +1018,6 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     const a    = document.getElementById(`mb-online-${p}`);
     const ico  = document.getElementById(`ico-${p}`);
     const val  = document.getElementById(`val-${p}`);
-    const meta = document.getElementById(`meta-${p}`);
     if (url) a.href = url;
 
     const fromMbRels = source === 'MB rels';
@@ -967,6 +1074,22 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         row.classList.remove('pc-st-notfound', 'pc-st-mismatch', 'pc-st-match');
         row.classList.add('pc-st-' + presence);
         row.classList.toggle('pc-inmb', fromMbRels);
+        // Whole row is clickable (#173): anywhere from after the icon to the
+        // track count — empty cells and the gaps included (the row is one
+        // subgrid box). LEFT-click opens the found platform page, or the
+        // provider's SEARCH page when nothing was found (so even completely
+        // empty rows work); RIGHT-click always opens the SEARCH page for a
+        // manual check. Icon keeps "add to MB" and the name <a> opens natively
+        // (both excluded). searchUrl is read lazily so init order doesn't matter.
+        const rowOpen = (e, preferSearch) => {
+            if (e.target.closest('.pc-cell-ico') || e.target.closest('a')) return;
+            const search = a.dataset.searchUrl || null;
+            const dest = preferSearch ? (search || url) : (url || search);
+            if (dest) { e.preventDefault(); window.open(dest, '_blank', 'noopener'); }
+        };
+        row.onclick       = (e) => rowOpen(e, false);
+        row.oncontextmenu = (e) => rowOpen(e, true);
+        row.style.cursor  = 'pointer';
     }
     const plat = document.getElementById(`plat-${p}`);
     if (plat) {
@@ -990,16 +1113,29 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         }
     }
 
-    // Meta line: year · format · label. Format before label because labels
-    // run long (multi-name imprints, "Records" suffixes) and would otherwise
-    // shove format past the row's visible width. The line is clipped with
-    // ellipsis (see CSS on #meta-${p}) so an extra-long label trails off
-    // rather than wrapping under the next provider.
-    const bits = [];
-    if (year)   bits.push(year);
-    if (format) bits.push(normalizeFormat(format));
-    if (label)  bits.push(label);
-    meta.textContent = bits.join(' · ');
+    // Meta cells: year · format · label, each its own grid cell so the columns
+    // align across providers (1-row layout) — see setMetaCells.
+    setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, year, format, label);
+}
+
+// Fill the three meta cells (year / format / label) for a row. The "·"
+// separators TRAIL year and format, but only when a later field follows — so
+// the same cell content reads correctly in both layouts: aligned columns in
+// 1-row ("2026 · | Digital · | Selections Lab"), and a joined line in 2-row
+// ("2026 · Digital · Selections Lab"). Format is normalized (Digital Media →
+// Digital); the full label is set as a tooltip so a truncated label (CSS
+// ellipsis) is still readable on hover.
+function setMetaCells(yearId, formatId, labelId, year, format, label) {
+    const yEl = document.getElementById(yearId);
+    const fEl = document.getElementById(formatId);
+    const lEl = document.getElementById(labelId);
+    const fmt = format ? normalizeFormat(format) : '';
+    const hasY = !!year, hasF = !!fmt, hasL = !!label;
+    // 2-digit year to save space in the compact row (#173); full year in tooltip.
+    const y2 = hasY ? String(year).slice(-2) : '';
+    if (yEl) { yEl.textContent = hasY ? (hasF || hasL ? `${y2} ·` : y2) : ''; yEl.title = hasY ? String(year) : ''; }
+    if (fEl) fEl.textContent = hasF ? (hasL ? `${fmt} ·` : fmt) : '';
+    if (lEl) { lEl.textContent = hasL ? label : ''; lEl.title = hasL ? label : ''; }
 }
 
 // MB's "Digital Media" is the spec name, but in a tight sidebar "Digital"
@@ -2266,15 +2402,14 @@ function resetRows() {
     for (const p of ALL_PROVIDERS) {
         const ico = document.getElementById(`ico-${p}`);
         const val = document.getElementById(`val-${p}`);
-        const meta = document.getElementById(`meta-${p}`);
         const a    = document.getElementById(`mb-online-${p}`);
         if (ico)  { ico.textContent = '⚪'; ico.style.color = '#888'; ico.style.fontWeight = 'normal'; ico.onclick = null; ico.style.cursor = ''; ico.classList.remove('pc-ico-circled'); }
         const plat = document.getElementById(`plat-${p}`);
         if (plat) { plat.onclick = null; plat.style.cursor = 'default'; }
         const row = document.getElementById(`row-${p}`);
-        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); }   // back to "not found" look
-        if (val)  { val.textContent = '—'; val.style.color = '#BF616A'; }   // neutral dash while re-scanning (was the junky "(-- tracks)")
-        if (meta) { meta.innerHTML = ''; }
+        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); row.onclick = null; row.oncontextmenu = null; row.style.cursor = ''; }   // back to "not found" look
+        if (val)  { val.textContent = '—'; val.style.color = '#BF616A'; }   // neutral dash while re-scanning
+        setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, null, null, null);
         // Reset the anchor href to its search-fallback so parseMbFromDom on
         // a subsequent refresh doesn't see the previous /album/<id> result
         // as an "existing MB rel" — covered by the #mb-pc-panel exclusion
@@ -2639,16 +2774,11 @@ async function runScans() {
     // Header subtitle: year · label · format (left-aligned), and the MB
     // track count right-aligned so it sits in the same column as the
     // platform vals below.
-    const subEl = document.getElementById('mb-mb-subtitle');
+    setMetaCells('mb-mb-year', 'mb-mb-format', 'mb-mb-label', year, format, releaseLabel);
     const trkEl = document.getElementById('mb-mb-tracks');
-    if (subEl) {
-        const parts = [];
-        if (year)         parts.push(year);
-        if (format)       parts.push(normalizeFormat(format));
-        if (releaseLabel) parts.push(releaseLabel);
-        subEl.textContent = parts.join(' · ');
-    }
     if (trkEl) trkEl.textContent = `${mbTracks}`;
+    const nameEl = document.getElementById('mb-mb-name');
+    if (nameEl) nameEl.href = `${MB_ORIGIN}/release/${mbid}`;
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
     appendLog('MusicBrainz', `Header meta — year=${year || '?'}  format=${format || '?'}  label=${releaseLabel || '?'}  source=${dataSource}`);
     appendLog('MusicBrainz', `Existing rels — spotify=${existing.spotify ? 'YES' : 'no'}  discogs=${existing.discogs ? 'YES' : 'no'}  bandcamp=${existing.bandcamp ? 'YES' : 'no'}  deezer=${existing.deezer ? 'YES' : 'no'}  apple=${existing.apple ? 'YES' : 'no'}`);
