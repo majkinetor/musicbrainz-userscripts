@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.9.19
+// @version      2026.6.10.1
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -428,7 +428,7 @@ container.innerHTML = `
    * legacy stacked look (name line + meta line below). */
   .pc-cell-ico  { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 22px; width: 22px; cursor: default; }
   .pc-cell-ico img { display: block; }
-  .pc-cell-name { color: inherit; text-decoration: none; font-weight: 600; font-size: 12px;
+  .pc-cell-name { color: inherit; text-decoration: none; font-weight: 600; font-size: var(--pc-name-size, 12px);
                   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pc-cell-year, .pc-cell-format, .pc-cell-label {
                   font-size: 10px; color: #999; font-family: sans-serif; white-space: nowrap; overflow: hidden; }
@@ -443,7 +443,7 @@ container.innerHTML = `
      same x whether or not a row has a format. Order: icon name year format label
      master tracks. */
   #mb-pc-panel.pc-layout-1row .pc-rows {
-    display: grid; align-items: center; column-gap: 6px; row-gap: 10px;
+    display: grid; align-items: center; column-gap: var(--pc-col-gap, 5px); row-gap: var(--pc-row-gap, 5px);
     grid-template-columns: 22px max-content max-content max-content minmax(0,1fr) max-content max-content;
   }
   /* each row is a subgrid box spanning all columns: it shares the parent's
@@ -463,7 +463,7 @@ container.innerHTML = `
   #mb-pc-panel.pc-layout-1row .pc-rows-sep    { grid-column: 1 / -1; border-bottom: 1px solid #EEE; }
 
   /* 2-row — legacy stacked look: name line, then a meta line below */
-  #mb-pc-panel.pc-layout-2row .pc-rows { display: flex; flex-direction: column; gap: 10px; }
+  #mb-pc-panel.pc-layout-2row .pc-rows { display: flex; flex-direction: column; gap: var(--pc-row-gap, 5px); }
   #mb-pc-panel.pc-layout-2row .pc-rows-sep { border-bottom: 1px solid #EEE; }
   #mb-pc-panel.pc-layout-2row .pc-row {
     display: grid; align-items: center; column-gap: 4px;
@@ -499,7 +499,7 @@ container.innerHTML = `
 <div class="pc-rows" style="margin-bottom: 6px;">
   <div id="row-mb" class="pc-row pc-row-mb">
     <span class="pc-cell-ico"><span class="pc-plat-ico" title="MusicBrainz">${MB_ICON}</span></span>
-    <a id="mb-mb-name" class="pc-cell-name" href="${MB_ORIGIN}/release/" target="_blank" rel="noopener" style="color: #BA68C8;">MusicBrainz</a>
+    <a id="mb-mb-name" class="pc-cell-name" href="${MB_ORIGIN}/release/" target="_blank" rel="noopener" title="MusicBrainz" style="color: #BA68C8;">MB</a>
     <span class="pc-meta">
       <span id="mb-mb-year"   class="pc-cell-year"></span>
       <span id="mb-mb-format" class="pc-cell-format"></span>
@@ -622,6 +622,23 @@ providerModal.innerHTML = `
     <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="circle" style="margin: 0;"> Circle</label>
     <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="glow" style="margin: 0;"> Glow</label>
   </div>
+  <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #333; padding: 2px 8px 6px 8px;">
+    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+      <span style="min-width: 104px;">Row gap</span>
+      <input type="range" id="mb-row-gap" min="0" max="10" step="1" style="flex: 1; margin: 0;">
+      <span id="mb-row-gap-val" style="min-width: 18px; text-align: right; color: #666;"></span>
+    </label>
+    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;" title="Column gap is only used in the 1-row layout">
+      <span style="min-width: 104px;">Column gap</span>
+      <input type="range" id="mb-col-gap" min="0" max="10" step="1" style="flex: 1; margin: 0;">
+      <span id="mb-col-gap-val" style="min-width: 18px; text-align: right; color: #666;"></span>
+    </label>
+    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+      <span style="min-width: 104px;">Platform name size</span>
+      <input type="range" id="mb-name-size" min="8" max="12" step="1" style="flex: 1; margin: 0;">
+      <span id="mb-name-size-val" style="min-width: 18px; text-align: right; color: #666;"></span>
+    </label>
+  </div>
   <div id="mb-bp-acct" style="border-top: 1px solid #EEE; margin-top: 12px; padding-top: 12px;">
     <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333;">
       <span style="font-weight: 600;">Beatport account</span>
@@ -665,6 +682,11 @@ container.classList.toggle('pc-no-names', !GM_getValue('pc:show-names', false));
 // row layout — 1-row aligned grid (default) vs 2-row stacked (issue #173)
 container.classList.add(GM_getValue('pc:layout', '1row') === '2row' ? 'pc-layout-2row' : 'pc-layout-1row');
 container.classList.add(GM_getValue('pc:mb-marker', 'circle') === 'glow' ? 'pc-mark-glow' : 'pc-mark-circle');   // how the in-MB marker is drawn
+// compact-view spacing + name font size (#178) — applied as CSS variables the
+// layout rules read (row/column gap in 1-row, row gap = flex gap in 2-row).
+container.style.setProperty('--pc-row-gap',  `${GM_getValue('pc:row-gap', 5)}px`);
+container.style.setProperty('--pc-col-gap',  `${GM_getValue('pc:col-gap', 5)}px`);
+container.style.setProperty('--pc-name-size', `${GM_getValue('pc:name-size', 12)}px`);
 
 // Provider-reorder controls in the providers modal — drag-and-drop. Each row
 // is draggable; dragover on a sibling reorders via the cursor's Y-midpoint
@@ -862,6 +884,15 @@ providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => r.addEven
     container.classList.toggle('pc-mark-glow', marker === 'glow');
     container.classList.toggle('pc-mark-circle', marker !== 'glow');
 }));
+// Compact-view sliders (#178): set the matching CSS variable live + persist.
+[['mb-row-gap', 'pc:row-gap', '--pc-row-gap', 5], ['mb-col-gap', 'pc:col-gap', '--pc-col-gap', 5], ['mb-name-size', 'pc:name-size', '--pc-name-size', 12]].forEach(([id, key, prop, def]) => {
+    const el = document.getElementById(id);
+    const valEl = document.getElementById(`${id}-val`);
+    const apply = v => { container.style.setProperty(prop, `${v}px`); if (valEl) valEl.textContent = String(v); };
+    el.value = GM_getValue(key, def);
+    apply(el.value);
+    el.addEventListener('input', () => { GM_setValue(key, Number(el.value)); apply(el.value); });
+});
 document.getElementById('mb-modal-copy-btn').addEventListener('click', async function () {
     // Firefox throws NS_ERROR_NOT_INITIALIZED from clipboard.writeText when
     // the document isn't focused. Fall back to a textarea + execCommand on
