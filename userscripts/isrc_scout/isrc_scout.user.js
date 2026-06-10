@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.10.4
+// @version      2026.6.10.5
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -1109,22 +1109,25 @@
   })();
 
   /* ═══════════════════════════════════════════════════════════════════════
-     TRACK ISRC PROVIDER (#181) — the per-track [SX] buttons and the bulk
-     "⟳ SoundExchange" button are one "track ISRC provider" control. The choice
-     is GLOBAL for the release (every track uses the same provider) and is NOT
-     remembered — it resets to SoundExchange on each load.
-       • SoundExchange searches each track by title/artist (per-track).
-       • The album providers (Deezer / Spotify / Beatport / Tidal / Volumo /
-         HDtracks) fetch the whole album ONCE (cached for the session) and a
-         per-track click fills just that one track from it.
-     Selecting a provider re-skins every [SX] button to that provider's icon.
+     TRACK ISRC PROVIDER (#181) — each per-track [SX] button is a by-ISRC lookup:
+     it takes the row's ISRC (entered or existing) and looks it up on the selected
+     provider, showing that track's metadata next to the row. It ONLY searches —
+     it never fills the field. The choice is GLOBAL for the release and NOT
+     remembered (resets to SoundExchange on each load). The ▾ on each button opens
+     the provider menu; the bulk "⟳ SoundExchange" button is left untouched.
+       • SoundExchange + Deezer + Tidal: global by-ISRC endpoints — offered on any
+         release (no album link needed).
+       • Beatport / Volumo / HDtracks: read the release's album ONCE (cached) and
+         match by ISRC, so they need the album's link (MB rel or Platform Check).
   ═══════════════════════════════════════════════════════════════════════ */
   // Album-based providers — same fetchers the import buttons use. `idField` is the
   // RELEASE property holding the in-MB album id; availability also honours a
   // Platform-Check-found URL (via providerAlbumId).
+  // Spotify is intentionally absent: its only by-ISRC route is the Web API
+  // `isrc:` search, which needs an app token (no free anonymous one), so it can't
+  // be a per-track ISRC provider. (Spotify stays a bulk import button via ISRC Hunt.)
   const ALBUM_PROVIDERS = {
     deezer:   { source: 'Deezer',   idField: 'deezerId',   fetcher: fetchDeezer,   code: 'dz' },
-    spotify:  { source: 'Spotify',  idField: 'spotifyId',  fetcher: fetchSpotify,  code: 'sp' },
     beatport: { source: 'Beatport', idField: 'beatportId', fetcher: fetchBeatport, code: 'bp' },
     tidal:    { source: 'Tidal',    idField: 'tidalId',    fetcher: fetchTidal,    code: 'td' },
     volumo:   { source: 'Volumo',   idField: 'volumoId',   fetcher: fetchVolumo,   code: 'vo' },
@@ -1135,11 +1138,11 @@
   Object.keys(ALBUM_PROVIDERS).forEach(k => {
     const p = ALBUM_PROVIDERS[k];
     // `global` providers have a by-ISRC endpoint that doesn't need the album link
-    // (Deezer: /track/isrc:<isrc>), so they're offered on any release. The rest
-    // scan the release's album, so they need its link to be available.
-    TRACK_PROV[k] = { name: p.source, short: p.source, code: p.code, color: _PROV_COLOR[k] || '#444', kind: 'album', global: k === 'deezer' };
+    // (Deezer: /track/isrc:<isrc>; Tidal: /tracks?filter[isrc]), so they're offered
+    // on any release. The rest scan the release's album, so they need its link.
+    TRACK_PROV[k] = { name: p.source, short: p.source, code: p.code, color: _PROV_COLOR[k] || '#444', kind: 'album', global: k === 'deezer' || k === 'tidal' };
   });
-  const TRACK_PROV_ORDER = ['sx', 'deezer', 'spotify', 'beatport', 'tidal', 'volumo', 'hdtracks'];
+  const TRACK_PROV_ORDER = ['sx', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks'];
   let trackProv = 'sx';                                  // NOT persisted (#181)
   const TPM = () => TRACK_PROV[trackProv];
   // a provider is offered only when it can resolve a source for THIS release
@@ -1194,7 +1197,8 @@
       return { isrc: normalizeIsrc(j.isrc), title: j.title_short || j.title || '', artist: [...new Set(arts)].join(', '),
         year: '', dur: j.duration ? msToMmSs(j.duration * 1000) : '', relTitle: (j.album && j.album.title) || '' };
     }
-    // album-scoped providers (HDtracks / Volumo / Beatport / Tidal / Spotify):
+    if (key === 'tidal') return await tidalLookupByIsrc(isrc);
+    // album-scoped providers (HDtracks / Volumo / Beatport):
     // fetch the release's album once and match the entry by ISRC.
     const entries = await ensureProvAlbum(key);
     const e = entries.find(s => normalizeIsrc(s.isrc) === isrc);
@@ -1591,6 +1595,23 @@
     const withIsrc = rows.filter(e => isValidIsrc(e.isrc)).length;
     if (!withIsrc) throw new Error('Tidal album exposed no ISRCs');
     return { total: rows.length, next: null };
+  }
+  // Global by-ISRC lookup (no album link needed) — Tidal v2 /tracks?filter[isrc],
+  // pulling the artist names via include=artists. Returns a fields-shaped object.
+  async function tidalLookupByIsrc(isrc) {
+    const token = await tidalToken();
+    const headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.api+json' };
+    const r = await gmGet(TIDAL.api + '/tracks?countryCode=' + TIDAL.country + '&filter%5Bisrc%5D=' + encodeURIComponent(isrc) + '&include=artists', headers);
+    if (r.status !== 200) return null;
+    let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { return null; }
+    const t = (j.data || [])[0];
+    if (!t) return null;
+    const a = t.attributes || {};
+    const names = {};
+    (j.included || []).forEach(x => { if (x.type === 'artists') names[x.id] = (x.attributes || {}).name; });
+    const artist = ((((t.relationships || {}).artists || {}).data) || []).map(d => names[d.id]).filter(Boolean).join(', ');
+    const ver = a.version ? ' (' + a.version + ')' : '';
+    return { isrc: normalizeIsrc(a.isrc || isrc), title: (a.title || '') + ver, artist, year: '', dur: isoDurToMmSs(a.duration), relTitle: '' };
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
