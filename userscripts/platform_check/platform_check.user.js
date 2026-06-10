@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.10
+// @version      2026.6.10.1
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -1098,7 +1098,7 @@ async function beatportApi(path) {
 //   colour tint    — green when fromCache=false, steel-blue when fromCache=true
 //   circled icon   — when source includes 'MB rels' (the URL was put there by
 //                    an MB editor, not discovered by us)
-function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState }) {
+function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks }) {
     const a    = document.getElementById(`mb-online-${p}`);
     const ico  = document.getElementById(`ico-${p}`);
     const val  = document.getElementById(`val-${p}`);
@@ -1121,7 +1121,11 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // val is the platform's track count as a bare number, coloured by match
     // against the MB-side number (shown in the header). No more "(N/M trks)".
     if (remoteTracks != null) {
-        val.textContent = String(remoteTracks);
+        // Bandcamp hidden download-only tracks (#183): mark the count with a "ⁿ"
+        // superscript + tooltip so the editor knows N of the tracks aren't
+        // streamable (the count itself already includes them).
+        val.textContent = String(remoteTracks) + (hiddenTracks > 0 ? 'ⁿ' : '');
+        val.title = hiddenTracks > 0 ? `${hiddenTracks} download-only track(s) hidden from streaming on Bandcamp` : '';
         if (parseInt(remoteTracks, 10) === parseInt(mbTracks, 10)) {
             ico.textContent = '✓';
             const tone = fromCache ? '#5B82B0' : '#008000';
@@ -1514,6 +1518,7 @@ function applyCachedRow(platform, label, cached, mbTracks, masterState) {
         source:       cached.source || null,
         fromCache:    true,
         masterState:  masterState   ?? null,
+        hiddenTracks: cached.hiddenTracks ?? 0,
     });
 }
 
@@ -1903,8 +1908,23 @@ async function fetchBandcampMeta(albumUrl) {
         [...html.matchAll(/"musicReleaseFormat"\s*:\s*"(\w+)"/g)]
             .map(m => m[1].replace(/Format$/, ''))
     )];
+    // Hidden download-only tracks (#183): the JSON-LD `numTracks` (and the player's
+    // trackinfo) only count STREAMABLE tracks, but the og:description meta tag —
+    // "N track album" — carries the REAL total including bonus tracks that are only
+    // in the download. So total − streaming = hidden. (Only trust the tag when it
+    // matches "N track album"; an artist-set custom description won't, and we just
+    // fall back to numTracks.) Same signal Harmony / bandcamp_importer use.
+    const streaming = numTracksMatch ? parseInt(numTracksMatch[1], 10) : null;
+    const ogTag = html.match(/<meta[^>]+property=["']og:description["'][^>]*>/i)?.[0] || '';
+    const ogTotal = (ogTag.match(/content=["']\s*(\d+)\s+track\b/i) || [])[1];
+    const total = ogTotal ? parseInt(ogTotal, 10) : null;
+    const hiddenTracks = (total != null && streaming != null && total > streaming) ? total - streaming : 0;
     return {
-        tracks: numTracksMatch ? parseInt(numTracksMatch[1], 10) : null,
+        // report the true total (incl. hidden) as the track count — that's what the
+        // Bandcamp release actually contains, and what MB compares against.
+        tracks: total != null ? total : streaming,
+        streamingTracks: streaming,
+        hiddenTracks,
         title:  titleMatch?.[1] || null,
         year:   yMatch?.[1]     || null,
         label:  lMatch?.[1]     || null,
@@ -2002,8 +2022,11 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     }
 
     const meta = bestMeta || await fetchBandcampMeta(albumUrl);
+    const hidden = meta?.hiddenTracks || 0;
     if (meta) {
-        appendLog(label, `Album parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} format=${meta.format || '?'}`, meta.tracks ? 'ok' : 'warn');
+        const trk = hidden > 0 ? `${meta.tracks} (${meta.streamingTracks} streaming + ${hidden} download-only hidden)` : `${meta.tracks}`;
+        appendLog(label, `Album parsed: tracks=${trk} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} format=${meta.format || '?'}`, meta.tracks ? 'ok' : 'warn');
+        if (hidden > 0) appendLog(label, `${hidden} download-only track(s) hidden from streaming — Bandcamp release has ${meta.tracks}, not ${meta.streamingTracks}`, 'warn');
     } else {
         appendLog(label, `Album page failed`, 'error');
     }
@@ -2011,8 +2034,8 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
     const fmt    = meta?.format ?? null;
-    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source });
-    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source });
+    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden });
+    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden });
 }
 
 // ─── Deezer ─────────────────────────────────────────────────────────────────
