@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9
+// @version      2026.6.10
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -447,32 +447,30 @@
     .ii-tbtn.primary { background: #198754; color: #fff; border-color: #198754; }
     .ii-tbtn.primary:hover { background: #157347; }
     .ii-tbtn.ghost { border-color: transparent; }
-    .ii-split { display: inline-flex; }
-    .ii-split .ii-tbtn { border-radius: 0; }
-    .ii-split .ii-tbtn:first-child { border-top-left-radius: 5px; border-bottom-left-radius: 5px; }
-    .ii-split .ii-caret { border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-left: none; padding: 4px 7px; font-size: 9px; }
-    .ii-srcmenu { display: none; position: fixed; z-index: 1000001; background: #fff; border: 1px solid #ced4da;
-      border-radius: 8px; box-shadow: 0 8px 28px rgba(0,0,0,.2); padding: 11px; width: 520px; max-width: 92vw; box-sizing: border-box; }
-    .ii-srcmenu.open { display: block; }
-    .ii-srcmenu-t { font-size: 11.5px; color: #495057; margin-bottom: 7px; }
-    .ii-srcmenu-t b { color: #212529; }
-    /* align-items:stretch makes the input match the button's height no matter what
-       height MusicBrainz forces on the button — no need to fight its CSS. */
-    .ii-srcmenu-pc { display: block; width: 100%; box-sizing: border-box; margin-bottom: 9px; padding: 7px 10px;
-      text-align: left; font-size: 12px; color: #0f5132; background: #e8f5ee; border: 1px solid #a3cfbb;
-      border-radius: 6px; cursor: pointer; }
-    .ii-srcmenu-pc:hover { background: #d5eddf; border-color: #75b798; }
-    .ii-srcmenu-pc b { color: #0a3622; }
-    .ii-srcmenu-pc-url { display: block; margin-top: 2px; font-size: 10.5px; color: #6c757d;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ii-srcmenu-row { display: flex; gap: 6px; align-items: stretch; }
-    .ii-srcmenu-row input {
-      flex: 1; min-width: 0; box-sizing: border-box !important; height: auto !important; min-height: 0 !important;
-      padding: 6px 10px !important; border: 1px solid #ced4da !important; border-radius: 6px !important;
-      font-size: 12px !important; margin: 0 !important; }
-    .ii-srcmenu-row input:focus { outline: none; border-color: #6f42c1 !important; }
-    .ii-srcmenu-row .ii-tbtn { margin: 0 !important; }
     .ii-tspacer { flex: 1; }
+    /* In-MB marker (#180): a provider button gets a ring around its icon + a
+       brand tint when the release already has that platform's URL in MB; an
+       un-tinted/un-ringed button means the link was found by Platform Check. */
+    #ii-tools.ii-show-icons .ii-tbtn.ii-mb .ii-bico {
+      box-shadow: 0 0 0 1.5px currentColor; border-radius: 50%; padding: 2px; }
+    .ii-tbtn.ii-mb { background: currentColor; }
+    .ii-tbtn.ii-mb .ii-bico, .ii-tbtn.ii-mb .ii-blabel { filter: none; }
+    .ii-tbtn.ii-mb .ii-blabel, #ii-tools.ii-show-icons .ii-tbtn.ii-mb .ii-bico svg { color: #fff; }
+    .ii-tbtn.ii-mb .ii-blabel { color: #fff; }
+    .ii-tbtn.ii-mb:hover { filter: brightness(1.08); }
+    /* Unified "paste a URL" control (#180), apollo "+"-unroll style: a small
+       round button that expands to an input on click; auto-detects the platform. */
+    .ii-urladd { display: inline-flex; align-items: center; gap: 5px; }
+    .ii-urladd-btn { display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; padding: 0; border: 1px solid #ced4da; border-radius: 50%;
+      background: #fff; color: #6c757d; cursor: pointer; font-size: 16px; line-height: 1; }
+    .ii-urladd-btn:hover { background: #f1f3f5; border-color: #adb5bd; }
+    .ii-urladd-btn svg { display: block; }
+    .ii-urladd-input { display: none; width: 230px; max-width: 46vw; padding: 4px 9px;
+      border: 1px solid #ced4da; border-radius: 5px; font-size: 12px; }
+    .ii-urladd-input:focus { outline: none; border-color: #6f42c1; }
+    .ii-urladd.open .ii-urladd-input { display: inline-block; }
+    .ii-urladd.open .ii-urladd-btn { border-radius: 5px; }
     .ii-prog { font-size: 11px; color: #6c757d; min-width: 0; }
     .ii-prog.err { color: #dc3545; font-weight: 700; }
     .ii-prog.continue { color: #6f42c1; font-weight: 700; cursor: pointer; text-decoration: underline dotted; }
@@ -758,7 +756,6 @@
       #ii-body { padding-bottom: 108px; }   /* clear the taller wrapped footer */
 
       /* secondary panels: keep them on-screen */
-      .ii-srcmenu { width: auto !important; left: 3vw !important; right: 3vw !important; max-width: none !important; }
       #ii-sxpanel { top: 2vh !important; left: 2vw !important; right: 2vw !important;
         width: auto !important; max-width: none !important; max-height: 92vh !important; }
     }
@@ -1532,14 +1529,18 @@
             <label><input type="checkbox" id="ii-ex-release">release</label>
           </span>
         </span>
-        <span class="ii-split"><button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from the linked Deezer album"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button><button class="ii-tbtn dz ii-caret" id="ii-dz-menu" title="More — import from a custom Deezer URL">▾</button></span>
-        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from the linked Spotify album"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
-        <span class="ii-split"><button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from the linked Beatport release"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button><button class="ii-tbtn bp ii-caret" id="ii-bp-menu" title="More — import from a custom Beatport URL / the one Platform Check found">▾</button></span>
-        <span class="ii-split"><button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from the linked Tidal album"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button><button class="ii-tbtn td ii-caret" id="ii-td-menu" title="More — import from a custom Tidal URL / the one Platform Check found">▾</button></span>
-        <span class="ii-split"><button class="ii-tbtn vo" id="ii-vo-all" title="Import ISRCs from the linked Volumo release"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button><button class="ii-tbtn vo ii-caret" id="ii-vo-menu" title="More — import from a custom Volumo URL / the one Platform Check found">▾</button></span>
+        <button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from Deezer"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button>
+        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from Spotify"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
+        <button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
+        <button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
+        <button class="ii-tbtn vo" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
+        <span class="ii-urladd" id="ii-urladd">
+          <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo) — auto-detected and imported">+</button>
+          <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
+        </span>
         <span class="ii-prog" id="ii-prog"></span>
         <span class="ii-tspacer"></span>
-        <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear entered</button>
+        <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear</button>
       </div>
 
       <div id="ii-body">
@@ -1566,22 +1567,6 @@
 
     document.body.appendChild(overlay);
     document.body.appendChild(modal);
-    // The custom-URL menu lives on <body>, NOT inside #ii-modal: the modal has a
-    // transform (centering) which would make a position:fixed child anchor to the
-    // modal instead of the viewport, plus overflow:hidden would clip it. On <body>
-    // it positions correctly under the caret and dodges MB's container button CSS.
-    const srcMenu = document.createElement('div');
-    srcMenu.id = 'ii-src-menu';
-    srcMenu.className = 'ii-srcmenu';
-    srcMenu.innerHTML =
-      // shown only when Platform Check (separate userscript) is installed AND found a URL for this source
-      '<button class="ii-srcmenu-pc" id="ii-src-pc" type="button" style="display:none">' +
-      '⌖ Use the <b id="ii-src-pc-label">Deezer</b> URL Platform Check found<span class="ii-srcmenu-pc-url" id="ii-src-pc-url"></span></button>' +
-      '<div class="ii-srcmenu-t">Import from a custom <b id="ii-src-label">Deezer</b> album URL</div>' +
-      '<div class="ii-srcmenu-row">' +
-      '<input type="text" id="ii-src-url" placeholder="Paste album URL…" autocomplete="off">' +
-      '<button class="ii-tbtn primary" id="ii-src-go">Import</button></div>';
-    document.body.appendChild(srcMenu);
     buildSxPanel();
 
     tbody     = modal.querySelector('#ii-tbody');
@@ -1658,21 +1643,25 @@
     modal.querySelector('#ii-bp-all').addEventListener('click', runBeatport);
     modal.querySelector('#ii-td-all').addEventListener('click', runTidal);
     modal.querySelector('#ii-vo-all').addEventListener('click', runVolumo);
-    modal.querySelector('#ii-dz-menu').addEventListener('click', e => toggleSrcMenu('Deezer', e.currentTarget));
-    modal.querySelector('#ii-bp-menu').addEventListener('click', e => toggleSrcMenu('Beatport', e.currentTarget));
-    modal.querySelector('#ii-td-menu').addEventListener('click', e => toggleSrcMenu('Tidal', e.currentTarget));
-    modal.querySelector('#ii-vo-menu').addEventListener('click', e => toggleSrcMenu('Volumo', e.currentTarget));
-    // Spotify has no ▾ menu: it imports via ISRC Hunt, which resolves the MB release
-    // FROM the Spotify URL — a custom/not-in-MB URL can't work, so there's nothing to offer.
-    document.getElementById('ii-src-go').addEventListener('click', submitSrcMenu);
-    document.getElementById('ii-src-url').addEventListener('keydown', e => { if (e.key === 'Enter') submitSrcMenu(); });
-    document.getElementById('ii-src-pc').addEventListener('click', importFromPlatformCheck);
-    // close the custom-URL menu on click-outside
+    // Unified "paste a URL" control (#180) — apollo-style unroll. Click the +
+    // to reveal the input; paste any streaming album URL; on Enter the platform
+    // is auto-detected and imported. Replaces the per-provider ▾ submenus.
+    const urlWrap  = modal.querySelector('#ii-urladd');
+    const urlBtn   = modal.querySelector('#ii-url-btn');
+    const urlInput = modal.querySelector('#ii-url-input');
+    const openUrlAdd  = () => { urlWrap.classList.add('open'); _setTimeout(() => urlInput.focus(), 0); };
+    const closeUrlAdd = () => { urlWrap.classList.remove('open'); urlInput.value = ''; reflectDetectedSource(''); };
+    urlBtn.addEventListener('click', () => urlWrap.classList.contains('open') ? closeUrlAdd() : openUrlAdd());
+    urlInput.addEventListener('input', () => reflectDetectedSource(urlInput.value));
+    urlInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { submitUrlAdd(urlInput.value); closeUrlAdd(); }
+      else if (e.key === 'Escape') closeUrlAdd();
+    });
+    // collapse on click-outside (only when empty, so a half-typed URL isn't lost)
     document.addEventListener('mousedown', e => {
-      const menu = document.getElementById('ii-src-menu');
-      if (!menu || !menu.classList.contains('open')) return;
-      if (menu.contains(e.target) || (e.target.closest && e.target.closest('.ii-caret'))) return;
-      menu.classList.remove('open');
+      if (!urlWrap.classList.contains('open')) return;
+      if (urlWrap.contains(e.target)) return;
+      if (!urlInput.value.trim()) closeUrlAdd();
     });
     submitBtn.addEventListener('click', doSubmit);
 
@@ -1798,16 +1787,23 @@
   function renderTracks() {
     modal.querySelector('#ii-rel-sub').textContent =
       RELEASE.title ? '· ' + [RELEASE.title, RELEASE.releaseYear, RELEASE.artist].filter(Boolean).join(' · ') : '';
-    modal.querySelector('#ii-dz-all').disabled = !RELEASE.deezerId;
-    modal.querySelector('#ii-sp-all').disabled = !RELEASE.spotifyId;
-    modal.querySelector('#ii-bp-all').disabled = !RELEASE.beatportId;
-    modal.querySelector('#ii-td-all').disabled = !RELEASE.tidalId;
-    modal.querySelector('#ii-vo-all').disabled = !RELEASE.volumoId;
-    modal.querySelector('#ii-dz-all').title = RELEASE.deezerId ? 'Import from Deezer' : 'No Deezer link on this release';
-    modal.querySelector('#ii-sp-all').title = RELEASE.spotifyId ? 'Import from Spotify' : 'No Spotify link on this release';
-    modal.querySelector('#ii-bp-all').title = RELEASE.beatportId ? 'Import from Beatport' : 'No Beatport link on this release (use ▾ for a custom URL)';
-    modal.querySelector('#ii-td-all').title = RELEASE.tidalId ? 'Import from Tidal' : 'No Tidal link on this release (use ▾ for a custom URL)';
-    modal.querySelector('#ii-vo-all').title = RELEASE.volumoId ? 'Import from Volumo' : 'No Volumo link on this release (use ▾ for a custom URL / the one Platform Check found)';
+    // Provider buttons (#180): show a provider only when the release has its
+    // link in MB OR Platform Check found one. MB-linked buttons are marked
+    // (ring + brand tint via .ii-mb); an unmarked button = a PC-found link.
+    [['Deezer', 'ii-dz-all', RELEASE.deezerId],
+     ['Spotify', 'ii-sp-all', RELEASE.spotifyId],
+     ['Beatport', 'ii-bp-all', RELEASE.beatportId],
+     ['Tidal', 'ii-td-all', RELEASE.tidalId],
+     ['Volumo', 'ii-vo-all', RELEASE.volumoId]].forEach(([source, id, mbId]) => {
+      const btn = modal.querySelector('#' + id);
+      const hasPc = !!platformCheckUrl(source);
+      btn.style.display = (mbId || hasPc) ? '' : 'none';
+      btn.classList.toggle('ii-mb', !!mbId);
+      btn.disabled = false;
+      btn.title = mbId ? ('Import from ' + source + ' (linked in MusicBrainz)')
+        : hasPc ? ('Import from ' + source + ' (link found by Platform Check — not yet in MB)')
+        : ('No ' + source + ' link');
+    });
 
     tbody.innerHTML = '';
     let lastMedium = null;
@@ -2675,42 +2671,23 @@
     }
   }
 
-  async function runDeezer() {
-    if (!RELEASE.deezerId) { Log.warn('Deezer: no Deezer album link on this release'); return; }
-    const btn = modal.querySelector('#ii-dz-all'); btn.disabled = true;
-    Log.info('Deezer: importing album ' + RELEASE.deezerId);
-    try { await runStreamingSource('Deezer', RELEASE.deezerId, fetchDeezer); }
+  // Run a provider's import using its in-MB album id, falling back to the URL
+  // Platform Check found (#180 — a provider button is only shown when one of
+  // those exists, so this resolves unless the link vanished mid-session).
+  async function runProvider(source, mbId, fetcher, btnSel) {
+    const id = providerAlbumId(source, mbId);
+    if (!id) { Log.warn(source + ': no ' + source + ' link on this release'); return; }
+    const btn = modal.querySelector(btnSel); btn.disabled = true;
+    Log.info(source + ': importing album ' + id);
+    try { await runStreamingSource(source, id, fetcher); }
     finally { btn.disabled = false; }   // always re-enable, even if something throws
   }
-  async function runSpotify() {
-    if (!RELEASE.spotifyId) { Log.warn('Spotify: no Spotify album link on this release'); return; }
-    const btn = modal.querySelector('#ii-sp-all'); btn.disabled = true;
-    Log.info('Spotify: importing album ' + RELEASE.spotifyId);
-    try { await runStreamingSource('Spotify', RELEASE.spotifyId, fetchSpotify); }
-    finally { btn.disabled = false; }
-  }
-  async function runBeatport() {
-    if (!RELEASE.beatportId) { Log.warn('Beatport: no Beatport link on this release'); return; }
-    const btn = modal.querySelector('#ii-bp-all'); btn.disabled = true;
-    Log.info('Beatport: importing release ' + RELEASE.beatportId);
-    try { await runStreamingSource('Beatport', RELEASE.beatportId, fetchBeatport); }
-    finally { btn.disabled = false; }
-  }
-  async function runTidal() {
-    if (!RELEASE.tidalId) { Log.warn('Tidal: no Tidal album link on this release'); return; }
-    const btn = modal.querySelector('#ii-td-all'); btn.disabled = true;
-    Log.info('Tidal: importing album ' + RELEASE.tidalId);
-    try { await runStreamingSource('Tidal', RELEASE.tidalId, fetchTidal); }
-    finally { btn.disabled = false; }
-  }
-  async function runVolumo() {
-    if (!RELEASE.volumoId) { Log.warn('Volumo: no Volumo link on this release'); return; }
-    const btn = modal.querySelector('#ii-vo-all'); btn.disabled = true;
-    Log.info('Volumo: importing album ' + RELEASE.volumoId);
-    try { await runStreamingSource('Volumo', RELEASE.volumoId, fetchVolumo); }
-    finally { btn.disabled = false; }
-  }
-  // Map a source label to its fetcher (used by the custom-URL + Platform-Check menus).
+  async function runDeezer()   { return runProvider('Deezer',   RELEASE.deezerId,   fetchDeezer,   '#ii-dz-all'); }
+  async function runSpotify()  { return runProvider('Spotify',  RELEASE.spotifyId,  fetchSpotify,  '#ii-sp-all'); }
+  async function runBeatport() { return runProvider('Beatport', RELEASE.beatportId, fetchBeatport, '#ii-bp-all'); }
+  async function runTidal()    { return runProvider('Tidal',    RELEASE.tidalId,    fetchTidal,    '#ii-td-all'); }
+  async function runVolumo()   { return runProvider('Volumo',   RELEASE.volumoId,   fetchVolumo,   '#ii-vo-all'); }
+  // Map a source label to its fetcher (used by the unified URL-paste import).
   function fetcherFor(source) {
     return source === 'Deezer'   ? fetchDeezer
          : source === 'Spotify'  ? fetchSpotify
@@ -2720,70 +2697,63 @@
          : null;
   }
 
-  /* ── custom-URL menu (Deezer / Beatport / Tidal "▾") — import from a pasted
-        album URL, OR from the URL Platform Check found, even when the release
-        has no such link in MB yet ── */
-  let _srcMenuSource = null, _srcPcUrl = null;
+  /* ── source links & the unified "paste a URL" control (#180) ── */
+  // Source name → SRC_ICON key / brand colour, for the URL-add detection feedback.
+  const SRC_CODE  = { Deezer: 'dz', Spotify: 'sp', Beatport: 'bp', Tidal: 'td', Volumo: 'vo' };
+  const SRC_COLOR = { dz: '#ef5466', sp: '#1db954', bp: '#0a8754', td: '#1f2d3d', vo: '#7c4dff' };
+
   // If Platform Check (separate userscript) is on the page, read the URL it found
   // for this source from its sidebar anchor (#mb-online-<source>).
   function platformCheckUrl(source) {
-    // Spotify import goes through ISRC Hunt, which looks up the MB release BY the
-    // Spotify URL — a found-but-not-yet-in-MB URL just errors. Deezer / Beatport /
-    // Tidal all import directly by album id, so a found URL is usable for them.
-    if (source === 'Spotify') return null;
     const a = document.getElementById('mb-online-' + source.toLowerCase());
     if (!a) return null;                                    // Platform Check not installed
     const href = a.getAttribute('href') || '';
     if (!/^https?:\/\//.test(href)) return null;            // nothing found yet ('#')
     return parseStreamingId(source, href) ? href : null;    // only if it parses to an album id
   }
-  function toggleSrcMenu(source, anchor) {
-    const menu = document.getElementById('ii-src-menu');
-    if (menu.classList.contains('open') && _srcMenuSource === source) { menu.classList.remove('open'); return; }
-    _srcMenuSource = source;
-    document.getElementById('ii-src-label').textContent = source;
-    // Platform Check option — only when installed and it found a usable URL
-    _srcPcUrl = platformCheckUrl(source);
-    const pcBtn = document.getElementById('ii-src-pc');
-    if (_srcPcUrl) {
-      pcBtn.style.display = '';
-      document.getElementById('ii-src-pc-label').textContent = source;
-      document.getElementById('ii-src-pc-url').textContent = _srcPcUrl.replace(/^https?:\/\//, '');
-    } else { pcBtn.style.display = 'none'; }
-    const url = document.getElementById('ii-src-url');
-    url.value = '';
-    url.placeholder = source === 'Deezer'   ? 'https://www.deezer.com/album/123…  (or an album id)'
-      : source === 'Spotify'  ? 'https://open.spotify.com/album/…  (or an album id)'
-      : source === 'Beatport' ? 'https://www.beatport.com/release/name/123…  (or a release id)'
-      : source === 'Tidal'    ? 'https://tidal.com/album/123…  (or an album id)'
-      : source === 'Volumo'   ? 'https://volumo.com/album/123…  (or an id / barcode)'
-      : 'Paste album URL…';
-    // show first so offsetWidth is measurable, then anchor under the caret that
-    // opened it (menu is position:fixed on <body>), kept fully on-screen
-    menu.classList.add('open');
-    const r = anchor.getBoundingClientRect();
-    menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - menu.offsetWidth - 12)) + 'px';
-    menu.style.top = (r.bottom + 4) + 'px';
-    _setTimeout(() => url.focus(), 0);
+  // Album id for a provider button: prefer the in-MB link, else fall back to the
+  // URL Platform Check found (which is why the button is shown at all).
+  function providerAlbumId(source, mbId) {
+    if (mbId) return mbId;
+    const pc = platformCheckUrl(source);
+    return pc ? parseStreamingId(source, pc) : null;
   }
-  async function submitSrcMenu() {
-    const source = _srcMenuSource;
-    const input = document.getElementById('ii-src-url').value;
-    document.getElementById('ii-src-menu').classList.remove('open');
-    if (!source) return;
-    const id = parseStreamingId(source, input);
-    if (!id) { toast('Couldn\'t find a ' + source + ' album id in that URL', 'err'); Log.warn(source + ': unparseable URL "' + input + '"'); return; }
-    Log.info(source + ': importing custom album ' + id);
-    await runStreamingSource(source, id, fetcherFor(source));
+  // Detect which streaming platform a pasted URL belongs to (domain-based, so a
+  // bare numeric id — ambiguous across platforms — is intentionally not matched).
+  function detectSource(input) {
+    const s = String(input || '').trim();
+    const mk = source => { const id = parseStreamingId(source, s); return id ? { source, code: SRC_CODE[source], id } : null; };
+    if (/deezer\.com/i.test(s)) return mk('Deezer');
+    if (/open\.spotify\.com|spotify:album:/i.test(s)) return mk('Spotify');
+    if (/beatport\.com/i.test(s)) return mk('Beatport');
+    if (/tidal\.com/i.test(s)) return mk('Tidal');
+    if (/volumo\.com/i.test(s)) return mk('Volumo');
+    return null;
   }
-  async function importFromPlatformCheck() {
-    const source = _srcMenuSource, url = _srcPcUrl;
-    document.getElementById('ii-src-menu').classList.remove('open');
-    if (!source || !url) return;
-    const id = parseStreamingId(source, url);
-    if (!id) { toast('Couldn\'t parse Platform Check\'s ' + source + ' URL', 'err'); return; }
-    Log.info(source + ': importing from Platform Check\'s URL ' + url + ' (album ' + id + ')');
-    await runStreamingSource(source, id, fetcherFor(source));
+  // Live feedback: show the detected platform's icon (in brand colour) on the +
+  // button, or reset to a plain + when nothing recognizable is typed.
+  function reflectDetectedSource(value) {
+    const btn = document.getElementById('ii-url-btn');
+    if (!btn) return;
+    const d = detectSource(value);
+    if (d) {
+      btn.innerHTML = SRC_ICON[d.code] || '+';
+      btn.style.color = SRC_COLOR[d.code] || '';
+      btn.title = d.source + ' detected — press Enter to import its ISRCs';
+    } else {
+      btn.textContent = '+';
+      btn.style.color = '';
+      btn.title = 'Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo) — auto-detected and imported';
+    }
+  }
+  async function submitUrlAdd(value) {
+    const d = detectSource(value);
+    if (!d) {
+      if (String(value || '').trim()) { toast('Unrecognized URL — paste a Deezer, Spotify, Beatport, Tidal or Volumo album link', 'err'); Log.warn('URL import: unrecognized "' + value + '"'); }
+      return;
+    }
+    Log.info(d.source + ': importing pasted album ' + d.id);
+    await runStreamingSource(d.source, d.id, fetcherFor(d.source));
   }
   function parseStreamingId(source, input) {
     const s = String(input || '').trim();
