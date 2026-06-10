@@ -34,7 +34,7 @@ Mouse click works as follows:
 |  Platform   |                    Search source                    |          Track verify          | Wikidata cross-ref |
 | ----------- | --------------------------------------------------- | ------------------------------ | ------------------ |
 | Discogs     | Discogs API (`api.discogs.com/database/search`)     | Discogs API release detail     | —                  |
-| Bandcamp    | Bandcamp's own search → DDG / Brave fallback        | JSON-LD on the album page      | —                  |
+| Bandcamp    | Bandcamp's own search → DDG / Brave fallback        | JSON-LD + og:description (hidden tracks) | —         |
 | Spotify     | DuckDuckGo / Brave (`site:open.spotify.com/album/`) | `/embed/album/<id>` HTML parse | P2205              |
 | Apple Music | iTunes Search API (`itunes.apple.com/search`)       | iTunes Lookup API              | P5121              |
 | Deezer      | Deezer API (`api.deezer.com/search/album`)          | Deezer API album detail        | —                  |
@@ -42,6 +42,8 @@ Mouse click works as follows:
 | Beatport    | Wikidata → DDG / Brave (`site:beatport.com/release/`) | — (unverifiable, see below)  | P11312             |
 | Volumo      | **barcode** (`/album_by_icpn`) → Volumo API search  | Volumo API album detail        | —                  |
 | HDtracks    | **barcode** (`/albums/search?q=<UPC>`) → API search | HDtracks API album detail      | —                  |
+
+**Bandcamp hidden tracks (#183).** A Bandcamp album can have bonus tracks that are *download-only* (not in the streaming player). The JSON-LD `numTracks` only counts the streamable ones, but the `og:description` meta tag ("N track album") carries the real total. Platform Check reports that true total, logs how many are hidden, and marks the count in the dashboard with a small superscript **ⁿ** (hover for "N download-only track(s) hidden from streaming"). So a Bandcamp release that streams fewer tracks than it actually contains no longer looks like a smaller release than MB.
 
 Discogs has few specifics:
 
