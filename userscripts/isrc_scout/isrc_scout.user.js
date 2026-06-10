@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.10.3
+// @version      2026.6.10.4
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -1134,7 +1134,10 @@
   const TRACK_PROV = { sx: { name: 'SoundExchange', short: 'SX', code: 'sx', color: _PROV_COLOR.sx, kind: 'search' } };
   Object.keys(ALBUM_PROVIDERS).forEach(k => {
     const p = ALBUM_PROVIDERS[k];
-    TRACK_PROV[k] = { name: p.source, short: p.source, code: p.code, color: _PROV_COLOR[k] || '#444', kind: 'album' };
+    // `global` providers have a by-ISRC endpoint that doesn't need the album link
+    // (Deezer: /track/isrc:<isrc>), so they're offered on any release. The rest
+    // scan the release's album, so they need its link to be available.
+    TRACK_PROV[k] = { name: p.source, short: p.source, code: p.code, color: _PROV_COLOR[k] || '#444', kind: 'album', global: k === 'deezer' };
   });
   const TRACK_PROV_ORDER = ['sx', 'deezer', 'spotify', 'beatport', 'tidal', 'volumo', 'hdtracks'];
   let trackProv = 'sx';                                  // NOT persisted (#181)
@@ -1143,13 +1146,13 @@
   // (SoundExchange always; an album provider needs an MB link or a PC-found URL).
   function trackProvAvailable(key) {
     if (key === 'sx') return true;
+    if (TRACK_PROV[key] && TRACK_PROV[key].global) return true;   // global by-ISRC — no link needed
     const p = ALBUM_PROVIDERS[key];
     return !!(p && RELEASE && providerAlbumId(p.source, RELEASE[p.idField]));
   }
-  // whether the per-track button should be clickable: album providers can fill an
-  // empty row, so they're always enabled; SoundExchange needs something to verify.
+  // The per-track button looks up an ISRC, so it needs one: enabled when the row
+  // has a valid entered ISRC or an existing one (uniform across all providers).
   function trackBtnDisabled(t, inputVal) {
-    if (TPM().kind === 'album') return false;
     return !(isValidIsrc(normalizeIsrc(inputVal)) || (t && t.existing && t.existing.length));
   }
 
@@ -1176,79 +1179,88 @@
     })().catch(e => { delete _provAlbumPromise[key]; throw e; });
     return _provAlbumPromise[key];
   }
-  // map a provider album entry to a MB track row (disc/pos first, then title)
-  function provEntryForRow(entries, t) {
-    let e = entries.find(s => (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || entries.filter(x => +x.disc === +t.mediumPos).length === 0));
-    if (!e) e = entries.find(s => s.title && isGoodMatch(s.title, s.artist, t.title, t.artist));
-    return e || null;
+  // Single-track by-ISRC lookup on a provider → a fields-shaped object
+  // {isrc,title,artist,year,dur,relTitle} carrying all the meta the provider
+  // exposes, or null. Deezer has a global by-ISRC endpoint (no album needed); the
+  // album-only providers scan the release's album for a track whose ISRC matches
+  // (still keyed off the ISRC, never the position). SoundExchange uses lookupIsrc.
+  async function providerLookupByIsrc(key, isrc) {
+    if (key === 'deezer') {
+      const r = await gmGet('https://api.deezer.com/track/isrc:' + encodeURIComponent(isrc), { 'Accept': 'application/json' });
+      if (r.status !== 200) return null;
+      let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { return null; }
+      if (!j || j.error || !normalizeIsrc(j.isrc || '')) return null;
+      const arts = [(j.artist && j.artist.name)].concat((j.contributors || []).map(c => c && c.name)).filter(Boolean);
+      return { isrc: normalizeIsrc(j.isrc), title: j.title_short || j.title || '', artist: [...new Set(arts)].join(', '),
+        year: '', dur: j.duration ? msToMmSs(j.duration * 1000) : '', relTitle: (j.album && j.album.title) || '' };
+    }
+    // album-scoped providers (HDtracks / Volumo / Beatport / Tidal / Spotify):
+    // fetch the release's album once and match the entry by ISRC.
+    const entries = await ensureProvAlbum(key);
+    const e = entries.find(s => normalizeIsrc(s.isrc) === isrc);
+    return e ? { isrc, title: e.title || '', artist: e.artist || '', year: '', dur: e.dur || '', relTitle: '' } : null;
   }
-  // Per-track fill from the selected album provider (fetches the album once).
-  async function fillRowFromProvider(idx) {
+  // Per-track ISRC lookup on the selected album provider — shows the provider's
+  // meta for the clicked track's ISRC, rendered like a SoundExchange result. It
+  // looks up ONLY that ISRC and NEVER fills the field.
+  async function lookupRowOnProvider(idx, isrc) {
     const t = RELEASE.tracks[idx], m = TPM(), el = rowLookup(idx);
     if (el) { el.onclick = null; el.className = 'ii-lookup spin'; el.textContent = '⏳ ' + m.name + '…'; }
     try {
-      const entries = await ensureProvAlbum(trackProv);
-      const e = provEntryForRow(entries, t);
-      const iso = e ? normalizeIsrc(e.isrc) : '';
-      if (!iso || !isValidIsrc(iso)) {
-        if (el) { el.className = 'ii-lookup err'; el.textContent = '✗ not found on ' + m.name; }
-        Log.warn(m.name + ' #' + (t.number || t.trackPos) + ': no ISRC for "' + t.title + '"');
+      const f = await providerLookupByIsrc(trackProv, isrc);
+      if (!f) {
+        if (el) { el.className = 'ii-lookup err'; el.textContent = '✗ ' + isrc + ' not found on ' + m.name; }
+        Log.info(m.name + ' ' + isrc + ' (#' + (t.number || t.trackPos) + '): not found');
         return;
       }
-      const inMb = t.existing.includes(iso);
+      const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.releaseYear);
+      const good = cls === 'best';
+      const rel = [f.relTitle, f.relLabel, f.relDate].filter(Boolean).join(' · ');
       if (el) {
-        el.className = 'ii-lookup ok';
-        el.innerHTML = '✓ ' + esc(e.title || t.title) + (e.dur ? ' · ' + esc(e.dur) : '');
-        el.title = [e.title, e.artist, e.dur].filter(Boolean).join(' · ');
+        el.className = 'ii-lookup ' + (good ? 'ok' : 'warn');
+        el.innerHTML = (good ? '✓ ' : '⚠ ') + sxMetaHtml(f, t) + (rel ? '<br><span class="ii-lookup-rel">' + esc(rel) + '</span>' : '');
+        el.title = [f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ') + (rel ? '  |  ' + rel : '');
       }
-      if (!t.pending && !inMb) { setPending(idx, iso, true, m.name); updateSummary(); }
-      Log.info(m.name + ' #' + (t.number || t.trackPos) + ' "' + t.title + '": ' + iso + (inMb ? ' (already in MB)' : ''));
+      Log.info(m.name + ' ' + isrc + ' (#' + (t.number || t.trackPos) + '): "' + f.title + '"' + (f.artist ? ' — ' + f.artist : ''));
     } catch (err) {
       if (el) { el.className = 'ii-lookup err'; el.textContent = '✗ ' + m.name + ' failed'; }
-      Log.err(m.name + ' single fill failed: ' + errText(err));
+      Log.err(m.name + ' lookup failed: ' + errText(err));
     }
   }
-
-  // The per-track button routes to SoundExchange (by-ISRC lookup/verify) or to the
-  // selected album provider (fill that one track from the fetched album).
-  function runTrackSingle(idx) {
-    const t = RELEASE.tracks[idx];
-    if (TPM().kind === 'album') { fillRowFromProvider(idx); return; }
-    const input = rowInput(idx);
+  // the ISRC a per-track button acts on: the entered value if valid, else the
+  // first existing ISRC on the recording.
+  function rowIsrc(idx) {
+    const t = RELEASE.tracks[idx], input = rowInput(idx);
     const v = normalizeIsrc(input ? input.value : '');
-    const isrc = (v && isValidIsrc(v)) ? v : ((t.existing && t.existing[0]) || '');
-    if (isrc) lookupIsrc(idx, isrc).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); });
+    return (v && isValidIsrc(v)) ? v : ((t && t.existing && t.existing[0]) || '');
   }
-  // Right-click a per-track button → run it for EVERY track with the current
-  // provider. For SoundExchange that's the rate-limit-safe batch search; for an
-  // album provider the album is fetched once and every row is resolved from it.
+  // The per-track button looks up the clicked track's ISRC on the current
+  // provider and shows the result next to the row — it never fills the field.
+  function runTrackSingle(idx) {
+    const isrc = rowIsrc(idx);
+    if (!isrc) return;                       // nothing to look up (button is disabled)
+    if (trackProv === 'sx') { lookupIsrc(idx, isrc).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); }); return; }
+    lookupRowOnProvider(idx, isrc);
+  }
+  // Right-click → look up EVERY track's ISRC on the current provider, shown next
+  // to each row. SoundExchange routes through its rate-limit/captcha-aware path
+  // (serialized + paced); album providers reuse the album fetched on the first.
   async function runTrackAll() {
     const m = TPM();
-    if (m.kind === 'album') {
-      try { await ensureProvAlbum(trackProv); }
-      catch (e) { Log.err(m.name + ': ' + errText(e)); toast(m.name + ' — ' + errText(e), 'err'); return; }
-      Log.info(m.name + ': resolving all ' + RELEASE.tracks.length + ' track(s)');
-      for (let i = 0; i < RELEASE.tracks.length; i++) await fillRowFromProvider(i);
-      return;
-    }
-    // SoundExchange: do exactly what left-clicking each per-track button does —
-    // a by-ISRC verify of every track's entered/existing ISRC, shown next to each
-    // row. Serialized + paced so we don't trip SX's rate limit / captcha; tracks
-    // with no ISRC (whose button is disabled) are skipped, like a real click.
     const todo = [];
-    RELEASE.tracks.forEach((t, idx) => {
-      const input = rowInput(idx);
-      const v = normalizeIsrc(input ? input.value : '');
-      const isrc = (v && isValidIsrc(v)) ? v : ((t.existing && t.existing[0]) || '');
-      if (isrc) todo.push({ idx, isrc });
-    });
-    Log.info('SoundExchange: verifying ' + todo.length + ' track(s) with an ISRC');
+    RELEASE.tracks.forEach((t, idx) => { const isrc = rowIsrc(idx); if (isrc) todo.push({ idx, isrc }); });
+    Log.info(m.name + ': looking up ' + todo.length + ' track(s) with an ISRC');
     for (let k = 0; k < todo.length; k++) {
       const { idx, isrc } = todo[k];
-      const cached = !!_isrcLookupCache[isrc];
-      try { await lookupIsrc(idx, isrc); }
-      catch (e) { if (e && (e.rateLimited || e.captcha)) { sxBlocked(e); return; } }
-      if (!cached && k < todo.length - 1) await sleep(BATCH_DELAY);   // pace only real requests
+      if (trackProv === 'sx') {
+        const cached = !!_isrcLookupCache[isrc];
+        try { await lookupIsrc(idx, isrc); }
+        catch (e) { if (e && (e.rateLimited || e.captcha)) { sxBlocked(e); return; } }
+        if (!cached && k < todo.length - 1) await sleep(BATCH_DELAY);   // pace only real requests
+      } else {
+        try { await lookupRowOnProvider(idx, isrc); }
+        catch (e) { Log.err(m.name + ': ' + errText(e)); }
+      }
     }
   }
 
@@ -1263,7 +1275,7 @@
       b.dataset.prov = key;
       b.innerHTML = provGlyph || m.short;
       b.title = (m.kind === 'album'
-        ? ('Get this track’s ISRC from ' + m.name)
+        ? ('Look up this track’s ISRC on ' + m.name)
         : 'Look up this track’s ISRC on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist')
         + '  ·  right-click: do all tracks';
       b.style.color = m.kind === 'album' ? m.color : '';

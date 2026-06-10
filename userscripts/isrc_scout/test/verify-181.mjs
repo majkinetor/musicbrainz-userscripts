@@ -97,18 +97,21 @@ const afterSelect = await page.evaluate(() => ({
     exactShown: getComputedStyle(document.getElementById('ii-exact-toggle')).display !== 'none',
 }));
 
-// 3) click the first per-track button → resolve that track's ISRC from HDtracks
+// snapshot the New-ISRC fields before any lookup, to prove nothing gets filled
+const fieldsBefore = await page.evaluate(() => [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-input')].map(i => i.value));
+
+// 3) click the first per-track button → look up that track's ISRC on HDtracks
 let bullet = '(skipped)';
 if (hasHd) {
     await page.evaluate(() => { const b = [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-sx')].find(x => !x.disabled); b && b.click(); });
     bullet = await page.waitForFunction(() => {
         const el = document.querySelector('#ii-tbody tr[data-idx] .ii-lookup');
         const t = el?.textContent?.trim();
-        return (t && /✓|✗/.test(t)) ? t : false;
+        return (t && /✓|⚠|✗/.test(t)) ? t : false;
     }, null, { timeout: 30_000 }).then(h => h.jsonValue()).catch(() => '(timeout)');
 }
 
-// 4) RIGHT-CLICK a per-track button → resolve ALL tracks from HDtracks
+// 4) RIGHT-CLICK a per-track button → look up ALL tracks on HDtracks
 let resolvedRows = 0;
 if (hasHd) {
     await page.evaluate(() => {
@@ -116,19 +119,23 @@ if (hasHd) {
         b && b.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
     });
     resolvedRows = await page.waitForFunction(() => {
-        const n = [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-lookup')].filter(el => /✓/.test(el.textContent || '')).length;
+        const n = [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-lookup')].filter(el => /✓|⚠/.test(el.textContent || '')).length;
         return n >= 13 ? n : false;
     }, null, { timeout: 45_000 }).then(h => h.jsonValue()).catch(() =>
-        page.evaluate(() => [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-lookup')].filter(el => /✓/.test(el.textContent || '')).length));
+        page.evaluate(() => [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-lookup')].filter(el => /✓|⚠/.test(el.textContent || '')).length));
 }
+
+// fields must be UNCHANGED — the per-track button only searches, never fills
+const fieldsAfter = await page.evaluate(() => [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-input')].map(i => i.value));
+const noFill = JSON.stringify(fieldsBefore) === JSON.stringify(fieldsAfter);
 
 const scriptLog = await page.evaluate(() => document.getElementById('ii-log-out')?.textContent || '');
 await context.close();
 
 const hdLines = scriptLog.split('\n').filter(l => /HDtracks/i.test(l));
-const perTrack = hdLines.find(l => /HDtracks #\d+/.test(l)) || '';
-const isrcInLog = /\b[A-Z]{2}[A-Z0-9]{3}\d{7}\b/.test(perTrack);
-const perTrackLines = hdLines.filter(l => /HDtracks #\d+/.test(l)).length;
+const perTrack = hdLines.find(l => /HDtracks [A-Z0-9]+ \(#\d+\)/.test(l)) || '';
+const isrcInLog = /HDtracks [A-Z]{2}[A-Z0-9]{3}\d{7} \(#\d+\)/.test(perTrack) && /— Daft Punk/.test(perTrack);
+const perTrackLines = hdLines.filter(l => /HDtracks [A-Z0-9]+ \(#\d+\)/.test(l)).length;
 
 console.log('\n── Provider menu (from a per-track ▾) ─────────');
 console.log('  offered :', providers.join(', '));
@@ -140,9 +147,10 @@ console.log('  some btn enabled        :', afterSelect.anyEnabled);
 console.log('\n── Per-track lookup from HDtracks ────────────');
 console.log('  bullet  :', bullet);
 console.log('  log line:', perTrack || '(none)');
+console.log('  fields unchanged (NO fill):', noFill);
 console.log('\n── Right-click → all tracks ──────────────────');
-console.log('  rows resolved (✓):', resolvedRows, '/ 13');
-console.log('  HDtracks #N log lines:', perTrackLines);
+console.log('  rows resolved (✓/⚠):', resolvedRows, '/ 13');
+console.log('  per-track log lines:', perTrackLines);
 if (pageErrors.length) console.log('\n  PAGE ERRORS:', pageErrors.join(' | '));
 
 console.log('\n── Verdict ───────────────────────────────────');
@@ -150,16 +158,17 @@ const menuOk     = providers.includes('SoundExchange') && providers.includes('HD
 const reskinOk   = afterSelect.btnProv === 'hdtracks' && afterSelect.allIcons;
 const bulkKept   = afterSelect.bulk === bulkBefore && /SoundExchange/.test(afterSelect.bulk || '');
 const exactKept  = afterSelect.exactShown;
-const bulletClean = /✓/.test(bullet) && !/already in MB/i.test(bullet);
-const lookupOk   = bulletClean && isrcInLog;
+const bulletMeta = /✓|⚠/.test(bullet) && /Daft Punk/.test(bullet) && !/already in MB/i.test(bullet);
+const lookupOk   = bulletMeta && isrcInLog;
 const allOk      = resolvedRows >= 13 && perTrackLines >= 13;
 console.log('  menu offers SoundExchange + HDtracks :', menuOk);
 console.log('  ALL per-track buttons re-skinned     :', reskinOk);
 console.log('  bulk ⟳ SoundExchange button UNCHANGED :', bulkKept);
 console.log('  exact controls still shown           :', exactKept);
-console.log('  per-track lookup matched, no "in MB" :', lookupOk, '·', perTrack.trim().slice(-40));
-console.log('  right-click resolved ALL 13 tracks   :', allOk, '(' + resolvedRows + ' rows, ' + perTrackLines + ' log lines)');
+console.log('  lookup shows full meta (incl. artist):', lookupOk, '·', bullet);
+console.log('  per-track button NEVER fills field   :', noFill);
+console.log('  right-click looked up ALL 13 tracks  :', allOk, '(' + resolvedRows + ' rows, ' + perTrackLines + ' log lines)');
 console.log('  no page errors                       :', pageErrors.length === 0);
-const pass = menuOk && reskinOk && bulkKept && exactKept && lookupOk && allOk && pageErrors.length === 0;
+const pass = menuOk && reskinOk && bulkKept && exactKept && lookupOk && noFill && allOk && pageErrors.length === 0;
 console.log(pass ? '\n✅ PASS' : '\n❌ FAIL');
 process.exit(pass ? 0 : 1);
