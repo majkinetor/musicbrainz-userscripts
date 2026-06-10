@@ -424,7 +424,9 @@
 
     /* toolbar */
     #ii-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
-      padding: 8px 16px; border-bottom: 1px solid #eee; flex-shrink: 0; background: #fbfbfd; }
+      padding: 8px 16px; border-bottom: 1px solid #eee; flex-shrink: 0; background: #fbfbfd;
+      position: relative; padding-right: 74px; }   /* reserve room so "Clear" stays pinned top-right and never wraps (#180) */
+    #ii-clear-pending { position: absolute; top: 8px; right: 16px; }
     .ii-tbtn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px;
       font-size: 12px; font-weight: 600; border-radius: 5px; cursor: pointer; text-decoration: none;
       border: 1px solid #dee2e6; background: #fff; color: #343a40; white-space: nowrap; }
@@ -447,7 +449,6 @@
     .ii-tbtn.primary { background: #198754; color: #fff; border-color: #198754; }
     .ii-tbtn.primary:hover { background: #157347; }
     .ii-tbtn.ghost { border-color: transparent; }
-    .ii-tspacer { flex: 1; }
     /* In-MB marker (#180): a provider button gets a ring around its icon + a
        brand tint when the release already has that platform's URL in MB; an
        un-tinted/un-ringed button means the link was found by Platform Check. */
@@ -461,15 +462,16 @@
     /* Unified "paste a URL" control (#180), apollo "+"-unroll style: a small
        round button that expands to an input on click; auto-detects the platform. */
     .ii-urladd { display: inline-flex; align-items: center; gap: 5px; }
+    .ii-urladd.open { flex: 1 1 auto; min-width: 120px; }   /* expanded input fills the row (#180) */
     .ii-urladd-btn { display: inline-flex; align-items: center; justify-content: center;
-      width: 26px; height: 26px; padding: 0; border: 1px solid #ced4da; border-radius: 50%;
+      flex: 0 0 auto; width: 26px; height: 26px; padding: 0; border: 1px solid #ced4da; border-radius: 50%;
       background: #fff; color: #6c757d; cursor: pointer; font-size: 16px; line-height: 1; }
     .ii-urladd-btn:hover { background: #f1f3f5; border-color: #adb5bd; }
     .ii-urladd-btn svg { display: block; }
-    .ii-urladd-input { display: none; width: 230px; max-width: 46vw; padding: 4px 9px;
+    .ii-urladd-input { display: none; padding: 4px 9px;
       border: 1px solid #ced4da; border-radius: 5px; font-size: 12px; }
     .ii-urladd-input:focus { outline: none; border-color: #6f42c1; }
-    .ii-urladd.open .ii-urladd-input { display: inline-block; }
+    .ii-urladd.open .ii-urladd-input { display: inline-block; flex: 1 1 auto; width: auto; min-width: 0; }
     .ii-urladd.open .ii-urladd-btn { border-radius: 5px; }
     .ii-prog { font-size: 11px; color: #6c757d; min-width: 0; }
     .ii-prog.err { color: #dc3545; font-weight: 700; }
@@ -1539,7 +1541,6 @@
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
         <span class="ii-prog" id="ii-prog"></span>
-        <span class="ii-tspacer"></span>
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear</button>
       </div>
 
@@ -1796,7 +1797,9 @@
      ['Tidal', 'ii-td-all', RELEASE.tidalId],
      ['Volumo', 'ii-vo-all', RELEASE.volumoId]].forEach(([source, id, mbId]) => {
       const btn = modal.querySelector('#' + id);
-      const hasPc = !!platformCheckUrl(source);
+      // Spotify imports only via its MB-linked album (ISRC Hunt resolves the
+      // release FROM the URL), so a PC-only Spotify link is not usable (#180).
+      const hasPc = source !== 'Spotify' && !!platformCheckUrl(source);
       btn.style.display = (mbId || hasPc) ? '' : 'none';
       btn.classList.toggle('ii-mb', !!mbId);
       btn.disabled = false;
@@ -2705,10 +2708,15 @@
   // If Platform Check (separate userscript) is on the page, read the URL it found
   // for this source from its sidebar anchor (#mb-online-<source>).
   function platformCheckUrl(source) {
-    const a = document.getElementById('mb-online-' + source.toLowerCase());
+    const key = source.toLowerCase();
+    const a = document.getElementById('mb-online-' + key);
     if (!a) return null;                                    // Platform Check not installed
     const href = a.getAttribute('href') || '';
     if (!/^https?:\/\//.test(href)) return null;            // nothing found yet ('#')
+    // Skip low-quality matches: PC marks its row pc-st-match (good), pc-st-mismatch
+    // (found but wrong — dimmed), or pc-st-notfound. Only trust a confident match (#180).
+    const row = document.getElementById('row-' + key);
+    if (row && !row.classList.contains('pc-st-match')) return null;
     return parseStreamingId(source, href) ? href : null;    // only if it parses to an album id
   }
   // Album id for a provider button: prefer the in-MB link, else fall back to the
@@ -2724,10 +2732,12 @@
     const s = String(input || '').trim();
     const mk = source => { const id = parseStreamingId(source, s); return id ? { source, code: SRC_CODE[source], id } : null; };
     if (/deezer\.com/i.test(s)) return mk('Deezer');
-    if (/open\.spotify\.com|spotify:album:/i.test(s)) return mk('Spotify');
     if (/beatport\.com/i.test(s)) return mk('Beatport');
     if (/tidal\.com/i.test(s)) return mk('Tidal');
     if (/volumo\.com/i.test(s)) return mk('Volumo');
+    // Spotify intentionally NOT detected here: its import resolves the MB release
+    // FROM the Spotify URL (ISRC Hunt), so a non-MB URL can't work (#180). It's
+    // offered only as a provider button when the release has a Spotify MB link.
     return null;
   }
   // Live feedback: show the detected platform's icon (in brand colour) on the +
@@ -2747,9 +2757,14 @@
     }
   }
   async function submitUrlAdd(value) {
-    const d = detectSource(value);
+    const v = String(value || '').trim();
+    const d = detectSource(v);
     if (!d) {
-      if (String(value || '').trim()) { toast('Unrecognized URL — paste a Deezer, Spotify, Beatport, Tidal or Volumo album link', 'err'); Log.warn('URL import: unrecognized "' + value + '"'); }
+      if (/open\.spotify\.com|spotify:album:/i.test(v)) {
+        toast('Spotify can only be imported from its MusicBrainz-linked album — use the Spotify button', 'err');
+      } else if (v) {
+        toast('Unrecognized URL — paste a Deezer, Beatport, Tidal or Volumo album link', 'err'); Log.warn('URL import: unrecognized "' + v + '"');
+      }
       return;
     }
     Log.info(d.source + ': importing pasted album ' + d.id);
