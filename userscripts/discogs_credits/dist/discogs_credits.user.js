@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.9.212221
+// @version      2026.6.10.140451
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -1451,7 +1451,7 @@
     Apito: null,
     Bagpipes: null,
     Bandoneon: null,
-    Bansuri: null,
+    Bansuri: "bansuri",
     "Baritone Horn": null,
     "Barrel Organ": null,
     "Bass Harmonica": null,

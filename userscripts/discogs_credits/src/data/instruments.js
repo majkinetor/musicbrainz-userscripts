@@ -475,7 +475,7 @@ export const INSTRUMENTS = {
     Apito: null,
     Bagpipes: null,
     Bandoneon: null,
-    Bansuri: null,
+    Bansuri: 'bansuri',
     'Baritone Horn': null,
     'Barrel Organ': null,
     'Bass Harmonica': null,
