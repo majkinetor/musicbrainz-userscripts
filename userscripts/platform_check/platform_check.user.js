@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.10.1
-// @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
+// @version      2026.6.10.2
+// @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md
@@ -27,6 +27,7 @@
 // @connect      openapi.tidal.com
 // @connect      auth.tidal.com
 // @connect      volumo.com
+// @connect      hdtracks.azurewebsites.net
 // @connect      api.beatport.com
 // @connect      *
 // ==/UserScript==
@@ -346,7 +347,7 @@ const iconBtn = 'cursor: pointer; user-select: none; color: #666; padding: 2px 6
 // metadata source, then the streaming services, with Deezer last because it
 // has the worst catalogue coverage of the four. Users can override via the
 // providers panel (drag-and-drop) and the choice persists in pc:provider-order.
-const ALL_PROVIDERS = ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer', 'tidal', 'beatport', 'volumo'];
+const ALL_PROVIDERS = ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks'];
 function getProviderOrder() {
     const raw = GM_getValue('pc:provider-order', null);
     if (!raw) return ALL_PROVIDERS.slice();
@@ -359,8 +360,8 @@ function getProviderOrder() {
     } catch { return ALL_PROVIDERS.slice(); }
 }
 const PROVIDER_ORDER = getProviderOrder();
-const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple', tidal:'Tidal', beatport:'Beatport', volumo:'Volumo' };
-const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C', tidal:'#111',  beatport:'#0a8754', volumo:'#7c4dff' };
+const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple', tidal:'Tidal', beatport:'Beatport', volumo:'Volumo', hdtracks:'HDtracks' };
+const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C', tidal:'#111',  beatport:'#0a8754', volumo:'#7c4dff', hdtracks:'#e63329' };
 // Small brand glyphs shown next to each provider name (toggle: pc:show-icons). Spotify / Apple Music /
 // Bandcamp are the real marks; Deezer (equalizer) and Discogs (vinyl) are clean brand-coloured stand-ins.
 const PROVIDER_ICON = {
@@ -374,6 +375,8 @@ const PROVIDER_ICON = {
   beatport: '<svg viewBox="0 0 24 24" width="14" height="14" fill="#0a8754"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg>',
   // Volumo: brand-violet disc with a "V" wedge (clean stand-in)
   volumo:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="#7c4dff"><circle cx="12" cy="12" r="10"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>',
+  // HDtracks: brand-red disc with an "HD" monogram (clean stand-in)
+  hdtracks: '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#e63329"/><path d="M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z" fill="#fff"/></svg>',
 };
 // MusicBrainz mark for the reference row (the release we're comparing platforms
 // against). Same logo image Apollo Editor uses for its MB/markdown toggle.
@@ -545,11 +548,11 @@ logModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width
 // active (toggled = filter ON = entries hidden). State is per-session only;
 // not persisted because the natural workflow is "open log to investigate
 // one provider's behavior on this page".
-const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Beatport', 'Volumo'];
+const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Beatport', 'Volumo', 'HDtracks'];
 const LOG_SOURCE_COLORS = {
     System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F',
     Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9', Deezer: '#A238FF', Apple: '#FA243C',
-    Tidal: '#CCC', Beatport: '#3AD17A', Volumo: '#b39dff',
+    Tidal: '#CCC', Beatport: '#3AD17A', Volumo: '#b39dff', HDtracks: '#f08a84',
 };
 logModal.innerHTML = `
 <style>
@@ -2471,6 +2474,63 @@ async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariou
     updateRow('volumo', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
+// ─── HDtracks ────────────────────────────────────────────────────────────────
+// High-resolution download store (#176) with a clean, unauthenticated, CORS-open
+// JSON API (hdtracks.azurewebsites.net/api/v1) — no Cloudflare, no captcha, no
+// token. The album id is a 24-char hex ObjectId; a barcode/UPC is resolved to it
+// via the search endpoint. /album/<id> embeds the full tracklist + per-track
+// ISRCs in one call. Bad ids / unknown GTINs return HTTP 200 with an empty body,
+// so presence is read from the JSON, not the status code. The 5009 legacy MB rels
+// use old URL forms (valbum_code=<UPC>, slug-id, artist page); the new canonical
+// web URL is https://www.hdtracks.com/#/album/<id>. We resolve by existing MB rel
+// → barcode → artist+album search.
+const HD_API = 'https://hdtracks.azurewebsites.net/api/v1';
+const hdtracksUrl = id => id ? `https://www.hdtracks.com/#/album/${id}` : null;
+async function hdtracksAlbum(id) { const r = await gmGet(`${HD_API}/album/${id}`); if (!r.ok) return null; try { const j = JSON.parse(r.responseText); return j && j.id ? j : null; } catch { return null; } }
+async function hdtracksSearch(q) { const r = await gmGet(`${HD_API}/albums/search?q=${encodeURIComponent(q)}`); if (!r.ok) return []; try { const j = JSON.parse(r.responseText); return Array.isArray(j.albums) ? j.albums : []; } catch { return []; } }
+async function scanHDtracks({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
+    const label = 'HDtracks';
+    const cached = cacheGet(mbid, 'hdtracks');
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('hdtracks', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('hdtracks', label, cached, mbTracks); return; }
+
+    let a = null, source = null;
+    if (existingUrl) {
+        source = 'MB rels'; appendLog(label, `Using existing MB URL: ${existingUrl}`, 'ok');
+        let m = existingUrl.match(/\/album\/([a-f0-9]{24})/i);
+        if (m) a = await hdtracksAlbum(m[1]);
+        else if ((m = existingUrl.match(/[?&]valbum_code=(\d{8,})/i))) {   // legacy URL: valbum_code is the UPC
+            const hits = await hdtracksSearch(m[1]);
+            if (hits[0]?.id) a = await hdtracksAlbum(hits[0].id);
+        }
+        // legacy slug-id / artist-page rels have no clean id mapping — fall through to barcode/search
+    }
+    if (!a && barcode) {
+        const hits = await hdtracksSearch(barcode);
+        if (hits[0]?.id) { a = await hdtracksAlbum(hits[0].id); if (a) { source = 'barcode'; appendLog(label, `Barcode ${barcode} → album ${a.id} "${a.name}"`, 'ok'); } }
+    }
+    if (!a && !existingUrl) {
+        const q = isVariousArtists ? album : `${artist} ${album}`;
+        const albums = await hdtracksSearch(q);
+        appendLog(label, `API search: ${albums.length} candidate(s)`);
+        let best = null;
+        for (const it of albums) {
+            const sc = scoreCandidate({ tracks: it.tracksCount || null, title: it.name, artist: (it.artists || []).join(' ') || it.mainArtist }, mbTracks, album, artist, isVariousArtists);
+            if (!best || sc > best.score) best = { score: sc, a: it };
+            if (sc >= 150) break;
+        }
+        if (best && best.score >= 120) { a = (await hdtracksAlbum(best.a.id)) || best.a; source = 'API search'; appendLog(label, `Picked best (score=${best.score}): album ${best.a.id}`, best.score >= 150 ? 'ok' : 'warn'); }
+    }
+    if (!a) { cacheSet(mbid, 'hdtracks', { url: null, tracks: null, year: null, label: null, source: 'search' }); updateRow('hdtracks', { url: null, mbTracks, remoteTracks: null }); return; }
+    const tracks = (a.tracks && a.tracks.length) || a.tracksCount || null;
+    const year = String(a.release || a.originalRelease || '').slice(0, 4) || null;
+    const lbl = a.label || null;
+    const url = hdtracksUrl(a.id);
+    appendLog(label, `Album: tracks=${tracks} title="${a.name}" year=${year || '?'}`, tracks ? 'ok' : 'warn');
+    cacheSet(mbid, 'hdtracks', { url, tracks, year, label: lbl, source });
+    updateRow('hdtracks', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+}
+
 // ─── Main entry ────────────────────────────────────────────────────────────
 const mbid = window.location.pathname.split('/')[2];
 if (!mbid || mbid.length < 10) {
@@ -2588,6 +2648,7 @@ function parseMbFromDom() {
             tidal:         externalHrefs.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
             beatport:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
             volumo:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
+            hdtracks:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?hdtracks\.com\//i.test(u)) || null,
             discogsMaster: externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
         };
 
@@ -2795,6 +2856,7 @@ function parseMbData(data) {
         tidal:         relUrls.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
         beatport:      relUrls.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
         volumo:        relUrls.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
+        hdtracks:      relUrls.find(u => /^https?:\/\/(?:www\.)?hdtracks\.com\//i.test(u)) || null,
         discogsMaster: relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?master\/\d+/i.test(u)) || null,
     };
     const format = data.media?.[0]?.format || null;
@@ -2927,6 +2989,7 @@ async function runScans() {
         tidal:    `https://tidal.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
         beatport: `https://www.beatport.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
         volumo:   `https://volumo.com/releases?search=${encodeURIComponent(`${artist} ${album}`)}`,
+        hdtracks: `https://www.hdtracks.com/#/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
     };
     for (const [p, u] of Object.entries(searchUrls)) {
         const a = document.getElementById(`mb-online-${p}`);
@@ -2956,6 +3019,7 @@ async function runScans() {
     if (GM_getValue('prov_tidal',    true)) tasks.push(scanTidal   ({ ...ctx, existingUrl: existing.tidal,    wikidataTidalId: wd?.tidalId || null }));
     if (GM_getValue('prov_beatport', true)) tasks.push(scanBeatport({ ...ctx, existingUrl: existing.beatport, wikidataBeatportId: wd?.beatportId || null }));
     if (GM_getValue('prov_volumo',   true)) tasks.push(scanVolumo  ({ ...ctx, existingUrl: existing.volumo   }));
+    if (GM_getValue('prov_hdtracks', true)) tasks.push(scanHDtracks({ ...ctx, existingUrl: existing.hdtracks }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
 }

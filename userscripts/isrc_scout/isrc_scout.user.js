@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.10
-// @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
+// @version      2026.6.10.1
+// @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md
@@ -23,6 +23,7 @@
 // @connect      openapi.tidal.com
 // @connect      auth.tidal.com
 // @connect      volumo.com
+// @connect      hdtracks.azurewebsites.net
 // @connect      api.beatport.com
 // @run-at       document-start
 // ==/UserScript==
@@ -195,6 +196,8 @@
     bp: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10 8.2l6 3.8-6 3.8z"/></svg>',
     td: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>',
     vo: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M7.5 8h2l2.5 5.5L14.5 8h2l-3.5 8h-2z"/></svg>',
+    // HDtracks: "HD" monogram (clean stand-in — the brand has no public glyph mark)
+    hd: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M2 6h2.4v4h4V6h2.4v12H8.4v-5.6h-4V18H2z"/><path d="M12 6h4.2c3 0 5 2.4 5 6s-2 6-5 6H12zm2.4 2.2v7.6h1.6c1.7 0 2.8-1.5 2.8-3.8s-1.1-3.8-2.8-3.8z"/></svg>',
   };
 
   const mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/)?.[1];
@@ -439,6 +442,7 @@
     .ii-tbtn.bp  { color: #0a8754; border-color: #9fe0c2; }
     .ii-tbtn.td  { color: #1f2d3d; border-color: #b5c2d0; }
     .ii-tbtn.vo  { color: #7c4dff; border-color: #cdbcff; }
+    .ii-tbtn.hd  { color: #e63329; border-color: #f4b8b3; }
     /* import-source buttons: independently show icon and/or text (⚙ Setup).
        Default = icons only (toolbar room); both can be on at once. */
     .ii-bico { display: none; line-height: 0; }
@@ -801,7 +805,7 @@
         });
       });
       const rels = data.relations || [];
-      let deezerId = null, spotifyId = null, beatportId = null, tidalId = null, volumoId = null;
+      let deezerId = null, spotifyId = null, beatportId = null, tidalId = null, volumoId = null, hdtracksId = null;
       rels.forEach(rel => {
         const u = rel.url && rel.url.resource;
         if (!u) return;
@@ -811,6 +815,12 @@
         if ((m = u.match(/beatport\.com\/release\/[^/]+\/(\d+)/)))       beatportId = m[1];
         if ((m = u.match(/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/))) tidalId = m[1];
         if ((m = u.match(/volumo\.com\/album\/(\d+)/)))                  volumoId = m[1];   // id or leading ICPN
+        // HDtracks: new API form #/album/<24-hex ObjectId> resolves directly; the
+        // 5009 legacy MB rels carry the UPC in valbum_code, which fetchHDtracks
+        // resolves via barcode search. The slug-id / artist-page legacy forms have
+        // no clean id mapping and are skipped (handled by Platform Check by barcode).
+        if (!hdtracksId && (m = u.match(/hdtracks\.com\/(?:#\/)?album\/([a-f0-9]{24})/i))) hdtracksId = m[1];
+        if (!hdtracksId && (m = u.match(/hdtracks\.com\/[^?]*[?&]valbum_code=(\d{8,})/i))) hdtracksId = m[1];
       });
       // THIS release's year — what the header shows AND what the SX "recording newer
       // than the release" check uses. Prefer the release's own date; only fall back to
@@ -834,11 +844,12 @@
       });
       Object.keys(pend).forEach(rid => { if (!tracks.some(t => t.recId === rid)) { delete pend[rid]; pendChanged = true; } });
       if (pendChanged) savePendingRemovals(pend);
-      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, beatportId, tidalId, volumoId, releaseYear, artist };
+      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, beatportId, tidalId, volumoId, hdtracksId, releaseYear, artist };
       Log.info('Release "' + RELEASE.title + '"' + (releaseYear ? ' (' + releaseYear + ')' : '') + ': ' + tracks.length + ' track(s), ' +
         tracks.filter(t => !t.existing.length).length + ' missing ISRC' +
         '; links: ' + [deezerId ? 'Deezer ' + deezerId : null, spotifyId ? 'Spotify ' + spotifyId : null,
-          beatportId ? 'Beatport ' + beatportId : null, tidalId ? 'Tidal ' + tidalId : null, volumoId ? 'Volumo ' + volumoId : null].filter(Boolean).join(', '));
+          beatportId ? 'Beatport ' + beatportId : null, tidalId ? 'Tidal ' + tidalId : null, volumoId ? 'Volumo ' + volumoId : null,
+          hdtracksId ? 'HDtracks ' + hdtracksId : null].filter(Boolean).join(', '));
       return RELEASE;
     });
   }
@@ -1384,6 +1395,53 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
+     HDTRACKS  (#176 — clean unauthenticated, CORS-open JSON API; one call per
+     album returns every track's ISRC inline, no per-track fan-out. The album id
+     is a 24-char hex ObjectId; a numeric token (UPC, from a legacy valbum_code
+     rel or from Platform Check) is resolved to that id via the search endpoint
+     first. Bad ids / unknown barcodes return HTTP 200, so presence is read from
+     the JSON body, never the status code.)
+  ═══════════════════════════════════════════════════════════════════════ */
+  const HD_API = 'https://hdtracks.azurewebsites.net/api/v1';
+  async function fetchHDtracks(albumId, onProgress, onIsrc) {
+    if (onProgress) onProgress(0, 0);
+    let id = String(albumId).trim();
+    if (!/^[a-f0-9]{24}$/i.test(id)) {
+      // a barcode/UPC — resolve to the ObjectId via search before fetching tracks
+      const sr = await gmGet(HD_API + '/albums/search?q=' + encodeURIComponent(id), { 'Accept': 'application/json' });
+      if (sr.status !== 200) throw new Error('HDtracks search ' + sr.status + ' for ' + id);
+      let sj; try { sj = JSON.parse(sr.responseText || 'null'); } catch (e) { throw new Error('HDtracks: malformed search JSON'); }
+      const hit = (sj && Array.isArray(sj.albums) && sj.albums[0]) || null;
+      if (!hit || !hit.id) throw new Error('HDtracks: no album for ' + id);
+      id = hit.id;
+    }
+    const r = await gmGet(HD_API + '/album/' + id, { 'Accept': 'application/json' });
+    if (r.status !== 200) throw new Error('HDtracks ' + r.status + ' for album ' + id);
+    let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { throw new Error('HDtracks: malformed JSON'); }
+    if (!j || !j.id) throw new Error('HDtracks: album ' + id + ' not found');
+    const list = (j && j.tracks) || [];
+    Log.info('HDtracks album "' + (j.name || id) + '": ' + list.length + ' track(s)');
+    let n = 0;
+    list.forEach((t, i) => {
+      const e = {
+        isrc:   normalizeIsrc(t.isrc || ''),
+        title:  t.name || '',
+        artist: t.mainArtist || '',
+        // discIndex is present on some albums; album-wide `index` is the only
+        // reliable ordering. Disc/position are display-only here — matching is by ISRC.
+        disc:   t.discIndex || 1,
+        pos:    t.index || (i + 1),
+        dur:    t.duration ? msToMmSs(t.duration * 1000) : '',   // duration is seconds (float)
+      };
+      try { if (onIsrc && isValidIsrc(e.isrc)) onIsrc(e); } catch (err) { Log.warn('HDtracks map hiccup for ' + e.isrc + ': ' + errText(err)); }
+      try { if (onProgress) onProgress(++n, list.length); } catch (err) {}
+    });
+    const withIsrc = list.filter(t => isValidIsrc(normalizeIsrc(t.isrc || ''))).length;
+    if (!withIsrc) throw new Error('HDtracks album exposed no ISRCs');
+    return { total: list.length, next: null };
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
      EDITOR MODAL — DOM
   ═══════════════════════════════════════════════════════════════════════ */
   let overlay, modal, tbody, summaryEl, progEl, submitBtn;
@@ -1536,8 +1594,9 @@
         <button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
         <button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
         <button class="ii-tbtn vo" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
+        <button class="ii-tbtn hd" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
         <span class="ii-urladd" id="ii-urladd">
-          <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo) — auto-detected and imported">+</button>
+          <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks) — auto-detected and imported">+</button>
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
         <span class="ii-prog" id="ii-prog"></span>
@@ -1644,6 +1703,7 @@
     modal.querySelector('#ii-bp-all').addEventListener('click', runBeatport);
     modal.querySelector('#ii-td-all').addEventListener('click', runTidal);
     modal.querySelector('#ii-vo-all').addEventListener('click', runVolumo);
+    modal.querySelector('#ii-hd-all').addEventListener('click', runHDtracks);
     // Unified "paste a URL" control (#180) — apollo-style unroll. Click the +
     // to reveal the input; paste any streaming album URL; on Enter the platform
     // is auto-detected and imported. Replaces the per-provider ▾ submenus.
@@ -1795,7 +1855,8 @@
      ['Spotify', 'ii-sp-all', RELEASE.spotifyId],
      ['Beatport', 'ii-bp-all', RELEASE.beatportId],
      ['Tidal', 'ii-td-all', RELEASE.tidalId],
-     ['Volumo', 'ii-vo-all', RELEASE.volumoId]].forEach(([source, id, mbId]) => {
+     ['Volumo', 'ii-vo-all', RELEASE.volumoId],
+     ['HDtracks', 'ii-hd-all', RELEASE.hdtracksId]].forEach(([source, id, mbId]) => {
       const btn = modal.querySelector('#' + id);
       // Spotify imports only via its MB-linked album (ISRC Hunt resolves the
       // release FROM the URL), so a PC-only Spotify link is not usable (#180).
@@ -2690,6 +2751,7 @@
   async function runBeatport() { return runProvider('Beatport', RELEASE.beatportId, fetchBeatport, '#ii-bp-all'); }
   async function runTidal()    { return runProvider('Tidal',    RELEASE.tidalId,    fetchTidal,    '#ii-td-all'); }
   async function runVolumo()   { return runProvider('Volumo',   RELEASE.volumoId,   fetchVolumo,   '#ii-vo-all'); }
+  async function runHDtracks() { return runProvider('HDtracks', RELEASE.hdtracksId, fetchHDtracks, '#ii-hd-all'); }
   // Map a source label to its fetcher (used by the unified URL-paste import).
   function fetcherFor(source) {
     return source === 'Deezer'   ? fetchDeezer
@@ -2697,13 +2759,14 @@
          : source === 'Beatport' ? fetchBeatport
          : source === 'Tidal'    ? fetchTidal
          : source === 'Volumo'   ? fetchVolumo
+         : source === 'HDtracks' ? fetchHDtracks
          : null;
   }
 
   /* ── source links & the unified "paste a URL" control (#180) ── */
   // Source name → SRC_ICON key / brand colour, for the URL-add detection feedback.
-  const SRC_CODE  = { Deezer: 'dz', Spotify: 'sp', Beatport: 'bp', Tidal: 'td', Volumo: 'vo' };
-  const SRC_COLOR = { dz: '#ef5466', sp: '#1db954', bp: '#0a8754', td: '#1f2d3d', vo: '#7c4dff' };
+  const SRC_CODE  = { Deezer: 'dz', Spotify: 'sp', Beatport: 'bp', Tidal: 'td', Volumo: 'vo', HDtracks: 'hd' };
+  const SRC_COLOR = { dz: '#ef5466', sp: '#1db954', bp: '#0a8754', td: '#1f2d3d', vo: '#7c4dff', hd: '#e63329' };
 
   // If Platform Check (separate userscript) is on the page, read the URL it found
   // for this source from its sidebar anchor (#mb-online-<source>).
@@ -2735,6 +2798,7 @@
     if (/beatport\.com/i.test(s)) return mk('Beatport');
     if (/tidal\.com/i.test(s)) return mk('Tidal');
     if (/volumo\.com/i.test(s)) return mk('Volumo');
+    if (/hdtracks\.com/i.test(s)) return mk('HDtracks');
     // Spotify intentionally NOT detected here: its import resolves the MB release
     // FROM the Spotify URL (ISRC Hunt), so a non-MB URL can't work (#180). It's
     // offered only as a provider button when the release has a Spotify MB link.
@@ -2753,7 +2817,7 @@
     } else {
       btn.textContent = '+';
       btn.style.color = '';
-      btn.title = 'Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo) — auto-detected and imported';
+      btn.title = 'Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks) — auto-detected and imported';
     }
   }
   async function submitUrlAdd(value) {
@@ -2763,7 +2827,7 @@
       if (/open\.spotify\.com|spotify:album:/i.test(v)) {
         toast('Spotify can only be imported from its MusicBrainz-linked album — use the Spotify button', 'err');
       } else if (v) {
-        toast('Unrecognized URL — paste a Deezer, Beatport, Tidal or Volumo album link', 'err'); Log.warn('URL import: unrecognized "' + v + '"');
+        toast('Unrecognized URL — paste a Deezer, Beatport, Tidal, Volumo or HDtracks album link', 'err'); Log.warn('URL import: unrecognized "' + v + '"');
       }
       return;
     }
@@ -2787,6 +2851,15 @@
     if (source === 'Volumo') {
       const m = s.match(/volumo\.com\/album\/(\d+)/);   // id or leading ICPN in the canonical /album/{icpn}-{slug}
       return m ? m[1] : (/^\d+$/.test(s) ? s : null);
+    }
+    if (source === 'HDtracks') {
+      // new API form #/album/<24-hex ObjectId>; legacy valbum_code=<UPC> resolves
+      // via barcode search. A bare 24-hex id or a bare 8+ digit barcode also work.
+      let m = s.match(/hdtracks\.com\/(?:#\/)?album\/([a-f0-9]{24})/i);
+      if (m) return m[1];
+      m = s.match(/[?&]valbum_code=(\d{8,})/i);
+      if (m) return m[1];
+      return /^[a-f0-9]{24}$/i.test(s) ? s : (/^\d{8,}$/.test(s) ? s : null);
     }
     let m = s.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/) || s.match(/spotify:album:([A-Za-z0-9]+)/);
     return m ? m[1] : (/^[A-Za-z0-9]{18,30}$/.test(s) ? s : null);
