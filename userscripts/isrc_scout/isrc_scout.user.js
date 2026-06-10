@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.10.2
+// @version      2026.6.10.3
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -1223,12 +1223,33 @@
   // provider. For SoundExchange that's the rate-limit-safe batch search; for an
   // album provider the album is fetched once and every row is resolved from it.
   async function runTrackAll() {
-    if (TPM().kind !== 'album') { runSxAll(); return; }
     const m = TPM();
-    try { await ensureProvAlbum(trackProv); }
-    catch (e) { Log.err(m.name + ': ' + errText(e)); toast(m.name + ' — ' + errText(e), 'err'); return; }
-    Log.info(m.name + ': resolving all ' + RELEASE.tracks.length + ' track(s)');
-    for (let i = 0; i < RELEASE.tracks.length; i++) await fillRowFromProvider(i);
+    if (m.kind === 'album') {
+      try { await ensureProvAlbum(trackProv); }
+      catch (e) { Log.err(m.name + ': ' + errText(e)); toast(m.name + ' — ' + errText(e), 'err'); return; }
+      Log.info(m.name + ': resolving all ' + RELEASE.tracks.length + ' track(s)');
+      for (let i = 0; i < RELEASE.tracks.length; i++) await fillRowFromProvider(i);
+      return;
+    }
+    // SoundExchange: do exactly what left-clicking each per-track button does —
+    // a by-ISRC verify of every track's entered/existing ISRC, shown next to each
+    // row. Serialized + paced so we don't trip SX's rate limit / captcha; tracks
+    // with no ISRC (whose button is disabled) are skipped, like a real click.
+    const todo = [];
+    RELEASE.tracks.forEach((t, idx) => {
+      const input = rowInput(idx);
+      const v = normalizeIsrc(input ? input.value : '');
+      const isrc = (v && isValidIsrc(v)) ? v : ((t.existing && t.existing[0]) || '');
+      if (isrc) todo.push({ idx, isrc });
+    });
+    Log.info('SoundExchange: verifying ' + todo.length + ' track(s) with an ISRC');
+    for (let k = 0; k < todo.length; k++) {
+      const { idx, isrc } = todo[k];
+      const cached = !!_isrcLookupCache[isrc];
+      try { await lookupIsrc(idx, isrc); }
+      catch (e) { if (e && (e.rateLimited || e.captcha)) { sxBlocked(e); return; } }
+      if (!cached && k < todo.length - 1) await sleep(BATCH_DELAY);   // pace only real requests
+    }
   }
 
   // Re-skin EVERY per-track button to the chosen provider (global, not persisted).
