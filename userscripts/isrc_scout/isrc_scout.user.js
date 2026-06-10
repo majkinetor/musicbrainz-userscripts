@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.10.1
+// @version      2026.6.10.2
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -613,6 +613,27 @@
     #ii-log-pane h3 { display: flex; align-items: center; gap: 8px; }
     .ii-sx-group { display: inline-flex; align-items: center; gap: 7px; padding: 3px 8px 3px 4px;
       border: 1px solid #e0d7f2; background: #faf8fe; border-radius: 7px; }
+    /* per-track ISRC-provider selector (#181): a split [icon|▾] on each row's button */
+    .ii-sxsplit { display: inline-flex; align-items: stretch; flex-shrink: 0; }
+    .ii-sxsplit .ii-sx { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+    .ii-sxprov { display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; margin-left: -1px;
+      font-size: 9px; color: #6c757d; background: #eef3fb; border: 1px solid #cfd8e3; border-left-color: #b9c6d8;
+      border-top-right-radius: 5px; border-bottom-right-radius: 5px; cursor: pointer; }
+    .ii-sxprov:hover { background: #dde8f7; color: #1b3f6e; }
+    .ii-prov-menu { display: none; position: absolute; z-index: 60; flex-direction: column; min-width: 178px;
+      padding: 4px; background: #fff; border: 1px solid #d6c7ee; border-radius: 7px; box-shadow: 0 6px 22px rgba(40,20,80,.18); }
+    .ii-prov-menu.open { display: flex; }
+    .ii-prov-item { display: flex; align-items: center; gap: 8px; padding: 6px 9px; font-size: 12px; font-weight: 600;
+      color: inherit; background: none; border: 0; border-radius: 5px; cursor: pointer; text-align: left; }
+    .ii-prov-item:hover { background: #f3eefc; }
+    .ii-prov-item.active { background: #ece4fb; }
+    .ii-prov-item.active::after { content: '✓'; margin-left: auto; color: #6f42c1; font-weight: 700; }
+    .ii-prov-ico { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; flex-shrink: 0; }
+    .ii-prov-ico svg { width: 16px; height: 16px; }
+    .ii-prov-sx { font-size: 10px; font-weight: 800; color: #6f42c1; }
+    .ii-prov-name { color: #343a40; }
+    /* per-track button shows the chosen provider's icon */
+    .ii-sx svg { width: 13px; height: 13px; display: block; }
     /* collapsible "exact" toggle — collapsed by default so the toolbar stays compact */
     .ii-exact-toggle { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; font-size: 11px;
       font-weight: 600; color: #8a7bb0; background: #fff; border: 1px solid #e0d7f2; border-radius: 5px; cursor: pointer; }
@@ -1086,6 +1107,188 @@
 
     return { refreshToken, apiSearch, apiSearchByIsrc, fields, classify };
   })();
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     TRACK ISRC PROVIDER (#181) — the per-track [SX] buttons and the bulk
+     "⟳ SoundExchange" button are one "track ISRC provider" control. The choice
+     is GLOBAL for the release (every track uses the same provider) and is NOT
+     remembered — it resets to SoundExchange on each load.
+       • SoundExchange searches each track by title/artist (per-track).
+       • The album providers (Deezer / Spotify / Beatport / Tidal / Volumo /
+         HDtracks) fetch the whole album ONCE (cached for the session) and a
+         per-track click fills just that one track from it.
+     Selecting a provider re-skins every [SX] button to that provider's icon.
+  ═══════════════════════════════════════════════════════════════════════ */
+  // Album-based providers — same fetchers the import buttons use. `idField` is the
+  // RELEASE property holding the in-MB album id; availability also honours a
+  // Platform-Check-found URL (via providerAlbumId).
+  const ALBUM_PROVIDERS = {
+    deezer:   { source: 'Deezer',   idField: 'deezerId',   fetcher: fetchDeezer,   code: 'dz' },
+    spotify:  { source: 'Spotify',  idField: 'spotifyId',  fetcher: fetchSpotify,  code: 'sp' },
+    beatport: { source: 'Beatport', idField: 'beatportId', fetcher: fetchBeatport, code: 'bp' },
+    tidal:    { source: 'Tidal',    idField: 'tidalId',    fetcher: fetchTidal,    code: 'td' },
+    volumo:   { source: 'Volumo',   idField: 'volumoId',   fetcher: fetchVolumo,   code: 'vo' },
+    hdtracks: { source: 'HDtracks', idField: 'hdtracksId', fetcher: fetchHDtracks, code: 'hd' },
+  };
+  const _PROV_COLOR = { sx: '#6f42c1', deezer: '#ef5466', spotify: '#1db954', beatport: '#0a8754', tidal: '#1f2d3d', volumo: '#7c4dff', hdtracks: '#e63329' };
+  const TRACK_PROV = { sx: { name: 'SoundExchange', short: 'SX', code: 'sx', color: _PROV_COLOR.sx, kind: 'search' } };
+  Object.keys(ALBUM_PROVIDERS).forEach(k => {
+    const p = ALBUM_PROVIDERS[k];
+    TRACK_PROV[k] = { name: p.source, short: p.source, code: p.code, color: _PROV_COLOR[k] || '#444', kind: 'album' };
+  });
+  const TRACK_PROV_ORDER = ['sx', 'deezer', 'spotify', 'beatport', 'tidal', 'volumo', 'hdtracks'];
+  let trackProv = 'sx';                                  // NOT persisted (#181)
+  const TPM = () => TRACK_PROV[trackProv];
+  // a provider is offered only when it can resolve a source for THIS release
+  // (SoundExchange always; an album provider needs an MB link or a PC-found URL).
+  function trackProvAvailable(key) {
+    if (key === 'sx') return true;
+    const p = ALBUM_PROVIDERS[key];
+    return !!(p && RELEASE && providerAlbumId(p.source, RELEASE[p.idField]));
+  }
+  // whether the per-track button should be clickable: album providers can fill an
+  // empty row, so they're always enabled; SoundExchange needs something to verify.
+  function trackBtnDisabled(t, inputVal) {
+    if (TPM().kind === 'album') return false;
+    return !(isValidIsrc(normalizeIsrc(inputVal)) || (t && t.existing && t.existing.length));
+  }
+
+  // Fetch the selected album provider's whole tracklist ONCE (all batches), keyed
+  // per provider for the session. Returns the collected per-track ISRC entries.
+  const _provAlbumEntries = {};
+  const _provAlbumPromise = {};
+  function ensureProvAlbum(key) {
+    if (_provAlbumEntries[key]) return Promise.resolve(_provAlbumEntries[key]);
+    if (_provAlbumPromise[key]) return _provAlbumPromise[key];
+    const p = ALBUM_PROVIDERS[key];
+    const id = providerAlbumId(p.source, RELEASE[p.idField]);
+    if (!id) return Promise.reject(new Error('no ' + p.source + ' link on this release'));
+    const entries = [];
+    _provAlbumPromise[key] = (async () => {
+      let cursor = 0, guard = 0;
+      while (guard++ < 50) {
+        const res = await p.fetcher(id, () => {}, s => { if (s && s.isrc) entries.push(s); }, cursor);
+        if (!res || res.next == null) break;
+        cursor = res.next;
+      }
+      _provAlbumEntries[key] = entries; delete _provAlbumPromise[key];
+      return entries;
+    })().catch(e => { delete _provAlbumPromise[key]; throw e; });
+    return _provAlbumPromise[key];
+  }
+  // map a provider album entry to a MB track row (disc/pos first, then title)
+  function provEntryForRow(entries, t) {
+    let e = entries.find(s => (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || entries.filter(x => +x.disc === +t.mediumPos).length === 0));
+    if (!e) e = entries.find(s => s.title && isGoodMatch(s.title, s.artist, t.title, t.artist));
+    return e || null;
+  }
+  // Per-track fill from the selected album provider (fetches the album once).
+  async function fillRowFromProvider(idx) {
+    const t = RELEASE.tracks[idx], m = TPM(), el = rowLookup(idx);
+    if (el) { el.onclick = null; el.className = 'ii-lookup spin'; el.textContent = '⏳ ' + m.name + '…'; }
+    try {
+      const entries = await ensureProvAlbum(trackProv);
+      const e = provEntryForRow(entries, t);
+      const iso = e ? normalizeIsrc(e.isrc) : '';
+      if (!iso || !isValidIsrc(iso)) {
+        if (el) { el.className = 'ii-lookup err'; el.textContent = '✗ not found on ' + m.name; }
+        Log.warn(m.name + ' #' + (t.number || t.trackPos) + ': no ISRC for "' + t.title + '"');
+        return;
+      }
+      const inMb = t.existing.includes(iso);
+      if (el) {
+        el.className = 'ii-lookup ok';
+        el.innerHTML = '✓ ' + esc(e.title || t.title) + (e.dur ? ' · ' + esc(e.dur) : '');
+        el.title = [e.title, e.artist, e.dur].filter(Boolean).join(' · ');
+      }
+      if (!t.pending && !inMb) { setPending(idx, iso, true, m.name); updateSummary(); }
+      Log.info(m.name + ' #' + (t.number || t.trackPos) + ' "' + t.title + '": ' + iso + (inMb ? ' (already in MB)' : ''));
+    } catch (err) {
+      if (el) { el.className = 'ii-lookup err'; el.textContent = '✗ ' + m.name + ' failed'; }
+      Log.err(m.name + ' single fill failed: ' + errText(err));
+    }
+  }
+
+  // The per-track button routes to SoundExchange (by-ISRC lookup/verify) or to the
+  // selected album provider (fill that one track from the fetched album).
+  function runTrackSingle(idx) {
+    const t = RELEASE.tracks[idx];
+    if (TPM().kind === 'album') { fillRowFromProvider(idx); return; }
+    const input = rowInput(idx);
+    const v = normalizeIsrc(input ? input.value : '');
+    const isrc = (v && isValidIsrc(v)) ? v : ((t.existing && t.existing[0]) || '');
+    if (isrc) lookupIsrc(idx, isrc).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); });
+  }
+  // Right-click a per-track button → run it for EVERY track with the current
+  // provider. For SoundExchange that's the rate-limit-safe batch search; for an
+  // album provider the album is fetched once and every row is resolved from it.
+  async function runTrackAll() {
+    if (TPM().kind !== 'album') { runSxAll(); return; }
+    const m = TPM();
+    try { await ensureProvAlbum(trackProv); }
+    catch (e) { Log.err(m.name + ': ' + errText(e)); toast(m.name + ' — ' + errText(e), 'err'); return; }
+    Log.info(m.name + ': resolving all ' + RELEASE.tracks.length + ' track(s)');
+    for (let i = 0; i < RELEASE.tracks.length; i++) await fillRowFromProvider(i);
+  }
+
+  // Re-skin EVERY per-track button to the chosen provider (global, not persisted).
+  // The bulk "⟳ SoundExchange" toolbar button is intentionally left untouched.
+  function setTrackProvider(key) {
+    if (!TRACK_PROV[key] || !trackProvAvailable(key)) return;
+    trackProv = key;
+    const m = TPM();
+    const provGlyph = (m.code !== 'sx' && SRC_ICON[m.code]) ? SRC_ICON[m.code] : null;
+    modal.querySelectorAll('.ii-sx').forEach(b => {
+      b.dataset.prov = key;
+      b.innerHTML = provGlyph || m.short;
+      b.title = (m.kind === 'album'
+        ? ('Get this track’s ISRC from ' + m.name)
+        : 'Look up this track’s ISRC on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist')
+        + '  ·  right-click: do all tracks';
+      b.style.color = m.kind === 'album' ? m.color : '';
+    });
+    RELEASE.tracks.forEach((t, i) => {
+      const b = tbody.querySelector('tr[data-idx="' + i + '"] .ii-sx');
+      if (b) { const inp = rowInput(i); b.disabled = trackBtnDisabled(t, inp ? inp.value : ''); }
+    });
+    Log.info('Track ISRC provider → ' + m.name);
+  }
+  // Build the provider dropdown (only the providers available for this release).
+  function buildProvMenu() {
+    const menu = modal.querySelector('#ii-prov-menu');
+    if (!menu) return;
+    menu.innerHTML = '';
+    TRACK_PROV_ORDER.filter(trackProvAvailable).forEach(key => {
+      const m = TRACK_PROV[key];
+      const glyph = (m.code !== 'sx' && SRC_ICON[m.code]) ? SRC_ICON[m.code] : '<span class="ii-prov-sx">SX</span>';
+      const it = document.createElement('button');
+      it.type = 'button';
+      it.className = 'ii-prov-item' + (key === trackProv ? ' active' : '');
+      it.style.color = m.color;
+      it.innerHTML = '<span class="ii-prov-ico">' + glyph + '</span><span class="ii-prov-name">' + m.name + '</span>';
+      it.addEventListener('click', () => { setTrackProvider(key); closeProvMenu(); });
+      menu.appendChild(it);
+    });
+  }
+  // Open the shared menu anchored beneath the clicked per-track ▾ caret.
+  function openProvMenu(anchor) {
+    buildProvMenu();
+    const menu = modal.querySelector('#ii-prov-menu');
+    if (!menu) return;
+    menu.classList.add('open');
+    if (anchor && menu.offsetParent) {
+      const a = anchor.getBoundingClientRect();
+      const p = menu.offsetParent.getBoundingClientRect();
+      let left = a.left - p.left;
+      left = Math.min(left, menu.offsetParent.clientWidth - menu.offsetWidth - 8);
+      menu.style.left = Math.max(8, left) + 'px';
+      menu.style.top = (a.bottom - p.top + 4) + 'px';
+    }
+  }
+  function closeProvMenu() {
+    const menu = modal.querySelector('#ii-prov-menu');
+    if (menu) menu.classList.remove('open');
+  }
 
   // SX exact-match toggles (persisted)
   const sxExact = {
@@ -1603,6 +1806,9 @@
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear</button>
       </div>
 
+      <!-- floating provider menu (#181) — opened from any per-track button's ▾ -->
+      <div class="ii-prov-menu" id="ii-prov-menu"></div>
+
       <div id="ii-body">
         <table id="ii-table">
           <colgroup>
@@ -1638,7 +1844,18 @@
     modal.querySelector('#ii-setup-toggle').addEventListener('click', () => togglePane('ii-setup-pane'));
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-clear-pending').addEventListener('click', clearPending);
-    modal.querySelector('#ii-sx-all').addEventListener('click', runSxAll);
+    modal.querySelector('#ii-sx-all').addEventListener('click', runSxAll);   // bulk SoundExchange — unchanged (#181)
+
+    // Track-ISRC-provider menu (#181): the per-track [SX] buttons carry a ▾ that
+    // opens this shared menu of providers available for THIS release; picking one
+    // re-skins EVERY per-track button (global, not persisted). The bulk
+    // SoundExchange button above is intentionally left alone.
+    document.addEventListener('mousedown', e => {
+      const menu = modal.querySelector('#ii-prov-menu');
+      if (!menu || !menu.classList.contains('open')) return;
+      if (e.target.closest('#ii-prov-menu') || e.target.closest('.ii-sxprov')) return;
+      closeProvMenu();
+    });
 
     // log pane
     Log.setPane(modal.querySelector('#ii-log-out'));
@@ -1895,7 +2112,10 @@
           '</div>' +
           // first track has no previous ISRC to increment — hide +1 but keep its slot so SX text stays aligned
           '<button class="ii-plus' + (idx === 0 ? ' ii-plus-hidden' : '') + '" title="Previous ISRC + 1  (right-click: fill the +1 sequence down to the last track, overwriting)">+1</button>' +
-          '<button class="ii-sx" type="button" title="Search this track on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist">SX</button>' +
+          '<span class="ii-sxsplit">' +
+            '<button class="ii-sx" type="button" title="Look up this track\'s ISRC on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist  ·  right-click: do all tracks">SX</button>' +
+            '<button class="ii-sxprov" type="button" tabindex="-1" title="Choose the ISRC provider for all tracks">▾</button>' +
+          '</span>' +
           '<span class="ii-lookup"></span>' +
           '</div><div class="ii-cands"></div></td>';
       const input = tr.querySelector('.ii-input');
@@ -1914,7 +2134,7 @@
         // Clear any stale bullet while editing; the SX check now fires on blur
         // (manual entry) or the row's [SX] button.
         const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.onclick = null; }
-        const sxb = tr.querySelector('.ii-sx'); if (sxb) sxb.disabled = !(isValidIsrc(normalizeIsrc(input.value)) || (t.existing && t.existing.length));   // #157: SX verifies a valid entered ISRC, or an existing one
+        const sxb = tr.querySelector('.ii-sx'); if (sxb) sxb.disabled = trackBtnDisabled(t, input.value);   // #157/#181: provider-aware enabled state
       });
       // Manual entry → verify on SoundExchange only when the field loses focus (#157).
       input.addEventListener('blur', () => {
@@ -1934,13 +2154,17 @@
       // to verify (no valid entered ISRC AND no existing ISRC).
       const sxBtn = tr.querySelector('.ii-sx');
       if (sxBtn) {
-        sxBtn.disabled = !(isValidIsrc(normalizeIsrc(input.value)) || (t.existing && t.existing.length));
-        sxBtn.addEventListener('click', () => {
-          const v = normalizeIsrc(input.value);
-          const isrc = (v && isValidIsrc(v)) ? v : ((t.existing && t.existing[0]) || '');
-          if (isrc) lookupIsrc(idx, isrc).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); });
-        });
+        sxBtn.disabled = trackBtnDisabled(t, input.value);
+        sxBtn.addEventListener('click', () => runTrackSingle(idx));
+        // right-click → run the current provider for ALL tracks (#181)
+        sxBtn.addEventListener('contextmenu', e => { e.preventDefault(); runTrackAll(); });
       }
+      // the ▾ next to each per-track button opens the shared provider menu (#181)
+      const provBtn = tr.querySelector('.ii-sxprov');
+      if (provBtn) provBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        modal.querySelector('#ii-prov-menu').classList.contains('open') ? closeProvMenu() : openProvMenu(provBtn);
+      });
       tbody.appendChild(tr);
       validateInput(input, t);
       // initial per-track entry point to the SoundExchange refine panel
@@ -2075,7 +2299,7 @@
     input.value = t.pending;
     input.dataset.autofill = '1';            // filled by a source — the on-input handler won't fire
     validateInput(input, t);
-    { const sxb = input.closest('tr')?.querySelector('.ii-sx'); if (sxb) sxb.disabled = !(isValidIsrc(t.pending) || (t.existing && t.existing.length)); }   // #157: keep [SX] enabled-state in sync after a fill
+    { const sxb = input.closest('tr')?.querySelector('.ii-sx'); if (sxb) sxb.disabled = trackBtnDisabled(t, t.pending); }   // #157/#181: keep per-track button enabled-state in sync after a fill
     // #157: do NOT auto-hit SoundExchange on fills. Deezer/Spotify/+1/paste fills
     // used to enqueue a per-track SX verify, which spammed SX (and double-hit it
     // during the bulk SX search). Now we only show the match bullet when the SX
