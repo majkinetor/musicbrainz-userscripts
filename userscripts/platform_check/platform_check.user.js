@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.10.1
+// @version      2026.6.10.2
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -2481,9 +2481,10 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
             const tracks = detail.track_count != null ? detail.track_count : ((detail.tracks || []).length || null);
             const year = String(detail.new_release_date || detail.publish_date || '').slice(0, 4) || null;
             const lbl = detail.label?.name || null;
-            appendLog(label, `Verified: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}`, tracks ? 'ok' : 'warn');
-            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source });
-            updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+            const bc = detail.upc || (source === 'barcode' ? barcode : null);   // (#182) Beatport exposes the UPC
+            appendLog(label, `Verified: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}${bc ? ` upc=${bc}` : ''}`, tracks ? 'ok' : 'warn');
+            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source, barcode: bc });
+            updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: bc });
             return;
         }
         // authed but the API found nothing & no rel id → fall through to the no-auth resolvers
