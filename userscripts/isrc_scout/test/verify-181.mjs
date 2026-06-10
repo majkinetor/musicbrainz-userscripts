@@ -76,25 +76,25 @@ await page.click('#ii-btn');
 await page.waitForSelector('#ii-modal.open', { timeout: 10_000 });
 await page.waitForFunction(() => document.querySelectorAll('#ii-tbody tr[data-idx]').length > 0, null, { timeout: 30_000 });
 
-// 1) open the provider menu, read the offered providers
-await page.evaluate(() => document.getElementById('ii-prov-toggle').click());
-await page.waitForSelector('#ii-sx-group.prov-open', { timeout: 5_000 });
+// 1) open the provider menu from the FIRST per-track button's ▾ caret
+const bulkBefore = await page.evaluate(() => document.getElementById('ii-sx-all')?.textContent?.trim());
+await page.evaluate(() => document.querySelector('#ii-tbody tr[data-idx] .ii-sxprov').click());
+await page.waitForSelector('#ii-prov-menu.open', { timeout: 5_000 });
 const providers = await page.evaluate(() =>
     [...document.querySelectorAll('#ii-prov-menu .ii-prov-item .ii-prov-name')].map(n => n.textContent.trim()));
 
-// 2) pick HDtracks → per-track buttons should re-skin
+// 2) pick HDtracks → ALL per-track buttons re-skin; the bulk button must NOT change
 const hasHd = providers.includes('HDtracks');
 if (hasHd) await page.evaluate(() => {
     const it = [...document.querySelectorAll('#ii-prov-menu .ii-prov-item')].find(b => /HDtracks/.test(b.textContent));
     it && it.click();
 });
 const afterSelect = await page.evaluate(() => ({
-    cur:        document.getElementById('ii-prov-cur')?.textContent?.trim(),
     bulk:       document.getElementById('ii-sx-all')?.textContent?.trim(),
-    btnHasIcon: !!document.querySelector('#ii-tbody tr[data-idx] .ii-sx svg'),
+    allIcons:   [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-sx')].every(b => !!b.querySelector('svg')),
     btnProv:    document.querySelector('#ii-tbody tr[data-idx] .ii-sx')?.dataset?.prov,
     anyEnabled: [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-sx')].some(b => !b.disabled),
-    exactHidden: getComputedStyle(document.getElementById('ii-exact-toggle')).display === 'none',
+    exactShown: getComputedStyle(document.getElementById('ii-exact-toggle')).display !== 'none',
 }));
 
 // 3) click the first per-track button → resolve that track's ISRC from HDtracks
@@ -115,27 +115,31 @@ const hdLines = scriptLog.split('\n').filter(l => /HDtracks/i.test(l));
 const perTrack = hdLines.find(l => /HDtracks #\d+/.test(l)) || '';
 const isrcInLog = /\b[A-Z]{2}[A-Z0-9]{3}\d{7}\b/.test(perTrack);
 
-console.log('\n── Provider menu ─────────────────────────────');
+console.log('\n── Provider menu (from a per-track ▾) ─────────');
 console.log('  offered :', providers.join(', '));
 console.log('\n── After selecting HDtracks ──────────────────');
-console.log('  cur label       :', afterSelect.cur);
-console.log('  bulk button     :', afterSelect.bulk);
-console.log('  per-row icon     :', afterSelect.btnHasIcon, '(dataset.prov=' + afterSelect.btnProv + ')');
-console.log('  exact controls hidden:', afterSelect.exactHidden);
-console.log('  some btn enabled :', afterSelect.anyEnabled);
+console.log('  bulk button (unchanged):', afterSelect.bulk, '   [was:', bulkBefore + ']');
+console.log('  ALL per-row icons       :', afterSelect.allIcons, '(dataset.prov=' + afterSelect.btnProv + ')');
+console.log('  exact controls shown    :', afterSelect.exactShown);
+console.log('  some btn enabled        :', afterSelect.anyEnabled);
 console.log('\n── Per-track lookup from HDtracks ────────────');
 console.log('  bullet  :', bullet);
 console.log('  log line:', perTrack || '(none)');
 if (pageErrors.length) console.log('\n  PAGE ERRORS:', pageErrors.join(' | '));
 
 console.log('\n── Verdict ───────────────────────────────────');
-const menuOk   = providers.includes('SoundExchange') && providers.includes('HDtracks');
-const reskinOk = afterSelect.cur === 'HDtracks' && /HDtracks/.test(afterSelect.bulk || '') && afterSelect.btnProv === 'hdtracks' && afterSelect.btnHasIcon && afterSelect.exactHidden;
-const lookupOk = /✓/.test(bullet) && isrcInLog;
+const menuOk     = providers.includes('SoundExchange') && providers.includes('HDtracks');
+const reskinOk   = afterSelect.btnProv === 'hdtracks' && afterSelect.allIcons;
+const bulkKept   = afterSelect.bulk === bulkBefore && /SoundExchange/.test(afterSelect.bulk || '');
+const exactKept  = afterSelect.exactShown;
+const bulletClean = /✓/.test(bullet) && !/already in MB/i.test(bullet);
+const lookupOk   = bulletClean && isrcInLog;
 console.log('  menu offers SoundExchange + HDtracks :', menuOk);
-console.log('  selecting HDtracks re-skins buttons  :', reskinOk);
-console.log('  per-track HDtracks lookup matched    :', lookupOk, '·', perTrack.trim().slice(-40));
+console.log('  ALL per-track buttons re-skinned     :', reskinOk);
+console.log('  bulk ⟳ SoundExchange button UNCHANGED :', bulkKept);
+console.log('  exact controls still shown           :', exactKept);
+console.log('  per-track lookup matched, no "in MB" :', lookupOk, '·', perTrack.trim().slice(-40));
 console.log('  no page errors                       :', pageErrors.length === 0);
-const pass = menuOk && reskinOk && lookupOk && pageErrors.length === 0;
+const pass = menuOk && reskinOk && bulkKept && exactKept && lookupOk && pageErrors.length === 0;
 console.log(pass ? '\n✅ PASS' : '\n❌ FAIL');
 process.exit(pass ? 0 : 1);
