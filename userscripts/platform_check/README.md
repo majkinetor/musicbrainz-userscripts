@@ -12,7 +12,7 @@ The userscript runs on `musicbrainz.org/release/*` and tries to locate each rele
 
 Once a URL is settled, the script fetches the platform's metadata (track count, year, label, format where available) and shows it alongside the MB-side numbers so you can see at a glance whether a candidate looks right. Results are cached per release so revisiting a page does no outbound traffic until you click ↻.
 
-**Barcode (UPC) matching.** When the MB release has a barcode (read from the release page, with the MB API as a fallback), providers that support a barcode lookup try it **first** for an exact match before any text search — currently **Deezer** (`api.deezer.com/album/upc:`), **Apple** (`itunes.apple.com/lookup?upc=`) and **Volumo** (`/album_by_icpn`). This avoids the ambiguity of title/artist search when a barcode is available.
+**Barcode (UPC) matching.** When the MB release has a barcode (read from the release page, with the MB API as a fallback), providers that support a barcode lookup try it **first** for an exact match before any text search — currently **Deezer** (`api.deezer.com/album/upc:`), **Apple** (`itunes.apple.com/lookup?upc=`), **Volumo** (`/album_by_icpn`) and **HDtracks** (`/albums/search?q=<UPC>`). This avoids the ambiguity of title/artist search when a barcode is available.
 
 Link availability is determined by the icon and text color:
 
@@ -41,6 +41,7 @@ Mouse click works as follows:
 | Tidal       | Tidal API (`openapi.tidal.com` searchResults)       | Tidal API album detail         | P4577              |
 | Beatport    | Wikidata → DDG / Brave (`site:beatport.com/release/`) | — (unverifiable, see below)  | P11312             |
 | Volumo      | **barcode** (`/album_by_icpn`) → Volumo API search  | Volumo API album detail        | —                  |
+| HDtracks    | **barcode** (`/albums/search?q=<UPC>`) → API search | HDtracks API album detail      | —                  |
 
 Discogs has few specifics:
 
@@ -52,6 +53,7 @@ Tidal and Beatport specifics:
 1. **Tidal** uses the official API with a baked-in client-credentials app token (catalog access, **no user login**). Track count, year and label are verified like the other API providers.
 1. **Beatport** is **Cloudflare-walled**, so its pages can't be fetched to verify a track count. It resolves via an existing MB relationship, Wikidata (P11312), or a web-search hit (best slug-vs-title match) — but a search-found link is surfaced as an **unverified** match (`?`), and unverified rows are excluded from the `+` insert and `↗` open-all actions.
 1. **Volumo** has a clean, unauthenticated JSON API (no Cloudflare/token). It resolves by the MB rel, then the release **barcode** (exact), then artist+album search, with the track count verified from the album. (ISRC Scout can import a Volumo release's ISRCs from the link this finds.)
+1. **HDtracks** (high-resolution download store) has a clean, unauthenticated, CORS-open JSON API (no Cloudflare/token). It resolves by the MB rel, then the release **barcode** (`/albums/search?q=<UPC>`, exact), then artist+album search, with the track count verified from the album. The new canonical URL is `https://www.hdtracks.com/#/album/<id>`; the thousands of legacy MB rels (`valbum_code=<UPC>`, slug-id, artist page) are recoverable by barcode. MB has no dedicated HDtracks link type ([MBS-9023](https://tickets.metabrainz.org/browse/MBS-9023)), so an inserted link is added as a generic *purchase for download* URL (pick the type manually if MB doesn't auto-select). (ISRC Scout can import an HDtracks release's ISRCs from the link this finds.)
 
 
 
