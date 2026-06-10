@@ -1,5 +1,17 @@
 # Import Discogs Credits Changelog
 
+## [2026.6.10](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.10)
+
+### Features
+
+1. Mapping of 378 instruments ([#179](https://github.com/majkinetor/musicbrainz-userscripts/issues/179))
+1. Jump to next unresolved ([#177](https://github.com/majkinetor/musicbrainz-userscripts/issues/177))
+1. Fetch MB artist relationship types ([#132](https://github.com/majkinetor/musicbrainz-userscripts/issues/132))
+
+### Fixes
+
+1. Original edit note overwritten ([#174](https://github.com/majkinetor/musicbrainz-userscripts/issues/174))
+
 ## [2026.6.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.9)
 
 - Small improvements

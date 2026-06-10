@@ -1,5 +1,13 @@
 # ISRC Scout Changelog
 
+## [2026.6.10](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.10)
+
+### Features
+
+1. Single track ISRC check providers ([#181](https://github.com/majkinetor/musicbrainz-userscripts/issues/181))
+1. UX improvements regarding avialable platforms and link handling ([#180](https://github.com/majkinetor/musicbrainz-userscripts/issues/180))
+1. Support for HDtracks ([#176](https://github.com/majkinetor/musicbrainz-userscripts/issues/176))
+
 ## [2026.6.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.9)
 
 ### Features
