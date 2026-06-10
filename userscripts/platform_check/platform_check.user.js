@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.10.2
+// @version      2026.6.10.3
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -624,9 +624,15 @@ providerModal.innerHTML = `
     <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #333; cursor: pointer; user-select: none;">
       <input type="checkbox" id="mb-show-names" style="margin: 0; width: 16px; height: 16px;"> Show names
     </label>
-    <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #333; cursor: pointer; user-select: none;" title="When on, a found link whose barcode differs from MB's is not added by + / ↗ (MB treats a different barcode as a different release). A subtle left bar marks mismatches either way.">
-      <input type="checkbox" id="mb-respect-barcode" style="margin: 0; width: 16px; height: 16px;"> Check barcodes for link confidence
-    </label>
+    <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #333;">
+      <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle left bar marks known mismatches regardless of this setting.">
+        <input type="checkbox" id="mb-respect-barcode" style="margin: 0; width: 16px; height: 16px;"> Check barcodes for link confidence
+      </label>
+      <select id="mb-barcode-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs.">
+        <option value="exists">if they exist</option>
+        <option value="strict">strictly</option>
+      </select>
+    </span>
   </div>
   <div style="display: flex; align-items: center; gap: 14px; font-size: 13px; color: #333; padding: 2px 8px;">
     <span>Layout:</span>
@@ -864,6 +870,8 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
     document.getElementById('mb-show-names').checked = GM_getValue('pc:show-names', false);
     document.getElementById('mb-respect-barcode').checked = GM_getValue('pc:respect-barcode', false);
+    document.getElementById('mb-barcode-mode').value = GM_getValue('pc:barcode-mode', 'exists');
+    document.getElementById('mb-barcode-mode').disabled = !GM_getValue('pc:respect-barcode', false);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     const marker = GM_getValue('pc:mb-marker', 'circle');
@@ -891,6 +899,10 @@ document.getElementById('mb-show-names').addEventListener('change', e => {
 });
 document.getElementById('mb-respect-barcode').addEventListener('change', e => {
     GM_setValue('pc:respect-barcode', e.target.checked);   // (#182) gate + / ↗ on barcode match
+    document.getElementById('mb-barcode-mode').disabled = !e.target.checked;
+});
+document.getElementById('mb-barcode-mode').addEventListener('change', e => {
+    GM_setValue('pc:barcode-mode', e.target.value);        // 'exists' (known mismatch only) | 'strict' (also unconfirmable)
 });
 providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => r.addEventListener('change', () => {
     const layout = (providerModal.querySelector('input[name="mb-layout"]:checked') || {}).value || '1row';
@@ -3154,13 +3166,18 @@ function flashInfo(targetEl, text, bg = '#5B82B0') {
 // Single-row click-to-add (icon click) — queues just one platform's URL and
 // opens /release/<mbid>/edit. The bulk + button at the bottom still queues
 // every ✓ row at once.
-// (#182) When "Check barcodes for link confidence" is on, a found link whose
-// barcode differs from MB's is a different release per MB guidelines — don't
-// queue it for insertion. Off by default; the subtle mismatch bar shows either way.
+// (#182) "Check barcodes for link confidence" gates the + / ↗ actions. Two modes:
+//   'exists' — withhold only links whose barcode is KNOWN and DIFFERS from MB's.
+//   'strict' — also withhold links we couldn't barcode-confirm (provider exposes
+//              no UPC, e.g. Apple/Spotify) — i.e. only barcode-confirmed links pass.
+// Off by default; the subtle mismatch bar still shows known mismatches regardless.
 function barcodeBlocks(platform) {
     if (!GM_getValue('pc:respect-barcode', false)) return false;
+    if (!MB_BARCODE) return false;                 // nothing to check against
     const c = cacheGet(mbid, platform);
-    return !!(c && c.barcode && MB_BARCODE && normBarcode(c.barcode) !== normBarcode(MB_BARCODE));
+    if (!c || !c.url) return false;
+    if (c.barcode) return normBarcode(c.barcode) !== normBarcode(MB_BARCODE);   // known → block iff differs
+    return GM_getValue('pc:barcode-mode', 'exists') === 'strict';               // unknown → block only in strict mode
 }
 function addSingleUrl(platform) {
     const cached = cacheGet(mbid, platform);
@@ -3169,8 +3186,9 @@ function addSingleUrl(platform) {
         return;
     }
     if (barcodeBlocks(platform)) {
-        appendLog('System', `Inject (click): ${platform} barcode differs from MB — blocked (barcode-confidence is on)`, 'warn');
-        flashInfo(document.getElementById(`ico-${platform}`) || document.body, 'Different barcode — not added');
+        const why = cacheGet(mbid, platform)?.barcode ? 'barcode differs from MB' : 'barcode not confirmed';
+        appendLog('System', `Inject (click): ${platform} ${why} — blocked (barcode-confidence is on)`, 'warn');
+        flashInfo(document.getElementById(`ico-${platform}`) || document.body, cacheGet(mbid, platform)?.barcode ? 'Different barcode — not added' : 'Barcode not confirmed — not added');
         return;
     }
     GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
@@ -3204,7 +3222,7 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
         if (cached.source === 'MB rels') continue;
         const icoText = document.getElementById(`ico-${p}`)?.textContent?.trim();
         if (icoText !== '✓') continue;
-        if (barcodeBlocks(p)) { barcodeBlocked++; appendLog('System', `Inject: ${p} barcode differs from MB — skipped (barcode-confidence on)`, 'warn'); continue; }
+        if (barcodeBlocks(p)) { barcodeBlocked++; appendLog('System', `Inject: ${p} ${cached.barcode ? 'barcode differs from MB' : 'barcode not confirmed'} — skipped (barcode-confidence on)`, 'warn'); continue; }
         pendingRelease[p] = cached.url;
     }
 

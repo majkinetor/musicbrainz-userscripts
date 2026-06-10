@@ -16,9 +16,12 @@ Once a URL is settled, the script fetches the platform's metadata (track count, 
 
 **Barcode accuracy (#182).** MusicBrainz treats a different barcode as a different release, so a found link with a mismatching barcode is the wrong entity per the [URL style guidelines](https://musicbrainz.org/doc/Style/Relationships/URLs#Which_entity_to_link_to). Platform Check now:
 
-- Captures the found item's barcode where the provider exposes it (Deezer, Tidal, Volumo, HDtracks; Apple/Spotify APIs don't) and, when it differs from MB's, marks the row with a **subtle amber bar on the left edge** — the barcode itself is shown only in the row tooltip + the diagnostic log, never in the dashboard.
+- Captures the found item's barcode where the provider exposes it (Deezer, Tidal, Volumo, HDtracks, authed Beatport; Apple/Spotify APIs don't) and, when it differs from MB's, marks the row with a **subtle amber bar on the left edge** — the barcode itself is shown only in the row tooltip + the diagnostic log, never in the dashboard.
 - Runs **[SAMBL](https://sambl.lioncat6.com)** (`/api/find?query=<UPC>&type=upc`) as a parallel barcode resolver. Its unique contribution here is the exact-barcode **Spotify** album (Spotify has no other unauthenticated UPC route); Tidal/Deezer already do barcode-first themselves, and its Apple result isn't barcode-exact so it's not trusted there.
-- Adds a setup option **"Check barcodes for link confidence"** (off by default). When on, a barcode-mismatched link is excluded from the `+` insert and `↗` open-all (the same bar as an unverified Beatport link); the left-bar indicator shows regardless.
+- Adds a setup option **"Check barcodes for link confidence"** (off by default) with two modes:
+  - **if they exist** — withhold from `+`/`↗` only links whose barcode is *known and differs*.
+  - **strictly** — only add *barcode-confirmed* links, i.e. also withhold links whose barcode can't be checked (Apple/Spotify, which don't expose a UPC).
+  - The left-bar indicator shows known mismatches regardless of this setting.
 
 Link availability is determined by the icon and text color:
 
