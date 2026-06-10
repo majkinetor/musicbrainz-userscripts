@@ -1219,6 +1219,17 @@
     const isrc = (v && isValidIsrc(v)) ? v : ((t.existing && t.existing[0]) || '');
     if (isrc) lookupIsrc(idx, isrc).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); });
   }
+  // Right-click a per-track button → run it for EVERY track with the current
+  // provider. For SoundExchange that's the rate-limit-safe batch search; for an
+  // album provider the album is fetched once and every row is resolved from it.
+  async function runTrackAll() {
+    if (TPM().kind !== 'album') { runSxAll(); return; }
+    const m = TPM();
+    try { await ensureProvAlbum(trackProv); }
+    catch (e) { Log.err(m.name + ': ' + errText(e)); toast(m.name + ' — ' + errText(e), 'err'); return; }
+    Log.info(m.name + ': resolving all ' + RELEASE.tracks.length + ' track(s)');
+    for (let i = 0; i < RELEASE.tracks.length; i++) await fillRowFromProvider(i);
+  }
 
   // Re-skin EVERY per-track button to the chosen provider (global, not persisted).
   // The bulk "⟳ SoundExchange" toolbar button is intentionally left untouched.
@@ -1230,9 +1241,10 @@
     modal.querySelectorAll('.ii-sx').forEach(b => {
       b.dataset.prov = key;
       b.innerHTML = provGlyph || m.short;
-      b.title = m.kind === 'album'
+      b.title = (m.kind === 'album'
         ? ('Get this track’s ISRC from ' + m.name)
-        : 'Look up this track’s ISRC on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist';
+        : 'Look up this track’s ISRC on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist')
+        + '  ·  right-click: do all tracks';
       b.style.color = m.kind === 'album' ? m.color : '';
     });
     RELEASE.tracks.forEach((t, i) => {
@@ -2101,7 +2113,7 @@
           // first track has no previous ISRC to increment — hide +1 but keep its slot so SX text stays aligned
           '<button class="ii-plus' + (idx === 0 ? ' ii-plus-hidden' : '') + '" title="Previous ISRC + 1  (right-click: fill the +1 sequence down to the last track, overwriting)">+1</button>' +
           '<span class="ii-sxsplit">' +
-            '<button class="ii-sx" type="button" title="Look up this track\'s ISRC on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist">SX</button>' +
+            '<button class="ii-sx" type="button" title="Look up this track\'s ISRC on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist  ·  right-click: do all tracks">SX</button>' +
             '<button class="ii-sxprov" type="button" tabindex="-1" title="Choose the ISRC provider for all tracks">▾</button>' +
           '</span>' +
           '<span class="ii-lookup"></span>' +
@@ -2144,6 +2156,8 @@
       if (sxBtn) {
         sxBtn.disabled = trackBtnDisabled(t, input.value);
         sxBtn.addEventListener('click', () => runTrackSingle(idx));
+        // right-click → run the current provider for ALL tracks (#181)
+        sxBtn.addEventListener('contextmenu', e => { e.preventDefault(); runTrackAll(); });
       }
       // the ▾ next to each per-track button opens the shared provider menu (#181)
       const provBtn = tr.querySelector('.ii-sxprov');
