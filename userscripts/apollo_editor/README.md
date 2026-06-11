@@ -30,6 +30,7 @@ Each takeover is optional and you can flip back to the native editor at any time
     - Reorder tracks within a medium with the ⠿ handle
     - Keyboard navigation
     - Highlighting of changed rows and split artists
+    - **Expand all media** — a release with many media loads with most collapsed; **right-click** a medium's expand arrow (Tracklist) or its expand row (Recordings) to expand **every** collapsed medium at once. Left-click still expands just that one.
 - **Recordings editor**
     - Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row and inline highlighting of the fields that differ.
     - Recording picker with MusicBrainz suggestions, free-form search, linked "appears on" releases, confidence highlights

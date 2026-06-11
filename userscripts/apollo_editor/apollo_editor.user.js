@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.162350
+// @version      2026.6.11.192516
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -452,7 +452,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.9.162350';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.11.192516';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1800,7 +1800,22 @@
         if (med.collapsed.subscribe && !med._tcColSub) { med._tcColSub = true; med.collapsed.subscribe(() => { const s = document.querySelector(`.tc-medsec[data-mi="${mi}"]`); if (s) s.style.display = u(med.collapsed) ? 'none' : ''; }); }
         sec.style.display = u(med.collapsed) ? 'none' : '';
       }
+      // #185: right-click the native expand arrow to expand ALL collapsed media at once.
+      // Tooltip says so; the contextmenu listener is guarded so it's added once per button.
+      const expBtn = fs.querySelector('button.icon.expand-medium');
+      if (expBtn) {
+        expBtn.title = 'Left click: expand this medium · Right click: expand all media';
+        if (!expBtn._tcExpAll) { expBtn._tcExpAll = true; expBtn.addEventListener('contextmenu', e => { e.preventDefault(); expandAllTracklistMediums(); }); }
+      }
     });
+  }
+  // #185: expand every collapsed medium on the Tracklist side — click each native
+  // per-medium expand arrow (it un-collapses + loads tracks just like a single click).
+  function expandAllTracklistMediums() {
+    const btns = document.querySelectorAll('fieldset.advanced-medium button.icon.expand-medium');
+    if (!btns.length) return;
+    Log.info('expand all media (tracklist):', btns.length, 'collapsed');
+    btns.forEach(b => { try { b.click(); } catch (e) {} });
   }
   // tidy the format header to a minimal look — but ONLY once a format is chosen. With no format the
   // full native header stays (Format: label, real combo, I don't know, help, error) so the user is
@@ -2361,8 +2376,10 @@
         if (collapsed) {
           const td = document.createElement('td'); td.colSpan = 8;
           const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tc-recmed-exp';
-          btn.textContent = '▸ Medium ' + (mi + 1) + ' — load recordings';
+          btn.textContent = '▸ Medium ' + (mi + 1) + ' — left click to expand, right click to expand all';
+          btn.title = 'Left click: load this medium · Right click: load all collapsed media';
           btn.onclick = () => expandRecMedium(mi, btn);
+          btn.oncontextmenu = (e) => { e.preventDefault(); expandAllRecMediums(btn); };
           td.appendChild(btn); mr.appendChild(td);
         } else {
           mr.innerHTML = '<td colspan="8">Medium ' + (mi + 1) + '</td>';
@@ -2388,6 +2405,19 @@
     // mounted table — so re-mount via showRecMirror (re-anchors to the now-loaded
     // medium's table + re-renders) once the medium reports loaded. #149
     const poll = () => { n++; if (mediumLoadedRec(med) || n > 75) { snapshotRecOriginals(); showRecMirror(); } else setTimeout(poll, 200); };
+    setTimeout(poll, 200);
+  }
+  // #185: expand EVERY still-collapsed medium at once (right-click an expand arrow).
+  // Fires loadTracks on all collapsed media, then re-renders once they've all loaded
+  // (one poll for the whole set, vs one per medium).
+  function expandAllRecMediums(btn) {
+    const pending = mediums().filter(med => !mediumLoadedRec(med));
+    if (!pending.length) return;
+    Log.info('expand all media (recordings):', pending.length, 'collapsed');
+    if (btn) { btn.classList.add('loading'); btn.textContent = '⏳ expanding all media…'; }
+    pending.forEach(med => { try { if (typeof med.loadTracks === 'function') med.loadTracks(); } catch (e) { Log.warn('loadTracks failed', e.message); } });
+    let n = 0;
+    const poll = () => { n++; if (pending.every(mediumLoadedRec) || n > 100) { snapshotRecOriginals(); showRecMirror(); } else setTimeout(poll, 200); };
     setTimeout(poll, 200);
   }
   function renderRecRow(r) {
