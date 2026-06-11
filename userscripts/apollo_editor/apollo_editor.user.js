@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.11.203351
+// @version      2026.6.11.205325
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -452,7 +452,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.11.203351';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.11.205325';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2167,8 +2167,7 @@
       '.tc-rectbl .tc-tkt{font-weight:600}',
       '.tc-rectbl .tc-rec-none{color:#c0392b}.tc-rectbl .tc-rec-new{color:#2c7a51}',
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
-      '.tc-rectbl td.tc-dh-cell{background:transparent;color:inherit}',   // #186 detailed: per-char carries the colour, no flat field
-      '.tc-rectbl .tc-dh{background:#ffc9c9;color:#a00000;border-radius:2px}',   // #186 a differing character run
+      '.tc-rectbl .tc-dh{background:#e53935;color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — drawn on top of the cell\'s base background
       '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl td.tc-updavail{box-shadow:inset 0 -2px 0 #cdb8f0}',   // native offers a copy (e.g. casing-only) — right-click to apply #146
@@ -2446,19 +2445,20 @@
       // Falls back to the flat tc-diff highlight when off, in copy-preview, or for long titles.
       // Diffs on the LITERAL strings, so a casing/punctuation-only difference still shows the exact
       // changed characters even though the tolerance/ignore-casing settings treat the row as a match.
+      // The cell keeps its base background (the match/mismatch colour, like the length cells);
+      // the per-character highlight is drawn on TOP — so the diff classes are left unchanged. #186
       const dh = SETTINGS.recDetailedHl && r.recGid && !r.isNew;
-      const dhCls = (base) => base === 'tc-diff' ? 'tc-dh-cell' : base ? base + ' tc-dh-cell' : 'tc-dh-cell';
-      let trackTitleHtml = esc(r.title || ''), recTitleHtml = titleCell, tCls2 = tCls;
+      let trackTitleHtml = esc(r.title || ''), recTitleHtml = titleCell;
       if (dh && !r.copyTitle && r.recName != null && (r.title || '') !== (r.recName || '')) {
         const segs = charDiff(r.title || '', r.recName || '');
-        if (segs) { trackTitleHtml = diffSide(segs, -1); recTitleHtml = diffSide(segs, 1) + disamb; tCls2 = dhCls(tCls); }
+        if (segs) { trackTitleHtml = diffSide(segs, -1); recTitleHtml = diffSide(segs, 1) + disamb; }
       }
       // artists: char-diff the plain credit text (drops the per-artist links while highlighting,
       // like the reference) — only when not in copy-preview and the literal credits differ.
-      let trackArtistHtml2 = r.trackArtistHtml || '', recArtistCell = artistCell, aCls2 = aCls;
+      let trackArtistHtml2 = r.trackArtistHtml || '', recArtistCell = artistCell;
       if (dh && !r.copyArtist && r.recArtist != null && (r.trackArtist || '') !== (r.recArtist || '')) {
         const segs = charDiff(r.trackArtist || '', r.recArtist || '');
-        if (segs) { trackArtistHtml2 = diffSide(segs, -1); recArtistCell = diffSide(segs, 1); aCls2 = dhCls(aCls); }
+        if (segs) { trackArtistHtml2 = diffSide(segs, -1); recArtistCell = diffSide(segs, 1); }
       }
       let recLenCls = (d.len || tolHas('length')) ? 'tc-diff' : '', recLenStyle = '';
       if (dh && (d.len || tolHas('length'))) {
@@ -2472,8 +2472,8 @@
         '<td>' + trackArtistHtml2 + '</td>' +
         '<td class="c-len">' + fmtMs(r.trackLen) + '</td>' +
         '<td class="c-sep"><span class="tc-dot"></span></td>' +
-        '<td class="tc-recname ' + tCls2 + '">' + recTitleHtml + '</td>' +
-        '<td class="tc-recartist ' + aCls2 + '">' + recArtistCell + '</td>' +
+        '<td class="tc-recname ' + tCls + '">' + recTitleHtml + '</td>' +
+        '<td class="tc-recartist ' + aCls + '">' + recArtistCell + '</td>' +
         '<td class="c-len ' + recLenCls + '"' + recLenStyle + '>' + fmtMs(r.recLen) + '</td>';
       const dot = tr.querySelector('.tc-dot');
       if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
