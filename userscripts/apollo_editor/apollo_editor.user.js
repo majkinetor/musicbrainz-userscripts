@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.11.194503
+// @version      2026.6.11.202423
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -68,7 +68,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: false, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -452,7 +452,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.11.194503';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.11.202423';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1953,16 +1953,103 @@
   function dupColor(pct) { return 'hsl(' + Math.round(pct * 1.2) + ',60%,42%)'; }   // 0% red → 100% green
   function augmentDupRows(tbody) {
     tbody.querySelectorAll(':scope > tr').forEach(tr => {
-      if (tr.querySelector('.tc-dup-sim')) return;   // already scored this (KO-rendered) row
+      if (tr.classList.contains('tc-dup-detail')) return;   // our own expanded-detail rows
+      if (tr.querySelector('.tc-dup-sim')) return;          // already scored this (KO-rendered) row
       const c = tr.children;
       const name = c[1] ? c[1].textContent.trim() : '', artist = c[2] ? c[2].textContent.trim() : '';
       const tracks = c[4] ? parseInt((c[4].textContent || '').trim(), 10) : NaN;
+      const gid = (tr.querySelector('input[name="base-release"]') || {}).value || null;
       const sim = dupSimilarity(name, artist, isNaN(tracks) ? null : tracks);
       const td = document.createElement('td'); td.className = 'tc-dup-sim';
       if (sim == null) { td.textContent = '—'; td.style.textAlign = 'center'; }
-      else { const pct = Math.round(sim * 100); td.textContent = pct + '%'; td.style.cssText = 'background:' + dupColor(pct) + ';color:#fff;font-weight:700;text-align:center;border-radius:3px;padding:1px 6px'; td.title = 'title · artist · track-count similarity to the release you are entering'; }
+      else {
+        const pct = Math.round(sim * 100); td.textContent = pct + '%';
+        td.style.cssText = 'background:' + dupColor(pct) + ';color:#fff;font-weight:700;text-align:center;border-radius:3px;padding:1px 6px';
+        td.title = 'title · artist · track-count similarity to the release you are entering';
+        if (gid) { td.style.cursor = 'pointer'; td.title += ' — click for a track-by-track comparison'; td.onclick = () => toggleDupDetail(tr, gid, td); }
+      }
       tr.insertBefore(td, c[2] || null);   // place right after the Release column
     });
+  }
+  // expand/collapse a per-track comparison of the existing release vs the one being
+  // entered, beneath the clicked row (mirrors MB Release Seeding Helper). #187
+  async function toggleDupDetail(tr, gid, cell) {
+    const nxt = tr.nextElementSibling;
+    if (nxt && nxt.classList.contains('tc-dup-detail')) { nxt.remove(); cell.classList.remove('tc-dd-open'); return; }
+    cell.classList.add('tc-dd-open');
+    const dr = document.createElement('tr'); dr.className = 'tc-dup-detail';
+    const td = document.createElement('td'); td.colSpan = tr.children.length;
+    td.innerHTML = '<div class="tc-dd-wrap">loading track comparison…</div>';
+    dr.appendChild(td); tr.parentNode.insertBefore(dr, tr.nextSibling);
+    const media = await fetchDupTracklist(gid);
+    if (!dr.isConnected) return;   // collapsed again before the fetch returned
+    td.querySelector('.tc-dd-wrap').innerHTML = media ? buildDupDetail(media, enteredTracklist()) : '<div class="tc-dd-wrap">could not load the existing release tracklist</div>';
+  }
+  function enteredTracklist() {
+    const out = [];
+    mediums().forEach(med => (u(med.tracks) || []).forEach(t => out.push({ title: u(t.name) || '', artist: acText(u(t.artistCredit)), len: u(t.length) || null })));
+    return out;
+  }
+  function acJoinJson(ac) { return (ac || []).map(n => (n.name || (n.artist && n.artist.name) || '') + (n.joinphrase || '')).join(''); }
+  async function fetchDupTracklist(gid) {
+    try {
+      const j = await fetch(`${ORIGIN}/ws/2/release/${gid}?inc=artist-credits+recordings&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+      return (j.media || []).map((m, mi) => ({
+        position: m.position || mi + 1, format: m.format || '',
+        tracks: (m.tracks || []).map(t => ({
+          pos: t.number || t.position || '',
+          title: t.title || (t.recording && t.recording.title) || '',
+          artist: acJoinJson(t['artist-credit'] || (t.recording && t.recording['artist-credit'])),
+          len: t.length || (t.recording && t.recording.length) || null,
+        })),
+      }));
+    } catch (e) { Log.warn('dup tracklist fetch failed', e.message); return null; }
+  }
+  const dupFmtLen = ms => ms ? (Math.floor(ms / 60000) + ':' + String(Math.round(ms / 1000) % 60).padStart(2, '0')) : '';
+  // char-level LCS diff (same as the recordings detailed highlight) — only the
+  // differing characters of each title light up. #186/#187
+  function dupCharDiff(a, b) {
+    a = a || ''; b = b || ''; if (a.length > 200 || b.length > 200) return null;
+    const n = a.length, m = b.length; const dp = []; for (let i = 0; i <= n; i++) dp.push(new Uint16Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    const out = []; let i = 0, j = 0; const push = (t, ch) => { const l = out[out.length - 1]; if (l && l.t === t) l.s += ch; else out.push({ t, s: ch }); };
+    while (i < n && j < m) { if (a[i] === b[j]) { push(0, b[j]); i++; j++; } else if (dp[i + 1][j] >= dp[i][j + 1]) { push(-1, a[i]); i++; } else { push(1, b[j]); j++; } }
+    while (i < n) push(-1, a[i++]); while (j < m) push(1, b[j++]); return out;
+  }
+  function dupDiffSide(segs, want) { return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + esc(s.s) + '</span>' : '').join(''); }
+  function buildDupDetail(media, entered) {
+    let gi = 0, rows = '';
+    media.forEach((med, mi) => {
+      rows += `<tr class="tc-dd-medhdr"><td colspan="7">#${med.position || mi + 1}${med.format ? ' ' + esc(med.format) : ''}</td></tr>`;
+      med.tracks.forEach(t => {
+        const s = entered[gi] || {}; gi++;
+        const d = dupCharDiff(t.title || '', s.title || '');
+        const titleEx = d ? dupDiffSide(d, -1) : esc(t.title || ''), titleSe = d ? dupDiffSide(d, 1) : esc(s.title || '');
+        const artDiff = (s.artist != null) && fold(t.artist || '') !== fold(s.artist || '');
+        const lenDiff = !!(t.len && s.len && Math.abs(t.len - s.len) > 3000);
+        const cx = artDiff ? ' class="tc-dd-x"' : '';
+        rows += `<tr class="tc-dd-row"><td class="tc-dd-pos">${esc(String(t.pos || gi))}</td>`
+          + `<td${cx}>${esc(t.artist || '')}</td><td>${titleEx}</td><td class="tc-dd-len${lenDiff ? ' tc-dd-x' : ''}">${dupFmtLen(t.len)}</td>`
+          + `<td${cx}>${esc(s.artist || '')}</td><td>${titleSe}</td><td class="tc-dd-len${lenDiff ? ' tc-dd-x' : ''}">${dupFmtLen(s.len)}</td></tr>`;
+      });
+    });
+    return `<table class="tc-dd-tbl"><thead><tr><th>Pos</th><th>Release artist</th><th>Release title</th><th>Len</th><th>Seeded artist</th><th>Seeded title</th><th>Len</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  function dupStyle() {
+    if (document.getElementById('tc-dup-style')) return;
+    const s = document.createElement('style'); s.id = 'tc-dup-style';
+    s.textContent = `
+      #duplicates-tab .tc-dup-sim.tc-dd-open { outline: 2px solid #2a8f2a; outline-offset: -2px; }
+      #duplicates-tab tr.tc-dup-detail > td { padding: 0; background: #f3fbf3; border-bottom: 2px solid #cfe6cf; }
+      .tc-dd-tbl { width: 100%; border-collapse: collapse; font: 12px Arial, sans-serif; }
+      .tc-dd-tbl th { text-align: left; font-weight: 600; color: #4a6a4a; border-bottom: 1px solid #cfe6cf; padding: 3px 10px; }
+      .tc-dd-tbl td { padding: 2px 10px; vertical-align: top; }
+      .tc-dd-tbl .tc-dd-medhdr td { font-weight: 700; background: #dff0df; color: #2a5a2a; }
+      .tc-dd-tbl .tc-dd-pos { color: #888; text-align: right; width: 34px; }
+      .tc-dd-tbl .tc-dd-len { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 48px; }
+      .tc-dd-tbl .tc-dd-x { color: #c00; }
+      .tc-dd-tbl .tc-dh { background: #ffc9c9; color: #a00000; border-radius: 2px; }`;
+    document.head.appendChild(s);
   }
   function applyDuplicates() {
     const panel = document.getElementById('duplicates-tab');
@@ -1970,13 +2057,14 @@
     const table = panel.querySelector('table.tbl'); if (!table) return;
     const thead = table.querySelector('thead tr'), tbody = table.querySelector('tbody');
     if (!dupWant()) {   // teardown
-      panel.querySelectorAll('.tc-dup-sim, .tc-dup-th').forEach(e => e.remove());
+      panel.querySelectorAll('.tc-dup-sim, .tc-dup-th, .tc-dup-detail').forEach(e => e.remove());
       if (tbody && tbody._tcDupObs) { tbody._tcDupObs.disconnect(); tbody._tcDupObs = null; }
       return;
     }
+    dupStyle();
     if (thead && !thead.querySelector('.tc-dup-th')) {
       const th = document.createElement('th'); th.className = 'tc-dup-th'; th.textContent = 'Similarity';
-      th.title = 'How closely each existing release matches the one you are entering.';
+      th.title = 'How closely each existing release matches the one you are entering — click a score for a track-by-track comparison.';
       thead.insertBefore(th, thead.children[2] || null);
     }
     if (!tbody) return;
