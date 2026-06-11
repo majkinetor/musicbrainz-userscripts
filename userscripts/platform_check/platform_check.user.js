@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.11
+// @version      2026.6.11.2
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -417,6 +417,17 @@ container.innerHTML = `
   /* barcode mismatch (#182): a thin amber bar on the row's left edge — the barcode
      itself is never shown in the dash, only in the row tooltip + the log. */
   #mb-pc-panel .pc-row.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a; }
+  /* format incompatibility (#182): a thin violet bar; only shown while the
+     "Use format for link confidence" option is on. Stacks beside the amber
+     barcode bar when a row is both. */
+  #mb-pc-panel .pc-row.pc-format-diff { box-shadow: inset 3px 0 0 #7e57c2; }
+  #mb-pc-panel .pc-row.pc-format-diff.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a, inset 6px 0 0 #7e57c2; }
+  /* withheld by barcode/format confidence (#182): grayed + non-clickable, so it reads
+     as "not added" like other mismatches rather than a clickable ✓ that does nothing. */
+  #mb-pc-panel .pc-row.pc-blocked .pc-ico-slot,
+  #mb-pc-panel .pc-row.pc-blocked a[id^="mb-online"],
+  #mb-pc-panel .pc-row.pc-blocked [id^="val-"] { color: #adadad !important; }
+  #mb-pc-panel.pc-icons-mode .pc-row.pc-blocked .pc-plat-ico svg { filter: grayscale(1); opacity: .5; }
   #mb-pc-panel.pc-icons-mode .pc-st-notfound a[id^="mb-online"] { color: #9aa !important; opacity: .6; }
   /* Circled ✓ — applied when the platform URL came from an MB url-relationship
    * (existing rel), as distinct from a found-via-Wikidata/search result. Layered
@@ -629,6 +640,15 @@ providerModal.innerHTML = `
         <input type="checkbox" id="mb-respect-barcode" style="margin: 0; width: 16px; height: 16px;"> Check barcodes for link confidence
       </label>
       <select id="mb-barcode-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs.">
+        <option value="exists">if they exist</option>
+        <option value="strict">strictly</option>
+      </select>
+    </span>
+    <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #333;">
+      <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="When on, found links whose format is incompatible with MB's (e.g. a Digital-only platform on a CD release) are withheld from + / ↗ (MB treats a different format as a different release). Digital-only platforms (Spotify, Apple, Tidal…) count as Digital; Bandcamp/Discogs use their actual format. A subtle violet left bar marks mismatches.">
+        <input type="checkbox" id="mb-respect-format" style="margin: 0; width: 16px; height: 16px;"> Use format for link confidence
+      </label>
+      <select id="mb-format-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: also withhold links whose format can't be determined. · if they exist: only withhold links whose format is known and incompatible.">
         <option value="exists">if they exist</option>
         <option value="strict">strictly</option>
       </select>
@@ -872,6 +892,9 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-respect-barcode').checked = GM_getValue('pc:respect-barcode', false);
     document.getElementById('mb-barcode-mode').value = GM_getValue('pc:barcode-mode', 'exists');
     document.getElementById('mb-barcode-mode').disabled = !GM_getValue('pc:respect-barcode', false);
+    document.getElementById('mb-respect-format').checked = GM_getValue('pc:respect-format', false);
+    document.getElementById('mb-format-mode').value = GM_getValue('pc:format-mode', 'exists');
+    document.getElementById('mb-format-mode').disabled = !GM_getValue('pc:respect-format', false);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     const marker = GM_getValue('pc:mb-marker', 'circle');
@@ -903,6 +926,13 @@ document.getElementById('mb-respect-barcode').addEventListener('change', e => {
 });
 document.getElementById('mb-barcode-mode').addEventListener('change', e => {
     GM_setValue('pc:barcode-mode', e.target.value);        // 'exists' (known mismatch only) | 'strict' (also unconfirmable)
+});
+document.getElementById('mb-respect-format').addEventListener('change', e => {
+    GM_setValue('pc:respect-format', e.target.checked);    // (#182) gate + / ↗ on format compatibility
+    document.getElementById('mb-format-mode').disabled = !e.target.checked;
+});
+document.getElementById('mb-format-mode').addEventListener('change', e => {
+    GM_setValue('pc:format-mode', e.target.value);         // 'exists' (known incompatible only) | 'strict' (also undeterminable)
 });
 providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => r.addEventListener('change', () => {
     const layout = (providerModal.querySelector('input[name="mb-layout"]:checked') || {}).value || '1row';
@@ -1128,6 +1158,38 @@ let MB_BARCODE = null;
 // 12-digit UPC-A and its 13-digit EAN form "0…" are the same barcode).
 function normBarcode(b) { return String(b || '').replace(/\D/g, '').replace(/^0+/, ''); }
 
+let MB_FORMAT = null;
+// Format-confidence (#182). Only Bandcamp and Discogs carry a real parsed
+// format string (Digital / CD / Vinyl …); every other provider is a digital-
+// only storefront that never exposes a physical edition, so an absent format
+// means "Digital" for the check (otherwise strict mode would withhold every
+// streaming link). Those two are excluded and judged on their actual format.
+const DIGITAL_ONLY_PROVIDERS = new Set(['spotify', 'apple', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks']);
+// Bucket a format string into {physical, digital} categories. A multi-format
+// string ("Digital, CD") yields both; an unknown/empty string yields neither.
+function formatCategories(s) {
+    const t = String(s || '').toLowerCase();
+    const cats = new Set();
+    if (/\b(cd|vinyl|cassette|sacd|dvd|blu-?ray|flexi|minidisc|lp|shm|7"|10"|12")\b/.test(t)) cats.add('physical');
+    if (/\b(digital|file|stream|lossless|web|wav|flac|mp3|aac|hi-?res)\b/.test(t)) cats.add('digital');
+    return cats;
+}
+// Remote format categories with the digital-only default applied.
+function remoteFormatCategories(platform, fmt) {
+    const cats = formatCategories(fmt);
+    if (cats.size === 0 && DIGITAL_ONLY_PROVIDERS.has(platform)) cats.add('digital');
+    return cats;
+}
+// A *known* format incompatibility (used for the row marker — shown only when
+// the option is on). Unknown remote format is not a known mismatch.
+function formatMismatch(platform, fmt) {
+    const mbCats = formatCategories(MB_FORMAT);
+    if (mbCats.size === 0) return false;
+    const remote = remoteFormatCategories(platform, fmt);
+    if (remote.size === 0) return false;
+    return ![...remote].some(x => mbCats.has(x));
+}
+
 function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks, barcode }) {
     const a    = document.getElementById(`mb-online-${p}`);
     const ico  = document.getElementById(`ico-${p}`);
@@ -1140,6 +1202,9 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // left bar (CSS) + tooltip/log only; the barcode itself is never shown in the
     // dashboard. Providers whose API hides the barcode (Apple, Bandcamp) pass none.
     const bcDiff = !!(url && MB_BARCODE && barcode && normBarcode(barcode) !== normBarcode(MB_BARCODE));
+    // Format incompatibility (#182) — only marked when the option is on, since
+    // "digital link on a physical release" is common enough to be noise otherwise.
+    const fmtDiff = !!(url && GM_getValue('pc:respect-format', false) && formatMismatch(p, format));
 
     // Source-on-hover: tooltip on the provider name. "via MB rels", "via
     // Wikidata", "via API search · cached", etc. Replaces the visible badge
@@ -1181,10 +1246,13 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // Circle MB-rels rows regardless of glyph — circle says "URL is in MB".
     ico.classList.toggle('pc-ico-circled', fromMbRels);
 
-    // Click-to-add on the main icon for verified ✓ + not-already-in-MB.
-    const canAdd = url && ico.textContent === '✓' && !fromMbRels;
+    // Withheld by barcode/format confidence (#182): present it like a mismatch
+    // (grayed, not clickable) instead of a ✓ that silently does nothing on click.
+    const blocked = !!(url && !fromMbRels && (barcodeBlocks(p) || formatBlocks(p)));
+    // Click-to-add on the main icon for verified ✓ + not-already-in-MB (and not withheld).
+    const canAdd = url && ico.textContent === '✓' && !fromMbRels && !blocked;
     ico.style.cursor = canAdd ? 'pointer' : '';
-    ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB` : '';
+    ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB` : (blocked ? `Withheld from + / ↗ — barcode/format confidence is on (see the coloured bar)` : '');
     ico.onclick = canAdd ? () => addSingleUrl(p) : null;
 
     // Icons-mode encoding — TWO INDEPENDENT dimensions:
@@ -1193,15 +1261,24 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     const row = document.getElementById(`row-${p}`);
     if (row) {
         const g = ico.textContent;   // '✓' match · '~' mismatch · '?' found-no-count · '×' not found
-        const presence = g === '×' ? 'notfound' : g === '~' ? 'mismatch' : 'match';
+        // a withheld (barcode/format-blocked) link reads as a mismatch, not a clean match (#182)
+        const presence = blocked ? 'mismatch' : g === '×' ? 'notfound' : g === '~' ? 'mismatch' : 'match';
         row.classList.remove('pc-st-notfound', 'pc-st-mismatch', 'pc-st-match');
         row.classList.add('pc-st-' + presence);
+        row.classList.toggle('pc-blocked', blocked);
         row.classList.toggle('pc-inmb', fromMbRels);
-        // subtle left bar when the found release's barcode differs from MB's (#182)
+        // subtle left bar when the found release's barcode differs from MB's, or
+        // (when the format option is on) its format is incompatible with MB's (#182)
         row.classList.toggle('pc-barcode-diff', bcDiff);
         row.dataset.barcodeDiff = bcDiff ? '1' : '';
-        if (bcDiff) row.title = `Different barcode than MB (MB ${MB_BARCODE} · ${PROVIDER_NAME[p]} ${barcode}) — likely a different release`;
-        else if (row.title && /Different barcode/.test(row.title)) row.title = '';
+        row.classList.toggle('pc-format-diff', fmtDiff);
+        const diffTips = [];
+        if (bcDiff) diffTips.push(`Different barcode than MB (MB ${MB_BARCODE} · ${PROVIDER_NAME[p]} ${barcode}) — likely a different release`);
+        if (fmtDiff) diffTips.push(`Format incompatible with MB release (MB ${MB_FORMAT} · ${PROVIDER_NAME[p]} ${normalizeFormat(format) || 'Digital'}) — likely a different release`);
+        // strict-mode withholding with no known mismatch (barcode/format couldn't be confirmed)
+        if (blocked && !diffTips.length) diffTips.push(`Withheld from + / ↗ — couldn't confirm barcode/format (strict mode)`);
+        if (diffTips.length) row.title = diffTips.join(' · ');
+        else if (row.title && /Different barcode|Format incompatible|Withheld from/.test(row.title)) row.title = '';
         // Whole row is clickable (#173): anywhere from after the icon to the
         // track count — empty cells and the gaps included (the row is one
         // subgrid box). LEFT-click opens the found platform page, or the
@@ -1788,7 +1865,7 @@ function mbFormatToDiscogs(mbFormat) {
     return null;
 }
 
-async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, format, existingDiscogsMaster }) {
+async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, format, barcode, existingDiscogsMaster }) {
     const label = 'Discogs';
     appendLog(label, `Existing RG master: ${existingDiscogsMaster || 'none'}`);
 
@@ -1834,6 +1911,32 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         const m = releaseUrl.match(/\/release\/(\d+)/);
         if (m) releaseId = m[1];
     } else {
+        // Barcode-first (#182): Discogs' search API supports `barcode=<UPC>` — an exact
+        // match, preferred over the text search (which can pick a different pressing of
+        // the same title). Falls through to the text search when there's no UPC hit.
+        if (barcode) {
+            const bu = `https://api.discogs.com/database/search?barcode=${encodeURIComponent(barcode)}&type=release&per_page=5`;
+            appendLog(label, `Barcode ${barcode}: ${bu}`);
+            const br = await gmGet(bu);
+            if (br.ok) {
+                try {
+                    const bres = JSON.parse(br.responseText).results || [];
+                    let bbest = null;
+                    for (const r of bres.slice(0, 8)) {
+                        const [artistPart, ...albumParts] = (r.title || '').split(' - ');
+                        const sc = scoreCandidate({ title: albumParts.join(' - '), artist: artistPart }, mbTracks, album, artist, isVariousArtists);
+                        if (!bbest || sc > bbest.score) bbest = { score: sc, item: r };
+                    }
+                    if (bbest && bbest.score >= 50) {
+                        releaseId  = String(bbest.item.id);
+                        releaseUrl = `https://www.discogs.com/release/${releaseId}`;
+                        source     = 'barcode';
+                        appendLog(label, `Barcode ${barcode} → ${releaseUrl}`, 'ok');
+                    } else appendLog(label, `Barcode ${barcode}: ${bres.length ? 'no confident match' : 'no result'} — falling back to text search`);
+                } catch (e) { appendLog(label, `Barcode search parse error: ${e.message}`, 'error'); }
+            } else appendLog(label, `Barcode ${barcode} search failed — falling back to text search`, 'warn');
+        }
+        if (!releaseUrl) {   // (#182) text search only when barcode-first didn't resolve
         // Discogs HTTP UI is Cloudflare-protected (403); the public API works
         // without an auth token for search + detail (~25 req/min unauth'd).
         // For VA compilations drop the artist term — Discogs doesn't credit
@@ -1894,6 +1997,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         } else {
             appendLog(label, `API search failed`, 'error');
         }
+        }   // (#182) end of barcode-first guard around the text search
         if (!releaseUrl) {
             // searchWeb returns an ARRAY of filtered candidate URLs (not a single string). The old code
             // did `if (fallback) { fallback.match(...) }` — but `[]` is truthy, so an empty result threw a
@@ -1917,7 +2021,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         return;
     }
 
-    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null;
+    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null, foundBarcode = null;
     if (releaseId) {
         const detailUrl = `https://api.discogs.com/releases/${releaseId}`;
         appendLog(label, `API detail: ${detailUrl}`);
@@ -1948,14 +2052,19 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
                 // Stored so the + flow can offer to add it to MB's release-group
                 // url-rels (a separate edit page from the release).
                 if (data.master_id) masterUrl = `https://www.discogs.com/master/${data.master_id}`;
-                appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'} format=${fmt || '?'} master=${masterUrl || '-'}`, 'ok');
+                // Barcode (#182): Discogs publishes it in `identifiers` ([{type:"Barcode", value}]).
+                // Capturing it lets the barcode-confidence check compare/confirm Discogs like the
+                // other barcode-exposing providers (previously it was treated as unconfirmable).
+                foundBarcode = ((data.identifiers || []).find(i => /^barcode$/i.test(i.type || '')) || {}).value || null;
+                if (foundBarcode) foundBarcode = String(foundBarcode).replace(/\s+/g, '');
+                appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'} format=${fmt || '?'} barcode=${foundBarcode || '-'} master=${masterUrl || '-'}`, 'ok');
             } catch (e) { appendLog(label, `API detail parse error: ${e.message}`, 'error'); }
         } else { appendLog(label, `API detail failed`, 'error'); }
     }
 
-    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source });
+    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source, barcode: foundBarcode });
     updateRow('discogs', {
-        url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source,
+        url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, barcode: foundBarcode,
         masterState: discogsMasterState(masterUrl, existingDiscogsMaster),
     });
 }
@@ -3137,6 +3246,7 @@ async function runScans() {
     }
 
     MB_BARCODE = barcode || null;   // (#182) for the barcode-mismatch indicator
+    MB_FORMAT  = format  || null;   // (#182) for the format-confidence check
     // SAMBL barcode resolver (#182) — its unique contribution is the exact-barcode
     // Spotify album (no other unauthenticated UPC route). Only worth a call when
     // there's a barcode and Spotify isn't already pinned by an MB rel.
@@ -3174,9 +3284,22 @@ document.getElementById('mb-refresh-btn').addEventListener('click', () => {
 // pending entry and dispatches each URL into MB's relationship editor.
 // Small floating toast near a target element, auto-fades after ~1.5 s.
 // Reused as inline feedback for the + button when there's nothing to do.
+// The visible per-row anchor for flashInfo. In icon mode the text glyph (`ico-…`)
+// is display:none, so anchoring a tooltip to it lands at the page's top-left corner
+// (zero-rect). Use the brand favicon (`plat-…`) when icons are shown. (#182)
+function rowAnchor(platform) {
+    const panel = document.getElementById('mb-pc-panel');
+    const iconMode = panel && panel.classList.contains('pc-icons-mode');
+    return (iconMode ? document.getElementById(`plat-${platform}`) : document.getElementById(`ico-${platform}`))
+        || document.getElementById(`plat-${platform}`) || document.getElementById(`ico-${platform}`)
+        || document.getElementById(`row-${platform}`) || document.body;
+}
 function flashInfo(targetEl, text, bg = '#5B82B0') {
     document.getElementById('pc-flash-info')?.remove();
-    const rect = targetEl.getBoundingClientRect();
+    let rect = targetEl.getBoundingClientRect();
+    // a hidden anchor reports a zero rect → the tip would jump to the top-left corner;
+    // fall back to the panel so it stays in view (#182)
+    if (!rect.width && !rect.height) { const panel = document.getElementById('mb-pc-panel'); if (panel) rect = panel.getBoundingClientRect(); }
     const tip = document.createElement('div');
     tip.id = 'pc-flash-info';
     tip.textContent = text;
@@ -3202,6 +3325,24 @@ function barcodeBlocks(platform) {
     if (c.barcode) return normBarcode(c.barcode) !== normBarcode(MB_BARCODE);   // known → block iff differs
     return GM_getValue('pc:barcode-mode', 'exists') === 'strict';               // unknown → block only in strict mode
 }
+// (#182) "Use format for link confidence" gates + / ↗ when the matched edition's
+// format is incompatible with the MB release format (a different medium is a
+// different MB release). Mirrors the barcode modes:
+//   'exists' — withhold only when the remote format is KNOWN and incompatible.
+//   'strict' — also withhold links whose format can't be determined.
+// Digital-only platforms count as Digital (so streaming links pass on a digital
+// release, withheld on a physical one); Bandcamp/Discogs use their parsed
+// format. Off by default.
+function formatBlocks(platform) {
+    if (!GM_getValue('pc:respect-format', false)) return false;
+    const mbCats = formatCategories(MB_FORMAT);
+    if (mbCats.size === 0) return false;                       // MB format unknown → can't judge
+    const c = cacheGet(mbid, platform);
+    if (!c || !c.url) return false;
+    const remote = remoteFormatCategories(platform, c.format);
+    if (remote.size === 0) return GM_getValue('pc:format-mode', 'exists') === 'strict';  // unknown → block only in strict
+    return ![...remote].some(x => mbCats.has(x));              // known → block iff no shared category
+}
 function addSingleUrl(platform) {
     const cached = cacheGet(mbid, platform);
     if (!cached?.url) {
@@ -3211,7 +3352,12 @@ function addSingleUrl(platform) {
     if (barcodeBlocks(platform)) {
         const why = cacheGet(mbid, platform)?.barcode ? 'barcode differs from MB' : 'barcode not confirmed';
         appendLog('System', `Inject (click): ${platform} ${why} — blocked (barcode-confidence is on)`, 'warn');
-        flashInfo(document.getElementById(`ico-${platform}`) || document.body, cacheGet(mbid, platform)?.barcode ? 'Different barcode — not added' : 'Barcode not confirmed — not added');
+        flashInfo(rowAnchor(platform), cacheGet(mbid, platform)?.barcode ? 'Different barcode — not added' : 'Barcode not confirmed — not added');
+        return;
+    }
+    if (formatBlocks(platform)) {
+        appendLog('System', `Inject (click): ${platform} format incompatible with MB (${MB_FORMAT}) — blocked (format-confidence is on)`, 'warn');
+        flashInfo(rowAnchor(platform), 'Format mismatch — not added');
         return;
     }
     GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
@@ -3239,6 +3385,7 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     // Bucket 1: URLs going onto the release.
     const pendingRelease = {};
     let barcodeBlocked = 0;
+    let formatBlocked = 0;
     for (const p of PROVIDER_ORDER) {
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
@@ -3246,6 +3393,7 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
         const icoText = document.getElementById(`ico-${p}`)?.textContent?.trim();
         if (icoText !== '✓') continue;
         if (barcodeBlocks(p)) { barcodeBlocked++; appendLog('System', `Inject: ${p} ${cached.barcode ? 'barcode differs from MB' : 'barcode not confirmed'} — skipped (barcode-confidence on)`, 'warn'); continue; }
+        if (formatBlocks(p)) { formatBlocked++; appendLog('System', `Inject: ${p} format incompatible with MB (${MB_FORMAT}) — skipped (format-confidence on)`, 'warn'); continue; }
         pendingRelease[p] = cached.url;
     }
 
@@ -3285,8 +3433,9 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
             : inMb > 0
                 ? `Inject: nothing to add — all confirmed links are already in MB`
                 : `Inject: nothing to add — no new links found`;
-        appendLog('System', barcodeBlocked > 0 ? msg + `; ${barcodeBlocked} blocked by barcode mismatch` : msg, 'warn');
-        flashInfo(triggerBtn, barcodeBlocked > 0 ? `${barcodeBlocked} blocked — different barcode` : unmatched > 0 ? "Found links don't match" : inMb > 0 ? 'Already in MB' : 'Nothing to add');
+        const blockedNote = [barcodeBlocked > 0 ? `${barcodeBlocked} blocked by barcode mismatch` : '', formatBlocked > 0 ? `${formatBlocked} blocked by format mismatch` : ''].filter(Boolean).join('; ');
+        appendLog('System', blockedNote ? msg + `; ${blockedNote}` : msg, 'warn');
+        flashInfo(triggerBtn, barcodeBlocked > 0 ? `${barcodeBlocked} blocked — different barcode` : formatBlocked > 0 ? `${formatBlocked} blocked — format mismatch` : unmatched > 0 ? "Found links don't match" : inMb > 0 ? 'Already in MB' : 'Nothing to add');
         return;
     }
 
@@ -3314,6 +3463,7 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
         // (found-but-unverifiable, e.g. Beatport) — same bar as the + inject button.
         if (document.getElementById(`ico-${p}`)?.textContent?.trim() !== '✓') continue;
         if (barcodeBlocks(p)) continue;   // (#182) barcode-confidence on + mismatch
+        if (formatBlocks(p)) continue;    // (#182) format-confidence on + incompatible
         urls.push(cached.url);
     }
     // Discogs master: only if found and not already on the release-group (non-circled)
