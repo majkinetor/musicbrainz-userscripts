@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.11.3
+// @version      2026.6.11.4
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -627,21 +627,21 @@ providerModal.innerHTML = `
   <!-- ───────── MAIN view ───────── -->
   <div id="mb-setup-main">
     <div style="display: flex; gap: 8px; margin: 14px 0 4px;">
-      <button class="pc-setup-nav" id="mb-view-order" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: #F5F5F7; border: 1px solid #E3E3E8; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">⋮⋮ <b>Order &amp; visibility</b><span style="margin-left: auto; color: #999;">›</span></button>
-      <button class="pc-setup-nav" id="mb-view-auth" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: #F5F5F7; border: 1px solid #E3E3E8; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">🔑 <b>Auth</b><span id="mb-auth-badge" style="margin-left: auto; color: #999;">›</span></button>
+      <button class="pc-setup-nav" id="mb-view-order" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: #F5F5F7; border: 1px solid #E3E3E8; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">⋮⋮ <b>Platforms</b><span style="margin-left: auto; color: #999;">›</span></button>
+      <button class="pc-setup-nav" id="mb-view-auth" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: #F5F5F7; border: 1px solid #E3E3E8; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">🔑 <b>Authentication</b><span id="mb-auth-badge" style="margin-left: auto; color: #999;">›</span></button>
     </div>
 
     <div class="pc-setup-sec">Link confidence</div>
     <div style="padding: 2px 4px;">
       <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; flex: 1;" title="When on, found links whose format is incompatible with MB's (e.g. a Digital-only platform on a CD release) are withheld from + / ↗. Digital-only platforms (Spotify, Apple, Tidal…) count as Digital; Bandcamp/Discogs use their actual format. A subtle violet left bar marks mismatches.">
-          <input type="checkbox" id="mb-respect-format" style="margin: 0; width: 16px; height: 16px;"> Use <b>format</b></label>
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="When on, found links whose format is incompatible with MB's (e.g. a Digital-only platform on a CD release) are withheld from + / ↗. Digital-only platforms (Spotify, Apple, Tidal…) count as Digital; Bandcamp/Discogs use their actual format. A subtle violet left bar marks mismatches.">
+          <input type="checkbox" id="mb-respect-format" style="margin: 0; width: 16px; height: 16px;"> Use <b>formats</b></label>
         <select id="mb-format-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: also withhold links whose format can't be determined. · if they exist: only withhold links whose format is known and incompatible.">
           <option value="exists">if they exist</option><option value="strict">strictly</option></select>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; flex: 1;" title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle amber left bar marks known mismatches regardless of this setting.">
-          <input type="checkbox" id="mb-respect-barcode" style="margin: 0; width: 16px; height: 16px;"> Use <b>barcode</b></label>
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle amber left bar marks known mismatches regardless of this setting.">
+          <input type="checkbox" id="mb-respect-barcode" style="margin: 0; width: 16px; height: 16px;"> Use <b>barcodes</b></label>
         <select id="mb-barcode-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs.">
           <option value="exists">if they exist</option><option value="strict">strictly</option></select>
       </div>
@@ -650,14 +650,16 @@ providerModal.innerHTML = `
     <div class="pc-setup-sec">Appearance</div>
     <div style="padding: 2px 4px;">
       <div style="font-weight: 600; color: #555; margin: 4px 0 2px;">Platform</div>
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;">
-        <input type="checkbox" id="mb-show-icons" style="margin: 0; width: 16px; height: 16px;"><span style="min-width: 44px;">Icon</span>
-        <span style="color: #888; font-size: 12px;">Size</span><input type="range" id="mb-icon-size" min="14" max="30" step="1" style="flex: 1; margin: 0;"><span id="mb-icon-size-val" style="min-width: 18px; text-align: right; color: #666;"></span>
-      </label>
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;">
-        <input type="checkbox" id="mb-show-names" style="margin: 0; width: 16px; height: 16px;"><span style="min-width: 44px;">Name</span>
-        <span style="color: #888; font-size: 12px;">Size</span><input type="range" id="mb-name-size" min="8" max="14" step="1" style="flex: 1; margin: 0;"><span id="mb-name-size-val" style="min-width: 18px; text-align: right; color: #666;"></span>
-      </label>
+      <div style="padding-left: 14px;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;">
+          <input type="checkbox" id="mb-show-icons" style="margin: 0; width: 16px; height: 16px;"><span style="min-width: 44px;">Icon</span>
+          <span style="color: #888; font-size: 12px;">Size</span><input type="range" id="mb-icon-size" min="14" max="30" step="1" style="flex: 1; min-width: 0; margin: 0;"><span id="mb-icon-size-val" style="min-width: 18px; text-align: right; color: #666;"></span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;">
+          <input type="checkbox" id="mb-show-names" style="margin: 0; width: 16px; height: 16px;"><span style="min-width: 44px;">Name</span>
+          <span style="color: #888; font-size: 12px;">Size</span><input type="range" id="mb-name-size" min="8" max="14" step="1" style="flex: 1; min-width: 0; margin: 0;"><span id="mb-name-size-val" style="min-width: 18px; text-align: right; color: #666;"></span>
+        </label>
+      </div>
 
       <div style="display: flex; align-items: center; gap: 12px; margin: 9px 0 4px;">
         <span style="font-weight: 600; color: #555;">MB marker</span>
@@ -666,17 +668,19 @@ providerModal.innerHTML = `
       </div>
 
       <div style="font-weight: 600; color: #555; margin: 8px 0 2px;">Layout</div>
-      <div style="display: flex; align-items: center; gap: 12px; margin: 4px 0;">
-        <span style="min-width: 44px;">Rows</span>
-        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="1row" style="margin: 0;"> 1 row</label>
-        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="2row" style="margin: 0;"> 2 rows</label>
+      <div style="padding-left: 14px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin: 4px 0;">
+          <span style="min-width: 44px;">Rows</span>
+          <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="1row" style="margin: 0;"> 1 row</label>
+          <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="2row" style="margin: 0;"> 2 rows</label>
+        </div>
+        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 4px 0;">
+          <span style="min-width: 44px;">Gap</span><span style="color: #888; font-size: 12px;">row</span>
+          <input type="range" id="mb-row-gap" min="0" max="10" step="1" style="flex: 1; min-width: 0; margin: 0;"><span id="mb-row-gap-val" style="min-width: 14px; text-align: right; color: #666;"></span>
+          <span style="color: #888; font-size: 12px;" title="Column gap is only used in the 1-row layout">col</span>
+          <input type="range" id="mb-col-gap" min="0" max="10" step="1" style="flex: 1; min-width: 0; margin: 0;"><span id="mb-col-gap-val" style="min-width: 14px; text-align: right; color: #666;"></span>
+        </label>
       </div>
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;">
-        <span style="min-width: 44px;">Gap</span><span style="color: #888; font-size: 12px;">row</span>
-        <input type="range" id="mb-row-gap" min="0" max="10" step="1" style="flex: 1; margin: 0;"><span id="mb-row-gap-val" style="min-width: 18px; text-align: right; color: #666;"></span>
-        <span style="color: #888; font-size: 12px;" title="Column gap is only used in the 1-row layout">col</span>
-        <input type="range" id="mb-col-gap" min="0" max="10" step="1" style="flex: 1; margin: 0;"><span id="mb-col-gap-val" style="min-width: 18px; text-align: right; color: #666;"></span>
-      </label>
     </div>
 
     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
@@ -686,8 +690,7 @@ providerModal.innerHTML = `
 
   <!-- ───────── ORDER & VISIBILITY sub-view ───────── -->
   <div id="mb-setup-order" style="display: none;">
-    <button class="pc-setup-back" type="button" style="margin: 12px 0 6px; padding: 4px 8px; background: none; border: none; color: #1DB954; font-size: 13px; cursor: pointer;">‹ Back</button>
-    <div class="pc-setup-sec" style="margin-top: 0;">Order &amp; visibility</div>
+    <div class="pc-setup-sec" style="margin-top: 14px; display: flex; align-items: center;">Platforms<button class="pc-setup-back" type="button" style="margin-left: auto; padding: 0; background: none; border: none; color: #1DB954; font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0; cursor: pointer;">‹ Back</button></div>
     <p style="font-size: 12px; color: #888; margin: 4px 0 10px;">Drag to reorder; uncheck to skip a service. All results come from public endpoints.</p>
     <div id="mb-provider-list">
     ${PROVIDER_ORDER.map(p => `
@@ -701,8 +704,7 @@ providerModal.innerHTML = `
 
   <!-- ───────── AUTH sub-view ───────── -->
   <div id="mb-setup-auth" style="display: none;">
-    <button class="pc-setup-back" type="button" style="margin: 12px 0 6px; padding: 4px 8px; background: none; border: none; color: #1DB954; font-size: 13px; cursor: pointer;">‹ Back</button>
-    <div class="pc-setup-sec" style="margin-top: 0;">Auth</div>
+    <div class="pc-setup-sec" style="margin-top: 14px; display: flex; align-items: center;">Authentication<button class="pc-setup-back" type="button" style="margin-left: auto; padding: 0; background: none; border: none; color: #1DB954; font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0; cursor: pointer;">‹ Back</button></div>
     <div id="mb-bp-acct" style="padding: 4px;">
       <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333;">
         <span style="font-weight: 600;">Beatport account</span>

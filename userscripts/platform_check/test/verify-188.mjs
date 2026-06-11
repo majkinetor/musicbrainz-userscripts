@@ -33,7 +33,7 @@ const shim = `(() => { const store = new Map();
     window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
     window.GM_setValue = (k, v) => { store.set(k, v); };
     window.GM_xmlhttpRequest = function(o){ window.__gmFetch({method:o.method||'GET',url:o.url,headers:o.headers||{},data:o.data}).then(r=>{ r._networkError?(o.onerror&&o.onerror(r)):(o.onload&&o.onload(r)); }).catch(()=>o.onerror&&o.onerror({status:0,responseText:''})); };
-    window.unsafeWindow = window; window.GM_info = { script: { name: 'platform_check (test)', version: '2026.6.11.3' }, scriptHandler: 'Playwright' };
+    window.unsafeWindow = window; window.GM_info = { script: { name: 'platform_check (test)', version: '2026.6.11.4' }, scriptHandler: 'Playwright' };
 })();`;
 
 const page = await context.newPage();
