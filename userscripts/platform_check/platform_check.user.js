@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.11.2
+// @version      2026.6.11.3
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -403,8 +403,8 @@ container.innerHTML = `
    * clean match · GRAY icon+name = found but track-count mismatch · faint = not found. Match vs mismatch is
    * also on the right via the count colour. */
   /* fixed-size box (keeps names aligned); NO frame by default — only in-MB draws a blue circle */
-  .pc-plat-ico { display: none; align-items: center; justify-content: center; flex: none; width: 22px; height: 22px; border-radius: 50%; box-sizing: border-box; }
-  .pc-plat-ico svg { display: block; }
+  .pc-plat-ico { display: none; align-items: center; justify-content: center; flex: none; width: var(--pc-icon-size, 22px); height: var(--pc-icon-size, 22px); border-radius: 50%; box-sizing: border-box; }
+  .pc-plat-ico svg { display: block; width: 100%; height: 100%; }
   #mb-pc-panel.pc-icons-mode .pc-plat-ico { display: inline-flex; }
   #mb-pc-panel.pc-icons-mode .pc-ico-slot { display: none; }
   /* in-MB marker (independent of match/mismatch) — Circle or Glow per the "MB marker" option */
@@ -420,6 +420,10 @@ container.innerHTML = `
   /* format incompatibility (#182): a thin violet bar; only shown while the
      "Use format for link confidence" option is on. Stacks beside the amber
      barcode bar when a row is both. */
+  /* setup panel (#188): section headers + nav-button hovers */
+  #mb-provider-modal-card .pc-setup-sec { font-weight: 700; color: #444; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; margin: 14px 0 4px; padding-bottom: 3px; border-bottom: 1px solid #EEE; }
+  #mb-provider-modal-card .pc-setup-nav:hover { background: #ECECF1; }
+  #mb-provider-modal-card .pc-setup-back:hover { text-decoration: underline; }
   #mb-pc-panel .pc-row.pc-format-diff { box-shadow: inset 3px 0 0 #7e57c2; }
   #mb-pc-panel .pc-row.pc-format-diff.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a, inset 6px 0 0 #7e57c2; }
   /* withheld by barcode/format confidence (#182): grayed + non-clickable, so it reads
@@ -613,89 +617,105 @@ const providerModal = document.createElement('div');
 providerModal.id = 'mb-provider-modal-overlay';
 providerModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 100000; font-family: sans-serif;';
 providerModal.innerHTML = `
-<div id="mb-provider-modal-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: #FFF; padding: 24px; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid #DDD;">
+<div id="mb-provider-modal-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: #FFF; padding: 20px 22px; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid #DDD; font-size: 13px; color: #333;">
   <div style="display: flex; align-items: baseline; gap: 8px; border-bottom: 1px solid #EEE; padding-bottom: 10px;">
     <h2 style="margin: 0; font-size: 18px; color: #FF8C00;">Platform Check</h2>
     <span title="installed script version" style="font-size: 11px; color: #999; font-weight: normal;">v${(typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?'}</span>
     <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/platform_check#readme" target="_blank" rel="noopener" title="Open the README in a new tab" style="margin-left: auto; font-size: 12px; font-weight: bold; color: #1DB954; text-decoration: none; border: 1px solid #cfe9d6; border-radius: 4px; padding: 1px 8px;">? Help</a>
   </div>
-  <p style="font-size: 13px; color: #555; margin: 10px 0 16px 0;">Toggle which services to query. All results come from public endpoints — no API keys required.</p>
-  <div id="mb-provider-list" style="margin-bottom: 14px;">
-  ${PROVIDER_ORDER.map(p => `
-    <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; margin-bottom: 2px; font-size: 13px; padding: 2px 8px; border-radius: 4px; background: #FAFAFA; border: 1px solid transparent; cursor: grab; user-select: none;">
-      <span class="pc-prov-grip" style="color: #BBB; font-size: 14px; margin-right: 8px; letter-spacing: -2px;" title="Drag to reorder">⋮⋮</span>
-      <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 10px 0 0; width: 15px; height: 15px;">
-      <span style="font-weight: 500; flex-grow: 1;">${PROVIDER_NAME[p]}</span>
-    </div>`).join('')}
-  </div>
-  <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 6px 8px;">
-    <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #333; cursor: pointer; user-select: none;">
-      <input type="checkbox" id="mb-show-icons" style="margin: 0; width: 16px; height: 16px;"> Show icons
-    </label>
-    <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #333; cursor: pointer; user-select: none;">
-      <input type="checkbox" id="mb-show-names" style="margin: 0; width: 16px; height: 16px;"> Show names
-    </label>
-    <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #333;">
-      <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle left bar marks known mismatches regardless of this setting.">
-        <input type="checkbox" id="mb-respect-barcode" style="margin: 0; width: 16px; height: 16px;"> Check barcodes for link confidence
-      </label>
-      <select id="mb-barcode-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs.">
-        <option value="exists">if they exist</option>
-        <option value="strict">strictly</option>
-      </select>
-    </span>
-    <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #333;">
-      <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="When on, found links whose format is incompatible with MB's (e.g. a Digital-only platform on a CD release) are withheld from + / ↗ (MB treats a different format as a different release). Digital-only platforms (Spotify, Apple, Tidal…) count as Digital; Bandcamp/Discogs use their actual format. A subtle violet left bar marks mismatches.">
-        <input type="checkbox" id="mb-respect-format" style="margin: 0; width: 16px; height: 16px;"> Use format for link confidence
-      </label>
-      <select id="mb-format-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: also withhold links whose format can't be determined. · if they exist: only withhold links whose format is known and incompatible.">
-        <option value="exists">if they exist</option>
-        <option value="strict">strictly</option>
-      </select>
-    </span>
-  </div>
-  <div style="display: flex; align-items: center; gap: 14px; font-size: 13px; color: #333; padding: 2px 8px;">
-    <span>Layout:</span>
-    <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="1row" style="margin: 0;"> 1 row</label>
-    <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="2row" style="margin: 0;"> 2 rows</label>
-  </div>
-  <div style="display: flex; align-items: center; gap: 14px; font-size: 13px; color: #333; padding: 2px 8px 6px 8px;">
-    <span>MB marker:</span>
-    <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="circle" style="margin: 0;"> Circle</label>
-    <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="glow" style="margin: 0;"> Glow</label>
-  </div>
-  <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #333; padding: 2px 8px 6px 8px;">
-    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-      <span style="min-width: 104px;">Row gap</span>
-      <input type="range" id="mb-row-gap" min="0" max="10" step="1" style="flex: 1; margin: 0;">
-      <span id="mb-row-gap-val" style="min-width: 18px; text-align: right; color: #666;"></span>
-    </label>
-    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;" title="Column gap is only used in the 1-row layout">
-      <span style="min-width: 104px;">Column gap</span>
-      <input type="range" id="mb-col-gap" min="0" max="10" step="1" style="flex: 1; margin: 0;">
-      <span id="mb-col-gap-val" style="min-width: 18px; text-align: right; color: #666;"></span>
-    </label>
-    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-      <span style="min-width: 104px;">Platform name size</span>
-      <input type="range" id="mb-name-size" min="8" max="12" step="1" style="flex: 1; margin: 0;">
-      <span id="mb-name-size-val" style="min-width: 18px; text-align: right; color: #666;"></span>
-    </label>
-  </div>
-  <div id="mb-bp-acct" style="border-top: 1px solid #EEE; margin-top: 12px; padding-top: 12px;">
-    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333;">
-      <span style="font-weight: 600;">Beatport account</span>
-      <span id="mb-bp-status" style="font-size: 11px; color: #999; margin-left: auto;"></span>
+
+  <!-- ───────── MAIN view ───────── -->
+  <div id="mb-setup-main">
+    <div style="display: flex; gap: 8px; margin: 14px 0 4px;">
+      <button class="pc-setup-nav" id="mb-view-order" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: #F5F5F7; border: 1px solid #E3E3E8; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">⋮⋮ <b>Order &amp; visibility</b><span style="margin-left: auto; color: #999;">›</span></button>
+      <button class="pc-setup-nav" id="mb-view-auth" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: #F5F5F7; border: 1px solid #E3E3E8; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">🔑 <b>Auth</b><span id="mb-auth-badge" style="margin-left: auto; color: #999;">›</span></button>
     </div>
-    <div style="font-size: 11px; color: #999; margin: 3px 0 7px;">Optional — enables <b>verified</b> Beatport matching (and the + insert) and lets ISRC Scout import Beatport ISRCs. Only the login token is stored, never your password.</div>
-    <div id="mb-bp-form" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-      <input id="mb-bp-user" type="text" placeholder="email / username" autocomplete="off" style="flex: 1 1 120px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
-      <input id="mb-bp-pass" type="password" placeholder="password" autocomplete="off" style="flex: 1 1 100px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
-      <button id="mb-bp-login" style="padding: 6px 12px; background: #0a8754; border: none; border-radius: 4px; color: #FFF; font-size: 12px; cursor: pointer;">Log in</button>
+
+    <div class="pc-setup-sec">Link confidence</div>
+    <div style="padding: 2px 4px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; flex: 1;" title="When on, found links whose format is incompatible with MB's (e.g. a Digital-only platform on a CD release) are withheld from + / ↗. Digital-only platforms (Spotify, Apple, Tidal…) count as Digital; Bandcamp/Discogs use their actual format. A subtle violet left bar marks mismatches.">
+          <input type="checkbox" id="mb-respect-format" style="margin: 0; width: 16px; height: 16px;"> Use <b>format</b></label>
+        <select id="mb-format-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: also withhold links whose format can't be determined. · if they exist: only withhold links whose format is known and incompatible.">
+          <option value="exists">if they exist</option><option value="strict">strictly</option></select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; flex: 1;" title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle amber left bar marks known mismatches regardless of this setting.">
+          <input type="checkbox" id="mb-respect-barcode" style="margin: 0; width: 16px; height: 16px;"> Use <b>barcode</b></label>
+        <select id="mb-barcode-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs.">
+          <option value="exists">if they exist</option><option value="strict">strictly</option></select>
+      </div>
     </div>
-    <button id="mb-bp-logout" style="display: none; padding: 5px 12px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 6px;">Sign out</button>
+
+    <div class="pc-setup-sec">Appearance</div>
+    <div style="padding: 2px 4px;">
+      <div style="font-weight: 600; color: #555; margin: 4px 0 2px;">Platform</div>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;">
+        <input type="checkbox" id="mb-show-icons" style="margin: 0; width: 16px; height: 16px;"><span style="min-width: 44px;">Icon</span>
+        <span style="color: #888; font-size: 12px;">Size</span><input type="range" id="mb-icon-size" min="14" max="30" step="1" style="flex: 1; margin: 0;"><span id="mb-icon-size-val" style="min-width: 18px; text-align: right; color: #666;"></span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;">
+        <input type="checkbox" id="mb-show-names" style="margin: 0; width: 16px; height: 16px;"><span style="min-width: 44px;">Name</span>
+        <span style="color: #888; font-size: 12px;">Size</span><input type="range" id="mb-name-size" min="8" max="14" step="1" style="flex: 1; margin: 0;"><span id="mb-name-size-val" style="min-width: 18px; text-align: right; color: #666;"></span>
+      </label>
+
+      <div style="display: flex; align-items: center; gap: 12px; margin: 9px 0 4px;">
+        <span style="font-weight: 600; color: #555;">MB marker</span>
+        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="circle" style="margin: 0;"> Circle</label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="glow" style="margin: 0;"> Glow</label>
+      </div>
+
+      <div style="font-weight: 600; color: #555; margin: 8px 0 2px;">Layout</div>
+      <div style="display: flex; align-items: center; gap: 12px; margin: 4px 0;">
+        <span style="min-width: 44px;">Rows</span>
+        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="1row" style="margin: 0;"> 1 row</label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="2row" style="margin: 0;"> 2 rows</label>
+      </div>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;">
+        <span style="min-width: 44px;">Gap</span><span style="color: #888; font-size: 12px;">row</span>
+        <input type="range" id="mb-row-gap" min="0" max="10" step="1" style="flex: 1; margin: 0;"><span id="mb-row-gap-val" style="min-width: 18px; text-align: right; color: #666;"></span>
+        <span style="color: #888; font-size: 12px;" title="Column gap is only used in the 1-row layout">col</span>
+        <input type="range" id="mb-col-gap" min="0" max="10" step="1" style="flex: 1; margin: 0;"><span id="mb-col-gap-val" style="min-width: 18px; text-align: right; color: #666;"></span>
+      </label>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+      <button id="mb-provider-close-btn" style="padding: 8px 16px; background: #1DB954; border: none; border-radius: 4px; font-size: 13px; color: #FFF; cursor: pointer;">Close</button>
+    </div>
   </div>
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
-    <button id="mb-provider-close-btn" style="padding: 8px 16px; background: #1DB954; border: none; border-radius: 4px; font-size: 13px; color: #FFF; cursor: pointer;">Close</button>
+
+  <!-- ───────── ORDER & VISIBILITY sub-view ───────── -->
+  <div id="mb-setup-order" style="display: none;">
+    <button class="pc-setup-back" type="button" style="margin: 12px 0 6px; padding: 4px 8px; background: none; border: none; color: #1DB954; font-size: 13px; cursor: pointer;">‹ Back</button>
+    <div class="pc-setup-sec" style="margin-top: 0;">Order &amp; visibility</div>
+    <p style="font-size: 12px; color: #888; margin: 4px 0 10px;">Drag to reorder; uncheck to skip a service. All results come from public endpoints.</p>
+    <div id="mb-provider-list">
+    ${PROVIDER_ORDER.map(p => `
+      <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; margin-bottom: 2px; font-size: 13px; padding: 4px 8px; border-radius: 4px; background: #FAFAFA; border: 1px solid transparent; cursor: grab; user-select: none;">
+        <span class="pc-prov-grip" style="color: #BBB; font-size: 14px; margin-right: 8px; letter-spacing: -2px;" title="Drag to reorder">⋮⋮</span>
+        <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 10px 0 0; width: 15px; height: 15px;">
+        <span style="font-weight: 500; flex-grow: 1;">${PROVIDER_NAME[p]}</span>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- ───────── AUTH sub-view ───────── -->
+  <div id="mb-setup-auth" style="display: none;">
+    <button class="pc-setup-back" type="button" style="margin: 12px 0 6px; padding: 4px 8px; background: none; border: none; color: #1DB954; font-size: 13px; cursor: pointer;">‹ Back</button>
+    <div class="pc-setup-sec" style="margin-top: 0;">Auth</div>
+    <div id="mb-bp-acct" style="padding: 4px;">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333;">
+        <span style="font-weight: 600;">Beatport account</span>
+        <span id="mb-bp-status" style="font-size: 11px; color: #999; margin-left: auto;"></span>
+      </div>
+      <div style="font-size: 11px; color: #999; margin: 3px 0 7px;">Optional — enables <b>verified</b> Beatport matching (and the + insert) and lets ISRC Scout import Beatport ISRCs. Only the login token is stored, never your password.</div>
+      <div id="mb-bp-form" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+        <input id="mb-bp-user" type="text" placeholder="email / username" autocomplete="off" style="flex: 1 1 120px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
+        <input id="mb-bp-pass" type="password" placeholder="password" autocomplete="off" style="flex: 1 1 100px; min-width: 0; padding: 6px 8px; border: 1px solid #CCC; border-radius: 4px; font-size: 12px;">
+        <button id="mb-bp-login" style="padding: 6px 12px; background: #0a8754; border: none; border-radius: 4px; color: #FFF; font-size: 12px; cursor: pointer;">Log in</button>
+      </div>
+      <button id="mb-bp-logout" style="display: none; padding: 5px 12px; background: #E0E0E0; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 6px;">Sign out</button>
+    </div>
   </div>
 </div>`;
 
@@ -729,6 +749,7 @@ container.classList.add(GM_getValue('pc:mb-marker', 'circle') === 'glow' ? 'pc-m
 container.style.setProperty('--pc-row-gap',  `${GM_getValue('pc:row-gap', 5)}px`);
 container.style.setProperty('--pc-col-gap',  `${GM_getValue('pc:col-gap', 5)}px`);
 container.style.setProperty('--pc-name-size', `${GM_getValue('pc:name-size', 12)}px`);
+container.style.setProperty('--pc-icon-size', `${GM_getValue('pc:icon-size', 22)}px`);   // #188 platform icon size
 
 // Provider-reorder controls in the providers modal — drag-and-drop. Each row
 // is draggable; dragover on a sibling reorders via the cursor's Y-midpoint
@@ -900,9 +921,18 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     const marker = GM_getValue('pc:mb-marker', 'circle');
     providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => { r.checked = r.value === marker; });
     bpRefreshSetupUI();
+    showSetupView('main');   // #188 always open on the main view
     pcOpenModal(providerModal, provCardEl(), 440, false);
 });
 document.getElementById('mb-provider-close-btn').addEventListener('click', closeAllModals);
+// #188 setup is split into a compact main view + "Order & visibility" and "Auth"
+// sub-views that replace the card content, each with a ‹ Back to the main view.
+function showSetupView(name) {
+    ['main', 'order', 'auth'].forEach(v => { const el = document.getElementById('mb-setup-' + v); if (el) el.style.display = v === name ? '' : 'none'; });
+}
+document.getElementById('mb-view-order').addEventListener('click', () => showSetupView('order'));
+document.getElementById('mb-view-auth').addEventListener('click', () => showSetupView('auth'));
+providerModal.querySelectorAll('.pc-setup-back').forEach(b => b.addEventListener('click', () => showSetupView('main')));
 // Real-time config (#175): each control applies + persists the instant it
 // changes — no Save button, no reload, and the sidebar updates live behind the
 // (now backdrop-free) settings card.
@@ -947,7 +977,7 @@ providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => r.addEven
     container.classList.toggle('pc-mark-circle', marker !== 'glow');
 }));
 // Compact-view sliders (#178): set the matching CSS variable live + persist.
-[['mb-row-gap', 'pc:row-gap', '--pc-row-gap', 5], ['mb-col-gap', 'pc:col-gap', '--pc-col-gap', 5], ['mb-name-size', 'pc:name-size', '--pc-name-size', 12]].forEach(([id, key, prop, def]) => {
+[['mb-row-gap', 'pc:row-gap', '--pc-row-gap', 5], ['mb-col-gap', 'pc:col-gap', '--pc-col-gap', 5], ['mb-name-size', 'pc:name-size', '--pc-name-size', 12], ['mb-icon-size', 'pc:icon-size', '--pc-icon-size', 22]].forEach(([id, key, prop, def]) => {
     const el = document.getElementById(id);
     const valEl = document.getElementById(`${id}-val`);
     const apply = v => { container.style.setProperty(prop, `${v}px`); if (valEl) valEl.textContent = String(v); };
