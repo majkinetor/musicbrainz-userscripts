@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.11.202423
+// @version      2026.6.11.204221
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -452,7 +452,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.11.202423';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.11.204221';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1950,7 +1950,15 @@
     if (myTracks && rowTracks) { const dt = Math.abs(myTracks - rowTracks); score *= dt === 0 ? 1 : dt === 1 ? 0.9 : dt <= 2 ? 0.75 : dt <= 4 ? 0.55 : 0.35; }
     return Math.max(0, Math.min(1, score));
   }
-  function dupColor(pct) { return 'hsl(' + Math.round(pct * 1.2) + ',60%,42%)'; }   // 0% red → 100% green
+  // 0% → Apollo red, 50% → amber, 100% → Apollo's match green (#1f8a4c) — uses the
+  // same palette as the confidence dots so the score reads as "our" green. (#187)
+  function dupColor(pct) {
+    const p = Math.max(0, Math.min(100, pct)) / 100;
+    const stops = [[0xd3, 0x2f, 0x2f], [0xff, 0xb7, 0x4d], [0x1f, 0x8a, 0x4c]];   // d32f2f · ffb74d · 1f8a4c
+    const seg = p < 0.5 ? 0 : 1, t = p < 0.5 ? p / 0.5 : (p - 0.5) / 0.5;
+    const c = stops[seg].map((v, i) => Math.round(v + (stops[seg + 1][i] - v) * t));
+    return `rgb(${c[0]},${c[1]},${c[2]})`;
+  }
   function augmentDupRows(tbody) {
     tbody.querySelectorAll(':scope > tr').forEach(tr => {
       if (tr.classList.contains('tc-dup-detail')) return;   // our own expanded-detail rows
@@ -2017,20 +2025,30 @@
     while (i < n) push(-1, a[i++]); while (j < m) push(1, b[j++]); return out;
   }
   function dupDiffSide(segs, want) { return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + esc(s.s) + '</span>' : '').join(''); }
+  // graded length-gap shade — same as the recordings detailed highlight (#186). null under 1s.
+  function dupLenShade(gapMs) {
+    const g = Math.abs(gapMs || 0);
+    if (g < 1000) return null;
+    if (g >= 5000) return { bg: '#d32f2f', fg: '#fff' };
+    return { bg: 'rgba(211,47,47,' + (0.2 + 0.6 * (g / 5000)).toFixed(2) + ')', fg: g >= 3500 ? '#fff' : '#7a0000' };
+  }
   function buildDupDetail(media, entered) {
     let gi = 0, rows = '';
     media.forEach((med, mi) => {
       rows += `<tr class="tc-dd-medhdr"><td colspan="7">#${med.position || mi + 1}${med.format ? ' ' + esc(med.format) : ''}</td></tr>`;
       med.tracks.forEach(t => {
-        const s = entered[gi] || {}; gi++;
-        const d = dupCharDiff(t.title || '', s.title || '');
-        const titleEx = d ? dupDiffSide(d, -1) : esc(t.title || ''), titleSe = d ? dupDiffSide(d, 1) : esc(s.title || '');
-        const artDiff = (s.artist != null) && fold(t.artist || '') !== fold(s.artist || '');
-        const lenDiff = !!(t.len && s.len && Math.abs(t.len - s.len) > 3000);
-        const cx = artDiff ? ' class="tc-dd-x"' : '';
+        const s = entered[gi]; gi++; const has = !!s;   // a seeded counterpart at this position?
+        // title + artist: per-character diff (literal, like #186 — casing shows)
+        const td = has ? dupCharDiff(t.title || '', s.title || '') : null;
+        const titleEx = td ? dupDiffSide(td, -1) : esc(t.title || ''), titleSe = has ? (td ? dupDiffSide(td, 1) : esc(s.title || '')) : '';
+        const ad = has ? dupCharDiff(t.artist || '', s.artist || '') : null;
+        const artEx = ad ? dupDiffSide(ad, -1) : esc(t.artist || ''), artSe = has ? (ad ? dupDiffSide(ad, 1) : esc(s.artist || '')) : '';
+        // length: graded shade on both Len cells when the gap is real (#186)
+        const sh = (has && t.len && s.len) ? dupLenShade(t.len - s.len) : null;
+        const lenSt = sh ? ` style="background:${sh.bg};color:${sh.fg}"` : '';
         rows += `<tr class="tc-dd-row"><td class="tc-dd-pos">${esc(String(t.pos || gi))}</td>`
-          + `<td${cx}>${esc(t.artist || '')}</td><td>${titleEx}</td><td class="tc-dd-len${lenDiff ? ' tc-dd-x' : ''}">${dupFmtLen(t.len)}</td>`
-          + `<td${cx}>${esc(s.artist || '')}</td><td>${titleSe}</td><td class="tc-dd-len${lenDiff ? ' tc-dd-x' : ''}">${dupFmtLen(s.len)}</td></tr>`;
+          + `<td>${artEx}</td><td>${titleEx}</td><td class="tc-dd-len"${lenSt}>${dupFmtLen(t.len)}</td>`
+          + `<td>${artSe}</td><td>${titleSe}</td><td class="tc-dd-len"${lenSt}>${has ? dupFmtLen(s.len) : ''}</td></tr>`;
       });
     });
     return `<table class="tc-dd-tbl"><thead><tr><th>Pos</th><th>Release artist</th><th>Release title</th><th>Len</th><th>Seeded artist</th><th>Seeded title</th><th>Len</th></tr></thead><tbody>${rows}</tbody></table>`;

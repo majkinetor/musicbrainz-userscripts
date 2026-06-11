@@ -103,7 +103,7 @@ This mirrors MusicBrainz's **native** update checkboxes exactly — so a copy is
 When you add a release, MusicBrainz's **Duplicates** tab lists existing releases you might want to *base your release on*. Apollo augments that native table (controlled by the **Modify Duplicates** [setting](#modify), **on by default**):
 
 - A **Similarity** column scores how closely each existing release matches the one you're entering — a folded-title ratio, softened by an **artist** mismatch (×0.75) and a **track-count** gap — rendered as a **red→green** percentage.
-- **Click a score** to expand a **track-by-track comparison** beneath the row: each track's *Release* (the existing release) vs *Seeded* (what you're entering) **artist**, **title** and **length**, grouped by medium. Differing title characters are highlighted per-character (same diff as the [detailed recordings highlighting](#recordings-editor)); a differing artist or a length gap over 3s is flagged red. Click again to collapse.
+- **Click a score** to expand a **track-by-track comparison** beneath the row: each track's *Release* (the existing release) vs *Seeded* (what you're entering) **artist**, **title** and **length**, grouped by medium. It reuses the [detailed recordings highlighting](#recordings-editor) — per-character **title and artist** diffs and a **graded length shade** (faint under a second → solid red past five). Click again to collapse.
 
 The score is computed from the data shown in the native row (no extra requests); the comparison fetches the existing release's tracklist on demand when you open it.
 

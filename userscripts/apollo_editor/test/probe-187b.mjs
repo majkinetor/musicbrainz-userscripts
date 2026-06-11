@@ -68,7 +68,9 @@ async function main() {
   const clicked = await page.evaluate(() => {
     const cells = [...document.querySelectorAll('#duplicates-tab .tc-dup-sim')].filter(c => /\d/.test(c.textContent));
     if (!cells.length) return null;
-    cells.sort((a, b) => parseInt(b.textContent) - parseInt(a.textContent));
+    // click the LOWEST score (different tracklist) so the comparison exercises title/artist
+    // diffs + graded length shades, not the exact 100% match
+    cells.sort((a, b) => parseInt(a.textContent) - parseInt(b.textContent));
     cells[0].click(); return cells[0].textContent;
   });
   log('clicked similarity cell:', clicked);
@@ -87,11 +89,17 @@ async function main() {
       compRows: dr ? dr.querySelectorAll('.tc-dd-row').length : 0,
       medHdrs: dr ? dr.querySelectorAll('.tc-dd-medhdr').length : 0,
       diffSpans: dr ? dr.querySelectorAll('.tc-dh').length : 0,
-      wrapHtml: dr ? (dr.querySelector('td')?.innerHTML || '').slice(0, 200) : null,
+      lenShaded: dr ? [...dr.querySelectorAll('.tc-dd-len')].filter(c => c.getAttribute('style') && /background/.test(c.getAttribute('style'))).length : 0,
       sample: dr ? dr.querySelector('.tc-dd-row')?.innerText?.replace(/\s+/g, ' ').slice(0, 140) : null,
     };
   });
   log('expanded detail:', JSON.stringify(detail));
+  // confirm the 100% similarity cell uses Apollo's green (rgb(31,138,76) = #1f8a4c)
+  const greenOk = await page.evaluate(() => {
+    const c = [...document.querySelectorAll('#duplicates-tab .tc-dup-sim')].find(x => x.textContent.trim() === '100%');
+    return c ? c.style.background : null;
+  });
+  log('100% cell background:', greenOk);
 
   await page.evaluate(() => { const p = document.getElementById('duplicates-tab'); if (p) { p.style.display = 'block'; p.removeAttribute('aria-hidden'); } });
   await page.waitForTimeout(300);
@@ -101,7 +109,8 @@ async function main() {
 
   const fatal = consoleLines.filter(l => l.startsWith('[pageerror]'));
   log('pageerrors:', fatal.length); fatal.slice(0, 4).forEach(l => console.log('   ', l));
-  const pass = before.rows > 0 && before.simCells.length > 0 && detail.present && detail.compRows > 0 && fatal.length === 0;
+  const pass = before.rows > 0 && before.simCells.length > 0 && detail.present && detail.compRows > 0
+    && detail.diffSpans > 0 && detail.lenShaded > 0 && /31, ?138, ?76/.test(greenOk || '') && fatal.length === 0;
   log('RESULT:', pass ? 'PASS' : 'CHECK', '— artifacts in', LOG_DIR);
   if (!HEADED) await ctx.close(); else log('headed — leaving open');
   process.exit(pass ? 0 : 1);
