@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.10.1
+// @version      2026.6.11
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -29,6 +29,7 @@
 // @connect      volumo.com
 // @connect      hdtracks.azurewebsites.net
 // @connect      api.beatport.com
+// @connect      sambl.lioncat6.com
 // @connect      *
 // ==/UserScript==
 (function () {
@@ -413,6 +414,9 @@ container.innerHTML = `
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: #999 !important; }
   #mb-pc-panel.pc-icons-mode .pc-st-notfound .pc-plat-ico svg { filter: grayscale(1); opacity: .3; }  /* not found */
+  /* barcode mismatch (#182): a thin amber bar on the row's left edge — the barcode
+     itself is never shown in the dash, only in the row tooltip + the log. */
+  #mb-pc-panel .pc-row.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a; }
   #mb-pc-panel.pc-icons-mode .pc-st-notfound a[id^="mb-online"] { color: #9aa !important; opacity: .6; }
   /* Circled ✓ — applied when the platform URL came from an MB url-relationship
    * (existing rel), as distinct from a found-via-Wikidata/search result. Layered
@@ -554,9 +558,9 @@ logModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width
 // active (toggled = filter ON = entries hidden). State is per-session only;
 // not persisted because the natural workflow is "open log to investigate
 // one provider's behavior on this page".
-const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Beatport', 'Volumo', 'HDtracks'];
+const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'SAMBL', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Beatport', 'Volumo', 'HDtracks'];
 const LOG_SOURCE_COLORS = {
-    System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F',
+    System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F', SAMBL: '#4FC3F7',
     Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9', Deezer: '#A238FF', Apple: '#FA243C',
     Tidal: '#CCC', Beatport: '#3AD17A', Volumo: '#b39dff', HDtracks: '#f08a84',
 };
@@ -620,6 +624,15 @@ providerModal.innerHTML = `
     <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #333; cursor: pointer; user-select: none;">
       <input type="checkbox" id="mb-show-names" style="margin: 0; width: 16px; height: 16px;"> Show names
     </label>
+    <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #333;">
+      <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle left bar marks known mismatches regardless of this setting.">
+        <input type="checkbox" id="mb-respect-barcode" style="margin: 0; width: 16px; height: 16px;"> Check barcodes for link confidence
+      </label>
+      <select id="mb-barcode-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs.">
+        <option value="exists">if they exist</option>
+        <option value="strict">strictly</option>
+      </select>
+    </span>
   </div>
   <div style="display: flex; align-items: center; gap: 14px; font-size: 13px; color: #333; padding: 2px 8px;">
     <span>Layout:</span>
@@ -856,6 +869,9 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     PROVIDER_ORDER.forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
     document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
     document.getElementById('mb-show-names').checked = GM_getValue('pc:show-names', false);
+    document.getElementById('mb-respect-barcode').checked = GM_getValue('pc:respect-barcode', false);
+    document.getElementById('mb-barcode-mode').value = GM_getValue('pc:barcode-mode', 'exists');
+    document.getElementById('mb-barcode-mode').disabled = !GM_getValue('pc:respect-barcode', false);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     const marker = GM_getValue('pc:mb-marker', 'circle');
@@ -880,6 +896,13 @@ document.getElementById('mb-show-icons').addEventListener('change', e => {
 document.getElementById('mb-show-names').addEventListener('change', e => {
     GM_setValue('pc:show-names', e.target.checked);
     container.classList.toggle('pc-no-names', !e.target.checked);
+});
+document.getElementById('mb-respect-barcode').addEventListener('change', e => {
+    GM_setValue('pc:respect-barcode', e.target.checked);   // (#182) gate + / ↗ on barcode match
+    document.getElementById('mb-barcode-mode').disabled = !e.target.checked;
+});
+document.getElementById('mb-barcode-mode').addEventListener('change', e => {
+    GM_setValue('pc:barcode-mode', e.target.value);        // 'exists' (known mismatch only) | 'strict' (also unconfirmable)
 });
 providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => r.addEventListener('change', () => {
     const layout = (providerModal.querySelector('input[name="mb-layout"]:checked') || {}).value || '1row';
@@ -1098,13 +1121,25 @@ async function beatportApi(path) {
 //   colour tint    — green when fromCache=false, steel-blue when fromCache=true
 //   circled icon   — when source includes 'MB rels' (the URL was put there by
 //                    an MB editor, not discovered by us)
-function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks }) {
+// The MB release's barcode for the current scan (#182) — set by runScans so
+// updateRow can compare a found item's barcode against it.
+let MB_BARCODE = null;
+// Normalise a barcode for comparison: digits only, leading zeros stripped (a
+// 12-digit UPC-A and its 13-digit EAN form "0…" are the same barcode).
+function normBarcode(b) { return String(b || '').replace(/\D/g, '').replace(/^0+/, ''); }
+
+function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks, barcode }) {
     const a    = document.getElementById(`mb-online-${p}`);
     const ico  = document.getElementById(`ico-${p}`);
     const val  = document.getElementById(`val-${p}`);
     if (url) a.href = url;
 
     const fromMbRels = source === 'MB rels';
+    // Barcode mismatch (#182): MB has a barcode, the found item exposes one, and
+    // they differ → a different release per MB guidelines. Surfaced as a subtle
+    // left bar (CSS) + tooltip/log only; the barcode itself is never shown in the
+    // dashboard. Providers whose API hides the barcode (Apple, Bandcamp) pass none.
+    const bcDiff = !!(url && MB_BARCODE && barcode && normBarcode(barcode) !== normBarcode(MB_BARCODE));
 
     // Source-on-hover: tooltip on the provider name. "via MB rels", "via
     // Wikidata", "via API search · cached", etc. Replaces the visible badge
@@ -1162,6 +1197,11 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         row.classList.remove('pc-st-notfound', 'pc-st-mismatch', 'pc-st-match');
         row.classList.add('pc-st-' + presence);
         row.classList.toggle('pc-inmb', fromMbRels);
+        // subtle left bar when the found release's barcode differs from MB's (#182)
+        row.classList.toggle('pc-barcode-diff', bcDiff);
+        row.dataset.barcodeDiff = bcDiff ? '1' : '';
+        if (bcDiff) row.title = `Different barcode than MB (MB ${MB_BARCODE} · ${PROVIDER_NAME[p]} ${barcode}) — likely a different release`;
+        else if (row.title && /Different barcode/.test(row.title)) row.title = '';
         // Whole row is clickable (#173): anywhere from after the icon to the
         // track count — empty cells and the gaps included (the row is one
         // subgrid box). LEFT-click opens the found platform page, or the
@@ -1471,7 +1511,7 @@ async function pickBestCandidate(candidates, fetchMeta, mbTracks, mbAlbum, label
 // `url` may be null when we've definitively concluded "no match exists on
 // this platform" (so we don't keep re-searching for niche releases that
 // genuinely aren't on Spotify/Bandcamp).
-function cacheKey(mbid, platform) { return `pc:cache:${platform}:${mbid}`; }
+function cacheKey(mbid, platform) { return `pc:cache:v2:${platform}:${mbid}`; }   // v2: entries now carry `barcode` (#182)
 function cacheGet(mbid, platform) {
     const raw = GM_getValue(cacheKey(mbid, platform), null);
     if (!raw) return null;
@@ -1519,6 +1559,7 @@ function applyCachedRow(platform, label, cached, mbTracks, masterState) {
         fromCache:    true,
         masterState:  masterState   ?? null,
         hiddenTracks: cached.hiddenTracks ?? 0,
+        barcode:      cached.barcode ?? null,
     });
 }
 
@@ -1572,6 +1613,31 @@ ${releaseMbid      ? `  { ?item wdt:P5813 "${releaseMbid}" }`               : ''
     return out;
 }
 
+// SAMBL (sambl.lioncat6.com) resolves a barcode → exact-UPC album URLs across
+// Spotify / Deezer / Tidal / Apple / Qobuz (#182). Its unique value here is
+// Spotify, which has no other unauthenticated UPC route (Tidal/Deezer already
+// do barcode-first themselves). No CORS header → must go through
+// GM_xmlhttpRequest (@connect sambl.lioncat6.com). Coverage is partial and its
+// Apple result isn't barcode-exact, so callers should trust it only for Spotify.
+async function lookupSambl(barcode) {
+    if (!barcode) return null;
+    const url = `https://sambl.lioncat6.com/api/find?query=${encodeURIComponent(barcode)}&type=upc`;
+    appendLog('SAMBL', `barcode lookup ${barcode}`);
+    const r = await gmGet(url);
+    appendLog('SAMBL', `status=${r.status} ${r.responseText.length}b in ${r.ms}ms`);
+    if (!r.ok) { appendLog('SAMBL', `lookup failed`, 'warn'); return null; }
+    let j; try { j = JSON.parse(r.responseText); } catch (e) { appendLog('SAMBL', `JSON parse: ${e.message}`, 'error'); return null; }
+    const out = {};
+    for (const x of (j.data || [])) {
+        if (!x.url || x.url.urlInfo?.type !== 'album') continue;
+        const prov = x.provider === 'applemusic' ? 'apple' : x.provider;   // normalize
+        if (!out[prov]) out[prov] = x.url.url;
+    }
+    const provs = Object.keys(out).filter(k => k !== 'musicbrainz');
+    appendLog('SAMBL', `exact-barcode albums: ${provs.length ? provs.join(', ') : '(none)'}`, provs.length ? 'ok' : 'warn');
+    return out;
+}
+
 // Concurrent search-engine queries from the same IP can trip anti-bot pages.
 // Serialize them on one chain so two scanners never hit the same engine at once.
 let searchChain = Promise.resolve();
@@ -1607,7 +1673,7 @@ async function fetchSpotifyMeta(albumUrl) {
     };
 }
 
-async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidataSpotifyId, isVariousArtists }) {
+async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidataSpotifyId, isVariousArtists, samblUrl }) {
     const label = 'Spotify';
 
     // Cache hit WITH URL → use it and skip everything else. A cached "no
@@ -1624,10 +1690,17 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     let albumUrl = existingUrl;
     let source   = null;
     let bestMeta = null;
+    let exactBarcode = false;   // (#182) true when the URL was resolved by exact UPC
 
     if (albumUrl) {
         appendLog(label, `Using existing MB URL: ${albumUrl}`, 'ok');
         source = 'MB rels';
+    } else if (samblUrl) {
+        // SAMBL resolved the exact-barcode Spotify album — the only barcode route
+        // for Spotify (the embed/API don't expose a UPC without an app token). It
+        // beats Wikidata/search, which can point at a different-barcode edition.
+        albumUrl = samblUrl; source = 'SAMBL (barcode)'; exactBarcode = true;
+        appendLog(label, `SAMBL barcode match → ${albumUrl}`, 'ok');
     } else if (wikidataSpotifyId) {
         albumUrl = `https://open.spotify.com/album/${wikidataSpotifyId}`;
         appendLog(label, `Wikidata answer: ${albumUrl}`, 'ok');
@@ -1697,8 +1770,9 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     }
     const tracks = meta?.tracks ?? null;
     const lbl    = meta?.label  ?? null;
-    cacheSet(mbid, 'spotify', { url: albumUrl, tracks, year: displayYear, label: lbl, source });
-    updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: tracks, year: displayYear, label: lbl, source });
+    const sbc = exactBarcode ? MB_BARCODE : null;   // exact UPC → MB barcode (no mismatch); else unknown
+    cacheSet(mbid, 'spotify', { url: albumUrl, tracks, year: displayYear, label: lbl, source, barcode: sbc });
+    updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: tracks, year: displayYear, label: lbl, source, barcode: sbc });
 }
 
 // MB's media[].format strings → Discogs API's `format` query value. Other
@@ -2056,6 +2130,7 @@ async function fetchDeezerMeta(albumUrl) {
             year:   d.release_date ? d.release_date.slice(0, 4) : null,
             label:  d.label || null,
             artist: d.artist?.name || null,
+            barcode: d.upc || null,
         };
     } catch { return null; }
 }
@@ -2083,8 +2158,9 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
             const albumUrl = bd.link || `https://www.deezer.com/album/${bd.id}`;
             appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
             const meta = await fetchDeezerMeta(albumUrl);
-            cacheSet(mbid, 'deezer', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode' });
-            updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode' });
+            const bc = bd.upc || meta?.barcode || barcode;
+            cacheSet(mbid, 'deezer', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
+            updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
             return;
         }
         appendLog(label, `Barcode ${barcode}: no UPC match — falling back to search`);
@@ -2156,8 +2232,8 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
     const tracks = meta?.tracks ?? null;
     const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
-    cacheSet(mbid, 'deezer', { url: albumUrl, tracks, year, label: lbl, source });
-    updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+    cacheSet(mbid, 'deezer', { url: albumUrl, tracks, year, label: lbl, source, barcode: meta?.barcode ?? null });
+    updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: meta?.barcode ?? null });
 }
 
 // ─── Apple Music ────────────────────────────────────────────────────────────
@@ -2293,10 +2369,18 @@ async function fetchTidalAlbumMeta(albumId, token) {
         const a = JSON.parse(r.responseText)?.data?.attributes;
         if (!a) return null;
         const lbl = stripCopyright(a.copyright?.text);
-        return { tracks: a.numberOfItems ?? null, title: a.title || null, year: a.releaseDate ? a.releaseDate.slice(0, 4) : null, label: lbl };
+        return { tracks: a.numberOfItems ?? null, title: a.title || null, year: a.releaseDate ? a.releaseDate.slice(0, 4) : null, label: lbl, barcode: a.barcodeId || null };
     } catch { return null; }
 }
-async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataTidalId }) {
+// Barcode-first (#182): Tidal v2 /albums?filter[barcodeId] is an exact match.
+async function tidalAlbumByBarcode(barcode, token) {
+    const r = await gmGet(`${TIDAL.api}/albums?countryCode=${TIDAL.country}&filter%5BbarcodeId%5D=${encodeURIComponent(barcode)}`,
+        { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.api+json' } });
+    if (!r.ok) return null;
+    try { const a = (JSON.parse(r.responseText).data || [])[0]; return a ? { id: a.id, barcode: a.attributes?.barcodeId || barcode } : null; }
+    catch { return null; }
+}
+async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataTidalId, barcode }) {
     const label = 'Tidal';
     const cached = cacheGet(mbid, 'tidal');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('tidal', label, cached, mbTracks); return; }
@@ -2307,14 +2391,24 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
 
     const idFromUrl = u => (String(u || '').match(/tidal\.com\/(?:browse\/)?album\/(\d+)/) || [])[1];
 
-    let albumId = null, source = null;
-    if (existingUrl) {
+    let albumId = null, source = null, foundBarcode = null;
+    // Barcode-first (#182): an exact-UPC hit beats Wikidata/search (which may
+    // point at a different-barcode edition). Only when there's no MB rel.
+    if (!existingUrl && barcode) {
+        const tok = await tidalToken();
+        if (tok) {
+            const hit = await tidalAlbumByBarcode(barcode, tok);
+            if (hit) { albumId = hit.id; source = 'barcode'; foundBarcode = hit.barcode || barcode; appendLog(label, `Barcode ${barcode} → album ${albumId}`, 'ok'); }
+            else appendLog(label, `Barcode ${barcode}: no Tidal UPC match — falling back`);
+        }
+    }
+    if (!albumId && existingUrl) {
         albumId = idFromUrl(existingUrl); source = 'MB rels';
         appendLog(label, `Using existing MB URL: ${existingUrl}`, 'ok');
-    } else if (wikidataTidalId) {
+    } else if (!albumId && wikidataTidalId) {
         albumId = wikidataTidalId; source = 'Wikidata';
         appendLog(label, `Wikidata answer: album ${albumId}`, 'ok');
-    } else {
+    } else if (!albumId) {
         // Only the SEARCH path needs a token — an existing/Wikidata URL is shown
         // (and circled, for MB rels) even if the token grant fails.
         const token = await tidalToken();
@@ -2359,8 +2453,9 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
     if (meta) appendLog(label, `Album parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
     else appendLog(label, `Detail unavailable (no token / fetch failed) — showing URL without track count`, 'warn');
     const tracks = meta?.tracks ?? null, year = meta?.year ?? null, lbl = meta?.label ?? null;
-    cacheSet(mbid, 'tidal', { url: albumUrl, tracks, year, label: lbl, source });
-    updateRow('tidal', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+    const bc = foundBarcode || meta?.barcode || null;
+    cacheSet(mbid, 'tidal', { url: albumUrl, tracks, year, label: lbl, source, barcode: bc });
+    updateRow('tidal', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: bc });
 }
 
 // ─── Beatport ─────────────────────────────────────────────────────────────────
@@ -2421,9 +2516,10 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
             const tracks = detail.track_count != null ? detail.track_count : ((detail.tracks || []).length || null);
             const year = String(detail.new_release_date || detail.publish_date || '').slice(0, 4) || null;
             const lbl = detail.label?.name || null;
-            appendLog(label, `Verified: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}`, tracks ? 'ok' : 'warn');
-            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source });
-            updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+            const bc = detail.upc || (source === 'barcode' ? barcode : null);   // (#182) Beatport exposes the UPC
+            appendLog(label, `Verified: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}${bc ? ` upc=${bc}` : ''}`, tracks ? 'ok' : 'warn');
+            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source, barcode: bc });
+            updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: bc });
             return;
         }
         // authed but the API found nothing & no rel id → fall through to the no-auth resolvers
@@ -2498,9 +2594,10 @@ async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariou
     const year = String(a.original_release_date || '').slice(0, 4) || null;
     const lbl = a.recordlabel?.name || (typeof a.recordlabel === 'string' ? a.recordlabel : null);   // recordlabel is an object {id,name,…}
     const url = volumoUrl(a);
+    const vbc = a.icpn || a.upc || null;
     appendLog(label, `Album: tracks=${tracks} title="${a.title}" year=${year || '?'}`, tracks ? 'ok' : 'warn');
-    cacheSet(mbid, 'volumo', { url, tracks, year, label: lbl, source });
-    updateRow('volumo', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+    cacheSet(mbid, 'volumo', { url, tracks, year, label: lbl, source, barcode: vbc });
+    updateRow('volumo', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: vbc });
 }
 
 // ─── HDtracks ────────────────────────────────────────────────────────────────
@@ -2555,9 +2652,10 @@ async function scanHDtracks({ artist, album, mbTracks, existingUrl, mbid, isVari
     const year = String(a.release || a.originalRelease || '').slice(0, 4) || null;
     const lbl = a.label || null;
     const url = hdtracksUrl(a.id);
+    const hbc = a.upc || null;
     appendLog(label, `Album: tracks=${tracks} title="${a.name}" year=${year || '?'}`, tracks ? 'ok' : 'warn');
-    cacheSet(mbid, 'hdtracks', { url, tracks, year, label: lbl, source });
-    updateRow('hdtracks', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+    cacheSet(mbid, 'hdtracks', { url, tracks, year, label: lbl, source, barcode: hbc });
+    updateRow('hdtracks', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: hbc });
 }
 
 // ─── Main entry ────────────────────────────────────────────────────────────
@@ -3038,9 +3136,17 @@ async function runScans() {
         }
     }
 
+    MB_BARCODE = barcode || null;   // (#182) for the barcode-mismatch indicator
+    // SAMBL barcode resolver (#182) — its unique contribution is the exact-barcode
+    // Spotify album (no other unauthenticated UPC route). Only worth a call when
+    // there's a barcode and Spotify isn't already pinned by an MB rel.
+    let sambl = null;
+    if (barcode && GM_getValue('prov_spotify', true) && !existing.spotify) {
+        sambl = await lookupSambl(barcode);
+    }
     const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format, barcode, existingDiscogsMaster: existing.discogsMaster || null };
     const tasks = [];
-    if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify,  wikidataSpotifyId: wd?.spotifyId || null }));
+    if (GM_getValue('prov_spotify',  true)) tasks.push(scanSpotify ({ ...ctx, existingUrl: existing.spotify,  wikidataSpotifyId: wd?.spotifyId || null, samblUrl: sambl?.spotify || null }));
     if (GM_getValue('prov_discogs',  true)) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
     if (GM_getValue('prov_bandcamp', true)) tasks.push(scanBandcamp({ ...ctx, existingUrl: existing.bandcamp }));
     if (GM_getValue('prov_deezer',   true)) tasks.push(scanDeezer  ({ ...ctx, existingUrl: existing.deezer   }));
@@ -3083,10 +3189,29 @@ function flashInfo(targetEl, text, bg = '#5B82B0') {
 // Single-row click-to-add (icon click) — queues just one platform's URL and
 // opens /release/<mbid>/edit. The bulk + button at the bottom still queues
 // every ✓ row at once.
+// (#182) "Check barcodes for link confidence" gates the + / ↗ actions. Two modes:
+//   'exists' — withhold only links whose barcode is KNOWN and DIFFERS from MB's.
+//   'strict' — also withhold links we couldn't barcode-confirm (provider exposes
+//              no UPC, e.g. Apple/Spotify) — i.e. only barcode-confirmed links pass.
+// Off by default; the subtle mismatch bar still shows known mismatches regardless.
+function barcodeBlocks(platform) {
+    if (!GM_getValue('pc:respect-barcode', false)) return false;
+    if (!MB_BARCODE) return false;                 // nothing to check against
+    const c = cacheGet(mbid, platform);
+    if (!c || !c.url) return false;
+    if (c.barcode) return normBarcode(c.barcode) !== normBarcode(MB_BARCODE);   // known → block iff differs
+    return GM_getValue('pc:barcode-mode', 'exists') === 'strict';               // unknown → block only in strict mode
+}
 function addSingleUrl(platform) {
     const cached = cacheGet(mbid, platform);
     if (!cached?.url) {
         appendLog('System', `Inject (click): no cached URL for ${platform} — abort`, 'warn');
+        return;
+    }
+    if (barcodeBlocks(platform)) {
+        const why = cacheGet(mbid, platform)?.barcode ? 'barcode differs from MB' : 'barcode not confirmed';
+        appendLog('System', `Inject (click): ${platform} ${why} — blocked (barcode-confidence is on)`, 'warn');
+        flashInfo(document.getElementById(`ico-${platform}`) || document.body, cacheGet(mbid, platform)?.barcode ? 'Different barcode — not added' : 'Barcode not confirmed — not added');
         return;
     }
     GM_setValue(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
@@ -3113,12 +3238,14 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     const triggerBtn = e.currentTarget;
     // Bucket 1: URLs going onto the release.
     const pendingRelease = {};
+    let barcodeBlocked = 0;
     for (const p of PROVIDER_ORDER) {
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
         if (cached.source === 'MB rels') continue;
         const icoText = document.getElementById(`ico-${p}`)?.textContent?.trim();
         if (icoText !== '✓') continue;
+        if (barcodeBlocks(p)) { barcodeBlocked++; appendLog('System', `Inject: ${p} ${cached.barcode ? 'barcode differs from MB' : 'barcode not confirmed'} — skipped (barcode-confidence on)`, 'warn'); continue; }
         pendingRelease[p] = cached.url;
     }
 
@@ -3158,8 +3285,8 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
             : inMb > 0
                 ? `Inject: nothing to add — all confirmed links are already in MB`
                 : `Inject: nothing to add — no new links found`;
-        appendLog('System', msg, 'warn');
-        flashInfo(triggerBtn, unmatched > 0 ? "Found links don't match" : inMb > 0 ? 'Already in MB' : 'Nothing to add');
+        appendLog('System', barcodeBlocked > 0 ? msg + `; ${barcodeBlocked} blocked by barcode mismatch` : msg, 'warn');
+        flashInfo(triggerBtn, barcodeBlocked > 0 ? `${barcodeBlocked} blocked — different barcode` : unmatched > 0 ? "Found links don't match" : inMb > 0 ? 'Already in MB' : 'Nothing to add');
         return;
     }
 
@@ -3186,6 +3313,7 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
         // Only confirmed matches (✓). Skip '~' (track-count mismatch) and '?'
         // (found-but-unverifiable, e.g. Beatport) — same bar as the + inject button.
         if (document.getElementById(`ico-${p}`)?.textContent?.trim() !== '✓') continue;
+        if (barcodeBlocks(p)) continue;   // (#182) barcode-confidence on + mismatch
         urls.push(cached.url);
     }
     // Discogs master: only if found and not already on the release-group (non-circled)

@@ -12,7 +12,16 @@ The userscript runs on `musicbrainz.org/release/*` and tries to locate each rele
 
 Once a URL is settled, the script fetches the platform's metadata (track count, year, label, format where available) and shows it alongside the MB-side numbers so you can see at a glance whether a candidate looks right. Results are cached per release so revisiting a page does no outbound traffic until you click ↻.
 
-**Barcode (UPC) matching.** When the MB release has a barcode (read from the release page, with the MB API as a fallback), providers that support a barcode lookup try it **first** for an exact match before any text search — currently **Deezer** (`api.deezer.com/album/upc:`), **Apple** (`itunes.apple.com/lookup?upc=`), **Volumo** (`/album_by_icpn`) and **HDtracks** (`/albums/search?q=<UPC>`). This avoids the ambiguity of title/artist search when a barcode is available.
+**Barcode (UPC) matching.** When the MB release has a barcode (read from the release page, with the MB API as a fallback), providers that support a barcode lookup try it **first** for an exact match before any text search — **Deezer** (`api.deezer.com/album/upc:`), **Tidal** (`/v2/albums?filter[barcodeId]`), **Apple** (`itunes.apple.com/lookup?upc=`), **Volumo** (`/album_by_icpn`) and **HDtracks** (`/albums/search?q=<UPC>`). This avoids the ambiguity of title/artist search when a barcode is available, and prefers the *exact* edition over a Wikidata/search match that may be a different barcode.
+
+**Barcode accuracy (#182).** MusicBrainz treats a different barcode as a different release, so a found link with a mismatching barcode is the wrong entity per the [URL style guidelines](https://musicbrainz.org/doc/Style/Relationships/URLs#Which_entity_to_link_to). Platform Check now:
+
+- Captures the found item's barcode where the provider exposes it (Deezer, Tidal, Volumo, HDtracks, authed Beatport; Apple/Spotify APIs don't) and, when it differs from MB's, marks the row with a **subtle amber bar on the left edge** — the barcode itself is shown only in the row tooltip + the diagnostic log, never in the dashboard.
+- Runs **[SAMBL](https://sambl.lioncat6.com)** (`/api/find?query=<UPC>&type=upc`) as a parallel barcode resolver. Its unique contribution here is the exact-barcode **Spotify** album (Spotify has no other unauthenticated UPC route); Tidal/Deezer already do barcode-first themselves, and its Apple result isn't barcode-exact so it's not trusted there.
+- Adds a setup option **"Check barcodes for link confidence"** (off by default) with two modes:
+  - **if they exist** — withhold from `+`/`↗` only links whose barcode is *known and differs*.
+  - **strictly** — only add *barcode-confirmed* links, i.e. also withhold links whose barcode can't be checked (Apple/Spotify, which don't expose a UPC).
+  - The left-bar indicator shows known mismatches regardless of this setting.
 
 Link availability is determined by the icon and text color:
 
@@ -38,7 +47,7 @@ Mouse click works as follows:
 | Spotify     | DuckDuckGo / Brave (`site:open.spotify.com/album/`) | `/embed/album/<id>` HTML parse | P2205              |
 | Apple Music | iTunes Search API (`itunes.apple.com/search`)       | iTunes Lookup API              | P5121              |
 | Deezer      | Deezer API (`api.deezer.com/search/album`)          | Deezer API album detail        | —                  |
-| Tidal       | Tidal API (`openapi.tidal.com` searchResults)       | Tidal API album detail         | P4577              |
+| Tidal       | **barcode** (`/albums?filter[barcodeId]`) → Tidal API searchResults | Tidal API album detail | P4577              |
 | Beatport    | Wikidata → DDG / Brave (`site:beatport.com/release/`) | — (unverifiable, see below)  | P11312             |
 | Volumo      | **barcode** (`/album_by_icpn`) → Volumo API search  | Volumo API album detail        | —                  |
 | HDtracks    | **barcode** (`/albums/search?q=<UPC>`) → API search | HDtracks API album detail      | —                  |
