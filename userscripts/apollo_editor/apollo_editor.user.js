@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.11.210310
+// @version      2026.6.11.212231
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -452,7 +452,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.11.210310';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.11.212231';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2725,13 +2725,15 @@
     const isNew = typeof ko.hasNewRecording === 'function' && !!u(ko.hasNewRecording);
     const curGid = !isNew && curRec ? u(curRec.gid) : null;
     const curArtist = curRec ? acText(u(curRec.artistCredit)) : '';
+    // Title - Artist - Len, same shape as the header; the artist links to the
+    // RECORDING's artist (acLinks), not plain text. #189
     const curHtml = isNew
       ? '<span class="tc-rpk-newcur">＋ new recording (created on submit)</span>'
       : curGid
         ? '<a href="' + ORIGIN + '/recording/' + esc(curGid) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>'
           + (u(curRec.comment) ? ' <span class="tc-rpk-cmt">(' + esc(u(curRec.comment)) + ')</span>' : '')   // disambiguation on selection #144
-          + (u(curRec.length) ? ' <span class="tc-rpk-curlen">' + fmtMs(u(curRec.length)) + '</span>' : '')
-          + (curArtist ? ' <span class="tc-rpk-curby">by ' + esc(curArtist) + '</span>' : '')
+          + (curArtist ? ' <span class="tc-rpk-curby">- ' + acLinks(u(curRec.artistCredit)) + '</span>' : '')
+          + (u(curRec.length) ? ' <span class="tc-rpk-curlen">- ' + fmtMs(u(curRec.length)) + '</span>' : '')
         : '<span class="tc-rpk-curnone">— none —</span>';
     const trackArtist = ctx.artist, trackLen = u(ko.length);
     // Show the copy checkboxes whenever NATIVE MB offers them (rawTitleDiff /
@@ -2825,14 +2827,14 @@
     let seq = 0, tmr = null;
     const runSearch = async (query, fallbackTitle) => {
       const my = ++seq;
-      // paste a recording MBID or a /recording/<mbid> URL → resolve it directly and show it
-      // as the single result to click (same idea as pasting an MBID in the artist picker). #189
+      // paste a recording MBID or a /recording/<mbid> URL → resolve and LINK it
+      // immediately (same as pasting an MBID in the artist picker). #189
       const gid = mbidFrom(query);
       if (gid) {
         resBox.innerHTML = '<div class="tc-rpk-empty">resolving recording…</div>';
         const rec = await fetchRecordingById(gid);
         if (my !== seq || !_recPop) return;
-        if (rec) { data[rec.gid] = rec; lastResults = [rec]; resBox.innerHTML = recRowHtml(rec, ctx); wire(resBox); }
+        if (rec) pickRecording(entry, rec);   // links the recording + closes the picker
         else resBox.innerHTML = '<div class="tc-rpk-empty">recording MBID not found</div>';
         return;
       }
