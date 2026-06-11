@@ -33,6 +33,7 @@ Each takeover is optional and you can flip back to the native editor at any time
 - **Recordings editor**
     - Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row and inline highlighting of the fields that differ.
     - Recording picker with MusicBrainz suggestions, free-form search, linked "appears on" releases, confidence highlights
+        - Paste a **recording MBID** or a MusicBrainz `/recording/<mbid>` URL into the search field to resolve straight to that recording (same as the artist picker)
     - Right-click a recording Title/Artist cell to copy the track's value down to the recording (on submit) — see [Updating recordings](#updating-recordings-titleartist)
 - **[Matching](#matching)**
     - Auto-match artists and recordings in one click
