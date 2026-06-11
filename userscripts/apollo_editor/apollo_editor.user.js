@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.162350
+// @version      2026.6.11.194503
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -68,7 +68,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: false, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -452,7 +452,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.9.162350';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.11.194503';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -818,6 +818,7 @@
         <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
         <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
         <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
+        <label title="On the Add-release Duplicates tab, add a Similarity column scoring how closely each existing release matches the one you are entering (title · artist · track count), coloured red→green — so you can pick the right release to base yours on."><input type="checkbox" id="tc-s-moddupes"> <span>Modify Duplicates</span></label>
         <label title="Edit the annotation as Markdown with a live preview, in the release editor's Additional information and on the standalone Edit annotation page."><input type="checkbox" id="tc-s-modanno"> <span>Modify annotations with Markdown</span></label>
         <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
         <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
@@ -864,8 +865,9 @@
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     gridcols.onchange = () => { SETTINGS.gridCols = gridcols.checked; saveSettings(); applyViewClasses(); };
     gridrows.onchange = () => { SETTINGS.gridRows = gridrows.checked; saveSettings(); applyViewClasses(); };
-    const replri = s.querySelector('#tc-s-replri'), repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), modanno = s.querySelector('#tc-s-modanno'), cnav = s.querySelector('#tc-s-compactnav'), zen = s.querySelector('#tc-s-zen');
+    const replri = s.querySelector('#tc-s-replri'), repltl = s.querySelector('#tc-s-repltl'), replrec = s.querySelector('#tc-s-replrec'), modanno = s.querySelector('#tc-s-modanno'), cnav = s.querySelector('#tc-s-compactnav'), zen = s.querySelector('#tc-s-zen'), moddupes = s.querySelector('#tc-s-moddupes');
     replri.checked = SETTINGS.replaceReleaseInfo !== false; repltl.checked = SETTINGS.replaceTracklist !== false; replrec.checked = SETTINGS.replaceRecordings !== false; modanno.checked = SETTINGS.modifyAnnotation !== false; cnav.checked = SETTINGS.compactNav !== false; zen.checked = !!SETTINGS.zenMode;
+    if (moddupes) { moddupes.checked = !!SETTINGS.modifyDuplicates; moddupes.onchange = () => { SETTINGS.modifyDuplicates = moddupes.checked; saveSettings(); applyDuplicates(); }; }
     replri.onchange = () => { SETTINGS.replaceReleaseInfo = replri.checked; saveSettings(); applyView(); };
     repltl.onchange = () => { SETTINGS.replaceTracklist = repltl.checked; saveSettings(); applyView(); };
     replrec.onchange = () => { SETTINGS.replaceRecordings = replrec.checked; saveSettings(); applyView(); };
@@ -1876,6 +1878,7 @@
     if (tracklistVisible()) { if (tlWant()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); } else hideMirror(); }
     if (recordingsVisible()) { if (recWant()) showRecMirror(); else hideRecMirror(); }
     if (releaseInfoVisible()) applyReleaseInfo();
+    applyDuplicates();   // #187
     relabelLauncher();
   }
   function ensureLauncher() {
@@ -1914,11 +1917,71 @@
       // mount as soon as the (lazily-built) native table exists — retry each tick so there's no native flash
       if (rec) { if (recWant()) { if (!document.getElementById('tc-recwrap')) showRecMirror(); else if (recSig() !== _lastRecSig) rerenderRec(); } else hideRecMirror(); }   // re-render when MB mutates a recording externally (e.g. cleared on a title edit)
       if (releaseInfoVisible()) applyReleaseInfo();
+      applyDuplicates();   // #187: score the Add-release Duplicates tab when "Modify Duplicates" is on
       if (editorEl()) { ensureLauncher(); wireTabFlush(); } else { const l = document.getElementById('tc-launch'); if (l) l.remove(); }   // #135: the switch shows on every tab; #145: flush the takeover on tab clicks
       if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); }   // keep compact nav alive + synced
       applyZen();   // #141: keep zen state applied (and fill the nav title once the release model is ready)
     };
     tick(); setInterval(tick, 500);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     DUPLICATES (#187) — Add-release "Duplicates" tab.  Adds a Similarity column
+     scoring how closely each existing "similar release" matches the one being
+     entered, so the editor can pick the right one to base their release on.
+     We proxy the native table (KO `foreach: similarReleases`): read each rendered
+     row's cells, insert a score cell, and re-apply via a MutationObserver when KO
+     re-renders. Off by default (the "Modify Duplicates" setting).
+  ═══════════════════════════════════════════════════════════════════════ */
+  function dupWant() { return apolloEnabled() && !!SETTINGS.modifyDuplicates; }
+  // similarity of an existing release (name / artist / track count, all we can read
+  // from the native row) to the release being entered. Multiplicative penalties,
+  // in the spirit of MB Release Seeding Helper: a steep title base, softened by an
+  // artist mismatch and a track-count gap (our proxy for its per-track length check).
+  function dupSimilarity(rowName, rowArtist, rowTracks) {
+    const rel = release(); if (!rel) return null;
+    const a = fold(u(rel.name) || ''), b = fold(rowName || '');
+    if (!a && !b) return null;
+    let score = 1 - recLev(a, b) / Math.max(a.length, b.length, 1);   // title ratio 0..1
+    if (score < 0) score = 0;
+    const myArtist = fold(acText(u(rel.artistCredit)) || ''), rArtist = fold(rowArtist || '');
+    if (myArtist && rArtist && myArtist !== rArtist) score *= (rArtist.includes(myArtist) || myArtist.includes(rArtist)) ? 0.9 : 0.75;
+    const myTracks = mediums().reduce((n, m) => n + ((u(m.tracks) || []).length || 0), 0);
+    if (myTracks && rowTracks) { const dt = Math.abs(myTracks - rowTracks); score *= dt === 0 ? 1 : dt === 1 ? 0.9 : dt <= 2 ? 0.75 : dt <= 4 ? 0.55 : 0.35; }
+    return Math.max(0, Math.min(1, score));
+  }
+  function dupColor(pct) { return 'hsl(' + Math.round(pct * 1.2) + ',60%,42%)'; }   // 0% red → 100% green
+  function augmentDupRows(tbody) {
+    tbody.querySelectorAll(':scope > tr').forEach(tr => {
+      if (tr.querySelector('.tc-dup-sim')) return;   // already scored this (KO-rendered) row
+      const c = tr.children;
+      const name = c[1] ? c[1].textContent.trim() : '', artist = c[2] ? c[2].textContent.trim() : '';
+      const tracks = c[4] ? parseInt((c[4].textContent || '').trim(), 10) : NaN;
+      const sim = dupSimilarity(name, artist, isNaN(tracks) ? null : tracks);
+      const td = document.createElement('td'); td.className = 'tc-dup-sim';
+      if (sim == null) { td.textContent = '—'; td.style.textAlign = 'center'; }
+      else { const pct = Math.round(sim * 100); td.textContent = pct + '%'; td.style.cssText = 'background:' + dupColor(pct) + ';color:#fff;font-weight:700;text-align:center;border-radius:3px;padding:1px 6px'; td.title = 'title · artist · track-count similarity to the release you are entering'; }
+      tr.insertBefore(td, c[2] || null);   // place right after the Release column
+    });
+  }
+  function applyDuplicates() {
+    const panel = document.getElementById('duplicates-tab');
+    if (!panel) return;
+    const table = panel.querySelector('table.tbl'); if (!table) return;
+    const thead = table.querySelector('thead tr'), tbody = table.querySelector('tbody');
+    if (!dupWant()) {   // teardown
+      panel.querySelectorAll('.tc-dup-sim, .tc-dup-th').forEach(e => e.remove());
+      if (tbody && tbody._tcDupObs) { tbody._tcDupObs.disconnect(); tbody._tcDupObs = null; }
+      return;
+    }
+    if (thead && !thead.querySelector('.tc-dup-th')) {
+      const th = document.createElement('th'); th.className = 'tc-dup-th'; th.textContent = 'Similarity';
+      th.title = 'How closely each existing release matches the one you are entering.';
+      thead.insertBefore(th, thead.children[2] || null);
+    }
+    if (!tbody) return;
+    augmentDupRows(tbody);
+    if (!tbody._tcDupObs) { const obs = new MutationObserver(() => augmentDupRows(tbody)); obs.observe(tbody, { childList: true }); tbody._tcDupObs = obs; }
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
