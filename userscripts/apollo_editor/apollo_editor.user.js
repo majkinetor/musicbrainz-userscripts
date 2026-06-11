@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.9.162350
+// @version      2026.6.11.193218
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -68,7 +68,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -452,7 +452,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.9.162350';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.11.193218';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -831,6 +831,7 @@
           <div class="tc-s-row lentol" title="Allow up to this many differing characters in the title (edit distance) and still count it as a match. 0 = exact."><span>Title tolerance</span><input type="number" id="tc-s-titletol" min="0" max="20" step="1"> <span>characters</span></div>
           <label title="Treat a case / accent / spacing-only difference in title or artist as a match (recommended)."><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
           <label title="Ignore punctuation &amp; symbols in titles/artists (&amp; → and, brackets, quotes, dashes, dots…)."><input type="checkbox" id="tc-s-ignorepunct"> <span>Ignore punctuation</span></label>
+          <label title="Highlight the exact differing characters in a mismatching title (instead of the whole field), and shade a length mismatch by how large the gap is."><input type="checkbox" id="tc-s-detailhl"> <span>Enable detailed highlighting</span></label>
         </div>
       </div>
       <div class="tc-s-sec">Appearance</div>
@@ -861,6 +862,7 @@
     titletol.onchange = () => { const v = Math.max(0, Math.min(20, parseInt(titletol.value, 10) || 0)); SETTINGS.recTitleTol = v; titletol.value = v; saveSettings(); refreshRec(); };
     igc.onchange = () => { SETTINGS.recIgnoreCase = igc.checked; saveSettings(); refreshRec(); };
     igp.onchange = () => { SETTINGS.recIgnorePunct = igp.checked; saveSettings(); refreshRec(); };
+    const detailhl = s.querySelector('#tc-s-detailhl'); if (detailhl) { detailhl.checked = !!SETTINGS.recDetailedHl; detailhl.onchange = () => { SETTINGS.recDetailedHl = detailhl.checked; saveSettings(); refreshRec(); }; }
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     gridcols.onchange = () => { SETTINGS.gridCols = gridcols.checked; saveSettings(); applyViewClasses(); };
     gridrows.onchange = () => { SETTINGS.gridRows = gridrows.checked; saveSettings(); applyViewClasses(); };
@@ -2039,6 +2041,34 @@
       return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm)) + esc(u(n.joinPhrase) || '');
     }).join('');
   }
+  // #186 detailed highlighting — char-level LCS diff of two short strings.
+  // Returns segments [{t,s}] with t: 0 common · -1 only-in-a · 1 only-in-b, or null
+  // when either string is too long (caller falls back to the flat highlight).
+  function charDiff(a, b) {
+    a = a || ''; b = b || '';
+    if (a.length > 200 || b.length > 200) return null;
+    const n = a.length, m = b.length;
+    const dp = []; for (let i = 0; i <= n; i++) dp.push(new Uint16Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    const out = []; let i = 0, j = 0;
+    const push = (t, ch) => { const l = out[out.length - 1]; if (l && l.t === t) l.s += ch; else out.push({ t, s: ch }); };
+    while (i < n && j < m) { if (a[i] === b[j]) { push(0, b[j]); i++; j++; } else if (dp[i + 1][j] >= dp[i][j + 1]) { push(-1, a[i]); i++; } else { push(1, b[j]); j++; } }
+    while (i < n) push(-1, a[i++]); while (j < m) push(1, b[j++]);
+    return out;
+  }
+  // render one side of a diff: common runs stay plain, this side's unique chars
+  // (want = -1 track/left, 1 recording/right) are wrapped as .tc-dh.
+  function diffSide(segs, want) {
+    return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + esc(s.s) + '</span>' : '').join('');
+  }
+  // graded length-gap shade (#186): null under 1s, scaling red 1–5s, solid red ≥5s.
+  function lenShade(gapMs) {
+    const g = Math.abs(gapMs || 0);
+    if (g < 1000) return null;
+    if (g >= 5000) return { bg: '#d32f2f', fg: '#fff' };
+    return { bg: 'rgba(211,47,47,' + (0.2 + 0.6 * (g / 5000)).toFixed(2) + ')', fg: g >= 3500 ? '#fff' : '#7a0000' };
+  }
   // read each track's recording association + the data needed to compare them side by side
   function readRecordings() {
     const out = [];
@@ -2137,6 +2167,9 @@
       '.tc-rectbl .tc-tkt{font-weight:600}',
       '.tc-rectbl .tc-rec-none{color:#c0392b}.tc-rectbl .tc-rec-new{color:#2c7a51}',
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
+      '.tc-rectbl td.tc-dh-cell{background:transparent;color:inherit}',   // #186 detailed: per-char carries the colour, no flat field
+      '.tc-rectbl .tc-dh{background:#ffc9c9;color:#a00000;border-radius:2px}',   // #186 a differing character run
+      '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl td.tc-updavail{box-shadow:inset 0 -2px 0 #cdb8f0}',   // native offers a copy (e.g. casing-only) — right-click to apply #146
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
@@ -2409,16 +2442,29 @@
       const aCls = r.copyArtist ? 'tc-copy' : (d.artist || tolHas('artist') ? 'tc-diff' : (r.rawArtistDiff ? 'tc-updavail' : ''));
       const tElig = r.rawTitleDiff || r.copyTitle, aElig = r.rawArtistDiff || r.copyArtist;
       const changed = recChangedFromOrig(r.mi, r.ti);   // differs from the page-load recording
+      // #186 detailed highlighting (opt-in): per-character title diff + graded length shade.
+      // Falls back to the flat tc-diff highlight when off, in copy-preview, or for long titles.
+      const dh = SETTINGS.recDetailedHl && r.recGid && !r.isNew;
+      let trackTitleHtml = esc(r.title || ''), recTitleHtml = titleCell, tCls2 = tCls;
+      if (dh && !r.copyTitle && (d.title || tolHas('title')) && r.recName) {
+        const segs = charDiff(r.title || '', r.recName || '');
+        if (segs) { trackTitleHtml = diffSide(segs, -1); recTitleHtml = diffSide(segs, 1) + disamb; tCls2 = 'tc-dh-cell'; }
+      }
+      let recLenCls = (d.len || tolHas('length')) ? 'tc-diff' : '', recLenStyle = '';
+      if (dh && (d.len || tolHas('length'))) {
+        const sh = lenShade((r.recLen || 0) - (r.trackLen || 0));
+        if (sh) { recLenCls = 'tc-dh-len'; recLenStyle = ' style="background:' + sh.bg + ';color:' + sh.fg + '"'; }
+      }
       const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : ''); tr.dataset.mi = r.mi; tr.dataset.ti = r.ti;
       tr.innerHTML =
         '<td class="c-n">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
-        '<td class="tc-tkt">' + esc(r.title || '') + '</td>' +
+        '<td class="tc-tkt">' + trackTitleHtml + '</td>' +
         '<td>' + (r.trackArtistHtml || '') + '</td>' +
         '<td class="c-len">' + fmtMs(r.trackLen) + '</td>' +
         '<td class="c-sep"><span class="tc-dot"></span></td>' +
-        '<td class="tc-recname ' + tCls + '">' + titleCell + '</td>' +
+        '<td class="tc-recname ' + tCls2 + '">' + recTitleHtml + '</td>' +
         '<td class="tc-recartist ' + aCls + '">' + artistCell + '</td>' +
-        '<td class="c-len ' + (d.len || tolHas('length') ? 'tc-diff' : '') + '">' + fmtMs(r.recLen) + '</td>';
+        '<td class="c-len ' + recLenCls + '"' + recLenStyle + '>' + fmtMs(r.recLen) + '</td>';
       const dot = tr.querySelector('.tc-dot');
       if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
       else if (r.recGid) { dot.style.background = r.exact ? CONF_COLOR.exact : CONF_COLOR.tolerance; dot.title = r.exact ? 'Exact match' : 'Tolerance match' + (r.tolDiffs && r.tolDiffs.length ? ' (' + r.tolDiffs.join(', ') + ')' : ''); }
