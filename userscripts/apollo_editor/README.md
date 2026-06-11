@@ -32,7 +32,7 @@ Each takeover is optional and you can flip back to the native editor at any time
     - Highlighting of changed rows and split artists
 - **Recordings editor**
     - Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row and inline highlighting of the fields that differ.
-    - **Detailed highlighting** (opt-in, _Matching_ settings) — highlights the exact **differing characters** in a mismatching title (instead of the whole field) and shades a **length mismatch** by how large the gap is (faint under a second → solid red past five).
+    - **Detailed highlighting** (opt-in, _Matching_ settings) — highlights the exact **differing characters** in a mismatching **title and artist** (including a casing- or punctuation-only difference the match would otherwise tolerate), instead of the whole field, and shades a **length mismatch** by how large the gap is (faint under a second → solid red past five).
     - Recording picker with MusicBrainz suggestions, free-form search, linked "appears on" releases, confidence highlights
     - Right-click a recording Title/Artist cell to copy the track's value down to the recording (on submit) — see [Updating recordings](#updating-recordings-titleartist)
 - **[Matching](#matching)**

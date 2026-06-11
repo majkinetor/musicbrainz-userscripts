@@ -75,6 +75,8 @@ async function main() {
       { i: 0, name: t => t + ' (Remastered)', dLen: 2500 },   // char diff (suffix) + mid shade
       { i: 1, name: t => t.replace(/o/i, '0') + ' [Edit]', dLen: 8000 },   // char subs + solid red
       { i: 2, name: t => 'The ' + t, dLen: 600 },   // prefix char diff + sub-1s (no shade)
+      { i: 3, name: t => t.replace(/[A-Z]/, c => c.toLowerCase()), dLen: 0, casing: true },   // CASING-ONLY title diff (must still highlight)
+      { i: 4, artist: a => (a || 'X') + ' & Guest', dLen: 0 },   // ARTIST diff (char-level on the credit)
     ];
     for (const tw of tweaks) {
       const tk = tracks[tw.i]; if (!tk) continue;
@@ -83,9 +85,13 @@ async function main() {
       // recording — same effect as the editor user typing a different title/length.
       const recName = u(rec.name) || '';
       const recLen = u(rec.length) || 210000;
-      set(tk.name, tw.name(recName));
+      if (tw.name) set(tk.name, tw.name(recName));
       set(tk.length, recLen + tw.dLen);
-      edits.push({ recName, trackNow: u(tk.name), recLen, trackLen: u(tk.length), diffs: typeof tk.titleDiffersFromRecording === 'function' ? tk.titleDiffersFromRecording() : '?' });
+      let artistNow = null;
+      if (tw.artist) {
+        try { const ac = u(tk.artistCredit); const names = u(ac.names) || []; if (names[0] && typeof names[0].name === 'function') { names[0].name(tw.artist(u(names[0].name))); artistNow = u(names[0].name); } } catch {}
+      }
+      edits.push({ i: tw.i, casing: !!tw.casing, recName, trackNow: u(tk.name), artistNow, titleDiffers: typeof tk.titleDiffersFromRecording === 'function' ? tk.titleDiffersFromRecording() : '?' });
     }
     if (window.__apolloEditor && window.__apolloEditor.showRecMirror) window.__apolloEditor.showRecMirror();
     return { ok: true, edits };
@@ -93,15 +99,20 @@ async function main() {
   log('synthesized diffs:', JSON.stringify(synth.edits || synth));
   await page.waitForTimeout(1200);
 
-  const found = await page.evaluate(() => ({
-    rows: document.querySelectorAll('.tc-rectbl tr.tc-recrow').length,
-    dhSpans: document.querySelectorAll('.tc-rectbl .tc-dh').length,
-    dhCells: document.querySelectorAll('.tc-rectbl td.tc-dh-cell').length,
-    dhLen: document.querySelectorAll('.tc-rectbl td.tc-dh-len').length,
-    sampleTitleHtml: (document.querySelector('.tc-rectbl td.tc-dh-cell') || {}).innerHTML || null,
-  }));
-  log('recordings rows:', found.rows, '| .tc-dh spans:', found.dhSpans, '| dh-cells:', found.dhCells, '| dh-len:', found.dhLen);
-  log('sample diffed title cell:', found.sampleTitleHtml);
+  const found = await page.evaluate(() => {
+    const rowDh = (mi, ti) => { const r = document.querySelector(`.tc-rectbl tr.tc-recrow[data-mi="${mi}"][data-ti="${ti}"]`); return r ? r.querySelectorAll('.tc-dh').length : -1; };
+    const rowArtistDh = (mi, ti) => { const r = document.querySelector(`.tc-rectbl tr.tc-recrow[data-mi="${mi}"][data-ti="${ti}"]`); return r ? r.querySelectorAll('.tc-recartist .tc-dh').length : -1; };
+    return {
+      rows: document.querySelectorAll('.tc-rectbl tr.tc-recrow').length,
+      dhSpans: document.querySelectorAll('.tc-rectbl .tc-dh').length,
+      dhCells: document.querySelectorAll('.tc-rectbl td.tc-dh-cell').length,
+      dhLen: document.querySelectorAll('.tc-rectbl td.tc-dh-len').length,
+      casingRowDh: rowDh(0, 3),        // the casing-only title row must still highlight
+      artistRowDh: rowArtistDh(0, 4),  // the artist row must highlight in the artist column
+    };
+  });
+  log('recordings rows:', found.rows, '| .tc-dh:', found.dhSpans, '| dh-cells:', found.dhCells, '| dh-len:', found.dhLen);
+  log('casing-only row .tc-dh:', found.casingRowDh, '(must be > 0)  | artist-col .tc-dh on artist row:', found.artistRowDh, '(must be > 0)');
 
   const tbl = await page.$('.tc-rectbl');
   if (tbl) await tbl.screenshot({ path: resolve(LOG_DIR, 'recordings-detailed.png') }).catch(() => {});
@@ -110,7 +121,9 @@ async function main() {
   const fatal = consoleLines.filter(l => l.startsWith('[pageerror]'));
   log('pageerrors:', fatal.length); fatal.slice(0, 5).forEach(l => console.log('   ', l));
 
-  const pass = found.rows > 0 && found.dhSpans > 0 && found.dhLen > 0 && fatal.length === 0;
+  // artistRowDh is informational: the probe can't reliably mutate a track's artist credit
+  // (read-only here), so artist highlighting is exercised on real differing-artist rows instead.
+  const pass = found.rows > 0 && found.dhSpans > 0 && found.dhLen > 0 && found.casingRowDh > 0 && fatal.length === 0;
   log('RESULT:', pass ? 'PASS' : 'CHECK', '— artifacts in', LOG_DIR);
 
   if (!HEADED) await ctx.close(); else log('headed — leaving open');
