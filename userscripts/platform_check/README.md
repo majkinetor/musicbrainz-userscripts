@@ -23,6 +23,12 @@ Once a URL is settled, the script fetches the platform's metadata (track count, 
   - **strictly** — only add *barcode-confirmed* links, i.e. also withhold links whose barcode can't be checked (Apple/Spotify, which don't expose a UPC).
   - The left-bar indicator shows known mismatches regardless of this setting.
 
+**Format accuracy (#182).** MusicBrainz treats a different format (medium) as a different release, so a digital-store link doesn't belong on a CD/Vinyl release per the same [URL guidelines](https://musicbrainz.org/doc/Style/Relationships/URLs#Which_entity_to_link_to). Only **Bandcamp** and **Discogs** expose a real format; every other provider is a digital-only storefront, so an absent format counts as **Digital**. Platform Check adds a setup option **"Use format for link confidence"** (off by default) with two modes:
+
+- **if they exist** — withhold from `+`/`↗` only links whose format is *known and incompatible* with the MB release (e.g. a Spotify/Apple/Tidal link on a CD release; a Bandcamp/Discogs edition whose parsed format shares no medium with MB's).
+- **strictly** — also withhold links whose format can't be determined (a Bandcamp/Discogs parse that yielded no format).
+- A **subtle violet bar on the left edge** marks incompatible rows while the option is on (digital-on-physical is common enough to be noise otherwise). Bandcamp/Discogs editions that *include* MB's medium (e.g. Bandcamp "Digital, CD" on a CD release) are compatible and pass.
+
 Link availability is determined by the icon and text color:
 
 1. Color - link is found
