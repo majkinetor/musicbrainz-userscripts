@@ -110,7 +110,11 @@ export const mbThrottle = (() => {
                 }
                 if (!res.ok) {
                     logDebug(`${tag} <- ${res.status} (give up) in ${elapsed}ms`);
-                    item.resolve(null);
+                    // 404 is an ANSWER (entity not in MB), not a failure. Callers
+                    // that need to tell the two apart (preflight's URL lookup —
+                    // "no relations" vs "lookup failed", #193 chip bug) opt in
+                    // via `fetchJson404` and get a `{ notFound: true }` sentinel.
+                    item.resolve(item.nf && res.status === 404 ? { notFound: true } : null);
                     return;
                 }
                 const data = item.wantJson ? await res.json() : res;
@@ -146,16 +150,19 @@ export const mbThrottle = (() => {
         item.resolve(null);
     }
 
-    function _enqueue(url, retries, wantJson) {
+    function _enqueue(url, retries, wantJson, nf = false) {
         return new Promise(resolve => {
-            _queue.push({ url, retries, wantJson, resolve });
+            _queue.push({ url, retries, wantJson, nf, resolve });
             _drain();
         });
     }
 
     return {
-        fetchJson: (url, retries = 3) => _enqueue(url, retries, true),
-        fetchRaw:  (url, retries = 3) => _enqueue(url, retries, false),
+        fetchJson:    (url, retries = 3) => _enqueue(url, retries, true),
+        // Like fetchJson, but a 404 resolves `{ notFound: true }` instead of
+        // null — so null unambiguously means "lookup FAILED" (#193 chip bug).
+        fetchJson404: (url, retries = 3) => _enqueue(url, retries, true, true),
+        fetchRaw:     (url, retries = 3) => _enqueue(url, retries, false),
         stats: () => ({ total: _totalRequests, rateLimited: _rateLimited,
                          inFlight: _running, queued: _queue.length }),
     };

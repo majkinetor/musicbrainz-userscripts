@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.12.210956
+// @version      2026.6.12.212000
 // @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
@@ -216,7 +216,7 @@
           }
           if (!res.ok) {
             logDebug(`${tag} <- ${res.status} (give up) in ${elapsed}ms`);
-            item.resolve(null);
+            item.resolve(item.nf && res.status === 404 ? { notFound: true } : null);
             return;
           }
           const data = item.wantJson ? await res.json() : res;
@@ -246,14 +246,17 @@
       }
       item.resolve(null);
     }
-    function _enqueue(url, retries, wantJson) {
+    function _enqueue(url, retries, wantJson, nf = false) {
       return new Promise((resolve) => {
-        _queue.push({ url, retries, wantJson, resolve });
+        _queue.push({ url, retries, wantJson, nf, resolve });
         _drain();
       });
     }
     return {
       fetchJson: (url, retries = 3) => _enqueue(url, retries, true),
+      // Like fetchJson, but a 404 resolves `{ notFound: true }` instead of
+      // null — so null unambiguously means "lookup FAILED" (#193 chip bug).
+      fetchJson404: (url, retries = 3) => _enqueue(url, retries, true, true),
       fetchRaw: (url, retries = 3) => _enqueue(url, retries, false),
       stats: () => ({
         total: _totalRequests,
@@ -2206,6 +2209,7 @@
         if (cachedLinkedIds === void 0 && (via2 === "url" || via2 === "both")) {
           cachedLinkedIds = [cachedRec.mbid];
         }
+        if (Array.isArray(cachedLinkedIds) && cachedLinkedIds.length === 0) cachedLinkedIds = void 0;
         if (cachedRec.name) {
           return buildResolved(
             cachedRec.mbUrl,
@@ -2237,16 +2241,17 @@
         );
       }
       if (cachedRec && Array.isArray(cachedRec.nameMatches)) {
-        return buildAttention(cachedRec.nameMatches, false, null, cachedRec.urlLinkedIds, cachedRec.creditOverride);
+        const attnLinkedIds = Array.isArray(cachedRec.urlLinkedIds) && cachedRec.urlLinkedIds.length === 0 ? void 0 : cachedRec.urlLinkedIds;
+        return buildAttention(cachedRec.nameMatches, false, null, attnLinkedIds, cachedRec.creditOverride);
       }
     }
     const [nameJson, urlJson] = await Promise.all([
       mbThrottle.fetchJson(
         `//musicbrainz.org/ws/2/${kind}?query=${encodeURIComponent(searchName)}&fmt=json&limit=${searchLimit}`
       ),
-      parsed ? mbThrottle.fetchJson(
+      parsed ? mbThrottle.fetchJson404(
         `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
-      ) : Promise.resolve(null)
+      ) : Promise.resolve({ notFound: true })
     ]);
     const nameSearchFailed = nameJson === null;
     const normalized = searchName.toLowerCase().trim();
@@ -2264,7 +2269,7 @@
       disambiguation: exactNameMatches[0].disambiguation || ""
     } : null;
     let urlHit = null;
-    const urlLinkedIds = (urlJson?.relations || []).map((r) => kind === "place" ? r.place?.id || r.label?.id || null : r[kind]?.id || null).filter(Boolean);
+    const urlLinkedIds = urlJson === null ? void 0 : (urlJson.relations || []).map((r) => kind === "place" ? r.place?.id || r.label?.id || null : r[kind]?.id || null).filter(Boolean);
     if (urlJson?.relations?.length > 0) {
       const rel = kind === "place" ? urlJson.relations.find((r) => r.place || r.label) : urlJson.relations.find((r) => r[kind]);
       if (rel) {
@@ -2288,7 +2293,8 @@
           disambiguation: "",
           resolvedVia: null,
           nameMatches: matches,
-          urlLinkedIds
+          // Omit when unknown (lookup failed) — never persist a guess.
+          ...urlLinkedIds !== void 0 && { urlLinkedIds }
         });
       }
     }
@@ -2330,7 +2336,8 @@
           name: finalName,
           disambiguation: finalDisam || "",
           resolvedVia: via,
-          urlLinkedIds
+          // Omit when unknown (lookup failed) — never persist a guess.
+          ...urlLinkedIds !== void 0 && { urlLinkedIds }
         });
       }
       return buildResolved(mbUrl, finalName, finalDisam || "", via, resolved.kind, false, urlLinkedIds);
@@ -2978,6 +2985,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
                     localStorage.setItem(urlCheckLsKey, JSON.stringify({ date: urlCheckToday, result }));
                   } catch (e2) {
                   }
+                  const healKey = parseSourceEntityUrl(r.entity?.resource_url)?.key;
+                  if (healKey) writeIdbRecord(healKey, { urlLinkedIds: linkedIds });
                   applyUrlCheckResult(result);
                 }).catch(() => applyUrlCheckResult("none"))
               );
@@ -3065,6 +3074,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
                     localStorage.setItem(urlCheckLsKey, JSON.stringify({ date: urlCheckToday, result }));
                   } catch (e2) {
                   }
+                  const healKey = parseSourceEntityUrl(r.entity?.resource_url)?.key;
+                  if (healKey) writeIdbRecord(healKey, { urlLinkedIds: linkedIds });
                   applyUrlCheckResult(result);
                 }).catch(() => applyUrlCheckResult("none"))
               );

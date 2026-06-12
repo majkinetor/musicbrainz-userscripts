@@ -837,6 +837,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                     const result = linkedIds.includes(selected.id) ? 'linked' : linkedIds.length > 0 ? 'other' : 'none';
                                     _urlCheckSessionCache.set(urlCheckCacheKey, result);
                                     try { localStorage.setItem(urlCheckLsKey, JSON.stringify({ date: urlCheckToday, result })); } catch(e) {}
+                                    // Write the verified list back to IDB so the
+                                    // poisoned-[] heal (#193 chip bug) re-checks each
+                                    // record at most once — next session trusts this.
+                                    const healKey = parseSourceEntityUrl(r.entity?.resource_url)?.key;
+                                    if (healKey) writeIdbRecord(healKey, { urlLinkedIds: linkedIds });
                                     applyUrlCheckResult(result);
                                 })
                                 .catch(() => applyUrlCheckResult('none'))
@@ -934,6 +939,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                     const result = linkedIds.includes(selected.id) ? 'linked' : linkedIds.length > 0 ? 'other' : 'none';
                                     _urlCheckSessionCache.set(urlCheckCacheKey, result);
                                     try { localStorage.setItem(urlCheckLsKey, JSON.stringify({ date: urlCheckToday, result })); } catch(e) {}
+                                    // Write the verified list back to IDB so the
+                                    // poisoned-[] heal (#193 chip bug) re-checks each
+                                    // record at most once — next session trusts this.
+                                    const healKey = parseSourceEntityUrl(r.entity?.resource_url)?.key;
+                                    if (healKey) writeIdbRecord(healKey, { urlLinkedIds: linkedIds });
                                     applyUrlCheckResult(result);
                                 })
                                 .catch(() => applyUrlCheckResult('none'))
