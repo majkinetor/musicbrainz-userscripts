@@ -33,6 +33,7 @@ Each takeover is optional and you can flip back to the native editor at any time
     - **Expand all media** — a release with many media loads with most collapsed; **right-click** a medium's expand arrow (Tracklist) or its expand row (Recordings) to expand **every** collapsed medium at once. Left-click still expands just that one.
 - **Recordings editor**
     - Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row and inline highlighting of the fields that differ.
+    - **Detailed highlighting** (opt-in, _Matching_ settings) — highlights the exact **differing characters** in a mismatching **title and artist** (including a casing- or punctuation-only difference the match would otherwise tolerate), instead of the whole field, and shades a **length mismatch** by how large the gap is (faint under a second → solid red past five).
     - Recording picker with MusicBrainz suggestions, free-form search, linked "appears on" releases, confidence highlights
         - Paste a **recording MBID** or a MusicBrainz `/recording/<mbid>` URL into the search field to link that recording immediately (same as the artist picker)
     - Right-click a recording Title/Artist cell to copy the track's value down to the recording (on submit) — see [Updating recordings](#updating-recordings-titleartist)
