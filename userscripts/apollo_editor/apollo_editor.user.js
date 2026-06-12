@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.12.084051
+// @version      2026.6.12.092451
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -452,7 +452,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.12.084051';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.12.092451';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2141,10 +2141,18 @@
   function recTitleEq(a, b) { const x = recFold(a), y = recFold(b); if (x === y) return true; const tol = SETTINGS.recTitleTol || 0; return tol > 0 && recLev(x, y) <= tol; }
   // an IDEAL match: title/length/artist match WITHOUT any relaxation option (ignore-punctuation, title or
   // length tolerance) — only case/accent folding. Preferred by auto-match and shown distinctly. #119
+  // artist-entity equality for the flattened {artistGids} carried on ctx / candidate data:
+  // same gids in order means any text difference is only a "credited as" name, not a real
+  // artist mismatch — so it must NOT drag the match confidence down (a *Credited as* value
+  // doesn't influence matching). This keeps auto-match consistent with the table's exact dot. #190
+  function sameAcEntities(a, b) {
+    const x = a && a.artistGids, y = b && b.artistGids;
+    return !!(x && y && x.length > 0 && x.length === y.length && x.every((g, i) => g === y[i]));
+  }
   function recExactMatch(data, ctx) {
     if (!ctx) return false;
     const titleEq = !data.name || !ctx.title || fold(data.name) === fold(ctx.title);
-    const artistEq = !data.artist || !ctx.artist || fold(data.artist) === fold(ctx.artist);
+    const artistEq = !data.artist || !ctx.artist || sameAcEntities(data, ctx) || fold(data.artist) === fold(ctx.artist);
     const lenEq = !data.length || !ctx.length || Math.round(data.length / 1000) === Math.round(ctx.length / 1000);
     return titleEq && artistEq && lenEq;
   }
@@ -2615,7 +2623,7 @@
     if (!ctx) return 0;
     let n = 0; const lenDiff = recLenGap(data.length, ctx.length);
     if (data.name && ctx.title && !recTitleEq(data.name, ctx.title)) n++;
-    if (data.artist && ctx.artist && !recNameEq(data.artist, ctx.artist)) n++;
+    if (data.artist && ctx.artist && !sameAcEntities(data, ctx) && !recNameEq(data.artist, ctx.artist)) n++;   // #190 same entity = credited-as only, not a diff
     if (lenDiff > 0) n++;
     if (n >= 3 && lenDiff > 10000) return 3;
     if (lenDiff > 15000) return 2;
@@ -2644,7 +2652,7 @@
         const r = todo[i]; considered++;
         setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '…');
         const ko = koTrack(r.mi, r.ti);
-        const ctx = { title: r.title, artist: r.trackArtist, length: r.trackLen };
+        const ctx = { title: r.title, artist: r.trackArtist, length: r.trackLen, artistGids: acArtistGids(u(ko.artistCredit)) };
         // best candidate from the local RG pool (normalised-title match; fuzzy scan if a Title tolerance is set).
         // lower confidence level wins; within the same level, an EXACT (no-tolerance) match is preferred. #119
         let best = null, bestLevel = Infinity;
@@ -2765,6 +2773,7 @@
     return {
       gid: r.id, name: r.title, length: r.length || null,
       artist: (r['artist-credit'] || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''),
+      artistGids: (r['artist-credit'] || []).map(a => a.artist && a.artist.id).filter(Boolean),   // #190 entity-aware artist match
       ac: r['artist-credit'] || [],   // raw credit, so the linked recording keeps its artist on screen
       releases: (() => { const seen = new Set(), out = []; (r.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; out.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } }); return out; })(),
       isrcs: r.isrcs || [],
@@ -2830,7 +2839,7 @@
     const rels = []; const seen = new Set();
     if (ap && ap.results) ap.results.forEach(r => { const rr = u(r); const name = u(rr.name), gid = u(rr.gid); const rg = u(rr.releaseGroup); const k = gid || name; if (name && !seen.has(k)) { seen.add(k); rels.push({ name, gid, rgGid: rg ? u(rg.gid) : null, rgName: rg ? u(rg.name) : null }); } });
     const isrcs = (u(e.isrcs) || []).map(x => typeof x === 'string' ? x : (x && (x.isrc || u(x.isrc)))).filter(Boolean);
-    return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), releases: rels, isrcs };
+    return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), artistGids: acArtistGids(u(e.artistCredit)), releases: rels, isrcs };
   }
   // confidence of a picker result vs the track that opened the picker (same scheme as the table dot)
   function resultConfClass(data, ctx) {
@@ -2889,7 +2898,7 @@
     const pop = document.createElement('div'); pop.className = 'tc-recpop'; _recPop = pop; _recPopAnchor = anchor; document.body.appendChild(pop);
     const ko = koTrack(entry.mi, entry.ti);
     const data = {};
-    const ctx = { title: u(ko.name), artist: acText(u(ko.artistCredit)), length: u(ko.length) };   // for result confidence colouring
+    const ctx = { title: u(ko.name), artist: acText(u(ko.artistCredit)), length: u(ko.length), artistGids: acArtistGids(u(ko.artistCredit)) };   // for result confidence colouring
     // the currently-linked recording (or "new recording" if that's flagged)
     const curRec = u(ko.recording);
     const isNew = typeof ko.hasNewRecording === 'function' && !!u(ko.hasNewRecording);
