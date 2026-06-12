@@ -1,5 +1,11 @@
 # ISRC Scout Changelog
 
+## [2026.6.12.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.12.2)
+
+### Fixes
+
+1. Tidal rate limit (HTTP 429) reported as "not found" ([#192](https://github.com/majkinetor/musicbrainz-userscripts/issues/192))
+
 ## [2026.6.10](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.10)
 
 ### Features
