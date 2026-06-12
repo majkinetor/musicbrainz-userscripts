@@ -19,7 +19,7 @@ Each takeover is optional and you can flip back to the native editor at any time
 
 - **Tracklist editor**
     - Artist picker with confidence highlight
-        - With **Change: all matching tracks**, *every* artist action — pick, *Credited as* edit, join-phrase, add/insert, remove, reorder, ⋔ split — is applied to every other track that shares the same artist credit (mirrors MB's native "change all matching tracks"; whole-credit string match, linked-artist identity ignored). Set **Change: single track** to edit just one.
+        - Change all matching tracks or single one 
         - Ctrl-click a search result to set that artist on all unresolved tracks
         - Paste an MBID or a MusicBrainz artist URL to resolve straight to that artist
     - Split artist with join-phrase selector
