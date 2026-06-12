@@ -47,6 +47,7 @@ Each takeover is optional and you can flip back to the native editor at any time
 - **Release Information** tab
     - The **annotation editor** (above) lives here, in *Additional information*.
     - External links moved to a right column with a dead-link checker; right-click a favicon/type to edit it
+- **[Duplicates](#duplicates)** tab — a red→green **Similarity** score per existing release, clickable for a track-by-track comparison, so you can pick the right release to base yours on.
 
 ## Matching
 
@@ -97,6 +98,15 @@ When a track's title or artist differs from its linked recording, you can copy t
 While a copy is on, the cell previews `→ New ` followed by the recording's ~~original~~ value, struck through. Cells that offer a copy carry a subtle underline; a real mismatch stays red.
 
 This mirrors MusicBrainz's **native** update checkboxes exactly — so a copy is offered whenever the native editor would show its checkbox, **including casing-only differences** that Apollo's match tolerance / *Ignore casing* setting would otherwise treat as a match. The tolerance settings still drive the confidence colouring; they no longer hide the copy. Right-clicking a recording cell with no difference does nothing (the browser's context menu is suppressed there).
+
+## Duplicates
+
+When you add a release, MusicBrainz's **Duplicates** tab lists existing releases you might want to *base your release on*. Apollo augments that native table (controlled by the **Modify Duplicates** [setting](#modify), **on by default**):
+
+- A **Similarity** column scores how closely each existing release matches the one you're entering — a folded-title ratio, softened by an **artist** mismatch (×0.75) and a **track-count** gap — rendered as a **red→green** percentage.
+- **Click a score** to expand a **track-by-track comparison** beneath the row: each track's *Release* (the existing release) vs *Seeded* (what you're entering) **artist**, **title** and **length**, grouped by medium. It reuses the [detailed recordings highlighting](#recordings-editor) — per-character **title and artist** diffs and a **graded length shade** (faint under a second → solid red past five). Click again to collapse.
+
+The score is computed from the data shown in the native row (no extra requests); the comparison fetches the existing release's tracklist on demand when you open it.
 
 ## Toolbar
 
@@ -154,6 +164,7 @@ If any of the following options is on, script replaces the native interface elem
 - Modify Release Information
 - Modify Tracklist
 - Modify Recordings
+- Modify Duplicates — the [Duplicates](#duplicates) similarity column + track comparison (on by default)
 - Modify annotations with Markdown — the [annotation editor](#annotation-editor) (applies to both `/edit` and the standalone `/edit_annotation` page)
 - Modify header and footer
 - Zen editing
