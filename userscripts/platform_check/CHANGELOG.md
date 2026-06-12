@@ -1,5 +1,12 @@
 # Platform Check Changelog
 
+## [2026.6.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.12)
+
+### Features
+
+1. Setup redesign ([#188](https://github.com/majkinetor/musicbrainz-userscripts/issues/188))
+1. Detection of Bandcamp hidden tracks ([#183](https://github.com/majkinetor/musicbrainz-userscripts/issues/183))
+
 ## [2026.6.10](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.10)
 
 ### Features

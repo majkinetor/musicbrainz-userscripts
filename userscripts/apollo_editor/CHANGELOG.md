@@ -1,5 +1,19 @@
 # Apollo Editor Changelog
 
+## [2026.6.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.12)
+
+### Features
+
+1. Add recording by MBID ([#189](https://github.com/majkinetor/musicbrainz-userscripts/issues/189))
+1. Duplicate similarity ([#187](https://github.com/majkinetor/musicbrainz-userscripts/issues/187))
+1. Detailed recordings highlighting ([#186](https://github.com/majkinetor/musicbrainz-userscripts/issues/186))
+1. Expand all collapsed media ([#185](https://github.com/majkinetor/musicbrainz-userscripts/issues/185))
+
+### Fixes
+
+1. Created artists not assigned in the native table ([#191](https://github.com/majkinetor/musicbrainz-userscripts/issues/191))
+1. Exact match applied only with cutoff set to "near" ([#190](https://github.com/majkinetor/musicbrainz-userscripts/issues/190))
+
 ## [2026.6.9](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.9)
 
 ### Features
