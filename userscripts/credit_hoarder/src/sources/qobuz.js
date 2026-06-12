@@ -111,14 +111,22 @@ export function parseQobuzCreditLine(line) {
  * `index` aligns with the page's tracklist).
  */
 export function extractQobuzCredits(html) {
-    const out = [];
-    const re = /<p[^>]*class="[^"]*track__info[^"]*"[^>]*>([\s\S]*?)<\/p>/gi;
-    let m, i = 0;
+    // DO NOT index credit lines by element order: the store page emits MORE
+    // `track__info`-classed <p>s than tracks (empty responsive duplicates —
+    // 32 for a 16-track album), which shifted every position and seeded
+    // credits onto the WRONG tracks in the first live test. Each track row
+    // carries `id="popinAddToCartBtnPlayerTrack<N>"` with the REAL track
+    // number — anchor every credits line to the nearest preceding marker.
+    const byTrack = new Map();   // real track number → credits
+    const re = /id="popinAddToCartBtnPlayerTrack(\d+)"|<p[^>]*class="[^"]*\btrack__info\b[^"]*"[^>]*>([\s\S]*?)<\/p>/gi;
+    let m, current = 0;
     while ((m = re.exec(html)) !== null) {
-        const text = decodeEntities(m[1].replace(/<[^>]+>/g, '').trim());
-        out.push({ index: ++i, credits: parseQobuzCreditLine(text) });
+        if (m[1] !== undefined) { current = parseInt(m[1], 10); continue; }
+        const text = decodeEntities((m[2] || '').replace(/<[^>]+>/g, '').trim());
+        if (!text || !current) continue;               // empty duplicate / preamble
+        if (!byTrack.has(current)) byTrack.set(current, parseQobuzCreditLine(text));
     }
-    return out;
+    return [...byTrack.entries()].sort((a, b) => a[0] - b[0]).map(([index, credits]) => ({ index, credits }));
 }
 
 /** Album title + artist from the store page, for the diagnostic log.

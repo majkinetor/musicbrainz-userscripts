@@ -24,15 +24,26 @@ assert.deepEqual(parseQobuzCreditLine(line2), [
 // Entity decoding (track 2: Conjunto Ana N'gola arrives as N&#039;gola)
 assert.equal(decodeEntities('Conjunto Ana N&#039;gola &amp; Co'), "Conjunto Ana N'gola & Co");
 
-// HTML extraction
-const html = '<div><p class="track__info">A, Composer - B, Producer</p><p class="track__info">C, Lyricist</p></div>';
+// HTML extraction — anchored to the page's real track-number markers.
+// Reproduces the live-test trap: empty duplicate track__info elements
+// (responsive layout) must NOT shift positions, and `track__infos`-class
+// decoys must not match.
+const html = [
+    '<button id="popinAddToCartBtnPlayerTrack1">…</button>',
+    '<p class="track__info">A, Composer - B, Producer</p>',
+    '<p class="track__info"></p>',                                   // empty duplicate
+    '<div class="track__infos">decoy, Composer</div>',               // class decoy
+    '<button id="popinAddToCartBtnPlayerTrack2">…</button>',
+    '<p class="track__info"> </p>',                                  // empty first…
+    '<p class="track__info track__info--mobile">C, Lyricist</p>',    // …real one second
+].join('\n');
 const tracks = extractQobuzCredits(html);
 assert.equal(tracks.length, 2);
-assert.deepEqual(tracks[0].credits, [
+assert.deepEqual(tracks[0], { index: 1, credits: [
     { name: 'A', roles: ['Composer'] },
     { name: 'B', roles: ['Producer'] },
-]);
-assert.equal(tracks[1].index, 2);
+] });
+assert.deepEqual(tracks[1], { index: 2, credits: [{ name: 'C', roles: ['Lyricist'] }] });
 
 // ── URL parsers ──────────────────────────────────────────────────────────────
 // Store URLs keep their own slug; slug-less forms synthesize a wrong-slug

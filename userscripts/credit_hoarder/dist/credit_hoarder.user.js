@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.12.214346
+// @version      2026.6.12.215906
 // @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
@@ -4354,14 +4354,19 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     return out;
   }
   function extractQobuzCredits(html) {
-    const out = [];
-    const re = /<p[^>]*class="[^"]*track__info[^"]*"[^>]*>([\s\S]*?)<\/p>/gi;
-    let m, i = 0;
+    const byTrack = /* @__PURE__ */ new Map();
+    const re = /id="popinAddToCartBtnPlayerTrack(\d+)"|<p[^>]*class="[^"]*\btrack__info\b[^"]*"[^>]*>([\s\S]*?)<\/p>/gi;
+    let m, current = 0;
     while ((m = re.exec(html)) !== null) {
-      const text = decodeEntities(m[1].replace(/<[^>]+>/g, "").trim());
-      out.push({ index: ++i, credits: parseQobuzCreditLine(text) });
+      if (m[1] !== void 0) {
+        current = parseInt(m[1], 10);
+        continue;
+      }
+      const text = decodeEntities((m[2] || "").replace(/<[^>]+>/g, "").trim());
+      if (!text || !current) continue;
+      if (!byTrack.has(current)) byTrack.set(current, parseQobuzCreditLine(text));
     }
-    return out;
+    return [...byTrack.entries()].sort((a, b) => a[0] - b[0]).map(([index, credits]) => ({ index, credits }));
   }
   function extractQobuzAlbumInfo(html) {
     const og = html.match(/<meta property="og:title" content="([^"]*)"/)?.[1] || "";
