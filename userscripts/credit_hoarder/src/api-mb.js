@@ -213,7 +213,10 @@ export function getSourceUrlsForRelease(mbid) {
         .then(body => body.json())
         .then(json => {
             const rels = json.relationships || [];
-            const href = pred => rels.find(pred)?.target?.href_url || null;
+            // MB's rel hrefs are protocol-relative (`//tidal.com/…`) —
+            // absolutize so logs / edit notes / tab-opens get a real URL.
+            const abs  = u => u && u.startsWith('//') ? 'https:' + u : u;
+            const href = pred => abs(rels.find(pred)?.target?.href_url || null);
             return {
                 discogs: href(rel => rel.target?.sidebar_name === 'Discogs'),
                 tidal:   href(rel => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || '')),

@@ -218,8 +218,16 @@ export function harvestTidalAlbum(albumUrl) {
     if (!parsed) return Promise.reject(new Error(`Not a Tidal album URL: ${albumUrl}`));
     const reqId = `${parsed.id}.${Date.now().toString(36)}`;
     const key = HARVEST_KEY(reqId);
-    const tab = window.open(`${parsed.creditsUrl}#ch-req=${reqId}`, '_blank');
-    if (!tab) return Promise.reject(new Error('Popup blocked — allow popups for musicbrainz.org and retry'));
+    const harvestUrl = `${parsed.creditsUrl}#ch-req=${reqId}`;
+    // Background tab — the user shouldn't lose the MB editor while the
+    // harvest runs. GM_openInTab supports `active:false`; plain window.open
+    // (foreground) is the fallback on managers without it.
+    if (typeof GM_openInTab === 'function') {
+        GM_openInTab(harvestUrl, { active: false, insert: true, setParent: true });
+    } else {
+        const tab = window.open(harvestUrl, '_blank');
+        if (!tab) return Promise.reject(new Error('Popup blocked — allow popups for musicbrainz.org and retry'));
+    }
     return new Promise((resolve, reject) => {
         let listenerId = null;
         let pollTimer = null;

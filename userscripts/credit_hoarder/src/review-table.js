@@ -7,7 +7,7 @@
 import { readIdbRecord, writeIdbRecord }   from './storage.js';
 import { mbThrottle, fetchWithRetry, fetchArtistRelTypes } from './api-mb.js';
 import { getDiscogsEntityData }            from './api-discogs.js';
-import { parseSourceEntityUrl }            from './sources/registry.js';
+import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId } from './sources/registry.js';
 import { guessSortName }                   from './mappers.js';
 import { getLogContainer, getReviewContainer } from './log.js';
 import { _hideBar }                        from './progress-bar.js';
@@ -843,25 +843,27 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         );
                     }
 
+                    const srcName = sourceNameForUrl(discogsHref);
                     function applyUrlCheckResult(result) {
                         if (result === 'linked') {
                             linkSlot.textContent = '\u2713';
-                            linkSlot.title = 'Discogs URL already linked to this MB ' + entityType;
+                            linkSlot.title = srcName + ' URL already linked to this MB ' + entityType;
                             linkSlot.style.color = '#5a5';
                             linkSlot.style.fontWeight = 'bold';
                         } else if (result === 'other') {
                             linkSlot.textContent = '\u26a0\ufe0f';
-                            linkSlot.title = `Discogs URL is linked to a DIFFERENT MB ${entityType}`;
+                            linkSlot.title = `${srcName} URL is linked to a DIFFERENT MB ${entityType}`;
                             linkSlot.style.color = '#c80';
                         } else {
                             linkSlot.textContent = '';
                             linkSlot.style.color = '';
                             const addLinkBtn = document.createElement('button');
                             addLinkBtn.textContent = '\ud83d\udd17'; // \ud83d\udd17
-                            addLinkBtn.title = 'Add Discogs link to MB ' + entityType;
+                            addLinkBtn.title = `Add ${srcName} link to MB ` + entityType;
                             addLinkBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#e8771d;'; // Discogs orange accent
                             addLinkBtn.addEventListener('click', () => {
-                                const ltId = entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
+                                const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
+                                if (!ltId) return;
                                 const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
                                 const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
                                 window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, '_blank', 'noopener,noreferrer');
@@ -878,7 +880,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                 // tooltip \u2014 re-verified when the tab
                                 // regains focus.
                                 linkSlot.textContent = '\u2026';
-                                linkSlot.title = 'Verifying Discogs link on return to this tab\u2026';
+                                linkSlot.title = `Verifying ${srcName} link on return to this tab\u2026`;
                                 linkSlot.style.color = '#888';
                                 linkSlot.style.fontStyle = 'italic';
                                 const onReturn = () => {
@@ -895,8 +897,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     }
 
                     if (!discogsHref) {
-                        // No Discogs URL — skip URL check entirely
-                        linkSlot.textContent = '⚠ No Discogs page';
+                        // No external URL — skip URL check entirely
+                        linkSlot.textContent = `⚠ No ${srcName} page`;
                         linkSlot.style.color = '#c80';
                     } else if (urlCheckCached !== null) {
                         // Session-cache always takes precedence over the
@@ -952,19 +954,22 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             'edit-artist.sort_name': guessSortName(finalName),
                             'edit-artist.type_id':   '1',
                         };
-                        if (discogsHref) {
+                        const ltArtist = sourceUrlLinkTypeId(discogsHref, 'artist');
+                        if (discogsHref && ltArtist) {
                             createParams['edit-artist.url.0.text']         = discogsHref;
-                            createParams['edit-artist.url.0.link_type_id'] = '180';
+                            createParams['edit-artist.url.0.link_type_id'] = ltArtist;
                         }
                         if (disambiguation) createParams['edit-artist.comment'] = disambiguation;
                         createUrl = 'https://musicbrainz.org/artist/create';
                     } else {
-                        const ltId = entityType === 'label' ? '217' : '705';
+                        const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
                         createParams = {
                             [`edit-${entityType}.name`]:                finalName,
-                            [`edit-${entityType}.url.0.text`]:          discogsHref,
-                            [`edit-${entityType}.url.0.link_type_id`]: ltId,
                         };
+                        if (discogsHref && ltId) {
+                            createParams[`edit-${entityType}.url.0.text`]         = discogsHref;
+                            createParams[`edit-${entityType}.url.0.link_type_id`] = ltId;
+                        }
                         if (disambiguation) createParams[`edit-${entityType}.comment`] = disambiguation;
                         createUrl = `https://musicbrainz.org/${entityType}/create`;
                     }

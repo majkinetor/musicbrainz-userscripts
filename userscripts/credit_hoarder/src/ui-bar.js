@@ -530,7 +530,22 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     docsLink.title = 'Open the script\'s README in a new tab';
     docsLink.style.cssText = 'flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;';
 
-    rightGroup.append(logToggleBtn, logoLink, docsLink);
+    // Tidal source icon — sits where the Discogs logo does, links the album.
+    const tidalLink = document.createElement('a');
+    tidalLink.className = 'discogs-source-icon';
+    tidalLink.target = '_blank';
+    tidalLink.rel = 'noopener noreferrer nofollow';
+    if (sources.tidal) {
+        tidalLink.href = sources.tidal;
+        tidalLink.title = sources.tidal;   // hover shows the full Tidal URL
+        // Official Tidal mark: three interlocking diamonds + one below center.
+        tidalLink.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="#000" aria-label="Tidal" style="vertical-align:middle;">'
+            + '<path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>';
+    } else {
+        tidalLink.style.display = 'none';
+    }
+
+    rightGroup.append(logToggleBtn, logoLink, tidalLink, docsLink);
 
     row1.appendChild(rightGroup);
 

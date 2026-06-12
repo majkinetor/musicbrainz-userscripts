@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.12.204704
+// @version      2026.6.12.210956
 // @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
@@ -15,6 +15,7 @@
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
 // @grant        unsafeWindow
+// @grant        GM_openInTab
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
@@ -281,7 +282,8 @@
     const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
     return fetch(url).then((body) => body.json()).then((json) => {
       const rels = json.relationships || [];
-      const href = (pred) => rels.find(pred)?.target?.href_url || null;
+      const abs = (u) => u && u.startsWith("//") ? "https:" + u : u;
+      const href = (pred) => abs(rels.find(pred)?.target?.href_url || null);
       return {
         discogs: href((rel) => rel.target?.sidebar_name === "Discogs"),
         tidal: href((rel) => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || ""))
@@ -2060,8 +2062,13 @@
     if (!parsed) return Promise.reject(new Error(`Not a Tidal album URL: ${albumUrl}`));
     const reqId = `${parsed.id}.${Date.now().toString(36)}`;
     const key = HARVEST_KEY(reqId);
-    const tab = window.open(`${parsed.creditsUrl}#ch-req=${reqId}`, "_blank");
-    if (!tab) return Promise.reject(new Error("Popup blocked \u2014 allow popups for musicbrainz.org and retry"));
+    const harvestUrl = `${parsed.creditsUrl}#ch-req=${reqId}`;
+    if (typeof GM_openInTab === "function") {
+      GM_openInTab(harvestUrl, { active: false, insert: true, setParent: true });
+    } else {
+      const tab = window.open(harvestUrl, "_blank");
+      if (!tab) return Promise.reject(new Error("Popup blocked \u2014 allow popups for musicbrainz.org and retry"));
+    }
     return new Promise((resolve, reject) => {
       let listenerId = null;
       let pollTimer = null;
@@ -2098,6 +2105,15 @@
   function parseSourceEntityUrl(url) {
     if (!url) return null;
     return parseDiscogsUrl(url) || parseTidalArtistUrl(url);
+  }
+  function sourceNameForUrl(url) {
+    return /tidal\.com\//i.test(url || "") ? "Tidal" : "Discogs";
+  }
+  function sourceUrlLinkTypeId(url, entityType) {
+    if (sourceNameForUrl(url) === "Tidal") {
+      return entityType === "artist" ? "978" : null;
+    }
+    return entityType === "label" ? "217" : entityType === "place" ? "705" : "180";
   }
 
   // src/preflight.js
@@ -2968,28 +2984,29 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             }, applyUrlCheckResult = function(result) {
               if (result === "linked") {
                 linkSlot.textContent = "\u2713";
-                linkSlot.title = "Discogs URL already linked to this MB " + entityType;
+                linkSlot.title = srcName + " URL already linked to this MB " + entityType;
                 linkSlot.style.color = "#5a5";
                 linkSlot.style.fontWeight = "bold";
               } else if (result === "other") {
                 linkSlot.textContent = "\u26A0\uFE0F";
-                linkSlot.title = `Discogs URL is linked to a DIFFERENT MB ${entityType}`;
+                linkSlot.title = `${srcName} URL is linked to a DIFFERENT MB ${entityType}`;
                 linkSlot.style.color = "#c80";
               } else {
                 linkSlot.textContent = "";
                 linkSlot.style.color = "";
                 const addLinkBtn = document.createElement("button");
                 addLinkBtn.textContent = "\u{1F517}";
-                addLinkBtn.title = "Add Discogs link to MB " + entityType;
+                addLinkBtn.title = `Add ${srcName} link to MB ` + entityType;
                 addLinkBtn.style.cssText = ACTION_CHIP_STYLE + "color:#e8771d;";
                 addLinkBtn.addEventListener("click", () => {
-                  const ltId = entityType === "label" ? "217" : entityType === "place" ? "705" : "180";
+                  const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
+                  if (!ltId) return;
                   const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
                   const mbid = selected.id.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
                   window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, "_blank", "noopener,noreferrer");
                   linkSlot.innerHTML = "";
                   linkSlot.textContent = "\u2026";
-                  linkSlot.title = "Verifying Discogs link on return to this tab\u2026";
+                  linkSlot.title = `Verifying ${srcName} link on return to this tab\u2026`;
                   linkSlot.style.color = "#888";
                   linkSlot.style.fontStyle = "italic";
                   const onReturn = () => {
@@ -3024,8 +3041,9 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               }
               if (urlCheckCached !== null) _urlCheckSessionCache.set(urlCheckCacheKey, urlCheckCached);
             }
+            const srcName = sourceNameForUrl(discogsHref);
             if (!discogsHref) {
-              linkSlot.textContent = "\u26A0 No Discogs page";
+              linkSlot.textContent = `\u26A0 No ${srcName} page`;
               linkSlot.style.color = "#c80";
             } else if (urlCheckCached !== null) {
               applyUrlCheckResult(urlCheckCached);
@@ -3062,19 +3080,22 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
                 "edit-artist.sort_name": guessSortName(finalName),
                 "edit-artist.type_id": "1"
               };
-              if (discogsHref) {
+              const ltArtist = sourceUrlLinkTypeId(discogsHref, "artist");
+              if (discogsHref && ltArtist) {
                 createParams["edit-artist.url.0.text"] = discogsHref;
-                createParams["edit-artist.url.0.link_type_id"] = "180";
+                createParams["edit-artist.url.0.link_type_id"] = ltArtist;
               }
               if (disambiguation) createParams["edit-artist.comment"] = disambiguation;
               createUrl = "https://musicbrainz.org/artist/create";
             } else {
-              const ltId = entityType === "label" ? "217" : "705";
+              const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
               createParams = {
-                [`edit-${entityType}.name`]: finalName,
-                [`edit-${entityType}.url.0.text`]: discogsHref,
-                [`edit-${entityType}.url.0.link_type_id`]: ltId
+                [`edit-${entityType}.name`]: finalName
               };
+              if (discogsHref && ltId) {
+                createParams[`edit-${entityType}.url.0.text`] = discogsHref;
+                createParams[`edit-${entityType}.url.0.link_type_id`] = ltId;
+              }
               if (disambiguation) createParams[`edit-${entityType}.comment`] = disambiguation;
               createUrl = `https://musicbrainz.org/${entityType}/create`;
             }
@@ -4698,7 +4719,18 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     docsLink.textContent = "? Help";
     docsLink.title = "Open the script's README in a new tab";
     docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;";
-    rightGroup.append(logToggleBtn, logoLink, docsLink);
+    const tidalLink = document.createElement("a");
+    tidalLink.className = "discogs-source-icon";
+    tidalLink.target = "_blank";
+    tidalLink.rel = "noopener noreferrer nofollow";
+    if (sources.tidal) {
+      tidalLink.href = sources.tidal;
+      tidalLink.title = sources.tidal;
+      tidalLink.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="#000" aria-label="Tidal" style="vertical-align:middle;"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>';
+    } else {
+      tidalLink.style.display = "none";
+    }
+    rightGroup.append(logToggleBtn, logoLink, tidalLink, docsLink);
     row1.appendChild(rightGroup);
     bar.appendChild(row1);
     const stickySpacer = document.createElement("div");
