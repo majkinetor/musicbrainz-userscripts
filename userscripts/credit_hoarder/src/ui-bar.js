@@ -424,20 +424,28 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     const row1 = document.createElement('div');
     row1.className = 'discogs-bar-row1';
 
-    // ONE Import button for all sources (#193): direct run when the release
-    // links a single source, a dropdown submenu when there are several.
+    // ONE Import button for all sources (#193), split-button style: the main
+    // button runs the FIRST linked source (priority Discogs, Tidal, Qobuz),
+    // the compact ▾ next to it opens a submenu with every linked source.
     const importSources = [];
     if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: g => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: g => runTidalImport(sources.tidal, g) });
     if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: g => runQobuzImport(sources.qobuz, g) });
-    const importLabel = importSources.length === 1 ? `Import from ${importSources[0].name}` : 'Import ▾';
+    const importLabel = `Import from ${importSources[0].name}`;
     const importBtn = document.createElement('button');
     importBtn.className = 'discogs-import-btn';
     importBtn.textContent = importLabel;
+    const importCaretBtn = document.createElement('button');
+    importCaretBtn.className = 'discogs-import-btn';
+    importCaretBtn.textContent = '▾';
+    importCaretBtn.title = 'Import from another source';
+    importCaretBtn.style.cssText = 'margin-left:2px;padding-left:0.45rem;padding-right:0.45rem;';
+    if (importSources.length < 2) importCaretBtn.style.display = 'none';
     const progressPct = document.createElement('span');
     progressPct.id = 'discogs-progress-pct';
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;';
     row1.appendChild(importBtn);
+    row1.appendChild(importCaretBtn);
     row1.appendChild(progressPct);
 
     // Action slot — the review "Start import" button + unresolved message get
@@ -905,6 +913,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     // (`runImport` for Discogs, `runTidalImport` for Tidal).
     function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
         importBtn.disabled = true;
+        importCaretBtn.disabled = true;
         srcBtn.textContent = 'Importing…';
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
@@ -1103,6 +1112,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         });
         runner(getOpts).finally(() => {
             importBtn.disabled = false;
+            importCaretBtn.disabled = false;
             srcBtn.textContent = restoreLabel;
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
@@ -1139,16 +1149,19 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         }
         document.body.appendChild(srcMenu);
     }
-    importBtn.addEventListener('click', (e) => {
-        if (!srcMenu) { startImport(importBtn, importLabel, importSources[0].url, importSources[0].run); return; }
+    // Main button: always the first (default) source. Caret: the submenu.
+    importBtn.addEventListener('click', () =>
+        startImport(importBtn, importLabel, importSources[0].url, importSources[0].run));
+    importCaretBtn.addEventListener('click', (e) => {
+        if (!srcMenu) return;
         e.stopPropagation();
         const open = srcMenu.classList.toggle('open');
         if (!open) return;
-        const r = importBtn.getBoundingClientRect();
+        const r = importCaretBtn.getBoundingClientRect();
         srcMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - srcMenu.offsetWidth - 8)) + 'px';
         srcMenu.style.top  = (r.bottom + 4) + 'px';
         const off = ev => {
-            if (!srcMenu.contains(ev.target) && ev.target !== importBtn && !importBtn.contains(ev.target)) {
+            if (!srcMenu.contains(ev.target) && ev.target !== importCaretBtn && !importCaretBtn.contains(ev.target)) {
                 srcMenu.classList.remove('open');
                 document.removeEventListener('mousedown', off);
             }

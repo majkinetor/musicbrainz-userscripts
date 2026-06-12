@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.12.221020
+// @version      2026.6.12.221522
 // @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
@@ -4787,14 +4787,21 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g) => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g) => runTidalImport(sources.tidal, g) });
     if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g) => runQobuzImport(sources.qobuz, g) });
-    const importLabel = importSources.length === 1 ? `Import from ${importSources[0].name}` : "Import \u25BE";
+    const importLabel = `Import from ${importSources[0].name}`;
     const importBtn = document.createElement("button");
     importBtn.className = "discogs-import-btn";
     importBtn.textContent = importLabel;
+    const importCaretBtn = document.createElement("button");
+    importCaretBtn.className = "discogs-import-btn";
+    importCaretBtn.textContent = "\u25BE";
+    importCaretBtn.title = "Import from another source";
+    importCaretBtn.style.cssText = "margin-left:2px;padding-left:0.45rem;padding-right:0.45rem;";
+    if (importSources.length < 2) importCaretBtn.style.display = "none";
     const progressPct = document.createElement("span");
     progressPct.id = "discogs-progress-pct";
     progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
     row1.appendChild(importBtn);
+    row1.appendChild(importCaretBtn);
     row1.appendChild(progressPct);
     const actionSlot = document.createElement("div");
     actionSlot.className = "discogs-bar-action";
@@ -5165,6 +5172,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     };
     function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
       importBtn.disabled = true;
+      importCaretBtn.disabled = true;
       srcBtn.textContent = "Importing\u2026";
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
@@ -5313,6 +5321,7 @@ ${lines}
       });
       runner(getOpts).finally(() => {
         importBtn.disabled = false;
+        importCaretBtn.disabled = false;
         srcBtn.textContent = restoreLabel;
         progressPct.textContent = "100%";
         setTimeout(() => {
@@ -5346,19 +5355,17 @@ ${lines}
       }
       document.body.appendChild(srcMenu);
     }
-    importBtn.addEventListener("click", (e) => {
-      if (!srcMenu) {
-        startImport(importBtn, importLabel, importSources[0].url, importSources[0].run);
-        return;
-      }
+    importBtn.addEventListener("click", () => startImport(importBtn, importLabel, importSources[0].url, importSources[0].run));
+    importCaretBtn.addEventListener("click", (e) => {
+      if (!srcMenu) return;
       e.stopPropagation();
       const open = srcMenu.classList.toggle("open");
       if (!open) return;
-      const r = importBtn.getBoundingClientRect();
+      const r = importCaretBtn.getBoundingClientRect();
       srcMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - srcMenu.offsetWidth - 8)) + "px";
       srcMenu.style.top = r.bottom + 4 + "px";
       const off = (ev) => {
-        if (!srcMenu.contains(ev.target) && ev.target !== importBtn && !importBtn.contains(ev.target)) {
+        if (!srcMenu.contains(ev.target) && ev.target !== importCaretBtn && !importCaretBtn.contains(ev.target)) {
           srcMenu.classList.remove("open");
           document.removeEventListener("mousedown", off);
         }
