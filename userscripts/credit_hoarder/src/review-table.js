@@ -6,7 +6,8 @@
 
 import { readIdbRecord, writeIdbRecord }   from './storage.js';
 import { mbThrottle, fetchWithRetry, fetchArtistRelTypes } from './api-mb.js';
-import { parseDiscogsUrl, getDiscogsEntityData } from './api-discogs.js';
+import { getDiscogsEntityData }            from './api-discogs.js';
+import { parseSourceEntityUrl }            from './sources/registry.js';
 import { guessSortName }                   from './mappers.js';
 import { getLogContainer, getReviewContainer } from './log.js';
 import { _hideBar }                        from './progress-bar.js';
@@ -43,7 +44,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
     for (const r of _nullNames) {
         const rUrl = r.entity?.resource_url;
         try {
-            const idbKey = parseDiscogsUrl(rUrl)?.key;
+            const idbKey = parseSourceEntityUrl(rUrl)?.key;
             const rec = await readIdbRecord(idbKey);
             if (rec?.name) {
                 _preloadedNames.set(rUrl, { name: rec.name, dis: rec.disambiguation || '' });
@@ -546,7 +547,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 refreshCredBg();
                 clearTimeout(_credSaveTimer);
                 _credSaveTimer = setTimeout(() => {
-                    const idbKey = parseDiscogsUrl(r.entity?.resource_url)?.key;
+                    const idbKey = parseSourceEntityUrl(r.entity?.resource_url)?.key;
                     if (idbKey) writeIdbRecord(idbKey, { creditOverride: credInput.value });
                 }, 500);
             });
@@ -717,7 +718,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     if (r._refreshCredBtns) r._refreshCredBtns();
                 }
                 // Persist to IDB immediately so selection survives even without clicking Start import
-                const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
+                const _idbKey = r.entity?.resource_url ? parseSourceEntityUrl(r.entity.resource_url)?.key : null;
                 if (_idbKey) {
                     writeIdbRecord(_idbKey, {
                         mbid:           a.id,

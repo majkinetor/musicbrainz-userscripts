@@ -26,7 +26,7 @@
 
 import { mbThrottle }                       from './api-mb.js';
 import { readIdbRecord, writeIdbRecord, deleteIdbRecord } from './storage.js';
-import { parseDiscogsUrl }                  from './api-discogs.js';
+import { parseSourceEntityUrl }             from './sources/registry.js';
 import { ENTITY_TYPE_MAP }                  from './data/entity-map.js';
 import { _setProgressPct }                  from './progress-bar.js';
 import { logDebug }                         from './log.js';
@@ -54,7 +54,7 @@ async function resolveEntity(entity, kind, opts) {
     const { bypassIdb } = opts;
     const { searchLimit, resultKey, incRels } = KIND_TABLE[kind];
 
-    const parsed     = parseDiscogsUrl(entity.resource_url);
+    const parsed     = parseSourceEntityUrl(entity.resource_url);
     const key        = parsed?.key;
     const searchName = entity.name;
     const displayName = kind === 'artist'

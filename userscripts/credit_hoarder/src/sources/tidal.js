@@ -98,3 +98,143 @@ export function filterTidalCredits(tracks) {
             .filter(c => c.names.length),
     }));
 }
+
+const TIDAL_ARTIST_RE = /^https?:\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/i;
+
+/** Parse a Tidal artist URL → `{ id, key, cleanUrl }` (key = IDB cache key,
+ *  `tidal-` prefixed so numeric Tidal ids never collide with Discogs ids),
+ *  or `null`. `cleanUrl` is MB's canonical Tidal artist URL form — the one
+ *  `/ws/2/url?resource=` is queried with during preflight. */
+export function parseTidalArtistUrl(url) {
+    const m = TIDAL_ARTIST_RE.exec(url || '');
+    if (!m) return null;
+    return { id: m[1], key: `tidal-artist/${m[1]}`, cleanUrl: `https://tidal.com/artist/${m[1]}` };
+}
+
+/**
+ * Map a raw Tidal harvest to the engine's tracklist-relationship shape
+ * (what the Discogs path builds in ui-bar's runImport):
+ *   `{ linkType, entityType, attributes, artist, track }`
+ * with `artist.resource_url` set to the canonical Tidal artist URL when the
+ * credit carries an id (→ preflight resolves it EXACTLY via MB's Tidal URL
+ * rel), or `''` when it doesn't (→ name search + review, like a Discogs
+ * credit with no resource_url).
+ *
+ * v1 imports Producer / Composer / Lyricist. `Music Publisher` is reported
+ * in `skipped` (work-publisher seeding is label-entity work, deferred), as
+ * is anything Copyright-Control. Returns:
+ *   { tracklistRels, tracklist, skipped, multiVolume }
+ * `tracklist` mirrors the Discogs tracklist shape dispatch needs for its
+ * position bookkeeping. `multiVolume` is true when track numbers repeat —
+ * Tidal numbers per volume while MB multi-medium positions are "m-p", so
+ * the caller should warn that positions may not all match.
+ */
+export function tidalToEngine(tracks) {
+    const IMPORT_ROLES = { 'Producer': 'producer', 'Composer': 'composer', 'Lyricist': 'lyricist' };
+    const tracklistRels = [];
+    const tracklist = [];
+    const skipped = [];
+    const seenPositions = new Set();
+    let multiVolume = false;
+    for (const t of filterTidalCredits(tracks)) {
+        const position = String(t.num || '').trim();
+        if (seenPositions.has(position)) multiVolume = true;
+        seenPositions.add(position);
+        const track = { position, title: t.title || '', type_: 'track' };
+        tracklist.push(track);
+        for (const c of t.credits) {
+            const linkType = IMPORT_ROLES[c.role];
+            for (const n of c.names) {
+                if (!linkType) {
+                    skipped.push(`track ${position} "${t.title}": ${c.role} — ${n.name}`);
+                    continue;
+                }
+                tracklistRels.push({
+                    linkType,
+                    entityType: 'artist',
+                    attributes: [],
+                    artist: {
+                        id:           n.tidalId ? `tidal-${n.tidalId}` : undefined,
+                        name:         n.name,
+                        anv:          '',
+                        resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : '',
+                    },
+                    track,
+                });
+            }
+        }
+    }
+    return { tracklistRels, tracklist, skipped, multiVolume };
+}
+
+// ── Cross-tab harvest (GM storage handshake) ────────────────────────────────
+// The MB side opens `https://tidal.com/album/<id>/credits#ch-req=<reqId>`;
+// this script also runs there (meta @match), waits for the SPA to paint the
+// credits, extracts them, and posts the result through GM storage — which,
+// unlike BroadcastChannel, is per-script and crosses origins.
+
+const HARVEST_KEY = reqId => `ch-tidal-result:${reqId}`;
+const HARVEST_TIMEOUT_MS = 45000;
+
+/** Tidal-tab side. Call once at script start when running on tidal.com.
+ *  No-op unless the URL carries our `#ch-req=` marker (so a user just
+ *  browsing Tidal with the script installed is never affected). */
+export function runTidalHarvestPage() {
+    const m = location.hash.match(/ch-req=([a-z0-9.-]+)/i);
+    if (!m) return;
+    const reqId = m[1];
+    const albumId = (location.pathname.match(/\/album\/(\d+)/) || [])[1] || null;
+    const post = payload => { try { GM_setValue(HARVEST_KEY(reqId), { albumId, ts: Date.now(), ...payload }); } catch (e) { /* GM missing */ } };
+    const started = Date.now();
+    let lastCount = -1, stableSince = 0;
+    const timer = setInterval(() => {
+        const items = document.querySelectorAll('[data-test="album-info-item"]');
+        if (items.length > 0) {
+            // wait until the count is stable for ~1.2s — the SPA appends
+            // tracks in chunks and we don't want a partial harvest
+            if (items.length !== lastCount) { lastCount = items.length; stableSince = Date.now(); }
+            else if (Date.now() - stableSince > 1200) {
+                clearInterval(timer);
+                post({ ok: true, tracks: extractTidalCreditsDom(document) });
+                setTimeout(() => window.close(), 250);
+                return;
+            }
+        }
+        if (Date.now() - started > HARVEST_TIMEOUT_MS - 5000) {
+            clearInterval(timer);
+            post({ ok: false, error: lastCount > 0 ? 'render never stabilised' : 'credits never rendered (login wall? geo block?)' });
+            setTimeout(() => window.close(), 250);
+        }
+    }, 300);
+}
+
+/** MB side. Opens the credits tab and resolves with the harvested
+ *  `{ ok, tracks | error, albumId }` payload, or rejects on timeout /
+ *  blocked popup. Cleans up its GM key either way. */
+export function harvestTidalAlbum(albumUrl) {
+    const parsed = parseTidalAlbumUrl(albumUrl);
+    if (!parsed) return Promise.reject(new Error(`Not a Tidal album URL: ${albumUrl}`));
+    const reqId = `${parsed.id}.${Date.now().toString(36)}`;
+    const key = HARVEST_KEY(reqId);
+    const tab = window.open(`${parsed.creditsUrl}#ch-req=${reqId}`, '_blank');
+    if (!tab) return Promise.reject(new Error('Popup blocked — allow popups for musicbrainz.org and retry'));
+    return new Promise((resolve, reject) => {
+        let listenerId = null;
+        let pollTimer = null;
+        const done = (fn, arg) => {
+            if (pollTimer) clearInterval(pollTimer);
+            clearTimeout(deadline);
+            try { if (listenerId !== null && typeof GM_removeValueChangeListener === 'function') GM_removeValueChangeListener(listenerId); } catch (e) {}
+            try { GM_deleteValue(key); } catch (e) {}
+            fn(arg);
+        };
+        const check = value => { if (value && typeof value === 'object') done(resolve, value); };
+        if (typeof GM_addValueChangeListener === 'function') {
+            listenerId = GM_addValueChangeListener(key, (_n, _o, value) => check(value));
+        }
+        // Poll as well — belt and braces, and the only path on managers
+        // without GM_addValueChangeListener.
+        pollTimer = setInterval(() => { try { check(GM_getValue(key)); } catch (e) {} }, 700);
+        const deadline = setTimeout(() => done(reject, new Error('Tidal harvest timed out — is the credits tab open and loading?')), HARVEST_TIMEOUT_MS);
+    });
+}

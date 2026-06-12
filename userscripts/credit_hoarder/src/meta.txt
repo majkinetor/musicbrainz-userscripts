@@ -9,8 +9,15 @@
 // @match        https://*.musicbrainz.org/artist/*
 // @match        https://*.musicbrainz.org/label/*
 // @match        https://*.musicbrainz.org/place/*
+// @match        https://tidal.com/album/*
+// @match        https://listen.tidal.com/album/*
 // @license      MIT
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
 // @grant        unsafeWindow
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_deleteValue
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
 // ==/UserScript==

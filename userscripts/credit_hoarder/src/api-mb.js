@@ -198,14 +198,26 @@ export async function fetchArtistRelTypes(mbid) {
  * throttle pausing it).
  */
 export function getDiscogsUrlForRelease(mbid) {
+    return getSourceUrlsForRelease(mbid).then(s => s.discogs);
+}
+
+/**
+ * One probe, every source: return `{ discogs, tidal }` URLs linked to the
+ * release (each `null` when absent). Same `/ws/js/release/<mbid>?inc=rels`
+ * call `getDiscogsUrlForRelease` always made — just harvested for all
+ * import sources at once.
+ */
+export function getSourceUrlsForRelease(mbid) {
     const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
     return fetch(url)
         .then(body => body.json())
         .then(json => {
-            const matchingRel = (json.relationships || []).find(rel => {
-                return rel.target?.sidebar_name === 'Discogs';
-            });
-            return matchingRel?.target?.href_url || null;
+            const rels = json.relationships || [];
+            const href = pred => rels.find(pred)?.target?.href_url || null;
+            return {
+                discogs: href(rel => rel.target?.sidebar_name === 'Discogs'),
+                tidal:   href(rel => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || '')),
+            };
         });
 }
 

@@ -16,21 +16,26 @@
  * (keeps `@homepageURL` in `src/meta.txt` in sync; never let "undefined"
  * appear in an edit note — issue #7).
  */
-export function buildEditNote(discogsUrl, opts, extraLines) {
+export function buildEditNote(sourceUrl, opts, extraLines) {
     const s = GM_info.script;
     // Strip the query string AND location.hash before stripping the
     // /edit-relationships suffix: on a seeded edit page the URL carries a huge
     // `#seed-urls-v1=…` fragment (and the old `$`-anchored replace never fired,
     // so the whole fragment leaked into the note — issue #174). Same cleanup on
-    // the Discogs URL so neither line carries tracking noise.
+    // the source URL so neither line carries tracking noise.
     const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, '');
-    const homepage = s.homepageURL || s.homepage || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md';
+    const homepage = s.homepageURL || s.homepage || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md';
     const header = s.name + ' v' + s.version + ' by ' + s.author + ' - ' + homepage;
+    // Label the source line by what the URL actually is (#193 — multi-source).
+    const cleanSource = String(sourceUrl || '').split(/[?#]/)[0];
+    const sourceName = /tidal\.com/i.test(cleanSource) ? 'Tidal'
+                     : /qobuz\.com/i.test(cleanSource) ? 'Qobuz'
+                     : 'Discogs';
     const lines = [
         header,
         '',
         'Release URL: ' + mbUrl,
-        'Discogs URL: ' + String(discogsUrl || '').split(/[?#]/)[0],
+        sourceName + ' URL: ' + cleanSource,
     ];
     if (opts) lines.push('Options: ' + opts);
     if (extraLines) lines.push(...(Array.isArray(extraLines) ? extraLines : [extraLines]));

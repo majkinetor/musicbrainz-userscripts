@@ -13,12 +13,22 @@
 // Side-effect imports (`./storage.js`, `./ui-bar.js`) trigger module init at
 // load time — opening IndexedDB and running the localStorage-cleanup IIFE.
 
-import { getDiscogsUrlForRelease } from './api-mb.js';
+import { getSourceUrlsForRelease } from './api-mb.js';
 import { insertDiscogsBar }      from './ui-bar.js';
 import { DISCOGS_CHANNEL }       from './constants.js';
 import { installHoverHighlight } from './hover-highlight.js';
 import { installBatchRemove }    from './batch-remove.js';
+import { runTidalHarvestPage }   from './sources/tidal.js';
 import                                './storage.js';   // opens IndexedDB on load
+
+// ── tidal.com: credits-harvest companion (#193) ──────────────────────────────
+// The script also @matches tidal.com album pages. When the MB side opened
+// this tab (URL carries `#ch-req=`), harvest the rendered credits and post
+// them back through GM storage, then close. A no-op on every other Tidal
+// page — and everything below this block is MB-only.
+if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
+    runTidalHarvestPage();
+}
 
 // ── BroadcastChannel: cross-tab artist creation signalling ────────────────────
 // `DISCOGS_CHANNEL` is created once in `constants.js` and imported here +
@@ -76,7 +86,9 @@ import                                './storage.js';   // opens IndexedDB on lo
 })();
 
 // ── Release-page bootstrap ────────────────────────────────────────────────────
-$(document).ready(function () {
+// Guarded by hostname — the tidal.com companion context has no jQuery and
+// none of this applies there.
+if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function () {
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
@@ -89,9 +101,11 @@ $(document).ready(function () {
     // click on any MB `×` button opens our confirmation popup. See
     // `src/batch-remove.js`.
     installBatchRemove();
-    getDiscogsUrlForRelease(m[1]).then(discogsUrl => {
-        if (discogsUrl) {
-            insertDiscogsBar(discogsUrl);
+    // One rel probe, every import source (#193): mount the bar when the
+    // release links ANY of them (Discogs and/or Tidal).
+    getSourceUrlsForRelease(m[1]).then(sources => {
+        if (sources.discogs || sources.tidal) {
+            insertDiscogsBar(sources.discogs, sources);
         }
     });
 });

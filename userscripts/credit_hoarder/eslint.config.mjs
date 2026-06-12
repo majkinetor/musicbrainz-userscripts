@@ -60,6 +60,8 @@ export default [
                 GM_setValue:            'readonly',
                 GM_getValue:            'readonly',
                 GM_deleteValue:         'readonly',
+                GM_addValueChangeListener:    'readonly',
+                GM_removeValueChangeListener: 'readonly',
                 GM_xmlhttpRequest:      'readonly',
                 GM_addStyle:            'readonly',
                 GM_openInTab:           'readonly',

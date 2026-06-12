@@ -2,7 +2,8 @@
 // Run: node test/sources-parse.mjs
 import assert from 'node:assert/strict';
 import { parseQobuzCreditLine, extractQobuzCredits, parseQobuzAlbumUrl, decodeEntities } from '../src/sources/qobuz.js';
-import { parseTidalAlbumUrl, TIDAL_ROLE_MAP } from '../src/sources/tidal.js';
+import { parseTidalAlbumUrl, parseTidalArtistUrl, tidalToEngine, TIDAL_ROLE_MAP } from '../src/sources/tidal.js';
+import { parseSourceEntityUrl } from '../src/sources/registry.js';
 
 // ── Qobuz credit line (verbatim from album vft3hpnx5c3lc, track 1) ──────────
 const line1 = 'Copyright Control, MusicPublisher - Kwadwo Donkoh, Producer - Wulomei, MainArtist - Nii Tei Ashitey, Composer, Lyricist';
@@ -47,5 +48,54 @@ assert.equal(parseTidalAlbumUrl('https://tidal.com/artist/6220117'), null);
 // Role map sanity: every mapped Tidal role targets work or recording
 for (const [role, plan] of Object.entries(TIDAL_ROLE_MAP))
     assert.ok(['work', 'recording'].includes(plan.target), role);
+
+// ── Tidal artist URL → entity-cache key (registry seam) ─────────────────────
+assert.deepEqual(parseTidalArtistUrl('https://tidal.com/artist/33321484'),
+    { id: '33321484', key: 'tidal-artist/33321484', cleanUrl: 'https://tidal.com/artist/33321484' });
+assert.equal(parseTidalArtistUrl('https://listen.tidal.com/artist/6220117').key, 'tidal-artist/6220117');
+assert.equal(parseTidalArtistUrl('https://tidal.com/album/427731309'), null);
+// registry: Discogs keys keep their legacy form, Tidal keys are prefixed
+assert.equal(parseSourceEntityUrl('https://api.discogs.com/artists/123').key, 'artist/123');
+assert.equal(parseSourceEntityUrl('https://tidal.com/artist/123').key, 'tidal-artist/123');
+assert.equal(parseSourceEntityUrl(''), null);
+
+// ── tidalToEngine: harvest → engine tracklist-rel shape ─────────────────────
+const harvest = [
+    { num: '1', title: 'Takoradi', tidalTrackId: '427731312', credits: [
+        { role: 'Producer',        names: [{ name: 'Kwadwo Donkoh', tidalId: '6220117' }] },
+        { role: 'Composer',        names: [{ name: 'Nii Tei Ashitey', tidalId: '33321484' }] },
+        { role: 'Lyricist',        names: [{ name: 'Nii Tei Ashitey', tidalId: '33321484' }] },
+        { role: 'Music Publisher', names: [{ name: 'Copyright Control', tidalId: '15780' }] },
+    ] },
+    { num: '2', title: 'Puxa Odette', tidalTrackId: '427731313', credits: [
+        { role: 'Music Publisher', names: [{ name: 'Mavuthela Music Co.', tidalId: null }] },
+        { role: 'Producer',        names: [{ name: 'No Tidal Page', tidalId: null }] },
+    ] },
+];
+const eng = tidalToEngine(harvest);
+assert.equal(eng.multiVolume, false);
+assert.deepEqual(eng.tracklist, [
+    { position: '1', title: 'Takoradi', type_: 'track' },
+    { position: '2', title: 'Puxa Odette', type_: 'track' },
+]);
+// Copyright Control publisher dropped entirely; real publisher → skipped list
+assert.equal(eng.skipped.length, 1);
+assert.match(eng.skipped[0], /Mavuthela/);
+assert.equal(eng.tracklistRels.length, 4); // producer+composer+lyricist (t1) + producer (t2)
+const prod = eng.tracklistRels[0];
+assert.equal(prod.linkType, 'producer');
+assert.equal(prod.entityType, 'artist');
+assert.deepEqual(prod.attributes, []);
+assert.equal(prod.artist.resource_url, 'https://tidal.com/artist/6220117');
+assert.equal(prod.track.position, '1');
+// unlinked credit → empty resource_url (name-search path), never undefined
+const unlinked = eng.tracklistRels[3];
+assert.equal(unlinked.artist.name, 'No Tidal Page');
+assert.equal(unlinked.artist.resource_url, '');
+// multi-volume detection: repeated track numbers
+assert.equal(tidalToEngine([
+    { num: '1', title: 'a', credits: [] },
+    { num: '1', title: 'b', credits: [] },
+]).multiVolume, true);
 
 console.log('sources-parse: all assertions passed');

@@ -24,10 +24,7 @@ import {
     resetLogCounts,
 }                                        from './log.js';
 import { _showBar, _hideBar }             from './progress-bar.js';
-import {
-    parseDiscogsUrl,
-    getDiscogsReleaseData,
-}                                        from './api-discogs.js';
+import { getDiscogsReleaseData }          from './api-discogs.js';
 import {
     convertPotentialDJMixers,
     rolesFromDiscogsArtists,
@@ -44,14 +41,18 @@ import { showReviewTable }               from './review-table.js';
 import { dispatchAllRelationships }      from './dispatch.js';
 import { buildEditNote }                 from './edit-note.js';
 import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
+import { parseSourceEntityUrl }           from './sources/registry.js';
+import { harvestTidalAlbum, tidalToEngine } from './sources/tidal.js';
 
 let _logs;
 let _summary;
 // Raw Discogs JSON of the current run, stashed by `runImport` so the "Copy
 // Discogs" item in the Log ▾ menu can copy it (#118). Updated each import.
 let _discogsJson = null;
+// Raw Tidal harvest of the current run — same contract for "Copy Tidal".
+let _tidalJson = null;
 
-export function insertDiscogsBar(discogsUrl) {
+export function insertDiscogsBar(discogsUrl, sources = {}) {
     // Inject styles
     const style = document.createElement('style');
     style.innerText = `
@@ -423,10 +424,17 @@ export function insertDiscogsBar(discogsUrl) {
     const importBtn = document.createElement('button');
     importBtn.className = 'discogs-import-btn';
     importBtn.textContent = 'Import from Discogs';
+    if (!discogsUrl) importBtn.style.display = 'none';   // Tidal-only release
+    // Second source: Tidal (#193). Same pipeline, different fetch+mapper.
+    const tidalBtn = document.createElement('button');
+    tidalBtn.className = 'discogs-import-btn';
+    tidalBtn.textContent = 'Import from Tidal';
+    if (!sources.tidal) tidalBtn.style.display = 'none';
     const progressPct = document.createElement('span');
     progressPct.id = 'discogs-progress-pct';
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;';
     row1.appendChild(importBtn);
+    row1.appendChild(tidalBtn);
     row1.appendChild(progressPct);
 
     // Action slot — the review "Start import" button + unresolved message get
@@ -496,11 +504,12 @@ export function insertDiscogsBar(discogsUrl) {
     logToggleBtn.style.display = 'none';
 
     const logoLink = document.createElement('a');
-    logoLink.href = discogsUrl;
+    logoLink.href = discogsUrl || sources.tidal || '#';
     logoLink.target = '_blank';
     logoLink.rel = 'noopener noreferrer nofollow';
     logoLink.className = 'discogs-source-icon';
-    logoLink.title = discogsUrl;   // hover shows the full Discogs URL
+    logoLink.title = discogsUrl || sources.tidal || '';   // hover shows the full source URL
+    if (!discogsUrl) logoLink.style.display = 'none';     // logo is Discogs-branded
     const logo = document.createElement('img');
     logo.src = DISCOGS_LOGO_URL;
     logo.className = 'discogs-logo';
@@ -793,7 +802,8 @@ export function insertDiscogsBar(discogsUrl) {
     const copyLogItem     = mkMenuItem('Copy log',          'Copy the full import log (incl. raw Discogs JSON)',                  (b, l) => bar._copy?.log(b, l));
     const copyNoJsonItem  = mkMenuItem('Copy without JSON', 'Copy the log without the raw Discogs JSON block — fits in a GitHub issue', (b, l) => bar._copy?.noJson(b, l));
     const copyDiscogsItem = mkMenuItem('Copy Discogs',      'Copy the raw Discogs JSON for this release',                          (b, l) => bar._copy?.discogs(b, l));
-    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem);
+    const copyTidalItem   = mkMenuItem('Copy Tidal',        'Copy the raw Tidal credits harvest for this release',                 (b, l) => bar._copy?.tidal(b, l));
+    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem, copyTidalItem);
     document.body.appendChild(logMenu);
 
     logMenuToggle.addEventListener('click', () => {
@@ -853,9 +863,14 @@ export function insertDiscogsBar(discogsUrl) {
         unresolvedPill.style.display = n > 0 ? '' : 'none';
     };
 
-    importBtn.addEventListener('click', () => {
+    // Shared import-run scaffolding — both source buttons funnel through here.
+    // `srcBtn`/`restoreLabel` drive the button state, `sourceUrl` feeds the
+    // edit note, `runner(getOpts)` is the source-specific import entry
+    // (`runImport` for Discogs, `runTidalImport` for Tidal).
+    function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
         importBtn.disabled = true;
-        importBtn.textContent = 'Importing…';
+        tidalBtn.disabled = true;
+        srcBtn.textContent = 'Importing…';
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
 
@@ -1011,6 +1026,7 @@ export function insertDiscogsBar(discogsUrl) {
             log:     (item, label) => copyToClipboard(buildCopyText({ skipDiscogsJson: false }), item, label),
             noJson:  (item, label) => copyToClipboard(buildCopyText({ skipDiscogsJson: true  }), item, label),
             discogs: (item, label) => { if (_discogsJson) copyToClipboard(JSON.stringify(_discogsJson, null, 2), item, label); },
+            tidal:   (item, label) => { if (_tidalJson)   copyToClipboard(JSON.stringify(_tidalJson,   null, 2), item, label); },
         };
 
         // Expose progress update hook. `dispatchAllRelationships` pushes the
@@ -1042,16 +1058,17 @@ export function insertDiscogsBar(discogsUrl) {
         });
         const _click = getOpts();
         const opts = `per-track:${_click.processTracklist?'on':'off'}, move-to-tracks:${_click.applyToTracks?'on':'off'}, create-works:${_click.createWorksMode}`;
-        const editNote = buildEditNote(discogsUrl, opts);
+        const editNote = buildEditNote(sourceUrl, opts);
         editNote.split('\n').forEach(line => {
             if (!line.trim()) return;
             // Make URLs clickable in the log
             const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
             log.info(html);
         });
-        runImport(discogsUrl, getOpts).finally(() => {
+        runner(getOpts).finally(() => {
             importBtn.disabled = false;
-            importBtn.textContent = 'Import from Discogs';
+            tidalBtn.disabled = false;
+            srcBtn.textContent = restoreLabel;
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
             bar.classList.remove('is-reviewing');   // #139: safety — clear if the flow ended during review
@@ -1067,7 +1084,11 @@ export function insertDiscogsBar(discogsUrl) {
             }, 2000);
             delete bar._setProgress;
         });
-    });
+    }
+    importBtn.addEventListener('click', () =>
+        startImport(importBtn, 'Import from Discogs', discogsUrl, getOpts => runImport(discogsUrl, getOpts)));
+    tidalBtn.addEventListener('click', () =>
+        startImport(tidalBtn, 'Import from Tidal', sources.tidal, getOpts => runTidalImport(sources.tidal, getOpts)));
 
     bar.appendChild(outputDiv);
 
@@ -1172,6 +1193,43 @@ function runImport(discogsUrl, getOpts) {
                 log.info(`Found ${tracklistRels.length} tracklist relationships`);
             }
 
+            return runSourcePipeline({ companies: json.companies, artistRoles, tracklistRels, tracklist: json.tracklist, sourceUrl: discogsUrl, processTracklist, getOpts });
+        });
+}
+
+// Tidal import (#193): open the anonymous credits tab, harvest via the GM
+// storage handshake (see sources/tidal.js), map to the engine shape, and run
+// the exact same pipeline as Discogs. Linked credits carry a Tidal artist
+// URL, so preflight resolves them via MB's Tidal URL rels — same exactness
+// as Discogs resolution.
+function runTidalImport(tidalUrl, getOpts) {
+    log.info(`Opening the Tidal credits tab — it closes itself once harvested (a few seconds)…`);
+    return harvestTidalAlbum(tidalUrl)
+        .then(harvest => {
+            _tidalJson = harvest;   // Log ▾ → "Copy Tidal"
+            if (!harvest.ok) throw new Error(`Tidal harvest failed: ${harvest.error || 'unknown error'}`);
+            // Raw harvest (collapsible) — mirrors the Discogs raw-JSON block.
+            const li = document.createElement('li');
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;';
+            pre.textContent = JSON.stringify(harvest, null, 2);
+            li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${harvest.tracks.length} tracks — raw Tidal harvest</strong></summary></details>`;
+            li.querySelector('details').appendChild(pre);
+            _logs.appendChild(li);
+            const { tracklistRels, tracklist, skipped, multiVolume } = tidalToEngine(harvest.tracks);
+            log.info(`Tidal credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+            skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
+            if (multiVolume) log.warn(`Multi-volume Tidal album — track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
+            if (!tracklistRels.length) { log.warn('No importable credits found on the Tidal credits page.'); return; }
+            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
+        })
+        .catch(err => { log.error(err.message || String(err)); });
+}
+
+// The source-agnostic pipeline (#193): unique-entity collection → preflight
+// resolution → review table → confirmed-IDB sweep → dispatch. Extracted from
+// runImport unchanged so every source feeds the same engine.
+function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts }) {
             // Collect all unique artist entities referenced across release-level and tracklist roles
             const allArtistRoles = artistRoles.concat(tracklistRels);
             const uniqueArtists = [];
@@ -1208,7 +1266,7 @@ function runImport(discogsUrl, getOpts) {
             });
             // Also add company roles to a companiesRolesMap
             const companiesRolesMap = new Map();
-            json.companies.forEach(c => {
+            companies.forEach(c => {
                 if (!c.resource_url) return;
                 if (!companiesRolesMap.has(c.resource_url)) companiesRolesMap.set(c.resource_url, []);
                 companiesRolesMap.get(c.resource_url).push({ linkType: c.entity_type_name || '' });
@@ -1217,7 +1275,7 @@ function runImport(discogsUrl, getOpts) {
             // Pre-flight: check artists and companies, show unified review table.
             const uniqueCompanies = [];
             const seenCompanyUrls = new Set();
-            json.companies.forEach(c => {
+            companies.forEach(c => {
                 if (c.resource_url && !seenCompanyUrls.has(c.resource_url) && ENTITY_TYPE_MAP[c.entity_type_name]) {
                     seenCompanyUrls.add(c.resource_url);
                     uniqueCompanies.push(c);
@@ -1326,7 +1384,7 @@ function runImport(discogsUrl, getOpts) {
                     // the inline writes survive.
                     const cachePromises = [];
                     confirmedMap.forEach((mbUrl, resourceUrl) => {
-                        const key = parseDiscogsUrl(resourceUrl)?.key;
+                        const key = parseSourceEntityUrl(resourceUrl)?.key;
                         if (!key) return;
                         // mbUrl is `//musicbrainz.org/<entityType>/<mbid>` —
                         // extract both halves so the new schema's `mbid` and
@@ -1368,8 +1426,6 @@ function runImport(discogsUrl, getOpts) {
                         dedupeDuplicateRoles:  live.dedupeDuplicateRoles,
                         creditOverrides: capturedConfirmedMap?.creditOverrides,
                     };
-                    return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, live.applyToTracks, live.createWorksMode, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
+                    return dispatchAllRelationships(companies, artistRoles, tracklistRels, live.applyToTracks, live.createWorksMode, tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, sourceUrl, dedupOpts);
                 });
-        })
-        .then(() => { });
 }

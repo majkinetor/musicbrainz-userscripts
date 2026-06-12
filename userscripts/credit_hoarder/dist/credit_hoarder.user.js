@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.12.193852
+// @version      2026.6.12.203039
 // @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
@@ -9,10 +9,17 @@
 // @match        https://*.musicbrainz.org/artist/*
 // @match        https://*.musicbrainz.org/label/*
 // @match        https://*.musicbrainz.org/place/*
+// @match        https://tidal.com/album/*
+// @match        https://listen.tidal.com/album/*
 // @license      MIT
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
 // @grant        unsafeWindow
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_deleteValue
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
 // ==/UserScript==
 
 (() => {
@@ -270,13 +277,15 @@
     _relTypeCache.set(mbid, types);
     return types;
   }
-  function getDiscogsUrlForRelease(mbid) {
+  function getSourceUrlsForRelease(mbid) {
     const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
     return fetch(url).then((body) => body.json()).then((json) => {
-      const matchingRel = (json.relationships || []).find((rel) => {
-        return rel.target?.sidebar_name === "Discogs";
-      });
-      return matchingRel?.target?.href_url || null;
+      const rels = json.relationships || [];
+      const href = (pred) => rels.find(pred)?.target?.href_url || null;
+      return {
+        discogs: href((rel) => rel.target?.sidebar_name === "Discogs"),
+        tidal: href((rel) => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || ""))
+      };
     });
   }
   function resolveLinkTypeId(name, type0, type1) {
@@ -1921,6 +1930,176 @@
     }, []) || [];
   }
 
+  // src/sources/tidal.js
+  var TIDAL_ROLE_MAP = {
+    "Producer": { target: "recording", rel: "producer" },
+    "Composer": { target: "work", rel: "composer" },
+    "Lyricist": { target: "work", rel: "lyricist" },
+    "Music Publisher": { target: "work", rel: "publisher" }
+  };
+  var TIDAL_COPYRIGHT_CONTROL_ID = "15780";
+  var TIDAL_ALBUM_RE = /^https?:\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i;
+  function parseTidalAlbumUrl(url) {
+    const m = TIDAL_ALBUM_RE.exec(url || "");
+    if (!m) return null;
+    return { id: m[1], creditsUrl: `https://tidal.com/album/${m[1]}/credits` };
+  }
+  function extractTidalCreditsDom(doc) {
+    const out = [];
+    for (const item of doc.querySelectorAll('[data-test="album-info-item"]')) {
+      const num = item.querySelector('[class*="_trackNumber"]')?.textContent?.trim() || "";
+      const titleEl = item.querySelector('[class*="_title_"]');
+      const credits = [];
+      for (const cell of item.querySelectorAll('[class*="_creditsCell"]')) {
+        const role = cell.querySelector("[data-uppercase]")?.textContent?.trim();
+        if (!role) continue;
+        const names = [...cell.querySelectorAll('[data-test="grid-item-detail-text-title-artist"]')].map((el) => ({
+          name: el.getAttribute("title") || el.textContent.trim(),
+          tidalId: (el.getAttribute("href") || "").match(/\/artist\/(\d+)/)?.[1] || null
+        })).filter((n) => n.name);
+        credits.push({ role, names });
+      }
+      out.push({
+        num,
+        title: titleEl?.getAttribute("title") || titleEl?.textContent?.trim() || "",
+        tidalTrackId: titleEl?.getAttribute("data-test-id") || null,
+        credits
+      });
+    }
+    return out;
+  }
+  function filterTidalCredits(tracks) {
+    return tracks.map((t) => ({
+      ...t,
+      credits: t.credits.filter((c) => TIDAL_ROLE_MAP[c.role]).map((c) => ({
+        ...c,
+        names: c.names.filter((n) => !(c.role === "Music Publisher" && (n.tidalId === TIDAL_COPYRIGHT_CONTROL_ID || /^copyright control$/i.test(n.name))))
+      })).filter((c) => c.names.length)
+    }));
+  }
+  var TIDAL_ARTIST_RE = /^https?:\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/i;
+  function parseTidalArtistUrl(url) {
+    const m = TIDAL_ARTIST_RE.exec(url || "");
+    if (!m) return null;
+    return { id: m[1], key: `tidal-artist/${m[1]}`, cleanUrl: `https://tidal.com/artist/${m[1]}` };
+  }
+  function tidalToEngine(tracks) {
+    const IMPORT_ROLES = { "Producer": "producer", "Composer": "composer", "Lyricist": "lyricist" };
+    const tracklistRels = [];
+    const tracklist = [];
+    const skipped = [];
+    const seenPositions = /* @__PURE__ */ new Set();
+    let multiVolume = false;
+    for (const t of filterTidalCredits(tracks)) {
+      const position = String(t.num || "").trim();
+      if (seenPositions.has(position)) multiVolume = true;
+      seenPositions.add(position);
+      const track = { position, title: t.title || "", type_: "track" };
+      tracklist.push(track);
+      for (const c of t.credits) {
+        const linkType = IMPORT_ROLES[c.role];
+        for (const n of c.names) {
+          if (!linkType) {
+            skipped.push(`track ${position} "${t.title}": ${c.role} \u2014 ${n.name}`);
+            continue;
+          }
+          tracklistRels.push({
+            linkType,
+            entityType: "artist",
+            attributes: [],
+            artist: {
+              id: n.tidalId ? `tidal-${n.tidalId}` : void 0,
+              name: n.name,
+              anv: "",
+              resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : ""
+            },
+            track
+          });
+        }
+      }
+    }
+    return { tracklistRels, tracklist, skipped, multiVolume };
+  }
+  var HARVEST_KEY = (reqId) => `ch-tidal-result:${reqId}`;
+  var HARVEST_TIMEOUT_MS = 45e3;
+  function runTidalHarvestPage() {
+    const m = location.hash.match(/ch-req=([a-z0-9.-]+)/i);
+    if (!m) return;
+    const reqId = m[1];
+    const albumId = (location.pathname.match(/\/album\/(\d+)/) || [])[1] || null;
+    const post = (payload) => {
+      try {
+        GM_setValue(HARVEST_KEY(reqId), { albumId, ts: Date.now(), ...payload });
+      } catch (e) {
+      }
+    };
+    const started = Date.now();
+    let lastCount = -1, stableSince = 0;
+    const timer = setInterval(() => {
+      const items = document.querySelectorAll('[data-test="album-info-item"]');
+      if (items.length > 0) {
+        if (items.length !== lastCount) {
+          lastCount = items.length;
+          stableSince = Date.now();
+        } else if (Date.now() - stableSince > 1200) {
+          clearInterval(timer);
+          post({ ok: true, tracks: extractTidalCreditsDom(document) });
+          setTimeout(() => window.close(), 250);
+          return;
+        }
+      }
+      if (Date.now() - started > HARVEST_TIMEOUT_MS - 5e3) {
+        clearInterval(timer);
+        post({ ok: false, error: lastCount > 0 ? "render never stabilised" : "credits never rendered (login wall? geo block?)" });
+        setTimeout(() => window.close(), 250);
+      }
+    }, 300);
+  }
+  function harvestTidalAlbum(albumUrl) {
+    const parsed = parseTidalAlbumUrl(albumUrl);
+    if (!parsed) return Promise.reject(new Error(`Not a Tidal album URL: ${albumUrl}`));
+    const reqId = `${parsed.id}.${Date.now().toString(36)}`;
+    const key = HARVEST_KEY(reqId);
+    const tab = window.open(`${parsed.creditsUrl}#ch-req=${reqId}`, "_blank");
+    if (!tab) return Promise.reject(new Error("Popup blocked \u2014 allow popups for musicbrainz.org and retry"));
+    return new Promise((resolve, reject) => {
+      let listenerId = null;
+      let pollTimer = null;
+      const done = (fn, arg) => {
+        if (pollTimer) clearInterval(pollTimer);
+        clearTimeout(deadline);
+        try {
+          if (listenerId !== null && typeof GM_removeValueChangeListener === "function") GM_removeValueChangeListener(listenerId);
+        } catch (e) {
+        }
+        try {
+          GM_deleteValue(key);
+        } catch (e) {
+        }
+        fn(arg);
+      };
+      const check = (value) => {
+        if (value && typeof value === "object") done(resolve, value);
+      };
+      if (typeof GM_addValueChangeListener === "function") {
+        listenerId = GM_addValueChangeListener(key, (_n, _o, value) => check(value));
+      }
+      pollTimer = setInterval(() => {
+        try {
+          check(GM_getValue(key));
+        } catch (e) {
+        }
+      }, 700);
+      const deadline = setTimeout(() => done(reject, new Error("Tidal harvest timed out \u2014 is the credits tab open and loading?")), HARVEST_TIMEOUT_MS);
+    });
+  }
+
+  // src/sources/registry.js
+  function parseSourceEntityUrl(url) {
+    if (!url) return null;
+    return parseDiscogsUrl(url) || parseTidalArtistUrl(url);
+  }
+
   // src/preflight.js
   var KIND_TABLE = {
     artist: { searchLimit: 10, resultKey: "artists", incRels: "artist-rels" },
@@ -1933,7 +2112,7 @@
   async function resolveEntity(entity, kind, opts) {
     const { bypassIdb } = opts;
     const { searchLimit, resultKey, incRels } = KIND_TABLE[kind];
-    const parsed = parseDiscogsUrl(entity.resource_url);
+    const parsed = parseSourceEntityUrl(entity.resource_url);
     const key = parsed?.key;
     const searchName = entity.name;
     const displayName = kind === "artist" ? entity.anv && entity.anv.trim() || entity.name : entity.name;
@@ -2222,7 +2401,7 @@
     for (const r of _nullNames) {
       const rUrl = r.entity?.resource_url;
       try {
-        const idbKey = parseDiscogsUrl(rUrl)?.key;
+        const idbKey = parseSourceEntityUrl(rUrl)?.key;
         const rec = await readIdbRecord(idbKey);
         if (rec?.name) {
           _preloadedNames.set(rUrl, { name: rec.name, dis: rec.disambiguation || "" });
@@ -2572,7 +2751,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           refreshCredBg();
           clearTimeout(_credSaveTimer);
           _credSaveTimer = setTimeout(() => {
-            const idbKey = parseDiscogsUrl(r.entity?.resource_url)?.key;
+            const idbKey = parseSourceEntityUrl(r.entity?.resource_url)?.key;
             if (idbKey) writeIdbRecord(idbKey, { creditOverride: credInput.value });
           }, 500);
         });
@@ -2709,7 +2888,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             refreshCredBg();
             if (r._refreshCredBtns) r._refreshCredBtns();
           }
-          const _idbKey = r.entity?.resource_url ? parseDiscogsUrl(r.entity.resource_url)?.key : null;
+          const _idbKey = r.entity?.resource_url ? parseSourceEntityUrl(r.entity.resource_url)?.key : null;
           if (_idbKey) {
             writeIdbRecord(_idbKey, {
               mbid: a.id,
@@ -3446,16 +3625,18 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
   }
 
   // src/edit-note.js
-  function buildEditNote(discogsUrl, opts, extraLines) {
+  function buildEditNote(sourceUrl, opts, extraLines) {
     const s = GM_info.script;
     const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, "");
-    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
+    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md";
     const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
+    const cleanSource = String(sourceUrl || "").split(/[?#]/)[0];
+    const sourceName = /tidal\.com/i.test(cleanSource) ? "Tidal" : /qobuz\.com/i.test(cleanSource) ? "Qobuz" : "Discogs";
     const lines = [
       header,
       "",
       "Release URL: " + mbUrl,
-      "Discogs URL: " + String(discogsUrl || "").split(/[?#]/)[0]
+      sourceName + " URL: " + cleanSource
     ];
     if (opts) lines.push("Options: " + opts);
     if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
@@ -4087,7 +4268,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
   var _logs2;
   var _summary;
   var _discogsJson = null;
-  function insertDiscogsBar(discogsUrl) {
+  var _tidalJson = null;
+  function insertDiscogsBar(discogsUrl, sources = {}) {
     const style = document.createElement("style");
     style.innerText = `
         .discogs-bar {
@@ -4448,10 +4630,16 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     const importBtn = document.createElement("button");
     importBtn.className = "discogs-import-btn";
     importBtn.textContent = "Import from Discogs";
+    if (!discogsUrl) importBtn.style.display = "none";
+    const tidalBtn = document.createElement("button");
+    tidalBtn.className = "discogs-import-btn";
+    tidalBtn.textContent = "Import from Tidal";
+    if (!sources.tidal) tidalBtn.style.display = "none";
     const progressPct = document.createElement("span");
     progressPct.id = "discogs-progress-pct";
     progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
     row1.appendChild(importBtn);
+    row1.appendChild(tidalBtn);
     row1.appendChild(progressPct);
     const actionSlot = document.createElement("div");
     actionSlot.className = "discogs-bar-action";
@@ -4491,11 +4679,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     logToggleBtn.title = "Show / hide the import log";
     logToggleBtn.style.display = "none";
     const logoLink = document.createElement("a");
-    logoLink.href = discogsUrl;
+    logoLink.href = discogsUrl || sources.tidal || "#";
     logoLink.target = "_blank";
     logoLink.rel = "noopener noreferrer nofollow";
     logoLink.className = "discogs-source-icon";
-    logoLink.title = discogsUrl;
+    logoLink.title = discogsUrl || sources.tidal || "";
+    if (!discogsUrl) logoLink.style.display = "none";
     const logo = document.createElement("img");
     logo.src = DISCOGS_LOGO_URL;
     logo.className = "discogs-logo";
@@ -4743,7 +4932,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     const copyLogItem = mkMenuItem("Copy log", "Copy the full import log (incl. raw Discogs JSON)", (b, l) => bar._copy?.log(b, l));
     const copyNoJsonItem = mkMenuItem("Copy without JSON", "Copy the log without the raw Discogs JSON block \u2014 fits in a GitHub issue", (b, l) => bar._copy?.noJson(b, l));
     const copyDiscogsItem = mkMenuItem("Copy Discogs", "Copy the raw Discogs JSON for this release", (b, l) => bar._copy?.discogs(b, l));
-    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem);
+    const copyTidalItem = mkMenuItem("Copy Tidal", "Copy the raw Tidal credits harvest for this release", (b, l) => bar._copy?.tidal(b, l));
+    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem, copyTidalItem);
     document.body.appendChild(logMenu);
     logMenuToggle.addEventListener("click", () => {
       setLogOpen(!outputDiv.classList.contains("log-open"));
@@ -4795,9 +4985,10 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       unresolvedPill.textContent = `\u2298 ${n} unresolved`;
       unresolvedPill.style.display = n > 0 ? "" : "none";
     };
-    importBtn.addEventListener("click", () => {
+    function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
       importBtn.disabled = true;
-      importBtn.textContent = "Importing\u2026";
+      tidalBtn.disabled = true;
+      srcBtn.textContent = "Importing\u2026";
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
       bar.classList.add("is-importing", "is-pinned");
@@ -4912,6 +5103,9 @@ ${lines}
         noJson: (item, label) => copyToClipboard(buildCopyText({ skipDiscogsJson: true }), item, label),
         discogs: (item, label) => {
           if (_discogsJson) copyToClipboard(JSON.stringify(_discogsJson, null, 2), item, label);
+        },
+        tidal: (item, label) => {
+          if (_tidalJson) copyToClipboard(JSON.stringify(_tidalJson, null, 2), item, label);
         }
       };
       bar._setProgress = (pct, text) => {
@@ -4931,15 +5125,16 @@ ${lines}
       });
       const _click = getOpts();
       const opts = `per-track:${_click.processTracklist ? "on" : "off"}, move-to-tracks:${_click.applyToTracks ? "on" : "off"}, create-works:${_click.createWorksMode}`;
-      const editNote = buildEditNote(discogsUrl, opts);
+      const editNote = buildEditNote(sourceUrl, opts);
       editNote.split("\n").forEach((line) => {
         if (!line.trim()) return;
         const html = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>');
         log.info(html);
       });
-      runImport(discogsUrl, getOpts).finally(() => {
+      runner(getOpts).finally(() => {
         importBtn.disabled = false;
-        importBtn.textContent = "Import from Discogs";
+        tidalBtn.disabled = false;
+        srcBtn.textContent = restoreLabel;
         progressPct.textContent = "100%";
         setTimeout(() => {
           progressPct.style.display = "none";
@@ -4954,7 +5149,9 @@ ${lines}
         }, 2e3);
         delete bar._setProgress;
       });
-    });
+    }
+    importBtn.addEventListener("click", () => startImport(importBtn, "Import from Discogs", discogsUrl, (getOpts) => runImport(discogsUrl, getOpts)));
+    tidalBtn.addEventListener("click", () => startImport(tidalBtn, "Import from Tidal", sources.tidal, (getOpts) => runTidalImport(sources.tidal, getOpts)));
     bar.appendChild(outputDiv);
     function insertBar() {
       const anchor = document.querySelector(".release-rel-editor") || // MB React wrapper
@@ -5032,136 +5229,163 @@ ${lines}
         }
         log.info(`Found ${tracklistRels.length} tracklist relationships`);
       }
-      const allArtistRoles = artistRoles.concat(tracklistRels);
-      const uniqueArtists = [];
-      const seenResourceUrls = /* @__PURE__ */ new Set();
-      const rolesMap = /* @__PURE__ */ new Map();
-      allArtistRoles.forEach((role) => {
-        const url = role.artist?.resource_url || `_nourl_${role.artist?.name || role.artist?.id}`;
-        if (!rolesMap.has(url)) rolesMap.set(url, []);
-        let displayLabel = role.linkType;
-        if (role.attributes && role.attributes.length > 0) {
-          const attr = role.attributes[0];
-          if (attr._type === "instrument" && attr.value) displayLabel = attr.value;
-          else if (attr._type === "vocal" && attr.value) displayLabel = attr.value;
-          else if (typeof attr === "string") displayLabel = `${role.linkType} [${attr}]`;
-        }
-        rolesMap.get(url).push({
-          linkType: role.linkType,
-          displayLabel,
-          trackPos: role.track?.position || "",
-          trackTitle: role.track?.title || ""
-        });
-        if (!seenResourceUrls.has(url)) {
-          seenResourceUrls.add(url);
-          if (!role.artist?.resource_url && role.artist) role.artist._syntheticKey = url;
-          uniqueArtists.push(role.artist);
-        }
-      });
-      const companiesRolesMap = /* @__PURE__ */ new Map();
-      json.companies.forEach((c) => {
-        if (!c.resource_url) return;
-        if (!companiesRolesMap.has(c.resource_url)) companiesRolesMap.set(c.resource_url, []);
-        companiesRolesMap.get(c.resource_url).push({ linkType: c.entity_type_name || "" });
-      });
-      const uniqueCompanies = [];
-      const seenCompanyUrls = /* @__PURE__ */ new Set();
-      json.companies.forEach((c) => {
-        if (c.resource_url && !seenCompanyUrls.has(c.resource_url) && ENTITY_TYPE_MAP[c.entity_type_name]) {
-          seenCompanyUrls.add(c.resource_url);
-          uniqueCompanies.push(c);
-        }
-      });
-      function runPreflight(bypassIdb = false) {
-        log.info(`Starting preflight: ${uniqueArtists.length} artist(s), ${uniqueCompanies.length} label(s)/place(s).`);
-        const artistProgressLi = document.createElement("li");
-        artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz\u2026`;
-        _logs2.appendChild(artistProgressLi);
-        const companyProgressLi = document.createElement("li");
-        companyProgressLi.textContent = `Checking ${uniqueCompanies.length} label(s)/place(s) against MusicBrainz\u2026`;
-        _logs2.appendChild(companyProgressLi);
-        const t0 = performance.now();
-        return (async () => {
-          const artistResults = await resolveAll(uniqueArtists, {
-            progressLi: artistProgressLi,
-            progressLabel: "Checking artists against MusicBrainz",
-            kindOf: ARTIST_KIND,
-            bypassIdb
-          });
-          const companyResults = await resolveAll(uniqueCompanies, {
-            progressLi: companyProgressLi,
-            progressLabel: "Checking labels/places against MusicBrainz",
-            kindOf: COMPANY_KIND,
-            bypassIdb
-          });
-          const elapsed = (performance.now() - t0) / 1e3;
-          log.info(`Preflight done in ${elapsed.toFixed(1)}s.`);
-          return [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
-        })();
+      return runSourcePipeline({ companies: json.companies, artistRoles, tracklistRels, tracklist: json.tracklist, sourceUrl: discogsUrl, processTracklist, getOpts });
+    });
+  }
+  function runTidalImport(tidalUrl, getOpts) {
+    log.info(`Opening the Tidal credits tab \u2014 it closes itself once harvested (a few seconds)\u2026`);
+    return harvestTidalAlbum(tidalUrl).then((harvest) => {
+      _tidalJson = harvest;
+      if (!harvest.ok) throw new Error(`Tidal harvest failed: ${harvest.error || "unknown error"}`);
+      const li = document.createElement("li");
+      const pre = document.createElement("pre");
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.textContent = JSON.stringify(harvest, null, 2);
+      li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${harvest.tracks.length} tracks \u2014 raw Tidal harvest</strong></summary></details>`;
+      li.querySelector("details").appendChild(pre);
+      _logs2.appendChild(li);
+      const { tracklistRels, tracklist, skipped, multiVolume } = tidalToEngine(harvest.tracks);
+      log.info(`Tidal credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+      skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
+      if (multiVolume) log.warn(`Multi-volume Tidal album \u2014 track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
+      if (!tracklistRels.length) {
+        log.warn("No importable credits found on the Tidal credits page.");
+        return;
       }
-      function annotateRoles(allResults) {
-        allResults.forEach((r) => {
-          if (!r) return;
-          const url = r.entity?.resource_url || r.entity?._syntheticKey;
-          if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
-        });
+      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
+    }).catch((err) => {
+      log.error(err.message || String(err));
+    });
+  }
+  function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts }) {
+    const allArtistRoles = artistRoles.concat(tracklistRels);
+    const uniqueArtists = [];
+    const seenResourceUrls = /* @__PURE__ */ new Set();
+    const rolesMap = /* @__PURE__ */ new Map();
+    allArtistRoles.forEach((role) => {
+      const url = role.artist?.resource_url || `_nourl_${role.artist?.name || role.artist?.id}`;
+      if (!rolesMap.has(url)) rolesMap.set(url, []);
+      let displayLabel = role.linkType;
+      if (role.attributes && role.attributes.length > 0) {
+        const attr = role.attributes[0];
+        if (attr._type === "instrument" && attr.value) displayLabel = attr.value;
+        else if (attr._type === "vocal" && attr.value) displayLabel = attr.value;
+        else if (typeof attr === "string") displayLabel = `${role.linkType} [${attr}]`;
       }
-      let capturedResults = null;
-      let capturedConfirmedMap = null;
-      return runPreflight().then((allResults) => {
-        annotateRoles(allResults);
-        capturedResults = allResults;
-        document.querySelector(".discogs-bar")?.classList.add("is-reviewing");
-        return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
-          // Mount the Start-import button + unresolved message in the
-          // always-visible header rather than below the table (#139).
-          // Resolved via the DOM (there's one bar) — `runImport` is a
-          // separate function from the bar builder that owns the slot.
-          headerSlot: document.querySelector(".discogs-bar-action"),
-          // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
-          // every entity via MB API. Used when a cached MBID is stale.
-          onRefresh: () => runPreflight(true).then((freshResults) => {
-            annotateRoles(freshResults);
-            capturedResults = freshResults;
-            return freshResults;
-          })
-        });
-      }).then((confirmedMap) => {
-        capturedConfirmedMap = confirmedMap;
-        document.querySelector(".discogs-bar")?.classList.remove("is-reviewing");
-        document.querySelector(".discogs-bar")?._setUnresolved?.(confirmedMap.unresolvedCount || 0);
-        const cachePromises = [];
-        confirmedMap.forEach((mbUrl, resourceUrl) => {
-          const key = parseDiscogsUrl(resourceUrl)?.key;
-          if (!key) return;
-          const m = mbUrl.match(/\/(artist|label|place)\/([a-f0-9-]+)/);
-          if (!m) return;
-          cachePromises.push(writeIdbRecord(key, {
-            mbid: m[2],
-            entityType: m[1]
-            // No resolvedVia change — the inline write owns it.
-          }));
-        });
-        return Promise.all(cachePromises);
-      }).then(() => {
-        const resolvedEntityTypes = /* @__PURE__ */ new Map();
-        (capturedResults || []).forEach((r) => {
-          if (r.entity?.resource_url && r.mbUrl && r.entityType) {
-            resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
-          }
-        });
-        const live = getOpts();
-        if (live.processTracklist !== processTracklist) {
-          log.warn(`"Per-track credits" toggled during review (preflight ran with "${processTracklist ? "on" : "off"}", import will follow preflight). To change, restart the import.`);
-        }
-        const dedupOpts = {
-          dedupeEquivalenceSets: live.dedupeEquivalenceSets,
-          dedupeDuplicateRoles: live.dedupeDuplicateRoles,
-          creditOverrides: capturedConfirmedMap?.creditOverrides
-        };
-        return dispatchAllRelationships(json.companies, artistRoles, tracklistRels, live.applyToTracks, live.createWorksMode, json.tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, discogsUrl, dedupOpts);
+      rolesMap.get(url).push({
+        linkType: role.linkType,
+        displayLabel,
+        trackPos: role.track?.position || "",
+        trackTitle: role.track?.title || ""
       });
+      if (!seenResourceUrls.has(url)) {
+        seenResourceUrls.add(url);
+        if (!role.artist?.resource_url && role.artist) role.artist._syntheticKey = url;
+        uniqueArtists.push(role.artist);
+      }
+    });
+    const companiesRolesMap = /* @__PURE__ */ new Map();
+    companies.forEach((c) => {
+      if (!c.resource_url) return;
+      if (!companiesRolesMap.has(c.resource_url)) companiesRolesMap.set(c.resource_url, []);
+      companiesRolesMap.get(c.resource_url).push({ linkType: c.entity_type_name || "" });
+    });
+    const uniqueCompanies = [];
+    const seenCompanyUrls = /* @__PURE__ */ new Set();
+    companies.forEach((c) => {
+      if (c.resource_url && !seenCompanyUrls.has(c.resource_url) && ENTITY_TYPE_MAP[c.entity_type_name]) {
+        seenCompanyUrls.add(c.resource_url);
+        uniqueCompanies.push(c);
+      }
+    });
+    function runPreflight(bypassIdb = false) {
+      log.info(`Starting preflight: ${uniqueArtists.length} artist(s), ${uniqueCompanies.length} label(s)/place(s).`);
+      const artistProgressLi = document.createElement("li");
+      artistProgressLi.textContent = `Checking ${uniqueArtists.length} artist(s) against MusicBrainz\u2026`;
+      _logs2.appendChild(artistProgressLi);
+      const companyProgressLi = document.createElement("li");
+      companyProgressLi.textContent = `Checking ${uniqueCompanies.length} label(s)/place(s) against MusicBrainz\u2026`;
+      _logs2.appendChild(companyProgressLi);
+      const t0 = performance.now();
+      return (async () => {
+        const artistResults = await resolveAll(uniqueArtists, {
+          progressLi: artistProgressLi,
+          progressLabel: "Checking artists against MusicBrainz",
+          kindOf: ARTIST_KIND,
+          bypassIdb
+        });
+        const companyResults = await resolveAll(uniqueCompanies, {
+          progressLi: companyProgressLi,
+          progressLabel: "Checking labels/places against MusicBrainz",
+          kindOf: COMPANY_KIND,
+          bypassIdb
+        });
+        const elapsed = (performance.now() - t0) / 1e3;
+        log.info(`Preflight done in ${elapsed.toFixed(1)}s.`);
+        return [...artistResults.allResults, ...companyResults.allResults].filter(Boolean);
+      })();
+    }
+    function annotateRoles(allResults) {
+      allResults.forEach((r) => {
+        if (!r) return;
+        const url = r.entity?.resource_url || r.entity?._syntheticKey;
+        if (url) r._roles = rolesMap.get(url) || companiesRolesMap.get(url) || [];
+      });
+    }
+    let capturedResults = null;
+    let capturedConfirmedMap = null;
+    return runPreflight().then((allResults) => {
+      annotateRoles(allResults);
+      capturedResults = allResults;
+      document.querySelector(".discogs-bar")?.classList.add("is-reviewing");
+      return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
+        // Mount the Start-import button + unresolved message in the
+        // always-visible header rather than below the table (#139).
+        // Resolved via the DOM (there's one bar) — `runImport` is a
+        // separate function from the bar builder that owns the slot.
+        headerSlot: document.querySelector(".discogs-bar-action"),
+        // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
+        // every entity via MB API. Used when a cached MBID is stale.
+        onRefresh: () => runPreflight(true).then((freshResults) => {
+          annotateRoles(freshResults);
+          capturedResults = freshResults;
+          return freshResults;
+        })
+      });
+    }).then((confirmedMap) => {
+      capturedConfirmedMap = confirmedMap;
+      document.querySelector(".discogs-bar")?.classList.remove("is-reviewing");
+      document.querySelector(".discogs-bar")?._setUnresolved?.(confirmedMap.unresolvedCount || 0);
+      const cachePromises = [];
+      confirmedMap.forEach((mbUrl, resourceUrl) => {
+        const key = parseSourceEntityUrl(resourceUrl)?.key;
+        if (!key) return;
+        const m = mbUrl.match(/\/(artist|label|place)\/([a-f0-9-]+)/);
+        if (!m) return;
+        cachePromises.push(writeIdbRecord(key, {
+          mbid: m[2],
+          entityType: m[1]
+          // No resolvedVia change — the inline write owns it.
+        }));
+      });
+      return Promise.all(cachePromises);
     }).then(() => {
+      const resolvedEntityTypes = /* @__PURE__ */ new Map();
+      (capturedResults || []).forEach((r) => {
+        if (r.entity?.resource_url && r.mbUrl && r.entityType) {
+          resolvedEntityTypes.set(r.entity.resource_url, r.entityType);
+        }
+      });
+      const live = getOpts();
+      if (live.processTracklist !== processTracklist) {
+        log.warn(`"Per-track credits" toggled during review (preflight ran with "${processTracklist ? "on" : "off"}", import will follow preflight). To change, restart the import.`);
+      }
+      const dedupOpts = {
+        dedupeEquivalenceSets: live.dedupeEquivalenceSets,
+        dedupeDuplicateRoles: live.dedupeDuplicateRoles,
+        creditOverrides: capturedConfirmedMap?.creditOverrides
+      };
+      return dispatchAllRelationships(companies, artistRoles, tracklistRels, live.applyToTracks, live.createWorksMode, tracklist, processTracklist, resolvedEntityTypes, capturedConfirmedMap, sourceUrl, dedupOpts);
     });
   }
 
@@ -5749,6 +5973,9 @@ ${lines}
   }
 
   // src/credit_hoarder.user.js
+  if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
+    runTidalHarvestPage();
+  }
   (function handleEntityPageIfNeeded() {
     const entityMatch = location.href.match(
       /musicbrainz\.org\/(artist|label|place)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:[^/]|$)/i
@@ -5777,15 +6004,15 @@ ${lines}
       setTimeout(() => window.close(), CLOSE_DELAY_MS);
     });
   })();
-  $(document).ready(function() {
+  if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function() {
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
     installHoverHighlight();
     installBatchRemove();
-    getDiscogsUrlForRelease(m[1]).then((discogsUrl) => {
-      if (discogsUrl) {
-        insertDiscogsBar(discogsUrl);
+    getSourceUrlsForRelease(m[1]).then((sources) => {
+      if (sources.discogs || sources.tidal) {
+        insertDiscogsBar(sources.discogs, sources);
       }
     });
   });
