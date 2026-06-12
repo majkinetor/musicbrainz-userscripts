@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.10
+// @version      2026.6.12
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -153,13 +153,14 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.6.8.3';
+  const SCRIPT_VERSION = '2026.6.12';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
   const SX_API   = 'https://isrc-api.soundexchange.com/api/ext/recordings';
   const SX_HOME  = 'https://isrc.soundexchange.com/';
   const BATCH_DELAY = 650;
+  const TIDAL_TRACK_DELAY = 350;   // pace per-track Tidal lookups under its rate limit
   const SX_BATCH_LIMIT = 30;     // max individual SoundExchange searches per batch (avoid being blocked)
   const STREAM_BATCH_LIMIT = 50; // max per-track Deezer fetches per batch (1000-track releases would spam Deezer)
   const ISRC_RE  = /^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/;
@@ -1227,8 +1228,13 @@
       }
       Log.info(m.name + ' ' + isrc + ' (#' + (t.number || t.trackPos) + '): "' + f.title + '"' + (f.artist ? ' — ' + f.artist : ''));
     } catch (err) {
-      if (el) { el.className = 'ii-lookup err'; el.textContent = '✗ ' + m.name + ' failed'; }
-      Log.err(m.name + ' lookup failed: ' + errText(err));
+      if (err && err.rateLimited) {   // 429 that didn't clear after back-off — NOT "not found"
+        if (el) { el.className = 'ii-lookup warn'; el.textContent = '⚠ ' + m.name + ' rate-limited — retry'; }
+        Log.warn(m.name + ' ' + isrc + ' (#' + (t.number || t.trackPos) + '): rate-limited (HTTP 429)');
+      } else {
+        if (el) { el.className = 'ii-lookup err'; el.textContent = '✗ ' + m.name + ' failed'; }
+        Log.err(m.name + ' lookup failed: ' + errText(err));
+      }
     }
   }
   // the ISRC a per-track button acts on: the entered value if valid, else the
@@ -1264,6 +1270,10 @@
       } else {
         try { await lookupRowOnProvider(idx, isrc); }
         catch (e) { Log.err(m.name + ': ' + errText(e)); }
+        // Tidal makes a real request per track, so pace them (album providers reuse one
+        // cached fetch and don't need it). Combined with tidalGet's back-off, this keeps
+        // a bulk pass under the rate limit instead of 429-ing the tail. #tidal-429
+        if (trackProv === 'tidal' && k < todo.length - 1) await sleep(TIDAL_TRACK_DELAY);
       }
     }
   }
@@ -1557,6 +1567,26 @@
     const sec = (parseInt(m[1] || 0, 10) * 3600) + (parseInt(m[2] || 0, 10) * 60) + parseInt(m[3] || 0, 10);
     return sec ? msToMmSs(sec * 1000) : '';
   }
+  // Tidal's openapi is aggressively rate-limited (HTTP 429). On a 429, back off —
+  // honouring a Retry-After header when present, else exponential — and retry, so a
+  // throttled request RECOVERS instead of looking like "not found". Only throws a
+  // typed `rateLimited` error when it never clears, so the caller can say so.
+  const TIDAL_MAX_RETRY = 4;
+  function retryAfterMs(r, fallback) {
+    const m = /retry-after:\s*([0-9.]+)/i.exec((r && r.responseHeaders) || '');
+    const s = m ? parseFloat(m[1]) : NaN;
+    return (s > 0) ? Math.min(s * 1000, 30000) : fallback;
+  }
+  async function tidalGet(url, headers) {
+    for (let attempt = 0; ; attempt++) {
+      const r = await gmGet(url, headers);
+      if (r.status !== 429) return r;
+      if (attempt >= TIDAL_MAX_RETRY) { const e = new Error('Tidal rate limit (HTTP 429)'); e.rateLimited = true; throw e; }
+      const wait = retryAfterMs(r, Math.min(800 * Math.pow(2, attempt), 8000));
+      Log.warn('Tidal 429 — backing off ' + wait + 'ms (retry ' + (attempt + 1) + '/' + TIDAL_MAX_RETRY + ')');
+      await sleep(wait);
+    }
+  }
   async function fetchTidal(albumId, onProgress, onIsrc) {
     if (onProgress) onProgress(0, 0);
     const token = await tidalToken();
@@ -1565,7 +1595,7 @@
     const rows = [];
     let guard = 0;
     while (path && guard++ < 50) {
-      const r = await gmGet(TIDAL.api + path, headers);
+      const r = await tidalGet(TIDAL.api + path, headers);
       if (r.status !== 200) throw new Error('Tidal ' + r.status + ' for album ' + albumId + (r.status === 404 ? ' (not found / region-locked)' : ''));
       const j = JSON.parse(r.responseText || '{}');
       const inc = {};
@@ -1601,7 +1631,7 @@
   async function tidalLookupByIsrc(isrc) {
     const token = await tidalToken();
     const headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.api+json' };
-    const r = await gmGet(TIDAL.api + '/tracks?countryCode=' + TIDAL.country + '&filter%5Bisrc%5D=' + encodeURIComponent(isrc) + '&include=artists', headers);
+    const r = await tidalGet(TIDAL.api + '/tracks?countryCode=' + TIDAL.country + '&filter%5Bisrc%5D=' + encodeURIComponent(isrc) + '&include=artists', headers);
     if (r.status !== 200) return null;
     let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { return null; }
     const t = (j.data || [])[0];
