@@ -43,6 +43,9 @@ assert.deepEqual(parseTidalAlbumUrl('https://tidal.com/album/427731309'),
     { id: '427731309', creditsUrl: 'https://tidal.com/album/427731309/credits' });
 assert.equal(parseTidalAlbumUrl('https://listen.tidal.com/album/427731309/credits').id, '427731309');
 assert.equal(parseTidalAlbumUrl('https://tidal.com/browse/album/427731309').id, '427731309');
+// MB rel hrefs are protocol-relative — the live-test regression (#193)
+assert.equal(parseTidalAlbumUrl('//tidal.com/album/427731309').id, '427731309');
+assert.equal(parseTidalArtistUrl('//tidal.com/artist/6220117').key, 'tidal-artist/6220117');
 assert.equal(parseTidalAlbumUrl('https://tidal.com/artist/6220117'), null);
 
 // Role map sanity: every mapped Tidal role targets work or recording

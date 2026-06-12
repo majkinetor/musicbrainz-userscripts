@@ -32,11 +32,13 @@ export const TIDAL_ROLE_MAP = {
 /** Tidal artist id of the "Copyright Control" placeholder publisher. */
 export const TIDAL_COPYRIGHT_CONTROL_ID = '15780';
 
-const TIDAL_ALBUM_RE = /^https?:\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i;
+// MB's `/ws/js/release` rel hrefs are PROTOCOL-RELATIVE (`//tidal.com/…`) —
+// both regexes accept that form alongside https://.
+const TIDAL_ALBUM_RE = /^(?:https?:)?\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i;
 
 /**
  * Parse a Tidal album URL → `{ id, creditsUrl }`, or `null`.
- * Accepts tidal.com, listen.tidal.com and /browse/ variants.
+ * Accepts tidal.com, listen.tidal.com, /browse/ and protocol-relative variants.
  */
 export function parseTidalAlbumUrl(url) {
     const m = TIDAL_ALBUM_RE.exec(url || '');
@@ -99,7 +101,7 @@ export function filterTidalCredits(tracks) {
     }));
 }
 
-const TIDAL_ARTIST_RE = /^https?:\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/i;
+const TIDAL_ARTIST_RE = /^(?:https?:)?\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/i;
 
 /** Parse a Tidal artist URL → `{ id, key, cleanUrl }` (key = IDB cache key,
  *  `tidal-` prefixed so numeric Tidal ids never collide with Discogs ids),

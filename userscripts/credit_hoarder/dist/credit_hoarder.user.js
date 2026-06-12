@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.12.203039
+// @version      2026.6.12.204704
 // @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
@@ -1938,7 +1938,7 @@
     "Music Publisher": { target: "work", rel: "publisher" }
   };
   var TIDAL_COPYRIGHT_CONTROL_ID = "15780";
-  var TIDAL_ALBUM_RE = /^https?:\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i;
+  var TIDAL_ALBUM_RE = /^(?:https?:)?\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i;
   function parseTidalAlbumUrl(url) {
     const m = TIDAL_ALBUM_RE.exec(url || "");
     if (!m) return null;
@@ -1977,7 +1977,7 @@
       })).filter((c) => c.names.length)
     }));
   }
-  var TIDAL_ARTIST_RE = /^https?:\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/i;
+  var TIDAL_ARTIST_RE = /^(?:https?:)?\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/i;
   function parseTidalArtistUrl(url) {
     const m = TIDAL_ARTIST_RE.exec(url || "");
     if (!m) return null;
