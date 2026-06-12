@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.12.215906
+// @version      2026.6.12.221020
 // @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
@@ -2425,6 +2425,7 @@
     companiesRolesMap = companiesRolesMap || /* @__PURE__ */ new Map();
     const onRefresh = opts?.onRefresh || null;
     const headerSlot = opts?.headerSlot || null;
+    const importSourceName = opts?.sourceName || "Discogs";
     const _preloadedNames = /* @__PURE__ */ new Map();
     const _nullNames = allResults.filter((r) => r.type === "resolved" && r.mbUrl && !r.mbName);
     for (const r of _nullNames) {
@@ -2650,6 +2651,7 @@
         const entityType = r.entityType || "artist";
         const displayName = r.displayName || r.entity?.name || "";
         const discogsHref = r.discogsHref || "";
+        const srcName = discogsHref ? sourceNameForUrl(discogsHref) : importSourceName;
         const e = r.logEntry || null;
         const artist = r.entity;
         const isResolved = r.type === "resolved";
@@ -3056,7 +3058,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               }
               if (urlCheckCached !== null) _urlCheckSessionCache.set(urlCheckCacheKey, urlCheckCached);
             }
-            const srcName = sourceNameForUrl(discogsHref);
             if (!discogsHref) {
               linkSlot.textContent = `\u26A0 No ${srcName} page`;
               linkSlot.style.color = "#c80";
@@ -3118,10 +3119,11 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             }
             const p = new URLSearchParams(createParams);
             const newTab = window.open(`${createUrl}?${p}`, "_blank");
+            const pendingKey = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || displayName}`;
             if (newTab) {
               const trySet = () => {
                 try {
-                  newTab.sessionStorage.setItem("discogs-importer-pending-artist", r.entity.resource_url);
+                  newTab.sessionStorage.setItem("discogs-importer-pending-artist", pendingKey);
                 } catch (e2) {
                   setTimeout(trySet, 50);
                 }
@@ -3130,7 +3132,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             }
             const onCreated = (evt) => {
               if (evt.data?.type !== "artist-created") return;
-              if (evt.data.resourceUrl !== r.entity.resource_url) return;
+              if (evt.data.resourceUrl !== pendingKey) return;
               DISCOGS_CHANNEL.removeEventListener("message", onCreated);
               _urlCheckSessionCache.set(`${evt.data.id}|${discogsHref}`, "linked");
               setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
@@ -3139,12 +3141,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           }
           const createBtn = document.createElement("button");
           createBtn.textContent = "+";
-          createBtn.title = "Create in MB with default Discogs name + URL";
+          createBtn.title = discogsHref ? `Create in MB with default ${srcName} name + URL` : "Create in MB with the credited name";
           createBtn.style.cssText = ACTION_CHIP_STYLE + "color:#2a7;font-size:1.15rem;font-weight:600;";
           createBtn.addEventListener("click", () => openCreateTab());
           const createAdvBtn = document.createElement("button");
           createAdvBtn.textContent = "\u25BE";
-          createAdvBtn.title = "Create in MB with editable name + disambiguation, pre-filled from the Discogs profile";
+          createAdvBtn.title = "Create in MB with editable name + disambiguation" + (srcName === "Discogs" && discogsHref ? ", pre-filled from the Discogs profile" : "");
           createAdvBtn.style.cssText = ACTION_CHIP_STYLE + "color:#666;";
           createAdvBtn.addEventListener("click", () => openAdvancedCreatePopup());
           tdAction.appendChild(createBtn);
@@ -4781,24 +4783,18 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     bar.className = "discogs-bar";
     const row1 = document.createElement("div");
     row1.className = "discogs-bar-row1";
+    const importSources = [];
+    if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g) => runImport(discogsUrl, g) });
+    if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g) => runTidalImport(sources.tidal, g) });
+    if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g) => runQobuzImport(sources.qobuz, g) });
+    const importLabel = importSources.length === 1 ? `Import from ${importSources[0].name}` : "Import \u25BE";
     const importBtn = document.createElement("button");
     importBtn.className = "discogs-import-btn";
-    importBtn.textContent = "Import from Discogs";
-    if (!discogsUrl) importBtn.style.display = "none";
-    const tidalBtn = document.createElement("button");
-    tidalBtn.className = "discogs-import-btn";
-    tidalBtn.textContent = "Import from Tidal";
-    if (!sources.tidal) tidalBtn.style.display = "none";
-    const qobuzBtn = document.createElement("button");
-    qobuzBtn.className = "discogs-import-btn";
-    qobuzBtn.textContent = "Import from Qobuz";
-    if (!sources.qobuz) qobuzBtn.style.display = "none";
+    importBtn.textContent = importLabel;
     const progressPct = document.createElement("span");
     progressPct.id = "discogs-progress-pct";
     progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
     row1.appendChild(importBtn);
-    row1.appendChild(tidalBtn);
-    row1.appendChild(qobuzBtn);
     row1.appendChild(progressPct);
     const actionSlot = document.createElement("div");
     actionSlot.className = "discogs-bar-action";
@@ -5169,8 +5165,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     };
     function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
       importBtn.disabled = true;
-      tidalBtn.disabled = true;
-      qobuzBtn.disabled = true;
       srcBtn.textContent = "Importing\u2026";
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
@@ -5319,8 +5313,6 @@ ${lines}
       });
       runner(getOpts).finally(() => {
         importBtn.disabled = false;
-        tidalBtn.disabled = false;
-        qobuzBtn.disabled = false;
         srcBtn.textContent = restoreLabel;
         progressPct.textContent = "100%";
         setTimeout(() => {
@@ -5337,9 +5329,42 @@ ${lines}
         delete bar._setProgress;
       });
     }
-    importBtn.addEventListener("click", () => startImport(importBtn, "Import from Discogs", discogsUrl, (getOpts) => runImport(discogsUrl, getOpts)));
-    tidalBtn.addEventListener("click", () => startImport(tidalBtn, "Import from Tidal", sources.tidal, (getOpts) => runTidalImport(sources.tidal, getOpts)));
-    qobuzBtn.addEventListener("click", () => startImport(qobuzBtn, "Import from Qobuz", sources.qobuz, (getOpts) => runQobuzImport(sources.qobuz, getOpts)));
+    let srcMenu = null;
+    if (importSources.length > 1) {
+      srcMenu = document.createElement("div");
+      srcMenu.className = "discogs-log-menu";
+      for (const s of importSources) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = `from ${s.name}`;
+        b.title = s.url;
+        b.addEventListener("click", () => {
+          srcMenu.classList.remove("open");
+          startImport(importBtn, importLabel, s.url, s.run);
+        });
+        srcMenu.appendChild(b);
+      }
+      document.body.appendChild(srcMenu);
+    }
+    importBtn.addEventListener("click", (e) => {
+      if (!srcMenu) {
+        startImport(importBtn, importLabel, importSources[0].url, importSources[0].run);
+        return;
+      }
+      e.stopPropagation();
+      const open = srcMenu.classList.toggle("open");
+      if (!open) return;
+      const r = importBtn.getBoundingClientRect();
+      srcMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - srcMenu.offsetWidth - 8)) + "px";
+      srcMenu.style.top = r.bottom + 4 + "px";
+      const off = (ev) => {
+        if (!srcMenu.contains(ev.target) && ev.target !== importBtn && !importBtn.contains(ev.target)) {
+          srcMenu.classList.remove("open");
+          document.removeEventListener("mousedown", off);
+        }
+      };
+      setTimeout(() => document.addEventListener("mousedown", off), 0);
+    });
     bar.appendChild(outputDiv);
     function insertBar() {
       const anchor = document.querySelector(".release-rel-editor") || // MB React wrapper
@@ -5566,6 +5591,9 @@ ${lines}
         // Resolved via the DOM (there's one bar) — `runImport` is a
         // separate function from the bar builder that owns the slot.
         headerSlot: document.querySelector(".discogs-bar-action"),
+        // Label fallback for URL-less credits (#193): a Qobuz row
+        // must say "No Qobuz page", not "No Discogs page".
+        sourceName: sourceNameForUrl(sourceUrl),
         // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
         // every entity via MB API. Used when a cached MBID is stale.
         onRefresh: () => runPreflight(true).then((freshResults) => {

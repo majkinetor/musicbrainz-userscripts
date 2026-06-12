@@ -41,7 +41,7 @@ import { showReviewTable }               from './review-table.js';
 import { dispatchAllRelationships }      from './dispatch.js';
 import { buildEditNote }                 from './edit-note.js';
 import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
-import { parseSourceEntityUrl }           from './sources/registry.js';
+import { parseSourceEntityUrl, sourceNameForUrl } from './sources/registry.js';
 import { harvestTidalAlbum, tidalToEngine } from './sources/tidal.js';
 import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine } from './sources/qobuz.js';
 
@@ -424,25 +424,20 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     const row1 = document.createElement('div');
     row1.className = 'discogs-bar-row1';
 
+    // ONE Import button for all sources (#193): direct run when the release
+    // links a single source, a dropdown submenu when there are several.
+    const importSources = [];
+    if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: g => runImport(discogsUrl, g) });
+    if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: g => runTidalImport(sources.tidal, g) });
+    if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: g => runQobuzImport(sources.qobuz, g) });
+    const importLabel = importSources.length === 1 ? `Import from ${importSources[0].name}` : 'Import ▾';
     const importBtn = document.createElement('button');
     importBtn.className = 'discogs-import-btn';
-    importBtn.textContent = 'Import from Discogs';
-    if (!discogsUrl) importBtn.style.display = 'none';   // Tidal-only release
-    // Second source: Tidal (#193). Same pipeline, different fetch+mapper.
-    const tidalBtn = document.createElement('button');
-    tidalBtn.className = 'discogs-import-btn';
-    tidalBtn.textContent = 'Import from Tidal';
-    if (!sources.tidal) tidalBtn.style.display = 'none';
-    const qobuzBtn = document.createElement('button');
-    qobuzBtn.className = 'discogs-import-btn';
-    qobuzBtn.textContent = 'Import from Qobuz';
-    if (!sources.qobuz) qobuzBtn.style.display = 'none';
+    importBtn.textContent = importLabel;
     const progressPct = document.createElement('span');
     progressPct.id = 'discogs-progress-pct';
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;';
     row1.appendChild(importBtn);
-    row1.appendChild(tidalBtn);
-    row1.appendChild(qobuzBtn);
     row1.appendChild(progressPct);
 
     // Action slot — the review "Start import" button + unresolved message get
@@ -910,8 +905,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     // (`runImport` for Discogs, `runTidalImport` for Tidal).
     function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
         importBtn.disabled = true;
-        tidalBtn.disabled = true;
-        qobuzBtn.disabled = true;
         srcBtn.textContent = 'Importing…';
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
@@ -1110,8 +1103,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         });
         runner(getOpts).finally(() => {
             importBtn.disabled = false;
-            tidalBtn.disabled = false;
-            qobuzBtn.disabled = false;
             srcBtn.textContent = restoreLabel;
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
@@ -1129,12 +1120,41 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
             delete bar._setProgress;
         });
     }
-    importBtn.addEventListener('click', () =>
-        startImport(importBtn, 'Import from Discogs', discogsUrl, getOpts => runImport(discogsUrl, getOpts)));
-    tidalBtn.addEventListener('click', () =>
-        startImport(tidalBtn, 'Import from Tidal', sources.tidal, getOpts => runTidalImport(sources.tidal, getOpts)));
-    qobuzBtn.addEventListener('click', () =>
-        startImport(qobuzBtn, 'Import from Qobuz', sources.qobuz, getOpts => runQobuzImport(sources.qobuz, getOpts)));
+    // Import-source submenu (#193): one button, dropdown when the release
+    // links several sources. Reuses the Log ▾ dropdown styling/behavior.
+    let srcMenu = null;
+    if (importSources.length > 1) {
+        srcMenu = document.createElement('div');
+        srcMenu.className = 'discogs-log-menu';
+        for (const s of importSources) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.textContent = `from ${s.name}`;
+            b.title = s.url;
+            b.addEventListener('click', () => {
+                srcMenu.classList.remove('open');
+                startImport(importBtn, importLabel, s.url, s.run);
+            });
+            srcMenu.appendChild(b);
+        }
+        document.body.appendChild(srcMenu);
+    }
+    importBtn.addEventListener('click', (e) => {
+        if (!srcMenu) { startImport(importBtn, importLabel, importSources[0].url, importSources[0].run); return; }
+        e.stopPropagation();
+        const open = srcMenu.classList.toggle('open');
+        if (!open) return;
+        const r = importBtn.getBoundingClientRect();
+        srcMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - srcMenu.offsetWidth - 8)) + 'px';
+        srcMenu.style.top  = (r.bottom + 4) + 'px';
+        const off = ev => {
+            if (!srcMenu.contains(ev.target) && ev.target !== importBtn && !importBtn.contains(ev.target)) {
+                srcMenu.classList.remove('open');
+                document.removeEventListener('mousedown', off);
+            }
+        };
+        setTimeout(() => document.addEventListener('mousedown', off), 0);
+    });
 
     bar.appendChild(outputDiv);
 
@@ -1436,6 +1456,9 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     // Resolved via the DOM (there's one bar) — `runImport` is a
                     // separate function from the bar builder that owns the slot.
                     headerSlot: document.querySelector('.discogs-bar-action'),
+                    // Label fallback for URL-less credits (#193): a Qobuz row
+                    // must say "No Qobuz page", not "No Discogs page".
+                    sourceName: sourceNameForUrl(sourceUrl),
                     // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
                     // every entity via MB API. Used when a cached MBID is stale.
                     onRefresh: () => runPreflight(true).then(freshResults => {

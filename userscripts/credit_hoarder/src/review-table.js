@@ -37,6 +37,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
     // have to scroll past the table to reach them (#139). Falls back to a footer
     // row under the table when absent.
     const headerSlot = opts?.headerSlot || null;
+    // `opts.sourceName` — name of the import source ('Discogs'/'Tidal'/'Qobuz').
+    // Per-row labels derive the source from the entity URL when there is one;
+    // URL-less credits (all of Qobuz) fall back to this so a Qobuz row never
+    // claims "No Discogs page" (#193 live-test round 3).
+    const importSourceName = opts?.sourceName || 'Discogs';
 
     // Pre-load missing names into a Map — IDB first, then MB WS2 fetch.
     const _preloadedNames = new Map();
@@ -349,6 +354,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const entityType  = r.entityType || 'artist';
             const displayName = r.displayName || r.entity?.name || '';
             const discogsHref = r.discogsHref || '';
+            // Which source this row's labels should name: derived from the
+            // entity URL when present, else the import source (#193 — a
+            // URL-less Qobuz row must not claim "No Discogs page").
+            const srcName     = discogsHref ? sourceNameForUrl(discogsHref) : importSourceName;
             const e           = r.logEntry || null;
             // Keep backward-compat alias
             const artist      = r.entity;
@@ -848,7 +857,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         );
                     }
 
-                    const srcName = sourceNameForUrl(discogsHref);
                     function applyUrlCheckResult(result) {
                         if (result === 'linked') {
                             linkSlot.textContent = '\u2713';
@@ -985,16 +993,23 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     }
                     const p = new URLSearchParams(createParams);
                     const newTab = window.open(`${createUrl}?${p}`, '_blank');
+                    // Identity for the cross-tab postback. MUST be truthy even
+                    // for URL-less credits (all of Qobuz): an empty
+                    // `resource_url` made the created-artist tab bail at its
+                    // `if (!pending) return` — never posting back, never
+                    // closing (#193 live-test round 3). Use the same synthetic
+                    // key the rest of the table keys rows by.
+                    const pendingKey = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || displayName}`;
                     if (newTab) {
                         const trySet = () => {
-                            try { newTab.sessionStorage.setItem('discogs-importer-pending-artist', r.entity.resource_url); }
+                            try { newTab.sessionStorage.setItem('discogs-importer-pending-artist', pendingKey); }
                             catch(e) { setTimeout(trySet, 50); }
                         };
                         trySet();
                     }
                     const onCreated = (evt) => {
                         if (evt.data?.type !== 'artist-created') return;
-                        if (evt.data.resourceUrl !== r.entity.resource_url) return;
+                        if (evt.data.resourceUrl !== pendingKey) return;
                         DISCOGS_CHANNEL.removeEventListener('message', onCreated);
                         // Issue #78: `openCreateTab` puts the Discogs URL
                         // straight into MB's create form (`edit-<type>.url.0.text`
@@ -1019,13 +1034,16 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // accessibility.
                 const createBtn = document.createElement('button');
                 createBtn.textContent = '+';
-                createBtn.title = 'Create in MB with default Discogs name + URL';
+                createBtn.title = discogsHref
+                    ? `Create in MB with default ${srcName} name + URL`
+                    : 'Create in MB with the credited name';
                 createBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#2a7;font-size:1.15rem;font-weight:600;'; // bigger, bolder plus
                 createBtn.addEventListener('click', () => openCreateTab());
 
                 const createAdvBtn = document.createElement('button');
                 createAdvBtn.textContent = '▾';
-                createAdvBtn.title = 'Create in MB with editable name + disambiguation, pre-filled from the Discogs profile';
+                createAdvBtn.title = 'Create in MB with editable name + disambiguation'
+                    + (srcName === 'Discogs' && discogsHref ? ', pre-filled from the Discogs profile' : '');
                 createAdvBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#666;'; // muted
 
                 createAdvBtn.addEventListener('click', () => openAdvancedCreatePopup());
