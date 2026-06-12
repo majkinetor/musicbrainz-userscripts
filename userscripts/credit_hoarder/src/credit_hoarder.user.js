@@ -1,0 +1,97 @@
+// Userscript-metadata block (`// ==UserScript== … // ==/UserScript==`) lives
+// in `src/meta.txt`. `build.mjs` prepends it to the bundled output so
+// VM/TM see the headers verbatim. This file is the entry module for esbuild.
+//
+// The entry is now small — every meaningful function moved to its own
+// `src/<module>.js`. What's left:
+//   - the cross-tab BroadcastChannel listener that runs on MB artist/label/place
+//     pages opened by the "Create in MB" button (it signals success back to the
+//     opener via `discogs-importer-artist` and closes itself);
+//   - the release-page bootstrap that detects a Discogs link on the release and,
+//     if present, mounts the UI bar via `insertDiscogsBar`.
+//
+// Side-effect imports (`./storage.js`, `./ui-bar.js`) trigger module init at
+// load time — opening IndexedDB and running the localStorage-cleanup IIFE.
+
+import { getDiscogsUrlForRelease } from './api-mb.js';
+import { insertDiscogsBar }      from './ui-bar.js';
+import { DISCOGS_CHANNEL }       from './constants.js';
+import { installHoverHighlight } from './hover-highlight.js';
+import { installBatchRemove }    from './batch-remove.js';
+import                                './storage.js';   // opens IndexedDB on load
+
+// ── BroadcastChannel: cross-tab artist creation signalling ────────────────────
+// `DISCOGS_CHANNEL` is created once in `constants.js` and imported here +
+// in `review-table.js` so both sides share one channel instance. The bootstrap
+// below is the LISTENER half — when this script runs on an MB
+// artist/label/place page that was opened by the "Create in MB" button, it
+// detects the successful creation (URL contains a MBID), posts the new entity
+// back to the opener tab via the channel, then closes itself.
+
+(function handleEntityPageIfNeeded() {
+    // Match artist, label, or place pages with a MBID
+    const entityMatch = location.href.match(
+        /musicbrainz\.org\/(artist|label|place)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:[^/]|$)/i
+    );
+    if (!entityMatch) return;
+
+    const entityType = entityMatch[1];
+    const mbid       = entityMatch[2];
+
+    // Check if we were opened by the importer
+    const pendingKey = 'discogs-importer-pending-artist';
+    const pending = sessionStorage.getItem(pendingKey);
+    if (!pending) return;
+
+    sessionStorage.removeItem(pendingKey);
+
+    // Fetch entity name to send back, but cap the wait so a slow
+    // `/ws/2/<type>/<mbid>` response doesn't keep the new-entity tab
+    // open for many seconds (#97). If the fetch beats the timeout, we
+    // get the real name + disambiguation; otherwise post with empty
+    // strings — the opener tab can backfill via its own state once it
+    // sees the `artist-created` message. Closing was previously gated
+    // on the fetch promise + a flat 800ms delay; this raced to 10s+
+    // whenever MB was slow (which #87 showed is more common than we
+    // thought). New worst case: ~1.1s.
+    const NAME_FETCH_TIMEOUT_MS = 1000;
+    const CLOSE_DELAY_MS = 50; // tiny grace for BroadcastChannel delivery
+    const ctrl  = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), NAME_FETCH_TIMEOUT_MS);
+    fetch(`//musicbrainz.org/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal })
+        .then(r => r.json())
+        .then(json => ({ name: json.name || '', disambiguation: json.disambiguation || '' }))
+        .catch(() => ({ name: '', disambiguation: '' }))
+        .then(({ name, disambiguation }) => {
+            clearTimeout(timer);
+            DISCOGS_CHANNEL.postMessage({
+                type: 'artist-created',  // keep same message type for compatibility
+                id: mbid,
+                name,
+                disambiguation,
+                resourceUrl: pending,
+            });
+            setTimeout(() => window.close(), CLOSE_DELAY_MS);
+        });
+})();
+
+// ── Release-page bootstrap ────────────────────────────────────────────────────
+$(document).ready(function () {
+    const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
+    const m = window.location.href.match(re);
+    if (!m) return;
+    // Hover-highlight runs page-wide on the rel-edit page regardless of
+    // whether we mount the import bar. Wiring it here means it's active for
+    // MB's rel editor even before (and after) the review table comes and
+    // goes — see `src/hover-highlight.js` for why.
+    installHoverHighlight();
+    // Batch-remove (issue #68) runs on every rel-edit page too — modifier-
+    // click on any MB `×` button opens our confirmation popup. See
+    // `src/batch-remove.js`.
+    installBatchRemove();
+    getDiscogsUrlForRelease(m[1]).then(discogsUrl => {
+        if (discogsUrl) {
+            insertDiscogsBar(discogsUrl);
+        }
+    });
+});

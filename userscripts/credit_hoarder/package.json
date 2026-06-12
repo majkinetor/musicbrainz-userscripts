@@ -1,0 +1,24 @@
+{
+  "name": "credit-hoarder-userscript",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Credit Hoarder — userscript build & test scaffolding",
+  "scripts": {
+    "prepare":     "node ../../dev/install-hook.mjs",
+    "build":       "node build.mjs",
+    "dev":         "node build.mjs --watch --serve",
+    "watch":      "node build.mjs --watch",
+    "lint":       "eslint src/",
+    "check":      "node --check dist/credit_hoarder.user.js",
+    "verify":     "pnpm run lint && pnpm run build && pnpm run check",
+    "test":       "node test/run.mjs",
+    "test:headed": "node test/run.mjs --headed",
+    "login":      "node test/login.mjs"
+  },
+  "devDependencies": {
+    "esbuild":    "^0.28.0",
+    "eslint":     "^9.16.0",
+    "playwright": "^1.49.0"
+  }
+}
