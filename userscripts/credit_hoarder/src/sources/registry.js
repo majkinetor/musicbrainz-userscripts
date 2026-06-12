@@ -23,7 +23,9 @@ export function parseSourceEntityUrl(url) {
 /** Which source a credited entity's external URL belongs to — drives UI
  *  labels ("Add Tidal link") and the link-type choice below. */
 export function sourceNameForUrl(url) {
-    return /tidal\.com\//i.test(url || '') ? 'Tidal' : 'Discogs';
+    if (/tidal\.com\//i.test(url || '')) return 'Tidal';
+    if (/qobuz\.com\//i.test(url || '')) return 'Qobuz';
+    return 'Discogs';
 }
 
 /** MB URL-relationship link-type id to seed when adding this external URL
@@ -31,8 +33,8 @@ export function sourceNameForUrl(url) {
  *  artist page is a "streaming page" (978). Returns null when there is no
  *  sensible type (e.g. Tidal URL on a label) — callers then omit the URL. */
 export function sourceUrlLinkTypeId(url, entityType) {
-    if (sourceNameForUrl(url) === 'Tidal') {
-        return entityType === 'artist' ? '978' : null;
-    }
+    const src = sourceNameForUrl(url);
+    if (src === 'Tidal') return entityType === 'artist' ? '978' : null;
+    if (src === 'Qobuz') return null;   // Qobuz credits carry no artist URLs
     return entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
 }

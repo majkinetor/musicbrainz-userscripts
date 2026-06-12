@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.12.212000
+// @version      2026.6.12.214346
 // @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
@@ -15,6 +15,9 @@
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
 // @grant        unsafeWindow
+// @grant        GM_xmlhttpRequest
+// @connect      qobuz.com
+// @connect      www.qobuz.com
 // @grant        GM_openInTab
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -289,7 +292,8 @@
       const href = (pred) => abs(rels.find(pred)?.target?.href_url || null);
       return {
         discogs: href((rel) => rel.target?.sidebar_name === "Discogs"),
-        tidal: href((rel) => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || ""))
+        tidal: href((rel) => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || "")),
+        qobuz: href((rel) => /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i.test(rel.target?.href_url || ""))
       };
     });
   }
@@ -2110,12 +2114,14 @@
     return parseDiscogsUrl(url) || parseTidalArtistUrl(url);
   }
   function sourceNameForUrl(url) {
-    return /tidal\.com\//i.test(url || "") ? "Tidal" : "Discogs";
+    if (/tidal\.com\//i.test(url || "")) return "Tidal";
+    if (/qobuz\.com\//i.test(url || "")) return "Qobuz";
+    return "Discogs";
   }
   function sourceUrlLinkTypeId(url, entityType) {
-    if (sourceNameForUrl(url) === "Tidal") {
-      return entityType === "artist" ? "978" : null;
-    }
+    const src = sourceNameForUrl(url);
+    if (src === "Tidal") return entityType === "artist" ? "978" : null;
+    if (src === "Qobuz") return null;
     return entityType === "label" ? "217" : entityType === "place" ? "705" : "180";
   }
 
@@ -4296,11 +4302,122 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     log.info(`<strong>Done: ${added} added, ${existedInMb} already in MB${dedupPart}, ${skipped} skipped, ${failed} failed</strong>`);
   }
 
+  // src/sources/qobuz.js
+  var QOBUZ_ROLE_MAP = {
+    "Composer": { target: "work", rel: "composer" },
+    "Lyricist": { target: "work", rel: "lyricist" },
+    "Author": { target: "work", rel: "lyricist" },
+    "ComposerLyricist": { target: "work", rel: "writer" },
+    "Writer": { target: "work", rel: "writer" },
+    "Arranger": { target: "work", rel: "arranger" },
+    "Producer": { target: "recording", rel: "producer" },
+    "Co-Producer": { target: "recording", rel: "producer" },
+    "Mixer": { target: "recording", rel: "mix" },
+    "MixingEngineer": { target: "recording", rel: "mix" },
+    "Engineer": { target: "recording", rel: "engineer" },
+    "RecordingEngineer": { target: "recording", rel: "recording" },
+    "MasteringEngineer": { target: "recording", rel: "mastering" },
+    "Remixer": { target: "recording", rel: "remixer" },
+    "Conductor": { target: "recording", rel: "conductor" },
+    "MusicPublisher": { target: "work", rel: "publisher" },
+    "MainArtist": null,
+    "FeaturedArtist": null,
+    "AssociatedPerformer": null,
+    "StudioPersonnel": null,
+    "Vocals": null
+  };
+  var QOBUZ_ALBUM_RE = /^(?:https?:)?\/\/(?:www\.|play\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/]+\/)?([a-z0-9]+)\/?(?:[?#]|$)/i;
+  function parseQobuzAlbumUrl(url) {
+    const m = QOBUZ_ALBUM_RE.exec(url || "");
+    if (!m) return null;
+    const original = String(url).replace(/^\/\//, "https://");
+    const isStore = /^https?:\/\/(www\.)?qobuz\.com\/[a-z]{2}-[a-z]{2}\/album\//i.test(original);
+    return { id: m[1], pageUrl: isStore ? original.split(/[?#]/)[0] : `https://www.qobuz.com/us-en/album/x/${m[1]}` };
+  }
+  function decodeEntities(s) {
+    return String(s).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ");
+  }
+  function parseQobuzCreditLine(line) {
+    const out = [];
+    for (const seg of String(line).split(" - ")) {
+      const tokens = seg.split(",").map((t) => t.trim()).filter(Boolean);
+      const firstRole = tokens.findIndex((t) => Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, t));
+      if (firstRole === -1) {
+        if (out.length) out[out.length - 1].name += " - " + seg.trim();
+        continue;
+      }
+      const name = tokens.slice(0, firstRole).join(", ");
+      const roles = tokens.slice(firstRole).filter((t) => Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, t));
+      if (name) out.push({ name, roles });
+      else if (out.length) out[out.length - 1].roles.push(...roles);
+    }
+    return out;
+  }
+  function extractQobuzCredits(html) {
+    const out = [];
+    const re = /<p[^>]*class="[^"]*track__info[^"]*"[^>]*>([\s\S]*?)<\/p>/gi;
+    let m, i = 0;
+    while ((m = re.exec(html)) !== null) {
+      const text = decodeEntities(m[1].replace(/<[^>]+>/g, "").trim());
+      out.push({ index: ++i, credits: parseQobuzCreditLine(text) });
+    }
+    return out;
+  }
+  function extractQobuzAlbumInfo(html) {
+    const og = html.match(/<meta property="og:title" content="([^"]*)"/)?.[1] || "";
+    return decodeEntities(og.replace(/ - Qobuz$/, ""));
+  }
+  function qobuzToEngine(parsedTracks) {
+    const tracklistRels = [];
+    const tracklist = [];
+    const skipped = [];
+    for (const t of parsedTracks) {
+      const track = { position: String(t.index), title: "", type_: "track" };
+      tracklist.push(track);
+      for (const credit of t.credits) {
+        for (const role of credit.roles) {
+          if (role === "MusicPublisher") {
+            if (!/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: MusicPublisher \u2014 ${credit.name}`);
+            continue;
+          }
+          const plan = QOBUZ_ROLE_MAP[role];
+          if (!plan) continue;
+          tracklistRels.push({
+            linkType: plan.rel,
+            entityType: "artist",
+            attributes: [],
+            artist: { name: credit.name, anv: "", resource_url: "" },
+            track
+          });
+        }
+      }
+    }
+    return { tracklistRels, tracklist, skipped };
+  }
+  function fetchQobuzAlbumPage(pageUrl) {
+    return new Promise((resolve, reject) => {
+      if (typeof GM_xmlhttpRequest !== "function") {
+        reject(new Error("GM_xmlhttpRequest unavailable"));
+        return;
+      }
+      GM_xmlhttpRequest({
+        method: "GET",
+        url: pageUrl,
+        headers: { "Accept": "text/html,application/xhtml+xml", "Accept-Language": "en-US,en;q=0.8" },
+        timeout: 2e4,
+        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve(r.responseText) : reject(new Error(`Qobuz page returned ${r.status}`)),
+        onerror: () => reject(new Error("Qobuz page fetch failed (network)")),
+        ontimeout: () => reject(new Error("Qobuz page fetch timed out"))
+      });
+    });
+  }
+
   // src/ui-bar.js
   var _logs2;
   var _summary;
   var _discogsJson = null;
   var _tidalJson = null;
+  var _qobuzJson = null;
   function insertDiscogsBar(discogsUrl, sources = {}) {
     const style = document.createElement("style");
     style.innerText = `
@@ -4667,11 +4784,16 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     tidalBtn.className = "discogs-import-btn";
     tidalBtn.textContent = "Import from Tidal";
     if (!sources.tidal) tidalBtn.style.display = "none";
+    const qobuzBtn = document.createElement("button");
+    qobuzBtn.className = "discogs-import-btn";
+    qobuzBtn.textContent = "Import from Qobuz";
+    if (!sources.qobuz) qobuzBtn.style.display = "none";
     const progressPct = document.createElement("span");
     progressPct.id = "discogs-progress-pct";
     progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
     row1.appendChild(importBtn);
     row1.appendChild(tidalBtn);
+    row1.appendChild(qobuzBtn);
     row1.appendChild(progressPct);
     const actionSlot = document.createElement("div");
     actionSlot.className = "discogs-bar-action";
@@ -4741,7 +4863,18 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     } else {
       tidalLink.style.display = "none";
     }
-    rightGroup.append(logToggleBtn, logoLink, tidalLink, docsLink);
+    const qobuzLink = document.createElement("a");
+    qobuzLink.className = "discogs-source-icon";
+    qobuzLink.target = "_blank";
+    qobuzLink.rel = "noopener noreferrer nofollow";
+    if (sources.qobuz) {
+      qobuzLink.href = sources.qobuz;
+      qobuzLink.title = sources.qobuz;
+      qobuzLink.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-label="Qobuz" style="vertical-align:middle;"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 L19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>';
+    } else {
+      qobuzLink.style.display = "none";
+    }
+    rightGroup.append(logToggleBtn, logoLink, tidalLink, qobuzLink, docsLink);
     row1.appendChild(rightGroup);
     bar.appendChild(row1);
     const stickySpacer = document.createElement("div");
@@ -4976,7 +5109,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     const copyNoJsonItem = mkMenuItem("Copy without JSON", "Copy the log without the raw Discogs JSON block \u2014 fits in a GitHub issue", (b, l) => bar._copy?.noJson(b, l));
     const copyDiscogsItem = mkMenuItem("Copy Discogs", "Copy the raw Discogs JSON for this release", (b, l) => bar._copy?.discogs(b, l));
     const copyTidalItem = mkMenuItem("Copy Tidal", "Copy the raw Tidal credits harvest for this release", (b, l) => bar._copy?.tidal(b, l));
-    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem, copyTidalItem);
+    const copyQobuzItem = mkMenuItem("Copy Qobuz", "Copy the parsed Qobuz credits for this release", (b, l) => bar._copy?.qobuz(b, l));
+    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem, copyTidalItem, copyQobuzItem);
     document.body.appendChild(logMenu);
     logMenuToggle.addEventListener("click", () => {
       setLogOpen(!outputDiv.classList.contains("log-open"));
@@ -5031,6 +5165,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
       importBtn.disabled = true;
       tidalBtn.disabled = true;
+      qobuzBtn.disabled = true;
       srcBtn.textContent = "Importing\u2026";
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
@@ -5149,6 +5284,9 @@ ${lines}
         },
         tidal: (item, label) => {
           if (_tidalJson) copyToClipboard(JSON.stringify(_tidalJson, null, 2), item, label);
+        },
+        qobuz: (item, label) => {
+          if (_qobuzJson) copyToClipboard(JSON.stringify(_qobuzJson, null, 2), item, label);
         }
       };
       bar._setProgress = (pct, text) => {
@@ -5177,6 +5315,7 @@ ${lines}
       runner(getOpts).finally(() => {
         importBtn.disabled = false;
         tidalBtn.disabled = false;
+        qobuzBtn.disabled = false;
         srcBtn.textContent = restoreLabel;
         progressPct.textContent = "100%";
         setTimeout(() => {
@@ -5195,6 +5334,7 @@ ${lines}
     }
     importBtn.addEventListener("click", () => startImport(importBtn, "Import from Discogs", discogsUrl, (getOpts) => runImport(discogsUrl, getOpts)));
     tidalBtn.addEventListener("click", () => startImport(tidalBtn, "Import from Tidal", sources.tidal, (getOpts) => runTidalImport(sources.tidal, getOpts)));
+    qobuzBtn.addEventListener("click", () => startImport(qobuzBtn, "Import from Qobuz", sources.qobuz, (getOpts) => runQobuzImport(sources.qobuz, getOpts)));
     bar.appendChild(outputDiv);
     function insertBar() {
       const anchor = document.querySelector(".release-rel-editor") || // MB React wrapper
@@ -5296,6 +5436,40 @@ ${lines}
         return;
       }
       return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
+    }).catch((err) => {
+      log.error(err.message || String(err));
+    });
+  }
+  function runQobuzImport(qobuzUrl, getOpts) {
+    const parsed = parseQobuzAlbumUrl(qobuzUrl);
+    if (!parsed) {
+      log.error(`Not a Qobuz album URL: ${qobuzUrl}`);
+      return Promise.resolve();
+    }
+    log.info(`Fetching Qobuz store page: ${parsed.pageUrl}`);
+    return fetchQobuzAlbumPage(parsed.pageUrl).then((html) => {
+      const albumInfo = extractQobuzAlbumInfo(html);
+      const tracks = extractQobuzCredits(html);
+      _qobuzJson = { pageUrl: parsed.pageUrl, album: albumInfo, tracks };
+      const li = document.createElement("li");
+      const pre = document.createElement("pre");
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.textContent = JSON.stringify(_qobuzJson, null, 2);
+      li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || "Qobuz album"} \xB7 ${tracks.length} tracks \u2014 parsed Qobuz credits</strong></summary></details>`;
+      li.querySelector("details").appendChild(pre);
+      _logs2.appendChild(li);
+      if (!tracks.length) {
+        log.warn("No credits found on the Qobuz page \u2014 nothing to import.");
+        return;
+      }
+      const { tracklistRels, tracklist, skipped } = qobuzToEngine(tracks);
+      log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+      skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
+      if (!tracklistRels.length) {
+        log.warn("No importable credits found on the Qobuz page.");
+        return;
+      }
+      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts });
     }).catch((err) => {
       log.error(err.message || String(err));
     });
@@ -6054,7 +6228,7 @@ ${lines}
     installHoverHighlight();
     installBatchRemove();
     getSourceUrlsForRelease(m[1]).then((sources) => {
-      if (sources.discogs || sources.tidal) {
+      if (sources.discogs || sources.tidal || sources.qobuz) {
         insertDiscogsBar(sources.discogs, sources);
       }
     });

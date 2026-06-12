@@ -43,6 +43,7 @@ import { buildEditNote }                 from './edit-note.js';
 import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
 import { parseSourceEntityUrl }           from './sources/registry.js';
 import { harvestTidalAlbum, tidalToEngine } from './sources/tidal.js';
+import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine } from './sources/qobuz.js';
 
 let _logs;
 let _summary;
@@ -51,6 +52,8 @@ let _summary;
 let _discogsJson = null;
 // Raw Tidal harvest of the current run — same contract for "Copy Tidal".
 let _tidalJson = null;
+// Parsed Qobuz credits of the current run — same contract for "Copy Qobuz".
+let _qobuzJson = null;
 
 export function insertDiscogsBar(discogsUrl, sources = {}) {
     // Inject styles
@@ -430,11 +433,16 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     tidalBtn.className = 'discogs-import-btn';
     tidalBtn.textContent = 'Import from Tidal';
     if (!sources.tidal) tidalBtn.style.display = 'none';
+    const qobuzBtn = document.createElement('button');
+    qobuzBtn.className = 'discogs-import-btn';
+    qobuzBtn.textContent = 'Import from Qobuz';
+    if (!sources.qobuz) qobuzBtn.style.display = 'none';
     const progressPct = document.createElement('span');
     progressPct.id = 'discogs-progress-pct';
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;';
     row1.appendChild(importBtn);
     row1.appendChild(tidalBtn);
+    row1.appendChild(qobuzBtn);
     row1.appendChild(progressPct);
 
     // Action slot — the review "Start import" button + unresolved message get
@@ -545,7 +553,24 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         tidalLink.style.display = 'none';
     }
 
-    rightGroup.append(logToggleBtn, logoLink, tidalLink, docsLink);
+    // Qobuz source icon — same spot, links the album store page.
+    const qobuzLink = document.createElement('a');
+    qobuzLink.className = 'discogs-source-icon';
+    qobuzLink.target = '_blank';
+    qobuzLink.rel = 'noopener noreferrer nofollow';
+    if (sources.qobuz) {
+        qobuzLink.href = sources.qobuz;
+        qobuzLink.title = sources.qobuz;   // hover shows the full Qobuz URL
+        // Simple Qobuz-blue "Q" roundel stand-in.
+        qobuzLink.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-label="Qobuz" style="vertical-align:middle;">'
+            + '<circle cx="12" cy="12" r="10" fill="#0070ef"/>'
+            + '<circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/>'
+            + '<path d="M14.5 14.5 L19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>';
+    } else {
+        qobuzLink.style.display = 'none';
+    }
+
+    rightGroup.append(logToggleBtn, logoLink, tidalLink, qobuzLink, docsLink);
 
     row1.appendChild(rightGroup);
 
@@ -818,7 +843,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     const copyNoJsonItem  = mkMenuItem('Copy without JSON', 'Copy the log without the raw Discogs JSON block — fits in a GitHub issue', (b, l) => bar._copy?.noJson(b, l));
     const copyDiscogsItem = mkMenuItem('Copy Discogs',      'Copy the raw Discogs JSON for this release',                          (b, l) => bar._copy?.discogs(b, l));
     const copyTidalItem   = mkMenuItem('Copy Tidal',        'Copy the raw Tidal credits harvest for this release',                 (b, l) => bar._copy?.tidal(b, l));
-    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem, copyTidalItem);
+    const copyQobuzItem   = mkMenuItem('Copy Qobuz',        'Copy the parsed Qobuz credits for this release',                      (b, l) => bar._copy?.qobuz(b, l));
+    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem, copyTidalItem, copyQobuzItem);
     document.body.appendChild(logMenu);
 
     logMenuToggle.addEventListener('click', () => {
@@ -885,6 +911,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
         importBtn.disabled = true;
         tidalBtn.disabled = true;
+        qobuzBtn.disabled = true;
         srcBtn.textContent = 'Importing…';
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
@@ -1042,6 +1069,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
             noJson:  (item, label) => copyToClipboard(buildCopyText({ skipDiscogsJson: true  }), item, label),
             discogs: (item, label) => { if (_discogsJson) copyToClipboard(JSON.stringify(_discogsJson, null, 2), item, label); },
             tidal:   (item, label) => { if (_tidalJson)   copyToClipboard(JSON.stringify(_tidalJson,   null, 2), item, label); },
+            qobuz:   (item, label) => { if (_qobuzJson)   copyToClipboard(JSON.stringify(_qobuzJson,   null, 2), item, label); },
         };
 
         // Expose progress update hook. `dispatchAllRelationships` pushes the
@@ -1083,6 +1111,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         runner(getOpts).finally(() => {
             importBtn.disabled = false;
             tidalBtn.disabled = false;
+            qobuzBtn.disabled = false;
             srcBtn.textContent = restoreLabel;
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
@@ -1104,6 +1133,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         startImport(importBtn, 'Import from Discogs', discogsUrl, getOpts => runImport(discogsUrl, getOpts)));
     tidalBtn.addEventListener('click', () =>
         startImport(tidalBtn, 'Import from Tidal', sources.tidal, getOpts => runTidalImport(sources.tidal, getOpts)));
+    qobuzBtn.addEventListener('click', () =>
+        startImport(qobuzBtn, 'Import from Qobuz', sources.qobuz, getOpts => runQobuzImport(sources.qobuz, getOpts)));
 
     bar.appendChild(outputDiv);
 
@@ -1237,6 +1268,37 @@ function runTidalImport(tidalUrl, getOpts) {
             if (multiVolume) log.warn(`Multi-volume Tidal album — track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
             if (!tracklistRels.length) { log.warn('No importable credits found on the Tidal credits page.'); return; }
             return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
+        })
+        .catch(err => { log.error(err.message || String(err)); });
+}
+
+// Qobuz import (#193): the store page server-renders all per-track credits
+// (one `track__info` line per track), so a single cross-origin page fetch is
+// enough — no companion tab, no auth. Names only (Qobuz exposes no artist
+// links), so every credit resolves via name search + the review table.
+function runQobuzImport(qobuzUrl, getOpts) {
+    const parsed = parseQobuzAlbumUrl(qobuzUrl);
+    if (!parsed) { log.error(`Not a Qobuz album URL: ${qobuzUrl}`); return Promise.resolve(); }
+    log.info(`Fetching Qobuz store page: ${parsed.pageUrl}`);
+    return fetchQobuzAlbumPage(parsed.pageUrl)
+        .then(html => {
+            const albumInfo = extractQobuzAlbumInfo(html);
+            const tracks = extractQobuzCredits(html);
+            _qobuzJson = { pageUrl: parsed.pageUrl, album: albumInfo, tracks };   // Log ▾ → "Copy Qobuz"
+            // Parsed credits (collapsible) — mirrors the Discogs raw-JSON block.
+            const li = document.createElement('li');
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'max-height:400px;overflow:auto;font-size:0.72rem;background:#f8f8f8;padding:0.5rem;border:1px solid #ddd;border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;';
+            pre.textContent = JSON.stringify(_qobuzJson, null, 2);
+            li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || 'Qobuz album'} · ${tracks.length} tracks — parsed Qobuz credits</strong></summary></details>`;
+            li.querySelector('details').appendChild(pre);
+            _logs.appendChild(li);
+            if (!tracks.length) { log.warn('No credits found on the Qobuz page — nothing to import.'); return; }
+            const { tracklistRels, tracklist, skipped } = qobuzToEngine(tracks);
+            log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+            skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
+            if (!tracklistRels.length) { log.warn('No importable credits found on the Qobuz page.'); return; }
+            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts });
         })
         .catch(err => { log.error(err.message || String(err)); });
 }

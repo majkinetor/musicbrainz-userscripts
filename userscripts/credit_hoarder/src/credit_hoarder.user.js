@@ -102,9 +102,9 @@ if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function () 
     // `src/batch-remove.js`.
     installBatchRemove();
     // One rel probe, every import source (#193): mount the bar when the
-    // release links ANY of them (Discogs and/or Tidal).
+    // release links ANY of them (Discogs / Tidal / Qobuz).
     getSourceUrlsForRelease(m[1]).then(sources => {
-        if (sources.discogs || sources.tidal) {
+        if (sources.discogs || sources.tidal || sources.qobuz) {
             insertDiscogsBar(sources.discogs, sources);
         }
     });

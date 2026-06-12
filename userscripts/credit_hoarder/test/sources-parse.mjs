@@ -1,7 +1,7 @@
 // Pure-node tests for the source parsers (no browser, no GM).
 // Run: node test/sources-parse.mjs
 import assert from 'node:assert/strict';
-import { parseQobuzCreditLine, extractQobuzCredits, parseQobuzAlbumUrl, decodeEntities } from '../src/sources/qobuz.js';
+import { parseQobuzCreditLine, extractQobuzCredits, parseQobuzAlbumUrl, decodeEntities, qobuzToEngine, extractQobuzAlbumInfo } from '../src/sources/qobuz.js';
 import { parseTidalAlbumUrl, parseTidalArtistUrl, tidalToEngine, TIDAL_ROLE_MAP } from '../src/sources/tidal.js';
 import { parseSourceEntityUrl } from '../src/sources/registry.js';
 
@@ -35,8 +35,13 @@ assert.deepEqual(tracks[0].credits, [
 assert.equal(tracks[1].index, 2);
 
 // ── URL parsers ──────────────────────────────────────────────────────────────
-assert.equal(parseQobuzAlbumUrl('https://www.qobuz.com/us-en/album/walatu-walasa-wulomei/vft3hpnx5c3lc').id, 'vft3hpnx5c3lc');
-assert.equal(parseQobuzAlbumUrl('https://open.qobuz.com/album/vft3hpnx5c3lc').id, 'vft3hpnx5c3lc');
+// Store URLs keep their own slug; slug-less forms synthesize a wrong-slug
+// store URL (Qobuz redirects it to the canonical page — verified live).
+assert.deepEqual(parseQobuzAlbumUrl('https://www.qobuz.com/us-en/album/walatu-walasa-wulomei/vft3hpnx5c3lc'),
+    { id: 'vft3hpnx5c3lc', pageUrl: 'https://www.qobuz.com/us-en/album/walatu-walasa-wulomei/vft3hpnx5c3lc' });
+assert.deepEqual(parseQobuzAlbumUrl('https://open.qobuz.com/album/vft3hpnx5c3lc'),
+    { id: 'vft3hpnx5c3lc', pageUrl: 'https://www.qobuz.com/us-en/album/x/vft3hpnx5c3lc' });
+assert.equal(parseQobuzAlbumUrl('//open.qobuz.com/album/vft3hpnx5c3lc').id, 'vft3hpnx5c3lc');   // MB protocol-relative
 assert.equal(parseQobuzAlbumUrl('https://www.qobuz.com/us-en/interpreter/wulomei'), null);
 
 assert.deepEqual(parseTidalAlbumUrl('https://tidal.com/album/427731309'),
@@ -100,5 +105,38 @@ assert.equal(tidalToEngine([
     { num: '1', title: 'a', credits: [] },
     { num: '1', title: 'b', credits: [] },
 ]).multiVolume, true);
+
+// ── qobuzToEngine: parsed page credits → engine tracklist-rel shape ─────────
+const qEng = qobuzToEngine([
+    { index: 1, credits: [
+        { name: 'Copyright Control', roles: ['MusicPublisher'] },
+        { name: 'Kwadwo Donkoh',     roles: ['Producer'] },
+        { name: 'Wulomei',           roles: ['MainArtist'] },
+        { name: 'Nii Tei Ashitey',   roles: ['Composer', 'Lyricist'] },
+    ] },
+    { index: 2, credits: [
+        { name: 'Mavuthela Music Co.', roles: ['MusicPublisher'] },
+        { name: 'Some Engineer',       roles: ['Engineer', 'Mixer'] },
+    ] },
+]);
+assert.deepEqual(qEng.tracklist, [
+    { position: '1', title: '', type_: 'track' },
+    { position: '2', title: '', type_: 'track' },
+]);
+// Copyright Control dropped; real publisher → skipped; MainArtist silent
+assert.equal(qEng.skipped.length, 1);
+assert.match(qEng.skipped[0], /Mavuthela/);
+assert.deepEqual(qEng.tracklistRels.map(r => [r.track.position, r.linkType, r.artist.name]), [
+    ['1', 'producer', 'Kwadwo Donkoh'],
+    ['1', 'composer', 'Nii Tei Ashitey'],
+    ['1', 'lyricist', 'Nii Tei Ashitey'],
+    ['2', 'engineer', 'Some Engineer'],
+    ['2', 'mix',      'Some Engineer'],
+]);
+assert.ok(qEng.tracklistRels.every(r => r.artist.resource_url === '' && r.entityType === 'artist'));
+
+// og:title → album info
+assert.equal(extractQobuzAlbumInfo('<meta property="og:title" content="Walatu Walasa, Wulomei - Qobuz"/>'),
+    'Walatu Walasa, Wulomei');
 
 console.log('sources-parse: all assertions passed');

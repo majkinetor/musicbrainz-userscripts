@@ -15,6 +15,9 @@
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
 // @grant        unsafeWindow
+// @grant        GM_xmlhttpRequest
+// @connect      qobuz.com
+// @connect      www.qobuz.com
 // @grant        GM_openInTab
 // @grant        GM_setValue
 // @grant        GM_getValue

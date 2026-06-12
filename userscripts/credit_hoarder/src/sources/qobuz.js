@@ -46,17 +46,24 @@ export const QOBUZ_ROLE_MAP = {
     'Vocals':              null,
 };
 
-const QOBUZ_ALBUM_RE = /^https?:\/\/(?:www\.|play\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/]+\/)?([a-z0-9]+)\/?(?:[?#]|$)/i;
+const QOBUZ_ALBUM_RE = /^(?:https?:)?\/\/(?:www\.|play\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/]+\/)?([a-z0-9]+)\/?(?:[?#]|$)/i;
 
 /**
  * Parse a Qobuz album URL → `{ id, pageUrl }`, or `null`. Accepts the
  * store-page form (`/us-en/album/<slug>/<id>`), the bare `/album/<id>`,
- * and play./open. subdomain links (those carry the id as the last segment).
+ * play./open. subdomain links and MB's protocol-relative hrefs.
+ *
+ * `pageUrl` is always the **store** page: open.qobuz.com is a tiny SPA
+ * shell with no credits, while the store page server-renders everything.
+ * MB rels carry no slug — a wrong-slug URL (`/album/x/<id>`) redirects to
+ * the canonical page (verified), so the synthesized form always lands.
  */
 export function parseQobuzAlbumUrl(url) {
     const m = QOBUZ_ALBUM_RE.exec(url || '');
     if (!m) return null;
-    return { id: m[1], pageUrl: `https://www.qobuz.com/us-en/album/x/${m[1]}` };
+    const original = String(url).replace(/^\/\//, 'https://');
+    const isStore  = /^https?:\/\/(www\.)?qobuz\.com\/[a-z]{2}-[a-z]{2}\/album\//i.test(original);
+    return { id: m[1], pageUrl: isStore ? original.split(/[?#]/)[0] : `https://www.qobuz.com/us-en/album/x/${m[1]}` };
 }
 
 /** Minimal HTML-entity decode for the entities Qobuz pages actually emit
@@ -112,4 +119,70 @@ export function extractQobuzCredits(html) {
         out.push({ index: ++i, credits: parseQobuzCreditLine(text) });
     }
     return out;
+}
+
+/** Album title + artist from the store page, for the diagnostic log.
+ *  og:title is `"<Album>, <Artist> - Qobuz"` (verified). */
+export function extractQobuzAlbumInfo(html) {
+    const og = html.match(/<meta property="og:title" content="([^"]*)"/)?.[1] || '';
+    return decodeEntities(og.replace(/ - Qobuz$/, ''));
+}
+
+/**
+ * Map parsed Qobuz credits to the engine's tracklist-relationship shape
+ * (same contract as `tidalToEngine`). Qobuz exposes names only — every
+ * credit goes through name search + review (`resource_url: ''`).
+ *
+ * v1 imports the roles `QOBUZ_ROLE_MAP` targets at work/recording
+ * (Composer, Lyricist, Writer, Arranger, Producer, Mixer, Engineer, …).
+ * `MusicPublisher` is reported in `skipped` (work-publisher seeding
+ * deferred, as in the Tidal source) — except the `Copyright Control`
+ * placeholder, which is dropped outright. Null-mapped roles (MainArtist,
+ * FeaturedArtist, AssociatedPerformer, …) are skipped silently.
+ */
+export function qobuzToEngine(parsedTracks) {
+    const tracklistRels = [];
+    const tracklist = [];
+    const skipped = [];
+    for (const t of parsedTracks) {
+        const track = { position: String(t.index), title: '', type_: 'track' };
+        tracklist.push(track);
+        for (const credit of t.credits) {
+            for (const role of credit.roles) {
+                if (role === 'MusicPublisher') {
+                    if (!/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: MusicPublisher — ${credit.name}`);
+                    continue;
+                }
+                const plan = QOBUZ_ROLE_MAP[role];
+                if (!plan) continue;   // MainArtist & friends — never imported
+                tracklistRels.push({
+                    linkType:   plan.rel,
+                    entityType: 'artist',
+                    attributes: [],
+                    artist: { name: credit.name, anv: '', resource_url: '' },
+                    track,
+                });
+            }
+        }
+    }
+    return { tracklistRels, tracklist, skipped };
+}
+
+/** Fetch the store page HTML cross-origin via GM_xmlhttpRequest
+ *  (musicbrainz.org → www.qobuz.com; `@connect qobuz.com`). */
+export function fetchQobuzAlbumPage(pageUrl) {
+    return new Promise((resolve, reject) => {
+        if (typeof GM_xmlhttpRequest !== 'function') { reject(new Error('GM_xmlhttpRequest unavailable')); return; }
+        GM_xmlhttpRequest({
+            method: 'GET',
+            url: pageUrl,
+            headers: { 'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'en-US,en;q=0.8' },
+            timeout: 20000,
+            onload: r => (r.status >= 200 && r.status < 400 && r.responseText)
+                ? resolve(r.responseText)
+                : reject(new Error(`Qobuz page returned ${r.status}`)),
+            onerror:   () => reject(new Error('Qobuz page fetch failed (network)')),
+            ontimeout: () => reject(new Error('Qobuz page fetch timed out')),
+        });
+    });
 }
