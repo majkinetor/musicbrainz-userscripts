@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Playwright profile moved to the repo root (/.pw-profile/, shared by all harnesses)
+storageState.json
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Build cache
+.esbuild/
+*.tsbuildinfo
+
+# Logs from local runs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Per-fixture import logs from `pnpm test`
+test/logs/
+
+# NB: GH credentials, notification-pipeline state/logs, and the
+# notif-channel server's node_modules now live under the repo-root
+# `/dev/` and are gitignored from the repo-root `.gitignore`. The
+# entries used to live here when the GH automation was per-userscript.

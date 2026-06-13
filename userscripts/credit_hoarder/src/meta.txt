@@ -1,0 +1,27 @@
+// ==UserScript==
+// @name         Credit Hoarder
+// @namespace    majkinetor
+// @version      2026.6.13.163639
+// @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
+// @author       majkinetor
+// @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.svg
+// @match        https://*.musicbrainz.org/release/*/edit-relationships
+// @match        https://*.musicbrainz.org/artist/*
+// @match        https://*.musicbrainz.org/label/*
+// @match        https://*.musicbrainz.org/place/*
+// @match        https://tidal.com/album/*
+// @match        https://listen.tidal.com/album/*
+// @license      MIT
+// @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md
+// @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
+// @grant        unsafeWindow
+// @grant        GM_xmlhttpRequest
+// @connect      qobuz.com
+// @connect      www.qobuz.com
+// @grant        GM_openInTab
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_deleteValue
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
+// ==/UserScript==
