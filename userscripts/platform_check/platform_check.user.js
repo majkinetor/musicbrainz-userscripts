@@ -1895,8 +1895,18 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
 // same shape as the Spotify/Bandcamp scanners. No barcode (the page carries no
 // UPC) and no format (digital-only), so it's judged on track count + title.
 const qzDec = s => String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n));
+// Normalise any Qobuz album URL to the server-rendered www store page. open./play.
+// are SPA shells with no credits in the HTML, and an MB rel is often the slug-less
+// open form — a wrong-slug www URL 301-redirects to the canonical page, so this
+// always lands somewhere scrapeable. (URL shapes per Harmony; #201, chaban-mb)
+function qobuzStoreUrl(albumUrl) {
+    const m = String(albumUrl || '').match(/qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/?#]+\/)?([a-z0-9]+)/i);
+    if (!m) return albumUrl;
+    if (/^https?:\/\/www\.qobuz\.com\/[a-z]{2}-[a-z]{2}\/album\/[^/]+\/[a-z0-9]+/i.test(albumUrl)) return albumUrl;   // already a www store page
+    return `https://www.qobuz.com/us-en/album/x/${m[1]}`;
+}
 async function fetchQobuzMeta(albumUrl) {
-    const r = await gmGet(albumUrl);
+    const r = await gmGet(qobuzStoreUrl(albumUrl));
     if (!r.ok || !r.responseText) return null;
     const html = r.responseText;
     // Track count: the page renders an empty duplicate of every track row for
