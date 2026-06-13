@@ -469,7 +469,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.095259';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.111157';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2247,14 +2247,43 @@
     return { level, color: REC_CONF[level].c, label: REC_CONF[level].label, diffs };
   }
   const fmtMs = ms => (ms || ms === 0) ? (Math.floor(Math.round(ms / 1000) / 60) + ':' + String(Math.round(ms / 1000) % 60).padStart(2, '0')) : '';
-  // artist-credit rendered as links to each artist's page (joined by their join phrases)
-  function acLinks(ac) {
+  // artist-credit rendered as links to each artist's page (joined by their join
+  // phrases). `withDisamb` appends each artist's disambiguation (when the page
+  // model carries it) — used in the picker header so a wrong artist is obvious. #195
+  function acLinks(ac, withDisamb) {
     const names = u(ac && ac.names) || [];
     if (!names.length) return '';
     return names.map(n => {
-      const nm = u(n.name) || (n.artist && u(u(n.artist).name)) || '';
-      const gid = n.artist && u(u(n.artist).gid);
-      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm)) + esc(u(n.joinPhrase) || '');
+      const art = n.artist ? u(n.artist) : null;
+      const nm = u(n.name) || (art && u(art.name)) || '';
+      const gid = art && u(art.gid);
+      const dis = withDisamb && art && u(art.comment) ? ' <span class="tc-rpk-adis">(' + esc(u(art.comment)) + ')</span>' : '';
+      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm)) + dis + esc(u(n.joinPhrase) || '');
+    }).join('');
+  }
+  // flat {name, gid, comment, join} per artist of a credit — lets the table diff
+  // artists by ENTITY (not raw text) while keeping links + disambiguations. #186 #195
+  function acData(ac) {
+    return (u(ac && ac.names) || []).map(n => {
+      const art = n.artist ? u(n.artist) : null;
+      return { name: u(n.name) || (art && u(art.name)) || '', gid: (art && u(art.gid)) || null, comment: (art && u(art.comment)) || '', join: u(n.joinPhrase) || '' };
+    });
+  }
+  // render one credit as links (+ disambiguations), boxing the artists whose
+  // ENTITY isn't present on the other side — the detailed-highlight equivalent
+  // for artists that keeps links instead of char-diffing plain text (#186: the
+  // original highlighted the differing artist; links used to drop here). A
+  // credited-as (same entity, different text) is NOT boxed — it's the same
+  // artist, just a different credit.
+  function acLinksDiff(self, other, withDisamb) {
+    const key = a => a.gid || ('name:' + a.name.toLowerCase().trim());
+    const otherSet = new Set((other || []).map(key));
+    return (self || []).map(a => {
+      const nm = esc(a.name);
+      const inner = a.gid ? '<a href="' + ORIGIN + '/artist/' + esc(a.gid) + '" target="_blank" rel="noopener">' + nm + '</a>' : nm;
+      const boxed = otherSet.has(key(a)) ? inner : '<span class="tc-dh">' + inner + '</span>';
+      const dis = withDisamb && a.comment ? ' <span class="tc-rec-disamb">(' + esc(a.comment) + ')</span>' : '';
+      return boxed + dis + esc(a.join);
     }).join('');
   }
   // #186 detailed highlighting — char-level LCS diff of two short strings.
@@ -2313,9 +2342,9 @@
       const rawArtistDiff = !!(rec && !isNew && nativeDiffFlag(t, 'artist'));
       out.push({
         exact, tolDiffs,
-        mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit)), trackLen: u(t.length),
+        mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit), true), trackAc: acData(u(t.artistCredit)), trackLen: u(t.length),
         isNew,
-        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recComment: rec ? (u(rec.comment) || '') : '', recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit)) : '', recLen: rec ? u(rec.length) : null,
+        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recComment: rec ? (u(rec.comment) || '') : '', recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit), true) : '', recAc: rec ? acData(u(rec.artistCredit)) : [], recLen: rec ? u(rec.length) : null,
         // submit-flags: when on, the recording's title/artist will be overwritten with the track's on submit
         copyTitle: typeof t.updateRecordingTitle === 'function' ? !!u(t.updateRecordingTitle) : false,
         copyArtist: typeof t.updateRecordingArtist === 'function' ? !!u(t.updateRecordingArtist) : false,
@@ -2391,6 +2420,7 @@
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
       '.tc-rectbl .tc-rec-disamb{color:#999;font-weight:400}',   // recording disambiguation, grey like native #144
+      '.tc-rectbl .tc-rpk-adis{color:#999;font-weight:400}',     // artist disambiguation in the table — grey like native, not black (tc-rpk-adis base style is picker-scoped) #186
       '.tc-rectbl td.tc-clickable{cursor:pointer}',
       '.tc-rectbl td.tc-clickable:hover{outline:1px solid #9cc6ab;outline-offset:-1px}',
       '.tc-rectbl td a{color:#2c5d9b;text-decoration:none}.tc-rectbl td a:hover{text-decoration:underline}',
@@ -2437,7 +2467,9 @@
       '.tc-recpop .tc-rpk-len{margin-left:auto;color:#666;font-variant-numeric:tabular-nums;white-space:nowrap}',
       '.tc-recpop .tc-rpk-by{color:#555;font-size:11px}',
       '.tc-recpop .tc-rpk-on{color:#777;font-size:11px}',
-      '.tc-recpop .tc-rpk-on a,.tc-recpop .tc-rpk-curon a{color:#2c5d9b;text-decoration:none}.tc-recpop .tc-rpk-on a:hover,.tc-recpop .tc-rpk-curon a:hover{text-decoration:underline}',
+      '.tc-recpop .tc-rpk-on a,.tc-recpop .tc-rpk-curon a,.tc-recpop .tc-rpk-name a,.tc-recpop .tc-rpk-by a{color:#2c5d9b;text-decoration:none}.tc-recpop .tc-rpk-on a:hover,.tc-recpop .tc-rpk-curon a:hover,.tc-recpop .tc-rpk-name a:hover,.tc-recpop .tc-rpk-by a:hover{text-decoration:underline}',
+      '.tc-recpop .tc-rpk-name a{color:inherit}',   // title link keeps the result's strong colour; underline on hover only
+      '.tc-recpop .tc-rpk-adis{color:#9a8fb5;font-size:10px}',   // artist disambiguation in the by-line / header #195',
       '.tc-recpop .tc-rpk-more{color:#999;font-style:italic}',
       '.tc-recpop .tc-rpk-rgx{color:#888;font-size:10px;font-weight:600}',
       // header subtitle = the song (track) artist + length; current-recording artist + its full appears-on
@@ -2689,12 +2721,18 @@
         const segs = charDiff(r.title || '', r.recName || '');
         if (segs) { trackTitleHtml = diffSide(segs, -1); recTitleHtml = diffSide(segs, 1) + disamb; }
       }
-      // artists: char-diff the plain credit text (drops the per-artist links while highlighting,
-      // like the reference) — only when not in copy-preview and the literal credits differ.
+      // artists: ENTITY-level diff that KEEPS the per-artist links + disambiguations
+      // (#186: links used to drop here because we char-diffed plain text; #195:
+      // disambiguations now show). The artist whose entity isn't on the other side
+      // is boxed; a credited-as (same entity) isn't. Trigger on an ENTITY difference,
+      // not just text — a track artist swapped to a SAME-NAME different artist reads
+      // identically but must still be boxed so it's not missed (#186, chaban).
+      const acKeys = ac => (ac || []).map(a => a.gid || ('name:' + (a.name || '').toLowerCase().trim())).join('');
+      const artistEntitiesDiffer = acKeys(r.trackAc) !== acKeys(r.recAc);
       let trackArtistHtml2 = r.trackArtistHtml || '', recArtistCell = artistCell;
-      if (dh && !r.copyArtist && r.recArtist != null && (r.trackArtist || '') !== (r.recArtist || '')) {
-        const segs = charDiff(r.trackArtist || '', r.recArtist || '');
-        if (segs) { trackArtistHtml2 = diffSide(segs, -1); recArtistCell = diffSide(segs, 1); }
+      if (dh && !r.copyArtist && r.recArtist != null && ((r.trackArtist || '') !== (r.recArtist || '') || artistEntitiesDiffer)) {
+        trackArtistHtml2 = acLinksDiff(r.trackAc, r.recAc, true);
+        recArtistCell    = acLinksDiff(r.recAc, r.trackAc, true);
       }
       let recLenCls = (d.len || tolHas('length')) ? 'tc-diff' : '', recLenStyle = '';
       if (dh && (d.len || tolHas('length'))) {
@@ -3000,8 +3038,25 @@
     const extra = groups.length - shown.length;
     return html + (extra > 0 ? ' <span class="tc-rpk-more">+' + extra + ' more</span>' : '');
   }
+  // render a WS2 artist-credit (the raw `artist-credit` array kept on mapped
+  // recordings) as links + optional disambiguations. Network-free: the gids and
+  // disambiguations come from the search response itself. #199 #195
+  function acLinksWs(ac, withDisamb) {
+    const names = ac || [];
+    if (!names.length) return '';
+    return names.map(n => {
+      const a = n.artist || {};
+      const nm = n.name || a.name || '';
+      const dis = withDisamb && a.disambiguation ? ' <span class="tc-rpk-adis">(' + esc(a.disambiguation) + ')</span>' : '';
+      const link = a.id ? '<a href="' + ORIGIN + '/artist/' + esc(a.id) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm);
+      return link + dis + esc(n.joinphrase || '');
+    }).join('');
+  }
   // a picker result row — mirrors the native list: title + length, by artist, appears on, ISRCs;
-  // left-border colour = confidence vs the track
+  // left-border colour = confidence vs the track. Title links to the recording and the
+  // artist credit links to each artist (with disambiguations), so an odd-looking result
+  // can be inspected without first selecting it (#199 #195). Clicks on these links are
+  // ignored by the row's pick handler (it bails on `closest('a')`).
   function recRowHtml(data, ctx) {
     const rels = relLinksHtml(data.releases, 6);
     const isrcs = (data.isrcs || []).slice(0, 4).join(', ');
@@ -3009,11 +3064,15 @@
     const dT = ctx && data.name && ctx.title && !recTitleEq(data.name, ctx.title);
     const dA = ctx && data.artist && ctx.artist && !recNameEq(data.artist, ctx.artist);
     const dL = !!(ctx && recLenGap(data.length, ctx.length) > 0);
+    const titleHtml = data.gid
+      ? '<a href="' + ORIGIN + '/recording/' + esc(data.gid) + '" target="_blank" rel="noopener">' + esc(data.name || '') + '</a>'
+      : esc(data.name || '');
+    const artistHtml = (data.ac && data.ac.length) ? acLinksWs(data.ac, true) : esc(data.artist || '');
     return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
-      '<div class="tc-rpk-main"><span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + esc(data.name || '') + '</span>' +
+      '<div class="tc-rpk-main"><span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + titleHtml + '</span>' +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
         '<span class="tc-rpk-len' + (dL ? ' tc-rpk-fdiff' : '') + '">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
-      (data.artist ? '<div class="tc-rpk-by' + (dA ? ' tc-rpk-fdiff' : '') + '">by ' + esc(data.artist) + '</div>' : '') +
+      (artistHtml ? '<div class="tc-rpk-by' + (dA ? ' tc-rpk-fdiff' : '') + '">by ' + artistHtml + '</div>' : '') +
       (rels ? '<div class="tc-rpk-on">appears on: ' + rels + '</div>' : '') +
       (isrcs ? '<div class="tc-rpk-isrc">ISRCs: ' + esc(isrcs) + '</div>' : '') +
       '</div>';
@@ -3036,7 +3095,7 @@
       : curGid
         ? '<span class="tc-rpk-curmain"><a href="' + ORIGIN + '/recording/' + esc(curGid) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>'
             + (u(curRec.comment) ? ' <span class="tc-rpk-cmt">(' + esc(u(curRec.comment)) + ')</span>' : '')   // disambiguation on selection #144
-            + (curArtist ? ' <span class="tc-rpk-curby">- ' + acLinks(u(curRec.artistCredit)) + '</span>' : '') + '</span>'
+            + (curArtist ? ' <span class="tc-rpk-curby">- ' + acLinks(u(curRec.artistCredit), true) + '</span>' : '') + '</span>'
           + (u(curRec.length) ? '<span class="tc-rpk-curlen">' + fmtMs(u(curRec.length)) + '</span>' : '')
         : '<span class="tc-rpk-curnone">— none —</span>';
     const trackArtist = ctx.artist, trackLen = u(ko.length);
