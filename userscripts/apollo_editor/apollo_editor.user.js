@@ -469,7 +469,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.100034';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.104046';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2254,6 +2254,31 @@
       return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm)) + dis + esc(u(n.joinPhrase) || '');
     }).join('');
   }
+  // flat {name, gid, comment, join} per artist of a credit — lets the table diff
+  // artists by ENTITY (not raw text) while keeping links + disambiguations. #186 #195
+  function acData(ac) {
+    return (u(ac && ac.names) || []).map(n => {
+      const art = n.artist ? u(n.artist) : null;
+      return { name: u(n.name) || (art && u(art.name)) || '', gid: (art && u(art.gid)) || null, comment: (art && u(art.comment)) || '', join: u(n.joinPhrase) || '' };
+    });
+  }
+  // render one credit as links (+ disambiguations), boxing the artists whose
+  // ENTITY isn't present on the other side — the detailed-highlight equivalent
+  // for artists that keeps links instead of char-diffing plain text (#186: the
+  // original highlighted the differing artist; links used to drop here). A
+  // credited-as (same entity, different text) is NOT boxed — it's the same
+  // artist, just a different credit.
+  function acLinksDiff(self, other, withDisamb) {
+    const key = a => a.gid || ('name:' + a.name.toLowerCase().trim());
+    const otherSet = new Set((other || []).map(key));
+    return (self || []).map(a => {
+      const nm = esc(a.name);
+      const inner = a.gid ? '<a href="' + ORIGIN + '/artist/' + esc(a.gid) + '" target="_blank" rel="noopener">' + nm + '</a>' : nm;
+      const boxed = otherSet.has(key(a)) ? inner : '<span class="tc-dh">' + inner + '</span>';
+      const dis = withDisamb && a.comment ? ' <span class="tc-rec-disamb">(' + esc(a.comment) + ')</span>' : '';
+      return boxed + dis + esc(a.join);
+    }).join('');
+  }
   // #186 detailed highlighting — char-level LCS diff of two short strings.
   // Returns segments [{t,s}] with t: 0 common · -1 only-in-a · 1 only-in-b, or null
   // when either string is too long (caller falls back to the flat highlight).
@@ -2307,9 +2332,9 @@
       const rawArtistDiff = !!(rec && !isNew && nativeDiffFlag(t, 'artist'));
       out.push({
         exact, tolDiffs,
-        mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit)), trackLen: u(t.length),
+        mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit), true), trackAc: acData(u(t.artistCredit)), trackLen: u(t.length),
         isNew,
-        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recComment: rec ? (u(rec.comment) || '') : '', recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit)) : '', recLen: rec ? u(rec.length) : null,
+        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recComment: rec ? (u(rec.comment) || '') : '', recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit), true) : '', recAc: rec ? acData(u(rec.artistCredit)) : [], recLen: rec ? u(rec.length) : null,
         // submit-flags: when on, the recording's title/artist will be overwritten with the track's on submit
         copyTitle: typeof t.updateRecordingTitle === 'function' ? !!u(t.updateRecordingTitle) : false,
         copyArtist: typeof t.updateRecordingArtist === 'function' ? !!u(t.updateRecordingArtist) : false,
@@ -2685,12 +2710,15 @@
         const segs = charDiff(r.title || '', r.recName || '');
         if (segs) { trackTitleHtml = diffSide(segs, -1); recTitleHtml = diffSide(segs, 1) + disamb; }
       }
-      // artists: char-diff the plain credit text (drops the per-artist links while highlighting,
-      // like the reference) — only when not in copy-preview and the literal credits differ.
+      // artists: ENTITY-level diff that KEEPS the per-artist links + disambiguations
+      // (#186: links used to drop here because we char-diffed plain text; #195:
+      // disambiguations now show). The artist whose entity isn't on the other side
+      // is boxed; a credited-as (same entity) isn't. Only when not copy-previewing
+      // and the credits actually differ.
       let trackArtistHtml2 = r.trackArtistHtml || '', recArtistCell = artistCell;
       if (dh && !r.copyArtist && r.recArtist != null && (r.trackArtist || '') !== (r.recArtist || '')) {
-        const segs = charDiff(r.trackArtist || '', r.recArtist || '');
-        if (segs) { trackArtistHtml2 = diffSide(segs, -1); recArtistCell = diffSide(segs, 1); }
+        trackArtistHtml2 = acLinksDiff(r.trackAc, r.recAc, true);
+        recArtistCell    = acLinksDiff(r.recAc, r.trackAc, true);
       }
       let recLenCls = (d.len || tolHas('length')) ? 'tc-diff' : '', recLenStyle = '';
       if (dh && (d.len || tolHas('length'))) {
