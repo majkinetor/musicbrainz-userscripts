@@ -45,6 +45,13 @@
   const getEditor = () => { try { return W.MB && W.MB.releaseEditor; } catch (e) { return null; } };
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/\s+/g, ' ').trim();
   const sameName = (a, b) => fold(a) === fold(b);
+  // gid → artist disambiguation, harvested from every WS2/js artist-credit the
+  // script fetches (search results, recording lookups). The MB page (KO) model
+  // doesn't carry disambiguations for freshly-picked entities, so the recordings
+  // table falls back to this cache to show them after a pick. #195
+  const _disamb = new Map();
+  const noteDisamb = (gid, c) => { if (gid && c) _disamb.set(gid, c); };
+  const getDisamb = gid => (gid && _disamb.get(gid)) || '';
   const MBID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
   // a MusicBrainz /artist/<mbid> URL, a bare MBID, or an MBID pasted anywhere in the text → the gid
   function mbidFrom(v) {
@@ -154,6 +161,7 @@
     try { const j = await fetch(`${ORIGIN}/ws/js/artist?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
     catch (e) { Log.warn('search failed:', name, e.message); }
     list = list.filter(c => c && (c.name || '').trim());   // drop the trailing empty placeholder entry
+    list.forEach(c => noteDisamb(c.gid || c.id, c.comment));   // cache disambiguations for the table after a pick (#195)
     _cache.set(k, list); return list;
   }
   // full alias arrays for display (the js search only carries primaryAlias, often empty). One WS2
@@ -469,7 +477,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.121029';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.122039';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2257,7 +2265,8 @@
       const art = n.artist ? u(n.artist) : null;
       const nm = u(n.name) || (art && u(art.name)) || '';
       const gid = art && u(art.gid);
-      const dis = withDisamb && art && u(art.comment) ? ' <span class="tc-rpk-adis">(' + esc(u(art.comment)) + ')</span>' : '';
+      const cmt = (art && u(art.comment)) || getDisamb(gid);   // KO model lacks it for fresh picks → cache fallback #195
+      const dis = withDisamb && cmt ? ' <span class="tc-rpk-adis">(' + esc(cmt) + ')</span>' : '';
       return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm)) + dis + esc(u(n.joinPhrase) || '');
     }).join('');
   }
@@ -2266,7 +2275,8 @@
   function acData(ac) {
     return (u(ac && ac.names) || []).map(n => {
       const art = n.artist ? u(n.artist) : null;
-      return { name: u(n.name) || (art && u(art.name)) || '', gid: (art && u(art.gid)) || null, comment: (art && u(art.comment)) || '', join: u(n.joinPhrase) || '' };
+      const gid = (art && u(art.gid)) || null;
+      return { name: u(n.name) || (art && u(art.name)) || '', gid, comment: (art && u(art.comment)) || getDisamb(gid), join: u(n.joinPhrase) || '' };
     });
   }
   // render one credit as links (+ disambiguations), boxing the artists whose
@@ -2922,6 +2932,7 @@
   }
   // a WS2 recording → the flat shape used by the picker / matcher (gid, name, length, artist text + raw ac, …)
   function mapWsRec(r) {
+    (r['artist-credit'] || []).forEach(a => a.artist && noteDisamb(a.artist.id, a.artist.disambiguation));   // cache disambiguations (#195)
     return {
       gid: r.id, name: r.title, length: r.length || null,
       artist: (r['artist-credit'] || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''),
@@ -3046,6 +3057,7 @@
     if (!names.length) return '';
     return names.map(n => {
       const a = n.artist || {};
+      noteDisamb(a.id, a.disambiguation);   // feed the cache so the table shows it after a pick (#195)
       const nm = n.name || a.name || '';
       const dis = withDisamb && a.disambiguation ? ' <span class="tc-rpk-adis">(' + esc(a.disambiguation) + ')</span>' : '';
       const link = a.id ? '<a href="' + ORIGIN + '/artist/' + esc(a.id) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm);
