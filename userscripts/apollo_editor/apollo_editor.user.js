@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.13.122039
+// @version      2026.6.13.130152
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -182,7 +182,7 @@
     const uniq = [...new Set((gids || []).filter(g => g && !_gidAliases.has(g)))];
     for (let i = 0; i < uniq.length; i += 90) {
       const q = uniq.slice(i, i + 90).map(g => 'arid:' + g).join(' OR ');
-      try { const w = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(q)}&limit=100&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); (w.artists || []).forEach(a => cacheAliases(a.id, a.aliases || [])); }
+      try { const w = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(q)}&limit=100&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); (w.artists || []).forEach(a => { cacheAliases(a.id, a.aliases || []); noteDisamb(a.id, a.disambiguation); }); }
       catch (e) { Log.warn('batch alias fetch failed', e.message); }
     }
   }
@@ -477,7 +477,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.122039';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.130152';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -646,6 +646,7 @@
     .tc-search.tc-marked{border:2px solid #e0a800}   /* persists when a pick changed several tracks */
     .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
     .tc-search .tc-bar-aka{flex:0 1 auto;min-width:0;max-width:55%;margin-left:2px;color:#9bb8a8;font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+    .tc-search .tc-bar-disamb{flex:0 1 auto;min-width:0;max-width:55%;margin-left:4px;color:#999;font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}   /* artist disambiguation, grey like native #195 */
     .tc-search .mk{flex:none;order:9;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}   /* order:9 keeps ＋ pinned at the far right, past the join-phrase */
     .tc-joinwrap{flex:none;margin-left:auto;display:flex;align-items:center;gap:0}
     .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:#777;font:italic 900 12px Arial;padding:1px 2px;border-radius:3px}
@@ -1225,7 +1226,7 @@
   // ＋ create-button at the right end of the box (before the join), only when the slot is unmatched;
   // and the alias on the resolved bar — only while the slot stays committed (gone the moment you edit)
   function adorn(search, slot, inp) {
-    [...search.querySelectorAll('.mk, .tc-bar-aka')].forEach(e => e.remove());
+    [...search.querySelectorAll('.mk, .tc-bar-aka, .tc-bar-disamb')].forEach(e => e.remove());
     search.classList.toggle('matched', !!slot.committed);
     const ref = search.querySelector('.tc-joinwrap');
     const aks = _gidAliases.get(slot.gid);
@@ -1238,6 +1239,11 @@
     // anywhere in the rest of the bar (the empty space / alias) focuses it to open the search. #128
     search.onmousedown = e => { if (e.target === inp || e.target.closest('.tc-joinwrap, .mk')) return; e.preventDefault(); inp.focus(); };
     if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = aka; al.title = aka; search.insertBefore(al, ref); }
+    // artist disambiguation, like native MB's credit editor — grey, after the alias.
+    // Sourced from the cache (filled by the same gid alias fetch); shows even for
+    // special-purpose artists like [unknown], whose alias is suppressed. #195
+    const dis = slot.committed ? getDisamb(slot.gid) : '';
+    if (dis) { const ds = document.createElement('span'); ds.className = 'tc-bar-disamb'; ds.textContent = '(' + dis + ')'; ds.title = dis; search.insertBefore(ds, ref); }
     if (!slot.committed) { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot); }; search.insertBefore(mk, ref); }
   }
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
