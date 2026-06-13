@@ -52,11 +52,12 @@ function todayTag() {
 }
 
 function collectIssues() {
-  const all = JSON.parse(gh('issue', 'list', '--repo', REPO, '--state', 'closed', '--limit', '1000', '--json', 'number,title,labels'));
+  const all = JSON.parse(gh('issue', 'list', '--repo', REPO, '--state', 'closed', '--limit', '1000', '--json', 'number,title,labels,stateReason'));
   const groups = {};   // dir → { name, path, features:[], fixes:[] }
   const included = [];
   for (const i of all) {
     const names = i.labels.map(l => l.name);
+    if (i.stateReason === 'NOT_PLANNED') continue;   // "Closed as not planned" → out of the changelog, same as the wontfix label
     if (['released', 'skip changelog', 'wontfix'].some(x => names.includes(x))) continue;
     const areas = names.filter(n => AREA_RE.test(n)); if (!areas.length) continue;   // an issue can span several scripts
     const kind = names.includes('enhancement') ? 'features' : names.includes('bug') ? 'fixes' : null; if (!kind) continue;
