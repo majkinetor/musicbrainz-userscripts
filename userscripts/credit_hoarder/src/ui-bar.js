@@ -532,7 +532,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     // hard-coded README.md link so it works even if the manager strips metadata.
     const docsHref = (typeof GM_info !== 'undefined' && (
         GM_info?.script?.homepageURL || GM_info?.script?.homepage
-    )) || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md';
+    )) || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md';
     const docsLink = document.createElement('a');
     docsLink.href = docsHref;
     docsLink.target = '_blank';
@@ -703,7 +703,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
 
     const tracklistCb    = makeCheckbox('Per-track credits',              bv('tracklist', true),
-        'Import per-track artist credits from Discogs.');
+        'Import per-track artist credits.');
     const applyTracksCb  = makeCheckbox('Move release credits to tracks', bv('applyTracks', false),
         'Move performance credits from the release down to every recording.');
     // "Create works" mode picker (#94, "never" option restored later):
@@ -842,12 +842,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         b.addEventListener('click', () => fn(b, label));
         return b;
     };
-    const copyLogItem     = mkMenuItem('Copy log',          'Copy the full import log (incl. raw Discogs JSON)',                  (b, l) => bar._copy?.log(b, l));
-    const copyNoJsonItem  = mkMenuItem('Copy without JSON', 'Copy the log without the raw Discogs JSON block — fits in a GitHub issue', (b, l) => bar._copy?.noJson(b, l));
-    const copyDiscogsItem = mkMenuItem('Copy Discogs',      'Copy the raw Discogs JSON for this release',                          (b, l) => bar._copy?.discogs(b, l));
-    const copyTidalItem   = mkMenuItem('Copy Tidal',        'Copy the raw Tidal credits harvest for this release',                 (b, l) => bar._copy?.tidal(b, l));
-    const copyQobuzItem   = mkMenuItem('Copy Qobuz',        'Copy the parsed Qobuz credits for this release',                      (b, l) => bar._copy?.qobuz(b, l));
-    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem, copyTidalItem, copyQobuzItem);
+    const copyLogItem     = mkMenuItem('Copy log',          'Copy the full import log (incl. the raw source data)',               (b, l) => bar._copy?.log(b, l));
+    const copyNoJsonItem  = mkMenuItem('Copy without JSON', 'Copy the log without the raw source-data block — fits in a GitHub issue', (b, l) => bar._copy?.noJson(b, l));
+    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem);
+    // Per-source raw-data copy items — only the sources actually linked on this
+    // release, so a Tidal/Qobuz-only release doesn't offer "Copy Discogs" etc. (#193)
+    if (discogsUrl)    logMenu.appendChild(mkMenuItem('Copy Discogs', 'Copy the raw Discogs JSON for this release',           (b, l) => bar._copy?.discogs(b, l)));
+    if (sources.tidal) logMenu.appendChild(mkMenuItem('Copy Tidal',   'Copy the raw Tidal credits harvest for this release',  (b, l) => bar._copy?.tidal(b, l)));
+    if (sources.qobuz) logMenu.appendChild(mkMenuItem('Copy Qobuz',   'Copy the parsed Qobuz credits for this release',       (b, l) => bar._copy?.qobuz(b, l)));
     document.body.appendChild(logMenu);
 
     logMenuToggle.addEventListener('click', () => {

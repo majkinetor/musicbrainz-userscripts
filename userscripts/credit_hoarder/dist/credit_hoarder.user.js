@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.12.221522
+// @version      2026.6.13.160408
 // @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
@@ -2638,7 +2638,7 @@
       const thead = document.createElement("thead");
       const hr = document.createElement("tr");
       hr.style.background = "#f5e8a0";
-      ["Discogs entity", "MB match / search"].forEach((col) => {
+      [importSourceName + " entity", "MB match / search"].forEach((col) => {
         const th = document.createElement("th");
         th.style.cssText = "text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;";
         th.textContent = col;
@@ -2755,7 +2755,7 @@
         credInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid #ddd;border-radius:3px;background:" + CRED_BG_SAME + ";";
         credInput.placeholder = displayName;
         credInput.title = `Override the credited name dispatched with every rel for this entity.
-Leave empty to use the default (Discogs name, or MB's most-frequent existing credit when known).`;
+Leave empty to use the default (${srcName} name, or MB's most-frequent existing credit when known).`;
         function refreshCredBg() {
           const value = (credInput.value || "").trim();
           const same = value === "" || value === displayName;
@@ -2796,8 +2796,8 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         mbBtn.style.cssText = CRED_BTN_STYLE;
         const dBtn = document.createElement("button");
         dBtn.type = "button";
-        dBtn.textContent = "D";
-        dBtn.title = "Set Credited as to the Discogs name";
+        dBtn.textContent = srcName.charAt(0);
+        dBtn.title = `Set Credited as to the ${srcName} name`;
         dBtn.style.cssText = CRED_BTN_STYLE;
         function currentMbName() {
           return rowState.get(_entityKey)?.mbName || r.mbName || null;
@@ -3041,7 +3041,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             const linkSlot = document.createElement("span");
             linkSlot.style.cssText = "display:inline-flex;align-items:center;font-size:0.8rem;color:#888;";
             linkSlot.textContent = "\u2026";
-            linkSlot.title = "Checking whether MB already has this Discogs URL linked";
+            linkSlot.title = `Checking whether MB already has this ${srcName} URL linked`;
             tdAction.appendChild(linkSlot);
             const urlCheckCacheKey = `${selected.id}|${discogsHref}`;
             const urlCheckLsKey = `discogs-urlcheck-${selected.id}-${discogsHref.replace(/[^a-z0-9]/gi, "-").substring(0, 80)}`;
@@ -3198,25 +3198,29 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             disInput.addEventListener("input", () => {
               disUserTouched = true;
             });
-            const profileLabel = document.createElement("div");
-            profileLabel.style.cssText = "font-size:0.78rem;color:#888;margin-top:0.55rem;";
-            profileLabel.textContent = "Discogs profile \u2014 select text to copy into Disambiguation";
-            modal.appendChild(profileLabel);
-            const profileBox = document.createElement("div");
-            profileBox.style.cssText = "border:1px solid #e0e0e0;border-radius:0.3rem;padding:0.5rem 0.6rem;background:#fafafa;font-size:0.85rem;line-height:1.5;white-space:pre-wrap;overflow:auto;min-height:5rem;max-height:18rem;flex:1;color:#444;";
-            profileBox.textContent = "Loading profile from Discogs\u2026";
-            modal.appendChild(profileBox);
-            const captureSelection = () => {
-              const sel = window.getSelection();
-              if (!sel || sel.isCollapsed) return;
-              if (!profileBox.contains(sel.anchorNode)) return;
-              const text = sel.toString().trim();
-              if (!text) return;
-              disInput.value = text;
-              disUserTouched = true;
-            };
-            profileBox.addEventListener("mouseup", captureSelection);
-            profileBox.addEventListener("keyup", captureSelection);
+            const showProfile = srcName === "Discogs" && !!discogsHref;
+            let profileBox = null;
+            if (showProfile) {
+              const profileLabel = document.createElement("div");
+              profileLabel.style.cssText = "font-size:0.78rem;color:#888;margin-top:0.55rem;";
+              profileLabel.textContent = "Discogs profile \u2014 select text to copy into Disambiguation";
+              modal.appendChild(profileLabel);
+              profileBox = document.createElement("div");
+              profileBox.style.cssText = "border:1px solid #e0e0e0;border-radius:0.3rem;padding:0.5rem 0.6rem;background:#fafafa;font-size:0.85rem;line-height:1.5;white-space:pre-wrap;overflow:auto;min-height:5rem;max-height:18rem;flex:1;color:#444;";
+              profileBox.textContent = "Loading profile from Discogs\u2026";
+              modal.appendChild(profileBox);
+              const captureSelection = () => {
+                const sel = window.getSelection();
+                if (!sel || sel.isCollapsed) return;
+                if (!profileBox.contains(sel.anchorNode)) return;
+                const text = sel.toString().trim();
+                if (!text) return;
+                disInput.value = text;
+                disUserTouched = true;
+              };
+              profileBox.addEventListener("mouseup", captureSelection);
+              profileBox.addEventListener("keyup", captureSelection);
+            }
             const btnRow2 = document.createElement("div");
             btnRow2.style.cssText = "display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.55rem;";
             const cancelBtn = document.createElement("button");
@@ -3253,7 +3257,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             submitBtn.addEventListener("click", submit);
             disInput.focus();
             disInput.select();
-            try {
+            if (showProfile) try {
               const data = await getDiscogsEntityData(r.entity?.resource_url);
               if (data?.realname && !nameUserTouched && data.realname.trim() !== displayName.trim()) {
                 nameInput.value = data.realname.trim();
@@ -3454,7 +3458,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         tbl.style.cssText = "border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;";
         const thRow = document.createElement("tr");
         thRow.style.background = "#f5f5f5";
-        ["Discogs entity", "Roles / Tracks", "MB match", "MBID", "Resolved via"].forEach((h) => {
+        [importSourceName + " entity", "Roles / Tracks", "MB match", "MBID", "Resolved via"].forEach((h) => {
           const th = document.createElement("th");
           th.style.cssText = "text-align:left;padding:0.2rem 0.4rem;border:1px solid #ddd;white-space:nowrap;";
           th.textContent = h;
@@ -4852,7 +4856,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     logo.className = "discogs-logo";
     logo.alt = "Discogs";
     logoLink.appendChild(logo);
-    const docsHref = typeof GM_info !== "undefined" && (GM_info?.script?.homepageURL || GM_info?.script?.homepage) || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
+    const docsHref = typeof GM_info !== "undefined" && (GM_info?.script?.homepageURL || GM_info?.script?.homepage) || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md";
     const docsLink = document.createElement("a");
     docsLink.href = docsHref;
     docsLink.target = "_blank";
@@ -4980,7 +4984,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     const tracklistCb = makeCheckbox(
       "Per-track credits",
       bv("tracklist", true),
-      "Import per-track artist credits from Discogs."
+      "Import per-track artist credits."
     );
     const applyTracksCb = makeCheckbox(
       "Move release credits to tracks",
@@ -5113,12 +5117,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       b.addEventListener("click", () => fn(b, label));
       return b;
     };
-    const copyLogItem = mkMenuItem("Copy log", "Copy the full import log (incl. raw Discogs JSON)", (b, l) => bar._copy?.log(b, l));
-    const copyNoJsonItem = mkMenuItem("Copy without JSON", "Copy the log without the raw Discogs JSON block \u2014 fits in a GitHub issue", (b, l) => bar._copy?.noJson(b, l));
-    const copyDiscogsItem = mkMenuItem("Copy Discogs", "Copy the raw Discogs JSON for this release", (b, l) => bar._copy?.discogs(b, l));
-    const copyTidalItem = mkMenuItem("Copy Tidal", "Copy the raw Tidal credits harvest for this release", (b, l) => bar._copy?.tidal(b, l));
-    const copyQobuzItem = mkMenuItem("Copy Qobuz", "Copy the parsed Qobuz credits for this release", (b, l) => bar._copy?.qobuz(b, l));
-    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem, copyDiscogsItem, copyTidalItem, copyQobuzItem);
+    const copyLogItem = mkMenuItem("Copy log", "Copy the full import log (incl. the raw source data)", (b, l) => bar._copy?.log(b, l));
+    const copyNoJsonItem = mkMenuItem("Copy without JSON", "Copy the log without the raw source-data block \u2014 fits in a GitHub issue", (b, l) => bar._copy?.noJson(b, l));
+    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem);
+    if (discogsUrl) logMenu.appendChild(mkMenuItem("Copy Discogs", "Copy the raw Discogs JSON for this release", (b, l) => bar._copy?.discogs(b, l)));
+    if (sources.tidal) logMenu.appendChild(mkMenuItem("Copy Tidal", "Copy the raw Tidal credits harvest for this release", (b, l) => bar._copy?.tidal(b, l)));
+    if (sources.qobuz) logMenu.appendChild(mkMenuItem("Copy Qobuz", "Copy the parsed Qobuz credits for this release", (b, l) => bar._copy?.qobuz(b, l)));
     document.body.appendChild(logMenu);
     logMenuToggle.addEventListener("click", () => {
       setLogOpen(!outputDiv.classList.contains("log-open"));

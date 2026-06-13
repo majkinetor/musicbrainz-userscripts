@@ -338,7 +338,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         const thead = document.createElement('thead');
         const hr = document.createElement('tr');
         hr.style.background = '#f5e8a0';
-        ['Discogs entity', 'MB match / search'].forEach(col => {
+        [importSourceName + ' entity', 'MB match / search'].forEach(col => {
             const th = document.createElement('th');
             th.style.cssText = 'text-align:left;padding:0.3rem 0.5rem;border:1px solid #d4b800;white-space:nowrap;';
             th.textContent = col;
@@ -516,7 +516,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const CRED_BG_DIFFERENT = '#fff4d0'; // soft yellow
             credInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid #ddd;border-radius:3px;background:' + CRED_BG_SAME + ';';
             credInput.placeholder = displayName;
-            credInput.title = `Override the credited name dispatched with every rel for this entity.\nLeave empty to use the default (Discogs name, or MB's most-frequent existing credit when known).`;
+            credInput.title = `Override the credited name dispatched with every rel for this entity.\nLeave empty to use the default (${srcName} name, or MB's most-frequent existing credit when known).`;
             function refreshCredBg() {
                 const value = (credInput.value || '').trim();
                 const same = (value === '' || value === displayName);
@@ -576,8 +576,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             mbBtn.style.cssText = CRED_BTN_STYLE;
             const dBtn = document.createElement('button');
             dBtn.type = 'button';
-            dBtn.textContent = 'D';
-            dBtn.title = 'Set Credited as to the Discogs name';
+            dBtn.textContent = srcName.charAt(0);   // D / T / Q — the import source
+            dBtn.title = `Set Credited as to the ${srcName} name`;
             dBtn.style.cssText = CRED_BTN_STYLE;
             function currentMbName() {
                 return rowState.get(_entityKey)?.mbName || r.mbName || null;
@@ -814,7 +814,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     const linkSlot = document.createElement('span');
                     linkSlot.style.cssText = 'display:inline-flex;align-items:center;font-size:0.8rem;color:#888;';
                     linkSlot.textContent = '…';
-                    linkSlot.title = 'Checking whether MB already has this Discogs URL linked';
+                    linkSlot.title = `Checking whether MB already has this ${srcName} URL linked`;
                     tdAction.appendChild(linkSlot);
 
                     // Query whether this specific Discogs URL is already linked in MB.
@@ -1112,37 +1112,38 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     let disUserTouched = false;
                     disInput.addEventListener('input', () => { disUserTouched = true; });
 
-                    // ── Discogs profile blurb ───────────────────────────────
-                    const profileLabel = document.createElement('div');
-                    profileLabel.style.cssText = 'font-size:0.78rem;color:#888;margin-top:0.55rem;';
-                    profileLabel.textContent = 'Discogs profile — select text to copy into Disambiguation';
-                    modal.appendChild(profileLabel);
+                    // ── Discogs profile blurb — only for Discogs-sourced entities;
+                    //    Tidal/Qobuz credits have no Discogs profile to fetch (#193) ──
+                    const showProfile = srcName === 'Discogs' && !!discogsHref;
+                    let profileBox = null;
+                    if (showProfile) {
+                        const profileLabel = document.createElement('div');
+                        profileLabel.style.cssText = 'font-size:0.78rem;color:#888;margin-top:0.55rem;';
+                        profileLabel.textContent = 'Discogs profile — select text to copy into Disambiguation';
+                        modal.appendChild(profileLabel);
 
-                    const profileBox = document.createElement('div');
-                    profileBox.style.cssText = 'border:1px solid #e0e0e0;border-radius:0.3rem;padding:0.5rem 0.6rem;background:#fafafa;'
-                                             + 'font-size:0.85rem;line-height:1.5;white-space:pre-wrap;overflow:auto;'
-                                             + 'min-height:5rem;max-height:18rem;flex:1;color:#444;';
-                    profileBox.textContent = 'Loading profile from Discogs…';
-                    modal.appendChild(profileBox);
+                        profileBox = document.createElement('div');
+                        profileBox.style.cssText = 'border:1px solid #e0e0e0;border-radius:0.3rem;padding:0.5rem 0.6rem;background:#fafafa;'
+                                                 + 'font-size:0.85rem;line-height:1.5;white-space:pre-wrap;overflow:auto;'
+                                                 + 'min-height:5rem;max-height:18rem;flex:1;color:#444;';
+                        profileBox.textContent = 'Loading profile from Discogs…';
+                        modal.appendChild(profileBox);
 
-                    // Selecting text inside the profile auto-fills the
-                    // Disambiguation input. `mouseup` + `keyup` together
-                    // catch both drag and shift-arrow selection. We bail
-                    // when the selection is empty (e.g. the user just
-                    // clicked to deselect — don't clobber the field).
-                    const captureSelection = () => {
-                        const sel = window.getSelection();
-                        if (!sel || sel.isCollapsed) return;
-                        if (!profileBox.contains(sel.anchorNode)) return;
-                        const text = sel.toString().trim();
-                        if (!text) return;
-                        disInput.value = text;
-                        // Counts as user input — don't surprise the user by
-                        // overwriting with the realname later.
-                        disUserTouched = true;
-                    };
-                    profileBox.addEventListener('mouseup', captureSelection);
-                    profileBox.addEventListener('keyup',   captureSelection);
+                        // Selecting text inside the profile auto-fills the
+                        // Disambiguation input. `mouseup` + `keyup` together
+                        // catch both drag and shift-arrow selection.
+                        const captureSelection = () => {
+                            const sel = window.getSelection();
+                            if (!sel || sel.isCollapsed) return;
+                            if (!profileBox.contains(sel.anchorNode)) return;
+                            const text = sel.toString().trim();
+                            if (!text) return;
+                            disInput.value = text;
+                            disUserTouched = true;
+                        };
+                        profileBox.addEventListener('mouseup', captureSelection);
+                        profileBox.addEventListener('keyup',   captureSelection);
+                    }
 
                     // ── Button row ──────────────────────────────────────────
                     const btnRow = document.createElement('div');
@@ -1184,8 +1185,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     // most likely to edit). Select-all so type-replace works.
                     disInput.focus(); disInput.select();
 
-                    // ── Lazy Discogs fetch — profile + realname ────────────
-                    try {
+                    // ── Lazy Discogs fetch — profile + realname (Discogs only — #193) ──
+                    if (showProfile) try {
                         const data = await getDiscogsEntityData(r.entity?.resource_url);
                         // Bump the name input to realname if the user hasn't
                         // started typing AND it's actually different/useful.
@@ -1422,7 +1423,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             tbl.style.cssText = 'border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;';
             const thRow = document.createElement('tr');
             thRow.style.background = '#f5f5f5';
-            ['Discogs entity', 'Roles / Tracks', 'MB match', 'MBID', 'Resolved via'].forEach(h => {
+            [importSourceName + ' entity', 'Roles / Tracks', 'MB match', 'MBID', 'Resolved via'].forEach(h => {
                 const th = document.createElement('th');
                 th.style.cssText = 'text-align:left;padding:0.2rem 0.4rem;border:1px solid #ddd;white-space:nowrap;';
                 th.textContent = h;
