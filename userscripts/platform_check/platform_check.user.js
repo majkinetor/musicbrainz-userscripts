@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.13.122132
+// @version      2026.6.13.170553
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -27,6 +27,8 @@
 // @connect      openapi.tidal.com
 // @connect      auth.tidal.com
 // @connect      volumo.com
+// @connect      www.qobuz.com
+// @connect      qobuz.com
 // @connect      hdtracks.azurewebsites.net
 // @connect      api.beatport.com
 // @connect      sambl.lioncat6.com
@@ -354,7 +356,7 @@ const iconBtn = 'cursor: pointer; user-select: none; color: #666; padding: 2px 6
 // metadata source, then the streaming services, with Deezer last because it
 // has the worst catalogue coverage of the four. Users can override via the
 // providers panel (drag-and-drop) and the choice persists in pc:provider-order.
-const ALL_PROVIDERS = ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks'];
+const ALL_PROVIDERS = ['discogs', 'bandcamp', 'spotify', 'apple', 'deezer', 'tidal', 'qobuz', 'beatport', 'volumo', 'hdtracks'];
 function getProviderOrder() {
     const raw = GM_getValue('pc:provider-order', null);
     if (!raw) return ALL_PROVIDERS.slice();
@@ -367,8 +369,8 @@ function getProviderOrder() {
     } catch { return ALL_PROVIDERS.slice(); }
 }
 const PROVIDER_ORDER = getProviderOrder();
-const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple', tidal:'Tidal', beatport:'Beatport', volumo:'Volumo', hdtracks:'HDtracks' };
-const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C', tidal:'#111',  beatport:'#0a8754', volumo:'#7c4dff', hdtracks:'#e63329' };
+const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple', tidal:'Tidal', qobuz:'Qobuz', beatport:'Beatport', volumo:'Volumo', hdtracks:'HDtracks' };
+const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C', tidal:'#111',  qobuz:'#0070ef', beatport:'#0a8754', volumo:'#7c4dff', hdtracks:'#e63329' };
 // Small brand glyphs shown next to each provider name (toggle: pc:show-icons). Spotify / Apple Music /
 // Bandcamp are the real marks; Deezer (equalizer) and Discogs (vinyl) are clean brand-coloured stand-ins.
 const PROVIDER_ICON = {
@@ -380,6 +382,8 @@ const PROVIDER_ICON = {
   // Tidal: its mark is four interlocking diamonds; Beatport: brand-green disc with a play wedge (clean stand-ins).
   tidal:    '<svg viewBox="0 0 24 24" width="14" height="14" fill="#111"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>',
   beatport: '<svg viewBox="0 0 24 24" width="14" height="14" fill="#0a8754"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg>',
+  // Qobuz: brand-blue roundel with a "Q" cut (clean stand-in)
+  qobuz:    '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>',
   // Volumo: brand-violet disc with a "V" wedge (clean stand-in)
   volumo:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="#7c4dff"><circle cx="12" cy="12" r="10"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>',
   // HDtracks: brand-red disc with an "HD" monogram (clean stand-in)
@@ -573,11 +577,11 @@ logModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width
 // active (toggled = filter ON = entries hidden). State is per-session only;
 // not persisted because the natural workflow is "open log to investigate
 // one provider's behavior on this page".
-const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'SAMBL', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Beatport', 'Volumo', 'HDtracks'];
+const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'SAMBL', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Qobuz', 'Beatport', 'Volumo', 'HDtracks'];
 const LOG_SOURCE_COLORS = {
     System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F', SAMBL: '#4FC3F7',
     Spotify: '#1DB954', Discogs: '#E0E0E0', Bandcamp: '#629AA9', Deezer: '#A238FF', Apple: '#FA243C',
-    Tidal: '#CCC', Beatport: '#3AD17A', Volumo: '#b39dff', HDtracks: '#f08a84',
+    Tidal: '#CCC', Qobuz: '#5b9bff', Beatport: '#3AD17A', Volumo: '#b39dff', HDtracks: '#f08a84',
 };
 logModal.innerHTML = `
 <style>
@@ -1196,7 +1200,7 @@ let MB_FORMAT = null;
 // only storefront that never exposes a physical edition, so an absent format
 // means "Digital" for the check (otherwise strict mode would withhold every
 // streaming link). Those two are excluded and judged on their actual format.
-const DIGITAL_ONLY_PROVIDERS = new Set(['spotify', 'apple', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks']);
+const DIGITAL_ONLY_PROVIDERS = new Set(['spotify', 'apple', 'deezer', 'tidal', 'qobuz', 'beatport', 'volumo', 'hdtracks']);
 // Bucket a format string into {physical, digital} categories. A multi-format
 // string ("Digital, CD") yields both; an unknown/empty string yields neither.
 function formatCategories(s) {
@@ -1884,6 +1888,168 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     updateRow('spotify', { url: albumUrl, mbTracks, remoteTracks: tracks, year: displayYear, label: lbl, source, barcode: sbc });
 }
 
+// ─── Qobuz ───────────────────────────────────────────────────────────────────
+// Qobuz's catalogue API (api.json/0.2) IS usable unauthenticated with the right
+// app_id — `712109809` (the web player's; `798273057` needs a user token). It
+// returns the UPC, so Qobuz gets barcode-first search + barcode capture like the
+// other API providers. Results are GEO-dependent (by request IP / country), so a
+// region where the API yields nothing falls back to scraping the server-rendered
+// store page. (#201, app_id + URL shapes per chaban-mb / Harmony.)
+const QOBUZ_APP_ID = '712109809';
+function qobuzApi(path) {
+    return gmGet(`https://www.qobuz.com/api.json/0.2/${path}${path.includes('?') ? '&' : '?'}app_id=${QOBUZ_APP_ID}`)
+        .then(r => { if (!r.ok) return null; try { return JSON.parse(r.responseText); } catch { return null; } });
+}
+// the album slug-id is the API's album_id (e.g. .../album/<slug>/vft3hpnx5c3lc)
+function qobuzAlbumId(url) { const m = String(url || '').match(/qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/?#]+\/)?([a-z0-9]+)/i); return m ? m[1] : null; }
+const qobuzMetaFromApi = d => (d && d.id) ? {
+    tracks: d.tracks_count ?? null,
+    title:  d.title || null,
+    year:   String(d.release_date_original || d.release_date_stream || '').slice(0, 4) || null,
+    label:  (d.label && d.label.name) || null,
+    artist: (d.artist && d.artist.name) || null,
+    barcode: d.upc || null,
+} : null;
+const qzDec = s => String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n));
+// Normalise any Qobuz album URL to the server-rendered www store page. open./play.
+// are SPA shells with no credits in the HTML, and an MB rel is often the slug-less
+// open form — a wrong-slug www URL 301-redirects to the canonical page, so this
+// always lands somewhere scrapeable. (URL shapes per Harmony; #201, chaban-mb)
+function qobuzStoreUrl(albumUrl) {
+    const m = String(albumUrl || '').match(/qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/?#]+\/)?([a-z0-9]+)/i);
+    if (!m) return albumUrl;
+    if (/^https?:\/\/www\.qobuz\.com\/[a-z]{2}-[a-z]{2}\/album\/[^/]+\/[a-z0-9]+/i.test(albumUrl)) return albumUrl;   // already a www store page
+    return `https://www.qobuz.com/us-en/album/x/${m[1]}`;
+}
+async function fetchQobuzMeta(albumUrl) {
+    // Prefer the API (structured + carries the UPC); fall back to scraping the
+    // store page where the API returns nothing (geo) or 429s. #201
+    const id = qobuzAlbumId(albumUrl);
+    if (id) { const m = qobuzMetaFromApi(await qobuzApi(`album/get?album_id=${encodeURIComponent(id)}`)); if (m && m.tracks) return m; }
+    return fetchQobuzScrape(albumUrl);
+}
+async function fetchQobuzScrape(albumUrl) {
+    let r = await gmGet(qobuzStoreUrl(albumUrl));
+    // Qobuz rate-limits very aggressively (429 after only a few requests, #201).
+    // One polite retry honouring Retry-After; if it persists, report it distinctly
+    // so the scanner can leave the row retryable instead of caching a false "no match".
+    if (r.status === 429) {
+        const ra = parseInt((String(r.responseHeaders || '').match(/retry-after:\s*(\d+)/i) || [])[1], 10);
+        await new Promise(z => setTimeout(z, Math.min((ra > 0 ? ra : 3) * 1000, 10000)));
+        r = await gmGet(qobuzStoreUrl(albumUrl));
+    }
+    if (r.status === 429) return { rateLimited: true };
+    if (!r.ok || !r.responseText) return null;
+    const html = r.responseText;
+    // Track count: the page renders an empty duplicate of every track row for
+    // its responsive layout, so the `track__info` blocks double-count. Each
+    // real track instead carries a unique add-to-cart marker — count those.
+    const trackIds = new Set([...html.matchAll(/popinAddToCartBtnPlayerTrack(\d+)/g)].map(m => m[1]));
+    // Album name + year from the JSON-LD MusicAlbum block (clean, unlike og:title).
+    let title = null, year = null;
+    for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+        try { const j = JSON.parse(m[1]); if (/MusicAlbum/.test(j['@type'] || '')) { if (j.name) title = qzDec(j.name); if (j.datePublished) year = String(j.datePublished).slice(0, 4); } } catch (e) { /* skip */ }
+    }
+    // Artist: og:title is "<Album>, <Artist> - Qobuz"; strip the suffix and the
+    // album-name prefix to leave the credit (VA pages read "Various Artists").
+    const og = qzDec((html.match(/<meta property="og:title" content="([^"]*)"/) || [])[1] || '').replace(/\s*-\s*Qobuz\s*$/i, '');
+    let artist = null;
+    if (title && og.startsWith(title)) artist = og.slice(title.length).replace(/^[,\s]+/, '').trim() || null;
+    else if (og.includes(',')) artist = og.slice(og.lastIndexOf(',') + 1).trim() || null;
+    const label = qzDec((html.match(/href="\/[a-z]{2}-[a-z]{2}\/label\/[^"]+"[^>]*>\s*([^<]{1,80})/) || [])[1] || '').trim() || null;
+    return { tracks: trackIds.size || null, title: title || og || null, year, label, artist, barcode: null };
+}
+
+async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
+    const label = 'Qobuz';
+    const cached = cacheGet(mbid, 'qobuz');
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('qobuz', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('qobuz', label, cached, mbTracks); return; }
+
+    // Barcode-first: the API matches an exact UPC with no text-search ambiguity.
+    // Qobuz indexes the UPC in its stored form, usually the 13-digit EAN with a
+    // leading zero (e.g. MB's 199257198605 is "0199257198605" there), so a query
+    // with MB's bare barcode misses — try the zero-padded form too. Geo-dependent,
+    // so it falls through to the normal search on no hit. #201 (chaban-mb)
+    if (!existingUrl && barcode) {
+        const queries = [...new Set([barcode, normBarcode(barcode), normBarcode(barcode).padStart(13, '0')])];
+        let items = [];
+        for (const q of queries) {
+            const s = await qobuzApi(`album/search?query=${encodeURIComponent(q)}&limit=10`);
+            items = s?.albums?.items || [];
+            if (items.some(a => normBarcode(a.upc) === normBarcode(barcode))) break;
+        }
+        const hit = items.find(a => normBarcode(a.upc) === normBarcode(barcode)) || items[0];
+        if (hit && hit.id) {
+            const albumUrl = `https://www.qobuz.com/us-en/album/x/${hit.id}`;
+            appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
+            const meta = await fetchQobuzMeta(albumUrl);
+            const bc = meta?.barcode || hit.upc || barcode;
+            cacheSet(mbid, 'qobuz', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
+            updateRow('qobuz', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
+            return;
+        }
+        appendLog(label, `Barcode ${barcode}: no API hit — falling back to search`);
+    }
+
+    let albumUrl = existingUrl;
+    let source   = null;
+    let bestMeta = null;
+    if (albumUrl) {
+        appendLog(label, `Using existing MB URL: ${albumUrl}`, 'ok');
+        source = 'MB rels';
+    } else if (cached) {
+        appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
+        applyCachedRow('qobuz', label, cached, mbTracks);
+        return;
+    } else {
+        const albumT  = searchTerms(album);
+        const artistT = searchTerms(artist);
+        // Qobuz album URLs are /<store>/album/<slug>/<id>; the store prefix varies,
+        // so we site-restrict to qobuz.com and keep only /album/.../<id> hits.
+        const q = isVariousArtists
+            ? `site:qobuz.com ${albumT} album`
+            : `site:qobuz.com ${artistT} ${albumT}`;
+        const candidates = await searchWeb(q, u => /qobuz\.com\/[a-z]{2}-[a-z]{2}\/album\/[^/]+\/[a-z0-9]+/i.test(u), label);
+        if (!candidates.length) {
+            cacheSet(mbid, 'qobuz', { url: null, tracks: null, year: null, label: null, source: 'search' });
+            updateRow('qobuz', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        appendLog(label, `Verifying ${candidates.length} candidate(s) by tracks + title + artist…`);
+        const best = await pickBestCandidate(candidates, fetchQobuzMeta, mbTracks, album, label, artist, isVariousArtists);
+        if (!best || best.score < 120) {
+            appendLog(label, `No verifiable match (best score=${best?.score ?? 'n/a'}) — leaving URL unset`, 'warn');
+            cacheSet(mbid, 'qobuz', { url: null, tracks: null, year: null, label: null, source: 'search' });
+            updateRow('qobuz', { url: null, mbTracks, remoteTracks: null });
+            return;
+        }
+        albumUrl = best.url;
+        bestMeta = best.meta;
+        appendLog(label, `Picked best (score=${best.score}): ${albumUrl}`, best.score >= 150 ? 'ok' : 'warn');
+        source = 'search';
+    }
+
+    const meta = bestMeta || await fetchQobuzMeta(albumUrl);
+    if (meta && meta.rateLimited) {
+        // Don't cache — Qobuz throttled us, not a real "no match". ↻ retries. (#201)
+        appendLog(label, `Rate-limited by Qobuz (429) — the link is set, track-count unverified; use ↻ to retry`, 'warn');
+        updateRow('qobuz', { url: albumUrl, mbTracks, remoteTracks: null, source });
+        return;
+    }
+    if (meta) {
+        appendLog(label, `Page parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
+    } else {
+        appendLog(label, `Album page fetch failed`, 'error');
+    }
+    const tracks = meta?.tracks ?? null;
+    const year   = meta?.year   ?? null;
+    const lbl    = meta?.label  ?? null;
+    const bc     = meta?.barcode ?? null;   // UPC from the API (null on the scrape fallback) — feeds barcode-confidence #201
+    cacheSet(mbid, 'qobuz', { url: albumUrl, tracks, year, label: lbl, source, barcode: bc });
+    updateRow('qobuz', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: bc });
+}
+
 // MB's media[].format strings → Discogs API's `format` query value. Other
 // formats (DVD/Blu-ray/SACD/etc.) we just leave unfiltered — those are rare
 // enough on Discogs that adding a filter hurts more than it helps.
@@ -2134,6 +2300,24 @@ async function fetchBandcampMeta(albumUrl) {
     const ogTotal = (ogTag.match(/content=["']\s*(\d+)\s+track\b/i) || [])[1];
     const total = ogTotal ? parseInt(ogTotal, 10) : null;
     const hiddenTracks = (total != null && streaming != null && total > streaming) ? total - streaming : 0;
+    // Barcode (#194): the UPC lives in TralbumData.current.upc — embedded in the
+    // page's `data-tralbum` attribute (entity-encoded JSON), not the JSON-LD.
+    // Often null (Bandcamp barcodes are hand-entered). Per Harmony (kellnerd/harmony#42)
+    // the digital `current.upc` can coincide with a physical package's barcode —
+    // when it does, it's the package's, not the digital release's, so we drop it.
+    let barcode = null, barcodeIsPackage = false;
+    const trm = html.match(/data-tralbum="([^"]*)"/);
+    if (trm) {
+        try {
+            const tr = JSON.parse(trm[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '<'));
+            const upc = tr && tr.current && tr.current.upc;
+            if (upc) {
+                const pkgUpcs = (tr.packages || []).map(pp => normBarcode(pp && pp.upc)).filter(Boolean);
+                if (pkgUpcs.includes(normBarcode(upc))) barcodeIsPackage = true;   // physical package's barcode — not the digital release's
+                else barcode = String(upc).trim();
+            }
+        } catch (e) { /* malformed data-tralbum — no barcode */ }
+    }
     return {
         // report the true total (incl. hidden) as the track count — that's what the
         // Bandcamp release actually contains, and what MB compares against.
@@ -2145,6 +2329,8 @@ async function fetchBandcampMeta(albumUrl) {
         label:  lMatch?.[1]     || null,
         format: formats.length ? formats.join(', ') : null,
         artist: artistMatch?.[1]?.trim() || null,
+        barcode,
+        barcodeIsPackage,
     };
 }
 
@@ -2240,8 +2426,9 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const hidden = meta?.hiddenTracks || 0;
     if (meta) {
         const trk = hidden > 0 ? `${meta.tracks} (${meta.streamingTracks} streaming + ${hidden} download-only hidden)` : `${meta.tracks}`;
-        appendLog(label, `Album parsed: tracks=${trk} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} format=${meta.format || '?'}`, meta.tracks ? 'ok' : 'warn');
+        appendLog(label, `Album parsed: tracks=${trk} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} format=${meta.format || '?'} barcode=${meta.barcode || (meta.barcodeIsPackage ? 'package-only (ignored)' : '-')}`, meta.tracks ? 'ok' : 'warn');
         if (hidden > 0) appendLog(label, `${hidden} download-only track(s) hidden from streaming — Bandcamp release has ${meta.tracks}, not ${meta.streamingTracks}`, 'warn');
+        if (meta.barcodeIsPackage) appendLog(label, `current.upc matches a physical package's barcode — not the digital release's, so ignored (harmony#42)`, 'warn');
     } else {
         appendLog(label, `Album page failed`, 'error');
     }
@@ -2249,8 +2436,9 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
     const fmt    = meta?.format ?? null;
-    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden });
-    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden });
+    const bc     = meta?.barcode ?? null;   // #194: digital release UPC (null when absent or package-only)
+    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden, barcode: bc });
+    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden, barcode: bc });
 }
 
 // ─── Deezer ─────────────────────────────────────────────────────────────────
@@ -2693,15 +2881,21 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
 // Electronic-music store with a clean, unauthenticated JSON API
 // (volumo.com/api/v1) — no Cloudflare, no captcha, no token. A release lookup
 // returns the full tracklist (with ISRCs) in one call. We resolve by existing
-// MB rel → barcode (ICPN) → artist+album search. Canonical URL is
-// /album/{icpn}-{slug}; the /album/{id} form 308-redirects to it.
-const volumoSlug = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-const volumoUrl  = a => a && a.icpn ? `https://volumo.com/album/${a.icpn}-${volumoSlug(a.title)}` : (a && a.id ? `https://volumo.com/album/${a.id}` : null);
+// MB rel → barcode (ICPN) → artist+album search. Volumo's canonical page is
+// /album/{icpn}-{slug}, but the bare /album/{id} form 308-redirects to it.
+// #202: MB doesn't normalize Volumo URLs yet (MBS-14369), so we emit the
+// clean, slug-less /album/{id} form ourselves — drop the human-readable
+// "-{slug}" tail (it's purely cosmetic and only invites duplicate-link noise).
+// {id} is the ICPN (barcode) when known, else Volumo's internal album id.
+const volumoUrl   = a => a && a.icpn ? `https://volumo.com/album/${a.icpn}` : (a && a.id ? `https://volumo.com/album/${a.id}` : null);
+// Normalize any Volumo album URL to that slug-less form so a slugged MB rel and
+// our clean URL compare equal (avoids a false "differs" / re-add).
+const volumoClean = u => { const m = String(u || '').match(/\/album\/(\d+)/i); return m ? `https://volumo.com/album/${m[1]}` : (u || null); };
 async function volumoApi(path) { const r = await gmGet('https://volumo.com/api/v1' + path); if (!r.ok) return null; try { const j = JSON.parse(r.responseText); return Array.isArray(j) ? j[0] : (j.album || j); } catch { return null; } }
 async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Volumo';
     const cached = cacheGet(mbid, 'volumo');
-    if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('volumo', label, cached, mbTracks); return; }
+    if (cached?.url && (!existingUrl || volumoClean(existingUrl) === volumoClean(cached.url))) { applyCachedRow('volumo', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('volumo', label, cached, mbTracks); return; }
 
     let a = null, source = null;
@@ -2914,6 +3108,7 @@ function parseMbFromDom() {
             deezer:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
             apple:         externalHrefs.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
             tidal:         externalHrefs.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
+            qobuz:         externalHrefs.find(u => /^https?:\/\/(?:www\.|play\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\//i.test(u)) || null,
             beatport:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
             volumo:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
             hdtracks:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?hdtracks\.com\//i.test(u)) || null,
@@ -3122,6 +3317,7 @@ function parseMbData(data) {
         deezer:        relUrls.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
         apple:         relUrls.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
         tidal:         relUrls.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
+        qobuz:         relUrls.find(u => /^https?:\/\/(?:www\.|play\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\//i.test(u)) || null,
         beatport:      relUrls.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
         volumo:        relUrls.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
         hdtracks:      relUrls.find(u => /^https?:\/\/(?:www\.)?hdtracks\.com\//i.test(u)) || null,
@@ -3255,6 +3451,7 @@ async function runScans() {
         deezer:   `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
         apple:    `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`,
         tidal:    `https://tidal.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
+        qobuz:    `https://www.qobuz.com/us-en/search/albums/${encodeURIComponent(`${artist} ${album}`)}`,
         beatport: `https://www.beatport.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
         volumo:   `https://volumo.com/releases?search=${encodeURIComponent(`${artist} ${album}`)}`,
         hdtracks: `https://www.hdtracks.com/#/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
@@ -3294,6 +3491,7 @@ async function runScans() {
     if (GM_getValue('prov_deezer',   true)) tasks.push(scanDeezer  ({ ...ctx, existingUrl: existing.deezer   }));
     if (GM_getValue('prov_apple',    true)) tasks.push(scanApple   ({ ...ctx, existingUrl: existing.apple,    wikidataAppleId: wd?.appleId || null }));
     if (GM_getValue('prov_tidal',    true)) tasks.push(scanTidal   ({ ...ctx, existingUrl: existing.tidal,    wikidataTidalId: wd?.tidalId || null }));
+    if (GM_getValue('prov_qobuz',    true)) tasks.push(scanQobuz   ({ ...ctx, existingUrl: existing.qobuz    }));
     if (GM_getValue('prov_beatport', true)) tasks.push(scanBeatport({ ...ctx, existingUrl: existing.beatport, wikidataBeatportId: wd?.beatportId || null }));
     if (GM_getValue('prov_volumo',   true)) tasks.push(scanVolumo  ({ ...ctx, existingUrl: existing.volumo   }));
     if (GM_getValue('prov_hdtracks', true)) tasks.push(scanHDtracks({ ...ctx, existingUrl: existing.hdtracks }));

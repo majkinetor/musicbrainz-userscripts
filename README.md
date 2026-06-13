@@ -7,8 +7,8 @@ See each script's README for detailed instructions, screenshots and videos:
 [Apollo Editor](./userscripts/apollo_editor/README.md) <img src="./userscripts/apollo_editor/icon.svg" align="left" width="32"><br>
 UI and tools for advanced adding and editing of MusicBrainz release
 
-[Import Discogs Credits](./userscripts/discogs_credits/README.md)<img src="./userscripts/discogs_credits/icon.png" align="left" width="32"><br>
-UI for importing Discogs credits as release relationships and few general import helpers
+[Credit Hoarder](./userscripts/credit_hoarder/README.md)<img src="./userscripts/credit_hoarder/icon.svg" align="left" width="32"><br>
+Import per-track release credits from several providers (Discogs, Tidal, Qobuz) as MusicBrainz relationships, with a review phase
 
 [ISRC Scout](./userscripts/isrc_scout/README.md)<img src="./userscripts/isrc_scout/icon.svg" align="left" width="32"><br>
 Reads the release's existing ISRCs and fill in the missing ones from several sources
