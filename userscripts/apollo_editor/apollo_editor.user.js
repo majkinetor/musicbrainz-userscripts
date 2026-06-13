@@ -469,7 +469,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.111157';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.121029';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -3095,7 +3095,7 @@
       : curGid
         ? '<span class="tc-rpk-curmain"><a href="' + ORIGIN + '/recording/' + esc(curGid) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>'
             + (u(curRec.comment) ? ' <span class="tc-rpk-cmt">(' + esc(u(curRec.comment)) + ')</span>' : '')   // disambiguation on selection #144
-            + (curArtist ? ' <span class="tc-rpk-curby">- ' + acLinks(u(curRec.artistCredit), true) + '</span>' : '') + '</span>'
+            + (curArtist ? ' <span class="tc-rpk-curby">- <span class="tc-rpk-curby-ac">' + acLinks(u(curRec.artistCredit), true) + '</span></span>' : '') + '</span>'
           + (u(curRec.length) ? '<span class="tc-rpk-curlen">' + fmtMs(u(curRec.length)) + '</span>' : '')
         : '<span class="tc-rpk-curnone">— none —</span>';
     const trackArtist = ctx.artist, trackLen = u(ko.length);
@@ -3126,7 +3126,7 @@
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
     // fill the current recording's full "appears on" (all releases, linkable) — not in the page model, so fetch it
     if (curGid) {
-      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=releases+release-groups+isrcs', { headers: { Accept: 'application/json' } })
+      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=artist-credits+releases+release-groups+isrcs', { headers: { Accept: 'application/json' } })
         .then(r => r.json()).then(j => {
           if (!_recPop) return;
           const el = pop.querySelector('.tc-rpk-curon-list');
@@ -3135,6 +3135,10 @@
             (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; rels.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } });
             el.innerHTML = rels.length ? relLinksHtml(rels, 0) : '—';
           }
+          // Artist disambiguations in the header: the page (KO) model doesn't carry
+          // them, so backfill from the WS2 artist-credit once it arrives (#195).
+          const acEl = pop.querySelector('.tc-rpk-curby-ac');
+          if (acEl && j['artist-credit']) { const h = acLinksWs(j['artist-credit'], true); if (h) acEl.innerHTML = h; }
           // ISRC line — reveal only when the recording actually has ISRC(s). #196
           const isrcWrap = pop.querySelector('.tc-rpk-curisrc'), isrcEl = pop.querySelector('.tc-rpk-curisrc-list');
           const isrcs = (j.isrcs || []).filter(Boolean);
