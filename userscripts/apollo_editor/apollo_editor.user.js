@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.13.171207
+// @version      2026.6.13.185105
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -92,7 +92,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -477,7 +477,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.171207';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.185105';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -777,6 +777,7 @@
     #tc-settings .tc-s-rad{display:inline-flex;align-items:center;gap:4px;margin:0;font-weight:normal;cursor:pointer}
     #tc-settings .tc-s-row input[type=radio]{margin:0}
     #tc-settings #tc-s-lentol,#tc-settings #tc-s-titletol,#tc-settings #tc-s-punctsize{width:48px;font:13px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px}
+    #tc-settings #tc-s-hlcolor{width:34px;height:22px;padding:0;border:1px solid #bbb;border-radius:3px;cursor:pointer;background:none}
     #tc-settings .tc-s-row.lentol{gap:7px}
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;display:inline-flex;align-items:stretch;background:#5f3ec0;color:#fff;border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
     #tc-launch .tc-launch-lbl{padding:8px 13px;cursor:pointer}
@@ -869,7 +870,7 @@
           <div class="tc-s-row lentol" title="Allow up to this many differing characters in the title (edit distance) and still count it as a match. 0 = exact."><span>Title tolerance</span><input type="number" id="tc-s-titletol" min="0" max="20" step="1"> <span>characters</span></div>
           <label title="Treat a case / accent / spacing-only difference in title or artist as a match (recommended)."><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
           <label title="Ignore punctuation &amp; symbols in titles/artists (&amp; → and, brackets, quotes, dashes, dots…)."><input type="checkbox" id="tc-s-ignorepunct"> <span>Ignore punctuation</span></label>
-          <label title="Highlight the exact differing characters in a mismatching title (instead of the whole field), and shade a length mismatch by how large the gap is."><input type="checkbox" id="tc-s-detailhl"> <span>Enable detailed highlighting</span></label>
+          <div class="tc-s-row" style="gap:8px"><label title="Highlight the exact differing characters in a mismatching title (instead of the whole field), and shade a length mismatch by how large the gap is."><input type="checkbox" id="tc-s-detailhl"> <span>Enable detailed highlighting</span></label><input type="color" id="tc-s-hlcolor" title="Highlight colour — the differing characters and the length-mismatch shading"></div>
         </div>
       </div>
       <div class="tc-s-sec">Appearance</div>
@@ -902,6 +903,7 @@
     igc.onchange = () => { SETTINGS.recIgnoreCase = igc.checked; saveSettings(); refreshRec(); };
     igp.onchange = () => { SETTINGS.recIgnorePunct = igp.checked; saveSettings(); refreshRec(); };
     const detailhl = s.querySelector('#tc-s-detailhl'); if (detailhl) { detailhl.checked = !!SETTINGS.recDetailedHl; detailhl.onchange = () => { SETTINGS.recDetailedHl = detailhl.checked; saveSettings(); refreshRec(); }; }
+    const hlcol = s.querySelector('#tc-s-hlcolor'); if (hlcol) { hlcol.value = SETTINGS.recHlColor || '#e53935'; hlcol.oninput = () => { SETTINGS.recHlColor = hlcol.value; applyHlColor(); }; hlcol.onchange = () => { SETTINGS.recHlColor = hlcol.value; applyHlColor(); saveSettings(); refreshRec(); }; }
     const punctsz = s.querySelector('#tc-s-punctsize'); if (punctsz) { punctsz.value = SETTINGS.recPunctSize != null ? SETTINGS.recPunctSize : 3; punctsz.onchange = () => { const v = Math.max(0, Math.min(12, parseInt(punctsz.value, 10) || 0)); SETTINGS.recPunctSize = v; punctsz.value = v; saveSettings(); refreshRec(); }; }
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     gridcols.onchange = () => { SETTINGS.gridCols = gridcols.checked; saveSettings(); applyViewClasses(); };
@@ -2392,11 +2394,21 @@
     return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + dhRun(s.s) + '</span>' : '').join('');
   }
   // graded length-gap shade (#186): null under 1s, scaling red 1–5s, solid red ≥5s.
+  // the configurable detailed-highlight colour as {r,g,b} (#186 — Matching → highlight colour)
+  function hlRgb() {
+    const h = String(SETTINGS.recHlColor || '#e53935').replace('#', '');
+    const n = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+    const v = parseInt(n, 16);
+    return (n.length === 6 && Number.isFinite(v)) ? { r: (v >> 16) & 255, g: (v >> 8) & 255, b: v & 255 } : { r: 229, g: 57, b: 53 };
+  }
+  function applyHlColor() { try { document.documentElement.style.setProperty('--tc-hl', SETTINGS.recHlColor || '#e53935'); } catch (e) {} }
   function lenShade(gapMs) {
     const g = Math.abs(gapMs || 0);
     if (g < 1000) return null;
-    if (g >= 5000) return { bg: '#d32f2f', fg: '#fff' };
-    return { bg: 'rgba(211,47,47,' + (0.2 + 0.6 * (g / 5000)).toFixed(2) + ')', fg: g >= 3500 ? '#fff' : '#7a0000' };
+    const { r, g: gg, b } = hlRgb();
+    if (g >= 5000) return { bg: `rgb(${r},${gg},${b})`, fg: '#fff' };
+    const a = (0.2 + 0.6 * (g / 5000)).toFixed(2);   // graded by gap; faint shades get dark tinted text, strong get white
+    return { bg: `rgba(${r},${gg},${b},${a})`, fg: g >= 3500 ? '#fff' : `rgb(${Math.round(r * 0.42)},${Math.round(gg * 0.42)},${Math.round(b * 0.42)})` };
   }
   // read each track's recording association + the data needed to compare them side by side
   function readRecordings() {
@@ -2499,7 +2511,7 @@
       '.tc-rectbl .tc-tkt{font-weight:600}',
       '.tc-rectbl .tc-rec-none{color:#c0392b}.tc-rectbl .tc-rec-new{color:#2c7a51}',
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
-      '.tc-rectbl .tc-dh{background:#e53935;color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — drawn on top of the cell\'s base background
+      '.tc-rectbl .tc-dh{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — colour configurable (Matching → highlight colour)
       '.tc-cf{display:inline-block;padding:0 .5px}',   // #203 confusable/invisible changed char — enlarged inline (Appearance) + hover tooltip names the codepoint
       '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
@@ -3346,7 +3358,7 @@
   // Both read/write the same MB model, so toggling Original/Apollo lets you work in either view (#119).
   function showRecMirror() {
     _apolloUsed = true;
-    recStyle(); snapshotRecOriginals();   // capture the page-load recording associations, for revert
+    recStyle(); applyHlColor(); snapshotRecOriginals();   // capture the page-load recording associations, for revert
     // Anchor on a loaded medium's assignation table when present; otherwise (every
     // medium collapsed, #149) mount into the recordings panel itself so we still
     // render — each collapsed medium then shows an expand control.
