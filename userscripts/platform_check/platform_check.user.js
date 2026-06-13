@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.13.192329
+// @version      2026.6.13.203248
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -3559,11 +3559,15 @@ function flashInfo(targetEl, text, bg = '#5B82B0') {
 // Off by default; the subtle mismatch bar still shows known mismatches regardless.
 function barcodeBlocks(platform) {
     if (!GM_getValue('pc:respect-barcode', false)) return false;
-    if (!MB_BARCODE) return false;                 // nothing to check against
     const c = cacheGet(mbid, platform);
-    if (!c || !c.url) return false;
+    if (!c || !c.url) return false;                // no found URL → nothing to withhold
+    const strict = GM_getValue('pc:barcode-mode', 'exists') === 'strict';
+    // MB has no barcode (missing OR [none]) → nothing here can be barcode-confirmed.
+    // strict: withhold (only confirmed links pass); if-they-exist: allow. (#206 chaban-mb —
+    // previously returned false unconditionally, so strict mode silently ignored the absence.)
+    if (!MB_BARCODE) return strict;
     if (c.barcode) return normBarcode(c.barcode) !== normBarcode(MB_BARCODE);   // known → block iff differs
-    return GM_getValue('pc:barcode-mode', 'exists') === 'strict';               // unknown → block only in strict mode
+    return strict;                                 // provider exposes no barcode → block only in strict mode
 }
 // (#182) "Use format for link confidence" gates + / ↗ when the matched edition's
 // format is incompatible with the MB release format (a different medium is a
