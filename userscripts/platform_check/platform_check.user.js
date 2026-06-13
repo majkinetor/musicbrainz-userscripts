@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.13.122132
+// @version      2026.6.13.153301
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -2693,15 +2693,21 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
 // Electronic-music store with a clean, unauthenticated JSON API
 // (volumo.com/api/v1) — no Cloudflare, no captcha, no token. A release lookup
 // returns the full tracklist (with ISRCs) in one call. We resolve by existing
-// MB rel → barcode (ICPN) → artist+album search. Canonical URL is
-// /album/{icpn}-{slug}; the /album/{id} form 308-redirects to it.
-const volumoSlug = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-const volumoUrl  = a => a && a.icpn ? `https://volumo.com/album/${a.icpn}-${volumoSlug(a.title)}` : (a && a.id ? `https://volumo.com/album/${a.id}` : null);
+// MB rel → barcode (ICPN) → artist+album search. Volumo's canonical page is
+// /album/{icpn}-{slug}, but the bare /album/{id} form 308-redirects to it.
+// #202: MB doesn't normalize Volumo URLs yet (MBS-14369), so we emit the
+// clean, slug-less /album/{id} form ourselves — drop the human-readable
+// "-{slug}" tail (it's purely cosmetic and only invites duplicate-link noise).
+// {id} is the ICPN (barcode) when known, else Volumo's internal album id.
+const volumoUrl   = a => a && a.icpn ? `https://volumo.com/album/${a.icpn}` : (a && a.id ? `https://volumo.com/album/${a.id}` : null);
+// Normalize any Volumo album URL to that slug-less form so a slugged MB rel and
+// our clean URL compare equal (avoids a false "differs" / re-add).
+const volumoClean = u => { const m = String(u || '').match(/\/album\/(\d+)/i); return m ? `https://volumo.com/album/${m[1]}` : (u || null); };
 async function volumoApi(path) { const r = await gmGet('https://volumo.com/api/v1' + path); if (!r.ok) return null; try { const j = JSON.parse(r.responseText); return Array.isArray(j) ? j[0] : (j.album || j); } catch { return null; } }
 async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Volumo';
     const cached = cacheGet(mbid, 'volumo');
-    if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('volumo', label, cached, mbTracks); return; }
+    if (cached?.url && (!existingUrl || volumoClean(existingUrl) === volumoClean(cached.url))) { applyCachedRow('volumo', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('volumo', label, cached, mbTracks); return; }
 
     let a = null, source = null;
