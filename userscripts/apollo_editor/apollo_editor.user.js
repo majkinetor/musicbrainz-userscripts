@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.13.130152
+// @version      2026.6.13.150659
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -477,7 +477,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.130152';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.150659';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2072,7 +2072,7 @@
     while (i < n && j < m) { if (a[i] === b[j]) { push(0, b[j]); i++; j++; } else if (dp[i + 1][j] >= dp[i][j + 1]) { push(-1, a[i]); i++; } else { push(1, b[j]); j++; } }
     while (i < n) push(-1, a[i++]); while (j < m) push(1, b[j++]); return out;
   }
-  function dupDiffSide(segs, want) { return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + esc(s.s) + '</span>' : '').join(''); }
+  function dupDiffSide(segs, want) { return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + dhRun(s.s) + '</span>' : '').join(''); }
   // graded length-gap shade — same as the recordings detailed highlight (#186). null under 1s.
   function dupLenShade(gapMs) {
     const g = Math.abs(gapMs || 0);
@@ -2114,7 +2114,8 @@
       .tc-dd-tbl .tc-dd-pos { color: #888; text-align: right; width: 34px; }
       .tc-dd-tbl .tc-dd-len { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 48px; }
       .tc-dd-tbl .tc-dd-x { color: #c00; }
-      .tc-dd-tbl .tc-dh { background: #ffc9c9; color: #a00000; border-radius: 2px; }`;
+      .tc-dd-tbl .tc-dh { background: #ffc9c9; color: #a00000; border-radius: 2px; }
+      .tc-dd-tbl .tc-cf { outline: 1px dashed currentColor; outline-offset: -1px; border-radius: 2px; padding: 0 .5px; }`;
     document.head.appendChild(s);
   }
   function applyDuplicates() {
@@ -2320,8 +2321,38 @@
   }
   // render one side of a diff: common runs stay plain, this side's unique chars
   // (want = -1 track/left, 1 recording/right) are wrapped as .tc-dh.
+  // #203: confusable / invisible characters. When a DIFFERING character is one of
+  // these, mark it with its Unicode name + codepoint (tooltip) and a dashed outline,
+  // and render invisibles with a visible glyph — so a straight vs curly quote (or
+  // hyphen vs en-dash, or a no-break space) is obvious in the highlight, not a guess.
+  const CONFUSABLE = {};
+  // Built from codepoints (NOT literal chars) so invisible keys can't be stripped/
+  // normalised in source. vis glyphs: ␣ ␣, ∅ ∅, ⇥ ⇥, · ·.
+  [
+    [0x0027, 'apostrophe (straight)'], [0x2019, 'right single quote / curly apostrophe'], [0x2018, 'left single quote'],
+    [0x0060, 'grave accent / backtick'], [0x00B4, 'acute accent'], [0x02BC, 'modifier letter apostrophe'],
+    [0x0022, 'quotation mark (straight)'], [0x201C, 'left double quote'], [0x201D, 'right double quote'],
+    [0x2032, 'prime'], [0x2033, 'double prime'],
+    [0x002D, 'hyphen-minus'], [0x2010, 'hyphen'], [0x2011, 'non-breaking hyphen'], [0x2012, 'figure dash'],
+    [0x2013, 'en dash'], [0x2014, 'em dash'], [0x2015, 'horizontal bar'], [0x2212, 'minus sign'],
+    [0x00AD, 'soft hyphen', '·'], [0x2026, 'horizontal ellipsis'],
+    [0x00A0, 'no-break space', '␣'], [0x202F, 'narrow no-break space', '␣'], [0x2009, 'thin space', '␣'],
+    [0x2002, 'en space', '␣'], [0x2003, 'em space', '␣'], [0x3000, 'ideographic space', '␣'],
+    [0x200B, 'zero-width space', '∅'], [0x200C, 'zero-width non-joiner', '∅'], [0x200D, 'zero-width joiner', '∅'],
+    [0xFEFF, 'byte-order mark', '∅'], [0x0009, 'tab', '⇥'],
+  ].forEach(([cp, n, vis]) => { CONFUSABLE[String.fromCodePoint(cp)] = { n, c: cp.toString(16).toUpperCase().padStart(4, '0'), vis }; });
+  // render a run of CHANGED characters: confusables get a titled dashed span (and
+  // invisibles a visible glyph); everything else is plain escaped text. #203
+  function dhRun(str) {
+    let out = '';
+    for (const ch of String(str)) {
+      const cf = CONFUSABLE[ch];
+      out += cf ? '<span class="tc-cf" title="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>' : esc(ch);
+    }
+    return out;
+  }
   function diffSide(segs, want) {
-    return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + esc(s.s) + '</span>' : '').join('');
+    return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + dhRun(s.s) + '</span>' : '').join('');
   }
   // graded length-gap shade (#186): null under 1s, scaling red 1–5s, solid red ≥5s.
   function lenShade(gapMs) {
@@ -2432,6 +2463,7 @@
       '.tc-rectbl .tc-rec-none{color:#c0392b}.tc-rectbl .tc-rec-new{color:#2c7a51}',
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
       '.tc-rectbl .tc-dh{background:#e53935;color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — drawn on top of the cell\'s base background
+      '.tc-cf{outline:1px dashed currentColor;outline-offset:-1px;border-radius:2px;padding:0 .5px}',   // #203 a confusable/invisible changed char — dashed box + hover tooltip names the codepoint
       '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
