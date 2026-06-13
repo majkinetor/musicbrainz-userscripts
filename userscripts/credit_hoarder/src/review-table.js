@@ -314,7 +314,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 (panelLi || panel).remove();
                 if (headerSlot) headerSlot.replaceChildren();   // #139: cleared, repopulated by the recursive render
                 onRefresh().then(freshResults => {
-                    showReviewTable(freshResults, rolesMap, companiesRolesMap, { onRefresh, headerSlot })
+                    // Pass the FULL opts through, not just { onRefresh, headerSlot } —
+                    // dropping sourceName/sourceIcon made the source-aware render throw
+                    // (e.g. sourceName.charAt(0)) and aborted before the Start-import
+                    // button mounted, so a refresh left no import button. (#193)
+                    showReviewTable(freshResults, rolesMap, companiesRolesMap, opts)
                         .then(confirmedMap => resolve(confirmedMap));
                 });
             });
