@@ -238,6 +238,12 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         }
         .discogs-import-btn:hover { background: #cf6618; }
         .discogs-import-btn:disabled { background: #c8a070; cursor: default; }
+        .discogs-import-btn svg { vertical-align: -2px; margin-right: 2px; }
+        /* split button (#193): main + attached caret read as one control */
+        .discogs-import-split { display: inline-flex; align-items: stretch; }
+        .discogs-import-btn.has-caret { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+        .discogs-import-caret { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 1px solid rgba(255,255,255,.4); padding-left: 0.4rem; padding-right: 0.55rem; font-weight: normal; }
+        .discogs-log-menu button svg { vertical-align: -2px; margin-right: 4px; }
         .discogs-bar-row2 {
             display: flex;
             align-items: center;
@@ -424,28 +430,35 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     const row1 = document.createElement('div');
     row1.className = 'discogs-bar-row1';
 
-    // ONE Import button for all sources (#193), split-button style: the main
-    // button runs the FIRST linked source (priority Discogs, Tidal, Qobuz),
-    // the compact ▾ next to it opens a submenu with every linked source.
+    // ONE split Import button for all sources (#193): the main button runs the
+    // FIRST linked source (priority Discogs, Tidal, Qobuz) with its icon; the
+    // attached ▾ opens a submenu of the OTHER sources (the default isn't repeated).
+    const SRC_ICON = {
+        Discogs: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
+        Tidal:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
+        Qobuz:   '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    };
+    const importHtml = s => (SRC_ICON[s.name] || '') + ' Import from ' + s.name;
     const importSources = [];
     if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: g => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: g => runTidalImport(sources.tidal, g) });
     if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: g => runQobuzImport(sources.qobuz, g) });
-    const importLabel = `Import from ${importSources[0].name}`;
+    const multiSource = importSources.length > 1;
+    const importSplit = document.createElement('span');
+    importSplit.className = 'discogs-import-split';
     const importBtn = document.createElement('button');
-    importBtn.className = 'discogs-import-btn';
-    importBtn.textContent = importLabel;
+    importBtn.className = 'discogs-import-btn' + (multiSource ? ' has-caret' : '');
+    importBtn.innerHTML = importHtml(importSources[0]);
     const importCaretBtn = document.createElement('button');
-    importCaretBtn.className = 'discogs-import-btn';
+    importCaretBtn.className = 'discogs-import-btn discogs-import-caret';
     importCaretBtn.textContent = '▾';
     importCaretBtn.title = 'Import from another source';
-    importCaretBtn.style.cssText = 'margin-left:2px;padding-left:0.45rem;padding-right:0.45rem;';
-    if (importSources.length < 2) importCaretBtn.style.display = 'none';
+    if (!multiSource) importCaretBtn.style.display = 'none';
+    importSplit.append(importBtn, importCaretBtn);
     const progressPct = document.createElement('span');
     progressPct.id = 'discogs-progress-pct';
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;';
-    row1.appendChild(importBtn);
-    row1.appendChild(importCaretBtn);
+    row1.appendChild(importSplit);
     row1.appendChild(progressPct);
 
     // Action slot — the review "Start import" button + unresolved message get
@@ -1115,7 +1128,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         runner(getOpts).finally(() => {
             importBtn.disabled = false;
             importCaretBtn.disabled = false;
-            srcBtn.textContent = restoreLabel;
+            srcBtn.innerHTML = restoreLabel;   // restore icon + label (#193)
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
             bar.classList.remove('is-reviewing');   // #139: safety — clear if the flow ended during review
@@ -1135,17 +1148,17 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     // Import-source submenu (#193): one button, dropdown when the release
     // links several sources. Reuses the Log ▾ dropdown styling/behavior.
     let srcMenu = null;
-    if (importSources.length > 1) {
+    if (multiSource) {
         srcMenu = document.createElement('div');
         srcMenu.className = 'discogs-log-menu';
-        for (const s of importSources) {
+        for (const s of importSources.slice(1)) {   // skip the default — it's the main button (#193)
             const b = document.createElement('button');
             b.type = 'button';
-            b.textContent = `from ${s.name}`;
+            b.innerHTML = (SRC_ICON[s.name] || '') + ' from ' + s.name;
             b.title = s.url;
             b.addEventListener('click', () => {
                 srcMenu.classList.remove('open');
-                startImport(importBtn, importLabel, s.url, s.run);
+                startImport(importBtn, importHtml(importSources[0]), s.url, s.run);
             });
             srcMenu.appendChild(b);
         }
@@ -1153,7 +1166,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     }
     // Main button: always the first (default) source. Caret: the submenu.
     importBtn.addEventListener('click', () =>
-        startImport(importBtn, importLabel, importSources[0].url, importSources[0].run));
+        startImport(importBtn, importHtml(importSources[0]), importSources[0].url, importSources[0].run));
     importCaretBtn.addEventListener('click', (e) => {
         if (!srcMenu) return;
         e.stopPropagation();
