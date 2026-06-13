@@ -1967,10 +1967,18 @@ async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVarious
     if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('qobuz', label, cached, mbTracks); return; }
 
     // Barcode-first: the API matches an exact UPC with no text-search ambiguity.
-    // Geo-dependent, so it just falls through to the normal search on no hit. #201
+    // Qobuz indexes the UPC in its stored form, usually the 13-digit EAN with a
+    // leading zero (e.g. MB's 199257198605 is "0199257198605" there), so a query
+    // with MB's bare barcode misses — try the zero-padded form too. Geo-dependent,
+    // so it falls through to the normal search on no hit. #201 (chaban-mb)
     if (!existingUrl && barcode) {
-        const s = await qobuzApi(`album/search?query=${encodeURIComponent(barcode)}&limit=10`);
-        const items = s?.albums?.items || [];
+        const queries = [...new Set([barcode, normBarcode(barcode), normBarcode(barcode).padStart(13, '0')])];
+        let items = [];
+        for (const q of queries) {
+            const s = await qobuzApi(`album/search?query=${encodeURIComponent(q)}&limit=10`);
+            items = s?.albums?.items || [];
+            if (items.some(a => normBarcode(a.upc) === normBarcode(barcode))) break;
+        }
         const hit = items.find(a => normBarcode(a.upc) === normBarcode(barcode)) || items[0];
         if (hit && hit.id) {
             const albumUrl = `https://www.qobuz.com/us-en/album/x/${hit.id}`;
