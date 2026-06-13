@@ -1889,11 +1889,27 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
 }
 
 // ─── Qobuz ───────────────────────────────────────────────────────────────────
-// Qobuz has no unauthenticated API (the api.json catalogue endpoints 401 even
-// with a freshly-scraped app_id), but its public store page is fully server-
-// rendered, so we resolve by web search and verify by scraping that page —
-// same shape as the Spotify/Bandcamp scanners. No barcode (the page carries no
-// UPC) and no format (digital-only), so it's judged on track count + title.
+// Qobuz's catalogue API (api.json/0.2) IS usable unauthenticated with the right
+// app_id — `712109809` (the web player's; `798273057` needs a user token). It
+// returns the UPC, so Qobuz gets barcode-first search + barcode capture like the
+// other API providers. Results are GEO-dependent (by request IP / country), so a
+// region where the API yields nothing falls back to scraping the server-rendered
+// store page. (#201, app_id + URL shapes per chaban-mb / Harmony.)
+const QOBUZ_APP_ID = '712109809';
+function qobuzApi(path) {
+    return gmGet(`https://www.qobuz.com/api.json/0.2/${path}${path.includes('?') ? '&' : '?'}app_id=${QOBUZ_APP_ID}`)
+        .then(r => { if (!r.ok) return null; try { return JSON.parse(r.responseText); } catch { return null; } });
+}
+// the album slug-id is the API's album_id (e.g. .../album/<slug>/vft3hpnx5c3lc)
+function qobuzAlbumId(url) { const m = String(url || '').match(/qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/?#]+\/)?([a-z0-9]+)/i); return m ? m[1] : null; }
+const qobuzMetaFromApi = d => (d && d.id) ? {
+    tracks: d.tracks_count ?? null,
+    title:  d.title || null,
+    year:   String(d.release_date_original || d.release_date_stream || '').slice(0, 4) || null,
+    label:  (d.label && d.label.name) || null,
+    artist: (d.artist && d.artist.name) || null,
+    barcode: d.upc || null,
+} : null;
 const qzDec = s => String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n));
 // Normalise any Qobuz album URL to the server-rendered www store page. open./play.
 // are SPA shells with no credits in the HTML, and an MB rel is often the slug-less
@@ -1906,6 +1922,13 @@ function qobuzStoreUrl(albumUrl) {
     return `https://www.qobuz.com/us-en/album/x/${m[1]}`;
 }
 async function fetchQobuzMeta(albumUrl) {
+    // Prefer the API (structured + carries the UPC); fall back to scraping the
+    // store page where the API returns nothing (geo) or 429s. #201
+    const id = qobuzAlbumId(albumUrl);
+    if (id) { const m = qobuzMetaFromApi(await qobuzApi(`album/get?album_id=${encodeURIComponent(id)}`)); if (m && m.tracks) return m; }
+    return fetchQobuzScrape(albumUrl);
+}
+async function fetchQobuzScrape(albumUrl) {
     let r = await gmGet(qobuzStoreUrl(albumUrl));
     // Qobuz rate-limits very aggressively (429 after only a few requests, #201).
     // One polite retry honouring Retry-After; if it persists, report it distinctly
@@ -1937,10 +1960,29 @@ async function fetchQobuzMeta(albumUrl) {
     return { tracks: trackIds.size || null, title: title || og || null, year, label, artist, barcode: null };
 }
 
-async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
+async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Qobuz';
     const cached = cacheGet(mbid, 'qobuz');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('qobuz', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('qobuz', label, cached, mbTracks); return; }
+
+    // Barcode-first: the API matches an exact UPC with no text-search ambiguity.
+    // Geo-dependent, so it just falls through to the normal search on no hit. #201
+    if (!existingUrl && barcode) {
+        const s = await qobuzApi(`album/search?query=${encodeURIComponent(barcode)}&limit=10`);
+        const items = s?.albums?.items || [];
+        const hit = items.find(a => normBarcode(a.upc) === normBarcode(barcode)) || items[0];
+        if (hit && hit.id) {
+            const albumUrl = `https://www.qobuz.com/us-en/album/x/${hit.id}`;
+            appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
+            const meta = await fetchQobuzMeta(albumUrl);
+            const bc = meta?.barcode || hit.upc || barcode;
+            cacheSet(mbid, 'qobuz', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
+            updateRow('qobuz', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
+            return;
+        }
+        appendLog(label, `Barcode ${barcode}: no API hit — falling back to search`);
+    }
 
     let albumUrl = existingUrl;
     let source   = null;
@@ -1995,8 +2037,9 @@ async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVarious
     const tracks = meta?.tracks ?? null;
     const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
-    cacheSet(mbid, 'qobuz', { url: albumUrl, tracks, year, label: lbl, source });
-    updateRow('qobuz', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
+    const bc     = meta?.barcode ?? null;   // UPC from the API (null on the scrape fallback) — feeds barcode-confidence #201
+    cacheSet(mbid, 'qobuz', { url: albumUrl, tracks, year, label: lbl, source, barcode: bc });
+    updateRow('qobuz', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: bc });
 }
 
 // MB's media[].format strings → Discogs API's `format` query value. Other
@@ -3400,7 +3443,7 @@ async function runScans() {
         deezer:   `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
         apple:    `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`,
         tidal:    `https://tidal.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
-        qobuz:    `https://www.qobuz.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
+        qobuz:    `https://www.qobuz.com/us-en/search/albums/${encodeURIComponent(`${artist} ${album}`)}`,
         beatport: `https://www.beatport.com/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
         volumo:   `https://volumo.com/releases?search=${encodeURIComponent(`${artist} ${album}`)}`,
         hdtracks: `https://www.hdtracks.com/#/search?q=${encodeURIComponent(`${artist} ${album}`)}`,
