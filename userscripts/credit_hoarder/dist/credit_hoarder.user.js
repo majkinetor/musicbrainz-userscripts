@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.13.171641
-// @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
+// @version      2026.6.13.183639
+// @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
-// @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
+// @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.svg
 // @match        https://*.musicbrainz.org/release/*/edit-relationships
 // @match        https://*.musicbrainz.org/artist/*
 // @match        https://*.musicbrainz.org/label/*
