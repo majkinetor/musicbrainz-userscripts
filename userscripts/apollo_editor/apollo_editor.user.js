@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.12
+// @version      2026.6.13
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -460,7 +460,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.12.104755';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.084207';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2174,10 +2174,17 @@
     const x = a && a.artistGids, y = b && b.artistGids;
     return !!(x && y && x.length > 0 && x.length === y.length && x.every((g, i) => g === y[i]));
   }
+  // EXACT means the displayed strings are identical — only Unicode-normalisation
+  // (NFC) is folded, never case/accents/spacing. A casing-only (or accent-only)
+  // difference is NOT exact: it's a real visible difference that native offers to
+  // copy, so it belongs in the tolerance band, not the blue "exact" one. #197
+  const literalEq = (a, b) => String(a == null ? '' : a).normalize('NFC') === String(b == null ? '' : b).normalize('NFC');
   function recExactMatch(data, ctx) {
     if (!ctx) return false;
-    const titleEq = !data.name || !ctx.title || fold(data.name) === fold(ctx.title);
-    const artistEq = !data.artist || !ctx.artist || sameAcEntities(data, ctx) || fold(data.artist) === fold(ctx.artist);
+    const titleEq = !data.name || !ctx.title || literalEq(data.name, ctx.title);
+    // a same-entity credited-as is still exact (#190) — only the artist *text*
+    // is no longer case/accent-folded into exactness (#197)
+    const artistEq = !data.artist || !ctx.artist || sameAcEntities(data, ctx) || literalEq(data.artist, ctx.artist);
     const lenEq = !data.length || !ctx.length || Math.round(data.length / 1000) === Math.round(ctx.length / 1000);
     return titleEq && artistEq && lenEq;
   }
@@ -2278,9 +2285,12 @@
       const diffs = rec ? recFieldDiffs(t, rec) : null;
       // ideal/exact match: title + length match with NO relaxation option used (fold only, no punctuation/
       // edit-distance/length tolerance). A credited-as artist (same entity) still counts as exact. #119
-      const exact = !!(rec && fold(u(t.name)) === fold(u(rec.name))
+      // EXACT = displayed title/artist identical (literal, not case/accent-folded —
+      // a casing-only diff is tolerance, #197) and length displays the same. A
+      // credited-as artist (same entity) still counts as exact. #119 #190
+      const exact = !!(rec && literalEq(u(t.name), u(rec.name))
         && (!u(t.length) || !u(rec.length) || Math.round(u(t.length) / 1000) === Math.round(u(rec.length) / 1000))
-        && (sameArtistEntities(t, rec) || fold(acText(u(t.artistCredit))) === fold(acText(u(rec.artistCredit)))));
+        && (sameArtistEntities(t, rec) || literalEq(acText(u(t.artistCredit)), acText(u(rec.artistCredit)))));
       // which fields a green (within-tolerance) match still differs on — for the dot tooltip
       const tolDiffs = [];
       if (rec) {
