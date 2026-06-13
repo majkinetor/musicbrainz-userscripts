@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.13.192329
+// @version      2026.6.13.204444
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -1001,7 +1001,10 @@ document.getElementById('mb-modal-copy-btn').addEventListener('click', async fun
     // Firefox throws NS_ERROR_NOT_INITIALIZED from clipboard.writeText when
     // the document isn't focused. Fall back to a textarea + execCommand on
     // failure rather than letting the unhandled rejection surface.
-    const text = logPanel.innerText || '';
+    // Wrap in a collapsed <details> + fenced block so it pastes into a GitHub
+    // issue/comment as a tidy, foldable log rather than a wall of text.
+    const raw = (logPanel.innerText || '').trim();
+    const text = '<details><summary>Platform Check Log</summary>\n\n```\n' + raw + '\n```\n\n</details>\n';
     const flash = msg => { this.textContent = msg; setTimeout(() => { this.textContent = 'Copy'; }, 1500); };
     try {
         await navigator.clipboard.writeText(text);
