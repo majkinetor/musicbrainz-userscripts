@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.12
+// @version      2026.6.13
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -51,6 +51,15 @@
     v = (v || '').trim();
     const url = v.match(new RegExp('musicbrainz\\.org/artist/(' + MBID_RE.source + ')', 'i')); if (url) return url[1].toLowerCase();
     const m = v.match(new RegExp('(?:^|[\\s/])(' + MBID_RE.source + ')(?:[\\s/?#]|$)', 'i')); return m ? m[1].toLowerCase() : null;
+  }
+  // an ISRC (CC-XXX-YY-NNNNN), with or without separators, found as a standalone
+  // token → the normalised 12-char uppercase form. Word-boundaried so it won't
+  // fire mid-string; the structure (2 alpha · 3 alphanum · 7 digit) is specific
+  // enough not to collide with a bare MBID. #196
+  const ISRC_TOKEN = /\b([A-Za-z]{2})-?([A-Za-z0-9]{3})-?([0-9]{2})-?([0-9]{5})\b/;
+  function isrcFrom(v) {
+    const m = String(v || '').match(ISRC_TOKEN);
+    return m ? (m[1] + m[2] + m[3] + m[4]).toUpperCase() : null;
   }
 
   /* ── create-artist-in-a-tab → auto-insert (BroadcastChannel handshake, like the Discogs importer) ── */
@@ -460,7 +469,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.12.104755';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.094227';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2415,6 +2424,7 @@
       '.tc-recpop .tc-rpk-main{display:flex;align-items:baseline;gap:6px}',
       '.tc-recpop .tc-rpk-name{font-weight:600;color:#222}',
       '.tc-recpop .tc-rpk-cmt{color:#888;font-size:11px}',
+      '.tc-recpop .tc-rpk-curisrc{padding:0 10px 4px;color:#777;font-size:11px}.tc-recpop .tc-rpk-curisrc-list{font-family:Consolas,monospace;color:#555}',
       '.tc-recpop .tc-rpk-len{margin-left:auto;color:#666;font-variant-numeric:tabular-nums;white-space:nowrap}',
       '.tc-recpop .tc-rpk-by{color:#555;font-size:11px}',
       '.tc-recpop .tc-rpk-on{color:#777;font-size:11px}',
@@ -2900,6 +2910,17 @@
       return j && j.id ? mapWsRec(j) : null;
     } catch (e) { Log.warn('recording lookup failed', e.message); return null; }
   }
+  // recordings sharing an ISRC — backs pasting an ISRC into the picker's search
+  // field (one ISRC can map to several recordings). #196
+  async function fetchRecordingsByIsrc(isrc) {
+    try {
+      // NB: the `isrc` resource rejects `release-groups` as an inc param (unlike
+      // the `recording` resource) — including it returns an error object with no
+      // recordings, which is why an existing ISRC came back "not found". #196
+      const j = await fetch(`${ORIGIN}/ws/2/isrc/${encodeURIComponent(isrc)}?fmt=json&inc=artist-credits+releases+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+      return ((j && j.recordings) || []).map(mapWsRec);
+    } catch (e) { Log.warn('ISRC lookup failed', e.message); return []; }
+  }
   function recEntityFrom(data) {
     if (data.entity) return data.entity;   // suggestions are already full MB entities
     try {
@@ -3020,12 +3041,15 @@
         (trackLen ? '<span class="tc-rpk-hdlen">' + fmtMs(trackLen) + '</span>' : '') + '</div>' +
       '<div class="tc-rpk-curwrap">' +
         '<div class="tc-rpk-cur">' + curHtml + '</div>' +
+        // ISRC of the linked recording — makes it obvious when an ISRC drove the
+        // selection (#196). Hidden until the async fill finds at least one.
+        (curGid ? '<div class="tc-rpk-curisrc" style="display:none">ISRC: <span class="tc-rpk-curisrc-list"></span></div>' : '') +
         (curGid ? '<div class="tc-rpk-curon">appears on: <span class="tc-rpk-curon-list">…</span></div>' : '') +
       '</div>' +
       (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
-      '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" placeholder="search by name, or paste a recording MBID / URL…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
+      '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" placeholder="search by name, or paste a recording MBID / URL / ISRC…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
       '<div class="tc-rpk-sec tc-rpk-suggsec" title="click to collapse / expand"><span>suggestions <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
       '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" title="relaxed search — show all recordings with this title, ignoring artist &amp; length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
     const newBtn = pop.querySelector('.tc-rpk-qnew'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
@@ -3033,12 +3057,19 @@
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
     // fill the current recording's full "appears on" (all releases, linkable) — not in the page model, so fetch it
     if (curGid) {
-      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=releases+release-groups', { headers: { Accept: 'application/json' } })
+      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=releases+release-groups+isrcs', { headers: { Accept: 'application/json' } })
         .then(r => r.json()).then(j => {
-          if (!_recPop) return; const el = pop.querySelector('.tc-rpk-curon-list'); if (!el) return;
-          const seen = new Set(), rels = [];
-          (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; rels.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } });
-          el.innerHTML = rels.length ? relLinksHtml(rels, 0) : '—';
+          if (!_recPop) return;
+          const el = pop.querySelector('.tc-rpk-curon-list');
+          if (el) {
+            const seen = new Set(), rels = [];
+            (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; rels.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } });
+            el.innerHTML = rels.length ? relLinksHtml(rels, 0) : '—';
+          }
+          // ISRC line — reveal only when the recording actually has ISRC(s). #196
+          const isrcWrap = pop.querySelector('.tc-rpk-curisrc'), isrcEl = pop.querySelector('.tc-rpk-curisrc-list');
+          const isrcs = (j.isrcs || []).filter(Boolean);
+          if (isrcWrap && isrcEl && isrcs.length) { isrcEl.textContent = isrcs.join(', '); isrcWrap.style.display = ''; }
         }).catch(() => {});
     }
     _recPopDrag(pop.querySelector('.tc-rpk-hd'));   // header is the drag handle
@@ -3109,6 +3140,18 @@
         if (my !== seq || !_recPop) return;
         if (rec) pickRecording(entry, rec);   // links the recording + closes the picker
         else resBox.innerHTML = '<div class="tc-rpk-empty">recording MBID not found</div>';
+        return;
+      }
+      // paste an ISRC → resolve to its recording(s). Exactly one → link
+      // immediately (same as an MBID); several → list them to choose from. #196
+      const isrc = isrcFrom(query);
+      if (isrc) {
+        resBox.innerHTML = '<div class="tc-rpk-empty">resolving ISRC ' + esc(isrc) + '…</div>';
+        const recs = await fetchRecordingsByIsrc(isrc);
+        if (my !== seq || !_recPop) return;
+        if (recs.length === 1) { pickRecording(entry, recs[0]); return; }   // one hit → link + close
+        if (recs.length > 1) { recs.forEach(rr => { data[rr.gid] = rr; }); lastResults = recs; paintResults(); return; }
+        resBox.innerHTML = '<div class="tc-rpk-empty">no recording with ISRC ' + esc(isrc) + '</div>';
         return;
       }
       resBox.innerHTML = '<div class="tc-rpk-empty">searching…</div>';
