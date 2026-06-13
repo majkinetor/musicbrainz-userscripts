@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.231211
+// @version      2026.6.24.125100
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1062,7 +1062,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.231211';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.24.125100';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -3105,12 +3105,13 @@
       if (!td.isConnected) continue;
       const media = await dupTracklist(gid);
       if (!td.isConnected) continue;
-      paintDupCell(td, tr, gid, media ? dupTrackScore(media, enteredTracklist()) : null);
+      const candTracks = media ? media.reduce((n, m) => n + ((m.tracks || []).length || 0), 0) : NaN;   // #187: candidate's actual track count
+      paintDupCell(td, tr, gid, media ? dupTrackScore(media, enteredTracklist()) : null, candTracks);
       await new Promise(z => setTimeout(z, 1100));
     }
     _dupBusy = false;
   }
-  function paintDupCell(td, tr, gid, sim) {
+  function paintDupCell(td, tr, gid, sim, candTracks) {
     if (sim == null) {
       td.textContent = '?'; td.style.cssText = 'text-align:center;color:#999' + (gid ? ';cursor:pointer' : '');
       td.title = 'no track overlap could be computed (tracklist unavailable, or no tracks entered yet)';
@@ -3118,9 +3119,15 @@
       return;
     }
     const pct = Math.round(sim * 100);
-    td.textContent = pct + '%';
+    // #187: flag a track-count mismatch (still scored — the % is useful when a
+    // platform just has a few extra/fewer tracks) so the number isn't read as a
+    // full match. Only when we actually have a tracklist entered to compare.
+    const myTracks = mediums().reduce((n, m) => n + ((u(m.tracks) || []).length || 0), 0);
+    const trackMiss = myTracks > 0 && !isNaN(candTracks) && candTracks !== myTracks;
+    td.innerHTML = pct + '%' + (trackMiss ? ' <span class="tc-dup-tm">⚠ tracks</span>' : '');
     td.style.cssText = 'background:' + dupColor(pct) + ';color:#fff;font-weight:700;text-align:center;border-radius:3px;padding:1px 6px' + (gid ? ';cursor:pointer' : '');
     td.title = 'track-overlap similarity to the release you are entering' + (gid ? ' — click for a track-by-track comparison' : '');
+    if (trackMiss) td.title += ` — track count differs: you entered ${myTracks}, this release has ${candTracks}`;
     if (gid) td.onclick = () => toggleDupDetail(tr, gid, td);
   }
   // 0% → Apollo red, 50% → amber, 100% → Apollo's match green (#1f8a4c) — uses the
@@ -3189,6 +3196,23 @@
     while (i < n) push(-1, a[i++]); while (j < m) push(1, b[j++]); return out;
   }
   function dupDiffSide(segs, want) { return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + dhRun(s.s) + '</span>' : '').join(''); }
+  // Char-diff with a cutoff (#187): when the two strings share too little, a
+  // scattered per-character highlight reads as "almost the same" — misleading
+  // when the titles are nothing alike. Below the cutoff we mark the WHOLE side
+  // instead (like the original MB Release Seeding Helper), so a real mismatch is
+  // obvious and clearly outweighs a small length gap. `want` = -1 left/existing, 1 right/seeded.
+  const DUP_DIFF_CUTOFF = 0.4;
+  function dupDiffOrWhole(a, b, want) {
+    a = a || ''; b = b || '';
+    const self = want === -1 ? a : b;
+    if (!self) return '';
+    const segs = dupCharDiff(a, b);
+    if (!segs) return esc(self);
+    const common = segs.reduce((n, s) => n + (s.t === 0 ? s.s.length : 0), 0);
+    if (common / Math.max(a.length, b.length, 1) < DUP_DIFF_CUTOFF)
+      return '<span class="tc-dh">' + esc(self) + '</span>';   // too different → whole line
+    return dupDiffSide(segs, want);
+  }
   // graded length-gap shade — same as the recordings detailed highlight (#186). null under 1s.
   function dupLenShade(gapMs) {
     const g = Math.abs(gapMs || 0);
@@ -3202,20 +3226,22 @@
       rows += `<tr class="tc-dd-medhdr"><td colspan="7">#${med.position || mi + 1}${med.format ? ' ' + esc(med.format) : ''}</td></tr>`;
       med.tracks.forEach(t => {
         const s = entered[gi]; gi++; const has = !!s;   // a seeded counterpart at this position?
-        // title + artist: per-character diff (literal, like #186 — casing shows)
-        const td = has ? dupCharDiff(t.title || '', s.title || '') : null;
-        const titleEx = td ? dupDiffSide(td, -1) : esc(t.title || ''), titleSe = has ? (td ? dupDiffSide(td, 1) : esc(s.title || '')) : '';
-        const ad = has ? dupCharDiff(t.artist || '', s.artist || '') : null;
-        const artEx = ad ? dupDiffSide(ad, -1) : esc(t.artist || ''), artSe = has ? (ad ? dupDiffSide(ad, 1) : esc(s.artist || '')) : '';
+        // title + artist: per-character diff with a cutoff (#187 — a wholly
+        // different title is marked whole, not as scattered characters).
+        const titleEx = has ? dupDiffOrWhole(t.title || '', s.title || '', -1) : esc(t.title || '');
+        const titleSe = has ? dupDiffOrWhole(t.title || '', s.title || '', 1)  : '';
+        const artEx   = has ? dupDiffOrWhole(t.artist || '', s.artist || '', -1) : esc(t.artist || '');
+        const artSe   = has ? dupDiffOrWhole(t.artist || '', s.artist || '', 1)  : '';
         // length: graded shade on both Len cells when the gap is real (#186)
         const sh = (has && t.len && s.len) ? dupLenShade(t.len - s.len) : null;
         const lenSt = sh ? ` style="background:${sh.bg};color:${sh.fg}"` : '';
+        // title-then-artist column order, to match the rest of the UI (#187)
         rows += `<tr class="tc-dd-row"><td class="tc-dd-pos">${esc(String(t.pos || gi))}</td>`
-          + `<td>${artEx}</td><td>${titleEx}</td><td class="tc-dd-len"${lenSt}>${dupFmtLen(t.len)}</td>`
-          + `<td>${artSe}</td><td>${titleSe}</td><td class="tc-dd-len"${lenSt}>${has ? dupFmtLen(s.len) : ''}</td></tr>`;
+          + `<td>${titleEx}</td><td>${artEx}</td><td class="tc-dd-len"${lenSt}>${dupFmtLen(t.len)}</td>`
+          + `<td>${titleSe}</td><td>${artSe}</td><td class="tc-dd-len"${lenSt}>${has ? dupFmtLen(s.len) : ''}</td></tr>`;
       });
     });
-    return `<table class="tc-dd-tbl"><thead><tr><th>Pos</th><th>Release artist</th><th>Release title</th><th>Len</th><th>Seeded artist</th><th>Seeded title</th><th>Len</th></tr></thead><tbody>${rows}</tbody></table>`;
+    return `<table class="tc-dd-tbl"><thead><tr><th>Pos</th><th>Release title</th><th>Release artist</th><th>Len</th><th>Seeded title</th><th>Seeded artist</th><th>Len</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
   function dupStyle() {
     if (document.getElementById('tc-dup-style')) return;
@@ -3231,7 +3257,8 @@
       .tc-dd-tbl .tc-dd-len { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 48px; }
       .tc-dd-tbl .tc-dd-x { color: #c00; }
       .tc-dd-tbl .tc-dh { background: #ffc9c9; color: #a00000; border-radius: 2px; }
-      .tc-dd-tbl .tc-cf { display: inline-block; padding: 0 .5px; }`;
+      .tc-dd-tbl .tc-cf { display: inline-block; padding: 0 .5px; }
+      #duplicates-tab .tc-dup-sim .tc-dup-tm { display: inline-block; margin-left: 4px; font-weight: 600; font-size: 10px; opacity: 0.92; white-space: nowrap; }`;
     document.head.appendChild(s);
   }
   function applyDuplicates() {
