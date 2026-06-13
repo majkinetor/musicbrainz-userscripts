@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.13.171207
+// @version      2026.6.13.201411
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -477,7 +477,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.171207';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.201411';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -855,7 +855,7 @@
         <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
         <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
         <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
-        <label title="On the Add-release Duplicates tab, add a Similarity column scoring how closely each existing release matches the one you are entering (title · artist · track count), coloured red→green — so you can pick the right release to base yours on."><input type="checkbox" id="tc-s-moddupes"> <span>Modify Duplicates</span></label>
+        <label title="On the Add-release Duplicates tab, add a Similarity column scoring how closely each existing release matches the one you are entering (by track-title overlap), coloured red→green — so you can pick the right release to base yours on."><input type="checkbox" id="tc-s-moddupes"> <span>Modify Duplicates</span></label>
         <label title="Edit the annotation as Markdown with a live preview, in the release editor's Additional information and on the standalone Edit annotation page."><input type="checkbox" id="tc-s-modanno"> <span>Modify annotations with Markdown</span></label>
         <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
         <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
@@ -2017,17 +2017,62 @@
   // from the native row) to the release being entered. Multiplicative penalties,
   // in the spirit of MB Release Seeding Helper: a steep title base, softened by an
   // artist mismatch and a track-count gap (our proxy for its per-track length check).
-  function dupSimilarity(rowName, rowArtist, rowTracks) {
-    const rel = release(); if (!rel) return null;
-    const a = fold(u(rel.name) || ''), b = fold(rowName || '');
-    if (!a && !b) return null;
-    let score = 1 - recLev(a, b) / Math.max(a.length, b.length, 1);   // title ratio 0..1
-    if (score < 0) score = 0;
-    const myArtist = fold(acText(u(rel.artistCredit)) || ''), rArtist = fold(rowArtist || '');
-    if (myArtist && rArtist && myArtist !== rArtist) score *= (rArtist.includes(myArtist) || myArtist.includes(rArtist)) ? 0.9 : 0.75;
-    const myTracks = mediums().reduce((n, m) => n + ((u(m.tracks) || []).length || 0), 0);
-    if (myTracks && rowTracks) { const dt = Math.abs(myTracks - rowTracks); score *= dt === 0 ? 1 : dt === 1 ? 0.9 : dt <= 2 ? 0.75 : dt <= 4 ? 0.55 : 0.35; }
-    return Math.max(0, Math.min(1, score));
+  // #187: similarity = how many of the ENTERED tracks have a title match in the
+  // candidate release (greedy 1:1, exact-fold then fuzzy ≥0.85), over the larger of
+  // the two tracklists. Metadata (title/artist/count) is deliberately NOT used —
+  // two unrelated "Best of …" VA comps share a title but no tracks, and would read
+  // 100% on the old metadata score; on track overlap they read ~0%.
+  function dupTrackScore(media, entered) {
+    const cand = [];
+    (media || []).forEach(m => (m.tracks || []).forEach(t => { const f = fold(t.title || ''); if (f) cand.push(f); }));
+    const ent = (entered || []).map(t => fold(t.title || '')).filter(Boolean);
+    if (!ent.length || !cand.length) return null;   // can't judge overlap → no confident score
+    const pool = cand.slice(); let matched = 0;
+    for (const e of ent) {
+      let idx = pool.indexOf(e);
+      if (idx < 0) {   // fuzzy fallback: best edit-distance ratio that clears 0.85
+        let bi = -1, br = 0;
+        for (let i = 0; i < pool.length; i++) { const r = 1 - recLev(e, pool[i]) / Math.max(e.length, pool[i].length, 1); if (r > br) { br = r; bi = i; } }
+        if (br >= 0.85) idx = bi;
+      }
+      if (idx >= 0) { matched++; pool.splice(idx, 1); }
+    }
+    return matched / Math.max(ent.length, cand.length);
+  }
+  // one WS fetch per existing release, shared between the score and the expand view
+  const _dupTlCache = new Map();
+  async function dupTracklist(gid) {
+    if (_dupTlCache.has(gid)) return _dupTlCache.get(gid);
+    const m = await fetchDupTracklist(gid); _dupTlCache.set(gid, m); return m;
+  }
+  // throttled scorer queue — fetch each candidate's tracklist one at a time (the
+  // Duplicates tab lists only a handful), staying under MB's WS rate limit.
+  const _dupQ = []; let _dupBusy = false;
+  function enqueueDupScore(gid, td, tr) { _dupQ.push({ gid, td, tr }); pumpDupScores(); }
+  async function pumpDupScores() {
+    if (_dupBusy) return; _dupBusy = true;
+    while (_dupQ.length) {
+      const { gid, td, tr } = _dupQ.shift();
+      if (!td.isConnected) continue;
+      const media = await dupTracklist(gid);
+      if (!td.isConnected) continue;
+      paintDupCell(td, tr, gid, media ? dupTrackScore(media, enteredTracklist()) : null);
+      await new Promise(z => setTimeout(z, 1100));
+    }
+    _dupBusy = false;
+  }
+  function paintDupCell(td, tr, gid, sim) {
+    if (sim == null) {
+      td.textContent = '?'; td.style.cssText = 'text-align:center;color:#999' + (gid ? ';cursor:pointer' : '');
+      td.title = 'no track overlap could be computed (tracklist unavailable, or no tracks entered yet)';
+      if (gid) td.onclick = () => toggleDupDetail(tr, gid, td);
+      return;
+    }
+    const pct = Math.round(sim * 100);
+    td.textContent = pct + '%';
+    td.style.cssText = 'background:' + dupColor(pct) + ';color:#fff;font-weight:700;text-align:center;border-radius:3px;padding:1px 6px' + (gid ? ';cursor:pointer' : '');
+    td.title = 'track-overlap similarity to the release you are entering' + (gid ? ' — click for a track-by-track comparison' : '');
+    if (gid) td.onclick = () => toggleDupDetail(tr, gid, td);
   }
   // 0% → Apollo red, 50% → amber, 100% → Apollo's match green (#1f8a4c) — uses the
   // same palette as the confidence dots so the score reads as "our" green. (#187)
@@ -2042,20 +2087,11 @@
     tbody.querySelectorAll(':scope > tr').forEach(tr => {
       if (tr.classList.contains('tc-dup-detail')) return;   // our own expanded-detail rows
       if (tr.querySelector('.tc-dup-sim')) return;          // already scored this (KO-rendered) row
-      const c = tr.children;
-      const name = c[1] ? c[1].textContent.trim() : '', artist = c[2] ? c[2].textContent.trim() : '';
-      const tracks = c[4] ? parseInt((c[4].textContent || '').trim(), 10) : NaN;
       const gid = (tr.querySelector('input[name="base-release"]') || {}).value || null;
-      const sim = dupSimilarity(name, artist, isNaN(tracks) ? null : tracks);
       const td = document.createElement('td'); td.className = 'tc-dup-sim';
-      if (sim == null) { td.textContent = '—'; td.style.textAlign = 'center'; }
-      else {
-        const pct = Math.round(sim * 100); td.textContent = pct + '%';
-        td.style.cssText = 'background:' + dupColor(pct) + ';color:#fff;font-weight:700;text-align:center;border-radius:3px;padding:1px 6px';
-        td.title = 'title · artist · track-count similarity to the release you are entering';
-        if (gid) { td.style.cursor = 'pointer'; td.title += ' — click for a track-by-track comparison'; td.onclick = () => toggleDupDetail(tr, gid, td); }
-      }
-      tr.insertBefore(td, c[2] || null);   // place right after the Release column
+      td.textContent = '…'; td.style.cssText = 'text-align:center;color:#999'; td.title = 'computing track-by-track similarity…';
+      tr.insertBefore(td, tr.children[2] || null);   // place right after the Release column
+      if (gid) enqueueDupScore(gid, td, tr); else td.textContent = '—';   // neutral until the tracklist is fetched (never a metadata-only guess)
     });
   }
   // expand/collapse a per-track comparison of the existing release vs the one being
@@ -2068,7 +2104,7 @@
     const td = document.createElement('td'); td.colSpan = tr.children.length;
     td.innerHTML = '<div class="tc-dd-wrap">loading track comparison…</div>';
     dr.appendChild(td); tr.parentNode.insertBefore(dr, tr.nextSibling);
-    const media = await fetchDupTracklist(gid);
+    const media = await dupTracklist(gid);
     if (!dr.isConnected) return;   // collapsed again before the fetch returned
     td.querySelector('.tc-dd-wrap').innerHTML = media ? buildDupDetail(media, enteredTracklist()) : '<div class="tc-dd-wrap">could not load the existing release tracklist</div>';
   }
