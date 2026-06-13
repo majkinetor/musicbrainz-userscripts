@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.13.160547
+// @version      2026.6.13.163130
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -477,7 +477,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.160547';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.163130';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -548,6 +548,17 @@
     .tc-mirror .t-actions>*{pointer-events:auto}
     .tc-mirror input.t-title.diff{background:#fff6da;border-color:#e7ce8a;border-radius:3px}
     .tc-mirror input.t-title.gcpreview{background:#e3f6e3;border-color:#86c686;border-radius:3px}
+    /* #203: rich title display — read-only styled text (confusable chars enlarged) shown
+       when the title isn't being edited; clicking/tabbing into it shows the native input.
+       Mirrors the input's diff/gcpreview/hasfeat backgrounds so the cell looks unchanged. */
+    .tc-mirror .t-title-disp{flex:1;min-width:0;box-sizing:border-box;border:1px solid transparent;border-radius:3px;background:transparent;font:13px Arial;padding:3px 2px;white-space:pre;overflow:hidden;cursor:text;display:flex;align-items:center}
+    .tc-mirror .t-title-disp:hover{border-color:#bbb;background:#fff}
+    .tc-mirror .t-title-disp.diff{background:#fff6da;border-color:#e7ce8a}
+    .tc-mirror .t-title-disp.gcpreview{background:#e3f6e3;border-color:#86c686}
+    .tc-mirror .t-title-disp.hasfeat{background:#eaf1fb;border-color:#9bbbe0}
+    .tc-mirror .t-title-disp.tc-hidden{display:none}
+    .tc-mirror.compact .t-title-disp{padding:0 2px;font-size:12px}
+    .tc-mirror input.t-title.tc-eml:not(.tc-editing){position:absolute;width:1px;height:1px;min-width:0;padding:0;margin:0;border:0;opacity:0;pointer-events:none}
     /* MB medium-format select made to read as plain text — click still opens the native dropdown */
     select.tc-fmt-flat{-webkit-appearance:none;-moz-appearance:none;appearance:none;border:1px solid transparent;background:transparent;font:bold 15px Arial;color:#222;padding:2px 5px;cursor:pointer}
     select.tc-fmt-flat:hover{background:#efeaf9;border-color:#d7ccef;border-radius:3px}
@@ -1462,14 +1473,31 @@
       // guess-case: highlight when the title differs from its guessed form; a per-title button applies it
       const tin = tr.querySelector('.t-title'); const diff = t.guessTitle && t.guessTitle !== t.title;
       if (t._srFlash) { tin.classList.add('srflash'); delete t._srFlash; }   // flash titles changed by search & replace
+      // #203: rich title display — show the title as styled read-only text (confusable /
+      // invisible chars enlarged + named on hover) when not editing, and drop into the
+      // native input on click/tab. Only when enlargement is on (recPunctSize > 0).
+      let disp = null, paintDisp = null;
+      if ((SETTINGS.recPunctSize | 0) > 0) {
+        disp = document.createElement('span'); disp.className = 't-title-disp';
+        paintDisp = (val) => {
+          disp.innerHTML = dhRun(val != null ? val : tin.value);
+          ['diff', 'gcpreview', 'hasfeat', 'srflash'].forEach(c => disp.classList.toggle(c, tin.classList.contains(c)));
+        };
+        tin.classList.add('tc-eml');
+        tin.parentElement.insertBefore(disp, tin);   // sits in the input's flex slot while resting
+        disp.addEventListener('mousedown', e => { e.preventDefault(); tin.focus(); });
+        tin.addEventListener('focus', () => { tin.classList.add('tc-editing'); disp.classList.add('tc-hidden'); });
+        tin.addEventListener('blur', () => { tin.classList.remove('tc-editing'); paintDisp(tin.value); disp.classList.remove('tc-hidden'); });
+        paintDisp(t.title);
+      }
       if (diff) {
         tin.classList.add('diff'); tin.title = 'Guess case → ' + t.guessTitle;
         const gb = document.createElement('button'); gb.className = 't-gc'; gb.textContent = 'Aa'; gb.title = 'Guess case → ' + t.guessTitle + '\n(right-click: guess case all tracks)';
         const wrap = tr.querySelector('.t-wrap');
         // like MB's integrated guess case: hovering the title cell previews the guessed name
         // (highlighted), leaving restores it, clicking Aa applies it. Never preview while editing.
-        const preview = () => { if (document.activeElement !== tin) { tin.value = t.guessTitle; tin.classList.add('gcpreview'); } };
-        const restore = () => { tin.value = t.title; tin.classList.remove('gcpreview'); };
+        const preview = () => { if (document.activeElement !== tin) { tin.value = t.guessTitle; tin.classList.add('gcpreview'); if (paintDisp) paintDisp(t.guessTitle); } };
+        const restore = () => { tin.value = t.title; tin.classList.remove('gcpreview'); if (paintDisp) paintDisp(t.title); };
         wrap.onmouseenter = preview; wrap.onmouseleave = () => { if (document.activeElement !== tin) restore(); };
         tin.addEventListener('focus', restore);   // clicking in to edit shows the real title, not the preview
         gb.onclick = () => { restore(); applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); rerender(); };
@@ -1488,6 +1516,7 @@
         tActions(tr.querySelector('.t-wrap')).appendChild(fb);
       }
       tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; wireRowNav(tin);
+      if (paintDisp) paintDisp(t.title);   // re-sync after the diff / feat blocks set their state classes
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
       numIn.onchange = e => { setNumber(t, e.target.value); refreshBadges(); }; wireRowNav(numIn);
       lenIn.onchange = e => {
