@@ -469,7 +469,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.091316';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.094227';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2424,6 +2424,7 @@
       '.tc-recpop .tc-rpk-main{display:flex;align-items:baseline;gap:6px}',
       '.tc-recpop .tc-rpk-name{font-weight:600;color:#222}',
       '.tc-recpop .tc-rpk-cmt{color:#888;font-size:11px}',
+      '.tc-recpop .tc-rpk-curisrc{padding:0 10px 4px;color:#777;font-size:11px}.tc-recpop .tc-rpk-curisrc-list{font-family:Consolas,monospace;color:#555}',
       '.tc-recpop .tc-rpk-len{margin-left:auto;color:#666;font-variant-numeric:tabular-nums;white-space:nowrap}',
       '.tc-recpop .tc-rpk-by{color:#555;font-size:11px}',
       '.tc-recpop .tc-rpk-on{color:#777;font-size:11px}',
@@ -3040,6 +3041,9 @@
         (trackLen ? '<span class="tc-rpk-hdlen">' + fmtMs(trackLen) + '</span>' : '') + '</div>' +
       '<div class="tc-rpk-curwrap">' +
         '<div class="tc-rpk-cur">' + curHtml + '</div>' +
+        // ISRC of the linked recording — makes it obvious when an ISRC drove the
+        // selection (#196). Hidden until the async fill finds at least one.
+        (curGid ? '<div class="tc-rpk-curisrc" style="display:none">ISRC: <span class="tc-rpk-curisrc-list"></span></div>' : '') +
         (curGid ? '<div class="tc-rpk-curon">appears on: <span class="tc-rpk-curon-list">…</span></div>' : '') +
       '</div>' +
       (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
@@ -3053,12 +3057,19 @@
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
     // fill the current recording's full "appears on" (all releases, linkable) — not in the page model, so fetch it
     if (curGid) {
-      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=releases+release-groups', { headers: { Accept: 'application/json' } })
+      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=releases+release-groups+isrcs', { headers: { Accept: 'application/json' } })
         .then(r => r.json()).then(j => {
-          if (!_recPop) return; const el = pop.querySelector('.tc-rpk-curon-list'); if (!el) return;
-          const seen = new Set(), rels = [];
-          (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; rels.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } });
-          el.innerHTML = rels.length ? relLinksHtml(rels, 0) : '—';
+          if (!_recPop) return;
+          const el = pop.querySelector('.tc-rpk-curon-list');
+          if (el) {
+            const seen = new Set(), rels = [];
+            (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; rels.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } });
+            el.innerHTML = rels.length ? relLinksHtml(rels, 0) : '—';
+          }
+          // ISRC line — reveal only when the recording actually has ISRC(s). #196
+          const isrcWrap = pop.querySelector('.tc-rpk-curisrc'), isrcEl = pop.querySelector('.tc-rpk-curisrc-list');
+          const isrcs = (j.isrcs || []).filter(Boolean);
+          if (isrcWrap && isrcEl && isrcs.length) { isrcEl.textContent = isrcs.join(', '); isrcWrap.style.display = ''; }
         }).catch(() => {});
     }
     _recPopDrag(pop.querySelector('.tc-rpk-hd'));   // header is the drag handle
