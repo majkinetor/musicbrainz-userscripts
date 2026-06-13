@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.13.170553
+// @version      2026.6.13.183644
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -168,6 +168,12 @@ async function injectInto(urls, storageKey) {
         // Tidal/Beatport but leaves hdtracks.com and volumo.com unset).
         { test: u => /hdtracks\.com\//i.test(u),                    ids: ['74'],        name: 'purchase for download' },
         { test: u => /volumo\.com\/album\//i.test(u),               ids: ['74'],        name: 'purchase for download' },
+        // Qobuz: MB's URLCleanup recognises it but allows BOTH 'purchase for download'
+        // and 'streaming page' (paid) — so MB can't auto-pick one and leaves the type
+        // blank ("Please select a link type", chaban-mb #201). Qobuz is a hi-res download
+        // store first (like HDtracks/Volumo), so prefer 74; fall back to 980 if that's the
+        // only one MB offers for the row.
+        { test: u => /qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\//i.test(u), ids: ['74', '980'], name: 'purchase for download' },
     ];
     const wait = pcWait;
     const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
