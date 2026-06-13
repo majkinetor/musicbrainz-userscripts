@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.13.122132
+// @version      2026.6.13.141334
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -2134,6 +2134,24 @@ async function fetchBandcampMeta(albumUrl) {
     const ogTotal = (ogTag.match(/content=["']\s*(\d+)\s+track\b/i) || [])[1];
     const total = ogTotal ? parseInt(ogTotal, 10) : null;
     const hiddenTracks = (total != null && streaming != null && total > streaming) ? total - streaming : 0;
+    // Barcode (#194): the UPC lives in TralbumData.current.upc — embedded in the
+    // page's `data-tralbum` attribute (entity-encoded JSON), not the JSON-LD.
+    // Often null (Bandcamp barcodes are hand-entered). Per Harmony (kellnerd/harmony#42)
+    // the digital `current.upc` can coincide with a physical package's barcode —
+    // when it does, it's the package's, not the digital release's, so we drop it.
+    let barcode = null, barcodeIsPackage = false;
+    const trm = html.match(/data-tralbum="([^"]*)"/);
+    if (trm) {
+        try {
+            const tr = JSON.parse(trm[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '<'));
+            const upc = tr && tr.current && tr.current.upc;
+            if (upc) {
+                const pkgUpcs = (tr.packages || []).map(pp => normBarcode(pp && pp.upc)).filter(Boolean);
+                if (pkgUpcs.includes(normBarcode(upc))) barcodeIsPackage = true;   // physical package's barcode — not the digital release's
+                else barcode = String(upc).trim();
+            }
+        } catch (e) { /* malformed data-tralbum — no barcode */ }
+    }
     return {
         // report the true total (incl. hidden) as the track count — that's what the
         // Bandcamp release actually contains, and what MB compares against.
@@ -2145,6 +2163,8 @@ async function fetchBandcampMeta(albumUrl) {
         label:  lMatch?.[1]     || null,
         format: formats.length ? formats.join(', ') : null,
         artist: artistMatch?.[1]?.trim() || null,
+        barcode,
+        barcodeIsPackage,
     };
 }
 
@@ -2240,8 +2260,9 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const hidden = meta?.hiddenTracks || 0;
     if (meta) {
         const trk = hidden > 0 ? `${meta.tracks} (${meta.streamingTracks} streaming + ${hidden} download-only hidden)` : `${meta.tracks}`;
-        appendLog(label, `Album parsed: tracks=${trk} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} format=${meta.format || '?'}`, meta.tracks ? 'ok' : 'warn');
+        appendLog(label, `Album parsed: tracks=${trk} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} format=${meta.format || '?'} barcode=${meta.barcode || (meta.barcodeIsPackage ? 'package-only (ignored)' : '-')}`, meta.tracks ? 'ok' : 'warn');
         if (hidden > 0) appendLog(label, `${hidden} download-only track(s) hidden from streaming — Bandcamp release has ${meta.tracks}, not ${meta.streamingTracks}`, 'warn');
+        if (meta.barcodeIsPackage) appendLog(label, `current.upc matches a physical package's barcode — not the digital release's, so ignored (harmony#42)`, 'warn');
     } else {
         appendLog(label, `Album page failed`, 'error');
     }
@@ -2249,8 +2270,9 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
     const fmt    = meta?.format ?? null;
-    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden });
-    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden });
+    const bc     = meta?.barcode ?? null;   // #194: digital release UPC (null when absent or package-only)
+    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden, barcode: bc });
+    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden, barcode: bc });
 }
 
 // ─── Deezer ─────────────────────────────────────────────────────────────────
