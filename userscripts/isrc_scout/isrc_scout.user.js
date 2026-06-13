@@ -379,7 +379,11 @@
       net:  (m, d) => add('net', m, d),
     };
   })();
-  const shortUrl = (u) => String(u || '').replace(/^https?:\/\//, '').replace(/[?#].*$/, '').slice(0, 90);
+  // Keep the FULL url — scheme + query — in the NET log so an API call's real
+  // arguments (album_id, app_id, …) are visible for debugging; only redact
+  // token/secret/signature values, and cap length. (#201: the query was being
+  // dropped, so a 404 gave no clue which id/app_id was actually sent.)
+  const shortUrl = (u) => String(u || '').replace(/([?&](?:[a-z_]*(?:token|secret|sig|password))=)[^&#]*/gi, '$1…').slice(0, 200);
   Log.info('ISRC Scout v' + SCRIPT_VERSION + ' — ' + MB_ROOT);
 
   /* ═══════════════════════════════════════════════════════════════════════
