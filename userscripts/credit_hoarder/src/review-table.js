@@ -42,6 +42,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
     // URL-less credits (all of Qobuz) fall back to this so a Qobuz row never
     // claims "No Discogs page" (#193 live-test round 3).
     const importSourceName = opts?.sourceName || 'Discogs';
+    // `opts.sourceIcon` — the source's brand glyph (HTML), shown on the Start-import
+    // button so the chosen source stays visible through the review phase (#193).
+    const sourceIcon = opts?.sourceIcon || '';
 
     // Pre-load missing names into a Map — IDB first, then MB WS2 fetch.
     const _preloadedNames = new Map();
@@ -1355,7 +1358,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         btnRow.style.cssText = 'display:flex;gap:0.75rem;align-items:center;margin-top:0.75rem;flex-wrap:wrap;';
 
         const importBtn = document.createElement('button');
-        importBtn.style.cssText = 'border:none;padding:0.4rem 1.1rem;border-radius:0.3rem;cursor:pointer;font-weight:bold;font-size:0.95rem;';
+        importBtn.style.cssText = 'border:none;padding:0.4rem 1.1rem;border-radius:0.3rem;cursor:pointer;font-weight:bold;font-size:0.95rem;display:inline-flex;align-items:center;gap:5px;';
 
         const issueNote = document.createElement('span');
         issueNote.className = 'discogs-issue-note';
@@ -1388,14 +1391,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         function updateImportBtn() {
             const unresolved = [...rowState.values()].filter(s => !s.confirmed).length;
             if (unresolved === 0) {
-                importBtn.textContent = 'Start import \u2192';
+                importBtn.innerHTML = sourceIcon + ' Start import \u2192';
                 importBtn.style.background = '#2ecc40';
                 importBtn.style.color = '#fff';
                 issueNote.textContent = '';
                 issueNote.classList.remove('clickable');
                 issueNote.removeAttribute('title');
             } else {
-                importBtn.textContent = `Start import anyway \u2192`;
+                importBtn.innerHTML = sourceIcon + ` Start import anyway \u2192`;
                 importBtn.style.background = '#e0a800';
                 importBtn.style.color = '#fff';
                 issueNote.textContent = `\u26a0 ${unresolved} unresolved`;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.13.163105
+// @version      2026.6.13.171641
 // @description  Import release credits from Discogs, Tidal and Qobuz into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.png
@@ -2426,6 +2426,7 @@
     const onRefresh = opts?.onRefresh || null;
     const headerSlot = opts?.headerSlot || null;
     const importSourceName = opts?.sourceName || "Discogs";
+    const sourceIcon = opts?.sourceIcon || "";
     const _preloadedNames = /* @__PURE__ */ new Map();
     const _nullNames = allResults.filter((r) => r.type === "resolved" && r.mbUrl && !r.mbName);
     for (const r of _nullNames) {
@@ -3406,7 +3407,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const btnRow = document.createElement("div");
       btnRow.style.cssText = "display:flex;gap:0.75rem;align-items:center;margin-top:0.75rem;flex-wrap:wrap;";
       const importBtn = document.createElement("button");
-      importBtn.style.cssText = "border:none;padding:0.4rem 1.1rem;border-radius:0.3rem;cursor:pointer;font-weight:bold;font-size:0.95rem;";
+      importBtn.style.cssText = "border:none;padding:0.4rem 1.1rem;border-radius:0.3rem;cursor:pointer;font-weight:bold;font-size:0.95rem;display:inline-flex;align-items:center;gap:5px;";
       const issueNote = document.createElement("span");
       issueNote.className = "discogs-issue-note";
       issueNote.style.cssText = "font-size:0.85rem;color:#7a5c00;";
@@ -3437,14 +3438,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       function updateImportBtn() {
         const unresolved = [...rowState.values()].filter((s) => !s.confirmed).length;
         if (unresolved === 0) {
-          importBtn.textContent = "Start import \u2192";
+          importBtn.innerHTML = sourceIcon + " Start import \u2192";
           importBtn.style.background = "#2ecc40";
           importBtn.style.color = "#fff";
           issueNote.textContent = "";
           issueNote.classList.remove("clickable");
           issueNote.removeAttribute("title");
         } else {
-          importBtn.textContent = `Start import anyway \u2192`;
+          importBtn.innerHTML = sourceIcon + ` Start import anyway \u2192`;
           importBtn.style.background = "#e0a800";
           importBtn.style.color = "#fff";
           issueNote.textContent = `\u26A0 ${unresolved} unresolved`;
@@ -4429,6 +4430,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   var _discogsJson = null;
   var _tidalJson = null;
   var _qobuzJson = null;
+  var SRC_ICON = {
+    Discogs: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
+    Tidal: '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
+    Qobuz: '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>'
+  };
+  var srcIconByUrl = (url) => SRC_ICON[sourceNameForUrl(url)] || "";
   function insertDiscogsBar(discogsUrl, sources = {}) {
     const style = document.createElement("style");
     style.innerText = `
@@ -4793,11 +4800,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     bar.className = "discogs-bar";
     const row1 = document.createElement("div");
     row1.className = "discogs-bar-row1";
-    const SRC_ICON = {
-      Discogs: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
-      Tidal: '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
-      Qobuz: '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>'
-    };
     const importHtml = (s) => (SRC_ICON[s.name] || "") + " Import from " + s.name;
     const importSources = [];
     if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g) => runImport(discogsUrl, g) });
@@ -5190,7 +5192,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
       importBtn.disabled = true;
       importCaretBtn.disabled = true;
-      srcBtn.textContent = "Importing\u2026";
+      srcBtn.innerHTML = srcIconByUrl(sourceUrl) + " Importing\u2026";
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
       bar.classList.add("is-importing", "is-pinned");
@@ -5618,6 +5620,8 @@ ${lines}
         // Label fallback for URL-less credits (#193): a Qobuz row
         // must say "No Qobuz page", not "No Discogs page".
         sourceName: sourceNameForUrl(sourceUrl),
+        sourceIcon: srcIconByUrl(sourceUrl),
+        // #193 — shown on the "Start import" button
         // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
         // every entity via MB API. Used when a cached MBID is stale.
         onRefresh: () => runPreflight(true).then((freshResults) => {

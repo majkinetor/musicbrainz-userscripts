@@ -55,6 +55,16 @@ let _tidalJson = null;
 // Parsed Qobuz credits of the current run — same contract for "Copy Qobuz".
 let _qobuzJson = null;
 
+// Per-source brand glyphs (#193) — shared by the split Import button, the
+// "Importing…" state, and the review "Start import" button, so the chosen
+// source is always visible without checking the log.
+const SRC_ICON = {
+    Discogs: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
+    Tidal:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
+    Qobuz:   '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>',
+};
+const srcIconByUrl = url => SRC_ICON[sourceNameForUrl(url)] || '';
+
 export function insertDiscogsBar(discogsUrl, sources = {}) {
     // Inject styles
     const style = document.createElement('style');
@@ -433,11 +443,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     // ONE split Import button for all sources (#193): the main button runs the
     // FIRST linked source (priority Discogs, Tidal, Qobuz) with its icon; the
     // attached ▾ opens a submenu of the OTHER sources (the default isn't repeated).
-    const SRC_ICON = {
-        Discogs: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
-        Tidal:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
-        Qobuz:   '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>',
-    };
     const importHtml = s => (SRC_ICON[s.name] || '') + ' Import from ' + s.name;
     const importSources = [];
     if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: g => runImport(discogsUrl, g) });
@@ -929,7 +934,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
         importBtn.disabled = true;
         importCaretBtn.disabled = true;
-        srcBtn.textContent = 'Importing…';
+        srcBtn.innerHTML = srcIconByUrl(sourceUrl) + ' Importing…';   // keep the source icon visible (#193)
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
 
@@ -1487,6 +1492,7 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     // Label fallback for URL-less credits (#193): a Qobuz row
                     // must say "No Qobuz page", not "No Discogs page".
                     sourceName: sourceNameForUrl(sourceUrl),
+                    sourceIcon: srcIconByUrl(sourceUrl),   // #193 — shown on the "Start import" button
                     // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
                     // every entity via MB API. Used when a cached MBID is stale.
                     onRefresh: () => runPreflight(true).then(freshResults => {
