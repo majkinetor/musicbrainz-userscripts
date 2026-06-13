@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.12
+// @version      2026.6.13.130152
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -45,12 +45,28 @@
   const getEditor = () => { try { return W.MB && W.MB.releaseEditor; } catch (e) { return null; } };
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/\s+/g, ' ').trim();
   const sameName = (a, b) => fold(a) === fold(b);
+  // gid → artist disambiguation, harvested from every WS2/js artist-credit the
+  // script fetches (search results, recording lookups). The MB page (KO) model
+  // doesn't carry disambiguations for freshly-picked entities, so the recordings
+  // table falls back to this cache to show them after a pick. #195
+  const _disamb = new Map();
+  const noteDisamb = (gid, c) => { if (gid && c) _disamb.set(gid, c); };
+  const getDisamb = gid => (gid && _disamb.get(gid)) || '';
   const MBID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
   // a MusicBrainz /artist/<mbid> URL, a bare MBID, or an MBID pasted anywhere in the text → the gid
   function mbidFrom(v) {
     v = (v || '').trim();
     const url = v.match(new RegExp('musicbrainz\\.org/artist/(' + MBID_RE.source + ')', 'i')); if (url) return url[1].toLowerCase();
     const m = v.match(new RegExp('(?:^|[\\s/])(' + MBID_RE.source + ')(?:[\\s/?#]|$)', 'i')); return m ? m[1].toLowerCase() : null;
+  }
+  // an ISRC (CC-XXX-YY-NNNNN), with or without separators, found as a standalone
+  // token → the normalised 12-char uppercase form. Word-boundaried so it won't
+  // fire mid-string; the structure (2 alpha · 3 alphanum · 7 digit) is specific
+  // enough not to collide with a bare MBID. #196
+  const ISRC_TOKEN = /\b([A-Za-z]{2})-?([A-Za-z0-9]{3})-?([0-9]{2})-?([0-9]{5})\b/;
+  function isrcFrom(v) {
+    const m = String(v || '').match(ISRC_TOKEN);
+    return m ? (m[1] + m[2] + m[3] + m[4]).toUpperCase() : null;
   }
 
   /* ── create-artist-in-a-tab → auto-insert (BroadcastChannel handshake, like the Discogs importer) ── */
@@ -145,6 +161,7 @@
     try { const j = await fetch(`${ORIGIN}/ws/js/artist?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
     catch (e) { Log.warn('search failed:', name, e.message); }
     list = list.filter(c => c && (c.name || '').trim());   // drop the trailing empty placeholder entry
+    list.forEach(c => noteDisamb(c.gid || c.id, c.comment));   // cache disambiguations for the table after a pick (#195)
     _cache.set(k, list); return list;
   }
   // full alias arrays for display (the js search only carries primaryAlias, often empty). One WS2
@@ -165,7 +182,7 @@
     const uniq = [...new Set((gids || []).filter(g => g && !_gidAliases.has(g)))];
     for (let i = 0; i < uniq.length; i += 90) {
       const q = uniq.slice(i, i + 90).map(g => 'arid:' + g).join(' OR ');
-      try { const w = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(q)}&limit=100&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); (w.artists || []).forEach(a => cacheAliases(a.id, a.aliases || [])); }
+      try { const w = await fetch(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(q)}&limit=100&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); (w.artists || []).forEach(a => { cacheAliases(a.id, a.aliases || []); noteDisamb(a.id, a.disambiguation); }); }
       catch (e) { Log.warn('batch alias fetch failed', e.message); }
     }
   }
@@ -460,7 +477,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.12.104755';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.130152';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -629,6 +646,7 @@
     .tc-search.tc-marked{border:2px solid #e0a800}   /* persists when a pick changed several tracks */
     .tc-search .nm{flex:1 1 0;min-width:0;border:none;background:transparent;font:13px Arial;padding:3px 0;outline:none}
     .tc-search .tc-bar-aka{flex:0 1 auto;min-width:0;max-width:55%;margin-left:2px;color:#9bb8a8;font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+    .tc-search .tc-bar-disamb{flex:0 1 auto;min-width:0;max-width:55%;margin-left:4px;color:#999;font-size:11px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}   /* artist disambiguation, grey like native #195 */
     .tc-search .mk{flex:none;order:9;cursor:pointer;border:none;background:none;color:#1f8a4c;font-weight:bold;font-size:15px;line-height:1;padding:0 2px}.tc-search .mk:hover{color:#136b39}   /* order:9 keeps ＋ pinned at the far right, past the join-phrase */
     .tc-joinwrap{flex:none;margin-left:auto;display:flex;align-items:center;gap:0}
     .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:#777;font:italic 900 12px Arial;padding:1px 2px;border-radius:3px}
@@ -1208,7 +1226,7 @@
   // ＋ create-button at the right end of the box (before the join), only when the slot is unmatched;
   // and the alias on the resolved bar — only while the slot stays committed (gone the moment you edit)
   function adorn(search, slot, inp) {
-    [...search.querySelectorAll('.mk, .tc-bar-aka')].forEach(e => e.remove());
+    [...search.querySelectorAll('.mk, .tc-bar-aka, .tc-bar-disamb')].forEach(e => e.remove());
     search.classList.toggle('matched', !!slot.committed);
     const ref = search.querySelector('.tc-joinwrap');
     const aks = _gidAliases.get(slot.gid);
@@ -1221,6 +1239,11 @@
     // anywhere in the rest of the bar (the empty space / alias) focuses it to open the search. #128
     search.onmousedown = e => { if (e.target === inp || e.target.closest('.tc-joinwrap, .mk')) return; e.preventDefault(); inp.focus(); };
     if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = aka; al.title = aka; search.insertBefore(al, ref); }
+    // artist disambiguation, like native MB's credit editor — grey, after the alias.
+    // Sourced from the cache (filled by the same gid alias fetch); shows even for
+    // special-purpose artists like [unknown], whose alias is suppressed. #195
+    const dis = slot.committed ? getDisamb(slot.gid) : '';
+    if (dis) { const ds = document.createElement('span'); ds.className = 'tc-bar-disamb'; ds.textContent = '(' + dis + ')'; ds.title = dis; search.insertBefore(ds, ref); }
     if (!slot.committed) { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot); }; search.insertBefore(mk, ref); }
   }
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
@@ -2174,10 +2197,17 @@
     const x = a && a.artistGids, y = b && b.artistGids;
     return !!(x && y && x.length > 0 && x.length === y.length && x.every((g, i) => g === y[i]));
   }
+  // EXACT means the displayed strings are identical — only Unicode-normalisation
+  // (NFC) is folded, never case/accents/spacing. A casing-only (or accent-only)
+  // difference is NOT exact: it's a real visible difference that native offers to
+  // copy, so it belongs in the tolerance band, not the blue "exact" one. #197
+  const literalEq = (a, b) => String(a == null ? '' : a).normalize('NFC') === String(b == null ? '' : b).normalize('NFC');
   function recExactMatch(data, ctx) {
     if (!ctx) return false;
-    const titleEq = !data.name || !ctx.title || fold(data.name) === fold(ctx.title);
-    const artistEq = !data.artist || !ctx.artist || sameAcEntities(data, ctx) || fold(data.artist) === fold(ctx.artist);
+    const titleEq = !data.name || !ctx.title || literalEq(data.name, ctx.title);
+    // a same-entity credited-as is still exact (#190) — only the artist *text*
+    // is no longer case/accent-folded into exactness (#197)
+    const artistEq = !data.artist || !ctx.artist || sameAcEntities(data, ctx) || literalEq(data.artist, ctx.artist);
     const lenEq = !data.length || !ctx.length || Math.round(data.length / 1000) === Math.round(ctx.length / 1000);
     return titleEq && artistEq && lenEq;
   }
@@ -2231,14 +2261,45 @@
     return { level, color: REC_CONF[level].c, label: REC_CONF[level].label, diffs };
   }
   const fmtMs = ms => (ms || ms === 0) ? (Math.floor(Math.round(ms / 1000) / 60) + ':' + String(Math.round(ms / 1000) % 60).padStart(2, '0')) : '';
-  // artist-credit rendered as links to each artist's page (joined by their join phrases)
-  function acLinks(ac) {
+  // artist-credit rendered as links to each artist's page (joined by their join
+  // phrases). `withDisamb` appends each artist's disambiguation (when the page
+  // model carries it) — used in the picker header so a wrong artist is obvious. #195
+  function acLinks(ac, withDisamb) {
     const names = u(ac && ac.names) || [];
     if (!names.length) return '';
     return names.map(n => {
-      const nm = u(n.name) || (n.artist && u(u(n.artist).name)) || '';
-      const gid = n.artist && u(u(n.artist).gid);
-      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm)) + esc(u(n.joinPhrase) || '');
+      const art = n.artist ? u(n.artist) : null;
+      const nm = u(n.name) || (art && u(art.name)) || '';
+      const gid = art && u(art.gid);
+      const cmt = (art && u(art.comment)) || getDisamb(gid);   // KO model lacks it for fresh picks → cache fallback #195
+      const dis = withDisamb && cmt ? ' <span class="tc-rpk-adis">(' + esc(cmt) + ')</span>' : '';
+      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm)) + dis + esc(u(n.joinPhrase) || '');
+    }).join('');
+  }
+  // flat {name, gid, comment, join} per artist of a credit — lets the table diff
+  // artists by ENTITY (not raw text) while keeping links + disambiguations. #186 #195
+  function acData(ac) {
+    return (u(ac && ac.names) || []).map(n => {
+      const art = n.artist ? u(n.artist) : null;
+      const gid = (art && u(art.gid)) || null;
+      return { name: u(n.name) || (art && u(art.name)) || '', gid, comment: (art && u(art.comment)) || getDisamb(gid), join: u(n.joinPhrase) || '' };
+    });
+  }
+  // render one credit as links (+ disambiguations), boxing the artists whose
+  // ENTITY isn't present on the other side — the detailed-highlight equivalent
+  // for artists that keeps links instead of char-diffing plain text (#186: the
+  // original highlighted the differing artist; links used to drop here). A
+  // credited-as (same entity, different text) is NOT boxed — it's the same
+  // artist, just a different credit.
+  function acLinksDiff(self, other, withDisamb) {
+    const key = a => a.gid || ('name:' + a.name.toLowerCase().trim());
+    const otherSet = new Set((other || []).map(key));
+    return (self || []).map(a => {
+      const nm = esc(a.name);
+      const inner = a.gid ? '<a href="' + ORIGIN + '/artist/' + esc(a.gid) + '" target="_blank" rel="noopener">' + nm + '</a>' : nm;
+      const boxed = otherSet.has(key(a)) ? inner : '<span class="tc-dh">' + inner + '</span>';
+      const dis = withDisamb && a.comment ? ' <span class="tc-rec-disamb">(' + esc(a.comment) + ')</span>' : '';
+      return boxed + dis + esc(a.join);
     }).join('');
   }
   // #186 detailed highlighting — char-level LCS diff of two short strings.
@@ -2278,9 +2339,12 @@
       const diffs = rec ? recFieldDiffs(t, rec) : null;
       // ideal/exact match: title + length match with NO relaxation option used (fold only, no punctuation/
       // edit-distance/length tolerance). A credited-as artist (same entity) still counts as exact. #119
-      const exact = !!(rec && fold(u(t.name)) === fold(u(rec.name))
+      // EXACT = displayed title/artist identical (literal, not case/accent-folded —
+      // a casing-only diff is tolerance, #197) and length displays the same. A
+      // credited-as artist (same entity) still counts as exact. #119 #190
+      const exact = !!(rec && literalEq(u(t.name), u(rec.name))
         && (!u(t.length) || !u(rec.length) || Math.round(u(t.length) / 1000) === Math.round(u(rec.length) / 1000))
-        && (sameArtistEntities(t, rec) || fold(acText(u(t.artistCredit))) === fold(acText(u(rec.artistCredit)))));
+        && (sameArtistEntities(t, rec) || literalEq(acText(u(t.artistCredit)), acText(u(rec.artistCredit)))));
       // which fields a green (within-tolerance) match still differs on — for the dot tooltip
       const tolDiffs = [];
       if (rec) {
@@ -2294,9 +2358,9 @@
       const rawArtistDiff = !!(rec && !isNew && nativeDiffFlag(t, 'artist'));
       out.push({
         exact, tolDiffs,
-        mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit)), trackLen: u(t.length),
+        mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit), true), trackAc: acData(u(t.artistCredit)), trackLen: u(t.length),
         isNew,
-        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recComment: rec ? (u(rec.comment) || '') : '', recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit)) : '', recLen: rec ? u(rec.length) : null,
+        recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recComment: rec ? (u(rec.comment) || '') : '', recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit), true) : '', recAc: rec ? acData(u(rec.artistCredit)) : [], recLen: rec ? u(rec.length) : null,
         // submit-flags: when on, the recording's title/artist will be overwritten with the track's on submit
         copyTitle: typeof t.updateRecordingTitle === 'function' ? !!u(t.updateRecordingTitle) : false,
         copyArtist: typeof t.updateRecordingArtist === 'function' ? !!u(t.updateRecordingArtist) : false,
@@ -2370,9 +2434,9 @@
       '.tc-rectbl .tc-dh{background:#e53935;color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — drawn on top of the cell\'s base background
       '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
-      '.tc-rectbl td.tc-updavail{box-shadow:inset 0 -2px 0 #cdb8f0}',   // native offers a copy (e.g. casing-only) — right-click to apply #146
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
       '.tc-rectbl .tc-rec-disamb{color:#999;font-weight:400}',   // recording disambiguation, grey like native #144
+      '.tc-rectbl .tc-rpk-adis{color:#999;font-weight:400}',     // artist disambiguation in the table — grey like native, not black (tc-rpk-adis base style is picker-scoped) #186
       '.tc-rectbl td.tc-clickable{cursor:pointer}',
       '.tc-rectbl td.tc-clickable:hover{outline:1px solid #9cc6ab;outline-offset:-1px}',
       '.tc-rectbl td a{color:#2c5d9b;text-decoration:none}.tc-rectbl td a:hover{text-decoration:underline}',
@@ -2415,10 +2479,13 @@
       '.tc-recpop .tc-rpk-main{display:flex;align-items:baseline;gap:6px}',
       '.tc-recpop .tc-rpk-name{font-weight:600;color:#222}',
       '.tc-recpop .tc-rpk-cmt{color:#888;font-size:11px}',
+      '.tc-recpop .tc-rpk-curisrc{padding:0 10px 4px;color:#777;font-size:11px}.tc-recpop .tc-rpk-curisrc-list{font-family:Consolas,monospace;color:#555}',
       '.tc-recpop .tc-rpk-len{margin-left:auto;color:#666;font-variant-numeric:tabular-nums;white-space:nowrap}',
       '.tc-recpop .tc-rpk-by{color:#555;font-size:11px}',
       '.tc-recpop .tc-rpk-on{color:#777;font-size:11px}',
-      '.tc-recpop .tc-rpk-on a,.tc-recpop .tc-rpk-curon a{color:#2c5d9b;text-decoration:none}.tc-recpop .tc-rpk-on a:hover,.tc-recpop .tc-rpk-curon a:hover{text-decoration:underline}',
+      '.tc-recpop .tc-rpk-on a,.tc-recpop .tc-rpk-curon a,.tc-recpop .tc-rpk-name a,.tc-recpop .tc-rpk-by a{color:#2c5d9b;text-decoration:none}.tc-recpop .tc-rpk-on a:hover,.tc-recpop .tc-rpk-curon a:hover,.tc-recpop .tc-rpk-name a:hover,.tc-recpop .tc-rpk-by a:hover{text-decoration:underline}',
+      '.tc-recpop .tc-rpk-name a{color:inherit}',   // title link keeps the result's strong colour; underline on hover only
+      '.tc-recpop .tc-rpk-adis{color:#9a8fb5;font-size:10px}',   // artist disambiguation in the by-line / header #195',
       '.tc-recpop .tc-rpk-more{color:#999;font-style:italic}',
       '.tc-recpop .tc-rpk-rgx{color:#888;font-size:10px;font-weight:600}',
       // header subtitle = the song (track) artist + length; current-recording artist + its full appears-on
@@ -2650,11 +2717,12 @@
         : r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? (esc(r.recName) + disamb) : '<span class="tc-rec-none">— none —</span>';
       const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') + (r.recArtist ? ' <s class="tc-rec-orig">' + esc(r.recArtist) + '</s>' : '') : (r.recArtistHtml || '');
       const tolHas = f => (r.tolDiffs || []).some(x => x === f || x.startsWith(f));   // within-tolerance diffs highlight the cells too
-      // tc-updavail: native offers a copy (e.g. a casing-only diff) that Apollo's
-      // tolerance/casing settings would otherwise treat as a match — a subtle cue
-      // that right-click will copy it. Real/tolerance diffs keep the red tc-diff. #146
-      const tCls = r.copyTitle ? 'tc-copy' : (d.title || tolHas('title') ? 'tc-diff' : (r.rawTitleDiff ? 'tc-updavail' : ''));
-      const aCls = r.copyArtist ? 'tc-copy' : (d.artist || tolHas('artist') ? 'tc-diff' : (r.rawArtistDiff ? 'tc-updavail' : ''));
+      // No more tc-updavail blue underline (#197): a native-offers-copy row is now
+      // always tolerance (never exact), so it's already coloured by its tolerance
+      // state — the extra blue line was redundant. Right-click copy still works
+      // (driven by tElig below), it just isn't drawn as a separate cue.
+      const tCls = r.copyTitle ? 'tc-copy' : (d.title || tolHas('title') ? 'tc-diff' : '');
+      const aCls = r.copyArtist ? 'tc-copy' : (d.artist || tolHas('artist') ? 'tc-diff' : '');
       const tElig = r.rawTitleDiff || r.copyTitle, aElig = r.rawArtistDiff || r.copyArtist;
       const changed = recChangedFromOrig(r.mi, r.ti);   // differs from the page-load recording
       // #186 detailed highlighting (opt-in): per-character title + artist diff + graded length shade.
@@ -2669,12 +2737,18 @@
         const segs = charDiff(r.title || '', r.recName || '');
         if (segs) { trackTitleHtml = diffSide(segs, -1); recTitleHtml = diffSide(segs, 1) + disamb; }
       }
-      // artists: char-diff the plain credit text (drops the per-artist links while highlighting,
-      // like the reference) — only when not in copy-preview and the literal credits differ.
+      // artists: ENTITY-level diff that KEEPS the per-artist links + disambiguations
+      // (#186: links used to drop here because we char-diffed plain text; #195:
+      // disambiguations now show). The artist whose entity isn't on the other side
+      // is boxed; a credited-as (same entity) isn't. Trigger on an ENTITY difference,
+      // not just text — a track artist swapped to a SAME-NAME different artist reads
+      // identically but must still be boxed so it's not missed (#186, chaban).
+      const acKeys = ac => (ac || []).map(a => a.gid || ('name:' + (a.name || '').toLowerCase().trim())).join('');
+      const artistEntitiesDiffer = acKeys(r.trackAc) !== acKeys(r.recAc);
       let trackArtistHtml2 = r.trackArtistHtml || '', recArtistCell = artistCell;
-      if (dh && !r.copyArtist && r.recArtist != null && (r.trackArtist || '') !== (r.recArtist || '')) {
-        const segs = charDiff(r.trackArtist || '', r.recArtist || '');
-        if (segs) { trackArtistHtml2 = diffSide(segs, -1); recArtistCell = diffSide(segs, 1); }
+      if (dh && !r.copyArtist && r.recArtist != null && ((r.trackArtist || '') !== (r.recArtist || '') || artistEntitiesDiffer)) {
+        trackArtistHtml2 = acLinksDiff(r.trackAc, r.recAc, true);
+        recArtistCell    = acLinksDiff(r.recAc, r.trackAc, true);
       }
       let recLenCls = (d.len || tolHas('length')) ? 'tc-diff' : '', recLenStyle = '';
       if (dh && (d.len || tolHas('length'))) {
@@ -2864,6 +2938,7 @@
   }
   // a WS2 recording → the flat shape used by the picker / matcher (gid, name, length, artist text + raw ac, …)
   function mapWsRec(r) {
+    (r['artist-credit'] || []).forEach(a => a.artist && noteDisamb(a.artist.id, a.artist.disambiguation));   // cache disambiguations (#195)
     return {
       gid: r.id, name: r.title, length: r.length || null,
       artist: (r['artist-credit'] || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''),
@@ -2899,6 +2974,17 @@
       const j = await fetch(`${ORIGIN}/ws/2/recording/${gid}?fmt=json&inc=artist-credits+releases+release-groups+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
       return j && j.id ? mapWsRec(j) : null;
     } catch (e) { Log.warn('recording lookup failed', e.message); return null; }
+  }
+  // recordings sharing an ISRC — backs pasting an ISRC into the picker's search
+  // field (one ISRC can map to several recordings). #196
+  async function fetchRecordingsByIsrc(isrc) {
+    try {
+      // NB: the `isrc` resource rejects `release-groups` as an inc param (unlike
+      // the `recording` resource) — including it returns an error object with no
+      // recordings, which is why an existing ISRC came back "not found". #196
+      const j = await fetch(`${ORIGIN}/ws/2/isrc/${encodeURIComponent(isrc)}?fmt=json&inc=artist-credits+releases+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+      return ((j && j.recordings) || []).map(mapWsRec);
+    } catch (e) { Log.warn('ISRC lookup failed', e.message); return []; }
   }
   function recEntityFrom(data) {
     if (data.entity) return data.entity;   // suggestions are already full MB entities
@@ -2969,8 +3055,26 @@
     const extra = groups.length - shown.length;
     return html + (extra > 0 ? ' <span class="tc-rpk-more">+' + extra + ' more</span>' : '');
   }
+  // render a WS2 artist-credit (the raw `artist-credit` array kept on mapped
+  // recordings) as links + optional disambiguations. Network-free: the gids and
+  // disambiguations come from the search response itself. #199 #195
+  function acLinksWs(ac, withDisamb) {
+    const names = ac || [];
+    if (!names.length) return '';
+    return names.map(n => {
+      const a = n.artist || {};
+      noteDisamb(a.id, a.disambiguation);   // feed the cache so the table shows it after a pick (#195)
+      const nm = n.name || a.name || '';
+      const dis = withDisamb && a.disambiguation ? ' <span class="tc-rpk-adis">(' + esc(a.disambiguation) + ')</span>' : '';
+      const link = a.id ? '<a href="' + ORIGIN + '/artist/' + esc(a.id) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm);
+      return link + dis + esc(n.joinphrase || '');
+    }).join('');
+  }
   // a picker result row — mirrors the native list: title + length, by artist, appears on, ISRCs;
-  // left-border colour = confidence vs the track
+  // left-border colour = confidence vs the track. Title links to the recording and the
+  // artist credit links to each artist (with disambiguations), so an odd-looking result
+  // can be inspected without first selecting it (#199 #195). Clicks on these links are
+  // ignored by the row's pick handler (it bails on `closest('a')`).
   function recRowHtml(data, ctx) {
     const rels = relLinksHtml(data.releases, 6);
     const isrcs = (data.isrcs || []).slice(0, 4).join(', ');
@@ -2978,11 +3082,15 @@
     const dT = ctx && data.name && ctx.title && !recTitleEq(data.name, ctx.title);
     const dA = ctx && data.artist && ctx.artist && !recNameEq(data.artist, ctx.artist);
     const dL = !!(ctx && recLenGap(data.length, ctx.length) > 0);
+    const titleHtml = data.gid
+      ? '<a href="' + ORIGIN + '/recording/' + esc(data.gid) + '" target="_blank" rel="noopener">' + esc(data.name || '') + '</a>'
+      : esc(data.name || '');
+    const artistHtml = (data.ac && data.ac.length) ? acLinksWs(data.ac, true) : esc(data.artist || '');
     return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
-      '<div class="tc-rpk-main"><span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + esc(data.name || '') + '</span>' +
+      '<div class="tc-rpk-main"><span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + titleHtml + '</span>' +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
         '<span class="tc-rpk-len' + (dL ? ' tc-rpk-fdiff' : '') + '">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
-      (data.artist ? '<div class="tc-rpk-by' + (dA ? ' tc-rpk-fdiff' : '') + '">by ' + esc(data.artist) + '</div>' : '') +
+      (artistHtml ? '<div class="tc-rpk-by' + (dA ? ' tc-rpk-fdiff' : '') + '">by ' + artistHtml + '</div>' : '') +
       (rels ? '<div class="tc-rpk-on">appears on: ' + rels + '</div>' : '') +
       (isrcs ? '<div class="tc-rpk-isrc">ISRCs: ' + esc(isrcs) + '</div>' : '') +
       '</div>';
@@ -3005,7 +3113,7 @@
       : curGid
         ? '<span class="tc-rpk-curmain"><a href="' + ORIGIN + '/recording/' + esc(curGid) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>'
             + (u(curRec.comment) ? ' <span class="tc-rpk-cmt">(' + esc(u(curRec.comment)) + ')</span>' : '')   // disambiguation on selection #144
-            + (curArtist ? ' <span class="tc-rpk-curby">- ' + acLinks(u(curRec.artistCredit)) + '</span>' : '') + '</span>'
+            + (curArtist ? ' <span class="tc-rpk-curby">- <span class="tc-rpk-curby-ac">' + acLinks(u(curRec.artistCredit), true) + '</span></span>' : '') + '</span>'
           + (u(curRec.length) ? '<span class="tc-rpk-curlen">' + fmtMs(u(curRec.length)) + '</span>' : '')
         : '<span class="tc-rpk-curnone">— none —</span>';
     const trackArtist = ctx.artist, trackLen = u(ko.length);
@@ -3020,12 +3128,15 @@
         (trackLen ? '<span class="tc-rpk-hdlen">' + fmtMs(trackLen) + '</span>' : '') + '</div>' +
       '<div class="tc-rpk-curwrap">' +
         '<div class="tc-rpk-cur">' + curHtml + '</div>' +
+        // ISRC of the linked recording — makes it obvious when an ISRC drove the
+        // selection (#196). Hidden until the async fill finds at least one.
+        (curGid ? '<div class="tc-rpk-curisrc" style="display:none">ISRC: <span class="tc-rpk-curisrc-list"></span></div>' : '') +
         (curGid ? '<div class="tc-rpk-curon">appears on: <span class="tc-rpk-curon-list">…</span></div>' : '') +
       '</div>' +
       (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
-      '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" placeholder="search by name, or paste a recording MBID / URL…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
+      '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" placeholder="search by name, or paste a recording MBID / URL / ISRC…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
       '<div class="tc-rpk-sec tc-rpk-suggsec" title="click to collapse / expand"><span>suggestions <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty">finding suggestions…</div></div>' +
       '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" title="relaxed search — show all recordings with this title, ignoring artist &amp; length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
     const newBtn = pop.querySelector('.tc-rpk-qnew'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
@@ -3033,12 +3144,23 @@
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
     // fill the current recording's full "appears on" (all releases, linkable) — not in the page model, so fetch it
     if (curGid) {
-      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=releases+release-groups', { headers: { Accept: 'application/json' } })
+      fetch(ORIGIN + '/ws/2/recording/' + curGid + '?fmt=json&inc=artist-credits+releases+release-groups+isrcs', { headers: { Accept: 'application/json' } })
         .then(r => r.json()).then(j => {
-          if (!_recPop) return; const el = pop.querySelector('.tc-rpk-curon-list'); if (!el) return;
-          const seen = new Set(), rels = [];
-          (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; rels.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } });
-          el.innerHTML = rels.length ? relLinksHtml(rels, 0) : '—';
+          if (!_recPop) return;
+          const el = pop.querySelector('.tc-rpk-curon-list');
+          if (el) {
+            const seen = new Set(), rels = [];
+            (j.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; rels.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } });
+            el.innerHTML = rels.length ? relLinksHtml(rels, 0) : '—';
+          }
+          // Artist disambiguations in the header: the page (KO) model doesn't carry
+          // them, so backfill from the WS2 artist-credit once it arrives (#195).
+          const acEl = pop.querySelector('.tc-rpk-curby-ac');
+          if (acEl && j['artist-credit']) { const h = acLinksWs(j['artist-credit'], true); if (h) acEl.innerHTML = h; }
+          // ISRC line — reveal only when the recording actually has ISRC(s). #196
+          const isrcWrap = pop.querySelector('.tc-rpk-curisrc'), isrcEl = pop.querySelector('.tc-rpk-curisrc-list');
+          const isrcs = (j.isrcs || []).filter(Boolean);
+          if (isrcWrap && isrcEl && isrcs.length) { isrcEl.textContent = isrcs.join(', '); isrcWrap.style.display = ''; }
         }).catch(() => {});
     }
     _recPopDrag(pop.querySelector('.tc-rpk-hd'));   // header is the drag handle
@@ -3109,6 +3231,18 @@
         if (my !== seq || !_recPop) return;
         if (rec) pickRecording(entry, rec);   // links the recording + closes the picker
         else resBox.innerHTML = '<div class="tc-rpk-empty">recording MBID not found</div>';
+        return;
+      }
+      // paste an ISRC → resolve to its recording(s). Exactly one → link
+      // immediately (same as an MBID); several → list them to choose from. #196
+      const isrc = isrcFrom(query);
+      if (isrc) {
+        resBox.innerHTML = '<div class="tc-rpk-empty">resolving ISRC ' + esc(isrc) + '…</div>';
+        const recs = await fetchRecordingsByIsrc(isrc);
+        if (my !== seq || !_recPop) return;
+        if (recs.length === 1) { pickRecording(entry, recs[0]); return; }   // one hit → link + close
+        if (recs.length > 1) { recs.forEach(rr => { data[rr.gid] = rr; }); lastResults = recs; paintResults(); return; }
+        resBox.innerHTML = '<div class="tc-rpk-empty">no recording with ISRC ' + esc(isrc) + '</div>';
         return;
       }
       resBox.innerHTML = '<div class="tc-rpk-empty">searching…</div>';

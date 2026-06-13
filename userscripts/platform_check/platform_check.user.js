@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.12
+// @version      2026.6.13.153301
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -408,7 +408,7 @@ container.innerHTML = `
   #mb-pc-panel.pc-icons-mode .pc-plat-ico { display: inline-flex; }
   #mb-pc-panel.pc-icons-mode .pc-ico-slot { display: none; }
   /* in-MB marker (independent of match/mismatch) — Circle or Glow per the "MB marker" option */
-  #mb-pc-panel.pc-icons-mode.pc-mark-circle .pc-inmb .pc-plat-ico { border: 1px solid #3b82c4; }
+  #mb-pc-panel.pc-icons-mode.pc-mark-circle .pc-inmb .pc-plat-ico { border: 1px solid #3b82c4; padding: 1px; }
   #mb-pc-panel.pc-icons-mode.pc-mark-glow   .pc-inmb .pc-plat-ico { background: radial-gradient(circle, rgba(59,130,196,.6), rgba(59,130,196,0) 70%); }
   /* presence — fades/grays the icon + name regardless of in-MB */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
@@ -2134,6 +2134,24 @@ async function fetchBandcampMeta(albumUrl) {
     const ogTotal = (ogTag.match(/content=["']\s*(\d+)\s+track\b/i) || [])[1];
     const total = ogTotal ? parseInt(ogTotal, 10) : null;
     const hiddenTracks = (total != null && streaming != null && total > streaming) ? total - streaming : 0;
+    // Barcode (#194): the UPC lives in TralbumData.current.upc — embedded in the
+    // page's `data-tralbum` attribute (entity-encoded JSON), not the JSON-LD.
+    // Often null (Bandcamp barcodes are hand-entered). Per Harmony (kellnerd/harmony#42)
+    // the digital `current.upc` can coincide with a physical package's barcode —
+    // when it does, it's the package's, not the digital release's, so we drop it.
+    let barcode = null, barcodeIsPackage = false;
+    const trm = html.match(/data-tralbum="([^"]*)"/);
+    if (trm) {
+        try {
+            const tr = JSON.parse(trm[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '<'));
+            const upc = tr && tr.current && tr.current.upc;
+            if (upc) {
+                const pkgUpcs = (tr.packages || []).map(pp => normBarcode(pp && pp.upc)).filter(Boolean);
+                if (pkgUpcs.includes(normBarcode(upc))) barcodeIsPackage = true;   // physical package's barcode — not the digital release's
+                else barcode = String(upc).trim();
+            }
+        } catch (e) { /* malformed data-tralbum — no barcode */ }
+    }
     return {
         // report the true total (incl. hidden) as the track count — that's what the
         // Bandcamp release actually contains, and what MB compares against.
@@ -2145,6 +2163,8 @@ async function fetchBandcampMeta(albumUrl) {
         label:  lMatch?.[1]     || null,
         format: formats.length ? formats.join(', ') : null,
         artist: artistMatch?.[1]?.trim() || null,
+        barcode,
+        barcodeIsPackage,
     };
 }
 
@@ -2240,8 +2260,9 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const hidden = meta?.hiddenTracks || 0;
     if (meta) {
         const trk = hidden > 0 ? `${meta.tracks} (${meta.streamingTracks} streaming + ${hidden} download-only hidden)` : `${meta.tracks}`;
-        appendLog(label, `Album parsed: tracks=${trk} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} format=${meta.format || '?'}`, meta.tracks ? 'ok' : 'warn');
+        appendLog(label, `Album parsed: tracks=${trk} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} format=${meta.format || '?'} barcode=${meta.barcode || (meta.barcodeIsPackage ? 'package-only (ignored)' : '-')}`, meta.tracks ? 'ok' : 'warn');
         if (hidden > 0) appendLog(label, `${hidden} download-only track(s) hidden from streaming — Bandcamp release has ${meta.tracks}, not ${meta.streamingTracks}`, 'warn');
+        if (meta.barcodeIsPackage) appendLog(label, `current.upc matches a physical package's barcode — not the digital release's, so ignored (harmony#42)`, 'warn');
     } else {
         appendLog(label, `Album page failed`, 'error');
     }
@@ -2249,8 +2270,9 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
     const fmt    = meta?.format ?? null;
-    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden });
-    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden });
+    const bc     = meta?.barcode ?? null;   // #194: digital release UPC (null when absent or package-only)
+    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden, barcode: bc });
+    updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden, barcode: bc });
 }
 
 // ─── Deezer ─────────────────────────────────────────────────────────────────
@@ -2693,15 +2715,21 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
 // Electronic-music store with a clean, unauthenticated JSON API
 // (volumo.com/api/v1) — no Cloudflare, no captcha, no token. A release lookup
 // returns the full tracklist (with ISRCs) in one call. We resolve by existing
-// MB rel → barcode (ICPN) → artist+album search. Canonical URL is
-// /album/{icpn}-{slug}; the /album/{id} form 308-redirects to it.
-const volumoSlug = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-const volumoUrl  = a => a && a.icpn ? `https://volumo.com/album/${a.icpn}-${volumoSlug(a.title)}` : (a && a.id ? `https://volumo.com/album/${a.id}` : null);
+// MB rel → barcode (ICPN) → artist+album search. Volumo's canonical page is
+// /album/{icpn}-{slug}, but the bare /album/{id} form 308-redirects to it.
+// #202: MB doesn't normalize Volumo URLs yet (MBS-14369), so we emit the
+// clean, slug-less /album/{id} form ourselves — drop the human-readable
+// "-{slug}" tail (it's purely cosmetic and only invites duplicate-link noise).
+// {id} is the ICPN (barcode) when known, else Volumo's internal album id.
+const volumoUrl   = a => a && a.icpn ? `https://volumo.com/album/${a.icpn}` : (a && a.id ? `https://volumo.com/album/${a.id}` : null);
+// Normalize any Volumo album URL to that slug-less form so a slugged MB rel and
+// our clean URL compare equal (avoids a false "differs" / re-add).
+const volumoClean = u => { const m = String(u || '').match(/\/album\/(\d+)/i); return m ? `https://volumo.com/album/${m[1]}` : (u || null); };
 async function volumoApi(path) { const r = await gmGet('https://volumo.com/api/v1' + path); if (!r.ok) return null; try { const j = JSON.parse(r.responseText); return Array.isArray(j) ? j[0] : (j.album || j); } catch { return null; } }
 async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Volumo';
     const cached = cacheGet(mbid, 'volumo');
-    if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('volumo', label, cached, mbTracks); return; }
+    if (cached?.url && (!existingUrl || volumoClean(existingUrl) === volumoClean(cached.url))) { applyCachedRow('volumo', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached — ↻ to retry)`, 'warn'); applyCachedRow('volumo', label, cached, mbTracks); return; }
 
     let a = null, source = null;

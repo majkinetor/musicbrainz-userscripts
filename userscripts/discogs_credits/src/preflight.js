@@ -152,6 +152,11 @@ async function resolveEntity(entity, kind, opts) {
             if (cachedLinkedIds === undefined && (via === 'url' || via === 'both')) {
                 cachedLinkedIds = [cachedRec.mbid];
             }
+            // Heal records poisoned by the pre-fix code, which wrote [] when
+            // the URL lookup merely FAILED (URL-chip false negative): an
+            // empty list from cache can't be trusted — drop it so the
+            // review-table re-checks the row live.
+            if (Array.isArray(cachedLinkedIds) && cachedLinkedIds.length === 0) cachedLinkedIds = undefined;
             if (cachedRec.name) {
                 return buildResolved(cachedRec.mbUrl, cachedRec.name,
                                      cachedRec.disambiguation || '', via,
@@ -176,18 +181,27 @@ async function resolveEntity(entity, kind, opts) {
             // remembered candidate list without re-querying MB so that an
             // immediate page reload doesn't redo every unresolved-entity
             // round-trip. Use the "🔄 Refresh from MB" button to bypass.
-            return buildAttention(cachedRec.nameMatches, false, null, cachedRec.urlLinkedIds, cachedRec.creditOverride);
+            // Same poisoned-[] heal as above (URL-chip false negative).
+            const attnLinkedIds = (Array.isArray(cachedRec.urlLinkedIds) && cachedRec.urlLinkedIds.length === 0)
+                ? undefined : cachedRec.urlLinkedIds;
+            return buildAttention(cachedRec.nameMatches, false, null, attnLinkedIds, cachedRec.creditOverride);
         }
     }
 
     // ── 2 + 3. Name search AND URL relation, in parallel ────────────────────
+    // The URL lookup uses `fetchJson404`: a 404 means "this URL isn't in MB"
+    // (a real answer → no relations), while `null` means the lookup FAILED
+    // (timeout / 429 storm). Conflating the two was the URL-chip bug — a
+    // failed lookup got recorded (and IDB-persisted!) as "no relations", so
+    // the review table showed the 🔗 add-link button for already-linked URLs
+    // until the focus-return recheck corrected it.
     const [nameJson, urlJson] = await Promise.all([
         mbThrottle.fetchJson(
             `//musicbrainz.org/ws/2/${kind}?query=${encodeURIComponent(searchName)}&fmt=json&limit=${searchLimit}`
         ),
-        parsed ? mbThrottle.fetchJson(
+        parsed ? mbThrottle.fetchJson404(
             `//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(parsed.cleanUrl)}&inc=${incRels}&fmt=json`
-        ) : Promise.resolve(null),
+        ) : Promise.resolve({ notFound: true }),
     ]);
 
     // Name search — collect everything for the review table; pick a single
@@ -216,7 +230,10 @@ async function resolveEntity(entity, kind, opts) {
     // of which one we pick) so the review-table can answer "is the chosen
     // entity already linked?" without re-querying MB per row.
     let urlHit = null;
-    const urlLinkedIds = (urlJson?.relations || [])
+    // `undefined` = lookup failed, we genuinely don't know → review-table
+    // falls back to its own per-row check. `[]` = MB answered "no relations"
+    // (incl. 404 = URL entity doesn't exist). Never store the failed state.
+    const urlLinkedIds = urlJson === null ? undefined : (urlJson.relations || [])
         .map(r => kind === 'place' ? (r.place?.id || r.label?.id || null) : (r[kind]?.id || null))
         .filter(Boolean);
     if (urlJson?.relations?.length > 0) {
@@ -250,7 +267,8 @@ async function resolveEntity(entity, kind, opts) {
                 disambiguation: '',
                 resolvedVia:    null,
                 nameMatches:    matches,
-                urlLinkedIds,
+                // Omit when unknown (lookup failed) — never persist a guess.
+                ...(urlLinkedIds !== undefined && { urlLinkedIds }),
             });
         }
     }
@@ -303,7 +321,8 @@ async function resolveEntity(entity, kind, opts) {
                 name:           finalName,
                 disambiguation: finalDisam || '',
                 resolvedVia:    via,
-                urlLinkedIds,
+                // Omit when unknown (lookup failed) — never persist a guess.
+                ...(urlLinkedIds !== undefined && { urlLinkedIds }),
             });
         }
         return buildResolved(mbUrl, finalName, finalDisam || '', via, resolved.kind, false, urlLinkedIds);

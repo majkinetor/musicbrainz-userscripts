@@ -36,6 +36,7 @@ Each takeover is optional and you can flip back to the native editor at any time
     - **Detailed highlighting** (opt-in, _Matching_ settings) — highlights the exact **differing characters** in a mismatching **title and artist** (including a casing- or punctuation-only difference the match would otherwise tolerate), instead of the whole field, and shades a **length mismatch** by how large the gap is (faint under a second → solid red past five).
     - Recording picker with MusicBrainz suggestions, free-form search, linked "appears on" releases, confidence highlights
         - Paste a **recording MBID** or a MusicBrainz `/recording/<mbid>` URL into the search field to link that recording immediately (same as the artist picker)
+        - Paste an **ISRC** (with or without separators, e.g. `GB-AYE-06-01498` or `GBAYE0601498`) into the search field to resolve it via MusicBrainz — a single match links immediately, several are listed to choose from. The linked recording's ISRC(s) are shown in the picker header so it's clear when an ISRC drove the selection.
     - Right-click a recording Title/Artist cell to copy the track's value down to the recording (on submit) — see [Updating recordings](#updating-recordings-titleartist)
 - **[Matching](#matching)**
     - Auto-match artists and recordings in one click

@@ -58,10 +58,12 @@ function collectIssues() {
   for (const i of all) {
     const names = i.labels.map(l => l.name);
     if (['released', 'skip changelog', 'wontfix'].some(x => names.includes(x))) continue;
-    const area = names.find(n => AREA_RE.test(n)); if (!area) continue;
+    const areas = names.filter(n => AREA_RE.test(n)); if (!areas.length) continue;   // an issue can span several scripts
     const kind = names.includes('enhancement') ? 'features' : names.includes('bug') ? 'fixes' : null; if (!kind) continue;
-    const dir = dirFromArea(area), path = userJsPath(dir);
-    (groups[dir] ||= { dir, name: scriptDisplayName(path), path, features: [], fixes: [] })[kind].push(i);
+    for (const area of areas) {   // add it to EACH script's changelog (cross-cutting work, e.g. a shared Qobuz API)
+      const dir = dirFromArea(area), path = userJsPath(dir);
+      (groups[dir] ||= { dir, name: scriptDisplayName(path), path, features: [], fixes: [] })[kind].push(i);
+    }
     included.push(i.number);
   }
   return { groups, included };
