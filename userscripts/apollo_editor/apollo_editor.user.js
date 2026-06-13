@@ -469,7 +469,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.094227';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.095259';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2183,10 +2183,17 @@
     const x = a && a.artistGids, y = b && b.artistGids;
     return !!(x && y && x.length > 0 && x.length === y.length && x.every((g, i) => g === y[i]));
   }
+  // EXACT means the displayed strings are identical — only Unicode-normalisation
+  // (NFC) is folded, never case/accents/spacing. A casing-only (or accent-only)
+  // difference is NOT exact: it's a real visible difference that native offers to
+  // copy, so it belongs in the tolerance band, not the blue "exact" one. #197
+  const literalEq = (a, b) => String(a == null ? '' : a).normalize('NFC') === String(b == null ? '' : b).normalize('NFC');
   function recExactMatch(data, ctx) {
     if (!ctx) return false;
-    const titleEq = !data.name || !ctx.title || fold(data.name) === fold(ctx.title);
-    const artistEq = !data.artist || !ctx.artist || sameAcEntities(data, ctx) || fold(data.artist) === fold(ctx.artist);
+    const titleEq = !data.name || !ctx.title || literalEq(data.name, ctx.title);
+    // a same-entity credited-as is still exact (#190) — only the artist *text*
+    // is no longer case/accent-folded into exactness (#197)
+    const artistEq = !data.artist || !ctx.artist || sameAcEntities(data, ctx) || literalEq(data.artist, ctx.artist);
     const lenEq = !data.length || !ctx.length || Math.round(data.length / 1000) === Math.round(ctx.length / 1000);
     return titleEq && artistEq && lenEq;
   }
@@ -2287,9 +2294,12 @@
       const diffs = rec ? recFieldDiffs(t, rec) : null;
       // ideal/exact match: title + length match with NO relaxation option used (fold only, no punctuation/
       // edit-distance/length tolerance). A credited-as artist (same entity) still counts as exact. #119
-      const exact = !!(rec && fold(u(t.name)) === fold(u(rec.name))
+      // EXACT = displayed title/artist identical (literal, not case/accent-folded —
+      // a casing-only diff is tolerance, #197) and length displays the same. A
+      // credited-as artist (same entity) still counts as exact. #119 #190
+      const exact = !!(rec && literalEq(u(t.name), u(rec.name))
         && (!u(t.length) || !u(rec.length) || Math.round(u(t.length) / 1000) === Math.round(u(rec.length) / 1000))
-        && (sameArtistEntities(t, rec) || fold(acText(u(t.artistCredit))) === fold(acText(u(rec.artistCredit)))));
+        && (sameArtistEntities(t, rec) || literalEq(acText(u(t.artistCredit)), acText(u(rec.artistCredit)))));
       // which fields a green (within-tolerance) match still differs on — for the dot tooltip
       const tolDiffs = [];
       if (rec) {
@@ -2379,7 +2389,6 @@
       '.tc-rectbl .tc-dh{background:#e53935;color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — drawn on top of the cell\'s base background
       '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
-      '.tc-rectbl td.tc-updavail{box-shadow:inset 0 -2px 0 #cdb8f0}',   // native offers a copy (e.g. casing-only) — right-click to apply #146
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
       '.tc-rectbl .tc-rec-disamb{color:#999;font-weight:400}',   // recording disambiguation, grey like native #144
       '.tc-rectbl td.tc-clickable{cursor:pointer}',
@@ -2660,11 +2669,12 @@
         : r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? (esc(r.recName) + disamb) : '<span class="tc-rec-none">— none —</span>';
       const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') + (r.recArtist ? ' <s class="tc-rec-orig">' + esc(r.recArtist) + '</s>' : '') : (r.recArtistHtml || '');
       const tolHas = f => (r.tolDiffs || []).some(x => x === f || x.startsWith(f));   // within-tolerance diffs highlight the cells too
-      // tc-updavail: native offers a copy (e.g. a casing-only diff) that Apollo's
-      // tolerance/casing settings would otherwise treat as a match — a subtle cue
-      // that right-click will copy it. Real/tolerance diffs keep the red tc-diff. #146
-      const tCls = r.copyTitle ? 'tc-copy' : (d.title || tolHas('title') ? 'tc-diff' : (r.rawTitleDiff ? 'tc-updavail' : ''));
-      const aCls = r.copyArtist ? 'tc-copy' : (d.artist || tolHas('artist') ? 'tc-diff' : (r.rawArtistDiff ? 'tc-updavail' : ''));
+      // No more tc-updavail blue underline (#197): a native-offers-copy row is now
+      // always tolerance (never exact), so it's already coloured by its tolerance
+      // state — the extra blue line was redundant. Right-click copy still works
+      // (driven by tElig below), it just isn't drawn as a separate cue.
+      const tCls = r.copyTitle ? 'tc-copy' : (d.title || tolHas('title') ? 'tc-diff' : '');
+      const aCls = r.copyArtist ? 'tc-copy' : (d.artist || tolHas('artist') ? 'tc-diff' : '');
       const tElig = r.rawTitleDiff || r.copyTitle, aElig = r.rawArtistDiff || r.copyArtist;
       const changed = recChangedFromOrig(r.mi, r.ti);   // differs from the page-load recording
       // #186 detailed highlighting (opt-in): per-character title + artist diff + graded length shade.
