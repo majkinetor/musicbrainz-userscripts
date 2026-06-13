@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.13.150659
+// @version      2026.6.13.152429
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -92,7 +92,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -477,7 +477,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.150659';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.152429';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -765,7 +765,7 @@
     #tc-settings .tc-s-row{display:flex;align-items:center;gap:12px;margin:7px 0;color:#333}
     #tc-settings .tc-s-rad{display:inline-flex;align-items:center;gap:4px;margin:0;font-weight:normal;cursor:pointer}
     #tc-settings .tc-s-row input[type=radio]{margin:0}
-    #tc-settings #tc-s-lentol{width:48px;font:13px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px}
+    #tc-settings #tc-s-lentol,#tc-settings #tc-s-titletol,#tc-settings #tc-s-punctsize{width:48px;font:13px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px}
     #tc-settings .tc-s-row.lentol{gap:7px}
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;display:inline-flex;align-items:stretch;background:#5f3ec0;color:#fff;border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
     #tc-launch .tc-launch-lbl{padding:8px 13px;cursor:pointer}
@@ -866,6 +866,7 @@
         <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="normal"> normal</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
         <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
         <div class="tc-s-row"><span>Show grid</span><label class="tc-s-rad" title="vertical column separators"><input type="checkbox" id="tc-s-gridcols"> columns</label><label class="tc-s-rad" title="horizontal lines between tracks"><input type="checkbox" id="tc-s-gridrows"> rows</label></div>
+        <div class="tc-s-row" title="In the detailed-highlight diff, enlarge a differing punctuation / confusable / invisible character (straight vs curly quote, hyphen vs dash, no-break space…) by this many pixels so look-alikes are obvious. 0 = no enlargement (hover tooltip still names the character)."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = off)</span></div>
       </div>`;
     document.body.appendChild(s);
     const r = anchor ? anchor.getBoundingClientRect() : { left: 60, bottom: 80 };
@@ -890,6 +891,7 @@
     igc.onchange = () => { SETTINGS.recIgnoreCase = igc.checked; saveSettings(); refreshRec(); };
     igp.onchange = () => { SETTINGS.recIgnorePunct = igp.checked; saveSettings(); refreshRec(); };
     const detailhl = s.querySelector('#tc-s-detailhl'); if (detailhl) { detailhl.checked = !!SETTINGS.recDetailedHl; detailhl.onchange = () => { SETTINGS.recDetailedHl = detailhl.checked; saveSettings(); refreshRec(); }; }
+    const punctsz = s.querySelector('#tc-s-punctsize'); if (punctsz) { punctsz.value = SETTINGS.recPunctSize != null ? SETTINGS.recPunctSize : 3; punctsz.onchange = () => { const v = Math.max(0, Math.min(12, parseInt(punctsz.value, 10) || 0)); SETTINGS.recPunctSize = v; punctsz.value = v; saveSettings(); refreshRec(); }; }
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     gridcols.onchange = () => { SETTINGS.gridCols = gridcols.checked; saveSettings(); applyViewClasses(); };
     gridrows.onchange = () => { SETTINGS.gridRows = gridrows.checked; saveSettings(); applyViewClasses(); };
@@ -2115,7 +2117,7 @@
       .tc-dd-tbl .tc-dd-len { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 48px; }
       .tc-dd-tbl .tc-dd-x { color: #c00; }
       .tc-dd-tbl .tc-dh { background: #ffc9c9; color: #a00000; border-radius: 2px; }
-      .tc-dd-tbl .tc-cf { outline: 1px dashed currentColor; outline-offset: -1px; border-radius: 2px; padding: 0 .5px; }`;
+      .tc-dd-tbl .tc-cf { display: inline-block; padding: 0 .5px; }`;
     document.head.appendChild(s);
   }
   function applyDuplicates() {
@@ -2341,13 +2343,17 @@
     [0x200B, 'zero-width space', '∅'], [0x200C, 'zero-width non-joiner', '∅'], [0x200D, 'zero-width joiner', '∅'],
     [0xFEFF, 'byte-order mark', '∅'], [0x0009, 'tab', '⇥'],
   ].forEach(([cp, n, vis]) => { CONFUSABLE[String.fromCodePoint(cp)] = { n, c: cp.toString(16).toUpperCase().padStart(4, '0'), vis }; });
-  // render a run of CHANGED characters: confusables get a titled dashed span (and
-  // invisibles a visible glyph); everything else is plain escaped text. #203
+  // render a run of CHANGED characters: a confusable / invisible char gets a
+  // tooltip naming it + its codepoint (and invisibles a visible glyph), and is
+  // enlarged by the Appearance "punctuation size" setting (px; 0 = off) so a
+  // straight vs curly quote pops out. Everything else is plain escaped text. #203
   function dhRun(str) {
+    const px = SETTINGS.recPunctSize | 0;
+    const st = px > 0 ? ' style="font-size:calc(1em + ' + px + 'px);font-weight:700;line-height:1"' : '';
     let out = '';
     for (const ch of String(str)) {
       const cf = CONFUSABLE[ch];
-      out += cf ? '<span class="tc-cf" title="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>' : esc(ch);
+      out += cf ? '<span class="tc-cf"' + st + ' title="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>' : esc(ch);
     }
     return out;
   }
@@ -2463,7 +2469,7 @@
       '.tc-rectbl .tc-rec-none{color:#c0392b}.tc-rectbl .tc-rec-new{color:#2c7a51}',
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
       '.tc-rectbl .tc-dh{background:#e53935;color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — drawn on top of the cell\'s base background
-      '.tc-cf{outline:1px dashed currentColor;outline-offset:-1px;border-radius:2px;padding:0 .5px}',   // #203 a confusable/invisible changed char — dashed box + hover tooltip names the codepoint
+      '.tc-cf{display:inline-block;padding:0 .5px}',   // #203 confusable/invisible changed char — enlarged inline (Appearance) + hover tooltip names the codepoint
       '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
