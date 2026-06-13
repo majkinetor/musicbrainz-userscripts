@@ -1906,7 +1906,16 @@ function qobuzStoreUrl(albumUrl) {
     return `https://www.qobuz.com/us-en/album/x/${m[1]}`;
 }
 async function fetchQobuzMeta(albumUrl) {
-    const r = await gmGet(qobuzStoreUrl(albumUrl));
+    let r = await gmGet(qobuzStoreUrl(albumUrl));
+    // Qobuz rate-limits very aggressively (429 after only a few requests, #201).
+    // One polite retry honouring Retry-After; if it persists, report it distinctly
+    // so the scanner can leave the row retryable instead of caching a false "no match".
+    if (r.status === 429) {
+        const ra = parseInt((String(r.responseHeaders || '').match(/retry-after:\s*(\d+)/i) || [])[1], 10);
+        await new Promise(z => setTimeout(z, Math.min((ra > 0 ? ra : 3) * 1000, 10000)));
+        r = await gmGet(qobuzStoreUrl(albumUrl));
+    }
+    if (r.status === 429) return { rateLimited: true };
     if (!r.ok || !r.responseText) return null;
     const html = r.responseText;
     // Track count: the page renders an empty duplicate of every track row for
@@ -1972,6 +1981,12 @@ async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVarious
     }
 
     const meta = bestMeta || await fetchQobuzMeta(albumUrl);
+    if (meta && meta.rateLimited) {
+        // Don't cache — Qobuz throttled us, not a real "no match". ↻ retries. (#201)
+        appendLog(label, `Rate-limited by Qobuz (429) — the link is set, track-count unverified; use ↻ to retry`, 'warn');
+        updateRow('qobuz', { url: albumUrl, mbTracks, remoteTracks: null, source });
+        return;
+    }
     if (meta) {
         appendLog(label, `Page parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'}`, meta.tracks ? 'ok' : 'warn');
     } else {
