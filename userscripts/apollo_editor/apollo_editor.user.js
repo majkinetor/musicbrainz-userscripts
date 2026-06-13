@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.13.130152
+// @version      2026.6.13.171207
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -92,7 +92,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -477,7 +477,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.130152';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.171207';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -548,6 +548,17 @@
     .tc-mirror .t-actions>*{pointer-events:auto}
     .tc-mirror input.t-title.diff{background:#fff6da;border-color:#e7ce8a;border-radius:3px}
     .tc-mirror input.t-title.gcpreview{background:#e3f6e3;border-color:#86c686;border-radius:3px}
+    /* #203: rich title display — read-only styled text (confusable chars enlarged) shown
+       when the title isn't being edited; clicking/tabbing into it shows the native input.
+       Mirrors the input's diff/gcpreview/hasfeat backgrounds so the cell looks unchanged. */
+    .tc-mirror .t-title-disp{flex:1;min-width:0;box-sizing:border-box;border:1px solid transparent;border-radius:3px;background:transparent;font:13px Arial;padding:3px 2px;white-space:pre;overflow:hidden;cursor:text;display:flex;align-items:center}
+    .tc-mirror .t-title-disp:hover{border-color:#bbb;background:#fff}
+    .tc-mirror .t-title-disp.diff{background:#fff6da;border-color:#e7ce8a}
+    .tc-mirror .t-title-disp.gcpreview{background:#e3f6e3;border-color:#86c686}
+    .tc-mirror .t-title-disp.hasfeat{background:#eaf1fb;border-color:#9bbbe0}
+    .tc-mirror .t-title-disp.tc-hidden{display:none}
+    .tc-mirror.compact .t-title-disp{padding:0 2px;font-size:12px}
+    .tc-mirror input.t-title.tc-eml:not(.tc-editing){position:absolute;width:1px;height:1px;min-width:0;padding:0;margin:0;border:0;opacity:0;pointer-events:none}
     /* MB medium-format select made to read as plain text — click still opens the native dropdown */
     select.tc-fmt-flat{-webkit-appearance:none;-moz-appearance:none;appearance:none;border:1px solid transparent;background:transparent;font:bold 15px Arial;color:#222;padding:2px 5px;cursor:pointer}
     select.tc-fmt-flat:hover{background:#efeaf9;border-color:#d7ccef;border-radius:3px}
@@ -765,7 +776,7 @@
     #tc-settings .tc-s-row{display:flex;align-items:center;gap:12px;margin:7px 0;color:#333}
     #tc-settings .tc-s-rad{display:inline-flex;align-items:center;gap:4px;margin:0;font-weight:normal;cursor:pointer}
     #tc-settings .tc-s-row input[type=radio]{margin:0}
-    #tc-settings #tc-s-lentol{width:48px;font:13px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px}
+    #tc-settings #tc-s-lentol,#tc-settings #tc-s-titletol,#tc-settings #tc-s-punctsize{width:48px;font:13px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px}
     #tc-settings .tc-s-row.lentol{gap:7px}
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;display:inline-flex;align-items:stretch;background:#5f3ec0;color:#fff;border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
     #tc-launch .tc-launch-lbl{padding:8px 13px;cursor:pointer}
@@ -866,6 +877,7 @@
         <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="normal"> normal</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
         <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
         <div class="tc-s-row"><span>Show grid</span><label class="tc-s-rad" title="vertical column separators"><input type="checkbox" id="tc-s-gridcols"> columns</label><label class="tc-s-rad" title="horizontal lines between tracks"><input type="checkbox" id="tc-s-gridrows"> rows</label></div>
+        <div class="tc-s-row" title="In the detailed-highlight diff, enlarge a differing punctuation / confusable / invisible character (straight vs curly quote, hyphen vs dash, no-break space…) by this many pixels so look-alikes are obvious. 0 = no enlargement (hover tooltip still names the character)."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = off)</span></div>
       </div>`;
     document.body.appendChild(s);
     const r = anchor ? anchor.getBoundingClientRect() : { left: 60, bottom: 80 };
@@ -890,6 +902,7 @@
     igc.onchange = () => { SETTINGS.recIgnoreCase = igc.checked; saveSettings(); refreshRec(); };
     igp.onchange = () => { SETTINGS.recIgnorePunct = igp.checked; saveSettings(); refreshRec(); };
     const detailhl = s.querySelector('#tc-s-detailhl'); if (detailhl) { detailhl.checked = !!SETTINGS.recDetailedHl; detailhl.onchange = () => { SETTINGS.recDetailedHl = detailhl.checked; saveSettings(); refreshRec(); }; }
+    const punctsz = s.querySelector('#tc-s-punctsize'); if (punctsz) { punctsz.value = SETTINGS.recPunctSize != null ? SETTINGS.recPunctSize : 3; punctsz.onchange = () => { const v = Math.max(0, Math.min(12, parseInt(punctsz.value, 10) || 0)); SETTINGS.recPunctSize = v; punctsz.value = v; saveSettings(); refreshRec(); }; }
     alt.onchange = () => { SETTINGS.altRows = alt.checked; saveSettings(); applyViewClasses(); };
     gridcols.onchange = () => { SETTINGS.gridCols = gridcols.checked; saveSettings(); applyViewClasses(); };
     gridrows.onchange = () => { SETTINGS.gridRows = gridrows.checked; saveSettings(); applyViewClasses(); };
@@ -1460,14 +1473,31 @@
       // guess-case: highlight when the title differs from its guessed form; a per-title button applies it
       const tin = tr.querySelector('.t-title'); const diff = t.guessTitle && t.guessTitle !== t.title;
       if (t._srFlash) { tin.classList.add('srflash'); delete t._srFlash; }   // flash titles changed by search & replace
+      // #203: rich title display — show the title as styled read-only text (confusable /
+      // invisible chars enlarged + named on hover) when not editing, and drop into the
+      // native input on click/tab. Only when enlargement is on (recPunctSize > 0).
+      let disp = null, paintDisp = null;
+      if ((SETTINGS.recPunctSize | 0) > 0) {
+        disp = document.createElement('span'); disp.className = 't-title-disp';
+        paintDisp = (val) => {
+          disp.innerHTML = dhRun(val != null ? val : tin.value);
+          ['diff', 'gcpreview', 'hasfeat', 'srflash'].forEach(c => disp.classList.toggle(c, tin.classList.contains(c)));
+        };
+        tin.classList.add('tc-eml');
+        tin.parentElement.insertBefore(disp, tin);   // sits in the input's flex slot while resting
+        disp.addEventListener('mousedown', e => { e.preventDefault(); tin.focus(); });
+        tin.addEventListener('focus', () => { tin.classList.add('tc-editing'); disp.classList.add('tc-hidden'); });
+        tin.addEventListener('blur', () => { tin.classList.remove('tc-editing'); paintDisp(tin.value); disp.classList.remove('tc-hidden'); });
+        paintDisp(t.title);
+      }
       if (diff) {
         tin.classList.add('diff'); tin.title = 'Guess case → ' + t.guessTitle;
         const gb = document.createElement('button'); gb.className = 't-gc'; gb.textContent = 'Aa'; gb.title = 'Guess case → ' + t.guessTitle + '\n(right-click: guess case all tracks)';
         const wrap = tr.querySelector('.t-wrap');
         // like MB's integrated guess case: hovering the title cell previews the guessed name
         // (highlighted), leaving restores it, clicking Aa applies it. Never preview while editing.
-        const preview = () => { if (document.activeElement !== tin) { tin.value = t.guessTitle; tin.classList.add('gcpreview'); } };
-        const restore = () => { tin.value = t.title; tin.classList.remove('gcpreview'); };
+        const preview = () => { if (document.activeElement !== tin) { tin.value = t.guessTitle; tin.classList.add('gcpreview'); if (paintDisp) paintDisp(t.guessTitle); } };
+        const restore = () => { tin.value = t.title; tin.classList.remove('gcpreview'); if (paintDisp) paintDisp(t.title); };
         wrap.onmouseenter = preview; wrap.onmouseleave = () => { if (document.activeElement !== tin) restore(); };
         tin.addEventListener('focus', restore);   // clicking in to edit shows the real title, not the preview
         gb.onclick = () => { restore(); applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); rerender(); };
@@ -1486,6 +1516,7 @@
         tActions(tr.querySelector('.t-wrap')).appendChild(fb);
       }
       tin.onchange = e => { setTitle(t, e.target.value); t.title = e.target.value; t.guessTitle = guessTitleStr(t); rerender(); }; wireRowNav(tin);
+      if (paintDisp) paintDisp(t.title);   // re-sync after the diff / feat blocks set their state classes
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
       numIn.onchange = e => { setNumber(t, e.target.value); refreshBadges(); }; wireRowNav(numIn);
       lenIn.onchange = e => {
@@ -2072,7 +2103,7 @@
     while (i < n && j < m) { if (a[i] === b[j]) { push(0, b[j]); i++; j++; } else if (dp[i + 1][j] >= dp[i][j + 1]) { push(-1, a[i]); i++; } else { push(1, b[j]); j++; } }
     while (i < n) push(-1, a[i++]); while (j < m) push(1, b[j++]); return out;
   }
-  function dupDiffSide(segs, want) { return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + esc(s.s) + '</span>' : '').join(''); }
+  function dupDiffSide(segs, want) { return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + dhRun(s.s) + '</span>' : '').join(''); }
   // graded length-gap shade — same as the recordings detailed highlight (#186). null under 1s.
   function dupLenShade(gapMs) {
     const g = Math.abs(gapMs || 0);
@@ -2114,7 +2145,8 @@
       .tc-dd-tbl .tc-dd-pos { color: #888; text-align: right; width: 34px; }
       .tc-dd-tbl .tc-dd-len { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 48px; }
       .tc-dd-tbl .tc-dd-x { color: #c00; }
-      .tc-dd-tbl .tc-dh { background: #ffc9c9; color: #a00000; border-radius: 2px; }`;
+      .tc-dd-tbl .tc-dh { background: #ffc9c9; color: #a00000; border-radius: 2px; }
+      .tc-dd-tbl .tc-cf { display: inline-block; padding: 0 .5px; }`;
     document.head.appendChild(s);
   }
   function applyDuplicates() {
@@ -2273,7 +2305,7 @@
       const gid = art && u(art.gid);
       const cmt = (art && u(art.comment)) || getDisamb(gid);   // KO model lacks it for fresh picks → cache fallback #195
       const dis = withDisamb && cmt ? ' <span class="tc-rpk-adis">(' + esc(cmt) + ')</span>' : '';
-      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(nm) + '</a>' : esc(nm)) + dis + esc(u(n.joinPhrase) || '');
+      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + dhRun(nm) + '</a>' : dhRun(nm)) + dis + esc(u(n.joinPhrase) || '');
     }).join('');
   }
   // flat {name, gid, comment, join} per artist of a credit — lets the table diff
@@ -2295,7 +2327,7 @@
     const key = a => a.gid || ('name:' + a.name.toLowerCase().trim());
     const otherSet = new Set((other || []).map(key));
     return (self || []).map(a => {
-      const nm = esc(a.name);
+      const nm = dhRun(a.name);
       const inner = a.gid ? '<a href="' + ORIGIN + '/artist/' + esc(a.gid) + '" target="_blank" rel="noopener">' + nm + '</a>' : nm;
       const boxed = otherSet.has(key(a)) ? inner : '<span class="tc-dh">' + inner + '</span>';
       const dis = withDisamb && a.comment ? ' <span class="tc-rec-disamb">(' + esc(a.comment) + ')</span>' : '';
@@ -2320,8 +2352,44 @@
   }
   // render one side of a diff: common runs stay plain, this side's unique chars
   // (want = -1 track/left, 1 recording/right) are wrapped as .tc-dh.
+  // #203: confusable / invisible characters. These are marked with their Unicode
+  // name + codepoint (tooltip) and enlarged, with invisibles drawn as a visible
+  // glyph — so a curly quote, an en-dash, or a no-break space is obvious wherever a
+  // title/artist is shown (not just inside a detailed-highlight diff), not a guess.
+  const CONFUSABLE = {};
+  // Built from codepoints (NOT literal chars) so invisible keys can't be stripped/
+  // normalised in source. vis glyphs: ␣ ␣, ∅ ∅, ⇥ ⇥, · ·.
+  [
+    [0x0027, 'apostrophe (straight)'], [0x2019, 'right single quote / curly apostrophe'], [0x2018, 'left single quote'],
+    [0x0060, 'grave accent / backtick'], [0x00B4, 'acute accent'], [0x02BC, 'modifier letter apostrophe'],
+    [0x0022, 'quotation mark (straight)'], [0x201C, 'left double quote'], [0x201D, 'right double quote'],
+    [0x2032, 'prime'], [0x2033, 'double prime'],
+    [0x002D, 'hyphen-minus'], [0x2010, 'hyphen'], [0x2011, 'non-breaking hyphen'], [0x2012, 'figure dash'],
+    [0x2013, 'en dash'], [0x2014, 'em dash'], [0x2015, 'horizontal bar'], [0x2212, 'minus sign'],
+    [0x00AD, 'soft hyphen', '·'], [0x2026, 'horizontal ellipsis'],
+    [0x00A0, 'no-break space', '␣'], [0x202F, 'narrow no-break space', '␣'], [0x2009, 'thin space', '␣'],
+    [0x2002, 'en space', '␣'], [0x2003, 'em space', '␣'], [0x3000, 'ideographic space', '␣'],
+    [0x200B, 'zero-width space', '∅'], [0x200C, 'zero-width non-joiner', '∅'], [0x200D, 'zero-width joiner', '∅'],
+    [0xFEFF, 'byte-order mark', '∅'], [0x0009, 'tab', '⇥'],
+  ].forEach(([cp, n, vis]) => { CONFUSABLE[String.fromCodePoint(cp)] = { n, c: cp.toString(16).toUpperCase().padStart(4, '0'), vis }; });
+  // Mark EVERY confusable / invisible character, wherever a title/artist is shown
+  // (not just inside a detailed-highlight diff): each gets a tooltip naming it + its
+  // codepoint, invisibles draw a visible glyph, and all are enlarged by the Appearance
+  // "punctuation size" setting (px). Straight ' " - are marked too — the point is to
+  // see the exact character in ANY situation (#203). px = 0 disables it (master switch).
+  function dhRun(str) {
+    const px = SETTINGS.recPunctSize | 0;
+    if (px <= 0) return esc(String(str));   // 0 = disabled everywhere
+    const st = ' style="font-size:calc(1em + ' + px + 'px);font-weight:700;line-height:1"';
+    let out = '';
+    for (const ch of String(str)) {
+      const cf = CONFUSABLE[ch];
+      out += cf ? '<span class="tc-cf"' + st + ' title="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>' : esc(ch);
+    }
+    return out;
+  }
   function diffSide(segs, want) {
-    return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + esc(s.s) + '</span>' : '').join('');
+    return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + dhRun(s.s) + '</span>' : '').join('');
   }
   // graded length-gap shade (#186): null under 1s, scaling red 1–5s, solid red ≥5s.
   function lenShade(gapMs) {
@@ -2432,6 +2500,7 @@
       '.tc-rectbl .tc-rec-none{color:#c0392b}.tc-rectbl .tc-rec-new{color:#2c7a51}',
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
       '.tc-rectbl .tc-dh{background:#e53935;color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — drawn on top of the cell\'s base background
+      '.tc-cf{display:inline-block;padding:0 .5px}',   // #203 confusable/invisible changed char — enlarged inline (Appearance) + hover tooltip names the codepoint
       '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
@@ -2713,9 +2782,9 @@
       // original alongside it, struck through: "→ New (O̶r̶i̶g̶i̶n̶a̶l̶)". #146
       // recording disambiguation shown in grey after the name, like the native UI. #144
       const disamb = r.recComment ? ' <span class="tc-rec-disamb">(' + esc(r.recComment) + ')</span>' : '';
-      const titleCell = r.copyTitle ? '→ ' + esc(r.title || '') + (r.recName ? ' <s class="tc-rec-orig">' + esc(r.recName) + disamb + '</s>' : '')
-        : r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? (esc(r.recName) + disamb) : '<span class="tc-rec-none">— none —</span>';
-      const artistCell = r.copyArtist ? '→ ' + esc(r.trackArtist || '') + (r.recArtist ? ' <s class="tc-rec-orig">' + esc(r.recArtist) + '</s>' : '') : (r.recArtistHtml || '');
+      const titleCell = r.copyTitle ? '→ ' + dhRun(r.title || '') + (r.recName ? ' <s class="tc-rec-orig">' + esc(r.recName) + disamb + '</s>' : '')
+        : r.isNew ? '<span class="tc-rec-new">＋ new recording</span>' : r.recName ? (dhRun(r.recName) + disamb) : '<span class="tc-rec-none">— none —</span>';
+      const artistCell = r.copyArtist ? '→ ' + dhRun(r.trackArtist || '') + (r.recArtist ? ' <s class="tc-rec-orig">' + esc(r.recArtist) + '</s>' : '') : (r.recArtistHtml || '');
       const tolHas = f => (r.tolDiffs || []).some(x => x === f || x.startsWith(f));   // within-tolerance diffs highlight the cells too
       // No more tc-updavail blue underline (#197): a native-offers-copy row is now
       // always tolerance (never exact), so it's already coloured by its tolerance
@@ -2732,7 +2801,7 @@
       // The cell keeps its base background (the match/mismatch colour, like the length cells);
       // the per-character highlight is drawn on TOP — so the diff classes are left unchanged. #186
       const dh = SETTINGS.recDetailedHl && r.recGid && !r.isNew;
-      let trackTitleHtml = esc(r.title || ''), recTitleHtml = titleCell;
+      let trackTitleHtml = dhRun(r.title || ''), recTitleHtml = titleCell;
       if (dh && !r.copyTitle && r.recName != null && (r.title || '') !== (r.recName || '')) {
         const segs = charDiff(r.title || '', r.recName || '');
         if (segs) { trackTitleHtml = diffSide(segs, -1); recTitleHtml = diffSide(segs, 1) + disamb; }
