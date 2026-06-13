@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.13.183639
+// @version      2026.6.13.221034
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.svg
@@ -2620,7 +2620,7 @@
           (panelLi || panel).remove();
           if (headerSlot) headerSlot.replaceChildren();
           onRefresh().then((freshResults) => {
-            showReviewTable(freshResults, rolesMap, companiesRolesMap, { onRefresh, headerSlot }).then((confirmedMap) => resolve(confirmedMap));
+            showReviewTable(freshResults, rolesMap, companiesRolesMap, opts).then((confirmedMap) => resolve(confirmedMap));
           });
         });
         heading.appendChild(refreshBtn);
