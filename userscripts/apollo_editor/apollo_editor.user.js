@@ -469,7 +469,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.084655';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.091316';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2913,7 +2913,10 @@
   // field (one ISRC can map to several recordings). #196
   async function fetchRecordingsByIsrc(isrc) {
     try {
-      const j = await fetch(`${ORIGIN}/ws/2/isrc/${encodeURIComponent(isrc)}?fmt=json&inc=artist-credits+releases+release-groups+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+      // NB: the `isrc` resource rejects `release-groups` as an inc param (unlike
+      // the `recording` resource) — including it returns an error object with no
+      // recordings, which is why an existing ISRC came back "not found". #196
+      const j = await fetch(`${ORIGIN}/ws/2/isrc/${encodeURIComponent(isrc)}?fmt=json&inc=artist-credits+releases+isrcs`, { headers: { Accept: 'application/json' } }).then(r => r.json());
       return ((j && j.recordings) || []).map(mapWsRec);
     } catch (e) { Log.warn('ISRC lookup failed', e.message); return []; }
   }
