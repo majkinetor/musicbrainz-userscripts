@@ -469,7 +469,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.104046';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.13.105212';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -2713,10 +2713,13 @@
       // artists: ENTITY-level diff that KEEPS the per-artist links + disambiguations
       // (#186: links used to drop here because we char-diffed plain text; #195:
       // disambiguations now show). The artist whose entity isn't on the other side
-      // is boxed; a credited-as (same entity) isn't. Only when not copy-previewing
-      // and the credits actually differ.
+      // is boxed; a credited-as (same entity) isn't. Trigger on an ENTITY difference,
+      // not just text — a track artist swapped to a SAME-NAME different artist reads
+      // identically but must still be boxed so it's not missed (#186, chaban).
+      const acKeys = ac => (ac || []).map(a => a.gid || ('name:' + (a.name || '').toLowerCase().trim())).join('');
+      const artistEntitiesDiffer = acKeys(r.trackAc) !== acKeys(r.recAc);
       let trackArtistHtml2 = r.trackArtistHtml || '', recArtistCell = artistCell;
-      if (dh && !r.copyArtist && r.recArtist != null && (r.trackArtist || '') !== (r.recArtist || '')) {
+      if (dh && !r.copyArtist && r.recArtist != null && ((r.trackArtist || '') !== (r.recArtist || '') || artistEntitiesDiffer)) {
         trackArtistHtml2 = acLinksDiff(r.trackAc, r.recAc, true);
         recArtistCell    = acLinksDiff(r.recAc, r.trackAc, true);
       }
