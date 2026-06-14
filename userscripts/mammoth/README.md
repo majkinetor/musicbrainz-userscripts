@@ -40,7 +40,8 @@ The ⚙ popover shows the script name, version and a help link, plus:
 | Setting | Default | Notes |
 |---|---|---|
 | **Hide edit-note help text** | off | Hides MusicBrainz's "Entering an edit note…" help paragraphs above the field. |
-| **Default click action** | `replace` | What a left-click does (`replace`, or `append` on a new line). Right-click does the other. |
+| **Default click action** | `replace` | What a left-click does (`replace`, or `append`). Right-click does the other. |
+| **Insert new line when appending** | on | Append a note on a new line; off appends on the same line (space-separated). |
 | **Items shown** | `6` | How many list rows render before the list scrolls. |
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 

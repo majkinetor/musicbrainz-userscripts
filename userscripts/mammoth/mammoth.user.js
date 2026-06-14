@@ -29,7 +29,7 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300 };   // defaultInsert: 'replace' | 'append'
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true };   // defaultInsert: 'replace' | 'append'
   const VERSION = '2026.6.14.190000';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -77,7 +77,7 @@
     if (!replace && cur.trim()) {
       if (cur.split('\n').some(l => l.trim() === text.trim())) { toast('Already in the note'); return; }   // #212: don't append a duplicate line
     }
-    setValue(ta, (replace || !cur.trim()) ? text : cur.replace(/\s+$/, '') + '\n' + text);
+    setValue(ta, (replace || !cur.trim()) ? text : cur.replace(/\s+$/, '') + (SET.appendNewline ? '\n' : ' ') + text);
     ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
   }
   // wrap the selection in `marker`; with no selection, wrap the word the caret
@@ -185,15 +185,18 @@
         <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
       </label>
       <div class="mmth-tip">Right-click does the other action.</div>
+      <label><input type="checkbox" class="mmth-s-nl"> Insert new line when appending</label>
       <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
       <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>`;
     document.body.appendChild(p); pop = p;
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
     const ins = p.querySelector('.mmth-s-ins'); ins.value = SET.defaultInsert;
+    const nl = p.querySelector('.mmth-s-nl'); nl.checked = SET.appendNewline !== false;
     const rows = p.querySelector('.mmth-s-rows'); rows.value = SET.visibleRows;
     const hist = p.querySelector('.mmth-s-hist'); hist.value = SET.historySize;
     help.onchange = () => { SET.hideHelp = help.checked; saveSet(); };
     ins.onchange = () => { SET.defaultInsert = ins.value; saveSet(); };
+    nl.onchange = () => { SET.appendNewline = nl.checked; saveSet(); };
     rows.onchange = () => { SET.visibleRows = Math.max(1, Math.min(30, parseInt(rows.value, 10) || 6)); rows.value = SET.visibleRows; saveSet(); };
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     placePop(p, anchor);
