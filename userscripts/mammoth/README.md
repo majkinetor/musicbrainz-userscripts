@@ -12,26 +12,26 @@ The wide edit-note field is split (and centered): the textarea on the left, and 
 
 ```
 ┌──────────────────────────────┬─────────────────────────┐
-│ (edit-note textarea)         │ ＋  ★  🕘        ?  ⚙   │  ← toolbar
-│                              ├─────────────────────────┤
-│                              │ Per CSG guidelines    ⠿ │
-│                              │ Source: official site ⠿ │  ⠿ = drag handle
+│ (edit-note textarea)       │ │ ＋  ★ 🕘  ✕      ?  ⚙   │  ← toolbar
+│                            │ ├─────────────────────────┤
+│                            │ │ Per CSG guidelines    ⠿ │
+│              separator ────┘ │ Source: official site ⠿ │  ⠿ = drag handle
 │                              │ …                       │      (on hover)
 └──────────────────────────────┴─────────────────────────┘
 ```
 
-Each note is one line (full text on hover). **Click** applies your default action (append or replace, set in ⚙); **right-click** does the other. **Ctrl/⌘ + ↑/↓** cycles through your saved notes, replacing the field (and keeping focus on the editor).
+Each note is one line (full text on hover). **Click** applies your default action (replace or append, set in ⚙); **right-click** does the other. **Ctrl/⌘ + ↑/↓** cycles through your saved notes, replacing the field (and keeping focus on the editor). **Ctrl/⌘ + B / I** wrap the selection in edit-note bold / italic.
 
-Toolbar: **＋** save the current edit-note text · **★** Saved notes · **🕘** Recent (history) · **?** edit-note syntax · **⚙** settings.
+Toolbar: **＋** save the current text · **★** Saved notes · **🕘** Recent (history) · **✕** clear the field · **?** edit-note syntax · **⚙** settings.
 
 ## Features
 
 - **Auto-history, no checkbox.** Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. No "remember this note" toggle to get stuck on across sessions.
-- **Saved notes.** **＋** saves the current text; in **History**, **📌** on a row pins it to Saved. In **Saved**, reorder by **drag** (the **⠿** handle on the right, shown on hover) and **🗑** deletes.
-- **Compact, one-line rows** with the full note on hover.
-- **Insert without keys.** Click does your default (append/replace); right-click does the other. **Append skips a line already present** in the field, and it never blindly overwrites — so it won't clobber a note another script (Apollo Editor, Credit Hoarder, Platform Check) wrote for its own submission. Ctrl/⌘ + ↑/↓ cycles saved notes.
+- **Saved notes.** **＋** saves the current text; in **History**, **★** on a row pins it to Saved. In **Saved**, reorder by **drag** (the **⠿** handle on the right, shown on hover) and **🗑** deletes.
+- **Compact, one-line rows** with the full note on hover; choose how many show before scrolling.
+- **Insert without keys.** Click does your default (replace/append); right-click does the other. **Append skips a line already present** in the field, and it never blindly overwrites — so it won't clobber a note another script (Apollo Editor, Credit Hoarder, Platform Check) wrote for its own submission. Ctrl/⌘ + ↑/↓ cycles saved notes; Ctrl/⌘ + B / I add bold / italic markup.
 - **Edit-note syntax help (?).** A quick reference for MusicBrainz's edit-note markup (`''italic''`, `'''bold'''`, `edit #123`, `doc:Page`, auto-linked URLs).
-- **Tidied field.** The native edit-note field is widened and centered, and its redundant "Edit note" label/heading is hidden.
+- **Tidied field.** The native edit-note field is widened and centered, with a separator to the panel, and its redundant "Edit note" label/heading is hidden.
 
 ## Settings (⚙)
 
@@ -40,7 +40,8 @@ The ⚙ popover shows the script name, version and a help link, plus:
 | Setting | Default | Notes |
 |---|---|---|
 | **Hide edit-note help text** | off | Hides MusicBrainz's "Entering an edit note…" help paragraphs above the field. |
-| **Default click action** | `append` | What a left-click does (`append` on a new line, or `replace`). Right-click does the other. |
+| **Default click action** | `replace` | What a left-click does (`replace`, or `append` on a new line). Right-click does the other. |
+| **Items shown** | `6` | How many list rows render before the list scrolls. |
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 
 Storage is per-browser (via the userscript manager). Nothing is sent anywhere.

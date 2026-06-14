@@ -43,19 +43,28 @@ for (const note of ['Source: official website', 'Per CSG guidelines']) { await s
 log('saved count:', await ev(() => (JSON.parse(window.__gm['mammoth:data'] || '{}').saved || []).length));
 log('rows:', await ev(() => document.querySelectorAll('.mmth-side .mmth-row').length));
 
-await setVal(''); await clickSel('.mmth-side .mmth-row'); await page.waitForTimeout(60);
-log('click→empty:', JSON.stringify(await taVal()));
+// default action is now REPLACE: click replaces, right-click appends
 await setVal('Base'); await clickSel('.mmth-side .mmth-row'); await page.waitForTimeout(60);
-log('click→nonempty (append):', JSON.stringify(await taVal()));
+log('click (default replace):', JSON.stringify(await taVal()));
 await setVal('Base'); await ev(() => document.querySelector('.mmth-side .mmth-row').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))); await page.waitForTimeout(60);
-log('rclick (replace):', JSON.stringify(await taVal()));
+log('rclick (append):', JSON.stringify(await taVal()));
+
+// Clear button empties the field
+await setVal('to be cleared'); await clickSel('button.mmth-fb[title="Clear the edit note"]'); await page.waitForTimeout(60);
+log('after clear:', JSON.stringify(await taVal()));
+
+// Ctrl+B / Ctrl+I wrap the selection
+await ev(() => { const ta = document.querySelector('textarea.edit-note'); ta.value = 'hello'; ta.focus(); ta.setSelectionRange(0, 5); ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, bubbles: true, cancelable: true })); });
+await page.waitForTimeout(40); log('Ctrl+B:', JSON.stringify(await taVal()));
+await ev(() => { const ta = document.querySelector('textarea.edit-note'); ta.value = 'hi'; ta.focus(); ta.setSelectionRange(0, 2); ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'i', ctrlKey: true, bubbles: true, cancelable: true })); });
+await page.waitForTimeout(40); log('Ctrl+I:', JSON.stringify(await taVal()));
 
 await ev(() => { const ta = document.querySelector('textarea.edit-note'); ta.value = ''; ta.focus(); ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', ctrlKey: true, bubbles: true, cancelable: true })); });
 await page.waitForTimeout(60);
-log('Ctrl+Down (cycle):', JSON.stringify(await taVal()));
+log('Ctrl+Down (cycle):', JSON.stringify(await taVal()), '| focused?', await ev(()=>document.activeElement===document.querySelector('textarea.edit-note')));
 
 log('in-list star removed?', await ev(()=>document.querySelectorAll('.mmth-side .mmth-row .mmth-star').length===0));
-log('grab handles (right, hover-only):', await ev(()=>document.querySelectorAll('.mmth-side .mmth-row .mmth-grab').length));
+log('grab handles:', await ev(()=>document.querySelectorAll('.mmth-side .mmth-row .mmth-grab').length), '| vsep?', await ev(()=>!!document.querySelector('.mmth-vsep')), '| clear btn?', await ev(()=>!!document.querySelector('button.mmth-fb[title="Clear the edit note"]')));
 
 await ev(() => { window.GM_setValue('mammoth:settings', JSON.stringify({ historySize: 10, hideHelp: true })); });
 await clickSel('button.mmth-fb[title="Settings"]'); await page.waitForTimeout(120);

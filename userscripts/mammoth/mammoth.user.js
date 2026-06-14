@@ -29,7 +29,7 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'append' };   // defaultInsert: 'append' | 'replace'
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6 };   // defaultInsert: 'replace' | 'append'
   const VERSION = '2026.6.14.190000';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -79,6 +79,14 @@
     setValue(ta, (replace || !cur.trim()) ? text : cur.replace(/\s+$/, '') + '\n' + text);
     ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
   }
+  // wrap the current selection (or just drop markers at the caret) in `marker`
+  function wrapSel(ta, marker) {
+    const s = ta.selectionStart ?? ta.value.length, e = ta.selectionEnd ?? s, v = ta.value, sel = v.slice(s, e);
+    setValue(ta, v.slice(0, s) + marker + sel + marker + v.slice(e));
+    ta.focus();
+    const caret = sel ? s + marker.length * 2 + sel.length : s + marker.length;
+    try { ta.setSelectionRange(sel ? s + marker.length : caret, sel ? s + marker.length + sel.length : caret); } catch (x) {}
+  }
 
   // ── capture on submit ────────────────────────────────────────────────────────
   const captureNote = () => document.querySelectorAll('textarea.edit-note').forEach(ta => recordHistory(ta.value));
@@ -93,9 +101,14 @@
   // ── styles ───────────────────────────────────────────────────────────────────
   const css = `
   fieldset.editnote, .editnote { max-width:100% !important; }
+  /* let the wrap's containing block be the full editnote width so margin:auto can
+     center it (in a narrow column it just fills — no overflow / no overlap). */
+  .editnote.mmth-on { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .editnote.mmth-on > .row { width:100% !important; box-sizing:border-box; }
   .editnote.mmth-on > legend, .editnote.mmth-on > .row > label[for] { display:none !important; }
-  .mmth-wrap { display:flex; gap:10px; align-items:stretch; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; }
+  .mmth-wrap { display:flex; gap:0; align-items:stretch; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; }
   .mmth-wrap > textarea.edit-note { flex:1 1 auto; width:auto !important; min-width:0; }
+  .mmth-vsep { flex:none; width:0; align-self:stretch; border-left:1px solid #d7e0db; margin:0 10px; }
   .mmth-hidehelp > p { display:none !important; }
   .mmth-side { flex:0 0 300px; max-width:300px; display:flex; flex-direction:column; border:1px solid #cfd9d3;
                border-radius:8px; background:#fbfdfc; font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; overflow:hidden; }
@@ -104,7 +117,8 @@
   .mmth-fb:hover { background:#dcefe2; }
   .mmth-fb.on { background:#cfe9d8; color:#1f5c3d; }
   .mmth-fb.mmth-spacer { flex:1; pointer-events:none; }
-  .mmth-list { flex:1 1 auto; overflow:auto; min-height:96px; max-height:160px; }
+  .mmth-fb.mmth-grp { margin-left:10px; }
+  .mmth-list { flex:1 1 auto; overflow:auto; }
   .mmth-row { display:flex; align-items:center; gap:4px; padding:4px 6px; border-top:1px solid #f0f4f2; cursor:pointer; }
   .mmth-row:first-child { border-top:none; }
   .mmth-row:hover { background:#eaf5ee; }
@@ -123,7 +137,8 @@
   .mmth-empty { padding:12px 8px; color:#9aa6a0; font-style:italic; text-align:center; }
   .mmth-pop { position:fixed; z-index:99999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2);
               padding:10px 12px; font:13px/1.45 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:280px; }
-  .mmth-pop h4 { margin:0 0 6px; font-size:13px; display:flex; align-items:center; gap:6px; }
+  .mmth-pop h4 { margin:-10px -12px 8px; padding:6px 10px; font-size:13px; display:flex; align-items:center; gap:6px; background:#f1f6f3; border-bottom:1px solid #e7eee9; border-radius:8px 8px 0 0; }
+  .mmth-tip { color:#8a978f; font-size:11px; margin:0 0 4px 22px; }
   .mmth-pop h4 .mmth-ver { color:#8a978f; font-weight:400; font-size:11px; }
   .mmth-pop h4 a { margin-left:auto; font-size:11px; color:#2c7a51; text-decoration:none; font-weight:600; }
   .mmth-pop label { display:flex; align-items:center; gap:6px; margin:5px 0; cursor:pointer; }
@@ -154,16 +169,19 @@
       <h4>🦣 Mammoth <span class="mmth-ver">v${scriptVersion()}</span><a href="${HELP_URL}" target="_blank" rel="noopener" title="Open the README">? Help</a></h4>
       <label><input type="checkbox" class="mmth-s-help"> Hide edit-note help text</label>
       <label>Default click action
-        <select class="mmth-s-ins"><option value="append">append</option><option value="replace">replace</option></select>
+        <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
       </label>
-      <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
-      <div style="color:#8a978f;font-size:11px;margin-top:4px">Right-click does the other action.</div>`;
+      <div class="mmth-tip">Right-click does the other action.</div>
+      <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
+      <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>`;
     document.body.appendChild(p); pop = p;
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
     const ins = p.querySelector('.mmth-s-ins'); ins.value = SET.defaultInsert;
+    const rows = p.querySelector('.mmth-s-rows'); rows.value = SET.visibleRows;
     const hist = p.querySelector('.mmth-s-hist'); hist.value = SET.historySize;
     help.onchange = () => { SET.hideHelp = help.checked; saveSet(); };
     ins.onchange = () => { SET.defaultInsert = ins.value; saveSet(); };
+    rows.onchange = () => { SET.visibleRows = Math.max(1, Math.min(30, parseInt(rows.value, 10) || 6)); rows.value = SET.visibleRows; saveSet(); };
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     placePop(p, anchor);
   }
@@ -201,22 +219,28 @@
 
     const fb = (glyph, title, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-fb' + (cls ? ' ' + cls : ''); b.textContent = glyph; b.title = title; b.onclick = fn; return b; };
     ft.appendChild(fb('＋', 'Save current edit note', '', () => { const v = (ta.value || '').trim(); if (!v) return toast('Edit note is empty'); toast(addSaved(v) ? 'Saved' : 'Already saved'); }));
-    const bSaved = fb('★', 'Saved notes', '', () => { inst.view = 'saved'; renderInst(inst); });
+    const bSaved = fb('★', 'Saved notes', 'mmth-grp', () => { inst.view = 'saved'; renderInst(inst); });
     const bHist = fb('🕘', 'History (last used)', '', () => { inst.view = 'history'; renderInst(inst); });
     ft.appendChild(bSaved); ft.appendChild(bHist);
+    ft.appendChild(fb('✕', 'Clear the edit note', 'mmth-grp', () => { setValue(ta, ''); ta.focus(); }));
     const sp = document.createElement('span'); sp.className = 'mmth-fb mmth-spacer'; ft.appendChild(sp);
     ft.appendChild(fb('?', 'Edit-note syntax', 'mmth-pop-anchor', e => openSyntax(e.currentTarget)));
     ft.appendChild(fb('⚙', 'Settings', 'mmth-pop-anchor', e => openSettings(e.currentTarget)));
     inst.tabs = { saved: bSaved, history: bHist };
 
     ta.addEventListener('keydown', e => {
-      if (!(e.ctrlKey || e.metaKey) || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const k = e.key.toLowerCase();
+      // Ctrl/⌘+B / +I wrap the selection in MB edit-note bold / italic markup
+      if (k === 'b' || k === 'i') { e.preventDefault(); wrapSel(ta, k === 'b' ? "'''" : "''"); return; }
+      // Ctrl/⌘+↑/↓ cycle through saved notes, replacing the field (focus stays here)
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
       const items = DATA.saved; if (!items.length) return;
       e.preventDefault();
       inst.cyc = (inst.cyc + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
       setValue(ta, items[inst.cyc].text);
       if (inst.view === 'saved') renderInst(inst);
-      ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (x) {}   // keep focus on the editor while cycling
+      ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (x) {}
     });
 
     renderInst(inst);
@@ -225,6 +249,7 @@
 
   function renderInst(inst) {
     const { ta, list } = inst;
+    list.style.maxHeight = (Math.max(1, Math.min(30, SET.visibleRows | 0 || 6)) * 26) + 'px';   // show N items, then scroll (#212)
     list.innerHTML = '';
     if (inst.tabs) { inst.tabs.saved.classList.toggle('on', inst.view === 'saved'); inst.tabs.history.classList.toggle('on', inst.view === 'history'); }
     const saved = inst.view === 'saved';
@@ -244,7 +269,7 @@
       const acts = document.createElement('div'); acts.className = 'mmth-rowacts';
       const ra = (glyph, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-ra'; b.textContent = glyph; b.title = title; b.onclick = e => { e.stopPropagation(); fn(); }; acts.appendChild(b); };
       if (saved) ra('🗑', 'Delete', () => removeSaved(it.id));
-      else { ra('📌', 'Save (pin to Saved)', () => { if (addSaved(it.text)) toast('Saved'); }); ra('🗑', 'Remove', () => removeHistory(it.text)); }
+      else { ra('★', 'Save (pin to Saved)', () => { if (addSaved(it.text)) toast('Saved'); }); ra('🗑', 'Remove', () => removeHistory(it.text)); }
       row.appendChild(acts);
 
       if (saved) {
@@ -277,6 +302,7 @@
       const wrap = document.createElement('div'); wrap.className = 'mmth-wrap';
       ta.parentNode.insertBefore(wrap, ta);
       wrap.appendChild(ta);
+      const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; wrap.appendChild(vsep);   // separator between field & panel (#212)
       wrap.appendChild(buildSide(ta));
     });
   }
