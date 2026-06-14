@@ -46,6 +46,12 @@ export async function waitForMBEditor(timeoutMs = 15000) {
  * correct side.
  */
 export function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes, trackPos) {
+    // A "credited as" identical to the target's own name is redundant: MB stores
+    // it as blank, and dispatching a non-blank duplicate prevents MB from
+    // grouping/merging this rel with ones that (correctly) have none — e.g.
+    // manually-added rels — so the same artist shows as two split entries
+    // instead of a single "Name (tracks 1–4)". Blank it. #210
+    if (credit && credit === (targetEntity.name || '')) credit = '';
     const swapped = sourceEntity.entityType > targetEntity.entityType;
     const e0 = swapped ? targetEntity : sourceEntity;
     const e1 = swapped ? sourceEntity : targetEntity;

@@ -31,6 +31,8 @@ A table of every track with its existing ISRCs and an input for the new one. Liv
 
 The **Deezer**, **Beatport**, **Tidal**, **Volumo** and **HDtracks** buttons each have a **▾** menu to *import from a custom album URL* — paste any matching album/release URL (or bare id) to import from it, even when the release has no such link. If the [`platform_check`](../platform_check/README.md) userscript is also installed and has found a URL for that platform, the menu also offers a one-click **"Use the &lt;platform&gt; URL Platform Check found"** option (skipped silently when `platform_check` isn't present). Spotify has no such menu: its import goes through ISRC Hunt, which resolves the MB release *from* the Spotify URL — so a custom or not-yet-in-MB URL does not work.
 
+> A Platform Check link whose **barcode or format differs** from MB's is still used here, even when PC's *Link confidence* setting is on (which withholds it from PC's own + / ↗). An ISRC identifies a *recording* and is independent of the release's barcode/format, so a barcode/format-mismatched edition is the right place to read ISRCs from. Genuine content mismatches (wrong track count, etc.) are still skipped.
+
 The import-source buttons can show as **brand icons, text labels, or both** — toggle under **⚙ Setup → Import-source buttons** (defaults to icons, to keep the toolbar compact). The **⟳ SoundExchange** *exact title/artist/release* toggles are collapsed behind a small **exact ▾** control (state remembered) for the same reason.
 
 ### Per-track helpers

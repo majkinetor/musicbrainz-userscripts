@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.14
+// @version      2026.6.14.160000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjZjNlZWZjIi8+PHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPjwvZz48bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+PC9zdmc+
@@ -3093,7 +3093,16 @@
     // Skip low-quality matches: PC marks its row pc-st-match (good), pc-st-mismatch
     // (found but wrong — dimmed), or pc-st-notfound. Only trust a confident match (#180).
     const row = document.getElementById('row-' + key);
-    if (row && !row.classList.contains('pc-st-match')) return null;
+    if (row && !row.classList.contains('pc-st-match')) {
+      // #211: a link PC withheld ONLY by its barcode/format link-confidence is
+      // still the right album for ISRC purposes — an ISRC identifies a recording
+      // and is independent of the release's barcode/format. PC demotes such a row
+      // to pc-st-mismatch but flags it pc-blocked while leaving the content-match
+      // glyph intact (✓ = found+counts, ? = found). Accept those; still reject a
+      // genuine content mismatch (~) or not-found (×), and non-blocked mismatches.
+      const glyph = ((document.getElementById('ico-' + key) || {}).textContent || '').trim();
+      if (!(row.classList.contains('pc-blocked') && (glyph === '✓' || glyph === '?'))) return null;
+    }
     return parseStreamingId(source, href) ? href : null;    // only if it parses to an album id
   }
   // Album id for a provider button: prefer the in-MB link, else fall back to the
