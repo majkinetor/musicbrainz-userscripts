@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.14
+// @version      2026.6.14.154401
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.svg
@@ -3748,6 +3748,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     return null;
   }
   function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes, trackPos) {
+    if (credit && credit === (targetEntity.name || "")) credit = "";
     const swapped = sourceEntity.entityType > targetEntity.entityType;
     const e0 = swapped ? targetEntity : sourceEntity;
     const e1 = swapped ? sourceEntity : targetEntity;
