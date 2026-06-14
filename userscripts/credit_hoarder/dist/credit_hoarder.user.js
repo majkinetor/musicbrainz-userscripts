@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.14.110347
+// @version      2026.6.14.110936
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.svg
@@ -1360,7 +1360,8 @@
     Laouto: "laouto",
     "Lap Steel Guitar": "lap steel guitar",
     Lavta: "lavta",
-    "Lead Guitar": null,
+    "Lead Guitar": "guitar",
+    // #209 — MB has no lead/rhythm-guitar instrument; both are just "guitar"
     Lira: null,
     "Lira da Braccio": "lira da braccio",
     Lirone: "lirone",
@@ -1399,7 +1400,8 @@
     "Requinto Guitar": null,
     "Resonator Banjo": null,
     "Resonator Guitar": "resonator guitar",
-    "Rhythm Guitar": null,
+    "Rhythm Guitar": "guitar",
+    // #209 — see Lead Guitar
     Ronroco: "ronroco",
     Ruan: "ruan",
     Sanshin: "sanshin",

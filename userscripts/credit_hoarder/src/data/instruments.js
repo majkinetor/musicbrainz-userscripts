@@ -365,7 +365,7 @@ export const INSTRUMENTS = {
     Laouto: 'laouto',
     'Lap Steel Guitar': 'lap steel guitar',
     Lavta: 'lavta',
-    'Lead Guitar': null,
+    'Lead Guitar': 'guitar',   // #209 — MB has no lead/rhythm-guitar instrument; both are just "guitar"
     Lira: null,
     'Lira da Braccio': 'lira da braccio',
     Lirone: 'lirone',
@@ -404,7 +404,7 @@ export const INSTRUMENTS = {
     'Requinto Guitar': null,
     'Resonator Banjo': null,
     'Resonator Guitar': 'resonator guitar',
-    'Rhythm Guitar': null,
+    'Rhythm Guitar': 'guitar',   // #209 — see Lead Guitar
     Ronroco: 'ronroco',
     Ruan: 'ruan',
     Sanshin: 'sanshin',
