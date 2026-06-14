@@ -77,7 +77,7 @@
     if (!replace && cur.trim()) {
       if (cur.split('\n').some(l => l.trim() === text.trim())) { toast('Already in the note'); return; }   // #212: don't append a duplicate line
     }
-    setValue(ta, (replace || !cur.trim()) ? text : cur.replace(/\s+$/, '') + (SET.appendNewline ? '\n' : ' ') + text);
+    setValue(ta, (replace || !cur.trim()) ? text : cur.replace(/\s+$/, '') + (SET.appendNewline ? '\n\n' : '\n') + text);
     ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
   }
   // wrap the selection in `marker`; with no selection, wrap the word the caret
@@ -185,7 +185,7 @@
         <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
       </label>
       <div class="mmth-tip">Right-click does the other action.</div>
-      <label><input type="checkbox" class="mmth-s-nl"> Insert new line when appending</label>
+      <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
       <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
       <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>`;
     document.body.appendChild(p); pop = p;
