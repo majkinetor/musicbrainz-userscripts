@@ -776,7 +776,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             }
 
             const credit = role.artist.anv?.trim() || role.artist.name;
-            const attrKey = (role.attributes||[]).map(a=>a.value||a._type||'').join(',');
+            const attrKey = (role.attributes||[]).map(a=>typeof a==='string'?a:(a.value||a._type||'')).join(',');
             const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
             if (seenTrackRels.has(trackRelKey)) continue;
             seenTrackRels.add(trackRelKey);

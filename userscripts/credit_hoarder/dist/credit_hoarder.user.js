@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.14.113015
+// @version      2026.6.14.120255
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.svg
@@ -1988,10 +1988,15 @@
     }
     return out;
   }
+  var ASSISTANT_RE = /^Assistant\s+(.+)$/i;
+  function tidalRoleBase(role) {
+    const m = ASSISTANT_RE.exec(role || "");
+    return m ? m[1] : role;
+  }
   function filterTidalCredits(tracks) {
     return tracks.map((t) => ({
       ...t,
-      credits: t.credits.filter((c) => TIDAL_ROLE_MAP[c.role]).map((c) => ({
+      credits: t.credits.filter((c) => TIDAL_ROLE_MAP[tidalRoleBase(c.role)]).map((c) => ({
         ...c,
         names: c.names.filter((n) => !(c.role === "Music Publisher" && (n.tidalId === TIDAL_COPYRIGHT_CONTROL_ID || /^copyright control$/i.test(n.name))))
       })).filter((c) => c.names.length)
@@ -2026,7 +2031,9 @@
       const track = { position, title: t.title || "", type_: "track" };
       tracklist.push(track);
       for (const c of t.credits) {
-        const linkType = IMPORT_ROLES[c.role];
+        const base = tidalRoleBase(c.role);
+        const assistant = base !== c.role;
+        const linkType = IMPORT_ROLES[base];
         for (const n of c.names) {
           if (!linkType) {
             skipped.push(`track ${position} "${t.title}": ${c.role} \u2014 ${n.name}`);
@@ -2035,7 +2042,7 @@
           tracklistRels.push({
             linkType,
             entityType: "artist",
-            attributes: [],
+            attributes: assistant ? ["assistant"] : [],
             artist: {
               id: n.tidalId ? `tidal-${n.tidalId}` : void 0,
               name: n.name,
@@ -4292,7 +4299,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           continue;
         }
         const credit = role.artist.anv?.trim() || role.artist.name;
-        const attrKey = (role.attributes || []).map((a) => a.value || a._type || "").join(",");
+        const attrKey = (role.attributes || []).map((a) => typeof a === "string" ? a : a.value || a._type || "").join(",");
         const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
         if (seenTrackRels.has(trackRelKey)) continue;
         seenTrackRels.add(trackRelKey);
