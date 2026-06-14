@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.13.204444
+// @version      2026.6.13.213309
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3eefc'/%3E%3Cg fill='none' stroke='%232a1a52' stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M40 88 A34 34 0 0 1 40 40'/%3E%3Cpath d='M29 99 A50 50 0 0 1 29 29'/%3E%3Cpath d='M88 88 A34 34 0 0 0 88 40'/%3E%3Cpath d='M99 99 A50 50 0 0 0 99 29'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='20' fill='%23e8201a'/%3E%3C/svg%3E
@@ -1920,10 +1920,6 @@ const qobuzMetaFromApi = d => (d && d.id) ? {
     barcode: d.upc || null,
 } : null;
 const qzDec = s => String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n));
-// Slugify an album title into the Qobuz URL slug (e.g. "Jiang Shi (Zombiez)" →
-// "jiang-shi-zombiez") so a barcode-found album gets the real, readable slug in the
-// URL we hand MB instead of an "x" placeholder. #201 (chaban-mb)
-const qobuzSlug = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 // Normalise any Qobuz album URL to the server-rendered www store page. open./play.
 // are SPA shells with no credits in the HTML, and an MB rel is often the slug-less
 // open form — a wrong-slug www URL 301-redirects to the canonical page, so this
@@ -1970,7 +1966,11 @@ async function fetchQobuzScrape(albumUrl) {
     if (title && og.startsWith(title)) artist = og.slice(title.length).replace(/^[,\s]+/, '').trim() || null;
     else if (og.includes(',')) artist = og.slice(og.lastIndexOf(',') + 1).trim() || null;
     const label = qzDec((html.match(/href="\/[a-z]{2}-[a-z]{2}\/label\/[^"]+"[^>]*>\s*([^<]{1,80})/) || [])[1] || '').trim() || null;
-    return { tracks: trackIds.size || null, title: title || og || null, year, label, artist, barcode: null };
+    // `url` = the page we actually landed on after redirects — i.e. Qobuz's REAL
+    // canonical /album/<slug>/<id> (the slug includes the artist, so we can't
+    // reconstruct it from the title; #201 chaban-mb). The caller uses it as the URL
+    // to hand MB instead of the /album/x/<id> placeholder we fetched with.
+    return { tracks: trackIds.size || null, title: title || og || null, year, label, artist, barcode: null, url: r.finalUrl || null };
 }
 
 async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
@@ -1994,9 +1994,16 @@ async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVarious
         }
         const hit = items.find(a => normBarcode(a.upc) === normBarcode(barcode)) || items[0];
         if (hit && hit.id) {
-            const albumUrl = `https://www.qobuz.com/us-en/album/${qobuzSlug(hit.title) || 'x'}/${hit.id}`;
+            // Qobuz's slug includes the artist, so it can't be rebuilt from the title
+            // (#201 chaban-mb). Use the REAL slug the API returns (`slug` / `relative_url`);
+            // if geo-stripped from the response, fall back to fetching /album/x/<id>
+            // (Qobuz 301s it to the canonical URL) and keeping that landed URL.
+            const fetchUrl = `https://www.qobuz.com/us-en/album/x/${hit.id}`;
+            const meta = await fetchQobuzMeta(fetchUrl);
+            const apiUrl = hit.slug ? `https://www.qobuz.com/us-en/album/${hit.slug}/${hit.id}`
+                : (hit.relative_url ? `https://www.qobuz.com/us-en${hit.relative_url}` : null);
+            const albumUrl = apiUrl || meta?.url || fetchUrl;
             appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
-            const meta = await fetchQobuzMeta(albumUrl);
             const bc = meta?.barcode || hit.upc || barcode;
             cacheSet(mbid, 'qobuz', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
             updateRow('qobuz', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
