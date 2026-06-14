@@ -254,7 +254,7 @@ export const INSTRUMENTS = {
     '5-String Banjo': null,
     '6-String Banjo': null,
     '6-String Bass': null,
-    'Acoustic Bass': null,
+    'Acoustic Bass': 'acoustic bass guitar',   // #209 — Discogs separates this from "Double Bass", which maps to upright
     'Arco Bass': null,
     Arpa: null,
     Autoharp: 'autoharp',
