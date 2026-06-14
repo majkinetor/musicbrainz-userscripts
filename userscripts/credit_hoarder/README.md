@@ -1,6 +1,6 @@
 # Credit Hoarder <img src="icon.svg" align="left" width="48" height="48">
 
-Import per-track release **credits** from streaming and database providers into MusicBrainz relationships — with a review phase so you only ever seed relationships to artists that actually exist in MB.
+Import track and release credits from streaming and database providers into MusicBrainz relationships, with a review phase so you only ever seed  entities that actually exist in MB.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/credit_hoarder/dist/credit_hoarder.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/credit_hoarder/dist/credit_hoarder.user.js)
 
@@ -10,7 +10,7 @@ The script presents itself on the **Edit relationships** screen of a MusicBrainz
 
 ## Workflow
 
-1. CH fetches the provider's per-track credits and gathers every entity (artists, labels, places), presenting them in the **Credit Review Table**.
+1. CH fetches the provider's credits and gathers every entity (artists, labels, places), presenting them in the **Credit Review Table**.
     1. Each entity is matched by name and — where the provider exposes one — by its source URL.
     1. Perfect hits are auto-selected; ambiguous or non-existent entities are left for you to resolve or ignore.
 1. Once the review table is confirmed, **Instant Fill** runs.
@@ -124,9 +124,6 @@ The log panel records every step. The log menu offers **Copy log** (includes the
 1. **Provider sources** — Discogs via `api.discogs.com` (token from MB's stored Discogs URL); Tidal via an anonymously-opened credits tab harvested cross-tab; Qobuz via the server-rendered store page.
 1. Resolution/review engine initially based on the Discogs Importer, itself based on the userscripts of *mattgoldspink*, *vzell*, *kellnerd*.
 
-## Roadmap
-
-See the [Credit Hoarder issue (#193)](https://github.com/majkinetor/musicbrainz-userscripts/issues/193) for the plan, including additional auth-free providers and applying imported credits across a whole release group with format-aware rules (e.g. lacquer-cut credits never propagate to a digital release).
 
 ## Development
 
