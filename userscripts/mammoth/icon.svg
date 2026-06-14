@@ -1,6 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="28" fill="#eff6f1"/>
-  <path d="M32 34h48l16 16v44a6 6 0 0 1-6 6H32a6 6 0 0 1-6-6V40a6 6 0 0 1 6-6Z" fill="#fff" stroke="#2c7a51" stroke-width="5"/>
-  <path d="M42 56h36M42 70h36M42 84h20" stroke="#2c7a51" stroke-width="5" stroke-linecap="round"/>
-  <path d="M88 90c10 0 16 6 16 14" fill="none" stroke="#6f42c1" stroke-width="6" stroke-linecap="round"/>
+  <rect width="128" height="128" rx="28" fill="#f2ece2"/>
+  <!-- shaggy body + domed head -->
+  <path d="M28 82c0-10 4-17 11-21 3-15 15-25 31-25s27 10 30 24c7 3 10 9 10 17v10c0 4-3 7-7 7h-7v-9h-8v9H66v-9h-8v9h-9c-5 0-9-4-9-9v-3c-4-2-7-6-7-11Z" fill="#8d6442"/>
+  <!-- ear -->
+  <path d="M74 46c11-7 22-3 22 8-9-5-16-3-20 3Z" fill="#7a5436"/>
+  <!-- trunk -->
+  <path d="M42 64c-9 6-13 19-7 31 3 6 11 3 9-3-2-8 0-15 7-19Z" fill="#8d6442"/>
+  <!-- tusk -->
+  <path d="M46 86c-9 5-18 2-22-7 7 7 15 6 20-1Z" fill="#fff" stroke="#6f4a2e" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- eye -->
+  <circle cx="54" cy="56" r="4" fill="#2a2017"/>
 </svg>

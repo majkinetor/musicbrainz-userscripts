@@ -1,3 +1,8 @@
+// Probe #212 — Mammoth edit-note sidebar.
+// Stubs GM storage, injects Mammoth on an artist edit page, and verifies (via
+// in-page event dispatch, deterministic in headless): sidebar injects + widens
+// the field, ＋ saves, click=append, right-click=replace, Ctrl+↓ cycles, ★
+// favourite sorts to top, hide-help, and submit-capture.
 import { chromium } from 'playwright';
 import { readFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
@@ -11,10 +16,9 @@ const log = (...a) => console.log('[probe-212]', ...a);
 
 await mkdir(LOG, { recursive: true });
 const code = await readFile(SCRIPT, 'utf8');
-const ctx = await chromium.launchPersistentContext(PROFILE, { headless: true, viewport: { width: 1400, height: 1000 }, deviceScaleFactor: 2 });
+const ctx = await chromium.launchPersistentContext(PROFILE, { headless: true, viewport: { width: 1500, height: 1000 }, deviceScaleFactor: 2 });
 const page = ctx.pages()[0] || await ctx.newPage();
 page.on('pageerror', e => log('[pageerror]', e.message));
-// stub GM storage before anything
 await page.addInitScript(() => {
   window.__gm = {};
   window.GM_getValue = (k, d) => (k in window.__gm ? window.__gm[k] : d);
@@ -25,44 +29,49 @@ if (page.url().includes('/login')) { log('NOT LOGGED IN'); await ctx.close(); pr
 await page.goto(`${O}/artist/056e4f3e-d505-4dad-8ec1-d04f521cbb56/edit`, { waitUntil: 'domcontentloaded' });
 await page.waitForSelector('textarea.edit-note', { timeout: 20000 });
 await page.addScriptTag({ content: code });
-await page.waitForTimeout(800);
+await page.waitForTimeout(700);
 
-const bars = await page.evaluate(() => document.querySelectorAll('.mmth-bar').length);
-log('bars injected:', bars);
+const ev = fn => page.evaluate(fn);
+const taVal = () => ev(() => document.querySelector('textarea.edit-note').value);
+const setVal = v => page.evaluate(v => { document.querySelector('textarea.edit-note').value = v; }, v);
+const clickSel = sel => page.evaluate(s => document.querySelector(s)?.click(), sel);
 
-// type a note, save it
-await page.evaluate(() => { const ta = document.querySelector('textarea.edit-note'); ta.value = 'Source: official website'; });
-await page.click('.mmth-btn:has-text("Save current")');
-await page.waitForTimeout(200);
-const savedCount = await page.evaluate(() => (JSON.parse(window.__gm['mammoth:data'] || '{}').saved || []).length);
-log('saved notes after Save current:', savedCount);
+log('sidebars:', await ev(() => document.querySelectorAll('.mmth-side').length));
+log('field width:', await ev(() => Math.round(document.querySelector('textarea.edit-note').getBoundingClientRect().width) + 'px'));
 
-// clear field, open panel, click the saved row → should insert
-await page.evaluate(() => { const ta = document.querySelector('textarea.edit-note'); ta.value = ''; });
-await page.click('.mmth-btn:has-text("Notes")');
-await page.waitForTimeout(200);
-await page.screenshot({ path: resolve(LOG, 'panel.png') });
-const rows = await page.evaluate(() => document.querySelectorAll('.mmth-row').length);
-log('rows in panel:', rows);
-await page.click('.mmth-row');
-await page.waitForTimeout(150);
-const inserted = await page.evaluate(() => document.querySelector('textarea.edit-note').value);
-log('inserted value:', JSON.stringify(inserted));
+for (const note of ['Source: official website', 'Per CSG guidelines']) { await setVal(note); await clickSel('button.mmth-fb[title="Save current edit note"]'); await page.waitForTimeout(60); }
+log('saved count:', await ev(() => (JSON.parse(window.__gm['mammoth:data'] || '{}').saved || []).length));
+log('rows:', await ev(() => document.querySelectorAll('.mmth-side .mmth-row').length));
 
-// append behaviour: set base text, open, click row → appends on newline
-await page.evaluate(() => { const ta = document.querySelector('textarea.edit-note'); ta.value = 'Existing line'; });
-await page.click('.mmth-btn:has-text("Notes")'); await page.waitForTimeout(150);
-await page.click('.mmth-row'); await page.waitForTimeout(150);
-const appended = await page.evaluate(() => document.querySelector('textarea.edit-note').value);
-log('appended value:', JSON.stringify(appended));
+await setVal(''); await clickSel('.mmth-side .mmth-row'); await page.waitForTimeout(60);
+log('click→empty:', JSON.stringify(await taVal()));
+await setVal('Base'); await clickSel('.mmth-side .mmth-row'); await page.waitForTimeout(60);
+log('click→nonempty (append):', JSON.stringify(await taVal()));
+await setVal('Base'); await ev(() => document.querySelector('.mmth-side .mmth-row').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))); await page.waitForTimeout(60);
+log('rclick (replace):', JSON.stringify(await taVal()));
 
-// submit capture: set value, fire submit event, check history
-await page.evaluate(() => {
-  const ta = document.querySelector('textarea.edit-note'); ta.value = 'Per CSG guidelines';
-  const form = ta.closest('form'); form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-});
-await page.waitForTimeout(150);
-const hist = await page.evaluate(() => (JSON.parse(window.__gm['mammoth:data'] || '{}').history || []).map(h => h.text));
-log('history after submit:', JSON.stringify(hist));
+await ev(() => { const ta = document.querySelector('textarea.edit-note'); ta.value = ''; ta.focus(); ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', ctrlKey: true, bubbles: true, cancelable: true })); });
+await page.waitForTimeout(60);
+log('Ctrl+Down (cycle):', JSON.stringify(await taVal()));
 
+await ev(() => { const last = [...document.querySelectorAll('.mmth-side .mmth-row .mmth-star')].pop(); last && last.click(); });
+await page.waitForTimeout(80);
+log('top row after fav-ing last:', await ev(() => document.querySelector('.mmth-side .mmth-row .mmth-txt')?.textContent), '| gold?', await ev(() => document.querySelector('.mmth-side .mmth-row .mmth-star')?.classList.contains('on')));
+
+await ev(() => { window.GM_setValue('mammoth:settings', JSON.stringify({ historySize: 10, hideHelp: true })); });
+await clickSel('button.mmth-fb-set'); await page.waitForTimeout(80);
+await clickSel('.mmth-setpop .mmth-s-help');  // toggles → set true via UI
+await page.waitForTimeout(80);
+log('help hidden?', await ev(() => { const p = document.querySelector('.editnote p'); return p ? getComputedStyle(p).display === 'none' : 'no-help-el'; }));
+await ev(() => document.querySelector('.mmth-setpop') && document.body.click());
+
+await ev(() => { const ta = document.querySelector('textarea.edit-note'); ta.value = 'Imported from Discogs'; ta.closest('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
+await page.waitForTimeout(80);
+log('history:', await ev(() => (JSON.parse(window.__gm['mammoth:data'] || '{}').history || []).map(h => h.text)));
+
+// re-show help for the screenshot, set sample text
+await ev(() => { window.GM_setValue('mammoth:settings', JSON.stringify({ historySize: 10, hideHelp: false })); document.querySelectorAll('.editnote').forEach(e => e.classList.remove('mmth-hidehelp')); document.querySelector('textarea.edit-note').value = 'Base text in the note'; });
+const clip = await ev(() => { const w = document.querySelector('.mmth-wrap').getBoundingClientRect(); return { x: Math.max(0, w.x - 80), y: Math.max(0, w.y - 70), width: Math.min(1400, w.width + 100), height: w.height + 90 }; });
+await page.screenshot({ path: resolve(LOG, 'sidebar.png'), clip });
+log('artifacts in', LOG);
 await ctx.close();
