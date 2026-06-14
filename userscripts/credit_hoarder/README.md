@@ -25,7 +25,7 @@ Providers differ in how rich their credits are and — crucially — whether the
 | Provider | Credits exposed | Artist identity | How it's fetched | Auth |
 |---|---|---|---|---|
 | **Discogs** | Fullest — performers + instruments, engineering, production, artwork, mastering, … | Discogs **artist IDs** → exact MB resolution via URL relationships | Discogs API | none |
-| **Tidal** | Producer, Composer, Lyricist, (Music) Publisher | **Tidal artist IDs** on ~99% of credits → exact MB resolution via URL relationships | companion harvest in an anonymously-opened `tidal.com/album/<id>/credits` tab, relayed back cross-tab | none |
+| **Tidal** | Producer, Mixing/Recording/Sound Engineer, Composer, Lyricist, Writer, Orchestrator, (Music) Publisher | **Tidal artist IDs** on ~99% of credits → exact MB resolution via URL relationships | companion harvest in an anonymously-opened `tidal.com/album/<id>/credits` tab, relayed back cross-tab | none |
 | **Qobuz** | Composer, Lyricist, Producer, Publisher, performers | **names only** — Qobuz exposes no artist/profile links on credits, so each name is resolved by MB **name search + your review** | direct page fetch (credits are server-rendered into the store page) | none |
 
 Notes & limitations:
@@ -38,9 +38,11 @@ Notes & limitations:
 
 | Provider role | MusicBrainz relationship |
 |---|---|
-| Composer, Lyricist | **work** rel (works are created on demand, as in the Discogs flow) |
-| Producer, Mixer, Engineer | **recording** rel |
+| Composer, Lyricist, Writer, Orchestrator | **work** rel (works are created on demand, as in the Discogs flow) |
+| Producer, Mixing Engineer (→ *mix*), Recording Engineer (→ *recording*), Sound Engineer (→ *sound*) | **recording** rel |
 | Music Publisher | **work** publisher (`Copyright Control` placeholder is dropped) |
+
+Tidal roles that are surfaced in the log but **not** imported (no clean MB target): *Mastering Engineer* (artist→recording mastering is deprecated in MB — mastering belongs at release level), *Sound Editor*, *Studio Personnel*, and the *Assistant … Engineer* variants (these need an MB "assistant" attribute that isn't modelled here yet). They appear in the skipped list so nothing is silently dropped.
 | Main Artist, Featured Artist | skipped — already the release's artist credit |
 
 ## Features

@@ -23,10 +23,18 @@
  *  Music Publisher is Tidal artist 15780 — a placeholder meaning "no
  *  publisher registered", filtered out by default. */
 export const TIDAL_ROLE_MAP = {
-    'Producer':        { target: 'recording', rel: 'producer' },
-    'Composer':        { target: 'work',      rel: 'composer' },
-    'Lyricist':        { target: 'work',      rel: 'lyricist' },
-    'Music Publisher': { target: 'work',      rel: 'publisher' },
+    'Producer':          { target: 'recording', rel: 'producer' },
+    'Mixing Engineer':   { target: 'recording', rel: 'mix' },
+    'Recording Engineer':{ target: 'recording', rel: 'recording' },
+    'Sound Engineer':    { target: 'recording', rel: 'sound engineer' },
+    'Composer':          { target: 'work',      rel: 'composer' },
+    'Lyricist':          { target: 'work',      rel: 'lyricist' },
+    'Writer':            { target: 'work',      rel: 'writer' },
+    'Orchestrator':      { target: 'work',      rel: 'orchestrator' },
+    'Music Publisher':   { target: 'work',      rel: 'publisher' },
+    // Not mapped (reported, not imported): Mastering Engineer (artist→recording mastering
+    // is deprecated in MB — it's release-level), Sound Editor, the Assistant * Engineer
+    // variants (need an MB "assistant" attribute), and Studio Personnel (too generic).
 };
 
 /** Tidal artist id of the "Copyright Control" placeholder publisher. */
@@ -132,7 +140,19 @@ export function parseTidalArtistUrl(url) {
  * the caller should warn that positions may not all match.
  */
 export function tidalToEngine(tracks) {
-    const IMPORT_ROLES = { 'Producer': 'producer', 'Composer': 'composer', 'Lyricist': 'lyricist' };
+    // Subset of TIDAL_ROLE_MAP actually dispatched as track/recording/work rels.
+    // 'Music Publisher' is intentionally excluded — work-publisher is label-entity
+    // work, deferred (handled via `skipped` below).
+    const IMPORT_ROLES = {
+        'Producer':           'producer',
+        'Mixing Engineer':    'mix',
+        'Recording Engineer': 'recording',
+        'Sound Engineer':     'sound engineer',
+        'Composer':           'composer',
+        'Lyricist':           'lyricist',
+        'Writer':             'writer',
+        'Orchestrator':       'orchestrator',
+    };
     const tracklistRels = [];
     const tracklist = [];
     const skipped = [];
