@@ -38,7 +38,8 @@
   const loadData = () => { try { return Object.assign({ saved: [], history: [] }, JSON.parse(GM_getValue(KEY, '{}') || '{}')); } catch (e) { return { saved: [], history: [] }; } };
   const saveData = () => { try { GM_setValue(KEY, JSON.stringify(DATA)); } catch (e) {} render(); };
   const loadSet = () => { try { return Object.assign({}, DEFAULTS, JSON.parse(GM_getValue(SKEY, '{}') || '{}')); } catch (e) { return Object.assign({}, DEFAULTS); } };
-  const saveSet = () => { try { GM_setValue(SKEY, JSON.stringify(SET)); } catch (e) {} applyHelp(); render(); };
+  const persistSet = () => { try { GM_setValue(SKEY, JSON.stringify(SET)); } catch (e) {} };           // quiet save (no re-render)
+  const saveSet = () => { persistSet(); applyHelp(); render(); };
 
   let DATA = loadData();
   let SET = loadSet();
@@ -79,9 +80,13 @@
     setValue(ta, (replace || !cur.trim()) ? text : cur.replace(/\s+$/, '') + '\n' + text);
     ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
   }
-  // wrap the current selection (or just drop markers at the caret) in `marker`
+  // wrap the selection in `marker`; with no selection, wrap the word the caret
+  // is in (or just drop the markers if the caret isn't inside a word).
   function wrapSel(ta, marker) {
-    const s = ta.selectionStart ?? ta.value.length, e = ta.selectionEnd ?? s, v = ta.value, sel = v.slice(s, e);
+    const v = ta.value;
+    let s = ta.selectionStart ?? v.length, e = ta.selectionEnd ?? s;
+    if (s === e) { let a = s, b = e; while (a > 0 && /\S/.test(v[a - 1])) a--; while (b < v.length && /\S/.test(v[b])) b++; if (b > a) { s = a; e = b; } }
+    const sel = v.slice(s, e);
     setValue(ta, v.slice(0, s) + marker + sel + marker + v.slice(e));
     ta.focus();
     const caret = sel ? s + marker.length * 2 + sel.length : s + marker.length;
@@ -101,9 +106,13 @@
   // ── styles ───────────────────────────────────────────────────────────────────
   const css = `
   fieldset.editnote, .editnote { max-width:100% !important; }
-  /* let the wrap's containing block be the full editnote width so margin:auto can
-     center it (in a narrow column it just fills — no overflow / no overlap). */
-  .editnote.mmth-on { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  /* On the release editor the edit note sits in a 540px .half-width column (its
+     only sibling is the changes warning, not a guidelines column), so give that
+     column the full form width when Mammoth is active. The :has() selector
+     scopes it to our column only. min-width:0 lets the editnote fieldset
+     (min-content by default) take that width so margin:auto can center it. */
+  .half-width:has(> .editnote.mmth-on), .col:has(> .editnote.mmth-on) { width:100% !important; max-width:100% !important; }
+  .editnote.mmth-on { width:100% !important; max-width:100% !important; min-width:0 !important; box-sizing:border-box; }
   .editnote.mmth-on > .row { width:100% !important; box-sizing:border-box; }
   .editnote.mmth-on > legend, .editnote.mmth-on > .row > label[for] { display:none !important; }
   .mmth-wrap { display:flex; gap:0; align-items:stretch; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; }
@@ -120,7 +129,8 @@
   .mmth-fb.on { background:#cfe9d8; color:#1f5c3d; }
   .mmth-fb.mmth-spacer { flex:1; pointer-events:none; }
   .mmth-fb.mmth-grp { margin-left:10px; }
-  .mmth-list { flex:1 1 auto; overflow:auto; }
+  .mmth-list { flex:1 1 auto; overflow-y:auto; scrollbar-width:none; }
+  .mmth-list::-webkit-scrollbar { width:0; height:0; }
   .mmth-row { display:flex; align-items:center; gap:4px; padding:4px 6px; border-top:1px solid #f0f4f2; cursor:pointer; }
   .mmth-row:first-child { border-top:none; }
   .mmth-row:hover { background:#eaf5ee; }
@@ -148,6 +158,7 @@
   .mmth-pop select { border:1px solid #d7e0db; border-radius:4px; padding:1px 4px; }
   .mmth-pop code { background:#f1f4f2; border-radius:3px; padding:0 3px; font-size:12px; }
   .mmth-pop .mmth-syn { display:grid; grid-template-columns:auto 1fr; gap:3px 10px; margin:4px 0; }
+  .mmth-pop .mmth-sub { font-weight:600; font-size:12px; margin:8px 0 2px; }
   .mmth-toast { position:fixed; z-index:100000; background:#2c3a33; color:#fff; padding:6px 12px; border-radius:6px; font:13px sans-serif; box-shadow:0 4px 14px rgba(0,0,0,.25); left:50%; top:14px; transform:translateX(-50%); }
   `;
   (function () { const s = document.createElement('style'); s.textContent = css; (document.head || document.documentElement).appendChild(s); })();
@@ -198,7 +209,13 @@
         <code>edit #123456</code><span>link to an edit</span>
         <code>doc:Page</code><span>or <code>[Page_Name]</code> — wiki doc link</span>
       </div>
-      <div style="color:#566">URLs become links automatically. HTML is not supported.</div>`;
+      <div style="color:#566">URLs become links automatically. HTML is not supported.</div>
+      <div class="mmth-sub">Shortcuts</div>
+      <div class="mmth-syn">
+        <code>Ctrl/⌘ B</code><span>bold the selection / word</span>
+        <code>Ctrl/⌘ I</code><span>italicise the selection / word</span>
+        <code>Ctrl/⌘ ↑/↓</code><span>cycle saved notes</span>
+      </div>`;
     document.body.appendChild(p); pop = p;
     placePop(p, anchor);
   }
@@ -254,7 +271,10 @@
       inst.cyc = (inst.cyc + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
       setValue(ta, items[inst.cyc].text);
       if (inst.view === 'saved') renderInst(inst);
-      ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (x) {}
+      // setValue can trigger a React re-render on the release editor that steals
+      // focus; re-assert it now AND after the re-render so the editor stays focused.
+      const refocus = () => { try { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } catch (x) {} };
+      refocus(); requestAnimationFrame(refocus); setTimeout(refocus, 0);
     });
 
     renderInst(inst);
@@ -316,6 +336,10 @@
       const wrap = document.createElement('div'); wrap.className = 'mmth-wrap';
       ta.parentNode.insertBefore(wrap, ta);
       wrap.appendChild(ta);
+      // remember the textarea height the user sets with the native resize grip (vertical);
+      // the splitter (below) remembers the field/panel split (horizontal).
+      if (SET.taHeight) ta.style.height = SET.taHeight + 'px';
+      let hT; try { new ResizeObserver(() => { clearTimeout(hT); hT = setTimeout(() => { const h = ta.clientHeight; if (h > 40 && h !== SET.taHeight) { SET.taHeight = h; persistSet(); } }, 400); }).observe(ta); } catch (x) {}
       const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; vsep.title = 'Drag to resize'; wrap.appendChild(vsep);   // resizable separator between field & panel (#212)
       const side = buildSide(ta); wrap.appendChild(side);
       wireResize(vsep, side);

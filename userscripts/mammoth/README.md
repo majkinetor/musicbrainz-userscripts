@@ -28,10 +28,10 @@ Toolbar: **＋** save the current text · **★** Saved notes · **🕘** Recent
 
 - **Auto-history, no checkbox.** Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. No "remember this note" toggle to get stuck on across sessions.
 - **Saved notes.** **＋** saves the current text; in **History**, **★** on a row pins it to Saved. In **Saved**, reorder by **drag** (the **⠿** handle on the right, shown on hover) and **🗑** deletes.
-- **Compact, one-line rows** with the full note on hover; choose how many show before scrolling.
-- **Insert without keys.** Click does your default (replace/append); right-click does the other. **Append skips a line already present** in the field, and it never blindly overwrites — so it won't clobber a note another script (Apollo Editor, Credit Hoarder, Platform Check) wrote for its own submission. Ctrl/⌘ + ↑/↓ cycles saved notes; Ctrl/⌘ + B / I add bold / italic markup.
-- **Edit-note syntax help (?).** A quick reference for MusicBrainz's edit-note markup (`''italic''`, `'''bold'''`, `edit #123`, `doc:Page`, auto-linked URLs).
-- **Resizable + tidied field.** The native edit-note field is widened and centered; **drag the separator** to resize the field vs. the panel (remembered). The redundant "Edit note" label/heading is hidden.
+- **Compact, one-line rows** with the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
+- **Insert without keys.** Click does your default (replace/append); right-click does the other. **Append skips a line already present** in the field, and it never blindly overwrites — so it won't clobber a note another script (Apollo Editor, Credit Hoarder, Platform Check) wrote for its own submission. Ctrl/⌘ + ↑/↓ cycles saved notes (focus stays in the editor); **Ctrl/⌘ + B / I** wrap the selection — or the word at the caret — in bold / italic markup.
+- **Edit-note syntax help (?).** A quick reference for MusicBrainz's edit-note markup (`''italic''`, `'''bold'''`, `edit #123`, `doc:Page`, auto-linked URLs) and the keyboard shortcuts.
+- **Resizable + tidied field.** The native edit-note field is widened and centered (it spans the full form width on the release editor). **Drag the separator** to resize the field vs. the panel, and the field's own height; both are remembered. The redundant "Edit note" label/heading is hidden.
 
 ## Settings (⚙)
 
