@@ -40,9 +40,10 @@ Notes & limitations:
 |---|---|
 | Composer, Lyricist, Writer, Orchestrator | **work** rel (works are created on demand, as in the Discogs flow) |
 | Producer, Mixing Engineer (→ *mix*), Recording Engineer (→ *recording*), Sound Engineer (→ *sound*) | **recording** rel |
+| Assistant Mixing / Recording / Sound Engineer | same **recording** rel as above, with the MB **assistant** attribute ticked (MB has no separate "assistant engineer" relationship) |
 | Music Publisher | **work** publisher (`Copyright Control` placeholder is dropped) |
 
-Tidal roles that are surfaced in the log but **not** imported (no clean MB target): *Mastering Engineer* (artist→recording mastering is deprecated in MB — mastering belongs at release level), *Sound Editor*, *Studio Personnel*, and the *Assistant … Engineer* variants (these need an MB "assistant" attribute that isn't modelled here yet). They appear in the skipped list so nothing is silently dropped.
+Tidal roles that are surfaced in the log but **not** imported (no clean MB target): *Mastering Engineer* (artist→recording mastering is deprecated in MB — mastering belongs at release level), *Sound Editor*, and *Studio Personnel*. They appear in the skipped list so nothing is silently dropped.
 | Main Artist, Featured Artist | skipped — already the release's artist credit |
 
 ## Features

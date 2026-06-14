@@ -90,15 +90,29 @@ export function extractTidalCreditsDom(doc) {
 }
 
 /**
+ * Strip an "Assistant …" prefix off a Tidal role. MB has no distinct
+ * "assistant mixing engineer" relationship — it's the base relationship
+ * (mix / recording / sound …) with the `assistant` attribute ticked — so we
+ * map the base role and carry the assistant flag separately.
+ *   "Assistant Mixing Engineer" -> "Mixing Engineer"
+ *   "Mixing Engineer"           -> "Mixing Engineer"
+ */
+const ASSISTANT_RE = /^Assistant\s+(.+)$/i;
+export function tidalRoleBase(role) {
+    const m = ASSISTANT_RE.exec(role || '');
+    return m ? m[1] : role;
+}
+
+/**
  * Drop credits we never import: the Copyright Control placeholder publisher
- * and any role missing from `TIDAL_ROLE_MAP`. Pure filter — keeps the raw
- * harvest intact for the diagnostic log ("Copy Tidal").
+ * and any role whose base is missing from `TIDAL_ROLE_MAP`. Pure filter —
+ * keeps the raw harvest intact for the diagnostic log ("Copy Tidal").
  */
 export function filterTidalCredits(tracks) {
     return tracks.map(t => ({
         ...t,
         credits: t.credits
-            .filter(c => TIDAL_ROLE_MAP[c.role])
+            .filter(c => TIDAL_ROLE_MAP[tidalRoleBase(c.role)])
             .map(c => ({
                 ...c,
                 names: c.names.filter(n =>
@@ -165,7 +179,9 @@ export function tidalToEngine(tracks) {
         const track = { position, title: t.title || '', type_: 'track' };
         tracklist.push(track);
         for (const c of t.credits) {
-            const linkType = IMPORT_ROLES[c.role];
+            const base      = tidalRoleBase(c.role);
+            const assistant = base !== c.role;
+            const linkType  = IMPORT_ROLES[base];
             for (const n of c.names) {
                 if (!linkType) {
                     skipped.push(`track ${position} "${t.title}": ${c.role} — ${n.name}`);
@@ -174,7 +190,7 @@ export function tidalToEngine(tracks) {
                 tracklistRels.push({
                     linkType,
                     entityType: 'artist',
-                    attributes: [],
+                    attributes: assistant ? ['assistant'] : [],
                     artist: {
                         id:           n.tidalId ? `tidal-${n.tidalId}` : undefined,
                         name:         n.name,
