@@ -1,52 +1,38 @@
 # Mammoth <img src="icon.svg" align="left" width="48" height="48">
 
-Edit-note memory for MusicBrainz — the elephant that never forgets. Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-note field on every edit form, and remembers the ones you submit. A nicer replacement for [Elephant Editor](https://github.com/jesus2099/konami-command/blob/master/mb_ELEPHANT-EDITOR.user.js).
+Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-note field on every edit form, and remembers the ones you submit.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/mammoth/mammoth.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/mammoth/mammoth.user.js)
 
-## What it does
+![](./screenshot.png)
 
-Every MusicBrainz edit form has an **Edit note** field — release/RG/artist/label/work/recording/area/place/series/event/genre/URL *add* and *edit*, the relationship editor, merges, removals, set-values, batch edits. Power editors reuse the same notes constantly ("Source: official site", "Per CSG", a discography URL…). Mammoth makes that painless.
-
-The wide edit-note field is split (and centered): the textarea on the left, and a **saved-notes panel on the right**.
-
-```
-┌──────────────────────────────┬─────────────────────────┐
-│ (edit-note textarea)       │ │ ＋  ★ 🕘  ✕      ?  ⚙   │  ← toolbar
-│                            │ ├─────────────────────────┤
-│                            │ │ Per CSG guidelines    ⠿ │
-│              separator ────┘ │ Source: official site ⠿ │  ⠿ = drag handle
-│                              │ …                       │      (on hover)
-└──────────────────────────────┴─────────────────────────┘
-```
-
-Each note is one line (full text on hover). **Click** applies your default action (replace or append, set in ⚙); **right-click** does the other. **Ctrl/⌘ + ↑/↓** cycles through your saved notes, replacing the field (and keeping focus on the editor). **Ctrl/⌘ + B / I** wrap the selection in edit-note bold / italic.
-
-Toolbar: **＋** save the current text · **★** Saved notes · **🕘** Recent (history) · **✕** clear the field · **?** edit-note syntax · **⚙** settings.
+Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the same notes constantly. Mammoth makes that painless.
 
 ## Features
 
-- **Auto-history, no checkbox.** Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. No "remember this note" toggle to get stuck on across sessions.
-- **Saved notes.** **＋** saves the current text; in **History**, **★** on a row pins it to Saved. In **Saved**, reorder by **drag** (the **⠿** handle on the right, shown on hover) and **🗑** deletes.
-- **Compact, one-line rows** with the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
-- **Insert without keys.** Click does your default (replace/append); right-click does the other. **Append skips a line already present** in the field, and it never blindly overwrites — so it won't clobber a note another script (Apollo Editor, Credit Hoarder, Platform Check) wrote for its own submission. Ctrl/⌘ + ↑/↓ cycles saved notes (focus stays in the editor); **Ctrl/⌘ + B / I** wrap the selection — or the word at the caret — in bold / italic markup.
-- **Edit-note syntax help (?).** A quick reference for MusicBrainz's edit-note markup (`''italic''`, `'''bold'''`, `edit #123`, `doc:Page`, auto-linked URLs) and the keyboard shortcuts.
-- **Resizable + tidied field.** The native edit-note field is widened and centered (it spans the full form width on the release editor). **Drag the separator** to resize the field vs. the panel, and the field's own height; both are remembered. The redundant "Edit note" label/heading is hidden.
+- **History**<br>
+Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. 
+- **Saved notes**<br>
+**＋** saves the current text; in **History**, **★** on a row moves it to saved notes. Reorder by **drag** (the **⠿** handle on the right, shown on hover) and delete with **🗑**.
+- **Compact, one-line rows**<br>
+With the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
+- **Insert**<br>
+Click does your default (replace/append); right-click does the other. Append skips a line already present in the field. Ctrl/⌘ + ↑/↓ cycles saved notes; **Ctrl/⌘ + B / I** wrap the selection — or the word at the caret — in bold / italic markup.
+- **Resizable**<br>
+The native edit-note field is widened and centered (it spans the full form width on the release editor). **Drag the separator** to resize the field vs. the panel, and the field's own height; both are remembered.
 
-## Settings (⚙)
+## Settings 
 
-The ⚙ popover shows the script name, version and a help link, plus:
+Accessesd using ⚙ button:
 
 | Setting | Default | Notes |
 |---|---|---|
-| **Hide edit-note help text** | off | Hides MusicBrainz's "Entering an edit note…" help paragraphs above the field. |
+| **Hide edit-note help text** | off | Hides MusicBrainz's help paragraphs above the field. |
 | **Default click action** | `replace` | What a left-click does (`replace`, or `append`). Right-click does the other. |
-| **Insert empty line when appending** | on | Separate an appended note with a blank line (`\n\n`); off uses a single new line (`\n`). |
-| **Items shown** | `6` | How many list rows render before the list scrolls. |
+| **Insert new line when appending** | on | Append a blank line before note. |
+| **Items shown** | `6` | How many list rows to render before the list scrolls. |
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 
-Storage is per-browser (via the userscript manager). Nothing is sent anywhere.
+##  Notes
 
-## Why standalone (not part of Apollo Editor)
-
-The edit-note field is on *every* edit form, while [Apollo Editor](../apollo_editor/README.md) is scoped to the release editor. Mammoth is a small, cross-cutting tool that attaches to the native edit-note textarea wherever it appears, and is useful with or without the other scripts.
+- Inspired by [Elephant Editor](https://github.com/jesus2099/konami-command/blob/master/mb_ELEPHANT-EDITOR.user.js).
