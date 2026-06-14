@@ -1,5 +1,11 @@
 # Import Discogs Credits Changelog
 
+## [2026.6.14](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.14)
+
+### Fixes
+
+1. Review table: URL status chip shows add-link for already-linked URLs ([#200](https://github.com/majkinetor/musicbrainz-userscripts/issues/200))
+
 ## [2026.6.10](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.10)
 
 ### Features

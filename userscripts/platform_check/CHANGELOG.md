@@ -1,5 +1,13 @@
 # Platform Check Changelog
 
+## [2026.6.14](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.14)
+
+### Features
+
+1. Cleanup Volumo URLs ([#202](https://github.com/majkinetor/musicbrainz-userscripts/issues/202))
+1. Qobuz provider ([#201](https://github.com/majkinetor/musicbrainz-userscripts/issues/201))
+1. Bandcamp barcode ([#194](https://github.com/majkinetor/musicbrainz-userscripts/issues/194))
+
 ## [2026.6.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.12)
 
 ### Features

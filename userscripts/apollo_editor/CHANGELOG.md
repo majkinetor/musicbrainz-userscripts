@@ -1,5 +1,19 @@
 # Apollo Editor Changelog
 
+## [2026.6.14](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.14)
+
+### Features
+
+1. Join phrase highlighting when missing a space or entire phrase ([#208](https://github.com/majkinetor/musicbrainz-userscripts/issues/208))
+1. Better visibility of punctuations ([#203](https://github.com/majkinetor/musicbrainz-userscripts/issues/203))
+1. Recording links in search results ([#199](https://github.com/majkinetor/musicbrainz-userscripts/issues/199))
+1. Search recording by ISRC ([#196](https://github.com/majkinetor/musicbrainz-userscripts/issues/196))
+1. Display disambiguations in tracklist editor ([#195](https://github.com/majkinetor/musicbrainz-userscripts/issues/195))
+
+### Fixes
+
+1. "Ignore casing" matches are marked as Exact ([#197](https://github.com/majkinetor/musicbrainz-userscripts/issues/197))
+
 ## [2026.6.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.12)
 
 ### Features
