@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="28" fill="#f2ece2"/>
+  
   <!-- shaggy body + domed head -->
   <path d="M28 82c0-10 4-17 11-21 3-15 15-25 31-25s27 10 30 24c7 3 10 9 10 17v10c0 4-3 7-7 7h-7v-9h-8v9H66v-9h-8v9h-9c-5 0-9-4-9-9v-3c-4-2-7-6-7-11Z" fill="#8d6442"/>
   <!-- ear -->

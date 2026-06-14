@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <title>MB Platform Check</title>
-  <rect width="128" height="128" rx="28" fill="#f3eefc"/>
+  
   <g fill="none" stroke="#2a1a52" stroke-width="9" stroke-linecap="round">
     <path d="M40 88 A34 34 0 0 1 40 40"/>
     <path d="M29 99 A50 50 0 0 1 29 29"/>
