@@ -75,7 +75,12 @@
   function applyNote(ta, text, replace) {
     const cur = ta.value || '';
     if (!replace && cur.trim()) {
-      if (cur.split('\n').some(l => l.trim() === text.trim())) { toast('Already in the note'); return; }   // #212: don't append a duplicate line
+      // #212: don't append a note already in the field — match whole-field, a
+      // blank-line-separated block, or a single line (handles multi-line notes).
+      const norm = s => s.split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean).join('\n').trim();
+      const tN = norm(text);
+      const cands = [cur, ...cur.split(/\n{2,}/), ...cur.split('\n')].map(norm);
+      if (tN && cands.includes(tN)) { toast('Already in the note'); return; }
     }
     setValue(ta, (replace || !cur.trim()) ? text : cur.replace(/\s+$/, '') + (SET.appendNewline ? '\n\n' : '\n') + text);
     ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
