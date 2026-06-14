@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.14
+// @version      2026.6.14.230000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1291,10 +1291,15 @@
       if ((SETTINGS.recPunctSize | 0) <= 0) return;
       const v = inp.value;
       if (v === '') { wrap.classList.add('tc-jp-nophrase', 'tc-jp-bad'); return; }
+      // CJK scripts (Japanese と / 、, Chinese, Korean) don't space their joins —
+      // skip the space flags when the join or an adjacent name is CJK (#208, chaban)
+      const idx = entry.slots.indexOf(slot);
+      const nxt = entry.slots[idx + 1];
+      const cjk = isCjk(v) || isCjk(slot.creditedAs || slot.name) || (nxt && isCjk(nxt.creditedAs || nxt.name));
       let bad = false;
       // leading space wanted unless the join is a tight ","/";" separator (#208, chaban)
-      if (!/^\s/.test(v) && !/^\s*[,;]/.test(v)) { wrap.classList.add('tc-jp-nolead'); bad = true; }
-      if (!/\s$/.test(v)) { wrap.classList.add('tc-jp-notrail'); bad = true; }
+      if (!cjk && !/^\s/.test(v) && !/^\s*[,;]/.test(v)) { wrap.classList.add('tc-jp-nolead'); bad = true; }
+      if (!cjk && !/\s$/.test(v)) { wrap.classList.add('tc-jp-notrail'); bad = true; }
       if (bad) wrap.classList.add('tc-jp-bad');
     };
     inp.oninput = () => { fit(); markJoin(); }; inp.onchange = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); markJoin(); if (refreshBadges) refreshBadges(); }; enterBlurs(inp);
@@ -2364,7 +2369,8 @@
       const gid = art && u(art.gid);
       const cmt = (art && u(art.comment)) || getDisamb(gid);   // KO model lacks it for fresh picks → cache fallback #195
       const dis = withDisamb && cmt ? ' <span class="tc-rpk-adis">(' + esc(cmt) + ')</span>' : '';
-      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + dhRun(nm) + '</a>' : dhRun(nm)) + dis + joinMark(u(n.joinPhrase) || '', i === names.length - 1);
+      const nx = names[i + 1]; const nxa = nx && (nx.artist ? u(nx.artist) : null); const nxNm = nx ? (u(nx.name) || (nxa && u(nxa.name)) || '') : '';
+      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + dhRun(nm) + '</a>' : dhRun(nm)) + dis + joinMark(u(n.joinPhrase) || '', i === names.length - 1, nm, nxNm);
     }).join('');
   }
   // flat {name, gid, comment, join} per artist of a credit — lets the table diff
@@ -2390,7 +2396,7 @@
       const inner = a.gid ? '<a href="' + ORIGIN + '/artist/' + esc(a.gid) + '" target="_blank" rel="noopener">' + nm + '</a>' : nm;
       const boxed = otherSet.has(key(a)) ? inner : '<span class="tc-dh">' + inner + '</span>';
       const dis = withDisamb && a.comment ? ' <span class="tc-rec-disamb">(' + esc(a.comment) + ')</span>' : '';
-      return boxed + dis + joinMark(a.join, i === self.length - 1);
+      return boxed + dis + joinMark(a.join, i === self.length - 1, a.name, self[i + 1] && self[i + 1].name);
     }).join('');
   }
   // #186 detailed highlighting — char-level LCS diff of two short strings.
@@ -2460,7 +2466,12 @@
   function joinNeed(j) {
     return { lead: !/^\s/.test(j) && !/^\s*[,;]/.test(j), trail: !/\s$/.test(j) };
   }
-  function joinMark(join, isLast) {
+  // CJK scripts (Japanese, Chinese, Korean) don't space their joins — e.g. と /
+  // 、 in Japanese — so a no-space join is correct there. Detects Hiragana,
+  // Katakana, Kanji, Hangul, CJK punctuation and full-width forms (chaban, #208).
+  const CJK_RE = /[　-〿぀-ヿ㐀-䶿一-鿿豈-﫿︰-﹏＀-￯가-힯]/;
+  const isCjk = s => CJK_RE.test(String(s == null ? '' : s));
+  function joinMark(join, isLast, prevName, nextName) {
     const j = String(join == null ? '' : join);
     const px = SETTINGS.recPunctSize | 0;
     if (px <= 0) return esc(j);
@@ -2468,6 +2479,7 @@
     if (j === '') return '<span class="tc-jp" title="missing join phrase — no separator between these artists">␣?␣</span>';
     const mk = side => '<span class="tc-jp" title="missing ' + side + ' space around the join phrase">␣</span>';
     const need = joinNeed(j);
+    if (isCjk(j) || isCjk(prevName) || isCjk(nextName)) { need.lead = false; need.trail = false; }   // CJK: no space convention
     return (need.lead ? mk('leading') : '') + dhRun(j) + (need.trail ? mk('trailing') : '');
   }
   function diffSide(segs, want) {
