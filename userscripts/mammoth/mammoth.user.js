@@ -270,7 +270,13 @@
       e.preventDefault();
       inst.cyc = (inst.cyc + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
       setValue(ta, items[inst.cyc].text);
-      if (inst.view === 'saved') renderInst(inst);
+      if (inst.view !== 'saved') { inst.view = 'saved'; inst.tabs && inst.tabs.saved.classList.add('on'); inst.tabs && inst.tabs.history.classList.remove('on'); }
+      renderInst(inst);
+      // keep the highlighted item visible — scroll WITHIN the list only (not the page)
+      const cur = inst.list.querySelector('.mmth-cyc');
+      if (cur) { const lr = inst.list.getBoundingClientRect(), cr = cur.getBoundingClientRect();
+        if (cr.top < lr.top) inst.list.scrollTop -= (lr.top - cr.top);
+        else if (cr.bottom > lr.bottom) inst.list.scrollTop += (cr.bottom - lr.bottom); }
       // setValue can trigger a React re-render on the release editor that steals
       // focus; re-assert it now AND after the re-render so the editor stays focused.
       const refocus = () => { try { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } catch (x) {} };
