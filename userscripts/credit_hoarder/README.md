@@ -25,13 +25,14 @@ Providers differ in how rich their credits are and — crucially — whether the
 | Provider | Credits exposed | Artist identity | How it's fetched | Auth |
 |---|---|---|---|---|
 | **Discogs** | Fullest — performers + instruments, engineering, production, artwork, mastering, … | Discogs **artist IDs** → exact MB resolution via URL relationships | Discogs API | none |
-| **Tidal** | Producer, Mixing/Recording/Sound Engineer, Composer, Lyricist, Writer, Orchestrator, (Music) Publisher | **Tidal artist IDs** on ~99% of credits → exact MB resolution via URL relationships | companion harvest in an anonymously-opened `tidal.com/album/<id>/credits` tab, relayed back cross-tab | none |
+| **Tidal** | Per-track: Producer, Mixing/Recording/Sound Engineer, Composer, Lyricist, Writer, Orchestrator, (Music) Publisher. **Plus release-level credits** from the Info tab — instruments, vocals, conductor, artwork, etc. (album-wide credits Tidal only lists once) | **Tidal artist IDs** on ~99% of credits → exact MB resolution via URL relationships | companion harvest in an anonymously-opened `tidal.com/album/<id>/credits` tab (per-track **and** the Info tab's "Additional Credits"), relayed back cross-tab | none |
 | **Qobuz** | Composer, Lyricist, Producer, Publisher, performers | **names only** — Qobuz exposes no artist/profile links on credits, so each name is resolved by MB **name search + your review** | direct page fetch (credits are server-rendered into the store page) | none |
 
 Notes & limitations:
 
 - **Artist identity is the dividing line.** Discogs and Tidal carry per-credit artist IDs, so most credits resolve to the exact MB artist automatically. **Qobuz gives names only** — there's no Qobuz artist-page link on a credit — so its credits land in the review table for you to confirm, and ambiguous names need a manual pick. Provider-specific helpers that depend on a source profile (e.g. pulling a real name / disambiguation from a Discogs profile) only apply to that provider.
 - **Coverage varies by release and region.** A provider only appears when the release is linked to it (or Platform Check found it); Tidal/Qobuz catalogues are licensing- and region-dependent.
+- **Tidal release-level credits (Info tab).** Many Tidal releases list their credits once for the whole album (on the Info tab → "Additional Credits") rather than per track — some have *no* per-track credits at all. The harvest reads both, so these albums import too. Release-level recording credits (producer, instruments, vocals, …) are pushed to every track when **Move release credits to tracks** is on; artwork/mastering stay at release level.
 - **Qobuz position anchoring.** Qobuz's page repeats empty credit blocks, so credits are matched to tracks by the page's real track-number markers, not element order — otherwise credits would seed onto the wrong tracks.
 
 ### Role mapping (streaming providers)
@@ -41,10 +42,11 @@ Notes & limitations:
 | Composer, Lyricist, Writer, Orchestrator | **work** rel (works are created on demand, as in the Discogs flow) |
 | Producer, Mixing Engineer (→ *mix*), Recording Engineer (→ *recording*), Sound Engineer (→ *sound*) | **recording** rel |
 | Assistant Mixing / Recording / Sound Engineer | same **recording** rel as above, with the MB **assistant** attribute ticked (MB has no separate "assistant engineer" relationship) |
-| Music Publisher | **work** publisher (`Copyright Control` placeholder is dropped) |
+| Instruments, Vocals, Background Vocals, Conductor (release-level) | **recording** rel (resolved through the shared instrument/role tables, same as Discogs) |
+| Artwork (release-level) | **release** rel (artwork) |
+| Music Publisher | **label → work** *publishing* rel — the publisher is resolved as an MB **label** (by name) and linked to each track's work. `Copyright Control` placeholder is dropped |
 
-Tidal roles that are surfaced in the log but **not** imported (no clean MB target): *Mastering Engineer* (artist→recording mastering is deprecated in MB — mastering belongs at release level), *Sound Editor*, and *Studio Personnel*. They appear in the skipped list so nothing is silently dropped.
-| Main Artist, Featured Artist | skipped — already the release's artist credit |
+Tidal roles surfaced in the log but **not** imported: *Primary/Main/Featured Artist* and *Record Label* / *Current Distributor* (these are the release's own artist credit or label, not a relationship to import); and *Mastering Engineer* (artist→recording mastering is deprecated in MB — mastering belongs at release level), *Sound Editor*, *Studio Personnel* (no clean MB target). All appear in the skipped list so nothing is silently dropped.
 
 ## Features
 

@@ -34,7 +34,7 @@ import {
 }                                        from './mappers.js';
 import {
     resolveAll,
-    ARTIST_KIND,
+    ENTITY_KIND,
     COMPANY_KIND,
 }                                        from './preflight.js';
 import { showReviewTable }               from './review-table.js';
@@ -42,7 +42,7 @@ import { dispatchAllRelationships }      from './dispatch.js';
 import { buildEditNote }                 from './edit-note.js';
 import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
 import { parseSourceEntityUrl, sourceNameForUrl } from './sources/registry.js';
-import { harvestTidalAlbum, tidalToEngine } from './sources/tidal.js';
+import { harvestTidalAlbum, tidalToEngine, tidalReleaseArtists } from './sources/tidal.js';
 import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine } from './sources/qobuz.js';
 
 let _logs;
@@ -1316,11 +1316,22 @@ function runTidalImport(tidalUrl, getOpts) {
             li.querySelector('details').appendChild(pre);
             _logs.appendChild(li);
             const { tracklistRels, tracklist, skipped, multiVolume } = tidalToEngine(harvest.tracks);
-            log.info(`Tidal credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
-            skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
+            // Release-level credits (Info tab): bridge → shared role mapper.
+            // Publishers come back pre-formed (label→work) — they bypass the
+            // artist mapper. Per-track publishers ride along in tracklistRels.
+            const { artists: relArtists, publishers: relPublishers, skipped: relSkipped } = tidalReleaseArtists(harvest.releaseCredits);
+            const artistRoles = [...relPublishers];
+            for (const a of relArtists) {
+                const roles = getArtistRoles(a);
+                if (!roles.length) { relSkipped.push(`release: ${a.tidalRole} — ${a.name}`); continue; }
+                if (a.assistant) roles.forEach(r => { r.attributes = (r.attributes || []).concat('assistant'); });
+                artistRoles.push(...roles);
+            }
+            log.info(`Tidal credits: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s) across ${tracklist.length} track(s)`);
+            skipped.concat(relSkipped).forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             if (multiVolume) log.warn(`Multi-volume Tidal album — track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
-            if (!tracklistRels.length) { log.warn('No importable credits found on the Tidal credits page.'); return; }
-            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
+            if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable credits found on the Tidal credits page.'); return; }
+            return runSourcePipeline({ companies: [], artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
         })
         .catch(err => { log.error(err.message || String(err)); });
 }
@@ -1449,7 +1460,7 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     const artistResults  = await resolveAll(uniqueArtists, {
                         progressLi:    artistProgressLi,
                         progressLabel: 'Checking artists against MusicBrainz',
-                        kindOf:        ARTIST_KIND,
+                        kindOf:        ENTITY_KIND,
                         bypassIdb,
                     });
                     const companyResults = await resolveAll(uniqueCompanies, {

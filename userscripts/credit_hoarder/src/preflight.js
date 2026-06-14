@@ -444,5 +444,10 @@ export async function resolveAll(entities, opts) {
 /** `kindOf` helper for artists — always `'artist'`. */
 export const ARTIST_KIND = () => 'artist';
 
+/** `kindOf` for the mixed artist/label stream: honour an explicit
+ *  `entity.entityType` (a music-publisher entity carries `'label'` so it
+ *  resolves against MB labels), defaulting to `'artist'`. */
+export const ENTITY_KIND = e => e?.entityType || 'artist';
+
 /** `kindOf` helper for Discogs companies — maps via ENTITY_TYPE_MAP. */
 export const COMPANY_KIND = c => ENTITY_TYPE_MAP[c.entity_type_name]?.entityType ?? null;

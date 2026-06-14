@@ -16,5 +16,8 @@ export const WORK_ONLY_ARTIST_RELS = [
     'premiered by',
     'was commissioned by',
     'publisher',
+    // MB's actual link-type name for the music-publisher rel (label→work).
+    // Tidal/Qobuz "Music Publisher" credits resolve to a label and attach here.
+    'publishing',
     'inspired the name of',
 ];

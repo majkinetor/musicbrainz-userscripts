@@ -738,11 +738,14 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                     continue;
                 }
                 const credit = role.artist.anv?.trim() || role.artist.name;
+                // Most work-only rels are artist→work; a music publisher is a
+                // label→work "publishing" rel (role carries entityType:'label').
+                const srcType = role.entityType || 'artist';
                 if (workEntity.gid) {
-                    await processOne(workEntity, 'artist', 'work', role.linkType, mbUrl, role.attributes || [], credit, trackPos || (entries[0]?.role?.track?.position));
+                    await processOne(workEntity, srcType, 'work', role.linkType, mbUrl, role.attributes || [], credit, trackPos || (entries[0]?.role?.track?.position));
                 } else {
                     // New work (no MBID yet) — dispatch directly with the provisional entity
-                    const linkTypeID = resolveLinkTypeId(role.linkType, 'artist', 'work');
+                    const linkTypeID = resolveLinkTypeId(role.linkType, srcType, 'work');
                     if (linkTypeID) {
                         const mbid = mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
                         try {

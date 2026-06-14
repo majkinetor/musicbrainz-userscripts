@@ -1,4 +1,7 @@
-// Tidal source — pure helpers (no GM, no engine imports).
+// Tidal source — pure helpers (no GM, no engine imports). Release-level
+// credits are bridged to Discogs role strings here; the caller runs them
+// through `getArtistRoles` so they share the full ENTITY_TYPE_MAP / INSTRUMENTS
+// resolution (kept at the call site to keep this module node-importable).
 //
 // Tidal renders full per-track credits for *logged-out* visitors at
 // `https://tidal.com/album/<id>/credits`. The page is a SPA: the raw HTML is
@@ -32,6 +35,7 @@ export const TIDAL_ROLE_MAP = {
     'Writer':            { target: 'work',      rel: 'writer' },
     'Orchestrator':      { target: 'work',      rel: 'orchestrator' },
     'Music Publisher':   { target: 'work',      rel: 'publisher' },
+    'Publisher':         { target: 'work',      rel: 'publisher' },
     // Not mapped (reported, not imported): Mastering Engineer (artist→recording mastering
     // is deprecated in MB — it's release-level), Sound Editor, the Assistant * Engineer
     // variants (need an MB "assistant" attribute), and Studio Personnel (too generic).
@@ -39,6 +43,45 @@ export const TIDAL_ROLE_MAP = {
 
 /** Tidal artist id of the "Copyright Control" placeholder publisher. */
 export const TIDAL_COPYRIGHT_CONTROL_ID = '15780';
+
+/** True for the "Copyright Control" placeholder publisher (Tidal artist 15780,
+ *  or that literal name) — meaning "no publisher registered". Never imported. */
+const isCopyrightControl = n =>
+    n?.tidalId === TIDAL_COPYRIGHT_CONTROL_ID || /^copyright control$/i.test(n?.name || '');
+
+// ── Release-level credits (Info tab → "Additional Credits") ─────────────────
+// These are album-wide, not per-track. Tidal labels them with its own role
+// names; bridge the ones that differ to the Discogs role strings the shared
+// mapper understands. Anything not listed is passed through verbatim —
+// instruments like "Guitar"/"Drums"/"Piano" already match the INSTRUMENTS
+// table, and plain roles like "Producer"/"Conductor"/"Artwork" already match
+// ENTITY_TYPE_MAP. Roles that still resolve to nothing are reported, not
+// dropped silently. `[Assistant]` is appended so getArtistRoles attaches the
+// MB assistant attribute (see TIDAL_ROLE_MAP for the per-track equivalent).
+export const TIDAL_RELEASE_ROLE_MAP = {
+    'Mixing':              'Mixed By',
+    'Mixing Engineer':     'Mixed By',
+    'Recording':           'Recorded By',
+    'Recording Engineer':  'Recorded By',
+    'Sound Engineer':      'sound engineer',
+    'Mastering':           'Mastered By',
+    'Mastering Engineer':  'Mastered By',
+    'Vocals (Background)': 'Backing Vocals',
+    'Background Vocals':   'Backing Vocals',
+    'Composer':            'Composed By',
+    'Lyricist':            'Lyrics By',
+    'Writer':              'Written-By',
+    'Orchestrator':        'Orchestrated By',
+};
+
+// Release roles that are NOT artist relationships — the album/track main
+// artist, or label/company-entity credits we can't resolve as artists.
+// Dropped explicitly (and reported) so they never mis-map.
+export const TIDAL_RELEASE_ROLE_SKIP = new Set([
+    'Primary Artist', 'Featured Artist', 'Main Artist', 'Artist',
+    'Record Label', 'Current Distributor', 'Distributor', 'Manufacturer',
+    'Copyright', 'Phonographic Copyright',
+]);
 
 // MB's `/ws/js/release` rel hrefs are PROTOCOL-RELATIVE (`//tidal.com/…`) —
 // both regexes accept that form alongside https://.
@@ -90,6 +133,40 @@ export function extractTidalCreditsDom(doc) {
 }
 
 /**
+ * Extract the Info tab's "Additional Credits" — release-level credits that
+ * aren't tied to any track. Same `_creditsCell` markup as the per-track cells,
+ * just outside any `album-info-item`. Returns `[{ role, names:[{name,tidalId}] }]`.
+ * Linked names carry a Tidal artist id (exact MB resolution); unlinked ones
+ * (e.g. artwork, assistant engineers) are name-only → name search + review.
+ */
+export function extractTidalReleaseCreditsDom(doc) {
+    const out = [];
+    for (const cell of doc.querySelectorAll('[class*="_creditsCell"]')) {
+        if (cell.closest('[data-test="album-info-item"]')) continue; // per-track — handled elsewhere
+        const role = cell.querySelector('[data-uppercase]')?.textContent?.trim();
+        if (!role) continue;
+        const names = [];
+        const seen  = new Set();
+        // Linked + plain-text names both sit in the value span; anchors carry
+        // the artist id, plain `[title]` nodes carry the name only.
+        const textBox = cell.querySelector('[class*="_creditsCellText"]') || cell;
+        for (const el of textBox.querySelectorAll('a, [title]')) {
+            const name = (el.getAttribute('title') || el.textContent || '').trim();
+            if (!name || seen.has(name)) continue;
+            seen.add(name);
+            names.push({ name, tidalId: (el.getAttribute('href') || '').match(/\/artist\/(\d+)/)?.[1] || null });
+        }
+        if (!names.length) {
+            // No marked-up name nodes — split the raw text on commas.
+            (textBox.textContent || '').split(/\s*,\s*/).map(s => s.trim()).filter(Boolean)
+                .forEach(name => { if (!seen.has(name)) { seen.add(name); names.push({ name, tidalId: null }); } });
+        }
+        if (names.length) out.push({ role, names });
+    }
+    return out;
+}
+
+/**
  * Strip an "Assistant …" prefix off a Tidal role. MB has no distinct
  * "assistant mixing engineer" relationship — it's the base relationship
  * (mix / recording / sound …) with the `assistant` attribute ticked — so we
@@ -116,8 +193,7 @@ export function filterTidalCredits(tracks) {
             .map(c => ({
                 ...c,
                 names: c.names.filter(n =>
-                    !(c.role === 'Music Publisher' &&
-                      (n.tidalId === TIDAL_COPYRIGHT_CONTROL_ID || /^copyright control$/i.test(n.name)))),
+                    !(/^(?:Music )?Publisher$/.test(c.role) && isCopyrightControl(n))),
             }))
             .filter(c => c.names.length),
     }));
@@ -144,19 +220,30 @@ export function parseTidalArtistUrl(url) {
  * rel), or `''` when it doesn't (→ name search + review, like a Discogs
  * credit with no resource_url).
  *
- * v1 imports Producer / Composer / Lyricist. `Music Publisher` is reported
- * in `skipped` (work-publisher seeding is label-entity work, deferred), as
- * is anything Copyright-Control. Returns:
+ * `Music Publisher` is resolved as a LABEL and attached to each track's work
+ * (label→work "publishing"); `Copyright Control` is filtered out. Returns:
  *   { tracklistRels, tracklist, skipped, multiVolume }
  * `tracklist` mirrors the Discogs tracklist shape dispatch needs for its
  * position bookkeeping. `multiVolume` is true when track numbers repeat —
  * Tidal numbers per volume while MB multi-medium positions are "m-p", so
  * the caller should warn that positions may not all match.
  */
+/** A music-publisher credit → label→work "publishing" rel. The publisher is a
+ *  LABEL entity (entityType:'label'), resolved by name against MB labels —
+ *  Tidal exposes no usable label URL, so resource_url is always empty. Pass a
+ *  `track` for a per-track work; omit it for a release-level (all works) rel. */
+function tidalPublisherRole(name, track) {
+    const role = {
+        linkType:   'publishing',
+        entityType: 'label',
+        attributes: [],
+        artist:     { name, anv: '', entityType: 'label', resource_url: '' },
+    };
+    if (track) role.track = track;
+    return role;
+}
+
 export function tidalToEngine(tracks) {
-    // Subset of TIDAL_ROLE_MAP actually dispatched as track/recording/work rels.
-    // 'Music Publisher' is intentionally excluded — work-publisher is label-entity
-    // work, deferred (handled via `skipped` below).
     const IMPORT_ROLES = {
         'Producer':           'producer',
         'Mixing Engineer':    'mix',
@@ -181,6 +268,14 @@ export function tidalToEngine(tracks) {
         for (const c of t.credits) {
             const base      = tidalRoleBase(c.role);
             const assistant = base !== c.role;
+            // Music publisher → label→work "publishing" (label-entity resolution).
+            if (base === 'Music Publisher' || base === 'Publisher') {
+                for (const n of c.names) {
+                    if (isCopyrightControl(n)) continue;
+                    tracklistRels.push(tidalPublisherRole(n.name, track));
+                }
+                continue;
+            }
             const linkType  = IMPORT_ROLES[base];
             for (const n of c.names) {
                 if (!linkType) {
@@ -203,6 +298,54 @@ export function tidalToEngine(tracks) {
         }
     }
     return { tracklistRels, tracklist, skipped, multiVolume };
+}
+
+/**
+ * Bridge the Info-tab release-level credits into Discogs-artist shapes
+ * (`{ name, anv, role, id, resource_url }`) that the caller feeds to
+ * `getArtistRoles` — the same release-level path Discogs uses, so the full
+ * ENTITY_TYPE_MAP / INSTRUMENTS resolution applies. Non-artist roles (album
+ * artist, label/company credits) are dropped and reported. Music-publisher
+ * credits are returned separately as pre-formed label→work `publishers` roles
+ * (they bypass getArtistRoles — they're label entities, not artists). Returns
+ * `{ artists, publishers, skipped }`.
+ */
+export function tidalReleaseArtists(releaseCredits) {
+    const artists = [];
+    const publishers = [];
+    const skipped = [];
+    for (const c of (releaseCredits || [])) {
+        const baseRole = tidalRoleBase(c.role);
+        if (baseRole === 'Music Publisher' || baseRole === 'Publisher') {
+            for (const n of (c.names || [])) {
+                if (isCopyrightControl(n)) continue;
+                publishers.push(tidalPublisherRole(n.name));   // no track → all works
+            }
+            continue;
+        }
+        if (TIDAL_RELEASE_ROLE_SKIP.has(c.role)) {
+            (c.names || []).forEach(n => skipped.push(`release: ${c.role} — ${n.name}`));
+            continue;
+        }
+        // "Assistant X" → base role + assistant attribute (appended by the
+        // caller after mapping), mirroring the per-track handling. Avoids the
+        // bogus task attribute getArtistRoles would add for "Engineer [Assistant]".
+        const base       = tidalRoleBase(c.role);
+        const assistant  = base !== c.role;
+        const discogsRole = TIDAL_RELEASE_ROLE_MAP[base] || base;
+        for (const n of (c.names || [])) {
+            artists.push({
+                id:           n.tidalId ? `tidal-${n.tidalId}` : undefined,
+                name:         n.name,
+                anv:          '',
+                role:         discogsRole,
+                assistant,
+                tidalRole:    c.role,   // for "not imported" reporting at the call site
+                resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : '',
+            });
+        }
+    }
+    return { artists, publishers, skipped };
 }
 
 // ── Cross-tab harvest (GM storage handshake) ────────────────────────────────
@@ -233,8 +376,8 @@ export function runTidalHarvestPage() {
             if (items.length !== lastCount) { lastCount = items.length; stableSince = Date.now(); }
             else if (Date.now() - stableSince > 1200) {
                 clearInterval(timer);
-                post({ ok: true, tracks: extractTidalCreditsDom(document) });
-                setTimeout(() => window.close(), 250);
+                const tracks = extractTidalCreditsDom(document);
+                harvestReleaseThenPost(tracks, post);
                 return;
             }
         }
@@ -244,6 +387,30 @@ export function runTidalHarvestPage() {
             setTimeout(() => window.close(), 250);
         }
     }, 300);
+}
+
+/** Switch to the Info tab, wait for its "Additional Credits" to paint, harvest
+ *  the release-level credits, then post both per-track + release credits. The
+ *  tab marker `data-test="album-info-tab-info"` is not localised. Best-effort:
+ *  if the tab is absent or never paints, posts with empty release credits. */
+function harvestReleaseThenPost(tracks, post) {
+    const finish = releaseCredits => { post({ ok: true, tracks, releaseCredits }); setTimeout(() => window.close(), 250); };
+    const infoTab = document.querySelector('[data-test="album-info-tab-info"]');
+    if (!infoTab) { finish([]); return; }
+    try { infoTab.click(); } catch (e) { finish([]); return; }
+    const start = Date.now();
+    const t = setInterval(() => {
+        const cells = [...document.querySelectorAll('[class*="_creditsCell"]')]
+            .filter(c => !c.closest('[data-test="album-info-item"]'));
+        if (cells.length > 0) {
+            clearInterval(t);
+            // small settle so all blocks are present before extraction
+            setTimeout(() => finish(extractTidalReleaseCreditsDom(document)), 600);
+        } else if (Date.now() - start > 6000) {
+            clearInterval(t);
+            finish([]);
+        }
+    }, 250);
 }
 
 /** MB side. Opens the credits tab and resolves with the harvested

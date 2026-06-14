@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.14.120255
+// @version      2026.6.14.134129
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.svg
@@ -1952,12 +1952,41 @@
     "Lyricist": { target: "work", rel: "lyricist" },
     "Writer": { target: "work", rel: "writer" },
     "Orchestrator": { target: "work", rel: "orchestrator" },
-    "Music Publisher": { target: "work", rel: "publisher" }
+    "Music Publisher": { target: "work", rel: "publisher" },
+    "Publisher": { target: "work", rel: "publisher" }
     // Not mapped (reported, not imported): Mastering Engineer (artist→recording mastering
     // is deprecated in MB — it's release-level), Sound Editor, the Assistant * Engineer
     // variants (need an MB "assistant" attribute), and Studio Personnel (too generic).
   };
   var TIDAL_COPYRIGHT_CONTROL_ID = "15780";
+  var isCopyrightControl = (n) => n?.tidalId === TIDAL_COPYRIGHT_CONTROL_ID || /^copyright control$/i.test(n?.name || "");
+  var TIDAL_RELEASE_ROLE_MAP = {
+    "Mixing": "Mixed By",
+    "Mixing Engineer": "Mixed By",
+    "Recording": "Recorded By",
+    "Recording Engineer": "Recorded By",
+    "Sound Engineer": "sound engineer",
+    "Mastering": "Mastered By",
+    "Mastering Engineer": "Mastered By",
+    "Vocals (Background)": "Backing Vocals",
+    "Background Vocals": "Backing Vocals",
+    "Composer": "Composed By",
+    "Lyricist": "Lyrics By",
+    "Writer": "Written-By",
+    "Orchestrator": "Orchestrated By"
+  };
+  var TIDAL_RELEASE_ROLE_SKIP = /* @__PURE__ */ new Set([
+    "Primary Artist",
+    "Featured Artist",
+    "Main Artist",
+    "Artist",
+    "Record Label",
+    "Current Distributor",
+    "Distributor",
+    "Manufacturer",
+    "Copyright",
+    "Phonographic Copyright"
+  ]);
   var TIDAL_ALBUM_RE = /^(?:https?:)?\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i;
   function parseTidalAlbumUrl(url) {
     const m = TIDAL_ALBUM_RE.exec(url || "");
@@ -1988,6 +2017,33 @@
     }
     return out;
   }
+  function extractTidalReleaseCreditsDom(doc) {
+    const out = [];
+    for (const cell of doc.querySelectorAll('[class*="_creditsCell"]')) {
+      if (cell.closest('[data-test="album-info-item"]')) continue;
+      const role = cell.querySelector("[data-uppercase]")?.textContent?.trim();
+      if (!role) continue;
+      const names = [];
+      const seen = /* @__PURE__ */ new Set();
+      const textBox = cell.querySelector('[class*="_creditsCellText"]') || cell;
+      for (const el of textBox.querySelectorAll("a, [title]")) {
+        const name = (el.getAttribute("title") || el.textContent || "").trim();
+        if (!name || seen.has(name)) continue;
+        seen.add(name);
+        names.push({ name, tidalId: (el.getAttribute("href") || "").match(/\/artist\/(\d+)/)?.[1] || null });
+      }
+      if (!names.length) {
+        (textBox.textContent || "").split(/\s*,\s*/).map((s) => s.trim()).filter(Boolean).forEach((name) => {
+          if (!seen.has(name)) {
+            seen.add(name);
+            names.push({ name, tidalId: null });
+          }
+        });
+      }
+      if (names.length) out.push({ role, names });
+    }
+    return out;
+  }
   var ASSISTANT_RE = /^Assistant\s+(.+)$/i;
   function tidalRoleBase(role) {
     const m = ASSISTANT_RE.exec(role || "");
@@ -1998,7 +2054,7 @@
       ...t,
       credits: t.credits.filter((c) => TIDAL_ROLE_MAP[tidalRoleBase(c.role)]).map((c) => ({
         ...c,
-        names: c.names.filter((n) => !(c.role === "Music Publisher" && (n.tidalId === TIDAL_COPYRIGHT_CONTROL_ID || /^copyright control$/i.test(n.name))))
+        names: c.names.filter((n) => !(/^(?:Music )?Publisher$/.test(c.role) && isCopyrightControl(n)))
       })).filter((c) => c.names.length)
     }));
   }
@@ -2007,6 +2063,16 @@
     const m = TIDAL_ARTIST_RE.exec(url || "");
     if (!m) return null;
     return { id: m[1], key: `tidal-artist/${m[1]}`, cleanUrl: `https://tidal.com/artist/${m[1]}` };
+  }
+  function tidalPublisherRole(name, track) {
+    const role = {
+      linkType: "publishing",
+      entityType: "label",
+      attributes: [],
+      artist: { name, anv: "", entityType: "label", resource_url: "" }
+    };
+    if (track) role.track = track;
+    return role;
   }
   function tidalToEngine(tracks) {
     const IMPORT_ROLES = {
@@ -2033,6 +2099,13 @@
       for (const c of t.credits) {
         const base = tidalRoleBase(c.role);
         const assistant = base !== c.role;
+        if (base === "Music Publisher" || base === "Publisher") {
+          for (const n of c.names) {
+            if (isCopyrightControl(n)) continue;
+            tracklistRels.push(tidalPublisherRole(n.name, track));
+          }
+          continue;
+        }
         const linkType = IMPORT_ROLES[base];
         for (const n of c.names) {
           if (!linkType) {
@@ -2055,6 +2128,41 @@
       }
     }
     return { tracklistRels, tracklist, skipped, multiVolume };
+  }
+  function tidalReleaseArtists(releaseCredits) {
+    const artists = [];
+    const publishers = [];
+    const skipped = [];
+    for (const c of releaseCredits || []) {
+      const baseRole = tidalRoleBase(c.role);
+      if (baseRole === "Music Publisher" || baseRole === "Publisher") {
+        for (const n of c.names || []) {
+          if (isCopyrightControl(n)) continue;
+          publishers.push(tidalPublisherRole(n.name));
+        }
+        continue;
+      }
+      if (TIDAL_RELEASE_ROLE_SKIP.has(c.role)) {
+        (c.names || []).forEach((n) => skipped.push(`release: ${c.role} \u2014 ${n.name}`));
+        continue;
+      }
+      const base = tidalRoleBase(c.role);
+      const assistant = base !== c.role;
+      const discogsRole = TIDAL_RELEASE_ROLE_MAP[base] || base;
+      for (const n of c.names || []) {
+        artists.push({
+          id: n.tidalId ? `tidal-${n.tidalId}` : void 0,
+          name: n.name,
+          anv: "",
+          role: discogsRole,
+          assistant,
+          tidalRole: c.role,
+          // for "not imported" reporting at the call site
+          resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : ""
+        });
+      }
+    }
+    return { artists, publishers, skipped };
   }
   var HARVEST_KEY = (reqId) => `ch-tidal-result:${reqId}`;
   var HARVEST_TIMEOUT_MS = 45e3;
@@ -2079,8 +2187,8 @@
           stableSince = Date.now();
         } else if (Date.now() - stableSince > 1200) {
           clearInterval(timer);
-          post({ ok: true, tracks: extractTidalCreditsDom(document) });
-          setTimeout(() => window.close(), 250);
+          const tracks = extractTidalCreditsDom(document);
+          harvestReleaseThenPost(tracks, post);
           return;
         }
       }
@@ -2090,6 +2198,34 @@
         setTimeout(() => window.close(), 250);
       }
     }, 300);
+  }
+  function harvestReleaseThenPost(tracks, post) {
+    const finish = (releaseCredits) => {
+      post({ ok: true, tracks, releaseCredits });
+      setTimeout(() => window.close(), 250);
+    };
+    const infoTab = document.querySelector('[data-test="album-info-tab-info"]');
+    if (!infoTab) {
+      finish([]);
+      return;
+    }
+    try {
+      infoTab.click();
+    } catch (e) {
+      finish([]);
+      return;
+    }
+    const start = Date.now();
+    const t = setInterval(() => {
+      const cells = [...document.querySelectorAll('[class*="_creditsCell"]')].filter((c) => !c.closest('[data-test="album-info-item"]'));
+      if (cells.length > 0) {
+        clearInterval(t);
+        setTimeout(() => finish(extractTidalReleaseCreditsDom(document)), 600);
+      } else if (Date.now() - start > 6e3) {
+        clearInterval(t);
+        finish([]);
+      }
+    }, 250);
   }
   function harvestTidalAlbum(albumUrl) {
     const parsed = parseTidalAlbumUrl(albumUrl);
@@ -2442,7 +2578,7 @@
     logDebug(`resolveAll: done`);
     return { allResults: results.filter(Boolean) };
   }
-  var ARTIST_KIND = () => "artist";
+  var ENTITY_KIND = (e) => e?.entityType || "artist";
   var COMPANY_KIND = (c) => ENTITY_TYPE_MAP[c.entity_type_name]?.entityType ?? null;
 
   // src/review-table.js
@@ -3743,6 +3879,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     "premiered by",
     "was commissioned by",
     "publisher",
+    // MB's actual link-type name for the music-publisher rel (label→work).
+    // Tidal/Qobuz "Music Publisher" credits resolve to a label and attach here.
+    "publishing",
     "inspired the name of"
   ];
 
@@ -4265,10 +4404,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             continue;
           }
           const credit = role.artist.anv?.trim() || role.artist.name;
+          const srcType = role.entityType || "artist";
           if (workEntity.gid) {
-            await processOne(workEntity, "artist", "work", role.linkType, mbUrl, role.attributes || [], credit, trackPos || entries[0]?.role?.track?.position);
+            await processOne(workEntity, srcType, "work", role.linkType, mbUrl, role.attributes || [], credit, trackPos || entries[0]?.role?.track?.position);
           } else {
-            const linkTypeID = resolveLinkTypeId(role.linkType, "artist", "work");
+            const linkTypeID = resolveLinkTypeId(role.linkType, srcType, "work");
             if (linkTypeID) {
               const mbid = mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
               try {
@@ -5511,14 +5651,27 @@ ${lines}
       li.querySelector("details").appendChild(pre);
       _logs2.appendChild(li);
       const { tracklistRels, tracklist, skipped, multiVolume } = tidalToEngine(harvest.tracks);
-      log.info(`Tidal credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
-      skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
+      const { artists: relArtists, publishers: relPublishers, skipped: relSkipped } = tidalReleaseArtists(harvest.releaseCredits);
+      const artistRoles = [...relPublishers];
+      for (const a of relArtists) {
+        const roles = getArtistRoles(a);
+        if (!roles.length) {
+          relSkipped.push(`release: ${a.tidalRole} \u2014 ${a.name}`);
+          continue;
+        }
+        if (a.assistant) roles.forEach((r) => {
+          r.attributes = (r.attributes || []).concat("assistant");
+        });
+        artistRoles.push(...roles);
+      }
+      log.info(`Tidal credits: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s) across ${tracklist.length} track(s)`);
+      skipped.concat(relSkipped).forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
       if (multiVolume) log.warn(`Multi-volume Tidal album \u2014 track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
-      if (!tracklistRels.length) {
+      if (!tracklistRels.length && !artistRoles.length) {
         log.warn("No importable credits found on the Tidal credits page.");
         return;
       }
-      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
+      return runSourcePipeline({ companies: [], artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
     }).catch((err) => {
       log.error(err.message || String(err));
     });
@@ -5611,7 +5764,7 @@ ${lines}
         const artistResults = await resolveAll(uniqueArtists, {
           progressLi: artistProgressLi,
           progressLabel: "Checking artists against MusicBrainz",
-          kindOf: ARTIST_KIND,
+          kindOf: ENTITY_KIND,
           bypassIdb
         });
         const companyResults = await resolveAll(uniqueCompanies, {

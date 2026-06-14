@@ -2,7 +2,7 @@
 // Run: node test/sources-parse.mjs
 import assert from 'node:assert/strict';
 import { parseQobuzCreditLine, extractQobuzCredits, parseQobuzAlbumUrl, decodeEntities, qobuzToEngine, extractQobuzAlbumInfo } from '../src/sources/qobuz.js';
-import { parseTidalAlbumUrl, parseTidalArtistUrl, tidalToEngine, TIDAL_ROLE_MAP } from '../src/sources/tidal.js';
+import { parseTidalAlbumUrl, parseTidalArtistUrl, tidalToEngine, tidalReleaseArtists, TIDAL_ROLE_MAP } from '../src/sources/tidal.js';
 import { parseSourceEntityUrl } from '../src/sources/registry.js';
 
 // ── Qobuz credit line (verbatim from album vft3hpnx5c3lc, track 1) ──────────
@@ -97,25 +97,57 @@ assert.deepEqual(eng.tracklist, [
     { position: '1', title: 'Takoradi', type_: 'track' },
     { position: '2', title: 'Puxa Odette', type_: 'track' },
 ]);
-// Copyright Control publisher dropped entirely; real publisher → skipped list
-assert.equal(eng.skipped.length, 1);
-assert.match(eng.skipped[0], /Mavuthela/);
-assert.equal(eng.tracklistRels.length, 4); // producer+composer+lyricist (t1) + producer (t2)
+// Copyright Control publisher dropped entirely; real publisher → label→work
+// "publishing" rel (label-entity resolution), nothing skipped.
+assert.equal(eng.skipped.length, 0);
+assert.equal(eng.tracklistRels.length, 5); // producer+composer+lyricist (t1) + publishing+producer (t2)
 const prod = eng.tracklistRels[0];
 assert.equal(prod.linkType, 'producer');
 assert.equal(prod.entityType, 'artist');
 assert.deepEqual(prod.attributes, []);
 assert.equal(prod.artist.resource_url, 'https://tidal.com/artist/6220117');
 assert.equal(prod.track.position, '1');
+// Music publisher → label→work "publishing", resolved by name (no URL)
+const pub = eng.tracklistRels.find(r => r.linkType === 'publishing');
+assert.equal(pub.entityType, 'label');
+assert.equal(pub.artist.entityType, 'label');
+assert.equal(pub.artist.name, 'Mavuthela Music Co.');
+assert.equal(pub.artist.resource_url, '');
+assert.equal(pub.track.position, '2');
 // unlinked credit → empty resource_url (name-search path), never undefined
-const unlinked = eng.tracklistRels[3];
-assert.equal(unlinked.artist.name, 'No Tidal Page');
+const unlinked = eng.tracklistRels.find(r => r.artist.name === 'No Tidal Page');
+assert.equal(unlinked.linkType, 'producer');
 assert.equal(unlinked.artist.resource_url, '');
 // multi-volume detection: repeated track numbers
 assert.equal(tidalToEngine([
     { num: '1', title: 'a', credits: [] },
     { num: '1', title: 'b', credits: [] },
 ]).multiVolume, true);
+
+// ── tidalReleaseArtists: Info-tab release-level credits → engine shapes ──────
+const relRes = tidalReleaseArtists([
+    { role: 'Producer',          names: [{ name: 'Ron Saint Germain', tidalId: '14254072' }] },
+    { role: 'Assistant Engineer',names: [{ name: 'Jen Monnar', tidalId: null }] },
+    { role: 'Vocals (Background)', names: [{ name: 'Keziah Jones', tidalId: '22' }] },
+    { role: 'Music Publisher',   names: [{ name: 'Big Publishing House', tidalId: null }, { name: 'Copyright Control', tidalId: '15780' }] },
+    { role: 'Primary Artist',    names: [{ name: 'Keziah Jones', tidalId: '22' }] },
+    { role: 'Record Label',      names: [{ name: 'Because Music' }] },
+]);
+// Publisher → pre-formed label→work rel (Copyright Control filtered out)
+assert.equal(relRes.publishers.length, 1);
+assert.equal(relRes.publishers[0].linkType, 'publishing');
+assert.equal(relRes.publishers[0].entityType, 'label');
+assert.equal(relRes.publishers[0].artist.name, 'Big Publishing House');
+assert.equal(relRes.publishers[0].track, undefined); // release-level → all works
+// Artist credits bridged to Discogs role strings (mapped by the caller)
+const byRole = Object.fromEntries(relRes.artists.map(a => [a.tidalRole, a]));
+assert.equal(byRole['Producer'].role, 'Producer');
+assert.equal(byRole['Assistant Engineer'].role, 'Engineer');
+assert.equal(byRole['Assistant Engineer'].assistant, true);
+assert.equal(byRole['Vocals (Background)'].role, 'Backing Vocals');
+// Non-artist roles dropped + reported
+assert.ok(relRes.skipped.some(s => /Primary Artist/.test(s)));
+assert.ok(relRes.skipped.some(s => /Record Label/.test(s)));
 
 // ── qobuzToEngine: parsed page credits → engine tracklist-rel shape ─────────
 const qEng = qobuzToEngine([
