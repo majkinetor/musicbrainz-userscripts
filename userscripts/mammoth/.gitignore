@@ -1,0 +1,6 @@
+node_modules/
+test/logs/
+# local-only test seeds extracted from captured pages — never commit
+*.local.json
+*.htm
+*.html

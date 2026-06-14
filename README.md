@@ -13,6 +13,9 @@ Import per-track release credits from several providers (Discogs, Tidal, Qobuz) 
 [ISRC Scout](./userscripts/isrc_scout/README.md)<img src="./userscripts/isrc_scout/icon.svg" align="left" width="32"><br>
 Reads the release's existing ISRCs and fill in the missing ones from several sources
 
+[Mammoth](./userscripts/mammoth/README.md)<img src="./userscripts/mammoth/icon.svg" align="left" width="32"><br>
+Edit-note memory: remembers your recent edit notes and lets you save and recall reusable ones on every edit form
+
 [Platform Check](./userscripts/platform_check/README.md)<img src="./userscripts/platform_check/icon.svg" align="left" width="32"><br>
 Find and verify URLs for a particular MusicBrainz release on online platforms
 
