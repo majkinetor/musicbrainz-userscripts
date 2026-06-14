@@ -59,11 +59,11 @@ await page.waitForTimeout(80);
 log('top row after fav-ing last:', await ev(() => document.querySelector('.mmth-side .mmth-row .mmth-txt')?.textContent), '| gold?', await ev(() => document.querySelector('.mmth-side .mmth-row .mmth-star')?.classList.contains('on')));
 
 await ev(() => { window.GM_setValue('mammoth:settings', JSON.stringify({ historySize: 10, hideHelp: true })); });
-await clickSel('button.mmth-fb-set'); await page.waitForTimeout(80);
-await clickSel('.mmth-setpop .mmth-s-help');  // toggles → set true via UI
+await clickSel('button.mmth-fb[title="Settings"]'); await page.waitForTimeout(120);
+await clickSel('.mmth-pop .mmth-s-help');  // toggles → set true via UI
 await page.waitForTimeout(80);
 log('help hidden?', await ev(() => { const p = document.querySelector('.editnote p'); return p ? getComputedStyle(p).display === 'none' : 'no-help-el'; }));
-await ev(() => document.querySelector('.mmth-setpop') && document.body.click());
+await ev(() => document.querySelector('.mmth-pop') && document.body.click());
 
 await ev(() => { const ta = document.querySelector('textarea.edit-note'); ta.value = 'Imported from Discogs'; ta.closest('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
 await page.waitForTimeout(80);
