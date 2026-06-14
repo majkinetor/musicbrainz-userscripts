@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.13.201411
+// @version      2026.6.14.140000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -663,6 +663,12 @@
     .tc-join{width:auto;text-align:right;border:1px solid transparent;background:transparent;color:#777;font:italic 900 12px Arial;padding:1px 2px;border-radius:3px}
     .tc-join:hover,.tc-join:focus{border-color:#bcdcc6;background:#fff;color:#444}
     .tc-joinarrow{cursor:pointer;border:none;background:none;color:#9a8fc0;font-size:10px;padding:0 1px;line-height:1}.tc-joinarrow:hover{color:#5f3ec0}
+    /* #208 join-phrase spacing flags: ␣ where a space is missing, ␣?␣ when the phrase is missing entirely */
+    .tc-joinwrap.tc-jp-bad .tc-join{border-color:var(--tc-hl,#e53935);background:#fff0f0;color:#b00}
+    .tc-jp-nolead::before,.tc-jp-notrail::after,.tc-jp-nophrase::before{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px;font:700 11px Arial;line-height:1}
+    .tc-jp-nolead::before{content:'␣'}
+    .tc-jp-notrail::after{content:'␣'}
+    .tc-jp-nophrase::before{content:'␣?␣'}
     .tc-joinpop .tc-acrow{justify-content:space-between;gap:14px}.tc-joinpop .cmt{color:#999}
     .tc-acts{flex:none;width:76px;display:flex;align-items:center;justify-content:flex-start;gap:4px;padding-left:4px}
     .tc-enter,.tc-slotx,.tc-splitb,.tc-slotgrab{cursor:pointer;border:none;background:none;padding:0 1px;visibility:hidden;line-height:1}
@@ -1276,7 +1282,21 @@
     const wrap = document.createElement('span'); wrap.className = 'tc-joinwrap';
     const inp = document.createElement('input'); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.title = 'join phrase to the next artist (editable; ▾ for presets)';
     const fit = () => { inp.size = Math.max(2, inp.value.length || 2); }; fit();
-    inp.oninput = fit; inp.onchange = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); if (refreshBadges) refreshBadges(); }; enterBlurs(inp);
+    // #208: flag a join phrase missing a space on either side (␣) or missing
+    // entirely (␣?␣). Every rendered join control sits BETWEEN two artists
+    // (the last slot has none), so an empty value here is a genuine gap.
+    // Same px>0 master switch as the #203 marking.
+    const markJoin = () => {
+      wrap.classList.remove('tc-jp-nolead', 'tc-jp-notrail', 'tc-jp-nophrase', 'tc-jp-bad');
+      if ((SETTINGS.recPunctSize | 0) <= 0) return;
+      const v = inp.value;
+      if (v === '') { wrap.classList.add('tc-jp-nophrase', 'tc-jp-bad'); return; }
+      let bad = false;
+      if (!/^\s/.test(v)) { wrap.classList.add('tc-jp-nolead'); bad = true; }
+      if (!/\s$/.test(v)) { wrap.classList.add('tc-jp-notrail'); bad = true; }
+      if (bad) wrap.classList.add('tc-jp-bad');
+    };
+    inp.oninput = () => { fit(); markJoin(); }; inp.onchange = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); markJoin(); if (refreshBadges) refreshBadges(); }; enterBlurs(inp);
     const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases';
     let pop = null; const close = () => { if (pop) { pop.remove(); pop = null; } };
     arrow.onclick = () => {
@@ -1284,10 +1304,10 @@
       pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
       pop.innerHTML = JOIN_OPTIONS.map(o => `<div class="tc-acrow" data-v="${esc(o.value)}"><span class="nm">${esc(o.label)}</span><span class="cmt">"${esc(o.value)}"</span></div>`).join('');
       document.body.appendChild(pop); const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
-      [...pop.querySelectorAll('[data-v]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); inp.value = row.dataset.v; fit(); editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); if (refreshBadges) refreshBadges(); close(); }; });
+      [...pop.querySelectorAll('[data-v]')].forEach(row => { row.onmousedown = e => { e.preventDefault(); inp.value = row.dataset.v; fit(); markJoin(); editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); if (refreshBadges) refreshBadges(); close(); }; });
       const off = e => { if (pop && !pop.contains(e.target) && e.target !== arrow) { close(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
     };
-    wrap.appendChild(inp); wrap.appendChild(arrow);
+    wrap.appendChild(inp); wrap.appendChild(arrow); markJoin();
     return wrap;
   }
   // attach the type-to-search autocomplete to an existing <input>
@@ -2337,13 +2357,13 @@
   function acLinks(ac, withDisamb) {
     const names = u(ac && ac.names) || [];
     if (!names.length) return '';
-    return names.map(n => {
+    return names.map((n, i) => {
       const art = n.artist ? u(n.artist) : null;
       const nm = u(n.name) || (art && u(art.name)) || '';
       const gid = art && u(art.gid);
       const cmt = (art && u(art.comment)) || getDisamb(gid);   // KO model lacks it for fresh picks → cache fallback #195
       const dis = withDisamb && cmt ? ' <span class="tc-rpk-adis">(' + esc(cmt) + ')</span>' : '';
-      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + dhRun(nm) + '</a>' : dhRun(nm)) + dis + esc(u(n.joinPhrase) || '');
+      return (gid ? '<a href="' + ORIGIN + '/artist/' + esc(gid) + '" target="_blank" rel="noopener">' + dhRun(nm) + '</a>' : dhRun(nm)) + dis + joinMark(u(n.joinPhrase) || '', i === names.length - 1);
     }).join('');
   }
   // flat {name, gid, comment, join} per artist of a credit — lets the table diff
@@ -2364,12 +2384,12 @@
   function acLinksDiff(self, other, withDisamb) {
     const key = a => a.gid || ('name:' + a.name.toLowerCase().trim());
     const otherSet = new Set((other || []).map(key));
-    return (self || []).map(a => {
+    return (self || []).map((a, i) => {
       const nm = dhRun(a.name);
       const inner = a.gid ? '<a href="' + ORIGIN + '/artist/' + esc(a.gid) + '" target="_blank" rel="noopener">' + nm + '</a>' : nm;
       const boxed = otherSet.has(key(a)) ? inner : '<span class="tc-dh">' + inner + '</span>';
       const dis = withDisamb && a.comment ? ' <span class="tc-rec-disamb">(' + esc(a.comment) + ')</span>' : '';
-      return boxed + dis + esc(a.join);
+      return boxed + dis + joinMark(a.join, i === self.length - 1);
     }).join('');
   }
   // #186 detailed highlighting — char-level LCS diff of two short strings.
@@ -2425,6 +2445,21 @@
       out += cf ? '<span class="tc-cf"' + st + ' title="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>' : esc(ch);
     }
     return out;
+  }
+  // #208 join-phrase spacing visibility (Recording view). A join phrase between
+  // two artists should have a space on BOTH sides (" & ", " feat. ", …). Mark
+  // where one is MISSING with a highlighted ␣ — so `Gandhabba &Render` reads as
+  // `Gandhabba &␣Render`. An empty phrase between two artists (no join at all)
+  // becomes `␣?␣`. Uses the same px>0 master switch as the #203 marking. `isLast`
+  // = the final artist of a credit, whose empty join is correct (not flagged).
+  function joinMark(join, isLast) {
+    const j = String(join == null ? '' : join);
+    const px = SETTINGS.recPunctSize | 0;
+    if (px <= 0) return esc(j);
+    if (isLast) return dhRun(j);                 // trailing artist — empty join is fine
+    if (j === '') return '<span class="tc-jp" title="missing join phrase — no separator between these artists">␣?␣</span>';
+    const mk = side => '<span class="tc-jp" title="missing ' + side + ' space around the join phrase">␣</span>';
+    return (/^\s/.test(j) ? '' : mk('leading')) + dhRun(j) + (/\s$/.test(j) ? '' : mk('trailing'));
   }
   function diffSide(segs, want) {
     return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + dhRun(s.s) + '</span>' : '').join('');
@@ -2549,6 +2584,7 @@
       '.tc-rectbl td.tc-diff{background:#ffecec;color:#b00}',
       '.tc-rectbl .tc-dh{background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px}',   // #186 a differing character run — colour configurable (Matching → highlight colour)
       '.tc-cf{display:inline-block;padding:0 .5px}',   // #203 confusable/invisible changed char — enlarged inline (Appearance) + hover tooltip names the codepoint
+      '.tc-jp{display:inline-block;background:var(--tc-hl,#e53935);color:#fff;border-radius:2px;padding:0 1px;font-weight:700}',   // #208 missing space (␣) / missing join phrase (␣?␣) around a join phrase',
       '.tc-rectbl td.tc-dh-len{font-weight:600;border-radius:2px}',   // #186 graded length-gap shade (inline bg)',
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
