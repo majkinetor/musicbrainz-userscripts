@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.14.140000
+// @version      2026.6.14.142500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1292,7 +1292,8 @@
       const v = inp.value;
       if (v === '') { wrap.classList.add('tc-jp-nophrase', 'tc-jp-bad'); return; }
       let bad = false;
-      if (!/^\s/.test(v)) { wrap.classList.add('tc-jp-nolead'); bad = true; }
+      // leading space wanted unless the join is a tight ","/";" separator (#208, chaban)
+      if (!/^\s/.test(v) && !/^\s*[,;]/.test(v)) { wrap.classList.add('tc-jp-nolead'); bad = true; }
       if (!/\s$/.test(v)) { wrap.classList.add('tc-jp-notrail'); bad = true; }
       if (bad) wrap.classList.add('tc-jp-bad');
     };
@@ -2452,6 +2453,13 @@
   // `Gandhabba &␣Render`. An empty phrase between two artists (no join at all)
   // becomes `␣?␣`. Uses the same px>0 master switch as the #203 marking. `isLast`
   // = the final artist of a credit, whose empty join is correct (not flagged).
+  // A join needs a TRAILING space (the next artist mustn't be glued on) and,
+  // for most phrases, a LEADING one too (" & ", " feat. "). The exception:
+  // a comma/semicolon attaches to the PREVIOUS name, so ", " is correct with
+  // no leading space — don't flag it (chaban, #208).
+  function joinNeed(j) {
+    return { lead: !/^\s/.test(j) && !/^\s*[,;]/.test(j), trail: !/\s$/.test(j) };
+  }
   function joinMark(join, isLast) {
     const j = String(join == null ? '' : join);
     const px = SETTINGS.recPunctSize | 0;
@@ -2459,7 +2467,8 @@
     if (isLast) return dhRun(j);                 // trailing artist — empty join is fine
     if (j === '') return '<span class="tc-jp" title="missing join phrase — no separator between these artists">␣?␣</span>';
     const mk = side => '<span class="tc-jp" title="missing ' + side + ' space around the join phrase">␣</span>';
-    return (/^\s/.test(j) ? '' : mk('leading')) + dhRun(j) + (/\s$/.test(j) ? '' : mk('trailing'));
+    const need = joinNeed(j);
+    return (need.lead ? mk('leading') : '') + dhRun(j) + (need.trail ? mk('trailing') : '');
   }
   function diffSide(segs, want) {
     return segs.map(s => s.t === 0 ? esc(s.s) : s.t === want ? '<span class="tc-dh">' + dhRun(s.s) + '</span>' : '').join('');
