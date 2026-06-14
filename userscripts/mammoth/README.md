@@ -31,7 +31,7 @@ Toolbar: **＋** save the current text · **★** Saved notes · **🕘** Recent
 - **Compact, one-line rows** with the full note on hover; choose how many show before scrolling.
 - **Insert without keys.** Click does your default (replace/append); right-click does the other. **Append skips a line already present** in the field, and it never blindly overwrites — so it won't clobber a note another script (Apollo Editor, Credit Hoarder, Platform Check) wrote for its own submission. Ctrl/⌘ + ↑/↓ cycles saved notes; Ctrl/⌘ + B / I add bold / italic markup.
 - **Edit-note syntax help (?).** A quick reference for MusicBrainz's edit-note markup (`''italic''`, `'''bold'''`, `edit #123`, `doc:Page`, auto-linked URLs).
-- **Tidied field.** The native edit-note field is widened and centered, with a separator to the panel, and its redundant "Edit note" label/heading is hidden.
+- **Resizable + tidied field.** The native edit-note field is widened and centered; **drag the separator** to resize the field vs. the panel (remembered). The redundant "Edit note" label/heading is hidden.
 
 ## Settings (⚙)
 

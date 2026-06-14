@@ -66,6 +66,17 @@ log('Ctrl+Down (cycle):', JSON.stringify(await taVal()), '| focused?', await ev(
 log('in-list star removed?', await ev(()=>document.querySelectorAll('.mmth-side .mmth-row .mmth-star').length===0));
 log('grab handles:', await ev(()=>document.querySelectorAll('.mmth-side .mmth-row .mmth-grab').length), '| vsep?', await ev(()=>!!document.querySelector('.mmth-vsep')), '| clear btn?', await ev(()=>!!document.querySelector('button.mmth-fb[title="Clear the edit note"]')));
 
+// resizable separator: drag left 80px → panel widens, width persists
+const resize = await ev(()=>{
+  const side=document.querySelector('.mmth-side'), v=document.querySelector('.mmth-vsep');
+  const before=Math.round(side.getBoundingClientRect().width); const r=v.getBoundingClientRect(); const x=r.left+4;
+  v.dispatchEvent(new PointerEvent('pointerdown',{clientX:x,bubbles:true,cancelable:true,pointerId:1}));
+  v.dispatchEvent(new PointerEvent('pointermove',{clientX:x-80,bubbles:true,pointerId:1}));
+  v.dispatchEvent(new PointerEvent('pointerup',{clientX:x-80,bubbles:true,pointerId:1}));
+  return {before, after:Math.round(side.getBoundingClientRect().width), saved:(JSON.parse(window.__gm['mammoth:settings']||'{}').sideWidth)};
+});
+log('resize: before='+resize.before+' after='+resize.after+' saved='+resize.saved);
+
 await ev(() => { window.GM_setValue('mammoth:settings', JSON.stringify({ historySize: 10, hideHelp: true })); });
 await clickSel('button.mmth-fb[title="Settings"]'); await page.waitForTimeout(120);
 await clickSel('.mmth-pop .mmth-s-help');  // toggles → set true via UI

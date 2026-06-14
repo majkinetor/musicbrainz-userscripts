@@ -29,7 +29,7 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6 };   // defaultInsert: 'replace' | 'append'
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300 };   // defaultInsert: 'replace' | 'append'
   const VERSION = '2026.6.14.190000';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -108,7 +108,9 @@
   .editnote.mmth-on > legend, .editnote.mmth-on > .row > label[for] { display:none !important; }
   .mmth-wrap { display:flex; gap:0; align-items:stretch; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; }
   .mmth-wrap > textarea.edit-note { flex:1 1 auto; width:auto !important; min-width:0; }
-  .mmth-vsep { flex:none; width:0; align-self:stretch; border-left:1px solid #d7e0db; margin:0 10px; }
+  .mmth-vsep { flex:none; width:9px; align-self:stretch; cursor:col-resize; position:relative; }
+  .mmth-vsep::before { content:''; position:absolute; left:4px; top:0; bottom:0; width:1px; background:#d7e0db; }
+  .mmth-vsep:hover::before, .mmth-vsep.mmth-dragv::before { background:#5aa67e; width:3px; left:3px; }
   .mmth-hidehelp > p { display:none !important; }
   .mmth-side { flex:0 0 300px; max-width:300px; display:flex; flex-direction:column; border:1px solid #cfd9d3;
                border-radius:8px; background:#fbfdfc; font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; overflow:hidden; }
@@ -208,8 +210,20 @@
   const clearMarks = host => host && host.querySelectorAll('.mmth-drop-before,.mmth-drop-after').forEach(r => r.classList.remove('mmth-drop-before', 'mmth-drop-after'));
   let _drag = null;
 
+  function setSideWidth(side, w) { w = Math.max(160, Math.min(640, Math.round(w))); side.style.flex = '0 0 ' + w + 'px'; side.style.maxWidth = w + 'px'; return w; }
+
+  // drag the separator to resize the panel vs. the field (persisted)
+  function wireResize(vsep, side) {
+    let startX = 0, startW = 0, on = false;
+    vsep.addEventListener('pointerdown', e => { on = true; startX = e.clientX; startW = side.getBoundingClientRect().width; try { vsep.setPointerCapture(e.pointerId); } catch (x) {} vsep.classList.add('mmth-dragv'); document.body.style.userSelect = 'none'; e.preventDefault(); });
+    vsep.addEventListener('pointermove', e => { if (on) setSideWidth(side, startW - (e.clientX - startX)); });   // panel is on the right → drag left widens it
+    const end = e => { if (!on) return; on = false; vsep.classList.remove('mmth-dragv'); document.body.style.userSelect = ''; SET.sideWidth = setSideWidth(side, side.getBoundingClientRect().width); saveSet(); try { vsep.releasePointerCapture(e.pointerId); } catch (x) {} };
+    vsep.addEventListener('pointerup', end); vsep.addEventListener('pointercancel', end);
+  }
+
   function buildSide(ta) {
     const side = document.createElement('div'); side.className = 'mmth-side';
+    setSideWidth(side, SET.sideWidth || 300);
     const ft = document.createElement('div'); ft.className = 'mmth-ft';            // toolbar ON TOP (#212)
     const list = document.createElement('div'); list.className = 'mmth-list';
     side.appendChild(ft); side.appendChild(list);
@@ -302,8 +316,9 @@
       const wrap = document.createElement('div'); wrap.className = 'mmth-wrap';
       ta.parentNode.insertBefore(wrap, ta);
       wrap.appendChild(ta);
-      const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; wrap.appendChild(vsep);   // separator between field & panel (#212)
-      wrap.appendChild(buildSide(ta));
+      const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; vsep.title = 'Drag to resize'; wrap.appendChild(vsep);   // resizable separator between field & panel (#212)
+      const side = buildSide(ta); wrap.appendChild(side);
+      wireResize(vsep, side);
     });
   }
   new MutationObserver(() => injectAll()).observe(document.documentElement, { childList: true, subtree: true });
