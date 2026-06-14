@@ -119,7 +119,9 @@
   .half-width:has(> .editnote.mmth-on), .col:has(> .editnote.mmth-on) { width:100% !important; max-width:100% !important; }
   .editnote.mmth-on { width:100% !important; max-width:100% !important; min-width:0 !important; box-sizing:border-box; }
   .editnote.mmth-on > .row { width:100% !important; box-sizing:border-box; }
-  .editnote.mmth-on > legend, .editnote.mmth-on > .row > label[for] { display:none !important; }
+  /* hide only the redundant inline "Edit note:" label next to the field — keep
+     the section header (the fieldset's legend) visible (#212). */
+  .editnote.mmth-on > .row > label[for] { display:none !important; }
   .mmth-wrap { display:flex; gap:0; align-items:stretch; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; }
   .mmth-wrap > textarea.edit-note { flex:1 1 auto; width:auto !important; min-width:0; }
   .mmth-vsep { flex:none; width:9px; align-self:stretch; cursor:col-resize; position:relative; }
@@ -346,7 +348,7 @@
     document.querySelectorAll('textarea.edit-note').forEach(ta => {
       if (ta.dataset.mmth) return;
       ta.dataset.mmth = '1';
-      const en = ta.closest('.editnote'); if (en) en.classList.add('mmth-on');   // hides the redundant legend + "Edit note:" label (#212)
+      const en = ta.closest('.editnote'); if (en) en.classList.add('mmth-on');   // hides the redundant inline "Edit note:" label (#212)
       const wrap = document.createElement('div'); wrap.className = 'mmth-wrap';
       ta.parentNode.insertBefore(wrap, ta);
       wrap.appendChild(ta);
