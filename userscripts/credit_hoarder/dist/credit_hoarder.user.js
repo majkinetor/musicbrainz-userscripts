@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.14.134129
+// @version      2026.6.14.141913
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.svg
@@ -1975,14 +1975,16 @@
     "Writer": "Written-By",
     "Orchestrator": "Orchestrated By"
   };
+  var TIDAL_RELEASE_COMPANY_MAP = {
+    "Current Distributor": "Distributed By",
+    "Distributor": "Distributed By"
+  };
   var TIDAL_RELEASE_ROLE_SKIP = /* @__PURE__ */ new Set([
     "Primary Artist",
     "Featured Artist",
     "Main Artist",
     "Artist",
     "Record Label",
-    "Current Distributor",
-    "Distributor",
     "Manufacturer",
     "Copyright",
     "Phonographic Copyright"
@@ -2074,6 +2076,13 @@
     if (track) role.track = track;
     return role;
   }
+  function tidalCompany(name, entityTypeName) {
+    return {
+      entity_type_name: entityTypeName,
+      name,
+      resource_url: "https://tidal.com/_company/" + encodeURIComponent(entityTypeName) + "/" + encodeURIComponent(name)
+    };
+  }
   function tidalToEngine(tracks) {
     const IMPORT_ROLES = {
       "Producer": "producer",
@@ -2132,6 +2141,7 @@
   function tidalReleaseArtists(releaseCredits) {
     const artists = [];
     const publishers = [];
+    const companies = [];
     const skipped = [];
     for (const c of releaseCredits || []) {
       const baseRole = tidalRoleBase(c.role);
@@ -2140,6 +2150,10 @@
           if (isCopyrightControl(n)) continue;
           publishers.push(tidalPublisherRole(n.name));
         }
+        continue;
+      }
+      if (TIDAL_RELEASE_COMPANY_MAP[c.role]) {
+        for (const n of c.names || []) companies.push(tidalCompany(n.name, TIDAL_RELEASE_COMPANY_MAP[c.role]));
         continue;
       }
       if (TIDAL_RELEASE_ROLE_SKIP.has(c.role)) {
@@ -2162,7 +2176,7 @@
         });
       }
     }
-    return { artists, publishers, skipped };
+    return { artists, publishers, companies, skipped };
   }
   var HARVEST_KEY = (reqId) => `ch-tidal-result:${reqId}`;
   var HARVEST_TIMEOUT_MS = 45e3;
@@ -5651,7 +5665,7 @@ ${lines}
       li.querySelector("details").appendChild(pre);
       _logs2.appendChild(li);
       const { tracklistRels, tracklist, skipped, multiVolume } = tidalToEngine(harvest.tracks);
-      const { artists: relArtists, publishers: relPublishers, skipped: relSkipped } = tidalReleaseArtists(harvest.releaseCredits);
+      const { artists: relArtists, publishers: relPublishers, companies: relCompanies, skipped: relSkipped } = tidalReleaseArtists(harvest.releaseCredits);
       const artistRoles = [...relPublishers];
       for (const a of relArtists) {
         const roles = getArtistRoles(a);
@@ -5664,14 +5678,15 @@ ${lines}
         });
         artistRoles.push(...roles);
       }
-      log.info(`Tidal credits: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s) across ${tracklist.length} track(s)`);
+      const companies = relCompanies || [];
+      log.info(`Tidal credits: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s)${companies.length ? ` + ${companies.length} label/company` : ""} across ${tracklist.length} track(s)`);
       skipped.concat(relSkipped).forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
       if (multiVolume) log.warn(`Multi-volume Tidal album \u2014 track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
-      if (!tracklistRels.length && !artistRoles.length) {
+      if (!tracklistRels.length && !artistRoles.length && !companies.length) {
         log.warn("No importable credits found on the Tidal credits page.");
         return;
       }
-      return runSourcePipeline({ companies: [], artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
+      return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
     }).catch((err) => {
       log.error(err.message || String(err));
     });

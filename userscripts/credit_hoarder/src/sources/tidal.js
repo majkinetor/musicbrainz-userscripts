@@ -74,12 +74,20 @@ export const TIDAL_RELEASE_ROLE_MAP = {
     'Orchestrator':        'Orchestrated By',
 };
 
-// Release roles that are NOT artist relationships — the album/track main
-// artist, or label/company-entity credits we can't resolve as artists.
-// Dropped explicitly (and reported) so they never mis-map.
+// Release-level roles that are label/company credits → release↔label rels (the
+// `companies` path, same as Discogs). Maps the Tidal label to the Discogs
+// company role string that ENTITY_TYPE_MAP resolves (e.g. distributed).
+export const TIDAL_RELEASE_COMPANY_MAP = {
+    'Current Distributor': 'Distributed By',
+    'Distributor':         'Distributed By',
+};
+
+// Release roles that are NOT relationships at all — the album/track main artist
+// (already the release's artist credit), the release's own label (set via the
+// label field), or copyright lines. Dropped explicitly (and reported).
 export const TIDAL_RELEASE_ROLE_SKIP = new Set([
     'Primary Artist', 'Featured Artist', 'Main Artist', 'Artist',
-    'Record Label', 'Current Distributor', 'Distributor', 'Manufacturer',
+    'Record Label', 'Manufacturer',
     'Copyright', 'Phonographic Copyright',
 ]);
 
@@ -243,6 +251,20 @@ function tidalPublisherRole(name, track) {
     return role;
 }
 
+/** A label/company release credit (e.g. distributor) → a `companies` entry in
+ *  the Discogs shape dispatchCompanies consumes. `entityTypeName` is the Discogs
+ *  role string ENTITY_TYPE_MAP maps (e.g. "Distributed By" → label, distributed).
+ *  Tidal exposes no label URL, so synthesise a unique resource_url (the companies
+ *  path keys on it and requires it) — it 404s on MB's url endpoint, so resolution
+ *  falls to a name search against MB labels. */
+function tidalCompany(name, entityTypeName) {
+    return {
+        entity_type_name: entityTypeName,
+        name,
+        resource_url: 'https://tidal.com/_company/' + encodeURIComponent(entityTypeName) + '/' + encodeURIComponent(name),
+    };
+}
+
 export function tidalToEngine(tracks) {
     const IMPORT_ROLES = {
         'Producer':           'producer',
@@ -305,14 +327,16 @@ export function tidalToEngine(tracks) {
  * (`{ name, anv, role, id, resource_url }`) that the caller feeds to
  * `getArtistRoles` — the same release-level path Discogs uses, so the full
  * ENTITY_TYPE_MAP / INSTRUMENTS resolution applies. Non-artist roles (album
- * artist, label/company credits) are dropped and reported. Music-publisher
- * credits are returned separately as pre-formed label→work `publishers` roles
- * (they bypass getArtistRoles — they're label entities, not artists). Returns
- * `{ artists, publishers, skipped }`.
+ * artist, the release's own label) are dropped and reported. Music-publisher
+ * credits come back as pre-formed label→work `publishers` roles, and label
+ * release credits (e.g. distributor) as `companies` (Discogs shape) — both
+ * bypass getArtistRoles since they're label entities, not artists. Returns
+ * `{ artists, publishers, companies, skipped }`.
  */
 export function tidalReleaseArtists(releaseCredits) {
     const artists = [];
     const publishers = [];
+    const companies = [];
     const skipped = [];
     for (const c of (releaseCredits || [])) {
         const baseRole = tidalRoleBase(c.role);
@@ -321,6 +345,10 @@ export function tidalReleaseArtists(releaseCredits) {
                 if (isCopyrightControl(n)) continue;
                 publishers.push(tidalPublisherRole(n.name));   // no track → all works
             }
+            continue;
+        }
+        if (TIDAL_RELEASE_COMPANY_MAP[c.role]) {               // distributor → release↔label rel
+            for (const n of (c.names || [])) companies.push(tidalCompany(n.name, TIDAL_RELEASE_COMPANY_MAP[c.role]));
             continue;
         }
         if (TIDAL_RELEASE_ROLE_SKIP.has(c.role)) {
@@ -345,7 +373,7 @@ export function tidalReleaseArtists(releaseCredits) {
             });
         }
     }
-    return { artists, publishers, skipped };
+    return { artists, publishers, companies, skipped };
 }
 
 // ── Cross-tab harvest (GM storage handshake) ────────────────────────────────

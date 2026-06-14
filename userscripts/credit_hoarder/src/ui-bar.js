@@ -1317,9 +1317,10 @@ function runTidalImport(tidalUrl, getOpts) {
             _logs.appendChild(li);
             const { tracklistRels, tracklist, skipped, multiVolume } = tidalToEngine(harvest.tracks);
             // Release-level credits (Info tab): bridge → shared role mapper.
-            // Publishers come back pre-formed (label→work) — they bypass the
-            // artist mapper. Per-track publishers ride along in tracklistRels.
-            const { artists: relArtists, publishers: relPublishers, skipped: relSkipped } = tidalReleaseArtists(harvest.releaseCredits);
+            // Publishers come back pre-formed (label→work) and label release
+            // credits (distributor) as companies — both bypass the artist
+            // mapper. Per-track publishers ride along in tracklistRels.
+            const { artists: relArtists, publishers: relPublishers, companies: relCompanies, skipped: relSkipped } = tidalReleaseArtists(harvest.releaseCredits);
             const artistRoles = [...relPublishers];
             for (const a of relArtists) {
                 const roles = getArtistRoles(a);
@@ -1327,11 +1328,12 @@ function runTidalImport(tidalUrl, getOpts) {
                 if (a.assistant) roles.forEach(r => { r.attributes = (r.attributes || []).concat('assistant'); });
                 artistRoles.push(...roles);
             }
-            log.info(`Tidal credits: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s) across ${tracklist.length} track(s)`);
+            const companies = relCompanies || [];
+            log.info(`Tidal credits: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s)${companies.length ? ` + ${companies.length} label/company` : ''} across ${tracklist.length} track(s)`);
             skipped.concat(relSkipped).forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             if (multiVolume) log.warn(`Multi-volume Tidal album — track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
-            if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable credits found on the Tidal credits page.'); return; }
-            return runSourcePipeline({ companies: [], artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
+            if (!tracklistRels.length && !artistRoles.length && !companies.length) { log.warn('No importable credits found on the Tidal credits page.'); return; }
+            return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
         })
         .catch(err => { log.error(err.message || String(err)); });
 }

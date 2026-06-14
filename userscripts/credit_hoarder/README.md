@@ -45,8 +45,9 @@ Notes & limitations:
 | Instruments, Vocals, Background Vocals, Conductor (release-level) | **recording** rel (resolved through the shared instrument/role tables, same as Discogs) |
 | Artwork (release-level) | **release** rel (artwork) |
 | Music Publisher | **label → work** *publishing* rel — the publisher is resolved as an MB **label** (by name) and linked to each track's work. `Copyright Control` placeholder is dropped |
+| Current Distributor | **label → release** *distributed* rel — the distributor is resolved as an MB **label** (by name) |
 
-Tidal roles surfaced in the log but **not** imported: *Primary/Main/Featured Artist* and *Record Label* / *Current Distributor* (these are the release's own artist credit or label, not a relationship to import); and *Mastering Engineer* (artist→recording mastering is deprecated in MB — mastering belongs at release level), *Sound Editor*, *Studio Personnel* (no clean MB target). All appear in the skipped list so nothing is silently dropped.
+Tidal roles surfaced in the log but **not** imported: *Primary/Main/Featured Artist* and *Record Label* (the release's own artist credit / label, set elsewhere, not a relationship); and *Mastering Engineer* (artist→recording mastering is deprecated in MB — mastering belongs at release level), *Sound Editor*, *Studio Personnel* (no clean MB target). All appear in the skipped list so nothing is silently dropped.
 
 ## Features
 

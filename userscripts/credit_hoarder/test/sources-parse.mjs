@@ -130,6 +130,7 @@ const relRes = tidalReleaseArtists([
     { role: 'Assistant Engineer',names: [{ name: 'Jen Monnar', tidalId: null }] },
     { role: 'Vocals (Background)', names: [{ name: 'Keziah Jones', tidalId: '22' }] },
     { role: 'Music Publisher',   names: [{ name: 'Big Publishing House', tidalId: null }, { name: 'Copyright Control', tidalId: '15780' }] },
+    { role: 'Current Distributor', names: [{ name: 'EMI Music Distribution' }] },
     { role: 'Primary Artist',    names: [{ name: 'Keziah Jones', tidalId: '22' }] },
     { role: 'Record Label',      names: [{ name: 'Because Music' }] },
 ]);
@@ -145,6 +146,11 @@ assert.equal(byRole['Producer'].role, 'Producer');
 assert.equal(byRole['Assistant Engineer'].role, 'Engineer');
 assert.equal(byRole['Assistant Engineer'].assistant, true);
 assert.equal(byRole['Vocals (Background)'].role, 'Backing Vocals');
+// Distributor → company (release↔label "distributed"), name-only synthetic URL
+assert.equal(relRes.companies.length, 1);
+assert.equal(relRes.companies[0].entity_type_name, 'Distributed By');
+assert.equal(relRes.companies[0].name, 'EMI Music Distribution');
+assert.ok(relRes.companies[0].resource_url.startsWith('https://tidal.com/_company/'));
 // Non-artist roles dropped + reported
 assert.ok(relRes.skipped.some(s => /Primary Artist/.test(s)));
 assert.ok(relRes.skipped.some(s => /Record Label/.test(s)));
