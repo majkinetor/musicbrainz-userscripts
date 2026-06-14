@@ -14,21 +14,20 @@ The wide edit-note field is split (and centered): the textarea on the left, and 
 ┌──────────────────────────────┬─────────────────────────┐
 │ (edit-note textarea)         │ ＋  ★  🕘        ?  ⚙   │  ← toolbar
 │                              ├─────────────────────────┤
-│                              │ ⠿ ★ Per CSG             │  favourite
-│                              │ ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄  │  ← separator
-│                              │ ⠿ ☆ Source: site        │
-│                              │ ⠿ ☆ …                   │
+│                              │ Per CSG guidelines    ⠿ │
+│                              │ Source: official site ⠿ │  ⠿ = drag handle
+│                              │ …                       │      (on hover)
 └──────────────────────────────┴─────────────────────────┘
 ```
 
-Each note is one line (full text on hover). **Click** applies your default action (append or replace, set in ⚙); **right-click** does the other. **Ctrl/⌘ + ↑/↓** cycles through your saved notes, replacing the field as you go.
+Each note is one line (full text on hover). **Click** applies your default action (append or replace, set in ⚙); **right-click** does the other. **Ctrl/⌘ + ↑/↓** cycles through your saved notes, replacing the field (and keeping focus on the editor).
 
 Toolbar: **＋** save the current edit-note text · **★** Saved notes · **🕘** Recent (history) · **?** edit-note syntax · **⚙** settings.
 
 ## Features
 
 - **Auto-history, no checkbox.** Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. No "remember this note" toggle to get stuck on across sessions.
-- **Saved notes.** **＋** saves the current text; in **History**, the **★** on a row pins it to Saved. In **Saved**, **★** marks a favourite (sorts to the top), **⠿ drag** to reorder, **🗑** deletes. A separator divides favourites from the rest.
+- **Saved notes.** **＋** saves the current text; in **History**, **📌** on a row pins it to Saved. In **Saved**, reorder by **drag** (the **⠿** handle on the right, shown on hover) and **🗑** deletes.
 - **Compact, one-line rows** with the full note on hover.
 - **Insert without keys.** Click does your default (append/replace); right-click does the other. **Append skips a line already present** in the field, and it never blindly overwrites — so it won't clobber a note another script (Apollo Editor, Credit Hoarder, Platform Check) wrote for its own submission. Ctrl/⌘ + ↑/↓ cycles saved notes.
 - **Edit-note syntax help (?).** A quick reference for MusicBrainz's edit-note markup (`''italic''`, `'''bold'''`, `edit #123`, `doc:Page`, auto-linked URLs).

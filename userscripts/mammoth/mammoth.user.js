@@ -55,11 +55,10 @@
   function addSaved(text) {
     text = (text || '').trim(); if (!text) return false;
     if (DATA.saved.some(s => s.text === text)) return false;
-    DATA.saved.push({ id: uid(), text, fav: false, ts: Date.now() });
+    DATA.saved.push({ id: uid(), text, ts: Date.now() });
     saveData(); return true;
   }
   const removeSaved = id => { DATA.saved = DATA.saved.filter(s => s.id !== id); saveData(); };
-  const toggleFav = id => { const s = DATA.saved.find(x => x.id === id); if (s) { s.fav = !s.fav; saveData(); } };
   const removeHistory = text => { DATA.history = DATA.history.filter(h => h.text !== text); saveData(); };
   function reorder(srcId, tgtId, before) {
     if (srcId === tgtId) return;
@@ -68,7 +67,6 @@
     let ti = a.findIndex(s => s.id === tgtId); if (ti < 0) { a.splice(si, 0, it); return; }
     a.splice(before ? ti : ti + 1, 0, it); saveData();
   }
-  const orderedSaved = () => [...DATA.saved.filter(s => s.fav), ...DATA.saved.filter(s => !s.fav)];
 
   // ── insert (React-safe) ──────────────────────────────────────────────────────
   const NATIVE_SET = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
@@ -114,16 +112,14 @@
   .mmth-row.mmth-drop-before { box-shadow:inset 0 2px 0 #2c7a51; }
   .mmth-row.mmth-drop-after { box-shadow:inset 0 -2px 0 #2c7a51; }
   .mmth-row.mmth-dragging { opacity:.45; }
-  .mmth-grab { flex:none; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; }
+  .mmth-grab { flex:none; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; opacity:0; }
+  .mmth-row:hover .mmth-grab { opacity:1; }
   .mmth-grab:active { cursor:grabbing; }
-  .mmth-star { flex:none; cursor:pointer; color:#cdd6d1; font-size:12px; }
-  .mmth-star.on { color:#e8a93a; }
   .mmth-txt { flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#293330; }
   .mmth-rowacts { flex:none; display:flex; gap:1px; opacity:0; }
   .mmth-row:hover .mmth-rowacts { opacity:1; }
   .mmth-ra { cursor:pointer; border:none; background:none; color:#7d8a82; font-size:11px; line-height:1; padding:1px 2px; border-radius:3px; }
   .mmth-ra:hover { background:#cfe9d8; color:#1f5c3d; }
-  .mmth-sep { height:0; border-top:1px dashed #cdd9d1; margin:2px 6px; }
   .mmth-empty { padding:12px 8px; color:#9aa6a0; font-style:italic; text-align:center; }
   .mmth-pop { position:fixed; z-index:99999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2);
               padding:10px 12px; font:13px/1.45 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:280px; }
@@ -215,7 +211,7 @@
 
     ta.addEventListener('keydown', e => {
       if (!(e.ctrlKey || e.metaKey) || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
-      const items = orderedSaved(); if (!items.length) return;
+      const items = DATA.saved; if (!items.length) return;
       e.preventDefault();
       inst.cyc = (inst.cyc + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
       setValue(ta, items[inst.cyc].text);
@@ -232,34 +228,31 @@
     list.innerHTML = '';
     if (inst.tabs) { inst.tabs.saved.classList.toggle('on', inst.view === 'saved'); inst.tabs.history.classList.toggle('on', inst.view === 'history'); }
     const saved = inst.view === 'saved';
-    const items = saved ? orderedSaved() : DATA.history;
+    const items = saved ? DATA.saved : DATA.history;
     if (!items.length) { const e = document.createElement('div'); e.className = 'mmth-empty'; e.textContent = saved ? 'No saved notes — ＋ saves the current one' : 'No history yet'; list.appendChild(e); return; }
 
-    let sepDone = false;
     items.forEach((it, idx) => {
-      if (saved && !sepDone && idx > 0 && !it.fav && items[idx - 1].fav) { const d = document.createElement('div'); d.className = 'mmth-sep'; list.appendChild(d); sepDone = true; }
       const row = document.createElement('div'); row.className = 'mmth-row';
       if (saved && idx === inst.cyc) row.classList.add('mmth-cyc');
       const dflt = SET.defaultInsert;
       row.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'})`;
+
+      const txt = document.createElement('span'); txt.className = 'mmth-txt'; txt.textContent = it.text.replace(/\s+/g, ' ').trim();
+      row.appendChild(txt);
+
+      // right-side hover actions (delete / pin), then the drag handle (saved only)
+      const acts = document.createElement('div'); acts.className = 'mmth-rowacts';
+      const ra = (glyph, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-ra'; b.textContent = glyph; b.title = title; b.onclick = e => { e.stopPropagation(); fn(); }; acts.appendChild(b); };
+      if (saved) ra('🗑', 'Delete', () => removeSaved(it.id));
+      else { ra('📌', 'Save (pin to Saved)', () => { if (addSaved(it.text)) toast('Saved'); }); ra('🗑', 'Remove', () => removeHistory(it.text)); }
+      row.appendChild(acts);
 
       if (saved) {
         const grab = document.createElement('span'); grab.className = 'mmth-grab'; grab.textContent = '⠿'; grab.title = 'Drag to reorder'; grab.draggable = true;
         grab.addEventListener('dragstart', e => { _drag = { id: it.id }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'row'); } catch (x) {} row.classList.add('mmth-dragging'); });
         grab.addEventListener('dragend', () => { row.classList.remove('mmth-dragging'); clearMarks(list); _drag = null; });
         row.appendChild(grab);
-        const star = document.createElement('span'); star.className = 'mmth-star' + (it.fav ? ' on' : ''); star.textContent = '★'; star.title = it.fav ? 'Unfavourite' : 'Favourite (sorts to top)';
-        star.onclick = e => { e.stopPropagation(); toggleFav(it.id); };
-        row.appendChild(star);
       }
-      const txt = document.createElement('span'); txt.className = 'mmth-txt'; txt.textContent = it.text.replace(/\s+/g, ' ').trim();
-      row.appendChild(txt);
-
-      const acts = document.createElement('div'); acts.className = 'mmth-rowacts';
-      const ra = (glyph, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-ra'; b.textContent = glyph; b.title = title; b.onclick = e => { e.stopPropagation(); fn(); }; acts.appendChild(b); };
-      if (saved) ra('🗑', 'Delete', () => removeSaved(it.id));
-      else { ra('★', 'Save (pin to Saved)', () => { if (addSaved(it.text)) toast('Saved'); }); ra('🗑', 'Remove', () => removeHistory(it.text)); }
-      row.appendChild(acts);
 
       row.onclick = () => applyNote(ta, it.text, SET.defaultInsert === 'replace');
       row.oncontextmenu = e => { e.preventDefault(); applyNote(ta, it.text, SET.defaultInsert !== 'replace'); };

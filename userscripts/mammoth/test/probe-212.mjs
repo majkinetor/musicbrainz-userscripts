@@ -54,9 +54,8 @@ await ev(() => { const ta = document.querySelector('textarea.edit-note'); ta.val
 await page.waitForTimeout(60);
 log('Ctrl+Down (cycle):', JSON.stringify(await taVal()));
 
-await ev(() => { const last = [...document.querySelectorAll('.mmth-side .mmth-row .mmth-star')].pop(); last && last.click(); });
-await page.waitForTimeout(80);
-log('top row after fav-ing last:', await ev(() => document.querySelector('.mmth-side .mmth-row .mmth-txt')?.textContent), '| gold?', await ev(() => document.querySelector('.mmth-side .mmth-row .mmth-star')?.classList.contains('on')));
+log('in-list star removed?', await ev(()=>document.querySelectorAll('.mmth-side .mmth-row .mmth-star').length===0));
+log('grab handles (right, hover-only):', await ev(()=>document.querySelectorAll('.mmth-side .mmth-row .mmth-grab').length));
 
 await ev(() => { window.GM_setValue('mammoth:settings', JSON.stringify({ historySize: 10, hideHelp: true })); });
 await clickSel('button.mmth-fb[title="Settings"]'); await page.waitForTimeout(120);
