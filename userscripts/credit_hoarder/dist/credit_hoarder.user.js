@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.14.110936
+// @version      2026.6.14.113015
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/credit_hoarder/icon.svg
@@ -1945,9 +1945,17 @@
   // src/sources/tidal.js
   var TIDAL_ROLE_MAP = {
     "Producer": { target: "recording", rel: "producer" },
+    "Mixing Engineer": { target: "recording", rel: "mix" },
+    "Recording Engineer": { target: "recording", rel: "recording" },
+    "Sound Engineer": { target: "recording", rel: "sound engineer" },
     "Composer": { target: "work", rel: "composer" },
     "Lyricist": { target: "work", rel: "lyricist" },
+    "Writer": { target: "work", rel: "writer" },
+    "Orchestrator": { target: "work", rel: "orchestrator" },
     "Music Publisher": { target: "work", rel: "publisher" }
+    // Not mapped (reported, not imported): Mastering Engineer (artist→recording mastering
+    // is deprecated in MB — it's release-level), Sound Editor, the Assistant * Engineer
+    // variants (need an MB "assistant" attribute), and Studio Personnel (too generic).
   };
   var TIDAL_COPYRIGHT_CONTROL_ID = "15780";
   var TIDAL_ALBUM_RE = /^(?:https?:)?\/\/(?:www\.|listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i;
@@ -1996,7 +2004,16 @@
     return { id: m[1], key: `tidal-artist/${m[1]}`, cleanUrl: `https://tidal.com/artist/${m[1]}` };
   }
   function tidalToEngine(tracks) {
-    const IMPORT_ROLES = { "Producer": "producer", "Composer": "composer", "Lyricist": "lyricist" };
+    const IMPORT_ROLES = {
+      "Producer": "producer",
+      "Mixing Engineer": "mix",
+      "Recording Engineer": "recording",
+      "Sound Engineer": "sound engineer",
+      "Composer": "composer",
+      "Lyricist": "lyricist",
+      "Writer": "writer",
+      "Orchestrator": "orchestrator"
+    };
     const tracklistRels = [];
     const tracklist = [];
     const skipped = [];
