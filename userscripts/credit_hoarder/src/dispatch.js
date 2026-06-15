@@ -114,6 +114,9 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         'programming',
         // NOT 'mastering' — MB deprecated artist→recording mastering (link type 136).
     ]);
+    // #221: an executive producer belongs at RELEASE level, not on recordings —
+    // keep it off the move-to-tracks routing so it's added once, on the release.
+    const isExecProducer = role => role.linkType === 'producer' && (role.attributes || []).some(a => a === 'executive' || (a && a.value === 'executive'));
 
     log.info(`Starting instant fill: ${companies.length} companies, ${artistRoles.length} release artist roles, ${tracklistRels.length} tracklist roles`);
 
@@ -527,7 +530,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         // When "move to tracks" is on, RECORDING_LINK_TYPES roles are skipped here
         // and dispatched only to recordings below — keeping them off the release.
         for (const role of artistRoles) {
-            if (applyToTracks && RECORDING_LINK_TYPES.has(role.linkType)) continue;
+            if (applyToTracks && RECORDING_LINK_TYPES.has(role.linkType) && !isExecProducer(role)) continue;   // #221: exec producer stays on the release
             // Work-only rels (writer, composer, etc.) go to works, not the release
             if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
 
@@ -546,7 +549,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         // Apply release-level artist credits to all recordings (only when applyToTracks is on).
         if (applyToTracks && recordingByGid.size > 0) {
             // Exclude work-only roles — those go to works via dispatchWorks below.
-            const applicable = artistRoles.filter(role => RECORDING_LINK_TYPES.has(role.linkType) && !WORK_ONLY_ARTIST_RELS.includes(role.linkType));
+            const applicable = artistRoles.filter(role => RECORDING_LINK_TYPES.has(role.linkType) && !WORK_ONLY_ARTIST_RELS.includes(role.linkType) && !isExecProducer(role));   // #221: exec producer not moved to tracks
             if (applicable.length > 0) {
                 log.info(`Applying ${applicable.length} release credit(s) to ${recordingByGid.size} recording(s)…`);
                 for (const role of applicable) {
