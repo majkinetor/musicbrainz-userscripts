@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.14
+// @version      2026.6.15.224014
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3505,6 +3505,28 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
   ];
 
   // src/dispatch.js
+  function makeIdentifyingClassifier(lat) {
+    const identifyingRoots = /* @__PURE__ */ new Set();
+    if (lat) {
+      for (const v of Object.values(lat)) {
+        const isRoot = v.parent_id == null || v.parent_id === v.id;
+        if (isRoot && /^(instrument|vocal)$/i.test(v.name || "")) identifyingRoots.add(v.id);
+      }
+    }
+    const rootCache = /* @__PURE__ */ new Map();
+    const rootIdOf = (typeID) => {
+      if (rootCache.has(typeID)) return rootCache.get(typeID);
+      let node = lat ? lat[typeID] : null;
+      let guard = 0;
+      while (node && node.parent_id != null && node.parent_id !== node.id && lat[node.parent_id] && guard++ < 64) {
+        node = lat[node.parent_id];
+      }
+      const rootId = node ? node.id : typeID;
+      rootCache.set(typeID, rootId);
+      return rootId;
+    };
+    return (typeID) => identifyingRoots.has(rootIdOf(typeID));
+  }
   async function dispatchAllRelationships(companies, artistRoles, tracklistRels, applyToTracks, createWorksMode, discogsTracklist, processTracklist, resolvedEntityTypes, confirmedMap, discogsUrl, dedupOpts) {
     resolvedEntityTypes = resolvedEntityTypes || /* @__PURE__ */ new Map();
     confirmedMap = confirmedMap || /* @__PURE__ */ new Map();
@@ -3515,6 +3537,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     const re = await waitForMBEditor();
     if (!re) return;
     const MB = pageWindow.MB;
+    const isIdentifyingAttr = makeIdentifyingClassifier(MB?.linkedEntities?.link_attribute_type);
     const equivalenceLookup = (() => {
       const m = /* @__PURE__ */ new Map();
       if (!dedupeEquivalenceSets || !MB?.linkedEntities?.link_type) return m;
@@ -3721,14 +3744,18 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const rels = sourceEntity?.relationships;
       if (!Array.isArray(rels) || rels.length === 0) return null;
       const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || /* @__PURE__ */ new Set([linkTypeID]);
-      const candSig = (() => {
-        if (!attrTree) return "";
+      const sigOf = (attrs) => attrs.map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
+      const idSigOf = (attrs) => attrs.filter((a) => isIdentifyingAttr(a.typeID)).map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
+      const candAttrs = (() => {
+        if (!attrTree) return [];
         try {
-          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
+          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => ({ typeID: a.typeID, text_value: a.text_value || "" }));
         } catch (e) {
-          return "";
+          return [];
         }
       })();
+      const candSig = sigOf(candAttrs);
+      const candIdSig = idSigOf(candAttrs);
       const lookupName = (id) => {
         try {
           return pageWindow.MB.linkedEntities.link_type[id]?.name || `#${id}`;
@@ -3742,12 +3769,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
         if (tgt !== targetGid) continue;
         const isEquivalent = r.linkTypeID !== linkTypeID;
-        const existingSig = (r.attributes || []).map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
-        const exactMatch = existingSig === candSig;
+        const existingAttrs = (r.attributes || []).map((a) => ({ typeID: a.typeID, text_value: a.text_value || "" }));
+        const exactMatch = sigOf(existingAttrs) === candSig;
         if (exactMatch) {
           return { kind: isEquivalent ? "equivalence" : "exact", existingLinkName: lookupName(r.linkTypeID) };
         }
-        if (dedupeDuplicateRoles && !dupMatch) {
+        if (dedupeDuplicateRoles && !dupMatch && idSigOf(existingAttrs) === candIdSig) {
           dupMatch = { kind: isEquivalent ? "equivalence" : "duplicate-role", existingLinkName: lookupName(r.linkTypeID) };
         }
       }
