@@ -650,6 +650,7 @@ export const INSTRUMENTS = {
     'Automatic Orchestra': null,
     Computer: null,
     'Drum Machine': 'drum machine',
+    'Rhythm Box': 'drum machine',   // #223 — Discogs "[Rhythm Box]" preset drum unit
     Effects: 'effects',
     Groovebox: null,
     Loops: null,
