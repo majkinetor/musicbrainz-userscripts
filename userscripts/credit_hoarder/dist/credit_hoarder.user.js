@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.15.165648
+// @version      2026.6.15.172438
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -4661,7 +4661,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-log-menu.open { display: flex; }
         .discogs-log-menu button { text-align: left; font-size: 0.82rem; color: #444; background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
         .discogs-log-menu button:hover { background: #f0ecfa; color: #333; }
-        .discogs-log-menu .discogs-log-menu-sep { height: 1px; background: #eee; margin: 0.25rem 0.2rem; padding: 0; }
         /* log panel toolbar: severity filter + copy buttons */
         .discogs-log-toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.3rem 0 0.45rem; }
         .discogs-log-filter { display: inline-flex; border: 1px solid #ddd; border-radius: 0.3rem; overflow: hidden; }
@@ -5043,8 +5042,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     const logToggleBtn = document.createElement("button");
     logToggleBtn.type = "button";
     logToggleBtn.className = "discogs-logtoggle-btn";
-    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret">\u25BE</span>';
-    logToggleBtn.title = "Show / hide the import log";
+    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret" title="More log actions (copy)">\u25BE</span>';
+    logToggleBtn.title = "Show / hide the import log (\u25BE for copy actions)";
     logToggleBtn.style.display = "none";
     const logoLink = document.createElement("a");
     logoLink.href = discogsUrl || sources.tidal || "#";
@@ -5306,11 +5305,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     };
     const logMenu = document.createElement("div");
     logMenu.className = "discogs-log-menu";
-    const logMenuToggle = document.createElement("button");
-    logMenuToggle.type = "button";
-    logMenuToggle.className = "discogs-log-menu-toggle";
-    const logMenuSep = document.createElement("div");
-    logMenuSep.className = "discogs-log-menu-sep";
     const mkMenuItem = (label, title, fn) => {
       const b = document.createElement("button");
       b.type = "button";
@@ -5321,39 +5315,38 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     };
     const copyLogItem = mkMenuItem("Copy log", "Copy the full import log (incl. the raw source data)", (b, l) => bar._copy?.log(b, l));
     const copyNoJsonItem = mkMenuItem("Copy without JSON", "Copy the log without the raw source-data block \u2014 fits in a GitHub issue", (b, l) => bar._copy?.noJson(b, l));
-    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem);
+    logMenu.append(copyLogItem, copyNoJsonItem);
     if (discogsUrl) logMenu.appendChild(mkMenuItem("Copy Discogs", "Copy the raw Discogs JSON for this release", (b, l) => bar._copy?.discogs(b, l)));
     if (sources.tidal) logMenu.appendChild(mkMenuItem("Copy Tidal", "Copy the raw Tidal credits harvest for this release", (b, l) => bar._copy?.tidal(b, l)));
     if (sources.qobuz) logMenu.appendChild(mkMenuItem("Copy Qobuz", "Copy the parsed Qobuz credits for this release", (b, l) => bar._copy?.qobuz(b, l)));
     document.body.appendChild(logMenu);
-    logMenuToggle.addEventListener("click", () => {
-      setLogOpen(!outputDiv.classList.contains("log-open"));
-      logMenu.classList.remove("open");
-    });
-    logToggleBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
+    function openLogMenu() {
       const open = logMenu.classList.toggle("open");
       if (!open) return;
-      logMenuToggle.textContent = outputDiv.classList.contains("log-open") ? "Hide log" : "Show log in page";
       const r = logToggleBtn.getBoundingClientRect();
       logMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - logMenu.offsetWidth - 8)) + "px";
       logMenu.style.top = r.bottom + 4 + "px";
       const off = (ev) => {
-        if (!logMenu.contains(ev.target) && ev.target !== logToggleBtn && !logToggleBtn.contains(ev.target)) {
+        if (!logMenu.contains(ev.target) && !logToggleBtn.contains(ev.target)) {
           logMenu.classList.remove("open");
           document.removeEventListener("mousedown", off);
         }
       };
       setTimeout(() => document.addEventListener("mousedown", off), 0);
+    }
+    logToggleBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (e.target.closest(".discogs-copylog-caret")) {
+        openLogMenu();
+        return;
+      }
+      logMenu.classList.remove("open");
+      setLogOpen(!outputDiv.classList.contains("log-open"));
     });
     function openLog(filter, scrollSel) {
       const f = filter || "all";
       outputDiv.classList.add("log-open");
       logToggleBtn.classList.add("active");
-      try {
-        localStorage.setItem(LOG_OPEN_KEY, "1");
-      } catch (e) {
-      }
       outputDiv.dataset.logfilter = f;
       logFilter.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x.dataset.f === f));
       requestAnimationFrame(() => {
@@ -5409,6 +5402,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       logBody.appendChild(_logs2);
       outputDiv.classList.remove("empty");
       logToggleBtn.style.display = "";
+      try {
+        applyLogOpen();
+      } catch (e) {
+      }
       function buildCopyText({ skipDiscogsJson }) {
         function htmlToMd(el) {
           function nodeToMd(node) {

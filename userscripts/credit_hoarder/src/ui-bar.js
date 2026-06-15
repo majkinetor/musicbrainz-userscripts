@@ -109,7 +109,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         .discogs-log-menu.open { display: flex; }
         .discogs-log-menu button { text-align: left; font-size: 0.82rem; color: #444; background: none; border: none; border-radius: 0.25rem; padding: 0.3rem 0.5rem; cursor: pointer; white-space: nowrap; }
         .discogs-log-menu button:hover { background: #f0ecfa; color: #333; }
-        .discogs-log-menu .discogs-log-menu-sep { height: 1px; background: #eee; margin: 0.25rem 0.2rem; padding: 0; }
         /* log panel toolbar: severity filter + copy buttons */
         .discogs-log-toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.3rem 0 0.45rem; }
         .discogs-log-filter { display: inline-flex; border: 1px solid #ddd; border-radius: 0.3rem; overflow: hidden; }
@@ -533,8 +532,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     const logToggleBtn = document.createElement('button');
     logToggleBtn.type = 'button';
     logToggleBtn.className = 'discogs-logtoggle-btn';
-    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret">▾</span>';
-    logToggleBtn.title = 'Show / hide the import log';
+    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret" title="More log actions (copy)">▾</span>';
+    logToggleBtn.title = 'Show / hide the import log (▾ for copy actions)';
     logToggleBtn.style.display = 'none';
 
     const logoLink = document.createElement('a');
@@ -848,17 +847,12 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         try { localStorage.setItem(LOG_OPEN_KEY, open ? '1' : '0'); } catch (e) {}
     };
 
-    // ── "Log ▾" dropdown menu (#118) ────────────────────────────────────────
-    // The caret now opens a small menu: show/hide the in-page log, plus the
-    // three copy actions (full log / log without JSON / raw Discogs JSON), which
-    // used to live as buttons inside the log toolbar.
+    // ── "Log ▾" dropdown menu (#118, #217) ──────────────────────────────────
+    // The button's main click toggles the in-page log (#217); the caret (▾)
+    // opens this small menu of extra actions — the copy variants (full log /
+    // log without JSON / per-source raw data).
     const logMenu = document.createElement('div');
     logMenu.className = 'discogs-log-menu';
-    const logMenuToggle = document.createElement('button');
-    logMenuToggle.type = 'button';
-    logMenuToggle.className = 'discogs-log-menu-toggle';
-    const logMenuSep = document.createElement('div');
-    logMenuSep.className = 'discogs-log-menu-sep';
     const mkMenuItem = (label, title, fn) => {
         const b = document.createElement('button');
         b.type = 'button'; b.textContent = label; b.title = title;
@@ -867,7 +861,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     };
     const copyLogItem     = mkMenuItem('Copy log',          'Copy the full import log (incl. the raw source data)',               (b, l) => bar._copy?.log(b, l));
     const copyNoJsonItem  = mkMenuItem('Copy without JSON', 'Copy the log without the raw source-data block — fits in a GitHub issue', (b, l) => bar._copy?.noJson(b, l));
-    logMenu.append(logMenuToggle, logMenuSep, copyLogItem, copyNoJsonItem);
+    // #217: the Toggle moved to the button's main click; the menu (▾) is now just
+    // the extra actions (copy variants).
+    logMenu.append(copyLogItem, copyNoJsonItem);
     // Per-source raw-data copy items — only the sources actually linked on this
     // release, so a Tidal/Qobuz-only release doesn't offer "Copy Discogs" etc. (#193)
     if (discogsUrl)    logMenu.appendChild(mkMenuItem('Copy Discogs', 'Copy the raw Discogs JSON for this release',           (b, l) => bar._copy?.discogs(b, l)));
@@ -875,21 +871,22 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     if (sources.qobuz) logMenu.appendChild(mkMenuItem('Copy Qobuz',   'Copy the parsed Qobuz credits for this release',       (b, l) => bar._copy?.qobuz(b, l)));
     document.body.appendChild(logMenu);
 
-    logMenuToggle.addEventListener('click', () => {
-        setLogOpen(!outputDiv.classList.contains('log-open'));
-        logMenu.classList.remove('open');
-    });
-
-    logToggleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
+    // Open the extra-actions menu (positioned under the button).
+    function openLogMenu() {
         const open = logMenu.classList.toggle('open');
         if (!open) return;
-        logMenuToggle.textContent = outputDiv.classList.contains('log-open') ? 'Hide log' : 'Show log in page';
         const r = logToggleBtn.getBoundingClientRect();
         logMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - logMenu.offsetWidth - 8)) + 'px';
         logMenu.style.top = (r.bottom + 4) + 'px';
-        const off = ev => { if (!logMenu.contains(ev.target) && ev.target !== logToggleBtn && !logToggleBtn.contains(ev.target)) { logMenu.classList.remove('open'); document.removeEventListener('mousedown', off); } };
+        const off = ev => { if (!logMenu.contains(ev.target) && !logToggleBtn.contains(ev.target)) { logMenu.classList.remove('open'); document.removeEventListener('mousedown', off); } };
         setTimeout(() => document.addEventListener('mousedown', off), 0);
+    }
+    // #217: clicking the button toggles the log; clicking the ▾ caret opens the menu.
+    logToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (e.target.closest('.discogs-copylog-caret')) { openLogMenu(); return; }
+        logMenu.classList.remove('open');
+        setLogOpen(!outputDiv.classList.contains('log-open'));
     });
 
     // ── Header badge wiring (#118) ──────────────────────────────────────────
@@ -900,9 +897,10 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     // to leave it under the fixed header, which read as "nothing happened".
     function openLog(filter, scrollSel) {
         const f = filter || 'all';
+        // #217: a badge opens the log for THIS run only — it does NOT persist the
+        // open state, so the next import/session respects the saved preference.
         outputDiv.classList.add('log-open');          // switch the log open if it wasn't
         logToggleBtn.classList.add('active');
-        try { localStorage.setItem(LOG_OPEN_KEY, '1'); } catch (e) {}
         outputDiv.dataset.logfilter = f;              // select the right filter…
         logFilter.querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.f === f));
         // …then position the view on the first matching line (rAF so the now-
@@ -976,6 +974,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         logBody.appendChild(_logs);
         outputDiv.classList.remove('empty');   // there's a log now → reveal the section + the header Log button
         logToggleBtn.style.display = '';
+        try { applyLogOpen(); } catch (e) {}   // #217: reset to the saved open/closed preference (clears a prior badge-only open)
 
         // Two "Copy log" variants:
         //   - "Copy log"           — full output, includes the raw Discogs JSON block
