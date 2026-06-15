@@ -22,6 +22,38 @@ import { ENTITY_TYPE_MAP }               from './data/entity-map.js';
 import { WORK_ONLY_ARTIST_RELS }         from './data/work-only-rels.js';
 import { _showBar, _setProgressPct }     from './progress-bar.js';
 
+// #225: Build a memoized predicate `(typeID) => boolean` that reports whether
+// a link-attribute type is *identifying* — i.e. it lives under MB's
+// "instrument" or "vocal" attribute root — as opposed to a pure modifier
+// (additional, solo, guest, minor…). Two instrument/vocal performances that
+// differ in their identifying attribute are distinct roles, not duplicates.
+// Exported for unit testing. When the attribute table is unavailable (no MB on
+// the page, or a future schema change), every attribute classifies as
+// non-identifying, which makes the duplicate-role dedup fall back to its prior
+// whole-signature behaviour — a safe no-op.
+export function makeIdentifyingClassifier(lat) {
+    const identifyingRoots = new Set();
+    if (lat) {
+        for (const v of Object.values(lat)) {
+            const isRoot = (v.parent_id == null || v.parent_id === v.id);
+            if (isRoot && /^(instrument|vocal)$/i.test(v.name || '')) identifyingRoots.add(v.id);
+        }
+    }
+    const rootCache = new Map();
+    const rootIdOf = (typeID) => {
+        if (rootCache.has(typeID)) return rootCache.get(typeID);
+        let node = lat ? lat[typeID] : null;
+        let guard = 0;
+        while (node && node.parent_id != null && node.parent_id !== node.id && lat[node.parent_id] && guard++ < 64) {
+            node = lat[node.parent_id];
+        }
+        const rootId = node ? node.id : typeID;
+        rootCache.set(typeID, rootId);
+        return rootId;
+    };
+    return (typeID) => identifyingRoots.has(rootIdOf(typeID));
+}
+
 // Dedup options come in as a trailing object (default empty). Used by
 // `relAlreadyExists` to honor the maintainer-configurable rules from
 // issue #62:
@@ -49,6 +81,12 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     if (!re) return;
 
     const MB = pageWindow.MB;
+
+    // #225: classifier that tells an instrument/vocal *identifying* attribute
+    // (synthesizer, drum machine, lead vocals…) apart from a pure modifier
+    // (additional, solo, guest…). The duplicate-role dedup uses it so two
+    // performances of DIFFERENT instruments aren't collapsed into one.
+    const isIdentifyingAttr = makeIdentifyingClassifier(MB?.linkedEntities?.link_attribute_type);
 
     // Precompute the equivalence-set lookup once: linkTypeID -> Set of
     // sibling linkTypeIDs (incl. itself) that share a configured group.
@@ -349,13 +387,20 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         // Equivalence-set expansion: when ON, a writer rel counts as
         // existing for an incoming composer dispatch (and vice versa).
         const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || new Set([linkTypeID]);
-        const candSig = (() => {
-            if (!attrTree) return '';
+        const sigOf   = (attrs) => attrs.map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
+        // #225: signature of only the instrument/vocal-identifying attributes —
+        // what makes two performances the "same role". Modifiers are excluded.
+        const idSigOf = (attrs) => attrs.filter(a => isIdentifyingAttr(a.typeID))
+            .map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
+        const candAttrs = (() => {
+            if (!attrTree) return [];
             try {
                 return [...pageWindow.MB.tree.iterate(attrTree)]
-                    .map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
-            } catch (e) { return ''; }
+                    .map(a => ({ typeID: a.typeID, text_value: a.text_value || '' }));
+            } catch (e) { return []; }
         })();
+        const candSig   = sigOf(candAttrs);
+        const candIdSig = idSigOf(candAttrs);
         const lookupName = (id) => {
             try { return pageWindow.MB.linkedEntities.link_type[id]?.name || `#${id}`; }
             catch (e) { return `#${id}`; }
@@ -368,15 +413,16 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
             if (tgt !== targetGid) continue;
             const isEquivalent = (r.linkTypeID !== linkTypeID);
-            const existingSig = (r.attributes || [])
-                .map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
-            const exactMatch = (existingSig === candSig);
+            const existingAttrs = (r.attributes || []).map(a => ({ typeID: a.typeID, text_value: a.text_value || '' }));
+            const exactMatch = (sigOf(existingAttrs) === candSig);
             if (exactMatch) {
                 return { kind: isEquivalent ? 'equivalence' : 'exact', existingLinkName: lookupName(r.linkTypeID) };
             }
-            // Attrs differ. With dedupeDuplicateRoles, still a match;
-            // remember but keep looking for an exact match elsewhere.
-            if (dedupeDuplicateRoles && !dupMatch) {
+            // Attrs differ. It's a duplicate *role* only when the identifying
+            // instrument/vocal attributes are the same (e.g. "guitar" vs
+            // "guitar (solo)"). Different instruments (synthesizer vs drum
+            // machine) are distinct performances and must both be added (#225).
+            if (dedupeDuplicateRoles && !dupMatch && idSigOf(existingAttrs) === candIdSig) {
                 dupMatch = { kind: isEquivalent ? 'equivalence' : 'duplicate-role', existingLinkName: lookupName(r.linkTypeID) };
             }
         }
