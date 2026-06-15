@@ -98,12 +98,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: #fff; border: 1px solid #d8c8a0; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
         .discogs-opts-panel.open { display: flex; }
         .discogs-opts-panel .discogs-opts-panel-hd { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #999; font-weight: 600; }
-        /* "Copy log ▾" dropdown in the right group */
-        .discogs-copylog-caret { color: #999; font-size: 0.7rem; }
-        /* "Log ▾" header toggle button (#142) */
-        .discogs-logtoggle-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
-        .discogs-logtoggle-btn:hover { border-color: #999; }
-        .discogs-logtoggle-btn.active { background: #f0ecfa; border-color: #b9a4e0; color: #5a3e94; }
+        /* "Log" header toggle — a split button (#142, #217): "Log" toggles, the
+           ▾ half (its own clickable target) opens the copy menu. */
+        .discogs-log-split { display: inline-flex; align-items: stretch; }
+        .discogs-logtoggle-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem 0 0 0.25rem; border-right: none; padding: 0.15rem 0.55rem; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap; }
+        .discogs-log-caret-btn { font-size: 0.78rem; color: #777; background: #fff; border: 1px solid #cfcfcf; border-radius: 0 0.25rem 0.25rem 0; padding: 0.15rem 0.45rem; cursor: pointer; display: inline-flex; align-items: center; }
+        .discogs-logtoggle-btn:hover, .discogs-log-caret-btn:hover { border-color: #999; }
+        .discogs-log-caret-btn:hover { background: #f6f3fc; }
+        .discogs-log-split.active .discogs-logtoggle-btn, .discogs-log-split.active .discogs-log-caret-btn { background: #f0ecfa; border-color: #b9a4e0; color: #5a3e94; }
         /* "Log ▾" dropdown menu (#118): show/hide + the three copy actions. */
         .discogs-log-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; min-width: 11rem; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.3rem; font-family: inherit; }
         .discogs-log-menu.open { display: flex; }
@@ -529,12 +531,20 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
 
     // "Log ▾" toggle. Shows/hides the log panel below the bar (copy buttons +
     // severity filter, #142). Hidden until the first import (no log to show yet).
+    const logSplit = document.createElement('span');
+    logSplit.className = 'discogs-log-split';
+    logSplit.style.display = 'none';   // hidden until the first import
     const logToggleBtn = document.createElement('button');
     logToggleBtn.type = 'button';
     logToggleBtn.className = 'discogs-logtoggle-btn';
-    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret" title="More log actions (copy)">▾</span>';
-    logToggleBtn.title = 'Show / hide the import log (▾ for copy actions)';
-    logToggleBtn.style.display = 'none';
+    logToggleBtn.textContent = 'Log';
+    logToggleBtn.title = 'Show / hide the import log';
+    const logCaretBtn = document.createElement('button');
+    logCaretBtn.type = 'button';
+    logCaretBtn.className = 'discogs-log-caret-btn';
+    logCaretBtn.textContent = '▾';
+    logCaretBtn.title = 'More log actions (copy)';
+    logSplit.append(logToggleBtn, logCaretBtn);
 
     const logoLink = document.createElement('a');
     logoLink.href = discogsUrl || sources.tidal || '#';
@@ -595,7 +605,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         qobuzLink.style.display = 'none';
     }
 
-    rightGroup.append(logToggleBtn, logoLink, tidalLink, qobuzLink, docsLink);
+    rightGroup.append(logSplit, logoLink, tidalLink, qobuzLink, docsLink);
 
     row1.appendChild(rightGroup);
 
@@ -839,11 +849,11 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     outputDiv.append(reviewSlot, logPanel);
     outputDiv.dataset.logfilter = 'all';
 
-    const applyLogOpen = () => { const open = localStorage.getItem(LOG_OPEN_KEY) === '1'; outputDiv.classList.toggle('log-open', open); logToggleBtn.classList.toggle('active', open); };
+    const applyLogOpen = () => { const open = localStorage.getItem(LOG_OPEN_KEY) === '1'; outputDiv.classList.toggle('log-open', open); logSplit.classList.toggle('active', open); };
     try { applyLogOpen(); } catch (e) {}
     const setLogOpen = (open) => {
         outputDiv.classList.toggle('log-open', open);
-        logToggleBtn.classList.toggle('active', open);
+        logSplit.classList.toggle('active', open);
         try { localStorage.setItem(LOG_OPEN_KEY, open ? '1' : '0'); } catch (e) {}
     };
 
@@ -871,23 +881,19 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     if (sources.qobuz) logMenu.appendChild(mkMenuItem('Copy Qobuz',   'Copy the parsed Qobuz credits for this release',       (b, l) => bar._copy?.qobuz(b, l)));
     document.body.appendChild(logMenu);
 
-    // Open the extra-actions menu (positioned under the button).
+    // Open the extra-actions menu (positioned under the split button).
     function openLogMenu() {
         const open = logMenu.classList.toggle('open');
         if (!open) return;
-        const r = logToggleBtn.getBoundingClientRect();
+        const r = logSplit.getBoundingClientRect();
         logMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - logMenu.offsetWidth - 8)) + 'px';
         logMenu.style.top = (r.bottom + 4) + 'px';
-        const off = ev => { if (!logMenu.contains(ev.target) && !logToggleBtn.contains(ev.target)) { logMenu.classList.remove('open'); document.removeEventListener('mousedown', off); } };
+        const off = ev => { if (!logMenu.contains(ev.target) && !logSplit.contains(ev.target)) { logMenu.classList.remove('open'); document.removeEventListener('mousedown', off); } };
         setTimeout(() => document.addEventListener('mousedown', off), 0);
     }
-    // #217: clicking the button toggles the log; clicking the ▾ caret opens the menu.
-    logToggleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (e.target.closest('.discogs-copylog-caret')) { openLogMenu(); return; }
-        logMenu.classList.remove('open');
-        setLogOpen(!outputDiv.classList.contains('log-open'));
-    });
+    // #217: the "Log" half toggles the log; the ▾ half opens the copy menu.
+    logToggleBtn.addEventListener('click', (e) => { e.stopPropagation(); logMenu.classList.remove('open'); setLogOpen(!outputDiv.classList.contains('log-open')); });
+    logCaretBtn.addEventListener('click', (e) => { e.stopPropagation(); openLogMenu(); });
 
     // ── Header badge wiring (#118) ──────────────────────────────────────────
     // A badge click opens the log if it's collapsed, switches to the matching
@@ -900,7 +906,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         // #217: a badge opens the log for THIS run only — it does NOT persist the
         // open state, so the next import/session respects the saved preference.
         outputDiv.classList.add('log-open');          // switch the log open if it wasn't
-        logToggleBtn.classList.add('active');
+        logSplit.classList.add('active');
         outputDiv.dataset.logfilter = f;              // select the right filter…
         logFilter.querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.f === f));
         // …then position the view on the first matching line (rAF so the now-
@@ -973,7 +979,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         logBody.appendChild(_summary);
         logBody.appendChild(_logs);
         outputDiv.classList.remove('empty');   // there's a log now → reveal the section + the header Log button
-        logToggleBtn.style.display = '';
+        logSplit.style.display = '';
         try { applyLogOpen(); } catch (e) {}   // #217: reset to the saved open/closed preference (clears a prior badge-only open)
 
         // Two "Copy log" variants:

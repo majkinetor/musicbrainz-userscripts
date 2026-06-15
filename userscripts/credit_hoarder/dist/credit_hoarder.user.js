@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.15.172438
+// @version      2026.6.15.181724
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -4650,12 +4650,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: #fff; border: 1px solid #d8c8a0; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
         .discogs-opts-panel.open { display: flex; }
         .discogs-opts-panel .discogs-opts-panel-hd { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #999; font-weight: 600; }
-        /* "Copy log \u25BE" dropdown in the right group */
-        .discogs-copylog-caret { color: #999; font-size: 0.7rem; }
-        /* "Log \u25BE" header toggle button (#142) */
-        .discogs-logtoggle-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
-        .discogs-logtoggle-btn:hover { border-color: #999; }
-        .discogs-logtoggle-btn.active { background: #f0ecfa; border-color: #b9a4e0; color: #5a3e94; }
+        /* "Log" header toggle \u2014 a split button (#142, #217): "Log" toggles, the
+           \u25BE half (its own clickable target) opens the copy menu. */
+        .discogs-log-split { display: inline-flex; align-items: stretch; }
+        .discogs-logtoggle-btn { font-size: 0.78rem; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.25rem 0 0 0.25rem; border-right: none; padding: 0.15rem 0.55rem; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap; }
+        .discogs-log-caret-btn { font-size: 0.78rem; color: #777; background: #fff; border: 1px solid #cfcfcf; border-radius: 0 0.25rem 0.25rem 0; padding: 0.15rem 0.45rem; cursor: pointer; display: inline-flex; align-items: center; }
+        .discogs-logtoggle-btn:hover, .discogs-log-caret-btn:hover { border-color: #999; }
+        .discogs-log-caret-btn:hover { background: #f6f3fc; }
+        .discogs-log-split.active .discogs-logtoggle-btn, .discogs-log-split.active .discogs-log-caret-btn { background: #f0ecfa; border-color: #b9a4e0; color: #5a3e94; }
         /* "Log \u25BE" dropdown menu (#118): show/hide + the three copy actions. */
         .discogs-log-menu { position: fixed; z-index: 100002; display: none; flex-direction: column; min-width: 11rem; background: #fff; border: 1px solid #cfcfcf; border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.3rem; font-family: inherit; }
         .discogs-log-menu.open { display: flex; }
@@ -5039,12 +5041,20 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     row1.appendChild(msgSlot);
     const rightGroup = document.createElement("div");
     rightGroup.className = "discogs-bar-right";
+    const logSplit = document.createElement("span");
+    logSplit.className = "discogs-log-split";
+    logSplit.style.display = "none";
     const logToggleBtn = document.createElement("button");
     logToggleBtn.type = "button";
     logToggleBtn.className = "discogs-logtoggle-btn";
-    logToggleBtn.innerHTML = 'Log <span class="discogs-copylog-caret" title="More log actions (copy)">\u25BE</span>';
-    logToggleBtn.title = "Show / hide the import log (\u25BE for copy actions)";
-    logToggleBtn.style.display = "none";
+    logToggleBtn.textContent = "Log";
+    logToggleBtn.title = "Show / hide the import log";
+    const logCaretBtn = document.createElement("button");
+    logCaretBtn.type = "button";
+    logCaretBtn.className = "discogs-log-caret-btn";
+    logCaretBtn.textContent = "\u25BE";
+    logCaretBtn.title = "More log actions (copy)";
+    logSplit.append(logToggleBtn, logCaretBtn);
     const logoLink = document.createElement("a");
     logoLink.href = discogsUrl || sources.tidal || "#";
     logoLink.target = "_blank";
@@ -5087,7 +5097,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     } else {
       qobuzLink.style.display = "none";
     }
-    rightGroup.append(logToggleBtn, logoLink, tidalLink, qobuzLink, docsLink);
+    rightGroup.append(logSplit, logoLink, tidalLink, qobuzLink, docsLink);
     row1.appendChild(rightGroup);
     bar.appendChild(row1);
     const stickySpacer = document.createElement("div");
@@ -5289,7 +5299,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     const applyLogOpen = () => {
       const open = localStorage.getItem(LOG_OPEN_KEY) === "1";
       outputDiv.classList.toggle("log-open", open);
-      logToggleBtn.classList.toggle("active", open);
+      logSplit.classList.toggle("active", open);
     };
     try {
       applyLogOpen();
@@ -5297,7 +5307,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     }
     const setLogOpen = (open) => {
       outputDiv.classList.toggle("log-open", open);
-      logToggleBtn.classList.toggle("active", open);
+      logSplit.classList.toggle("active", open);
       try {
         localStorage.setItem(LOG_OPEN_KEY, open ? "1" : "0");
       } catch (e) {
@@ -5323,11 +5333,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     function openLogMenu() {
       const open = logMenu.classList.toggle("open");
       if (!open) return;
-      const r = logToggleBtn.getBoundingClientRect();
+      const r = logSplit.getBoundingClientRect();
       logMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - logMenu.offsetWidth - 8)) + "px";
       logMenu.style.top = r.bottom + 4 + "px";
       const off = (ev) => {
-        if (!logMenu.contains(ev.target) && !logToggleBtn.contains(ev.target)) {
+        if (!logMenu.contains(ev.target) && !logSplit.contains(ev.target)) {
           logMenu.classList.remove("open");
           document.removeEventListener("mousedown", off);
         }
@@ -5336,17 +5346,17 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     }
     logToggleBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      if (e.target.closest(".discogs-copylog-caret")) {
-        openLogMenu();
-        return;
-      }
       logMenu.classList.remove("open");
       setLogOpen(!outputDiv.classList.contains("log-open"));
+    });
+    logCaretBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openLogMenu();
     });
     function openLog(filter, scrollSel) {
       const f = filter || "all";
       outputDiv.classList.add("log-open");
-      logToggleBtn.classList.add("active");
+      logSplit.classList.add("active");
       outputDiv.dataset.logfilter = f;
       logFilter.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x.dataset.f === f));
       requestAnimationFrame(() => {
@@ -5401,7 +5411,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       logBody.appendChild(_summary);
       logBody.appendChild(_logs2);
       outputDiv.classList.remove("empty");
-      logToggleBtn.style.display = "";
+      logSplit.style.display = "";
       try {
         applyLogOpen();
       } catch (e) {
