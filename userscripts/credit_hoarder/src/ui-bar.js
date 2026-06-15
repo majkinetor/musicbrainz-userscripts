@@ -182,6 +182,11 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
             white-space: nowrap;
             min-width: 0;
         }
+        /* #216: persistent end-of-run message (e.g. "No importable credits found") */
+        .discogs-bar-status-final {
+            color: #b26a00;
+            font-weight: 600;
+        }
         /* Count badges. Buttons so they can focus/open the log; styled as pills.
            Borderless + a touch larger per #139; the (deepened) fill carries them. */
         .discogs-badge {
@@ -926,6 +931,15 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         unresolvedPill.textContent = `⊘ ${n} unresolved`;
         unresolvedPill.style.display = n > 0 ? '' : 'none';
     };
+    // #216: a persistent end-of-run message shown in the header next to the Log
+    // (so even with the log collapsed you see why the import stopped). Unlike the
+    // transient status line it survives the post-run reset (see startImport).
+    bar._setStopMessage = (msg) => {
+        bar._stopActive = !!msg;
+        statusEl.textContent = msg || '';
+        statusEl.style.display = msg ? '' : 'none';
+        statusEl.classList.toggle('discogs-bar-status-final', !!msg);
+    };
 
     // Shared import-run scaffolding — both source buttons funnel through here.
     // `srcBtn`/`restoreLabel` drive the button state, `sourceUrl` feeds the
@@ -949,8 +963,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         // Fresh run → zero the badge tallies + clear any prior status line (#118).
         resetLogCounts();
         bar._setUnresolved(0);
-        statusEl.textContent = '';
-        statusEl.style.display = 'none';
+        bar._setStopMessage('');   // #216: clear any prior end-of-run message
 
         // Fresh log/summary elements each run
         _logs = document.createElement('ul');
@@ -1100,7 +1113,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         // happening in the background while the log is collapsed (#118 pt 5).
         bar._setProgress = (pct, text) => {
             if (pct !== null && pct >= 100) _hideBar();
-            if (text && bar.classList.contains('is-importing')) {
+            if (text && bar.classList.contains('is-importing') && !bar._stopActive) {   // #216: don't clobber a final stop message
                 statusEl.textContent = text;
                 statusEl.style.display = '';
             }
@@ -1143,8 +1156,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
                 // marquee + status line go away.
                 bar.classList.remove('is-importing');
                 _hideBar();
-                statusEl.textContent = '';
-                statusEl.style.display = 'none';
+                if (!bar._stopActive) { statusEl.textContent = ''; statusEl.style.display = 'none'; }   // #216: keep the end-of-run message
                 bar._pin();   // re-measure the spacer for the badge-bearing header height
             }, 2000);
             delete bar._setProgress;
@@ -1332,7 +1344,7 @@ function runTidalImport(tidalUrl, getOpts) {
             log.info(`Tidal credits: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s)${companies.length ? ` + ${companies.length} label/company` : ''} across ${tracklist.length} track(s)`);
             skipped.concat(relSkipped).forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             if (multiVolume) log.warn(`Multi-volume Tidal album — track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
-            if (!tracklistRels.length && !artistRoles.length && !companies.length) { log.warn('No importable credits found on the Tidal credits page.'); return; }
+            if (!tracklistRels.length && !artistRoles.length && !companies.length) { log.warn('No importable credits found on the Tidal credits page.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
             return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
         })
         .catch(err => { log.error(err.message || String(err)); });
@@ -1359,11 +1371,11 @@ function runQobuzImport(qobuzUrl, getOpts) {
             li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${albumInfo || 'Qobuz album'} · ${tracks.length} tracks — parsed Qobuz credits</strong></summary></details>`;
             li.querySelector('details').appendChild(pre);
             _logs.appendChild(li);
-            if (!tracks.length) { log.warn('No credits found on the Qobuz page — nothing to import.'); return; }
+            if (!tracks.length) { log.warn('No credits found on the Qobuz page — nothing to import.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
             const { tracklistRels, tracklist, skipped } = qobuzToEngine(tracks);
             log.info(`Qobuz credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
             skipped.forEach(s => log.info(`Not imported (v1 scope): ${s}`));
-            if (!tracklistRels.length) { log.warn('No importable credits found on the Qobuz page.'); return; }
+            if (!tracklistRels.length) { log.warn('No importable credits found on the Qobuz page.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
             return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts });
         })
         .catch(err => { log.error(err.message || String(err)); });
@@ -1493,6 +1505,14 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
             return runPreflight().then(allResults => {
                 annotateRoles(allResults);
                 capturedResults = allResults;
+                // #216: nothing to review (no entities resolved/unresolved) — stop
+                // instead of showing an empty "Start import" table. Surface a
+                // persistent header message (next to the Log) and let the run end.
+                if (!allResults.length) {
+                    log.warn('Nothing to import — no entities to review.');
+                    document.querySelector('.discogs-bar')?._setStopMessage?.('Nothing to import — no entities to review');
+                    return;
+                }
                 // #139: the review wait isn't an active import phase — hide the
                 // "Importing…" button + percentage while the user reviews.
                 document.querySelector('.discogs-bar')?.classList.add('is-reviewing');
@@ -1516,6 +1536,7 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                 });
             })
                 .then(confirmedMap => {
+                    if (!confirmedMap) return;   // #216: review skipped (nothing to import)
                     capturedConfirmedMap = confirmedMap;
                     // #139: dispatch is starting — a real import phase again, so
                     // restore the "Importing…" button + percentage.
@@ -1547,6 +1568,7 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     return Promise.all(cachePromises);
                 })
                 .then(() => {
+                    if (!capturedConfirmedMap) return;   // #216: nothing to dispatch
                     // Build resolved entity type map from preflight results
                     const resolvedEntityTypes = new Map();
                     (capturedResults || []).forEach(r => {

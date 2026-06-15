@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.14.190009
+// @version      2026.6.15.165648
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -4734,6 +4734,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             white-space: nowrap;
             min-width: 0;
         }
+        /* #216: persistent end-of-run message (e.g. "No importable credits found") */
+        .discogs-bar-status-final {
+            color: #b26a00;
+            font-weight: 600;
+        }
         /* Count badges. Buttons so they can focus/open the log; styled as pills.
            Borderless + a touch larger per #139; the (deepened) fill carries them. */
         .discogs-badge {
@@ -5371,6 +5376,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       unresolvedPill.textContent = `\u2298 ${n} unresolved`;
       unresolvedPill.style.display = n > 0 ? "" : "none";
     };
+    bar._setStopMessage = (msg) => {
+      bar._stopActive = !!msg;
+      statusEl.textContent = msg || "";
+      statusEl.style.display = msg ? "" : "none";
+      statusEl.classList.toggle("discogs-bar-status-final", !!msg);
+    };
     function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
       importBtn.disabled = true;
       importCaretBtn.disabled = true;
@@ -5387,8 +5398,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       requestAnimationFrame(bar._showProgress);
       resetLogCounts();
       bar._setUnresolved(0);
-      statusEl.textContent = "";
-      statusEl.style.display = "none";
+      bar._setStopMessage("");
       _logs2 = document.createElement("ul");
       _logs2.className = "logs";
       setLogContainer(_logs2);
@@ -5499,7 +5509,7 @@ ${lines}
       };
       bar._setProgress = (pct, text) => {
         if (pct !== null && pct >= 100) _hideBar();
-        if (text && bar.classList.contains("is-importing")) {
+        if (text && bar.classList.contains("is-importing") && !bar._stopActive) {
           statusEl.textContent = text;
           statusEl.style.display = "";
         }
@@ -5532,8 +5542,10 @@ ${lines}
         setTimeout(() => {
           bar.classList.remove("is-importing");
           _hideBar();
-          statusEl.textContent = "";
-          statusEl.style.display = "none";
+          if (!bar._stopActive) {
+            statusEl.textContent = "";
+            statusEl.style.display = "none";
+          }
           bar._pin();
         }, 2e3);
         delete bar._setProgress;
@@ -5685,6 +5697,7 @@ ${lines}
       if (multiVolume) log.warn(`Multi-volume Tidal album \u2014 track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
       if (!tracklistRels.length && !artistRoles.length && !companies.length) {
         log.warn("No importable credits found on the Tidal credits page.");
+        document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
       return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
@@ -5712,6 +5725,7 @@ ${lines}
       _logs2.appendChild(li);
       if (!tracks.length) {
         log.warn("No credits found on the Qobuz page \u2014 nothing to import.");
+        document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
       const { tracklistRels, tracklist, skipped } = qobuzToEngine(tracks);
@@ -5719,6 +5733,7 @@ ${lines}
       skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
       if (!tracklistRels.length) {
         log.warn("No importable credits found on the Qobuz page.");
+        document.querySelector(".discogs-bar")?._setStopMessage?.("No importable credits found");
         return;
       }
       return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: qobuzUrl, processTracklist: true, getOpts });
@@ -5806,6 +5821,11 @@ ${lines}
     return runPreflight().then((allResults) => {
       annotateRoles(allResults);
       capturedResults = allResults;
+      if (!allResults.length) {
+        log.warn("Nothing to import \u2014 no entities to review.");
+        document.querySelector(".discogs-bar")?._setStopMessage?.("Nothing to import \u2014 no entities to review");
+        return;
+      }
       document.querySelector(".discogs-bar")?.classList.add("is-reviewing");
       return showReviewTable(capturedResults, rolesMap, companiesRolesMap, {
         // Mount the Start-import button + unresolved message in the
@@ -5827,6 +5847,7 @@ ${lines}
         })
       });
     }).then((confirmedMap) => {
+      if (!confirmedMap) return;
       capturedConfirmedMap = confirmedMap;
       document.querySelector(".discogs-bar")?.classList.remove("is-reviewing");
       document.querySelector(".discogs-bar")?._setUnresolved?.(confirmedMap.unresolvedCount || 0);
@@ -5844,6 +5865,7 @@ ${lines}
       });
       return Promise.all(cachePromises);
     }).then(() => {
+      if (!capturedConfirmedMap) return;
       const resolvedEntityTypes = /* @__PURE__ */ new Map();
       (capturedResults || []).forEach((r) => {
         if (r.entity?.resource_url && r.mbUrl && r.entityType) {
