@@ -344,6 +344,23 @@ export function getArtistRoles(artist) {
                     role = ENTITY_TYPE_MAP['Programmed By'];
                     instrumentName = INSTRUMENTS_CI['drum machine'];
                 }
+                // #223: when the base instrument has no specific MB mapping
+                // (`null` → bare "instrument" rel), the Discogs bracket modifier
+                // often names the actual device — e.g. "Electronic Drums
+                // [Rhythm Box]" is a drum machine, "Mallets [Vibraphone]" a
+                // vibraphone. Gated on `!instrumentName` so a known base is
+                // never overridden by its bracket (e.g. "Bass [Guitar]" must
+                // stay "bass", not become "guitar").
+                if (!instrumentName && rolePart[1]) {
+                    const bracket = rolePart[1].replace(/]/g, '').trim();
+                    for (const candidate of [bracket, bracket.split(',')[0].trim()]) {
+                        const lc = candidate.toLowerCase();
+                        if (lc && Object.prototype.hasOwnProperty.call(INSTRUMENTS_CI, lc) && INSTRUMENTS_CI[lc]) {
+                            instrumentName = INSTRUMENTS_CI[lc];
+                            break;
+                        }
+                    }
+                }
                 return Object.assign({}, role, {
                     artist: artist,
                     attributes: instrumentName ? [{ _type: 'instrument', value: instrumentName.toLowerCase() }] : [],
