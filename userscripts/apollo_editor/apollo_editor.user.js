@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.14.230000
+// @version      2026.6.15.234500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -92,7 +92,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
 
@@ -261,7 +261,86 @@
     return map;
   }
 
-  async function matchSlot(creditedAs, sib) {
+  /* ── Discogs artist-link matching (#224) ──────────────────────────────────────
+   * When the release carries a Discogs link, match each track artist by its
+   * Discogs URL — a strong, human-verified signal — before the name search.
+   * Self-contained: Apollo stays fully independent of Credit Hoarder. Gated by
+   * the "Discogs artist link matching" option. Resolves one slot at a time
+   * (matchModel is already sequential), waiting + retrying on rate limits. */
+  const DISCOGS_TOKEN = 'gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ';
+  // Scrape the release's Discogs link from the page — edit-relationships anchors
+  // or the release editor's external-link inputs. First match wins (#224).
+  function discogsReleaseUrlFromPage() {
+    const re = /discogs\.com\/(?:[a-z]{2}\/)?(?:[^/\s"']*\/)?release\/(\d+)/i;
+    for (const a of document.querySelectorAll('a[href*="discogs.com/release/"]')) { const m = re.exec(a.getAttribute('href') || ''); if (m) return `https://www.discogs.com/release/${m[1]}`; }
+    for (const inp of document.querySelectorAll('input')) { const m = re.exec(inp.value || ''); if (m) return `https://www.discogs.com/release/${m[1]}`; }
+    return null;
+  }
+  // Map folded track title → array of Discogs artist www-URLs (one per credited
+  // track artist, in order). Keyed by title like the sibling map, so it's robust
+  // to medium/ordering differences. Cached per release link.
+  let _discogsMap = { url: undefined, map: null };
+  async function loadDiscogsMap(force) {
+    if (SETTINGS.discogsUrlMatch === false) return null;
+    const url = discogsReleaseUrlFromPage();
+    if (!url) { _discogsMap = { url: null, map: null }; return null; }
+    if (!force && _discogsMap.url === url && _discogsMap.map) return _discogsMap.map;
+    let json = null;
+    try { json = await fetch(`${url.replace('https://www.discogs.com/release/', 'https://api.discogs.com/releases/')}?token=${DISCOGS_TOKEN}`).then(r => r.ok ? r.json() : null); }
+    catch (e) { Log.warn('Discogs match: fetch failed —', e.message); }
+    const map = new Map();
+    if (json && Array.isArray(json.tracklist)) {
+      json.tracklist.filter(t => (t.type_ || 'track') === 'track').forEach(t => {
+        const key = fold(t.title || ''); if (!key || map.has(key)) return;
+        map.set(key, (t.artists || []).map(a => (a && a.id) ? `https://www.discogs.com/artist/${a.id}` : null));
+      });
+      Log.info('Discogs match: mapped', map.size, 'track titles from', url);
+    } else { Log.warn('Discogs match: release JSON had no tracklist'); }
+    _discogsMap = { url, map };
+    return map;
+  }
+  // Resolve a Discogs artist URL to MB artist(s) via its URL relationship.
+  // Returns [{ gid, name }] (0 / 1 / many). Waits + retries on 429 / 503.
+  const _discogsResolveCache = new Map();
+  async function resolveByDiscogsUrl(discogsUrl) {
+    if (!discogsUrl) return [];
+    if (_discogsResolveCache.has(discogsUrl)) return _discogsResolveCache.get(discogsUrl);
+    let out = [];
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const r = await fetch(`${ORIGIN}/ws/2/url?resource=${encodeURIComponent(discogsUrl)}&inc=artist-rels&fmt=json`, { headers: { Accept: 'application/json' } });
+        if (r.status === 429 || r.status === 503) { await new Promise(z => setTimeout(z, 1100)); continue; }
+        if (!r.ok) break;
+        const j = await r.json();
+        const seen = new Set();
+        out = (j.relations || []).filter(rel => rel.artist && rel.artist.id).map(rel => ({ gid: rel.artist.id, name: rel.artist.name })).filter(e => !seen.has(e.gid) && seen.add(e.gid));
+        break;
+      } catch (e) { await new Promise(z => setTimeout(z, 600)); }
+    }
+    _discogsResolveCache.set(discogsUrl, out);
+    return out;
+  }
+  // slot status from a match result — 'disc' for a confident Discogs-URL match,
+  // 'rg' for a release-group sibling, else the name-search confidence.
+  const slotStatusOf = m => !m.entity ? 'none' : (m.source === 'rg' ? 'rg' : (m.source === 'discogs' && m.confidence === 'high') ? 'disc' : m.confidence);
+
+  async function matchSlot(creditedAs, sib, discogsUrl) {
+    // #224: a Discogs artist-link match outranks the name search.
+    if (SETTINGS.discogsUrlMatch !== false && discogsUrl) {
+      const hits = await resolveByDiscogsUrl(discogsUrl);
+      if (hits.length === 1) {
+        const e = await fetchEntity(hits[0].gid);
+        if (e && e.gid) return { entity: e, source: 'discogs', confidence: 'high', candidates: [e] };
+      } else if (hits.length > 1) {
+        // ambiguous — surface every linked artist plus the name-search hits and let the user pick
+        const named = await searchArtist(creditedAs);
+        const ents = [];
+        for (const h of hits) { const e = await fetchEntity(h.gid); if (e && e.gid) ents.push(e); }
+        const merged = [...ents, ...named.filter(c => !ents.some(e => e.gid === (c.gid || c.id)))];
+        if (ents.length) return { entity: ents[0], source: 'discogs', confidence: 'low', candidates: merged };
+      }
+      // 0 hits → fall through to the name / sibling logic below
+    }
     let candidates = await searchArtist(creditedAs);
     let entity = null, source = 'search', confidence = 'low';
     if (sib && sib.gid) {
@@ -287,18 +366,20 @@
   async function buildModel(onProgress) {
     const tl = readTracklist();
     const siblings = await loadSiblingMap();
+    const dmap = await loadDiscogsMap();
     const tracks = [];
     const todo = tl.filter(t => t.names.some(n => !n.artistGid));
     let done = 0;
     for (const t of tl) {
       const sib = siblings.get(fold(t.title)) || null;
+      const durls = dmap ? dmap.get(fold(t.title)) : null;
       const slots = [];
       for (let i = 0; i < t.names.length; i++) {
         const n = t.names[i];
         if (n.artistGid) { slots.push({ creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status: 'set', entity: null, gid: n.artistGid, name: n.artistName, candidates: [], committed: true }); }
         else {
-          const m = await matchSlot(n.creditedAs, sib && sib[i]);
-          const status = m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none';
+          const m = await matchSlot(n.creditedAs, sib && sib[i], durls && durls[i]);
+          const status = slotStatusOf(m);
           slots.push({ creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status, entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false });
         }
       }
@@ -325,8 +406,8 @@
     });
   }
   // on load, immediately write the confident matches (RG/HIGH) — that's the "no apply phase" behaviour
-  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high') { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
-  function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high') { s.committed = true; any = true; } }); if (any) commitTrack(t); }
+  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high' || s.status === 'disc') { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
+  function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (s.status === 'rg' || s.status === 'high' || s.status === 'disc') { s.committed = true; any = true; } }); if (any) commitTrack(t); }
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
   function buildShell() {
     snapshotMissing();   // capture page-load state for any lazily-loaded medium before matching touches it
@@ -352,14 +433,16 @@
     setMatching(true);
     try {
       const siblings = await loadSiblingMap();
+      const dmap = await loadDiscogsMap();
       const todo = MODEL.tracks.filter(t => t.slots.some(s => s._pending)); let done = 0;
       for (const t of MODEL.tracks) {
         if (!t.slots.some(s => s._pending)) continue;
         const sib = siblings.get(fold(t.title)) || null;
+        const durls = dmap ? dmap.get(fold(t.title)) : null;
         for (let i = 0; i < t.slots.length; i++) {
           const s = t.slots[i]; if (!s._pending) continue;
-          const m = await matchSlot(s.creditedAs, sib && sib[i]);
-          Object.assign(s, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
+          const m = await matchSlot(s.creditedAs, sib && sib[i], durls && durls[i]);
+          Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
         }
         autoCommitTrack(t); if (!isEditing()) rerender();
         done++; if (onProgress) onProgress(done, todo.length);
@@ -477,7 +560,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.13.201411';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.15.234500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -500,17 +583,17 @@
 
   const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
   const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: 'Match' }];
-  const badgeText = s => ({ rg: 'rg', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
+  const badgeText = s => ({ rg: 'rg', disc: 'disc', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   // Enter in our inputs must not bubble to MB's form (it switches tabs); commit by blurring instead
   const enterBlurs = el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); el.blur(); } });
-  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
-  const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s.toUpperCase()}</span>`;
+  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'disc', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
+  const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s === 'disc' ? 'DISC' : s.toUpperCase()}</span>`;
 
   const css = `
     .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:#fff;white-space:nowrap}
-    .tc-badge.rg{background:#1f8a4c}.tc-badge.set{background:#6c757d}.tc-badge.high{background:#2f6fd6}
+    .tc-badge.rg{background:#1f8a4c}.tc-badge.set{background:#6c757d}.tc-badge.high{background:#2f6fd6}.tc-badge.disc{background:#0a7a8c}
     .tc-badge.low{background:#e0a800}.tc-badge.user{background:#6f42c1}.tc-badge.none{background:#c0392b}
     .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}
     .tc-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}
@@ -870,6 +953,7 @@
       <div class="tc-s-sec">Matching</div>
       <div class="tc-s-group">
         <div class="tc-s-row"><b class="tc-s-sub">Auto-match on start</b><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label></div>
+        <label title="When the release has a Discogs link, match each track artist by its Discogs URL (a strong, human-verified signal) before the name search. A single linked MusicBrainz artist is used directly; several are offered as candidates."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
         <div class="tc-s-sub">Recording</div>
         <div class="tc-s-group">
           <div class="tc-s-row lentol" title="A length difference up to this many seconds counts as a match (not a length mismatch)."><span>Length tolerance</span><input type="number" id="tc-s-lentol" min="0" max="60" step="1"> <span>seconds</span></div>
@@ -901,6 +985,7 @@
     s.querySelectorAll('input[name="tc-s-layout"]').forEach(rb => { rb.checked = rb.value === curLayout; rb.onchange = () => { if (rb.checked) { SETTINGS.layout = rb.value; saveSettings(); applyViewClasses(); } }; });
     am.onchange = () => { SETTINGS.autoMatch = am.checked; saveSettings(); };
     amRec.onchange = () => { SETTINGS.autoMatchRec = amRec.checked; saveSettings(); };
+    const dmatch = s.querySelector('#tc-s-discogsmatch'); if (dmatch) { dmatch.checked = SETTINGS.discogsUrlMatch !== false; dmatch.onchange = () => { SETTINGS.discogsUrlMatch = dmatch.checked; saveSettings(); }; }
     const lentol = s.querySelector('#tc-s-lentol'), titletol = s.querySelector('#tc-s-titletol'), igc = s.querySelector('#tc-s-ignorecase'), igp = s.querySelector('#tc-s-ignorepunct');
     lentol.value = SETTINGS.recLenTol != null ? SETTINGS.recLenTol : 5; titletol.value = SETTINGS.recTitleTol || 0; igc.checked = SETTINGS.recIgnoreCase !== false; igp.checked = !!SETTINGS.recIgnorePunct;
     const refreshRec = () => { try { if (document.getElementById('tc-recwrap')) rerenderRec(); } catch (e) {} };   // live-update the table
@@ -1137,7 +1222,7 @@
     slot.creditedAs = on.creditedAs; slot.joinPhrase = on.joinPhrase; slot.query = null;
     const a = u(on.artist) || {}, gid = u(a.gid);
     if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: { gid, name: u(a.name), id: u(a.id) }, candidates: [], committed: true });
-    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const m = await matchSlot(on.creditedAs, sib && sib[i]); Object.assign(slot, { status: m.entity ? (m.source === 'rg' ? 'rg' : m.confidence) : 'none', entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false }); }
+    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const m = await matchSlot(on.creditedAs, sib && sib[i], durls && durls[i]); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false }); }
     commitTrack(entry); Log.info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
@@ -4832,7 +4917,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
