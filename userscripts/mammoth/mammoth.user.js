@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.14.190000
+// @version      2026.6.15.233000
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPCEtLSBzaGFnZ3kgYm9keSArIGRvbWVkIGhlYWQgLS0+DQogIDxwYXRoIGQ9Ik0yOCA4MmMwLTEwIDQtMTcgMTEtMjEgMy0xNSAxNS0yNSAzMS0yNXMyNyAxMCAzMCAyNGM3IDMgMTAgOSAxMCAxN3YxMGMwIDQtMyA3LTcgN2gtN3YtOWgtOHY5SDY2di05aC04djloLTljLTUgMC05LTQtOS05di0zYy00LTItNy02LTctMTFaIiBmaWxsPSIjOGQ2NDQyIi8+DQogIDwhLS0gZWFyIC0tPg0KICA8cGF0aCBkPSJNNzQgNDZjMTEtNyAyMi0zIDIyIDgtOS01LTE2LTMtMjAgM1oiIGZpbGw9IiM3YTU0MzYiLz4NCiAgPCEtLSB0cnVuayAtLT4NCiAgPHBhdGggZD0iTTQyIDY0Yy05IDYtMTMgMTktNyAzMSAzIDYgMTEgMyA5LTMtMi04IDAtMTUgNy0xOVoiIGZpbGw9IiM4ZDY0NDIiLz4NCiAgPCEtLSB0dXNrIC0tPg0KICA8cGF0aCBkPSJNNDYgODZjLTkgNS0xOCAyLTIyLTcgNyA3IDE1IDYgMjAtMVoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzZmNGEyZSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4NCiAgPCEtLSBleWUgLS0+DQogIDxjaXJjbGUgY3g9IjU0IiBjeT0iNTYiIHI9IjQiIGZpbGw9IiMyYTIwMTciLz4NCjwvc3ZnPg0K
@@ -30,7 +30,7 @@
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true };   // defaultInsert: 'replace' | 'append'
-  const VERSION = '2026.6.14.190000';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.6.15.233000';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -69,9 +69,28 @@
     a.splice(before ? ti : ti + 1, 0, it); saveData();
   }
 
-  // ── insert (React-safe) ──────────────────────────────────────────────────────
+  // ── insert (React-safe + undoable) ───────────────────────────────────────────
   const NATIVE_SET = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-  function setValue(ta, val) { NATIVE_SET.call(ta, val); ta.dispatchEvent(new Event('input', { bubbles: true })); ta.dispatchEvent(new Event('change', { bubbles: true })); }
+  // Set the whole field value via the native edit pipeline so the change joins
+  // the browser's undo stack — ctrl/⌘+Z restores the previous note (#226).
+  // `execCommand` also fires a genuine `input` event, so the React-controlled
+  // edit-note field (release editor) still updates. Falls back to the native
+  // value setter + synthetic events if execCommand is unavailable or no-ops.
+  function setValue(ta, val) {
+    let ok = false;
+    try {
+      ta.focus();
+      ta.setSelectionRange(0, ta.value.length);   // select all → replace as one undoable step
+      ok = val ? document.execCommand('insertText', false, val)
+               : document.execCommand('delete', false, null);
+      if (ok && ta.value !== val) ok = false;      // some engines return true but no-op
+    } catch (e) { ok = false; }
+    if (!ok) {
+      NATIVE_SET.call(ta, val);
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    ta.dispatchEvent(new Event('change', { bubbles: true }));
+  }
   function applyNote(ta, text, replace) {
     const cur = ta.value || '';
     if (!replace && cur.trim()) {
