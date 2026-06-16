@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.105000
+// @version      2026.6.16.110000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -560,7 +560,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.105000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.110000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -714,8 +714,9 @@
     .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box}
     .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px}
     .tc-cred::placeholder{color:#cfcfcf}
-    .tc-cred-clr{flex:none;display:none;border:none;background:none;color:#c0392b;cursor:pointer;font-size:14px;line-height:1;padding:0 1px;align-self:center}
-    .tc-aslot.tc-has-cred:hover .tc-cred-clr{display:inline-flex}
+    .tc-credwrap{position:relative;flex:none;display:inline-flex;align-items:center}
+    .tc-cred-clr{position:absolute;left:-3px;top:50%;transform:translateY(-50%);z-index:2;display:none;border:none;background:none;color:#c0392b;cursor:pointer;font-size:14px;line-height:1;padding:0 1px}
+    .tc-aslot.tc-has-cred:hover .tc-cred-clr{display:block}
     .tc-cred-clr:hover{color:#922}
     .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
     .tc-aslot.tc-can-split .tc-cred{background:#fff3cf;border-color:#e7ce8a;border-radius:3px;color:#8a6d00}
@@ -1491,7 +1492,11 @@
       // whole-credit "all matching tracks" propagation (liveRerender=false → keep focus when nothing propagates)
       editCredit(entry, () => { s.creditedAs = newCred; if (s.creditedAs === s.name) cred.value = ''; }, 'credited-as', false);
       refreshBadges();   // a credited-as edit changes the track → update the ↺ button + changed-row border now
-    }; wireRowNav(cred); line.appendChild(credClr); line.appendChild(cred); updCredClr();
+    }; wireRowNav(cred);
+    // wrap so the × can be absolutely positioned over the field's (empty, right-
+    // aligned) left edge — it must not take flow space or it shifts the row (#228)
+    const credWrap = document.createElement('span'); credWrap.className = 'tc-credwrap';
+    credWrap.appendChild(cred); credWrap.appendChild(credClr); line.appendChild(credWrap); updCredClr();
     const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
     if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
     line.appendChild(ic);

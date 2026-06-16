@@ -42,12 +42,26 @@ const res = await page.evaluate(async () => {
 });
 log('result:', JSON.stringify(res));
 
+// #228 follow-up: the × must not shift the row (it's absolutely positioned)
+const shift = await page.evaluate(() => {
+  const cred = document.querySelector('.tc-aslot .tc-cred'); const line = cred.closest('.tc-aslot');
+  const setN = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+  setN.call(cred, 'Probe Credit'); cred.dispatchEvent(new Event('input', { bubbles: true }));
+  const clr = line.querySelector('.tc-cred-clr');
+  const downstream = line.querySelector('.tc-search') || line.querySelector('.tc-tic') || cred;
+  clr.style.display = 'none'; const a = Math.round(downstream.getBoundingClientRect().left);
+  clr.style.display = 'block'; const b = Math.round(downstream.getBoundingClientRect().left);
+  clr.style.display = ''; return { hidden: a, shown: b };
+});
+log('downstream left — × hidden:', shift.hidden, 'shown:', shift.shown);
+
 let fail = 0;
 const check = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 check(res.clrExists, 'clear button exists in the slot');
 check(res.hasClass, 'tc-has-cred class set when the field has a value (shows × on hover)');
 check(res.valueAfterClear === '', 'clicking × clears the credited-as field');
 check(res.classAfter === false, 'tc-has-cred removed after clearing');
+check(shift.hidden === shift.shown, 'showing the × does not shift the row (no misalignment)');
 console.log(fail ? `\n${fail} FAILURE(S)` : '\nALL ASSERTIONS PASS');
 await ctx.close();
 process.exit(fail ? 1 : 0);
