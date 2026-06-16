@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.293000
+// @version      2026.6.16.300000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -64,7 +64,10 @@
       const types = (raw && raw !== '-') ? raw.split(',').map(s => s.trim()).filter(s => s && s !== '-') : [];
       const cmtP = ps.find(p => p !== typeP && p.textContent.trim() && !/All sizes:/i.test(p.textContent) && !/Dimensions:/i.test(p.textContent));
       const comment = cmtP ? cmtP.textContent.trim() : '';
-      return { id: m[1], types, comment, pending: b.classList.contains('mp'), order: i };
+      const orig = [...b.querySelectorAll('a')].find(a => a.textContent.trim().toLowerCase() === 'original');
+      const img = orig ? new URL(orig.getAttribute('href'), location.href).href : '';
+      const pdf = /\.pdf(\?|$)/i.test(img);
+      return { id: m[1], types, comment, pending: b.classList.contains('mp'), pdf, img, order: i };
     }).filter(Boolean);
   }
   async function loadArt() {
@@ -74,11 +77,11 @@
     catch (e) { /* not propagated / none yet */ }
     const byId = new Map(caa.map(im => [String(im.id), im]));
     const source = (pageArt && pageArt.length)
-      ? pageArt.map(p => ({ id: p.id, types: p.types, comment: p.comment || (byId.get(String(p.id)) || {}).comment || '', pending: p.pending }))
-      : caa.map(im => ({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '', pending: false }));
+      ? pageArt.map(p => ({ id: p.id, types: p.types, comment: p.comment || (byId.get(String(p.id)) || {}).comment || '', pending: p.pending, img: p.img || (byId.get(String(p.id)) || {}).image || imgUrl(p.id), pdf: p.pdf }))
+      : caa.map(im => ({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '', pending: false, img: im.image || imgUrl(im.id), pdf: /\.pdf(\?|$)/i.test(im.image || '') }));
     MODEL = source.map((s, i) => ({
       id: s.id, types: s.types.slice(), comment: s.comment,
-      order: i, w: 0, h: 0, _del: false, _new: false, _pending: !!s.pending, _img: (byId.get(String(s.id)) || {}).image || imgUrl(s.id),
+      order: i, w: 0, h: 0, _del: false, _new: false, _pending: !!s.pending, _pdf: !!s.pdf || /\.pdf(\?|$)/i.test(s.img || ''), _img: s.img,
       _origTypes: s.types.slice(), _origComment: s.comment, _origOrder: i,
     }));
     render();
@@ -220,6 +223,7 @@
       ${it._new ? '<span class="as-newban">NEW</span>' : ''}
       <div class="as-types">${chips}</div>
       <div class="as-thumb"><img loading="lazy" draggable="false" src="${esc(src)}" alt=""><span class="as-dim">${esc(dim)}</span>
+        ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${it._pending ? '<span class="as-pendban" title="has a pending edit on MusicBrainz">⏳ pending</span>' : ''}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
@@ -278,7 +282,7 @@
     root.querySelectorAll('.as-chip').forEach(ch => ch.onclick = e => { e.stopPropagation(); openTypePop(ch); });
     // click image → lightbox; right-click card → toggle selection
     root.querySelectorAll('.as-thumb img').forEach(img => {
-      img.onclick = e => { const it = byId(cardId(e.target)); if (it) openLightbox(it.id); };
+      img.onclick = e => { const it = byId(cardId(e.target)); if (!it) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
       img.onerror = () => { const th = img.closest('.as-thumb'); if (th) th.classList.add('na'); };   // CAA not propagated yet
       if (img.complete && !img.naturalWidth && img.getAttribute('src')) img.onerror();
     });
@@ -615,6 +619,8 @@
   let _lb = null;          // current lightbox image id
   const visible = () => grouped().flatMap(g => g.items);   // flat, in displayed order
   function openLightbox(id) {
+    const it0 = byId(id);
+    if (it0 && it0._pdf) { window.open(it0._img, '_blank', 'noopener'); return; }   // PDFs render in a new tab
     _lb = id; _cursorId = id;
     let ov = document.getElementById('as-lb');
     if (!ov) {
@@ -631,7 +637,18 @@
       ov.onclick = e => { if (e.target === ov) closeLightbox(); };
     }
     paintLightbox();
+    preloadNeighbors();
     ov.style.display = 'flex';
+  }
+  // prefetch the adjacent covers' 1200px so arrow-nav is instant
+  const _preloaded = new Set();
+  function preloadNeighbors() {
+    const seq = visible().filter(it => !it._pdf);
+    const i = seq.findIndex(it => String(it.id) === String(_lb));
+    if (i < 0) return;
+    [seq[(i + 1) % seq.length], seq[(i - 1 + seq.length) % seq.length]].forEach(it => {
+      if (it && !it._new && !_preloaded.has(it.id)) { _preloaded.add(it.id); const im = new Image(); im.src = thumb(it.id, 1200); }
+    });
   }
   function paintLightbox() {
     const ov = document.getElementById('as-lb'); if (!ov) return;
@@ -651,10 +668,12 @@
   }
   function closeLightbox() { _lb = null; const ov = document.getElementById('as-lb'); if (ov) ov.style.display = 'none'; }
   function lbNav(d) {
-    const seq = visible(); if (!seq.length) return;
+    const seq = visible().filter(it => !it._pdf);   // PDFs open in a tab, not the lightbox
+    if (!seq.length) return;
     let i = seq.findIndex(it => String(it.id) === String(_lb));
+    if (i < 0) i = 0;
     i = (i + d + seq.length) % seq.length;
-    _lb = seq[i].id; _cursorId = _lb; paintLightbox(); markCursor(true);
+    _lb = seq[i].id; _cursorId = _lb; paintLightbox(); markCursor(true); preloadNeighbors();
   }
 
   // ── keyboard cursor (arrows select / move; Enter opens lightbox) ──────────────
@@ -757,6 +776,7 @@
   .as-card.new{background:repeating-linear-gradient(45deg,#eef7f1,#eef7f1 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:#9bd3b6;border-style:dashed}
   .as-card.pending{background:#fdf3d0;border-color:#e6cf86}
   .as-pendban{position:absolute;left:6px;top:6px;z-index:4;background:#d89000;color:#fff;font:700 10px/1 Arial;letter-spacing:.3px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
+  .as-pdfban{position:absolute;right:6px;top:6px;z-index:4;background:#7a3a8f;color:#fff;font:700 10px/1 Arial;letter-spacing:.5px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
   .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9}
   .as-thumb img{width:100%;height:100%;object-fit:contain;display:block}
