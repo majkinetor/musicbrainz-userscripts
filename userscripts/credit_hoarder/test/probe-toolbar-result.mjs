@@ -5,7 +5,7 @@ const { chromium } = createRequire('C:/Work/mb-userscripts/userscripts/apollo_ed
 import { readFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { clickImport, confirmReviewTable, waitForImportDone } from './lib/browser.js';
+import { clickImport, waitForImportDone } from './lib/browser.js';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PROFILE = resolve(HERE, '..', '..', '..', '.pw-profile');
 const DIST = resolve(HERE, '..', 'dist', 'credit_hoarder.user.js');
@@ -14,7 +14,7 @@ const REL = '3cc7b91d-d9c3-4b1e-9d52-37c15aa17fc4';   // The Lost Tapes (Discogs
 const log = (...a) => console.log('[probe-result]', ...a);
 
 const code = await readFile(DIST, 'utf8');
-const ctx = await chromium.launchPersistentContext(PROFILE, { headless: true, viewport: { width: 1700, height: 1050 } });
+const ctx = await chromium.launchPersistentContext(PROFILE, { headless: true, viewport: { width: 1700, height: 1050 }, bypassCSP: true });
 const page = ctx.pages()[0] || await ctx.newPage();
 page.on('pageerror', e => log('[pageerror]', e.message));
 await page.addInitScript(() => {
@@ -27,8 +27,12 @@ await page.addScriptTag({ content: code });
 await page.waitForSelector('.discogs-bar .discogs-import-btn', { timeout: 30000 });
 
 await clickImport(page);
-const confirmed = await confirmReviewTable(page, { timeout: 4 * 60_000 });
-log('review confirmed:', confirmed);
+// the review table's confirm button is "<icon> Start import →" — match by
+// substring (the lib's ^-anchored helper misses the leading icon text)
+const startBtn = page.locator('button', { hasText: /Start import/i }).first();
+await startBtn.waitFor({ state: 'visible', timeout: 4 * 60_000 });
+await startBtn.click();
+log('clicked Start import');
 const { timedOut } = await waitForImportDone(page, { timeout: 4 * 60_000 });
 log('import done, timedOut:', timedOut);
 
