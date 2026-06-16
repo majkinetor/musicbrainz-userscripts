@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.233000
+// @version      2026.6.16.240000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -170,6 +170,7 @@
       ${it._new ? '<span class="as-newban">NEW</span>' : ''}
       <div class="as-types">${chips}</div>
       <div class="as-thumb"><img loading="lazy" src="${esc(src)}" alt=""><span class="as-dim">${esc(dim)}</span>
+        <span class="as-selmark">✓</span>
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
       ${it._del ? '' : `<div class="as-meta">${(it.comment || it._editcmt)
@@ -252,13 +253,24 @@
     if (c) { c.disabled = !n; if (!c.disabled) c.onclick = enterEdit; }
   }
 
+  // position a popover next to an anchor, flipping up / clamping so it stays on-screen
+  function placePop(pop, r) {
+    const ph = pop.offsetHeight, pw = pop.offsetWidth, vh = innerHeight, vw = innerWidth, M = 8;
+    let top = r.bottom + 3;
+    if (top + ph > vh - M && r.top - ph - 3 >= M) top = r.top - ph - 3;   // flip above the anchor
+    top = Math.max(M, Math.min(top, vh - ph - M));
+    let left = Math.max(M, Math.min(r.left, vw - pw - M));
+    pop.style.top = (top + scrollY) + 'px';
+    pop.style.left = (left + scrollX) + 'px';
+  }
+
   function openTypePop(chip) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const it = byId(cardId(chip)); if (!it) return;
     const pop = document.createElement('div'); pop.className = 'as-pop';
     pop.innerHTML = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('');
     document.body.appendChild(pop);
-    const r = chip.getBoundingClientRect(); pop.style.left = (r.left + scrollX) + 'px'; pop.style.top = (r.bottom + scrollY + 3) + 'px';
+    placePop(pop, chip.getBoundingClientRect());
     pop.querySelectorAll('input').forEach(cb => cb.onchange = () => {
       it.types = ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
       render();
@@ -432,7 +444,7 @@
       + ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')
       + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply (replace)</button><button class="as-btn as-pop-add">Add</button></div>`;
     document.body.appendChild(pop);
-    const r = btn.getBoundingClientRect(); pop.style.left = (r.left + scrollX) + 'px'; pop.style.top = (r.bottom + scrollY + 3) + 'px';
+    placePop(pop, btn.getBoundingClientRect());
     const picked = () => ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
     pop.querySelector('.as-pop-apply').onclick = () => { const ts = picked(); sel.forEach(it => it.types = ts.slice()); pop.remove(); render(); };
     pop.querySelector('.as-pop-add').onclick = () => { const ts = picked(); sel.forEach(it => it.types = [...new Set([...it.types, ...ts])]); pop.remove(); render(); };
@@ -492,7 +504,8 @@
   .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
   /* selection + keyboard cursor */
   .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
-  .as-card.sel::after{content:'✓';position:absolute;right:7px;top:7px;width:20px;height:20px;line-height:20px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:12px;z-index:6;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .as-selmark{position:absolute;right:6px;bottom:6px;width:22px;height:22px;line-height:22px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:13px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.4);z-index:4;display:none}
+  .as-card.sel .as-selmark{display:block}
   .as-card.as-cursor{box-shadow:0 0 0 2px #2a6,0 3px 14px rgba(40,160,100,.28)}
   /* bulk bar */
   .as-bulk{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:120;display:flex;align-items:center;gap:11px;padding:9px 15px;background:#fff;border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 8px 28px rgba(60,40,110,.28);flex-wrap:wrap;max-width:94vw}
@@ -507,8 +520,8 @@
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
-  .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:#fff;transition:opacity .12s}
-  .as-lb-img.loading{opacity:0}
+  .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:#fff}
+  .as-lb-img.loading{visibility:hidden}
   #as-lb.na .as-lb-img{display:none}
   #as-lb.na::after{content:'Image not available, please try again later';color:#f0c4da;font-style:italic;font-size:16px}
   .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:42px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
