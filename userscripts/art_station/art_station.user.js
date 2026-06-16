@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.310000
+// @version      2026.6.16.311500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -474,6 +474,8 @@
   }
   // ── Phase 2a: apply staged changes as real MB edits (form-replay) ─────────────
   const R = `/release/${MBID}`;
+  // credit the tool in every edit note (user's note first, then the script name)
+  const editNote = m => [m.note && m.note.trim(), 'Art Station'].filter(Boolean).join('\n\n');
   async function getPostForm(url) {
     const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET ' + r.status); return r.text(); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -497,14 +499,14 @@
     const tm = typeMapOf(form, 'edit-cover-art');
     it.types.forEach(t => { if (tm[t]) p.append('edit-cover-art.type_id', tm[t]); });
     p.append('edit-cover-art.comment', it.comment);
-    p.append('edit-cover-art.edit_note', meta.note);
+    p.append('edit-cover-art.edit_note', editNote(meta));
     if (meta.votable) p.append('edit-cover-art.make_votable', '1');
     return { method: 'POST', url: form._action, body: p };
   }
   async function buildRemove(it, meta) {
     const form = await getPostForm(`${R}/remove-cover-art/${it.id}`);
     const p = new URLSearchParams(); copyHidden(form, p);
-    p.append('confirm.edit_note', meta.note);
+    p.append('confirm.edit_note', editNote(meta));
     if (meta.votable) p.append('confirm.make_votable', '1');
     return { method: 'POST', url: form._action, body: p };
   }
@@ -526,7 +528,7 @@
       report(`1. GET /ws/js/cover-art-upload/${MBID}?mime_type=${mime}  → {action,image_id,formdata,nonce}\n`
         + `2. POST ‹signed archive.org action›  multipart: ‹policy,signature,key,AWSAccessKeyId…› + file (${(it._fileObj && it._fileObj.name) || 'file'}, ${(it._fileObj && it._fileObj.size) || '?'}b)\n`
         + `3. POST ${R}/add-cover-art\n   add-cover-art.id=‹image_id›\n   add-cover-art.position=${pos}\n   add-cover-art.nonce=‹nonce›\n   add-cover-art.mime_type=${mime}\n`
-        + `   add-cover-art.type_id=${typeIds.join(',') || '(none)'}\n   add-cover-art.comment=${it.comment}\n   add-cover-art.edit_note=${meta.note}`
+        + `   add-cover-art.type_id=${typeIds.join(',') || '(none)'}\n   add-cover-art.comment=${it.comment}\n   add-cover-art.edit_note=${editNote(meta).replace(/\n+/g, ' / ')}`
         + (meta.votable ? `\n   add-cover-art.make_votable=1` : ''));
       return;
     }
@@ -543,7 +545,7 @@
     p.append('add-cover-art.mime_type', mime);   // required Select (MB Form::Role::AddArt)
     typeIds.forEach(id => p.append('add-cover-art.type_id', id));
     p.append('add-cover-art.comment', it.comment);
-    p.append('add-cover-art.edit_note', meta.note);
+    p.append('add-cover-art.edit_note', editNote(meta));
     if (meta.votable) p.append('add-cover-art.make_votable', '1');
     const add = await fetch(`${R}/add-cover-art`, { method: 'POST', body: p, credentials: 'same-origin' });
     if (!add.ok) throw new Error('add ' + add.status);
@@ -553,7 +555,7 @@
     const p = new URLSearchParams(); copyHidden(form, p, /\.artwork\./);
     const seq = MODEL.filter(it => !it._del && !it._new).sort((a, b) => a.order - b.order);
     seq.forEach((it, i) => { p.append(`reorder-cover-art.artwork.${i}.id`, it.id); p.append(`reorder-cover-art.artwork.${i}.position`, String(i + 1)); });
-    p.append('reorder-cover-art.edit_note', meta.note);
+    p.append('reorder-cover-art.edit_note', editNote(meta));
     if (meta.votable) p.append('reorder-cover-art.make_votable', '1');
     return { method: 'POST', url: form._action, body: p };
   }
@@ -577,7 +579,7 @@
     const ov = document.createElement('div'); ov.id = 'as-commit';
     ov.innerHTML = `<div class="as-cm-box">
       <div class="as-cm-h">Apply ${plan.length} change${plan.length===1?'':'s'} as MusicBrainz edits</div>
-      <label class="as-cm-row">Edit note<textarea class="as-cm-note" rows="2" placeholder="optional note shown on each edit"></textarea></label>
+      <label class="as-cm-row">Edit note <span class="as-cm-hint">("Art Station" is appended automatically)</span><textarea class="as-cm-note" rows="2" placeholder="optional note shown on each edit"></textarea></label>
       <div class="as-cm-row as-cm-opts">
         <label><input type="checkbox" class="as-cm-vote"> Make all votable</label>
         <label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun" checked> Dry run — show the requests, don't submit</label>
@@ -611,7 +613,7 @@
           const req = await op.build(meta);
           if (meta.dry) {
             st.textContent = '👁'; row.classList.add('dry');
-            pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/&/g, '\n  ')}`;
+            pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/\+/g, ' ').replace(/&/g, '\n  ')}`;
           } else {
             const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin' });
             if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -633,7 +635,7 @@
   function openLightbox(id) {
     const it0 = byId(id);
     if (it0 && it0._pdf) { window.open(it0._img, '_blank', 'noopener'); return; }   // PDFs render in a new tab
-    _lb = id; _cursorId = id;
+    _lb = id; _cursorId = id; _lbEditCmt = false;
     let ov = document.getElementById('as-lb');
     if (!ov) {
       ov = document.createElement('div'); ov.id = 'as-lb';
@@ -642,14 +644,12 @@
         <img class="as-lb-img" alt="">
         <button class="as-lb-nav as-lb-next" title="next (→)">›</button>
         <div class="as-lb-bar"><div class="as-lb-cap"></div>
-          <input class="as-lb-cmt" placeholder="add a comment…" spellcheck="false"></div>`;
+          <div class="as-lb-cmtarea"></div></div>`;
       document.body.appendChild(ov);
       ov.querySelector('.as-lb-x').onclick = closeLightbox;
       ov.querySelector('.as-lb-play').onclick = e => { e.stopPropagation(); togglePlay(); };
       ov.querySelector('.as-lb-prev').onclick = e => { e.stopPropagation(); lbNav(-1); };
       ov.querySelector('.as-lb-next').onclick = e => { e.stopPropagation(); lbNav(1); };
-      const cmt = ov.querySelector('.as-lb-cmt');
-      cmt.oninput = () => { const it = byId(_lb); if (it) { it.comment = cmt.value; _lbDirty = true; } };
       ov.onclick = e => { if (e.target === ov) closeLightbox(); };
     }
     paintLightbox();
@@ -682,7 +682,21 @@
     if (img.complete && img.naturalWidth) img.classList.remove('loading');
     const bits = [it.types.length ? it.types.join(', ') : 'no type', it.w && it.h ? `${it.w} × ${it.h}` : null].filter(Boolean);
     ov.querySelector('.as-lb-cap').textContent = bits.join('  ·  ');
-    const cmt = ov.querySelector('.as-lb-cmt'); if (cmt && document.activeElement !== cmt) cmt.value = it.comment || '';
+    paintCmtArea(ov, it);
+  }
+  let _lbEditCmt = false;
+  function paintCmtArea(ov, it) {
+    const area = ov.querySelector('.as-lb-cmtarea'); if (!area) return;
+    if (it.comment || _lbEditCmt) {
+      area.innerHTML = `<input class="as-lb-cmt" placeholder="comment…" spellcheck="false">`;
+      const inp = area.querySelector('.as-lb-cmt'); inp.value = it.comment || '';
+      inp.oninput = () => { const cur = byId(_lb); if (cur) { cur.comment = inp.value; _lbDirty = true; } };
+      inp.onblur = () => { const cur = byId(_lb); if (cur && !cur.comment.trim()) { _lbEditCmt = false; paintCmtArea(ov, cur); } };
+      if (_lbEditCmt) inp.focus();
+    } else {
+      area.innerHTML = `<button class="as-lb-cmtadd" title="add a comment">✎ comment</button>`;
+      area.querySelector('.as-lb-cmtadd').onclick = () => { _lbEditCmt = true; paintCmtArea(ov, byId(_lb)); };
+    }
   }
   let _lbDirty = false;
   function closeLightbox() {
@@ -700,7 +714,7 @@
     let i = seq.findIndex(it => String(it.id) === String(_lb));
     if (i < 0) i = 0;
     i = (i + d + seq.length) % seq.length;
-    _lb = seq[i].id; _cursorId = _lb; paintLightbox(); markCursor(true); preloadNeighbors();
+    _lb = seq[i].id; _cursorId = _lb; _lbEditCmt = false; paintLightbox(); markCursor(true); preloadNeighbors();
   }
 
   // ── keyboard cursor (arrows select / move; Enter opens lightbox) ──────────────
@@ -864,14 +878,18 @@
   .as-lb-x:hover,.as-lb-play:hover{background:rgba(255,255,255,.25)}
   .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw)}
   .as-lb-cap{color:#eee;font-size:13px;text-align:center}
+  .as-lb-cmtarea{width:100%;display:flex;justify-content:center}
   .as-lb-cmt{width:100%;font:13px inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:7px;padding:7px 11px;text-align:center}
   .as-lb-cmt::placeholder{color:rgba(255,255,255,.45)}
   .as-lb-cmt:focus{outline:none;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.14)}
+  .as-lb-cmtadd{font:12px inherit;color:rgba(255,255,255,.6);background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:4px 13px;cursor:pointer}
+  .as-lb-cmtadd:hover{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
   /* commit panel */
   #as-commit{position:fixed;inset:0;z-index:9998;background:rgba(15,12,28,.55);display:flex;align-items:center;justify-content:center;padding:24px}
   .as-cm-box{background:#fff;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);max-height:88vh;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222}
   .as-cm-h{font-size:16px;font-weight:700;color:#3b2c70;margin-bottom:12px}
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:#555}
+  .as-cm-hint{font-size:11px;color:#9a8ccb;font-weight:400}
   .as-cm-note{font:13px inherit;border:1px solid #cfc6e6;border-radius:7px;padding:6px 9px;resize:vertical}
   .as-cm-opts{flex-direction:row;gap:18px;flex-wrap:wrap}
   .as-cm-opts label{display:flex;align-items:center;gap:6px;cursor:pointer;color:#444}
