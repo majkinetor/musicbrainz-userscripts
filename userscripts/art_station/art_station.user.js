@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.301500
+// @version      2026.6.16.310000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -159,7 +159,9 @@
     for (const k of keys) map.get(k).sort(sortFn);
     return keys.map(k => ({ type: k, items: map.get(k) }));
   }
+  const typeRank = t => { const i = TYPE_ORDER.indexOf(t); return i < 0 ? 99 : i; };
   function sortFn(a, b) {
+    if (SETTINGS.sort === 'bytype') return typeRank(a.types[0] || '') - typeRank(b.types[0] || '') || a.order - b.order;
     if (SETTINGS.sort === 'dim') return (b.w * b.h) - (a.w * a.h) || a.order - b.order;
     if (SETTINGS.sort === 'newest') return b.id - a.id;   // CAA id desc ≈ upload recency (no real date in CAA)
     return a.order - b.order;   // position (committed order)
@@ -173,6 +175,7 @@
       <span class="as-ctl">Size <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}"></span>
       <span class="as-ctl">Sort <select class="as-sort">
         <option value="type"${SETTINGS.sort==='type'?' selected':''}>Position</option>
+        <option value="bytype"${SETTINGS.sort==='bytype'?' selected':''}>Type</option>
         <option value="dim"${SETTINGS.sort==='dim'?' selected':''}>Dimensions ▾</option>
         <option value="newest"${SETTINGS.sort==='newest'?' selected':''}>Newest</option></select></span>
       <label class="as-ctl"><input class="as-group" type="checkbox"${SETTINGS.group?' checked':''}> Group by type</label>
@@ -634,15 +637,19 @@
     let ov = document.getElementById('as-lb');
     if (!ov) {
       ov = document.createElement('div'); ov.id = 'as-lb';
-      ov.innerHTML = `<button class="as-lb-x" title="close (Esc)">✕</button>
+      ov.innerHTML = `<div class="as-lb-top"><button class="as-lb-play" title="slideshow (P)">▶ Play</button><button class="as-lb-x" title="close (Esc)">✕</button></div>
         <button class="as-lb-nav as-lb-prev" title="previous (←)">‹</button>
         <img class="as-lb-img" alt="">
         <button class="as-lb-nav as-lb-next" title="next (→)">›</button>
-        <div class="as-lb-cap"></div>`;
+        <div class="as-lb-bar"><div class="as-lb-cap"></div>
+          <input class="as-lb-cmt" placeholder="add a comment…" spellcheck="false"></div>`;
       document.body.appendChild(ov);
       ov.querySelector('.as-lb-x').onclick = closeLightbox;
+      ov.querySelector('.as-lb-play').onclick = e => { e.stopPropagation(); togglePlay(); };
       ov.querySelector('.as-lb-prev').onclick = e => { e.stopPropagation(); lbNav(-1); };
       ov.querySelector('.as-lb-next').onclick = e => { e.stopPropagation(); lbNav(1); };
+      const cmt = ov.querySelector('.as-lb-cmt');
+      cmt.oninput = () => { const it = byId(_lb); if (it) { it.comment = cmt.value; _lbDirty = true; } };
       ov.onclick = e => { if (e.target === ov) closeLightbox(); };
     }
     paintLightbox();
@@ -654,8 +661,9 @@
   function preloadNeighbors() {
     const seq = visible().filter(it => !it._pdf);
     const i = seq.findIndex(it => String(it.id) === String(_lb));
-    if (i < 0) return;
-    [seq[(i + 1) % seq.length], seq[(i - 1 + seq.length) % seq.length]].forEach(it => {
+    if (i < 0 || !seq.length) return;
+    [1, 2, -1, -2].forEach(d => {        // prefetch 2 covers each way so nav stays instant
+      const it = seq[(i + d + seq.length) % seq.length];
       if (it && !it._new && !_preloaded.has(it.id)) { _preloaded.add(it.id); const im = new Image(); im.src = thumb(it.id, 1200); }
     });
   }
@@ -672,10 +680,20 @@
     img.onerror = () => { img.classList.remove('loading'); ov.classList.add('na'); };   // CAA not propagated yet
     img.src = src;
     if (img.complete && img.naturalWidth) img.classList.remove('loading');
-    const bits = [it.types.length ? it.types.join(', ') : 'no type', it.w && it.h ? `${it.w} × ${it.h}` : null, it.comment].filter(Boolean);
+    const bits = [it.types.length ? it.types.join(', ') : 'no type', it.w && it.h ? `${it.w} × ${it.h}` : null].filter(Boolean);
     ov.querySelector('.as-lb-cap').textContent = bits.join('  ·  ');
+    const cmt = ov.querySelector('.as-lb-cmt'); if (cmt && document.activeElement !== cmt) cmt.value = it.comment || '';
   }
-  function closeLightbox() { _lb = null; const ov = document.getElementById('as-lb'); if (ov) ov.style.display = 'none'; }
+  let _lbDirty = false;
+  function closeLightbox() {
+    stopPlay(); _lb = null;
+    const ov = document.getElementById('as-lb'); if (ov) ov.style.display = 'none';
+    if (_lbDirty) { _lbDirty = false; render(); }   // reflect comment edits in the grid
+  }
+  let _play = null;
+  function updatePlayBtn() { const b = document.querySelector('.as-lb-play'); if (b) b.textContent = _play ? '⏸ Pause' : '▶ Play'; }
+  function stopPlay() { if (_play) { clearInterval(_play); _play = null; updatePlayBtn(); } }
+  function togglePlay() { if (_play) stopPlay(); else { _play = setInterval(() => lbNav(1), 3000); updatePlayBtn(); } }
   function lbNav(d) {
     const seq = visible().filter(it => !it._pdf);   // PDFs open in a tab, not the lightbox
     if (!seq.length) return;
@@ -720,6 +738,7 @@
       if (e.key === 'Escape') { e.preventDefault(); closeLightbox(); }
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); lbNav(-1); }
       else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); lbNav(1); }
+      else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePlay(); }
       return;
     }
     if (!root.isConnected || !root.querySelector('.as-card')) return;
@@ -839,9 +858,15 @@
   .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:42px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
   .as-lb-nav:hover{background:rgba(255,255,255,.25)}
   .as-lb-prev{left:18px}.as-lb-next{right:18px}
-  .as-lb-x{position:fixed;top:16px;right:20px;font-size:24px;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;width:42px;height:42px;cursor:pointer}
-  .as-lb-x:hover{background:rgba(255,255,255,.25)}
-  .as-lb-cap{margin-top:14px;color:#eee;font-size:13px;text-align:center;max-width:80vw}
+  .as-lb-top{position:fixed;top:16px;right:20px;display:flex;gap:10px;align-items:center}
+  .as-lb-x,.as-lb-play{font-size:15px;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;height:42px;cursor:pointer;font-weight:600}
+  .as-lb-x{width:42px;font-size:24px}.as-lb-play{padding:0 14px}
+  .as-lb-x:hover,.as-lb-play:hover{background:rgba(255,255,255,.25)}
+  .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw)}
+  .as-lb-cap{color:#eee;font-size:13px;text-align:center}
+  .as-lb-cmt{width:100%;font:13px inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:7px;padding:7px 11px;text-align:center}
+  .as-lb-cmt::placeholder{color:rgba(255,255,255,.45)}
+  .as-lb-cmt:focus{outline:none;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.14)}
   /* commit panel */
   #as-commit{position:fixed;inset:0;z-index:9998;background:rgba(15,12,28,.55);display:flex;align-items:center;justify-content:center;padding:24px}
   .as-cm-box{background:#fff;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);max-height:88vh;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222}
