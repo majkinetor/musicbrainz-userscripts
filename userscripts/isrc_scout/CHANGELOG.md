@@ -1,5 +1,11 @@
 # ISRC Scout Changelog
 
+## [2026.6.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.16)
+
+### Features
+
+1. Use PC links even when formats and barcodes do not match ([#211](https://github.com/majkinetor/musicbrainz-userscripts/issues/211))
+
 ## [2026.6.14](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.14)
 
 - Small improvements

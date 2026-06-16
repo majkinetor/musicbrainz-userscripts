@@ -1,5 +1,13 @@
 # Apollo Editor Changelog
 
+## [2026.6.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.16)
+
+### Features
+
+1. Hover icon to clear "Credited as" and artist name fields ([#228](https://github.com/majkinetor/musicbrainz-userscripts/issues/228))
+1. Sync Discogs artist URL ([#227](https://github.com/majkinetor/musicbrainz-userscripts/issues/227))
+1. Discogs matching by URL ([#224](https://github.com/majkinetor/musicbrainz-userscripts/issues/224))
+
 ## [2026.6.14](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.14)
 
 ### Features

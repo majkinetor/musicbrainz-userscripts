@@ -1,5 +1,11 @@
 # Import Discogs Credits Changelog
 
+## [2026.6.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.16)
+
+### Fixes
+
+1. Different instruments are not duplicates ([#225](https://github.com/majkinetor/musicbrainz-userscripts/issues/225))
+
 ## [2026.6.14](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.14)
 
 ### Fixes

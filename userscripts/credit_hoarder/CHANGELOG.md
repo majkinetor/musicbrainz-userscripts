@@ -1,5 +1,19 @@
 # Credit Hoarder Changelog
 
+## [2026.6.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.16)
+
+### Features
+
+1. Add executive producer at release-level ([#221](https://github.com/majkinetor/musicbrainz-userscripts/issues/221))
+1. Log button handling improvements ([#217](https://github.com/majkinetor/musicbrainz-userscripts/issues/217))
+1. Stop import with no review items with message in toolbar ([#216](https://github.com/majkinetor/musicbrainz-userscripts/issues/216))
+
+### Fixes
+
+1. Different instruments are not duplicates ([#225](https://github.com/majkinetor/musicbrainz-userscripts/issues/225))
+1. Instruments not mapped ([#223](https://github.com/majkinetor/musicbrainz-userscripts/issues/223))
+1. Redundant entries with equivalent "Credited as" fields ([#210](https://github.com/majkinetor/musicbrainz-userscripts/issues/210))
+
 ## [2026.6.14](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.14)
 
 ### Features
