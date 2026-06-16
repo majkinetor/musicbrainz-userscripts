@@ -77,13 +77,14 @@ Each resolved artist is tagged by how it matched (release-group, name, pre-exist
 When the release carries a **Discogs link** (read from the page), Apollo uses it for artists — controlled by the *Discogs artist link matching* [setting](#matching-options) (on by default).
 
 - **Match by Discogs URL.** Before the name search, each track artist is matched by its Discogs URL (taken from the release's Discogs tracklist) against MusicBrainz's URL relationships — a strong, human-verified signal. A single linked MB artist is applied directly with a teal **DISC** badge; several linked artists are offered as candidates to pick from.
-- **Add / create the link.** For a slot whose Discogs URL is known, the artist-type icon becomes a **🔗 link icon** when a link can be added:
-  - unresolved slot → creates the artist seeded with the Discogs link (same as `＋`);
-  - matched/existing artist that's missing the link → adds it (opens the artist's edit form pre-seeded, confirmed on return);
-  - if the Discogs URL already links a **different** MB artist, the icon is an **amber ⚠** that names that artist — clicking still adds it to this artist, but you're warned.
-- **Missing-links badge.** A teal **🔗 N links** badge in the toolbar counts artists still missing their Discogs link (tooltip spells it out). It stays until they're all added; each click steps to the next such track and focuses its credit field.
+- **Add / create the link.** For a slot whose Discogs URL is known, the artist-type icon becomes an actionable Discogs icon when there's something to do — click it to act:
+  - unresolved slot → **teal 🔗**: creates the artist seeded with the Discogs link (same as `＋`);
+  - matched artist with **no** Discogs link → **teal 🔗**: adds it (opens the artist's edit form pre-seeded, confirmed on return);
+  - the Discogs URL already links a **different** MB artist (conflict) → **amber ⚠**: clicking still adds it to this artist, but you're warned which artist it currently points to;
+  - the artist already links a **different** Discogs page than the release credits (mismatch) → **amber ⚠**: the tooltip names both pages, and clicking adds the release's link to the artist anyway. A mismatch often means the wrong artist was matched, so it's worth a look first.
+- **Badge.** A teal **🔗 N links** badge in the toolbar counts the artists whose Discogs link needs attention — **missing + mismatched** (the tooltip breaks it down). It stays until they're resolved; each click steps to the next such track and focuses its credit field. Adding a link updates every track crediting that same artist at once.
 
-Already-linked artists are verified for free via MusicBrainz's internal entity endpoint, so the rate-limited URL lookup only runs for artists actually missing a link — a fully-linked release is near-instant.
+Already-linked artists are verified for free via MusicBrainz's internal entity endpoint, so the rate-limited URL lookup only runs for artists actually missing a link — a fully-linked release is near-instant. Clearing or reverting all artists doesn't trigger a re-check (it runs again when you Match).
 
 ### Recording matching
 
