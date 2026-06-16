@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.253000
+// @version      2026.6.16.260000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -430,19 +430,114 @@
     inp.onchange = () => addFiles(inp.files);
     inp.click();
   }
+  // ── Phase 2a: apply staged changes as real MB edits (form-replay) ─────────────
+  const R = `/release/${MBID}`;
+  async function getPostForm(url) {
+    const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET ' + r.status); return r.text(); });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const form = [...doc.querySelectorAll('form')].find(f => (f.getAttribute('method') || '').toUpperCase() === 'POST');
+    if (!form) throw new Error('no POST form at ' + url);
+    form._action = new URL(form.getAttribute('action') || url, location.origin + url).href;
+    return form;
+  }
+  // carry every hidden field (csrf/nonce/etc.) verbatim — that's the point of form-replay
+  function copyHidden(form, params, skip) {
+    form.querySelectorAll('input[type=hidden]').forEach(h => { if (h.name && !(skip && skip.test(h.name))) params.append(h.name, h.value); });
+  }
+  function typeMapOf(form, prefix) {
+    const m = {};
+    form.querySelectorAll(`input[name="${prefix}.type_id"]`).forEach(cb => { const l = cb.closest('label'); const n = (l ? l.textContent : '').trim(); if (n) m[n] = cb.value; });
+    return m;
+  }
+  async function buildEdit(it, meta) {   // retype / comment on an existing cover
+    const form = await getPostForm(`${R}/edit-cover-art/${it.id}`);
+    const p = new URLSearchParams(); copyHidden(form, p);
+    const tm = typeMapOf(form, 'edit-cover-art');
+    it.types.forEach(t => { if (tm[t]) p.append('edit-cover-art.type_id', tm[t]); });
+    p.append('edit-cover-art.comment', it.comment);
+    p.append('edit-cover-art.edit_note', meta.note);
+    if (meta.votable) p.append('edit-cover-art.make_votable', '1');
+    return { method: 'POST', url: form._action, body: p };
+  }
+  async function buildRemove(it, meta) {
+    const form = await getPostForm(`${R}/remove-cover-art/${it.id}`);
+    const p = new URLSearchParams(); copyHidden(form, p);
+    p.append('confirm.edit_note', meta.note);
+    if (meta.votable) p.append('confirm.make_votable', '1');
+    return { method: 'POST', url: form._action, body: p };
+  }
+  async function buildReorder(meta) {     // single edit: full ordered artwork list
+    const form = await getPostForm(`${R}/reorder-cover-art`);
+    const p = new URLSearchParams(); copyHidden(form, p, /\.artwork\./);
+    const seq = MODEL.filter(it => !it._del && !it._new).sort((a, b) => a.order - b.order);
+    seq.forEach((it, i) => { p.append(`reorder-cover-art.artwork.${i}.id`, it.id); p.append(`reorder-cover-art.artwork.${i}.position`, String(i + 1)); });
+    p.append('reorder-cover-art.edit_note', meta.note);
+    if (meta.votable) p.append('reorder-cover-art.make_votable', '1');
+    return { method: 'POST', url: form._action, body: p };
+  }
+  // ordered work list (uploads are Phase 2b): remove → retype/comment → reorder
+  function buildPlan() {
+    const plan = [];
+    MODEL.filter(it => it._new && !it._del).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'} (upload)`, kind: 'add', skip: 'Phase 2b', it }));
+    MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || 'cover'} #${it.id}`, kind: 'remove', build: m => buildRemove(it, m) }));
+    MODEL.filter(it => !it._del && !it._new && (it.comment !== it._origComment || it.types.join('|') !== it._origTypes.join('|')))
+      .forEach(it => plan.push({ label: `Edit ${it._origTypes[0] || 'cover'} #${it.id} → ${it.types.join(', ') || '(none)'}`, kind: 'edit', build: m => buildEdit(it, m) }));
+    const ex = MODEL.filter(it => !it._del && !it._new);
+    const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
+    const orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
+    if (now !== orig) plan.push({ label: 'Reorder covers', kind: 'reorder', build: m => buildReorder(m) });
+    return plan;
+  }
+
   function enterEdit() {
-    // PoC: summarise what WOULD be submitted. Real form-replay submission (remove /
-    // edit-cover-art / reorder, and uploads for NEW) lands in the next iteration.
-    const dels = MODEL.filter(it => it._del && !it._new);
-    const edits = MODEL.filter(it => !it._del && !it._new && (it.comment !== it._origComment || it.types.join('|') !== it._origTypes.join('|')));
-    const moved = MODEL.some(it => !it._del && it.order !== it._origOrder);
-    const adds = MODEL.filter(it => it._new && !it._del);
-    alert(`Enter edit (PoC summary):\n` +
-      `• remove: ${dels.length}\n` +
-      `• retype/comment: ${edits.length}\n` +
-      `• reorder: ${moved ? 'yes' : 'no'}\n` +
-      `• add (upload): ${adds.length}\n\n` +
-      `Submission wiring is the next step.`);
+    document.getElementById('as-commit')?.remove();
+    const plan = buildPlan();
+    const ov = document.createElement('div'); ov.id = 'as-commit';
+    ov.innerHTML = `<div class="as-cm-box">
+      <div class="as-cm-h">Apply ${plan.length} change${plan.length===1?'':'s'} as MusicBrainz edits</div>
+      <label class="as-cm-row">Edit note<textarea class="as-cm-note" rows="2" placeholder="optional note shown on each edit"></textarea></label>
+      <div class="as-cm-row as-cm-opts">
+        <label><input type="checkbox" class="as-cm-vote"> Make all votable</label>
+        <label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun" checked> Dry run — show the requests, don't submit</label>
+      </div>
+      <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<div class="as-cm-payload"></div></div>`).join('')}</div>
+      <div class="as-cm-f"><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
+      <div class="as-cm-note2">New-image uploads (archive.org) are Phase 2b — listed but skipped here.</div>
+    </div>`;
+    document.body.appendChild(ov);
+    ov.onclick = e => { if (e.target === ov) ov.remove(); };
+    ov.querySelector('.as-cm-cancel').onclick = () => ov.remove();
+    const dryEl = ov.querySelector('.as-cm-dryrun');
+    const goBtn = ov.querySelector('.as-cm-go');
+    const setGoLabel = () => goBtn.textContent = dryEl.checked ? 'Dry run' : 'Submit edits';
+    dryEl.onchange = setGoLabel; setGoLabel();
+    goBtn.onclick = () => runPlan(ov, plan, { note: ov.querySelector('.as-cm-note').value, votable: ov.querySelector('.as-cm-vote').checked, dry: dryEl.checked });
+  }
+  async function runPlan(ov, plan, meta) {
+    ov.querySelector('.as-cm-go').disabled = true;
+    ov.querySelector('.as-cm-cancel').disabled = true;
+    for (let i = 0; i < plan.length; i++) {
+      const op = plan[i], row = ov.querySelector(`.as-cm-op[data-i="${i}"]`);
+      const st = row.querySelector('.as-cm-st'), pay = row.querySelector('.as-cm-payload');
+      if (op.skip) { st.textContent = '⏭'; continue; }
+      st.textContent = '⏳';
+      try {
+        const req = await op.build(meta);
+        if (meta.dry) {
+          st.textContent = '👁'; row.classList.add('dry');
+          pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/&/g, '\n  ')}`;
+        } else {
+          const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin' });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          st.textContent = '✅';
+        }
+      } catch (e) { st.textContent = '❌'; pay.textContent = String(e && e.message || e); row.classList.add('err'); }
+      await new Promise(r => setTimeout(r, meta.dry ? 0 : 600));   // be gentle on MB when live
+    }
+    ov.querySelector('.as-cm-cancel').disabled = false;
+    ov.querySelector('.as-cm-cancel').textContent = 'Close';
+    if (!meta.dry) { const b = ov.querySelector('.as-cm-go'); b.textContent = 'Done — reload'; b.disabled = false; b.onclick = () => location.reload(); }
+    else ov.querySelector('.as-cm-go').disabled = false;
   }
 
   // ── lightbox (#230: click image → popup, ←→↑↓ navigate) ───────────────────────
@@ -637,6 +732,26 @@
   .as-lb-x{position:fixed;top:16px;right:20px;font-size:24px;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;width:42px;height:42px;cursor:pointer}
   .as-lb-x:hover{background:rgba(255,255,255,.25)}
   .as-lb-cap{margin-top:14px;color:#eee;font-size:13px;text-align:center;max-width:80vw}
+  /* commit panel */
+  #as-commit{position:fixed;inset:0;z-index:9998;background:rgba(15,12,28,.55);display:flex;align-items:center;justify-content:center;padding:24px}
+  .as-cm-box{background:#fff;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);max-height:88vh;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222}
+  .as-cm-h{font-size:16px;font-weight:700;color:#3b2c70;margin-bottom:12px}
+  .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:#555}
+  .as-cm-note{font:13px inherit;border:1px solid #cfc6e6;border-radius:7px;padding:6px 9px;resize:vertical}
+  .as-cm-opts{flex-direction:row;gap:18px;flex-wrap:wrap}
+  .as-cm-opts label{display:flex;align-items:center;gap:6px;cursor:pointer;color:#444}
+  .as-cm-dry{color:#a05a00}
+  .as-cm-list{overflow:auto;border:1px solid #eee;border-radius:8px;padding:6px;margin:4px 0 12px;background:#fafafa}
+  .as-cm-op{padding:5px 6px;border-radius:6px;font-size:13px}
+  .as-cm-op.dry{background:#f3eefe}.as-cm-op.err{background:#fdecea}
+  .as-cm-st{display:inline-block;width:18px}
+  .as-cm-skip{font-size:11px;color:#999;margin-left:6px;background:#eee;border-radius:10px;padding:1px 7px}
+  .as-cm-payload{white-space:pre-wrap;font:11px/1.4 ui-monospace,Consolas,monospace;color:#555;margin:4px 0 2px 18px;display:none}
+  .as-cm-op.dry .as-cm-payload,.as-cm-op.err .as-cm-payload{display:block}
+  .as-cm-f{display:flex;justify-content:flex-end;gap:8px}
+  .as-cm-go{background:var(--as-acc);color:#fff;border-color:var(--as-acc);font-weight:600}
+  .as-cm-go:disabled{opacity:.5}
+  .as-cm-note2{font-size:11px;color:#9a8ccb;margin-top:8px;text-align:center}
   `;
   const st = document.createElement('style'); st.textContent = css; appendEl(st);
 
