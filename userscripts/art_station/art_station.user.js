@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.291500
+// @version      2026.6.16.293000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -756,7 +756,7 @@
   .as-sec-new h3{color:#1f9d6b}
   .as-card.new{background:repeating-linear-gradient(45deg,#eef7f1,#eef7f1 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:#9bd3b6;border-style:dashed}
   .as-card.pending{background:#fdf3d0;border-color:#e6cf86}
-  .as-pendban{position:absolute;right:6px;top:6px;z-index:4;background:#d89000;color:#fff;font:700 10px/1 Arial;letter-spacing:.3px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
+  .as-pendban{position:absolute;left:6px;top:6px;z-index:4;background:#d89000;color:#fff;font:700 10px/1 Arial;letter-spacing:.3px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
   .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9}
   .as-thumb img{width:100%;height:100%;object-fit:contain;display:block}
