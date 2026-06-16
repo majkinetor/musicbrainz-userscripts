@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.101500
+// @version      2026.6.16.103000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -394,7 +394,16 @@
         if (!wasCached) updateStatus(`resolving Discogs links ${done}/${jobs.length}…`);
         if (!isEditingNow()) rerender();   // real-time: show each icon as it resolves
       }
-    } finally { _tagDiscogsRunning = false; refreshStatus(); if (!isEditingNow()) rerender(); }
+    } finally {
+      _tagDiscogsRunning = false;
+      if (!isEditingNow()) rerender();
+      // #227: report the outcome in the always-visible toolbar status
+      let missing = 0, unknown = 0;
+      MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s._discogsAddable) missing++; else if (s._discogsPending) unknown++; }));
+      const msg = missing ? `${missing} missing Discogs link${missing === 1 ? '' : 's'}${unknown ? ` (${unknown} unchecked)` : ''}`
+                          : (unknown ? `${unknown} Discogs link${unknown === 1 ? '' : 's'} unchecked` : 'Discogs links: all present');
+      updateStatus(msg);
+    }
   }
   // chain glyph shown in place of the artist-type icon when a Discogs link can be added
   const DISCOGS_LINK_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
@@ -548,8 +557,10 @@
         done++; if (onProgress) onProgress(done, todo.length);
       }
       if (!isEditing()) rerender();
-      await tagDiscogsForAll();   // #227: also tag page-load 'set' artists (they skip matching)
     } finally { setMatching(false); refreshStatus(); }   // set the final per-medium badges once the pass is done
+    // #227: tag/resolve Discogs links AFTER the match finally (so its summary
+    // message isn't overwritten by refreshStatus) — covers 'set' artists too.
+    await tagDiscogsForAll();
   }
   // (re-)match every still-unmatched slot — the "Match" button / used when auto-match is off
   async function matchAll() { if (!MODEL) return; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && !s.committed) s._pending = true; })); await matchModel((d, n) => updateStatus(`matching ${d}/${n}…`)); }
@@ -663,7 +674,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.101500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.103000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -822,8 +833,8 @@
     .tc-aslot.tc-can-split .tc-cred::placeholder{color:#caa64e}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
-    .tc-tic.discogs-add{color:#0a7a8c;cursor:pointer}.tc-tic.discogs-add:hover{color:#075e6b}
-    .tc-tic.discogs-warn{color:#d98300;cursor:pointer}.tc-tic.discogs-warn:hover{color:#b26a00}
+    .tc-tic.discogs-add{color:#0a7a8c;cursor:pointer;background:#d6eff3;border-radius:4px}.tc-tic.discogs-add:hover{color:#075e6b;background:#bfe6ed}
+    .tc-tic.discogs-warn{color:#b26a00;cursor:pointer;background:#fdecc8;border-radius:4px}.tc-tic.discogs-warn:hover{color:#915700;background:#fbe0a8}
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
     .tc-search{flex:1 1 0;min-width:0;align-self:stretch;display:flex;align-items:center;gap:4px;border:none;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden}   /* unmatched = plain white; the green fill marks a match */
     .tc-search:focus-within{box-shadow:inset 0 0 0 1px #b9a4e0}
