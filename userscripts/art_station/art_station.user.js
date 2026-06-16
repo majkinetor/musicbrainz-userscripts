@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.243000
+// @version      2026.6.16.250000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -102,9 +102,9 @@
   function render() {
     mount();
     const y = window.scrollY;            // keep the viewport put — rebuilding innerHTML must not jump the page
-    const n = stagedCount();
+    const n = opsCount();
     const groups = grouped();
-    root.innerHTML = bar(n) + bulkBar() + newSection() + groups.map(g => section(g.type, g.items)).join('') + deletedSection();
+    root.innerHTML = bar(n) + bulkBar() + dropZone() + newSection() + groups.map(g => section(g.type, g.items)).join('') + deletedSection();
     wire();
     if (window.scrollY !== y) window.scrollTo(0, y);
   }
@@ -130,15 +130,15 @@
   }
   function sortFn(a, b) {
     if (SETTINGS.sort === 'dim') return (b.w * b.h) - (a.w * a.h) || a.order - b.order;
-    if (SETTINGS.sort === 'newest') return b.id - a.id;
-    return a.order - b.order;   // position
+    if (SETTINGS.sort === 'newest') return b.id - a.id;   // CAA id desc ≈ upload recency (no real date in CAA)
+    return a.order - b.order;   // position (committed order)
   }
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   function bar(n) {
     return `<div class="as-bar">
-      <button class="as-btn as-add" title="Add cover art (file or URL)">＋ Add image</button>
+      <button class="as-btn as-add" title="Add cover art — file drop zone (goes first)">＋ Add image</button>
       <span class="as-ctl">Size <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}"></span>
       <span class="as-ctl">Sort <select class="as-sort">
         <option value="type"${SETTINGS.sort==='type'?' selected':''}>Position</option>
@@ -147,7 +147,7 @@
       <label class="as-ctl"><input class="as-group" type="checkbox"${SETTINGS.group?' checked':''}> Group by type</label>
       <button class="as-btn as-selall" title="Select every cover (then Download / Set type / Delete)">${allSelected() ? '☑ Deselect all' : '☐ Select all'}</button>
       <span class="as-sp"></span>
-      <span class="as-staged"${n?'':' style="display:none"'}>${n} staged change${n===1?'':'s'}</span>
+      <button class="as-btn as-staged" title="Show pending operations"${n?'':' style="display:none"'}>${n} staged change${n===1?'':'s'} ▾</button>
       <button class="as-btn as-commit" title="Apply staged changes as MusicBrainz edits"${n?'':' disabled'}>✓ Enter edit</button>
     </div>`;
   }
@@ -166,6 +166,11 @@
     const label = type === null ? 'All covers' : type;
     return `<div class="as-sec"><h3>${esc(label)}</h3><span class="as-cnt">${items.length}</span><span class="as-line"></span></div>
       <div class="as-grid" data-group="${esc(type||'')}">${items.map(card).join('')}</div>`;
+  }
+  function dropZone() {
+    if (!_dropZone) return '';
+    return `<div class="as-dropzone" tabindex="0" title="drop image / PDF files, or click to browse">
+      <div class="as-dz-in">⬇ Drop cover images here<span>or click to browse · new covers go first</span></div></div>`;
   }
   function newSection() {
     if (!SETTINGS.group) return '';   // Position view shows new uploads inline, positioned among covers
@@ -224,7 +229,8 @@
     root.querySelector('.as-sort').onchange = e => { SETTINGS.sort = e.target.value; save(); render(); };
     root.querySelector('.as-group').onchange = e => { SETTINGS.group = e.target.checked; save(); render(); };
     root.querySelector('.as-selall').onclick = () => { const sel = !allSelected(); selectable().forEach(it => it._sel = sel); render(); };
-    root.querySelector('.as-add').onclick = addImage;
+    root.querySelector('.as-add').onclick = toggleDropZone;
+    const staged = root.querySelector('.as-staged'); if (staged) staged.onclick = e => { e.stopPropagation(); openStagedPop(staged); };
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
@@ -233,6 +239,14 @@
       inp.onblur = e => { const it = byId(cardId(e.target)); if (it && !it.comment.trim()) { it._editcmt = false; render(); } };
     });
     root.querySelectorAll('.as-pencil').forEach(wirePencil);
+
+    const dz = root.querySelector('.as-dropzone');
+    if (dz) {
+      dz.onclick = pickFiles;
+      dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
+      dz.ondragleave = () => dz.classList.remove('over');
+      dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); addFiles(e.dataTransfer.files); };
+    }
 
     // type chips → popover
     root.querySelectorAll('.as-chip').forEach(ch => ch.onclick = e => { e.stopPropagation(); openTypePop(ch); });
@@ -268,9 +282,39 @@
     wireBulk();
   }
   function refreshStaged() {
-    const n = stagedCount(); const s = root.querySelector('.as-staged'); const c = root.querySelector('.as-commit');
-    if (s) { s.textContent = `${n} staged change${n===1?'':'s'}`; s.style.display = n ? '' : 'none'; }
+    const n = opsCount(); const s = root.querySelector('.as-staged'); const c = root.querySelector('.as-commit');
+    if (s) { s.textContent = `${n} staged change${n===1?'':'s'} ▾`; s.style.display = n ? '' : 'none'; }
     if (c) { c.disabled = !n; if (!c.disabled) c.onclick = enterEdit; }
+  }
+  // the list of pending MB operations behind "N staged changes"
+  function pendingOps() {
+    const label = it => it.types[0] || (it._new ? 'new image' : 'cover');
+    const ops = [];
+    MODEL.filter(it => it._new && !it._del).forEach(it => ops.push(`➕ Add ${label(it)}${it.types.length ? ` — ${it.types.join(', ')}` : ''}${it.comment ? ` “${it.comment}”` : ''}`));
+    MODEL.filter(it => it._del && !it._new).forEach(it => ops.push(`🗑 Remove ${label(it)}`));
+    MODEL.filter(it => !it._del && !it._new).forEach(it => {
+      if (it.types.join('|') !== it._origTypes.join('|')) ops.push(`🏷 Set type on ${it._origTypes[0] || 'cover'} → ${it.types.join(', ') || '(none)'}`);
+      if (it.comment !== it._origComment) ops.push(`✎ Comment on ${label(it)} → ${it.comment ? `“${it.comment}”` : '(cleared)'}`);
+    });
+    // reorder = the EXISTING covers' relative order changed. Inserting new covers
+    // shifts indices but is positioned by the add op itself (not a separate reorder).
+    const ex = MODEL.filter(it => !it._del && !it._new);
+    const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
+    const orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
+    if (now !== orig) ops.push('↕ Reorder covers');
+    return ops;
+  }
+  const opsCount = () => pendingOps().length;
+  function openStagedPop(btn) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
+    const ops = pendingOps(); if (!ops.length) return;
+    const pop = document.createElement('div'); pop.className = 'as-pop as-staged-pop';
+    pop.innerHTML = `<div class="as-pop-h">Pending operations (${ops.length})</div>`
+      + ops.map(o => `<div class="as-op">${esc(o)}</div>`).join('');
+    document.body.appendChild(pop);
+    placePop(pop, btn.getBoundingClientRect());
+    const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
 
   // position a popover next to an anchor, flipping up / clamping so it stays on-screen
@@ -343,12 +387,24 @@
       setTimeout(() => URL.revokeObjectURL(obj), 8000);
     } catch (e) { window.open(url, '_blank'); }   // fallback: just open it
   }
-  function addImage() {
+  let _dropZone = false;
+  function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
+  function newItem(f) {
+    return { id: 'new-' + Math.random().toString(36).slice(2, 8), types: [], comment: '', order: 0, w: 0, h: 0,
+      _del: false, _new: true, _file: URL.createObjectURL(f), _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 };
+  }
+  function addFiles(files) {
+    const news = [...files].filter(f => f.type.startsWith('image/') || f.type === 'application/pdf').map(newItem);
+    if (!news.length) return;
+    // new covers go FIRST (majkinetor: they were landing last), then existing in order
+    const rest = MODEL.slice().sort((a, b) => a.order - b.order);
+    MODEL = [...news, ...rest];
+    MODEL.forEach((it, i) => it.order = i);
+    _dropZone = false; render();
+  }
+  function pickFiles() {
     const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*,.pdf'; inp.multiple = true;
-    inp.onchange = () => {
-      [...inp.files].forEach(f => { const url = URL.createObjectURL(f); MODEL.push({ id: 'new-' + Math.random().toString(36).slice(2, 8), types: [], comment: '', order: MODEL.length, w: 0, h: 0, _del: false, _new: true, _file: url, _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 }); });
-      render();
-    };
+    inp.onchange = () => addFiles(inp.files);
     inp.click();
   }
   function enterEdit() {
@@ -484,7 +540,15 @@
   .as-add{font-weight:600;color:var(--as-acc)}
   .as-dl{border-color:#bcd;color:#2a6}
   .as-sp{flex:1 1 auto}
-  .as-staged{font-size:12px;color:#a05a00;background:#fff3d6;border:1px solid #ecd9a0;border-radius:9px;padding:2px 9px;white-space:nowrap}
+  .as-staged{font-size:12px;color:#a05a00;background:#fff3d6;border-color:#ecd9a0;white-space:nowrap}
+  .as-staged:hover{background:#ffeec0}
+  .as-op{padding:4px 8px;border-radius:5px;font-size:12.5px;color:#333;white-space:nowrap}
+  .as-op:hover{background:#f3eefe}
+  .as-staged-pop{min-width:230px;max-width:420px}
+  .as-dropzone{border:2px dashed #b7a4ee;border-radius:11px;background:#f7f4ff;padding:24px;text-align:center;cursor:pointer;margin-bottom:12px;transition:.1s}
+  .as-dropzone.over{background:#ece4ff;border-color:var(--as-acc)}
+  .as-dz-in{font-weight:600;font-size:15px;color:#6a5b95;display:flex;flex-direction:column;gap:4px}
+  .as-dz-in span{font-weight:400;font-size:12px;color:#9a8ccb}
   .as-commit{background:var(--as-acc);color:#fff;border-color:var(--as-acc);font-weight:600}
   .as-commit:disabled{opacity:.45;cursor:default}
   .as-sec{margin:14px 0 4px;display:flex;align-items:center;gap:8px}
