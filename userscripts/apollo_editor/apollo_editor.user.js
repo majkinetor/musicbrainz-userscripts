@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.123000
+// @version      2026.6.16.130000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -443,12 +443,17 @@
       const p = new URLSearchParams({ 'edit-artist.url.0.text': url, 'edit-artist.url.0.link_type_id': DISCOGS_ARTIST_LINK_TYPE });
       W.open(`${ORIGIN}/artist/${slot.gid}/edit?${p}`, '_blank');
       Log.info('Discogs link: opening edit for', slot.name || slot.gid, '→', url);
+      const gid = slot.gid;
       const onReturn = async () => {
         if (document.visibilityState !== 'visible') return;
         document.removeEventListener('visibilitychange', onReturn);
-        const hits = await resolveByDiscogsUrl(url, true);   // force re-check
-        if (hits && hits.some(h => h.gid === slot.gid)) { slot._discogsAddable = false; slot._discogsConflict = null; slot._flash = true; toast(`added Discogs link to ${slot.name}`); }
-        rerender();
+        // the artist's links changed — drop the stale caches and re-tag EVERY slot,
+        // so other slots crediting the SAME artist update too (#227)
+        _artistRelsCache.delete(gid);
+        _discogsResolveCache.delete(url);
+        const own = await artistDiscogsUrls(gid);
+        if (own && own.some(u => discogsIdOf(u) === discogsIdOf(url))) { MODEL && MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid === gid) s._flash = true; })); toast(`added Discogs link to ${slot.name}`); }
+        await tagDiscogsForAll();
       };
       document.addEventListener('visibilitychange', onReturn);
     } else {
@@ -701,7 +706,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.123000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.130000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
