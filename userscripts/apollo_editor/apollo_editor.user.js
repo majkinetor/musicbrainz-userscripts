@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.095000
+// @version      2026.6.16.101500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -300,25 +300,48 @@
     return map;
   }
   // Resolve a Discogs artist URL to MB artist(s) via its URL relationship.
-  // Returns [{ gid, name }] (0 / 1 / many). Waits + retries on 429 / 503.
+  // Returns [{ gid, name }] (0 / 1 / many) on success, or `null` when the lookup
+  // could not complete (rate-limited / network) — callers must treat null as
+  // "unknown" and NOT cache it, so a transient 503 never becomes a false
+  // negative (#227). Only successful responses are cached.
   const _discogsResolveCache = new Map();
+  const _sleep = ms => new Promise(z => setTimeout(z, ms));
+  // The public /ws/2 endpoint is rate-limited (~1 req/s). Serialize every call
+  // through a gate with a minimum gap so a model full of artists doesn't trip
+  // the limiter and get a wall of 503s (#227).
+  let _wsGate = Promise.resolve(); let _wsLast = 0; const WS_MIN_GAP = 1100;
+  function wsGet(url) {
+    const run = async () => {
+      const gap = WS_MIN_GAP - (Date.now() - _wsLast);
+      if (gap > 0) await _sleep(gap);
+      try { return await fetch(url, { headers: { Accept: 'application/json' } }); }
+      finally { _wsLast = Date.now(); }
+    };
+    const p = _wsGate.then(run, run);
+    _wsGate = p.then(() => {}, () => {});   // keep the chain alive regardless of outcome
+    return p;
+  }
   async function resolveByDiscogsUrl(discogsUrl, force) {
     if (!discogsUrl) return [];
     if (!force && _discogsResolveCache.has(discogsUrl)) return _discogsResolveCache.get(discogsUrl);
-    let out = [];
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const r = await fetch(`${ORIGIN}/ws/2/url?resource=${encodeURIComponent(discogsUrl)}&inc=artist-rels&fmt=json`, { headers: { Accept: 'application/json' } });
-        if (r.status === 429 || r.status === 503) { await new Promise(z => setTimeout(z, 1100)); continue; }
-        if (!r.ok) break;
-        const j = await r.json();
-        const seen = new Set();
-        out = (j.relations || []).filter(rel => rel.artist && rel.artist.id).map(rel => ({ gid: rel.artist.id, name: rel.artist.name })).filter(e => !seen.has(e.gid) && seen.add(e.gid));
-        break;
-      } catch (e) { await new Promise(z => setTimeout(z, 600)); }
+    for (let attempt = 0; attempt < 5; attempt++) {
+      let r;
+      try { r = await wsGet(`${ORIGIN}/ws/2/url?resource=${encodeURIComponent(discogsUrl)}&inc=artist-rels&fmt=json`); }
+      catch (e) { await _sleep(1200); continue; }                 // network error → retry, don't cache
+      if (r.status === 404) { _discogsResolveCache.set(discogsUrl, []); return []; }   // URL not in MB → 0 owners (cacheable)
+      if (r.status === 429 || r.status === 503) {                 // rate limited → back off, don't cache
+        const ra = parseInt(r.headers.get('retry-after') || '', 10);
+        await _sleep(Math.max(1200, (ra > 0 ? ra : 1) * 1000));
+        continue;
+      }
+      if (!r.ok) { await _sleep(1200); continue; }                // other transient error → retry, don't cache
+      let j; try { j = await r.json(); } catch (e) { await _sleep(1200); continue; }
+      const seen = new Set();
+      const out = (j.relations || []).filter(rel => rel.artist && rel.artist.id).map(rel => ({ gid: rel.artist.id, name: rel.artist.name })).filter(e => !seen.has(e.gid) && seen.add(e.gid));
+      _discogsResolveCache.set(discogsUrl, out);                  // cache ONLY a successful response
+      return out;
     }
-    _discogsResolveCache.set(discogsUrl, out);
-    return out;
+    return null;   // all retries exhausted — unknown, leave uncached so it's retried later
   }
   // slot status from a match result — 'disc' for a confident Discogs-URL match,
   // 'rg' for a release-group sibling, else the name-search confidence.
@@ -336,25 +359,42 @@
     slot._discogsConflict = null;
     if (!durl || SETTINGS.discogsUrlMatch === false) { slot._discogsAddable = false; return; }
     const hits = await resolveByDiscogsUrl(durl);
-    if (!slot.gid)                          { slot._discogsAddable = true;  return; }   // no MB artist → create with link
+    if (hits === null)                      { slot._discogsAddable = false; slot._discogsPending = true; return; }   // lookup failed → unknown, no false negative
+    slot._discogsPending = false;
+    if (!slot.gid)                          { slot._discogsAddable = hits.length === 0; if (hits.length) slot._discogsConflict = hits[0]; return; }   // unresolved → create only when URL unowned
     if (hits.some(h => h.gid === slot.gid)) { slot._discogsAddable = false; return; }   // already linked to THIS artist
     if (hits.length === 0)                  { slot._discogsAddable = true;  return; }   // URL has no MB owner → add to this artist
-    // #227: the Discogs URL already links a DIFFERENT MB artist than the slot's
-    // (e.g. a wrong/different page-load 'set' match) — flag it, never auto-add.
-    slot._discogsAddable = false;
+    // #227: the Discogs URL already links a DIFFERENT MB artist than the slot's.
+    // Still offer to add it to this artist (majkinetor), but warn which artist it
+    // currently points to.
+    slot._discogsAddable = true;
     slot._discogsConflict = hits[0];        // { gid, name } the Discogs URL actually points to
   }
   // Tag every slot in the model — covers page-load 'set' artists, which skip the
-  // match pass (#227). Cached resolve, so repeat renders cost nothing.
+  // match pass (#227). Updates each row as it resolves (real-time) and shows
+  // progress in the always-visible toolbar status. Cached resolves are instant.
+  let _tagDiscogsRunning = false;
   async function tagDiscogsForAll() {
-    if (!MODEL || SETTINGS.discogsUrlMatch === false) return;
+    if (!MODEL || SETTINGS.discogsUrlMatch === false || _tagDiscogsRunning) return;
     const dmap = await loadDiscogsMap();
     if (!dmap) return;
+    const jobs = [];
     for (const t of MODEL.tracks) {
       const durls = dmap.get(fold(t.title)); if (!durls) continue;
-      for (let i = 0; i < t.slots.length; i++) await tagDiscogsAddable(t.slots[i], durls[i]);
+      t.slots.forEach((s, i) => { if (durls[i]) jobs.push([s, durls[i], t]); });
     }
-    if (!isEditingNow()) rerender();
+    if (!jobs.length) return;
+    _tagDiscogsRunning = true;
+    let done = 0;
+    try {
+      for (const [s, durl] of jobs) {
+        const wasCached = _discogsResolveCache.has(durl);
+        await tagDiscogsAddable(s, durl);
+        done++;
+        if (!wasCached) updateStatus(`resolving Discogs links ${done}/${jobs.length}…`);
+        if (!isEditingNow()) rerender();   // real-time: show each icon as it resolves
+      }
+    } finally { _tagDiscogsRunning = false; refreshStatus(); if (!isEditingNow()) rerender(); }
   }
   // chain glyph shown in place of the artist-type icon when a Discogs link can be added
   const DISCOGS_LINK_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
@@ -371,7 +411,7 @@
         if (document.visibilityState !== 'visible') return;
         document.removeEventListener('visibilitychange', onReturn);
         const hits = await resolveByDiscogsUrl(url, true);   // force re-check
-        if (hits.some(h => h.gid === slot.gid)) { slot._discogsAddable = false; slot._flash = true; toast(`added Discogs link to ${slot.name}`); }
+        if (hits && hits.some(h => h.gid === slot.gid)) { slot._discogsAddable = false; slot._discogsConflict = null; slot._flash = true; toast(`added Discogs link to ${slot.name}`); }
         rerender();
       };
       document.addEventListener('visibilitychange', onReturn);
@@ -385,10 +425,10 @@
     // #224: a Discogs artist-link match outranks the name search.
     if (SETTINGS.discogsUrlMatch !== false && discogsUrl) {
       const hits = await resolveByDiscogsUrl(discogsUrl);
-      if (hits.length === 1) {
+      if (hits && hits.length === 1) {
         const e = await fetchEntity(hits[0].gid);
         if (e && e.gid) return { entity: e, source: 'discogs', confidence: 'high', candidates: [e] };
-      } else if (hits.length > 1) {
+      } else if (hits && hits.length > 1) {
         // ambiguous — surface every linked artist plus the name-search hits and let the user pick
         const named = await searchArtist(creditedAs);
         const ents = [];
@@ -623,7 +663,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.095000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.101500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1553,16 +1593,20 @@
     }; wireRowNav(cred); line.appendChild(cred);
     let ic;
     if (s._discogsAddable) {
-      // #227: a Discogs link can be added — swap the artist-type icon for a link icon
-      ic = document.createElement('a'); ic.className = 'tc-tic discogs-add'; ic.href = '#'; ic.innerHTML = DISCOGS_LINK_SVG;
-      ic.title = s.gid ? 'Add the Discogs link to this artist' : 'Create this artist with its Discogs link';
+      // #227: a Discogs link can be added — swap the artist-type icon for a link icon.
+      // When the URL already links a DIFFERENT MB artist, use the amber warning glyph
+      // but still let the click add it to this artist (majkinetor).
+      const conf = s._discogsConflict;
+      ic = document.createElement('a'); ic.className = 'tc-tic ' + (conf ? 'discogs-warn' : 'discogs-add'); ic.href = '#'; ic.innerHTML = conf ? DISCOGS_WARN_SVG : DISCOGS_LINK_SVG;
+      ic.title = conf ? `Discogs links a different MB artist: ${conf.name} — click to add it to ${s.name || 'this artist'} anyway`
+                      : (s.gid ? 'Add the Discogs link to this artist' : 'Create this artist with its Discogs link');
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreateDiscogsLink(s); };
     } else if (s._discogsConflict) {
-      // #227: Discogs links a DIFFERENT MB artist — warn, don't add. Click opens that artist to verify.
+      // unresolved slot whose Discogs URL already belongs to an MB artist — info only (pick that artist)
       ic = document.createElement('a'); ic.className = 'tc-tic discogs-warn'; ic.innerHTML = DISCOGS_WARN_SVG;
       ic.href = `${ORIGIN}/artist/${s._discogsConflict.gid}`; ic.target = '_blank'; ic.rel = 'noopener';
-      ic.title = `Discogs links a different MB artist: ${s._discogsConflict.name} — verify (this slot is ${s.name || 'unset'})`;
+      ic.title = `Discogs links this URL to ${s._discogsConflict.name} — pick that artist`;
     } else {
       ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
       if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
