@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.221500
+// @version      2026.6.16.224500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -80,14 +80,16 @@
 
   function render() {
     mount();
+    const y = window.scrollY;            // keep the viewport put — rebuilding innerHTML must not jump the page
     const n = stagedCount();
     const groups = grouped();
-    root.innerHTML = bar(n) + bulkBar() + groups.map(g => section(g.type, g.items)).join('') + deletedSection();
+    root.innerHTML = bar(n) + bulkBar() + newSection() + groups.map(g => section(g.type, g.items)).join('') + deletedSection();
     wire();
+    if (window.scrollY !== y) window.scrollTo(0, y);
   }
 
   function grouped() {
-    let items = MODEL.filter(it => !it._del);
+    let items = MODEL.filter(it => !it._del && !it._new);   // new uploads get their own section on top
     if (!SETTINGS.group) {
       items = items.slice().sort((a, b) => a.order - b.order);
       return [{ type: null, items }];
@@ -142,6 +144,12 @@
     return `<div class="as-sec"><h3>${esc(label)}</h3><span class="as-cnt">${items.length}</span><span class="as-line"></span></div>
       <div class="as-grid" data-group="${esc(type||'')}">${items.map(card).join('')}</div>`;
   }
+  function newSection() {
+    const news = MODEL.filter(it => it._new && !it._del).sort((a, b) => a.order - b.order);
+    if (!news.length) return '';
+    return `<div class="as-sec as-sec-new"><h3>New uploads</h3><span class="as-cnt">${news.length}</span><span class="as-line"></span></div>
+      <div class="as-grid">${news.map(card).join('')}</div>`;
+  }
   function deletedSection() {
     const dels = MODEL.filter(it => it._del);
     if (!dels.length) return '';
@@ -158,9 +166,7 @@
       ${it._new ? '<span class="as-newban">NEW</span>' : ''}
       <div class="as-types">${chips}</div>
       <div class="as-thumb"><img loading="lazy" src="${esc(src)}" alt=""><span class="as-dim">${esc(dim)}</span>
-        ${it._del
-          ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>'
-          : '<button class="as-tbtn as-rm" title="remove this cover art">✕</button>'}
+        ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
       ${it._del ? '' : `<div class="as-meta">${(it.comment || it._editcmt)
           ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…">`
@@ -196,7 +202,6 @@
     root.querySelector('.as-add').onclick = addImage;
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
-    root.querySelectorAll('.as-rm').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = true; it._sel = false; render(); } });
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
     root.querySelectorAll('.as-cmt').forEach(inp => {
       inp.oninput = e => { const it = byId(cardId(e.target)); if (it) { it.comment = e.target.value; refreshStaged(); } };
@@ -207,17 +212,35 @@
     // type chips → popover
     root.querySelectorAll('.as-chip').forEach(ch => ch.onclick = e => { e.stopPropagation(); openTypePop(ch); });
     // click image → lightbox; right-click card → toggle selection
-    root.querySelectorAll('.as-thumb img').forEach(img => img.onclick = e => { const it = byId(cardId(e.target)); if (it) openLightbox(it.id); });
-    root.querySelectorAll('.as-card').forEach(c => c.oncontextmenu = e => { if (c.classList.contains('del')) return; e.preventDefault(); const it = byId(c.dataset.id); if (it) { it._sel = !it._sel; render(); } });
-    // bulk actions
+    root.querySelectorAll('.as-thumb img').forEach(img => {
+      img.onclick = e => { const it = byId(cardId(e.target)); if (it) openLightbox(it.id); };
+      img.onerror = () => { const th = img.closest('.as-thumb'); if (th) th.classList.add('na'); };   // CAA not propagated yet
+      if (img.complete && !img.naturalWidth && img.getAttribute('src')) img.onerror();
+    });
+    // right-click toggles selection IN PLACE — no render(), so the page never jumps
+    root.querySelectorAll('.as-card').forEach(c => c.oncontextmenu = e => {
+      if (c.classList.contains('del')) return;
+      e.preventDefault(); const it = byId(c.dataset.id); if (!it) return;
+      it._sel = !it._sel; c.classList.toggle('sel', it._sel); syncBulkBar();
+    });
+    wireBulk();
+    wireDrag();
+    markCursor();
+  }
+  function wireBulk() {
     const q = s => root.querySelector(s);
-    q('.as-bk-clr') && (q('.as-bk-clr').onclick = () => { MODEL.forEach(it => it._sel = false); render(); });
+    q('.as-bk-clr') && (q('.as-bk-clr').onclick = () => { MODEL.forEach(it => it._sel = false); root.querySelectorAll('.as-card.sel').forEach(c => c.classList.remove('sel')); syncBulkBar(); });
     q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; } }); render(); });
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = () => MODEL.filter(it => it._sel && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 350)));
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
-
-    wireDrag();
-    markCursor();
+  }
+  // insert / refresh / remove the fixed bulk bar without touching the grid (no reflow → no jump)
+  function syncBulkBar() {
+    const html = bulkBar();
+    let bb = root.querySelector('.as-bulk');
+    if (!html) { if (bb) bb.remove(); return; }
+    if (bb) bb.outerHTML = html; else root.insertAdjacentHTML('afterbegin', html);
+    wireBulk();
   }
   function refreshStaged() {
     const n = stagedCount(); const s = root.querySelector('.as-staged'); const c = root.querySelector('.as-commit');
@@ -324,11 +347,12 @@
     const it = byId(_lb); if (!it) return;
     const img = ov.querySelector('.as-lb-img');
     const src = it._new ? it._file : thumb(it.id, 1200);
+    ov.classList.remove('na');
     // hide until the NEW src has decoded — otherwise the previous image lingers
     // visibly while the 1200px loads ("original shows shortly")
     img.classList.add('loading');
-    img.onload = () => img.classList.remove('loading');
-    img.onerror = () => img.classList.remove('loading');
+    img.onload = () => { img.classList.remove('loading'); ov.classList.remove('na'); };
+    img.onerror = () => { img.classList.remove('loading'); ov.classList.add('na'); };   // CAA not propagated yet
     img.src = src;
     if (img.complete && img.naturalWidth) img.classList.remove('loading');
     const bits = [it.types.length ? it.types.join(', ') : 'no type', it.w && it.h ? `${it.w} × ${it.h}` : null, it.comment].filter(Boolean);
@@ -339,22 +363,22 @@
     const seq = visible(); if (!seq.length) return;
     let i = seq.findIndex(it => String(it.id) === String(_lb));
     i = (i + d + seq.length) % seq.length;
-    _lb = seq[i].id; _cursorId = _lb; paintLightbox(); markCursor();
+    _lb = seq[i].id; _cursorId = _lb; paintLightbox(); markCursor(true);
   }
 
   // ── keyboard cursor (arrows select / move; Enter opens lightbox) ──────────────
   let _cursorId = null;
-  function markCursor() {
+  function markCursor(scroll) {
     root.querySelectorAll('.as-card.as-cursor').forEach(c => c.classList.remove('as-cursor'));
     if (!_cursorId) return;
     const c = root.querySelector(`.as-card[data-id="${CSS.escape(String(_cursorId))}"]`);
-    if (c) { c.classList.add('as-cursor'); c.scrollIntoView({ block: 'nearest' }); }
+    if (c) { c.classList.add('as-cursor'); if (scroll) c.scrollIntoView({ block: 'nearest' }); }
   }
   function moveCursor(dx, dy) {
     const cards = [...root.querySelectorAll('.as-card:not(.del)')];
     if (!cards.length) return;
     let cur = cards.find(c => c.dataset.id === String(_cursorId)) || cards[0];
-    if (!_cursorId) { _cursorId = cur.dataset.id; markCursor(); return; }
+    if (!_cursorId) { _cursorId = cur.dataset.id; markCursor(true); return; }
     const r0 = cur.getBoundingClientRect();
     let best = null, bestD = Infinity;
     for (const c of cards) {
@@ -368,7 +392,7 @@
       const d = (dx ? Math.abs(ddx) + Math.abs(ddy) * 3 : Math.abs(ddy) + Math.abs(ddx) * 3);
       if (d < bestD) { bestD = d; best = c; }
     }
-    if (best) { _cursorId = best.dataset.id; markCursor(); }
+    if (best) { _cursorId = best.dataset.id; markCursor(true); }
   }
   document.addEventListener('keydown', e => {
     const t = e.target;
@@ -430,9 +454,14 @@
   .as-card.as-drop{outline:2px dashed var(--as-acc);outline-offset:-2px}
   .as-card.del .as-thumb img{filter:grayscale(1) brightness(.82)}
   .as-card.del{opacity:.7}
-  .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:var(--as-acc);color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
+  .as-sec-new h3{color:#1f9d6b}
+  .as-card.new{background:repeating-linear-gradient(45deg,#eef7f1,#eef7f1 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:#9bd3b6;border-style:dashed}
+  .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
   .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f0eef6}
   .as-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .as-thumb.na{display:flex;align-items:center;justify-content:center;background:#ededed}
+  .as-thumb.na img{visibility:hidden}
+  .as-thumb.na::after{content:'Image not available,\\A please try again later';white-space:pre-line;text-align:center;color:#a0306a;font-style:italic;font-size:12px;line-height:1.35;padding:10px}
   .as-dim{position:absolute;left:6px;bottom:6px;background:rgba(20,16,40,.78);color:#fff;font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
@@ -452,10 +481,10 @@
   .as-card.sel::after{content:'✓';position:absolute;left:7px;top:7px;width:20px;height:20px;line-height:20px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:12px;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .as-card.as-cursor{box-shadow:0 0 0 2px #2a6,0 3px 14px rgba(40,160,100,.28)}
   /* bulk bar */
-  .as-bulk{position:sticky;top:52px;z-index:29;display:flex;align-items:center;gap:11px;padding:7px 12px;background:#f3eefe;border:1px solid #cbbdf0;border-radius:9px;margin-bottom:8px;flex-wrap:wrap}
+  .as-bulk{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:120;display:flex;align-items:center;gap:11px;padding:9px 15px;background:#fff;border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 8px 28px rgba(60,40,110,.28);flex-wrap:wrap;max-width:94vw}
   .as-bulk b{color:var(--as-acc)}
   .as-bk-rm{border-color:#e6b8b2;color:var(--as-warn)}
-  .as-hint{font-size:11px;color:#8a7fb8;margin-left:auto}
+  .as-hint{font-size:11px;color:#8a7fb8;width:100%;text-align:center;margin-top:2px}
   .as-pop{position:absolute;z-index:40;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}
   .as-pop label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer}
   .as-pop label:hover{background:#f3eefe}.as-pop input{accent-color:var(--as-acc)}
@@ -466,6 +495,8 @@
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
   .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:#fff;transition:opacity .12s}
   .as-lb-img.loading{opacity:0}
+  #as-lb.na .as-lb-img{display:none}
+  #as-lb.na::after{content:'Image not available, please try again later';color:#f0c4da;font-style:italic;font-size:16px}
   .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:42px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
   .as-lb-nav:hover{background:rgba(255,255,255,.25)}
   .as-lb-prev{left:18px}.as-lb-next{right:18px}
