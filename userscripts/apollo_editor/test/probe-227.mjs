@@ -41,21 +41,22 @@ const r = await page.evaluate(async ({ ERIC, ERIC_GID, UNLINKED }) => {
   await A.tagDiscogsAddable(unresolved, UNLINKED);
   const linked = { gid: ERIC_GID, name: 'Eric Van Wonterghem' };
   await A.tagDiscogsAddable(linked, ERIC);
-  // #227: a 'set' slot whose gid differs from the artist the Discogs URL links → conflict, not add
-  const conflict = { gid: 'd71e808b-b501-46cb-8412-07c7d16ff1f2', name: 'Some Other Artist' };
-  await A.tagDiscogsAddable(conflict, ERIC);
+  // #227: an artist that links a DIFFERENT Discogs page than queried → mismatch, NOT missing/addable.
+  // John Whybrew (d71e808b) links discogs/artist/695567; query it against Eric's URL (205719).
+  const mismatch = { gid: 'd71e808b-b501-46cb-8412-07c7d16ff1f2', name: 'John Whybrew' };
+  await A.tagDiscogsAddable(mismatch, ERIC);
 
   // add-to-existing seed URL
   A.addOrCreateDiscogsLink({ gid: ERIC_GID, name: 'Eric', _discogsUrl: ERIC });
   // create-with-link seed URL
   A.createArtist('Somebody New', { creditedAs: 'Somebody New' }, UNLINKED);
   return { unresolvedAddable: unresolved._discogsAddable, linkedAddable: linked._discogsAddable,
-    conflictAddable: conflict._discogsAddable, conflictWith: conflict._discogsConflict, opened: window.__opened };
+    mismatchAddable: mismatch._discogsAddable, mismatchUrl: mismatch._discogsMismatch, opened: window.__opened };
 }, { ERIC, ERIC_GID, UNLINKED });
 
 log('unresolved addable:', r.unresolvedAddable);
 log('linked addable:', r.linkedAddable);
-log('conflict:', r.conflictAddable, JSON.stringify(r.conflictWith));
+log('mismatch:', r.mismatchAddable, r.mismatchUrl);
 log('opened URLs:', JSON.stringify(r.opened, null, 1));
 
 const editUrl = r.opened.find(u => u.includes(`/artist/${ERIC_GID}/edit`)) || '';
@@ -64,7 +65,7 @@ let fail = 0;
 const check = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 check(r.unresolvedAddable === true, 'unresolved slot with a Discogs URL is addable (create-with-link)');
 check(r.linkedAddable === false, 'already-linked artist is NOT addable');
-check(r.conflictAddable === true && r.conflictWith && r.conflictWith.name === 'Eric Van Wonterghem', 'differing Discogs URL → still addable, conflict flagged (names the real owner)');
+check(r.mismatchAddable === false && /695567/.test(r.mismatchUrl || ''), 'artist linking a different Discogs page → mismatch (not addable/missing)');
 check(/edit-artist\.url\.0\.text=.*999999999/.test(decodeURIComponent(createUrl)) && /link_type_id=180/.test(createUrl), 'create seeds the Discogs URL + link_type_id=180');
 check(/edit-artist\.url\.0\.text=.*205719/.test(decodeURIComponent(editUrl)) && /link_type_id=180/.test(editUrl), 'add-to-existing seeds the artist edit form with URL + link_type_id=180');
 console.log(fail ? `\n${fail} FAILURE(S)` : '\nALL ASSERTIONS PASS');
