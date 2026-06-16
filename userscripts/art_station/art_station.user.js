@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.270000
+// @version      2026.6.16.281500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -47,14 +47,33 @@
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
+  // MB's page (its DB) is the source of truth for the cover list — it includes images
+  // that aren't on the Cover Art Archive yet (just added). CAA only enriches comments.
+  function parsePageArt() {
+    const blocks = [...document.querySelectorAll('.artwork-cont')];
+    if (!blocks.length) return null;
+    return blocks.map((b, i) => {
+      const ed = b.querySelector('a[href*="/edit-cover-art/"]');
+      const m = ed && ed.getAttribute('href').match(/\/edit-cover-art\/(\d+)/);
+      if (!m) return null;
+      const tm = b.textContent.replace(/\s+/g, ' ').match(/Types:\s*(.*?)\s*All sizes/i);
+      const types = tm ? tm[1].split(',').map(s => s.trim()).filter(s => s && s !== '-') : [];
+      return { id: m[1], types, order: i };
+    }).filter(Boolean);
+  }
   async function loadArt() {
-    let images = [];
-    try { const j = await fetch(CAA, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null); if (j) images = j.images || []; }
-    catch (e) { /* none yet */ }
-    MODEL = images.map((im, i) => ({
-      id: im.id, types: (im.types || []).slice(), comment: im.comment || '',
-      order: i, w: 0, h: 0, _del: false, _new: false, _img: im.image || imgUrl(im.id),
-      _origTypes: (im.types || []).slice(), _origComment: im.comment || '', _origOrder: i,
+    const pageArt = parsePageArt();
+    let caa = [];
+    try { const j = await fetch(CAA, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null); if (j) caa = j.images || []; }
+    catch (e) { /* not propagated / none yet */ }
+    const byId = new Map(caa.map(im => [String(im.id), im]));
+    const source = (pageArt && pageArt.length)
+      ? pageArt.map(p => ({ id: p.id, types: p.types, comment: (byId.get(String(p.id)) || {}).comment || '' }))
+      : caa.map(im => ({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '' }));
+    MODEL = source.map((s, i) => ({
+      id: s.id, types: s.types.slice(), comment: s.comment,
+      order: i, w: 0, h: 0, _del: false, _new: false, _img: (byId.get(String(s.id)) || {}).image || imgUrl(s.id),
+      _origTypes: s.types.slice(), _origComment: s.comment, _origOrder: i,
     }));
     render();
     MODEL.forEach(measure);   // lazy-fill dimensions
@@ -483,7 +502,7 @@
     if (dry) {
       report(`1. GET /ws/js/cover-art-upload/${MBID}?mime_type=${mime}  → {action,image_id,formdata,nonce}\n`
         + `2. POST ‹signed archive.org action›  multipart: ‹policy,signature,key,AWSAccessKeyId…› + file (${(it._fileObj && it._fileObj.name) || 'file'}, ${(it._fileObj && it._fileObj.size) || '?'}b)\n`
-        + `3. POST ${R}/add-cover-art\n   add-cover-art.id=‹image_id›\n   add-cover-art.position=${pos}\n   add-cover-art.nonce=‹nonce›\n`
+        + `3. POST ${R}/add-cover-art\n   add-cover-art.id=‹image_id›\n   add-cover-art.position=${pos}\n   add-cover-art.nonce=‹nonce›\n   add-cover-art.mime_type=${mime}\n`
         + `   add-cover-art.type_id=${typeIds.join(',') || '(none)'}\n   add-cover-art.comment=${it.comment}\n   add-cover-art.edit_note=${meta.note}`
         + (meta.votable ? `\n   add-cover-art.make_votable=1` : ''));
       return;
@@ -494,10 +513,11 @@
     fd.append('file', it._fileObj, (it._fileObj && it._fileObj.name) || String(signed.image_id));
     const up = await fetch(signed.action, { method: 'POST', body: fd });   // archive.org (auth in the signed policy)
     if (!up.ok) throw new Error('IA upload ' + up.status);
-    const p = new URLSearchParams(); copyHidden(form, p, /\.(nonce|position|id|type_id|comment)$/);
+    const p = new URLSearchParams(); copyHidden(form, p, /\.(nonce|position|id|type_id|comment|mime_type)$/);
     p.append('add-cover-art.id', signed.image_id);
     p.append('add-cover-art.position', pos);
     p.append('add-cover-art.nonce', signed.nonce);
+    p.append('add-cover-art.mime_type', mime);   // required Select (MB Form::Role::AddArt)
     typeIds.forEach(id => p.append('add-cover-art.type_id', id));
     p.append('add-cover-art.comment', it.comment);
     p.append('add-cover-art.edit_note', meta.note);
@@ -729,11 +749,13 @@
   .as-sec-new h3{color:#1f9d6b}
   .as-card.new{background:repeating-linear-gradient(45deg,#eef7f1,#eef7f1 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:#9bd3b6;border-style:dashed}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
-  .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f0eef6}
-  .as-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-  .as-thumb.na{display:flex;align-items:center;justify-content:center;background:#ededed}
-  .as-thumb.na img{visibility:hidden}
-  .as-thumb.na::after{content:'Image not available,\\A please try again later';white-space:pre-line;text-align:center;color:#a0306a;font-style:italic;font-size:12px;line-height:1.35;padding:10px}
+  .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9}
+  .as-thumb img{width:100%;height:100%;object-fit:contain;display:block}
+  .as-thumb.na{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:linear-gradient(135deg,#faf8ff,#efeafb)}
+  .as-thumb.na img{display:none}
+  .as-thumb.na::before{content:'';width:34px;height:34px;border-radius:50%;border:3px solid #d8ccf5;border-top-color:var(--as-acc);animation:as-spin 1s linear infinite}
+  .as-thumb.na::after{content:'Processing on the\\ACover Art Archive…';white-space:pre-line;text-align:center;color:#8a7fb8;font-size:12px;font-weight:600;line-height:1.4;padding:0 12px}
+  @keyframes as-spin{to{transform:rotate(360deg)}}
   .as-dim{position:absolute;left:6px;bottom:6px;background:rgba(20,16,40,.78);color:#fff;font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
