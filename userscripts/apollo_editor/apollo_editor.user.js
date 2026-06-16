@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.115000
+// @version      2026.6.16.120000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -695,7 +695,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.115000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.120000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1170,26 +1170,28 @@
   // the always-visible total in the toolbar (left of Match) — shows the release-wide unresolved count / progress;
   // when there are unresolved artists the badge is clickable and jumps to the first one
   const setGlobalStat = n => { document.querySelectorAll('.tc-globalstat').forEach(e => { e.textContent = n ? statusText(n) : ''; e.classList.toggle('tc-unres', n > 0); e.onclick = n > 0 ? focusFirstUnresolved : null; e.style.cursor = n > 0 ? 'pointer' : ''; e.title = n > 0 ? 'jump to the first unresolved artist' : ''; }); };
-  // #227: persistent "N missing Discogs links" badge. Stays until every link is
-  // added; clicking jumps to the first track missing one and focuses its credit.
-  function focusFirstMissingDiscogs() {
-    for (const t of MODEL.tracks) {
-      const i = t.slots.findIndex(s => s._discogsAddable); if (i < 0) continue;
-      const row = rowEl(t.mi, t.ti); if (!row) return;
-      row.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      const creds = row.querySelectorAll('.tc-cred'); (creds[i] || row).focus();
-      return;
-    }
+  // #227: persistent missing-Discogs-links badge. Stays until every link is
+  // added; each click steps to the NEXT track missing one and focuses its credit.
+  let _discNavIdx = -1;
+  function focusNextMissingDiscogs() {
+    const list = [];
+    MODEL.tracks.forEach(t => t.slots.forEach((s, i) => { if (s._discogsAddable) list.push([t, i]); }));
+    if (!list.length) { _discNavIdx = -1; return; }
+    _discNavIdx = (_discNavIdx + 1) % list.length;
+    const [t, i] = list[_discNavIdx];
+    const row = rowEl(t.mi, t.ti); if (!row) return;
+    row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const creds = row.querySelectorAll('.tc-cred'); (creds[i] || row).focus();
   }
   const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s._discogsAddable) n++; })); return n; };
   const setDiscStat = () => {
     const n = missingDiscogsCount();
     document.querySelectorAll('.tc-discstat').forEach(e => {
-      e.textContent = n ? `🔗 ${n} missing Discogs link${n === 1 ? '' : 's'}` : '';
+      e.textContent = n ? `🔗 ${n} link${n === 1 ? '' : 's'}` : '';
       e.classList.toggle('tc-disc-badge', n > 0);
-      e.onclick = n > 0 ? focusFirstMissingDiscogs : null;
+      e.onclick = n > 0 ? focusNextMissingDiscogs : null;
       e.style.cursor = n > 0 ? 'pointer' : '';
-      e.title = n > 0 ? 'jump to the first track missing its Discogs link' : '';
+      e.title = n > 0 ? `${n} track${n === 1 ? '' : 's'} missing a Discogs artist link — click to step to the next` : '';
     });
   };
   // transient progress text in the same slot, while the check runs (not a pill)

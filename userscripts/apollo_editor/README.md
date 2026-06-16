@@ -72,6 +72,19 @@ Each resolved artist is tagged by how it matched (release-group, name, pre-exist
 1. 🟢 Green colored artist box means the artist was matched confidently (release-group or unambiguous exact name).
 1. ⚪ White search box means artist is unresolved or low-confidence, for user to pick; these are what the "N unresolved" counter counts and what clicking that badge jumps to.
 
+### Discogs artist links
+
+When the release carries a **Discogs link** (read from the page), Apollo uses it for artists — controlled by the *Discogs artist link matching* [setting](#matching-options) (on by default).
+
+- **Match by Discogs URL.** Before the name search, each track artist is matched by its Discogs URL (taken from the release's Discogs tracklist) against MusicBrainz's URL relationships — a strong, human-verified signal. A single linked MB artist is applied directly with a teal **DISC** badge; several linked artists are offered as candidates to pick from.
+- **Add / create the link.** For a slot whose Discogs URL is known, the artist-type icon becomes a **🔗 link icon** when a link can be added:
+  - unresolved slot → creates the artist seeded with the Discogs link (same as `＋`);
+  - matched/existing artist that's missing the link → adds it (opens the artist's edit form pre-seeded, confirmed on return);
+  - if the Discogs URL already links a **different** MB artist, the icon is an **amber ⚠** that names that artist — clicking still adds it to this artist, but you're warned.
+- **Missing-links badge.** A teal **🔗 N links** badge in the toolbar counts artists still missing their Discogs link (tooltip spells it out). It stays until they're all added; each click steps to the next such track and focuses its credit field.
+
+Already-linked artists are verified for free via MusicBrainz's internal entity endpoint, so the rate-limited URL lookup only runs for artists actually missing a link — a fully-linked release is near-instant.
+
 ### Recording matching
 
 Apollo fetches **every recording in the release group in one request**, indexes them by title, and matches each track **locally** — choosing the highest-confidence candidate (title + artist + length). It only falls back to a per-track MusicBrainz lookup for the tracks the release group can't satisfy. A full release therefore matches in roughly one fetch rather than one request per track.
@@ -181,6 +194,7 @@ All configured modifications are toggled on/off using the switcher button.
 | Option | Default | What it does |
 |---|---|---|
 | **Auto-match on start**| On<br>On | **Tracklist** - Matches artists automatically when the page loads<br>**Recordings** - Matches recordings automatically when the page loads|
+| **Discogs artist link matching**| On | When the release has a Discogs link, match track artists by their [Discogs URL](#discogs-artist-links) (before the name search) and offer to add/create missing links|
 |**Length tolerance**|5| Allow a length gap within N seconds (use `0` for exact)|
 |**Title tolerance**|1| Allow up to N differing characters in the title (use `0` for exact)|
 |**Ignore casing** |On|Case / accent / spacing-only differences don't count|
