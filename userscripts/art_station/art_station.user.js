@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.210000
+// @version      2026.6.16.213000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -172,6 +172,21 @@
   function byId(id) { return MODEL.find(it => String(it.id) === String(id)); }
   function cardId(el) { const c = el.closest('.as-card'); return c ? c.dataset.id : null; }
 
+  function wirePencil(btn) {
+    if (!btn) return;
+    btn.onclick = e => {
+      e.stopPropagation(); const it = byId(cardId(e.target)); if (!it) return;
+      it._editcmt = true;
+      // swap just THIS card's comment row in place — a full render() jumps the page
+      const meta = btn.closest('.as-meta');
+      meta.innerHTML = `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…">`;
+      const inp = meta.querySelector('.as-cmt');
+      inp.oninput = () => { it.comment = inp.value; refreshStaged(); };
+      inp.onblur = () => { if (!it.comment.trim()) { it._editcmt = false; meta.innerHTML = `<button class="as-pencil" title="add a comment">✎</button>`; wirePencil(meta.querySelector('.as-pencil')); } };
+      inp.focus();
+    };
+  }
+
   function wire() {
     root.querySelector('.as-size').oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); };
     root.querySelector('.as-size').onchange = () => { save(); render(); };
@@ -187,7 +202,7 @@
       inp.oninput = e => { const it = byId(cardId(e.target)); if (it) { it.comment = e.target.value; refreshStaged(); } };
       inp.onblur = e => { const it = byId(cardId(e.target)); if (it && !it.comment.trim()) { it._editcmt = false; render(); } };
     });
-    root.querySelectorAll('.as-pencil').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._editcmt = true; render(); const i = document.querySelector(`.as-card[data-id="${it.id}"] .as-cmt`); if (i) i.focus(); } });
+    root.querySelectorAll('.as-pencil').forEach(wirePencil);
 
     // type chips → popover
     root.querySelectorAll('.as-chip').forEach(ch => ch.onclick = e => { e.stopPropagation(); openTypePop(ch); });
