@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.15.233000
+// @version      2026.6.16.121500
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPCEtLSBzaGFnZ3kgYm9keSArIGRvbWVkIGhlYWQgLS0+DQogIDxwYXRoIGQ9Ik0yOCA4MmMwLTEwIDQtMTcgMTEtMjEgMy0xNSAxNS0yNSAzMS0yNXMyNyAxMCAzMCAyNGM3IDMgMTAgOSAxMCAxN3YxMGMwIDQtMyA3LTcgN2gtN3YtOWgtOHY5SDY2di05aC04djloLTljLTUgMC05LTQtOS05di0zYy00LTItNy02LTctMTFaIiBmaWxsPSIjOGQ2NDQyIi8+DQogIDwhLS0gZWFyIC0tPg0KICA8cGF0aCBkPSJNNzQgNDZjMTEtNyAyMi0zIDIyIDgtOS01LTE2LTMtMjAgM1oiIGZpbGw9IiM3YTU0MzYiLz4NCiAgPCEtLSB0cnVuayAtLT4NCiAgPHBhdGggZD0iTTQyIDY0Yy05IDYtMTMgMTktNyAzMSAzIDYgMTEgMyA5LTMtMi04IDAtMTUgNy0xOVoiIGZpbGw9IiM4ZDY0NDIiLz4NCiAgPCEtLSB0dXNrIC0tPg0KICA8cGF0aCBkPSJNNDYgODZjLTkgNS0xOCAyLTIyLTcgNyA3IDE1IDYgMjAtMVoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzZmNGEyZSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4NCiAgPCEtLSBleWUgLS0+DQogIDxjaXJjbGUgY3g9IjU0IiBjeT0iNTYiIHI9IjQiIGZpbGw9IiMyYTIwMTciLz4NCjwvc3ZnPg0K
@@ -30,7 +30,7 @@
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true };   // defaultInsert: 'replace' | 'append'
-  const VERSION = '2026.6.15.233000';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.6.16.121500';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -374,10 +374,27 @@
       // remember the textarea height the user sets with the native resize grip (vertical);
       // the splitter (below) remembers the field/panel split (horizontal).
       if (SET.taHeight) ta.style.height = SET.taHeight + 'px';
-      let hT; try { new ResizeObserver(() => { clearTimeout(hT); hT = setTimeout(() => { const h = ta.clientHeight; if (h > 40 && h !== SET.taHeight) { SET.taHeight = h; persistSet(); } }, 400); }).observe(ta); } catch (x) {}
+      // Persist ONLY a deliberate user resize (height changes between mouse down
+      // and up on the field). The old ResizeObserver fired on any layout-driven
+      // size change too, so visiting a differently-sized edit page (e.g. the
+      // full-width release editor) silently overwrote the saved height.
+      let _downH = null;
+      ta.addEventListener('mousedown', () => { _downH = ta.offsetHeight; });
+      window.addEventListener('mouseup', () => {
+        if (_downH == null) return;
+        const h = ta.offsetHeight; const was = _downH; _downH = null;
+        if (h > 40 && h !== was && h !== SET.taHeight) { SET.taHeight = h; ta.style.height = h + 'px'; persistSet(); }
+      });
       const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; vsep.title = 'Drag to resize'; wrap.appendChild(vsep);   // resizable separator between field & panel (#212)
       const side = buildSide(ta); wrap.appendChild(side);
       wireResize(vsep, side);
+      // Keep the field at least as tall as the saved-notes panel so it never
+      // renders shorter than the sidebar — the panel's height (driven by the
+      // visible-rows setting) is the floor; the user can still drag taller.
+      const syncFloor = () => { try { const h = side.offsetHeight; if (h > 0 && (parseInt(ta.style.minHeight, 10) || 0) !== h) ta.style.minHeight = h + 'px'; } catch (x) {} };
+      syncFloor();
+      requestAnimationFrame(syncFloor); setTimeout(syncFloor, 150); setTimeout(syncFloor, 600);   // catch the sidebar's final layout
+      try { new ResizeObserver(syncFloor).observe(side); } catch (x) {}
     });
   }
   new MutationObserver(() => injectAll()).observe(document.documentElement, { childList: true, subtree: true });
