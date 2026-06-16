@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.260000
+// @version      2026.6.16.261500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -195,12 +195,12 @@
       ${it._new ? '<span class="as-newban">NEW</span>' : ''}
       <div class="as-types">${chips}</div>
       <div class="as-thumb"><img loading="lazy" src="${esc(src)}" alt=""><span class="as-dim">${esc(dim)}</span>
-        <span class="as-selmark">✓</span>
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
       ${it._del ? '' : `<div class="as-meta">${(it.comment || it._editcmt)
           ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…">`
           : `<button class="as-pencil" title="add a comment">✎</button>`}</div>`}
+      <span class="as-selmark">✓</span>
     </div>`;
   }
 
@@ -706,8 +706,9 @@
   .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
   /* selection + keyboard cursor */
   .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
-  .as-selmark{position:absolute;right:6px;bottom:6px;width:22px;height:22px;line-height:22px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:13px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.4);z-index:4;display:none}
+  .as-selmark{position:absolute;right:7px;bottom:7px;width:21px;height:21px;line-height:21px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:12px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:6;display:none}
   .as-card.sel .as-selmark{display:block}
+  .as-card.sel .as-cmt{padding-right:28px}
   .as-card.as-cursor{box-shadow:0 0 0 2px #2a6,0 3px 14px rgba(40,160,100,.28)}
   /* bulk bar */
   .as-bulk{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:120;display:flex;align-items:center;gap:11px;padding:9px 15px;background:#fff;border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 8px 28px rgba(60,40,110,.28);flex-wrap:wrap;max-width:94vw}
