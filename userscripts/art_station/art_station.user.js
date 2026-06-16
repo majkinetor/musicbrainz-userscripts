@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.250000
+// @version      2026.6.16.251500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -160,7 +160,7 @@
       <button class="as-btn as-bk-rm">🗑 Delete</button>
       <span class="as-sp"></span>
       <button class="as-btn as-bk-clr">Clear selection</button>
-      <span class="as-hint">right-click a cover to select · click a cover to enlarge · ←→↑↓ to move</span></div>`;
+      <span class="as-hint">right-click to select · drag a selected cover to move the group · click to enlarge</span></div>`;
   }
   function section(type, items) {
     const label = type === null ? 'All covers' : type;
@@ -344,32 +344,36 @@
   }
 
   let _drag = null;
+  // the block being dragged: the whole selection if the grabbed card is selected, else just it
+  const dragBlock = () => (_drag && _drag._sel) ? MODEL.filter(it => it._sel && !it._del).sort((a, b) => a.order - b.order) : (_drag ? [_drag] : []);
   function wireDrag() {
     root.querySelectorAll('.as-card[draggable="true"]').forEach(card => {
-      card.ondragstart = e => { _drag = byId(card.dataset.id); card.classList.add('as-dragging'); e.dataTransfer.effectAllowed = 'move'; };
-      card.ondragend = () => { card.classList.remove('as-dragging'); _drag = null; root.querySelectorAll('.as-drop').forEach(c => c.classList.remove('as-drop')); };
+      card.ondragstart = e => { _drag = byId(card.dataset.id); dragBlock().forEach(g => cardEl(g)?.classList.add('as-dragging')); e.dataTransfer.effectAllowed = 'move'; };
+      card.ondragend = () => { root.querySelectorAll('.as-dragging').forEach(c => c.classList.remove('as-dragging')); _drag = null; root.querySelectorAll('.as-drop').forEach(c => c.classList.remove('as-drop')); };
       card.ondragover = e => {
-        if (!_drag || _drag === byId(card.dataset.id)) return;
-        // reorder only WITHIN the same group when grouping is on (#230 remark 1)
-        if (SETTINGS.group && _drag.types[0] !== byId(card.dataset.id).types[0] && (_drag.types[0] || NO_TYPE) !== (byId(card.dataset.id).types[0] || NO_TYPE)) return;
+        const tgt = byId(card.dataset.id);
+        if (!_drag || dragBlock().includes(tgt)) return;   // not onto a member of the moving block
         e.preventDefault(); root.querySelectorAll('.as-drop').forEach(c => c.classList.remove('as-drop')); card.classList.add('as-drop');
       };
       card.ondrop = e => {
-        e.preventDefault(); const tgt = byId(card.dataset.id); if (!_drag || !tgt || _drag === tgt) return;
-        reorder(_drag, tgt); render();
+        e.preventDefault(); const tgt = byId(card.dataset.id); const block = dragBlock();
+        if (!_drag || !tgt || block.includes(tgt)) return;
+        reorder(block, tgt); render();
       };
     });
   }
-  function reorder(src, tgt) {
-    // splice src next to tgt, then renumber. Drop on the side you came from:
-    // dragging forward (left→right) lands AFTER the target, backward lands BEFORE.
+  const cardEl = it => root.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"]`);
+  function reorder(block, tgt) {
+    // move the block (one card, or the whole selection) next to tgt, preserving the
+    // block's relative order. Drop on the side you came from: forward → after tgt.
     const seq = MODEL.filter(it => !it._del).slice().sort((a, b) => a.order - b.order);
-    const from = seq.indexOf(src);
-    const forward = from < seq.indexOf(tgt);
-    seq.splice(from, 1);
-    const to = seq.indexOf(tgt) + (forward ? 1 : 0);
-    seq.splice(to, 0, src);
-    seq.forEach((it, i) => it.order = i);
+    const set = new Set(block);
+    const fromFirst = Math.min(...block.map(b => seq.indexOf(b)));
+    const forward = fromFirst < seq.indexOf(tgt);
+    const rest = seq.filter(it => !set.has(it));
+    const to = rest.indexOf(tgt) + (forward ? 1 : 0);
+    rest.splice(to, 0, ...block);
+    rest.forEach((it, i) => it.order = i);
   }
 
   // ── actions ───────────────────────────────────────────────────────────────────
