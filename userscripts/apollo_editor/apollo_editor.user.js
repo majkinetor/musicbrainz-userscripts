@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.110000
+// @version      2026.6.16.113000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -560,7 +560,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.110000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.113000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -701,7 +701,7 @@
     .tc-mirror.compact .tc-aslot,.tc-mirror.compact .tc-bl{height:21px}
     .tc-mirror.compact input.t-title,.tc-mirror.compact input.t-len,.tc-mirror.compact input.t-num{padding:0 2px;font-size:12px}
     .tc-mirror.compact .tc-search{padding:0 5px}.tc-mirror.compact .tc-search .nm{padding:1px 0;font-size:12px}
-    .tc-mirror.compact .tc-cred{padding:0 4px}
+    .tc-mirror.compact .tc-cred{padding:0 4px 0 15px}
     /* badge column: pills per artist line; on row hover the track ↺/✕ overlay it */
     .tc-bl{height:28px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
     .tc-trackacts{position:absolute;inset:0;display:none;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,.93)}
@@ -712,12 +712,12 @@
     .tc-mirror tr.tc-changed td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}   /* a track that differs from its page-load state */
     /* one artist = one aligned fixed-height line: credited-as · icon · search box · acts (no line between artists) */
     .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box}
-    .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px}
+    .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px 1px 15px}
     .tc-cred::placeholder{color:#cfcfcf}
     .tc-credwrap{position:relative;flex:none;display:inline-flex;align-items:center}
-    .tc-cred-clr{position:absolute;left:-3px;top:50%;transform:translateY(-50%);z-index:2;display:none;border:none;background:none;color:#c0392b;cursor:pointer;font-size:14px;line-height:1;padding:0 1px}
+    .tc-cred-clr{position:absolute;left:2px;top:50%;transform:translateY(-50%);z-index:2;display:none;border:none;background:none;color:#bbb;cursor:pointer;font-size:12px;line-height:1;padding:0}
     .tc-aslot.tc-has-cred:hover .tc-cred-clr{display:block}
-    .tc-cred-clr:hover{color:#922}
+    .tc-cred-clr:hover{color:#c0392b}
     .tc-cred:hover,.tc-cred:focus{border-color:#cdbff0;background:#fff;color:#333}
     .tc-aslot.tc-can-split .tc-cred{background:#fff3cf;border-color:#e7ce8a;border-radius:3px;color:#8a6d00}
     .tc-aslot.tc-can-split .tc-cred::placeholder{color:#caa64e}
