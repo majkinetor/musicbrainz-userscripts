@@ -1158,10 +1158,13 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
             setTimeout(() => {
                 // Keep `is-pinned` — the toolbar stays on top after the import so
                 // the WARN/ERR badge remains visible (#118). Only the import-phase
-                // marquee + status line go away.
+                // marquee goes away; the final status line (the "Done: N added…"
+                // summary, or a stop message) STAYS so the result remains visible
+                // in the toolbar after the import finishes.
                 bar.classList.remove('is-importing');
                 _hideBar();
-                if (!bar._stopActive) { statusEl.textContent = ''; statusEl.style.display = 'none'; }   // #216: keep the end-of-run message
+                // (no clear here) — leave the last status line in place so the
+                // "Done: N added…" summary stays visible in the toolbar.
                 bar._pin();   // re-measure the spacer for the badge-bearing header height
             }, 2000);
             delete bar._setProgress;

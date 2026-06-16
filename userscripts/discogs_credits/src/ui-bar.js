@@ -1061,8 +1061,8 @@ export function insertDiscogsBar(discogsUrl) {
                 // marquee + status line go away.
                 bar.classList.remove('is-importing');
                 _hideBar();
-                statusEl.textContent = '';
-                statusEl.style.display = 'none';
+                // (no clear here) — leave the last status line in place so the
+                // "Done: N added…" summary stays visible in the toolbar after import.
                 bar._pin();   // re-measure the spacer for the badge-bearing header height
             }, 2000);
             delete bar._setProgress;
