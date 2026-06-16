@@ -1,0 +1,175 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Art Station — mockup</title>
+<style>
+  :root{ --tile:200px; --accent:#5f3ec0; --accent2:#7a5fd0; --warn:#c0392b; --ok:#1f8a4c; }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;background:#f3f1f8}
+  /* ── toolbar ── */
+  .bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:14px;padding:8px 14px;background:#fff;border-bottom:1px solid #e2dcef;box-shadow:0 1px 4px rgba(60,40,110,.06);flex-wrap:wrap}
+  .brand{font-weight:700;color:var(--accent);font-size:15px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .brand .logo{width:20px;height:20px;border-radius:5px;background:linear-gradient(135deg,var(--accent),#ff8c3b)}
+  .ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
+  .ctl input[type=range]{accent-color:var(--accent)}
+  select,.btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer}
+  .btn:hover{background:#f6f3fd}
+  .btn.ghost{border-style:dashed;color:#7a6fae}
+  .btn.dl{border-color:#bcd;color:#2a6}
+  .sp{flex:1 1 auto}
+  .staged{font-size:12px;color:#a05a00;background:#fff3d6;border:1px solid #ecd9a0;border-radius:9px;padding:2px 9px;white-space:nowrap}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+  /* ── sections ── */
+  .wrap{padding:10px 14px 40px}
+  .sec{margin:14px 0 4px;display:flex;align-items:center;gap:8px}
+  .sec h3{margin:0;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#6a5b95}
+  .sec .count{font-size:12px;color:#9b8fc0}
+  .sec .line{flex:1;height:1px;background:#e2dcef}
+  .grid{display:flex;flex-wrap:wrap;gap:14px}
+  /* ── card ── */
+  .card{width:var(--tile);background:#fff;border:1px solid #e2dcef;border-radius:9px;overflow:hidden;position:relative;transition:.12s}
+  .card:hover{box-shadow:0 3px 12px rgba(60,40,110,.14);border-color:#cbbdf0}
+  .card.sel{outline:2px solid var(--accent);outline-offset:-1px}
+  .card.del .thumb{filter:grayscale(1) brightness(.8)}
+  .card.del .meta{opacity:.55}
+  .thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#eee}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .dim{position:absolute;left:6px;bottom:6px;background:rgba(20,16,40,.78);color:#fff;font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px;letter-spacing:.02em}
+  .pick{position:absolute;top:7px;left:7px;width:18px;height:18px;accent-color:var(--accent);cursor:pointer;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+  .tools{position:absolute;top:5px;right:5px;display:flex;gap:3px;opacity:.85;transition:.12s}
+  .card:hover .tools{opacity:1}
+  .tbtn{width:24px;height:24px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+  .tbtn.rm:hover{background:var(--warn);color:#fff}
+  .tbtn.grab{cursor:grab;color:#888}
+  .meta{padding:7px 8px 9px;display:flex;flex-direction:column;gap:6px}
+  /* type chip (non-obtrusive: a pill that opens a small popover) */
+  .types{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+  .chip{font-size:11px;font-weight:600;color:#3b2c70;background:#efeaff;border:1px solid #d8ccf5;border-radius:20px;padding:1px 9px;cursor:pointer}
+  .chip .x{color:#9a8ccb;margin-left:3px}
+  .chip.add{color:#8a7fb8;background:#fff;border-style:dashed}
+  .cmt{font:12px inherit;border:1px solid #e2dcef;border-radius:6px;padding:3px 7px;color:#444;background:#faf9fe;width:100%}
+  .cmt::placeholder{color:#bbb}
+  /* type popover (shown open on one card to illustrate) */
+  .pop{position:absolute;z-index:9;top:34px;left:8px;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:140px;font-size:13px}
+  .pop label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer}
+  .pop label:hover{background:#f3eefe}
+  .pop input{accent-color:var(--accent)}
+  .del-note{font-size:12px;color:#b03}
+  .undo{font-size:11px;color:var(--accent);cursor:pointer;text-decoration:underline}
+  /* add tile */
+  .addtile{width:var(--tile);min-height:120px;border:2px dashed #cbbdf0;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8a7fb8;cursor:pointer;background:#fbfaff}
+  .addtile .big{font-size:30px;line-height:1}
+  .addtile small{font-size:11px}
+  .hint{font-size:11px;color:#a99}
+</style></head>
+<body>
+  <div class="bar">
+    <span class="brand"><span class="logo"></span>Art Station</span>
+    <span class="ctl">Size <input type="range" min="120" max="320" value="200" oninput="document.documentElement.style.setProperty('--tile',this.value+'px')"></span>
+    <span class="ctl">Sort <select><option>Type</option><option>Position</option><option>Dimensions ▾</option><option>Newest</option></select></span>
+    <label class="ctl"><input type="checkbox" checked> Group by type</label>
+    <button class="btn dl">⬇ Download selected · 3</button>
+    <span class="sp"></span>
+    <span class="staged">3 staged changes</span>
+    <button class="btn primary">✓ Enter edit</button>
+  </div>
+
+  <div class="wrap">
+    <!-- FRONT -->
+    <div class="sec"><h3>Front</h3><span class="count">2</span><span class="line"></span></div>
+    <div class="grid">
+      <div class="card sel">
+        <a class="thumb"><div id="c1"></div><span class="dim">1417 × 1417</span></a>
+        <input class="pick" type="checkbox" checked>
+        <div class="tools"><button class="tbtn grab" title="drag to reorder">⠿</button><button class="tbtn rm" title="mark for removal">✕</button></div>
+        <div class="meta">
+          <div class="types"><span class="chip">Front <span class="x">▾</span></span></div>
+          <input class="cmt" placeholder="comment…" value="">
+        </div>
+      </div>
+      <div class="card">
+        <a class="thumb"><div id="c2"></div><span class="dim">600 × 600</span></a>
+        <input class="pick" type="checkbox">
+        <div class="tools"><button class="tbtn grab">⠿</button><button class="tbtn rm">✕</button></div>
+        <div class="meta">
+          <!-- type popover shown OPEN here to illustrate the non-obtrusive picker -->
+          <div class="types"><span class="chip">Front <span class="x">▾</span></span></div>
+          <div class="pop">
+            <label><input type="checkbox" checked> Front</label>
+            <label><input type="checkbox"> Back</label>
+            <label><input type="checkbox"> Medium</label>
+            <label><input type="checkbox"> Booklet</label>
+            <label><input type="checkbox"> Tray</label>
+            <label><input type="checkbox"> Other</label>
+          </div>
+          <input class="cmt" placeholder="comment…" value="alt scan (lower res)">
+        </div>
+      </div>
+    </div>
+
+    <!-- BACK -->
+    <div class="sec"><h3>Back</h3><span class="count">1</span><span class="line"></span></div>
+    <div class="grid">
+      <div class="card">
+        <a class="thumb"><div id="c3"></div><span class="dim">1400 × 1400</span></a>
+        <input class="pick" type="checkbox" checked>
+        <div class="tools"><button class="tbtn grab">⠿</button><button class="tbtn rm">✕</button></div>
+        <div class="meta"><div class="types"><span class="chip">Back <span class="x">▾</span></span></div><input class="cmt" placeholder="comment…"></div>
+      </div>
+    </div>
+
+    <!-- MEDIUM -->
+    <div class="sec"><h3>Medium</h3><span class="count">2</span><span class="line"></span></div>
+    <div class="grid">
+      <div class="card">
+        <a class="thumb"><div id="c4"></div><span class="dim">1200 × 1200</span></a>
+        <input class="pick" type="checkbox" checked>
+        <div class="tools"><button class="tbtn grab">⠿</button><button class="tbtn rm">✕</button></div>
+        <div class="meta"><div class="types"><span class="chip">Medium <span class="x">▾</span></span><span class="chip add">+ type</span></div><input class="cmt" placeholder="comment…" value="CD"></div>
+      </div>
+      <div class="card">
+        <a class="thumb"><div id="c5"></div><span class="dim">900 × 900</span></a>
+        <input class="pick" type="checkbox">
+        <div class="tools"><button class="tbtn grab">⠿</button><button class="tbtn rm">✕</button></div>
+        <div class="meta"><div class="types"><span class="chip">Medium <span class="x">▾</span></span></div><input class="cmt" placeholder="comment…" value="CD 2"></div>
+      </div>
+    </div>
+
+    <!-- BOOKLET -->
+    <div class="sec"><h3>Booklet</h3><span class="count">1</span><span class="line"></span></div>
+    <div class="grid">
+      <div class="card">
+        <a class="thumb"><div id="c6"></div><span class="dim">2000 × 2000</span></a>
+        <input class="pick" type="checkbox">
+        <div class="tools"><button class="tbtn grab">⠿</button><button class="tbtn rm">✕</button></div>
+        <div class="meta"><div class="types"><span class="chip">Booklet <span class="x">▾</span></span></div><input class="cmt" placeholder="comment…" value="page 1–2"></div>
+      </div>
+      <div class="addtile"><span class="big">+</span><span>Add image</span><small>file · URL · providers (later phase)</small></div>
+    </div>
+
+    <!-- MARKED FOR REMOVAL -->
+    <div class="sec"><h3>Marked for removal</h3><span class="count">1</span><span class="line"></span></div>
+    <div class="grid">
+      <div class="card del">
+        <a class="thumb"><div id="c7"></div><span class="dim">300 × 300</span></a>
+        <div class="tools" style="opacity:1"><button class="tbtn" title="undo">↺</button></div>
+        <div class="meta"><div class="del-note">will be removed on Enter edit · <span class="undo">undo</span></div></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// paint placeholder "covers" so the gallery reads like real artwork (mockup only)
+const covers = [
+  ['c1', ['#2b2150','#8b1e3f'], 'THE LOST', 'TAPES', '1981–86'],
+  ['c2', ['#1d3b53','#0a7a8c'], 'THE LOST', 'TAPES', 'alt'],
+  ['c3', ['#3a2e1a','#a36b1e'], 'BACK', 'COVER', 'tracklist'],
+  ['c4', ['#222','#444'], 'CD', '', ''],
+  ['c5', ['#2a2030','#5a3a6a'], 'CD 2', '', ''],
+  ['c6', ['#102a17','#1f8a4c'], 'BOOKLET', '', '8 pp'],
+  ['c7', ['#444','#666'], 'LOW', 'QUALITY', '']
+];
+for (const [id,[a,b],t1,t2,t3] of covers){
+  const el=document.getElementById(id); if(!el) continue;
+  el.style.cssText='width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#fff;text-align:center;background:linear-gradient(135deg,'+a+','+b+')';
+  el.innerHTML='<div style="font:800 17px/1.05 Arial;letter-spacing:1px;text-shadow:0 1px 4px rgba(0,0,0,.4)">'+t1+'</div>'+(t2?'<div style="font:800 17px/1.05 Arial;letter-spacing:1px">'+t2+'</div>':'')+(t3?'<div style="font:600 10px Arial;opacity:.85;margin-top:4px;letter-spacing:.5px">'+t3+'</div>':'');
+}
+</script>
+</body></html>
