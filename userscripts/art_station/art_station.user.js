@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.261500
+// @version      2026.6.16.270000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -466,6 +466,45 @@
     if (meta.votable) p.append('confirm.make_votable', '1');
     return { method: 'POST', url: form._action, body: p };
   }
+  // Phase 2b: upload a new image. (1) sign via MB, (2) POST file to archive.org, (3) register.
+  async function signUpload(mime) {
+    const r = await fetch(`/ws/js/cover-art-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin' });
+    if (!r.ok) throw new Error('sign ' + r.status);
+    return r.json();   // { action, image_id, formdata, nonce }
+  }
+  let _addForm = null;
+  const addForm = () => (_addForm = _addForm || getPostForm(`${R}/add-cover-art`));
+  async function runAdd(it, meta, dry, report) {
+    const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
+    const form = await addForm();
+    const tm = typeMapOf(form, 'add-cover-art');
+    const typeIds = it.types.map(t => tm[t]).filter(Boolean);
+    const pos = String(it.order + 1);
+    if (dry) {
+      report(`1. GET /ws/js/cover-art-upload/${MBID}?mime_type=${mime}  → {action,image_id,formdata,nonce}\n`
+        + `2. POST ‹signed archive.org action›  multipart: ‹policy,signature,key,AWSAccessKeyId…› + file (${(it._fileObj && it._fileObj.name) || 'file'}, ${(it._fileObj && it._fileObj.size) || '?'}b)\n`
+        + `3. POST ${R}/add-cover-art\n   add-cover-art.id=‹image_id›\n   add-cover-art.position=${pos}\n   add-cover-art.nonce=‹nonce›\n`
+        + `   add-cover-art.type_id=${typeIds.join(',') || '(none)'}\n   add-cover-art.comment=${it.comment}\n   add-cover-art.edit_note=${meta.note}`
+        + (meta.votable ? `\n   add-cover-art.make_votable=1` : ''));
+      return;
+    }
+    const signed = await signUpload(mime);
+    const fd = new FormData();
+    Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
+    fd.append('file', it._fileObj, (it._fileObj && it._fileObj.name) || String(signed.image_id));
+    const up = await fetch(signed.action, { method: 'POST', body: fd });   // archive.org (auth in the signed policy)
+    if (!up.ok) throw new Error('IA upload ' + up.status);
+    const p = new URLSearchParams(); copyHidden(form, p, /\.(nonce|position|id|type_id|comment)$/);
+    p.append('add-cover-art.id', signed.image_id);
+    p.append('add-cover-art.position', pos);
+    p.append('add-cover-art.nonce', signed.nonce);
+    typeIds.forEach(id => p.append('add-cover-art.type_id', id));
+    p.append('add-cover-art.comment', it.comment);
+    p.append('add-cover-art.edit_note', meta.note);
+    if (meta.votable) p.append('add-cover-art.make_votable', '1');
+    const add = await fetch(`${R}/add-cover-art`, { method: 'POST', body: p, credentials: 'same-origin' });
+    if (!add.ok) throw new Error('add ' + add.status);
+  }
   async function buildReorder(meta) {     // single edit: full ordered artwork list
     const form = await getPostForm(`${R}/reorder-cover-art`);
     const p = new URLSearchParams(); copyHidden(form, p, /\.artwork\./);
@@ -478,7 +517,7 @@
   // ordered work list (uploads are Phase 2b): remove → retype/comment → reorder
   function buildPlan() {
     const plan = [];
-    MODEL.filter(it => it._new && !it._del).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'} (upload)`, kind: 'add', skip: 'Phase 2b', it }));
+    MODEL.filter(it => it._new && !it._del).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'}${it.comment ? ` “${it.comment}”` : ''} (upload)`, kind: 'add', run: (m, dry, report) => runAdd(it, m, dry, report) }));
     MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || 'cover'} #${it.id}`, kind: 'remove', build: m => buildRemove(it, m) }));
     MODEL.filter(it => !it._del && !it._new && (it.comment !== it._origComment || it.types.join('|') !== it._origTypes.join('|')))
       .forEach(it => plan.push({ label: `Edit ${it._origTypes[0] || 'cover'} #${it.id} → ${it.types.join(', ') || '(none)'}`, kind: 'edit', build: m => buildEdit(it, m) }));
@@ -502,7 +541,7 @@
       </div>
       <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<div class="as-cm-payload"></div></div>`).join('')}</div>
       <div class="as-cm-f"><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
-      <div class="as-cm-note2">New-image uploads (archive.org) are Phase 2b — listed but skipped here.</div>
+      <div class="as-cm-note2">New images upload to the Cover Art Archive, then register on MusicBrainz. Dry run shows every request first.</div>
     </div>`;
     document.body.appendChild(ov);
     ov.onclick = e => { if (e.target === ov) ov.remove(); };
@@ -522,14 +561,19 @@
       if (op.skip) { st.textContent = '⏭'; continue; }
       st.textContent = '⏳';
       try {
-        const req = await op.build(meta);
-        if (meta.dry) {
-          st.textContent = '👁'; row.classList.add('dry');
-          pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/&/g, '\n  ')}`;
+        if (op.run) {                       // multi-step op (uploads) reports its own payload
+          await op.run(meta, meta.dry, txt => { pay.textContent = txt; });
+          st.textContent = meta.dry ? '👁' : '✅'; if (meta.dry) row.classList.add('dry');
         } else {
-          const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin' });
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          st.textContent = '✅';
+          const req = await op.build(meta);
+          if (meta.dry) {
+            st.textContent = '👁'; row.classList.add('dry');
+            pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/&/g, '\n  ')}`;
+          } else {
+            const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin' });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            st.textContent = '✅';
+          }
         }
       } catch (e) { st.textContent = '❌'; pay.textContent = String(e && e.message || e); row.classList.add('err'); }
       await new Promise(r => setTimeout(r, meta.dry ? 0 : 600));   // be gentle on MB when live
