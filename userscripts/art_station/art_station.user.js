@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.281500
+// @version      2026.6.16.290000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -56,9 +56,15 @@
       const ed = b.querySelector('a[href*="/edit-cover-art/"]');
       const m = ed && ed.getAttribute('href').match(/\/edit-cover-art\/(\d+)/);
       if (!m) return null;
-      const tm = b.textContent.replace(/\s+/g, ' ').match(/Types:\s*(.*?)\s*All sizes/i);
-      const types = tm ? tm[1].split(',').map(s => s.trim()).filter(s => s && s !== '-') : [];
-      return { id: m[1], types, order: i };
+      // each piece is its own <p> — parse types from the "Types:" <p> ONLY (the comment
+      // is a separate <p>, so reading the whole block grabbed it, e.g. "Types: -test")
+      const ps = [...b.querySelectorAll('p')];
+      const typeP = ps.find(p => /^\s*Types:/.test(p.textContent));
+      const raw = typeP ? typeP.textContent.replace(/^\s*Types:\s*/, '').trim() : '';
+      const types = (raw && raw !== '-') ? raw.split(',').map(s => s.trim()).filter(s => s && s !== '-') : [];
+      const cmtP = ps.find(p => p !== typeP && p.textContent.trim() && !/All sizes:/i.test(p.textContent) && !/Dimensions:/i.test(p.textContent));
+      const comment = cmtP ? cmtP.textContent.trim() : '';
+      return { id: m[1], types, comment, pending: b.classList.contains('mp'), order: i };
     }).filter(Boolean);
   }
   async function loadArt() {
@@ -68,11 +74,11 @@
     catch (e) { /* not propagated / none yet */ }
     const byId = new Map(caa.map(im => [String(im.id), im]));
     const source = (pageArt && pageArt.length)
-      ? pageArt.map(p => ({ id: p.id, types: p.types, comment: (byId.get(String(p.id)) || {}).comment || '' }))
-      : caa.map(im => ({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '' }));
+      ? pageArt.map(p => ({ id: p.id, types: p.types, comment: p.comment || (byId.get(String(p.id)) || {}).comment || '', pending: p.pending }))
+      : caa.map(im => ({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '', pending: false }));
     MODEL = source.map((s, i) => ({
       id: s.id, types: s.types.slice(), comment: s.comment,
-      order: i, w: 0, h: 0, _del: false, _new: false, _img: (byId.get(String(s.id)) || {}).image || imgUrl(s.id),
+      order: i, w: 0, h: 0, _del: false, _new: false, _pending: !!s.pending, _img: (byId.get(String(s.id)) || {}).image || imgUrl(s.id),
       _origTypes: s.types.slice(), _origComment: s.comment, _origOrder: i,
     }));
     render();
@@ -210,10 +216,11 @@
     const chips = it.types.map(t => `<span class="as-chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')
                 + (it._del ? '' : `<span class="as-chip as-addtype" title="set type">＋</span>`);
     const src = it._new ? it._file : thumb(it.id, SETTINGS.tile > 260 ? 500 : 250);
-    return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
+    return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
       ${it._new ? '<span class="as-newban">NEW</span>' : ''}
       <div class="as-types">${chips}</div>
       <div class="as-thumb"><img loading="lazy" src="${esc(src)}" alt=""><span class="as-dim">${esc(dim)}</span>
+        ${it._pending ? '<span class="as-pendban" title="has a pending edit on MusicBrainz">⏳ pending</span>' : ''}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
       ${it._del ? '' : `<div class="as-meta">${(it.comment || it._editcmt)
@@ -748,14 +755,14 @@
   .as-card.del{opacity:.7}
   .as-sec-new h3{color:#1f9d6b}
   .as-card.new{background:repeating-linear-gradient(45deg,#eef7f1,#eef7f1 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:#9bd3b6;border-style:dashed}
+  .as-card.pending{background:#fdf3d0;border-color:#e6cf86}
+  .as-pendban{position:absolute;left:6px;top:6px;z-index:4;background:#d89000;color:#fff;font:700 10px/1 Arial;letter-spacing:.3px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
   .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9}
   .as-thumb img{width:100%;height:100%;object-fit:contain;display:block}
-  .as-thumb.na{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:linear-gradient(135deg,#faf8ff,#efeafb)}
+  .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#faf8ff,#efeafb)}
   .as-thumb.na img{display:none}
-  .as-thumb.na::before{content:'';width:34px;height:34px;border-radius:50%;border:3px solid #d8ccf5;border-top-color:var(--as-acc);animation:as-spin 1s linear infinite}
-  .as-thumb.na::after{content:'Processing on the\\ACover Art Archive…';white-space:pre-line;text-align:center;color:#8a7fb8;font-size:12px;font-weight:600;line-height:1.4;padding:0 12px}
-  @keyframes as-spin{to{transform:rotate(360deg)}}
+  .as-thumb.na::after{content:'Not on the Cover Art Archive yet';text-align:center;color:#9a8ccb;font-size:12px;font-weight:600;line-height:1.45;padding:0 16px}
   .as-dim{position:absolute;left:6px;bottom:6px;background:rgba(20,16,40,.78);color:#fff;font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
