@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.15.231127
+// @version      2026.6.16.113004
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -4986,8 +4986,6 @@ ${lines}
         setTimeout(() => {
           bar.classList.remove("is-importing");
           _hideBar();
-          statusEl.textContent = "";
-          statusEl.style.display = "none";
           bar._pin();
         }, 2e3);
         delete bar._setProgress;
