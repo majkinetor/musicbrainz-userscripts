@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.224500
+// @version      2026.6.16.231500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -39,7 +39,7 @@
     catch (e) { /* none yet */ }
     MODEL = images.map((im, i) => ({
       id: im.id, types: (im.types || []).slice(), comment: im.comment || '',
-      order: i, w: 0, h: 0, _del: false, _new: false,
+      order: i, w: 0, h: 0, _del: false, _new: false, _img: im.image || imgUrl(im.id),
       _origTypes: (im.types || []).slice(), _origComment: im.comment || '', _origOrder: i,
     }));
     render();
@@ -61,18 +61,20 @@
   function mount() {
     if (_mounted) return; _mounted = true;
     const anchor = document.querySelector('#content') || document.body;
-    // #230: sit BELOW the MB header + the entity tabs
-    const tabs = anchor.querySelector('ul.tabs');
-    const h1 = anchor.querySelector('h1');
-    if (tabs && tabs.parentElement === anchor) tabs.insertAdjacentElement('afterend', root);
-    else if (h1 && h1.parentElement === anchor) h1.insertAdjacentElement('afterend', root);
+    // #230: sit BELOW the MB header + the entity tabs. ul.tabs is nested in a
+    // div.tabs child of #content, so climb to that #content-level ancestor.
+    const childOf = (el) => { if (!el) return null; let n = el; while (n.parentElement && n.parentElement !== anchor) n = n.parentElement; return n.parentElement === anchor ? n : null; };
+    const afterTabs = childOf(anchor.querySelector('ul.tabs'));
+    const afterH1 = childOf(anchor.querySelector('h1'));
+    if (afterTabs) afterTabs.insertAdjacentElement('afterend', root);
+    else if (afterH1) afterH1.insertAdjacentElement('afterend', root);
     else anchor.insertBefore(root, anchor.firstChild);
-    // hide the native cover-art list (the type <h2>s and the .artwork-cont blocks),
-    // leaving the rest of the page (title, sidebar) intact
+    // hide the native cover-art UI between the tabs and the page footer: the type
+    // <h2>s, the .artwork-cont blocks and the trailing "These images…" note.
     [...anchor.children].forEach(ch => {
-      if (ch === root) return;
-      if (ch.querySelector && ch.querySelector('.artwork-cont')) ch.style.display = 'none';
-      else if (ch.tagName === 'H2') ch.style.display = 'none';
+      if (ch === root || ch === afterTabs || ch === afterH1) return;
+      if (ch.tagName === 'H2' || ch.tagName === 'P') ch.style.display = 'none';
+      else if (ch.querySelector && ch.querySelector('.artwork-cont')) ch.style.display = 'none';
       else if (ch.classList && ch.classList.contains('artwork-cont')) ch.style.display = 'none';
     });
     document.querySelectorAll('.artwork-cont').forEach(e => { e.style.display = 'none'; });
@@ -293,9 +295,22 @@
   }
 
   // ── actions ───────────────────────────────────────────────────────────────────
-  function dlOne(it) { const a = document.createElement('a'); a.href = imgUrl(it.id); a.download = `${MBID}-${it.id}.jpg`; document.body.appendChild(a); a.click(); a.remove(); }
+  async function dlOne(it) {
+    const url = it._img || imgUrl(it.id);
+    const ext = (url.match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
+    const name = `${MBID}-${it.id}.${ext}`;
+    try {
+      // cross-origin <a download> is ignored by browsers — fetch the blob (CAA
+      // sends CORS) and download via a same-origin object URL so it actually saves
+      const blob = await fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); });
+      const obj = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = obj; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(obj), 8000);
+    } catch (e) { window.open(url, '_blank'); }   // fallback: just open it
+  }
   function downloadAll() {
-    MODEL.filter(it => !it._del && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 350));
+    MODEL.filter(it => !it._del && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 400));
   }
   function addImage() {
     const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*,.pdf'; inp.multiple = true;
@@ -478,14 +493,14 @@
   .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
   /* selection + keyboard cursor */
   .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
-  .as-card.sel::after{content:'✓';position:absolute;left:7px;top:7px;width:20px;height:20px;line-height:20px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:12px;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .as-card.sel::after{content:'✓';position:absolute;right:7px;top:7px;width:20px;height:20px;line-height:20px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:12px;z-index:6;box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .as-card.as-cursor{box-shadow:0 0 0 2px #2a6,0 3px 14px rgba(40,160,100,.28)}
   /* bulk bar */
   .as-bulk{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:120;display:flex;align-items:center;gap:11px;padding:9px 15px;background:#fff;border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 8px 28px rgba(60,40,110,.28);flex-wrap:wrap;max-width:94vw}
   .as-bulk b{color:var(--as-acc)}
   .as-bk-rm{border-color:#e6b8b2;color:var(--as-warn)}
   .as-hint{font-size:11px;color:#8a7fb8;width:100%;text-align:center;margin-top:2px}
-  .as-pop{position:absolute;z-index:40;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}
+  .as-pop{position:absolute;z-index:200;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}
   .as-pop label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer}
   .as-pop label:hover{background:#f3eefe}.as-pop input{accent-color:var(--as-acc)}
   .as-pop-h{font-weight:600;color:#6a5b95;padding:3px 6px 6px;border-bottom:1px solid #eee;margin-bottom:4px}
