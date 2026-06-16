@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.231500
+// @version      2026.6.16.233000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -54,6 +54,8 @@
 
   const changed = it => it._del || it._new || it.comment !== it._origComment || it.order !== it._origOrder || it.types.join('|') !== it._origTypes.join('|');
   const stagedCount = () => MODEL.filter(changed).length;
+  const selectable = () => MODEL.filter(it => !it._del);
+  const allSelected = () => { const s = selectable(); return s.length > 0 && s.every(it => it._sel); };
 
   // ── render ───────────────────────────────────────────────────────────────────
   const root = document.createElement('div'); root.id = 'as-root';
@@ -124,7 +126,7 @@
         <option value="dim"${SETTINGS.sort==='dim'?' selected':''}>Dimensions ▾</option>
         <option value="newest"${SETTINGS.sort==='newest'?' selected':''}>Newest</option></select></span>
       <label class="as-ctl"><input class="as-group" type="checkbox"${SETTINGS.group?' checked':''}> Group by type</label>
-      <button class="as-btn as-dl" title="Download every cover (originals) to your computer">⬇ Download all</button>
+      <button class="as-btn as-selall" title="Select every cover (then Download / Set type / Delete)">${allSelected() ? '☑ Deselect all' : '☐ Select all'}</button>
       <span class="as-sp"></span>
       <span class="as-staged"${n?'':' style="display:none"'}>${n} staged change${n===1?'':'s'}</span>
       <button class="as-btn as-commit" title="Apply staged changes as MusicBrainz edits"${n?'':' disabled'}>✓ Enter edit</button>
@@ -200,7 +202,7 @@
     root.querySelector('.as-size').onchange = () => { save(); render(); };
     root.querySelector('.as-sort').onchange = e => { SETTINGS.sort = e.target.value; save(); render(); };
     root.querySelector('.as-group').onchange = e => { SETTINGS.group = e.target.checked; save(); render(); };
-    root.querySelector('.as-dl').onclick = downloadAll;
+    root.querySelector('.as-selall').onclick = () => { const sel = !allSelected(); selectable().forEach(it => it._sel = sel); render(); };
     root.querySelector('.as-add').onclick = addImage;
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
@@ -308,9 +310,6 @@
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(obj), 8000);
     } catch (e) { window.open(url, '_blank'); }   // fallback: just open it
-  }
-  function downloadAll() {
-    MODEL.filter(it => !it._del && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 400));
   }
   function addImage() {
     const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*,.pdf'; inp.multiple = true;
