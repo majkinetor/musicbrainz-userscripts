@@ -21,7 +21,7 @@ const UNLINKED = 'https://www.discogs.com/artist/999999999';   // no MB owner
 const log = (...a) => console.log('[probe-227]', ...a);
 
 const code = await readFile(SCRIPT, 'utf8');
-const ctx = await chromium.launchPersistentContext(PROFILE, { headless: true, viewport: { width: 1600, height: 1000 } });
+const ctx = await chromium.launchPersistentContext(PROFILE, { headless: true, viewport: { width: 1600, height: 1000 }, bypassCSP: true });
 const page = ctx.pages()[0] || await ctx.newPage();
 page.on('pageerror', e => log('[pageerror]', e.message));
 await page.addInitScript(() => { window.GM_getValue = (k, d) => d; window.GM_setValue = () => {}; window.GM_info = { script: { name: 'apollo', version: 'test' } }; });

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.110500
+// @version      2026.6.16.114500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -405,28 +405,26 @@
     if (!MODEL || SETTINGS.discogsUrlMatch === false || _tagDiscogsRunning) return;
     if (!discogsReleaseUrlFromPage()) return;   // nothing to check on this page
     _tagDiscogsRunning = true;
-    updateStatus('checking Discogs links…');     // show immediately, before the (maybe slow) JSON fetch / lookups
+    setDiscProgress('checking Discogs links…');   // show immediately in the badge slot, before the JSON fetch / lookups
     try {
       const dmap = await loadDiscogsMap();
       const jobs = [];
       if (dmap) for (const t of MODEL.tracks) { const durls = dmap.get(fold(t.title)); if (durls) t.slots.forEach((s, i) => { if (durls[i]) jobs.push([s, durls[i]]); }); }
-      if (!jobs.length) { refreshStatus(); return; }
+      if (!jobs.length) { setDiscProgress(''); return; }
       let done = 0, lastRender = 0;
       for (const [s, durl] of jobs) {
         await tagDiscogsAddable(s, durl);
         done++;
-        // update the toolbar + rows together, throttled — set status AFTER rerender
-        // so rerender can't blank it (which caused the flicker)
+        // update rows + the progress text together, throttled — set the text AFTER
+        // rerender so refreshStatus can't blank it
         const now = Date.now();
-        if (now - lastRender > 300) { if (!isEditingNow()) rerender(); updateStatus(`checking Discogs links ${done}/${jobs.length}…`); lastRender = now; }
+        if (now - lastRender > 300) { if (!isEditingNow()) rerender(); setDiscProgress(`checking Discogs links ${done}/${jobs.length}…`); lastRender = now; }
       }
       if (!isEditingNow()) rerender();
-      // #227: report the outcome in the always-visible toolbar status
-      let missing = 0, unknown = 0;
-      MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s._discogsAddable) missing++; else if (s._discogsPending) unknown++; }));
-      updateStatus(missing ? `${missing} missing Discogs link${missing === 1 ? '' : 's'}${unknown ? ` (${unknown} unchecked)` : ''}`
-                           : (unknown ? `${unknown} Discogs link${unknown === 1 ? '' : 's'} unchecked` : 'Discogs links: all present'));
-    } finally { _tagDiscogsRunning = false; }
+    } finally {
+      _tagDiscogsRunning = false;
+      setDiscStat();   // #227: settle into the persistent "N missing Discogs links" badge
+    }
   }
   // chain glyph shown in place of the artist-type icon when a Discogs link can be added
   const DISCOGS_LINK_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
@@ -697,7 +695,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.110500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.114500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -933,6 +931,9 @@
     .tc-globalstat{flex:none;font-size:12px;color:#999;font-style:italic;white-space:nowrap}
     .tc-am-lbl{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#555;white-space:nowrap}.tc-am-lbl select{font:12px Arial;padding:1px 3px}
     .tc-globalstat.tc-unres{font-style:normal;font-weight:bold;color:#fff;background:#d6342c;padding:1px 8px;border-radius:9px}
+    /* #227: persistent "N missing Discogs links" badge (teal, like the DISC match badge) */
+    .tc-discstat{flex:none;font-size:12px;color:#999;font-style:italic;white-space:nowrap}
+    .tc-discstat.tc-disc-badge{font-style:normal;font-weight:bold;color:#fff;background:#0a7a8c;padding:1px 8px;border-radius:9px}
     .tc-tablewrap{overflow-x:auto}
     .tc-addrow{padding:8px 4px;font-size:13px;color:#555;display:flex;align-items:center;gap:6px}
     .tc-addrow input.tc-addn{width:54px;font:13px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px}
@@ -1165,6 +1166,30 @@
   // the always-visible total in the toolbar (left of Match) — shows the release-wide unresolved count / progress;
   // when there are unresolved artists the badge is clickable and jumps to the first one
   const setGlobalStat = n => { document.querySelectorAll('.tc-globalstat').forEach(e => { e.textContent = n ? statusText(n) : ''; e.classList.toggle('tc-unres', n > 0); e.onclick = n > 0 ? focusFirstUnresolved : null; e.style.cursor = n > 0 ? 'pointer' : ''; e.title = n > 0 ? 'jump to the first unresolved artist' : ''; }); };
+  // #227: persistent "N missing Discogs links" badge. Stays until every link is
+  // added; clicking jumps to the first track missing one and focuses its credit.
+  function focusFirstMissingDiscogs() {
+    for (const t of MODEL.tracks) {
+      const i = t.slots.findIndex(s => s._discogsAddable); if (i < 0) continue;
+      const row = rowEl(t.mi, t.ti); if (!row) return;
+      row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      const creds = row.querySelectorAll('.tc-cred'); (creds[i] || row).focus();
+      return;
+    }
+  }
+  const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s._discogsAddable) n++; })); return n; };
+  const setDiscStat = () => {
+    const n = missingDiscogsCount();
+    document.querySelectorAll('.tc-discstat').forEach(e => {
+      e.textContent = n ? `🔗 ${n} missing Discogs link${n === 1 ? '' : 's'}` : '';
+      e.classList.toggle('tc-disc-badge', n > 0);
+      e.onclick = n > 0 ? focusFirstMissingDiscogs : null;
+      e.style.cursor = n > 0 ? 'pointer' : '';
+      e.title = n > 0 ? 'jump to the first track missing its Discogs link' : '';
+    });
+  };
+  // transient progress text in the same slot, while the check runs (not a pill)
+  const setDiscProgress = (t) => document.querySelectorAll('.tc-discstat').forEach(e => { e.textContent = t || ''; e.classList.remove('tc-disc-badge'); e.onclick = null; e.style.cursor = ''; e.title = ''; });
   // transient action feedback (a pick propagated, S&R count, …) — lives in the toolbar so it never
   // overwrites a medium's unresolved badge; auto-clears
   let _toastTimer = null;
@@ -1216,6 +1241,7 @@
     if (ACTIVE.sections) ACTIVE.sections.forEach(s => setStatusSpan(s.sec.querySelector('.tc-hstatus'), unresolvedIn(s.mi)));
     else document.querySelectorAll('#tc-panel .tc-hstatus').forEach(span => setStatusSpan(span, unresolvedIn(null)));
     setGlobalStat(unresolvedIn(null));   // release-wide total in the toolbar
+    if (!_tagDiscogsRunning) setDiscStat();   // #227: keep the missing-links badge in sync (the check owns it while running)
   }
 
   function buildTable() {
@@ -2084,7 +2110,7 @@
   }
 
   const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
-    + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
+    + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-discstat"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
     + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
