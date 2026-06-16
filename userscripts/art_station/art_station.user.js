@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.311500
+// @version      2026.6.16.320000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -597,32 +597,44 @@
     dryEl.onchange = setGoLabel; setGoLabel();
     goBtn.onclick = () => runPlan(ov, plan, { note: ov.querySelector('.as-cm-note').value, votable: ov.querySelector('.as-cm-vote').checked, dry: dryEl.checked });
   }
+  async function runOp(ov, op, meta) {
+    const row = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`);
+    const st = row.querySelector('.as-cm-st'), pay = row.querySelector('.as-cm-payload');
+    if (op.skip) { st.textContent = '⏭'; return; }
+    st.textContent = '⏳';
+    try {
+      if (op.run) {                         // multi-step op (uploads) reports its own payload
+        await op.run(meta, meta.dry, txt => { pay.textContent = txt; });
+        st.textContent = meta.dry ? '👁' : '✅'; if (meta.dry) row.classList.add('dry');
+      } else {
+        const req = await op.build(meta);
+        if (meta.dry) {
+          st.textContent = '👁'; row.classList.add('dry');
+          pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/\+/g, ' ').replace(/&/g, '\n  ')}`;
+        } else {
+          const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin' });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          st.textContent = '✅';
+        }
+      }
+    } catch (e) { st.textContent = '❌'; pay.textContent = String(e && e.message || e); row.classList.add('err'); }
+  }
+  // run a list with bounded concurrency
+  async function runPool(ops, conc, ov, meta) {
+    let i = 0;
+    const worker = async () => { while (i < ops.length) await runOp(ov, ops[i++], meta); };
+    await Promise.all(Array.from({ length: Math.min(conc, ops.length || 1) }, worker));
+  }
   async function runPlan(ov, plan, meta) {
     ov.querySelector('.as-cm-go').disabled = true;
     ov.querySelector('.as-cm-cancel').disabled = true;
-    for (let i = 0; i < plan.length; i++) {
-      const op = plan[i], row = ov.querySelector(`.as-cm-op[data-i="${i}"]`);
-      const st = row.querySelector('.as-cm-st'), pay = row.querySelector('.as-cm-payload');
-      if (op.skip) { st.textContent = '⏭'; continue; }
-      st.textContent = '⏳';
-      try {
-        if (op.run) {                       // multi-step op (uploads) reports its own payload
-          await op.run(meta, meta.dry, txt => { pay.textContent = txt; });
-          st.textContent = meta.dry ? '👁' : '✅'; if (meta.dry) row.classList.add('dry');
-        } else {
-          const req = await op.build(meta);
-          if (meta.dry) {
-            st.textContent = '👁'; row.classList.add('dry');
-            pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/\+/g, ' ').replace(/&/g, '\n  ')}`;
-          } else {
-            const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin' });
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            st.textContent = '✅';
-          }
-        }
-      } catch (e) { st.textContent = '❌'; pay.textContent = String(e && e.message || e); row.classList.add('err'); }
-      await new Promise(r => setTimeout(r, meta.dry ? 0 : 600));   // be gentle on MB when live
-    }
+    plan.forEach((op, i) => { op._i = i; });
+    const CONC = meta.dry ? 8 : 4;   // modest concurrency live to stay friendly to MB
+    // adds keep order (positions are order-sensitive); edits/removes are independent → parallel;
+    // reorder runs last, after everything else has settled.
+    await runPool(plan.filter(o => o.kind === 'add'), 1, ov, meta);
+    await runPool(plan.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta);
+    await runPool(plan.filter(o => o.kind === 'reorder'), 1, ov, meta);
     ov.querySelector('.as-cm-cancel').disabled = false;
     ov.querySelector('.as-cm-cancel').textContent = 'Close';
     if (!meta.dry) { const b = ov.querySelector('.as-cm-go'); b.textContent = 'Done — reload'; b.disabled = false; b.onclick = () => location.reload(); }
