@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.131500
+// @version      2026.6.16.133000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -716,7 +716,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.131500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.133000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1194,9 +1194,12 @@
   // #227: persistent missing-Discogs-links badge. Stays until every link is
   // added; each click steps to the NEXT track missing one and focuses its credit.
   let _discNavIdx = -1;
+  // an artist whose Discogs link needs attention: missing (addable) OR mismatched
+  // (links a different Discogs page than the release credits). #227
+  const discNeedsAttention = s => !!(s._discogsAddable || s._discogsMismatch);
   function focusNextMissingDiscogs() {
     const list = [];
-    MODEL.tracks.forEach(t => t.slots.forEach((s, i) => { if (s._discogsAddable) list.push([t, i]); }));
+    MODEL.tracks.forEach(t => t.slots.forEach((s, i) => { if (discNeedsAttention(s)) list.push([t, i]); }));
     if (!list.length) { _discNavIdx = -1; return; }
     _discNavIdx = (_discNavIdx + 1) % list.length;
     const [t, i] = list[_discNavIdx];
@@ -1204,15 +1207,17 @@
     row.scrollIntoView({ block: 'center', behavior: 'smooth' });
     const creds = row.querySelectorAll('.tc-cred'); (creds[i] || row).focus();
   }
-  const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s._discogsAddable) n++; })); return n; };
+  const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (discNeedsAttention(s)) n++; })); return n; };
   const setDiscStat = () => {
-    const n = missingDiscogsCount();
+    let miss = 0, mism = 0;
+    if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s._discogsAddable) miss++; else if (s._discogsMismatch) mism++; }));
+    const n = miss + mism;
     document.querySelectorAll('.tc-discstat').forEach(e => {
       e.textContent = n ? `🔗 ${n} link${n === 1 ? '' : 's'}` : '';
       e.classList.toggle('tc-disc-badge', n > 0);
       e.onclick = n > 0 ? focusNextMissingDiscogs : null;
       e.style.cursor = n > 0 ? 'pointer' : '';
-      e.title = n > 0 ? `${n} track${n === 1 ? '' : 's'} missing a Discogs artist link — click to step to the next` : '';
+      e.title = n > 0 ? `${miss} missing, ${mism} mismatched Discogs link${n === 1 ? '' : 's'} — click to step to the next` : '';
     });
   };
   // transient progress text in the same slot, while the check runs (not a pill)
