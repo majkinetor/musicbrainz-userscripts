@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.214500
+// @version      2026.6.16.220000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -151,7 +151,7 @@
   function card(it) {
     const dim = it._new ? 'local' : (it.w && it.h ? `${it.w} × ${it.h}` : '…');
     // #230: untyped shows ONLY the ＋ (set-type) chip — no "(no type)" label
-    const chips = it.types.map(t => `<span class="as-chip" data-t="${esc(t)}">${esc(t)}<span class="as-cx">▾</span></span>`).join('')
+    const chips = it.types.map(t => `<span class="as-chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')
                 + (it._del ? '' : `<span class="as-chip as-addtype" title="set type">＋</span>`);
     const src = it._new ? it._file : thumb(it.id, SETTINGS.tile > 260 ? 500 : 250);
     return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}" data-id="${esc(it.id)}" ${it._del?'':'draggable="true"'}>
@@ -439,7 +439,6 @@
   .as-chip{font-size:11px;font-weight:600;color:#3b2c70;background:#efeaff;border:1px solid #d8ccf5;border-radius:20px;padding:1px 9px;cursor:pointer}
   .as-chip.none{color:#9a8ccb;background:#f6f4fc;border-style:dashed}
   .as-chip.as-addtype{color:#8a7fb8;background:#fff;border-style:dashed}
-  .as-cx{color:#9a8ccb;margin-left:3px;font-size:9px}
   .as-cmt{font:12px inherit;border:1px solid #e2dcef;border-radius:6px;padding:3px 7px;color:#444;background:#faf9fe;width:100%}
   .as-pencil{font:12px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:1px 8px;cursor:pointer;align-self:flex-start;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
