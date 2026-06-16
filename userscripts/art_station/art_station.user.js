@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.300000
+// @version      2026.6.16.301500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -132,7 +132,10 @@
     const y = window.scrollY;            // keep the viewport put — rebuilding innerHTML must not jump the page
     const n = opsCount();
     const groups = grouped();
-    root.innerHTML = bar(n) + bulkBar() + dropZone() + newSection() + groups.map(g => section(g.type, g.items)).join('') + deletedSection();
+    const body = SETTINGS.group
+      ? groups.map(g => groupRow(g.type, g.items)).join('')   // compact: label column + cards beside it
+      : groups.map(g => section(g.type, g.items)).join('');
+    root.innerHTML = bar(n) + bulkBar() + dropZone() + newSection() + body + deletedSection();
     wire();
     if (window.scrollY !== y) window.scrollTo(0, y);
   }
@@ -194,6 +197,12 @@
     const label = type === null ? 'All covers' : type;
     return `<div class="as-sec"><h3>${esc(label)}</h3><span class="as-cnt">${items.length}</span><span class="as-line"></span></div>
       <div class="as-grid" data-group="${esc(type||'')}">${items.map(card).join('')}</div>`;
+  }
+  // compact group: type label in a left column, cards flow beside it (no full-width waste)
+  function groupRow(type, items) {
+    const label = type === NO_TYPE ? 'No type' : type;
+    return `<div class="as-grow"><div class="as-glabel"><span class="as-gl-name">${esc(label)}</span><span class="as-gl-cnt">${items.length}</span></div>
+      <div class="as-grid" data-group="${esc(type||'')}">${items.map(card).join('')}</div></div>`;
   }
   function dropZone() {
     if (!_dropZone) return '';
@@ -765,6 +774,13 @@
   .as-cnt{font-size:12px;color:#9b8fc0}
   .as-line{flex:1;height:1px;background:#e2dcef}
   .as-grid{display:flex;flex-wrap:wrap;gap:14px}
+  /* compact group rows: label column + cards beside it */
+  .as-grow{display:flex;align-items:flex-start;gap:16px;padding:12px 0;border-top:1px solid #ece7f6}
+  .as-grow:first-of-type{border-top:none}
+  .as-glabel{flex:0 0 104px;position:sticky;top:58px;padding-top:2px}
+  .as-gl-name{display:block;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#6a5b95;word-break:break-word}
+  .as-gl-cnt{font-size:11px;color:#9b8fc0}
+  .as-grow .as-grid{flex:1}
   .as-card{width:var(--as-tile);background:#fff;border:1px solid #e2dcef;border-radius:9px;overflow:hidden;position:relative;transition:.1s}
   .as-card[draggable=true]{cursor:grab}
   .as-card:hover{box-shadow:0 3px 12px rgba(60,40,110,.15);border-color:#cbbdf0}
