@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.251500
+// @version      2026.6.16.253000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -256,11 +256,14 @@
       img.onerror = () => { const th = img.closest('.as-thumb'); if (th) th.classList.add('na'); };   // CAA not propagated yet
       if (img.complete && !img.naturalWidth && img.getAttribute('src')) img.onerror();
     });
-    // right-click toggles selection IN PLACE — no render(), so the page never jumps
-    root.querySelectorAll('.as-card').forEach(c => c.oncontextmenu = e => {
-      if (c.classList.contains('del')) return;
-      e.preventDefault(); const it = byId(c.dataset.id); if (!it) return;
-      it._sel = !it._sel; c.classList.toggle('sel', it._sel); syncBulkBar();
+    // right-button paint-select IN PLACE — no render(), so the page never jumps.
+    // down toggles the start card; holding right + moving paints the same state on hovered cards.
+    root.querySelectorAll('.as-card').forEach(c => {
+      c.onmousedown = e => {
+        if (e.button !== 2 || c.classList.contains('del')) return;
+        e.preventDefault(); const it = byId(c.dataset.id); if (!it) return;
+        _paint = { value: !it._sel }; paintCard(c);
+      };
     });
     wireBulk();
     wireDrag();
@@ -273,6 +276,22 @@
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = () => MODEL.filter(it => it._sel && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 350)));
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
   }
+  // right-button paint selection (held + move)
+  let _paint = null;
+  function paintCard(c) {
+    if (!c || !_paint || c.classList.contains('del')) return;
+    const it = byId(c.dataset.id); if (!it || it._sel === _paint.value) return;
+    it._sel = _paint.value; c.classList.toggle('sel', it._sel); syncBulkBar();
+  }
+  document.addEventListener('mousemove', e => {
+    if (!_paint || !e.buttons) return;   // e.buttons falls to 0 if the button was released off-window
+    const c = e.target.closest && e.target.closest('.as-card');
+    if (c && root.contains(c)) paintCard(c);
+  });
+  document.addEventListener('mouseup', () => { _paint = null; });
+  // right-click is our selection gesture across the gallery — suppress the native menu there
+  document.addEventListener('contextmenu', e => { if (root.contains(e.target)) e.preventDefault(); });
+
   // insert / refresh / remove the fixed bulk bar without touching the grid (no reflow → no jump)
   function syncBulkBar() {
     const html = bulkBar();
