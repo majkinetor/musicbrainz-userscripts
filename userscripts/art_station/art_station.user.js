@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.240000
+// @version      2026.6.16.241500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -56,6 +56,9 @@
   const stagedCount = () => MODEL.filter(changed).length;
   const selectable = () => MODEL.filter(it => !it._del);
   const allSelected = () => { const s = selectable(); return s.length > 0 && s.every(it => it._sel); };
+  // reorder (drag) only in the canonical Position view — ungrouped + sorted by position.
+  // Grouping is view-only; other sorts don't map to the committed order.
+  const canReorder = () => !SETTINGS.group && SETTINGS.sort === 'type';
 
   // ── render ───────────────────────────────────────────────────────────────────
   const root = document.createElement('div'); root.id = 'as-root';
@@ -93,11 +96,13 @@
   }
 
   function grouped() {
-    let items = MODEL.filter(it => !it._del && !it._new);   // new uploads get their own section on top
     if (!SETTINGS.group) {
-      items = items.slice().sort((a, b) => a.order - b.order);
+      // Position view (committed order): new uploads sit INLINE, positioned among covers
+      const items = MODEL.filter(it => !it._del).slice().sort(sortFn);
       return [{ type: null, items }];
     }
+    // group mode is view-only; new uploads get their own section on top (see newSection)
+    let items = MODEL.filter(it => !it._del && !it._new);
     // group by primary type; untyped → NO_TYPE; order groups by TYPE_ORDER then alpha
     const map = new Map();
     for (const it of items) { const t = (it.types[0] || NO_TYPE); if (!map.has(t)) map.set(t, []); map.get(t).push(it); }
@@ -149,6 +154,7 @@
       <div class="as-grid" data-group="${esc(type||'')}">${items.map(card).join('')}</div>`;
   }
   function newSection() {
+    if (!SETTINGS.group) return '';   // Position view shows new uploads inline, positioned among covers
     const news = MODEL.filter(it => it._new && !it._del).sort((a, b) => a.order - b.order);
     if (!news.length) return '';
     return `<div class="as-sec as-sec-new"><h3>New uploads</h3><span class="as-cnt">${news.length}</span><span class="as-line"></span></div>
@@ -166,7 +172,7 @@
     const chips = it.types.map(t => `<span class="as-chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')
                 + (it._del ? '' : `<span class="as-chip as-addtype" title="set type">＋</span>`);
     const src = it._new ? it._file : thumb(it.id, SETTINGS.tile > 260 ? 500 : 250);
-    return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}" data-id="${esc(it.id)}" ${it._del?'':'draggable="true"'}>
+    return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
       ${it._new ? '<span class="as-newban">NEW</span>' : ''}
       <div class="as-types">${chips}</div>
       <div class="as-thumb"><img loading="lazy" src="${esc(src)}" alt=""><span class="as-dim">${esc(dim)}</span>
