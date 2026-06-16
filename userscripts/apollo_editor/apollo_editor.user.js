@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.130000
+// @version      2026.6.16.131500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -364,13 +364,19 @@
     if (!gid) return [];
     if (_artistRelsCache.has(gid)) return _artistRelsCache.get(gid);
     let out = null;
-    try {
-      const j = await fetch(`${ORIGIN}/ws/js/entity/${gid}?inc=rels`, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
-      if (j) out = (j.relationships || j.relations || [])
-        .filter(x => x.linkTypeID === DISCOGS_LINK_TYPE_ID && (x.target_type === 'url' || (x.target && x.target.entityType === 'url')))
-        .map(x => (x.target && (x.target.name || x.target.decoded || x.target.pretty_name)) || '');
-    } catch (e) { out = null; }
-    if (out !== null) _artistRelsCache.set(gid, out);   // cache only success
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const r = await fetch(`${ORIGIN}/ws/js/entity/${gid}?inc=rels`, { headers: { Accept: 'application/json' } });
+        if (r.status === 429 || r.status === 503) { await _sleep(800); continue; }   // rate limited → back off, don't cache a miss
+        if (!r.ok) { await _sleep(500); continue; }
+        const j = await r.json();
+        out = (j.relationships || j.relations || [])
+          .filter(x => x.linkTypeID === DISCOGS_LINK_TYPE_ID && (x.target_type === 'url' || (x.target && x.target.entityType === 'url')))
+          .map(x => (x.target && (x.target.name || x.target.decoded || x.target.pretty_name)) || '');
+        break;
+      } catch (e) { await _sleep(500); }
+    }
+    if (out !== null) _artistRelsCache.set(gid, out);   // cache only a real response (a rate-limited miss stays uncached → retried)
     return out;
   }
   async function tagDiscogsAddable(slot, durl) {
@@ -390,11 +396,15 @@
         slot._discogsMismatch = own.find(u => discogsIdOf(u)) || own[0];
         return;
       }
-      // no Discogs link at all — genuinely missing; pay the rate-limited URL→artist lookup to warn on a conflict
+      // /ws/js found no Discogs link — confirm with the AUTHORITATIVE URL→artist
+      // lookup before declaring it missing. This also catches a false-empty
+      // /ws/js response (the artist actually owns the URL) so we never offer to
+      // add a link it already has (#227).
       const hits = await resolveByDiscogsUrl(durl);
       if (hits === null) { slot._discogsAddable = false; slot._discogsPending = true; return; }
+      if (hits.some(h => h.gid === slot.gid)) { slot._discogsAddable = false; return; }   // this artist already owns the URL → legit
       slot._discogsAddable = true;
-      if (hits.length && !hits.some(h => h.gid === slot.gid)) slot._discogsConflict = hits[0];     // URL owned by a different artist
+      if (hits.length) slot._discogsConflict = hits[0];     // URL owned by a different artist → add anyway, but warn
       return;
     }
     // unresolved slot — need the URL→artist lookup to decide create vs. pick
@@ -706,7 +716,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.130000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.131500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
