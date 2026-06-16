@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.220000
+// @version      2026.6.16.221500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -258,10 +258,14 @@
     });
   }
   function reorder(src, tgt) {
-    // splice src to just before tgt in the global order, then renumber
+    // splice src next to tgt, then renumber. Drop on the side you came from:
+    // dragging forward (left→right) lands AFTER the target, backward lands BEFORE.
     const seq = MODEL.filter(it => !it._del).slice().sort((a, b) => a.order - b.order);
-    const from = seq.indexOf(src); seq.splice(from, 1);
-    const to = seq.indexOf(tgt); seq.splice(to, 0, src);
+    const from = seq.indexOf(src);
+    const forward = from < seq.indexOf(tgt);
+    seq.splice(from, 1);
+    const to = seq.indexOf(tgt) + (forward ? 1 : 0);
+    seq.splice(to, 0, src);
     seq.forEach((it, i) => it.order = i);
   }
 
