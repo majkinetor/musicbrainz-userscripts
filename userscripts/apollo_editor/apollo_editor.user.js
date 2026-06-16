@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.113000
+// @version      2026.6.16.140000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -300,38 +300,186 @@
     return map;
   }
   // Resolve a Discogs artist URL to MB artist(s) via its URL relationship.
-  // Returns [{ gid, name }] (0 / 1 / many). Waits + retries on 429 / 503.
+  // Returns [{ gid, name }] (0 / 1 / many) on success, or `null` when the lookup
+  // could not complete (rate-limited / network) — callers must treat null as
+  // "unknown" and NOT cache it, so a transient 503 never becomes a false
+  // negative (#227). Only successful responses are cached.
   const _discogsResolveCache = new Map();
-  async function resolveByDiscogsUrl(discogsUrl) {
+  const _sleep = ms => new Promise(z => setTimeout(z, ms));
+  // The public /ws/2 endpoint is rate-limited (~1 req/s). Serialize every call
+  // through a gate with a minimum gap so a model full of artists doesn't trip
+  // the limiter and get a wall of 503s (#227).
+  let _wsGate = Promise.resolve(); let _wsLast = 0; const WS_MIN_GAP = 700;
+  function wsGet(url) {
+    const run = async () => {
+      const gap = WS_MIN_GAP - (Date.now() - _wsLast);
+      if (gap > 0) await _sleep(gap);
+      try { return await fetch(url, { headers: { Accept: 'application/json' } }); }
+      finally { _wsLast = Date.now(); }
+    };
+    const p = _wsGate.then(run, run);
+    _wsGate = p.then(() => {}, () => {});   // keep the chain alive regardless of outcome
+    return p;
+  }
+  async function resolveByDiscogsUrl(discogsUrl, force) {
     if (!discogsUrl) return [];
-    if (_discogsResolveCache.has(discogsUrl)) return _discogsResolveCache.get(discogsUrl);
-    let out = [];
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const r = await fetch(`${ORIGIN}/ws/2/url?resource=${encodeURIComponent(discogsUrl)}&inc=artist-rels&fmt=json`, { headers: { Accept: 'application/json' } });
-        if (r.status === 429 || r.status === 503) { await new Promise(z => setTimeout(z, 1100)); continue; }
-        if (!r.ok) break;
-        const j = await r.json();
-        const seen = new Set();
-        out = (j.relations || []).filter(rel => rel.artist && rel.artist.id).map(rel => ({ gid: rel.artist.id, name: rel.artist.name })).filter(e => !seen.has(e.gid) && seen.add(e.gid));
-        break;
-      } catch (e) { await new Promise(z => setTimeout(z, 600)); }
+    if (!force && _discogsResolveCache.has(discogsUrl)) return _discogsResolveCache.get(discogsUrl);
+    for (let attempt = 0; attempt < 5; attempt++) {
+      let r;
+      try { r = await wsGet(`${ORIGIN}/ws/2/url?resource=${encodeURIComponent(discogsUrl)}&inc=artist-rels&fmt=json`); }
+      catch (e) { await _sleep(1200); continue; }                 // network error → retry, don't cache
+      if (r.status === 404) { _discogsResolveCache.set(discogsUrl, []); return []; }   // URL not in MB → 0 owners (cacheable)
+      if (r.status === 429 || r.status === 503) {                 // rate limited → back off, don't cache
+        const ra = parseInt(r.headers.get('retry-after') || '', 10);
+        await _sleep(Math.max(1200, (ra > 0 ? ra : 1) * 1000));
+        continue;
+      }
+      if (!r.ok) { await _sleep(1200); continue; }                // other transient error → retry, don't cache
+      let j; try { j = await r.json(); } catch (e) { await _sleep(1200); continue; }
+      const seen = new Set();
+      const out = (j.relations || []).filter(rel => rel.artist && rel.artist.id).map(rel => ({ gid: rel.artist.id, name: rel.artist.name })).filter(e => !seen.has(e.gid) && seen.add(e.gid));
+      _discogsResolveCache.set(discogsUrl, out);                  // cache ONLY a successful response
+      return out;
     }
-    _discogsResolveCache.set(discogsUrl, out);
-    return out;
+    return null;   // all retries exhausted — unknown, leave uncached so it's retried later
   }
   // slot status from a match result — 'disc' for a confident Discogs-URL match,
   // 'rg' for a release-group sibling, else the name-search confidence.
   const slotStatusOf = m => !m.entity ? 'none' : (m.source === 'rg' ? 'rg' : (m.source === 'discogs' && m.confidence === 'high') ? 'disc' : m.confidence);
 
+  /* ── add / create the Discogs link for a slot (#227) ──────────────────────────
+   * Stash the slot's Discogs artist URL and decide whether a link can be added:
+   *   - unresolved slot + known URL → create the artist seeded with the link
+   *   - matched slot + URL that has NO MB owner yet → add it to that artist
+   *   - URL already owned (by this or another artist) → nothing to add
+   * Reuses the cached `resolveByDiscogsUrl` (no extra request during matching). */
+  const DISCOGS_ARTIST_LINK_TYPE = '180';   // MB Discogs artist-URL relationship (string, for seeding)
+  const DISCOGS_LINK_TYPE_ID = 180;          // numeric, for matching the js entity rels
+  const discogsIdOf = u => (String(u).match(/\/artist\/(\d+)/) || [])[1] || null;
+  // The Discogs URLs a MB artist links, via the INTERNAL /ws/js entity endpoint
+  // (not rate-limited). Returns an array (possibly empty) on success, or null on
+  // failure. Cached per gid (#227 speed: linked artists cost no /ws/2 call).
+  const _artistRelsCache = new Map();
+  async function artistDiscogsUrls(gid) {
+    if (!gid) return [];
+    if (_artistRelsCache.has(gid)) return _artistRelsCache.get(gid);
+    let out = null;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const r = await fetch(`${ORIGIN}/ws/js/entity/${gid}?inc=rels`, { headers: { Accept: 'application/json' } });
+        if (r.status === 429 || r.status === 503) { await _sleep(800); continue; }   // rate limited → back off, don't cache a miss
+        if (!r.ok) { await _sleep(500); continue; }
+        const j = await r.json();
+        out = (j.relationships || j.relations || [])
+          .filter(x => x.linkTypeID === DISCOGS_LINK_TYPE_ID && (x.target_type === 'url' || (x.target && x.target.entityType === 'url')))
+          .map(x => (x.target && (x.target.name || x.target.decoded || x.target.pretty_name)) || '');
+        break;
+      } catch (e) { await _sleep(500); }
+    }
+    if (out !== null) _artistRelsCache.set(gid, out);   // cache only a real response (a rate-limited miss stays uncached → retried)
+    return out;
+  }
+  async function tagDiscogsAddable(slot, durl) {
+    slot._discogsUrl = durl || null;
+    slot._discogsConflict = null;
+    slot._discogsMismatch = null;
+    slot._discogsPending = false;
+    if (!durl || SETTINGS.discogsUrlMatch === false) { slot._discogsAddable = false; return; }
+    if (slot.gid) {
+      // FREE check first: this artist's own Discogs links (internal endpoint)
+      const own = await artistDiscogsUrls(slot.gid);
+      if (own === null) { slot._discogsAddable = false; slot._discogsPending = true; return; }   // unknown
+      const want = discogsIdOf(durl);
+      if (own.some(u => discogsIdOf(u) === want)) { slot._discogsAddable = false; return; }       // already linked to THIS Discogs page → legit, no badge
+      if (own.length) {   // #227: artist links a DIFFERENT Discogs page than the release credits → mismatch.
+        slot._discogsAddable = true;   // still offer to add the release's link (majkinetor) — flagged with ⚠
+        slot._discogsMismatch = own.find(u => discogsIdOf(u)) || own[0];
+        return;
+      }
+      // /ws/js found no Discogs link — confirm with the AUTHORITATIVE URL→artist
+      // lookup before declaring it missing. This also catches a false-empty
+      // /ws/js response (the artist actually owns the URL) so we never offer to
+      // add a link it already has (#227).
+      const hits = await resolveByDiscogsUrl(durl);
+      if (hits === null) { slot._discogsAddable = false; slot._discogsPending = true; return; }
+      if (hits.some(h => h.gid === slot.gid)) { slot._discogsAddable = false; return; }   // this artist already owns the URL → legit
+      slot._discogsAddable = true;
+      if (hits.length) slot._discogsConflict = hits[0];     // URL owned by a different artist → add anyway, but warn
+      return;
+    }
+    // unresolved slot — need the URL→artist lookup to decide create vs. pick
+    const hits = await resolveByDiscogsUrl(durl);
+    if (hits === null) { slot._discogsAddable = false; slot._discogsPending = true; return; }
+    slot._discogsAddable = hits.length === 0;
+    if (hits.length) slot._discogsConflict = hits[0];
+  }
+  // Tag every slot in the model — covers page-load 'set' artists, which skip the
+  // match pass (#227). Updates each row as it resolves (real-time) and shows
+  // progress in the always-visible toolbar status. Cached resolves are instant.
+  let _tagDiscogsRunning = false;
+  async function tagDiscogsForAll() {
+    if (!MODEL || SETTINGS.discogsUrlMatch === false || _tagDiscogsRunning) return;
+    if (!discogsReleaseUrlFromPage()) return;   // nothing to check on this page
+    _tagDiscogsRunning = true;
+    setDiscProgress('checking Discogs links…');   // show immediately in the badge slot, before the JSON fetch / lookups
+    try {
+      const dmap = await loadDiscogsMap();
+      const jobs = [];
+      if (dmap) for (const t of MODEL.tracks) { const durls = dmap.get(fold(t.title)); if (durls) t.slots.forEach((s, i) => { if (durls[i]) jobs.push([s, durls[i]]); }); }
+      if (!jobs.length) { setDiscProgress(''); return; }
+      let done = 0, lastRender = 0;
+      for (const [s, durl] of jobs) {
+        await tagDiscogsAddable(s, durl);
+        done++;
+        // update rows + the progress text together, throttled — set the text AFTER
+        // rerender so refreshStatus can't blank it
+        const now = Date.now();
+        if (now - lastRender > 300) { if (!isEditingNow()) rerender(); setDiscProgress(`checking Discogs links ${done}/${jobs.length}…`); lastRender = now; }
+      }
+      if (!isEditingNow()) rerender();
+    } finally {
+      _tagDiscogsRunning = false;
+      setDiscStat();   // #227: settle into the persistent "N missing Discogs links" badge
+    }
+  }
+  // chain glyph shown in place of the artist-type icon when a Discogs link can be added
+  const DISCOGS_LINK_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+  // warning triangle shown when the Discogs URL links a DIFFERENT MB artist (#227)
+  const DISCOGS_WARN_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  function addOrCreateDiscogsLink(slot) {
+    const url = slot._discogsUrl; if (!url) return;
+    if (slot.gid) {
+      // add the link to the existing artist — open its edit form pre-seeded, verify on return
+      const p = new URLSearchParams({ 'edit-artist.url.0.text': url, 'edit-artist.url.0.link_type_id': DISCOGS_ARTIST_LINK_TYPE });
+      W.open(`${ORIGIN}/artist/${slot.gid}/edit?${p}`, '_blank');
+      Log.info('Discogs link: opening edit for', slot.name || slot.gid, '→', url);
+      const gid = slot.gid;
+      const onReturn = async () => {
+        if (document.visibilityState !== 'visible') return;
+        document.removeEventListener('visibilitychange', onReturn);
+        // the artist's links changed — drop the stale caches and re-tag EVERY slot,
+        // so other slots crediting the SAME artist update too (#227)
+        _artistRelsCache.delete(gid);
+        _discogsResolveCache.delete(url);
+        const own = await artistDiscogsUrls(gid);
+        if (own && own.some(u => discogsIdOf(u) === discogsIdOf(url))) { MODEL && MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid === gid) s._flash = true; })); toast(`added Discogs link to ${slot.name}`); }
+        await tagDiscogsForAll();
+      };
+      document.addEventListener('visibilitychange', onReturn);
+    } else {
+      // no MB artist yet — create one seeded with the link (same as ＋)
+      createArtist((slot.creditedAs || '').trim() || slot.name || '', slot, url);
+    }
+  }
+
   async function matchSlot(creditedAs, sib, discogsUrl) {
     // #224: a Discogs artist-link match outranks the name search.
     if (SETTINGS.discogsUrlMatch !== false && discogsUrl) {
       const hits = await resolveByDiscogsUrl(discogsUrl);
-      if (hits.length === 1) {
+      if (hits && hits.length === 1) {
         const e = await fetchEntity(hits[0].gid);
         if (e && e.gid) return { entity: e, source: 'discogs', confidence: 'high', candidates: [e] };
-      } else if (hits.length > 1) {
+      } else if (hits && hits.length > 1) {
         // ambiguous — surface every linked artist plus the name-search hits and let the user pick
         const named = await searchArtist(creditedAs);
         const ents = [];
@@ -380,7 +528,9 @@
         else {
           const m = await matchSlot(n.creditedAs, sib && sib[i], durls && durls[i]);
           const status = slotStatusOf(m);
-          slots.push({ creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status, entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false });
+          const slot = { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status, entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false };
+          await tagDiscogsAddable(slot, durls && durls[i]);   // #227
+          slots.push(slot);
         }
       }
       const te = { mi: t.mi, ti: t.ti, number: t.number, title: t.title, length: t.length, slots };
@@ -443,12 +593,16 @@
           const s = t.slots[i]; if (!s._pending) continue;
           const m = await matchSlot(s.creditedAs, sib && sib[i], durls && durls[i]);
           Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates }); delete s._pending;
+          await tagDiscogsAddable(s, durls && durls[i]);   // #227
         }
         autoCommitTrack(t); if (!isEditing()) rerender();
         done++; if (onProgress) onProgress(done, todo.length);
       }
       if (!isEditing()) rerender();
     } finally { setMatching(false); refreshStatus(); }   // set the final per-medium badges once the pass is done
+    // #227: tag/resolve Discogs links AFTER the match finally (so its summary
+    // message isn't overwritten by refreshStatus) — covers 'set' artists too.
+    await tagDiscogsForAll();
   }
   // (re-)match every still-unmatched slot — the "Match" button / used when auto-match is off
   async function matchAll() { if (!MODEL) return; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && !s.committed) s._pending = true; })); await matchModel((d, n) => updateStatus(`matching ${d}/${n}…`)); }
@@ -539,8 +693,10 @@
   }
   // open MB's create-artist form; when it's saved, the new artist page posts the MBID back over the
   // channel (handshake via sessionStorage token) and closes itself, and we drop it into the slot.
-  function createArtist(name, slot) {
-    const url = `${ORIGIN}/artist/create?edit-artist.name=${encodeURIComponent(name)}&edit-artist.sort_name=${encodeURIComponent(guessSortName(name))}`;
+  function createArtist(name, slot, discogsUrl) {
+    let url = `${ORIGIN}/artist/create?edit-artist.name=${encodeURIComponent(name)}&edit-artist.sort_name=${encodeURIComponent(guessSortName(name))}`;
+    // #227: seed the Discogs link so the new artist is born already linked
+    if (discogsUrl) { url += `&edit-artist.url.0.text=${encodeURIComponent(discogsUrl)}&edit-artist.url.0.link_type_id=${DISCOGS_ARTIST_LINK_TYPE}`; _discogsResolveCache.delete(discogsUrl); }
     const tab = W.open(url, '_blank');   // NOT noopener — we set a token on the new tab's sessionStorage
     if (tab && slot && ART_CHANNEL) {
       const token = 'tc-' + Date.now() + '-' + (++_createSeq); _pendingCreates.set(token, { slot });
@@ -560,7 +716,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.113000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.140000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -723,6 +879,8 @@
     .tc-aslot.tc-can-split .tc-cred::placeholder{color:#caa64e}
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
+    .tc-tic.discogs-add{color:#0a7a8c;cursor:pointer;background:#d6eff3;border-radius:4px}.tc-tic.discogs-add:hover{color:#075e6b;background:#bfe6ed}
+    .tc-tic.discogs-warn{color:#b26a00;cursor:pointer;background:#fdecc8;border-radius:4px}.tc-tic.discogs-warn:hover{color:#915700;background:#fbe0a8}
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
     .tc-search{flex:1 1 0;min-width:0;align-self:stretch;display:flex;align-items:center;gap:4px;border:none;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden}   /* unmatched = plain white; the green fill marks a match */
     .tc-search:focus-within{box-shadow:inset 0 0 0 1px #b9a4e0}
@@ -798,6 +956,9 @@
     .tc-globalstat{flex:none;font-size:12px;color:#999;font-style:italic;white-space:nowrap}
     .tc-am-lbl{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#555;white-space:nowrap}.tc-am-lbl select{font:12px Arial;padding:1px 3px}
     .tc-globalstat.tc-unres{font-style:normal;font-weight:bold;color:#fff;background:#d6342c;padding:1px 8px;border-radius:9px}
+    /* #227: persistent "N missing Discogs links" badge (teal, like the DISC match badge) */
+    .tc-discstat{flex:none;font-size:12px;color:#999;font-style:italic;white-space:nowrap}
+    .tc-discstat.tc-disc-badge{font-style:normal;font-weight:bold;color:#fff;background:#0a7a8c;padding:1px 8px;border-radius:9px}
     .tc-tablewrap{overflow-x:auto}
     .tc-addrow{padding:8px 4px;font-size:13px;color:#555;display:flex;align-items:center;gap:6px}
     .tc-addrow input.tc-addn{width:54px;font:13px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px}
@@ -1030,6 +1191,37 @@
   // the always-visible total in the toolbar (left of Match) — shows the release-wide unresolved count / progress;
   // when there are unresolved artists the badge is clickable and jumps to the first one
   const setGlobalStat = n => { document.querySelectorAll('.tc-globalstat').forEach(e => { e.textContent = n ? statusText(n) : ''; e.classList.toggle('tc-unres', n > 0); e.onclick = n > 0 ? focusFirstUnresolved : null; e.style.cursor = n > 0 ? 'pointer' : ''; e.title = n > 0 ? 'jump to the first unresolved artist' : ''; }); };
+  // #227: persistent missing-Discogs-links badge. Stays until every link is
+  // added; each click steps to the NEXT track missing one and focuses its credit.
+  let _discNavIdx = -1;
+  // an artist whose Discogs link needs attention: missing (addable) OR mismatched
+  // (links a different Discogs page than the release credits). #227
+  const discNeedsAttention = s => !!s._discogsAddable;   // mismatch is now addable too (offer the release's link, flagged ⚠)
+  function focusNextMissingDiscogs() {
+    const list = [];
+    MODEL.tracks.forEach(t => t.slots.forEach((s, i) => { if (discNeedsAttention(s)) list.push([t, i]); }));
+    if (!list.length) { _discNavIdx = -1; return; }
+    _discNavIdx = (_discNavIdx + 1) % list.length;
+    const [t, i] = list[_discNavIdx];
+    const row = rowEl(t.mi, t.ti); if (!row) return;
+    row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const creds = row.querySelectorAll('.tc-cred'); (creds[i] || row).focus();
+  }
+  const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (discNeedsAttention(s)) n++; })); return n; };
+  const setDiscStat = () => {
+    let miss = 0, mism = 0;
+    if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s._discogsMismatch) mism++; else if (s._discogsAddable) miss++; }));
+    const n = miss + mism;
+    document.querySelectorAll('.tc-discstat').forEach(e => {
+      e.textContent = n ? `🔗 ${n} link${n === 1 ? '' : 's'}` : '';
+      e.classList.toggle('tc-disc-badge', n > 0);
+      e.onclick = n > 0 ? focusNextMissingDiscogs : null;
+      e.style.cursor = n > 0 ? 'pointer' : '';
+      e.title = n > 0 ? `${miss} missing, ${mism} mismatched Discogs link${n === 1 ? '' : 's'} — click to step to the next` : '';
+    });
+  };
+  // transient progress text in the same slot, while the check runs (not a pill)
+  const setDiscProgress = (t) => document.querySelectorAll('.tc-discstat').forEach(e => { e.textContent = t || ''; e.classList.remove('tc-disc-badge'); e.onclick = null; e.style.cursor = ''; e.title = ''; });
   // transient action feedback (a pick propagated, S&R count, …) — lives in the toolbar so it never
   // overwrites a medium's unresolved badge; auto-clears
   let _toastTimer = null;
@@ -1081,6 +1273,7 @@
     if (ACTIVE.sections) ACTIVE.sections.forEach(s => setStatusSpan(s.sec.querySelector('.tc-hstatus'), unresolvedIn(s.mi)));
     else document.querySelectorAll('#tc-panel .tc-hstatus').forEach(span => setStatusSpan(span, unresolvedIn(null)));
     setGlobalStat(unresolvedIn(null));   // release-wide total in the toolbar
+    if (!_tagDiscogsRunning) setDiscStat();   // #227: keep the missing-links badge in sync (the check owns it while running)
   }
 
   function buildTable() {
@@ -1202,6 +1395,8 @@
     if (copies) { slot._marked = true; Log.info('propagated', c.name, '→', copies, 'matching track(s)'); }
     rerender();
     if (copies) toast(`linked “${c.name}” — also on ${copies} matching track${copies > 1 ? 's' : ''}`);
+    // #227: the new artist may lack the slot's Discogs link — recompute the add affordance
+    if (slot._discogsUrl) tagDiscogsAddable(slot, slot._discogsUrl).then(() => rerender());
   }
   // Ctrl/Cmd-click a search result → set that artist on EVERY still-unresolved slot (bulk-fill, e.g. a
   // various-artists comp that's actually one artist). Resolved (green) slots are left untouched.
@@ -1226,7 +1421,7 @@
     slot.creditedAs = on.creditedAs; slot.joinPhrase = on.joinPhrase; slot.query = null;
     const a = u(on.artist) || {}, gid = u(a.gid);
     if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: { gid, name: u(a.name), id: u(a.id) }, candidates: [], committed: true });
-    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const m = await matchSlot(on.creditedAs, sib && sib[i], durls && durls[i]); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false }); }
+    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const m = await matchSlot(on.creditedAs, sib && sib[i], durls && durls[i]); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); }
     commitTrack(entry); Log.info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
@@ -1354,7 +1549,7 @@
     // special-purpose artists like [unknown], whose alias is suppressed. #195
     const dis = slot.committed ? getDisamb(slot.gid) : '';
     if (dis) { const ds = document.createElement('span'); ds.className = 'tc-bar-disamb'; ds.textContent = '(' + dis + ')'; ds.title = dis; search.insertBefore(ds, ref); }
-    if (!slot.committed) { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot); }; search.insertBefore(mk, ref); }
+    if (!slot.committed) { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null); }; search.insertBefore(mk, ref); }
   }
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
   function renderBadgeCell(cell, track) {
@@ -1497,8 +1692,28 @@
     // aligned) left edge — it must not take flow space or it shifts the row (#228)
     const credWrap = document.createElement('span'); credWrap.className = 'tc-credwrap';
     credWrap.appendChild(cred); credWrap.appendChild(credClr); line.appendChild(credWrap); updCredClr();
-    const ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
-    if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
+    let ic;
+    if (s._discogsAddable) {
+      // #227: a Discogs link can be added — swap the artist-type icon for a link icon.
+      // Amber warning glyph (still clickable to add) when the URL belongs to a
+      // different MB artist (conflict) or the artist already links a different
+      // Discogs page (mismatch); plain teal link icon otherwise.
+      const conf = s._discogsConflict, mism = s._discogsMismatch;
+      ic = document.createElement('a'); ic.className = 'tc-tic ' + ((conf || mism) ? 'discogs-warn' : 'discogs-add'); ic.href = '#'; ic.innerHTML = (conf || mism) ? DISCOGS_WARN_SVG : DISCOGS_LINK_SVG;
+      ic.title = mism ? `Discogs mismatch: this artist links discogs.com/artist/${discogsIdOf(mism)}, the release credits discogs.com/artist/${discogsIdOf(s._discogsUrl)} — click to add the release's link anyway`
+               : conf ? `Discogs links a different MB artist: ${conf.name} — click to add it to ${s.name || 'this artist'} anyway`
+                      : (s.gid ? 'Add the Discogs link to this artist' : 'Create this artist with its Discogs link');
+      ic.onmousedown = e => e.preventDefault();
+      ic.onclick = e => { e.preventDefault(); addOrCreateDiscogsLink(s); };
+    } else if (s._discogsConflict) {
+      // unresolved slot whose Discogs URL already belongs to an MB artist — info only (pick that artist)
+      ic = document.createElement('a'); ic.className = 'tc-tic discogs-warn'; ic.innerHTML = DISCOGS_WARN_SVG;
+      ic.href = `${ORIGIN}/artist/${s._discogsConflict.gid}`; ic.target = '_blank'; ic.rel = 'noopener';
+      ic.title = `Discogs links this URL to ${s._discogsConflict.name} — pick that artist`;
+    } else {
+      ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
+      if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
+    }
     line.appendChild(ic);
     const search = document.createElement('span'); search.className = 'tc-search';
     const inp = document.createElement('input'); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
@@ -1660,7 +1875,7 @@
     MODEL = buildShell();
     if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); }   // (re)build per-medium tables + hide/tidy native
     rerender();   // show the tables instantly
-    if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else updateStatus('auto-match off — click Match');
+    if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else { updateStatus('auto-match off — click Match'); tagDiscogsForAll(); }   // #227: tag 'set' artists even when not matching
     enrichResolvedAliases();   // batch-fetch aliases for resolved artists (existing releases too)
   }
   async function rebuild(noMatch) {
@@ -1668,6 +1883,7 @@
     if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); }
     rerender();
     if (!noMatch && SETTINGS.autoMatch !== false) await matchModel();
+    else if (!noMatch) tagDiscogsForAll();   // #227: tag 'set' artists when auto-match is off — but NOT on a clear/revert (it would check zero matched artists); refreshStatus clears the badge instead
     enrichResolvedAliases();
   }
   // revert to the page-load state, but DON'T auto-match (that only runs on startup) — Match is manual here
@@ -1938,7 +2154,7 @@
   }
 
   const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
-    + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
+    + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-discstat"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
     + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
@@ -4930,7 +5146,7 @@
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
