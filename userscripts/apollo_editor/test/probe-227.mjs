@@ -65,7 +65,7 @@ let fail = 0;
 const check = (c, m) => { console.log((c ? 'ok  : ' : 'FAIL: ') + m); if (!c) fail++; };
 check(r.unresolvedAddable === true, 'unresolved slot with a Discogs URL is addable (create-with-link)');
 check(r.linkedAddable === false, 'already-linked artist is NOT addable');
-check(r.mismatchAddable === false && /695567/.test(r.mismatchUrl || ''), 'artist linking a different Discogs page → mismatch (not addable/missing)');
+check(r.mismatchAddable === true && /695567/.test(r.mismatchUrl || ''), 'artist linking a different Discogs page → mismatch flagged, still addable (add release link anyway)');
 check(/edit-artist\.url\.0\.text=.*999999999/.test(decodeURIComponent(createUrl)) && /link_type_id=180/.test(createUrl), 'create seeds the Discogs URL + link_type_id=180');
 check(/edit-artist\.url\.0\.text=.*205719/.test(decodeURIComponent(editUrl)) && /link_type_id=180/.test(editUrl), 'add-to-existing seeds the artist edit form with URL + link_type_id=180');
 console.log(fail ? `\n${fail} FAILURE(S)` : '\nALL ASSERTIONS PASS');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.133000
+// @version      2026.6.16.134500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -391,8 +391,8 @@
       if (own === null) { slot._discogsAddable = false; slot._discogsPending = true; return; }   // unknown
       const want = discogsIdOf(durl);
       if (own.some(u => discogsIdOf(u) === want)) { slot._discogsAddable = false; return; }       // already linked to THIS Discogs page → legit, no badge
-      if (own.length) {   // #227: artist links a DIFFERENT Discogs page than the release credits → mismatch, not "missing"
-        slot._discogsAddable = false;
+      if (own.length) {   // #227: artist links a DIFFERENT Discogs page than the release credits → mismatch.
+        slot._discogsAddable = true;   // still offer to add the release's link (majkinetor) — flagged with ⚠
         slot._discogsMismatch = own.find(u => discogsIdOf(u)) || own[0];
         return;
       }
@@ -716,7 +716,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.16.133000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.16.134500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
@@ -1196,7 +1196,7 @@
   let _discNavIdx = -1;
   // an artist whose Discogs link needs attention: missing (addable) OR mismatched
   // (links a different Discogs page than the release credits). #227
-  const discNeedsAttention = s => !!(s._discogsAddable || s._discogsMismatch);
+  const discNeedsAttention = s => !!s._discogsAddable;   // mismatch is now addable too (offer the release's link, flagged ⚠)
   function focusNextMissingDiscogs() {
     const list = [];
     MODEL.tracks.forEach(t => t.slots.forEach((s, i) => { if (discNeedsAttention(s)) list.push([t, i]); }));
@@ -1210,7 +1210,7 @@
   const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (discNeedsAttention(s)) n++; })); return n; };
   const setDiscStat = () => {
     let miss = 0, mism = 0;
-    if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s._discogsAddable) miss++; else if (s._discogsMismatch) mism++; }));
+    if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s._discogsMismatch) mism++; else if (s._discogsAddable) miss++; }));
     const n = miss + mism;
     document.querySelectorAll('.tc-discstat').forEach(e => {
       e.textContent = n ? `🔗 ${n} link${n === 1 ? '' : 's'}` : '';
@@ -1695,20 +1695,16 @@
     let ic;
     if (s._discogsAddable) {
       // #227: a Discogs link can be added — swap the artist-type icon for a link icon.
-      // When the URL already links a DIFFERENT MB artist, use the amber warning glyph
-      // but still let the click add it to this artist (majkinetor).
-      const conf = s._discogsConflict;
-      ic = document.createElement('a'); ic.className = 'tc-tic ' + (conf ? 'discogs-warn' : 'discogs-add'); ic.href = '#'; ic.innerHTML = conf ? DISCOGS_WARN_SVG : DISCOGS_LINK_SVG;
-      ic.title = conf ? `Discogs links a different MB artist: ${conf.name} — click to add it to ${s.name || 'this artist'} anyway`
+      // Amber warning glyph (still clickable to add) when the URL belongs to a
+      // different MB artist (conflict) or the artist already links a different
+      // Discogs page (mismatch); plain teal link icon otherwise.
+      const conf = s._discogsConflict, mism = s._discogsMismatch;
+      ic = document.createElement('a'); ic.className = 'tc-tic ' + ((conf || mism) ? 'discogs-warn' : 'discogs-add'); ic.href = '#'; ic.innerHTML = (conf || mism) ? DISCOGS_WARN_SVG : DISCOGS_LINK_SVG;
+      ic.title = mism ? `Discogs mismatch: this artist links discogs.com/artist/${discogsIdOf(mism)}, the release credits discogs.com/artist/${discogsIdOf(s._discogsUrl)} — click to add the release's link anyway`
+               : conf ? `Discogs links a different MB artist: ${conf.name} — click to add it to ${s.name || 'this artist'} anyway`
                       : (s.gid ? 'Add the Discogs link to this artist' : 'Create this artist with its Discogs link');
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreateDiscogsLink(s); };
-    } else if (s._discogsMismatch) {
-      // #227: this artist already links a DIFFERENT Discogs page than the release credits — flag, don't add.
-      ic = document.createElement('a'); ic.className = 'tc-tic discogs-warn'; ic.innerHTML = DISCOGS_WARN_SVG;
-      ic.href = s._discogsMismatch; ic.target = '_blank'; ic.rel = 'noopener';
-      const haveId = discogsIdOf(s._discogsMismatch), wantId = discogsIdOf(s._discogsUrl);
-      ic.title = `Discogs mismatch: this artist links discogs.com/artist/${haveId}, but the release credits discogs.com/artist/${wantId} — verify (click opens the linked page)`;
     } else if (s._discogsConflict) {
       // unresolved slot whose Discogs URL already belongs to an MB artist — info only (pick that artist)
       ic = document.createElement('a'); ic.className = 'tc-tic discogs-warn'; ic.innerHTML = DISCOGS_WARN_SVG;
