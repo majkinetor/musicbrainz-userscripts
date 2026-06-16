@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.241500
+// @version      2026.6.16.243000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
 // @grant        none
-// @run-at       document-idle
+// @run-at       document-start
 // ==/UserScript==
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -18,6 +18,20 @@
   const M = location.pathname.match(/\/release\/([0-9a-f-]{36})\/cover-art/i);
   if (!M) return;
   const MBID = M[1];
+
+  // append a node to <head>/<html>, deferring if neither exists yet (document-start)
+  function appendEl(el) {
+    const t = document.head || document.documentElement;
+    if (t) { t.appendChild(el); return; }
+    new MutationObserver((_, obs) => { const t2 = document.head || document.documentElement; if (t2) { obs.disconnect(); t2.appendChild(el); } }).observe(document, { childList: true });
+  }
+
+  // Hide the native cover-art UI BEFORE it paints (we run at document-start), so the
+  // tab never flashes MB's gallery before ours mounts. Our gallery uses .as-* only.
+  const earlyHide = document.createElement('style');
+  earlyHide.textContent = '.artwork-cont,#content>h2,#content>p{display:none!important}';
+  appendEl(earlyHide);
+
   const CAA = `https://coverartarchive.org/release/${MBID}`;
   const imgUrl  = id => `${CAA}/${id}.jpg`;          // original
   const thumb   = (id, n) => `${CAA}/${id}-${n}.jpg`; // 250 / 500 / 1200
@@ -537,7 +551,9 @@
   .as-lb-x:hover{background:rgba(255,255,255,.25)}
   .as-lb-cap{margin-top:14px;color:#eee;font-size:13px;text-align:center;max-width:80vw}
   `;
-  const st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
+  const st = document.createElement('style'); st.textContent = css; appendEl(st);
 
-  loadArt();
+  // we run at document-start; wait for #content before mounting the gallery
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadArt, { once: true });
+  else loadArt();
 })();
