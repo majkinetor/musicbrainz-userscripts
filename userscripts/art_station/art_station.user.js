@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.190000
+// @version      2026.6.16.210000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -61,7 +61,12 @@
   function mount() {
     if (_mounted) return; _mounted = true;
     const anchor = document.querySelector('#content') || document.body;
-    anchor.insertBefore(root, anchor.firstChild);
+    // #230: sit BELOW the MB header + the entity tabs
+    const tabs = anchor.querySelector('ul.tabs');
+    const h1 = anchor.querySelector('h1');
+    if (tabs && tabs.parentElement === anchor) tabs.insertAdjacentElement('afterend', root);
+    else if (h1 && h1.parentElement === anchor) h1.insertAdjacentElement('afterend', root);
+    else anchor.insertBefore(root, anchor.firstChild);
     // hide the native cover-art list (the type <h2>s and the .artwork-cont blocks),
     // leaving the rest of the page (title, sidebar) intact
     [...anchor.children].forEach(ch => {
@@ -77,7 +82,7 @@
     mount();
     const n = stagedCount();
     const groups = grouped();
-    root.innerHTML = bar(n) + groups.map(g => section(g.type, g.items)).join('') + deletedSection();
+    root.innerHTML = bar(n) + bulkBar() + groups.map(g => section(g.type, g.items)).join('') + deletedSection();
     wire();
   }
 
@@ -121,6 +126,17 @@
       <button class="as-btn as-commit" title="Apply staged changes as MusicBrainz edits"${n?'':' disabled'}>✓ Enter edit</button>
     </div>`;
   }
+  function bulkBar() {
+    const sel = MODEL.filter(it => it._sel && !it._del);
+    if (!sel.length) return '';
+    return `<div class="as-bulk"><b>${sel.length} selected</b>
+      <button class="as-btn as-bk-type">Set type ▾</button>
+      <button class="as-btn as-bk-dl">⬇ Download</button>
+      <button class="as-btn as-bk-rm">🗑 Delete</button>
+      <span class="as-sp"></span>
+      <button class="as-btn as-bk-clr">Clear selection</button>
+      <span class="as-hint">right-click a cover to select · click a cover to enlarge · ←→↑↓ to move</span></div>`;
+  }
   function section(type, items) {
     const label = type === null ? 'All covers' : type;
     return `<div class="as-sec"><h3>${esc(label)}</h3><span class="as-cnt">${items.length}</span><span class="as-line"></span></div>
@@ -134,11 +150,11 @@
   }
   function card(it) {
     const dim = it._new ? 'local' : (it.w && it.h ? `${it.w} × ${it.h}` : '…');
-    const types = it.types.length ? it.types : (it._del ? [] : [NO_TYPE]);
-    const chips = types.map(t => `<span class="as-chip${t===NO_TYPE?' none':''}" data-t="${esc(t)}">${esc(t)}<span class="as-cx">▾</span></span>`).join('')
-                + (it._del ? '' : `<span class="as-chip as-addtype" title="add a type">＋</span>`);
+    // #230: untyped shows ONLY the ＋ (set-type) chip — no "(no type)" label
+    const chips = it.types.map(t => `<span class="as-chip" data-t="${esc(t)}">${esc(t)}<span class="as-cx">▾</span></span>`).join('')
+                + (it._del ? '' : `<span class="as-chip as-addtype" title="set type">＋</span>`);
     const src = it._new ? it._file : thumb(it.id, SETTINGS.tile > 260 ? 500 : 250);
-    return `<div class="as-card${it._del?' del':''}${it._new?' new':''}" data-id="${esc(it.id)}" ${it._del?'':'draggable="true"'}>
+    return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}" data-id="${esc(it.id)}" ${it._del?'':'draggable="true"'}>
       ${it._new ? '<span class="as-newban">NEW</span>' : ''}
       <div class="as-types">${chips}</div>
       <div class="as-thumb"><img loading="lazy" src="${esc(src)}" alt=""><span class="as-dim">${esc(dim)}</span>
@@ -146,9 +162,9 @@
           ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>'
           : '<button class="as-tbtn as-rm" title="remove this cover art">✕</button>'}
       </div>
-      ${it._del ? '' : `<div class="as-meta">${it.comment
+      ${it._del ? '' : `<div class="as-meta">${(it.comment || it._editcmt)
           ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…">`
-          : `<button class="as-cmtadd" title="add a comment">+ comment</button>`}</div>`}
+          : `<button class="as-pencil" title="add a comment">✎</button>`}</div>`}
     </div>`;
   }
 
@@ -165,15 +181,28 @@
     root.querySelector('.as-add').onclick = addImage;
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
-    root.querySelectorAll('.as-rm').forEach(b => b.onclick = e => { const it = byId(cardId(e.target)); if (it) { it._del = true; render(); } });
-    root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
-    root.querySelectorAll('.as-cmt').forEach(inp => inp.oninput = e => { const it = byId(cardId(e.target)); if (it) { it.comment = e.target.value; refreshStaged(); } });
-    root.querySelectorAll('.as-cmtadd').forEach(b => b.onclick = e => { const it = byId(cardId(e.target)); if (it) { it.comment = ' '; render(); const i = document.querySelector(`.as-card[data-id="${it.id}"] .as-cmt`); if (i) { i.value = ''; i.focus(); } } });
+    root.querySelectorAll('.as-rm').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = true; it._sel = false; render(); } });
+    root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
+    root.querySelectorAll('.as-cmt').forEach(inp => {
+      inp.oninput = e => { const it = byId(cardId(e.target)); if (it) { it.comment = e.target.value; refreshStaged(); } };
+      inp.onblur = e => { const it = byId(cardId(e.target)); if (it && !it.comment.trim()) { it._editcmt = false; render(); } };
+    });
+    root.querySelectorAll('.as-pencil').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._editcmt = true; render(); const i = document.querySelector(`.as-card[data-id="${it.id}"] .as-cmt`); if (i) i.focus(); } });
 
     // type chips → popover
     root.querySelectorAll('.as-chip').forEach(ch => ch.onclick = e => { e.stopPropagation(); openTypePop(ch); });
-    // drag reorder
+    // click image → lightbox; right-click card → toggle selection
+    root.querySelectorAll('.as-thumb img').forEach(img => img.onclick = e => { const it = byId(cardId(e.target)); if (it) openLightbox(it.id); });
+    root.querySelectorAll('.as-card').forEach(c => c.oncontextmenu = e => { if (c.classList.contains('del')) return; e.preventDefault(); const it = byId(c.dataset.id); if (it) { it._sel = !it._sel; render(); } });
+    // bulk actions
+    const q = s => root.querySelector(s);
+    q('.as-bk-clr') && (q('.as-bk-clr').onclick = () => { MODEL.forEach(it => it._sel = false); render(); });
+    q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; } }); render(); });
+    q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = () => MODEL.filter(it => it._sel && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 350)));
+    q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
+
     wireDrag();
+    markCursor();
   }
   function refreshStaged() {
     const n = stagedCount(); const s = root.querySelector('.as-staged'); const c = root.querySelector('.as-commit');
@@ -222,10 +251,9 @@
   }
 
   // ── actions ───────────────────────────────────────────────────────────────────
+  function dlOne(it) { const a = document.createElement('a'); a.href = imgUrl(it.id); a.download = `${MBID}-${it.id}.jpg`; document.body.appendChild(a); a.click(); a.remove(); }
   function downloadAll() {
-    MODEL.filter(it => !it._del && !it._new).forEach((it, i) => {
-      setTimeout(() => { const a = document.createElement('a'); a.href = imgUrl(it.id); a.download = `${MBID}-${it.id}.jpg`; document.body.appendChild(a); a.click(); a.remove(); }, i * 350);
-    });
+    MODEL.filter(it => !it._del && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 350));
   }
   function addImage() {
     const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*,.pdf'; inp.multiple = true;
@@ -248,6 +276,103 @@
       `• reorder: ${moved ? 'yes' : 'no'}\n` +
       `• add (upload): ${adds.length}\n\n` +
       `Submission wiring is the next step.`);
+  }
+
+  // ── lightbox (#230: click image → popup, ←→↑↓ navigate) ───────────────────────
+  let _lb = null;          // current lightbox image id
+  const visible = () => grouped().flatMap(g => g.items);   // flat, in displayed order
+  function openLightbox(id) {
+    _lb = id; _cursorId = id;
+    let ov = document.getElementById('as-lb');
+    if (!ov) {
+      ov = document.createElement('div'); ov.id = 'as-lb';
+      ov.innerHTML = `<button class="as-lb-x" title="close (Esc)">✕</button>
+        <button class="as-lb-nav as-lb-prev" title="previous (←)">‹</button>
+        <img class="as-lb-img" alt="">
+        <button class="as-lb-nav as-lb-next" title="next (→)">›</button>
+        <div class="as-lb-cap"></div>`;
+      document.body.appendChild(ov);
+      ov.querySelector('.as-lb-x').onclick = closeLightbox;
+      ov.querySelector('.as-lb-prev').onclick = e => { e.stopPropagation(); lbNav(-1); };
+      ov.querySelector('.as-lb-next').onclick = e => { e.stopPropagation(); lbNav(1); };
+      ov.onclick = e => { if (e.target === ov) closeLightbox(); };
+    }
+    paintLightbox();
+    ov.style.display = 'flex';
+  }
+  function paintLightbox() {
+    const ov = document.getElementById('as-lb'); if (!ov) return;
+    const it = byId(_lb); if (!it) return;
+    ov.querySelector('.as-lb-img').src = it._new ? it._file : thumb(it.id, 1200);
+    const bits = [it.types.length ? it.types.join(', ') : 'no type', it.w && it.h ? `${it.w} × ${it.h}` : null, it.comment].filter(Boolean);
+    ov.querySelector('.as-lb-cap').textContent = bits.join('  ·  ');
+  }
+  function closeLightbox() { _lb = null; const ov = document.getElementById('as-lb'); if (ov) ov.style.display = 'none'; }
+  function lbNav(d) {
+    const seq = visible(); if (!seq.length) return;
+    let i = seq.findIndex(it => String(it.id) === String(_lb));
+    i = (i + d + seq.length) % seq.length;
+    _lb = seq[i].id; _cursorId = _lb; paintLightbox(); markCursor();
+  }
+
+  // ── keyboard cursor (arrows select / move; Enter opens lightbox) ──────────────
+  let _cursorId = null;
+  function markCursor() {
+    root.querySelectorAll('.as-card.as-cursor').forEach(c => c.classList.remove('as-cursor'));
+    if (!_cursorId) return;
+    const c = root.querySelector(`.as-card[data-id="${CSS.escape(String(_cursorId))}"]`);
+    if (c) { c.classList.add('as-cursor'); c.scrollIntoView({ block: 'nearest' }); }
+  }
+  function moveCursor(dx, dy) {
+    const cards = [...root.querySelectorAll('.as-card:not(.del)')];
+    if (!cards.length) return;
+    let cur = cards.find(c => c.dataset.id === String(_cursorId)) || cards[0];
+    if (!_cursorId) { _cursorId = cur.dataset.id; markCursor(); return; }
+    const r0 = cur.getBoundingClientRect();
+    let best = null, bestD = Infinity;
+    for (const c of cards) {
+      if (c === cur) continue;
+      const r = c.getBoundingClientRect();
+      const ddx = (r.left + r.width / 2) - (r0.left + r0.width / 2);
+      const ddy = (r.top + r.height / 2) - (r0.top + r0.height / 2);
+      if (dx > 0 && ddx <= 4) continue; if (dx < 0 && ddx >= -4) continue;
+      if (dy > 0 && ddy <= 4) continue; if (dy < 0 && ddy >= -4) continue;
+      // penalise off-axis drift so motion stays mostly in the requested direction
+      const d = (dx ? Math.abs(ddx) + Math.abs(ddy) * 3 : Math.abs(ddy) + Math.abs(ddx) * 3);
+      if (d < bestD) { bestD = d; best = c; }
+    }
+    if (best) { _cursorId = best.dataset.id; markCursor(); }
+  }
+  document.addEventListener('keydown', e => {
+    const t = e.target;
+    if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    if (_lb) {
+      if (e.key === 'Escape') { e.preventDefault(); closeLightbox(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); lbNav(-1); }
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); lbNav(1); }
+      return;
+    }
+    if (!root.isConnected || !root.querySelector('.as-card')) return;
+    const map = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    if (map[e.key]) { e.preventDefault(); moveCursor(map[e.key][0], map[e.key][1]); }
+    else if (e.key === 'Enter' && _cursorId) { e.preventDefault(); openLightbox(_cursorId); }
+    else if (e.key === ' ' && _cursorId) { e.preventDefault(); const it = byId(_cursorId); if (it && !it._del) { it._sel = !it._sel; render(); } }
+  });
+
+  function openBulkTypePop(btn) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
+    const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
+    const pop = document.createElement('div'); pop.className = 'as-pop';
+    pop.innerHTML = `<div class="as-pop-h">Set type on ${sel.length} cover${sel.length===1?'':'s'}</div>`
+      + ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')
+      + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply (replace)</button><button class="as-btn as-pop-add">Add</button></div>`;
+    document.body.appendChild(pop);
+    const r = btn.getBoundingClientRect(); pop.style.left = (r.left + scrollX) + 'px'; pop.style.top = (r.bottom + scrollY + 3) + 'px';
+    const picked = () => ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
+    pop.querySelector('.as-pop-apply').onclick = () => { const ts = picked(); sel.forEach(it => it.types = ts.slice()); pop.remove(); render(); };
+    pop.querySelector('.as-pop-add').onclick = () => { const ts = picked(); sel.forEach(it => it.types = [...new Set([...it.types, ...ts])]); pop.remove(); render(); };
+    const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
 
   // ── styles ───────────────────────────────────────────────────────────────────
@@ -293,11 +418,33 @@
   .as-chip.as-addtype{color:#8a7fb8;background:#fff;border-style:dashed}
   .as-cx{color:#9a8ccb;margin-left:3px;font-size:9px}
   .as-cmt{font:12px inherit;border:1px solid #e2dcef;border-radius:6px;padding:3px 7px;color:#444;background:#faf9fe;width:100%}
-  .as-cmtadd{font:11px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:2px 7px;cursor:pointer;align-self:flex-start;display:none}
-  .as-card:hover .as-cmtadd{display:inline-block}
-  .as-pop{position:absolute;z-index:40;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:300px;overflow:auto;font-size:13px}
+  .as-pencil{font:12px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:1px 8px;cursor:pointer;align-self:flex-start;opacity:0;transition:.1s}
+  .as-card:hover .as-pencil{opacity:1}
+  .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
+  /* selection + keyboard cursor */
+  .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
+  .as-card.sel::after{content:'✓';position:absolute;left:7px;top:7px;width:20px;height:20px;line-height:20px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:12px;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .as-card.as-cursor{box-shadow:0 0 0 2px #2a6,0 3px 14px rgba(40,160,100,.28)}
+  /* bulk bar */
+  .as-bulk{position:sticky;top:52px;z-index:29;display:flex;align-items:center;gap:11px;padding:7px 12px;background:#f3eefe;border:1px solid #cbbdf0;border-radius:9px;margin-bottom:8px;flex-wrap:wrap}
+  .as-bulk b{color:var(--as-acc)}
+  .as-bk-rm{border-color:#e6b8b2;color:var(--as-warn)}
+  .as-hint{font-size:11px;color:#8a7fb8;margin-left:auto}
+  .as-pop{position:absolute;z-index:40;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}
   .as-pop label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer}
   .as-pop label:hover{background:#f3eefe}.as-pop input{accent-color:var(--as-acc)}
+  .as-pop-h{font-weight:600;color:#6a5b95;padding:3px 6px 6px;border-bottom:1px solid #eee;margin-bottom:4px}
+  .as-pop-f{display:flex;gap:6px;padding:6px 4px 2px;border-top:1px solid #eee;margin-top:4px;position:sticky;bottom:0;background:#fff}
+  .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
+  /* lightbox */
+  #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
+  .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:#fff}
+  .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:42px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
+  .as-lb-nav:hover{background:rgba(255,255,255,.25)}
+  .as-lb-prev{left:18px}.as-lb-next{right:18px}
+  .as-lb-x{position:fixed;top:16px;right:20px;font-size:24px;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;width:42px;height:42px;cursor:pointer}
+  .as-lb-x:hover{background:rgba(255,255,255,.25)}
+  .as-lb-cap{margin-top:14px;color:#eee;font-size:13px;text-align:center;max-width:80vw}
   `;
   const st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
 
