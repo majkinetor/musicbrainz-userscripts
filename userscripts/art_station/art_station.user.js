@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.213000
+// @version      2026.6.16.214500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -318,7 +318,15 @@
   function paintLightbox() {
     const ov = document.getElementById('as-lb'); if (!ov) return;
     const it = byId(_lb); if (!it) return;
-    ov.querySelector('.as-lb-img').src = it._new ? it._file : thumb(it.id, 1200);
+    const img = ov.querySelector('.as-lb-img');
+    const src = it._new ? it._file : thumb(it.id, 1200);
+    // hide until the NEW src has decoded — otherwise the previous image lingers
+    // visibly while the 1200px loads ("original shows shortly")
+    img.classList.add('loading');
+    img.onload = () => img.classList.remove('loading');
+    img.onerror = () => img.classList.remove('loading');
+    img.src = src;
+    if (img.complete && img.naturalWidth) img.classList.remove('loading');
     const bits = [it.types.length ? it.types.join(', ') : 'no type', it.w && it.h ? `${it.w} × ${it.h}` : null, it.comment].filter(Boolean);
     ov.querySelector('.as-lb-cap').textContent = bits.join('  ·  ');
   }
@@ -418,7 +426,7 @@
   .as-card.as-drop{outline:2px dashed var(--as-acc);outline-offset:-2px}
   .as-card.del .as-thumb img{filter:grayscale(1) brightness(.82)}
   .as-card.del{opacity:.7}
-  .as-newban{position:absolute;top:8px;left:-26px;transform:rotate(-45deg);background:var(--as-acc);color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:var(--as-acc);color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
   .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f0eef6}
   .as-thumb img{width:100%;height:100%;object-fit:cover;display:block}
   .as-dim{position:absolute;left:6px;bottom:6px;background:rgba(20,16,40,.78);color:#fff;font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px}
@@ -453,7 +461,8 @@
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
-  .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:#fff}
+  .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:#fff;transition:opacity .12s}
+  .as-lb-img.loading{opacity:0}
   .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:42px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
   .as-lb-nav:hover{background:rgba(255,255,255,.25)}
   .as-lb-prev{left:18px}.as-lb-next{right:18px}
