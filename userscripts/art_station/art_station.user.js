@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.320000
+// @version      2026.6.16.321500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -518,30 +518,28 @@
   }
   let _addForm = null;
   const addForm = () => (_addForm = _addForm || getPostForm(`${R}/add-cover-art`));
-  async function runAdd(it, meta, dry, report) {
+  // step 1 (parallel-safe): sign + PUT the file to archive.org. Stores the signed
+  // upload on the item; the slow network part — like Turbo, run these concurrently.
+  async function uploadStep(it) {
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
-    const form = await addForm();
-    const tm = typeMapOf(form, 'add-cover-art');
-    const typeIds = it.types.map(t => tm[t]).filter(Boolean);
-    const pos = String(it.order + 1);
-    if (dry) {
-      report(`1. GET /ws/js/cover-art-upload/${MBID}?mime_type=${mime}  → {action,image_id,formdata,nonce}\n`
-        + `2. POST ‹signed archive.org action›  multipart: ‹policy,signature,key,AWSAccessKeyId…› + file (${(it._fileObj && it._fileObj.name) || 'file'}, ${(it._fileObj && it._fileObj.size) || '?'}b)\n`
-        + `3. POST ${R}/add-cover-art\n   add-cover-art.id=‹image_id›\n   add-cover-art.position=${pos}\n   add-cover-art.nonce=‹nonce›\n   add-cover-art.mime_type=${mime}\n`
-        + `   add-cover-art.type_id=${typeIds.join(',') || '(none)'}\n   add-cover-art.comment=${it.comment}\n   add-cover-art.edit_note=${editNote(meta).replace(/\n+/g, ' / ')}`
-        + (meta.votable ? `\n   add-cover-art.make_votable=1` : ''));
-      return;
-    }
     const signed = await signUpload(mime);
     const fd = new FormData();
     Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
     fd.append('file', it._fileObj, (it._fileObj && it._fileObj.name) || String(signed.image_id));
     const up = await fetch(signed.action, { method: 'POST', body: fd });   // archive.org (auth in the signed policy)
     if (!up.ok) throw new Error('IA upload ' + up.status);
+    it._signed = signed;
+  }
+  // step 2 (SEQUENTIAL): register on MB. Submitted in order so positions stay correct.
+  async function registerStep(it, meta) {
+    const form = await addForm();
+    const tm = typeMapOf(form, 'add-cover-art');
+    const typeIds = it.types.map(t => tm[t]).filter(Boolean);
+    const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
     const p = new URLSearchParams(); copyHidden(form, p, /\.(nonce|position|id|type_id|comment|mime_type)$/);
-    p.append('add-cover-art.id', signed.image_id);
-    p.append('add-cover-art.position', pos);
-    p.append('add-cover-art.nonce', signed.nonce);
+    p.append('add-cover-art.id', it._signed.image_id);
+    p.append('add-cover-art.position', String(it.order + 1));
+    p.append('add-cover-art.nonce', it._signed.nonce);
     p.append('add-cover-art.mime_type', mime);   // required Select (MB Form::Role::AddArt)
     typeIds.forEach(id => p.append('add-cover-art.type_id', id));
     p.append('add-cover-art.comment', it.comment);
@@ -549,6 +547,16 @@
     if (meta.votable) p.append('add-cover-art.make_votable', '1');
     const add = await fetch(`${R}/add-cover-art`, { method: 'POST', body: p, credentials: 'same-origin' });
     if (!add.ok) throw new Error('add ' + add.status);
+  }
+  async function runAdd(it, meta, dry, report) {   // dry-run summary only (live uses runAdds)
+    const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
+    const form = await addForm();
+    const typeIds = it.types.map(t => typeMapOf(form, 'add-cover-art')[t]).filter(Boolean);
+    report(`1. GET /ws/js/cover-art-upload/${MBID}?mime_type=${mime}  → {action,image_id,formdata,nonce}\n`
+      + `2. POST ‹signed archive.org action›  multipart: ‹policy,signature,key,AWSAccessKeyId…› + file (${(it._fileObj && it._fileObj.name) || 'file'}, ${(it._fileObj && it._fileObj.size) || '?'}b)\n`
+      + `3. POST ${R}/add-cover-art\n   add-cover-art.id=‹image_id›\n   add-cover-art.position=${it.order + 1}\n   add-cover-art.nonce=‹nonce›\n   add-cover-art.mime_type=${mime}\n`
+      + `   add-cover-art.type_id=${typeIds.join(',') || '(none)'}\n   add-cover-art.comment=${it.comment}\n   add-cover-art.edit_note=${editNote(meta).replace(/\n+/g, ' / ')}`
+      + (meta.votable ? `\n   add-cover-art.make_votable=1` : ''));
   }
   async function buildReorder(meta) {     // single edit: full ordered artwork list
     const form = await getPostForm(`${R}/reorder-cover-art`);
@@ -562,7 +570,7 @@
   // ordered work list (uploads are Phase 2b): remove → retype/comment → reorder
   function buildPlan() {
     const plan = [];
-    MODEL.filter(it => it._new && !it._del).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'}${it.comment ? ` “${it.comment}”` : ''} (upload)`, kind: 'add', run: (m, dry, report) => runAdd(it, m, dry, report) }));
+    MODEL.filter(it => it._new && !it._del).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'}${it.comment ? ` “${it.comment}”` : ''} (upload)`, kind: 'add', it, run: (m, dry, report) => runAdd(it, m, dry, report) }));
     MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || 'cover'} #${it.id}`, kind: 'remove', build: m => buildRemove(it, m) }));
     MODEL.filter(it => !it._del && !it._new && (it.comment !== it._origComment || it.types.join('|') !== it._origTypes.join('|')))
       .forEach(it => plan.push({ label: `Edit ${it._origTypes[0] || 'cover'} #${it.id} → ${it.types.join(', ') || '(none)'}`, kind: 'edit', build: m => buildEdit(it, m) }));
@@ -619,20 +627,29 @@
       }
     } catch (e) { st.textContent = '❌'; pay.textContent = String(e && e.message || e); row.classList.add('err'); }
   }
-  // run a list with bounded concurrency
-  async function runPool(ops, conc, ov, meta) {
+  // bounded-concurrency map
+  async function pool(items, conc, fn) {
     let i = 0;
-    const worker = async () => { while (i < ops.length) await runOp(ov, ops[i++], meta); };
-    await Promise.all(Array.from({ length: Math.min(conc, ops.length || 1) }, worker));
+    const worker = async () => { while (i < items.length) { const k = i++; await fn(items[k]); } };
+    await Promise.all(Array.from({ length: Math.min(conc, items.length || 1) }, worker));
+  }
+  const runPool = (ops, conc, ov, meta) => pool(ops, conc, op => runOp(ov, op, meta));
+  // adds: parallel UPLOAD to archive.org, then SEQUENTIAL register (positions stay correct) — like Turbo
+  async function runAdds(ov, addOps, meta) {
+    if (meta.dry || !addOps.length) return runPool(addOps, meta.dry ? 8 : 1, ov, meta);
+    const setSt = (op, s) => { ov.querySelector(`.as-cm-op[data-i="${op._i}"] .as-cm-st`).textContent = s; };
+    const fail = (op, e) => { const row = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`); row.querySelector('.as-cm-st').textContent = '❌'; row.querySelector('.as-cm-payload').textContent = String(e && e.message || e); row.classList.add('err'); op._err = true; };
+    addOps.forEach(op => setSt(op, '⏳'));
+    await pool(addOps, 4, async op => { try { await uploadStep(op.it); setSt(op, '⏫'); } catch (e) { fail(op, e); } });  // parallel upload
+    for (const op of addOps) { if (op._err) continue; try { await registerStep(op.it, meta); setSt(op, '✅'); } catch (e) { fail(op, e); } }   // ordered register
   }
   async function runPlan(ov, plan, meta) {
     ov.querySelector('.as-cm-go').disabled = true;
     ov.querySelector('.as-cm-cancel').disabled = true;
     plan.forEach((op, i) => { op._i = i; });
     const CONC = meta.dry ? 8 : 4;   // modest concurrency live to stay friendly to MB
-    // adds keep order (positions are order-sensitive); edits/removes are independent → parallel;
-    // reorder runs last, after everything else has settled.
-    await runPool(plan.filter(o => o.kind === 'add'), 1, ov, meta);
+    // uploads run in parallel (register stays ordered); edits/removes parallel; reorder last.
+    await runAdds(ov, plan.filter(o => o.kind === 'add'), meta);
     await runPool(plan.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta);
     await runPool(plan.filter(o => o.kind === 'reorder'), 1, ov, meta);
     ov.querySelector('.as-cm-cancel').disabled = false;
