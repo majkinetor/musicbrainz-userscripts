@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.193000
+// @version      2026.6.17.200000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -216,8 +216,7 @@
       <span class="as-sp"></span>
       <span class="as-selbox">${selBox()}</span>
       <span class="as-sp"></span>
-      <button class="as-btn as-staged" title="Show pending operations"${n?'':' style="display:none"'}>${n} staged change${n===1?'':'s'} ▾</button>
-      <button class="as-btn as-commit" title="Apply staged changes as MusicBrainz edits"${n?'':' disabled'}>✓ Enter edit</button>
+      <button class="as-btn as-commit" title="Review &amp; apply staged changes as MusicBrainz edits"${n?'':' disabled'}>✓ Enter edit${n ? ` (${n})` : ''}</button>
     </div>`;
   }
   // #234: the selection cluster lives in the center of the main toolbar (the old
@@ -228,7 +227,7 @@
     return `${sel.length ? `<b class="as-selcnt">${sel.length} selected</b>` : '<span class="as-selcnt none">none selected</span>'}
       <button class="as-ic as-selall" title="Select all covers">✳</button>
       <button class="as-ic as-selclr" title="Clear selection"${sel.length ? '' : ' disabled'}>✕</button>
-      ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Set type ▾</button>
+      ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Type ▾</button>
       <button class="as-btn as-bk-cmt" title="Set a comment on the selection">✎ Comment ▾</button>
       <button class="as-btn as-bk-dl" title="Download the selected covers">⬇ Download</button>
       <button class="as-btn as-bk-rm" title="Mark the selected covers for removal">🗑 Delete</button>` : ''}`;
@@ -337,7 +336,6 @@
     root.querySelector('.as-size').onchange = () => { save(); render(); };
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     root.querySelector('.as-add').onclick = toggleDropZone;
-    const staged = root.querySelector('.as-staged'); if (staged) staged.onclick = e => { e.stopPropagation(); openStagedPop(staged); };
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
@@ -417,9 +415,8 @@
     if (box) { box.innerHTML = selBox(); wireSel(); }
   }
   function refreshStaged() {
-    const n = opsCount(); const s = root.querySelector('.as-staged'); const c = root.querySelector('.as-commit');
-    if (s) { s.textContent = `${n} staged change${n===1?'':'s'} ▾`; s.style.display = n ? '' : 'none'; }
-    if (c) { c.disabled = !n; if (!c.disabled) c.onclick = enterEdit; }
+    const n = opsCount(); const c = root.querySelector('.as-commit');
+    if (c) { c.textContent = `✓ Enter edit${n ? ` (${n})` : ''}`; c.disabled = !n; if (!c.disabled) c.onclick = enterEdit; }
   }
   // the list of pending MB operations behind "N staged changes"
   function pendingOps() {
@@ -439,19 +436,10 @@
     if (now !== orig) ops.push('↕ Reorder covers');
     return ops;
   }
-  const opsCount = () => pendingOps().length;
-  function openStagedPop(btn) {
-    document.querySelectorAll('.as-pop').forEach(p => p.remove());
-    const ops = pendingOps(); if (!ops.length) return;
-    const pop = document.createElement('div'); pop.className = 'as-pop as-staged-pop';
-    pop.innerHTML = `<div class="as-pop-h">Pending operations (${ops.length})</div>`
-      + ops.map(o => `<div class="as-op">${esc(o)}</div>`).join('');
-    document.body.appendChild(pop);
-    placePop(pop, btn.getBoundingClientRect());
-    const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
-    setTimeout(() => document.addEventListener('mousedown', off), 0);
-  }
-
+  // the count shown on "Enter edit (N)" = the number of real MB edits we'll submit
+  // (buildPlan merges a cover's type+comment change into one edit), so it matches
+  // the panel's operation list exactly. #234
+  const opsCount = () => buildPlan().length;
   // #234: the "View ▾" dropdown — Sort options + Group toggle, moved off the
   // main toolbar to free its center for the selection controls.
   function openViewPop(btn) {
@@ -485,7 +473,7 @@
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const it = byId(cardId(chip)); if (!it) return;
     const pop = document.createElement('div'); pop.className = 'as-pop';
-    pop.innerHTML = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('');
+    pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
     document.body.appendChild(pop);
     placePop(pop, chip.getBoundingClientRect());
     pop.querySelectorAll('input').forEach(cb => cb.onchange = () => {
@@ -663,9 +651,16 @@
   function buildPlan() {
     const plan = [];
     MODEL.filter(it => it._new && !it._del).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'}${it.comment ? ` “${it.comment}”` : ''} (upload)`, kind: 'add', it, run: (m, dry, report) => runAdd(it, m, dry, report) }));
-    MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || 'cover'} #${it.id}`, kind: 'remove', build: m => buildRemove(it, m) }));
+    MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || 'cover'}`, kind: 'remove', build: m => buildRemove(it, m) }));
     MODEL.filter(it => !it._del && !it._new && (it.comment !== it._origComment || it.types.join('|') !== it._origTypes.join('|')))
-      .forEach(it => plan.push({ label: `Edit ${it._origTypes[0] || 'cover'} #${it.id} → ${it.types.join(', ') || '(none)'}`, kind: 'edit', build: m => buildEdit(it, m) }));
+      .forEach(it => {
+        // readable description of what changed on this cover (the panel list now
+        // doubles as the "pending operations" view — #234)
+        const ch = [];
+        if (it.types.join('|') !== it._origTypes.join('|')) ch.push(`type → ${it.types.join(', ') || '(none)'}`);
+        if (it.comment !== it._origComment) ch.push(`comment → ${it.comment ? `“${it.comment}”` : '(cleared)'}`);
+        plan.push({ label: `Edit ${it._origTypes[0] || 'cover'}: ${ch.join(', ')}`, kind: 'edit', build: m => buildEdit(it, m) });
+      });
     const ex = MODEL.filter(it => !it._del && !it._new);
     const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
     const orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
@@ -679,12 +674,9 @@
     const ov = document.createElement('div'); ov.id = 'as-commit';
     ov.innerHTML = `<div class="as-cm-box">
       <div class="as-cm-h">Apply ${plan.length} change${plan.length===1?'':'s'} as MusicBrainz edits</div>
-      <label class="as-cm-row">Edit note<textarea class="as-cm-note" rows="2" placeholder="optional note shown on each edit"></textarea></label>
-      <div class="as-cm-row as-cm-opts">
-        <label><input type="checkbox" class="as-cm-vote"> Make all votable</label>
-      </div>
+      <textarea class="as-cm-note" rows="2" placeholder="optional edit note shown on each edit"></textarea>
       <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<div class="as-cm-payload"></div></div>`).join('')}</div>
-      <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
+      <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
       <div class="as-cm-note2">New images upload to the Cover Art Archive, then register on MusicBrainz. Dry run shows every request first.</div>
     </div>`;
     document.body.appendChild(ov);
@@ -938,7 +930,7 @@
     const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
     const pop = document.createElement('div'); pop.className = 'as-pop';
     pop.innerHTML = `<div class="as-pop-h">Set type on ${sel.length} cover${sel.length===1?'':'s'}</div>`
-      + ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')
+      + `<div class="as-type-grid">${ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>`
       + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply (replace)</button><button class="as-btn as-pop-add">Add</button></div>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
@@ -1066,6 +1058,7 @@
   .as-dragwarn{font-size:11px;color:#b06a00;background:#fff3d6;border:1px solid #ecd9a0;border-radius:6px;padding:2px 7px;white-space:nowrap}
   .as-pop-note{color:#9a8ccb;font-size:11px}
   .as-pop{position:absolute;z-index:200;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}
+  .as-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
   .as-pop label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer}
   .as-pop label:hover{background:#f3eefe}.as-pop input{accent-color:var(--as-acc)}
   .as-pop-h{font-weight:600;color:#6a5b95;padding:3px 6px 6px;border-bottom:1px solid #eee;margin-bottom:4px}
@@ -1100,7 +1093,8 @@
   .as-cm-h{font-size:16px;font-weight:700;color:#3b2c70;margin-bottom:12px}
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:#555}
   .as-cm-hint{font-size:11px;color:#9a8ccb;font-weight:400}
-  .as-cm-note{font:13px inherit;border:1px solid #cfc6e6;border-radius:7px;padding:6px 9px;resize:vertical}
+  .as-cm-note{font:13px inherit;border:1px solid #cfc6e6;border-radius:7px;padding:6px 9px;resize:vertical;width:100%;box-sizing:border-box;display:block;margin-bottom:12px}
+  .as-cm-chk{display:flex;align-items:center;gap:6px;cursor:pointer;color:#555}
   .as-cm-opts{flex-direction:row;gap:18px;flex-wrap:wrap}
   .as-cm-opts label{display:flex;align-items:center;gap:6px;cursor:pointer;color:#444}
   .as-cm-dry{color:#a05a00;display:flex;align-items:center;gap:6px;cursor:pointer}
