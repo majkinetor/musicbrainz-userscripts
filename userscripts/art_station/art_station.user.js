@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.171000
+// @version      2026.6.17.172500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -41,7 +41,34 @@
   const ALL_TYPES  = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Watermark', 'Raw/Unedited', 'Matrix/Runout', 'Top', 'Bottom', 'Panel', 'Other'];
   const NO_TYPE = '(no type)';
 
-  let MODEL = [];       // [{ id, types:[], comment, order, w, h, _del, _new, _file }]
+  let MODEL = [];       // [{ id, types:[], comment, order, w, h, bytes, _del, _new, _file }]
+  const SIZES = new Map(); // CAA image id -> original file size in bytes (from archive.org metadata)
+  const fmtSize = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+  // footer line under the image: "600 × 600 · 206 KB" — each half shown once known
+  function dimText(it) {
+    if (it._new) return 'local';
+    const parts = [];
+    if (it.w && it.h) parts.push(`${it.w} × ${it.h}`);
+    if (it.bytes) parts.push(fmtSize(it.bytes));
+    return parts.length ? parts.join(' · ') : '…';
+  }
+  function refreshDim(it) {
+    const el = document.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-dim`);
+    if (el) el.textContent = dimText(it);
+  }
+  // one request per release: archive.org item metadata carries every original's byte size
+  async function loadSizes() {
+    try {
+      const j = await fetch(`https://archive.org/metadata/mbid-${MBID}`, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
+      if (!j || !j.files) return;
+      for (const f of j.files) {
+        if (f.source !== 'original' || !f.size) continue;
+        const m = String(f.name).match(/-(\d+)\.[a-z0-9]+$/i);
+        if (m) SIZES.set(m[1], +f.size);
+      }
+      MODEL.forEach(it => { const b = SIZES.get(String(it.id)); if (b) { it.bytes = b; refreshDim(it); } });
+    } catch (e) { /* size is a nicety — never block the gallery */ }
+  }
   let SETTINGS = load();
   function load() { try { return Object.assign({ tile: 200, group: false, sort: 'type' }, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return { tile: 200, group: false, sort: 'type' }; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
@@ -86,11 +113,12 @@
     }));
     render();
     MODEL.forEach(measure);   // lazy-fill dimensions
+    loadSizes();              // lazy-fill file sizes (single archive.org request)
   }
   function measure(it) {
     if (it._new || it.w) return;
     const img = new Image();
-    img.onload = () => { it.w = img.naturalWidth; it.h = img.naturalHeight; const el = document.querySelector(`.as-card[data-id="${it.id}"] .as-dim`); if (el) el.textContent = it.w && it.h ? `${it.w} × ${it.h}` : ''; };
+    img.onload = () => { it.w = img.naturalWidth; it.h = img.naturalHeight; refreshDim(it); };
     img.src = imgUrl(it.id);
   }
 
@@ -226,7 +254,6 @@
       <div class="as-grid">${dels.map(card).join('')}</div>`;
   }
   function card(it) {
-    const dim = it._new ? 'local' : (it.w && it.h ? `${it.w} × ${it.h}` : '…');
     const src = it._new ? it._file : thumb(it.id, SETTINGS.tile > 260 ? 500 : 250);
     return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
       ${it._new ? '<span class="as-newban">NEW</span>' : ''}
@@ -234,32 +261,32 @@
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
-      ${foot(it, dim)}
+      ${foot(it)}
       <span class="as-selmark">✓</span>
     </div>`;
   }
-  // #234: footer below the image. Row 1 = type (first only, "+" when more) on
-  // the left, dimensions on the right; the set-type ＋ and the add-comment ✎
-  // appear on hover so they don't spam. Row 2 = the comment — only rendered
-  // when one exists (or while editing), so empty comments cost no height.
-  function foot(it, dim) {
-    // #234: show only the first type; "+" suffix signals there are more.
+  // #234: footer below the image (mockup-driven). Row 1 = the comment on the
+  // left + "dimensions · size" on the right — sharing one row means an empty
+  // comment costs no extra height. Row 2 = the type as a centered pill on a
+  // divider line at the card's bottom (first type only, "+" when there are
+  // more). Empty comment → a hover-only ✎; untyped → a faint ＋ pill.
+  function foot(it) {
     const firstType = it.types[0] || '';
-    const typeChip = firstType
-      ? `<span class="as-chip as-type" title="${esc(it.types.join(', '))}">${esc(firstType)}${it.types.length > 1 ? '+' : ''}</span>`
-      : '';
-    if (it._del) return `<div class="as-foot"><div class="as-foot-top">${typeChip}<span class="as-foot-sp"></span><span class="as-dim">${esc(dim)}</span></div></div>`;
-    const hasCmt = it.comment || it._editcmt;
-    return `<div class="as-foot">
-      <div class="as-foot-top">${typeChip}<span class="as-chip as-addtype" title="set type">＋</span>${hasCmt ? '' : '<button class="as-pencil" title="add a comment">✎</button>'}<span class="as-foot-sp"></span><span class="as-dim">${esc(dim)}</span></div>
-      ${hasCmt ? `<div class="as-foot-cmt">${metaInner(it)}</div>` : ''}
-    </div>`;
-  }
-  // comment row body: input while editing, otherwise the centered text
-  function metaInner(it) {
-    return it._editcmt
+    const typePill = firstType
+      ? `<span class="as-type" title="${esc(it.types.join(', '))}">${esc(firstType)}${it.types.length > 1 ? '+' : ''}</span>`
+      : `<span class="as-type as-type-add" title="set type">＋ type</span>`;
+    const typeRow = `<div class="as-foot-type"><span class="as-tline"></span>${typePill}<span class="as-tline"></span></div>`;
+    const dim = `<span class="as-dim">${esc(dimText(it))}</span>`;
+    if (it._del) return `<div class="as-foot"><div class="as-foot-row"><span class="as-foot-cmt"></span>${dim}</div>${typeRow}</div>`;
+    const cmt = it._editcmt
       ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…">`
-      : `<div class="as-cmt-text" title="edit comment">${esc(it.comment)}</div>`;
+      : (it.comment
+          ? `<span class="as-cmt-text" title="edit comment">${esc(it.comment)}</span>`
+          : `<button class="as-pencil" title="add a comment">✎</button>`);
+    return `<div class="as-foot">
+      <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${dim}</div>
+      ${typeRow}
+    </div>`;
   }
 
   // ── interaction ───────────────────────────────────────────────────────────────
@@ -302,8 +329,8 @@
       dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); addFiles(e.dataTransfer.files); };
     }
 
-    // type chips → popover
-    root.querySelectorAll('.as-chip').forEach(ch => ch.onclick = e => { e.stopPropagation(); openTypePop(ch); });
+    // type pill → popover
+    root.querySelectorAll('.as-type').forEach(ch => ch.onclick = e => { e.stopPropagation(); openTypePop(ch); });
     // click the THUMB (not just the <img>, which is display:none on a not-yet-propagated
     // cover) → lightbox; PDFs open in a new tab. right-click card → toggle selection
     root.querySelectorAll('.as-thumb').forEach(th => {
@@ -908,22 +935,21 @@
   .as-card:hover .as-tbtn{opacity:1}
   .as-rm:hover{background:var(--as-warn);color:#fff}
   .as-undo{opacity:1;background:#fff;color:var(--as-acc);font-size:12px;font-weight:600}
-  /* #234: footer below the image — row 1 (type · dimensions), row 2 (comment, only when present) */
-  .as-foot{padding:5px 8px 6px;display:flex;flex-direction:column;gap:3px;border-top:1px solid #efeaf8}
-  .as-foot-top{display:flex;align-items:center;gap:5px;min-height:18px}
-  .as-foot-sp{flex:1}
-  .as-foot-cmt{display:flex;justify-content:center}
-  .as-cmt-text{font:11px inherit;color:#5a5470;text-align:center;line-height:1.3;padding:1px 6px;cursor:text;word-break:break-word;max-width:100%}
+  /* #234: footer (mockup) — row 1: comment (left) · dimensions+size (right); row 2: centered type pill on a divider */
+  .as-foot{padding:5px 8px 7px;display:flex;flex-direction:column;gap:5px;border-top:1px solid #efeaf8}
+  .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px}
+  .as-foot-cmt{flex:1 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
+  .as-cmt-text{font:11px inherit;color:#5a5470;line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .as-cmt-text:hover{color:var(--as-acc)}
-  .as-card.sel .as-foot-top{padding-right:26px}
-  .as-card.sel .as-cmt-text{padding-right:22px}
-  .as-type{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .as-chip{font-size:11px;font-weight:600;color:#3b2c70;background:#efeaff;border:1px solid #d8ccf5;border-radius:20px;padding:1px 9px;cursor:pointer}
-  .as-chip.none{color:#9a8ccb;background:#f6f4fc;border-style:dashed}
-  .as-chip.as-addtype{color:#8a7fb8;background:#fff;border-style:dashed;opacity:0;transition:.1s}
-  .as-card:hover .as-chip.as-addtype{opacity:1}
-  .as-cmt{font:12px inherit;border:1px solid #e2dcef;border-radius:6px;padding:3px 7px;color:#444;background:#faf9fe;width:100%}
-  .as-pencil{font:12px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:1px 8px;cursor:pointer;opacity:0;transition:.1s}
+  .as-foot-type{display:flex;align-items:center;gap:7px}
+  .as-card.sel .as-foot-type{padding-right:20px}
+  .as-tline{flex:1;height:1px;background:#e7e1f2}
+  .as-type{font-size:11px;font-weight:700;color:#3b2c70;background:#f1ecff;border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:78%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .as-type:hover{background:#e7dffb}
+  .as-type-add{color:#8a7fb8;background:#fff;border-style:dashed;font-weight:600;opacity:.5}
+  .as-card:hover .as-type-add{opacity:1}
+  .as-cmt{font:11px inherit;border:1px solid #e2dcef;border-radius:6px;padding:2px 6px;color:#444;background:#faf9fe;width:100%}
+  .as-pencil{font:11px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
   .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
   /* selection + keyboard cursor */
