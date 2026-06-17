@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.210000
+// @version      2026.6.17.211500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -664,7 +664,7 @@
   function buildPlan() {
     const plan = [];
     MODEL.filter(it => it._new && !it._del).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'}${it.comment ? ` “${it.comment}”` : ''} (upload)`, kind: 'add', it, run: (m, dry, report) => runAdd(it, m, dry, report) }));
-    MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || 'cover'}`, kind: 'remove', build: m => buildRemove(it, m) }));
+    MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || 'cover'}`, id: it.id, kind: 'remove', build: m => buildRemove(it, m) }));
     MODEL.filter(it => !it._del && !it._new && (it.comment !== it._origComment || it.types.join('|') !== it._origTypes.join('|')))
       .forEach(it => {
         // readable description of what changed on this cover (the panel list now
@@ -672,7 +672,7 @@
         const ch = [];
         if (it.types.join('|') !== it._origTypes.join('|')) ch.push(`type → ${it.types.join(', ') || '(none)'}`);
         if (it.comment !== it._origComment) ch.push(`comment → ${it.comment ? `“${it.comment}”` : '(cleared)'}`);
-        plan.push({ label: `Edit ${it._origTypes[0] || 'cover'}: ${ch.join(', ')}`, kind: 'edit', build: m => buildEdit(it, m) });
+        plan.push({ label: `Edit ${it._origTypes[0] || 'cover'}: ${ch.join(', ')}`, id: it.id, kind: 'edit', build: m => buildEdit(it, m) });
       });
     const ex = MODEL.filter(it => !it._del && !it._new);
     const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
@@ -688,7 +688,7 @@
     ov.innerHTML = `<div class="as-cm-box">
       <div class="as-cm-h">Apply ${plan.length} change${plan.length===1?'':'s'} as MusicBrainz edits</div>
       <textarea class="as-cm-note" rows="2" placeholder="optional edit note shown on each edit"></textarea>
-      <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<div class="as-cm-payload"></div></div>`).join('')}</div>
+      <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<div class="as-cm-payload"></div></div>`).join('')}</div>
       <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
     </div>`;
     document.body.appendChild(ov);
@@ -1122,6 +1122,7 @@
   .as-cm-payload{white-space:pre-wrap;font:11px/1.4 ui-monospace,Consolas,monospace;color:#555;margin:4px 0 2px 18px;display:none}
   .as-cm-op.dry .as-cm-payload,.as-cm-op.err .as-cm-payload{display:block}
   .as-cm-f{display:flex;align-items:center;gap:8px}
+  .as-cm-id{color:#a99fc4;font-size:12px;font-variant-numeric:tabular-nums}
   .as-cm-go{background:var(--as-acc);color:#fff;border-color:var(--as-acc);font-weight:600}
   .as-cm-go:disabled{opacity:.5}
   .as-cm-note2{font-size:11px;color:#9a8ccb;margin-top:8px;text-align:center}
