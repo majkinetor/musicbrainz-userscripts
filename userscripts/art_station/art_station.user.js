@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.183000
+// @version      2026.6.17.184500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -313,8 +313,21 @@
     root.querySelectorAll('.as-cmt').forEach(inp => {
       inp.oninput = () => { const it = byId(cardId(inp)); if (it) { it.comment = inp.value; refreshStaged(); } };
       inp.onblur = () => { const it = byId(cardId(inp)); if (it) { it._editcmt = false; render(); } };
-      // Enter finishes the edit (blur → render); Escape also bails out.
-      inp.onkeydown = e => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); inp.blur(); } };
+      // Enter saves and jumps to the NEXT card's comment (Escape just bails out).
+      inp.onkeydown = e => {
+        if (e.key === 'Escape') { e.preventDefault(); inp.blur(); return; }
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const it = byId(cardId(inp)); if (!it) return;
+        it.comment = inp.value; it._editcmt = false;
+        inp.onblur = null;   // we drive the transition — don't let the stale blur double-render
+        const cards = [...root.querySelectorAll('.as-card:not(.del)')];
+        const idx = cards.findIndex(c => c.dataset.id === String(it.id));
+        const nextIt = (idx >= 0 && cards[idx + 1]) ? byId(cards[idx + 1].dataset.id) : null;
+        if (nextIt) nextIt._editcmt = true;
+        refreshStaged(); render();
+        if (nextIt) root.querySelector(`.as-card[data-id="${CSS.escape(String(nextIt.id))}"] .as-cmt`)?.focus();
+      };
     });
   }
 
@@ -838,6 +851,15 @@
       const inp = area.querySelector('.as-lb-cmt'); inp.value = it.comment || '';
       inp.oninput = () => { const cur = byId(_lb); if (cur) { cur.comment = inp.value; _lbDirty = true; } };
       inp.onblur = () => { const cur = byId(_lb); if (cur && !cur.comment.trim()) { _lbEditCmt = false; paintCmtArea(ov, cur); } };
+      // Enter saves and advances to the next image, keeping its comment open for editing.
+      inp.onkeydown = e => {
+        if (e.key === 'Escape') { e.preventDefault(); inp.blur(); return; }
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const cur = byId(_lb); if (cur) { cur.comment = inp.value; _lbDirty = true; }
+        inp.onblur = null;   // we drive the transition — don't let the stale blur cancel edit mode
+        lbNav(1, true);
+      };
       if (_lbEditCmt) inp.focus();
     } else {
       area.innerHTML = `<button class="as-lb-cmtadd" title="add a comment">✎ comment</button>`;
@@ -854,13 +876,14 @@
   function updatePlayBtn() { const b = document.querySelector('.as-lb-play'); if (b) b.textContent = _play ? '⏸ Pause' : '▶ Play'; }
   function stopPlay() { if (_play) { clearInterval(_play); _play = null; updatePlayBtn(); } }
   function togglePlay() { if (_play) stopPlay(); else { _play = setInterval(() => lbNav(1), 3000); updatePlayBtn(); } }
-  function lbNav(d) {
+  function lbNav(d, keepEdit) {
     const seq = visible().filter(it => !it._pdf);   // PDFs open in a tab, not the lightbox
     if (!seq.length) return;
     let i = seq.findIndex(it => String(it.id) === String(_lb));
     if (i < 0) i = 0;
     i = (i + d + seq.length) % seq.length;
-    _lb = seq[i].id; _cursorId = _lb; _lbEditCmt = false; paintLightbox(); markCursor(true); preloadNeighbors();
+    // keepEdit (Enter in the comment field) carries edit-mode to the next image
+    _lb = seq[i].id; _cursorId = _lb; _lbEditCmt = !!keepEdit; paintLightbox(); markCursor(true); preloadNeighbors();
   }
 
   // ── keyboard cursor (arrows select / move; Enter opens lightbox) ──────────────
