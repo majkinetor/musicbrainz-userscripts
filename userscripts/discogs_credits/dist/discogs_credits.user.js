@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.17.153928
+// @version      2026.6.17.160439
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3799,10 +3799,14 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       }
       return dupMatch;
     }
-    async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos) {
-      const overrideCredit = creditOverrides.get(mbUrl);
-      if (overrideCredit && String(overrideCredit).trim()) {
-        credit = String(overrideCredit).trim();
+    async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos, forceCredit) {
+      if (forceCredit) {
+        credit = forceCredit;
+      } else {
+        const overrideCredit = creditOverrides.get(mbUrl);
+        if (overrideCredit && String(overrideCredit).trim()) {
+          credit = String(overrideCredit).trim();
+        }
       }
       const mbid = mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
       if (!mbid) {
@@ -3823,7 +3827,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           return "";
         }
       })() : "";
-      const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}`;
+      const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}|${credit || ""}`;
       if (dispatchedThisSession.has(sessionKey)) {
         log.info(`Skipped duplicate dispatch of <strong>${linkTypeName}</strong>: ${sourceEntity.name} \u2194 ${credit || ""} \u2014 already queued earlier this run`);
         dedupedThisSession++;
@@ -3919,7 +3923,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           continue;
         }
         const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
-        await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit);
+        await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit, void 0, role.creditedAs);
         tickProgress();
       }
     }
@@ -3936,7 +3940,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             }
             const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
             for (const recEntity of recordingByGid.values()) {
-              await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*");
+              await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*", role.creditedAs);
             }
           }
         }
@@ -4108,7 +4112,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         if (seenTrackRels.has(trackRelKey)) continue;
         seenTrackRels.add(trackRelKey);
         log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> \u2014 ${credit}`);
-        await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
+        await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, role.track.position, role.creditedAs);
         tickProgress();
       }
     }
