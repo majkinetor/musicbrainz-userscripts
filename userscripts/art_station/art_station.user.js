@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.160000
+// @version      2026.6.17.171000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -227,50 +227,58 @@
   }
   function card(it) {
     const dim = it._new ? 'local' : (it.w && it.h ? `${it.w} × ${it.h}` : '…');
-    // #230: untyped shows ONLY the ＋ (set-type) chip — no "(no type)" label
-    const chips = it.types.map(t => `<span class="as-chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')
-                + (it._del ? '' : `<span class="as-chip as-addtype" title="set type">＋</span>`);
     const src = it._new ? it._file : thumb(it.id, SETTINGS.tile > 260 ? 500 : 250);
     return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
       ${it._new ? '<span class="as-newban">NEW</span>' : ''}
-      <div class="as-types">${chips}</div>
-      <div class="as-thumb"><img loading="lazy" draggable="false" src="${esc(src)}" alt=""><span class="as-dim">${esc(dim)}</span>
+      <div class="as-thumb"><img loading="lazy" draggable="false" src="${esc(src)}" alt="">
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
-      ${it._del ? '' : `<div class="as-meta">${metaInner(it)}</div>`}
+      ${foot(it, dim)}
       <span class="as-selmark">✓</span>
     </div>`;
   }
-  // comment row: input while editing, centered text when set, pencil when empty
+  // #234: footer below the image. Row 1 = type (first only, "+" when more) on
+  // the left, dimensions on the right; the set-type ＋ and the add-comment ✎
+  // appear on hover so they don't spam. Row 2 = the comment — only rendered
+  // when one exists (or while editing), so empty comments cost no height.
+  function foot(it, dim) {
+    // #234: show only the first type; "+" suffix signals there are more.
+    const firstType = it.types[0] || '';
+    const typeChip = firstType
+      ? `<span class="as-chip as-type" title="${esc(it.types.join(', '))}">${esc(firstType)}${it.types.length > 1 ? '+' : ''}</span>`
+      : '';
+    if (it._del) return `<div class="as-foot"><div class="as-foot-top">${typeChip}<span class="as-foot-sp"></span><span class="as-dim">${esc(dim)}</span></div></div>`;
+    const hasCmt = it.comment || it._editcmt;
+    return `<div class="as-foot">
+      <div class="as-foot-top">${typeChip}<span class="as-chip as-addtype" title="set type">＋</span>${hasCmt ? '' : '<button class="as-pencil" title="add a comment">✎</button>'}<span class="as-foot-sp"></span><span class="as-dim">${esc(dim)}</span></div>
+      ${hasCmt ? `<div class="as-foot-cmt">${metaInner(it)}</div>` : ''}
+    </div>`;
+  }
+  // comment row body: input while editing, otherwise the centered text
   function metaInner(it) {
     return it._editcmt
       ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…">`
-      : (it.comment
-          ? `<div class="as-cmt-text" title="edit comment">${esc(it.comment)}</div>`
-          : `<button class="as-pencil" title="add a comment">✎</button>`);
+      : `<div class="as-cmt-text" title="edit comment">${esc(it.comment)}</div>`;
   }
 
   // ── interaction ───────────────────────────────────────────────────────────────
   function byId(id) { return MODEL.find(it => String(it.id) === String(id)); }
   function cardId(el) { const c = el.closest('.as-card'); return c ? c.dataset.id : null; }
 
-  // Wire one comment row. Swaps in place (no full render → no page jump):
-  // input while editing, centered text when set, pencil when empty.
-  function wireMeta(meta) {
-    if (!meta) return;
-    const inp = meta.querySelector('.as-cmt');
-    if (inp) {
+  // Wire the comment controls. #234 split the footer (pencil on row 1, comment
+  // on row 2 which only exists when there's a comment), so entering/leaving edit
+  // re-renders — render() keeps the viewport put, so the page still doesn't jump.
+  function wireComments() {
+    root.querySelectorAll('.as-pencil, .as-cmt-text').forEach(el => el.onclick = e => {
+      e.stopPropagation(); const it = byId(cardId(el)); if (!it) return;
+      it._editcmt = true; render();
+      root.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-cmt`)?.focus();
+    });
+    root.querySelectorAll('.as-cmt').forEach(inp => {
       inp.oninput = () => { const it = byId(cardId(inp)); if (it) { it.comment = inp.value; refreshStaged(); } };
-      inp.onblur = () => { const it = byId(cardId(inp)); if (it) { it._editcmt = false; meta.innerHTML = metaInner(it); wireMeta(meta); } };
-      return;
-    }
-    const ed = meta.querySelector('.as-cmt-text, .as-pencil');
-    if (ed) ed.onclick = e => {
-      e.stopPropagation(); const it = byId(cardId(ed)); if (!it) return;
-      it._editcmt = true; meta.innerHTML = metaInner(it); wireMeta(meta);
-      meta.querySelector('.as-cmt')?.focus();
-    };
+      inp.onblur = () => { const it = byId(cardId(inp)); if (it) { it._editcmt = false; render(); } };
+    });
   }
 
   function wire() {
@@ -284,7 +292,7 @@
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
-    root.querySelectorAll('.as-meta').forEach(wireMeta);
+    wireComments();
 
     const dz = root.querySelector('.as-dropzone');
     if (dz) {
@@ -895,19 +903,25 @@
   .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#faf8ff,#efeafb)}
   .as-thumb.na img{display:none}
   .as-thumb.na::after{content:'Not on the Cover Art Archive yet';text-align:center;color:#9a8ccb;font-size:12px;font-weight:600;line-height:1.45;padding:0 16px}
-  .as-dim{position:absolute;left:6px;bottom:6px;background:rgba(20,16,40,.78);color:#fff;font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px}
+  .as-dim{font-size:10px;font-weight:600;color:#6b5fa0;white-space:nowrap;flex:0 0 auto}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
   .as-rm:hover{background:var(--as-warn);color:#fff}
   .as-undo{opacity:1;background:#fff;color:var(--as-acc);font-size:12px;font-weight:600}
-  .as-meta{padding:4px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:8px}
-  .as-cmt-text{font:12px inherit;color:#444;text-align:center;line-height:1.35;padding:2px 6px;cursor:text;word-break:break-word;max-width:100%}
+  /* #234: footer below the image — row 1 (type · dimensions), row 2 (comment, only when present) */
+  .as-foot{padding:5px 8px 6px;display:flex;flex-direction:column;gap:3px;border-top:1px solid #efeaf8}
+  .as-foot-top{display:flex;align-items:center;gap:5px;min-height:18px}
+  .as-foot-sp{flex:1}
+  .as-foot-cmt{display:flex;justify-content:center}
+  .as-cmt-text{font:11px inherit;color:#5a5470;text-align:center;line-height:1.3;padding:1px 6px;cursor:text;word-break:break-word;max-width:100%}
   .as-cmt-text:hover{color:var(--as-acc)}
-  .as-card.sel .as-cmt-text{padding-right:24px}
-  .as-types{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:6px 8px 5px}
+  .as-card.sel .as-foot-top{padding-right:26px}
+  .as-card.sel .as-cmt-text{padding-right:22px}
+  .as-type{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .as-chip{font-size:11px;font-weight:600;color:#3b2c70;background:#efeaff;border:1px solid #d8ccf5;border-radius:20px;padding:1px 9px;cursor:pointer}
   .as-chip.none{color:#9a8ccb;background:#f6f4fc;border-style:dashed}
-  .as-chip.as-addtype{color:#8a7fb8;background:#fff;border-style:dashed}
+  .as-chip.as-addtype{color:#8a7fb8;background:#fff;border-style:dashed;opacity:0;transition:.1s}
+  .as-card:hover .as-chip.as-addtype{opacity:1}
   .as-cmt{font:12px inherit;border:1px solid #e2dcef;border-radius:6px;padding:3px 7px;color:#444;background:#faf9fe;width:100%}
   .as-pencil{font:12px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:1px 8px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
