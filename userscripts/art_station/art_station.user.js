@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.174500
+// @version      2026.6.17.175500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -705,7 +705,19 @@
     await runPool(plan.filter(o => o.kind === 'reorder'), 1, ov, meta);
     ov.querySelector('.as-cm-cancel').disabled = false;
     ov.querySelector('.as-cm-cancel').textContent = 'Close';
-    if (!meta.dry) { const b = ov.querySelector('.as-cm-go'); b.textContent = 'Done — reload'; b.disabled = false; b.onclick = () => location.reload(); }
+    if (!meta.dry) {
+      const b = ov.querySelector('.as-cm-go');
+      const errs = ov.querySelectorAll('.as-cm-op.err').length;
+      if (!errs) {
+        // #234: clean run → reload automatically so the gallery shows the new
+        // state (brief pause so the ✅s are visible first).
+        b.textContent = 'Done — reloading…'; b.disabled = true;
+        setTimeout(() => location.reload(), 900);
+      } else {
+        // something failed — leave it up so the user can read the ❌ rows.
+        b.textContent = `Reload (${errs} failed)`; b.disabled = false; b.onclick = () => location.reload();
+      }
+    }
     else ov.querySelector('.as-cm-go').disabled = false;
   }
 
@@ -916,7 +928,7 @@
   .as-sec-del h3{color:var(--as-warn)}
   .as-cnt{font-size:12px;color:#9b8fc0}
   .as-line{flex:1;height:1px;background:#e2dcef}
-  .as-grid{display:flex;flex-wrap:wrap;gap:14px}
+  .as-grid{display:flex;flex-wrap:wrap;gap:24px 14px}
   /* compact group rows: label column + cards beside it */
   .as-grow{display:flex;align-items:flex-start;gap:16px;padding:12px 0;border-top:1px solid #ece7f6}
   .as-grow:first-of-type{border-top:none}
@@ -952,7 +964,7 @@
   .as-foot-cmt{flex:1 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
   .as-cmt-text{font:11px inherit;color:#5a5470;line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .as-cmt-text:hover{color:var(--as-acc)}
-  .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%)}
+  .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
   .as-card.sel .as-foot-type{padding-right:20px}
   .as-tline{flex:1;height:1px;background:#e7e1f2}
   .as-type{font-size:11px;font-weight:700;color:#3b2c70;background:#f1ecff;border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:78%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
