@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.172500
+// @version      2026.6.17.174500
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -256,8 +256,8 @@
   function card(it) {
     const src = it._new ? it._file : thumb(it.id, SETTINGS.tile > 260 ? 500 : 250);
     return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
-      ${it._new ? '<span class="as-newban">NEW</span>' : ''}
       <div class="as-thumb"><img loading="lazy" draggable="false" src="${esc(src)}" alt="">
+        ${it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
@@ -336,7 +336,18 @@
     root.querySelectorAll('.as-thumb').forEach(th => {
       th.onclick = e => { if (e.target.closest('button')) return; const it = byId(cardId(e.target)); if (!it) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
       const img = th.querySelector('img'); if (!img) return;
-      img.onerror = () => th.classList.add('na');   // thumbnail not generated yet
+      // A freshly-added cover has its original uploaded but the CAA thumbnails
+      // (250/500) aren't generated yet — so the thumb URL 404s and native MB
+      // shows a placeholder. We can do better: fall back to the full original
+      // (the same URL the lightbox uses), so the image shows in the gallery.
+      // Only show the "not on CAA" placeholder if the original 404s too. PDFs
+      // can't render as <img>, so they keep the placeholder.
+      img.onerror = () => {
+        const it = byId(cardId(img));
+        const orig = it && !it._pdf ? (it._img || imgUrl(it.id)) : null;
+        if (orig && img.getAttribute('src') !== orig) img.src = orig;
+        else th.classList.add('na');
+      };
       if (img.complete && !img.naturalWidth && img.getAttribute('src')) img.onerror();
     });
     // right-button paint-select IN PLACE — no render(), so the page never jumps.
@@ -913,7 +924,7 @@
   .as-gl-name{display:block;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#6a5b95;word-break:break-word}
   .as-gl-cnt{font-size:11px;color:#9b8fc0}
   .as-grow .as-grid{flex:1}
-  .as-card{width:var(--as-tile);background:#fff;border:1px solid #e2dcef;border-radius:9px;overflow:hidden;position:relative;transition:.1s}
+  .as-card{width:var(--as-tile);background:#fff;border:1px solid #e2dcef;border-radius:9px;overflow:visible;position:relative;transition:.1s}
   .as-card[draggable=true]{cursor:grab}
   .as-card:hover{box-shadow:0 3px 12px rgba(60,40,110,.15);border-color:#cbbdf0}
   .as-card.as-dragging{opacity:.4}
@@ -925,7 +936,7 @@
   .as-card.pending{background:#fdf3d0;border-color:#e6cf86}
   .as-pdfban{position:absolute;right:6px;top:6px;z-index:4;background:#7a3a8f;color:#fff;font:700 10px/1 Arial;letter-spacing:.5px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
-  .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9;cursor:zoom-in}
+  .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9;cursor:zoom-in;border-radius:9px 9px 0 0;overflow:hidden}
   .as-thumb img{width:100%;height:100%;object-fit:contain;display:block}
   .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#faf8ff,#efeafb)}
   .as-thumb.na img{display:none}
@@ -936,12 +947,12 @@
   .as-rm:hover{background:var(--as-warn);color:#fff}
   .as-undo{opacity:1;background:#fff;color:var(--as-acc);font-size:12px;font-weight:600}
   /* #234: footer (mockup) — row 1: comment (left) · dimensions+size (right); row 2: centered type pill on a divider */
-  .as-foot{padding:5px 8px 7px;display:flex;flex-direction:column;gap:5px;border-top:1px solid #efeaf8}
+  .as-foot{padding:5px 8px 0;display:flex;flex-direction:column;gap:6px;border-top:1px solid #efeaf8}
   .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px}
   .as-foot-cmt{flex:1 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
   .as-cmt-text{font:11px inherit;color:#5a5470;line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .as-cmt-text:hover{color:var(--as-acc)}
-  .as-foot-type{display:flex;align-items:center;gap:7px}
+  .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%)}
   .as-card.sel .as-foot-type{padding-right:20px}
   .as-tline{flex:1;height:1px;background:#e7e1f2}
   .as-type{font-size:11px;font-weight:700;color:#3b2c70;background:#f1ecff;border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:78%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
