@@ -1,4 +1,4 @@
-# Art Station
+# Art Station <img src="icon.png" align="left" width="48">
 
 A cover-art editor for MusicBrainz: one gallery to view, group, sort, reorder, retype, comment, remove, download and add a release's cover art — all staged, then applied on **Enter edit**.
 
