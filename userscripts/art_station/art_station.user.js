@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.211500
+// @version      2026.6.17.213000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -770,6 +770,15 @@
   let _z = { s: 1, x: 0, y: 0 };   // wheel-zoom state (scale + translate)
   function applyZoom(img) { img.style.transform = `translate(${_z.x}px,${_z.y}px) scale(${_z.s})`; img.style.cursor = _z.s > 1 ? 'grab' : ''; }
   function resetZoom() { _z = { s: 1, x: 0, y: 0 }; const img = document.querySelector('.as-lb-img'); if (img) applyZoom(img); }
+  // keyboard zoom (↑/↓ in the lightbox) — anchored on the image centre, same step as the wheel
+  function zoomKey(dir) {
+    const img = document.querySelector('.as-lb-img'); if (!img) return;
+    const ns = Math.min(8, Math.max(1, _z.s * (dir > 0 ? 1.2 : 1 / 1.2)));
+    if (ns === _z.s) return;
+    const r = ns / _z.s; _z.x *= r; _z.y *= r; _z.s = ns;
+    if (ns === 1) { _z.x = 0; _z.y = 0; }
+    applyZoom(img);
+  }
   const visible = () => grouped().flatMap(g => g.items);   // flat, in displayed order
   function openLightbox(id) {
     const it0 = byId(id);
@@ -925,8 +934,10 @@
     if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
     if (_lb) {
       if (e.key === 'Escape') { e.preventDefault(); closeLightbox(); }
-      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); lbNav(-1); }
-      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); lbNav(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); lbNav(-1); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); lbNav(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); zoomKey(1); }     // ↑ zoom in
+      else if (e.key === 'ArrowDown') { e.preventDefault(); zoomKey(-1); }  // ↓ zoom out
       else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePlay(); }
       return;
     }
