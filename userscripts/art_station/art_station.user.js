@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.003000
+// @version      2026.6.18.010000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -249,7 +249,7 @@
       <button class="as-btn as-add" title="Add cover art — file drop zone (goes first)">＋ Add image</button>
       <span class="as-ctl">Size <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
-      ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder works only with Sort = Position and grouping off">⚠ drag-reorder off</span>' : ''}
+      ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and grouping off">⚠</span>' : ''}
       <span class="as-sp"></span>
       <span class="as-selbox">${selBox()}</span>
       <span class="as-sp"></span>
@@ -899,6 +899,7 @@
         document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
       });
     }
+    resetZoom();   // a fresh open starts un-zoomed; ←/→ navigation keeps the zoom
     paintLightbox();
     preloadNeighbors();
     ov.style.display = 'flex';
@@ -919,7 +920,8 @@
     const it = byId(_lb); if (!it) return;
     const img = ov.querySelector('.as-lb-img');
     const src = it._new ? it._file : thumb(it.id, 1200);
-    resetZoom();   // each image starts un-zoomed
+    // NOTE: no resetZoom here — the zoom level is kept while navigating ←/→ (#234);
+    // it's reset only on a fresh open (openLightbox) and on close.
     ov.classList.remove('na');
     // hide until the NEW src has decoded — otherwise the previous image lingers
     // visibly while the 1200px loads ("original shows shortly")
@@ -940,11 +942,11 @@
   let _lbEditCmt = false;
   function paintCmtArea(ov, it) {
     const area = ov.querySelector('.as-lb-cmtarea'); if (!area) return;
-    if (it.comment || _lbEditCmt) {
-      area.innerHTML = `<input class="as-lb-cmt" placeholder="comment…" spellcheck="false">`;
+    if (_lbEditCmt) {
+      area.innerHTML = `<input class="as-lb-cmt" placeholder="comment…" spellcheck="false" list="as-cmt-presets">`;
       const inp = area.querySelector('.as-lb-cmt'); inp.value = it.comment || '';
       inp.oninput = () => { const cur = byId(_lb); if (cur) { cur.comment = inp.value; _lbDirty = true; } };
-      inp.onblur = () => { const cur = byId(_lb); if (cur && !cur.comment.trim()) { _lbEditCmt = false; paintCmtArea(ov, cur); } };
+      inp.onblur = () => { _lbEditCmt = false; paintCmtArea(ov, byId(_lb)); };
       // Enter saves and advances to the next image, keeping its comment open for editing.
       inp.onkeydown = e => {
         if (e.key === 'Escape') { e.preventDefault(); inp.blur(); return; }
@@ -954,7 +956,11 @@
         inp.onblur = null;   // we drive the transition — don't let the stale blur cancel edit mode
         lbNav(1, true);
       };
-      if (_lbEditCmt) inp.focus();
+      inp.focus();
+    } else if (it.comment) {
+      // not editing: show the comment as plain centered text (no input box), like the gallery
+      area.innerHTML = `<div class="as-lb-cmt-text" title="edit comment">${esc(it.comment)}</div>`;
+      area.querySelector('.as-lb-cmt-text').onclick = () => { _lbEditCmt = true; paintCmtArea(ov, byId(_lb)); };
     } else {
       area.innerHTML = `<button class="as-lb-cmtadd" title="add a comment">✎ comment</button>`;
       area.querySelector('.as-lb-cmtadd').onclick = () => { _lbEditCmt = true; paintCmtArea(ov, byId(_lb)); };
@@ -1183,7 +1189,7 @@
   .as-selall{color:#2a7d50}
   .as-bk-rm{border-color:#e6b8b2;color:var(--as-warn)}
   .as-view{font-weight:600}
-  .as-dragwarn{font-size:11px;color:#b06a00;background:#fff3d6;border:1px solid #ecd9a0;border-radius:6px;padding:2px 7px;white-space:nowrap}
+  .as-dragwarn{font-size:13px;color:#b06a00;background:#fff3d6;border:1px solid #ecd9a0;border-radius:6px;padding:3px 7px;line-height:1;cursor:help}
   .as-pop-note{color:#9a8ccb;font-size:11px}
   .as-pop{position:absolute;z-index:200;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}
   .as-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
@@ -1211,6 +1217,8 @@
   .as-lb-cap{color:#eee;font-size:13px;text-align:center}
   .as-lb-cmtarea{width:100%;display:flex;justify-content:center}
   .as-lb-cmt{width:100%;font:13px inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:7px;padding:7px 11px;text-align:center}
+  .as-lb-cmt-text{font:14px inherit;color:#fff;text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}
+  .as-lb-cmt-text:hover{color:#e7dffb}
   .as-lb-cmt::placeholder{color:rgba(255,255,255,.45)}
   .as-lb-cmt:focus{outline:none;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.14)}
   .as-lb-cmtadd{font:12px inherit;color:rgba(255,255,255,.6);background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:4px 13px;cursor:pointer}
