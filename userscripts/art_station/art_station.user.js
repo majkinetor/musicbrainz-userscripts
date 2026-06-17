@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.150000
+// @version      2026.6.17.160000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -43,7 +43,7 @@
 
   let MODEL = [];       // [{ id, types:[], comment, order, w, h, _del, _new, _file }]
   let SETTINGS = load();
-  function load() { try { return Object.assign({ tile: 200, group: true, sort: 'type' }, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return { tile: 200, group: true, sort: 'type' }; } }
+  function load() { try { return Object.assign({ tile: 200, group: false, sort: 'type' }, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return { tile: 200, group: false, sort: 'type' }; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
