@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16
+// @version      2026.6.17
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -328,7 +328,7 @@
       let r;
       try { r = await wsGet(`${ORIGIN}/ws/2/url?resource=${encodeURIComponent(discogsUrl)}&inc=artist-rels&fmt=json`); }
       catch (e) { await _sleep(1200); continue; }                 // network error → retry, don't cache
-      if (r.status === 404) { _discogsResolveCache.set(discogsUrl, []); return []; }   // URL not in MB → 0 owners (cacheable)
+      if (r.status === 404) { _discogsResolveCache.set(discogsUrl, []); _dput('resolve', discogsUrl, []); return []; }   // URL not in MB → 0 owners (cacheable)
       if (r.status === 429 || r.status === 503) {                 // rate limited → back off, don't cache
         const ra = parseInt(r.headers.get('retry-after') || '', 10);
         await _sleep(Math.max(1200, (ra > 0 ? ra : 1) * 1000));
@@ -338,7 +338,7 @@
       let j; try { j = await r.json(); } catch (e) { await _sleep(1200); continue; }
       const seen = new Set();
       const out = (j.relations || []).filter(rel => rel.artist && rel.artist.id).map(rel => ({ gid: rel.artist.id, name: rel.artist.name })).filter(e => !seen.has(e.gid) && seen.add(e.gid));
-      _discogsResolveCache.set(discogsUrl, out);                  // cache ONLY a successful response
+      _discogsResolveCache.set(discogsUrl, out); _dput('resolve', discogsUrl, out);   // cache ONLY a successful response
       return out;
     }
     return null;   // all retries exhausted — unknown, leave uncached so it's retried later
@@ -360,6 +360,30 @@
   // (not rate-limited). Returns an array (possibly empty) on success, or null on
   // failure. Cached per gid (#227 speed: linked artists cost no /ws/2 call).
   const _artistRelsCache = new Map();
+
+  // #231: persist the Discogs link caches across reloads/releases so the
+  // rate-limited /ws/2/url lookups (and the internal rels reads) aren't repeated
+  // on F5 or when revisiting a release. 1-day TTL (links change rarely; a fresh
+  // edit still drops the entry immediately via the #227 invalidation). Invisible
+  // (no UI), apollo-only. Stored as { resolve: {url:{v,t}}, rels: {gid:{v,t}} }.
+  const DCACHE_KEY = 'apollo:discogs-link-cache-v1';
+  const DCACHE_TTL = 24 * 60 * 60 * 1000;
+  let _dpersist = { resolve: {}, rels: {} };
+  let _dsaveTimer = null;
+  function _dsave() { if (_dsaveTimer) return; _dsaveTimer = setTimeout(() => { _dsaveTimer = null; try { localStorage.setItem(DCACHE_KEY, JSON.stringify(_dpersist)); } catch (e) {} }, 700); }
+  function _dput(kind, key, val) { _dpersist[kind][key] = { v: val, t: Date.now() }; _dsave(); }
+  function _ddrop(kind, key) { if (_dpersist[kind] && _dpersist[kind][key]) { delete _dpersist[kind][key]; _dsave(); } }
+  (function _dloadPersist() {
+    try {
+      const o = JSON.parse(localStorage.getItem(DCACHE_KEY) || 'null');
+      if (!o || typeof o !== 'object') return;
+      const now = Date.now(); let pruned = false;
+      for (const [k, e] of Object.entries(o.resolve || {})) { if (e && now - e.t < DCACHE_TTL) { _dpersist.resolve[k] = e; _discogsResolveCache.set(k, e.v); } else pruned = true; }
+      for (const [k, e] of Object.entries(o.rels || {})) { if (e && now - e.t < DCACHE_TTL) { _dpersist.rels[k] = e; _artistRelsCache.set(k, e.v); } else pruned = true; }
+      if (pruned) _dsave();   // write back without the expired entries
+    } catch (e) {}
+  })();
+
   async function artistDiscogsUrls(gid) {
     if (!gid) return [];
     if (_artistRelsCache.has(gid)) return _artistRelsCache.get(gid);
@@ -376,7 +400,7 @@
         break;
       } catch (e) { await _sleep(500); }
     }
-    if (out !== null) _artistRelsCache.set(gid, out);   // cache only a real response (a rate-limited miss stays uncached → retried)
+    if (out !== null) { _artistRelsCache.set(gid, out); _dput('rels', gid, out); }   // cache only a real response (a rate-limited miss stays uncached → retried)
     return out;
   }
   async function tagDiscogsAddable(slot, durl) {
@@ -459,8 +483,8 @@
         document.removeEventListener('visibilitychange', onReturn);
         // the artist's links changed — drop the stale caches and re-tag EVERY slot,
         // so other slots crediting the SAME artist update too (#227)
-        _artistRelsCache.delete(gid);
-        _discogsResolveCache.delete(url);
+        _artistRelsCache.delete(gid); _ddrop('rels', gid);
+        _discogsResolveCache.delete(url); _ddrop('resolve', url);
         const own = await artistDiscogsUrls(gid);
         if (own && own.some(u => discogsIdOf(u) === discogsIdOf(url))) { MODEL && MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid === gid) s._flash = true; })); toast(`added Discogs link to ${slot.name}`); }
         await tagDiscogsForAll();
