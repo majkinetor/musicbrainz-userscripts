@@ -9,6 +9,7 @@ import { mbThrottle, fetchWithRetry, fetchArtistRelTypes } from './api-mb.js';
 import { getDiscogsEntityData }            from './api-discogs.js';
 import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId } from './sources/registry.js';
 import { guessSortName }                   from './mappers.js';
+import { buildCreateNote }                 from './edit-note.js';
 import { getLogContainer, getReviewContainer } from './log.js';
 import { _hideBar }                        from './progress-bar.js';
 import { DISCOGS_CHANNEL, pageWindow }     from './constants.js';
@@ -985,6 +986,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             createParams['edit-artist.url.0.link_type_id'] = ltArtist;
                         }
                         if (disambiguation) createParams['edit-artist.comment'] = disambiguation;
+                        createParams['edit-artist.edit_note'] = buildCreateNote(discogsHref);   // proper attribution on the created entity
                         createUrl = 'https://musicbrainz.org/artist/create';
                     } else {
                         const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
@@ -996,6 +998,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             createParams[`edit-${entityType}.url.0.link_type_id`] = ltId;
                         }
                         if (disambiguation) createParams[`edit-${entityType}.comment`] = disambiguation;
+                        createParams[`edit-${entityType}.edit_note`] = buildCreateNote(discogsHref);   // proper attribution on the created entity
                         createUrl = `https://musicbrainz.org/${entityType}/create`;
                     }
                     const p = new URLSearchParams(createParams);

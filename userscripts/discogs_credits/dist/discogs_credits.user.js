@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.18
+// @version      2026.6.18.015258
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2239,6 +2239,43 @@
   var ARTIST_KIND = () => "artist";
   var COMPANY_KIND = (c) => ENTITY_TYPE_MAP[c.entity_type_name]?.entityType ?? null;
 
+  // src/edit-note.js
+  function buildEditNote(discogsUrl, opts, extraLines) {
+    const s = GM_info.script;
+    const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, "");
+    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
+    const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
+    const lines = [
+      header,
+      "",
+      "Release URL: " + mbUrl,
+      "Discogs URL: " + String(discogsUrl || "").split(/[?#]/)[0]
+    ];
+    if (opts) lines.push("Options: " + opts);
+    if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
+    return lines.join("\n");
+  }
+  function buildCreateNote(sourceUrl) {
+    const s = GM_info.script;
+    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
+    const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
+    const cleanSource = String(sourceUrl || "").split(/[?#]/)[0];
+    const sourceName = /tidal\.com/i.test(cleanSource) ? "Tidal" : /qobuz\.com/i.test(cleanSource) ? "Qobuz" : "Discogs";
+    const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, "");
+    const lines = [header, "", "Created while importing credits onto " + mbUrl];
+    if (cleanSource) lines.push("Source: " + sourceName + " \u2014 " + cleanSource);
+    return lines.join("\n");
+  }
+  function combineEditNote(existingNote, ourNote) {
+    const headerPrefix = GM_info.script.name + " v";
+    let base = String(existingNote || "");
+    const lines = base.split("\n");
+    const ourIdx = lines.findIndex((l) => l.startsWith(headerPrefix));
+    if (ourIdx !== -1) base = lines.slice(0, ourIdx).join("\n");
+    base = base.replace(/\s+$/, "");
+    return base ? base + "\n\n" + ourNote : ourNote;
+  }
+
   // src/review-table.js
   var _urlCheckSessionCache = /* @__PURE__ */ new Map();
   async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
@@ -2921,6 +2958,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
                 createParams["edit-artist.url.0.link_type_id"] = "180";
               }
               if (disambiguation) createParams["edit-artist.comment"] = disambiguation;
+              createParams["edit-artist.edit_note"] = buildCreateNote(discogsHref);
               createUrl = "https://musicbrainz.org/artist/create";
             } else {
               const ltId = entityType === "label" ? "217" : "705";
@@ -2930,6 +2968,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
                 [`edit-${entityType}.url.0.link_type_id`]: ltId
               };
               if (disambiguation) createParams[`edit-${entityType}.comment`] = disambiguation;
+              createParams[`edit-${entityType}.edit_note`] = buildCreateNote(discogsHref);
               createUrl = `https://musicbrainz.org/${entityType}/create`;
             }
             const p = new URLSearchParams(createParams);
@@ -3478,32 +3517,6 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       log.warn(`Attribute tree build failed (${e.message}) \u2014 importing without attributes`);
       return null;
     }
-  }
-
-  // src/edit-note.js
-  function buildEditNote(discogsUrl, opts, extraLines) {
-    const s = GM_info.script;
-    const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, "");
-    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
-    const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
-    const lines = [
-      header,
-      "",
-      "Release URL: " + mbUrl,
-      "Discogs URL: " + String(discogsUrl || "").split(/[?#]/)[0]
-    ];
-    if (opts) lines.push("Options: " + opts);
-    if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
-    return lines.join("\n");
-  }
-  function combineEditNote(existingNote, ourNote) {
-    const headerPrefix = GM_info.script.name + " v";
-    let base = String(existingNote || "");
-    const lines = base.split("\n");
-    const ourIdx = lines.findIndex((l) => l.startsWith(headerPrefix));
-    if (ourIdx !== -1) base = lines.slice(0, ourIdx).join("\n");
-    base = base.replace(/\s+$/, "");
-    return base ? base + "\n\n" + ourNote : ourNote;
   }
 
   // src/data/work-only-rels.js

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.18
+// @version      2026.6.18.014913
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2629,6 +2629,45 @@
   var ENTITY_KIND = (e) => e?.entityType || "artist";
   var COMPANY_KIND = (c) => ENTITY_TYPE_MAP[c.entity_type_name]?.entityType ?? null;
 
+  // src/edit-note.js
+  function buildEditNote(sourceUrl, opts, extraLines) {
+    const s = GM_info.script;
+    const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, "");
+    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md";
+    const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
+    const cleanSource = String(sourceUrl || "").split(/[?#]/)[0];
+    const sourceName = /tidal\.com/i.test(cleanSource) ? "Tidal" : /qobuz\.com/i.test(cleanSource) ? "Qobuz" : "Discogs";
+    const lines = [
+      header,
+      "",
+      "Release URL: " + mbUrl,
+      sourceName + " URL: " + cleanSource
+    ];
+    if (opts) lines.push("Options: " + opts);
+    if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
+    return lines.join("\n");
+  }
+  function buildCreateNote(sourceUrl) {
+    const s = GM_info.script;
+    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md";
+    const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
+    const cleanSource = String(sourceUrl || "").split(/[?#]/)[0];
+    const sourceName = /tidal\.com/i.test(cleanSource) ? "Tidal" : /qobuz\.com/i.test(cleanSource) ? "Qobuz" : "Discogs";
+    const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, "");
+    const lines = [header, "", "Created while importing credits onto " + mbUrl];
+    if (cleanSource) lines.push("Source: " + sourceName + " \u2014 " + cleanSource);
+    return lines.join("\n");
+  }
+  function combineEditNote(existingNote, ourNote) {
+    const headerPrefix = GM_info.script.name + " v";
+    let base = String(existingNote || "");
+    const lines = base.split("\n");
+    const ourIdx = lines.findIndex((l) => l.startsWith(headerPrefix));
+    if (ourIdx !== -1) base = lines.slice(0, ourIdx).join("\n");
+    base = base.replace(/\s+$/, "");
+    return base ? base + "\n\n" + ourNote : ourNote;
+  }
+
   // src/review-table.js
   var _urlCheckSessionCache = /* @__PURE__ */ new Map();
   async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
@@ -3316,6 +3355,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                 createParams["edit-artist.url.0.link_type_id"] = ltArtist;
               }
               if (disambiguation) createParams["edit-artist.comment"] = disambiguation;
+              createParams["edit-artist.edit_note"] = buildCreateNote(discogsHref);
               createUrl = "https://musicbrainz.org/artist/create";
             } else {
               const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
@@ -3327,6 +3367,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                 createParams[`edit-${entityType}.url.0.link_type_id`] = ltId;
               }
               if (disambiguation) createParams[`edit-${entityType}.comment`] = disambiguation;
+              createParams[`edit-${entityType}.edit_note`] = buildCreateNote(discogsHref);
               createUrl = `https://musicbrainz.org/${entityType}/create`;
             }
             const p = new URLSearchParams(createParams);
@@ -3881,34 +3922,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       log.warn(`Attribute tree build failed (${e.message}) \u2014 importing without attributes`);
       return null;
     }
-  }
-
-  // src/edit-note.js
-  function buildEditNote(sourceUrl, opts, extraLines) {
-    const s = GM_info.script;
-    const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, "");
-    const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md";
-    const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
-    const cleanSource = String(sourceUrl || "").split(/[?#]/)[0];
-    const sourceName = /tidal\.com/i.test(cleanSource) ? "Tidal" : /qobuz\.com/i.test(cleanSource) ? "Qobuz" : "Discogs";
-    const lines = [
-      header,
-      "",
-      "Release URL: " + mbUrl,
-      sourceName + " URL: " + cleanSource
-    ];
-    if (opts) lines.push("Options: " + opts);
-    if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
-    return lines.join("\n");
-  }
-  function combineEditNote(existingNote, ourNote) {
-    const headerPrefix = GM_info.script.name + " v";
-    let base = String(existingNote || "");
-    const lines = base.split("\n");
-    const ourIdx = lines.findIndex((l) => l.startsWith(headerPrefix));
-    if (ourIdx !== -1) base = lines.slice(0, ourIdx).join("\n");
-    base = base.replace(/\s+$/, "");
-    return base ? base + "\n\n" + ourNote : ourNote;
   }
 
   // src/data/work-only-rels.js

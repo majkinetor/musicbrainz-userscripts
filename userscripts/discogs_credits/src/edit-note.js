@@ -38,6 +38,26 @@ export function buildEditNote(discogsUrl, opts, extraLines) {
 }
 
 /**
+ * Edit note for a NEW entity (artist / label / place …) the script creates from
+ * a source credit during an import. Same attribution header as `buildEditNote`,
+ * plus the source URL the entity came from and the release it was imported onto,
+ * so the auto-created entity carries a proper, traceable note.
+ */
+export function buildCreateNote(sourceUrl) {
+    const s = GM_info.script;
+    const homepage = s.homepageURL || s.homepage || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md';
+    const header = s.name + ' v' + s.version + ' by ' + s.author + ' - ' + homepage;
+    const cleanSource = String(sourceUrl || '').split(/[?#]/)[0];
+    const sourceName = /tidal\.com/i.test(cleanSource) ? 'Tidal'
+                     : /qobuz\.com/i.test(cleanSource) ? 'Qobuz'
+                     : 'Discogs';
+    const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, '');
+    const lines = [header, '', 'Created while importing credits onto ' + mbUrl];
+    if (cleanSource) lines.push('Source: ' + sourceName + ' — ' + cleanSource);
+    return lines.join('\n');
+}
+
+/**
  * Merge our edit note onto whatever is already in the edit-note field instead
  * of clobbering it — other scripts (Harmony seeder, Seed-URLs, …) set their own
  * note first and we were overwriting it (issue #174). Our block is APPENDED
