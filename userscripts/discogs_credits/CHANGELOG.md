@@ -1,5 +1,11 @@
 # Import Discogs Credits Changelog
 
+## [2026.6.18](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.18)
+
+### Fixes
+
+1. Works created without name ([#232](https://github.com/majkinetor/musicbrainz-userscripts/issues/232))
+
 ## [2026.6.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.16)
 
 ### Fixes

@@ -1,5 +1,15 @@
 # Credit Hoarder Changelog
 
+## [2026.6.18](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.18)
+
+### Features
+
+1. Import Discogs credits of audio plays ([#233](https://github.com/majkinetor/musicbrainz-userscripts/issues/233))
+
+### Fixes
+
+1. Works created without name ([#232](https://github.com/majkinetor/musicbrainz-userscripts/issues/232))
+
 ## [2026.6.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.16)
 
 ### Features

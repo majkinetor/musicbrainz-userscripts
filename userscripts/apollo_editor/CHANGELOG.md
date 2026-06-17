@@ -1,5 +1,11 @@
 # Apollo Editor Changelog
 
+## [2026.6.18](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.18)
+
+### Features
+
+1. Discogs link caching ([#231](https://github.com/majkinetor/musicbrainz-userscripts/issues/231))
+
 ## [2026.6.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.16)
 
 ### Features
