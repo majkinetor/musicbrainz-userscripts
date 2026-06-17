@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.220000
+// @version      2026.6.18.003000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -174,6 +174,9 @@
     _native.forEach(el => { el.style.display = _showOrig ? '' : 'none'; });
     root.classList.toggle('as-orig', _showOrig);
   }
+  // at big tile sizes the selection outline alone is plenty obvious, so drop the
+  // per-card ✓ badge — keeps large artwork uncluttered. #234
+  function applyZoomClass() { root.classList.toggle('as-zoomed', SETTINGS.tile >= 280); }
 
   function render() {
     mount();
@@ -190,7 +193,21 @@
     root.innerHTML = bar(n) + commentPresets() + dropZone() + newSection() + body + deletedSection();
     wire();
     applyOriginal();   // keep the native/script view state across re-renders
+    applyZoomClass();
+    fitTypePills();    // show as many types as the pill width allows
     if (window.scrollY !== y) window.scrollTo(0, y);
+  }
+  // #234: a grid card's type pill shows as many of its types as fit on one line;
+  // a trailing "+" appears only when some types are hidden for lack of space.
+  function fitTypePills() {
+    root.querySelectorAll('.as-foot-type .as-type').forEach(pill => {
+      if (pill.classList.contains('as-type-add')) return;   // untyped placeholder
+      const it = byId(cardId(pill)); if (!it || !it.types.length) return;
+      const types = it.types;
+      pill.textContent = types.join(', ');
+      let n = types.length;
+      while (n > 1 && pill.scrollWidth > pill.clientWidth) { n--; pill.textContent = types.slice(0, n).join(', ') + ' +'; }
+    });
   }
   // shared autocomplete of the comments already used on this release (#238 presets)
   function commentPresets() {
@@ -300,8 +317,9 @@
   // more). Empty comment → a hover-only ✎; untyped → a faint ＋ pill.
   function foot(it) {
     const firstType = it.types[0] || '';
+    // seed with the full list; fitTypePills() trims to what fits and adds "+" if needed
     const typePill = firstType
-      ? `<span class="as-type" title="${esc(it.types.join(', '))}">${esc(firstType)}${it.types.length > 1 ? '+' : ''}</span>`
+      ? `<span class="as-type" title="${esc(it.types.join(', '))}">${esc(it.types.join(', '))}</span>`
       : `<span class="as-type as-type-add" title="set type">＋ type</span>`;
     const typeRow = `<div class="as-foot-type"><span class="as-tline"></span>${typePill}<span class="as-tline"></span></div>`;
     const dim = `<span class="as-dim">${esc(dimText(it))}</span>`;
@@ -323,14 +341,15 @@
     const src = it._new ? it._file : thumb(it.id, 250);
     const types = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
     return `<div class="as-drow${it._new ? ' new' : ''}${it._pending ? ' pending' : ''}${it._sel ? ' sel' : ''}" data-id="${esc(it.id)}">
+      <input type="checkbox" class="as-dsel" title="select"${it._sel ? ' checked' : ''}>
       <div class="as-dleft">
         <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}<img loading="lazy" draggable="false" src="${esc(src)}" alt="">${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
-        <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span>${it._new ? '' : ` <span class="as-cm-id">#${esc(it.id)}</span>`}</div>
+        <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span></div>
+        ${it._new ? '' : `<div class="as-did">#${esc(it.id)}</div>`}
       </div>
       <div class="as-dmeta">
         <div class="as-dlbl">Types</div>
         <div class="as-dtypes">${types}</div>
-        <div class="as-dlbl">Comment</div>
         <input class="as-dcmt" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets" spellcheck="false">
       </div>
     </div>`;
@@ -390,11 +409,15 @@
       });
       const cmt = row.querySelector('.as-dcmt');
       if (cmt) cmt.oninput = () => { it.comment = cmt.value; refreshStaged(); };
+      // selection: the checkbox is the certain indicator; right-click also paints
+      const sel = row.querySelector('.as-dsel');
+      if (sel) sel.onchange = () => { it._sel = sel.checked; row.classList.toggle('sel', it._sel); syncSel(); };
+      row.onmousedown = e => { if (e.button !== 2) return; e.preventDefault(); _paint = { value: !it._sel }; paintCard(row); };
     });
   }
 
   function wire() {
-    root.querySelector('.as-size').oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); };
+    root.querySelector('.as-size').oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); };
     root.querySelector('.as-size').onchange = () => { save(); render(); };
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     root.querySelector('.as-add').onclick = toggleDropZone;
@@ -448,8 +471,8 @@
   }
   function wireSel() {
     const q = s => root.querySelector(s);
-    q('.as-selall') && (q('.as-selall').onclick = () => { selectable().forEach(it => it._sel = true); root.querySelectorAll('.as-card:not(.del)').forEach(c => c.classList.add('sel')); syncSel(); });
-    q('.as-selclr') && (q('.as-selclr').onclick = () => { MODEL.forEach(it => it._sel = false); root.querySelectorAll('.as-card.sel').forEach(c => c.classList.remove('sel')); syncSel(); });
+    q('.as-selall') && (q('.as-selall').onclick = () => { selectable().forEach(it => it._sel = true); root.querySelectorAll('.as-card:not(.del), .as-drow').forEach(c => c.classList.add('sel')); root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = true); syncSel(); });
+    q('.as-selclr') && (q('.as-selclr').onclick = () => { MODEL.forEach(it => it._sel = false); root.querySelectorAll('.as-card.sel, .as-drow.sel').forEach(c => c.classList.remove('sel')); root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = false); syncSel(); });
     q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; } }); render(); });
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = () => MODEL.filter(it => it._sel && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 350)));
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
@@ -460,11 +483,13 @@
   function paintCard(c) {
     if (!c || !_paint || c.classList.contains('del')) return;
     const it = byId(c.dataset.id); if (!it || it._sel === _paint.value) return;
-    it._sel = _paint.value; c.classList.toggle('sel', it._sel); syncSel();
+    it._sel = _paint.value; c.classList.toggle('sel', it._sel);
+    const cb = c.querySelector('.as-dsel'); if (cb) cb.checked = it._sel;   // keep the row checkbox in sync
+    syncSel();
   }
   document.addEventListener('mousemove', e => {
     if (!_paint || !e.buttons) return;   // e.buttons falls to 0 if the button was released off-window
-    const c = e.target.closest && e.target.closest('.as-card');
+    const c = e.target.closest && e.target.closest('.as-card, .as-drow');
     if (c && root.contains(c)) paintCard(c);
   });
   document.addEventListener('mouseup', () => { _paint = null; });
@@ -1078,13 +1103,15 @@
   .as-drow{display:flex;gap:16px;align-items:flex-start;border:1px solid #e2dcef;border-radius:9px;padding:10px 12px;background:#fff;position:relative}
   .as-drow.new{background:repeating-linear-gradient(45deg,#eef7f1,#eef7f1 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:#9bd3b6;border-style:dashed}
   .as-drow.pending{background:#fdf3d0;border-color:#e6cf86}
-  .as-drow.sel{outline:3px solid var(--as-acc);outline-offset:-1px}
+  .as-drow.sel{outline:2px solid var(--as-acc);outline-offset:-1px;background:#f1ecff;box-shadow:inset 4px 0 0 var(--as-acc)}
+  .as-dsel{flex:0 0 auto;width:18px;height:18px;margin:4px 2px 0 2px;accent-color:var(--as-acc);cursor:pointer}
   .as-dleft{flex:0 0 auto;width:128px;text-align:center}
   .as-dthumb{position:relative;width:128px;height:128px;border-radius:7px;overflow:hidden;background:#f4f2f9;cursor:zoom-in;display:block}
   .as-dthumb img{width:100%;height:100%;object-fit:contain;display:block}
   .as-dthumb.na img{display:none}
   .as-dthumb.na::after{content:'not on CAA yet';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9a8ccb;font-size:11px;font-weight:600;text-align:center;padding:0 8px}
   .as-dcap{font-size:11px;font-weight:600;color:#6b5fa0;margin-top:5px;white-space:nowrap}
+  .as-did{font-size:11px;color:#a99fc4;font-variant-numeric:tabular-nums;word-break:break-all;line-height:1.3;margin-top:1px}
   .as-dmeta{flex:1 1 auto;min-width:0}
   .as-dlbl{font-weight:700;color:#6a5b95;font-size:12px;margin:0 0 4px}
   .as-dtypes{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:3px 12px;margin:0 0 10px}
@@ -1130,7 +1157,7 @@
   .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
   .as-card.sel .as-foot-type{padding-right:20px}
   .as-tline{flex:1;height:1px;background:#e7e1f2}
-  .as-type{font-size:11px;font-weight:700;color:#3b2c70;background:#f1ecff;border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:78%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .as-type{font-size:11px;font-weight:700;color:#3b2c70;background:#f1ecff;border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .as-type:hover{background:#e7dffb}
   .as-type-add{color:#8a7fb8;background:#fff;border-style:dashed;font-weight:600;opacity:.5}
   .as-card:hover .as-type-add{opacity:1}
@@ -1142,6 +1169,7 @@
   .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
   .as-selmark{position:absolute;right:7px;bottom:7px;width:21px;height:21px;line-height:21px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:12px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:6;display:none}
   .as-card.sel .as-selmark{display:block}
+  #as-root.as-zoomed .as-card.sel .as-selmark{display:none}   /* big tiles: outline alone shows selection */
   .as-card.sel .as-cmt{padding-right:28px}
   .as-card.as-cursor{box-shadow:0 0 0 2px #2a6,0 3px 14px rgba(40,160,100,.28)}
   /* bulk bar */
