@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.17.160359
+// @version      2026.6.17.163408
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -1952,12 +1952,15 @@
         return null;
       }
       if (Array.isArray(mapping.attributes)) {
-        additionalAttributes = additionalAttributes.concat(mapping.attributes);
+        let mapped = mapping.attributes;
+        if (creditedAs && mapping.linkType === "vocal") {
+          mapped = mapped.map((a) => a && a._type === "vocal" ? Object.assign({}, a, { creditedAs }) : a);
+        }
+        additionalAttributes = additionalAttributes.concat(mapped);
       }
       return Object.assign({}, mapping, {
         artist,
-        attributes: additionalAttributes,
-        creditedAs
+        attributes: additionalAttributes
       });
     }).filter((resolvedRole) => {
       return !!resolvedRole;
@@ -3850,6 +3853,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     for (const attr of rawAttributes) {
       let attrName = null;
       let textValue = "";
+      let creditedAs = "";
       if (typeof attr === "string") {
         attrName = attr;
       } else if (attr && typeof attr === "object" && attr._type) {
@@ -3859,6 +3863,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         } else {
           attrName = attr.value;
         }
+        if (attr.creditedAs) creditedAs = attr.creditedAs;
       } else if (typeof attr === "function") {
         attrName = extractFnValue(attr);
       }
@@ -3866,7 +3871,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const found = findAttrByName(attrName);
       if (!found || seen.has(found.id)) continue;
       seen.add(found.id);
-      attrObjs.push({ type: found, typeID: found.id, credited_as: "", text_value: textValue });
+      attrObjs.push({ type: found, typeID: found.id, credited_as: creditedAs, text_value: textValue });
     }
     if (attrObjs.length === 0) return null;
     attrObjs.sort((a, b) => a.typeID - b.typeID);
@@ -4172,12 +4177,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const rels = sourceEntity?.relationships;
       if (!Array.isArray(rels) || rels.length === 0) return null;
       const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || /* @__PURE__ */ new Set([linkTypeID]);
-      const sigOf = (attrs) => attrs.map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
-      const idSigOf = (attrs) => attrs.filter((a) => isIdentifyingAttr(a.typeID)).map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
+      const sigOf = (attrs) => attrs.map((a) => `${a.typeID}:${a.text_value || ""}:${a.credited_as || ""}`).sort().join(",");
+      const idSigOf = (attrs) => attrs.filter((a) => isIdentifyingAttr(a.typeID)).map((a) => `${a.typeID}:${a.text_value || ""}:${a.credited_as || ""}`).sort().join(",");
       const candAttrs = (() => {
         if (!attrTree) return [];
         try {
-          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => ({ typeID: a.typeID, text_value: a.text_value || "" }));
+          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => ({ typeID: a.typeID, text_value: a.text_value || "", credited_as: a.credited_as || "" }));
         } catch (e) {
           return [];
         }
@@ -4197,7 +4202,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
         if (tgt !== targetGid) continue;
         const isEquivalent = r.linkTypeID !== linkTypeID;
-        const existingAttrs = (r.attributes || []).map((a) => ({ typeID: a.typeID, text_value: a.text_value || "" }));
+        const existingAttrs = (r.attributes || []).map((a) => ({ typeID: a.typeID, text_value: a.text_value || "", credited_as: a.credited_as || "" }));
         const exactMatch = sigOf(existingAttrs) === candSig;
         if (exactMatch) {
           return { kind: isEquivalent ? "equivalence" : "exact", existingLinkName: lookupName(r.linkTypeID) };
@@ -4208,14 +4213,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       }
       return dupMatch;
     }
-    async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos, forceCredit) {
-      if (forceCredit) {
-        credit = forceCredit;
-      } else {
-        const overrideCredit = creditOverrides.get(mbUrl);
-        if (overrideCredit && String(overrideCredit).trim()) {
-          credit = String(overrideCredit).trim();
-        }
+    async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos) {
+      const overrideCredit = creditOverrides.get(mbUrl);
+      if (overrideCredit && String(overrideCredit).trim()) {
+        credit = String(overrideCredit).trim();
       }
       const mbid = mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
       if (!mbid) {
@@ -4231,12 +4232,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const attrTree = buildAttributes(rawAttributes);
       const attrSig = attrTree ? (() => {
         try {
-          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => a.typeID || "").join(",");
+          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => (a.typeID || "") + (a.credited_as ? "~" + a.credited_as : "")).join(",");
         } catch (e) {
           return "";
         }
       })() : "";
-      const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}|${credit || ""}`;
+      const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}`;
       if (dispatchedThisSession.has(sessionKey)) {
         log.info(`Skipped duplicate dispatch of <strong>${linkTypeName}</strong>: ${sourceEntity.name} \u2194 ${credit || ""} \u2014 already queued earlier this run`);
         dedupedThisSession++;
@@ -4332,7 +4333,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           continue;
         }
         const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
-        await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit, void 0, role.creditedAs);
+        await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit);
         tickProgress();
       }
     }
@@ -4349,7 +4350,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             }
             const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
             for (const recEntity of recordingByGid.values()) {
-              await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*", role.creditedAs);
+              await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*");
             }
           }
         }
@@ -4522,7 +4523,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         if (seenTrackRels.has(trackRelKey)) continue;
         seenTrackRels.add(trackRelKey);
         log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> \u2014 ${credit}`);
-        await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, role.track.position, role.creditedAs);
+        await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
         tickProgress();
       }
     }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.17.160439
+// @version      2026.6.17.163431
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -1922,12 +1922,15 @@
         return null;
       }
       if (Array.isArray(mapping.attributes)) {
-        additionalAttributes = additionalAttributes.concat(mapping.attributes);
+        let mapped = mapping.attributes;
+        if (creditedAs && mapping.linkType === "vocal") {
+          mapped = mapped.map((a) => a && a._type === "vocal" ? Object.assign({}, a, { creditedAs }) : a);
+        }
+        additionalAttributes = additionalAttributes.concat(mapped);
       }
       return Object.assign({}, mapping, {
         artist,
-        attributes: additionalAttributes,
-        creditedAs
+        attributes: additionalAttributes
       });
     }).filter((resolvedRole) => {
       return !!resolvedRole;
@@ -3447,6 +3450,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     for (const attr of rawAttributes) {
       let attrName = null;
       let textValue = "";
+      let creditedAs = "";
       if (typeof attr === "string") {
         attrName = attr;
       } else if (attr && typeof attr === "object" && attr._type) {
@@ -3456,6 +3460,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         } else {
           attrName = attr.value;
         }
+        if (attr.creditedAs) creditedAs = attr.creditedAs;
       } else if (typeof attr === "function") {
         attrName = extractFnValue(attr);
       }
@@ -3463,7 +3468,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const found = findAttrByName(attrName);
       if (!found || seen.has(found.id)) continue;
       seen.add(found.id);
-      attrObjs.push({ type: found, typeID: found.id, credited_as: "", text_value: textValue });
+      attrObjs.push({ type: found, typeID: found.id, credited_as: creditedAs, text_value: textValue });
     }
     if (attrObjs.length === 0) return null;
     attrObjs.sort((a, b) => a.typeID - b.typeID);
@@ -3763,12 +3768,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const rels = sourceEntity?.relationships;
       if (!Array.isArray(rels) || rels.length === 0) return null;
       const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || /* @__PURE__ */ new Set([linkTypeID]);
-      const sigOf = (attrs) => attrs.map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
-      const idSigOf = (attrs) => attrs.filter((a) => isIdentifyingAttr(a.typeID)).map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
+      const sigOf = (attrs) => attrs.map((a) => `${a.typeID}:${a.text_value || ""}:${a.credited_as || ""}`).sort().join(",");
+      const idSigOf = (attrs) => attrs.filter((a) => isIdentifyingAttr(a.typeID)).map((a) => `${a.typeID}:${a.text_value || ""}:${a.credited_as || ""}`).sort().join(",");
       const candAttrs = (() => {
         if (!attrTree) return [];
         try {
-          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => ({ typeID: a.typeID, text_value: a.text_value || "" }));
+          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => ({ typeID: a.typeID, text_value: a.text_value || "", credited_as: a.credited_as || "" }));
         } catch (e) {
           return [];
         }
@@ -3788,7 +3793,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
         if (tgt !== targetGid) continue;
         const isEquivalent = r.linkTypeID !== linkTypeID;
-        const existingAttrs = (r.attributes || []).map((a) => ({ typeID: a.typeID, text_value: a.text_value || "" }));
+        const existingAttrs = (r.attributes || []).map((a) => ({ typeID: a.typeID, text_value: a.text_value || "", credited_as: a.credited_as || "" }));
         const exactMatch = sigOf(existingAttrs) === candSig;
         if (exactMatch) {
           return { kind: isEquivalent ? "equivalence" : "exact", existingLinkName: lookupName(r.linkTypeID) };
@@ -3799,14 +3804,10 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       }
       return dupMatch;
     }
-    async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos, forceCredit) {
-      if (forceCredit) {
-        credit = forceCredit;
-      } else {
-        const overrideCredit = creditOverrides.get(mbUrl);
-        if (overrideCredit && String(overrideCredit).trim()) {
-          credit = String(overrideCredit).trim();
-        }
+    async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos) {
+      const overrideCredit = creditOverrides.get(mbUrl);
+      if (overrideCredit && String(overrideCredit).trim()) {
+        credit = String(overrideCredit).trim();
       }
       const mbid = mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
       if (!mbid) {
@@ -3822,12 +3823,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const attrTree = buildAttributes(rawAttributes);
       const attrSig = attrTree ? (() => {
         try {
-          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => a.typeID || "").join(",");
+          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => (a.typeID || "") + (a.credited_as ? "~" + a.credited_as : "")).join(",");
         } catch (e) {
           return "";
         }
       })() : "";
-      const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}|${credit || ""}`;
+      const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}`;
       if (dispatchedThisSession.has(sessionKey)) {
         log.info(`Skipped duplicate dispatch of <strong>${linkTypeName}</strong>: ${sourceEntity.name} \u2194 ${credit || ""} \u2014 already queued earlier this run`);
         dedupedThisSession++;
@@ -3923,7 +3924,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           continue;
         }
         const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
-        await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit, void 0, role.creditedAs);
+        await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit);
         tickProgress();
       }
     }
@@ -3940,7 +3941,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             }
             const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
             for (const recEntity of recordingByGid.values()) {
-              await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*", role.creditedAs);
+              await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*");
             }
           }
         }
@@ -4112,7 +4113,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         if (seenTrackRels.has(trackRelKey)) continue;
         seenTrackRels.add(trackRelKey);
         log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> \u2014 ${credit}`);
-        await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, role.track.position, role.creditedAs);
+        await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
         tickProgress();
       }
     }

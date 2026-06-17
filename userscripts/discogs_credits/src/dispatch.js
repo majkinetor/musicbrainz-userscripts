@@ -387,16 +387,19 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         // Equivalence-set expansion: when ON, a writer rel counts as
         // existing for an incoming composer dispatch (and vice versa).
         const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || new Set([linkTypeID]);
-        const sigOf   = (attrs) => attrs.map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
+        // #233: include each attribute's credited-as — a vocal credited
+        // "spoken vocals [Michal]" is a different role from "[Tonda]", so one
+        // actor voicing several characters keeps every rel (no false dedup).
+        const sigOf   = (attrs) => attrs.map(a => `${a.typeID}:${a.text_value || ''}:${a.credited_as || ''}`).sort().join(',');
         // #225: signature of only the instrument/vocal-identifying attributes —
         // what makes two performances the "same role". Modifiers are excluded.
         const idSigOf = (attrs) => attrs.filter(a => isIdentifyingAttr(a.typeID))
-            .map(a => `${a.typeID}:${a.text_value || ''}`).sort().join(',');
+            .map(a => `${a.typeID}:${a.text_value || ''}:${a.credited_as || ''}`).sort().join(',');
         const candAttrs = (() => {
             if (!attrTree) return [];
             try {
                 return [...pageWindow.MB.tree.iterate(attrTree)]
-                    .map(a => ({ typeID: a.typeID, text_value: a.text_value || '' }));
+                    .map(a => ({ typeID: a.typeID, text_value: a.text_value || '', credited_as: a.credited_as || '' }));
             } catch (e) { return []; }
         })();
         const candSig   = sigOf(candAttrs);
@@ -413,7 +416,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
             if (tgt !== targetGid) continue;
             const isEquivalent = (r.linkTypeID !== linkTypeID);
-            const existingAttrs = (r.attributes || []).map(a => ({ typeID: a.typeID, text_value: a.text_value || '' }));
+            const existingAttrs = (r.attributes || []).map(a => ({ typeID: a.typeID, text_value: a.text_value || '', credited_as: a.credited_as || '' }));
             const exactMatch = (sigOf(existingAttrs) === candSig);
             if (exactMatch) {
                 return { kind: isEquivalent ? 'equivalence' : 'exact', existingLinkName: lookupName(r.linkTypeID) };
@@ -430,22 +433,15 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     }
 
     // ── Helper: process one relationship ─────────────────────────────────────
-    async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos, forceCredit) {
-        // #233: a per-relationship credit (e.g. a Voice Actor's character) is
-        // intrinsic to THIS rel — it must not be replaced by the per-entity
-        // "Credited as" override, and unlike that override it differs per rel.
-        if (forceCredit) {
-            credit = forceCredit;
-        } else {
-            // Credited-as override (issue #62): when the user edited the
-            // "Credited as" input on this entity's review-table row, that
-            // value wins over the Discogs-side credit for every rel
-            // dispatched to this target. Empty/missing override falls
-            // through to the caller's credit (typically Discogs ANV).
-            const overrideCredit = creditOverrides.get(mbUrl);
-            if (overrideCredit && String(overrideCredit).trim()) {
-                credit = String(overrideCredit).trim();
-            }
+    async function processOne(sourceEntity, entityType0, entityType1, linkTypeName, mbUrl, rawAttributes, credit, trackPos) {
+        // Credited-as override (issue #62): when the user edited the
+        // "Credited as" input on this entity's review-table row, that
+        // value wins over the Discogs-side credit for every rel
+        // dispatched to this target. Empty/missing override falls
+        // through to the caller's credit (typically Discogs ANV).
+        const overrideCredit = creditOverrides.get(mbUrl);
+        if (overrideCredit && String(overrideCredit).trim()) {
+            credit = String(overrideCredit).trim();
         }
         const mbid = mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
         if (!mbid) { log.error(`Bad MBID URL: ${mbUrl}`); failed++; return; }
@@ -458,10 +454,11 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         }
 
         const attrTree = buildAttributes(rawAttributes);
-        const attrSig = attrTree ? (() => { try { return [...pageWindow.MB.tree.iterate(attrTree)].map(a => a.typeID || '').join(','); } catch(e) { return ''; } })() : '';
-        // #233: include the credit so two rels that differ only by credited-as
-        // (e.g. one Voice Actor voicing several characters) aren't deduped away.
-        const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}|${credit || ''}`;
+        // #233: fold each attribute's credited-as into the signature so two
+        // spoken-vocals rels that differ only by character ("spoken vocals
+        // [Michal]" vs "[Tonda]") aren't collapsed by the session dedup.
+        const attrSig = attrTree ? (() => { try { return [...pageWindow.MB.tree.iterate(attrTree)].map(a => (a.typeID || '') + (a.credited_as ? '~' + a.credited_as : '')).join(','); } catch(e) { return ''; } })() : '';
+        const sessionKey = `${sourceEntity.gid}|${linkTypeID}|${mbid}|${attrSig}`;
         // Within-session dedup: same (source, linkType, target, attrs) tuple
         // gets visited multiple times if a Discogs credit appears at both
         // release and track level. Tracked separately from "existed in MB"
@@ -592,7 +589,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 skipped++; tickProgress(); continue;
             }
             const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
-            await processOne(releaseEntity, 'artist', 'release', role.linkType, mbUrl, role.attributes || [], credit, undefined, role.creditedAs);
+            await processOne(releaseEntity, 'artist', 'release', role.linkType, mbUrl, role.attributes || [], credit);
             tickProgress();
         }
     }
@@ -612,7 +609,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                     }
                     const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
                     for (const recEntity of recordingByGid.values()) {
-                        await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || '*', role.creditedAs);
+                        await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || '*');
                     }
                 }
             }
@@ -838,7 +835,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             if (seenTrackRels.has(trackRelKey)) continue;
             seenTrackRels.add(trackRelKey);
             log.info(`Track ${role.track.position} "${role.track.title}": adding <strong>${role.linkType}</strong> — ${credit}`);
-            await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, role.track.position, role.creditedAs);
+            await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, role.track.position);
             tickProgress();
         }
     }
