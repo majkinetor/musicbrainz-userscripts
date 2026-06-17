@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.140000
+// @version      2026.6.17.150000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -238,29 +238,38 @@
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
-      ${it._del ? '' : `<div class="as-meta">${(it.comment || it._editcmt)
-          ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…">`
-          : `<button class="as-pencil" title="add a comment">✎</button>`}</div>`}
+      ${it._del ? '' : `<div class="as-meta">${metaInner(it)}</div>`}
       <span class="as-selmark">✓</span>
     </div>`;
+  }
+  // comment row: input while editing, centered text when set, pencil when empty
+  function metaInner(it) {
+    return it._editcmt
+      ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…">`
+      : (it.comment
+          ? `<div class="as-cmt-text" title="edit comment">${esc(it.comment)}</div>`
+          : `<button class="as-pencil" title="add a comment">✎</button>`);
   }
 
   // ── interaction ───────────────────────────────────────────────────────────────
   function byId(id) { return MODEL.find(it => String(it.id) === String(id)); }
   function cardId(el) { const c = el.closest('.as-card'); return c ? c.dataset.id : null; }
 
-  function wirePencil(btn) {
-    if (!btn) return;
-    btn.onclick = e => {
-      e.stopPropagation(); const it = byId(cardId(e.target)); if (!it) return;
-      it._editcmt = true;
-      // swap just THIS card's comment row in place — a full render() jumps the page
-      const meta = btn.closest('.as-meta');
-      meta.innerHTML = `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…">`;
-      const inp = meta.querySelector('.as-cmt');
-      inp.oninput = () => { it.comment = inp.value; refreshStaged(); };
-      inp.onblur = () => { if (!it.comment.trim()) { it._editcmt = false; meta.innerHTML = `<button class="as-pencil" title="add a comment">✎</button>`; wirePencil(meta.querySelector('.as-pencil')); } };
-      inp.focus();
+  // Wire one comment row. Swaps in place (no full render → no page jump):
+  // input while editing, centered text when set, pencil when empty.
+  function wireMeta(meta) {
+    if (!meta) return;
+    const inp = meta.querySelector('.as-cmt');
+    if (inp) {
+      inp.oninput = () => { const it = byId(cardId(inp)); if (it) { it.comment = inp.value; refreshStaged(); } };
+      inp.onblur = () => { const it = byId(cardId(inp)); if (it) { it._editcmt = false; meta.innerHTML = metaInner(it); wireMeta(meta); } };
+      return;
+    }
+    const ed = meta.querySelector('.as-cmt-text, .as-pencil');
+    if (ed) ed.onclick = e => {
+      e.stopPropagation(); const it = byId(cardId(ed)); if (!it) return;
+      it._editcmt = true; meta.innerHTML = metaInner(it); wireMeta(meta);
+      meta.querySelector('.as-cmt')?.focus();
     };
   }
 
@@ -275,11 +284,7 @@
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
-    root.querySelectorAll('.as-cmt').forEach(inp => {
-      inp.oninput = e => { const it = byId(cardId(e.target)); if (it) { it.comment = e.target.value; refreshStaged(); } };
-      inp.onblur = e => { const it = byId(cardId(e.target)); if (it && !it.comment.trim()) { it._editcmt = false; render(); } };
-    });
-    root.querySelectorAll('.as-pencil').forEach(wirePencil);
+    root.querySelectorAll('.as-meta').forEach(wireMeta);
 
     const dz = root.querySelector('.as-dropzone');
     if (dz) {
@@ -588,13 +593,12 @@
     const ov = document.createElement('div'); ov.id = 'as-commit';
     ov.innerHTML = `<div class="as-cm-box">
       <div class="as-cm-h">Apply ${plan.length} change${plan.length===1?'':'s'} as MusicBrainz edits</div>
-      <label class="as-cm-row">Edit note <span class="as-cm-hint">("Art Station" is appended automatically)</span><textarea class="as-cm-note" rows="2" placeholder="optional note shown on each edit"></textarea></label>
+      <label class="as-cm-row">Edit note<textarea class="as-cm-note" rows="2" placeholder="optional note shown on each edit"></textarea></label>
       <div class="as-cm-row as-cm-opts">
         <label><input type="checkbox" class="as-cm-vote"> Make all votable</label>
-        <label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun" checked> Dry run — show the requests, don't submit</label>
       </div>
       <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<div class="as-cm-payload"></div></div>`).join('')}</div>
-      <div class="as-cm-f"><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
+      <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
       <div class="as-cm-note2">New images upload to the Cover Art Archive, then register on MusicBrainz. Dry run shows every request first.</div>
     </div>`;
     document.body.appendChild(ov);
@@ -661,6 +665,9 @@
 
   // ── lightbox (#230: click image → popup, ←→↑↓ navigate) ───────────────────────
   let _lb = null;          // current lightbox image id
+  let _z = { s: 1, x: 0, y: 0 };   // wheel-zoom state (scale + translate)
+  function applyZoom(img) { img.style.transform = `translate(${_z.x}px,${_z.y}px) scale(${_z.s})`; img.style.cursor = _z.s > 1 ? 'grab' : ''; }
+  function resetZoom() { _z = { s: 1, x: 0, y: 0 }; const img = document.querySelector('.as-lb-img'); if (img) applyZoom(img); }
   const visible = () => grouped().flatMap(g => g.items);   // flat, in displayed order
   function openLightbox(id) {
     const it0 = byId(id);
@@ -681,6 +688,26 @@
       ov.querySelector('.as-lb-prev').onclick = e => { e.stopPropagation(); lbNav(-1); };
       ov.querySelector('.as-lb-next').onclick = e => { e.stopPropagation(); lbNav(1); };
       ov.onclick = e => { if (e.target === ov) closeLightbox(); };
+      // wheel zooms the image toward the cursor (instead of scrolling the page behind)
+      ov.addEventListener('wheel', e => {
+        e.preventDefault();
+        const img = ov.querySelector('.as-lb-img'); const r = img.getBoundingClientRect();
+        const cx = r.left + r.width / 2 - _z.x, cy = r.top + r.height / 2 - _z.y;   // untransformed centre
+        const relx = e.clientX - cx, rely = e.clientY - cy;
+        const ns = Math.min(8, Math.max(1, _z.s * (e.deltaY < 0 ? 1.2 : 1 / 1.2)));
+        if (ns === _z.s) return;
+        _z.x = relx - ns * (relx - _z.x) / _z.s; _z.y = rely - ns * (rely - _z.y) / _z.s; _z.s = ns;
+        if (ns === 1) { _z.x = 0; _z.y = 0; }
+        applyZoom(img);
+      }, { passive: false });
+      // drag to pan when zoomed
+      ov.querySelector('.as-lb-img').addEventListener('mousedown', e => {
+        if (_z.s <= 1) return; e.preventDefault();
+        const sx = e.clientX, sy = e.clientY, ox = _z.x, oy = _z.y, img = e.currentTarget;
+        const mv = ev => { _z.x = ox + (ev.clientX - sx); _z.y = oy + (ev.clientY - sy); applyZoom(img); };
+        const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+        document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+      });
     }
     paintLightbox();
     preloadNeighbors();
@@ -702,6 +729,7 @@
     const it = byId(_lb); if (!it) return;
     const img = ov.querySelector('.as-lb-img');
     const src = it._new ? it._file : thumb(it.id, 1200);
+    resetZoom();   // each image starts un-zoomed
     ov.classList.remove('na');
     // hide until the NEW src has decoded — otherwise the previous image lingers
     // visibly while the 1200px loads ("original shows shortly")
@@ -735,7 +763,7 @@
   }
   let _lbDirty = false;
   function closeLightbox() {
-    stopPlay(); _lb = null;
+    stopPlay(); resetZoom(); _lb = null;
     const ov = document.getElementById('as-lb'); if (ov) ov.style.display = 'none';
     if (_lbDirty) { _lbDirty = false; render(); }   // reflect comment edits in the grid
   }
@@ -872,13 +900,16 @@
   .as-card:hover .as-tbtn{opacity:1}
   .as-rm:hover{background:var(--as-warn);color:#fff}
   .as-undo{opacity:1;background:#fff;color:var(--as-acc);font-size:12px;font-weight:600}
-  .as-meta{padding:4px 8px 8px;display:flex;flex-direction:column;gap:6px;min-height:8px}
+  .as-meta{padding:4px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:8px}
+  .as-cmt-text{font:12px inherit;color:#444;text-align:center;line-height:1.35;padding:2px 6px;cursor:text;word-break:break-word;max-width:100%}
+  .as-cmt-text:hover{color:var(--as-acc)}
+  .as-card.sel .as-cmt-text{padding-right:24px}
   .as-types{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:6px 8px 5px}
   .as-chip{font-size:11px;font-weight:600;color:#3b2c70;background:#efeaff;border:1px solid #d8ccf5;border-radius:20px;padding:1px 9px;cursor:pointer}
   .as-chip.none{color:#9a8ccb;background:#f6f4fc;border-style:dashed}
   .as-chip.as-addtype{color:#8a7fb8;background:#fff;border-style:dashed}
   .as-cmt{font:12px inherit;border:1px solid #e2dcef;border-radius:6px;padding:3px 7px;color:#444;background:#faf9fe;width:100%}
-  .as-pencil{font:12px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:1px 8px;cursor:pointer;align-self:flex-start;opacity:0;transition:.1s}
+  .as-pencil{font:12px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:1px 8px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
   .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
   /* selection + keyboard cursor */
@@ -928,7 +959,7 @@
   .as-cm-note{font:13px inherit;border:1px solid #cfc6e6;border-radius:7px;padding:6px 9px;resize:vertical}
   .as-cm-opts{flex-direction:row;gap:18px;flex-wrap:wrap}
   .as-cm-opts label{display:flex;align-items:center;gap:6px;cursor:pointer;color:#444}
-  .as-cm-dry{color:#a05a00}
+  .as-cm-dry{color:#a05a00;display:flex;align-items:center;gap:6px;cursor:pointer}
   .as-cm-list{overflow:auto;border:1px solid #eee;border-radius:8px;padding:6px;margin:4px 0 12px;background:#fafafa}
   .as-cm-op{padding:5px 6px;border-radius:6px;font-size:13px}
   .as-cm-op.dry{background:#f3eefe}.as-cm-op.err{background:#fdecea}
@@ -936,7 +967,7 @@
   .as-cm-skip{font-size:11px;color:#999;margin-left:6px;background:#eee;border-radius:10px;padding:1px 7px}
   .as-cm-payload{white-space:pre-wrap;font:11px/1.4 ui-monospace,Consolas,monospace;color:#555;margin:4px 0 2px 18px;display:none}
   .as-cm-op.dry .as-cm-payload,.as-cm-op.err .as-cm-payload{display:block}
-  .as-cm-f{display:flex;justify-content:flex-end;gap:8px}
+  .as-cm-f{display:flex;align-items:center;gap:8px}
   .as-cm-go{background:var(--as-acc);color:#fff;border-color:var(--as-acc);font-weight:600}
   .as-cm-go:disabled{opacity:.5}
   .as-cm-note2{font-size:11px;color:#9a8ccb;margin-top:8px;text-align:center}
