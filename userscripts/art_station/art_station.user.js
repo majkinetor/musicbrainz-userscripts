@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.213000
+// @version      2026.6.17.220000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -80,7 +80,7 @@
     } catch (e) { /* size is a nicety — never block the gallery */ }
   }
   let SETTINGS = load();
-  function load() { try { return Object.assign({ tile: 200, group: false, sort: 'type' }, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return { tile: 200, group: false, sort: 'type' }; } }
+  function load() { try { return Object.assign({ tile: 200, group: false, sort: 'type', detailed: false }, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return { tile: 200, group: false, sort: 'type', detailed: false }; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -180,13 +180,22 @@
     const y = window.scrollY;            // keep the viewport put — rebuilding innerHTML must not jump the page
     const n = opsCount();
     const groups = grouped();
-    const body = SETTINGS.group
-      ? groups.map(g => groupRow(g.type, g.items)).join('')   // compact: label column + cards beside it
-      : groups.map(g => section(g.type, g.items)).join('');
-    root.innerHTML = bar(n) + dropZone() + newSection() + body + deletedSection();
+    // #238 Detailed view: a flat list, image left + all type checkboxes & the full
+    // comment beside it (read long comments / see every type without the popover).
+    const body = SETTINGS.detailed
+      ? `<div class="as-dlist">${MODEL.filter(it => !it._del).slice().sort(sortFn).map(detailRow).join('')}</div>`
+      : SETTINGS.group
+        ? groups.map(g => groupRow(g.type, g.items)).join('')   // compact: label column + cards beside it
+        : groups.map(g => section(g.type, g.items)).join('');
+    root.innerHTML = bar(n) + commentPresets() + dropZone() + newSection() + body + deletedSection();
     wire();
     applyOriginal();   // keep the native/script view state across re-renders
     if (window.scrollY !== y) window.scrollTo(0, y);
+  }
+  // shared autocomplete of the comments already used on this release (#238 presets)
+  function commentPresets() {
+    const seen = [...new Set(MODEL.map(it => (it.comment || '').trim()).filter(Boolean))];
+    return `<datalist id="as-cmt-presets">${seen.map(c => `<option value="${esc(c)}"></option>`).join('')}</datalist>`;
   }
 
   function grouped() {
@@ -298,13 +307,32 @@
     const dim = `<span class="as-dim">${esc(dimText(it))}</span>`;
     if (it._del) return `<div class="as-foot"><div class="as-foot-row"><span class="as-foot-cmt"></span>${dim}</div>${typeRow}</div>`;
     const cmt = it._editcmt
-      ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…">`
+      ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets">`
       : (it.comment
           ? `<span class="as-cmt-text" title="edit comment">${esc(it.comment)}</span>`
           : `<button class="as-pencil" title="add a comment">✎</button>`);
     return `<div class="as-foot">
       <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${dim}</div>
       ${typeRow}
+    </div>`;
+  }
+  // #238 Detailed view row: image + id on the left, all type checkboxes and the
+  // full comment field beside it. No per-row toolbar actions (selection / delete
+  // live on the main toolbar).
+  function detailRow(it) {
+    const src = it._new ? it._file : thumb(it.id, 250);
+    const types = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
+    return `<div class="as-drow${it._new ? ' new' : ''}${it._pending ? ' pending' : ''}${it._sel ? ' sel' : ''}" data-id="${esc(it.id)}">
+      <div class="as-dleft">
+        <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}<img loading="lazy" draggable="false" src="${esc(src)}" alt="">${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
+        <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span>${it._new ? '' : ` <span class="as-cm-id">#${esc(it.id)}</span>`}</div>
+      </div>
+      <div class="as-dmeta">
+        <div class="as-dlbl">Types</div>
+        <div class="as-dtypes">${types}</div>
+        <div class="as-dlbl">Comment</div>
+        <input class="as-dcmt" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets" spellcheck="false">
+      </div>
     </div>`;
   }
 
@@ -342,6 +370,29 @@
     });
   }
 
+  // #238 wire the detailed-view rows: thumbnail → lightbox, inline type checkboxes,
+  // and the comment field — all editing the model in place (no re-render, no jump).
+  function wireDetail() {
+    root.querySelectorAll('.as-drow').forEach(row => {
+      const it = byId(row.dataset.id); if (!it) return;
+      const th = row.querySelector('.as-dthumb');
+      if (th) {
+        th.onclick = e => { if (e.target.closest('button')) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
+        const img = th.querySelector('img');
+        if (img) {
+          img.onerror = () => { const orig = !it._pdf ? (it._img || imgUrl(it.id)) : null; if (orig && img.getAttribute('src') !== orig) img.src = orig; else th.classList.add('na'); };
+          if (img.complete && !img.naturalWidth && img.getAttribute('src')) img.onerror();
+        }
+      }
+      row.querySelectorAll('.as-dtypes input').forEach(cb => cb.onchange = () => {
+        it.types = ALL_TYPES.filter(t => row.querySelector(`.as-dtypes input[value="${CSS.escape(t)}"]`).checked);
+        refreshStaged();
+      });
+      const cmt = row.querySelector('.as-dcmt');
+      if (cmt) cmt.oninput = () => { it.comment = cmt.value; refreshStaged(); };
+    });
+  }
+
   function wire() {
     root.querySelector('.as-size').oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); };
     root.querySelector('.as-size').onchange = () => { save(); render(); };
@@ -351,6 +402,7 @@
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
     wireComments();
+    wireDetail();
 
     const dz = root.querySelector('.as-dropzone');
     if (dz) {
@@ -460,11 +512,13 @@
     pop.innerHTML = `<div class="as-pop-h">Sort</div>`
       + sorts.map(([v, l]) => `<label><input type="radio" name="as-vsort" value="${v}"${SETTINGS.sort === v ? ' checked' : ''}> ${l}${v === 'type' ? ' <span class="as-pop-note">(needed to drag-reorder)</span>' : ''}</label>`).join('')
       + `<div class="as-pop-h">View</div>`
+      + `<label><input type="checkbox" class="as-vdetail"${SETTINGS.detailed ? ' checked' : ''}> Detailed view <span class="as-pop-note">(list + all types & comment)</span></label>`
       + `<label><input type="checkbox" class="as-vgrp"${SETTINGS.group ? ' checked' : ''}> Group by type <span class="as-pop-note">(view-only)</span></label>`
       + `<label><input type="checkbox" class="as-vorig"${_showOrig ? ' checked' : ''}> Show original <span class="as-pop-note">(MB's native UI)</span></label>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     pop.querySelectorAll('input[name="as-vsort"]').forEach(r => r.onchange = () => { SETTINGS.sort = r.value; save(); render(); });
+    pop.querySelector('.as-vdetail').onchange = e => { SETTINGS.detailed = e.target.checked; save(); render(); };
     pop.querySelector('.as-vgrp').onchange = e => { SETTINGS.group = e.target.checked; save(); render(); };
     pop.querySelector('.as-vorig').onchange = e => { _showOrig = e.target.checked; applyOriginal(); };
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
@@ -972,7 +1026,7 @@
     const common = sel.every(it => it.comment === sel[0].comment) ? sel[0].comment : '';
     const pop = document.createElement('div'); pop.className = 'as-pop as-cmt-pop';
     pop.innerHTML = `<div class="as-pop-h">Comment on ${sel.length} cover${sel.length===1?'':'s'}</div>`
-      + `<input class="as-bulk-cmt" placeholder="comment…" spellcheck="false" value="${esc(common)}">`
+      + `<input class="as-bulk-cmt" placeholder="comment…" spellcheck="false" list="as-cmt-presets" value="${esc(common)}">`
       + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply</button><button class="as-btn as-bulk-cmt-clr">Clear</button></div>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
@@ -1019,6 +1073,25 @@
   .as-cnt{font-size:12px;color:#9b8fc0}
   .as-line{flex:1;height:1px;background:#e2dcef}
   .as-grid{display:flex;flex-wrap:wrap;gap:24px 14px}
+  /* #238 Detailed view: list rows — image + id on the left, all types & full comment on the right */
+  .as-dlist{display:flex;flex-direction:column;gap:10px}
+  .as-drow{display:flex;gap:16px;align-items:flex-start;border:1px solid #e2dcef;border-radius:9px;padding:10px 12px;background:#fff;position:relative}
+  .as-drow.new{background:repeating-linear-gradient(45deg,#eef7f1,#eef7f1 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:#9bd3b6;border-style:dashed}
+  .as-drow.pending{background:#fdf3d0;border-color:#e6cf86}
+  .as-drow.sel{outline:3px solid var(--as-acc);outline-offset:-1px}
+  .as-dleft{flex:0 0 auto;width:128px;text-align:center}
+  .as-dthumb{position:relative;width:128px;height:128px;border-radius:7px;overflow:hidden;background:#f4f2f9;cursor:zoom-in;display:block}
+  .as-dthumb img{width:100%;height:100%;object-fit:contain;display:block}
+  .as-dthumb.na img{display:none}
+  .as-dthumb.na::after{content:'not on CAA yet';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9a8ccb;font-size:11px;font-weight:600;text-align:center;padding:0 8px}
+  .as-dcap{font-size:11px;font-weight:600;color:#6b5fa0;margin-top:5px;white-space:nowrap}
+  .as-dmeta{flex:1 1 auto;min-width:0}
+  .as-dlbl{font-weight:700;color:#6a5b95;font-size:12px;margin:0 0 4px}
+  .as-dtypes{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:3px 12px;margin:0 0 10px}
+  .as-dtypes label{display:flex;align-items:center;gap:6px;font-size:13px;color:#333;cursor:pointer}
+  .as-dtypes input{accent-color:var(--as-acc)}
+  .as-dcmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid #cfc6e6;border-radius:6px;padding:6px 9px;background:#faf9fe;color:#333}
+  .as-dcmt:focus{outline:2px solid var(--as-acc);outline-offset:-1px;background:#fff}
   /* compact group rows: label column + cards beside it */
   .as-grow{display:flex;align-items:flex-start;gap:16px;padding:12px 0;border-top:1px solid #ece7f6}
   .as-grow:first-of-type{border-top:none}
