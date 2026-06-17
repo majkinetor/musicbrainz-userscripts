@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.16.321500
+// @version      2026.6.17.140000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -236,7 +236,6 @@
       <div class="as-types">${chips}</div>
       <div class="as-thumb"><img loading="lazy" draggable="false" src="${esc(src)}" alt=""><span class="as-dim">${esc(dim)}</span>
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
-        ${it._pending ? '<span class="as-pendban" title="has a pending edit on MusicBrainz">⏳ pending</span>' : ''}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
       ${it._del ? '' : `<div class="as-meta">${(it.comment || it._editcmt)
@@ -292,10 +291,12 @@
 
     // type chips → popover
     root.querySelectorAll('.as-chip').forEach(ch => ch.onclick = e => { e.stopPropagation(); openTypePop(ch); });
-    // click image → lightbox; right-click card → toggle selection
-    root.querySelectorAll('.as-thumb img').forEach(img => {
-      img.onclick = e => { const it = byId(cardId(e.target)); if (!it) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
-      img.onerror = () => { const th = img.closest('.as-thumb'); if (th) th.classList.add('na'); };   // CAA not propagated yet
+    // click the THUMB (not just the <img>, which is display:none on a not-yet-propagated
+    // cover) → lightbox; PDFs open in a new tab. right-click card → toggle selection
+    root.querySelectorAll('.as-thumb').forEach(th => {
+      th.onclick = e => { if (e.target.closest('button')) return; const it = byId(cardId(e.target)); if (!it) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
+      const img = th.querySelector('img'); if (!img) return;
+      img.onerror = () => th.classList.add('na');   // thumbnail not generated yet
       if (img.complete && !img.naturalWidth && img.getAttribute('src')) img.onerror();
     });
     // right-button paint-select IN PLACE — no render(), so the page never jumps.
@@ -706,7 +707,12 @@
     // visibly while the 1200px loads ("original shows shortly")
     img.classList.add('loading');
     img.onload = () => { img.classList.remove('loading'); ov.classList.remove('na'); };
-    img.onerror = () => { img.classList.remove('loading'); ov.classList.add('na'); };   // CAA not propagated yet
+    img.onerror = () => {
+      // thumbnails aren't generated yet (pending / just uploaded) — show the original,
+      // which MB serves before the thumbs exist (its "original" link). #230
+      if (!it._new && it._img && img.src !== it._img) { img.src = it._img; return; }
+      img.classList.remove('loading'); ov.classList.add('na');
+    };
     img.src = src;
     if (img.complete && img.naturalWidth) img.classList.remove('loading');
     const bits = [it.types.length ? it.types.join(', ') : 'no type', it.w && it.h ? `${it.w} × ${it.h}` : null].filter(Boolean);
@@ -811,9 +817,10 @@
   const css = `
   :root{ --as-tile:${SETTINGS.tile}px; --as-acc:#5f3ec0; --as-warn:#c0392b; }
   #as-root{font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;margin:0 0 18px}
-  .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:13px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:wrap;margin-bottom:6px}
+  .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:11px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:nowrap;overflow-x:auto;margin-bottom:6px}
+  .as-bar>*{flex:0 0 auto}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
-  .as-size{accent-color:var(--as-acc)}
+  .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
   #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer}
   .as-btn:hover{background:#f6f3fd}
   .as-add{font-weight:600;color:var(--as-acc)}
@@ -853,10 +860,9 @@
   .as-sec-new h3{color:#1f9d6b}
   .as-card.new{background:repeating-linear-gradient(45deg,#eef7f1,#eef7f1 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:#9bd3b6;border-style:dashed}
   .as-card.pending{background:#fdf3d0;border-color:#e6cf86}
-  .as-pendban{position:absolute;left:6px;top:6px;z-index:4;background:#d89000;color:#fff;font:700 10px/1 Arial;letter-spacing:.3px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-pdfban{position:absolute;right:6px;top:6px;z-index:4;background:#7a3a8f;color:#fff;font:700 10px/1 Arial;letter-spacing:.5px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
-  .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9}
+  .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9;cursor:zoom-in}
   .as-thumb img{width:100%;height:100%;object-fit:contain;display:block}
   .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#faf8ff,#efeafb)}
   .as-thumb.na img{display:none}
