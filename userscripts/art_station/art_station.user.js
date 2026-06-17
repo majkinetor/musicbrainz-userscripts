@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.184500
+// @version      2026.6.17.193000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -229,6 +229,7 @@
       <button class="as-ic as-selall" title="Select all covers">✳</button>
       <button class="as-ic as-selclr" title="Clear selection"${sel.length ? '' : ' disabled'}>✕</button>
       ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Set type ▾</button>
+      <button class="as-btn as-bk-cmt" title="Set a comment on the selection">✎ Comment ▾</button>
       <button class="as-btn as-bk-dl" title="Download the selected covers">⬇ Download</button>
       <button class="as-btn as-bk-rm" title="Mark the selected covers for removal">🗑 Delete</button>` : ''}`;
   }
@@ -391,6 +392,7 @@
     q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; } }); render(); });
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = () => MODEL.filter(it => it._sel && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 350)));
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
+    q('.as-bk-cmt') && (q('.as-bk-cmt').onclick = e => { e.stopPropagation(); openBulkCommentPop(q('.as-bk-cmt')); });
   }
   // right-button paint selection (held + move)
   let _paint = null;
@@ -947,6 +949,27 @@
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
 
+  // #236: set one comment on every selected cover at once. Pre-fills the shared
+  // comment if they already agree; Apply writes it, Clear blanks them all.
+  function openBulkCommentPop(btn) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
+    const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
+    const common = sel.every(it => it.comment === sel[0].comment) ? sel[0].comment : '';
+    const pop = document.createElement('div'); pop.className = 'as-pop as-cmt-pop';
+    pop.innerHTML = `<div class="as-pop-h">Comment on ${sel.length} cover${sel.length===1?'':'s'}</div>`
+      + `<input class="as-bulk-cmt" placeholder="comment…" spellcheck="false" value="${esc(common)}">`
+      + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply</button><button class="as-btn as-bulk-cmt-clr">Clear</button></div>`;
+    document.body.appendChild(pop);
+    placePop(pop, btn.getBoundingClientRect());
+    const inp = pop.querySelector('.as-bulk-cmt'); inp.focus(); inp.select();
+    const apply = v => { sel.forEach(it => it.comment = v); pop.remove(); render(); };
+    pop.querySelector('.as-pop-apply').onclick = () => apply(inp.value);
+    pop.querySelector('.as-bulk-cmt-clr').onclick = () => apply('');
+    inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); apply(inp.value); } else if (e.key === 'Escape') { e.preventDefault(); pop.remove(); } };
+    const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
+
   // ── styles ───────────────────────────────────────────────────────────────────
   const css = `
   :root{ --as-tile:${SETTINGS.tile}px; --as-acc:#5f3ec0; --as-warn:#c0392b; }
@@ -1048,6 +1071,8 @@
   .as-pop-h{font-weight:600;color:#6a5b95;padding:3px 6px 6px;border-bottom:1px solid #eee;margin-bottom:4px}
   .as-pop-f{display:flex;gap:6px;padding:6px 4px 2px;border-top:1px solid #eee;margin-top:4px;position:sticky;bottom:0;background:#fff}
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
+  .as-cmt-pop{min-width:220px}
+  .as-bulk-cmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid #d8ccf5;border-radius:6px;padding:5px 8px;margin:2px 0 2px;background:#faf9fe;color:#333}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
   .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:#fff}
