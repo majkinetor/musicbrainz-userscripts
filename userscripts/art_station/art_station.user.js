@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.202500
+// @version      2026.6.17.210000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -143,6 +143,8 @@
   // ── render ───────────────────────────────────────────────────────────────────
   const root = document.createElement('div'); root.id = 'as-root';
   let _mounted = false;
+  let _showOrig = false;       // "Show original" (View) — reveal MB's native UI, keep only our toolbar
+  const _native = [];          // the native cover-art elements mount() hid, so we can show them again
   function mount() {
     if (_mounted) return; _mounted = true;
     const anchor = document.querySelector('#content') || document.body;
@@ -156,13 +158,21 @@
     else anchor.insertBefore(root, anchor.firstChild);
     // hide the native cover-art UI between the tabs and the page footer: the type
     // <h2>s, the .artwork-cont blocks and the trailing "These images…" note.
+    const hide = el => { el.style.display = 'none'; _native.push(el); };
     [...anchor.children].forEach(ch => {
       if (ch === root || ch === afterTabs || ch === afterH1) return;
-      if (ch.tagName === 'H2' || ch.tagName === 'P') ch.style.display = 'none';
-      else if (ch.querySelector && ch.querySelector('.artwork-cont')) ch.style.display = 'none';
-      else if (ch.classList && ch.classList.contains('artwork-cont')) ch.style.display = 'none';
+      if (ch.tagName === 'H2' || ch.tagName === 'P') hide(ch);
+      else if (ch.querySelector && ch.querySelector('.artwork-cont')) hide(ch);
+      else if (ch.classList && ch.classList.contains('artwork-cont')) hide(ch);
     });
-    document.querySelectorAll('.artwork-cont').forEach(e => { e.style.display = 'none'; });
+    document.querySelectorAll('.artwork-cont').forEach(hide);
+  }
+  // "Show original" (View): un-hide MB's native cover-art UI and collapse our
+  // gallery to just the toolbar — like Apollo's native/script switcher. #234
+  function applyOriginal() {
+    earlyHide.disabled = _showOrig;                                  // the document-start hiding style
+    _native.forEach(el => { el.style.display = _showOrig ? '' : 'none'; });
+    root.classList.toggle('as-orig', _showOrig);
   }
 
   function render() {
@@ -175,6 +185,7 @@
       : groups.map(g => section(g.type, g.items)).join('');
     root.innerHTML = bar(n) + dropZone() + newSection() + body + deletedSection();
     wire();
+    applyOriginal();   // keep the native/script view state across re-renders
     if (window.scrollY !== y) window.scrollTo(0, y);
   }
 
@@ -449,11 +460,13 @@
     pop.innerHTML = `<div class="as-pop-h">Sort</div>`
       + sorts.map(([v, l]) => `<label><input type="radio" name="as-vsort" value="${v}"${SETTINGS.sort === v ? ' checked' : ''}> ${l}${v === 'type' ? ' <span class="as-pop-note">(needed to drag-reorder)</span>' : ''}</label>`).join('')
       + `<div class="as-pop-h">View</div>`
-      + `<label><input type="checkbox" class="as-vgrp"${SETTINGS.group ? ' checked' : ''}> Group by type <span class="as-pop-note">(view-only)</span></label>`;
+      + `<label><input type="checkbox" class="as-vgrp"${SETTINGS.group ? ' checked' : ''}> Group by type <span class="as-pop-note">(view-only)</span></label>`
+      + `<label><input type="checkbox" class="as-vorig"${_showOrig ? ' checked' : ''}> Show original <span class="as-pop-note">(MB's native UI)</span></label>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     pop.querySelectorAll('input[name="as-vsort"]').forEach(r => r.onchange = () => { SETTINGS.sort = r.value; save(); render(); });
     pop.querySelector('.as-vgrp').onchange = e => { SETTINGS.group = e.target.checked; save(); render(); };
+    pop.querySelector('.as-vorig').onchange = e => { _showOrig = e.target.checked; applyOriginal(); };
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -967,6 +980,8 @@
   #as-root{font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;margin:0 0 18px}
   .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:11px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:nowrap;overflow-x:auto;margin-bottom:6px}
   .as-bar>*{flex:0 0 auto}
+  /* "Show original": collapse the gallery to just the toolbar, MB's native UI shows through */
+  #as-root.as-orig>:not(.as-bar){display:none}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
   #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer}
