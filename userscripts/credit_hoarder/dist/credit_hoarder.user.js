@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.17.133718
+// @version      2026.6.17.150611
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -763,6 +763,20 @@
     "Composed By": {
       entityType: "artist",
       linkType: "composer"
+    },
+    // #233: author of the source text (e.g. the novel a Hörspiel adapts). MB
+    // 'writer' is a work-level rel, so this lands on the work CH creates.
+    Author: {
+      entityType: "artist",
+      linkType: "writer"
+    },
+    // #233: spoken-word performer (audio play / Hörspiel cast). MB convention is
+    // the 'vocal' relationship with the 'spoken vocals' attribute; the character
+    // in the Discogs bracket becomes the credited-as (handled in mappers.js).
+    "Voice Actor": {
+      entityType: "artist",
+      linkType: "vocal",
+      attributes: [{ _type: "vocal", value: "spoken vocals" }]
     },
     "Words By": {
       entityType: "artist",
@@ -1842,6 +1856,7 @@
     }
     return rawRoles.map((role) => {
       let additionalAttributes = [];
+      let creditedAs = null;
       let rolePart = role.trim().split("[");
       const actualRole = rolePart[0].trim();
       if (/Recording Engineer/.test(rolePart[1]) && actualRole === "Engineer") {
@@ -1907,6 +1922,9 @@
       if (mapping && mapping.linkType == "artwork" && rolePart[1]) {
         additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
       }
+      if (mapping && mapping.linkType == "vocal" && rolePart[1]) {
+        creditedAs = rolePart[1].replace(/]/g, "").trim() || null;
+      }
       const actualRoleLc = actualRole.toLowerCase();
       if (!mapping && Object.prototype.hasOwnProperty.call(INSTRUMENTS_CI, actualRoleLc)) {
         let instrumentName = INSTRUMENTS_CI[actualRoleLc];
@@ -1938,7 +1956,8 @@
       }
       return Object.assign({}, mapping, {
         artist,
-        attributes: additionalAttributes
+        attributes: additionalAttributes,
+        creditedAs
       });
     }).filter((resolvedRole) => {
       return !!resolvedRole;
@@ -4308,7 +4327,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           tickProgress();
           continue;
         }
-        const credit = role.artist.anv?.trim() || role.artist.name;
+        const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
         await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit);
         tickProgress();
       }
@@ -4324,7 +4343,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               log.skip(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review`);
               continue;
             }
-            const credit = role.artist.anv?.trim() || role.artist.name;
+            const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
             for (const recEntity of recordingByGid.values()) {
               await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*");
             }
@@ -4458,7 +4477,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             log.skip(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
             continue;
           }
-          const credit = role.artist.anv?.trim() || role.artist.name;
+          const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
           const srcType = role.entityType || "artist";
           if (workEntity.gid) {
             await processOne(workEntity, srcType, "work", role.linkType, mbUrl, role.attributes || [], credit, trackPos || entries[0]?.role?.track?.position);
@@ -4493,7 +4512,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           failed++;
           continue;
         }
-        const credit = role.artist.anv?.trim() || role.artist.name;
+        const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
         const attrKey = (role.attributes || []).map((a) => typeof a === "string" ? a : a.value || a._type || "").join(",");
         const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
         if (seenTrackRels.has(trackRelKey)) continue;

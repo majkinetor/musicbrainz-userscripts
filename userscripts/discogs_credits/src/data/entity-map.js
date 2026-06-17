@@ -237,6 +237,20 @@ export const ENTITY_TYPE_MAP = {
         entityType: 'artist',
         linkType: 'composer',
     },
+    // #233: author of the source text (e.g. the novel a Hörspiel adapts). MB
+    // 'writer' is a work-level rel, so this lands on the work CH creates.
+    Author: {
+        entityType: 'artist',
+        linkType: 'writer',
+    },
+    // #233: spoken-word performer (audio play / Hörspiel cast). MB convention is
+    // the 'vocal' relationship with the 'spoken vocals' attribute; the character
+    // in the Discogs bracket becomes the credited-as (handled in mappers.js).
+    'Voice Actor': {
+        entityType: 'artist',
+        linkType: 'vocal',
+        attributes: [{ _type: 'vocal', value: 'spoken vocals' }],
+    },
     'Words By': {
         entityType: 'artist',
         linkType: 'lyricist',

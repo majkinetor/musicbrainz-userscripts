@@ -585,7 +585,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 log.skip(`Skipped ${role.artist.name} (${role.linkType}) — not resolved in review`);
                 skipped++; tickProgress(); continue;
             }
-            const credit = role.artist.anv?.trim() || role.artist.name;
+            const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
             await processOne(releaseEntity, 'artist', 'release', role.linkType, mbUrl, role.attributes || [], credit);
             tickProgress();
         }
@@ -604,7 +604,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                         log.skip(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks — not resolved in review`);
                         continue;
                     }
-                    const credit = role.artist.anv?.trim() || role.artist.name;
+                    const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
                     for (const recEntity of recordingByGid.values()) {
                         await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || '*');
                     }
@@ -789,7 +789,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                     log.skip(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
                     continue;
                 }
-                const credit = role.artist.anv?.trim() || role.artist.name;
+                const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
                 // Most work-only rels are artist→work; a music publisher is a
                 // label→work "publishing" rel (role carries entityType:'label').
                 const srcType = role.entityType || 'artist';
@@ -830,7 +830,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 failed++; continue;
             }
 
-            const credit = role.artist.anv?.trim() || role.artist.name;
+            const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
             const attrKey = (role.attributes||[]).map(a=>typeof a==='string'?a:(a.value||a._type||'')).join(',');
             const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
             if (seenTrackRels.has(trackRelKey)) continue;

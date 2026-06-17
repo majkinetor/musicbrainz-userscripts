@@ -255,6 +255,7 @@ export function getArtistRoles(artist) {
     return rawRoles
         .map(role => {
             let additionalAttributes = [];
+            let creditedAs = null;
             let rolePart = role.trim().split('[');
             const actualRole = rolePart[0].trim();
             if (/Recording Engineer/.test(rolePart[1]) && actualRole === 'Engineer') {
@@ -325,6 +326,11 @@ export function getArtistRoles(artist) {
             if (mapping && mapping.linkType == 'artwork' && rolePart[1]) {
                 additionalAttributes.push({ _type: 'task', value: rolePart[1].replace(']', '').trim().toLowerCase() });
             }
+            if (mapping && mapping.linkType == 'vocal' && rolePart[1]) {
+                // #233: Voice Actor [Character] — the bracket is the character; surface
+                // it as the credited-as on the spoken-vocals relationship.
+                creditedAs = rolePart[1].replace(/]/g, '').trim() || null;
+            }
             const actualRoleLc = actualRole.toLowerCase();
             if (!mapping && Object.prototype.hasOwnProperty.call(INSTRUMENTS_CI, actualRoleLc)) {
                 // It's a known instrument — case-insensitive lookup so
@@ -358,6 +364,7 @@ export function getArtistRoles(artist) {
             return Object.assign({}, mapping, {
                 artist: artist,
                 attributes: additionalAttributes,
+                creditedAs: creditedAs,
             });
         })
         .filter(resolvedRole => {
