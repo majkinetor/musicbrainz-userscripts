@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.16
+// @version      2026.6.17.134045
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3976,7 +3976,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       }
       for (const [recGid, entries] of workOnlyByGid) {
         const recEntity = entries[0]?.recEntity ?? recordingByGid.get(recGid);
-        const trackTitle = entries[0]?.role.track.title ?? recEntity?.name ?? recGid;
+        const trackTitle = entries[0]?.role.track.title || recEntity?.name || recGid;
         const trackPos = entries[0]?.role.track.position ?? "";
         if (!recEntity) continue;
         const hasExistingWork = editorWorkByRecGid.has(recGid);

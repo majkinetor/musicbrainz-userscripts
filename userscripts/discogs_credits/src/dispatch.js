@@ -689,7 +689,9 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         for (const [recGid, entries] of workOnlyByGid) {
             // entries may be empty when createWorksMode='when-missing' adds all recordings (no work-only roles)
             const recEntity  = entries[0]?.recEntity  ?? recordingByGid.get(recGid);
-            const trackTitle = entries[0]?.role.track.title    ?? recEntity?.name ?? recGid;
+            // `||` (not `??`): a parsed credit may carry an empty track title — fall
+            // through to the MB recording's name so the created work is never nameless (#232).
+            const trackTitle = entries[0]?.role.track.title || recEntity?.name || recGid;
             const trackPos   = entries[0]?.role.track.position ?? '';
             if (!recEntity) continue;
 
