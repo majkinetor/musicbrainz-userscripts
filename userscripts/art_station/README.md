@@ -4,6 +4,8 @@ A cover-art editor for MusicBrainz: one gallery to view, group, sort, reorder, r
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/art_station/art_station.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/art_station/art_station.user.js)
 
+![](./screenshot.png)
+
 It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`), replacing the native list with a gallery. The gallery is the staged state, and **Enter edit** makes MusicBrainz match it.
 
 ## Features
