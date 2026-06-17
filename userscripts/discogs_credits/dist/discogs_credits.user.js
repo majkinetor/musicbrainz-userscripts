@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.17.134045
+// @version      2026.6.17.163431
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -748,6 +748,20 @@
     "Composed By": {
       entityType: "artist",
       linkType: "composer"
+    },
+    // #233: author of the source text (e.g. the novel a Hörspiel adapts). MB
+    // 'writer' is a work-level rel, so this lands on the work CH creates.
+    Author: {
+      entityType: "artist",
+      linkType: "writer"
+    },
+    // #233: spoken-word performer (audio play / Hörspiel cast). MB convention is
+    // the 'vocal' relationship with the 'spoken vocals' attribute; the character
+    // in the Discogs bracket becomes the credited-as (handled in mappers.js).
+    "Voice Actor": {
+      entityType: "artist",
+      linkType: "vocal",
+      attributes: [{ _type: "vocal", value: "spoken vocals" }]
     },
     "Words By": {
       entityType: "artist",
@@ -1822,6 +1836,7 @@
     }
     return rawRoles.map((role) => {
       let additionalAttributes = [];
+      let creditedAs = null;
       let rolePart = role.trim().split("[");
       const actualRole = rolePart[0].trim();
       if (/Recording Engineer/.test(rolePart[1]) && actualRole === "Engineer") {
@@ -1887,6 +1902,9 @@
       if (mapping && mapping.linkType == "artwork" && rolePart[1]) {
         additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
       }
+      if (mapping && mapping.linkType == "vocal" && rolePart[1]) {
+        creditedAs = rolePart[1].replace(/]/g, "").trim() || null;
+      }
       const actualRoleLc = actualRole.toLowerCase();
       if (!mapping && Object.prototype.hasOwnProperty.call(INSTRUMENTS_CI, actualRoleLc)) {
         let instrumentName = INSTRUMENTS_CI[actualRoleLc];
@@ -1904,7 +1922,11 @@
         return null;
       }
       if (Array.isArray(mapping.attributes)) {
-        additionalAttributes = additionalAttributes.concat(mapping.attributes);
+        let mapped = mapping.attributes;
+        if (creditedAs && mapping.linkType === "vocal") {
+          mapped = mapped.map((a) => a && a._type === "vocal" ? Object.assign({}, a, { creditedAs }) : a);
+        }
+        additionalAttributes = additionalAttributes.concat(mapped);
       }
       return Object.assign({}, mapping, {
         artist,
@@ -3428,6 +3450,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     for (const attr of rawAttributes) {
       let attrName = null;
       let textValue = "";
+      let creditedAs = "";
       if (typeof attr === "string") {
         attrName = attr;
       } else if (attr && typeof attr === "object" && attr._type) {
@@ -3437,6 +3460,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         } else {
           attrName = attr.value;
         }
+        if (attr.creditedAs) creditedAs = attr.creditedAs;
       } else if (typeof attr === "function") {
         attrName = extractFnValue(attr);
       }
@@ -3444,7 +3468,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const found = findAttrByName(attrName);
       if (!found || seen.has(found.id)) continue;
       seen.add(found.id);
-      attrObjs.push({ type: found, typeID: found.id, credited_as: "", text_value: textValue });
+      attrObjs.push({ type: found, typeID: found.id, credited_as: creditedAs, text_value: textValue });
     }
     if (attrObjs.length === 0) return null;
     attrObjs.sort((a, b) => a.typeID - b.typeID);
@@ -3744,12 +3768,12 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const rels = sourceEntity?.relationships;
       if (!Array.isArray(rels) || rels.length === 0) return null;
       const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || /* @__PURE__ */ new Set([linkTypeID]);
-      const sigOf = (attrs) => attrs.map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
-      const idSigOf = (attrs) => attrs.filter((a) => isIdentifyingAttr(a.typeID)).map((a) => `${a.typeID}:${a.text_value || ""}`).sort().join(",");
+      const sigOf = (attrs) => attrs.map((a) => `${a.typeID}:${a.text_value || ""}:${a.credited_as || ""}`).sort().join(",");
+      const idSigOf = (attrs) => attrs.filter((a) => isIdentifyingAttr(a.typeID)).map((a) => `${a.typeID}:${a.text_value || ""}:${a.credited_as || ""}`).sort().join(",");
       const candAttrs = (() => {
         if (!attrTree) return [];
         try {
-          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => ({ typeID: a.typeID, text_value: a.text_value || "" }));
+          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => ({ typeID: a.typeID, text_value: a.text_value || "", credited_as: a.credited_as || "" }));
         } catch (e) {
           return [];
         }
@@ -3769,7 +3793,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
         if (tgt !== targetGid) continue;
         const isEquivalent = r.linkTypeID !== linkTypeID;
-        const existingAttrs = (r.attributes || []).map((a) => ({ typeID: a.typeID, text_value: a.text_value || "" }));
+        const existingAttrs = (r.attributes || []).map((a) => ({ typeID: a.typeID, text_value: a.text_value || "", credited_as: a.credited_as || "" }));
         const exactMatch = sigOf(existingAttrs) === candSig;
         if (exactMatch) {
           return { kind: isEquivalent ? "equivalence" : "exact", existingLinkName: lookupName(r.linkTypeID) };
@@ -3799,7 +3823,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       const attrTree = buildAttributes(rawAttributes);
       const attrSig = attrTree ? (() => {
         try {
-          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => a.typeID || "").join(",");
+          return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => (a.typeID || "") + (a.credited_as ? "~" + a.credited_as : "")).join(",");
         } catch (e) {
           return "";
         }
@@ -3899,7 +3923,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           tickProgress();
           continue;
         }
-        const credit = role.artist.anv?.trim() || role.artist.name;
+        const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
         await processOne(releaseEntity, "artist", "release", role.linkType, mbUrl, role.attributes || [], credit);
         tickProgress();
       }
@@ -3915,7 +3939,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               log.skip(`Skipped ${role.artist.name} (${role.linkType}) in applyToTracks \u2014 not resolved in review`);
               continue;
             }
-            const credit = role.artist.anv?.trim() || role.artist.name;
+            const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
             for (const recEntity of recordingByGid.values()) {
               await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*");
             }
@@ -4049,7 +4073,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
             log.skip(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
             continue;
           }
-          const credit = role.artist.anv?.trim() || role.artist.name;
+          const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
           if (workEntity.gid) {
             await processOne(workEntity, "artist", "work", role.linkType, mbUrl, role.attributes || [], credit, trackPos || entries[0]?.role?.track?.position);
           } else {
@@ -4083,7 +4107,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           failed++;
           continue;
         }
-        const credit = role.artist.anv?.trim() || role.artist.name;
+        const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
         const attrKey = (role.attributes || []).map((a) => a.value || a._type || "").join(",");
         const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
         if (seenTrackRels.has(trackRelKey)) continue;

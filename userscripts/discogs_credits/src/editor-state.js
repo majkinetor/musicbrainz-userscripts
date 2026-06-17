@@ -143,6 +143,7 @@ export function buildAttributes(rawAttributes) {
     for (const attr of rawAttributes) {
         let attrName = null;
         let textValue = '';
+        let creditedAs = '';
         if (typeof attr === 'string') {
             // Checkbox-style: 'additional', 'guest', 'solo'
             attrName = attr;
@@ -155,6 +156,8 @@ export function buildAttributes(rawAttributes) {
             } else {
                 attrName = attr.value;
             }
+            // #233: per-attribute credited-as (e.g. a vocal credited "spoken vocals [Michal]")
+            if (attr.creditedAs) creditedAs = attr.creditedAs;
         } else if (typeof attr === 'function') {
             // Legacy function attribute — extract quoted string from source
             attrName = extractFnValue(attr);
@@ -163,7 +166,7 @@ export function buildAttributes(rawAttributes) {
         const found = findAttrByName(attrName);
         if (!found || seen.has(found.id)) continue;
         seen.add(found.id);
-        attrObjs.push({ type: found, typeID: found.id, credited_as: '', text_value: textValue });
+        attrObjs.push({ type: found, typeID: found.id, credited_as: creditedAs, text_value: textValue });
     }
     if (attrObjs.length === 0) return null;
     attrObjs.sort((a, b) => a.typeID - b.typeID);

@@ -255,6 +255,7 @@ export function getArtistRoles(artist) {
     return rawRoles
         .map(role => {
             let additionalAttributes = [];
+            let creditedAs = null;
             let rolePart = role.trim().split('[');
             const actualRole = rolePart[0].trim();
             if (/Recording Engineer/.test(rolePart[1]) && actualRole === 'Engineer') {
@@ -325,6 +326,13 @@ export function getArtistRoles(artist) {
             if (mapping && mapping.linkType == 'artwork' && rolePart[1]) {
                 additionalAttributes.push({ _type: 'task', value: rolePart[1].replace(']', '').trim().toLowerCase() });
             }
+            if (mapping && mapping.linkType == 'vocal' && rolePart[1]) {
+                // #233: Voice Actor [Character] — the bracket is the character. It
+                // becomes the credited-as ON the vocal attribute (rendering
+                // "spoken vocals [Michal]"), NOT the artist's entity credit. Attached
+                // to the attribute below.
+                creditedAs = rolePart[1].replace(/]/g, '').trim() || null;
+            }
             const actualRoleLc = actualRole.toLowerCase();
             if (!mapping && Object.prototype.hasOwnProperty.call(INSTRUMENTS_CI, actualRoleLc)) {
                 // It's a known instrument — case-insensitive lookup so
@@ -370,7 +378,14 @@ export function getArtistRoles(artist) {
                 return null;
             }
             if (Array.isArray(mapping.attributes)) {
-                additionalAttributes = additionalAttributes.concat(mapping.attributes);
+                let mapped = mapping.attributes;
+                // #233: hang the Voice Actor's character off the vocal attribute as its
+                // credited-as → "spoken vocals [Michal]". Clone so the shared entity-map
+                // attribute object isn't mutated across roles.
+                if (creditedAs && mapping.linkType === 'vocal') {
+                    mapped = mapped.map(a => (a && a._type === 'vocal') ? Object.assign({}, a, { creditedAs }) : a);
+                }
+                additionalAttributes = additionalAttributes.concat(mapped);
             }
             return Object.assign({}, mapping, {
                 artist: artist,

@@ -78,5 +78,10 @@
         "name": "Bartók/Brahms — The Miraculous Mandarin Suite / Symphony No. 1",
         "url":  "https://musicbrainz.org/release/a69b5a78-a4de-4e81-ade9-d59ebf6b23d8",
         "tags": "debug bug-112 sub-tracks classical"
+    },
+    {
+        "name": "Krabat",
+        "url":  "https://musicbrainz.org/release/784efcaa-e0a6-4117-9c05-0997fedd89e3",
+        "tags": "debug bug-233 audio-play voice-actor"
     }
 ]
