@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.17.175500
+// @version      2026.6.17.183000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -32,6 +32,15 @@
   earlyHide.textContent = '.artwork-cont,#content>h2,#content>p{display:none!important}';
   appendEl(earlyHide);
 
+  // Proper edit-note attribution, like the other scripts: "Name vX by author - url".
+  // GM_info is exposed even under @grant none on the common managers; fall back to
+  // the hard-coded repo URL so the note never reads "v undefined".
+  const _gm = (typeof GM_info !== 'undefined' && GM_info.script) ? GM_info.script : null;
+  const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station';
+  const ATTRIBUTION = _gm
+    ? `${_gm.name} v${_gm.version} by ${_gm.author} - ${_gm.homepageURL || _gm.homepage || SCRIPT_URL}`
+    : `Art Station by majkinetor - ${SCRIPT_URL}`;
+
   const CAA = `https://coverartarchive.org/release/${MBID}`;
   const imgUrl  = id => `${CAA}/${id}.jpg`;          // original
   const thumb   = (id, n) => `${CAA}/${id}-${n}.jpg`; // 250 / 500 / 1200
@@ -43,14 +52,15 @@
 
   let MODEL = [];       // [{ id, types:[], comment, order, w, h, bytes, _del, _new, _file }]
   const SIZES = new Map(); // CAA image id -> original file size in bytes (from archive.org metadata)
-  const fmtSize = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
-  // footer line under the image: "600 × 600 · 206 KB" — each half shown once known
+  const fmtSize = b => b >= 1048576 ? (b / 1048576).toFixed(1) + 'Mb' : Math.max(1, Math.round(b / 1024)) + 'Kb';
+  // footer line under the image: "1.2Mb   600 × 600" — size first, then resolution,
+  // each half shown once known, separated by a wide gap (em-space).
   function dimText(it) {
     if (it._new) return 'local';
     const parts = [];
-    if (it.w && it.h) parts.push(`${it.w} × ${it.h}`);
     if (it.bytes) parts.push(fmtSize(it.bytes));
-    return parts.length ? parts.join(' · ') : '…';
+    if (it.w && it.h) parts.push(`${it.w} × ${it.h}`);
+    return parts.length ? parts.join(' ') : '…';
   }
   function refreshDim(it) {
     const el = document.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-dim`);
@@ -163,7 +173,7 @@
     const body = SETTINGS.group
       ? groups.map(g => groupRow(g.type, g.items)).join('')   // compact: label column + cards beside it
       : groups.map(g => section(g.type, g.items)).join('');
-    root.innerHTML = bar(n) + bulkBar() + dropZone() + newSection() + body + deletedSection();
+    root.innerHTML = bar(n) + dropZone() + newSection() + body + deletedSection();
     wire();
     if (window.scrollY !== y) window.scrollTo(0, y);
   }
@@ -201,28 +211,26 @@
     return `<div class="as-bar">
       <button class="as-btn as-add" title="Add cover art — file drop zone (goes first)">＋ Add image</button>
       <span class="as-ctl">Size <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}"></span>
-      <span class="as-ctl">Sort <select class="as-sort">
-        <option value="type"${SETTINGS.sort==='type'?' selected':''}>Position</option>
-        <option value="bytype"${SETTINGS.sort==='bytype'?' selected':''}>Type</option>
-        <option value="dim"${SETTINGS.sort==='dim'?' selected':''}>Dimensions ▾</option>
-        <option value="newest"${SETTINGS.sort==='newest'?' selected':''}>Newest</option></select></span>
-      <label class="as-ctl"><input class="as-group" type="checkbox"${SETTINGS.group?' checked':''}> Group by type</label>
-      <button class="as-btn as-selall" title="Select every cover (then Download / Set type / Delete)">${allSelected() ? '☑ Deselect all' : '☐ Select all'}</button>
+      <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
+      ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder works only with Sort = Position and grouping off">⚠ drag-reorder off</span>' : ''}
+      <span class="as-sp"></span>
+      <span class="as-selbox">${selBox()}</span>
       <span class="as-sp"></span>
       <button class="as-btn as-staged" title="Show pending operations"${n?'':' style="display:none"'}>${n} staged change${n===1?'':'s'} ▾</button>
       <button class="as-btn as-commit" title="Apply staged changes as MusicBrainz edits"${n?'':' disabled'}>✓ Enter edit</button>
     </div>`;
   }
-  function bulkBar() {
+  // #234: the selection cluster lives in the center of the main toolbar (the old
+  // bottom bulk bar is gone). syncSel() rebuilds just this span in place so
+  // right-click paint-select never reflows the grid.
+  function selBox() {
     const sel = MODEL.filter(it => it._sel && !it._del);
-    if (!sel.length) return '';
-    return `<div class="as-bulk"><b>${sel.length} selected</b>
-      <button class="as-btn as-bk-type">Set type ▾</button>
-      <button class="as-btn as-bk-dl">⬇ Download</button>
-      <button class="as-btn as-bk-rm">🗑 Delete</button>
-      <span class="as-sp"></span>
-      <button class="as-btn as-bk-clr">Clear selection</button>
-      <span class="as-hint">right-click to select · drag a selected cover to move the group · click to enlarge</span></div>`;
+    return `${sel.length ? `<b class="as-selcnt">${sel.length} selected</b>` : '<span class="as-selcnt none">none selected</span>'}
+      <button class="as-ic as-selall" title="Select all covers">✳</button>
+      <button class="as-ic as-selclr" title="Clear selection"${sel.length ? '' : ' disabled'}>✕</button>
+      ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Set type ▾</button>
+      <button class="as-btn as-bk-dl" title="Download the selected covers">⬇ Download</button>
+      <button class="as-btn as-bk-rm" title="Mark the selected covers for removal">🗑 Delete</button>` : ''}`;
   }
   function section(type, items) {
     const label = type === null ? 'All covers' : type;
@@ -305,15 +313,15 @@
     root.querySelectorAll('.as-cmt').forEach(inp => {
       inp.oninput = () => { const it = byId(cardId(inp)); if (it) { it.comment = inp.value; refreshStaged(); } };
       inp.onblur = () => { const it = byId(cardId(inp)); if (it) { it._editcmt = false; render(); } };
+      // Enter finishes the edit (blur → render); Escape also bails out.
+      inp.onkeydown = e => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); inp.blur(); } };
     });
   }
 
   function wire() {
     root.querySelector('.as-size').oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); };
     root.querySelector('.as-size').onchange = () => { save(); render(); };
-    root.querySelector('.as-sort').onchange = e => { SETTINGS.sort = e.target.value; save(); render(); };
-    root.querySelector('.as-group').onchange = e => { SETTINGS.group = e.target.checked; save(); render(); };
-    root.querySelector('.as-selall').onclick = () => { const sel = !allSelected(); selectable().forEach(it => it._sel = sel); render(); };
+    const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     root.querySelector('.as-add').onclick = toggleDropZone;
     const staged = root.querySelector('.as-staged'); if (staged) staged.onclick = e => { e.stopPropagation(); openStagedPop(staged); };
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
@@ -359,13 +367,14 @@
         _paint = { value: !it._sel }; paintCard(c);
       };
     });
-    wireBulk();
+    wireSel();
     wireDrag();
     markCursor();
   }
-  function wireBulk() {
+  function wireSel() {
     const q = s => root.querySelector(s);
-    q('.as-bk-clr') && (q('.as-bk-clr').onclick = () => { MODEL.forEach(it => it._sel = false); root.querySelectorAll('.as-card.sel').forEach(c => c.classList.remove('sel')); syncBulkBar(); });
+    q('.as-selall') && (q('.as-selall').onclick = () => { selectable().forEach(it => it._sel = true); root.querySelectorAll('.as-card:not(.del)').forEach(c => c.classList.add('sel')); syncSel(); });
+    q('.as-selclr') && (q('.as-selclr').onclick = () => { MODEL.forEach(it => it._sel = false); root.querySelectorAll('.as-card.sel').forEach(c => c.classList.remove('sel')); syncSel(); });
     q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; } }); render(); });
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = () => MODEL.filter(it => it._sel && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 350)));
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
@@ -375,7 +384,7 @@
   function paintCard(c) {
     if (!c || !_paint || c.classList.contains('del')) return;
     const it = byId(c.dataset.id); if (!it || it._sel === _paint.value) return;
-    it._sel = _paint.value; c.classList.toggle('sel', it._sel); syncBulkBar();
+    it._sel = _paint.value; c.classList.toggle('sel', it._sel); syncSel();
   }
   document.addEventListener('mousemove', e => {
     if (!_paint || !e.buttons) return;   // e.buttons falls to 0 if the button was released off-window
@@ -386,13 +395,11 @@
   // right-click is our selection gesture across the gallery — suppress the native menu there
   document.addEventListener('contextmenu', e => { if (root.contains(e.target)) e.preventDefault(); });
 
-  // insert / refresh / remove the fixed bulk bar without touching the grid (no reflow → no jump)
-  function syncBulkBar() {
-    const html = bulkBar();
-    let bb = root.querySelector('.as-bulk');
-    if (!html) { if (bb) bb.remove(); return; }
-    if (bb) bb.outerHTML = html; else root.insertAdjacentHTML('afterbegin', html);
-    wireBulk();
+  // refresh just the toolbar's selection cluster in place — no grid reflow, so
+  // right-click paint-select never makes the page jump.
+  function syncSel() {
+    const box = root.querySelector('.as-selbox');
+    if (box) { box.innerHTML = selBox(); wireSel(); }
   }
   function refreshStaged() {
     const n = opsCount(); const s = root.querySelector('.as-staged'); const c = root.querySelector('.as-commit');
@@ -426,6 +433,24 @@
       + ops.map(o => `<div class="as-op">${esc(o)}</div>`).join('');
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
+    const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
+
+  // #234: the "View ▾" dropdown — Sort options + Group toggle, moved off the
+  // main toolbar to free its center for the selection controls.
+  function openViewPop(btn) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
+    const pop = document.createElement('div'); pop.className = 'as-pop as-view-pop';
+    const sorts = [['type', 'Position'], ['bytype', 'Type'], ['dim', 'Dimensions'], ['newest', 'Newest']];
+    pop.innerHTML = `<div class="as-pop-h">Sort</div>`
+      + sorts.map(([v, l]) => `<label><input type="radio" name="as-vsort" value="${v}"${SETTINGS.sort === v ? ' checked' : ''}> ${l}${v === 'type' ? ' <span class="as-pop-note">(needed to drag-reorder)</span>' : ''}</label>`).join('')
+      + `<div class="as-pop-h">View</div>`
+      + `<label><input type="checkbox" class="as-vgrp"${SETTINGS.group ? ' checked' : ''}> Group by type <span class="as-pop-note">(view-only)</span></label>`;
+    document.body.appendChild(pop);
+    placePop(pop, btn.getBoundingClientRect());
+    pop.querySelectorAll('input[name="as-vsort"]').forEach(r => r.onchange = () => { SETTINGS.sort = r.value; save(); render(); });
+    pop.querySelector('.as-vgrp').onchange = e => { SETTINGS.group = e.target.checked; save(); render(); };
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -526,8 +551,8 @@
   }
   // ── Phase 2a: apply staged changes as real MB edits (form-replay) ─────────────
   const R = `/release/${MBID}`;
-  // credit the tool in every edit note (user's note first, then the script name)
-  const editNote = m => [m.note && m.note.trim(), 'Art Station'].filter(Boolean).join('\n\n');
+  // credit the tool in every edit note (user's note first, then the attribution)
+  const editNote = m => [m.note && m.note.trim(), ATTRIBUTION].filter(Boolean).join('\n\n');
   async function getPostForm(url) {
     const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET ' + r.status); return r.text(); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -953,7 +978,7 @@
   .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#faf8ff,#efeafb)}
   .as-thumb.na img{display:none}
   .as-thumb.na::after{content:'Not on the Cover Art Archive yet';text-align:center;color:#9a8ccb;font-size:12px;font-weight:600;line-height:1.45;padding:0 16px}
-  .as-dim{font-size:10px;font-weight:600;color:#6b5fa0;white-space:nowrap;flex:0 0 auto}
+  .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;white-space:nowrap;flex:0 0 auto}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
   .as-rm:hover{background:var(--as-warn);color:#fff}
@@ -982,10 +1007,18 @@
   .as-card.sel .as-cmt{padding-right:28px}
   .as-card.as-cursor{box-shadow:0 0 0 2px #2a6,0 3px 14px rgba(40,160,100,.28)}
   /* bulk bar */
-  .as-bulk{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:120;display:flex;align-items:center;gap:11px;padding:9px 15px;background:#fff;border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 8px 28px rgba(60,40,110,.28);flex-wrap:wrap;max-width:94vw}
-  .as-bulk b{color:var(--as-acc)}
+  /* #234: center selection cluster in the main toolbar */
+  .as-selbox{display:flex;align-items:center;gap:8px;flex:0 1 auto;justify-content:center}
+  .as-selcnt{font-size:13px;font-weight:700;color:var(--as-acc);white-space:nowrap}
+  .as-selcnt.none{font-weight:400;color:#b3a9cc}
+  .as-ic{font:14px/1 inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:3px 9px;color:#5a4b8a;cursor:pointer}
+  .as-ic:hover{background:#f1ecff}
+  .as-ic:disabled{opacity:.4;cursor:default}
+  .as-selall{color:#2a7d50}
   .as-bk-rm{border-color:#e6b8b2;color:var(--as-warn)}
-  .as-hint{font-size:11px;color:#8a7fb8;width:100%;text-align:center;margin-top:2px}
+  .as-view{font-weight:600}
+  .as-dragwarn{font-size:11px;color:#b06a00;background:#fff3d6;border:1px solid #ecd9a0;border-radius:6px;padding:2px 7px;white-space:nowrap}
+  .as-pop-note{color:#9a8ccb;font-size:11px}
   .as-pop{position:absolute;z-index:200;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}
   .as-pop label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer}
   .as-pop label:hover{background:#f3eefe}.as-pop input{accent-color:var(--as-acc)}
