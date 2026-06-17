@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.020000
+// @version      2026.6.18.024000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -172,7 +172,20 @@
   function applyOriginal() {
     earlyHide.disabled = _showOrig;                                  // the document-start hiding style
     _native.forEach(el => { el.style.display = _showOrig ? '' : 'none'; });
-    root.classList.toggle('as-orig', _showOrig);
+    root.classList.toggle('as-orig', _showOrig);                     // hides the whole Art Station UI
+    ensureSwitch();
+  }
+  // #234: an Apollo-style fixed switcher (bottom-right) toggling Original ⇄ Art
+  // Station — always visible; the only control left when the native UI is shown.
+  function ensureSwitch() {
+    let sw = document.getElementById('as-switch');
+    if (!sw) {
+      sw = document.createElement('button'); sw.id = 'as-switch';
+      document.body.appendChild(sw);
+      sw.onclick = () => { _showOrig = !_showOrig; render(); };
+    }
+    sw.textContent = _showOrig ? 'Art Station' : 'Original';
+    sw.title = _showOrig ? 'Switch back to the Art Station gallery' : 'Show the original MusicBrainz cover-art page';
   }
   // at big tile sizes the selection outline alone is plenty obvious, so drop the
   // per-card ✓ badge — keeps large artwork uncluttered. #234
@@ -246,9 +259,6 @@
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   function bar(n) {
-    // #234: in "Show original" the gallery is hidden — the toolbar carries no
-    // controls, just a button to switch back to the Art Station gallery.
-    if (_showOrig) return `<div class="as-bar as-bar-orig"><button class="as-btn as-asback" title="Back to the Art Station gallery">◨ Art Station</button></div>`;
     return `<div class="as-bar">
       <button class="as-btn as-add" title="Add cover art — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
       <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
@@ -270,6 +280,7 @@
       ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Type ▾</button>
       <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="as-bt">Comment ▾</span></button>
       <button class="as-btn as-bk-dl" title="Download the selected covers"><span class="as-bi">⬇</span><span class="as-bt">Download</span></button>
+      <button class="as-btn as-bk-report" title="Postable Markdown / HTML report of the selection"><span class="as-bi">📋</span><span class="as-bt">Report</span></button>
       <button class="as-btn as-bk-rm" title="Mark the selected covers for removal"><span class="as-bi">🗑</span><span class="as-bt">Delete</span></button>` : ''}`;
   }
   function section(type, items) {
@@ -420,12 +431,10 @@
   }
 
   function wire() {
-    // #234: "Show original" toolbar has only the back button — wire it and stop.
-    if (_showOrig) { const back = root.querySelector('.as-asback'); if (back) back.onclick = () => { _showOrig = false; render(); }; return; }
     root.querySelector('.as-size').oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); };
     root.querySelector('.as-size').onchange = () => { save(); render(); };
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
-    const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = e => { e.stopPropagation(); openViewPop(dw); };
+    const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
@@ -483,6 +492,7 @@
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = () => MODEL.filter(it => it._sel && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 350)));
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
     q('.as-bk-cmt') && (q('.as-bk-cmt').onclick = e => { e.stopPropagation(); openBulkCommentPop(q('.as-bk-cmt')); });
+    q('.as-bk-report') && (q('.as-bk-report').onclick = e => { e.stopPropagation(); openReport(); });
   }
   // right-button paint selection (held + move)
   let _paint = null;
@@ -553,21 +563,18 @@
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-view-pop';
     const sorts = [['type', 'Position'], ['bytype', 'Type'], ['dim', 'Dimensions'], ['newest', 'Newest']];
-    const vmode = _showOrig ? 'orig' : SETTINGS.detailed ? 'detailed' : SETTINGS.group ? 'group' : 'grid';
+    const vmode = SETTINGS.detailed ? 'detailed' : SETTINGS.group ? 'group' : 'grid';
     pop.innerHTML = `<div class="as-pop-h">Sort</div>`
       + sorts.map(([v, l]) => `<label><input type="radio" name="as-vsort" value="${v}"${SETTINGS.sort === v ? ' checked' : ''}> ${l}${v === 'type' ? ' <span class="as-pop-note">(needed to drag-reorder)</span>' : ''}</label>`).join('')
       + `<div class="as-pop-h">View</div>`
-      + [['grid', 'Grid', ''], ['detailed', 'Detailed view', '(list + all types &amp; comment)'], ['group', 'Group by type', '(view-only)'], ['orig', 'Show original', "(MB's native UI)"]]
+      + [['grid', 'Grid', ''], ['detailed', 'Detailed view', '(list + all types &amp; comment)'], ['group', 'Group by type', '(view-only)']]
           .map(([v, l, note]) => `<label><input type="radio" name="as-vmode" value="${v}"${vmode === v ? ' checked' : ''}> ${l}${note ? ` <span class="as-pop-note">${note}</span>` : ''}</label>`).join('');
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     pop.querySelectorAll('input[name="as-vsort"]').forEach(r => r.onchange = () => { SETTINGS.sort = r.value; save(); render(); });
-    // #234: the view modes are mutually exclusive — Grid / Detailed / Group / native.
-    // "Show original" only sets the overlay flag and KEEPS the underlying layout, so
-    // the Art Station button returns to whatever view was active before.
+    // #234: the view modes are mutually exclusive — Grid / Detailed / Group.
     pop.querySelectorAll('input[name="as-vmode"]').forEach(r => r.onchange = () => {
-      if (r.value === 'orig') { _showOrig = true; }
-      else { _showOrig = false; SETTINGS.detailed = r.value === 'detailed'; SETTINGS.group = r.value === 'group'; }
+      SETTINGS.detailed = r.value === 'detailed'; SETTINGS.group = r.value === 'group';
       save(); render();
     });
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
@@ -1094,14 +1101,75 @@
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
 
+  // ── #239 postable report (Markdown / HTML) of the selected covers ─────────────
+  // release artist(s) + title, linked, parsed from the page header
+  function releaseInfo() {
+    const title = (document.querySelector('h1 bdi') || document.querySelector('h1'))?.textContent?.trim() || 'release';
+    const sub = document.querySelector('p.subheader') || document.querySelector('.subheader');
+    const artists = sub ? [...sub.querySelectorAll('a[href*="/artist/"]')]
+      .filter(a => !/\/create(\?|$)/.test(a.getAttribute('href')))
+      .map(a => ({ name: a.textContent.trim(), url: 'https://musicbrainz.org' + a.getAttribute('href').split(/[?#]/)[0] })) : [];
+    return { title, url: `https://musicbrainz.org/release/${MBID}`, artists };
+  }
+  function buildReport(opts) {
+    const info = releaseInfo();
+    const sel = MODEL.filter(it => it._sel && !it._del && !it._new).slice().sort(sortFn);
+    const sz = opts.size, W = sz === 'original' ? null : sz;
+    const url = it => `https://coverartarchive.org/release/${MBID}/${it.id}${sz === 'original' ? '' : '-' + sz}.jpg`;
+    const alt = it => (it.types[0] || 'cover').toLowerCase();
+    const cap = it => [it.types.join(', ') || 'no type', it.comment].filter(Boolean).join(' — ');
+    const out = [];
+    if (opts.format === 'html') {
+      const artists = info.artists.length ? info.artists.map(a => `<a href="${a.url}">${esc(a.name)}</a>`).join(', ') : 'Unknown artist';
+      out.push(`<h3>${artists} - <a href="${info.url}">${esc(info.title)}</a></h3>`, '');
+      if (opts.layout === 'captioned') sel.forEach(it => out.push(`<p><img src="${url(it)}" alt="${esc(alt(it))}"${W ? ` width="${W}"` : ''}><br><em>${esc(cap(it))}</em></p>`));
+      else out.push(sel.map(it => `<img src="${url(it)}" alt="${esc(alt(it))}"${W ? ` width="${W}"` : ''}>`).join(' '));
+    } else {
+      const artists = info.artists.length ? info.artists.map(a => `[${a.name}](${a.url})`).join(', ') : 'Unknown artist';
+      out.push(`### ${artists} - [${info.title}](${info.url})`, '');
+      if (opts.layout === 'captioned') sel.forEach(it => out.push(`**${cap(it)}**  `, `![${alt(it)}](${url(it)})`, ''));
+      else out.push(sel.map(it => `![${alt(it)}](${url(it)})`).join(' '));
+    }
+    return out.join('\n');
+  }
+  function openReport() {
+    const sel = MODEL.filter(it => it._sel && !it._del && !it._new);
+    const omitted = MODEL.filter(it => it._sel && it._new && !it._del).length;
+    document.getElementById('as-report')?.remove();
+    const ov = document.createElement('div'); ov.id = 'as-report';
+    ov.innerHTML = `<div class="as-cm-box as-rp-box">
+      <div class="as-cm-h">Report — ${sel.length} cover${sel.length===1?'':'s'}</div>
+      <div class="as-rp-opts">
+        <label>Format <select class="as-rp-fmt"><option value="markdown">Markdown</option><option value="html">HTML</option></select></label>
+        <label>Image size <select class="as-rp-size"><option>250</option><option>500</option><option>1200</option><option value="original">original</option></select></label>
+        <label>Layout <select class="as-rp-layout"><option value="inline">Inline images</option><option value="captioned">With types &amp; comments</option></select></label>
+      </div>
+      <textarea class="as-rp-out" rows="9" spellcheck="false" readonly></textarea>
+      <div class="as-cm-f"><span class="as-rp-note">${omitted ? `${omitted} unsaved upload${omitted===1?'':'s'} omitted (no CAA URL yet)` : ''}</span><span class="as-sp"></span><button class="as-btn as-rp-copy">📋 Copy</button><button class="as-btn as-cm-cancel">Close</button></div>
+    </div>`;
+    document.body.appendChild(ov);
+    ov.onclick = e => { if (e.target === ov) ov.remove(); };
+    ov.querySelector('.as-cm-cancel').onclick = () => ov.remove();
+    const ta = ov.querySelector('.as-rp-out');
+    const regen = () => { ta.value = buildReport({ format: ov.querySelector('.as-rp-fmt').value, size: ov.querySelector('.as-rp-size').value, layout: ov.querySelector('.as-rp-layout').value }); };
+    ov.querySelectorAll('select').forEach(s => s.onchange = regen);
+    ov.querySelector('.as-rp-copy').onclick = async () => {
+      ta.select(); try { await navigator.clipboard.writeText(ta.value); } catch (e) { document.execCommand('copy'); }
+      const b = ov.querySelector('.as-rp-copy'); b.textContent = '✓ Copied'; setTimeout(() => { b.textContent = '📋 Copy'; }, 1200);
+    };
+    regen();
+  }
+
   // ── styles ───────────────────────────────────────────────────────────────────
   const css = `
   :root{ --as-tile:${SETTINGS.tile}px; --as-acc:#5f3ec0; --as-warn:#c0392b; }
   #as-root{font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;margin:0 0 18px}
   .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px 11px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:wrap;margin-bottom:6px}
   .as-bar>*{flex:0 0 auto}
-  /* "Show original": collapse the gallery to just the toolbar, MB's native UI shows through */
-  #as-root.as-orig>:not(.as-bar){display:none}
+  /* "Original" (Apollo-style switch): hide the whole Art Station UI, MB's native page shows through */
+  #as-root.as-orig{display:none}
+  #as-switch{position:fixed;bottom:14px;right:14px;z-index:99998;background:var(--as-acc);color:#fff;border:none;border-radius:20px;font:bold 13px Arial;padding:9px 16px;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
+  #as-switch:hover{background:#4e329f}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
   #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer;white-space:nowrap}
@@ -1253,7 +1321,12 @@
   .as-lb-cmtadd{font:12px inherit;color:rgba(255,255,255,.6);background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:4px 13px;cursor:pointer}
   .as-lb-cmtadd:hover{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
   /* commit panel */
-  #as-commit{position:fixed;inset:0;z-index:9998;background:rgba(15,12,28,.55);display:flex;align-items:center;justify-content:center;padding:24px}
+  #as-commit,#as-report{position:fixed;inset:0;z-index:9998;background:rgba(15,12,28,.55);display:flex;align-items:center;justify-content:center;padding:24px}
+  .as-rp-opts{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:10px}
+  .as-rp-opts label{display:flex;align-items:center;gap:6px;font-size:13px;color:#555}
+  .as-rp-out{font:12px/1.45 ui-monospace,Consolas,monospace;border:1px solid #cfc6e6;border-radius:7px;padding:9px 11px;resize:vertical;background:#faf9fe;color:#333;white-space:pre;overflow:auto}
+  .as-rp-note{font-size:12px;color:#a05a00}
+  .as-rp-copy{font-weight:600;color:var(--as-acc)}
   .as-cm-box{background:#fff;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);max-height:88vh;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222}
   .as-cm-h{font-size:16px;font-weight:700;color:#3b2c70;margin-bottom:12px}
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:#555}
