@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.012000
+// @version      2026.6.18.020000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -138,7 +138,7 @@
   const allSelected = () => { const s = selectable(); return s.length > 0 && s.every(it => it._sel); };
   // reorder (drag) only in the canonical Position view — ungrouped + sorted by position.
   // Grouping is view-only; other sorts don't map to the committed order.
-  const canReorder = () => !SETTINGS.group && SETTINGS.sort === 'type';
+  const canReorder = () => !SETTINGS.group && !SETTINGS.detailed && SETTINGS.sort === 'type';
 
   // ── render ───────────────────────────────────────────────────────────────────
   const root = document.createElement('div'); root.id = 'as-root';
@@ -195,6 +195,7 @@
     applyOriginal();   // keep the native/script view state across re-renders
     applyZoomClass();
     fitTypePills();    // show as many types as the pill width allows
+    fitToolbar();      // icon-only buttons if the toolbar would otherwise wrap
     if (window.scrollY !== y) window.scrollTo(0, y);
   }
   // #234: a grid card's type pill shows as many of its types as fit on one line;
@@ -245,17 +246,19 @@
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   function bar(n) {
+    // #234: in "Show original" the gallery is hidden — the toolbar carries no
+    // controls, just a button to switch back to the Art Station gallery.
+    if (_showOrig) return `<div class="as-bar as-bar-orig"><button class="as-btn as-asback" title="Back to the Art Station gallery">◨ Art Station</button></div>`;
     return `<div class="as-bar">
-      <button class="as-btn as-add" title="Add cover art — file drop zone (goes first)">＋ Add image</button>
-      <span class="as-ctl">Size <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}"></span>
+      <button class="as-btn as-add" title="Add cover art — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
+      <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
-      ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and grouping off">⚠</span>' : ''}
-      <span class="as-sp"></span>
+      ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
       <span class="as-selbox">${selBox()}</span>
-      <span class="as-sp"></span>
-      <button class="as-btn as-commit" title="Review &amp; apply staged changes as MusicBrainz edits"${n?'':' disabled'}>✓ Enter edit${n ? ` (${n})` : ''}</button>
+      <button class="as-btn as-commit" title="Review &amp; apply staged changes as MusicBrainz edits"${n?'':' disabled'}>${commitInner(n)}</button>
     </div>`;
   }
+  const commitInner = n => `<span class="as-bi">✓</span><span class="as-bt">Enter edit</span>${n ? ` <span class="as-cnt2">(${n})</span>` : ''}`;
   // #234: the selection cluster lives in the center of the main toolbar (the old
   // bottom bulk bar is gone). syncSel() rebuilds just this span in place so
   // right-click paint-select never reflows the grid.
@@ -265,9 +268,9 @@
       <button class="as-ic as-selall" title="Select all covers">✳</button>
       <button class="as-ic as-selclr" title="Clear selection"${sel.length ? '' : ' disabled'}>✕</button>
       ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Type ▾</button>
-      <button class="as-btn as-bk-cmt" title="Set a comment on the selection">✎ Comment ▾</button>
-      <button class="as-btn as-bk-dl" title="Download the selected covers">⬇ Download</button>
-      <button class="as-btn as-bk-rm" title="Mark the selected covers for removal">🗑 Delete</button>` : ''}`;
+      <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="as-bt">Comment ▾</span></button>
+      <button class="as-btn as-bk-dl" title="Download the selected covers"><span class="as-bi">⬇</span><span class="as-bt">Download</span></button>
+      <button class="as-btn as-bk-rm" title="Mark the selected covers for removal"><span class="as-bi">🗑</span><span class="as-bt">Delete</span></button>` : ''}`;
   }
   function section(type, items) {
     const label = type === null ? 'All covers' : type;
@@ -417,9 +420,12 @@
   }
 
   function wire() {
+    // #234: "Show original" toolbar has only the back button — wire it and stop.
+    if (_showOrig) { const back = root.querySelector('.as-asback'); if (back) back.onclick = () => { _showOrig = false; render(); }; return; }
     root.querySelector('.as-size').oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); };
     root.querySelector('.as-size').onchange = () => { save(); render(); };
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
+    const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = e => { e.stopPropagation(); openViewPop(dw); };
     root.querySelector('.as-add').onclick = toggleDropZone;
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
@@ -493,6 +499,7 @@
     if (c && root.contains(c)) paintCard(c);
   });
   document.addEventListener('mouseup', () => { _paint = null; });
+  window.addEventListener('resize', () => { if (root.isConnected) fitToolbar(); });
   // right-click is our selection gesture across the gallery — suppress the native menu there
   document.addEventListener('contextmenu', e => { if (root.contains(e.target)) e.preventDefault(); });
 
@@ -500,11 +507,23 @@
   // right-click paint-select never makes the page jump.
   function syncSel() {
     const box = root.querySelector('.as-selbox');
-    if (box) { box.innerHTML = selBox(); wireSel(); }
+    if (box) { box.innerHTML = selBox(); wireSel(); fitToolbar(); }
   }
   function refreshStaged() {
     const n = opsCount(); const c = root.querySelector('.as-commit');
-    if (c) { c.textContent = `✓ Enter edit${n ? ` (${n})` : ''}`; c.disabled = !n; if (!c.disabled) c.onclick = enterEdit; }
+    if (c) { c.innerHTML = commitInner(n); c.disabled = !n; if (!c.disabled) c.onclick = enterEdit; fitToolbar(); }
+  }
+  // #234: when the toolbar's real items + gaps can't fit one row (the flex
+  // spacers would have to collapse and it'd wrap), collapse the labelled buttons
+  // to icon-only — the icons + tooltips carry the meaning. Measured by summing
+  // widths (the flex:1 spacers defeat scrollWidth/offsetTop-based detection).
+  function fitToolbar() {
+    const bar = root.querySelector('.as-bar'); if (!bar) return;
+    bar.classList.remove('as-compact');           // measure at full labels
+    const kids = [...bar.children];
+    let need = 11 * Math.max(0, kids.length - 1); // inter-item gaps
+    kids.forEach(el => { if (!el.classList.contains('as-sp')) need += el.offsetWidth; });
+    bar.classList.toggle('as-compact', need > bar.clientWidth - 24);   // minus h-padding
   }
   // the list of pending MB operations behind "N staged changes"
   function pendingOps() {
@@ -544,10 +563,11 @@
     placePop(pop, btn.getBoundingClientRect());
     pop.querySelectorAll('input[name="as-vsort"]').forEach(r => r.onchange = () => { SETTINGS.sort = r.value; save(); render(); });
     // #234: the view modes are mutually exclusive — Grid / Detailed / Group / native.
+    // "Show original" only sets the overlay flag and KEEPS the underlying layout, so
+    // the Art Station button returns to whatever view was active before.
     pop.querySelectorAll('input[name="as-vmode"]').forEach(r => r.onchange = () => {
-      _showOrig = r.value === 'orig';
-      SETTINGS.detailed = r.value === 'detailed';
-      SETTINGS.group = r.value === 'group';
+      if (r.value === 'orig') { _showOrig = true; }
+      else { _showOrig = false; SETTINGS.detailed = r.value === 'detailed'; SETTINGS.group = r.value === 'group'; }
       save(); render();
     });
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
@@ -1085,12 +1105,17 @@
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
   #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer;white-space:nowrap}
+  .as-btn{display:inline-flex;align-items:center;gap:5px}
+  /* #234: compact toolbar — hide button labels (keep icons + tooltips) when it would otherwise wrap */
+  .as-bar.as-compact .as-bt{display:none}
   .as-btn:hover{background:#f6f3fd}
   /* accent (white-on-purple) buttons must darken on hover, not lighten — else the white text vanishes */
   .as-commit:hover:not(:disabled),.as-pop-apply:hover:not(:disabled),.as-cm-go:hover:not(:disabled){background:#4e329f;color:#fff;border-color:#4e329f}
   .as-add{font-weight:600;color:var(--as-acc)}
+  .as-asback{font-weight:700;color:var(--as-acc);background:#f3eefe;border-color:#cdbff2}
   .as-dl{border-color:#bcd;color:#2a6}
   .as-sp{flex:1 1 auto}
+  .as-commit{margin-left:auto}   /* push Enter edit to the far right of the toolbar */
   .as-staged{font-size:12px;color:#a05a00;background:#fff3d6;border-color:#ecd9a0;white-space:nowrap}
   .as-staged:hover{background:#ffeec0}
   .as-op{padding:4px 8px;border-radius:5px;font-size:12.5px;color:#333;white-space:nowrap}
