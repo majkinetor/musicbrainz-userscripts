@@ -489,7 +489,13 @@
     q('.as-selall') && (q('.as-selall').onclick = () => { selectable().forEach(it => it._sel = true); root.querySelectorAll('.as-card:not(.del), .as-drow').forEach(c => c.classList.add('sel')); root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = true); syncSel(); });
     q('.as-selclr') && (q('.as-selclr').onclick = () => { MODEL.forEach(it => it._sel = false); root.querySelectorAll('.as-card.sel, .as-drow.sel').forEach(c => c.classList.remove('sel')); root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = false); syncSel(); });
     q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; } }); render(); });
-    q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = () => MODEL.filter(it => it._sel && !it._new).forEach((it, i) => setTimeout(() => dlOne(it), i * 350)));
+    q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = async e => {
+      const sel = MODEL.filter(it => it._sel && !it._new); if (!sel.length) return;
+      if (sel.length === 1) return dlOne(sel[0]);           // single → save the image directly
+      const b = e.currentTarget, lbl = b.querySelector('.as-bt'), old = lbl ? lbl.textContent : '';
+      b.disabled = true; if (lbl) lbl.textContent = 'Zipping…';
+      try { await dlZip(sel); } finally { b.disabled = false; if (lbl) lbl.textContent = old; }   // multiple → one .zip (#240)
+    });
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
     q('.as-bk-cmt') && (q('.as-bk-cmt').onclick = e => { e.stopPropagation(); openBulkCommentPop(q('.as-bk-cmt')); });
     q('.as-bk-report') && (q('.as-bk-report').onclick = e => { e.stopPropagation(); openReport(); });
@@ -654,6 +660,49 @@
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(obj), 8000);
     } catch (e) { window.open(url, '_blank'); }   // fallback: just open it
+  }
+  // #240: multiple selected covers → one ZIP. Triggering N separate downloads
+  // from timeouts trips the browser's "downloading multiple files" block (only the
+  // first saves); a single zip download sidesteps it entirely.
+  function crc32(bytes) {
+    let t = crc32._t;
+    if (!t) { t = crc32._t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } }
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) crc = (crc >>> 8) ^ t[(crc ^ bytes[i]) & 0xFF];
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+  // store-only ZIP (no compression — covers are already JPEG/PNG), no dependency
+  function makeZip(files) {
+    const enc = new TextEncoder();
+    const dv = (len, fill) => { const a = new Uint8Array(len); fill(new DataView(a.buffer)); return a; };
+    const parts = [], central = [];
+    let offset = 0;
+    for (const f of files) {
+      const name = enc.encode(f.name), data = f.data, crc = crc32(data), size = data.length;
+      parts.push(dv(30, v => { v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint32(14, crc, true); v.setUint32(18, size, true); v.setUint32(22, size, true); v.setUint16(26, name.length, true); }), name, data);
+      central.push(dv(46, v => { v.setUint32(0, 0x02014b50, true); v.setUint16(4, 20, true); v.setUint16(6, 20, true); v.setUint32(16, crc, true); v.setUint32(20, size, true); v.setUint32(24, size, true); v.setUint16(28, name.length, true); v.setUint32(42, offset, true); }), name);
+      offset += 30 + name.length + size;
+    }
+    const cdSize = central.reduce((s, c) => s + c.length, 0);
+    const eocd = dv(22, v => { v.setUint32(0, 0x06054b50, true); v.setUint16(8, files.length, true); v.setUint16(10, files.length, true); v.setUint32(12, cdSize, true); v.setUint32(16, offset, true); });
+    return new Blob([...parts, ...central, eocd], { type: 'application/zip' });
+  }
+  async function dlZip(sel) {
+    const used = new Set(), entries = [];
+    for (const it of sel) {
+      const url = it._img || imgUrl(it.id);
+      const ext = (url.match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
+      let base = (it.types[0] || 'cover'), name = `${base}.${ext}`, n = 2;
+      while (used.has(name.toLowerCase())) name = `${base}-${n++}.${ext}`;   // disambiguate same-type covers
+      used.add(name.toLowerCase());
+      try { entries.push({ name, data: new Uint8Array(await fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })) }); }
+      catch (e) { /* skip a cover that won't fetch */ }
+    }
+    if (!entries.length) return;
+    const obj = URL.createObjectURL(makeZip(entries));
+    const a = document.createElement('a'); a.href = obj; a.download = `${MBID}-covers.zip`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(obj), 8000);
   }
   let _dropZone = false;
   function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
