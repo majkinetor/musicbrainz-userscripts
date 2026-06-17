@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.010000
+// @version      2026.6.18.012000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -534,18 +534,22 @@
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-view-pop';
     const sorts = [['type', 'Position'], ['bytype', 'Type'], ['dim', 'Dimensions'], ['newest', 'Newest']];
+    const vmode = _showOrig ? 'orig' : SETTINGS.detailed ? 'detailed' : SETTINGS.group ? 'group' : 'grid';
     pop.innerHTML = `<div class="as-pop-h">Sort</div>`
       + sorts.map(([v, l]) => `<label><input type="radio" name="as-vsort" value="${v}"${SETTINGS.sort === v ? ' checked' : ''}> ${l}${v === 'type' ? ' <span class="as-pop-note">(needed to drag-reorder)</span>' : ''}</label>`).join('')
       + `<div class="as-pop-h">View</div>`
-      + `<label><input type="checkbox" class="as-vdetail"${SETTINGS.detailed ? ' checked' : ''}> Detailed view <span class="as-pop-note">(list + all types & comment)</span></label>`
-      + `<label><input type="checkbox" class="as-vgrp"${SETTINGS.group ? ' checked' : ''}> Group by type <span class="as-pop-note">(view-only)</span></label>`
-      + `<label><input type="checkbox" class="as-vorig"${_showOrig ? ' checked' : ''}> Show original <span class="as-pop-note">(MB's native UI)</span></label>`;
+      + [['grid', 'Grid', ''], ['detailed', 'Detailed view', '(list + all types &amp; comment)'], ['group', 'Group by type', '(view-only)'], ['orig', 'Show original', "(MB's native UI)"]]
+          .map(([v, l, note]) => `<label><input type="radio" name="as-vmode" value="${v}"${vmode === v ? ' checked' : ''}> ${l}${note ? ` <span class="as-pop-note">${note}</span>` : ''}</label>`).join('');
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     pop.querySelectorAll('input[name="as-vsort"]').forEach(r => r.onchange = () => { SETTINGS.sort = r.value; save(); render(); });
-    pop.querySelector('.as-vdetail').onchange = e => { SETTINGS.detailed = e.target.checked; save(); render(); };
-    pop.querySelector('.as-vgrp').onchange = e => { SETTINGS.group = e.target.checked; save(); render(); };
-    pop.querySelector('.as-vorig').onchange = e => { _showOrig = e.target.checked; applyOriginal(); };
+    // #234: the view modes are mutually exclusive — Grid / Detailed / Group / native.
+    pop.querySelectorAll('input[name="as-vmode"]').forEach(r => r.onchange = () => {
+      _showOrig = r.value === 'orig';
+      SETTINGS.detailed = r.value === 'detailed';
+      SETTINGS.group = r.value === 'group';
+      save(); render();
+    });
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -1074,13 +1078,13 @@
   const css = `
   :root{ --as-tile:${SETTINGS.tile}px; --as-acc:#5f3ec0; --as-warn:#c0392b; }
   #as-root{font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;margin:0 0 18px}
-  .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:11px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:nowrap;overflow-x:auto;margin-bottom:6px}
+  .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px 11px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:wrap;margin-bottom:6px}
   .as-bar>*{flex:0 0 auto}
   /* "Show original": collapse the gallery to just the toolbar, MB's native UI shows through */
   #as-root.as-orig>:not(.as-bar){display:none}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
-  #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer}
+  #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer;white-space:nowrap}
   .as-btn:hover{background:#f6f3fd}
   /* accent (white-on-purple) buttons must darken on hover, not lighten — else the white text vanishes */
   .as-commit:hover:not(:disabled),.as-pop-apply:hover:not(:disabled),.as-cm-go:hover:not(:disabled){background:#4e329f;color:#fff;border-color:#4e329f}
