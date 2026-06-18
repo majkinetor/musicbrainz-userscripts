@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.360000
+// @version      2026.6.18.370000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -81,6 +81,28 @@
   const ITEM = IS_EVENT ? 'image' : 'cover';
   const ITEMS = ITEM + 's';
 
+  // #243 guess a cover type from the file name — "Folder"/"Cover" are the de-facto names
+  // for the front; otherwise the type word appears in the name (back, booklet, obi, …).
+  // First match wins, so order specific → general. Only types valid for this entity are used.
+  const TYPE_FROM_NAME = [
+    [/\b(front|folder|frontal|recto)\b|cover art|albumart/, 'Front'],
+    [/\b(back|rear|verso|trasera)\b/, 'Back'],
+    [/\b(booklet|inlay|libretto|insert)\b/, 'Booklet'],
+    [/\btray\b/, 'Tray'], [/\bobi\b/, 'Obi'], [/\bspine\b/, 'Spine'], [/\bsticker\b/, 'Sticker'],
+    [/\b(matrix|runout)\b/, 'Matrix/Runout'], [/\bliner\b/, 'Liner'], [/\bposter\b/, 'Poster'],
+    [/\bcd\d*\b|\bdiscs?\b|\bdisk\b|\bvinyl\b|\bmedium\b|\blabel\b|\bside\s*[a-d0-9]/, 'Medium'],
+    [/\btrack\b/, 'Track'], [/\btop\b/, 'Top'], [/\bbottom\b/, 'Bottom'], [/\b(raw|unedited)\b/, 'Raw/Unedited'], [/\bwatermark\b/, 'Watermark'],
+    [/\bflyer\b/, 'Flyer'], [/\bticket\b/, 'Ticket'], [/\bsetlist\b/, 'Setlist'], [/\bbanner\b/, 'Banner'],
+    [/\bprogram\b/, 'Program'], [/\bschedule\b/, 'Schedule'], [/\bmap\b/, 'Map'], [/\blogo\b/, 'Logo'], [/\bmerch/, 'Merchandise'],
+    [/\bcover\b/, 'Front'],   // generic fallback (after Back etc.) so "cover.jpg" → Front but "back cover" → Back
+  ];
+  function typeFromName(name) {
+    const base = String(name || '').replace(/\.[a-z0-9]+$/i, '').replace(/[^a-z0-9]+/gi, ' ').toLowerCase().trim();
+    if (!base) return null;
+    for (const [re, t] of TYPE_FROM_NAME) if (re.test(base) && ALL_TYPES.includes(t)) return t;
+    return null;
+  }
+
   let MODEL = [];       // [{ id, types:[], comment, order, w, h, bytes, _del, _new, _file }]
   const SIZES = new Map(); // CAA image id -> original file size in bytes (from archive.org metadata)
   const fmtSize = b => b >= 1048576 ? (b / 1048576).toFixed(1) + 'Mb' : Math.max(1, Math.round(b / 1024)) + 'Kb';
@@ -118,7 +140,7 @@
     } catch (e) { /* size is a nicety — never block the gallery */ }
   }
   let SETTINGS = load();
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -255,10 +277,12 @@
       + `<button class="as-setup-x" title="close">✕</button></div>`
       + `<div class="as-setup-body">`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-hidefoot"${SETTINGS.hideMbFooter ? ' checked' : ''}> Hide MB native buttons (Add / Reorder / Import…)</label>`
+      + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-autotype"${SETTINGS.autoType ? ' checked' : ''}> Set ${ITEM} type from the file name (Front, Back, Booklet…)</label>`
       + `</div>`;
     document.body.appendChild(panel);
     panel.querySelector('.as-setup-x').onclick = () => panel.remove();
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
+    panel.querySelector('.as-setup-autotype').onchange = e => { SETTINGS.autoType = e.target.checked; save(); };
     const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -1117,7 +1141,9 @@
   let _dropZone = false;
   function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
   function newItem(f, meta) {
-    return { id: 'new-' + Math.random().toString(36).slice(2, 8), types: (meta && meta.types) ? meta.types.slice() : [], comment: (meta && meta.comment) || '', order: 0, w: 0, h: 0,
+    let types = (meta && meta.types && meta.types.length) ? meta.types.slice() : [];
+    if (!types.length && SETTINGS.autoType) { const t = typeFromName(f.name); if (t) types = [t]; }   // #243
+    return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment: (meta && meta.comment) || '', order: 0, w: 0, h: 0,
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 };
   }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
