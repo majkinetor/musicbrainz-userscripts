@@ -1,5 +1,14 @@
 # Art Station Changelog
 
+## [2026.6.18.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.18.2)
+
+### Features
+
+1. Enhanced Cover Art Uploads Integration ([#242](https://github.com/majkinetor/musicbrainz-userscripts/issues/242))
+1. Event art support ([#241](https://github.com/majkinetor/musicbrainz-userscripts/issues/241))
+1. Download multiple covers as zip archive ([#240](https://github.com/majkinetor/musicbrainz-userscripts/issues/240))
+1. Integration with covers.musichoarders.xyz ([#235](https://github.com/majkinetor/musicbrainz-userscripts/issues/235))
+
 ## [2026.6.18](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.18)
 
 ### Features
