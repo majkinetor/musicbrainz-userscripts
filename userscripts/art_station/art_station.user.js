@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.370000
+// @version      2026.6.18.380000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -815,10 +815,20 @@
   }
 
   // ── actions ───────────────────────────────────────────────────────────────────
+  // #244 a download name that round-trips the type back via #243:
+  //   "<NN> <type1>,<type2> <comment>.<ext>"  — types lowercased, "/" → "_",
+  //   no type → "none". e.g. "09 front,sticker Front cover with the sticker.jpg"
+  function downloadName(it, pos, ext, pad = 2) {
+    const nn = String(pos).padStart(pad, '0');
+    const types = (it.types && it.types.length) ? it.types.map(t => t.toLowerCase().replace(/[\\/]/g, '_')).join(',') : 'none';
+    const comment = (it.comment || '').trim().slice(0, 100);
+    const base = (nn + ' ' + types + (comment ? ' ' + comment : '')).replace(/[<>:"|?*]/g, '_').replace(/[\\/]/g, '_').replace(/\s+/g, ' ').trim();
+    return `${base}.${ext}`;
+  }
   async function dlOne(it) {
     const url = it._img || imgUrl(it.id);
     const ext = (url.match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
-    const name = `${MBID}-${it.id}.${ext}`;
+    const name = downloadName(it, it.order + 1, ext);
     try {
       // cross-origin <a download> is ignored by browsers — fetch the blob (CAA
       // sends CORS) and download via a same-origin object URL so it actually saves
@@ -855,11 +865,13 @@
   // member names, disambiguating same-type covers (front.jpg, booklet.jpg, booklet-2.jpg …)
   function zipNames(sel) {
     const used = new Set();
+    const pad = Math.max(2, String(Math.max(0, ...sel.map(it => it.order + 1))).length);
     return sel.map(it => {
       const url = it._img || imgUrl(it.id);
       const ext = (url.match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
-      let base = (it.types[0] || ITEM), name = `${base}.${ext}`, n = 2;
-      while (used.has(name.toLowerCase())) name = `${base}-${n++}.${ext}`;
+      let name = downloadName(it, it.order + 1, ext, pad);   // #244 "NN types comment.ext"
+      const b = name.replace(/\.[^.]+$/, ''); let n = 2;
+      while (used.has(name.toLowerCase())) name = `${b} (${n++}).${ext}`;
       used.add(name.toLowerCase());
       return { url, name };
     });
@@ -867,21 +879,26 @@
   const fetchBytes = async url => new Uint8Array(await fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }));
   async function dlZip(sel, onProgress) {
     const items = zipNames(sel), enc = new TextEncoder();
+    const readme = { name: 'README.md', data: enc.encode(manifestMd(sel)) };   // #244 manifest in the archive
     // #240: stream the zip straight to disk when the browser supports it — the
     // download starts immediately (first cover written as soon as it arrives) and
     // the whole archive is never buffered in memory.
     if (window.showSaveFilePicker) {
       let handle;
-      try { handle = await window.showSaveFilePicker({ suggestedName: `${MBID}${MBID}-${ITEMS}.zip`, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
+      try { handle = await window.showSaveFilePicker({ suggestedName: `${MBID}-${ITEMS}.zip`, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
       catch (e) { return; }   // user cancelled the save dialog
       const w = await handle.createWritable();
       const central = []; let offset = 0, done = 0;
-      for (const o of items) {
-        let data; try { data = await fetchBytes(o.url); } catch (e) { onProgress && onProgress(++done, items.length); continue; }
-        const name = enc.encode(o.name), crc = crc32(data);
+      const writeEntry = async (nameStr, data) => {
+        const name = enc.encode(nameStr), crc = crc32(data);
         await w.write(zipLocal(crc, data.length, name.length)); await w.write(name); await w.write(data);
         central.push({ crc, size: data.length, name, offset });
         offset += 30 + name.length + data.length;
+      };
+      await writeEntry(readme.name, readme.data);   // README.md first
+      for (const o of items) {
+        let data; try { data = await fetchBytes(o.url); } catch (e) { onProgress && onProgress(++done, items.length); continue; }
+        await writeEntry(o.name, data);
         onProgress && onProgress(++done, items.length);
       }
       let cdSize = 0;
@@ -896,10 +913,10 @@
       try { const data = await fetchBytes(o.url); onProgress && onProgress(++done, items.length); return { name: o.name, data }; }
       catch (e) { onProgress && onProgress(++done, items.length); return null; }
     }));
-    const entries = results.filter(Boolean);
-    if (!entries.length) return;
+    const entries = [readme, ...results.filter(Boolean)];   // README.md first
+    if (entries.length <= 1) return;
     const obj = URL.createObjectURL(makeZip(entries));
-    const a = document.createElement('a'); a.href = obj; a.download = `${MBID}${MBID}-${ITEMS}.zip`;
+    const a = document.createElement('a'); a.href = obj; a.download = `${MBID}-${ITEMS}.zip`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(obj), 8000);
   }
@@ -1686,9 +1703,39 @@
       .map(a => ({ name: a.textContent.trim(), url: 'https://musicbrainz.org' + a.getAttribute('href').split(/[?#]/)[0] })) : [];
     return { title, url: `https://musicbrainz.org${ENT.base}`, artists };
   }
+  const pad2 = n => String(n).padStart(2, '0');
+  // the logged-in MB user, for the export manifest ("Exported by"). Read the name from
+  // the /user/<name> href — the link text may be a label like "Profile".
+  function mbUser() {
+    for (const a of document.querySelectorAll('a[href^="/user/"]')) {
+      const m = (a.getAttribute('href') || '').match(/^\/user\/([^/?#]+)\/?$/);
+      if (m) return decodeURIComponent(m[1]);
+    }
+    return '';
+  }
+  // #244 a README.md / manifest for the download archive (and a Report type): release
+  // header, export metadata, and the artwork list linking each type-named file to its original.
+  function manifestMd(sel) {
+    const info = releaseInfo();
+    const artists = info.artists.length ? info.artists.map(a => `[${a.name}](${a.url})`).join(', ') : 'Unknown artist';
+    const d = new Date();
+    const date = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    const by = mbUser();
+    const pad = Math.max(2, String(Math.max(0, ...sel.map(it => it.order + 1))).length);
+    const out = [`# ${artists} - [${info.title}](${info.url})`, '', `- Export date: ${date}`];
+    if (by) out.push(`- Exported by: ${by}`);
+    out.push('', '## Artwork', '');
+    sel.forEach((it, i) => {
+      const orig = it._img || imgUrl(it.id);
+      const ext = (orig.match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
+      out.push(`${i + 1}. [${downloadName(it, it.order + 1, ext, pad)}](${orig})`);
+    });
+    return out.join('\n') + '\n';
+  }
   function buildReport(opts) {
     const info = releaseInfo();
     const sel = MODEL.filter(it => it._sel && !it._del && !it._new).slice().sort(sortFn);
+    if (opts.format === 'manifest') return manifestMd(sel);
     const sz = opts.size, W = sz === 'original' ? null : sz;
     const url = it => `${CAA}/${it.id}${sz === 'original' ? '' : '-' + sz}.jpg`;
     const alt = it => (it.types[0] || (IS_EVENT ? 'event art' : ITEM)).toLowerCase();
@@ -1715,7 +1762,7 @@
     ov.innerHTML = `<div class="as-cm-box as-rp-box">
       <div class="as-cm-h">Report — ${sel.length} ${ITEM}${sel.length===1?'':'s'}</div>
       <div class="as-rp-opts">
-        <label>Format <select class="as-rp-fmt"><option value="markdown">Markdown</option><option value="html">HTML</option></select></label>
+        <label>Format <select class="as-rp-fmt"><option value="markdown">Markdown</option><option value="html">HTML</option><option value="manifest">README.md (archive manifest)</option></select></label>
         <label>Image size <select class="as-rp-size"><option>250</option><option>500</option><option>1200</option><option value="original">original</option></select></label>
         <label>Layout <select class="as-rp-layout"><option value="inline">Inline images</option><option value="captioned">With types &amp; comments</option></select></label>
       </div>
@@ -1750,7 +1797,7 @@
   #as-switch:hover{background:rgba(255,255,255,.13)}
   #as-setup-btn{padding:8px 12px;cursor:pointer;font-size:14px;display:flex;align-items:center;background:none;border:none;border-left:1px solid rgba(255,255,255,.28);color:inherit}
   #as-setup-btn:hover{background:rgba(255,255,255,.13)}
-  #as-setup{position:fixed;bottom:58px;right:14px;z-index:99999;width:320px;max-width:92vw;background:#fff;border:1px solid #cbbdf0;border-radius:10px;box-shadow:0 8px 28px rgba(40,20,80,.32);font:13px Arial;color:#222}
+  #as-setup{position:fixed;bottom:58px;right:14px;z-index:99999;width:max-content;min-width:320px;max-width:92vw;background:#fff;border:1px solid #cbbdf0;border-radius:10px;box-shadow:0 8px 28px rgba(40,20,80,.32);font:13px Arial;color:#222}
   .as-setup-h{display:flex;align-items:center;gap:7px;padding:10px 12px;border-bottom:1px solid #ece6f8;color:#563b8f}
   .as-setup-ver{font-size:11px;font-weight:normal;color:#999}
   .as-setup-help{margin-left:auto;font-size:12px;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
@@ -1759,7 +1806,7 @@
   .as-setup-x:hover{color:#555}
   .as-setup-body{padding:10px 12px}
   .as-setup-info{margin:0 0 10px;color:#666;font-size:12px;line-height:1.45}
-  .as-setup-opt{display:flex;gap:8px;align-items:center;cursor:pointer}
+  .as-setup-opt{display:flex;gap:8px;align-items:center;cursor:pointer;white-space:nowrap}
   .as-setup-opt input{margin:0}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}

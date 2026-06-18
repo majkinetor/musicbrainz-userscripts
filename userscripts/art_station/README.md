@@ -26,10 +26,10 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
 - **Single or bulk mode**
     - **Set type**
     - **Set comment** with auto focusing next comment field on `<ENTER>`
-    - **Remove** and **Download** zip archive
-    - **Reports** in HTML and Markdown with configurable parameters  
+    - **Remove** and **Download** as a zip archive — files named by type so they round-trip (see below), plus a `README.md` manifest
+    - **Reports** in HTML, Markdown, or as the `README.md` archive manifest
 - **Add images**
-  - **File drop** — choose local file and upload to the Cover Art Archive in parallel
+  - **File drop** — choose local file and upload to the Cover Art Archive in parallel; the **type is guessed from the file name** (see below)
   - **URL link** — use [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch cover from Discogs, Apple, Spotify, Bandcamp…
   - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover via integration.
   - Fresh covers shown faster than native UI
@@ -38,6 +38,25 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
   - Slideshow
   - Set comment and type
   - `<Delete>` key to remove image 
+
+## File names ⇄ types
+
+Cover types and file names round-trip, so a downloaded archive can be re-added later with types intact.
+
+**On add** (drop / pick / source) — when an image has no type, it's guessed from the file name (toggle in ⚙ setup):
+
+| Name contains | Type |
+|---|---|
+| `front`, `folder`, `cover`, `frontal`, `recto` | Front |
+| `back`, `rear`, `verso` | Back |
+| `booklet`, `inlay`, `insert` | Booklet |
+| `cd`, `disc`, `disk`, `vinyl`, `medium`, `label`, `side a/b/…` | Medium |
+| `tray`, `obi`, `spine`, `sticker`, `liner`, `poster`, `matrix`/`runout`, `track`, `top`, `bottom`, `raw`/`unedited`, `watermark` | the matching type |
+| `flyer`, `ticket`, `setlist`, `banner`, `program`, `schedule`, `map`, `logo`, `merch` | the matching **event-art** type |
+
+Matching is word-boundaried and order-aware, so `back cover` → **Back** (not Front) and an album titled *Super Disco Pirata* → no type.
+
+**On download** — each file is named `<NN> <type1>,<type2> <comment>.<ext>` (position, then the lowercased types with `/`→`_`, then the comment; no type → `none`), e.g. `09 front,sticker Front cover with the sticker.jpg`. A `README.md` manifest with the release header, export date/user, and every artwork linked to its original is added to the archive (also available as a Report format).
 
 ## Applying changes
 
