@@ -8,7 +8,7 @@ See each script's README for detailed instructions, screenshots and videos:
 UI and tools for advanced adding and editing of MusicBrainz release
 
 [Art Station](./userscripts/art_station/README.md) <img src="./userscripts/art_station/icon.png" align="left" width="32"><br>
-Cover-art editor: view, group, sort, reorder, retype, comment, remove, download and add a release's cover art, staged and applied on Enter edit
+Cover/event-art editor: view, group, sort, reorder, retype, comment, remove, download, add and source a release's cover art (or an event's event art), staged and applied on Enter edit
 
 [Credit Hoarder](./userscripts/credit_hoarder/README.md)<img src="./userscripts/credit_hoarder/icon.svg" align="left" width="32"><br>
 Import per-track release credits from several providers (Discogs, Tidal, Qobuz) as MusicBrainz relationships, with a review phase
