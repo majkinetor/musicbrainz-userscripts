@@ -43,7 +43,7 @@ export function buildEditNote(discogsUrl, opts, extraLines) {
  * plus the source URL the entity came from and the release it was imported onto,
  * so the auto-created entity carries a proper, traceable note.
  */
-export function buildCreateNote(sourceUrl) {
+export function buildCreateNote(sourceUrl, action = 'Created the entity') {
     const s = GM_info.script;
     const homepage = s.homepageURL || s.homepage || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md';
     const header = s.name + ' v' + s.version + ' by ' + s.author + ' - ' + homepage;
@@ -52,7 +52,7 @@ export function buildCreateNote(sourceUrl) {
                      : /qobuz\.com/i.test(cleanSource) ? 'Qobuz'
                      : 'Discogs';
     const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, '');
-    const lines = [header, '', 'Created while importing credits onto ' + mbUrl];
+    const lines = [header, '', action + ' while importing credits onto ' + mbUrl];
     if (cleanSource) lines.push('Source: ' + sourceName + ' — ' + cleanSource);
     return lines.join('\n');
 }

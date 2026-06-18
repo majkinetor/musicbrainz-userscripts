@@ -868,7 +868,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             addLinkBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#e8771d;'; // Discogs orange accent
                             addLinkBtn.addEventListener('click', () => {
                                 const ltId = entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
-                                const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
+                                const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId, [`edit-${entityType}.edit_note`]: buildCreateNote(discogsHref, 'Added the Discogs link') });
                                 const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
                                 window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, '_blank', 'noopener,noreferrer');
                                 // Replace button with a "pending verification" badge.

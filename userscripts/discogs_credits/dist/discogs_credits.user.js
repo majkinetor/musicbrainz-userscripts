@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.18.015258
+// @version      2026.6.18.020558
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2255,14 +2255,14 @@
     if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
     return lines.join("\n");
   }
-  function buildCreateNote(sourceUrl) {
+  function buildCreateNote(sourceUrl, action = "Created the entity") {
     const s = GM_info.script;
     const homepage = s.homepageURL || s.homepage || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/discogs_credits/README.md";
     const header = s.name + " v" + s.version + " by " + s.author + " - " + homepage;
     const cleanSource = String(sourceUrl || "").split(/[?#]/)[0];
     const sourceName = /tidal\.com/i.test(cleanSource) ? "Tidal" : /qobuz\.com/i.test(cleanSource) ? "Qobuz" : "Discogs";
     const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit-relationships$/, "");
-    const lines = [header, "", "Created while importing credits onto " + mbUrl];
+    const lines = [header, "", action + " while importing credits onto " + mbUrl];
     if (cleanSource) lines.push("Source: " + sourceName + " \u2014 " + cleanSource);
     return lines.join("\n");
   }
@@ -2873,7 +2873,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
                 addLinkBtn.style.cssText = ACTION_CHIP_STYLE + "color:#e8771d;";
                 addLinkBtn.addEventListener("click", () => {
                   const ltId = entityType === "label" ? "217" : entityType === "place" ? "705" : "180";
-                  const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId });
+                  const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId, [`edit-${entityType}.edit_note`]: buildCreateNote(discogsHref, "Added the Discogs link") });
                   const mbid = selected.id.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
                   window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, "_blank", "noopener,noreferrer");
                   linkSlot.innerHTML = "";
