@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.071000
+// @version      2026.6.18.081000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -263,7 +263,7 @@
   function bar(n) {
     return `<div class="as-bar">
       <button class="as-btn as-add" title="Add cover art — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
-      <button class="as-btn as-mh" title="Source a cover from covers.musichoarders.xyz (#235)"><span class="as-bi">🔍</span><span class="as-bt">MH Covers</span></button>
+      <button class="as-btn as-mh" title="Source a cover from covers.musichoarders.xyz (#235)"><span class="as-bi"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="" width="15" height="15"></span><span class="as-bt">MH Covers</span></button>
       <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
@@ -440,6 +440,7 @@
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
     const mh = root.querySelector('.as-mh'); if (mh) mh.onclick = openMHCovers;
+    const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
@@ -747,12 +748,13 @@
   //    as a staged NEW cover, so it rides the normal Enter-edit upload flow. ─────
   const MH_ORIGIN = 'https://covers.musichoarders.xyz';
   // cross-origin GET → Blob (covers can be on any provider host → needs GM xhr)
-  function gmFetch(url) {
+  function gmFetch(url, onProgress) {
     return new Promise((resolve, reject) => {
       const gx = (typeof GM !== 'undefined' && GM.xmlHttpRequest && GM.xmlHttpRequest.bind(GM))
               || (typeof GM_xmlhttpRequest !== 'undefined' && GM_xmlhttpRequest) || null;
       if (!gx) { fetch(url).then(r => r.ok ? r.blob() : Promise.reject(new Error('HTTP ' + r.status))).then(resolve, reject); return; }
-      gx({ method: 'GET', url, responseType: 'blob', timeout: 60000,
+      gx({ method: 'GET', url, responseType: 'blob', timeout: 180000,
+        onprogress: e => { if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total); },
         onload: r => (r.status >= 200 && r.status < 300) ? resolve(r.response) : reject(new Error('HTTP ' + r.status)),
         onerror: () => reject(new Error('network error')), ontimeout: () => reject(new Error('timed out')) });
     });
@@ -795,9 +797,9 @@
   }
   async function addCoverFromMH(o) {
     const url = o.bigCoverUrl || o.smallCoverUrl; if (!url) return;
-    toast('Fetching cover from MH…', 8000);
+    toast('Fetching cover from MH…', 120000);
     try {
-      const blob = await gmFetch(url);
+      const blob = await gmFetch(url, (l, t) => toast(`Fetching cover from MH… ${Math.round(l / t * 100)}%`, 120000));
       const ext = (String(url).match(/\.(jpe?g|png|gif|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase().replace('jpeg', 'jpg');
       const type = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
       const file = new File([blob], `mh-${Date.now()}.${ext}`, { type });
@@ -874,14 +876,24 @@
   const addForm = () => (_addForm = _addForm || getPostForm(`${R}/add-cover-art`));
   // step 1 (parallel-safe): sign + PUT the file to archive.org. Stores the signed
   // upload on the item; the slow network part — like Turbo, run these concurrently.
-  async function uploadStep(it) {
+  async function uploadStep(it, onProgress) {
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
     const signed = await signUpload(mime);
     const fd = new FormData();
     Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
     fd.append('file', it._fileObj, (it._fileObj && it._fileObj.name) || String(signed.image_id));
-    const up = await fetch(signed.action, { method: 'POST', body: fd });   // archive.org (auth in the signed policy)
-    if (!up.ok) throw new Error('IA upload ' + up.status);
+    // XHR (not fetch) so we get upload progress + a timeout — a big cover used to
+    // sit silently with no feedback, and a stalled POST would hang forever. #240/#235
+    await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', signed.action);
+      xhr.timeout = 300000;   // 5 min ceiling for large covers
+      xhr.upload.onprogress = e => { if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total); };
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('IA upload ' + xhr.status));
+      xhr.onerror = () => reject(new Error('IA upload network error'));
+      xhr.ontimeout = () => reject(new Error('IA upload timed out'));
+      xhr.send(fd);
+    });
     it._signed = signed;
   }
   // step 2 (SEQUENTIAL): register on MB. Submitted in order so positions stay correct.
@@ -996,7 +1008,7 @@
     const setSt = (op, s) => { ov.querySelector(`.as-cm-op[data-i="${op._i}"] .as-cm-st`).textContent = s; };
     const fail = (op, e) => { const row = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`); row.querySelector('.as-cm-st').textContent = '❌'; row.querySelector('.as-cm-payload').textContent = String(e && e.message || e); row.classList.add('err'); op._err = true; };
     addOps.forEach(op => setSt(op, '⏳'));
-    await pool(addOps, 4, async op => { try { await uploadStep(op.it); setSt(op, '⏫'); } catch (e) { fail(op, e); } });  // parallel upload
+    await pool(addOps, 4, async op => { try { await uploadStep(op.it, (l, t) => setSt(op, `⏫${Math.round(l / t * 100)}%`)); setSt(op, '⏫'); } catch (e) { fail(op, e); } });  // parallel upload w/ progress
     for (const op of addOps) { if (op._err) continue; try { await registerStep(op.it, meta); setSt(op, '✅'); } catch (e) { fail(op, e); } }   // ordered register
   }
   async function runPlan(ov, plan, meta) {
@@ -1332,6 +1344,7 @@
   .as-commit:hover:not(:disabled),.as-pop-apply:hover:not(:disabled),.as-cm-go:hover:not(:disabled){background:#4e329f;color:#fff;border-color:#4e329f}
   .as-add{font-weight:600;color:var(--as-acc)}
   .as-mh{font-weight:600;color:#1f7a8c}
+  .as-mh-ic{display:inline-block;vertical-align:-3px;border-radius:3px}
   #as-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#3b2c70;color:#fff;padding:10px 16px;border-radius:9px;font:13px/1.35 -apple-system,Segoe UI,Roboto,Arial,sans-serif;box-shadow:0 6px 22px rgba(40,20,80,.35);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center}
   .as-asback{font-weight:700;color:var(--as-acc);background:#f3eefe;border-color:#cdbff2}
   .as-dl{border-color:#bcd;color:#2a6}
