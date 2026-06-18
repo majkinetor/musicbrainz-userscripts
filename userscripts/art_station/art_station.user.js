@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.330000
+// @version      2026.6.18.340000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -330,6 +330,10 @@
   }
   const typeRank = t => { const i = TYPE_ORDER.indexOf(t); return i < 0 ? 99 : i; };
   function sortFn(a, b) {
+    // new + still-sourcing covers always lead, whatever the sort — otherwise e.g. the
+    // "dimensions" sort buries a small new cover (and the 0×0 sourcing slot) at the end.
+    if (!!a._new !== !!b._new) return a._new ? -1 : 1;
+    if (a._new) return a.order - b.order;   // among new: insertion order (newest first)
     if (SETTINGS.sort === 'bytype') return typeRank(a.types[0] || '') - typeRank(b.types[0] || '') || a.order - b.order;
     if (SETTINGS.sort === 'dim') return (b.w * b.h) - (a.w * a.h) || a.order - b.order;
     if (SETTINGS.sort === 'newest') return b.id - a.id;   // CAA id desc ≈ upload recency (no real date in CAA)
