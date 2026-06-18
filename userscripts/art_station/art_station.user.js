@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.440000
+// @version      2026.6.18.450000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -357,8 +357,10 @@
   function fitFooters() {
     root.querySelectorAll('.as-card .as-foot-cmt').forEach(cmt => {
       cmt.classList.remove('as-cmt-collapsed');
-      if (!cmt.querySelector('.as-cmt-text')) return;   // empty comment (hover pencil) — nothing to clip
-      if (cmt.clientWidth < 24) cmt.classList.add('as-cmt-collapsed');
+      const txt = cmt.querySelector('.as-cmt-text'); if (!txt) return;   // empty comment (hover pencil)
+      // hide ONLY a comment clipped to an unreadable sliver — a SHORT comment that fully
+      // fits (e.g. "A") keeps a narrow column but must still show (and stay clickable).
+      if (txt.scrollWidth > txt.clientWidth + 1 && cmt.clientWidth < 24) cmt.classList.add('as-cmt-collapsed');
     });
   }
   // shared autocomplete of the comments already used on this release (#238 presets)
