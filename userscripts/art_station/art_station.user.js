@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.183000
+// @version      2026.6.18.190000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -1259,6 +1259,7 @@
   function stopPlay() { if (_play) { clearInterval(_play); _play = null; updatePlayBtn(); } }
   function togglePlay() { if (_play) stopPlay(); else { _play = setInterval(() => lbNav(1), 3000); updatePlayBtn(); } }
   function lbNav(d, keepEdit) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());   // a dangling type pop must not survive a cover change (incl. slideshow)
     const seq = visible().filter(it => !it._pdf);   // PDFs open in a tab, not the lightbox
     if (!seq.length) return;
     let i = seq.findIndex(it => String(it.id) === String(_lb));
@@ -1313,6 +1314,14 @@
   }
   document.addEventListener('keydown', e => {
     const t = e.target;
+    // a popover (type picker / bulk pop) is open → Escape dismisses IT first
+    // (wherever focus is), and other keys are swallowed so navigation/zoom/delete
+    // don't act behind it. Mirrors the backdrop-click behaviour.
+    if (document.querySelector('.as-pop')) {
+      if (e.key === 'Escape') { e.preventDefault(); document.querySelectorAll('.as-pop').forEach(p => p.remove()); }
+      else if (!(t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) e.preventDefault();
+      return;
+    }
     if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
     if (_lb) {
       if (e.key === 'Escape') { e.preventDefault(); closeLightbox(); }
