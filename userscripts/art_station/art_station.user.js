@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.2
+// @version      2026.6.18.360000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -999,20 +999,21 @@
     async function harvest(doc, win) {
       const files = [], metas = [];
       const seen = new Set();
+      // ECAU sets the cover type/comment (e.g. "Front" from Bandcamp) on the uploader, but MB
+      // does NOT nest those checkboxes inside the preview image's row — so a row-scoped read
+      // missed them. We seed exactly one image per iframe, so read them doc-wide. #242
+      const types = [...doc.querySelectorAll('input[name*="type_id"]:checked')]
+        .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
+        .filter(t => ALL_TYPES.includes(t));
+      const ci = doc.querySelector('input[name*="comment"], textarea[name*="comment"]');
+      const comment = ci ? (ci.value || '') : '';
       for (const img of [...doc.querySelectorAll(previewSel)]) {
         const src = img.src || img.getAttribute('src'); if (!src || seen.has(src)) continue; seen.add(src);
         let blob; try { blob = /^blob:/i.test(src) ? await win.fetch(src).then(r => r.blob()) : await gmFetch(src); } catch (e) { continue; }
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-        // best-effort: read the types/comment ECAU set on this image's uploader row
-        let types = [], comment = '';
-        const row = img.closest('.file-info, .image-position, tr, li, .row') || doc;
-        try {
-          row.querySelectorAll('input[name*="type_id"]:checked').forEach(cb => { const l = cb.closest('label'); const n = l ? l.textContent.trim() : ''; if (n) types.push(n); });
-          const ci = row.querySelector('input[name*="comment"], textarea[name*="comment"]'); if (ci) comment = ci.value || '';
-        } catch (e) {}
-        metas.push({ types: types.filter(t => ALL_TYPES.includes(t)), comment });
+        metas.push({ types: types.slice(), comment });
       }
       return { files, metas };
     }
