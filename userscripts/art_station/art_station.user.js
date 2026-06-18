@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.180000
+// @version      2026.6.18.183000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -1149,7 +1149,10 @@
       ov.querySelector('.as-lb-play').onclick = e => { e.stopPropagation(); togglePlay(); };
       ov.querySelector('.as-lb-prev').onclick = e => { e.stopPropagation(); lbNav(-1); };
       ov.querySelector('.as-lb-next').onclick = e => { e.stopPropagation(); lbNav(1); };
-      ov.onclick = e => { if (e.target === ov && !_popJustClosed) closeLightbox(); };   // a type-pop dismiss must not also close the lightbox
+      // a backdrop click while a type popover is open OR the comment is focused
+      // should dismiss THAT (handled by their own outside-click/blur), not close
+      // the whole viewer — _popJustClosed / _lbJustBlurred bridge the mousedown→click gap
+      ov.onclick = e => { if (e.target === ov && !_popJustClosed && !_lbJustBlurred && !document.querySelector('.as-pop')) closeLightbox(); };
       // wheel zooms the image toward the cursor (instead of scrolling the page behind)
       ov.addEventListener('wheel', e => {
         e.preventDefault();
@@ -1218,13 +1221,14 @@
     paintCmtArea(ov, it);
   }
   let _lbEditCmt = false;
+  let _lbJustBlurred = false;   // bridges the mousedown-blur → click gap so defocusing the comment doesn't also close the viewer
   function paintCmtArea(ov, it) {
     const area = ov.querySelector('.as-lb-cmtarea'); if (!area) return;
     if (_lbEditCmt) {
       area.innerHTML = `<input class="as-lb-cmt" placeholder="comment…" spellcheck="false" list="as-cmt-presets">`;
       const inp = area.querySelector('.as-lb-cmt'); inp.value = it.comment || '';
       inp.oninput = () => { const cur = byId(_lb); if (cur) { cur.comment = inp.value; _lbDirty = true; } };
-      inp.onblur = () => { _lbEditCmt = false; paintCmtArea(ov, byId(_lb)); };
+      inp.onblur = () => { _lbEditCmt = false; _lbJustBlurred = true; setTimeout(() => { _lbJustBlurred = false; }, 0); paintCmtArea(ov, byId(_lb)); };
       // Enter saves and advances to the next image, keeping its comment open for editing.
       inp.onkeydown = e => {
         if (e.key === 'Escape') { e.preventDefault(); inp.blur(); return; }
