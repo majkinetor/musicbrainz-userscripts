@@ -1,0 +1,12 @@
+import { createRequire } from "module"; import { readFileSync } from "fs";
+const require = createRequire("C:/Work/mb-userscripts/userscripts/apollo_editor/");
+const { chromium } = require("playwright");
+const script = readFileSync("userscripts/art_station/art_station.user.js","utf8");
+const ctx = await chromium.launchPersistentContext("C:/Work/mb-userscripts/.pw-profile",{headless:true,bypassCSP:true,viewport:{width:1100,height:600},deviceScaleFactor:3});
+const page = ctx.pages()[0]||await ctx.newPage();
+await page.goto("https://musicbrainz.org/release/b792340e-2c77-4dd1-9de4-6dc174440a33/cover-art",{waitUntil:"networkidle"});
+await page.addScriptTag({content:script}); await page.waitForTimeout(3000);
+const b = await page.$("#as-root .as-mh"); const r = await b.boundingBox();
+await page.screenshot({path:"userscripts/art_station/dev/mhbtn.png",clip:{x:r.x-90,y:r.y-8,width:r.width+260,height:r.height+16}});
+console.log("icon loaded:", await page.evaluate(()=>{const i=document.querySelector(".as-mh-ic");return i&&i.complete&&i.naturalWidth>0;}));
+await ctx.close();

@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.060000
-// @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
+// @version      2026.6.18.190000
+// @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
-// @grant        none
+// @grant        GM.xmlHttpRequest
+// @grant        GM_xmlhttpRequest
+// @connect      *
 // @run-at       document-start
 // ==/UserScript==
 //
@@ -56,7 +58,6 @@
   // footer line under the image: "1.2Mb   600 × 600" — size first, then resolution,
   // each half shown once known, separated by a wide gap (em-space).
   function dimText(it) {
-    if (it._new) return 'local';
     const parts = [];
     if (it.bytes) parts.push(fmtSize(it.bytes));
     if (it.w && it.h) parts.push(`${it.w} × ${it.h}`);
@@ -126,10 +127,12 @@
     loadSizes();              // lazy-fill file sizes (single archive.org request)
   }
   function measure(it) {
-    if (it._new || it.w) return;
+    if (it.w || (it._new && it._pdf)) return;          // measured already, or a PDF (no pixel dims)
+    const src = it._new ? it._file : imgUrl(it.id);     // new covers measure from the local object URL
+    if (!src) return;
     const img = new Image();
     img.onload = () => { it.w = img.naturalWidth; it.h = img.naturalHeight; refreshDim(it); };
-    img.src = imgUrl(it.id);
+    img.src = src;
   }
 
   const changed = it => it._del || it._new || it.comment !== it._origComment || it.order !== it._origOrder || it.types.join('|') !== it._origTypes.join('|');
@@ -205,6 +208,7 @@
         : groups.map(g => section(g.type, g.items)).join('');
     root.innerHTML = bar(n) + commentPresets() + dropZone() + newSection() + body + deletedSection();
     wire();
+    hydrateImgs();     // re-attach cached <img> for new/pending covers so they don't reload
     applyOriginal();   // keep the native/script view state across re-renders
     applyZoomClass();
     fitTypePills();    // show as many types as the pill width allows
@@ -261,6 +265,7 @@
   function bar(n) {
     return `<div class="as-bar">
       <button class="as-btn as-add" title="Add cover art — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
+      <button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>
       <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
@@ -281,7 +286,7 @@
       <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="as-bt">Comment ▾</span></button>
       <button class="as-btn as-bk-dl" title="Download the selected covers"><span class="as-bi">⬇</span><span class="as-bt">Download</span></button>
       <button class="as-btn as-bk-report" title="Postable Markdown / HTML report of the selection"><span class="as-bi">📋</span><span class="as-bt">Report</span></button>
-      <button class="as-btn as-bk-rm" title="Mark the selected covers for removal"><span class="as-bi">🗑</span><span class="as-bt">Delete</span></button>` : ''}`;
+      <button class="as-btn as-bk-rm" title="Mark the selected covers for removal"><span class="as-bi">🗑️</span><span class="as-bt">Delete</span></button>` : ''}`;
   }
   function section(type, items) {
     const label = type === null ? 'All covers' : type;
@@ -312,10 +317,39 @@
     return `<div class="as-sec as-sec-del"><h3>Marked for removal</h3><span class="as-cnt">${dels.length}</span><span class="as-line"></span></div>
       <div class="as-grid">${dels.map(card).join('')}</div>`;
   }
+  // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
+  // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
+  // the thumb 404s and we fall back to the full original) covers, though, visibly
+  // RELOAD on every render — type change, resize, anything. So we keep ONE live
+  // <img> per such cover in _imgCache and re-attach the already-decoded node into
+  // a host slot after each render instead of building a fresh one. (covers "reload
+  // in place" — #235)
+  const _imgCache = new Map();
+  function thumbImg(it, size) {
+    if (it._new || it._pending) return `<span class="as-imghost" data-host="${esc(it.id)}" data-size="${size}"></span>`;
+    return `<img loading="lazy" draggable="false" src="${esc(thumb(it.id, size))}" alt="">`;
+  }
+  function hydrateImgs() {
+    root.querySelectorAll('.as-imghost[data-host]').forEach(host => {
+      const id = host.dataset.host, size = +host.dataset.size, it = byId(id);
+      if (!it) return;
+      let img = _imgCache.get(String(id));
+      if (!img) {                                  // first sighting — build + load it once
+        img = new Image(); img.loading = 'lazy'; img.draggable = false; img.alt = '';
+        img.onerror = () => {                      // pending thumb not ready → show the original
+          const orig = !it._pdf ? (it._img || imgUrl(it.id)) : null;
+          if (orig && img.getAttribute('src') !== orig) img.src = orig;
+          else img.closest('.as-thumb, .as-dthumb')?.classList.add('na');
+        };
+        img.src = it._new ? it._file : thumb(it.id, size);
+        _imgCache.set(String(id), img);
+      }
+      host.replaceWith(img);                       // re-attach the cached (decoded) node — no reload
+    });
+  }
   function card(it) {
-    const src = it._new ? it._file : thumb(it.id, SETTINGS.tile > 260 ? 500 : 250);
     return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
-      <div class="as-thumb"><img loading="lazy" draggable="false" src="${esc(src)}" alt="">
+      <div class="as-thumb">${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
         ${it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
@@ -352,12 +386,11 @@
   // full comment field beside it. No per-row toolbar actions (selection / delete
   // live on the main toolbar).
   function detailRow(it) {
-    const src = it._new ? it._file : thumb(it.id, 250);
     const types = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
     return `<div class="as-drow${it._new ? ' new' : ''}${it._pending ? ' pending' : ''}${it._sel ? ' sel' : ''}" data-id="${esc(it.id)}">
       <input type="checkbox" class="as-dsel" title="select"${it._sel ? ' checked' : ''}>
       <div class="as-dleft">
-        <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}<img loading="lazy" draggable="false" src="${esc(src)}" alt="">${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
+        <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
         <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span></div>
         ${it._new ? '' : `<div class="as-did">#${esc(it.id)}</div>`}
       </div>
@@ -436,6 +469,8 @@
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
+    const mh = root.querySelector('.as-mh'); if (mh) mh.onclick = openMHCovers;
+    const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
@@ -601,19 +636,26 @@
   }
 
   function openTypePop(chip) {
-    document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const it = byId(cardId(chip)); if (!it) return;
+    openTypePopFor(it, chip, () => render());
+  }
+  // shared single-cover type picker — anchored to `anchor`, mutating `it.types`,
+  // calling `onChange` after each toggle. Used by the grid pills AND the lightbox.
+  function openTypePopFor(it, anchor, onChange) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop';
     pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
     document.body.appendChild(pop);
-    placePop(pop, chip.getBoundingClientRect());
+    placePop(pop, anchor.getBoundingClientRect());
     pop.querySelectorAll('input').forEach(cb => cb.onchange = () => {
       it.types = ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
-      render();
+      onChange && onChange();
     });
-    const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); _popJustClosed = true; setTimeout(() => { _popJustClosed = false; }, 0); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
+    return pop;
   }
+  let _popJustClosed = false;   // bridges the mousedown-dismiss → click gap so a pop dismissal doesn't also close the lightbox
 
   let _drag = null;
   // the block being dragged: the whole selection if the grabbed card is selected, else just it
@@ -737,11 +779,77 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(obj), 8000);
   }
+  // ── #235 source covers from covers.musichoarders.xyz (the sanctioned MH Covers
+  //    integration — same window.open + postMessage protocol the "Ame" script uses;
+  //    no internal MH API). A chosen cover is fetched and dropped into the gallery
+  //    as a staged NEW cover, so it rides the normal Enter-edit upload flow. ─────
+  const MH_ORIGIN = 'https://covers.musichoarders.xyz';
+  // cross-origin GET → Blob (covers can be on any provider host → needs GM xhr)
+  function gmFetch(url, onProgress) {
+    return new Promise((resolve, reject) => {
+      const gx = (typeof GM !== 'undefined' && GM.xmlHttpRequest && GM.xmlHttpRequest.bind(GM))
+              || (typeof GM_xmlhttpRequest !== 'undefined' && GM_xmlhttpRequest) || null;
+      if (!gx) { fetch(url).then(r => r.ok ? r.blob() : Promise.reject(new Error('HTTP ' + r.status))).then(resolve, reject); return; }
+      gx({ method: 'GET', url, responseType: 'blob', timeout: 180000,
+        onprogress: e => { if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total); },
+        onload: r => (r.status >= 200 && r.status < 300) ? resolve(r.response) : reject(new Error('HTTP ' + r.status)),
+        onerror: () => reject(new Error('network error')), ontimeout: () => reject(new Error('timed out')) });
+    });
+  }
+  let _toastT;
+  function toast(msg, ms = 2800) {
+    let el = document.getElementById('as-toast');
+    if (!el) { el = document.createElement('div'); el.id = 'as-toast'; document.body.appendChild(el); }
+    el.textContent = msg; el.style.opacity = '1';
+    clearTimeout(_toastT); _toastT = setTimeout(() => { el.style.opacity = '0'; }, ms);
+  }
+  function openMHCovers() {
+    const info = releaseInfo();
+    const artist = info.artists.map(a => a.name).join(' ').trim();
+    const album = (info.title || '').trim();
+    if (!album) { toast('Could not read the release title'); return; }
+    const p = new URLSearchParams();
+    // remote.* puts MH Covers into integration ("pick") mode — picking a cover posts
+    // it back over the browser channel instead of just opening the image. #235
+    p.set('remote.port', 'browser');
+    p.set('remote.agent', 'Art Station - MusicBrainz');
+    p.set('remote.text', 'Pick a cover for this MusicBrainz release.');
+    if (artist) p.set('artist', artist); p.set('album', album);
+    const win = window.open(`${MH_ORIGIN}?${p}`, '_blank');
+    if (!win) { toast('Pop-up blocked — allow pop-ups for MH Covers'); return; }
+    toast('Pick a cover in the MH Covers tab…', 6000);
+    const onMsg = async e => {
+      if (e.source !== win) return;
+      let host = ''; try { host = new URL(e.origin).hostname; } catch (err) {}
+      if (!/(^|\.)musichoarders\.xyz$/.test(host)) return;
+      let o; try { o = JSON.parse(e.data); } catch (err) { return; }
+      if (o.action !== 'primary' && o.action !== 'secondary') return;
+      cleanup(); try { win.close(); } catch (err) {}
+      await addCoverFromMH(o);
+    };
+    const onUnload = () => { try { win.close(); } catch (err) {} };
+    const cleanup = () => { window.removeEventListener('message', onMsg); window.removeEventListener('beforeunload', onUnload); };
+    window.addEventListener('message', onMsg);
+    window.addEventListener('beforeunload', onUnload);
+  }
+  async function addCoverFromMH(o) {
+    const url = o.bigCoverUrl || o.smallCoverUrl; if (!url) return;
+    toast('Fetching cover from MH…', 120000);
+    try {
+      const blob = await gmFetch(url, (l, t) => toast(`Fetching cover from MH… ${Math.round(l / t * 100)}%`, 120000));
+      const ext = (String(url).match(/\.(jpe?g|png|gif|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase().replace('jpeg', 'jpg');
+      const type = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+      const file = new File([blob], `mh-${Date.now()}.${ext}`, { type });
+      addFiles([file]);
+      toast('Added cover from MH Covers ✓');
+    } catch (e) { toast('Could not fetch the cover — ' + e.message, 5000); }
+  }
+
   let _dropZone = false;
   function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
   function newItem(f) {
     return { id: 'new-' + Math.random().toString(36).slice(2, 8), types: [], comment: '', order: 0, w: 0, h: 0,
-      _del: false, _new: true, _file: URL.createObjectURL(f), _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 };
+      bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 };
   }
   function addFiles(files) {
     const news = [...files].filter(f => f.type.startsWith('image/') || f.type === 'application/pdf').map(newItem);
@@ -750,6 +858,7 @@
     const rest = MODEL.slice().sort((a, b) => a.order - b.order);
     MODEL = [...news, ...rest];
     MODEL.forEach((it, i) => it.order = i);
+    news.forEach(measure);   // fill in each new cover's resolution from its local file
     _dropZone = false; render();
   }
   function pickFiles() {
@@ -796,8 +905,8 @@
     return { method: 'POST', url: form._action, body: p };
   }
   // Phase 2b: upload a new image. (1) sign via MB, (2) POST file to archive.org, (3) register.
-  async function signUpload(mime) {
-    const r = await fetch(`/ws/js/cover-art-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin' });
+  async function signUpload(mime, ctl) {
+    const r = await fetch(`/ws/js/cover-art-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin', signal: ctl && ctl.ac.signal });
     if (!r.ok) throw new Error('sign ' + r.status);
     return r.json();   // { action, image_id, formdata, nonce }
   }
@@ -805,18 +914,34 @@
   const addForm = () => (_addForm = _addForm || getPostForm(`${R}/add-cover-art`));
   // step 1 (parallel-safe): sign + PUT the file to archive.org. Stores the signed
   // upload on the item; the slow network part — like Turbo, run these concurrently.
-  async function uploadStep(it) {
+  async function uploadStep(it, onProgress, ctl) {
+    if (ctl && ctl.aborted) throw new Error('cancelled');
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
-    const signed = await signUpload(mime);
+    const signed = await signUpload(mime, ctl);
+    if (ctl && ctl.aborted) throw new Error('cancelled');
     const fd = new FormData();
     Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
     fd.append('file', it._fileObj, (it._fileObj && it._fileObj.name) || String(signed.image_id));
-    const up = await fetch(signed.action, { method: 'POST', body: fd });   // archive.org (auth in the signed policy)
-    if (!up.ok) throw new Error('IA upload ' + up.status);
+    // XHR (not fetch) so we get upload progress + a timeout — a big cover used to
+    // sit silently with no feedback, and a stalled POST would hang forever. #240/#235
+    // The live xhr is registered on ctl so Cancel can abort an in-flight upload.
+    await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', signed.action);
+      xhr.timeout = 300000;   // 5 min ceiling for large covers
+      if (ctl) ctl.xhrs.add(xhr);
+      const done = () => { if (ctl) ctl.xhrs.delete(xhr); };
+      xhr.upload.onprogress = e => { if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total); };
+      xhr.onload = () => { done(); (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('IA upload ' + xhr.status)); };
+      xhr.onerror = () => { done(); reject(new Error('IA upload network error')); };
+      xhr.ontimeout = () => { done(); reject(new Error('IA upload timed out')); };
+      xhr.onabort = () => { done(); reject(new Error('cancelled')); };
+      xhr.send(fd);
+    });
     it._signed = signed;
   }
   // step 2 (SEQUENTIAL): register on MB. Submitted in order so positions stay correct.
-  async function registerStep(it, meta) {
+  async function registerStep(it, meta, ctl) {
     const form = await addForm();
     const tm = typeMapOf(form, 'add-cover-art');
     const typeIds = it.types.map(t => tm[t]).filter(Boolean);
@@ -830,7 +955,7 @@
     p.append('add-cover-art.comment', it.comment);
     p.append('add-cover-art.edit_note', editNote(meta));
     if (meta.votable) p.append('add-cover-art.make_votable', '1');
-    const add = await fetch(`${R}/add-cover-art`, { method: 'POST', body: p, credentials: 'same-origin' });
+    const add = await fetch(`${R}/add-cover-art`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
     if (!add.ok) throw new Error('add ' + add.status);
   }
   async function runAdd(it, meta, dry, report) {   // dry-run summary only (live uses runAdds)
@@ -892,10 +1017,11 @@
     dryEl.onchange = setGoLabel; setGoLabel();
     goBtn.onclick = () => runPlan(ov, plan, { note: ov.querySelector('.as-cm-note').value, votable: ov.querySelector('.as-cm-vote').checked, dry: dryEl.checked });
   }
-  async function runOp(ov, op, meta) {
+  async function runOp(ov, op, meta, ctl) {
     const row = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`);
     const st = row.querySelector('.as-cm-st'), pay = row.querySelector('.as-cm-payload');
     if (op.skip) { st.textContent = '⏭'; return; }
+    if (ctl && ctl.aborted) { st.textContent = '⛔'; return; }
     st.textContent = '⏳';
     try {
       if (op.run) {                         // multi-step op (uploads) reports its own payload
@@ -907,12 +1033,16 @@
           st.textContent = '👁'; row.classList.add('dry');
           pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/\+/g, ' ').replace(/&/g, '\n  ')}`;
         } else {
-          const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin' });
+          const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
           if (!r.ok) throw new Error('HTTP ' + r.status);
           st.textContent = '✅';
         }
       }
-    } catch (e) { st.textContent = '❌'; pay.textContent = String(e && e.message || e); row.classList.add('err'); }
+    } catch (e) {
+      const cancelled = ctl && ctl.aborted;
+      st.textContent = cancelled ? '⛔' : '❌'; pay.textContent = String(e && e.message || e);
+      if (!cancelled) row.classList.add('err');
+    }
   }
   // bounded-concurrency map
   async function pool(items, conc, fn) {
@@ -920,27 +1050,56 @@
     const worker = async () => { while (i < items.length) { const k = i++; await fn(items[k]); } };
     await Promise.all(Array.from({ length: Math.min(conc, items.length || 1) }, worker));
   }
-  const runPool = (ops, conc, ov, meta) => pool(ops, conc, op => runOp(ov, op, meta));
+  const runPool = (ops, conc, ov, meta, ctl) => pool(ops, conc, op => runOp(ov, op, meta, ctl));
   // adds: parallel UPLOAD to archive.org, then SEQUENTIAL register (positions stay correct) — like Turbo
-  async function runAdds(ov, addOps, meta) {
-    if (meta.dry || !addOps.length) return runPool(addOps, meta.dry ? 8 : 1, ov, meta);
+  async function runAdds(ov, addOps, meta, ctl) {
+    if (meta.dry || !addOps.length) return runPool(addOps, meta.dry ? 8 : 1, ov, meta, ctl);
     const setSt = (op, s) => { ov.querySelector(`.as-cm-op[data-i="${op._i}"] .as-cm-st`).textContent = s; };
     const fail = (op, e) => { const row = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`); row.querySelector('.as-cm-st').textContent = '❌'; row.querySelector('.as-cm-payload').textContent = String(e && e.message || e); row.classList.add('err'); op._err = true; };
+    const stop = (op) => { setSt(op, '⛔'); op._err = true; };
     addOps.forEach(op => setSt(op, '⏳'));
-    await pool(addOps, 4, async op => { try { await uploadStep(op.it); setSt(op, '⏫'); } catch (e) { fail(op, e); } });  // parallel upload
-    for (const op of addOps) { if (op._err) continue; try { await registerStep(op.it, meta); setSt(op, '✅'); } catch (e) { fail(op, e); } }   // ordered register
+    await pool(addOps, 4, async op => {
+      if (ctl && ctl.aborted) return stop(op);
+      try { await uploadStep(op.it, (l, t) => setSt(op, `⏫${Math.round(l / t * 100)}%`), ctl); setSt(op, '⏫'); }
+      catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
+    });  // parallel upload w/ progress (abortable via ctl)
+    for (const op of addOps) {                                   // ordered register
+      if (op._err) continue;
+      if (ctl && ctl.aborted) { stop(op); continue; }
+      try { await registerStep(op.it, meta, ctl); setSt(op, '✅'); }
+      catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
+    }
   }
   async function runPlan(ov, plan, meta) {
-    ov.querySelector('.as-cm-go').disabled = true;
-    ov.querySelector('.as-cm-cancel').disabled = true;
+    const goBtn = ov.querySelector('.as-cm-go'), cancelBtn = ov.querySelector('.as-cm-cancel');
+    goBtn.disabled = true;
     plan.forEach((op, i) => { op._i = i; });
+    // ctl carries the abort flag + the live xhrs/fetch-signal so Cancel works mid-run
+    const ctl = { aborted: false, xhrs: new Set(), ac: new AbortController() };
+    if (meta.dry) { cancelBtn.disabled = true; }
+    else {
+      cancelBtn.disabled = false; cancelBtn.textContent = 'Cancel';
+      cancelBtn.onclick = () => {                 // abort in-flight uploads + skip the rest
+        if (ctl.aborted) { ov.remove(); return; }
+        ctl.aborted = true;
+        try { ctl.ac.abort(); } catch (e) {}
+        ctl.xhrs.forEach(x => { try { x.abort(); } catch (e) {} });
+        cancelBtn.textContent = 'Cancelling…'; cancelBtn.disabled = true;
+      };
+    }
     const CONC = meta.dry ? 8 : 4;   // modest concurrency live to stay friendly to MB
     // uploads run in parallel (register stays ordered); edits/removes parallel; reorder last.
-    await runAdds(ov, plan.filter(o => o.kind === 'add'), meta);
-    await runPool(plan.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta);
-    await runPool(plan.filter(o => o.kind === 'reorder'), 1, ov, meta);
-    ov.querySelector('.as-cm-cancel').disabled = false;
-    ov.querySelector('.as-cm-cancel').textContent = 'Close';
+    await runAdds(ov, plan.filter(o => o.kind === 'add'), meta, ctl);
+    if (!ctl.aborted) await runPool(plan.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta, ctl);
+    if (!ctl.aborted) await runPool(plan.filter(o => o.kind === 'reorder'), 1, ov, meta, ctl);
+    cancelBtn.disabled = false;
+    cancelBtn.textContent = 'Close';
+    cancelBtn.onclick = () => ov.remove();
+    if (ctl.aborted) {   // mark any not-yet-started ops as cancelled, leave the modal up
+      ov.querySelectorAll('.as-cm-op .as-cm-st').forEach(s => { if (s.textContent === '○' || s.textContent === '⏳') s.textContent = '⛔'; });
+      goBtn.textContent = 'Cancelled'; goBtn.disabled = true;
+      return;
+    }
     if (!meta.dry) {
       const b = ov.querySelector('.as-cm-go');
       const errs = ov.querySelectorAll('.as-cm-op.err').length;
@@ -990,7 +1149,10 @@
       ov.querySelector('.as-lb-play').onclick = e => { e.stopPropagation(); togglePlay(); };
       ov.querySelector('.as-lb-prev').onclick = e => { e.stopPropagation(); lbNav(-1); };
       ov.querySelector('.as-lb-next').onclick = e => { e.stopPropagation(); lbNav(1); };
-      ov.onclick = e => { if (e.target === ov) closeLightbox(); };
+      // a backdrop click while a type popover is open OR the comment is focused
+      // should dismiss THAT (handled by their own outside-click/blur), not close
+      // the whole viewer — _popJustClosed / _lbJustBlurred bridge the mousedown→click gap
+      ov.onclick = e => { if (e.target === ov && !_popJustClosed && !_lbJustBlurred && !document.querySelector('.as-pop')) closeLightbox(); };
       // wheel zooms the image toward the cursor (instead of scrolling the page behind)
       ov.addEventListener('wheel', e => {
         e.preventDefault();
@@ -1048,18 +1210,25 @@
     };
     img.src = src;
     if (img.complete && img.naturalWidth) img.classList.remove('loading');
-    const bits = [it.types.length ? it.types.join(', ') : 'no type', it.w && it.h ? `${it.w} × ${it.h}` : null].filter(Boolean);
-    ov.querySelector('.as-lb-cap').textContent = bits.join('  ·  ');
+    const dims = it.w && it.h ? `${it.w} × ${it.h}` : '';
+    const cap = ov.querySelector('.as-lb-cap');
+    // type is a clickable chip (same picker as the grid pills) so it can be set full-screen
+    cap.innerHTML = `<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" title="set cover type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
+    cap.querySelector('.as-lb-type').onclick = e => {
+      e.stopPropagation();
+      openTypePopFor(byId(_lb), e.currentTarget, () => { _lbDirty = true; paintLightbox(); });
+    };
     paintCmtArea(ov, it);
   }
   let _lbEditCmt = false;
+  let _lbJustBlurred = false;   // bridges the mousedown-blur → click gap so defocusing the comment doesn't also close the viewer
   function paintCmtArea(ov, it) {
     const area = ov.querySelector('.as-lb-cmtarea'); if (!area) return;
     if (_lbEditCmt) {
       area.innerHTML = `<input class="as-lb-cmt" placeholder="comment…" spellcheck="false" list="as-cmt-presets">`;
       const inp = area.querySelector('.as-lb-cmt'); inp.value = it.comment || '';
       inp.oninput = () => { const cur = byId(_lb); if (cur) { cur.comment = inp.value; _lbDirty = true; } };
-      inp.onblur = () => { _lbEditCmt = false; paintCmtArea(ov, byId(_lb)); };
+      inp.onblur = () => { _lbEditCmt = false; _lbJustBlurred = true; setTimeout(() => { _lbJustBlurred = false; }, 0); paintCmtArea(ov, byId(_lb)); };
       // Enter saves and advances to the next image, keeping its comment open for editing.
       inp.onkeydown = e => {
         if (e.key === 'Escape') { e.preventDefault(); inp.blur(); return; }
@@ -1090,6 +1259,7 @@
   function stopPlay() { if (_play) { clearInterval(_play); _play = null; updatePlayBtn(); } }
   function togglePlay() { if (_play) stopPlay(); else { _play = setInterval(() => lbNav(1), 3000); updatePlayBtn(); } }
   function lbNav(d, keepEdit) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());   // a dangling type pop must not survive a cover change (incl. slideshow)
     const seq = visible().filter(it => !it._pdf);   // PDFs open in a tab, not the lightbox
     if (!seq.length) return;
     let i = seq.findIndex(it => String(it.id) === String(_lb));
@@ -1097,6 +1267,21 @@
     i = (i + d + seq.length) % seq.length;
     // keepEdit (Enter in the comment field) carries edit-mode to the next image
     _lb = seq[i].id; _cursorId = _lb; _lbEditCmt = !!keepEdit; paintLightbox(); markCursor(true); preloadNeighbors();
+  }
+  // Del in full-screen view → mark the current cover for removal (same as the grid's
+  // delete: _del moves it to "Marked for removal", undoable there), then advance to
+  // the next cover — or close the lightbox if that was the last one.
+  function deleteLbCover() {
+    const it = byId(_lb); if (!it) return;
+    const seq = visible().filter(x => !x._pdf);
+    const i = seq.findIndex(x => String(x.id) === String(_lb));
+    it._del = true; it._sel = false; _lbDirty = true;
+    toast(`“${(it.types && it.types[0]) || 'cover'}” marked for removal — undo in the grid`);
+    const rest = visible().filter(x => !x._pdf);   // recomputed without the just-deleted cover
+    if (!rest.length) { closeLightbox(); return; }
+    const nx = rest[Math.min(i, rest.length - 1)];
+    resetZoom();
+    _lb = nx.id; _cursorId = nx.id; _lbEditCmt = false; paintLightbox(); markCursor(true); preloadNeighbors();
   }
 
   // ── keyboard cursor (arrows select / move; Enter opens lightbox) ──────────────
@@ -1129,6 +1314,14 @@
   }
   document.addEventListener('keydown', e => {
     const t = e.target;
+    // a popover (type picker / bulk pop) is open → Escape dismisses IT first
+    // (wherever focus is), and other keys are swallowed so navigation/zoom/delete
+    // don't act behind it. Mirrors the backdrop-click behaviour.
+    if (document.querySelector('.as-pop')) {
+      if (e.key === 'Escape') { e.preventDefault(); document.querySelectorAll('.as-pop').forEach(p => p.remove()); }
+      else if (!(t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) e.preventDefault();
+      return;
+    }
     if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
     if (_lb) {
       if (e.key === 'Escape') { e.preventDefault(); closeLightbox(); }
@@ -1137,6 +1330,7 @@
       else if (e.key === 'ArrowUp') { e.preventDefault(); zoomKey(1); }     // ↑ zoom in
       else if (e.key === 'ArrowDown') { e.preventDefault(); zoomKey(-1); }  // ↓ zoom out
       else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePlay(); }
+      else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteLbCover(); }
       return;
     }
     if (!root.isConnected || !root.querySelector('.as-card')) return;
@@ -1262,6 +1456,9 @@
   /* accent (white-on-purple) buttons must darken on hover, not lighten — else the white text vanishes */
   .as-commit:hover:not(:disabled),.as-pop-apply:hover:not(:disabled),.as-cm-go:hover:not(:disabled){background:#4e329f;color:#fff;border-color:#4e329f}
   .as-add{font-weight:600;color:var(--as-acc)}
+  .as-mh{padding:3px 7px}
+  .as-mh-ic{display:block;background:#80a32b;padding:2px;border-radius:5px;width:14px;height:14px}   /* green chip so the white MH icon shows; sized so it doesn't out-tall the text buttons */
+  #as-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#3b2c70;color:#fff;padding:10px 16px;border-radius:9px;font:13px/1.35 -apple-system,Segoe UI,Roboto,Arial,sans-serif;box-shadow:0 6px 22px rgba(40,20,80,.35);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center}
   .as-asback{font-weight:700;color:var(--as-acc);background:#f3eefe;border-color:#cdbff2}
   .as-dl{border-color:#bcd;color:#2a6}
   .as-sp{flex:1 1 auto}
@@ -1342,7 +1539,7 @@
   .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
   .as-card.sel .as-foot-type{padding-right:20px}
   .as-tline{flex:1;height:1px;background:#e7e1f2}
-  .as-type{font-size:11px;font-weight:700;color:#3b2c70;background:#f1ecff;border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .as-type{font-size:11px;font-weight:700;color:#3b2c70;background:#f2f2f2;border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .as-type:hover{background:#e7dffb}
   .as-type-add{color:#8a7fb8;background:#fff;border-style:dashed;font-weight:600;opacity:.5}
   .as-card:hover .as-type-add{opacity:1}
@@ -1370,7 +1567,7 @@
   .as-view{font-weight:600}
   .as-dragwarn{font-size:13px;color:#b06a00;background:#fff3d6;border:1px solid #ecd9a0;border-radius:6px;padding:3px 7px;line-height:1;cursor:help}
   .as-pop-note{color:#9a8ccb;font-size:11px}
-  .as-pop{position:absolute;z-index:200;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}
+  .as-pop{position:absolute;z-index:10001;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}   /* z above the lightbox (9999) so the type picker shows over it */
   .as-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
   .as-pop label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer}
   .as-pop label:hover{background:#f3eefe}.as-pop input{accent-color:var(--as-acc)}
@@ -1393,7 +1590,14 @@
   .as-lb-x{width:42px;font-size:24px}.as-lb-play{padding:0 14px}
   .as-lb-x:hover,.as-lb-play:hover{background:rgba(255,255,255,.25)}
   .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw)}
-  .as-lb-cap{color:#eee;font-size:13px;text-align:center}
+  /* default: a zoomed image may cover the bar (image takes priority). Only when the
+     caption/comment is focused (editing) does it lift above the image. */
+  .as-lb-bar:focus-within{position:relative;z-index:2}
+  .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+  .as-lb-type{font:700 12px inherit;color:#e7dffb;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:3px 14px;cursor:pointer}
+  .as-lb-type:hover{background:rgba(255,255,255,.2);color:#fff}
+  .as-lb-type.as-type-add{font-weight:600;border-style:dashed;color:rgba(255,255,255,.6)}
+  .as-lb-dim{color:#bbb}
   .as-lb-cmtarea{width:100%;display:flex;justify-content:center}
   .as-lb-cmt{width:100%;font:13px inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:7px;padding:7px 11px;text-align:center}
   .as-lb-cmt-text{font:14px inherit;color:#fff;text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}
@@ -1421,7 +1625,7 @@
   .as-cm-list{overflow:auto;border:1px solid #eee;border-radius:8px;padding:6px;margin:4px 0 12px;background:#fafafa}
   .as-cm-op{padding:5px 6px;border-radius:6px;font-size:13px}
   .as-cm-op.dry{background:#f3eefe}.as-cm-op.err{background:#fdecea}
-  .as-cm-st{display:inline-block;width:18px}
+  .as-cm-st{display:inline-block;min-width:18px;white-space:nowrap;text-align:center}
   .as-cm-skip{font-size:11px;color:#999;margin-left:6px;background:#eee;border-radius:10px;padding:1px 7px}
   .as-cm-payload{white-space:pre-wrap;font:11px/1.4 ui-monospace,Consolas,monospace;color:#555;margin:4px 0 2px 18px;display:none}
   .as-cm-op.dry .as-cm-payload,.as-cm-op.err .as-cm-payload{display:block}
