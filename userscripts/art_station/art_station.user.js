@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.260000
+// @version      2026.6.18.270000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -1011,21 +1011,26 @@
   }
   // ECAU-supported art providers we recognise on a release's external links, so the
   // popover can offer "Import from <provider>" the way the native add page does.
+  // domain = the provider's CANONICAL site (not the linked subdomain, e.g.
+  // analogafrica.bandcamp.com → bandcamp.com) — favicons come from there.
   const ART_PROVIDERS = [
-    { re: /(^|\.)discogs\.com$/i, name: 'Discogs' },
-    { re: /(^|\.)bandcamp\.com$/i, name: 'Bandcamp' },
-    { re: /(^|\.)music\.apple\.com$|(^|\.)itunes\.apple\.com$/i, name: 'Apple Music' },
-    { re: /(^|\.)open\.spotify\.com$|(^|\.)spotify\.com$/i, name: 'Spotify' },
-    { re: /(^|\.)amazon\./i, name: 'Amazon' },
-    { re: /(^|\.)deezer\.com$/i, name: 'Deezer' },
-    { re: /(^|\.)tidal\.com$/i, name: 'Tidal' },
-    { re: /(^|\.)qobuz\.com$/i, name: 'Qobuz' },
-    { re: /(^|\.)vgmdb\.net$/i, name: 'VGMdb' },
-    { re: /7digital\./i, name: '7digital' },
-    { re: /(^|\.)beatport\.com$/i, name: 'Beatport' },
-    { re: /(^|\.)junodownload\.com$|(^|\.)juno\.co\.uk$/i, name: 'Juno' },
+    { re: /(^|\.)discogs\.com$/i, name: 'Discogs', domain: 'discogs.com' },
+    { re: /(^|\.)bandcamp\.com$/i, name: 'Bandcamp', domain: 'bandcamp.com' },
+    { re: /(^|\.)music\.apple\.com$|(^|\.)itunes\.apple\.com$/i, name: 'Apple Music', domain: 'music.apple.com' },
+    { re: /(^|\.)open\.spotify\.com$|(^|\.)spotify\.com$/i, name: 'Spotify', domain: 'spotify.com' },
+    { re: /(^|\.)amazon\./i, name: 'Amazon', domain: 'amazon.com' },
+    { re: /(^|\.)deezer\.com$/i, name: 'Deezer', domain: 'deezer.com' },
+    { re: /(^|\.)tidal\.com$/i, name: 'Tidal', domain: 'tidal.com' },
+    { re: /(^|\.)qobuz\.com$/i, name: 'Qobuz', domain: 'qobuz.com' },
+    { re: /(^|\.)vgmdb\.net$/i, name: 'VGMdb', domain: 'vgmdb.net' },
+    { re: /7digital\./i, name: '7digital', domain: '7digital.com' },
+    { re: /(^|\.)beatport\.com$/i, name: 'Beatport', domain: 'beatport.com' },
+    { re: /(^|\.)junodownload\.com$|(^|\.)juno\.co\.uk$/i, name: 'Juno', domain: 'junodownload.com' },
   ];
-  function providerOf(url) { let h = ''; try { h = new URL(url).hostname; } catch (e) { return null; } const p = ART_PROVIDERS.find(x => x.re.test(h)); return p ? p.name : null; }
+  // DuckDuckGo's icon service returns a clean favicon PNG for any domain — far more
+  // reliable than guessing each provider's /favicon.ico (artist subdomains 404).
+  const ddgIcon = d => `https://icons.duckduckgo.com/ip3/${d}.ico`;
+  function providerOf(url) { let h = ''; try { h = new URL(url).hostname; } catch (e) { return null; } return ART_PROVIDERS.find(x => x.re.test(h)) || null; }
   // the release/event's external links → the recognised art providers, deduped
   async function artProviderLinks() {
     try {
@@ -1034,16 +1039,15 @@
       const seen = new Set(), out = [];
       for (const rel of j.relations) {
         const u = rel.url && rel.url.resource; if (!u) continue;
-        const name = providerOf(u); if (!name) continue;
-        const key = name + '|' + u; if (seen.has(key)) continue; seen.add(key);
-        out.push({ name, url: u });
+        const prov = providerOf(u); if (!prov) continue;
+        const key = prov.name + '|' + u; if (seen.has(key)) continue; seen.add(key);
+        out.push({ name: prov.name, url: u, icon: ddgIcon(prov.domain) });
       }
       return out;
     } catch (e) { return []; }
   }
   let _provLinks = null;   // fetched once per page; reused by the button count + the popover
   function getProvLinks() { return _provLinks ? Promise.resolve(_provLinks) : artProviderLinks().then(l => (_provLinks = l)); }
-  const provIcon = url => { try { return new URL(url).origin + '/favicon.ico'; } catch (e) { return ''; } };
   function openSourcePop(btn) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
@@ -1066,7 +1070,7 @@
       const box = pop.querySelector('.as-src-prov'); if (!box) return;
       if (!provs.length) { box.textContent = 'No supported platforms linked on this release.'; placePop(pop, btn.getBoundingClientRect()); return; }
       box.classList.remove('as-pop-note');
-      box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(provIcon(p.url))}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('');
+      box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('');
       box.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { pop.remove(); sourceFromUrl(provs[+b.dataset.i].url); });
       box.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });   // hide a missing favicon (no inline handler — CSP)
       placePop(pop, btn.getBoundingClientRect());
