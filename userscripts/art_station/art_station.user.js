@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.380000
+// @version      2026.6.18.390000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1722,8 +1722,8 @@
     const date = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
     const by = mbUser();
     const pad = Math.max(2, String(Math.max(0, ...sel.map(it => it.order + 1))).length);
-    const out = [`# ${artists} - [${info.title}](${info.url})`, '', `- Export date: ${date}`];
-    if (by) out.push(`- Exported by: ${by}`);
+    const out = [`# ${artists} - [${info.title}](${info.url})`, '', `- **Export date:** ${date}`];
+    if (by) out.push(`- **Exported by:** ${by}`);
     out.push('', '## Artwork', '');
     sel.forEach((it, i) => {
       const orig = it._img || imgUrl(it.id);
