@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.470000
+// @version      2026.6.18.480000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1062,6 +1062,10 @@
   // normal "you get what you see" Enter-edit flow. Requires ECAU installed (it's what the
   // manager injects into the iframe). #242
   const ECAU_TIMEOUT = 45000;
+  // Some providers (notably Amazon) hand ECAU their site logo / "smile" favicon
+  // alongside the real covers. Those are tiny; real cover art is never this small.
+  // Drop anything whose longest side is under this so the brand glyph isn't staged. #242
+  const MIN_ART_PX = 200;
   // ECAU writes progress/errors into its .ROpdebee_log_container; read it to fail fast
   // on a bad / non-image URL instead of spinning until the timeout.
   function ecauError(doc) {
@@ -1118,6 +1122,9 @@
       for (const img of [...doc.querySelectorAll(previewSel)]) {
         const src = img.src || img.getAttribute('src'); if (!src || seen.has(src)) continue; seen.add(src);
         let blob; try { blob = /^blob:/i.test(src) ? await win.fetch(src).then(r => r.blob()) : await gmFetch(src); } catch (e) { continue; }
+        // skip a provider's logo/favicon (e.g. Amazon's smile) — decode the actual blob,
+        // not the preview <img> (MB may downscale that), and drop sub-cover-sized art. #242
+        try { const bmp = await (win.createImageBitmap || createImageBitmap)(blob); const big = Math.max(bmp.width, bmp.height); bmp.close && bmp.close(); if (big && big < MIN_ART_PX) continue; } catch (e) {}
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
