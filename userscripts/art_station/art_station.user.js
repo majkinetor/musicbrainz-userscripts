@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.270000
+// @version      2026.6.18.280000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -936,7 +936,16 @@
   // image's checked type checkboxes / comment) and stage them as NEW covers — riding the
   // normal "you get what you see" Enter-edit flow. Requires ECAU installed (it's what the
   // manager injects into the iframe). #242
-  const ECAU_TIMEOUT = 90000;
+  const ECAU_TIMEOUT = 45000;
+  // ECAU writes progress/errors into its .ROpdebee_log_container; read it to fail fast
+  // on a bad / non-image URL instead of spinning until the timeout.
+  function ecauError(doc) {
+    const log = doc.querySelector('.ROpdebee_log_container'); if (!log) return null;
+    const txt = (log.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!txt) return null;
+    if (/failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to/i.test(txt)) return txt.slice(-160);
+    return null;
+  }
   // a placeholder card (spinner + label) shown at the front of the gallery while ECAU
   // works, so the (sometimes slow) provider fetch has visible in-grid progress. It's
   // replaced by the real cover on success, removed on failure.
@@ -995,7 +1004,11 @@
       let doc, win; try { doc = ifr.contentDocument; win = ifr.contentWindow; } catch (e) { return; }
       if (!doc || !win) return;
       const n = doc.querySelectorAll(previewSel).length;
-      if (!n) return;
+      if (!n) {   // nothing yet — but if ECAU has reported a failure, stop now (don't spin)
+        const err = ecauError(doc);
+        if (err) { done = true; stop(); dropSourcingSlot(slot); render(); toast('Couldn’t source that URL — ' + err, 8000); }
+        return;
+      }
       if (n !== lastN) { lastN = n; settleAt = performance.now() + 1500; setSourcingLabel(slot, 'Adding…'); return; }  // still arriving → wait
       if (performance.now() < settleAt) return;
       done = true;
