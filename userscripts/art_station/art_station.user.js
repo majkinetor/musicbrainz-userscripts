@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.410000
+// @version      2026.6.18.420000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2072,10 +2072,13 @@
   .as-lb-x,.as-lb-play{font-size:15px;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;height:42px;cursor:pointer;font-weight:600}
   .as-lb-x{width:42px;font-size:24px}.as-lb-play{padding:0 14px}
   .as-lb-x:hover,.as-lb-play:hover{background:rgba(255,255,255,.25)}
-  /* lightbox actions: Delete top-left, Download (with size menu) top-centre */
-  .as-lb-del{position:fixed;top:16px;left:20px;z-index:2;font-size:18px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;height:42px;width:46px;cursor:pointer}
+  /* lightbox actions: Delete top-left, Download (size menu) top-centre. No z-index, so a
+     ZOOMED image paints over them — same as Play/✕. The download wrapper lifts only while
+     its menu is open so the menu stays usable. */
+  .as-lb-del{position:fixed;top:16px;left:20px;font-size:18px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;height:42px;width:46px;cursor:pointer}
   .as-lb-del:hover{background:var(--as-warn)}
-  .as-lb-dlwrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center}
+  .as-lb-dlwrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center}
+  .as-lb-dlwrap:has(.as-lb-dlmenu.open){z-index:3}
   .as-lb-dl,.as-lb-dlcaret{font:600 14px Arial;color:#fff;background:rgba(255,255,255,.12);border:none;height:42px;cursor:pointer}
   .as-lb-dl{padding:0 14px;border-radius:8px 0 0 8px}
   .as-lb-dlcaret{padding:0 11px;border-radius:0 8px 8px 0;border-left:1px solid rgba(255,255,255,.25);font-size:12px}
@@ -2087,7 +2090,10 @@
   .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw)}
   /* default: a zoomed image may cover the bar (image takes priority). Only when the
      caption/comment is focused (editing) does it lift above the image. */
-  .as-lb-bar:focus-within{position:relative;z-index:2}
+  /* while editing (focused), give the bar a readable dark backdrop — otherwise the comment
+     field / type chip are invisible over a light image */
+  .as-lb-bar:focus-within{position:relative;z-index:2;background:rgba(15,12,28,.88);padding:11px 16px;border-radius:13px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+  .as-lb-bar:focus-within .as-lb-cmt{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5)}
   .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
   .as-lb-type{font:700 12px inherit;color:#e7dffb;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:3px 14px;cursor:pointer}
   .as-lb-type:hover{background:rgba(255,255,255,.2);color:#fff}
