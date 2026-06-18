@@ -493,8 +493,10 @@
       const sel = MODEL.filter(it => it._sel && !it._new); if (!sel.length) return;
       if (sel.length === 1) return dlOne(sel[0]);           // single → save the image directly
       const b = e.currentTarget, lbl = b.querySelector('.as-bt'), old = lbl ? lbl.textContent : '';
-      b.disabled = true; if (lbl) lbl.textContent = 'Zipping…';
-      try { await dlZip(sel); } finally { b.disabled = false; if (lbl) lbl.textContent = old; }   // multiple → one .zip (#240)
+      b.disabled = true; if (lbl) lbl.style.display = 'inline';   // show progress even in compact mode
+      const prog = (d, t) => { if (lbl) lbl.textContent = `Zipping ${d}/${t}…`; };
+      prog(0, sel.length);
+      try { await dlZip(sel, prog); } finally { b.disabled = false; if (lbl) { lbl.textContent = old; lbl.style.display = ''; } }   // multiple → one .zip (#240)
     });
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
     q('.as-bk-cmt') && (q('.as-bk-cmt').onclick = e => { e.stopPropagation(); openBulkCommentPop(q('.as-bk-cmt')); });
@@ -671,33 +673,64 @@
     for (let i = 0; i < bytes.length; i++) crc = (crc >>> 8) ^ t[(crc ^ bytes[i]) & 0xFF];
     return (crc ^ 0xFFFFFFFF) >>> 0;
   }
-  // store-only ZIP (no compression — covers are already JPEG/PNG), no dependency
+  // store-only ZIP record builders (no compression — covers are already JPEG/PNG)
+  const _zdv = (len, fill) => { const a = new Uint8Array(len); fill(new DataView(a.buffer)); return a; };
+  const zipLocal   = (crc, size, nameLen) => _zdv(30, v => { v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint32(14, crc, true); v.setUint32(18, size, true); v.setUint32(22, size, true); v.setUint16(26, nameLen, true); });
+  const zipCentral = (crc, size, nameLen, off) => _zdv(46, v => { v.setUint32(0, 0x02014b50, true); v.setUint16(4, 20, true); v.setUint16(6, 20, true); v.setUint32(16, crc, true); v.setUint32(20, size, true); v.setUint32(24, size, true); v.setUint16(28, nameLen, true); v.setUint32(42, off, true); });
+  const zipEOCD    = (count, cdSize, cdOff) => _zdv(22, v => { v.setUint32(0, 0x06054b50, true); v.setUint16(8, count, true); v.setUint16(10, count, true); v.setUint32(12, cdSize, true); v.setUint32(16, cdOff, true); });
   function makeZip(files) {
-    const enc = new TextEncoder();
-    const dv = (len, fill) => { const a = new Uint8Array(len); fill(new DataView(a.buffer)); return a; };
-    const parts = [], central = [];
-    let offset = 0;
-    for (const f of files) {
-      const name = enc.encode(f.name), data = f.data, crc = crc32(data), size = data.length;
-      parts.push(dv(30, v => { v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint32(14, crc, true); v.setUint32(18, size, true); v.setUint32(22, size, true); v.setUint16(26, name.length, true); }), name, data);
-      central.push(dv(46, v => { v.setUint32(0, 0x02014b50, true); v.setUint16(4, 20, true); v.setUint16(6, 20, true); v.setUint32(16, crc, true); v.setUint32(20, size, true); v.setUint32(24, size, true); v.setUint16(28, name.length, true); v.setUint32(42, offset, true); }), name);
-      offset += 30 + name.length + size;
-    }
+    const enc = new TextEncoder(); const parts = [], central = []; let offset = 0;
+    for (const f of files) { const name = enc.encode(f.name), crc = crc32(f.data), size = f.data.length;
+      parts.push(zipLocal(crc, size, name.length), name, f.data);
+      central.push(zipCentral(crc, size, name.length, offset), name); offset += 30 + name.length + size; }
     const cdSize = central.reduce((s, c) => s + c.length, 0);
-    const eocd = dv(22, v => { v.setUint32(0, 0x06054b50, true); v.setUint16(8, files.length, true); v.setUint16(10, files.length, true); v.setUint32(12, cdSize, true); v.setUint32(16, offset, true); });
-    return new Blob([...parts, ...central, eocd], { type: 'application/zip' });
+    return new Blob([...parts, ...central, zipEOCD(files.length, cdSize, offset)], { type: 'application/zip' });
   }
-  async function dlZip(sel) {
-    const used = new Set(), entries = [];
-    for (const it of sel) {
+  // member names, disambiguating same-type covers (front.jpg, booklet.jpg, booklet-2.jpg …)
+  function zipNames(sel) {
+    const used = new Set();
+    return sel.map(it => {
       const url = it._img || imgUrl(it.id);
       const ext = (url.match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
       let base = (it.types[0] || 'cover'), name = `${base}.${ext}`, n = 2;
-      while (used.has(name.toLowerCase())) name = `${base}-${n++}.${ext}`;   // disambiguate same-type covers
+      while (used.has(name.toLowerCase())) name = `${base}-${n++}.${ext}`;
       used.add(name.toLowerCase());
-      try { entries.push({ name, data: new Uint8Array(await fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })) }); }
-      catch (e) { /* skip a cover that won't fetch */ }
+      return { url, name };
+    });
+  }
+  const fetchBytes = async url => new Uint8Array(await fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }));
+  async function dlZip(sel, onProgress) {
+    const items = zipNames(sel), enc = new TextEncoder();
+    // #240: stream the zip straight to disk when the browser supports it — the
+    // download starts immediately (first cover written as soon as it arrives) and
+    // the whole archive is never buffered in memory.
+    if (window.showSaveFilePicker) {
+      let handle;
+      try { handle = await window.showSaveFilePicker({ suggestedName: `${MBID}-covers.zip`, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
+      catch (e) { return; }   // user cancelled the save dialog
+      const w = await handle.createWritable();
+      const central = []; let offset = 0, done = 0;
+      for (const o of items) {
+        let data; try { data = await fetchBytes(o.url); } catch (e) { onProgress && onProgress(++done, items.length); continue; }
+        const name = enc.encode(o.name), crc = crc32(data);
+        await w.write(zipLocal(crc, data.length, name.length)); await w.write(name); await w.write(data);
+        central.push({ crc, size: data.length, name, offset });
+        offset += 30 + name.length + data.length;
+        onProgress && onProgress(++done, items.length);
+      }
+      let cdSize = 0;
+      for (const c of central) { await w.write(zipCentral(c.crc, c.size, c.name.length, c.offset)); await w.write(c.name); cdSize += 46 + c.name.length; }
+      await w.write(zipEOCD(central.length, cdSize, offset));
+      await w.close();
+      return;
     }
+    // fallback: fetch all in PARALLEL (fast), then one blob download
+    let done = 0;
+    const results = await Promise.all(items.map(async o => {
+      try { const data = await fetchBytes(o.url); onProgress && onProgress(++done, items.length); return { name: o.name, data }; }
+      catch (e) { onProgress && onProgress(++done, items.length); return null; }
+    }));
+    const entries = results.filter(Boolean);
     if (!entries.length) return;
     const obj = URL.createObjectURL(makeZip(entries));
     const a = document.createElement('a'); a.href = obj; a.download = `${MBID}-covers.zip`;
