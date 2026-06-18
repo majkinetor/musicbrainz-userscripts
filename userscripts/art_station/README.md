@@ -29,8 +29,9 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
     - **Remove** and **Download** zip archive
     - **Reports** in HTML and Markdown with configurable parameters  
 - **Add images**
-  - **File drop** — new covers upload to the Cover Art Archive, in parallel
-  - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover, via the sanctioned integration.
+  - **File drop** — choose local file and upload to the Cover Art Archive in parallel
+  - **URL link** — use [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch cover from Discogs, Apple, Spotify, Bandcamp…
+  - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover via integration.
   - Fresh covers shown faster than native UI
 - **Full-screen viewer**
   - Arrow keys for navigation (left/right) and zoom (up/down) with zoom level remembered
