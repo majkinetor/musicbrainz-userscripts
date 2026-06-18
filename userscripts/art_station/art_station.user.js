@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.240000
+// @version      2026.6.18.250000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -340,7 +340,7 @@
     return `<div class="as-bar">
       <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
       ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
-      ${IS_EVENT ? '' : `<button class="as-btn as-src" title="Source a cover from a linked platform or any URL, via ECAU (#242)"><span class="as-bi">🔗</span><span class="as-bt">URL</span></button>`}
+      ${IS_EVENT ? '' : `<button class="as-btn as-src" title="Source a cover from a linked platform or any URL, via ECAU (#242)"><span class="as-bi">🔗</span><span class="as-bt">URL<span class="as-src-n"></span></span></button>`}
       <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
@@ -381,7 +381,7 @@
   }
   function newSection() {
     if (!SETTINGS.group) return '';   // Position view shows new uploads inline, positioned among covers
-    const news = MODEL.filter(it => it._new && !it._del).sort((a, b) => a.order - b.order);
+    const news = MODEL.filter(it => it._new && !it._del && !it._sourcing).sort((a, b) => a.order - b.order);
     if (!news.length) return '';
     return `<div class="as-sec as-sec-new"><h3>New uploads</h3><span class="as-cnt">${news.length}</span><span class="as-line"></span></div>
       <div class="as-grid">${news.map(card).join('')}</div>`;
@@ -423,6 +423,8 @@
     });
   }
   function card(it) {
+    if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}">`
+      + `<div class="as-srcing-thumb"><div class="as-spinner"></div><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
     return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
       <div class="as-thumb">${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
         ${it._new ? '<span class="as-newban">NEW</span>' : ''}
@@ -545,7 +547,12 @@
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
     const mh = root.querySelector('.as-mh'); if (mh) mh.onclick = openMHCovers;
-    const src = root.querySelector('.as-src'); if (src) src.onclick = e => { e.stopPropagation(); openSourcePop(src); };
+    const src = root.querySelector('.as-src');
+    if (src) {
+      src.onclick = e => { e.stopPropagation(); openSourcePop(src); };
+      // show the number of linked platforms on the button: "URL (2)"
+      getProvLinks().then(l => { const n = src.querySelector('.as-src-n'); if (n) { n.textContent = l.length ? ` (${l.length})` : ''; if (l.length) src.title = `Source a cover — ${l.length} linked platform${l.length > 1 ? 's' : ''} or any URL, via ECAU (#242)`; } });
+    }
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
@@ -658,7 +665,7 @@
   function pendingOps() {
     const label = it => it.types[0] || (it._new ? 'new image' : ITEM);
     const ops = [];
-    MODEL.filter(it => it._new && !it._del).forEach(it => ops.push(`➕ Add ${label(it)}${it.types.length ? ` — ${it.types.join(', ')}` : ''}${it.comment ? ` “${it.comment}”` : ''}`));
+    MODEL.filter(it => it._new && !it._del && !it._sourcing).forEach(it => ops.push(`➕ Add ${label(it)}${it.types.length ? ` — ${it.types.join(', ')}` : ''}${it.comment ? ` “${it.comment}”` : ''}`));
     MODEL.filter(it => it._del && !it._new).forEach(it => ops.push(`🗑 Remove ${label(it)}`));
     MODEL.filter(it => !it._del && !it._new).forEach(it => {
       if (it.types.join('|') !== it._origTypes.join('|')) ops.push(`🏷 Set type on ${it._origTypes[0] || ITEM} → ${it.types.join(', ') || '(none)'}`);
@@ -930,6 +937,21 @@
   // normal "you get what you see" Enter-edit flow. Requires ECAU installed (it's what the
   // manager injects into the iframe). #242
   const ECAU_TIMEOUT = 90000;
+  // a placeholder card (spinner + label) shown at the front of the gallery while ECAU
+  // works, so the (sometimes slow) provider fetch has visible in-grid progress. It's
+  // replaced by the real cover on success, removed on failure.
+  function addSourcingSlot(label) {
+    const ph = { id: 'srcing-' + Math.random().toString(36).slice(2, 7), types: [], comment: '', order: -1, w: 0, h: 0, _new: true, _sourcing: true, _srcLabel: label, _origTypes: [], _origComment: '', _origOrder: -1 };
+    const rest = MODEL.slice().sort((a, b) => a.order - b.order);
+    MODEL = [ph, ...rest]; MODEL.forEach((it, i) => it.order = i);
+    render();
+    return ph.id;
+  }
+  function setSourcingLabel(id, text) {
+    const it = MODEL.find(x => x.id === id); if (it) it._srcLabel = text;
+    const el = document.querySelector(`.as-card[data-id="${CSS.escape(id)}"] .as-srcing-lbl`); if (el) el.textContent = text;
+  }
+  function dropSourcingSlot(id) { MODEL = MODEL.filter(it => it.id !== id); MODEL.forEach((it, i) => it.order = i); }
   function sourceFromUrl(rawUrl) {
     const url = (rawUrl || '').trim();
     if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
@@ -940,7 +962,7 @@
     ifr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1100px;height:900px;border:0;opacity:0;pointer-events:none';
     document.body.appendChild(ifr);
     ifr.src = `${R}/add-${ART}?${p}`;
-    toast('Sourcing via ECAU…', ECAU_TIMEOUT);
+    const slot = addSourcingSlot('Sourcing…');
     let done = false, lastN = 0, settleAt = 0;
     const stop = () => { clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} };
     async function harvest(doc, win) {
@@ -967,16 +989,16 @@
       if (!doc || !win) return;
       const n = doc.querySelectorAll('img[src^="blob:"]').length;
       if (!n) return;
-      if (n !== lastN) { lastN = n; settleAt = performance.now() + 1500; return; }  // still arriving → wait
+      if (n !== lastN) { lastN = n; settleAt = performance.now() + 1500; setSourcingLabel(slot, 'Adding…'); return; }  // still arriving → wait
       if (performance.now() < settleAt) return;
       done = true;
       const { files, metas } = await harvest(doc, win);
-      stop();
+      stop(); dropSourcingSlot(slot);
       if (files.length) { addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from provider ✓`); }
-      else toast('Provider returned no image', 5000);
+      else { render(); toast('Provider returned no image', 5000); }
     }, 400);
     const killer = setTimeout(() => {
-      if (done) return; done = true; stop();
+      if (done) return; done = true; stop(); dropSourcingSlot(slot); render();
       toast('No image returned — is “Enhanced Cover Art Uploads” installed? It powers provider sourcing.', 9000);
     }, ECAU_TIMEOUT);
   }
@@ -1012,6 +1034,9 @@
       return out;
     } catch (e) { return []; }
   }
+  let _provLinks = null;   // fetched once per page; reused by the button count + the popover
+  function getProvLinks() { return _provLinks ? Promise.resolve(_provLinks) : artProviderLinks().then(l => (_provLinks = l)); }
+  const provIcon = url => { try { return new URL(url).origin + '/favicon.ico'; } catch (e) { return ''; } };
   function openSourcePop(btn) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
@@ -1030,12 +1055,13 @@
     // lands; only auto-go when the whole field is a URL (typing-then-pasting won't fire).
     inp.onpaste = () => setTimeout(() => { if (/^https?:\/\//i.test(inp.value.trim())) go(); }, 0);
     // populate "Import from <provider>" buttons from the release's linked platforms
-    artProviderLinks().then(provs => {
+    getProvLinks().then(provs => {
       const box = pop.querySelector('.as-src-prov'); if (!box) return;
       if (!provs.length) { box.textContent = 'No supported platforms linked on this release.'; placePop(pop, btn.getBoundingClientRect()); return; }
       box.classList.remove('as-pop-note');
-      box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}">⬇ Import from ${esc(p.name)}</button>`).join('');
+      box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(provIcon(p.url))}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('');
       box.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { pop.remove(); sourceFromUrl(provs[+b.dataset.i].url); });
+      box.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });   // hide a missing favicon (no inline handler — CSP)
       placePop(pop, btn.getBoundingClientRect());
     });
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
@@ -1181,7 +1207,7 @@
   // ordered work list (uploads are Phase 2b): remove → retype/comment → reorder
   function buildPlan() {
     const plan = [];
-    MODEL.filter(it => it._new && !it._del).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'}${it.comment ? ` “${it.comment}”` : ''} (upload)`, kind: 'add', it, run: (m, dry, report) => runAdd(it, m, dry, report) }));
+    MODEL.filter(it => it._new && !it._del && !it._sourcing).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'}${it.comment ? ` “${it.comment}”` : ''} (upload)`, kind: 'add', it, run: (m, dry, report) => runAdd(it, m, dry, report) }));
     MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || ITEM}`, id: it.id, kind: 'remove', build: m => buildRemove(it, m) }));
     MODEL.filter(it => !it._del && !it._new && (it.comment !== it._origComment || it.types.join('|') !== it._origTypes.join('|')))
       .forEach(it => {
@@ -1611,7 +1637,7 @@
   }
   function openReport() {
     const sel = MODEL.filter(it => it._sel && !it._del && !it._new);
-    const omitted = MODEL.filter(it => it._sel && it._new && !it._del).length;
+    const omitted = MODEL.filter(it => it._sel && it._new && !it._del && !it._sourcing).length;
     document.getElementById('as-report')?.remove();
     const ov = document.createElement('div'); ov.id = 'as-report';
     ov.innerHTML = `<div class="as-cm-box as-rp-box">
@@ -1734,6 +1760,11 @@
   .as-sec-new h3{color:#1f9d6b}
   .as-card.new{background:repeating-linear-gradient(45deg,#eef7f1,#eef7f1 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:#9bd3b6;border-style:dashed}
   .as-card.pending{background:#fdf3d0;border-color:#e6cf86}
+  .as-card.as-sourcing{border-style:dashed}
+  .as-srcing-thumb{width:100%;aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;color:#3b8f6b}
+  .as-spinner{width:30px;height:30px;border:3px solid #c7e7d6;border-top-color:#1f9d6b;border-radius:50%;animation:as-spin .8s linear infinite}
+  @keyframes as-spin{to{transform:rotate(360deg)}}
+  .as-srcing-lbl{font:600 12px Arial;color:#2c7a59}
   .as-pdfban{position:absolute;right:6px;top:6px;z-index:4;background:#7a3a8f;color:#fff;font:700 10px/1 Arial;letter-spacing:.5px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
   .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9;cursor:zoom-in;border-radius:9px 9px 0 0;overflow:hidden}
@@ -1795,7 +1826,9 @@
   .as-cmt-pop{min-width:220px}
   .as-src-pop{min-width:340px;max-width:380px}
   .as-src-prov{display:flex;flex-direction:column;gap:5px;margin:6px 0 2px}
-  .as-src-prov-b{justify-content:flex-start;font-weight:600;color:#3b2c70}
+  .as-src-prov-b{justify-content:flex-start;font-weight:600;color:#3b2c70;gap:8px}
+  .as-src-ic{width:16px;height:16px;object-fit:contain;flex:0 0 auto}
+  .as-src-n{opacity:.85}
   .as-src-or{margin:9px 0 0;color:#9a8ccb;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
   .as-src-inp{width:100%;box-sizing:border-box;margin:4px 0 2px;padding:6px 8px;border:1px solid #cfc6e6;border-radius:6px;font:13px inherit}
   .as-src-pop .as-pop-note{padding:4px 2px 2px;line-height:1.4}
