@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.140000
+// @version      2026.6.18.143000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -285,7 +285,7 @@
       <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="as-bt">Comment ▾</span></button>
       <button class="as-btn as-bk-dl" title="Download the selected covers"><span class="as-bi">⬇</span><span class="as-bt">Download</span></button>
       <button class="as-btn as-bk-report" title="Postable Markdown / HTML report of the selection"><span class="as-bi">📋</span><span class="as-bt">Report</span></button>
-      <button class="as-btn as-bk-rm" title="Mark the selected covers for removal"><span class="as-bi">🗑</span><span class="as-bt">Delete</span></button>` : ''}`;
+      <button class="as-btn as-bk-rm" title="Mark the selected covers for removal"><span class="as-bi">🗑️</span><span class="as-bt">Delete</span></button>` : ''}`;
   }
   function section(type, items) {
     const label = type === null ? 'All covers' : type;
