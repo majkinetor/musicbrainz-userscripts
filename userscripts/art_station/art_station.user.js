@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.320000
+// @version      2026.6.18.330000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -340,7 +340,6 @@
 
   function bar(n) {
     return `<div class="as-bar">
-      <img class="as-logo" src="${ICON_URL}" alt="Art Station" title="Art Station — setup">
       <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
       ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
       ${IS_EVENT ? '' : `<button class="as-btn as-src" title="Source a cover from a linked platform or any URL, via ECAU (#242)"><span class="as-bi">🔗</span><span class="as-bt">URL<span class="as-src-n"></span></span></button>`}
@@ -549,7 +548,6 @@
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
-    const logo = root.querySelector('.as-logo'); if (logo) logo.onclick = openSetup;
     const mh = root.querySelector('.as-mh'); if (mh) mh.onclick = openMHCovers;
     const src = root.querySelector('.as-src');
     if (src) {
@@ -1700,8 +1698,7 @@
   :root{ --as-tile:${SETTINGS.tile}px; --as-acc:#5f3ec0; --as-warn:#c0392b; }
   #as-root{font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;margin:0 0 18px}
   .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px 11px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:wrap;margin-bottom:6px}
-  .as-logo{width:24px;height:24px;object-fit:contain;cursor:pointer;flex:0 0 auto}
-  .as-setup-ic{width:20px;height:20px;object-fit:contain;flex:0 0 auto}
+  .as-setup-ic{width:30px;height:30px;object-fit:contain;flex:0 0 auto}
   .as-bar>*{flex:0 0 auto}
   /* "Original" (Apollo-style switch): hide the whole Art Station UI, MB's native page shows through */
   #as-root.as-orig{display:none}
