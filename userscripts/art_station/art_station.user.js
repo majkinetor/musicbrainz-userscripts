@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.200000
+// @version      2026.6.18.210000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -282,6 +282,7 @@
     return `<div class="as-bar">
       <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
       ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
+      ${IS_EVENT ? '' : `<button class="as-btn as-src" title="Source from a provider URL (Discogs / Apple / Spotify / Amazon / Bandcamp / …) via ECAU (#242)"><span class="as-bi">🔗</span><span class="as-bt">From URL</span></button>`}
       <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
@@ -486,6 +487,7 @@
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
     const mh = root.querySelector('.as-mh'); if (mh) mh.onclick = openMHCovers;
+    const src = root.querySelector('.as-src'); if (src) src.onclick = e => { e.stopPropagation(); openSourcePop(src); };
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
@@ -861,14 +863,92 @@
     } catch (e) { toast('Could not fetch the cover — ' + e.message, 5000); }
   }
 
+  // ── #242 Source from any provider via ECAU (ROpdebee's Enhanced Cover Art Uploads). ──
+  // We don't reimplement providers — that scraping/maximization is the high-churn part
+  // ECAU owns. Instead we seed ECAU's public x_seed interface in a HIDDEN add-cover-art
+  // iframe (so no native/ECAU UI is ever shown), let it fetch + maximize, then harvest
+  // the File(s) from MB's native uploader preview rows (the blob: <img> previews + each
+  // image's checked type checkboxes / comment) and stage them as NEW covers — riding the
+  // normal "you get what you see" Enter-edit flow. Requires ECAU installed (it's what the
+  // manager injects into the iframe). #242
+  const ECAU_TIMEOUT = 90000;
+  function sourceFromUrl(rawUrl) {
+    const url = (rawUrl || '').trim();
+    if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
+    const p = new URLSearchParams();
+    p.set('x_seed.origin', releaseInfo().url);
+    p.set('x_seed.image.0.url', url);
+    const ifr = document.createElement('iframe');
+    ifr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1100px;height:900px;border:0;opacity:0;pointer-events:none';
+    document.body.appendChild(ifr);
+    ifr.src = `${R}/add-${ART}?${p}`;
+    toast('Sourcing via ECAU…', ECAU_TIMEOUT);
+    let done = false, lastN = 0, settleAt = 0;
+    const stop = () => { clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} };
+    async function harvest(doc, win) {
+      const files = [], metas = [];
+      for (const img of [...doc.querySelectorAll('img[src^="blob:"]')]) {
+        let blob; try { blob = await win.fetch(img.src).then(r => r.blob()); } catch (e) { continue; }
+        const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+        const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
+        // best-effort: read the types/comment ECAU set on this image's uploader row
+        let types = [], comment = '';
+        const row = img.closest('.file-info, .image-position, tr, li, .row') || doc;
+        try {
+          row.querySelectorAll('input[name*="type_id"]:checked').forEach(cb => { const l = cb.closest('label'); const n = l ? l.textContent.trim() : ''; if (n) types.push(n); });
+          const ci = row.querySelector('input[name*="comment"], textarea[name*="comment"]'); if (ci) comment = ci.value || '';
+        } catch (e) {}
+        metas.push({ types: types.filter(t => ALL_TYPES.includes(t)), comment });
+      }
+      return { files, metas };
+    }
+    const poll = setInterval(async () => {
+      if (done) return;
+      let doc, win; try { doc = ifr.contentDocument; win = ifr.contentWindow; } catch (e) { return; }
+      if (!doc || !win) return;
+      const n = doc.querySelectorAll('img[src^="blob:"]').length;
+      if (!n) return;
+      if (n !== lastN) { lastN = n; settleAt = performance.now() + 1500; return; }  // still arriving → wait
+      if (performance.now() < settleAt) return;
+      done = true;
+      const { files, metas } = await harvest(doc, win);
+      stop();
+      if (files.length) { addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from provider ✓`); }
+      else toast('Provider returned no image', 5000);
+    }, 400);
+    const killer = setTimeout(() => {
+      if (done) return; done = true; stop();
+      toast('No image returned — is “Enhanced Cover Art Uploads” installed? It powers provider sourcing.', 9000);
+    }, ECAU_TIMEOUT);
+  }
+  function openSourcePop(btn) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
+    const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
+    pop.innerHTML = `<div class="as-pop-h">Source from a provider URL</div>`
+      + `<input class="as-src-inp" placeholder="https://www.discogs.com/release/… or an image URL" spellcheck="false">`
+      + `<div class="as-pop-f"><button class="as-btn as-src-go">Fetch</button></div>`
+      + `<div class="as-pop-note">Powered by ROpdebee's Enhanced Cover Art Uploads (must be installed). Discogs · Apple · Spotify · Amazon · Bandcamp · …</div>`;
+    document.body.appendChild(pop); placePop(pop, btn.getBoundingClientRect());
+    const inp = pop.querySelector('.as-src-inp'); inp.focus();
+    const go = () => { const v = inp.value; pop.remove(); sourceFromUrl(v); };
+    pop.querySelector('.as-src-go').onclick = go;
+    inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } else if (e.key === 'Escape') { e.preventDefault(); pop.remove(); } };
+    const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
+
   let _dropZone = false;
   function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
-  function newItem(f) {
-    return { id: 'new-' + Math.random().toString(36).slice(2, 8), types: [], comment: '', order: 0, w: 0, h: 0,
+  function newItem(f, meta) {
+    return { id: 'new-' + Math.random().toString(36).slice(2, 8), types: (meta && meta.types) ? meta.types.slice() : [], comment: (meta && meta.comment) || '', order: 0, w: 0, h: 0,
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 };
   }
-  function addFiles(files) {
-    const news = [...files].filter(f => f.type.startsWith('image/') || f.type === 'application/pdf').map(newItem);
+  // metas (optional) carries per-file { types, comment } — used when sourcing covers
+  // that already know their type/comment (e.g. ECAU provider import, #242)
+  function addFiles(files, metas) {
+    const news = [...files].map((f, i) => ({ f, meta: metas && metas[i] }))
+      .filter(x => x.f.type.startsWith('image/') || x.f.type === 'application/pdf').map(x => newItem(x.f, x.meta));
     if (!news.length) return;
     // new covers go FIRST (majkinetor: they were landing last), then existing in order
     const rest = MODEL.slice().sort((a, b) => a.order - b.order);
@@ -1592,6 +1672,9 @@
   .as-pop-f{display:flex;gap:6px;padding:6px 4px 2px;border-top:1px solid #eee;margin-top:4px;position:sticky;bottom:0;background:#fff}
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   .as-cmt-pop{min-width:220px}
+  .as-src-pop{min-width:340px;max-width:380px}
+  .as-src-inp{width:100%;box-sizing:border-box;margin:6px 0 2px;padding:6px 8px;border:1px solid #cfc6e6;border-radius:6px;font:13px inherit}
+  .as-src-pop .as-pop-note{padding:4px 2px 2px;line-height:1.4}
   .as-bulk-cmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid #d8ccf5;border-radius:6px;padding:5px 8px;margin:2px 0 2px;background:#faf9fe;color:#333}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
