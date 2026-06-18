@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.220000
+// @version      2026.6.18.230000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -41,6 +41,17 @@
   const earlyHide = document.createElement('style');
   earlyHide.textContent = '.artwork-cont,#content>h2,#content>p{display:none!important}';
   appendEl(earlyHide);
+  // Hide the native button row (Add / Reorder / Import…) before paint too — a JS hide
+  // at render time flashes them on entry AND misses ECAU's async-added Import buttons;
+  // a document-start !important style avoids both. Toggled by the setting + Original.
+  const footerStyle = document.createElement('style');
+  footerStyle.textContent = '#content div.buttons.ui-helper-clearfix{display:none!important}';
+  appendEl(footerStyle);
+  // saved prefs read directly here (the SETTINGS object is built later) so the initial
+  // Original/footer state is applied flash-free, before first paint.
+  let _savedPrefs = {}; try { _savedPrefs = JSON.parse(localStorage.getItem('artstation:settings') || '{}'); } catch (e) {}
+  earlyHide.disabled = !!_savedPrefs.showOrig;
+  footerStyle.disabled = !!_savedPrefs.showOrig || _savedPrefs.hideMbFooter === false;
 
   // Proper edit-note attribution, like the other scripts: "Name vX by author - url".
   // GM_info is exposed even under @grant none on the common managers; fall back to
@@ -79,9 +90,17 @@
     if (it.w && it.h) parts.push(`${it.w} × ${it.h}`);
     return parts.length ? parts.join(' ') : '…';
   }
+  // card-foot version: size + resolution as separate spans so they WRAP (stack) on a
+  // narrow card instead of overflowing the tile.
+  function dimHtml(it) {
+    const parts = [];
+    if (it.bytes) parts.push(`<span class="as-dim-sz">${fmtSize(it.bytes)}</span>`);
+    if (it.w && it.h) parts.push(`<span class="as-dim-px">${it.w} × ${it.h}</span>`);
+    return parts.join('') || '<span class="as-dim-sz">…</span>';
+  }
   function refreshDim(it) {
     const el = document.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-dim`);
-    if (el) el.textContent = dimText(it);
+    if (el) el.innerHTML = dimHtml(it);
   }
   // one request per release: archive.org item metadata carries every original's byte size
   async function loadSizes() {
@@ -97,7 +116,7 @@
     } catch (e) { /* size is a nicety — never block the gallery */ }
   }
   let SETTINGS = load();
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -162,7 +181,7 @@
   // ── render ───────────────────────────────────────────────────────────────────
   const root = document.createElement('div'); root.id = 'as-root';
   let _mounted = false;
-  let _showOrig = false;       // "Show original" (View) — reveal MB's native UI, keep only our toolbar
+  let _showOrig = SETTINGS.showOrig;   // "Show original" — reveal MB's native UI; remembered across loads
   const _native = [];          // the native cover-art elements mount() hid, so we can show them again
   function mount() {
     if (_mounted) return; _mounted = true;
@@ -198,9 +217,7 @@
   // optional (setup): hide MB's native button row (Add / Reorder / Import from …)
   // under the gallery — redundant with Art Station's own toolbar. Revealed in Original.
   function applyHideFooter() {
-    document.querySelectorAll('#content div.buttons.ui-helper-clearfix').forEach(el => {
-      el.style.display = (SETTINGS.hideMbFooter && !_showOrig) ? 'none' : '';
-    });
+    footerStyle.disabled = !(SETTINGS.hideMbFooter && !_showOrig);
   }
   // #234: an Apollo-style fixed switcher (bottom-right) toggling Original ⇄ Art
   // Station, plus a ⚙ setup button — always visible.
@@ -208,11 +225,11 @@
     let wrap = document.getElementById('as-switch-wrap');
     if (!wrap) {
       wrap = document.createElement('div'); wrap.id = 'as-switch-wrap';
+      const sw = document.createElement('button'); sw.id = 'as-switch';
+      sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
       const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = '⚙'; gear.title = 'Art Station setup';
       gear.onclick = openSetup;
-      const sw = document.createElement('button'); sw.id = 'as-switch';
-      sw.onclick = () => { _showOrig = !_showOrig; render(); };
-      wrap.append(gear, sw); document.body.appendChild(wrap);
+      wrap.append(sw, gear); document.body.appendChild(wrap);   // label left, gear right — one pill
     }
     const sw = document.getElementById('as-switch');
     sw.textContent = _showOrig ? 'Art Station' : 'Original';
@@ -221,14 +238,13 @@
   // setup panel (Apollo-style): script info + help + toggles
   function openSetup() {
     document.getElementById('as-setup')?.remove();
-    const ver = (_gm && _gm.version) || '', author = (_gm && _gm.author) || 'majkinetor';
-    const home = (_gm && (_gm.homepageURL || _gm.homepage)) || SCRIPT_URL;
+    const ver = (_gm && _gm.version) || '';
+    const help = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/README.md';
     const panel = document.createElement('div'); panel.id = 'as-setup';
     panel.innerHTML = `<div class="as-setup-h"><b>Art Station</b> <span class="as-setup-ver">v${esc(ver)}</span>`
-      + `<a class="as-setup-help" href="${esc(home)}" target="_blank" rel="noopener">Help ↗</a>`
+      + `<a class="as-setup-help" href="${help}" target="_blank" rel="noopener">Help ↗</a>`
       + `<button class="as-setup-x" title="close">✕</button></div>`
       + `<div class="as-setup-body">`
-      + `<p class="as-setup-info">${esc(ENT.Noun)} editor — one staged gallery, applied on <b>Enter edit</b>. by ${esc(author)}</p>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-hidefoot"${SETTINGS.hideMbFooter ? ' checked' : ''}> Hide MB native buttons (Add / Reorder / Import…)</label>`
       + `</div>`;
     document.body.appendChild(panel);
@@ -259,6 +275,7 @@
     applyOriginal();   // keep the native/script view state across re-renders
     applyZoomClass();
     fitTypePills();    // show as many types as the pill width allows
+    fitFooters();      // hide a comment that can't fit even a few chars (no ugly sliver)
     fitToolbar();      // icon-only buttons if the toolbar would otherwise wrap
     if (window.scrollY !== y) window.scrollTo(0, y);
   }
@@ -272,6 +289,16 @@
       pill.textContent = types.join(', ');
       let n = types.length;
       while (n > 1 && pill.scrollWidth > pill.clientWidth) { n--; pill.textContent = types.slice(0, n).join(', ') + ' +'; }
+    });
+  }
+  // the comment shares the footer row with the dimensions; on a narrow card the
+  // dimensions win and the comment can be squeezed to a 1-2px sliver of a glyph.
+  // Hide it entirely below a readable width rather than show that sliver.
+  function fitFooters() {
+    root.querySelectorAll('.as-card .as-foot-cmt').forEach(cmt => {
+      cmt.classList.remove('as-cmt-collapsed');
+      if (!cmt.querySelector('.as-cmt-text')) return;   // empty comment (hover pencil) — nothing to clip
+      if (cmt.clientWidth < 24) cmt.classList.add('as-cmt-collapsed');
     });
   }
   // shared autocomplete of the comments already used on this release (#238 presets)
@@ -418,7 +445,7 @@
       ? `<span class="as-type" title="${esc(it.types.join(', '))}">${esc(it.types.join(', '))}</span>`
       : `<span class="as-type as-type-add" title="set type">＋ type</span>`;
     const typeRow = `<div class="as-foot-type"><span class="as-tline"></span>${typePill}<span class="as-tline"></span></div>`;
-    const dim = `<span class="as-dim">${esc(dimText(it))}</span>`;
+    const dim = `<span class="as-dim">${dimHtml(it)}</span>`;
     if (it._del) return `<div class="as-foot"><div class="as-foot-row"><span class="as-foot-cmt"></span>${dim}</div>${typeRow}</div>`;
     const cmt = it._editcmt
       ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets">`
@@ -1615,11 +1642,12 @@
   .as-bar>*{flex:0 0 auto}
   /* "Original" (Apollo-style switch): hide the whole Art Station UI, MB's native page shows through */
   #as-root.as-orig{display:none}
-  #as-switch-wrap{position:fixed;bottom:14px;right:14px;z-index:99998;display:flex;gap:8px;align-items:center}
-  #as-switch{background:var(--as-acc);color:#fff;border:none;border-radius:20px;font:bold 13px Arial;padding:9px 16px;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
-  #as-switch:hover{background:#4e329f}
-  #as-setup-btn{width:36px;height:36px;border-radius:50%;border:none;background:#fff;color:var(--as-acc);font-size:17px;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
-  #as-setup-btn:hover{background:#f0ecfa}
+  /* one unified pill like Apollo's launcher: label segment + a divider + the gear */
+  #as-switch-wrap{position:fixed;bottom:14px;right:14px;z-index:99998;display:inline-flex;align-items:stretch;background:var(--as-acc);color:#fff;border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
+  #as-switch{padding:8px 14px;cursor:pointer;background:none;border:none;color:inherit;font:inherit}
+  #as-switch:hover{background:rgba(255,255,255,.13)}
+  #as-setup-btn{padding:8px 12px;cursor:pointer;font-size:14px;display:flex;align-items:center;background:none;border:none;border-left:1px solid rgba(255,255,255,.28);color:inherit}
+  #as-setup-btn:hover{background:rgba(255,255,255,.13)}
   #as-setup{position:fixed;bottom:58px;right:14px;z-index:99999;width:320px;max-width:92vw;background:#fff;border:1px solid #cbbdf0;border-radius:10px;box-shadow:0 8px 28px rgba(40,20,80,.32);font:13px Arial;color:#222}
   .as-setup-h{display:flex;align-items:center;gap:7px;padding:10px 12px;border-bottom:1px solid #ece6f8;color:#563b8f}
   .as-setup-ver{font-size:11px;font-weight:normal;color:#999}
@@ -1710,7 +1738,8 @@
   .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#faf8ff,#efeafb)}
   .as-thumb.na img{display:none}
   .as-thumb.na::after{content:'Not on the Cover Art Archive yet';text-align:center;color:#9a8ccb;font-size:12px;font-weight:600;line-height:1.45;padding:0 16px}
-  .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;white-space:nowrap;flex:0 0 auto}
+  .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;flex:0 0 auto;margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 7px}
+  .as-dim-sz,.as-dim-px{white-space:nowrap}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
   .as-rm:hover{background:var(--as-warn);color:#fff}
@@ -1718,7 +1747,8 @@
   /* #234: footer (mockup) — row 1: comment (left) · dimensions+size (right); row 2: centered type pill on a divider */
   .as-foot{padding:5px 8px 0;display:flex;flex-direction:column;gap:6px;border-top:1px solid #efeaf8}
   .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px}
-  .as-foot-cmt{flex:1 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
+  .as-foot-cmt{flex:0 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
+  .as-foot-cmt.as-cmt-collapsed{display:none}
   .as-cmt-text{font:11px inherit;color:#5a5470;line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .as-cmt-text:hover{color:var(--as-acc)}
   .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
