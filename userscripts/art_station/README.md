@@ -45,18 +45,28 @@ Cover types and file names round-trip, so a downloaded archive can be re-added l
 
 **On add** (drop / pick / source) — when an image has no type, it's guessed from the file name (toggle in ⚙ setup):
 
-| Name contains | Type |
-|---|---|
-| `front`, `folder`, `cover`, `frontal`, `recto` | Front |
-| `back`, `rear`, `verso` | Back |
-| `booklet`, `inlay`, `insert` | Booklet |
-| `cd`, `disc`, `disk`, `vinyl`, `medium`, `label`, `side a/b/…` | Medium |
-| `tray`, `obi`, `spine`, `sticker`, `liner`, `poster`, `matrix`/`runout`, `track`, `top`, `bottom`, `raw`/`unedited`, `watermark` | the matching type |
-| `flyer`, `ticket`, `setlist`, `banner`, `program`, `schedule`, `map`, `logo`, `merch` | the matching **event-art** type |
+|  Type   |                         Name contains                          |
+| ------- | -------------------------------------------------------------- |
+| Front   | `front`, `folder`, `cover`, `frontal`, `recto`                 |
+| Back    | `back`, `rear`, `verso`                                        |
+| Booklet | `booklet`, `inlay`, `insert`                                   |
+| Medium  | `cd`, `disc`, `disk`, `vinyl`, `medium`, `label`, `side a/b/…` |
+
+The following types are matched by their name:
+
+- Release: `tray`, `obi`, `spine`, `sticker`, `liner`, `poster`, `matrix`, `runout`, `track`, `top`, `bottom`, `raw`, `unedited`, `watermark`
+- Event: `flyer`, `ticket`, `setlist`, `banner`, `program`, `schedule`, `map`, `logo`, `merch`                                            |
 
 Matching is word-boundaried and order-aware, so `back cover` → **Back** (not Front) and an album titled *Super Disco Pirata* → no type.
 
-**On download** — each file is named `<NN> <type1>,<type2> <comment>.<ext>` (position, then the lowercased types with `/`→`_`, then the comment; no type → `none`), e.g. `09 front,sticker Front cover with the sticker.jpg`. A `README.md` manifest with the release header, export date/user, and every artwork linked to its original is added to the archive (also available as a Report format).
+### File names in download archive
+
+Each file is named 
+* `<NN> <type1>,<type2>,..<typeN> <comment>.<ext>`
+
+where `none` is used where no type is given 
+
+**Example**: `09 front,sticker Front cover with the sticker.jpg`.
 
 ## Applying changes
 
