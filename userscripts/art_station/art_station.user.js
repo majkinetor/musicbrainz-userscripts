@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.390000
+// @version      2026.6.18.400000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -873,13 +873,18 @@
       const b = name.replace(/\.[^.]+$/, ''); let n = 2;
       while (used.has(name.toLowerCase())) name = `${b} (${n++}).${ext}`;
       used.add(name.toLowerCase());
-      return { url, name };
+      return { url, name, it };
     });
   }
   const fetchBytes = async url => new Uint8Array(await fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }));
+  // capture the original's resolution from its bytes (no extra request) so the manifest table has it
+  async function measureBytes(it, data) {
+    if (it.w || it._pdf || !data) return;
+    try { const bmp = await createImageBitmap(new Blob([data])); it.w = bmp.width; it.h = bmp.height; bmp.close && bmp.close(); } catch (e) {}
+  }
   async function dlZip(sel, onProgress) {
     const items = zipNames(sel), enc = new TextEncoder();
-    const readme = { name: 'README.md', data: enc.encode(manifestMd(sel)) };   // #244 manifest in the archive
+    await loadSizes();   // byte sizes for the manifest; resolutions are captured during the fetch below
     // #240: stream the zip straight to disk when the browser supports it — the
     // download starts immediately (first cover written as soon as it arrives) and
     // the whole archive is never buffered in memory.
@@ -895,12 +900,13 @@
         central.push({ crc, size: data.length, name, offset });
         offset += 30 + name.length + data.length;
       };
-      await writeEntry(readme.name, readme.data);   // README.md first
       for (const o of items) {
         let data; try { data = await fetchBytes(o.url); } catch (e) { onProgress && onProgress(++done, items.length); continue; }
+        await measureBytes(o.it, data);
         await writeEntry(o.name, data);
         onProgress && onProgress(++done, items.length);
       }
+      await writeEntry('README.md', enc.encode(manifestMd(sel)));   // manifest last — now has resolutions
       let cdSize = 0;
       for (const c of central) { await w.write(zipCentral(c.crc, c.size, c.name.length, c.offset)); await w.write(c.name); cdSize += 46 + c.name.length; }
       await w.write(zipEOCD(central.length, cdSize, offset));
@@ -910,11 +916,12 @@
     // fallback: fetch all in PARALLEL (fast), then one blob download
     let done = 0;
     const results = await Promise.all(items.map(async o => {
-      try { const data = await fetchBytes(o.url); onProgress && onProgress(++done, items.length); return { name: o.name, data }; }
+      try { const data = await fetchBytes(o.url); await measureBytes(o.it, data); onProgress && onProgress(++done, items.length); return { name: o.name, data }; }
       catch (e) { onProgress && onProgress(++done, items.length); return null; }
     }));
-    const entries = [readme, ...results.filter(Boolean)];   // README.md first
-    if (entries.length <= 1) return;
+    const covers = results.filter(Boolean);
+    if (!covers.length) return;
+    const entries = [...covers, { name: 'README.md', data: enc.encode(manifestMd(sel)) }];   // manifest last — now has resolutions
     const obj = URL.createObjectURL(makeZip(entries));
     const a = document.createElement('a'); a.href = obj; a.download = `${MBID}-${ITEMS}.zip`;
     document.body.appendChild(a); a.click(); a.remove();
@@ -1715,27 +1722,53 @@
   }
   // #244 a README.md / manifest for the download archive (and a Report type): release
   // header, export metadata, and the artwork list linking each type-named file to its original.
-  function manifestMd(sel) {
+  const extOf = it => ((it._img || imgUrl(it.id)).match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
+  // shared rows for the "Detailed table" layout / archive manifest
+  function manifestRows(sel) {
+    const ord = sel.slice().sort((a, b) => a.order - b.order);
+    const pad = Math.max(2, String(Math.max(0, ...ord.map(it => it.order + 1))).length);
+    return ord.map(it => ({
+      pos: pad2(it.order + 1), name: downloadName(it, it.order + 1, extOf(it), pad),
+      orig: it._img || imgUrl(it.id), res: (it.w && it.h) ? `${it.w} × ${it.h}` : '', size: it.bytes ? fmtSize(it.bytes) : '',
+    }));
+  }
+  function manifestHead() {
     const info = releaseInfo();
+    const d = new Date(), date = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    return { info, date, by: mbUser() };
+  }
+  // #244 markdown manifest (README.md in the archive + the Markdown "Detailed table" report)
+  function manifestMd(sel) {
+    const { info, date, by } = manifestHead();
     const artists = info.artists.length ? info.artists.map(a => `[${a.name}](${a.url})`).join(', ') : 'Unknown artist';
-    const d = new Date();
-    const date = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-    const by = mbUser();
-    const pad = Math.max(2, String(Math.max(0, ...sel.map(it => it.order + 1))).length);
     const out = [`# ${artists} - [${info.title}](${info.url})`, '', `- **Export date:** ${date}`];
     if (by) out.push(`- **Exported by:** ${by}`);
-    out.push('', '## Artwork', '');
-    sel.forEach((it, i) => {
-      const orig = it._img || imgUrl(it.id);
-      const ext = (orig.match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
-      out.push(`${i + 1}. [${downloadName(it, it.order + 1, ext, pad)}](${orig})`);
-    });
+    out.push('', '## Artwork', '', '| Position | Cover | Resolution | Size |', '| --- | --- | --- | --- |');
+    manifestRows(sel).forEach(r => out.push(`| ${r.pos} | [${r.name}](${r.orig}) | ${r.res} | ${r.size} |`));
     return out.join('\n') + '\n';
+  }
+  function manifestHtml(sel) {
+    const { info, date, by } = manifestHead();
+    const artists = info.artists.length ? info.artists.map(a => `<a href="${a.url}">${esc(a.name)}</a>`).join(', ') : 'Unknown artist';
+    const out = [`<h3>${artists} - <a href="${info.url}">${esc(info.title)}</a></h3>`,
+      `<p><strong>Export date:</strong> ${date}${by ? `<br><strong>Exported by:</strong> ${esc(by)}` : ''}</p>`,
+      '<table><thead><tr><th>Position</th><th>Cover</th><th>Resolution</th><th>Size</th></tr></thead><tbody>'];
+    manifestRows(sel).forEach(r => out.push(`<tr><td>${r.pos}</td><td><a href="${r.orig}">${esc(r.name)}</a></td><td>${esc(r.res)}</td><td>${esc(r.size)}</td></tr>`));
+    out.push('</tbody></table>');
+    return out.join('\n');
+  }
+  // ensure resolution (loads originals) + byte sizes are known before a manifest is built
+  async function ensureMeasured(sel) {
+    await loadSizes();
+    await pool(sel.filter(it => !it.w && !it._pdf), 4, it => new Promise(res => {
+      const src = it._new ? it._file : imgUrl(it.id); if (!src) return res();
+      const img = new Image(); img.onload = () => { it.w = img.naturalWidth; it.h = img.naturalHeight; res(); }; img.onerror = () => res(); img.src = src;
+    }));
   }
   function buildReport(opts) {
     const info = releaseInfo();
     const sel = MODEL.filter(it => it._sel && !it._del && !it._new).slice().sort(sortFn);
-    if (opts.format === 'manifest') return manifestMd(sel);
+    if (opts.layout === 'detailed') return opts.format === 'html' ? manifestHtml(sel) : manifestMd(sel);   // #244 table w/ position, type-name, resolution, size
     const sz = opts.size, W = sz === 'original' ? null : sz;
     const url = it => `${CAA}/${it.id}${sz === 'original' ? '' : '-' + sz}.jpg`;
     const alt = it => (it.types[0] || (IS_EVENT ? 'event art' : ITEM)).toLowerCase();
@@ -1762,9 +1795,9 @@
     ov.innerHTML = `<div class="as-cm-box as-rp-box">
       <div class="as-cm-h">Report — ${sel.length} ${ITEM}${sel.length===1?'':'s'}</div>
       <div class="as-rp-opts">
-        <label>Format <select class="as-rp-fmt"><option value="markdown">Markdown</option><option value="html">HTML</option><option value="manifest">README.md (archive manifest)</option></select></label>
+        <label>Format <select class="as-rp-fmt"><option value="markdown">Markdown</option><option value="html">HTML</option></select></label>
         <label>Image size <select class="as-rp-size"><option>250</option><option>500</option><option>1200</option><option value="original">original</option></select></label>
-        <label>Layout <select class="as-rp-layout"><option value="inline">Inline images</option><option value="captioned">With types &amp; comments</option></select></label>
+        <label>Layout <select class="as-rp-layout"><option value="inline">Inline images</option><option value="captioned">With types &amp; comments</option><option value="detailed">Detailed table</option></select></label>
       </div>
       <textarea class="as-rp-out" rows="9" spellcheck="false" readonly></textarea>
       <div class="as-cm-f"><span class="as-rp-note">${omitted ? `${omitted} unsaved upload${omitted===1?'':'s'} omitted (no CAA URL yet)` : ''}</span><span class="as-sp"></span><button class="as-btn as-rp-copy">📋 Copy</button><button class="as-btn as-cm-cancel">Close</button></div>
@@ -1773,7 +1806,11 @@
     ov.onclick = e => { if (e.target === ov) ov.remove(); };
     ov.querySelector('.as-cm-cancel').onclick = () => ov.remove();
     const ta = ov.querySelector('.as-rp-out');
-    const regen = () => { ta.value = buildReport({ format: ov.querySelector('.as-rp-fmt').value, size: ov.querySelector('.as-rp-size').value, layout: ov.querySelector('.as-rp-layout').value }); };
+    const regen = async () => {
+      const opts = { format: ov.querySelector('.as-rp-fmt').value, size: ov.querySelector('.as-rp-size').value, layout: ov.querySelector('.as-rp-layout').value };
+      if (opts.layout === 'detailed') { ta.value = 'Measuring resolutions…'; await ensureMeasured(sel); }   // load dimensions for the table
+      ta.value = buildReport(opts);
+    };
     ov.querySelectorAll('select').forEach(s => s.onchange = regen);
     ov.querySelector('.as-rp-copy').onclick = async () => {
       ta.select(); try { await navigator.clipboard.writeText(ta.value); } catch (e) { document.execCommand('copy'); }

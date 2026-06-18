@@ -27,7 +27,7 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
     - **Set type**
     - **Set comment** with auto focusing next comment field on `<ENTER>`
     - **Remove** and **Download** as a zip archive — files named by type so they round-trip (see below), plus a `README.md` manifest
-    - **Reports** in HTML, Markdown, or as the `README.md` archive manifest
+    - **Reports** in HTML or Markdown — inline, captioned, or a **Detailed table** (position · type-named file · resolution · size) that doubles as the archive `README.md`
 - **Add images**
   - **File drop** — choose local file and upload to the Cover Art Archive in parallel; the **type is guessed from the file name** (see below)
   - **URL link** — use [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch cover from Discogs, Apple, Spotify, Bandcamp…
