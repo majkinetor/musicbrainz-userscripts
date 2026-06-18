@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18
-// @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove and download a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
+// @version      2026.6.18.070000
+// @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
-// @grant        none
+// @grant        GM.xmlHttpRequest
+// @grant        GM_xmlhttpRequest
+// @connect      *
 // @run-at       document-start
 // ==/UserScript==
 //
@@ -261,6 +263,7 @@
   function bar(n) {
     return `<div class="as-bar">
       <button class="as-btn as-add" title="Add cover art — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
+      <button class="as-btn as-mh" title="Source a cover from covers.musichoarders.xyz (#235)"><span class="as-bi">🔍</span><span class="as-bt">MH Covers</span></button>
       <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
@@ -436,6 +439,7 @@
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
+    const mh = root.querySelector('.as-mh'); if (mh) mh.onclick = openMHCovers;
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
@@ -737,6 +741,65 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(obj), 8000);
   }
+  // ── #235 source covers from covers.musichoarders.xyz (the sanctioned MH Covers
+  //    integration — same window.open + postMessage protocol the "Ame" script uses;
+  //    no internal MH API). A chosen cover is fetched and dropped into the gallery
+  //    as a staged NEW cover, so it rides the normal Enter-edit upload flow. ─────
+  const MH_ORIGIN = 'https://covers.musichoarders.xyz';
+  // cross-origin GET → Blob (covers can be on any provider host → needs GM xhr)
+  function gmFetch(url) {
+    return new Promise((resolve, reject) => {
+      const gx = (typeof GM !== 'undefined' && GM.xmlHttpRequest && GM.xmlHttpRequest.bind(GM))
+              || (typeof GM_xmlhttpRequest !== 'undefined' && GM_xmlhttpRequest) || null;
+      if (!gx) { fetch(url).then(r => r.ok ? r.blob() : Promise.reject(new Error('HTTP ' + r.status))).then(resolve, reject); return; }
+      gx({ method: 'GET', url, responseType: 'blob', timeout: 60000,
+        onload: r => (r.status >= 200 && r.status < 300) ? resolve(r.response) : reject(new Error('HTTP ' + r.status)),
+        onerror: () => reject(new Error('network error')), ontimeout: () => reject(new Error('timed out')) });
+    });
+  }
+  let _toastT;
+  function toast(msg, ms = 2800) {
+    let el = document.getElementById('as-toast');
+    if (!el) { el = document.createElement('div'); el.id = 'as-toast'; document.body.appendChild(el); }
+    el.textContent = msg; el.style.opacity = '1';
+    clearTimeout(_toastT); _toastT = setTimeout(() => { el.style.opacity = '0'; }, ms);
+  }
+  function openMHCovers() {
+    const info = releaseInfo();
+    const artist = info.artists.map(a => a.name).join(' ').trim();
+    const album = (info.title || '').trim();
+    if (!album) { toast('Could not read the release title'); return; }
+    const p = new URLSearchParams(); if (artist) p.set('artist', artist); p.set('album', album);
+    const win = window.open(`${MH_ORIGIN}?${p}`, '_blank');
+    if (!win) { toast('Pop-up blocked — allow pop-ups for MH Covers'); return; }
+    toast('Pick a cover in the MH Covers tab…', 6000);
+    const onMsg = async e => {
+      if (e.source !== win) return;
+      let host = ''; try { host = new URL(e.origin).hostname; } catch (err) {}
+      if (!/(^|\.)musichoarders\.xyz$/.test(host)) return;
+      let o; try { o = JSON.parse(e.data); } catch (err) { return; }
+      if (o.action !== 'primary' && o.action !== 'secondary') return;
+      cleanup(); try { win.close(); } catch (err) {}
+      await addCoverFromMH(o);
+    };
+    const onUnload = () => { try { win.close(); } catch (err) {} };
+    const cleanup = () => { window.removeEventListener('message', onMsg); window.removeEventListener('beforeunload', onUnload); };
+    window.addEventListener('message', onMsg);
+    window.addEventListener('beforeunload', onUnload);
+  }
+  async function addCoverFromMH(o) {
+    const url = o.bigCoverUrl || o.smallCoverUrl; if (!url) return;
+    toast('Fetching cover from MH…', 8000);
+    try {
+      const blob = await gmFetch(url);
+      const ext = (String(url).match(/\.(jpe?g|png|gif|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase().replace('jpeg', 'jpg');
+      const type = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+      const file = new File([blob], `mh-${Date.now()}.${ext}`, { type });
+      addFiles([file]);
+      toast('Added cover from MH Covers ✓');
+    } catch (e) { toast('Could not fetch the cover — ' + e.message, 5000); }
+  }
+
   let _dropZone = false;
   function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
   function newItem(f) {
@@ -1262,6 +1325,8 @@
   /* accent (white-on-purple) buttons must darken on hover, not lighten — else the white text vanishes */
   .as-commit:hover:not(:disabled),.as-pop-apply:hover:not(:disabled),.as-cm-go:hover:not(:disabled){background:#4e329f;color:#fff;border-color:#4e329f}
   .as-add{font-weight:600;color:var(--as-acc)}
+  .as-mh{font-weight:600;color:#1f7a8c}
+  #as-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#3b2c70;color:#fff;padding:10px 16px;border-radius:9px;font:13px/1.35 -apple-system,Segoe UI,Roboto,Arial,sans-serif;box-shadow:0 6px 22px rgba(40,20,80,.35);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center}
   .as-asback{font-weight:700;color:var(--as-acc);background:#f3eefe;border-color:#cdbff2}
   .as-dl{border-color:#bcd;color:#2a6}
   .as-sp{flex:1 1 auto}
