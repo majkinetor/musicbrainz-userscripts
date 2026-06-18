@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.160000
+// @version      2026.6.18.163000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -1526,7 +1526,7 @@
   .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
   .as-card.sel .as-foot-type{padding-right:20px}
   .as-tline{flex:1;height:1px;background:#e7e1f2}
-  .as-type{font-size:11px;font-weight:700;color:#3b2c70;background:#f1ecff;border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .as-type{font-size:11px;font-weight:700;color:#3b2c70;background:#f2f2f2;border:1px solid #d8ccf5;border-radius:20px;padding:2px 13px;cursor:pointer;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .as-type:hover{background:#e7dffb}
   .as-type-add{color:#8a7fb8;background:#fff;border-style:dashed;font-weight:600;opacity:.5}
   .as-card:hover .as-type-add{opacity:1}
