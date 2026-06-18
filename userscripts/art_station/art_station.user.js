@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.480000
+// @version      2026.6.18.490000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1758,6 +1758,17 @@
     if (map[e.key]) { e.preventDefault(); moveCursor(map[e.key][0], map[e.key][1]); }
     else if (e.key === 'Enter' && _cursorId) { e.preventDefault(); openLightbox(_cursorId); }
     else if (e.key === ' ' && _cursorId) { e.preventDefault(); const it = byId(_cursorId); if (it && !it._del) { it._sel = !it._sel; render(); } }
+    else if ((e.key === 'Delete' || e.key === 'Backspace') && _cursorId) {   // mark the focused cover for removal (mirrors the viewer's Del)
+      e.preventDefault();
+      const it = byId(_cursorId); if (!it || it._del) return;
+      const cards = [...root.querySelectorAll('.as-card:not(.del)')];
+      const i = cards.findIndex(c => c.dataset.id === String(_cursorId));
+      it._del = true; it._sel = false;
+      // advance the cursor to the next remaining cover so Del can be pressed repeatedly
+      const rest = cards.filter(c => c.dataset.id !== String(_cursorId));
+      _cursorId = rest.length ? rest[Math.min(i, rest.length - 1)].dataset.id : null;
+      render();
+    }
   });
 
   function openBulkTypePop(btn) {

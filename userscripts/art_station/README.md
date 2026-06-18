@@ -77,6 +77,7 @@ where `none` is used where no type is given
 | `←` `→` `↑` `↓` | move the cursor between covers |
 | `Enter` | open the focused cover full-screen |
 | `Space` | select / deselect the focused cover |
+| `Delete` | mark the focused cover for removal (undo in the grid) |
 
 **Full-screen viewer:**
 
