@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.082000
+// @version      2026.6.18.140000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -58,7 +58,6 @@
   // footer line under the image: "1.2Mb   600 × 600" — size first, then resolution,
   // each half shown once known, separated by a wide gap (em-space).
   function dimText(it) {
-    if (it._new) return 'local';
     const parts = [];
     if (it.bytes) parts.push(fmtSize(it.bytes));
     if (it.w && it.h) parts.push(`${it.w} × ${it.h}`);
@@ -128,10 +127,12 @@
     loadSizes();              // lazy-fill file sizes (single archive.org request)
   }
   function measure(it) {
-    if (it._new || it.w) return;
+    if (it.w || (it._new && it._pdf)) return;          // measured already, or a PDF (no pixel dims)
+    const src = it._new ? it._file : imgUrl(it.id);     // new covers measure from the local object URL
+    if (!src) return;
     const img = new Image();
     img.onload = () => { it.w = img.naturalWidth; it.h = img.naturalHeight; refreshDim(it); };
-    img.src = imgUrl(it.id);
+    img.src = src;
   }
 
   const changed = it => it._del || it._new || it.comment !== it._origComment || it.order !== it._origOrder || it.types.join('|') !== it._origTypes.join('|');
@@ -812,7 +813,7 @@
   function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
   function newItem(f) {
     return { id: 'new-' + Math.random().toString(36).slice(2, 8), types: [], comment: '', order: 0, w: 0, h: 0,
-      _del: false, _new: true, _file: URL.createObjectURL(f), _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 };
+      bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 };
   }
   function addFiles(files) {
     const news = [...files].filter(f => f.type.startsWith('image/') || f.type === 'application/pdf').map(newItem);
@@ -821,6 +822,7 @@
     const rest = MODEL.slice().sort((a, b) => a.order - b.order);
     MODEL = [...news, ...rest];
     MODEL.forEach((it, i) => it.order = i);
+    news.forEach(measure);   // fill in each new cover's resolution from its local file
     _dropZone = false; render();
   }
   function pickFiles() {
@@ -867,8 +869,8 @@
     return { method: 'POST', url: form._action, body: p };
   }
   // Phase 2b: upload a new image. (1) sign via MB, (2) POST file to archive.org, (3) register.
-  async function signUpload(mime) {
-    const r = await fetch(`/ws/js/cover-art-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin' });
+  async function signUpload(mime, ctl) {
+    const r = await fetch(`/ws/js/cover-art-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin', signal: ctl && ctl.ac.signal });
     if (!r.ok) throw new Error('sign ' + r.status);
     return r.json();   // { action, image_id, formdata, nonce }
   }
@@ -876,28 +878,34 @@
   const addForm = () => (_addForm = _addForm || getPostForm(`${R}/add-cover-art`));
   // step 1 (parallel-safe): sign + PUT the file to archive.org. Stores the signed
   // upload on the item; the slow network part — like Turbo, run these concurrently.
-  async function uploadStep(it, onProgress) {
+  async function uploadStep(it, onProgress, ctl) {
+    if (ctl && ctl.aborted) throw new Error('cancelled');
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
-    const signed = await signUpload(mime);
+    const signed = await signUpload(mime, ctl);
+    if (ctl && ctl.aborted) throw new Error('cancelled');
     const fd = new FormData();
     Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
     fd.append('file', it._fileObj, (it._fileObj && it._fileObj.name) || String(signed.image_id));
     // XHR (not fetch) so we get upload progress + a timeout — a big cover used to
     // sit silently with no feedback, and a stalled POST would hang forever. #240/#235
+    // The live xhr is registered on ctl so Cancel can abort an in-flight upload.
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', signed.action);
       xhr.timeout = 300000;   // 5 min ceiling for large covers
+      if (ctl) ctl.xhrs.add(xhr);
+      const done = () => { if (ctl) ctl.xhrs.delete(xhr); };
       xhr.upload.onprogress = e => { if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total); };
-      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('IA upload ' + xhr.status));
-      xhr.onerror = () => reject(new Error('IA upload network error'));
-      xhr.ontimeout = () => reject(new Error('IA upload timed out'));
+      xhr.onload = () => { done(); (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('IA upload ' + xhr.status)); };
+      xhr.onerror = () => { done(); reject(new Error('IA upload network error')); };
+      xhr.ontimeout = () => { done(); reject(new Error('IA upload timed out')); };
+      xhr.onabort = () => { done(); reject(new Error('cancelled')); };
       xhr.send(fd);
     });
     it._signed = signed;
   }
   // step 2 (SEQUENTIAL): register on MB. Submitted in order so positions stay correct.
-  async function registerStep(it, meta) {
+  async function registerStep(it, meta, ctl) {
     const form = await addForm();
     const tm = typeMapOf(form, 'add-cover-art');
     const typeIds = it.types.map(t => tm[t]).filter(Boolean);
@@ -911,7 +919,7 @@
     p.append('add-cover-art.comment', it.comment);
     p.append('add-cover-art.edit_note', editNote(meta));
     if (meta.votable) p.append('add-cover-art.make_votable', '1');
-    const add = await fetch(`${R}/add-cover-art`, { method: 'POST', body: p, credentials: 'same-origin' });
+    const add = await fetch(`${R}/add-cover-art`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
     if (!add.ok) throw new Error('add ' + add.status);
   }
   async function runAdd(it, meta, dry, report) {   // dry-run summary only (live uses runAdds)
@@ -973,10 +981,11 @@
     dryEl.onchange = setGoLabel; setGoLabel();
     goBtn.onclick = () => runPlan(ov, plan, { note: ov.querySelector('.as-cm-note').value, votable: ov.querySelector('.as-cm-vote').checked, dry: dryEl.checked });
   }
-  async function runOp(ov, op, meta) {
+  async function runOp(ov, op, meta, ctl) {
     const row = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`);
     const st = row.querySelector('.as-cm-st'), pay = row.querySelector('.as-cm-payload');
     if (op.skip) { st.textContent = '⏭'; return; }
+    if (ctl && ctl.aborted) { st.textContent = '⛔'; return; }
     st.textContent = '⏳';
     try {
       if (op.run) {                         // multi-step op (uploads) reports its own payload
@@ -988,12 +997,16 @@
           st.textContent = '👁'; row.classList.add('dry');
           pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/\+/g, ' ').replace(/&/g, '\n  ')}`;
         } else {
-          const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin' });
+          const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
           if (!r.ok) throw new Error('HTTP ' + r.status);
           st.textContent = '✅';
         }
       }
-    } catch (e) { st.textContent = '❌'; pay.textContent = String(e && e.message || e); row.classList.add('err'); }
+    } catch (e) {
+      const cancelled = ctl && ctl.aborted;
+      st.textContent = cancelled ? '⛔' : '❌'; pay.textContent = String(e && e.message || e);
+      if (!cancelled) row.classList.add('err');
+    }
   }
   // bounded-concurrency map
   async function pool(items, conc, fn) {
@@ -1001,27 +1014,56 @@
     const worker = async () => { while (i < items.length) { const k = i++; await fn(items[k]); } };
     await Promise.all(Array.from({ length: Math.min(conc, items.length || 1) }, worker));
   }
-  const runPool = (ops, conc, ov, meta) => pool(ops, conc, op => runOp(ov, op, meta));
+  const runPool = (ops, conc, ov, meta, ctl) => pool(ops, conc, op => runOp(ov, op, meta, ctl));
   // adds: parallel UPLOAD to archive.org, then SEQUENTIAL register (positions stay correct) — like Turbo
-  async function runAdds(ov, addOps, meta) {
-    if (meta.dry || !addOps.length) return runPool(addOps, meta.dry ? 8 : 1, ov, meta);
+  async function runAdds(ov, addOps, meta, ctl) {
+    if (meta.dry || !addOps.length) return runPool(addOps, meta.dry ? 8 : 1, ov, meta, ctl);
     const setSt = (op, s) => { ov.querySelector(`.as-cm-op[data-i="${op._i}"] .as-cm-st`).textContent = s; };
     const fail = (op, e) => { const row = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`); row.querySelector('.as-cm-st').textContent = '❌'; row.querySelector('.as-cm-payload').textContent = String(e && e.message || e); row.classList.add('err'); op._err = true; };
+    const stop = (op) => { setSt(op, '⛔'); op._err = true; };
     addOps.forEach(op => setSt(op, '⏳'));
-    await pool(addOps, 4, async op => { try { await uploadStep(op.it, (l, t) => setSt(op, `⏫${Math.round(l / t * 100)}%`)); setSt(op, '⏫'); } catch (e) { fail(op, e); } });  // parallel upload w/ progress
-    for (const op of addOps) { if (op._err) continue; try { await registerStep(op.it, meta); setSt(op, '✅'); } catch (e) { fail(op, e); } }   // ordered register
+    await pool(addOps, 4, async op => {
+      if (ctl && ctl.aborted) return stop(op);
+      try { await uploadStep(op.it, (l, t) => setSt(op, `⏫${Math.round(l / t * 100)}%`), ctl); setSt(op, '⏫'); }
+      catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
+    });  // parallel upload w/ progress (abortable via ctl)
+    for (const op of addOps) {                                   // ordered register
+      if (op._err) continue;
+      if (ctl && ctl.aborted) { stop(op); continue; }
+      try { await registerStep(op.it, meta, ctl); setSt(op, '✅'); }
+      catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
+    }
   }
   async function runPlan(ov, plan, meta) {
-    ov.querySelector('.as-cm-go').disabled = true;
-    ov.querySelector('.as-cm-cancel').disabled = true;
+    const goBtn = ov.querySelector('.as-cm-go'), cancelBtn = ov.querySelector('.as-cm-cancel');
+    goBtn.disabled = true;
     plan.forEach((op, i) => { op._i = i; });
+    // ctl carries the abort flag + the live xhrs/fetch-signal so Cancel works mid-run
+    const ctl = { aborted: false, xhrs: new Set(), ac: new AbortController() };
+    if (meta.dry) { cancelBtn.disabled = true; }
+    else {
+      cancelBtn.disabled = false; cancelBtn.textContent = 'Cancel';
+      cancelBtn.onclick = () => {                 // abort in-flight uploads + skip the rest
+        if (ctl.aborted) { ov.remove(); return; }
+        ctl.aborted = true;
+        try { ctl.ac.abort(); } catch (e) {}
+        ctl.xhrs.forEach(x => { try { x.abort(); } catch (e) {} });
+        cancelBtn.textContent = 'Cancelling…'; cancelBtn.disabled = true;
+      };
+    }
     const CONC = meta.dry ? 8 : 4;   // modest concurrency live to stay friendly to MB
     // uploads run in parallel (register stays ordered); edits/removes parallel; reorder last.
-    await runAdds(ov, plan.filter(o => o.kind === 'add'), meta);
-    await runPool(plan.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta);
-    await runPool(plan.filter(o => o.kind === 'reorder'), 1, ov, meta);
-    ov.querySelector('.as-cm-cancel').disabled = false;
-    ov.querySelector('.as-cm-cancel').textContent = 'Close';
+    await runAdds(ov, plan.filter(o => o.kind === 'add'), meta, ctl);
+    if (!ctl.aborted) await runPool(plan.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta, ctl);
+    if (!ctl.aborted) await runPool(plan.filter(o => o.kind === 'reorder'), 1, ov, meta, ctl);
+    cancelBtn.disabled = false;
+    cancelBtn.textContent = 'Close';
+    cancelBtn.onclick = () => ov.remove();
+    if (ctl.aborted) {   // mark any not-yet-started ops as cancelled, leave the modal up
+      ov.querySelectorAll('.as-cm-op .as-cm-st').forEach(s => { if (s.textContent === '○' || s.textContent === '⏳') s.textContent = '⛔'; });
+      goBtn.textContent = 'Cancelled'; goBtn.disabled = true;
+      return;
+    }
     if (!meta.dry) {
       const b = ov.querySelector('.as-cm-go');
       const errs = ov.querySelectorAll('.as-cm-op.err').length;
@@ -1179,6 +1221,21 @@
     // keepEdit (Enter in the comment field) carries edit-mode to the next image
     _lb = seq[i].id; _cursorId = _lb; _lbEditCmt = !!keepEdit; paintLightbox(); markCursor(true); preloadNeighbors();
   }
+  // Del in full-screen view → mark the current cover for removal (same as the grid's
+  // delete: _del moves it to "Marked for removal", undoable there), then advance to
+  // the next cover — or close the lightbox if that was the last one.
+  function deleteLbCover() {
+    const it = byId(_lb); if (!it) return;
+    const seq = visible().filter(x => !x._pdf);
+    const i = seq.findIndex(x => String(x.id) === String(_lb));
+    it._del = true; it._sel = false; _lbDirty = true;
+    toast(`“${(it.types && it.types[0]) || 'cover'}” marked for removal — undo in the grid`);
+    const rest = visible().filter(x => !x._pdf);   // recomputed without the just-deleted cover
+    if (!rest.length) { closeLightbox(); return; }
+    const nx = rest[Math.min(i, rest.length - 1)];
+    resetZoom();
+    _lb = nx.id; _cursorId = nx.id; _lbEditCmt = false; paintLightbox(); markCursor(true); preloadNeighbors();
+  }
 
   // ── keyboard cursor (arrows select / move; Enter opens lightbox) ──────────────
   let _cursorId = null;
@@ -1218,6 +1275,7 @@
       else if (e.key === 'ArrowUp') { e.preventDefault(); zoomKey(1); }     // ↑ zoom in
       else if (e.key === 'ArrowDown') { e.preventDefault(); zoomKey(-1); }  // ↓ zoom out
       else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePlay(); }
+      else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteLbCover(); }
       return;
     }
     if (!root.isConnected || !root.querySelector('.as-card')) return;
@@ -1344,7 +1402,7 @@
   .as-commit:hover:not(:disabled),.as-pop-apply:hover:not(:disabled),.as-cm-go:hover:not(:disabled){background:#4e329f;color:#fff;border-color:#4e329f}
   .as-add{font-weight:600;color:var(--as-acc)}
   .as-mh{padding:4px 7px}
-  .as-mh-ic{display:block;background:#3b2c70;padding:2px;border-radius:5px}   /* dark chip so the white MH icon shows */
+  .as-mh-ic{display:block;background:#80a32b;padding:3px;border-radius:5px}   /* green chip so the white MH icon shows */
   #as-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#3b2c70;color:#fff;padding:10px 16px;border-radius:9px;font:13px/1.35 -apple-system,Segoe UI,Roboto,Arial,sans-serif;box-shadow:0 6px 22px rgba(40,20,80,.35);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center}
   .as-asback{font-weight:700;color:var(--as-acc);background:#f3eefe;border-color:#cdbff2}
   .as-dl{border-color:#bcd;color:#2a6}
@@ -1505,7 +1563,7 @@
   .as-cm-list{overflow:auto;border:1px solid #eee;border-radius:8px;padding:6px;margin:4px 0 12px;background:#fafafa}
   .as-cm-op{padding:5px 6px;border-radius:6px;font-size:13px}
   .as-cm-op.dry{background:#f3eefe}.as-cm-op.err{background:#fdecea}
-  .as-cm-st{display:inline-block;width:18px}
+  .as-cm-st{display:inline-block;min-width:18px;white-space:nowrap;text-align:center}
   .as-cm-skip{font-size:11px;color:#999;margin-left:6px;background:#eee;border-radius:10px;padding:1px 7px}
   .as-cm-payload{white-space:pre-wrap;font:11px/1.4 ui-monospace,Consolas,monospace;color:#555;margin:4px 0 2px 18px;display:none}
   .as-cm-op.dry .as-cm-payload,.as-cm-op.err .as-cm-payload{display:block}
