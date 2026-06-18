@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.250000
+// @version      2026.6.18.260000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -965,10 +965,17 @@
     const slot = addSourcingSlot('Sourcing…');
     let done = false, lastN = 0, settleAt = 0;
     const stop = () => { clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} };
+    // a preview is the uploader's rendered image — usually a blob:, but in some browsers
+    // ECAU leaves it as the remote provider URL (e.g. i.discogs.com). Fetch blobs in-frame;
+    // fetch remote URLs via GM xhr so the page CSP can't block them (the FF-vs-Chromium
+    // difference vzell hit). #242
+    const previewSel = '.uploader-preview-image, img[src^="blob:"]';
     async function harvest(doc, win) {
       const files = [], metas = [];
-      for (const img of [...doc.querySelectorAll('img[src^="blob:"]')]) {
-        let blob; try { blob = await win.fetch(img.src).then(r => r.blob()); } catch (e) { continue; }
+      const seen = new Set();
+      for (const img of [...doc.querySelectorAll(previewSel)]) {
+        const src = img.src || img.getAttribute('src'); if (!src || seen.has(src)) continue; seen.add(src);
+        let blob; try { blob = /^blob:/i.test(src) ? await win.fetch(src).then(r => r.blob()) : await gmFetch(src); } catch (e) { continue; }
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
@@ -987,7 +994,7 @@
       if (done) return;
       let doc, win; try { doc = ifr.contentDocument; win = ifr.contentWindow; } catch (e) { return; }
       if (!doc || !win) return;
-      const n = doc.querySelectorAll('img[src^="blob:"]').length;
+      const n = doc.querySelectorAll(previewSel).length;
       if (!n) return;
       if (n !== lastN) { lastN = n; settleAt = performance.now() + 1500; setSourcingLabel(slot, 'Adding…'); return; }  // still arriving → wait
       if (performance.now() < settleAt) return;
