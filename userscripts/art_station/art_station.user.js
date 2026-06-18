@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.490000
+// @version      2026.6.18.500000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -616,7 +616,20 @@
         refreshStaged();
       });
       const cmt = row.querySelector('.as-dcmt');
-      if (cmt) cmt.oninput = () => { it.comment = cmt.value; refreshStaged(); };
+      if (cmt) {
+        cmt.oninput = () => { it.comment = cmt.value; refreshStaged(); };
+        // Enter jumps to the NEXT row's comment (Escape bails) — matches the grid.
+        // Detailed view edits in place, so just move focus (no re-render).
+        cmt.onkeydown = e => {
+          if (e.key === 'Escape') { e.preventDefault(); cmt.blur(); return; }
+          if (e.key !== 'Enter') return;
+          e.preventDefault();
+          const rows = [...root.querySelectorAll('.as-drow:not(.del)')];
+          const idx = rows.findIndex(r => r.dataset.id === String(it.id));
+          const nc = (idx >= 0 && rows[idx + 1]) ? rows[idx + 1].querySelector('.as-dcmt') : null;
+          if (nc) { nc.focus(); nc.select(); } else cmt.blur();
+        };
+      }
       // selection: the checkbox is the certain indicator; right-click also paints
       const sel = row.querySelector('.as-dsel');
       if (sel) sel.onchange = () => { it._sel = sel.checked; row.classList.toggle('sel', it._sel); syncSel(); };
