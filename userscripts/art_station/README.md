@@ -1,6 +1,6 @@
 # Art Station <img src="icon.png" align="left" width="48">
 
-A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reorder, retype, comment, remove, download, add and source a release's cover art (or an event's event art) — all staged, then applied on **Enter edit**.
+A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reorder, retype, comment, remove, download, add and source a release's cover and event art — all staged, then applied on **Enter edit**.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/art_station/art_station.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/art_station/art_station.user.js)
 
@@ -16,23 +16,27 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
 
 ## Features
 
-- **Gallery** with an adjustable thumbnail size
-- **Group by type** or a flat **Position** view
-- **Sort** by position, type (Front, Back, Booklet, …), dimensions or newest.
-- **Reorder** by dragging covers (Position view); drag a whole selection together.
-- **Select** with right-click or right-drag; **Select all** from the toolbar.
-- **Set type** and **comment** per cover, or in bulk on a selection.
-- **Remove** and **Download** (a selection, or every cover).
-- **Add** images by file drop — new covers upload to the Cover Art Archive, in parallel.
-- **Source from [MH Covers](https://covers.musichoarders.xyz)** (releases only): pick a cover on covers.musichoarders.xyz and it drops into the gallery as a staged new cover, via the sanctioned integration. Cancel an in-flight upload from the **Enter edit** panel.
-- **Full-screen viewer** on click: arrow-key navigation, a slideshow, an editable comment, set-type, and `Delete` to remove — all without leaving the viewer.
-- Covers with a **pending MusicBrainz edit** are tinted and badged, like the native page.
-
-## Events
-
-The same gallery works on an event's **Event art** tab. Everything is identical except the vocabulary — event-art types are *Poster, Flyer, Banner, Program, Setlist, Schedule, Ticket, Map, Logo, Merchandise, Raw/Unedited, Watermark* — and the MH Covers source button (release-cover only) is hidden.
-
-> **Note:** sourcing from MH Covers fetches images cross-origin, so the script declares `@grant GM.xmlHttpRequest` + `@connect *`; your userscript manager will prompt for cross-origin access the first time you use it. The script uses no page-globals, so the sandbox switch is safe.
+- **Gallery**
+  - Adjustable thumbnail size 
+  - **Grid and Detailed view** 
+  - **Group by type**
+  - **Sort** by position, type, dimensions or newest.
+- **Reorder** by dragging single cover or a whole selection together.
+- **Select** with right-click or right-drag
+- **Single or bulk mode**
+    - **Set type**
+    - **Set comment** with auto focusing next comment field on `<ENTER>`
+    - **Remove** and **Download**
+    - **Reports** in HTML and Markdown with configurable parameters  
+- **Add images**
+  - **File drop** — new covers upload to the Cover Art Archive, in parallel
+  - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover, via the sanctioned integration.
+  - Fresh covers shown faster than native UI
+- **Full-screen viewer**
+  - Arrow keys for navigation (left/right) and zoom (up/down) with zoom level remembered
+  - Slideshow
+  - Set comment and type
+  - `<Delete>` key to remove image 
 
 ## Applying changes
 
