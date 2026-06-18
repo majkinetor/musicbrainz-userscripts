@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.400000
+// @version      2026.6.18.410000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -96,11 +96,30 @@
     [/\bprogram\b/, 'Program'], [/\bschedule\b/, 'Schedule'], [/\bmap\b/, 'Map'], [/\blogo\b/, 'Logo'], [/\bmerch/, 'Merchandise'],
     [/\bcover\b/, 'Front'],   // generic fallback (after Back etc.) so "cover.jpg" → Front but "back cover" → Back
   ];
-  function typeFromName(name) {
-    const base = String(name || '').replace(/\.[a-z0-9]+$/i, '').replace(/[^a-z0-9]+/gi, ' ').toLowerCase().trim();
-    if (!base) return null;
-    for (const [re, t] of TYPE_FROM_NAME) if (re.test(base) && ALL_TYPES.includes(t)) return t;
-    return null;
+  // exact download tokens → canonical type ("front"→Front, "raw_unedited"→Raw/Unedited), for round-tripping #244 names
+  const TYPE_BY_TOKEN = {};
+  [...COVER_TYPES, ...EVENT_TYPES].forEach(t => { TYPE_BY_TOKEN[t.toLowerCase().replace(/[\\/]/g, '_')] = t; });
+  // #243/#244 parse a file name into { types[], comment }:
+  //   "02 front,sticker some comment.jpg" → [Front,Sticker], "some comment"   (our download format)
+  //   "booklet page 12" → [Booklet], "page 12"   ·   "page 12 booklet" → [Booklet], ""   (keyword + after)
+  function parseName(name) {
+    let base = String(name || '').replace(/\.[a-z0-9]+$/i, '').trim();
+    base = base.replace(/^\s*\d+\s*[-_.)]*\s*/, '');   // strip a leading position number
+    if (!base) return { types: [], comment: '' };
+    // case A — leading comma-joined exact type tokens (no spaces), then the comment
+    const sp = base.search(/\s/);
+    const head = (sp < 0 ? base : base.slice(0, sp)).trim(), tail = sp < 0 ? '' : base.slice(sp + 1).trim();
+    const tokens = head.split(',').map(t => t.trim()).filter(Boolean);
+    const headTypes = tokens.map(t => TYPE_BY_TOKEN[t.toLowerCase()]);
+    if (tokens.length && headTypes.every(Boolean)) return { types: headTypes.filter(t => ALL_TYPES.includes(t)), comment: tail };
+    // case B — a fuzzy type keyword anywhere; the comment is whatever follows it
+    const spaced = base.replace(/[^a-z0-9,]+/gi, ' ').replace(/\s+/g, ' ').trim(), lower = spaced.toLowerCase();
+    for (const [re, t] of TYPE_FROM_NAME) {
+      if (!ALL_TYPES.includes(t)) continue;
+      const m = lower.match(re);
+      if (m) return { types: [t], comment: spaced.slice(m.index + m[0].length).replace(/^[\s,]+/, '').trim() };
+    }
+    return { types: [], comment: '' };
   }
 
   let MODEL = [];       // [{ id, types:[], comment, order, w, h, bytes, _del, _new, _file }]
@@ -140,7 +159,7 @@
     } catch (e) { /* size is a nicety — never block the gallery */ }
   }
   let SETTINGS = load();
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -176,6 +195,12 @@
     const source = (pageArt && pageArt.length)
       ? pageArt.map(p => ({ id: p.id, types: p.types, comment: p.comment || (byId.get(String(p.id)) || {}).comment || '', pending: p.pending, img: p.img || (byId.get(String(p.id)) || {}).image || imgUrl(p.id), pdf: p.pdf }))
       : caa.map(im => ({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '', pending: false, img: im.image || imgUrl(im.id), pdf: /\.pdf(\?|$)/i.test(im.image || '') }));
+    // a partial page parse (e.g. a block without an edit link) must not DROP a cover the
+    // CAA knows about — append any CAA image missing from the page list so none vanish.
+    if (pageArt && pageArt.length && caa.length) {
+      const have = new Set(source.map(s => String(s.id)));
+      for (const im of caa) if (!have.has(String(im.id))) source.push({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '', pending: false, img: im.image || imgUrl(im.id), pdf: /\.pdf(\?|$)/i.test(im.image || '') });
+    }
     MODEL = source.map((s, i) => ({
       id: s.id, types: s.types.slice(), comment: s.comment,
       order: i, w: 0, h: 0, _del: false, _new: false, _pending: !!s.pending, _pdf: !!s.pdf || /\.pdf(\?|$)/i.test(s.img || ''), _img: s.img,
@@ -278,11 +303,13 @@
       + `<div class="as-setup-body">`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-hidefoot"${SETTINGS.hideMbFooter ? ' checked' : ''}> Hide MB native buttons (Add / Reorder / Import…)</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-autotype"${SETTINGS.autoType ? ' checked' : ''}> Set ${ITEM} type from the file name (Front, Back, Booklet…)</label>`
+      + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-autocomment"${SETTINGS.autoComment ? ' checked' : ''}> Set comment from the file name (text after the type)</label>`
       + `</div>`;
     document.body.appendChild(panel);
     panel.querySelector('.as-setup-x').onclick = () => panel.remove();
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
     panel.querySelector('.as-setup-autotype').onchange = e => { SETTINGS.autoType = e.target.checked; save(); };
+    panel.querySelector('.as-setup-autocomment').onchange = e => { SETTINGS.autoComment = e.target.checked; save(); };
     const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -606,7 +633,7 @@
       dz.onclick = pickFiles;
       dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
       dz.ondragleave = () => dz.classList.remove('over');
-      dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); addFiles(e.dataTransfer.files); };
+      dz.ondrop = async e => { e.preventDefault(); dz.classList.remove('over'); addFiles(await filesFromDrop(e.dataTransfer)); };
     }
 
     // type pill → popover
@@ -825,10 +852,17 @@
     const base = (nn + ' ' + types + (comment ? ' ' + comment : '')).replace(/[<>:"|?*]/g, '_').replace(/[\\/]/g, '_').replace(/\s+/g, ' ').trim();
     return `${base}.${ext}`;
   }
-  async function dlOne(it) {
-    const url = it._img || imgUrl(it.id);
-    const ext = (url.match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
-    const name = downloadName(it, it.order + 1, ext);
+  // download URL + extension for a cover — NEW covers use their local blob, not a CAA URL
+  const dlUrl = it => it._new ? it._file : (it._img || imgUrl(it.id));
+  function dlExt(it) {
+    if (it._new) { const n = (it._fileObj && it._fileObj.name) || ''; const m = n.match(/\.([a-z0-9]+)$/i); return (m ? m[1] : ((it._fileObj && it._fileObj.type || '').split('/')[1] || 'jpg')).toLowerCase().replace('jpeg', 'jpg'); }
+    return ((it._img || imgUrl(it.id)).match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
+  }
+  async function dlOne(it, size) {
+    const orig = !size || size === 'original' || it._new;   // new covers only have their local blob
+    const url = orig ? dlUrl(it) : thumb(it.id, size), ext = dlExt(it);
+    let name = downloadName(it, it.order + 1, ext);
+    if (!orig) name = name.replace(/\.(\w+)$/, ` ${size}.$1`);   // note the thumbnail size
     try {
       // cross-origin <a download> is ignored by browsers — fetch the blob (CAA
       // sends CORS) and download via a same-origin object URL so it actually saves
@@ -867,8 +901,7 @@
     const used = new Set();
     const pad = Math.max(2, String(Math.max(0, ...sel.map(it => it.order + 1))).length);
     return sel.map(it => {
-      const url = it._img || imgUrl(it.id);
-      const ext = (url.match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
+      const url = dlUrl(it), ext = dlExt(it);
       let name = downloadName(it, it.order + 1, ext, pad);   // #244 "NN types comment.ext"
       const b = name.replace(/\.[^.]+$/, ''); let n = 2;
       while (used.has(name.toLowerCase())) name = `${b} (${n++}).${ext}`;
@@ -1166,8 +1199,13 @@
   function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
   function newItem(f, meta) {
     let types = (meta && meta.types && meta.types.length) ? meta.types.slice() : [];
-    if (!types.length && SETTINGS.autoType) { const t = typeFromName(f.name); if (t) types = [t]; }   // #243
-    return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment: (meta && meta.comment) || '', order: 0, w: 0, h: 0,
+    let comment = (meta && meta.comment) || '';
+    if (!types.length && (SETTINGS.autoType || SETTINGS.autoComment)) {   // #243/#244 guess type + comment from the file name
+      const p = parseName(f.name);
+      if (SETTINGS.autoType) types = p.types;
+      if (SETTINGS.autoComment && !comment && p.comment) comment = p.comment;
+    }
+    return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment, order: 0, w: 0, h: 0,
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 };
   }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
@@ -1182,6 +1220,21 @@
     MODEL.forEach((it, i) => it.order = i);
     news.forEach(measure);   // fill in each new cover's resolution from its local file
     _dropZone = false; render();
+  }
+  // #243 a drop can include whole FOLDERS — recurse the directory entries to collect every
+  // file. webkitGetAsEntry() must be read synchronously while the drop event is live.
+  function filesFromDrop(dt) {
+    const entries = [...(dt.items || [])].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+    if (!entries.some(e => e.isDirectory)) return Promise.resolve([...(dt.files || [])]);
+    const out = [];
+    const walk = entry => new Promise(res => {
+      if (entry.isFile) { entry.file(f => { out.push(f); res(); }, () => res()); return; }
+      if (!entry.isDirectory) return res();
+      const rd = entry.createReader();
+      const readBatch = () => rd.readEntries(async ents => { if (!ents.length) return res(); await Promise.all(ents.map(walk)); readBatch(); }, () => res());
+      readBatch();
+    });
+    return Promise.all(entries.map(walk)).then(() => out);
   }
   function pickFiles() {
     const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*,.pdf'; inp.multiple = true;
@@ -1461,7 +1514,10 @@
     let ov = document.getElementById('as-lb');
     if (!ov) {
       ov = document.createElement('div'); ov.id = 'as-lb';
-      ov.innerHTML = `<div class="as-lb-top"><button class="as-lb-play" title="slideshow (P)">▶ Play</button><button class="as-lb-x" title="close (Esc)">✕</button></div>
+      ov.innerHTML = `<button class="as-lb-del" title="Mark for removal (Del)">🗑️</button>
+        <div class="as-lb-dlwrap"><button class="as-lb-dl" title="Download original">⬇ Download</button><button class="as-lb-dlcaret" title="Other sizes">▾</button>
+          <div class="as-lb-dlmenu"><button data-sz="original">Original</button><button data-sz="1200">1200 px</button><button data-sz="500">500 px</button><button data-sz="250">250 px</button></div></div>
+        <div class="as-lb-top"><button class="as-lb-play" title="slideshow (P)">▶ Play</button><button class="as-lb-x" title="close (Esc)">✕</button></div>
         <button class="as-lb-nav as-lb-prev" title="previous (←)">‹</button>
         <img class="as-lb-img" alt="">
         <button class="as-lb-nav as-lb-next" title="next (→)">›</button>
@@ -1469,6 +1525,11 @@
           <div class="as-lb-cmtarea"></div></div>`;
       document.body.appendChild(ov);
       ov.querySelector('.as-lb-x').onclick = closeLightbox;
+      ov.querySelector('.as-lb-del').onclick = e => { e.stopPropagation(); deleteLbCover(); };
+      const dlMenu = ov.querySelector('.as-lb-dlmenu');
+      ov.querySelector('.as-lb-dl').onclick = e => { e.stopPropagation(); dlMenu.classList.remove('open'); const it = byId(_lb); if (it) dlOne(it); };
+      ov.querySelector('.as-lb-dlcaret').onclick = e => { e.stopPropagation(); dlMenu.classList.toggle('open'); };
+      dlMenu.querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); dlMenu.classList.remove('open'); const it = byId(_lb); if (it) dlOne(it, b.dataset.sz); });
       ov.querySelector('.as-lb-play').onclick = e => { e.stopPropagation(); togglePlay(); };
       ov.querySelector('.as-lb-prev').onclick = e => { e.stopPropagation(); lbNav(-1); };
       ov.querySelector('.as-lb-next').onclick = e => { e.stopPropagation(); lbNav(1); };
@@ -1654,6 +1715,8 @@
       else if (e.key === 'ArrowDown') { e.preventDefault(); zoomKey(-1); }  // ↓ zoom out
       else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePlay(); }
       else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteLbCover(); }
+      else if (e.key === 'Enter') { e.preventDefault(); _lbEditCmt = true; paintCmtArea(document.getElementById('as-lb'), byId(_lb)); }   // start editing the comment
+      else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); const it = byId(_lb); if (it) dlOne(it); }   // download original
       return;
     }
     if (!root.isConnected || !root.querySelector('.as-card')) return;
@@ -1722,14 +1785,14 @@
   }
   // #244 a README.md / manifest for the download archive (and a Report type): release
   // header, export metadata, and the artwork list linking each type-named file to its original.
-  const extOf = it => ((it._img || imgUrl(it.id)).match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
   // shared rows for the "Detailed table" layout / archive manifest
   function manifestRows(sel) {
     const ord = sel.slice().sort((a, b) => a.order - b.order);
     const pad = Math.max(2, String(Math.max(0, ...ord.map(it => it.order + 1))).length);
     return ord.map(it => ({
-      pos: pad2(it.order + 1), name: downloadName(it, it.order + 1, extOf(it), pad),
-      orig: it._img || imgUrl(it.id), res: (it.w && it.h) ? `${it.w} × ${it.h}` : '', size: it.bytes ? fmtSize(it.bytes) : '',
+      pos: pad2(it.order + 1),
+      name: downloadName(it, it.order + 1, dlExt(it), pad).replace(/^\d+\s+/, ''),   // drop the position — the Position column already has it
+      orig: dlUrl(it), res: (it.w && it.h) ? `${it.w} × ${it.h}` : '', size: it.bytes ? fmtSize(it.bytes) : '',
     }));
   }
   function manifestHead() {
@@ -1745,6 +1808,7 @@
     if (by) out.push(`- **Exported by:** ${by}`);
     out.push('', '## Artwork', '', '| Position | Cover | Resolution | Size |', '| --- | --- | --- | --- |');
     manifestRows(sel).forEach(r => out.push(`| ${r.pos} | [${r.name}](${r.orig}) | ${r.res} | ${r.size} |`));
+    out.push('', `*Report created with [Art Station](${SCRIPT_URL})${_gm ? ' v' + _gm.version : ''}*`);
     return out.join('\n') + '\n';
   }
   function manifestHtml(sel) {
@@ -1754,7 +1818,7 @@
       `<p><strong>Export date:</strong> ${date}${by ? `<br><strong>Exported by:</strong> ${esc(by)}` : ''}</p>`,
       '<table><thead><tr><th>Position</th><th>Cover</th><th>Resolution</th><th>Size</th></tr></thead><tbody>'];
     manifestRows(sel).forEach(r => out.push(`<tr><td>${r.pos}</td><td><a href="${r.orig}">${esc(r.name)}</a></td><td>${esc(r.res)}</td><td>${esc(r.size)}</td></tr>`));
-    out.push('</tbody></table>');
+    out.push('</tbody></table>', `<p><em>Report created with <a href="${SCRIPT_URL}">Art Station</a>${_gm ? ' v' + esc(_gm.version) : ''}</em></p>`);
     return out.join('\n');
   }
   // ensure resolution (loads originals) + byte sizes are known before a manifest is built
@@ -2008,6 +2072,18 @@
   .as-lb-x,.as-lb-play{font-size:15px;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;height:42px;cursor:pointer;font-weight:600}
   .as-lb-x{width:42px;font-size:24px}.as-lb-play{padding:0 14px}
   .as-lb-x:hover,.as-lb-play:hover{background:rgba(255,255,255,.25)}
+  /* lightbox actions: Delete top-left, Download (with size menu) top-centre */
+  .as-lb-del{position:fixed;top:16px;left:20px;z-index:2;font-size:18px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;height:42px;width:46px;cursor:pointer}
+  .as-lb-del:hover{background:var(--as-warn)}
+  .as-lb-dlwrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center}
+  .as-lb-dl,.as-lb-dlcaret{font:600 14px Arial;color:#fff;background:rgba(255,255,255,.12);border:none;height:42px;cursor:pointer}
+  .as-lb-dl{padding:0 14px;border-radius:8px 0 0 8px}
+  .as-lb-dlcaret{padding:0 11px;border-radius:0 8px 8px 0;border-left:1px solid rgba(255,255,255,.25);font-size:12px}
+  .as-lb-dl:hover,.as-lb-dlcaret:hover{background:rgba(255,255,255,.25)}
+  .as-lb-dlmenu{position:absolute;top:48px;left:0;min-width:130px;background:#fff;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.4);padding:5px;display:none;flex-direction:column}
+  .as-lb-dlmenu.open{display:flex}
+  .as-lb-dlmenu button{text-align:left;background:none;border:none;color:#333;font:13px Arial;padding:7px 10px;border-radius:6px;cursor:pointer}
+  .as-lb-dlmenu button:hover{background:#f0ecfa;color:var(--as-acc)}
   .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw)}
   /* default: a zoomed image may cover the bar (image takes priority). Only when the
      caption/comment is focused (editing) does it lift above the image. */

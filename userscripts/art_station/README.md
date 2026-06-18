@@ -68,6 +68,28 @@ where `none` is used where no type is given
 
 **Example**: `09 front,sticker Front cover with the sticker.jpg`.
 
+## Keyboard shortcuts
+
+**Gallery** (when a cover is focused — arrow to it first):
+
+| Key | Action |
+|---|---|
+| `←` `→` `↑` `↓` | move the cursor between covers |
+| `Enter` | open the focused cover full-screen |
+| `Space` | select / deselect the focused cover |
+
+**Full-screen viewer:**
+
+| Key | Action |
+|---|---|
+| `←` `→` | previous / next cover |
+| `↑` `↓` | zoom in / out |
+| `Enter` | edit the comment |
+| `D` | download the original |
+| `Delete` | mark the cover for removal |
+| `P` | play / pause the slideshow |
+| `Esc` | close (dismisses an open popover or comment edit first) |
+
 ## Applying changes
 
 Every change is staged. **Enter edit** opens a panel that lists the pending operations and submits them as real MusicBrainz edits — remove, retype/comment, reorder and new-image uploads — each crediting *Art Station* in the edit note.
