@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.070000
+// @version      2026.6.18.071000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -769,7 +769,13 @@
     const artist = info.artists.map(a => a.name).join(' ').trim();
     const album = (info.title || '').trim();
     if (!album) { toast('Could not read the release title'); return; }
-    const p = new URLSearchParams(); if (artist) p.set('artist', artist); p.set('album', album);
+    const p = new URLSearchParams();
+    // remote.* puts MH Covers into integration ("pick") mode — picking a cover posts
+    // it back over the browser channel instead of just opening the image. #235
+    p.set('remote.port', 'browser');
+    p.set('remote.agent', 'Art Station - MusicBrainz');
+    p.set('remote.text', 'Pick a cover for this MusicBrainz release.');
+    if (artist) p.set('artist', artist); p.set('album', album);
     const win = window.open(`${MH_ORIGIN}?${p}`, '_blank');
     if (!win) { toast('Pop-up blocked — allow pop-ups for MH Covers'); return; }
     toast('Pick a cover in the MH Covers tab…', 6000);
