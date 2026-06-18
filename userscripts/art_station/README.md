@@ -26,7 +26,7 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
 - **Single or bulk mode**
     - **Set type**
     - **Set comment** with auto focusing next comment field on `<ENTER>`
-    - **Remove** and **Download**
+    - **Remove** and **Download** zip archive
     - **Reports** in HTML and Markdown with configurable parameters  
 - **Add images**
   - **File drop** — new covers upload to the Cover Art Archive, in parallel
