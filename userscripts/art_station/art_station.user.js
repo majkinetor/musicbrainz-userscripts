@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.163000
+// @version      2026.6.18.170000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -1443,8 +1443,8 @@
   /* accent (white-on-purple) buttons must darken on hover, not lighten — else the white text vanishes */
   .as-commit:hover:not(:disabled),.as-pop-apply:hover:not(:disabled),.as-cm-go:hover:not(:disabled){background:#4e329f;color:#fff;border-color:#4e329f}
   .as-add{font-weight:600;color:var(--as-acc)}
-  .as-mh{padding:4px 7px}
-  .as-mh-ic{display:block;background:#80a32b;padding:3px;border-radius:5px}   /* green chip so the white MH icon shows */
+  .as-mh{padding:3px 7px}
+  .as-mh-ic{display:block;background:#80a32b;padding:2px;border-radius:5px;width:14px;height:14px}   /* green chip so the white MH icon shows; sized so it doesn't out-tall the text buttons */
   #as-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#3b2c70;color:#fff;padding:10px 16px;border-radius:9px;font:13px/1.35 -apple-system,Segoe UI,Roboto,Arial,sans-serif;box-shadow:0 6px 22px rgba(40,20,80,.35);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center}
   .as-asback{font-weight:700;color:var(--as-acc);background:#f3eefe;border-color:#cdbff2}
   .as-dl{border-color:#bcd;color:#2a6}
