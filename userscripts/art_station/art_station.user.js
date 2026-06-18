@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.210000
+// @version      2026.6.18.220000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -97,7 +97,7 @@
     } catch (e) { /* size is a nicety — never block the gallery */ }
   }
   let SETTINGS = load();
-  function load() { try { return Object.assign({ tile: 200, group: false, sort: 'type', detailed: false }, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return { tile: 200, group: false, sort: 'type', detailed: false }; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -193,18 +193,49 @@
     _native.forEach(el => { el.style.display = _showOrig ? '' : 'none'; });
     root.classList.toggle('as-orig', _showOrig);                     // hides the whole Art Station UI
     ensureSwitch();
+    applyHideFooter();
+  }
+  // optional (setup): hide MB's native button row (Add / Reorder / Import from …)
+  // under the gallery — redundant with Art Station's own toolbar. Revealed in Original.
+  function applyHideFooter() {
+    document.querySelectorAll('#content div.buttons.ui-helper-clearfix').forEach(el => {
+      el.style.display = (SETTINGS.hideMbFooter && !_showOrig) ? 'none' : '';
+    });
   }
   // #234: an Apollo-style fixed switcher (bottom-right) toggling Original ⇄ Art
-  // Station — always visible; the only control left when the native UI is shown.
+  // Station, plus a ⚙ setup button — always visible.
   function ensureSwitch() {
-    let sw = document.getElementById('as-switch');
-    if (!sw) {
-      sw = document.createElement('button'); sw.id = 'as-switch';
-      document.body.appendChild(sw);
+    let wrap = document.getElementById('as-switch-wrap');
+    if (!wrap) {
+      wrap = document.createElement('div'); wrap.id = 'as-switch-wrap';
+      const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = '⚙'; gear.title = 'Art Station setup';
+      gear.onclick = openSetup;
+      const sw = document.createElement('button'); sw.id = 'as-switch';
       sw.onclick = () => { _showOrig = !_showOrig; render(); };
+      wrap.append(gear, sw); document.body.appendChild(wrap);
     }
+    const sw = document.getElementById('as-switch');
     sw.textContent = _showOrig ? 'Art Station' : 'Original';
     sw.title = _showOrig ? 'Switch back to the Art Station gallery' : 'Show the original MusicBrainz cover-art page';
+  }
+  // setup panel (Apollo-style): script info + help + toggles
+  function openSetup() {
+    document.getElementById('as-setup')?.remove();
+    const ver = (_gm && _gm.version) || '', author = (_gm && _gm.author) || 'majkinetor';
+    const home = (_gm && (_gm.homepageURL || _gm.homepage)) || SCRIPT_URL;
+    const panel = document.createElement('div'); panel.id = 'as-setup';
+    panel.innerHTML = `<div class="as-setup-h"><b>Art Station</b> <span class="as-setup-ver">v${esc(ver)}</span>`
+      + `<a class="as-setup-help" href="${esc(home)}" target="_blank" rel="noopener">Help ↗</a>`
+      + `<button class="as-setup-x" title="close">✕</button></div>`
+      + `<div class="as-setup-body">`
+      + `<p class="as-setup-info">${esc(ENT.Noun)} editor — one staged gallery, applied on <b>Enter edit</b>. by ${esc(author)}</p>`
+      + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-hidefoot"${SETTINGS.hideMbFooter ? ' checked' : ''}> Hide MB native buttons (Add / Reorder / Import…)</label>`
+      + `</div>`;
+    document.body.appendChild(panel);
+    panel.querySelector('.as-setup-x').onclick = () => panel.remove();
+    panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
+    const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
   // at big tile sizes the selection outline alone is plenty obvious, so drop the
   // per-card ✓ badge — keeps large artwork uncluttered. #234
@@ -282,7 +313,7 @@
     return `<div class="as-bar">
       <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
       ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
-      ${IS_EVENT ? '' : `<button class="as-btn as-src" title="Source from a provider URL (Discogs / Apple / Spotify / Amazon / Bandcamp / …) via ECAU (#242)"><span class="as-bi">🔗</span><span class="as-bt">From URL</span></button>`}
+      ${IS_EVENT ? '' : `<button class="as-btn as-src" title="Source a cover from a linked platform or any URL, via ECAU (#242)"><span class="as-bi">🔗</span><span class="as-bt">URL</span></button>`}
       <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
@@ -922,18 +953,61 @@
       toast('No image returned — is “Enhanced Cover Art Uploads” installed? It powers provider sourcing.', 9000);
     }, ECAU_TIMEOUT);
   }
+  // ECAU-supported art providers we recognise on a release's external links, so the
+  // popover can offer "Import from <provider>" the way the native add page does.
+  const ART_PROVIDERS = [
+    { re: /(^|\.)discogs\.com$/i, name: 'Discogs' },
+    { re: /(^|\.)bandcamp\.com$/i, name: 'Bandcamp' },
+    { re: /(^|\.)music\.apple\.com$|(^|\.)itunes\.apple\.com$/i, name: 'Apple Music' },
+    { re: /(^|\.)open\.spotify\.com$|(^|\.)spotify\.com$/i, name: 'Spotify' },
+    { re: /(^|\.)amazon\./i, name: 'Amazon' },
+    { re: /(^|\.)deezer\.com$/i, name: 'Deezer' },
+    { re: /(^|\.)tidal\.com$/i, name: 'Tidal' },
+    { re: /(^|\.)qobuz\.com$/i, name: 'Qobuz' },
+    { re: /(^|\.)vgmdb\.net$/i, name: 'VGMdb' },
+    { re: /7digital\./i, name: '7digital' },
+    { re: /(^|\.)beatport\.com$/i, name: 'Beatport' },
+    { re: /(^|\.)junodownload\.com$|(^|\.)juno\.co\.uk$/i, name: 'Juno' },
+  ];
+  function providerOf(url) { let h = ''; try { h = new URL(url).hostname; } catch (e) { return null; } const p = ART_PROVIDERS.find(x => x.re.test(h)); return p ? p.name : null; }
+  // the release/event's external links → the recognised art providers, deduped
+  async function artProviderLinks() {
+    try {
+      const j = await fetch(`https://musicbrainz.org/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
+      if (!j || !j.relations) return [];
+      const seen = new Set(), out = [];
+      for (const rel of j.relations) {
+        const u = rel.url && rel.url.resource; if (!u) continue;
+        const name = providerOf(u); if (!name) continue;
+        const key = name + '|' + u; if (seen.has(key)) continue; seen.add(key);
+        out.push({ name, url: u });
+      }
+      return out;
+    } catch (e) { return []; }
+  }
   function openSourcePop(btn) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
-    pop.innerHTML = `<div class="as-pop-h">Source from a provider URL</div>`
-      + `<input class="as-src-inp" placeholder="https://www.discogs.com/release/… or an image URL" spellcheck="false">`
+    pop.innerHTML = `<div class="as-pop-h">Source a cover</div>`
+      + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
+      + `<div class="as-src-or">or paste any URL</div>`
+      + `<input class="as-src-inp" placeholder="https://… provider page or image URL" spellcheck="false">`
       + `<div class="as-pop-f"><button class="as-btn as-src-go">Fetch</button></div>`
-      + `<div class="as-pop-note">Powered by ROpdebee's Enhanced Cover Art Uploads (must be installed). Discogs · Apple · Spotify · Amazon · Bandcamp · …</div>`;
+      + `<div class="as-pop-note">Powered by ROpdebee's <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Enhanced Cover Art Uploads</a> (must be installed).</div>`;
     document.body.appendChild(pop); placePop(pop, btn.getBoundingClientRect());
     const inp = pop.querySelector('.as-src-inp'); inp.focus();
     const go = () => { const v = inp.value; pop.remove(); sourceFromUrl(v); };
     pop.querySelector('.as-src-go').onclick = go;
     inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } else if (e.key === 'Escape') { e.preventDefault(); pop.remove(); } };
+    // populate "Import from <provider>" buttons from the release's linked platforms
+    artProviderLinks().then(provs => {
+      const box = pop.querySelector('.as-src-prov'); if (!box) return;
+      if (!provs.length) { box.textContent = 'No supported platforms linked on this release.'; placePop(pop, btn.getBoundingClientRect()); return; }
+      box.classList.remove('as-pop-note');
+      box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}">⬇ Import from ${esc(p.name)}</button>`).join('');
+      box.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { pop.remove(); sourceFromUrl(provs[+b.dataset.i].url); });
+      placePop(pop, btn.getBoundingClientRect());
+    });
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -1541,8 +1615,22 @@
   .as-bar>*{flex:0 0 auto}
   /* "Original" (Apollo-style switch): hide the whole Art Station UI, MB's native page shows through */
   #as-root.as-orig{display:none}
-  #as-switch{position:fixed;bottom:14px;right:14px;z-index:99998;background:var(--as-acc);color:#fff;border:none;border-radius:20px;font:bold 13px Arial;padding:9px 16px;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
+  #as-switch-wrap{position:fixed;bottom:14px;right:14px;z-index:99998;display:flex;gap:8px;align-items:center}
+  #as-switch{background:var(--as-acc);color:#fff;border:none;border-radius:20px;font:bold 13px Arial;padding:9px 16px;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
   #as-switch:hover{background:#4e329f}
+  #as-setup-btn{width:36px;height:36px;border-radius:50%;border:none;background:#fff;color:var(--as-acc);font-size:17px;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
+  #as-setup-btn:hover{background:#f0ecfa}
+  #as-setup{position:fixed;bottom:58px;right:14px;z-index:99999;width:320px;max-width:92vw;background:#fff;border:1px solid #cbbdf0;border-radius:10px;box-shadow:0 8px 28px rgba(40,20,80,.32);font:13px Arial;color:#222}
+  .as-setup-h{display:flex;align-items:center;gap:7px;padding:10px 12px;border-bottom:1px solid #ece6f8;color:#563b8f}
+  .as-setup-ver{font-size:11px;font-weight:normal;color:#999}
+  .as-setup-help{margin-left:auto;font-size:12px;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
+  .as-setup-help:hover{background:#f0ecfa}
+  .as-setup-x{border:none;background:none;color:#999;font-size:14px;cursor:pointer;padding:0 2px}
+  .as-setup-x:hover{color:#555}
+  .as-setup-body{padding:10px 12px}
+  .as-setup-info{margin:0 0 10px;color:#666;font-size:12px;line-height:1.45}
+  .as-setup-opt{display:flex;gap:8px;align-items:center;cursor:pointer}
+  .as-setup-opt input{margin:0}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
   #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer;white-space:nowrap}
@@ -1673,7 +1761,10 @@
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   .as-cmt-pop{min-width:220px}
   .as-src-pop{min-width:340px;max-width:380px}
-  .as-src-inp{width:100%;box-sizing:border-box;margin:6px 0 2px;padding:6px 8px;border:1px solid #cfc6e6;border-radius:6px;font:13px inherit}
+  .as-src-prov{display:flex;flex-direction:column;gap:5px;margin:6px 0 2px}
+  .as-src-prov-b{justify-content:flex-start;font-weight:600;color:#3b2c70}
+  .as-src-or{margin:9px 0 0;color:#9a8ccb;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  .as-src-inp{width:100%;box-sizing:border-box;margin:4px 0 2px;padding:6px 8px;border:1px solid #cfc6e6;border-radius:6px;font:13px inherit}
   .as-src-pop .as-pop-note{padding:4px 2px 2px;line-height:1.4}
   .as-bulk-cmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid #d8ccf5;border-radius:6px;padding:5px 8px;margin:2px 0 2px;background:#faf9fe;color:#333}
   /* lightbox */
