@@ -885,7 +885,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             addLinkBtn.addEventListener('click', () => {
                                 const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
                                 if (!ltId) return;
-                                const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId, [`edit-${entityType}.edit_note`]: buildCreateNote(discogsHref, 'Added the Discogs link') });
+                                const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId, [`edit-${entityType}.edit_note`]: buildCreateNote('Added Discogs link') });
                                 const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
                                 window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, '_blank', 'noopener,noreferrer');
                                 // Replace button with a "pending verification" badge.
@@ -986,7 +986,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             createParams['edit-artist.url.0.link_type_id'] = ltArtist;
                         }
                         if (disambiguation) createParams['edit-artist.comment'] = disambiguation;
-                        createParams['edit-artist.edit_note'] = buildCreateNote(discogsHref);   // proper attribution on the created entity
+                        createParams['edit-artist.edit_note'] = buildCreateNote();   // proper attribution on the created entity
                         createUrl = 'https://musicbrainz.org/artist/create';
                     } else {
                         const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
@@ -998,7 +998,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             createParams[`edit-${entityType}.url.0.link_type_id`] = ltId;
                         }
                         if (disambiguation) createParams[`edit-${entityType}.comment`] = disambiguation;
-                        createParams[`edit-${entityType}.edit_note`] = buildCreateNote(discogsHref);   // proper attribution on the created entity
+                        createParams[`edit-${entityType}.edit_note`] = buildCreateNote();   // proper attribution on the created entity
                         createUrl = `https://musicbrainz.org/${entityType}/create`;
                     }
                     const p = new URLSearchParams(createParams);
