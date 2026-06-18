@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.190000
-// @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
+// @version      2026.6.18.200000
+// @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
+// @match        *://*.musicbrainz.org/event/*/event-art
 // @grant        GM.xmlHttpRequest
 // @grant        GM_xmlhttpRequest
 // @connect      *
@@ -17,9 +18,16 @@
 (function () {
   'use strict';
 
-  const M = location.pathname.match(/\/release\/([0-9a-f-]{36})\/cover-art/i);
+  // Works on BOTH a release's cover art and an event's event art — same gallery,
+  // same flow, only the entity differs (archive host, the */-art endpoint suffix,
+  // and the type vocabulary). Everything downstream goes through ENT. (#241)
+  const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(?:cover|event)-art/i);
   if (!M) return;
-  const MBID = M[1];
+  const IS_EVENT = M[1].toLowerCase() === 'event';
+  const MBID = M[2];
+  const ENT = IS_EVENT
+    ? { kind: 'event',   base: `/event/${MBID}`,   art: 'event-art', archive: `https://eventartarchive.org/event/${MBID}`, noun: 'event art', Noun: 'Event art' }
+    : { kind: 'release', base: `/release/${MBID}`, art: 'cover-art', archive: `https://coverartarchive.org/release/${MBID}`, noun: 'cover art', Noun: 'Cover art' };
 
   // append a node to <head>/<html>, deferring if neither exists yet (document-start)
   function appendEl(el) {
@@ -43,14 +51,22 @@
     ? `${_gm.name} v${_gm.version} by ${_gm.author} - ${_gm.homepageURL || _gm.homepage || SCRIPT_URL}`
     : `Art Station by majkinetor - ${SCRIPT_URL}`;
 
-  const CAA = `https://coverartarchive.org/release/${MBID}`;
+  const CAA = ENT.archive;                            // CAA for releases, EAA for events
   const imgUrl  = id => `${CAA}/${id}.jpg`;          // original
   const thumb   = (id, n) => `${CAA}/${id}-${n}.jpg`; // 250 / 500 / 1200
 
-  // canonical MB cover-art types, in a sensible display order; "(none)" is virtual
-  const TYPE_ORDER = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Watermark', 'Matrix/Runout', 'Top', 'Bottom', 'Spine', 'Other'];
-  const ALL_TYPES  = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Watermark', 'Raw/Unedited', 'Matrix/Runout', 'Top', 'Bottom', 'Panel', 'Other'];
+  // canonical MB art types per entity, in a sensible display order; "(none)" is virtual.
+  // Event art has its own vocabulary (Poster/Flyer/Setlist/…) — wholly distinct from cover art.
+  const COVER_ORDER = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Watermark', 'Matrix/Runout', 'Top', 'Bottom', 'Other'];
+  const COVER_TYPES = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Watermark', 'Raw/Unedited', 'Matrix/Runout', 'Top', 'Bottom', 'Panel', 'Other'];
+  const EVENT_TYPES = ['Poster', 'Flyer', 'Banner', 'Program', 'Setlist', 'Schedule', 'Ticket', 'Map', 'Logo', 'Merchandise', 'Raw/Unedited', 'Watermark'];
+  const TYPE_ORDER = IS_EVENT ? EVENT_TYPES : COVER_ORDER;
+  const ALL_TYPES  = IS_EVENT ? EVENT_TYPES : COVER_TYPES;
   const NO_TYPE = '(no type)';
+  // neutral noun for a single artwork piece in UI labels: "cover" for releases,
+  // "image" for events (an untyped event piece isn't a "cover").
+  const ITEM = IS_EVENT ? 'image' : 'cover';
+  const ITEMS = ITEM + 's';
 
   let MODEL = [];       // [{ id, types:[], comment, order, w, h, bytes, _del, _new, _file }]
   const SIZES = new Map(); // CAA image id -> original file size in bytes (from archive.org metadata)
@@ -91,8 +107,8 @@
     const blocks = [...document.querySelectorAll('.artwork-cont')];
     if (!blocks.length) return null;
     return blocks.map((b, i) => {
-      const ed = b.querySelector('a[href*="/edit-cover-art/"]');
-      const m = ed && ed.getAttribute('href').match(/\/edit-cover-art\/(\d+)/);
+      const ed = b.querySelector(`a[href*="/edit-${ART}/"]`);
+      const m = ed && ed.getAttribute('href').match(new RegExp(`/edit-${ART}/(\\d+)`));
       if (!m) return null;
       // each piece is its own <p> — parse types from the "Types:" <p> ONLY (the comment
       // is a separate <p>, so reading the whole block grabbed it, e.g. "Types: -test")
@@ -264,8 +280,8 @@
 
   function bar(n) {
     return `<div class="as-bar">
-      <button class="as-btn as-add" title="Add cover art — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
-      <button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>
+      <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
+      ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
       <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
@@ -280,16 +296,16 @@
   function selBox() {
     const sel = MODEL.filter(it => it._sel && !it._del);
     return `${sel.length ? `<b class="as-selcnt">${sel.length} selected</b>` : '<span class="as-selcnt none">none selected</span>'}
-      <button class="as-ic as-selall" title="Select all covers">✳</button>
+      <button class="as-ic as-selall" title="Select all ${ITEMS}">✳</button>
       <button class="as-ic as-selclr" title="Clear selection"${sel.length ? '' : ' disabled'}>✕</button>
       ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Type ▾</button>
       <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="as-bt">Comment ▾</span></button>
-      <button class="as-btn as-bk-dl" title="Download the selected covers"><span class="as-bi">⬇</span><span class="as-bt">Download</span></button>
+      <button class="as-btn as-bk-dl" title="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="as-bt">Download</span></button>
       <button class="as-btn as-bk-report" title="Postable Markdown / HTML report of the selection"><span class="as-bi">📋</span><span class="as-bt">Report</span></button>
-      <button class="as-btn as-bk-rm" title="Mark the selected covers for removal"><span class="as-bi">🗑️</span><span class="as-bt">Delete</span></button>` : ''}`;
+      <button class="as-btn as-bk-rm" title="Mark the selected ${ITEMS} for removal"><span class="as-bi">🗑️</span><span class="as-bt">Delete</span></button>` : ''}`;
   }
   function section(type, items) {
-    const label = type === null ? 'All covers' : type;
+    const label = type === null ? ('All ' + ITEMS) : type;
     return `<div class="as-sec"><h3>${esc(label)}</h3><span class="as-cnt">${items.length}</span><span class="as-line"></span></div>
       <div class="as-grid" data-group="${esc(type||'')}">${items.map(card).join('')}</div>`;
   }
@@ -302,7 +318,7 @@
   function dropZone() {
     if (!_dropZone) return '';
     return `<div class="as-dropzone" tabindex="0" title="drop image / PDF files, or click to browse">
-      <div class="as-dz-in">⬇ Drop cover images here<span>or click to browse · new covers go first</span></div></div>`;
+      <div class="as-dz-in">⬇ Drop ${ENT.noun} files here<span>or click to browse · new ${ITEMS} go first</span></div></div>`;
   }
   function newSection() {
     if (!SETTINGS.group) return '';   // Position view shows new uploads inline, positioned among covers
@@ -580,12 +596,12 @@
   }
   // the list of pending MB operations behind "N staged changes"
   function pendingOps() {
-    const label = it => it.types[0] || (it._new ? 'new image' : 'cover');
+    const label = it => it.types[0] || (it._new ? 'new image' : ITEM);
     const ops = [];
     MODEL.filter(it => it._new && !it._del).forEach(it => ops.push(`➕ Add ${label(it)}${it.types.length ? ` — ${it.types.join(', ')}` : ''}${it.comment ? ` “${it.comment}”` : ''}`));
     MODEL.filter(it => it._del && !it._new).forEach(it => ops.push(`🗑 Remove ${label(it)}`));
     MODEL.filter(it => !it._del && !it._new).forEach(it => {
-      if (it.types.join('|') !== it._origTypes.join('|')) ops.push(`🏷 Set type on ${it._origTypes[0] || 'cover'} → ${it.types.join(', ') || '(none)'}`);
+      if (it.types.join('|') !== it._origTypes.join('|')) ops.push(`🏷 Set type on ${it._origTypes[0] || ITEM} → ${it.types.join(', ') || '(none)'}`);
       if (it.comment !== it._origComment) ops.push(`✎ Comment on ${label(it)} → ${it.comment ? `“${it.comment}”` : '(cleared)'}`);
     });
     // reorder = the EXISTING covers' relative order changed. Inserting new covers
@@ -593,7 +609,7 @@
     const ex = MODEL.filter(it => !it._del && !it._new);
     const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
     const orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
-    if (now !== orig) ops.push('↕ Reorder covers');
+    if (now !== orig) ops.push('↕ Reorder ' + ITEMS);
     return ops;
   }
   // the count shown on "Enter edit (N)" = the number of real MB edits we'll submit
@@ -734,7 +750,7 @@
     return sel.map(it => {
       const url = it._img || imgUrl(it.id);
       const ext = (url.match(/\.(jpg|jpeg|png|gif|pdf|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase();
-      let base = (it.types[0] || 'cover'), name = `${base}.${ext}`, n = 2;
+      let base = (it.types[0] || ITEM), name = `${base}.${ext}`, n = 2;
       while (used.has(name.toLowerCase())) name = `${base}-${n++}.${ext}`;
       used.add(name.toLowerCase());
       return { url, name };
@@ -748,7 +764,7 @@
     // the whole archive is never buffered in memory.
     if (window.showSaveFilePicker) {
       let handle;
-      try { handle = await window.showSaveFilePicker({ suggestedName: `${MBID}-covers.zip`, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
+      try { handle = await window.showSaveFilePicker({ suggestedName: `${MBID}${MBID}-${ITEMS}.zip`, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
       catch (e) { return; }   // user cancelled the save dialog
       const w = await handle.createWritable();
       const central = []; let offset = 0, done = 0;
@@ -775,7 +791,7 @@
     const entries = results.filter(Boolean);
     if (!entries.length) return;
     const obj = URL.createObjectURL(makeZip(entries));
-    const a = document.createElement('a'); a.href = obj; a.download = `${MBID}-covers.zip`;
+    const a = document.createElement('a'); a.href = obj; a.download = `${MBID}${MBID}-${ITEMS}.zip`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(obj), 8000);
   }
@@ -867,7 +883,8 @@
     inp.click();
   }
   // ── Phase 2a: apply staged changes as real MB edits (form-replay) ─────────────
-  const R = `/release/${MBID}`;
+  const R = ENT.base;          // /release/<mbid> | /event/<gid>
+  const ART = ENT.art;         // cover-art | event-art — the MB endpoint + form-field suffix
   // credit the tool in every edit note (user's note first, then the attribution)
   const editNote = m => [m.note && m.note.trim(), ATTRIBUTION].filter(Boolean).join('\n\n');
   async function getPostForm(url) {
@@ -888,17 +905,17 @@
     return m;
   }
   async function buildEdit(it, meta) {   // retype / comment on an existing cover
-    const form = await getPostForm(`${R}/edit-cover-art/${it.id}`);
+    const form = await getPostForm(`${R}/edit-${ART}/${it.id}`);
     const p = new URLSearchParams(); copyHidden(form, p);
-    const tm = typeMapOf(form, 'edit-cover-art');
-    it.types.forEach(t => { if (tm[t]) p.append('edit-cover-art.type_id', tm[t]); });
-    p.append('edit-cover-art.comment', it.comment);
-    p.append('edit-cover-art.edit_note', editNote(meta));
-    if (meta.votable) p.append('edit-cover-art.make_votable', '1');
+    const tm = typeMapOf(form, `edit-${ART}`);
+    it.types.forEach(t => { if (tm[t]) p.append(`edit-${ART}.type_id`, tm[t]); });
+    p.append(`edit-${ART}.comment`, it.comment);
+    p.append(`edit-${ART}.edit_note`, editNote(meta));
+    if (meta.votable) p.append(`edit-${ART}.make_votable`, '1');
     return { method: 'POST', url: form._action, body: p };
   }
   async function buildRemove(it, meta) {
-    const form = await getPostForm(`${R}/remove-cover-art/${it.id}`);
+    const form = await getPostForm(`${R}/remove-${ART}/${it.id}`);
     const p = new URLSearchParams(); copyHidden(form, p);
     p.append('confirm.edit_note', editNote(meta));
     if (meta.votable) p.append('confirm.make_votable', '1');
@@ -906,12 +923,12 @@
   }
   // Phase 2b: upload a new image. (1) sign via MB, (2) POST file to archive.org, (3) register.
   async function signUpload(mime, ctl) {
-    const r = await fetch(`/ws/js/cover-art-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin', signal: ctl && ctl.ac.signal });
+    const r = await fetch(`/ws/js/${ART}-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin', signal: ctl && ctl.ac.signal });
     if (!r.ok) throw new Error('sign ' + r.status);
     return r.json();   // { action, image_id, formdata, nonce }
   }
   let _addForm = null;
-  const addForm = () => (_addForm = _addForm || getPostForm(`${R}/add-cover-art`));
+  const addForm = () => (_addForm = _addForm || getPostForm(`${R}/add-${ART}`));
   // step 1 (parallel-safe): sign + PUT the file to archive.org. Stores the signed
   // upload on the item; the slow network part — like Turbo, run these concurrently.
   async function uploadStep(it, onProgress, ctl) {
@@ -943,45 +960,45 @@
   // step 2 (SEQUENTIAL): register on MB. Submitted in order so positions stay correct.
   async function registerStep(it, meta, ctl) {
     const form = await addForm();
-    const tm = typeMapOf(form, 'add-cover-art');
+    const tm = typeMapOf(form, `add-${ART}`);
     const typeIds = it.types.map(t => tm[t]).filter(Boolean);
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
     const p = new URLSearchParams(); copyHidden(form, p, /\.(nonce|position|id|type_id|comment|mime_type)$/);
-    p.append('add-cover-art.id', it._signed.image_id);
-    p.append('add-cover-art.position', String(it.order + 1));
-    p.append('add-cover-art.nonce', it._signed.nonce);
-    p.append('add-cover-art.mime_type', mime);   // required Select (MB Form::Role::AddArt)
-    typeIds.forEach(id => p.append('add-cover-art.type_id', id));
-    p.append('add-cover-art.comment', it.comment);
-    p.append('add-cover-art.edit_note', editNote(meta));
-    if (meta.votable) p.append('add-cover-art.make_votable', '1');
-    const add = await fetch(`${R}/add-cover-art`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
+    p.append(`add-${ART}.id`, it._signed.image_id);
+    p.append(`add-${ART}.position`, String(it.order + 1));
+    p.append(`add-${ART}.nonce`, it._signed.nonce);
+    p.append(`add-${ART}.mime_type`, mime);   // required Select (MB Form::Role::AddArt)
+    typeIds.forEach(id => p.append(`add-${ART}.type_id`, id));
+    p.append(`add-${ART}.comment`, it.comment);
+    p.append(`add-${ART}.edit_note`, editNote(meta));
+    if (meta.votable) p.append(`add-${ART}.make_votable`, '1');
+    const add = await fetch(`${R}/add-${ART}`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
     if (!add.ok) throw new Error('add ' + add.status);
   }
   async function runAdd(it, meta, dry, report) {   // dry-run summary only (live uses runAdds)
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
     const form = await addForm();
-    const typeIds = it.types.map(t => typeMapOf(form, 'add-cover-art')[t]).filter(Boolean);
-    report(`1. GET /ws/js/cover-art-upload/${MBID}?mime_type=${mime}  → {action,image_id,formdata,nonce}\n`
+    const typeIds = it.types.map(t => typeMapOf(form, `add-${ART}`)[t]).filter(Boolean);
+    report(`1. GET /ws/js/${ART}-upload/${MBID}?mime_type=${mime}  → {action,image_id,formdata,nonce}\n`
       + `2. POST ‹signed archive.org action›  multipart: ‹policy,signature,key,AWSAccessKeyId…› + file (${(it._fileObj && it._fileObj.name) || 'file'}, ${(it._fileObj && it._fileObj.size) || '?'}b)\n`
-      + `3. POST ${R}/add-cover-art\n   add-cover-art.id=‹image_id›\n   add-cover-art.position=${it.order + 1}\n   add-cover-art.nonce=‹nonce›\n   add-cover-art.mime_type=${mime}\n`
-      + `   add-cover-art.type_id=${typeIds.join(',') || '(none)'}\n   add-cover-art.comment=${it.comment}\n   add-cover-art.edit_note=${editNote(meta).replace(/\n+/g, ' / ')}`
-      + (meta.votable ? `\n   add-cover-art.make_votable=1` : ''));
+      + `3. POST ${R}/add-${ART}\n   add-${ART}.id=‹image_id›\n   add-${ART}.position=${it.order + 1}\n   add-${ART}.nonce=‹nonce›\n   add-${ART}.mime_type=${mime}\n`
+      + `   add-${ART}.type_id=${typeIds.join(',') || '(none)'}\n   add-${ART}.comment=${it.comment}\n   add-${ART}.edit_note=${editNote(meta).replace(/\n+/g, ' / ')}`
+      + (meta.votable ? `\n   add-${ART}.make_votable=1` : ''));
   }
   async function buildReorder(meta) {     // single edit: full ordered artwork list
-    const form = await getPostForm(`${R}/reorder-cover-art`);
+    const form = await getPostForm(`${R}/reorder-${ART}`);
     const p = new URLSearchParams(); copyHidden(form, p, /\.artwork\./);
     const seq = MODEL.filter(it => !it._del && !it._new).sort((a, b) => a.order - b.order);
-    seq.forEach((it, i) => { p.append(`reorder-cover-art.artwork.${i}.id`, it.id); p.append(`reorder-cover-art.artwork.${i}.position`, String(i + 1)); });
-    p.append('reorder-cover-art.edit_note', editNote(meta));
-    if (meta.votable) p.append('reorder-cover-art.make_votable', '1');
+    seq.forEach((it, i) => { p.append(`reorder-${ART}.artwork.${i}.id`, it.id); p.append(`reorder-${ART}.artwork.${i}.position`, String(i + 1)); });
+    p.append(`reorder-${ART}.edit_note`, editNote(meta));
+    if (meta.votable) p.append(`reorder-${ART}.make_votable`, '1');
     return { method: 'POST', url: form._action, body: p };
   }
   // ordered work list (uploads are Phase 2b): remove → retype/comment → reorder
   function buildPlan() {
     const plan = [];
     MODEL.filter(it => it._new && !it._del).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'}${it.comment ? ` “${it.comment}”` : ''} (upload)`, kind: 'add', it, run: (m, dry, report) => runAdd(it, m, dry, report) }));
-    MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || 'cover'}`, id: it.id, kind: 'remove', build: m => buildRemove(it, m) }));
+    MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || ITEM}`, id: it.id, kind: 'remove', build: m => buildRemove(it, m) }));
     MODEL.filter(it => !it._del && !it._new && (it.comment !== it._origComment || it.types.join('|') !== it._origTypes.join('|')))
       .forEach(it => {
         // readable description of what changed on this cover (the panel list now
@@ -989,12 +1006,12 @@
         const ch = [];
         if (it.types.join('|') !== it._origTypes.join('|')) ch.push(`type → ${it.types.join(', ') || '(none)'}`);
         if (it.comment !== it._origComment) ch.push(`comment → ${it.comment ? `“${it.comment}”` : '(cleared)'}`);
-        plan.push({ label: `Edit ${it._origTypes[0] || 'cover'}: ${ch.join(', ')}`, id: it.id, kind: 'edit', build: m => buildEdit(it, m) });
+        plan.push({ label: `Edit ${it._origTypes[0] || ITEM}: ${ch.join(', ')}`, id: it.id, kind: 'edit', build: m => buildEdit(it, m) });
       });
     const ex = MODEL.filter(it => !it._del && !it._new);
     const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
     const orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
-    if (now !== orig) plan.push({ label: 'Reorder covers', kind: 'reorder', build: m => buildReorder(m) });
+    if (now !== orig) plan.push({ label: 'Reorder ' + ITEMS, kind: 'reorder', build: m => buildReorder(m) });
     return plan;
   }
 
@@ -1213,7 +1230,7 @@
     const dims = it.w && it.h ? `${it.w} × ${it.h}` : '';
     const cap = ov.querySelector('.as-lb-cap');
     // type is a clickable chip (same picker as the grid pills) so it can be set full-screen
-    cap.innerHTML = `<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" title="set cover type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
+    cap.innerHTML = `<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" title="set ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
     cap.querySelector('.as-lb-type').onclick = e => {
       e.stopPropagation();
       openTypePopFor(byId(_lb), e.currentTarget, () => { _lbDirty = true; paintLightbox(); });
@@ -1276,7 +1293,7 @@
     const seq = visible().filter(x => !x._pdf);
     const i = seq.findIndex(x => String(x.id) === String(_lb));
     it._del = true; it._sel = false; _lbDirty = true;
-    toast(`“${(it.types && it.types[0]) || 'cover'}” marked for removal — undo in the grid`);
+    toast(`“${(it.types && it.types[0]) || ITEM}” marked for removal — undo in the grid`);
     const rest = visible().filter(x => !x._pdf);   // recomputed without the just-deleted cover
     if (!rest.length) { closeLightbox(); return; }
     const nx = rest[Math.min(i, rest.length - 1)];
@@ -1344,7 +1361,7 @@
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
     const pop = document.createElement('div'); pop.className = 'as-pop';
-    pop.innerHTML = `<div class="as-pop-h">Set type on ${sel.length} cover${sel.length===1?'':'s'}</div>`
+    pop.innerHTML = `<div class="as-pop-h">Set type on ${sel.length} ${ITEM}${sel.length===1?'':'s'}</div>`
       + `<div class="as-type-grid">${ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>`
       + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply (replace)</button><button class="as-btn as-pop-add">Add</button></div>`;
     document.body.appendChild(pop);
@@ -1363,7 +1380,7 @@
     const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
     const common = sel.every(it => it.comment === sel[0].comment) ? sel[0].comment : '';
     const pop = document.createElement('div'); pop.className = 'as-pop as-cmt-pop';
-    pop.innerHTML = `<div class="as-pop-h">Comment on ${sel.length} cover${sel.length===1?'':'s'}</div>`
+    pop.innerHTML = `<div class="as-pop-h">Comment on ${sel.length} ${ITEM}${sel.length===1?'':'s'}</div>`
       + `<input class="as-bulk-cmt" placeholder="comment…" spellcheck="false" list="as-cmt-presets" value="${esc(common)}">`
       + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply</button><button class="as-btn as-bulk-cmt-clr">Clear</button></div>`;
     document.body.appendChild(pop);
@@ -1385,14 +1402,14 @@
     const artists = sub ? [...sub.querySelectorAll('a[href*="/artist/"]')]
       .filter(a => !/\/create(\?|$)/.test(a.getAttribute('href')))
       .map(a => ({ name: a.textContent.trim(), url: 'https://musicbrainz.org' + a.getAttribute('href').split(/[?#]/)[0] })) : [];
-    return { title, url: `https://musicbrainz.org/release/${MBID}`, artists };
+    return { title, url: `https://musicbrainz.org${ENT.base}`, artists };
   }
   function buildReport(opts) {
     const info = releaseInfo();
     const sel = MODEL.filter(it => it._sel && !it._del && !it._new).slice().sort(sortFn);
     const sz = opts.size, W = sz === 'original' ? null : sz;
-    const url = it => `https://coverartarchive.org/release/${MBID}/${it.id}${sz === 'original' ? '' : '-' + sz}.jpg`;
-    const alt = it => (it.types[0] || 'cover').toLowerCase();
+    const url = it => `${CAA}/${it.id}${sz === 'original' ? '' : '-' + sz}.jpg`;
+    const alt = it => (it.types[0] || (IS_EVENT ? 'event art' : ITEM)).toLowerCase();
     const cap = it => [it.types.join(', ') || 'no type', it.comment].filter(Boolean).join(' — ');
     const out = [];
     if (opts.format === 'html') {
@@ -1414,7 +1431,7 @@
     document.getElementById('as-report')?.remove();
     const ov = document.createElement('div'); ov.id = 'as-report';
     ov.innerHTML = `<div class="as-cm-box as-rp-box">
-      <div class="as-cm-h">Report — ${sel.length} cover${sel.length===1?'':'s'}</div>
+      <div class="as-cm-h">Report — ${sel.length} ${ITEM}${sel.length===1?'':'s'}</div>
       <div class="as-rp-opts">
         <label>Format <select class="as-rp-fmt"><option value="markdown">Markdown</option><option value="html">HTML</option></select></label>
         <label>Image size <select class="as-rp-size"><option>250</option><option>500</option><option>1200</option><option value="original">original</option></select></label>
