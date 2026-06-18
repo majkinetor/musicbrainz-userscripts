@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.230000
+// @version      2026.6.18.240000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -1026,6 +1026,9 @@
     const go = () => { const v = inp.value; pop.remove(); sourceFromUrl(v); };
     pop.querySelector('.as-src-go').onclick = go;
     inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } else if (e.key === 'Escape') { e.preventDefault(); pop.remove(); } };
+    // paste a URL → fetch immediately (no need to click Fetch). Read after the paste
+    // lands; only auto-go when the whole field is a URL (typing-then-pasting won't fire).
+    inp.onpaste = () => setTimeout(() => { if (/^https?:\/\//i.test(inp.value.trim())) go(); }, 0);
     // populate "Import from <provider>" buttons from the release's linked platforms
     artProviderLinks().then(provs => {
       const box = pop.querySelector('.as-src-prov'); if (!box) return;
