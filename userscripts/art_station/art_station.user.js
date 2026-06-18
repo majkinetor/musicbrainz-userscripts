@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.170000
+// @version      2026.6.18.173000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -1569,14 +1569,17 @@
   .as-lb-img.loading{visibility:hidden}
   #as-lb.na .as-lb-img{display:none}
   #as-lb.na::after{content:'Image not available, please try again later';color:#f0c4da;font-style:italic;font-size:16px}
-  .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:42px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
+  .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);z-index:2;font-size:42px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
   .as-lb-nav:hover{background:rgba(255,255,255,.25)}
   .as-lb-prev{left:18px}.as-lb-next{right:18px}
-  .as-lb-top{position:fixed;top:16px;right:20px;display:flex;gap:10px;align-items:center}
+  .as-lb-top{position:fixed;top:16px;right:20px;z-index:2;display:flex;gap:10px;align-items:center}
   .as-lb-x,.as-lb-play{font-size:15px;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;height:42px;cursor:pointer;font-weight:600}
   .as-lb-x{width:42px;font-size:24px}.as-lb-play{padding:0 14px}
   .as-lb-x:hover,.as-lb-play:hover{background:rgba(255,255,255,.25)}
-  .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw)}
+  /* position:relative + z so a ZOOMED image (which forms a transform stacking
+     context) paints UNDER the bar instead of swallowing the comment; the backdrop
+     keeps the comment readable when the image is panned behind it */
+  .as-lb-bar{position:relative;z-index:2;margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw);padding:9px 18px;border-radius:13px;background:rgba(15,12,28,.72);backdrop-filter:blur(3px)}
   .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
   .as-lb-type{font:700 12px inherit;color:#e7dffb;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:3px 14px;cursor:pointer}
   .as-lb-type:hover{background:rgba(255,255,255,.2);color:#fff}
