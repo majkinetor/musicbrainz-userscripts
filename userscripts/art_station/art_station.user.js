@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.430000
+// @version      2026.6.18.440000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2065,21 +2065,21 @@
   .as-lb-img.loading{visibility:hidden}
   #as-lb.na .as-lb-img{display:none}
   #as-lb.na::after{content:'Image not available, please try again later';color:#f0c4da;font-style:italic;font-size:16px}
-  .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:42px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
+  .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:42px;line-height:1;color:#fff;background:transparent;border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
   .as-lb-nav:hover{background:rgba(255,255,255,.25)}
   .as-lb-prev{left:18px}.as-lb-next{right:18px}
   .as-lb-top{position:fixed;top:16px;right:20px;display:flex;gap:10px;align-items:center}
-  .as-lb-x,.as-lb-play{font-size:15px;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;height:42px;cursor:pointer;font-weight:600}
+  .as-lb-x,.as-lb-play{font-size:15px;color:#fff;background:transparent;border:none;border-radius:8px;height:42px;cursor:pointer;font-weight:600}
   .as-lb-x{width:42px;font-size:24px}.as-lb-play{padding:0 14px}
   .as-lb-x:hover,.as-lb-play:hover{background:rgba(255,255,255,.25)}
   /* lightbox actions: Delete top-left, Download (size menu) top-centre. No z-index, so a
      ZOOMED image paints over them — same as Play/✕. The download wrapper lifts only while
      its menu is open so the menu stays usable. */
-  .as-lb-del{position:fixed;top:16px;left:20px;font-size:18px;line-height:1;color:#fff;background:rgba(255,255,255,.12);border:none;border-radius:8px;height:42px;width:46px;cursor:pointer}
+  .as-lb-del{position:fixed;top:16px;left:20px;font-size:18px;line-height:1;color:#fff;background:transparent;border:none;border-radius:8px;height:42px;width:46px;cursor:pointer}
   .as-lb-del:hover{background:var(--as-warn)}
   .as-lb-dlwrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center}
   .as-lb-dlwrap:has(.as-lb-dlmenu.open){z-index:3}
-  .as-lb-dl,.as-lb-dlcaret{font:600 14px Arial;color:#fff;background:rgba(255,255,255,.12);border:none;height:42px;cursor:pointer}
+  .as-lb-dl,.as-lb-dlcaret{font:600 14px Arial;color:#fff;background:transparent;border:none;height:42px;cursor:pointer}
   .as-lb-dl{padding:0 14px;border-radius:8px 0 0 8px}
   .as-lb-dlcaret{padding:0 11px;border-radius:0 8px 8px 0;border-left:1px solid rgba(255,255,255,.25);font-size:12px}
   .as-lb-dl:hover,.as-lb-dlcaret:hover{background:rgba(255,255,255,.25)}
