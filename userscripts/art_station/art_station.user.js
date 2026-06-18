@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.450000
+// @version      2026.6.18.460000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -459,8 +459,10 @@
   function deletedSection() {
     const dels = MODEL.filter(it => it._del);
     if (!dels.length) return '';
-    return `<div class="as-sec as-sec-del"><h3>Marked for removal</h3><span class="as-cnt">${dels.length}</span><span class="as-line"></span></div>
-      <div class="as-grid">${dels.map(card).join('')}</div>`;
+    const body = SETTINGS.detailed   // match the current view — detail rows, not grid cards
+      ? `<div class="as-dlist">${dels.map(detailRow).join('')}</div>`
+      : `<div class="as-grid">${dels.map(card).join('')}</div>`;
+    return `<div class="as-sec as-sec-del"><h3>Marked for removal</h3><span class="as-cnt">${dels.length}</span><span class="as-line"></span></div>${body}`;
   }
   // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
   // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
@@ -533,6 +535,18 @@
   // full comment field beside it. No per-row toolbar actions (selection / delete
   // live on the main toolbar).
   function detailRow(it) {
+    if (it._del) return `<div class="as-drow del" data-id="${esc(it.id)}">
+      <span class="as-dsel-x">✕</span>
+      <div class="as-dleft">
+        <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${it._pdf ? '<span class="as-pdfban">PDF</span>' : ''}</div>
+        <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span></div>
+        ${it._new ? '' : `<div class="as-did">#${esc(it.id)}</div>`}
+      </div>
+      <div class="as-dmeta as-dmeta-del">
+        <div class="as-ddel-lbl">${esc(it.types.join(', ') || 'no type')}${it.comment ? ` — “${esc(it.comment)}”` : ''}</div>
+        <button class="as-tbtn as-undo" title="keep this image">↺ keep</button>
+      </div>
+    </div>`;
     const types = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
     return `<div class="as-drow${it._new ? ' new' : ''}${it._pending ? ' pending' : ''}${it._sel ? ' sel' : ''}" data-id="${esc(it.id)}">
       <input type="checkbox" class="as-dsel" title="select"${it._sel ? ' checked' : ''}>
@@ -551,7 +565,7 @@
 
   // ── interaction ───────────────────────────────────────────────────────────────
   function byId(id) { return MODEL.find(it => String(it.id) === String(id)); }
-  function cardId(el) { const c = el.closest('.as-card'); return c ? c.dataset.id : null; }
+  function cardId(el) { const c = el.closest('.as-card, .as-drow'); return c ? c.dataset.id : null; }
 
   // Wire the comment controls. #234 split the footer (pencil on row 1, comment
   // on row 2 which only exists when there's a comment), so entering/leaving edit
@@ -1961,6 +1975,12 @@
   .as-did{font-size:11px;color:#a99fc4;font-variant-numeric:tabular-nums;word-break:break-all;line-height:1.3;margin-top:1px}
   .as-dmeta{flex:1 1 auto;min-width:0}
   .as-dlbl{font-weight:700;color:#6a5b95;font-size:12px;margin:0 0 4px}
+  /* a marked-for-removal detail row: greyed image + a "keep" (undo) button, no editing */
+  .as-drow.del{opacity:.75;background:#fdf6f5;border-color:#eccfca}
+  .as-drow.del .as-dthumb img{filter:grayscale(1) brightness(.85)}
+  .as-dsel-x{flex:0 0 auto;width:18px;text-align:center;color:#c0392b;font-weight:700;margin-top:2px}
+  .as-dmeta-del{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .as-ddel-lbl{color:#8a5a52;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .as-dtypes{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:3px 12px;margin:0 0 10px}
   .as-dtypes label{display:flex;align-items:center;gap:6px;font-size:13px;color:#333;cursor:pointer}
   .as-dtypes input{accent-color:var(--as-acc)}
