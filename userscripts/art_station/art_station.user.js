@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.200000
+// @version      2026.6.18.300000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
+// @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
 // @match        *://*.musicbrainz.org/release/*/cover-art
 // @match        *://*.musicbrainz.org/event/*/event-art
 // @grant        GM.xmlHttpRequest
@@ -41,12 +42,24 @@
   const earlyHide = document.createElement('style');
   earlyHide.textContent = '.artwork-cont,#content>h2,#content>p{display:none!important}';
   appendEl(earlyHide);
+  // Hide the native button row (Add / Reorder / Import…) before paint too — a JS hide
+  // at render time flashes them on entry AND misses ECAU's async-added Import buttons;
+  // a document-start !important style avoids both. Toggled by the setting + Original.
+  const footerStyle = document.createElement('style');
+  footerStyle.textContent = '#content div.buttons.ui-helper-clearfix{display:none!important}';
+  appendEl(footerStyle);
+  // saved prefs read directly here (the SETTINGS object is built later) so the initial
+  // Original/footer state is applied flash-free, before first paint.
+  let _savedPrefs = {}; try { _savedPrefs = JSON.parse(localStorage.getItem('artstation:settings') || '{}'); } catch (e) {}
+  earlyHide.disabled = !!_savedPrefs.showOrig;
+  footerStyle.disabled = !!_savedPrefs.showOrig || _savedPrefs.hideMbFooter === false;
 
   // Proper edit-note attribution, like the other scripts: "Name vX by author - url".
   // GM_info is exposed even under @grant none on the common managers; fall back to
   // the hard-coded repo URL so the note never reads "v undefined".
   const _gm = (typeof GM_info !== 'undefined' && GM_info.script) ? GM_info.script : null;
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station';
+  const ICON_URL = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png';
   const ATTRIBUTION = _gm
     ? `${_gm.name} v${_gm.version} by ${_gm.author} - ${_gm.homepageURL || _gm.homepage || SCRIPT_URL}`
     : `Art Station by majkinetor - ${SCRIPT_URL}`;
@@ -79,9 +92,17 @@
     if (it.w && it.h) parts.push(`${it.w} × ${it.h}`);
     return parts.length ? parts.join(' ') : '…';
   }
+  // card-foot version: size + resolution as separate spans so they WRAP (stack) on a
+  // narrow card instead of overflowing the tile.
+  function dimHtml(it) {
+    const parts = [];
+    if (it.bytes) parts.push(`<span class="as-dim-sz">${fmtSize(it.bytes)}</span>`);
+    if (it.w && it.h) parts.push(`<span class="as-dim-px">${it.w} × ${it.h}</span>`);
+    return parts.join('') || '<span class="as-dim-sz">…</span>';
+  }
   function refreshDim(it) {
     const el = document.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-dim`);
-    if (el) el.textContent = dimText(it);
+    if (el) el.innerHTML = dimHtml(it);
   }
   // one request per release: archive.org item metadata carries every original's byte size
   async function loadSizes() {
@@ -97,7 +118,7 @@
     } catch (e) { /* size is a nicety — never block the gallery */ }
   }
   let SETTINGS = load();
-  function load() { try { return Object.assign({ tile: 200, group: false, sort: 'type', detailed: false }, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return { tile: 200, group: false, sort: 'type', detailed: false }; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -162,7 +183,7 @@
   // ── render ───────────────────────────────────────────────────────────────────
   const root = document.createElement('div'); root.id = 'as-root';
   let _mounted = false;
-  let _showOrig = false;       // "Show original" (View) — reveal MB's native UI, keep only our toolbar
+  let _showOrig = SETTINGS.showOrig;   // "Show original" — reveal MB's native UI; remembered across loads
   const _native = [];          // the native cover-art elements mount() hid, so we can show them again
   function mount() {
     if (_mounted) return; _mounted = true;
@@ -193,18 +214,46 @@
     _native.forEach(el => { el.style.display = _showOrig ? '' : 'none'; });
     root.classList.toggle('as-orig', _showOrig);                     // hides the whole Art Station UI
     ensureSwitch();
+    applyHideFooter();
+  }
+  // optional (setup): hide MB's native button row (Add / Reorder / Import from …)
+  // under the gallery — redundant with Art Station's own toolbar. Revealed in Original.
+  function applyHideFooter() {
+    footerStyle.disabled = !(SETTINGS.hideMbFooter && !_showOrig);
   }
   // #234: an Apollo-style fixed switcher (bottom-right) toggling Original ⇄ Art
-  // Station — always visible; the only control left when the native UI is shown.
+  // Station, plus a ⚙ setup button — always visible.
   function ensureSwitch() {
-    let sw = document.getElementById('as-switch');
-    if (!sw) {
-      sw = document.createElement('button'); sw.id = 'as-switch';
-      document.body.appendChild(sw);
-      sw.onclick = () => { _showOrig = !_showOrig; render(); };
+    let wrap = document.getElementById('as-switch-wrap');
+    if (!wrap) {
+      wrap = document.createElement('div'); wrap.id = 'as-switch-wrap';
+      const sw = document.createElement('button'); sw.id = 'as-switch';
+      sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
+      const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = '⚙'; gear.title = 'Art Station setup';
+      gear.onclick = openSetup;
+      wrap.append(sw, gear); document.body.appendChild(wrap);   // label left, gear right — one pill
     }
+    const sw = document.getElementById('as-switch');
     sw.textContent = _showOrig ? 'Art Station' : 'Original';
     sw.title = _showOrig ? 'Switch back to the Art Station gallery' : 'Show the original MusicBrainz cover-art page';
+  }
+  // setup panel (Apollo-style): script info + help + toggles
+  function openSetup() {
+    document.getElementById('as-setup')?.remove();
+    const ver = (_gm && _gm.version) || '';
+    const help = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/README.md';
+    const panel = document.createElement('div'); panel.id = 'as-setup';
+    panel.innerHTML = `<div class="as-setup-h"><img class="as-setup-ic" src="${ICON_URL}" alt=""><b>Art Station</b> <span class="as-setup-ver">v${esc(ver)}</span>`
+      + `<a class="as-setup-help" href="${help}" target="_blank" rel="noopener">Help ↗</a>`
+      + `<button class="as-setup-x" title="close">✕</button></div>`
+      + `<div class="as-setup-body">`
+      + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-hidefoot"${SETTINGS.hideMbFooter ? ' checked' : ''}> Hide MB native buttons (Add / Reorder / Import…)</label>`
+      + `</div>`;
+    document.body.appendChild(panel);
+    panel.querySelector('.as-setup-x').onclick = () => panel.remove();
+    panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
+    const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
   // at big tile sizes the selection outline alone is plenty obvious, so drop the
   // per-card ✓ badge — keeps large artwork uncluttered. #234
@@ -228,6 +277,7 @@
     applyOriginal();   // keep the native/script view state across re-renders
     applyZoomClass();
     fitTypePills();    // show as many types as the pill width allows
+    fitFooters();      // hide a comment that can't fit even a few chars (no ugly sliver)
     fitToolbar();      // icon-only buttons if the toolbar would otherwise wrap
     if (window.scrollY !== y) window.scrollTo(0, y);
   }
@@ -241,6 +291,16 @@
       pill.textContent = types.join(', ');
       let n = types.length;
       while (n > 1 && pill.scrollWidth > pill.clientWidth) { n--; pill.textContent = types.slice(0, n).join(', ') + ' +'; }
+    });
+  }
+  // the comment shares the footer row with the dimensions; on a narrow card the
+  // dimensions win and the comment can be squeezed to a 1-2px sliver of a glyph.
+  // Hide it entirely below a readable width rather than show that sliver.
+  function fitFooters() {
+    root.querySelectorAll('.as-card .as-foot-cmt').forEach(cmt => {
+      cmt.classList.remove('as-cmt-collapsed');
+      if (!cmt.querySelector('.as-cmt-text')) return;   // empty comment (hover pencil) — nothing to clip
+      if (cmt.clientWidth < 24) cmt.classList.add('as-cmt-collapsed');
     });
   }
   // shared autocomplete of the comments already used on this release (#238 presets)
@@ -280,8 +340,10 @@
 
   function bar(n) {
     return `<div class="as-bar">
+      <img class="as-logo" src="${ICON_URL}" alt="Art Station" title="Art Station — setup">
       <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
       ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
+      ${IS_EVENT ? '' : `<button class="as-btn as-src" title="Source a cover from a linked platform or any URL, via ECAU (#242)"><span class="as-bi">🔗</span><span class="as-bt">URL<span class="as-src-n"></span></span></button>`}
       <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
@@ -322,7 +384,7 @@
   }
   function newSection() {
     if (!SETTINGS.group) return '';   // Position view shows new uploads inline, positioned among covers
-    const news = MODEL.filter(it => it._new && !it._del).sort((a, b) => a.order - b.order);
+    const news = MODEL.filter(it => it._new && !it._del && !it._sourcing).sort((a, b) => a.order - b.order);
     if (!news.length) return '';
     return `<div class="as-sec as-sec-new"><h3>New uploads</h3><span class="as-cnt">${news.length}</span><span class="as-line"></span></div>
       <div class="as-grid">${news.map(card).join('')}</div>`;
@@ -364,6 +426,8 @@
     });
   }
   function card(it) {
+    if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}">`
+      + `<div class="as-srcing-thumb"><div class="as-spinner"></div><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
     return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
       <div class="as-thumb">${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
         ${it._new ? '<span class="as-newban">NEW</span>' : ''}
@@ -386,7 +450,7 @@
       ? `<span class="as-type" title="${esc(it.types.join(', '))}">${esc(it.types.join(', '))}</span>`
       : `<span class="as-type as-type-add" title="set type">＋ type</span>`;
     const typeRow = `<div class="as-foot-type"><span class="as-tline"></span>${typePill}<span class="as-tline"></span></div>`;
-    const dim = `<span class="as-dim">${esc(dimText(it))}</span>`;
+    const dim = `<span class="as-dim">${dimHtml(it)}</span>`;
     if (it._del) return `<div class="as-foot"><div class="as-foot-row"><span class="as-foot-cmt"></span>${dim}</div>${typeRow}</div>`;
     const cmt = it._editcmt
       ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets">`
@@ -485,7 +549,14 @@
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
+    const logo = root.querySelector('.as-logo'); if (logo) logo.onclick = openSetup;
     const mh = root.querySelector('.as-mh'); if (mh) mh.onclick = openMHCovers;
+    const src = root.querySelector('.as-src');
+    if (src) {
+      src.onclick = e => { e.stopPropagation(); openSourcePop(src); };
+      // show the number of linked platforms on the button: "URL (2)"
+      getProvLinks().then(l => { const n = src.querySelector('.as-src-n'); if (n) { n.textContent = l.length ? ` (${l.length})` : ''; if (l.length) src.title = `Source a cover — ${l.length} linked platform${l.length > 1 ? 's' : ''} or any URL, via ECAU (#242)`; } });
+    }
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
@@ -598,7 +669,7 @@
   function pendingOps() {
     const label = it => it.types[0] || (it._new ? 'new image' : ITEM);
     const ops = [];
-    MODEL.filter(it => it._new && !it._del).forEach(it => ops.push(`➕ Add ${label(it)}${it.types.length ? ` — ${it.types.join(', ')}` : ''}${it.comment ? ` “${it.comment}”` : ''}`));
+    MODEL.filter(it => it._new && !it._del && !it._sourcing).forEach(it => ops.push(`➕ Add ${label(it)}${it.types.length ? ` — ${it.types.join(', ')}` : ''}${it.comment ? ` “${it.comment}”` : ''}`));
     MODEL.filter(it => it._del && !it._new).forEach(it => ops.push(`🗑 Remove ${label(it)}`));
     MODEL.filter(it => !it._del && !it._new).forEach(it => {
       if (it.types.join('|') !== it._origTypes.join('|')) ops.push(`🏷 Set type on ${it._origTypes[0] || ITEM} → ${it.types.join(', ') || '(none)'}`);
@@ -861,14 +932,181 @@
     } catch (e) { toast('Could not fetch the cover — ' + e.message, 5000); }
   }
 
+  // ── #242 Source from any provider via ECAU (ROpdebee's Enhanced Cover Art Uploads). ──
+  // We don't reimplement providers — that scraping/maximization is the high-churn part
+  // ECAU owns. Instead we seed ECAU's public x_seed interface in a HIDDEN add-cover-art
+  // iframe (so no native/ECAU UI is ever shown), let it fetch + maximize, then harvest
+  // the File(s) from MB's native uploader preview rows (the blob: <img> previews + each
+  // image's checked type checkboxes / comment) and stage them as NEW covers — riding the
+  // normal "you get what you see" Enter-edit flow. Requires ECAU installed (it's what the
+  // manager injects into the iframe). #242
+  const ECAU_TIMEOUT = 45000;
+  // ECAU writes progress/errors into its .ROpdebee_log_container; read it to fail fast
+  // on a bad / non-image URL instead of spinning until the timeout.
+  function ecauError(doc) {
+    const log = doc.querySelector('.ROpdebee_log_container'); if (!log) return null;
+    const txt = (log.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!txt) return null;
+    if (/failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to/i.test(txt)) return txt.slice(-160);
+    return null;
+  }
+  // a placeholder card (spinner + label) shown at the front of the gallery while ECAU
+  // works, so the (sometimes slow) provider fetch has visible in-grid progress. It's
+  // replaced by the real cover on success, removed on failure.
+  function addSourcingSlot(label) {
+    const ph = { id: 'srcing-' + Math.random().toString(36).slice(2, 7), types: [], comment: '', order: -1, w: 0, h: 0, _new: true, _sourcing: true, _srcLabel: label, _origTypes: [], _origComment: '', _origOrder: -1 };
+    const rest = MODEL.slice().sort((a, b) => a.order - b.order);
+    MODEL = [ph, ...rest]; MODEL.forEach((it, i) => it.order = i);
+    render();
+    return ph.id;
+  }
+  function setSourcingLabel(id, text) {
+    const it = MODEL.find(x => x.id === id); if (it) it._srcLabel = text;
+    const el = document.querySelector(`.as-card[data-id="${CSS.escape(id)}"] .as-srcing-lbl`); if (el) el.textContent = text;
+  }
+  function dropSourcingSlot(id) { MODEL = MODEL.filter(it => it.id !== id); MODEL.forEach((it, i) => it.order = i); }
+  function sourceFromUrl(rawUrl) {
+    const url = (rawUrl || '').trim();
+    if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
+    const p = new URLSearchParams();
+    p.set('x_seed.origin', releaseInfo().url);
+    p.set('x_seed.image.0.url', url);
+    const ifr = document.createElement('iframe');
+    ifr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1100px;height:900px;border:0;opacity:0;pointer-events:none';
+    document.body.appendChild(ifr);
+    ifr.src = `${R}/add-${ART}?${p}`;
+    const slot = addSourcingSlot('Sourcing…');
+    let done = false, lastN = 0, settleAt = 0;
+    const stop = () => { clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} };
+    // a preview is the uploader's rendered image — usually a blob:, but in some browsers
+    // ECAU leaves it as the remote provider URL (e.g. i.discogs.com). Fetch blobs in-frame;
+    // fetch remote URLs via GM xhr so the page CSP can't block them (the FF-vs-Chromium
+    // difference vzell hit). #242
+    const previewSel = '.uploader-preview-image, img[src^="blob:"]';
+    async function harvest(doc, win) {
+      const files = [], metas = [];
+      const seen = new Set();
+      for (const img of [...doc.querySelectorAll(previewSel)]) {
+        const src = img.src || img.getAttribute('src'); if (!src || seen.has(src)) continue; seen.add(src);
+        let blob; try { blob = /^blob:/i.test(src) ? await win.fetch(src).then(r => r.blob()) : await gmFetch(src); } catch (e) { continue; }
+        const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+        const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
+        // best-effort: read the types/comment ECAU set on this image's uploader row
+        let types = [], comment = '';
+        const row = img.closest('.file-info, .image-position, tr, li, .row') || doc;
+        try {
+          row.querySelectorAll('input[name*="type_id"]:checked').forEach(cb => { const l = cb.closest('label'); const n = l ? l.textContent.trim() : ''; if (n) types.push(n); });
+          const ci = row.querySelector('input[name*="comment"], textarea[name*="comment"]'); if (ci) comment = ci.value || '';
+        } catch (e) {}
+        metas.push({ types: types.filter(t => ALL_TYPES.includes(t)), comment });
+      }
+      return { files, metas };
+    }
+    const poll = setInterval(async () => {
+      if (done) return;
+      let doc, win; try { doc = ifr.contentDocument; win = ifr.contentWindow; } catch (e) { return; }
+      if (!doc || !win) return;
+      const n = doc.querySelectorAll(previewSel).length;
+      if (!n) {   // nothing yet — but if ECAU has reported a failure, stop now (don't spin)
+        const err = ecauError(doc);
+        if (err) { done = true; stop(); dropSourcingSlot(slot); render(); toast('Couldn’t source that URL — ' + err, 8000); }
+        return;
+      }
+      if (n !== lastN) { lastN = n; settleAt = performance.now() + 1500; setSourcingLabel(slot, 'Adding…'); return; }  // still arriving → wait
+      if (performance.now() < settleAt) return;
+      done = true;
+      const { files, metas } = await harvest(doc, win);
+      stop(); dropSourcingSlot(slot);
+      if (files.length) { addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from provider ✓`); }
+      else { render(); toast('Provider returned no image', 5000); }
+    }, 400);
+    const killer = setTimeout(() => {
+      if (done) return; done = true; stop(); dropSourcingSlot(slot); render();
+      toast('No image returned — is “Enhanced Cover Art Uploads” installed? It powers provider sourcing.', 9000);
+    }, ECAU_TIMEOUT);
+  }
+  // ECAU-supported art providers we recognise on a release's external links, so the
+  // popover can offer "Import from <provider>" the way the native add page does.
+  // domain = the provider's CANONICAL site (not the linked subdomain, e.g.
+  // analogafrica.bandcamp.com → bandcamp.com) — favicons come from there.
+  const ART_PROVIDERS = [
+    { re: /(^|\.)discogs\.com$/i, name: 'Discogs', domain: 'discogs.com' },
+    { re: /(^|\.)bandcamp\.com$/i, name: 'Bandcamp', domain: 'bandcamp.com' },
+    { re: /(^|\.)music\.apple\.com$|(^|\.)itunes\.apple\.com$/i, name: 'Apple Music', domain: 'music.apple.com' },
+    { re: /(^|\.)open\.spotify\.com$|(^|\.)spotify\.com$/i, name: 'Spotify', domain: 'spotify.com' },
+    { re: /(^|\.)amazon\./i, name: 'Amazon', domain: 'amazon.com' },
+    { re: /(^|\.)deezer\.com$/i, name: 'Deezer', domain: 'deezer.com' },
+    { re: /(^|\.)tidal\.com$/i, name: 'Tidal', domain: 'tidal.com' },
+    { re: /(^|\.)qobuz\.com$/i, name: 'Qobuz', domain: 'qobuz.com' },
+    { re: /(^|\.)vgmdb\.net$/i, name: 'VGMdb', domain: 'vgmdb.net' },
+    { re: /7digital\./i, name: '7digital', domain: '7digital.com' },
+    { re: /(^|\.)beatport\.com$/i, name: 'Beatport', domain: 'beatport.com' },
+    { re: /(^|\.)junodownload\.com$|(^|\.)juno\.co\.uk$/i, name: 'Juno', domain: 'junodownload.com' },
+  ];
+  // DuckDuckGo's icon service returns a clean favicon PNG for any domain — far more
+  // reliable than guessing each provider's /favicon.ico (artist subdomains 404).
+  const ddgIcon = d => `https://icons.duckduckgo.com/ip3/${d}.ico`;
+  function providerOf(url) { let h = ''; try { h = new URL(url).hostname; } catch (e) { return null; } return ART_PROVIDERS.find(x => x.re.test(h)) || null; }
+  // the release/event's external links → the recognised art providers, deduped
+  async function artProviderLinks() {
+    try {
+      const j = await fetch(`https://musicbrainz.org/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
+      if (!j || !j.relations) return [];
+      const seen = new Set(), out = [];
+      for (const rel of j.relations) {
+        const u = rel.url && rel.url.resource; if (!u) continue;
+        const prov = providerOf(u); if (!prov) continue;
+        const key = prov.name + '|' + u; if (seen.has(key)) continue; seen.add(key);
+        out.push({ name: prov.name, url: u, icon: ddgIcon(prov.domain) });
+      }
+      return out;
+    } catch (e) { return []; }
+  }
+  let _provLinks = null;   // fetched once per page; reused by the button count + the popover
+  function getProvLinks() { return _provLinks ? Promise.resolve(_provLinks) : artProviderLinks().then(l => (_provLinks = l)); }
+  function openSourcePop(btn) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
+    const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
+    pop.innerHTML = `<div class="as-pop-h">Source a cover</div>`
+      + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
+      + `<div class="as-src-or">or paste any URL</div>`
+      + `<input class="as-src-inp" placeholder="https://… provider page or image URL" spellcheck="false">`
+      + `<div class="as-pop-f"><button class="as-btn as-src-go">Fetch</button></div>`
+      + `<div class="as-pop-note">Powered by ROpdebee's <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Enhanced Cover Art Uploads</a> (must be installed).</div>`;
+    document.body.appendChild(pop); placePop(pop, btn.getBoundingClientRect());
+    const inp = pop.querySelector('.as-src-inp'); inp.focus();
+    const go = () => { const v = inp.value; pop.remove(); sourceFromUrl(v); };
+    pop.querySelector('.as-src-go').onclick = go;
+    inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } else if (e.key === 'Escape') { e.preventDefault(); pop.remove(); } };
+    // paste a URL → fetch immediately (no need to click Fetch). Read after the paste
+    // lands; only auto-go when the whole field is a URL (typing-then-pasting won't fire).
+    inp.onpaste = () => setTimeout(() => { if (/^https?:\/\//i.test(inp.value.trim())) go(); }, 0);
+    // populate "Import from <provider>" buttons from the release's linked platforms
+    getProvLinks().then(provs => {
+      const box = pop.querySelector('.as-src-prov'); if (!box) return;
+      if (!provs.length) { box.textContent = 'No supported platforms linked on this release.'; placePop(pop, btn.getBoundingClientRect()); return; }
+      box.classList.remove('as-pop-note');
+      box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('');
+      box.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { pop.remove(); sourceFromUrl(provs[+b.dataset.i].url); });
+      box.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });   // hide a missing favicon (no inline handler — CSP)
+      placePop(pop, btn.getBoundingClientRect());
+    });
+    const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
+
   let _dropZone = false;
   function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
-  function newItem(f) {
-    return { id: 'new-' + Math.random().toString(36).slice(2, 8), types: [], comment: '', order: 0, w: 0, h: 0,
+  function newItem(f, meta) {
+    return { id: 'new-' + Math.random().toString(36).slice(2, 8), types: (meta && meta.types) ? meta.types.slice() : [], comment: (meta && meta.comment) || '', order: 0, w: 0, h: 0,
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 };
   }
-  function addFiles(files) {
-    const news = [...files].filter(f => f.type.startsWith('image/') || f.type === 'application/pdf').map(newItem);
+  // metas (optional) carries per-file { types, comment } — used when sourcing covers
+  // that already know their type/comment (e.g. ECAU provider import, #242)
+  function addFiles(files, metas) {
+    const news = [...files].map((f, i) => ({ f, meta: metas && metas[i] }))
+      .filter(x => x.f.type.startsWith('image/') || x.f.type === 'application/pdf').map(x => newItem(x.f, x.meta));
     if (!news.length) return;
     // new covers go FIRST (majkinetor: they were landing last), then existing in order
     const rest = MODEL.slice().sort((a, b) => a.order - b.order);
@@ -997,7 +1235,7 @@
   // ordered work list (uploads are Phase 2b): remove → retype/comment → reorder
   function buildPlan() {
     const plan = [];
-    MODEL.filter(it => it._new && !it._del).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'}${it.comment ? ` “${it.comment}”` : ''} (upload)`, kind: 'add', it, run: (m, dry, report) => runAdd(it, m, dry, report) }));
+    MODEL.filter(it => it._new && !it._del && !it._sourcing).forEach(it => plan.push({ label: `Add ${it.types[0] || 'new image'}${it.comment ? ` “${it.comment}”` : ''} (upload)`, kind: 'add', it, run: (m, dry, report) => runAdd(it, m, dry, report) }));
     MODEL.filter(it => it._del && !it._new).forEach(it => plan.push({ label: `Remove ${it.types[0] || ITEM}`, id: it.id, kind: 'remove', build: m => buildRemove(it, m) }));
     MODEL.filter(it => !it._del && !it._new && (it.comment !== it._origComment || it.types.join('|') !== it._origTypes.join('|')))
       .forEach(it => {
@@ -1427,7 +1665,7 @@
   }
   function openReport() {
     const sel = MODEL.filter(it => it._sel && !it._del && !it._new);
-    const omitted = MODEL.filter(it => it._sel && it._new && !it._del).length;
+    const omitted = MODEL.filter(it => it._sel && it._new && !it._del && !it._sourcing).length;
     document.getElementById('as-report')?.remove();
     const ov = document.createElement('div'); ov.id = 'as-report';
     ov.innerHTML = `<div class="as-cm-box as-rp-box">
@@ -1458,11 +1696,28 @@
   :root{ --as-tile:${SETTINGS.tile}px; --as-acc:#5f3ec0; --as-warn:#c0392b; }
   #as-root{font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;margin:0 0 18px}
   .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px 11px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:wrap;margin-bottom:6px}
+  .as-logo{width:24px;height:24px;object-fit:contain;cursor:pointer;flex:0 0 auto}
+  .as-setup-ic{width:20px;height:20px;object-fit:contain;flex:0 0 auto}
   .as-bar>*{flex:0 0 auto}
   /* "Original" (Apollo-style switch): hide the whole Art Station UI, MB's native page shows through */
   #as-root.as-orig{display:none}
-  #as-switch{position:fixed;bottom:14px;right:14px;z-index:99998;background:var(--as-acc);color:#fff;border:none;border-radius:20px;font:bold 13px Arial;padding:9px 16px;cursor:pointer;box-shadow:0 3px 12px rgba(40,20,80,.3)}
-  #as-switch:hover{background:#4e329f}
+  /* one unified pill like Apollo's launcher: label segment + a divider + the gear */
+  #as-switch-wrap{position:fixed;bottom:14px;right:14px;z-index:99998;display:inline-flex;align-items:stretch;background:var(--as-acc);color:#fff;border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
+  #as-switch{padding:8px 14px;cursor:pointer;background:none;border:none;color:inherit;font:inherit}
+  #as-switch:hover{background:rgba(255,255,255,.13)}
+  #as-setup-btn{padding:8px 12px;cursor:pointer;font-size:14px;display:flex;align-items:center;background:none;border:none;border-left:1px solid rgba(255,255,255,.28);color:inherit}
+  #as-setup-btn:hover{background:rgba(255,255,255,.13)}
+  #as-setup{position:fixed;bottom:58px;right:14px;z-index:99999;width:320px;max-width:92vw;background:#fff;border:1px solid #cbbdf0;border-radius:10px;box-shadow:0 8px 28px rgba(40,20,80,.32);font:13px Arial;color:#222}
+  .as-setup-h{display:flex;align-items:center;gap:7px;padding:10px 12px;border-bottom:1px solid #ece6f8;color:#563b8f}
+  .as-setup-ver{font-size:11px;font-weight:normal;color:#999}
+  .as-setup-help{margin-left:auto;font-size:12px;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
+  .as-setup-help:hover{background:#f0ecfa}
+  .as-setup-x{border:none;background:none;color:#999;font-size:14px;cursor:pointer;padding:0 2px}
+  .as-setup-x:hover{color:#555}
+  .as-setup-body{padding:10px 12px}
+  .as-setup-info{margin:0 0 10px;color:#666;font-size:12px;line-height:1.45}
+  .as-setup-opt{display:flex;gap:8px;align-items:center;cursor:pointer}
+  .as-setup-opt input{margin:0}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
   #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer;white-space:nowrap}
@@ -1535,6 +1790,11 @@
   .as-sec-new h3{color:#1f9d6b}
   .as-card.new{background:repeating-linear-gradient(45deg,#eef7f1,#eef7f1 11px,#e2f0e8 11px,#e2f0e8 22px);border-color:#9bd3b6;border-style:dashed}
   .as-card.pending{background:#fdf3d0;border-color:#e6cf86}
+  .as-card.as-sourcing{border-style:dashed}
+  .as-srcing-thumb{width:100%;aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;color:#3b8f6b}
+  .as-spinner{width:30px;height:30px;border:3px solid #c7e7d6;border-top-color:#1f9d6b;border-radius:50%;animation:as-spin .8s linear infinite}
+  @keyframes as-spin{to{transform:rotate(360deg)}}
+  .as-srcing-lbl{font:600 12px Arial;color:#2c7a59}
   .as-pdfban{position:absolute;right:6px;top:6px;z-index:4;background:#7a3a8f;color:#fff;font:700 10px/1 Arial;letter-spacing:.5px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
   .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9;cursor:zoom-in;border-radius:9px 9px 0 0;overflow:hidden}
@@ -1542,7 +1802,8 @@
   .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#faf8ff,#efeafb)}
   .as-thumb.na img{display:none}
   .as-thumb.na::after{content:'Not on the Cover Art Archive yet';text-align:center;color:#9a8ccb;font-size:12px;font-weight:600;line-height:1.45;padding:0 16px}
-  .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;white-space:nowrap;flex:0 0 auto}
+  .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;flex:0 0 auto;margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 7px}
+  .as-dim-sz,.as-dim-px{white-space:nowrap}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
   .as-rm:hover{background:var(--as-warn);color:#fff}
@@ -1550,7 +1811,8 @@
   /* #234: footer (mockup) — row 1: comment (left) · dimensions+size (right); row 2: centered type pill on a divider */
   .as-foot{padding:5px 8px 0;display:flex;flex-direction:column;gap:6px;border-top:1px solid #efeaf8}
   .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px}
-  .as-foot-cmt{flex:1 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
+  .as-foot-cmt{flex:0 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
+  .as-foot-cmt.as-cmt-collapsed{display:none}
   .as-cmt-text{font:11px inherit;color:#5a5470;line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .as-cmt-text:hover{color:var(--as-acc)}
   .as-foot-type{display:flex;align-items:center;gap:7px;transform:translateY(50%);position:relative;z-index:1}
@@ -1592,6 +1854,14 @@
   .as-pop-f{display:flex;gap:6px;padding:6px 4px 2px;border-top:1px solid #eee;margin-top:4px;position:sticky;bottom:0;background:#fff}
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   .as-cmt-pop{min-width:220px}
+  .as-src-pop{min-width:340px;max-width:380px;overflow-x:hidden}
+  .as-src-prov{display:flex;flex-direction:column;gap:5px;margin:6px 0 2px}
+  .as-src-prov-b{justify-content:flex-start;font-weight:600;color:#3b2c70;gap:8px}
+  .as-src-ic{width:16px;height:16px;object-fit:contain;flex:0 0 auto}
+  .as-src-n{opacity:.85}
+  .as-src-or{margin:9px 0 0;color:#9a8ccb;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  .as-src-inp{width:100%;box-sizing:border-box;margin:4px 0 2px;padding:6px 8px;border:1px solid #cfc6e6;border-radius:6px;font:13px inherit}
+  .as-src-pop .as-pop-note{padding:6px 4px 2px;line-height:1.4;overflow-wrap:break-word}
   .as-bulk-cmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid #d8ccf5;border-radius:6px;padding:5px 8px;margin:2px 0 2px;background:#faf9fe;color:#333}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
