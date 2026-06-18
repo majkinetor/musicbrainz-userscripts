@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.300000
+// @version      2026.6.18.310000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1854,14 +1854,14 @@
   .as-pop-f{display:flex;gap:6px;padding:6px 4px 2px;border-top:1px solid #eee;margin-top:4px;position:sticky;bottom:0;background:#fff}
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   .as-cmt-pop{min-width:220px}
-  .as-src-pop{min-width:340px;max-width:380px;overflow-x:hidden}
+  .as-src-pop{min-width:340px;max-width:90vw;width:max-content}
   .as-src-prov{display:flex;flex-direction:column;gap:5px;margin:6px 0 2px}
   .as-src-prov-b{justify-content:flex-start;font-weight:600;color:#3b2c70;gap:8px}
   .as-src-ic{width:16px;height:16px;object-fit:contain;flex:0 0 auto}
   .as-src-n{opacity:.85}
   .as-src-or{margin:9px 0 0;color:#9a8ccb;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
   .as-src-inp{width:100%;box-sizing:border-box;margin:4px 0 2px;padding:6px 8px;border:1px solid #cfc6e6;border-radius:6px;font:13px inherit}
-  .as-src-pop .as-pop-note{padding:6px 4px 2px;line-height:1.4;overflow-wrap:break-word}
+  .as-src-pop > .as-pop-note:last-child{padding:6px 4px 2px;line-height:1.4;white-space:nowrap}
   .as-bulk-cmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid #d8ccf5;border-radius:6px;padding:5px 8px;margin:2px 0 2px;background:#faf9fe;color:#333}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
