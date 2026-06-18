@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.310000
+// @version      2026.6.18.320000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1044,9 +1044,10 @@
     { re: /(^|\.)beatport\.com$/i, name: 'Beatport', domain: 'beatport.com' },
     { re: /(^|\.)junodownload\.com$|(^|\.)juno\.co\.uk$/i, name: 'Juno', domain: 'junodownload.com' },
   ];
-  // DuckDuckGo's icon service returns a clean favicon PNG for any domain — far more
-  // reliable than guessing each provider's /favicon.ico (artist subdomains 404).
-  const ddgIcon = d => `https://icons.duckduckgo.com/ip3/${d}.ico`;
+  // Google's favicon service returns a real icon for every provider domain — more
+  // reliable than guessing /favicon.ico (artist subdomains 404) or DuckDuckGo (which
+  // serves a blank placeholder for some, e.g. Spotify).
+  const provIconUrl = d => `https://www.google.com/s2/favicons?sz=64&domain=${d}`;
   function providerOf(url) { let h = ''; try { h = new URL(url).hostname; } catch (e) { return null; } return ART_PROVIDERS.find(x => x.re.test(h)) || null; }
   // the release/event's external links → the recognised art providers, deduped
   async function artProviderLinks() {
@@ -1058,7 +1059,7 @@
         const u = rel.url && rel.url.resource; if (!u) continue;
         const prov = providerOf(u); if (!prov) continue;
         const key = prov.name + '|' + u; if (seen.has(key)) continue; seen.add(key);
-        out.push({ name: prov.name, url: u, icon: ddgIcon(prov.domain) });
+        out.push({ name: prov.name, url: u, icon: provIconUrl(prov.domain) });
       }
       return out;
     } catch (e) { return []; }
@@ -1087,8 +1088,11 @@
       const box = pop.querySelector('.as-src-prov'); if (!box) return;
       if (!provs.length) { box.textContent = 'No supported platforms linked on this release.'; placePop(pop, btn.getBoundingClientRect()); return; }
       box.classList.remove('as-pop-note');
-      box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('');
+      box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('')
+        + (provs.length > 1 ? `<button class="as-btn as-src-all">⬇ Import all ${provs.length} sources</button>` : '');
       box.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { pop.remove(); sourceFromUrl(provs[+b.dataset.i].url); });
+      const allBtn = box.querySelector('.as-src-all');
+      if (allBtn) allBtn.onclick = () => { pop.remove(); provs.forEach(p => sourceFromUrl(p.url)); };   // one sourcing slot per provider
       box.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });   // hide a missing favicon (no inline handler — CSP)
       placePop(pop, btn.getBoundingClientRect());
     });
@@ -1854,9 +1858,14 @@
   .as-pop-f{display:flex;gap:6px;padding:6px 4px 2px;border-top:1px solid #eee;margin-top:4px;position:sticky;bottom:0;background:#fff}
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   .as-cmt-pop{min-width:220px}
-  .as-src-pop{min-width:340px;max-width:90vw;width:max-content}
+  /* grow to fit all providers when the screen allows; no horizontal bar, and hide the
+     vertical scrollbar chrome (still wheel-scrollable on a very short screen) */
+  .as-src-pop{min-width:340px;max-width:90vw;width:max-content;max-height:calc(100vh - 20px);overflow-x:hidden;scrollbar-width:none}
+  .as-src-pop::-webkit-scrollbar{display:none}
   .as-src-prov{display:flex;flex-direction:column;gap:5px;margin:6px 0 2px}
   .as-src-prov-b{justify-content:flex-start;font-weight:600;color:#3b2c70;gap:8px}
+  .as-src-all{justify-content:center;font-weight:700;color:#fff;background:var(--as-acc);border-color:var(--as-acc);margin-top:3px}
+  .as-src-all:hover{background:#4e329f;border-color:#4e329f}
   .as-src-ic{width:16px;height:16px;object-fit:contain;flex:0 0 auto}
   .as-src-n{opacity:.85}
   .as-src-or{margin:9px 0 0;color:#9a8ccb;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
