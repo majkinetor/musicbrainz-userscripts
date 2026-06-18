@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.143000
+// @version      2026.6.18.160000
 // @description  Cover-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art, staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/release/*/cover-art
@@ -208,6 +208,7 @@
         : groups.map(g => section(g.type, g.items)).join('');
     root.innerHTML = bar(n) + commentPresets() + dropZone() + newSection() + body + deletedSection();
     wire();
+    hydrateImgs();     // re-attach cached <img> for new/pending covers so they don't reload
     applyOriginal();   // keep the native/script view state across re-renders
     applyZoomClass();
     fitTypePills();    // show as many types as the pill width allows
@@ -316,10 +317,39 @@
     return `<div class="as-sec as-sec-del"><h3>Marked for removal</h3><span class="as-cnt">${dels.length}</span><span class="as-line"></span></div>
       <div class="as-grid">${dels.map(card).join('')}</div>`;
   }
+  // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
+  // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
+  // the thumb 404s and we fall back to the full original) covers, though, visibly
+  // RELOAD on every render — type change, resize, anything. So we keep ONE live
+  // <img> per such cover in _imgCache and re-attach the already-decoded node into
+  // a host slot after each render instead of building a fresh one. (covers "reload
+  // in place" — #235)
+  const _imgCache = new Map();
+  function thumbImg(it, size) {
+    if (it._new || it._pending) return `<span class="as-imghost" data-host="${esc(it.id)}" data-size="${size}"></span>`;
+    return `<img loading="lazy" draggable="false" src="${esc(thumb(it.id, size))}" alt="">`;
+  }
+  function hydrateImgs() {
+    root.querySelectorAll('.as-imghost[data-host]').forEach(host => {
+      const id = host.dataset.host, size = +host.dataset.size, it = byId(id);
+      if (!it) return;
+      let img = _imgCache.get(String(id));
+      if (!img) {                                  // first sighting — build + load it once
+        img = new Image(); img.loading = 'lazy'; img.draggable = false; img.alt = '';
+        img.onerror = () => {                      // pending thumb not ready → show the original
+          const orig = !it._pdf ? (it._img || imgUrl(it.id)) : null;
+          if (orig && img.getAttribute('src') !== orig) img.src = orig;
+          else img.closest('.as-thumb, .as-dthumb')?.classList.add('na');
+        };
+        img.src = it._new ? it._file : thumb(it.id, size);
+        _imgCache.set(String(id), img);
+      }
+      host.replaceWith(img);                       // re-attach the cached (decoded) node — no reload
+    });
+  }
   function card(it) {
-    const src = it._new ? it._file : thumb(it.id, SETTINGS.tile > 260 ? 500 : 250);
     return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
-      <div class="as-thumb"><img loading="lazy" draggable="false" src="${esc(src)}" alt="">
+      <div class="as-thumb">${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
         ${it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
@@ -356,12 +386,11 @@
   // full comment field beside it. No per-row toolbar actions (selection / delete
   // live on the main toolbar).
   function detailRow(it) {
-    const src = it._new ? it._file : thumb(it.id, 250);
     const types = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
     return `<div class="as-drow${it._new ? ' new' : ''}${it._pending ? ' pending' : ''}${it._sel ? ' sel' : ''}" data-id="${esc(it.id)}">
       <input type="checkbox" class="as-dsel" title="select"${it._sel ? ' checked' : ''}>
       <div class="as-dleft">
-        <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}<img loading="lazy" draggable="false" src="${esc(src)}" alt="">${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
+        <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
         <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span></div>
         ${it._new ? '' : `<div class="as-did">#${esc(it.id)}</div>`}
       </div>
@@ -607,19 +636,26 @@
   }
 
   function openTypePop(chip) {
-    document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const it = byId(cardId(chip)); if (!it) return;
+    openTypePopFor(it, chip, () => render());
+  }
+  // shared single-cover type picker — anchored to `anchor`, mutating `it.types`,
+  // calling `onChange` after each toggle. Used by the grid pills AND the lightbox.
+  function openTypePopFor(it, anchor, onChange) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop';
     pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
     document.body.appendChild(pop);
-    placePop(pop, chip.getBoundingClientRect());
+    placePop(pop, anchor.getBoundingClientRect());
     pop.querySelectorAll('input').forEach(cb => cb.onchange = () => {
       it.types = ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
-      render();
+      onChange && onChange();
     });
-    const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); _popJustClosed = true; setTimeout(() => { _popJustClosed = false; }, 0); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
+    return pop;
   }
+  let _popJustClosed = false;   // bridges the mousedown-dismiss → click gap so a pop dismissal doesn't also close the lightbox
 
   let _drag = null;
   // the block being dragged: the whole selection if the grabbed card is selected, else just it
@@ -1113,7 +1149,7 @@
       ov.querySelector('.as-lb-play').onclick = e => { e.stopPropagation(); togglePlay(); };
       ov.querySelector('.as-lb-prev').onclick = e => { e.stopPropagation(); lbNav(-1); };
       ov.querySelector('.as-lb-next').onclick = e => { e.stopPropagation(); lbNav(1); };
-      ov.onclick = e => { if (e.target === ov) closeLightbox(); };
+      ov.onclick = e => { if (e.target === ov && !_popJustClosed) closeLightbox(); };   // a type-pop dismiss must not also close the lightbox
       // wheel zooms the image toward the cursor (instead of scrolling the page behind)
       ov.addEventListener('wheel', e => {
         e.preventDefault();
@@ -1171,8 +1207,14 @@
     };
     img.src = src;
     if (img.complete && img.naturalWidth) img.classList.remove('loading');
-    const bits = [it.types.length ? it.types.join(', ') : 'no type', it.w && it.h ? `${it.w} × ${it.h}` : null].filter(Boolean);
-    ov.querySelector('.as-lb-cap').textContent = bits.join('  ·  ');
+    const dims = it.w && it.h ? `${it.w} × ${it.h}` : '';
+    const cap = ov.querySelector('.as-lb-cap');
+    // type is a clickable chip (same picker as the grid pills) so it can be set full-screen
+    cap.innerHTML = `<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" title="set cover type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
+    cap.querySelector('.as-lb-type').onclick = e => {
+      e.stopPropagation();
+      openTypePopFor(byId(_lb), e.currentTarget, () => { _lbDirty = true; paintLightbox(); });
+    };
     paintCmtArea(ov, it);
   }
   let _lbEditCmt = false;
@@ -1512,7 +1554,7 @@
   .as-view{font-weight:600}
   .as-dragwarn{font-size:13px;color:#b06a00;background:#fff3d6;border:1px solid #ecd9a0;border-radius:6px;padding:3px 7px;line-height:1;cursor:help}
   .as-pop-note{color:#9a8ccb;font-size:11px}
-  .as-pop{position:absolute;z-index:200;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}
+  .as-pop{position:absolute;z-index:10001;background:#fff;border:1px solid #cbbdf0;border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}   /* z above the lightbox (9999) so the type picker shows over it */
   .as-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
   .as-pop label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer}
   .as-pop label:hover{background:#f3eefe}.as-pop input{accent-color:var(--as-acc)}
@@ -1535,7 +1577,11 @@
   .as-lb-x{width:42px;font-size:24px}.as-lb-play{padding:0 14px}
   .as-lb-x:hover,.as-lb-play:hover{background:rgba(255,255,255,.25)}
   .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw)}
-  .as-lb-cap{color:#eee;font-size:13px;text-align:center}
+  .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+  .as-lb-type{font:700 12px inherit;color:#e7dffb;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:3px 14px;cursor:pointer}
+  .as-lb-type:hover{background:rgba(255,255,255,.2);color:#fff}
+  .as-lb-type.as-type-add{font-weight:600;border-style:dashed;color:rgba(255,255,255,.6)}
+  .as-lb-dim{color:#bbb}
   .as-lb-cmtarea{width:100%;display:flex;justify-content:center}
   .as-lb-cmt{width:100%;font:13px inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:7px;padding:7px 11px;text-align:center}
   .as-lb-cmt-text{font:14px inherit;color:#fff;text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}
