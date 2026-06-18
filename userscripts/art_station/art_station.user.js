@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.460000
+// @version      2026.6.18.470000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -625,8 +625,19 @@
   }
 
   function wire() {
-    root.querySelector('.as-size').oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); };
-    root.querySelector('.as-size').onchange = () => { save(); render(); };
+    const sizeEl = root.querySelector('.as-size');
+    sizeEl.oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); };
+    sizeEl.onchange = () => { save(); render(); };
+    // scroll the wheel over the slider to resize (no need to drag it)
+    let _szT = null;
+    sizeEl.onwheel = e => {
+      e.preventDefault();
+      const min = +sizeEl.min || 120, max = +sizeEl.max || 340;
+      SETTINGS.tile = Math.max(min, Math.min(max, SETTINGS.tile + (e.deltaY < 0 ? 15 : -15)));
+      sizeEl.value = SETTINGS.tile;
+      document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); fitFooters();
+      clearTimeout(_szT); _szT = setTimeout(() => { save(); render(); }, 250);   // persist + re-fit once scrolling settles
+    };
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
