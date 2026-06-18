@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.420000
+// @version      2026.6.18.430000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -676,7 +676,7 @@
     q('.as-selclr') && (q('.as-selclr').onclick = () => { MODEL.forEach(it => it._sel = false); root.querySelectorAll('.as-card.sel, .as-drow.sel').forEach(c => c.classList.remove('sel')); root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = false); syncSel(); });
     q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; } }); render(); });
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = async e => {
-      const sel = MODEL.filter(it => it._sel && !it._new); if (!sel.length) return;
+      const sel = MODEL.filter(it => it._sel && !it._del && !it._sourcing); if (!sel.length) return;   // include NEW covers (download their local blob)
       if (sel.length === 1) return dlOne(sel[0]);           // single → save the image directly
       const b = e.currentTarget, lbl = b.querySelector('.as-bt'), old = lbl ? lbl.textContent : '';
       b.disabled = true; if (lbl) lbl.style.display = 'inline';   // show progress even in compact mode
