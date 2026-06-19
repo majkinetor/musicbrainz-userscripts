@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.130000
+// @version      2026.6.19.170000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1510,6 +1510,7 @@
       <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
     </div>`;
     document.body.appendChild(ov);
+    if (IS_ADD && _seedNote) ov.querySelector('.as-cm-note').value = _seedNote;   // #248 carry over the add page's edit note
     ov.onclick = e => { if (e.target === ov) ov.remove(); };
     ov.querySelector('.as-cm-cancel').onclick = () => ov.remove();
     const dryEl = ov.querySelector('.as-cm-dryrun');
@@ -2305,8 +2306,11 @@
   // harvest is idempotent + re-runnable: a NEW row is staged; a row we've already
   // staged has its type/comment SYNCED if the integration set them after the image
   // appeared (common with ECAU) — but only while the user hasn't edited that cover.
+  let _seedNote = '';   // #248 an edit note an integration pre-filled on the native add page → moved to our commit panel
   async function harvestSeeds() {
     const form = document.getElementById('add-' + ART); if (!form) return;
+    const en = form.querySelector('textarea.edit-note, textarea[name*="edit_note"]');   // capture a seeded edit note
+    if (en && en.value && en.value.trim()) _seedNote = en.value.trim();
     const rows = [...form.querySelectorAll('tr')].filter(tr => tr.querySelector('img.uploader-preview-image, img[src^="blob:"]'));
     const files = [], metas = []; let dirty = false;
     for (const tr of rows) {
