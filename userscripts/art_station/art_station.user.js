@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.230000
+// @version      2026.6.19.240000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2437,12 +2437,13 @@
   const st = document.createElement('style'); st.textContent = css; appendEl(st);
 
   // ── #248 add page: harvest images seeded into the native uploader ───────────────
-  // Integrations (ECAU / Harmony) drop images into MB's add-cover-art uploader,
-  // optionally with a type/comment. We read each preview row — its blob, its OWN
-  // checked type checkboxes (per-row, not doc-wide, so each image keeps its type)
-  // and any comment — and stage it as a NEW cover. Runs on load and via an observer
-  // because the seed is async (ECAU fetches + maximises after the page settles).
-  const _sameArr = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+  // Integrations (ECAU / Harmony) drop images into MB's add-cover-art uploader. We
+  // read each preview row's blob and stage it as a NEW cover. Runs on load and via an
+  // observer because the seed is async (ECAU fetches + maximises after the page settles).
+  // NOTE: we deliberately do NOT scrape the row's type/comment checkboxes — ECAU sets
+  // them via Knockout and re-renders rows when maximising, so the checked state is only
+  // momentarily readable and racing it was unreliable (#253). Types are set instead from
+  // the file-name option or in AS itself.
   // #253 read each preview image's OWN type + comment — NEVER doc-wide (that smears
   // every image's types onto every cover). The native uploader nests an image's
   // checkbox grid in an ancestor it shares with nothing else (imageScope finds it);
@@ -2502,18 +2503,10 @@
         const img = tr.querySelector('img.uploader-preview-image, img[src^="blob:"]');
         const src = img && (img.src || img.getAttribute('src'));
         if (!src || !/^blob:/i.test(src)) continue;
-        const { types, comment } = readArtMeta(img);   // #253 this image's own type/comment block
         const rowId = tr.dataset.asRow;
-        if (rowId) {   // this row is already staged — sync metadata, swap in a maximised image, never re-add
+        if (rowId) {   // this row is already staged — swap in a maximised image, never re-add
           const existing = MODEL.find(m => m._seedSrc === rowId);
           if (!existing || existing._del) continue;
-          const last = existing._seedTypes || [];
-          // sync only FILLS late-arriving types — never wipes a captured type back to
-          // empty. ECAU maximises a row by re-rendering it; the checkboxes blink back to
-          // unchecked mid-render, and the src-change re-harvest would otherwise read [] and
-          // clobber the good type. So require a non-empty read before overwriting. #253
-          if (types.length && _sameArr(existing.types, last) && !_sameArr(types, existing.types)) { existing.types = types.slice(); existing._seedTypes = types.slice(); dirty = true; }
-          if (!existing.comment && comment) { existing.comment = comment; dirty = true; }
           if (src !== existing._seedBlobSrc) {   // ECAU maximised → replace the staged blob with the bigger one
             let blob; try { blob = await fetch(src).then(r => r.ok ? r.blob() : null); } catch (e) { blob = null; }
             if (blob) {
@@ -2534,7 +2527,7 @@
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `seed-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-        metas.push({ types, comment, seedSrc: id, seedTypes: types.slice(), seedBlobSrc: src });
+        metas.push({ seedSrc: id, seedBlobSrc: src });   // #253 image only — types are set via the file-name option or in AS, not scraped from ECAU's transient checkboxes
       }
       const added = files.length ? await addFilesDeduped(files, metas) : 0;
       if (added) toast(`Imported ${added} pre-added ${added > 1 ? ITEMS : ITEM} ✓`);
