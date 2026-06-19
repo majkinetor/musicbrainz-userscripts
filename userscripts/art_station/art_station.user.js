@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.520000
+// @version      2026.6.18.530000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -497,9 +497,9 @@
   // #249 a small favicon chip in the cover's bottom-left corner naming where a
   // newly-sourced image came from (ECAU provider / MH Covers), shown until commit.
   function provBadge(it) {
-    return (it._new && it._provIcon)
-      ? `<span class="as-prov" title="Sourced from ${esc(it._provider || 'provider')}"><img src="${esc(it._provIcon)}" alt=""></span>`
-      : '';
+    if (!(it._new && it._provIcon)) return '';
+    const tip = `Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `\n${it._provUrl}` : '');   // #249 URL on a second line
+    return `<span class="as-prov" title="${esc(tip)}"><img src="${esc(it._provIcon)}" alt=""></span>`;
   }
   function card(it) {
     if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}">`
@@ -1087,7 +1087,7 @@
       const type = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
       const file = new File([blob], `mh-${Date.now()}.${ext}`, { type });
       const prov = mhProvider(o);
-      addFiles([file], [{ provider: prov.name, provIcon: prov.icon }]);
+      addFiles([file], [{ provider: prov.name, provIcon: prov.icon, provUrl: url }]);
       toast('Added cover from MH Covers ✓');
     } catch (e) { toast('Could not fetch the cover — ' + e.message, 5000); }
   }
@@ -1177,7 +1177,7 @@
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-        metas.push({ types: types.slice(), comment, provider: prov && prov.name, provIcon: prov && prov.icon });
+        metas.push({ types: types.slice(), comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url });
       }
       return { files, metas };
     }
@@ -1290,7 +1290,7 @@
     }
     return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment, order: 0, w: 0, h: 0,
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
-      _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '',   // #249 where this image was sourced (shown until committed)
+      _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '', _provUrl: (meta && meta.provUrl) || '',   // #249 where this image was sourced (shown until committed)
       _origTypes: [], _origComment: '', _origOrder: -1 };
   }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
