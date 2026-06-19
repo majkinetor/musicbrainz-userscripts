@@ -3,6 +3,7 @@
 Import track and release credits from streaming and database providers into MusicBrainz relationships, with a review phase so you only ever seed  entities that actually exist in MB.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/credit_hoarder/dist/credit_hoarder.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/credit_hoarder/dist/credit_hoarder.user.js)
+- [Changelog](./CHANGELOG.md)
 
 > Credit Hoarder is the multi-source successor to the single-source [Discogs Importer](../discogs_credits/README.md). It reuses that engine's resolution/review core but treats every provider as a peer. If you only ever import from Discogs, either works; for Tidal/Qobuz (and future providers), use Credit Hoarder.
 
@@ -82,6 +83,18 @@ These run on every `/edit-relationships` page regardless of which provider (if a
 
 - **Hover-highlight** — hovering an entity in the relationship editor highlights every relationship that references it (and vice versa). Also runs against the review table while it's open.
 - **Batch-remove** — modifier-click (SHIFT, CTRL, SHIFT+CTRL) on any `(×)` button opens a popup to remove all relationships matching a chosen scope (by entity, by link type, by track range, only-this-session).
+
+## Shortcuts
+
+**Batch-remove** — hold a modifier and click any relationship's `(×)` remove button to open the batch-remove popup, seeded by scope:
+
+| Click | Scope |
+|---|---|
+| `Shift` + click | same **role** |
+| `Ctrl`/`⌘` + click | same **target** entity |
+| `Ctrl`/`⌘` + `Shift` + click | same **role and target** |
+
+In the review table's create-artist popup and the batch-remove dialog: `Enter` confirms, `Esc` closes. In a search box, `Enter` runs the search.
 
 ## Diagnostics
 

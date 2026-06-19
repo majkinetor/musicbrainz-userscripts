@@ -105,6 +105,18 @@ These run on every `/edit-relationships` page regardless of whether a Discogs li
 - **Hover-highlight** — Hovering an entity in the rel editor highlights all relationships that reference it (and vice versa). Also runs against the review table while it's open.
 - **Batch-remove** — Modifier-click (SHIFT, CTRL, SHIFT+CTRL) on any `(×)` button opens a popup to remove all relationships matching a chosen scope (by entity, by link type, by track range, only-this-session).
 
+## Shortcuts
+
+**Batch-remove** — hold a modifier and click any relationship's `(×)` remove button to open the batch-remove popup, seeded by scope:
+
+| Click | Scope |
+|---|---|
+| `Shift` + click | same **role** |
+| `Ctrl`/`⌘` + click | same **target** entity |
+| `Ctrl`/`⌘` + `Shift` + click | same **role and target** |
+
+In the review table's create-artist popup and the batch-remove dialog: `Enter` confirms, `Esc` closes. In a search box, `Enter` runs the search.
+
 ## Notes
 
 1. **IndexedDB cache** — Resolved Discogs URL → MB MBID mappings persist across sessions.
