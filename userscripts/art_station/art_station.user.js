@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.190000
+// @version      2026.6.19.200000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1267,24 +1267,27 @@
     async function harvest(doc, win) {
       const files = [], metas = [];
       const seen = new Set();
-      // ECAU sets the cover type/comment (e.g. "Front" from Bandcamp) on the uploader, but MB
-      // does NOT nest those checkboxes inside the preview image's row — so a row-scoped read
-      // missed them. We seed exactly one image per iframe, so read them doc-wide. #242
-      const types = [...doc.querySelectorAll('input[name*="type_id"]:checked')]
-        .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
-        .filter(t => ALL_TYPES.includes(t));
-      const ci = doc.querySelector('input[name*="comment"], textarea[name*="comment"]');
-      const comment = ci ? (ci.value || '') : '';
+      // Read the type/comment MB set for THIS image from its own uploader row, not
+      // doc-wide: a provider/seed can return several images with DIFFERENT types
+      // (Front, Track, Track…) and a doc-wide read smears them all together. #253
+      const readMeta = (scope) => ({
+        types: [...scope.querySelectorAll('input[type=checkbox]:checked, input[name*="type_id"]:checked')]
+          .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
+          .filter(t => ALL_TYPES.includes(t)),
+        comment: (() => { const ci = scope.querySelector('input[name*="comment"], textarea[name*="comment"], input.comment, textarea.comment'); return ci ? (ci.value || '') : ''; })(),
+      });
       for (const img of [...doc.querySelectorAll(previewSel)]) {
         const src = img.src || img.getAttribute('src'); if (!src || seen.has(src)) continue; seen.add(src);
         let blob; try { blob = /^blob:/i.test(src) ? await win.fetch(src).then(r => r.blob()) : await gmFetch(src); } catch (e) { continue; }
         // skip a provider's logo/favicon (e.g. Amazon's smile) — decode the actual blob,
         // not the preview <img> (MB may downscale that), and drop sub-cover-sized art. #242
         try { const bmp = await (win.createImageBitmap || createImageBitmap)(blob); const big = Math.max(bmp.width, bmp.height); bmp.close && bmp.close(); if (big && big < MIN_ART_PX) continue; } catch (e) {}
+        const row = img.closest('tr');
+        const { types, comment } = readMeta(row && row.querySelector('input[type=checkbox]') ? row : doc);   // per-row, doc-wide only if the row has no checkboxes
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-        metas.push({ types: types.slice(), comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url });
+        metas.push({ types, comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url });
       }
       return { files, metas };
     }
@@ -2525,12 +2528,15 @@
     let t; const soon = () => { clearTimeout(t); t = setTimeout(harvestSeeds, 250); };
     harvestSeeds();
     // a new row, a maximised image (src swap), or a type/comment change all re-harvest.
-    // change events (checkbox.checked is a property, not an attribute) need a listener.
     new MutationObserver(soon).observe(form, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
     form.addEventListener('change', soon);
     form.addEventListener('input', soon);
-    // belt-and-suspenders for integrations that set the type a beat after the image
-    [600, 1500, 3000].forEach(ms => setTimeout(harvestSeeds, ms));
+    // MB applies seeded types/comments by setting the checkbox `checked` PROPERTY (no
+    // change event) a beat after the image, so neither the observer nor the listeners
+    // fire — poll-resync for a while so the per-row type/comment still gets picked up. #253
+    let polls = 0;
+    const poll = setInterval(() => { if (++polls > 24 || !document.getElementById('as-root')) { clearInterval(poll); return; } harvestSeeds(); }, 800);
+    window.addEventListener('beforeunload', () => clearInterval(poll));
   }
 
   // we run at document-start; wait for #content before mounting the gallery
