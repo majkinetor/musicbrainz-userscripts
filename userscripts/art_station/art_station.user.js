@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.550000
+// @version      2026.6.19.160000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1135,6 +1135,65 @@
     const el = document.querySelector(`.as-card[data-id="${CSS.escape(id)}"] .as-srcing-lbl`); if (el) el.textContent = text;
   }
   function dropSourcingSlot(id) { MODEL = MODEL.filter(it => it.id !== id); MODEL.forEach((it, i) => it.order = i); }
+
+  // ── #250 Plugin API ─────────────────────────────────────────────────────────
+  // Third-party userscripts register a custom cover provider — it shows as its own
+  // "Import from <name>" button in the Source popover. The provider's run(ctx)
+  // returns the images it fetched ITSELF (a Blob — so the provider's own
+  // authenticated, e.g. CloudFlare-cleared, session does the fetch) OR plain URLs
+  // (Art Station fetches those via GM xhr). Each cover keeps the provider's badge.
+  const _customProviders = [];
+  let _srcBtn = null;   // the button that opened the Source popover (to re-open on late registration)
+  const hostIcon = u => { try { return provIconUrl(new URL(u).hostname.replace(/^www\./, '')); } catch (e) { return ''; } };
+  function registerProvider(p) {
+    if (!p || typeof p.run !== 'function' || !p.name) return false;
+    const id = p.id || p.name;
+    if (_customProviders.some(x => x.id === id)) return false;   // de-dupe
+    _customProviders.push({ id, name: String(p.name), icon: p.icon || '', run: p.run });
+    if (document.querySelector('.as-src-pop') && _srcBtn) openSourcePop(_srcBtn);   // reflect in an open popover
+    return true;
+  }
+  async function providerBlob(it) {            // one provider result → a Blob
+    if (it == null) return null;
+    if (it.blob instanceof Blob) return it.blob;
+    if (it.file instanceof Blob) return it.file;
+    if (it.dataUrl) return fetch(it.dataUrl).then(r => r.blob());
+    if (it.url) return gmFetch(it.url);        // Art Station fetches plain (non-locked) URLs
+    return null;
+  }
+  function sourceFromProvider(prov) {
+    const slot = addSourcingSlot(`Sourcing ${prov.name}…`);
+    const info = releaseInfo();
+    const ctx = { mbid: MBID, entity: ENT.kind, artist: info.artists.map(a => a.name).join(', '), title: info.title, url: info.url };
+    let done = false;
+    const finish = () => { done = true; dropSourcingSlot(slot); };
+    const killer = setTimeout(() => { if (done) return; finish(); render(); toast(`${prov.name} timed out`, 6000); }, 90000);
+    Promise.resolve().then(() => prov.run(ctx)).then(async list => {
+      if (done) return; clearTimeout(killer);
+      const items = Array.isArray(list) ? list : (list ? [list] : []);
+      const files = [], metas = [];
+      for (const it of items) {
+        let blob; try { blob = await providerBlob(it); } catch (e) { blob = null; }
+        if (!blob) continue;
+        const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+        const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        const types = Array.isArray(it.types) ? it.types.filter(t => ALL_TYPES.includes(t)) : [];
+        const srcUrl = it.source || it.url || '';
+        files.push(new File([blob], `prov-${Date.now()}-${files.length}.${ext}`, { type: mime }));
+        metas.push({ types, comment: it.comment || '', provider: prov.name, provIcon: prov.icon || hostIcon(srcUrl), provUrl: srcUrl });
+      }
+      finish();
+      if (files.length) { addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from ${prov.name} ✓`); }
+      else { render(); toast(`${prov.name} returned no image`, 5000); }
+    }).catch(e => { if (done) return; clearTimeout(killer); finish(); render(); toast(`${prov.name} failed — ${(e && e.message) || e}`, 8000); });
+  }
+  // expose the registry on the page (and a CustomEvent fallback for managers that
+  // isolate `window` from other userscripts). Either way is fine to call repeatedly.
+  (function exposeApi() {
+    const api = { apiVersion: 1, registerProvider };
+    try { (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).ArtStation = api; } catch (e) { try { window.ArtStation = api; } catch (x) {} }
+    try { document.addEventListener('artstation:register-provider', e => { try { registerProvider(e.detail); } catch (x) {} }); } catch (e) {}
+  })();
   // prov (optional) = { name, icon } the cover is being sourced from — passed by the
   // "Import from <provider>" buttons, else derived from the URL. Stamped on each new
   // cover so the gallery shows where it came from until commit (#249).
@@ -1251,15 +1310,24 @@
   let _provLinks = null;   // fetched once per page; reused by the button count + the popover
   function getProvLinks() { return _provLinks ? Promise.resolve(_provLinks) : artProviderLinks().then(l => (_provLinks = l)); }
   function openSourcePop(btn) {
+    _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
     pop.innerHTML = `<div class="as-pop-h">Source a cover</div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
+      + `<div class="as-src-custom"></div>`
       + `<div class="as-src-or">or paste any URL</div>`
       + `<input class="as-src-inp" placeholder="https://… provider page or image URL" spellcheck="false">`
       + `<div class="as-pop-f"><button class="as-btn as-src-go">Fetch</button></div>`
       + `<div class="as-pop-note">Powered by ROpdebee's <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Enhanced Cover Art Uploads</a> (must be installed).</div>`;
     document.body.appendChild(pop); placePop(pop, btn.getBoundingClientRect());
+    // #250 custom providers registered by other userscripts — their own Import buttons
+    const cbox = pop.querySelector('.as-src-custom');
+    if (cbox && _customProviders.length) {
+      cbox.innerHTML = _customProviders.map((p, i) => `<button class="as-btn as-src-prov-b" data-ci="${i}">${p.icon ? `<img class="as-src-ic" src="${esc(p.icon)}" alt="">` : '🧩 '}⬇ Import from ${esc(p.name)}</button>`).join('');
+      cbox.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { const p = _customProviders[+b.dataset.ci]; pop.remove(); sourceFromProvider(p); });
+      cbox.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });
+    }
     const inp = pop.querySelector('.as-src-inp'); inp.focus();
     const go = () => { const v = inp.value; pop.remove(); sourceFromUrl(v); };
     pop.querySelector('.as-src-go').onclick = go;
