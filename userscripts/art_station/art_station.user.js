@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.210000
+// @version      2026.6.19.220000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2443,28 +2443,42 @@
   // and any comment — and stage it as a NEW cover. Runs on load and via an observer
   // because the seed is async (ECAU fetches + maximises after the page settles).
   const _sameArr = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
-  // #253 the per-image block: the widest ancestor of a preview <img> that still
-  // contains ONLY that image — used to read its OWN checked type checkboxes + comment.
-  // Never read doc-wide (a provider/seed returns several images with different types,
-  // and a doc-wide read smeared every type onto every cover).
+  // #253 read each preview image's OWN type + comment — NEVER doc-wide (that smears
+  // every image's types onto every cover). The native uploader nests an image's
+  // checkbox grid in an ancestor it shares with nothing else (imageScope finds it);
+  // ECAU lays the preview out apart from the grid, so as a fallback the Nth preview
+  // image is matched to the Nth visible type group by render order.
   function imageScope(img) {
     let n = img.parentElement, scope = null;
     while (n) {
       if (n.querySelectorAll('img.uploader-preview-image, img[src^="blob:"]').length > 1) break;   // climbed past this image
-      if (n.querySelector('input[type=checkbox]')) scope = n;   // widest single-image block that holds this image's checkboxes
+      if (n.querySelector('.cover-art-types input[type=checkbox], input[name*="type_id"]')) scope = n;   // widest single-image block holding this image's grid
       if (n.tagName === 'FORM' || !n.parentElement) break;
       n = n.parentElement;
     }
     return scope;
   }
-  function readArtMeta(img) {
-    const scope = imageScope(img);
-    if (!scope) return { types: [], comment: '' };
-    const types = [...scope.querySelectorAll('input[type=checkbox]:checked, input[name*="type_id"]:checked')]
+  function readTypeGroup(group, block) {
+    const types = [...group.querySelectorAll('input[type=checkbox]:checked, input[name*="type_id"]:checked')]
       .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
       .filter(t => ALL_TYPES.includes(t));
-    const ci = scope.querySelector('input[name*="comment"], textarea[name*="comment"], input.comment, textarea.comment');
+    const sel = 'input[name*="comment"], textarea[name*="comment"], input.comment, textarea.comment';
+    let ci = group.querySelector(sel);                                          // the group's own comment, if nested
+    if (!ci && block && block !== group) { const cs = block.querySelectorAll(sel); if (cs.length === 1) ci = cs[0]; }   // else a single-image block's lone comment (never a shared one)
     return { types, comment: ci ? (ci.value || '') : '' };
+  }
+  const visibleTypeGroups = root => [...root.querySelectorAll('.cover-art-types')]
+    .filter(g => g.querySelector('input[type=checkbox]') && g.offsetParent !== null);   // skip the hidden knockout template
+  function readArtMeta(img) {
+    const scope = imageScope(img);
+    if (scope) return readTypeGroup(scope.querySelector('.cover-art-types') || scope, scope);
+    // ECAU/other restructured uploader → match the Nth image to the Nth type group
+    const root = img.closest('form') || img.getRootNode();
+    const imgs = [...root.querySelectorAll('img.uploader-preview-image, img[src^="blob:"]')];
+    const groups = visibleTypeGroups(root);
+    const i = imgs.indexOf(img);
+    if (i >= 0 && groups.length === imgs.length && groups[i]) return readTypeGroup(groups[i], groups[i].closest('td, li, tr') || groups[i].parentElement);
+    return { types: [], comment: '' };
   }
   // harvest is idempotent + re-runnable: a NEW row is staged; a row we've already
   // staged has its type/comment SYNCED if the integration set them after the image
