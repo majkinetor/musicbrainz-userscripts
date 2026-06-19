@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.240000
+// @version      2026.6.19.250000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1495,15 +1495,30 @@
     return { method: 'POST', url: form._action, body: p };
   }
   // Phase 2b: upload a new image. (1) sign via MB, (2) POST file to archive.org, (3) register.
-  async function signUpload(mime, ctl) {
-    const r = await fetch(`/ws/js/${ART}-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin', signal: ctl && ctl.ac.signal });
-    if (!r.ok) throw new Error('sign ' + r.status);
-    return r.json();   // { action, image_id, formdata, nonce }
+  // The sign endpoint reserves an image_id/nonce per call and fetches an S3 policy from the
+  // Internet Archive, so concurrent calls for the same release RACE and 500 — committing 6
+  // covers, only the 1st succeeded and the rest failed "sign 500". So serialise signing
+  // through a gate (the slow S3 PUT still overlaps) and retry transient 5xx/429 (IA flakes).
+  let _signGate = Promise.resolve();
+  async function signUploadRaw(mime, ctl) {
+    for (let attempt = 1; ; attempt++) {
+      if (ctl && ctl.aborted) throw new Error('cancelled');
+      const r = await fetch(`/ws/js/${ART}-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin', signal: ctl && ctl.ac.signal });
+      if (r.ok) return r.json();   // { action, image_id, formdata, nonce }
+      if (attempt >= 4 || ![429, 500, 502, 503, 504].includes(r.status)) throw new Error('sign ' + r.status);
+      await new Promise(res => setTimeout(res, 500 * attempt + Math.floor(Math.random() * 400)));   // backoff + jitter
+    }
+  }
+  function signUpload(mime, ctl) {
+    const run = () => signUploadRaw(mime, ctl);
+    const p = _signGate.then(run, run);   // one sign at a time, regardless of prior failures
+    _signGate = p.catch(() => {});
+    return p;
   }
   let _addForm = null;
   const addForm = () => (_addForm = _addForm || getPostForm(`${R}/add-${ART}`));
-  // step 1 (parallel-safe): sign + PUT the file to archive.org. Stores the signed
-  // upload on the item; the slow network part — like Turbo, run these concurrently.
+  // step 1: sign (serialised by the gate above) then PUT the file to archive.org. Stores
+  // the signed upload on the item; the slow PUT is the part that overlaps across items.
   async function uploadStep(it, onProgress, ctl) {
     if (ctl && ctl.aborted) throw new Error('cancelled');
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
