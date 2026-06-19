@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.550000
+// @version      2026.6.19.170000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
 // @match        *://*.musicbrainz.org/release/*/cover-art
+// @match        *://*.musicbrainz.org/release/*/add-cover-art
 // @match        *://*.musicbrainz.org/event/*/event-art
+// @match        *://*.musicbrainz.org/event/*/add-event-art
 // @grant        GM.xmlHttpRequest
 // @grant        GM_xmlhttpRequest
 // @connect      *
@@ -22,10 +24,14 @@
   // Works on BOTH a release's cover art and an event's event art — same gallery,
   // same flow, only the entity differs (archive host, the */-art endpoint suffix,
   // and the type vocabulary). Everything downstream goes through ENT. (#241)
-  const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(?:cover|event)-art/i);
+  const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(add-)?(?:cover|event)-art/i);
   if (!M) return;
   const IS_EVENT = M[1].toLowerCase() === 'event';
   const MBID = M[2];
+  // #248 the native "add cover art" uploader page (also where integrations like
+  // Harmony land, sometimes pre-seeded with images). Art Station fully takes it
+  // over: same gallery, plus it harvests any seeded images as staged new covers.
+  const IS_ADD = !!M[3];
   const ENT = IS_EVENT
     ? { kind: 'event',   base: `/event/${MBID}`,   art: 'event-art', archive: `https://eventartarchive.org/event/${MBID}`, noun: 'event art', Noun: 'Event art' }
     : { kind: 'release', base: `/release/${MBID}`, art: 'cover-art', archive: `https://coverartarchive.org/release/${MBID}`, noun: 'cover art', Noun: 'Cover art' };
@@ -53,6 +59,18 @@
   let _savedPrefs = {}; try { _savedPrefs = JSON.parse(localStorage.getItem('artstation:settings') || '{}'); } catch (e) {}
   earlyHide.disabled = !!_savedPrefs.showOrig;
   footerStyle.disabled = !!_savedPrefs.showOrig || _savedPrefs.hideMbFooter === false;
+  // #248 the add page: take the whole thing over. Move the native uploader form
+  // OFF-SCREEN (not display:none) so it stays functional — integrations (ECAU /
+  // Harmony) still seed it and we harvest the resulting preview rows — while every
+  // bit of its UI (and any plugin UI inside it) is invisible. mount() hides the
+  // rest of #content. Disabled in "Show original".
+  let addHide = null;
+  if (IS_ADD) {
+    addHide = document.createElement('style');
+    addHide.textContent = 'form#add-cover-art,form#add-event-art{position:fixed!important;left:-99999px!important;top:0!important;width:1000px!important;opacity:0!important;pointer-events:none!important}';
+    appendEl(addHide);
+    addHide.disabled = !!_savedPrefs.showOrig;
+  }
 
   // Proper edit-note attribution, like the other scripts: "Name vX by author - url".
   // GM_info is exposed even under @grant none on the common managers; fall back to
@@ -166,6 +184,7 @@
   // MB's page (its DB) is the source of truth for the cover list — it includes images
   // that aren't on the Cover Art Archive yet (just added). CAA only enriches comments.
   function parsePageArt() {
+    if (IS_ADD) return null;   // #248 the add page has no native gallery to parse — use CAA only
     const blocks = [...document.querySelectorAll('.artwork-cont')];
     if (!blocks.length) return null;
     return blocks.map((b, i) => {
@@ -253,18 +272,32 @@
     // hide the native cover-art UI between the tabs and the page footer: the type
     // <h2>s, the .artwork-cont blocks and the trailing "These images…" note.
     const hide = el => { el.style.display = 'none'; _native.push(el); };
-    [...anchor.children].forEach(ch => {
-      if (ch === root || ch === afterTabs || ch === afterH1) return;
-      if (ch.tagName === 'H2' || ch.tagName === 'P') hide(ch);
-      else if (ch.querySelector && ch.querySelector('.artwork-cont')) hide(ch);
-      else if (ch.classList && ch.classList.contains('artwork-cont')) hide(ch);
-    });
-    document.querySelectorAll('.artwork-cont').forEach(hide);
+    if (IS_ADD) {
+      // #248 full takeover: hide every #content child except the header, the tabs,
+      // the title and our gallery. The uploader form is left alone — it's already
+      // off-screen (addHide) and must stay live so seeds populate it for harvest.
+      [...anchor.children].forEach(ch => {
+        if (ch === root || ch === afterTabs || ch === afterH1) return;
+        if (/^(SCRIPT|NOSCRIPT|STYLE|LINK)$/.test(ch.tagName)) return;
+        if (ch.id === 'add-cover-art' || ch.id === 'add-event-art') return;   // the off-screen uploader (harvest source)
+        if (ch.classList && ch.classList.contains('releaseheader')) return;
+        hide(ch);
+      });
+    } else {
+      [...anchor.children].forEach(ch => {
+        if (ch === root || ch === afterTabs || ch === afterH1) return;
+        if (ch.tagName === 'H2' || ch.tagName === 'P') hide(ch);
+        else if (ch.querySelector && ch.querySelector('.artwork-cont')) hide(ch);
+        else if (ch.classList && ch.classList.contains('artwork-cont')) hide(ch);
+      });
+      document.querySelectorAll('.artwork-cont').forEach(hide);
+    }
   }
   // "Show original" (View): un-hide MB's native cover-art UI and collapse our
   // gallery to just the toolbar — like Apollo's native/script switcher. #234
   function applyOriginal() {
     earlyHide.disabled = _showOrig;                                  // the document-start hiding style
+    if (addHide) addHide.disabled = _showOrig;                       // #248 reveal the native uploader in Original
     _native.forEach(el => { el.style.display = _showOrig ? '' : 'none'; });
     root.classList.toggle('as-orig', _showOrig);                     // hides the whole Art Station UI
     ensureSwitch();
@@ -1297,6 +1330,7 @@
     return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment, order: 0, w: 0, h: 0,
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
       _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '', _provUrl: (meta && meta.provUrl) || '',   // #249 where this image was sourced (shown until committed)
+      _seedSrc: (meta && meta.seedSrc) || '', _seedTypes: (meta && meta.seedTypes) ? meta.seedTypes.slice() : null,   // #248 native-uploader row + last types synced from it
       _origTypes: [], _origComment: '', _origOrder: -1 };
   }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
@@ -1476,6 +1510,7 @@
       <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
     </div>`;
     document.body.appendChild(ov);
+    if (IS_ADD && _seedNote) ov.querySelector('.as-cm-note').value = _seedNote;   // #248 carry over the add page's edit note
     ov.onclick = e => { if (e.target === ov) ov.remove(); };
     ov.querySelector('.as-cm-cancel').onclick = () => ov.remove();
     const dryEl = ov.querySelector('.as-cm-dryrun');
@@ -1573,8 +1608,10 @@
       if (!errs) {
         // #234: clean run → reload automatically so the gallery shows the new
         // state (brief pause so the ✅s are visible first).
-        b.textContent = 'Done — reloading…'; b.disabled = true;
-        setTimeout(() => location.reload(), 900);
+        // #248 on the add page there's nothing to reload INTO — land on the cover-art
+        // tab so the freshly-uploaded covers show in the normal gallery.
+        b.textContent = IS_ADD ? 'Done — opening cover art…' : 'Done — reloading…'; b.disabled = true;
+        setTimeout(() => { if (IS_ADD) location.href = `${ENT.base}/${ENT.art}`; else location.reload(); }, 900);
       } else {
         // something failed — leave it up so the user can read the ❌ rows.
         b.textContent = `Reload (${errs} failed)`; b.disabled = false; b.onclick = () => location.reload();
@@ -2255,7 +2292,70 @@
   `;
   const st = document.createElement('style'); st.textContent = css; appendEl(st);
 
+  // ── #248 add page: harvest images seeded into the native uploader ───────────────
+  // Integrations (ECAU / Harmony) drop images into MB's add-cover-art uploader,
+  // optionally with a type/comment. We read each preview row — its blob, its OWN
+  // checked type checkboxes (per-row, not doc-wide, so each image keeps its type)
+  // and any comment — and stage it as a NEW cover. Runs on load and via an observer
+  // because the seed is async (ECAU fetches + maximises after the page settles).
+  const _sameArr = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+  const rowTypes = tr => [...tr.querySelectorAll('input[type=checkbox]:checked')]
+    .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
+    .filter(t => ALL_TYPES.includes(t));
+  const rowComment = tr => { const ci = tr.querySelector('input[name*="comment"], textarea[name*="comment"], input.comment, textarea.comment'); return ci ? (ci.value || '') : ''; };
+  // harvest is idempotent + re-runnable: a NEW row is staged; a row we've already
+  // staged has its type/comment SYNCED if the integration set them after the image
+  // appeared (common with ECAU) — but only while the user hasn't edited that cover.
+  let _seedNote = '';   // #248 an edit note an integration pre-filled on the native add page → moved to our commit panel
+  async function harvestSeeds() {
+    const form = document.getElementById('add-' + ART); if (!form) return;
+    const en = form.querySelector('textarea.edit-note, textarea[name*="edit_note"]');   // capture a seeded edit note
+    if (en && en.value && en.value.trim()) _seedNote = en.value.trim();
+    const rows = [...form.querySelectorAll('tr')].filter(tr => tr.querySelector('img.uploader-preview-image, img[src^="blob:"]'));
+    const files = [], metas = []; let dirty = false;
+    for (const tr of rows) {
+      const img = tr.querySelector('img.uploader-preview-image, img[src^="blob:"]');
+      const src = img && (img.src || img.getAttribute('src'));
+      if (!src || !/^blob:/i.test(src)) continue;
+      const types = rowTypes(tr), comment = rowComment(tr);
+      const existing = MODEL.find(m => m._seedSrc === src);
+      if (existing) {   // already staged — keep its type/comment in step with the row unless the user changed them
+        if (existing._del) continue;
+        const last = existing._seedTypes || [];
+        if (_sameArr(existing.types, last) && !_sameArr(types, existing.types)) { existing.types = types.slice(); existing._seedTypes = types.slice(); dirty = true; }
+        if (!existing.comment && comment) { existing.comment = comment; dirty = true; }
+        continue;
+      }
+      let blob; try { blob = await fetch(src).then(r => r.ok ? r.blob() : null); } catch (e) { blob = null; }
+      if (!blob) continue;   // not decodable yet — a later pass will pick it up
+      const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+      const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+      files.push(new File([blob], `seed-${Date.now()}-${files.length}.${ext}`, { type: mime }));
+      metas.push({ types, comment, seedSrc: src, seedTypes: types.slice() });
+    }
+    if (files.length) { addFiles(files, metas); toast(`Imported ${files.length} pre-added ${files.length > 1 ? ITEMS : ITEM} ✓`); }
+    else if (dirty) { refreshStaged(); render(); }
+  }
+  function initAdd() {
+    if (!IS_ADD) return;
+    const form = document.getElementById('add-' + ART);
+    if (!form) {   // uploader not in the DOM yet — wait for it
+      const o = new MutationObserver(() => { if (document.getElementById('add-' + ART)) { o.disconnect(); initAdd(); } });
+      o.observe(document.documentElement, { childList: true, subtree: true });
+      return;
+    }
+    let t; const soon = () => { clearTimeout(t); t = setTimeout(harvestSeeds, 250); };
+    harvestSeeds();
+    // a new row, a maximised image (src swap), or a type/comment change all re-harvest.
+    // change events (checkbox.checked is a property, not an attribute) need a listener.
+    new MutationObserver(soon).observe(form, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+    form.addEventListener('change', soon);
+    form.addEventListener('input', soon);
+    // belt-and-suspenders for integrations that set the type a beat after the image
+    [600, 1500, 3000].forEach(ms => setTimeout(harvestSeeds, ms));
+  }
+
   // we run at document-start; wait for #content before mounting the gallery
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadArt, { once: true });
-  else loadArt();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => loadArt().then(initAdd), { once: true });
+  else loadArt().then(initAdd);
 })();
