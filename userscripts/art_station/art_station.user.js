@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.180000
+// @version      2026.6.19.190000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1194,8 +1194,8 @@
       const type = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
       const file = new File([blob], `mh-${Date.now()}.${ext}`, { type });
       const prov = mhProvider(o);
-      addFiles([file], [{ provider: prov.name, provIcon: prov.icon, provUrl: url }]);
-      toast('Added cover from MH Covers ✓');
+      const added = await addFilesDeduped([file], [{ provider: prov.name, provIcon: prov.icon, provUrl: url }]);   // #253
+      toast(added ? 'Added cover from MH Covers ✓' : 'That cover is already added');
     } catch (e) { toast('Could not fetch the cover — ' + e.message, 5000); }
   }
 
@@ -1303,8 +1303,9 @@
       done = true;
       const { files, metas } = await harvest(doc, win);
       stop(); dropSourcingSlot(slot);
-      if (files.length) { addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from provider ✓`); }
-      else { render(); toast('Provider returned no image', 5000); }
+      const added = files.length ? await addFilesDeduped(files, metas) : 0;   // #253 skip an image already staged
+      if (added) toast(`Added ${added} image${added > 1 ? 's' : ''} from provider ✓`);
+      else { render(); toast(files.length ? 'That image is already added' : 'Provider returned no image', 5000); }
     }, 400);
     const killer = setTimeout(() => {
       if (done) return; done = true; stop(); dropSourcingSlot(slot); render();
@@ -1399,6 +1400,8 @@
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
       _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '', _provUrl: (meta && meta.provUrl) || '',   // #249 where this image was sourced (shown until committed)
       _seedSrc: (meta && meta.seedSrc) || '', _seedTypes: (meta && meta.seedTypes) ? meta.seedTypes.slice() : null,   // #248 native-uploader row + last types synced from it
+      _seedBlobSrc: (meta && meta.seedBlobSrc) || '',   // #253 the row's current blob URL (changes when ECAU maximises)
+      _contentKey: (meta && meta.contentKey) || '',     // #253 image-content fingerprint, to drop duplicate sourced/seeded covers
       _origTypes: [], _origComment: '', _origOrder: -1 };
   }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
@@ -1413,6 +1416,31 @@
     MODEL.forEach((it, i) => it.order = i);
     news.forEach(measure);   // fill in each new cover's resolution from its local file
     _dropZone = false; render();
+  }
+  // #253 a content fingerprint so the same image isn't staged twice. Sourcing
+  // (ECAU/MH/providers) and the add-page harvest can surface the SAME cover more
+  // than once — ECAU re-fires as it maximises, a provider may return dups, etc.
+  async function fileKey(file) {
+    try {
+      const buf = await file.arrayBuffer();
+      const h = await crypto.subtle.digest('SHA-1', buf);
+      return file.size + ':' + [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) { return 'sz' + file.size; }   // fallback: byte length only
+  }
+  // stage files, skipping any whose content already exists as a staged NEW cover
+  // (or repeats within this batch). Returns how many were actually added.
+  async function addFilesDeduped(files, metas) {
+    const have = new Set(MODEL.filter(m => m._new && !m._del && m._contentKey).map(m => m._contentKey));
+    const outF = [], outM = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i]; if (!(f.type.startsWith('image/') || f.type === 'application/pdf')) continue;
+      const k = await fileKey(f);
+      if (have.has(k)) continue;
+      have.add(k);
+      outF.push(f); outM.push(Object.assign({}, metas && metas[i], { contentKey: k }));
+    }
+    if (outF.length) addFiles(outF, outM);
+    return outF.length;
   }
   // #243 a drop can include whole FOLDERS — recurse the directory entries to collect every
   // file. webkitGetAsEntry() must be read synchronously while the drop event is live.
@@ -2430,34 +2458,61 @@
   // staged has its type/comment SYNCED if the integration set them after the image
   // appeared (common with ECAU) — but only while the user hasn't edited that cover.
   let _seedNote = '';   // #248 an edit note an integration pre-filled on the native add page → moved to our commit panel
+  // #253 harvest keys on the uploader ROW (tagged once), NOT the blob URL: ECAU
+  // maximises the preview in place — the blob URL changes — so blob-keying re-staged
+  // the SAME image on every pass (multiple identical covers from one seed). Reentrancy
+  // is guarded with a trailing re-run so overlapping passes can't double-add either.
+  let _harvesting = false, _harvestPending = false, _rowSeq = 0;
   async function harvestSeeds() {
-    const form = document.getElementById('add-' + ART); if (!form) return;
-    const en = form.querySelector('textarea.edit-note, textarea[name*="edit_note"]');   // capture a seeded edit note
-    if (en && en.value && en.value.trim()) _seedNote = en.value.trim();
-    const rows = [...form.querySelectorAll('tr')].filter(tr => tr.querySelector('img.uploader-preview-image, img[src^="blob:"]'));
-    const files = [], metas = []; let dirty = false;
-    for (const tr of rows) {
-      const img = tr.querySelector('img.uploader-preview-image, img[src^="blob:"]');
-      const src = img && (img.src || img.getAttribute('src'));
-      if (!src || !/^blob:/i.test(src)) continue;
-      const types = rowTypes(tr), comment = rowComment(tr);
-      const existing = MODEL.find(m => m._seedSrc === src);
-      if (existing) {   // already staged — keep its type/comment in step with the row unless the user changed them
-        if (existing._del) continue;
-        const last = existing._seedTypes || [];
-        if (_sameArr(existing.types, last) && !_sameArr(types, existing.types)) { existing.types = types.slice(); existing._seedTypes = types.slice(); dirty = true; }
-        if (!existing.comment && comment) { existing.comment = comment; dirty = true; }
-        continue;
+    if (_harvesting) { _harvestPending = true; return; }
+    _harvesting = true; _harvestPending = false;
+    try {
+      const form = document.getElementById('add-' + ART); if (!form) return;
+      const en = form.querySelector('textarea.edit-note, textarea[name*="edit_note"]');   // capture a seeded edit note
+      if (en && en.value && en.value.trim()) _seedNote = en.value.trim();
+      const rows = [...form.querySelectorAll('tr')].filter(tr => tr.querySelector('img.uploader-preview-image, img[src^="blob:"]'));
+      const files = [], metas = []; let dirty = false;
+      for (const tr of rows) {
+        const img = tr.querySelector('img.uploader-preview-image, img[src^="blob:"]');
+        const src = img && (img.src || img.getAttribute('src'));
+        if (!src || !/^blob:/i.test(src)) continue;
+        const types = rowTypes(tr), comment = rowComment(tr);
+        const rowId = tr.dataset.asRow;
+        if (rowId) {   // this row is already staged — sync metadata, swap in a maximised image, never re-add
+          const existing = MODEL.find(m => m._seedSrc === rowId);
+          if (!existing || existing._del) continue;
+          const last = existing._seedTypes || [];
+          if (_sameArr(existing.types, last) && !_sameArr(types, existing.types)) { existing.types = types.slice(); existing._seedTypes = types.slice(); dirty = true; }
+          if (!existing.comment && comment) { existing.comment = comment; dirty = true; }
+          if (src !== existing._seedBlobSrc) {   // ECAU maximised → replace the staged blob with the bigger one
+            let blob; try { blob = await fetch(src).then(r => r.ok ? r.blob() : null); } catch (e) { blob = null; }
+            if (blob) {
+              try { URL.revokeObjectURL(existing._file); } catch (e) {}
+              const m = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+              existing._file = URL.createObjectURL(blob);
+              existing._fileObj = new File([blob], (existing._fileObj && existing._fileObj.name) || 'seed.jpg', { type: m });
+              existing._seedBlobSrc = src; existing.bytes = blob.size; existing.w = 0; existing.h = 0; existing._contentKey = await fileKey(existing._fileObj);
+              _imgCache.delete(String(existing.id)); measure(existing); dirty = true;
+            }
+          }
+          continue;
+        }
+        let blob; try { blob = await fetch(src).then(r => r.ok ? r.blob() : null); } catch (e) { blob = null; }
+        if (!blob) continue;   // not decodable yet — a later pass will pick it up
+        const id = 'srow' + (++_rowSeq);
+        tr.dataset.asRow = id;   // tag BEFORE staging so a racing pass sees it taken
+        const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+        const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        files.push(new File([blob], `seed-${Date.now()}-${files.length}.${ext}`, { type: mime }));
+        metas.push({ types, comment, seedSrc: id, seedTypes: types.slice(), seedBlobSrc: src });
       }
-      let blob; try { blob = await fetch(src).then(r => r.ok ? r.blob() : null); } catch (e) { blob = null; }
-      if (!blob) continue;   // not decodable yet — a later pass will pick it up
-      const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
-      const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-      files.push(new File([blob], `seed-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-      metas.push({ types, comment, seedSrc: src, seedTypes: types.slice() });
+      const added = files.length ? await addFilesDeduped(files, metas) : 0;
+      if (added) toast(`Imported ${added} pre-added ${added > 1 ? ITEMS : ITEM} ✓`);
+      else if (dirty) { refreshStaged(); render(); }
+    } finally {
+      _harvesting = false;
+      if (_harvestPending) { _harvestPending = false; harvestSeeds(); }
     }
-    if (files.length) { addFiles(files, metas); toast(`Imported ${files.length} pre-added ${files.length > 1 ? ITEMS : ITEM} ✓`); }
-    else if (dirty) { refreshStaged(); render(); }
   }
   function initAdd() {
     if (!IS_ADD) return;
