@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.530000
+// @version      2026.6.18.540000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1982,6 +1982,10 @@
   // ── styles ───────────────────────────────────────────────────────────────────
   const css = `
   :root{ --as-tile:${SETTINGS.tile}px; --as-acc:#5f3ec0; --as-warn:#c0392b; }
+  /* the sticky toolbar grows a line when a selection adds the bulk-action buttons;
+     scroll-anchoring would then nudge the page on every right-click select. Disable
+     anchoring so the scrollbar stays put (Art Station owns this page's scroll). */
+  html{overflow-anchor:none}
   #as-root{font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;margin:0 0 18px}
   .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px 11px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:wrap;margin-bottom:6px}
   .as-setup-ic{width:30px;height:30px;object-fit:contain;flex:0 0 auto}
