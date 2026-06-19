@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.550000
+// @version      2026.6.19.140000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -696,7 +696,7 @@
     // click the THUMB (not just the <img>, which is display:none on a not-yet-propagated
     // cover) → lightbox; PDFs open in a new tab. right-click card → toggle selection
     root.querySelectorAll('.as-thumb').forEach(th => {
-      th.onclick = e => { if (e.target.closest('button')) return; const it = byId(cardId(e.target)); if (!it) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
+      th.onclick = e => { if (e.target.closest('button') || _lpSwallow) return; const it = byId(cardId(e.target)); if (!it) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
       const img = th.querySelector('img'); if (!img) return;
       // A freshly-added cover has its original uploaded but the CAA thumbnails
       // (250/500) aren't generated yet — so the thumb URL 404s and native MB
@@ -720,6 +720,7 @@
         e.preventDefault(); const it = byId(c.dataset.id); if (!it) return;
         _paint = { value: !it._sel }; paintCard(c);
       };
+      wireCardTouch(c);   // #251 long-press to select, drag-handle to reorder (mobile)
     });
     wireSel();
     wireDrag();
@@ -758,6 +759,73 @@
     if (c && root.contains(c)) paintCard(c);
   });
   document.addEventListener('mouseup', () => { _paint = null; });
+
+  // ── #251 touch support: long-press to select, long-press-then-drag to reorder ───
+  // A tap opens the viewer; _lpSwallow eats the click synthesised after a long-press
+  // so it doesn't ALSO open the viewer.
+  let _lpSwallow = false;
+  const swallowTap = () => { _lpSwallow = true; setTimeout(() => { _lpSwallow = false; }, 450); };
+  function toggleSel(c) {
+    const it = byId(c.dataset.id); if (!it || it._del) return;
+    it._sel = !it._sel; c.classList.toggle('sel', it._sel);
+    const cb = c.querySelector('.as-dsel'); if (cb) cb.checked = it._sel;
+    syncSel();
+  }
+  let _tdrag = null;   // active touch reorder: { block, ghost, tgt }
+  function wireCardTouch(c) {
+    if (c.classList.contains('del')) return;
+    let timer = null, start = null, engaged = false, moved = false;
+    c.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0]; start = { x: t.clientX, y: t.clientY }; engaged = false; moved = false;
+      timer = setTimeout(() => {
+        engaged = true; try { navigator.vibrate && navigator.vibrate(15); } catch (x) {}
+        const it = byId(c.dataset.id);
+        if (canReorder() && it && !it._del) startTouchDrag(c, it, start);   // pick up to reorder
+        else toggleSel(c);                                                  // otherwise select
+      }, 420);
+    }, { passive: true });
+    c.addEventListener('touchmove', e => {
+      if (!start) return;
+      const t = e.touches[0], far = Math.hypot(t.clientX - start.x, t.clientY - start.y) > 12;
+      if (!engaged) { if (far) { clearTimeout(timer); timer = null; start = null; } return; }   // pre-engage move = page scroll
+      e.preventDefault(); moved = true;
+      if (_tdrag) moveTouchDrag(t);
+    }, { passive: false });
+    c.addEventListener('touchend', e => {
+      clearTimeout(timer); timer = null;
+      if (_tdrag) { e.preventDefault(); const dropped = endTouchDrag(); if (!dropped && !moved) toggleSel(c); swallowTap(); start = null; return; }
+      if (engaged) { e.preventDefault(); swallowTap(); }   // long-press select already done
+      start = null;
+    }, { passive: false });
+    c.addEventListener('touchcancel', () => { clearTimeout(timer); timer = null; if (_tdrag) endTouchDrag(); start = null; });
+  }
+  function startTouchDrag(c, it, start) {
+    _drag = it; const block = dragBlock(); block.forEach(g => cardEl(g)?.classList.add('as-dragging'));
+    const r = c.getBoundingClientRect();
+    const ghost = c.cloneNode(true); ghost.className = 'as-card as-ghost';
+    ghost.style.cssText = `position:fixed;left:0;top:0;width:${r.width}px;z-index:100050;pointer-events:none;opacity:.92;transform:translate(${r.left}px,${r.top}px) scale(1.04);box-shadow:0 10px 30px rgba(0,0,0,.4)`;
+    document.body.appendChild(ghost);
+    _tdrag = { block, ghost, off: { x: start.x - r.left, y: start.y - r.top }, tgt: null };
+  }
+  function moveTouchDrag(t) {
+    const g = _tdrag.ghost; g.style.transform = `translate(${t.clientX - _tdrag.off.x}px,${t.clientY - _tdrag.off.y}px) scale(1.04)`;
+    g.style.visibility = 'hidden'; const under = document.elementFromPoint(t.clientX, t.clientY); g.style.visibility = '';
+    const card = under && under.closest && under.closest('.as-card[draggable="true"]');
+    root.querySelectorAll('.as-drop').forEach(c => c.classList.remove('as-drop'));
+    const tgt = card && byId(card.dataset.id);
+    _tdrag.tgt = (tgt && !_tdrag.block.includes(tgt)) ? tgt : null;
+    if (_tdrag.tgt) card.classList.add('as-drop');
+  }
+  function endTouchDrag() {
+    const { block, ghost, tgt } = _tdrag; _tdrag = null;
+    ghost.remove();
+    root.querySelectorAll('.as-dragging').forEach(c => c.classList.remove('as-dragging'));
+    root.querySelectorAll('.as-drop').forEach(c => c.classList.remove('as-drop'));
+    _drag = null;
+    if (tgt) { reorder(block, tgt); render(); return true; }
+    return false;
+  }
   window.addEventListener('resize', () => { if (root.isConnected) fitToolbar(); });
   // right-click is our selection gesture across the gallery — suppress the native menu there
   document.addEventListener('contextmenu', e => { if (root.contains(e.target)) e.preventDefault(); });
@@ -1648,8 +1716,22 @@
         const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
         document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
       });
+      // #251 mobile: just the full image — swipe left/right to navigate, swipe down
+      // to close, tap to toggle the controls (hidden by default on a touch screen).
+      ov.classList.toggle('as-lb-touch', matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window);
+      let tsx = 0, tsy = 0, tmoved = false, tmulti = false;
+      ov.addEventListener('touchstart', e => { tmulti = e.touches.length > 1; if (tmulti) return; tsx = e.touches[0].clientX; tsy = e.touches[0].clientY; tmoved = false; }, { passive: true });
+      ov.addEventListener('touchmove', e => { if (tmulti || e.touches.length > 1) { tmulti = true; return; } if (Math.hypot(e.touches[0].clientX - tsx, e.touches[0].clientY - tsy) > 8) tmoved = true; }, { passive: true });
+      ov.addEventListener('touchend', e => {
+        if (tmulti || _z.s > 1) return;   // multi-touch / zoomed → don't hijack
+        const t = e.changedTouches[0], dx = t.clientX - tsx, dy = t.clientY - tsy;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3) { lbNav(dx < 0 ? 1 : -1); return; }
+        if (dy > 80 && dy > Math.abs(dx) * 1.3) { closeLightbox(); return; }
+        if (!tmoved) ov.classList.toggle('as-lb-chrome');   // tap toggles the controls
+      }, { passive: true });
     }
     resetZoom();   // a fresh open starts un-zoomed; ←/→ navigation keeps the zoom
+    ov.classList.remove('as-lb-chrome');   // #251 touch: start as just-the-image, tap to reveal controls
     paintLightbox();
     preloadNeighbors();
     ov.style.display = 'flex';
@@ -2224,6 +2306,12 @@
   .as-lb-cmt:focus{outline:none;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.14)}
   .as-lb-cmtadd{font:12px inherit;color:rgba(255,255,255,.6);background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:4px 13px;cursor:pointer}
   .as-lb-cmtadd:hover{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
+  /* #251 touch viewer: show only the full image; tap reveals the controls, swipe navigates */
+  #as-lb.as-lb-touch .as-lb-img{max-width:100vw;max-height:100vh;border-radius:0}
+  #as-lb.as-lb-touch .as-lb-nav{display:none}
+  #as-lb.as-lb-touch .as-lb-del,#as-lb.as-lb-touch .as-lb-dlwrap,#as-lb.as-lb-touch .as-lb-top,#as-lb.as-lb-touch .as-lb-bar{opacity:0;pointer-events:none;transition:opacity .15s}
+  #as-lb.as-lb-touch.as-lb-chrome .as-lb-del,#as-lb.as-lb-touch.as-lb-chrome .as-lb-dlwrap,#as-lb.as-lb-touch.as-lb-chrome .as-lb-top,#as-lb.as-lb-touch.as-lb-chrome .as-lb-bar{opacity:1;pointer-events:auto}
+  .as-ghost{border-radius:9px;background:#fff}
   /* commit panel */
   #as-commit,#as-report{position:fixed;inset:0;z-index:9998;background:rgba(15,12,28,.55);display:flex;align-items:center;justify-content:center;padding:24px}
   .as-rp-opts{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:10px}
