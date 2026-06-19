@@ -21,6 +21,17 @@ Click does your default (replace/append); right-click does the other. Append ski
 - **Resizable**<br>
 The native edit-note field is widened and centered (it spans the full form width on the release editor). **Drag the separator** to resize the field vs. the panel, and the field's own height; both are remembered.
 
+## Keyboard shortcuts
+
+In the edit-note field (and Mammoth's panel):
+
+| Key | Action |
+|---|---|
+| `Ctrl`/`⌘` + `Enter` | Submit the edit (clicks the page's *Enter edit* / submit button) |
+| `Ctrl`/`⌘` + `↑` / `↓` | Cycle through your saved notes, replacing the field |
+| `Ctrl`/`⌘` + `B` | Wrap the selection — or the word at the caret — in **bold** markup |
+| `Ctrl`/`⌘` + `I` | Wrap the selection — or the word at the caret — in *italic* markup |
+
 ## Settings 
 
 Accessesd using ⚙ button:
