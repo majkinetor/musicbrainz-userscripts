@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.120000
+// @version      2026.6.19.130000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1607,8 +1607,10 @@
       if (!errs) {
         // #234: clean run → reload automatically so the gallery shows the new
         // state (brief pause so the ✅s are visible first).
-        b.textContent = 'Done — reloading…'; b.disabled = true;
-        setTimeout(() => location.reload(), 900);
+        // #248 on the add page there's nothing to reload INTO — land on the cover-art
+        // tab so the freshly-uploaded covers show in the normal gallery.
+        b.textContent = IS_ADD ? 'Done — opening cover art…' : 'Done — reloading…'; b.disabled = true;
+        setTimeout(() => { if (IS_ADD) location.href = `${ENT.base}/${ENT.art}`; else location.reload(); }, 900);
       } else {
         // something failed — leave it up so the user can read the ❌ rows.
         b.textContent = `Reload (${errs} failed)`; b.disabled = false; b.onclick = () => location.reload();
