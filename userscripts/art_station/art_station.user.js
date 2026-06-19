@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.250000
+// @version      2026.6.19.260000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1221,6 +1221,25 @@
     if (/failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to/i.test(txt)) return txt.slice(-160);
     return null;
   }
+  // ECAU injects its own UI into the add page (the paste-URL box, the "Import from …"
+  // buttons, the supported-providers link). Its presence is how we tell the manager
+  // actually loaded it — used to warn in the source popover and to fail a sourcing
+  // attempt fast (instead of spinning to ECAU_TIMEOUT) when it isn't there. #242
+  const ecauUI = doc => !!(doc && doc.querySelector('#ROpdebee_paste_url, .ROpdebee_import_url_buttons, #ROpdebee_ecau_providers_link'));
+  const NO_ECAU = 'Enhanced Cover Art Uploads isn’t installed or is disabled — it powers provider / URL sourcing.';
+  let _ecauProbe = null;   // cached: load the add page once in a hidden frame and see if ECAU injects its UI
+  function ecauInstalled() {
+    return _ecauProbe || (_ecauProbe = new Promise(resolve => {
+      const ifr = document.createElement('iframe');
+      ifr.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;height:700px;border:0;opacity:0;pointer-events:none';
+      let done = false;
+      const finish = v => { if (done) return; done = true; clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} resolve(v); };
+      const poll = setInterval(() => { let d; try { d = ifr.contentDocument; } catch (e) { return; } if (ecauUI(d)) finish(true); }, 300);
+      const killer = setTimeout(() => finish(false), 9000);
+      ifr.src = `${R}/add-${ART}`;
+      document.body.appendChild(ifr);
+    }));
+  }
   // a placeholder card (spinner + label) shown at the front of the gallery while ECAU
   // works, so the (sometimes slow) provider fetch has visible in-grid progress. It's
   // replaced by the real cover on success, removed on failure.
@@ -1257,7 +1276,7 @@
     document.body.appendChild(ifr);
     ifr.src = `${R}/add-${ART}?${p}`;
     const slot = addSourcingSlot(prov ? `Sourcing ${prov.name}…` : 'Sourcing…');
-    let done = false, lastN = 0, settleAt = 0;
+    let done = false, lastN = 0, settleAt = 0, noUiSince = 0;
     const stop = () => { clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} };
     // a preview is the uploader's rendered image — usually a blob:, but in some browsers
     // ECAU leaves it as the remote provider URL (e.g. i.discogs.com). Fetch blobs in-frame;
@@ -1288,7 +1307,13 @@
       const n = doc.querySelectorAll(previewSel).length;
       if (!n) {   // nothing yet — but if ECAU has reported a failure, stop now (don't spin)
         const err = ecauError(doc);
-        if (err) { done = true; stop(); dropSourcingSlot(slot); render(); toast('Couldn’t source that URL — ' + err, 8000); }
+        if (err) { done = true; stop(); dropSourcingSlot(slot); render(); toast('Couldn’t source that URL — ' + err, 8000); return; }
+        // ECAU absent: the add page has fully loaded but ECAU never injected its UI →
+        // fail fast (~6s) with a clear message instead of spinning to the 45s timeout.
+        if (doc.readyState === 'complete' && !ecauUI(doc)) {
+          if (!noUiSince) noUiSince = performance.now();
+          else if (performance.now() - noUiSince > 6000) { done = true; stop(); dropSourcingSlot(slot); render(); toast(NO_ECAU, 9000); }
+        } else noUiSince = 0;
         return;
       }
       if (n !== lastN) { lastN = n; settleAt = performance.now() + 1500; setSourcingLabel(slot, 'Adding…'); return; }  // still arriving → wait
@@ -1373,6 +1398,16 @@
       const allBtn = box.querySelector('.as-src-all');
       if (allBtn) allBtn.onclick = () => { pop.remove(); provs.forEach(p => sourceFromUrl(p.url, { name: p.name, icon: p.icon })); };   // one sourcing slot per provider
       box.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });   // hide a missing favicon (no inline handler — CSP)
+      placePop(pop, btn.getBoundingClientRect());
+    });
+    // detect a missing/disabled ECAU and turn the footer note into a clear warning,
+    // so the user knows BEFORE fetching (sourcing also fails fast if they try anyway).
+    ecauInstalled().then(ok => {
+      if (ok || !pop.isConnected) return;
+      const note = pop.querySelector('.as-pop-note:last-child');
+      if (!note) return;
+      note.classList.add('as-src-warn');
+      note.innerHTML = `⚠ ${esc(NO_ECAU)} <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Install / enable →</a>`;
       placePop(pop, btn.getBoundingClientRect());
     });
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
@@ -2355,6 +2390,8 @@
   .as-src-or{margin:9px 0 0;color:#9a8ccb;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
   .as-src-inp{width:100%;box-sizing:border-box;margin:4px 0 2px;padding:6px 8px;border:1px solid #cfc6e6;border-radius:6px;font:13px inherit}
   .as-src-pop > .as-pop-note:last-child{padding:6px 4px 2px;line-height:1.4;white-space:nowrap}
+  .as-src-pop > .as-pop-note.as-src-warn{white-space:normal;color:#a85a00;font-weight:600}
+  .as-src-pop > .as-pop-note.as-src-warn a{color:#a85a00;text-decoration:underline}
   .as-bulk-cmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid #d8ccf5;border-radius:6px;padding:5px 8px;margin:2px 0 2px;background:#faf9fe;color:#333}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
