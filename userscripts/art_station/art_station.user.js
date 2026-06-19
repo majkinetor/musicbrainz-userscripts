@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.510000
+// @version      2026.6.18.520000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1135,7 +1135,13 @@
   function sourceFromUrl(rawUrl, prov) {
     const url = (rawUrl || '').trim();
     if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
-    if (!prov) { const pf = providerOf(url); if (pf) prov = { name: pf.name, icon: provIconUrl(pf.domain) }; }
+    // known provider → its name+icon; otherwise fall back to the URL's host so a
+    // pasted link from anywhere (e.g. nugs.net) still gets a favicon badge. #249
+    if (!prov) {
+      const pf = providerOf(url);
+      if (pf) prov = { name: pf.name, icon: provIconUrl(pf.domain) };
+      else { try { const h = new URL(url).hostname.replace(/^www\./, ''); if (h) prov = { name: h, icon: provIconUrl(h) }; } catch (e) {} }
+    }
     const p = new URLSearchParams();
     p.set('x_seed.origin', releaseInfo().url);
     p.set('x_seed.image.0.url', url);
