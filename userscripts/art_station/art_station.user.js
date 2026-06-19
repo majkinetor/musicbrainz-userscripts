@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.200000
+// @version      2026.6.19.210000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1267,23 +1267,13 @@
     async function harvest(doc, win) {
       const files = [], metas = [];
       const seen = new Set();
-      // Read the type/comment MB set for THIS image from its own uploader row, not
-      // doc-wide: a provider/seed can return several images with DIFFERENT types
-      // (Front, Track, Track…) and a doc-wide read smears them all together. #253
-      const readMeta = (scope) => ({
-        types: [...scope.querySelectorAll('input[type=checkbox]:checked, input[name*="type_id"]:checked')]
-          .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
-          .filter(t => ALL_TYPES.includes(t)),
-        comment: (() => { const ci = scope.querySelector('input[name*="comment"], textarea[name*="comment"], input.comment, textarea.comment'); return ci ? (ci.value || '') : ''; })(),
-      });
       for (const img of [...doc.querySelectorAll(previewSel)]) {
         const src = img.src || img.getAttribute('src'); if (!src || seen.has(src)) continue; seen.add(src);
         let blob; try { blob = /^blob:/i.test(src) ? await win.fetch(src).then(r => r.blob()) : await gmFetch(src); } catch (e) { continue; }
         // skip a provider's logo/favicon (e.g. Amazon's smile) — decode the actual blob,
         // not the preview <img> (MB may downscale that), and drop sub-cover-sized art. #242
         try { const bmp = await (win.createImageBitmap || createImageBitmap)(blob); const big = Math.max(bmp.width, bmp.height); bmp.close && bmp.close(); if (big && big < MIN_ART_PX) continue; } catch (e) {}
-        const row = img.closest('tr');
-        const { types, comment } = readMeta(row && row.querySelector('input[type=checkbox]') ? row : doc);   // per-row, doc-wide only if the row has no checkboxes
+        const { types, comment } = readArtMeta(img);   // #253 THIS image's own type/comment block (never doc-wide)
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
@@ -2453,10 +2443,29 @@
   // and any comment — and stage it as a NEW cover. Runs on load and via an observer
   // because the seed is async (ECAU fetches + maximises after the page settles).
   const _sameArr = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
-  const rowTypes = tr => [...tr.querySelectorAll('input[type=checkbox]:checked')]
-    .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
-    .filter(t => ALL_TYPES.includes(t));
-  const rowComment = tr => { const ci = tr.querySelector('input[name*="comment"], textarea[name*="comment"], input.comment, textarea.comment'); return ci ? (ci.value || '') : ''; };
+  // #253 the per-image block: the widest ancestor of a preview <img> that still
+  // contains ONLY that image — used to read its OWN checked type checkboxes + comment.
+  // Never read doc-wide (a provider/seed returns several images with different types,
+  // and a doc-wide read smeared every type onto every cover).
+  function imageScope(img) {
+    let n = img.parentElement, scope = null;
+    while (n) {
+      if (n.querySelectorAll('img.uploader-preview-image, img[src^="blob:"]').length > 1) break;   // climbed past this image
+      if (n.querySelector('input[type=checkbox]')) scope = n;   // widest single-image block that holds this image's checkboxes
+      if (n.tagName === 'FORM' || !n.parentElement) break;
+      n = n.parentElement;
+    }
+    return scope;
+  }
+  function readArtMeta(img) {
+    const scope = imageScope(img);
+    if (!scope) return { types: [], comment: '' };
+    const types = [...scope.querySelectorAll('input[type=checkbox]:checked, input[name*="type_id"]:checked')]
+      .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
+      .filter(t => ALL_TYPES.includes(t));
+    const ci = scope.querySelector('input[name*="comment"], textarea[name*="comment"], input.comment, textarea.comment');
+    return { types, comment: ci ? (ci.value || '') : '' };
+  }
   // harvest is idempotent + re-runnable: a NEW row is staged; a row we've already
   // staged has its type/comment SYNCED if the integration set them after the image
   // appeared (common with ECAU) — but only while the user hasn't edited that cover.
@@ -2479,7 +2488,7 @@
         const img = tr.querySelector('img.uploader-preview-image, img[src^="blob:"]');
         const src = img && (img.src || img.getAttribute('src'));
         if (!src || !/^blob:/i.test(src)) continue;
-        const types = rowTypes(tr), comment = rowComment(tr);
+        const { types, comment } = readArtMeta(img);   // #253 this image's own type/comment block
         const rowId = tr.dataset.asRow;
         if (rowId) {   // this row is already staged — sync metadata, swap in a maximised image, never re-add
           const existing = MODEL.find(m => m._seedSrc === rowId);
