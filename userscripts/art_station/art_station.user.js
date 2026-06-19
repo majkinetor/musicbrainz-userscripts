@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.540000
+// @version      2026.6.18.550000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -451,7 +451,10 @@
   }
   function newSection() {
     if (!SETTINGS.group) return '';   // Position view shows new uploads inline, positioned among covers
-    const news = MODEL.filter(it => it._new && !it._del && !it._sourcing).sort((a, b) => a.order - b.order);
+    // group view excludes _new covers from the type groups, so the New uploads section
+    // is the ONLY place they show — include in-progress sourcing placeholders too, or
+    // a URL/ECAU/MH import would add nothing visible while it works.
+    const news = MODEL.filter(it => it._new && !it._del).sort((a, b) => a.order - b.order);
     if (!news.length) return '';
     return `<div class="as-sec as-sec-new"><h3>New uploads</h3><span class="as-cnt">${news.length}</span><span class="as-line"></span></div>
       <div class="as-grid">${news.map(card).join('')}</div>`;
@@ -543,6 +546,9 @@
   // full comment field beside it. No per-row toolbar actions (selection / delete
   // live on the main toolbar).
   function detailRow(it) {
+    if (it._sourcing) return `<div class="as-drow new as-sourcing" data-id="${esc(it.id)}">
+      <div class="as-dthumb as-srcing-thumb"><div class="as-spinner"></div></div>
+      <div class="as-dmeta"><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
     if (it._del) return `<div class="as-drow del" data-id="${esc(it.id)}">
       <span class="as-dsel-x">✕</span>
       <div class="as-dleft">
