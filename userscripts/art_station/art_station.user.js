@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.18.500000
+// @version      2026.6.18.510000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -494,6 +494,13 @@
       host.replaceWith(img);                       // re-attach the cached (decoded) node — no reload
     });
   }
+  // #249 a small favicon chip in the cover's bottom-left corner naming where a
+  // newly-sourced image came from (ECAU provider / MH Covers), shown until commit.
+  function provBadge(it) {
+    return (it._new && it._provIcon)
+      ? `<span class="as-prov" title="Sourced from ${esc(it._provider || 'provider')}"><img src="${esc(it._provIcon)}" alt=""></span>`
+      : '';
+  }
   function card(it) {
     if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}">`
       + `<div class="as-srcing-thumb"><div class="as-spinner"></div><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
@@ -501,6 +508,7 @@
       <div class="as-thumb">${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
         ${it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
+        ${provBadge(it)}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
       </div>
       ${foot(it)}
@@ -551,7 +559,7 @@
     return `<div class="as-drow${it._new ? ' new' : ''}${it._pending ? ' pending' : ''}${it._sel ? ' sel' : ''}" data-id="${esc(it.id)}">
       <input type="checkbox" class="as-dsel" title="select"${it._sel ? ' checked' : ''}>
       <div class="as-dleft">
-        <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
+        <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${provBadge(it)}${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
         <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span></div>
         ${it._new ? '' : `<div class="as-did">#${esc(it.id)}</div>`}
       </div>
@@ -662,6 +670,7 @@
       getProvLinks().then(l => { const n = src.querySelector('.as-src-n'); if (n) { n.textContent = l.length ? ` (${l.length})` : ''; if (l.length) src.title = `Source a cover — ${l.length} linked platform${l.length > 1 ? 's' : ''} or any URL, via ECAU (#242)`; } });
     }
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
+    root.querySelectorAll('.as-prov img').forEach(img => img.onerror = () => { const s = img.closest('.as-prov'); if (s) s.style.display = 'none'; });   // #249 hide a missing provider favicon
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) commit.onclick = enterEdit;
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
@@ -1053,6 +1062,22 @@
     window.addEventListener('message', onMsg);
     window.addEventListener('beforeunload', onUnload);
   }
+  // MH reports the cover's underlying source (e.g. "itunes", "bandcamp") — map the
+  // known ones to a recognisable name + favicon so the staged cover shows where it
+  // came from, the same as ECAU sources do (#249). Unknown → labelled as MH Covers.
+  const MH_SOURCE = {
+    itunes: ['Apple Music', 'music.apple.com'], applemusic: ['Apple Music', 'music.apple.com'],
+    deezer: ['Deezer', 'deezer.com'], spotify: ['Spotify', 'spotify.com'], tidal: ['Tidal', 'tidal.com'],
+    qobuz: ['Qobuz', 'qobuz.com'], bandcamp: ['Bandcamp', 'bandcamp.com'], discogs: ['Discogs', 'discogs.com'],
+    amazonmusic: ['Amazon', 'amazon.com'], amazon: ['Amazon', 'amazon.com'], vgmdb: ['VGMdb', 'vgmdb.net'],
+    junodownload: ['Juno', 'junodownload.com'], beatport: ['Beatport', 'beatport.com'], sevendigital: ['7digital', '7digital.com'],
+  };
+  function mhProvider(o) {
+    const key = String(o.source || o.sourceName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const m = MH_SOURCE[key];
+    if (m) return { name: `${m[0]} (via MH)`, icon: provIconUrl(m[1]) };
+    return { name: 'MH Covers', icon: `${MH_ORIGIN}/favicon.svg` };
+  }
   async function addCoverFromMH(o) {
     const url = o.bigCoverUrl || o.smallCoverUrl; if (!url) return;
     toast('Fetching cover from MH…', 120000);
@@ -1061,7 +1086,8 @@
       const ext = (String(url).match(/\.(jpe?g|png|gif|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase().replace('jpeg', 'jpg');
       const type = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
       const file = new File([blob], `mh-${Date.now()}.${ext}`, { type });
-      addFiles([file]);
+      const prov = mhProvider(o);
+      addFiles([file], [{ provider: prov.name, provIcon: prov.icon }]);
       toast('Added cover from MH Covers ✓');
     } catch (e) { toast('Could not fetch the cover — ' + e.message, 5000); }
   }
@@ -1103,9 +1129,13 @@
     const el = document.querySelector(`.as-card[data-id="${CSS.escape(id)}"] .as-srcing-lbl`); if (el) el.textContent = text;
   }
   function dropSourcingSlot(id) { MODEL = MODEL.filter(it => it.id !== id); MODEL.forEach((it, i) => it.order = i); }
-  function sourceFromUrl(rawUrl) {
+  // prov (optional) = { name, icon } the cover is being sourced from — passed by the
+  // "Import from <provider>" buttons, else derived from the URL. Stamped on each new
+  // cover so the gallery shows where it came from until commit (#249).
+  function sourceFromUrl(rawUrl, prov) {
     const url = (rawUrl || '').trim();
     if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
+    if (!prov) { const pf = providerOf(url); if (pf) prov = { name: pf.name, icon: provIconUrl(pf.domain) }; }
     const p = new URLSearchParams();
     p.set('x_seed.origin', releaseInfo().url);
     p.set('x_seed.image.0.url', url);
@@ -1113,7 +1143,7 @@
     ifr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1100px;height:900px;border:0;opacity:0;pointer-events:none';
     document.body.appendChild(ifr);
     ifr.src = `${R}/add-${ART}?${p}`;
-    const slot = addSourcingSlot('Sourcing…');
+    const slot = addSourcingSlot(prov ? `Sourcing ${prov.name}…` : 'Sourcing…');
     let done = false, lastN = 0, settleAt = 0;
     const stop = () => { clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} };
     // a preview is the uploader's rendered image — usually a blob:, but in some browsers
@@ -1141,7 +1171,7 @@
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-        metas.push({ types: types.slice(), comment });
+        metas.push({ types: types.slice(), comment, provider: prov && prov.name, provIcon: prov && prov.icon });
       }
       return { files, metas };
     }
@@ -1232,9 +1262,9 @@
       box.classList.remove('as-pop-note');
       box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('')
         + (provs.length > 1 ? `<button class="as-btn as-src-all">⬇ Import all ${provs.length} sources</button>` : '');
-      box.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { pop.remove(); sourceFromUrl(provs[+b.dataset.i].url); });
+      box.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { const p = provs[+b.dataset.i]; pop.remove(); sourceFromUrl(p.url, { name: p.name, icon: p.icon }); });
       const allBtn = box.querySelector('.as-src-all');
-      if (allBtn) allBtn.onclick = () => { pop.remove(); provs.forEach(p => sourceFromUrl(p.url)); };   // one sourcing slot per provider
+      if (allBtn) allBtn.onclick = () => { pop.remove(); provs.forEach(p => sourceFromUrl(p.url, { name: p.name, icon: p.icon })); };   // one sourcing slot per provider
       box.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });   // hide a missing favicon (no inline handler — CSP)
       placePop(pop, btn.getBoundingClientRect());
     });
@@ -1253,7 +1283,9 @@
       if (SETTINGS.autoComment && !comment && p.comment) comment = p.comment;
     }
     return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment, order: 0, w: 0, h: 0,
-      bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f, _origTypes: [], _origComment: '', _origOrder: -1 };
+      bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
+      _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '',   // #249 where this image was sourced (shown until committed)
+      _origTypes: [], _origComment: '', _origOrder: -1 };
   }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
   // that already know their type/comment (e.g. ECAU provider import, #242)
@@ -2052,6 +2084,11 @@
   .as-srcing-lbl{font:600 12px Arial;color:#2c7a59}
   .as-pdfban{position:absolute;right:6px;top:6px;z-index:4;background:#7a3a8f;color:#fff;font:700 10px/1 Arial;letter-spacing:.5px;padding:3px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:#fff;font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
+  /* #249 provider favicon chip, bottom-left of a newly-sourced cover */
+  .as-prov{position:absolute;left:6px;bottom:6px;z-index:5;width:25px;height:25px;border-radius:6px;background:rgba(255,255,255,.93);box-shadow:0 1px 3px rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:zoom-in}
+  .as-prov img{width:18px;height:18px;display:block;object-fit:contain}
+  .as-dthumb .as-prov{left:4px;bottom:4px;width:22px;height:22px}
+  .as-dthumb .as-prov img{width:16px;height:16px}
   .as-thumb{position:relative;display:block;width:100%;aspect-ratio:1;background:#f4f2f9;cursor:zoom-in;border-radius:9px 9px 0 0;overflow:hidden}
   .as-thumb img{width:100%;height:100%;object-fit:contain;display:block}
   .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#faf8ff,#efeafb)}
