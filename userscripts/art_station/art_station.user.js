@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.140000
+// @version      2026.6.19.150000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1654,6 +1654,7 @@
   // ── lightbox (#230: click image → popup, ←→↑↓ navigate) ───────────────────────
   let _lb = null;          // current lightbox image id
   let _z = { s: 1, x: 0, y: 0 };   // wheel-zoom state (scale + translate)
+  let _pinch = null, _pan = null;  // #251 active touch pinch-zoom / one-finger pan
   function applyZoom(img) { img.style.transform = `translate(${_z.x}px,${_z.y}px) scale(${_z.s})`; img.style.cursor = _z.s > 1 ? 'grab' : ''; }
   function resetZoom() { _z = { s: 1, x: 0, y: 0 }; const img = document.querySelector('.as-lb-img'); if (img) applyZoom(img); }
   // keyboard zoom (↑/↓ in the lightbox) — anchored on the image centre, same step as the wheel
@@ -1717,18 +1718,42 @@
         document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
       });
       // #251 mobile: just the full image — swipe left/right to navigate, swipe down
-      // to close, tap to toggle the controls (hidden by default on a touch screen).
+      // to close, tap toggles the controls; pinch to zoom, one finger to pan, tap to
+      // reset. (hidden chrome by default on a touch screen.)
       ov.classList.toggle('as-lb-touch', matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window);
       let tsx = 0, tsy = 0, tmoved = false, tmulti = false;
       ov.addEventListener('touchstart', e => { tmulti = e.touches.length > 1; if (tmulti) return; tsx = e.touches[0].clientX; tsy = e.touches[0].clientY; tmoved = false; }, { passive: true });
       ov.addEventListener('touchmove', e => { if (tmulti || e.touches.length > 1) { tmulti = true; return; } if (Math.hypot(e.touches[0].clientX - tsx, e.touches[0].clientY - tsy) > 8) tmoved = true; }, { passive: true });
       ov.addEventListener('touchend', e => {
-        if (tmulti || _z.s > 1) return;   // multi-touch / zoomed → don't hijack
+        if (tmulti) return;                               // a pinch/2-finger gesture, not a swipe
+        if (_z.s > 1) { if (!tmoved && !_pinch) resetZoom(); return; }   // zoomed: tap → fit, else pan handled it
         const t = e.changedTouches[0], dx = t.clientX - tsx, dy = t.clientY - tsy;
         if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3) { lbNav(dx < 0 ? 1 : -1); return; }
         if (dy > 80 && dy > Math.abs(dx) * 1.3) { closeLightbox(); return; }
         if (!tmoved) ov.classList.toggle('as-lb-chrome');   // tap toggles the controls
       }, { passive: true });
+      // pinch-zoom toward the pinch midpoint (mirrors the wheel zoom), one-finger pan when zoomed
+      const limg = ov.querySelector('.as-lb-img');
+      const tdist = (a, b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      limg.addEventListener('touchstart', e => {
+        if (e.touches.length === 2) { e.preventDefault(); const m = { x: (e.touches[0].clientX + e.touches[1].clientX) / 2, y: (e.touches[0].clientY + e.touches[1].clientY) / 2 }; _pinch = { d0: tdist(e.touches[0], e.touches[1]), s0: _z.s, x0: _z.x, y0: _z.y, m }; _pan = null; }
+        else if (e.touches.length === 1 && _z.s > 1) { _pan = { x: e.touches[0].clientX, y: e.touches[0].clientY, x0: _z.x, y0: _z.y }; }
+      }, { passive: false });
+      limg.addEventListener('touchmove', e => {
+        if (_pinch && e.touches.length === 2) {
+          e.preventDefault();
+          const ns = Math.min(8, Math.max(1, _pinch.s0 * tdist(e.touches[0], e.touches[1]) / _pinch.d0));
+          const r = limg.getBoundingClientRect(), cx = r.left + r.width / 2 - _z.x, cy = r.top + r.height / 2 - _z.y;
+          const relx = _pinch.m.x - cx, rely = _pinch.m.y - cy;
+          _z.x = relx - ns * (relx - _pinch.x0) / _pinch.s0; _z.y = rely - ns * (rely - _pinch.y0) / _pinch.s0; _z.s = ns;
+          if (ns === 1) { _z.x = 0; _z.y = 0; }
+          applyZoom(limg);
+        } else if (_pan && e.touches.length === 1 && _z.s > 1) {
+          e.preventDefault();
+          _z.x = _pan.x0 + (e.touches[0].clientX - _pan.x); _z.y = _pan.y0 + (e.touches[0].clientY - _pan.y); applyZoom(limg);
+        }
+      }, { passive: false });
+      limg.addEventListener('touchend', e => { if (e.touches.length < 2) _pinch = null; if (e.touches.length === 0) _pan = null; }, { passive: false });
     }
     resetZoom();   // a fresh open starts un-zoomed; ←/→ navigation keeps the zoom
     ov.classList.remove('as-lb-chrome');   // #251 touch: start as just-the-image, tap to reveal controls
@@ -2312,6 +2337,16 @@
   #as-lb.as-lb-touch .as-lb-del,#as-lb.as-lb-touch .as-lb-dlwrap,#as-lb.as-lb-touch .as-lb-top,#as-lb.as-lb-touch .as-lb-bar{opacity:0;pointer-events:none;transition:opacity .15s}
   #as-lb.as-lb-touch.as-lb-chrome .as-lb-del,#as-lb.as-lb-touch.as-lb-chrome .as-lb-dlwrap,#as-lb.as-lb-touch.as-lb-chrome .as-lb-top,#as-lb.as-lb-touch.as-lb-chrome .as-lb-bar{opacity:1;pointer-events:auto}
   .as-ghost{border-radius:9px;background:#fff}
+  /* #251 bigger tap targets on a touch screen (≈44px), incl. the full-screen controls */
+  @media (pointer: coarse) {
+    #as-root .as-btn,#as-root .as-ic,#as-root select{min-height:40px;padding-top:8px;padding-bottom:8px}
+    #as-root .as-type,#as-root .as-type-add{padding-top:7px;padding-bottom:7px}
+    #as-root .as-pencil{min-height:34px;padding:0 12px}
+    #as-root .as-tbtn{opacity:1;padding:8px 11px}
+    .as-lb-x,.as-lb-play,.as-lb-del,.as-lb-dl,.as-lb-dlcaret{min-width:46px;min-height:46px;font-size:18px}
+    .as-lb-cmtadd,.as-lb-type{min-height:40px;padding:9px 16px}
+    .as-lb-dlmenu button{padding:12px 14px}
+  }
   /* commit panel */
   #as-commit,#as-report{position:fixed;inset:0;z-index:9998;background:rgba(15,12,28,.55);display:flex;align-items:center;justify-content:center;padding:24px}
   .as-rp-opts{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:10px}
