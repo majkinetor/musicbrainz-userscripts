@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.220000
+// @version      2026.6.19.230000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2508,7 +2508,11 @@
           const existing = MODEL.find(m => m._seedSrc === rowId);
           if (!existing || existing._del) continue;
           const last = existing._seedTypes || [];
-          if (_sameArr(existing.types, last) && !_sameArr(types, existing.types)) { existing.types = types.slice(); existing._seedTypes = types.slice(); dirty = true; }
+          // sync only FILLS late-arriving types — never wipes a captured type back to
+          // empty. ECAU maximises a row by re-rendering it; the checkboxes blink back to
+          // unchecked mid-render, and the src-change re-harvest would otherwise read [] and
+          // clobber the good type. So require a non-empty read before overwriting. #253
+          if (types.length && _sameArr(existing.types, last) && !_sameArr(types, existing.types)) { existing.types = types.slice(); existing._seedTypes = types.slice(); dirty = true; }
           if (!existing.comment && comment) { existing.comment = comment; dirty = true; }
           if (src !== existing._seedBlobSrc) {   // ECAU maximised → replace the staged blob with the bigger one
             let blob; try { blob = await fetch(src).then(r => r.ok ? r.blob() : null); } catch (e) { blob = null; }
