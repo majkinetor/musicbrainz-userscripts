@@ -267,16 +267,15 @@ function tidalCompany(name, entityTypeName) {
 }
 
 export function tidalToEngine(tracks) {
-    const IMPORT_ROLES = {
-        'Producer':           'producer',
-        'Mixing Engineer':    'mix',
-        'Recording Engineer': 'recording',
-        'Sound Engineer':     'sound engineer',
-        'Composer':           'composer',
-        'Lyricist':           'lyricist',
-        'Writer':             'writer',
-        'Orchestrator':       'orchestrator',
-    };
+    // Derive the per-track role→linkType map straight from TIDAL_ROLE_MAP so the two
+    // can't drift — a hardcoded copy here is exactly why a freshly-mapped role (Remixer,
+    // #257) passed filterTidalCredits but was then dropped as "Not imported (v1 scope)".
+    // Publisher / Music Publisher are handled separately below (label→work), so exclude them.
+    const IMPORT_ROLES = Object.fromEntries(
+        Object.entries(TIDAL_ROLE_MAP)
+            .filter(([role]) => role !== 'Publisher' && role !== 'Music Publisher')
+            .map(([role, { rel }]) => [role, rel]),
+    );
     const tracklistRels = [];
     const tracklist = [];
     const skipped = [];
