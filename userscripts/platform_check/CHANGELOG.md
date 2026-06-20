@@ -1,5 +1,12 @@
 # Platform Check Changelog
 
+## [2026.6.20](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.20)
+
+### Fixes
+
+1. Discogs master URL queued for addition despite no good Discogs release match ([#256](https://github.com/majkinetor/musicbrainz-userscripts/issues/256))
+1. Links for disabled provider queued for addition ([#255](https://github.com/majkinetor/musicbrainz-userscripts/issues/255))
+
 ## [2026.6.14](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.14)
 
 ### Features

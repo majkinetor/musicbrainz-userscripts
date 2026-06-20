@@ -1,5 +1,11 @@
 # Credit Hoarder Changelog
 
+## [2026.6.20](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.20)
+
+### Fixes
+
+1. "Group background vocalist" role on Tidal not recognized ([#266](https://github.com/majkinetor/musicbrainz-userscripts/issues/266))
+
 ## [2026.6.18.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.18.2)
 
 - Small improvements

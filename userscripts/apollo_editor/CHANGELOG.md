@@ -1,5 +1,11 @@
 # Apollo Editor Changelog
 
+## [2026.6.20](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.20)
+
+### Fixes
+
+1. Apollo Editor Tools menu on the Tracklist tab not completely visible and on wrong position ([#247](https://github.com/majkinetor/musicbrainz-userscripts/issues/247))
+
 ## [2026.6.18.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.18.2)
 
 - Small improvements
