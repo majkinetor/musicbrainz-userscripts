@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.133000
+// @version      2026.6.20.155000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -682,24 +682,26 @@
       // selection: the checkbox is the certain indicator; right-click also paints
       const sel = row.querySelector('.as-dsel');
       if (sel) sel.onchange = () => { it._sel = sel.checked; row.classList.toggle('sel', it._sel); syncSel(); };
-      row.onmousedown = e => { if (e.button !== 2) return; e.preventDefault(); _paint = { value: !it._sel }; paintCard(row); };
+      row.onmousedown = e => { if (e.button !== 2) return; e.preventDefault(); _paint = { value: !it._sel, cards: [] }; paintCard(row); };
     });
   }
 
+  // bump the thumbnail size by one notch (dir +1 bigger / -1 smaller), update the live
+  // CSS var + slider, and persist/re-fit once changes settle. Shared by the size slider's
+  // wheel and the right-click+wheel gallery shortcut (#259).
+  let _szT = null;
+  function resizeTile(dir) {
+    SETTINGS.tile = Math.max(120, Math.min(340, SETTINGS.tile + (dir > 0 ? 15 : -15)));
+    const sizeEl = root.querySelector('.as-size'); if (sizeEl) sizeEl.value = SETTINGS.tile;
+    document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); fitFooters();
+    clearTimeout(_szT); _szT = setTimeout(() => { save(); render(); }, 250);   // persist + re-fit once scrolling settles
+  }
   function wire() {
     const sizeEl = root.querySelector('.as-size');
     sizeEl.oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); };
     sizeEl.onchange = () => { save(); render(); };
     // scroll the wheel over the slider to resize (no need to drag it)
-    let _szT = null;
-    sizeEl.onwheel = e => {
-      e.preventDefault();
-      const min = +sizeEl.min || 120, max = +sizeEl.max || 340;
-      SETTINGS.tile = Math.max(min, Math.min(max, SETTINGS.tile + (e.deltaY < 0 ? 15 : -15)));
-      sizeEl.value = SETTINGS.tile;
-      document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); fitFooters();
-      clearTimeout(_szT); _szT = setTimeout(() => { save(); render(); }, 250);   // persist + re-fit once scrolling settles
-    };
+    sizeEl.onwheel = e => { e.preventDefault(); e.stopPropagation(); resizeTile(e.deltaY < 0 ? 1 : -1); };   // stopProp: don't also trigger the RMB+wheel root handler (#259)
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
@@ -753,7 +755,7 @@
       c.onmousedown = e => {
         if (e.button !== 2 || c.classList.contains('del')) return;
         e.preventDefault(); const it = byId(c.dataset.id); if (!it) return;
-        _paint = { value: !it._sel }; paintCard(c);
+        _paint = { value: !it._sel, cards: [] }; paintCard(c);
       };
       wireCardTouch(c);   // #251 long-press to select, drag-handle to reorder (mobile)
     });
@@ -786,14 +788,34 @@
     const it = byId(c.dataset.id); if (!it || it._sel === _paint.value) return;
     it._sel = _paint.value; c.classList.toggle('sel', it._sel);
     const cb = c.querySelector('.as-dsel'); if (cb) cb.checked = it._sel;   // keep the row checkbox in sync
+    _paint.cards.push(c);
     syncSel();
+  }
+  // #259 the right-click+wheel resize shares the RMB-down with paint-select; if the user
+  // wheels, the gesture was a resize, so undo any cards toggled on the way in.
+  function cancelPaint() {
+    if (!_paint) return;
+    const prev = !_paint.value;
+    for (const c of _paint.cards) { const it = byId(c.dataset.id); if (!it) continue; it._sel = prev; c.classList.toggle('sel', it._sel); const cb = c.querySelector('.as-dsel'); if (cb) cb.checked = it._sel; }
+    _paint = null; syncSel();
   }
   document.addEventListener('mousemove', e => {
     if (!_paint || !e.buttons) return;   // e.buttons falls to 0 if the button was released off-window
     const c = e.target.closest && e.target.closest('.as-card, .as-drow');
     if (c && root.contains(c)) paintCard(c);
   });
-  document.addEventListener('mouseup', () => { _paint = null; });
+  document.addEventListener('mouseup', e => { _paint = null; if (e.button === 2) _rmb = false; });
+  // #259 hold the right mouse button and scroll the wheel anywhere in the gallery to set
+  // thumbnail size. RMB is also paint-select, so a wheel cancels the in-flight select.
+  let _rmb = false;
+  root.addEventListener('mousedown', e => { if (e.button === 2) _rmb = true; });
+  window.addEventListener('blur', () => { _rmb = false; });
+  root.addEventListener('wheel', e => {
+    if (!_rmb) return;
+    e.preventDefault();              // don't scroll the page while resizing
+    cancelPaint();                   // the RMB-down was the start of a resize, not a select
+    resizeTile(e.deltaY < 0 ? 1 : -1);
+  }, { passive: false });
 
   // ── #251 touch support: long-press to select, long-press-then-drag to reorder ───
   // A tap opens the viewer; _lpSwallow eats the click synthesised after a long-press
