@@ -124,6 +124,20 @@ assert.equal(tidalToEngine([
     { num: '1', title: 'b', credits: [] },
 ]).multiVolume, true);
 
+// #266 per-track vocal roles → recording vocal rels with the MB vocal attribute
+const vEng = tidalToEngine([
+    { num: '1', title: 'Children Of The Sun', tidalTrackId: '1', credits: [
+        { role: 'Lead Vocalist',              names: [{ name: 'Jim LaMarche', tidalId: '1' }] },
+        { role: 'Group Background Vocalists', names: [{ name: 'The Choir', tidalId: '2' }] },
+    ] },
+]);
+const vByRole = Object.fromEntries(vEng.tracklistRels.map(r => [r.artist.name, r]));
+assert.equal(vByRole['Jim LaMarche'].linkType, 'vocal');
+assert.deepEqual(vByRole['Jim LaMarche'].attributes, [{ _type: 'vocal', value: 'lead vocals' }]);
+assert.equal(vByRole['The Choir'].linkType, 'vocal');
+assert.equal(vByRole['The Choir'].entityType, 'artist');
+assert.deepEqual(vByRole['The Choir'].attributes, [{ _type: 'vocal', value: 'background vocals' }]);
+
 // ── tidalReleaseArtists: Info-tab release-level credits → engine shapes ──────
 const relRes = tidalReleaseArtists([
     { role: 'Producer',          names: [{ name: 'Ron Saint Germain', tidalId: '14254072' }] },

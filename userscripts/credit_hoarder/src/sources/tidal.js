@@ -32,6 +32,11 @@ export const TIDAL_ROLE_MAP = {
     'Recording Engineer':{ target: 'recording', rel: 'recording' },
     'Sound Engineer':    { target: 'recording', rel: 'sound engineer' },
     'Lead Vocalist':     { target: 'recording', rel: 'vocal', attributes: [{ _type: 'vocal', value: 'lead vocals' }] },   // #257
+    // #266 Tidal's per-track background-vocal roles → recording vocal[background vocals]
+    // (same MB attribute as the release-level "Backing Vocals", see entity-map.js).
+    'Group Background Vocalists': { target: 'recording', rel: 'vocal', attributes: [{ _type: 'vocal', value: 'background vocals' }] },
+    'Background Vocalist':        { target: 'recording', rel: 'vocal', attributes: [{ _type: 'vocal', value: 'background vocals' }] },
+    'Background Vocalists':       { target: 'recording', rel: 'vocal', attributes: [{ _type: 'vocal', value: 'background vocals' }] },
     'Composer':          { target: 'work',      rel: 'composer' },
     'Lyricist':          { target: 'work',      rel: 'lyricist' },
     'Writer':            { target: 'work',      rel: 'writer' },
