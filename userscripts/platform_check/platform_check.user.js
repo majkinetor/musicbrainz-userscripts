@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.14
+// @version      2026.6.20
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -375,6 +375,11 @@ function getProviderOrder() {
     } catch { return ALL_PROVIDERS.slice(); }
 }
 const PROVIDER_ORDER = getProviderOrder();
+// A provider the user has unchecked in Settings is hidden from the dash, but its
+// result may still be cached from an earlier enabled run. Anything that consumes the
+// cache (inject +, open-all ↗) must skip disabled providers or it queues/opens links
+// for a provider the user turned off. (#255)
+const providerEnabled = p => GM_getValue(`prov_${p}`, true);
 const PROVIDER_NAME  = { spotify:'Spotify', discogs:'Discogs', bandcamp:'Bandcamp', deezer:'Deezer', apple:'Apple', tidal:'Tidal', qobuz:'Qobuz', beatport:'Beatport', volumo:'Volumo', hdtracks:'HDtracks' };
 const PROVIDER_COLOR = { spotify:'#1DB954', discogs:'#222',    bandcamp:'#629AA9', deezer:'#A238FF', apple:'#FA243C', tidal:'#111',  qobuz:'#0070ef', beatport:'#0a8754', volumo:'#7c4dff', hdtracks:'#e63329' };
 // Small brand glyphs shown next to each provider name (toggle: pc:show-icons). Spotify / Apple Music /
@@ -3641,6 +3646,7 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     let barcodeBlocked = 0;
     let formatBlocked = 0;
     for (const p of PROVIDER_ORDER) {
+        if (!providerEnabled(p)) continue;   // #255 disabled in Settings — never queue its (possibly stale) cache
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
         if (cached.source === 'MB rels') continue;
@@ -3662,7 +3668,9 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
     const mbCached     = mbDataGet(mbid);
     const rgMbid       = mbCached?.releaseGroupMbid;
     const existingMaster = mbCached?.existing?.discogsMaster;
-    if (masterUrl && rgMbid && !existingMaster) {
+    if (!providerEnabled('discogs')) {
+        // #255 Discogs disabled — skip its master too (it may be cached from an enabled run)
+    } else if (masterUrl && rgMbid && !existingMaster) {
         pendingRG['discogs-master'] = masterUrl;
         appendLog('System', `Inject: queueing Discogs master ${masterUrl} for release-group ${rgMbid}`);
     } else if (masterUrl && existingMaster) {
@@ -3678,6 +3686,7 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
         //   • inMb      — a confirmed match exists but is already a relationship on the release
         let unmatched = 0, inMb = 0;
         for (const p of PROVIDER_ORDER) {
+            if (!providerEnabled(p)) continue;   // #255 disabled providers don't factor into "why nothing queued"
             const c = cacheGet(mbid, p);
             if (!c?.url) continue;
             if (c.source === 'MB rels') inMb++; else unmatched++;   // not in MB but not queued ⇒ not a ✓ match
@@ -3710,6 +3719,7 @@ document.getElementById('mb-inject-btn').addEventListener('click', async (e) => 
 document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
     const urls = [];
     for (const p of PROVIDER_ORDER) {
+        if (!providerEnabled(p)) continue;   // #255 disabled in Settings — don't open its (possibly stale) cache
         const cached = cacheGet(mbid, p);
         if (!cached?.url) continue;
         if (cached.source === 'MB rels') continue;   // circled — already in MB, skip
@@ -3723,7 +3733,7 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
     // Discogs master: only if found and not already on the release-group (non-circled)
     const masterUrl = cacheGet(mbid, 'discogs')?.masterUrl;
     const existingMaster = mbDataGet(mbid)?.existing?.discogsMaster;
-    if (masterUrl && !existingMaster) urls.push(masterUrl);
+    if (providerEnabled('discogs') && masterUrl && !existingMaster) urls.push(masterUrl);   // #255 skip if Discogs disabled
     const uniq = [...new Set(urls)];
     if (!uniq.length) {
         appendLog('System', 'Open all: nothing new — all found links are already in MB', 'warn');
