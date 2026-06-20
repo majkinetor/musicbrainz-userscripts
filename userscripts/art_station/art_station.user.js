@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.164500
+// @version      2026.6.20.201500
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1315,18 +1315,33 @@
     if (document.querySelector('.as-src-pop') && _srcBtn) openSourcePop(_srcBtn);   // reflect in an open popover
     return true;
   }
+  // does a blob decode as a real image in OUR realm? (the true test of a usable cover)
+  async function decodesImg(blob) {
+    try { const bmp = await createImageBitmap(blob); bmp.close && bmp.close(); return true; } catch (e) { return false; }
+  }
   async function providerBlob(it) {            // one provider result → a Blob in OUR realm
     if (it == null) return null;
-    if (it.dataUrl) return fetch(it.dataUrl).then(r => r.blob());
+    if (it.dataUrl) { try { return await fetch(it.dataUrl).then(r => r.blob()); } catch (e) {} }
+    const directUrl = it.url || it.source || '';   // a re-fetchable image URL, if the provider gave one
     // A provider fetches images in ITS OWN userscript sandbox, so the Blob/File it hands
-    // back belongs to a different realm: `instanceof Blob` can be false here, and an object
-    // URL we make from it won't render (#250 — vzell's Jungleland blobs were valid JPEGs but
-    // showed blank). So duck-type it and COPY the bytes into a fresh same-realm Blob.
+    // back belongs to a different realm. Copying its bytes into a fresh same-realm Blob is
+    // enough on most managers — but a cross-realm ArrayBuffer can copy the right byte LENGTH
+    // yet not the actual content (#250 — vzell's Jungleland blobs reported the correct size
+    // but never decoded). So launder it AND verify it actually decodes before trusting it.
     const raw = it.blob || it.file;
     if (raw && typeof raw.arrayBuffer === 'function') {
-      try { const buf = await raw.arrayBuffer(); return new Blob([buf], { type: raw.type || 'image/jpeg' }); } catch (e) {}
+      try {
+        const buf = await raw.arrayBuffer();
+        const u8 = new Uint8Array(buf), copy = new Uint8Array(u8.length); copy.set(u8);   // explicit same-realm byte copy
+        const b = new Blob([copy], { type: raw.type || 'image/jpeg' });
+        // PDFs can't be decode-checked; trust them. Images must decode, else fall through.
+        if ((raw.type === 'application/pdf') || await decodesImg(b)) return b;
+      } catch (e) {}
     }
-    if (it.url) return gmFetch(it.url);        // else Art Station fetches a plain (non-locked) URL itself
+    // Fallback: fetch the image URL ourselves, in OUR realm — no cross-realm object at all.
+    // This rescues a provider that only hands back a Blob whose bytes don't survive the
+    // sandbox boundary, as long as it also told us the URL (it.url / it.source).
+    if (directUrl) { try { return await gmFetch(directUrl); } catch (e) {} }
     return null;
   }
   function sourceFromProvider(prov, links) {
