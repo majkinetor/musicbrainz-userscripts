@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.162000
+// @version      2026.6.20.163000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1322,7 +1322,10 @@
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-        metas.push({ types, comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url });
+        // #260 if ECAU left the preview as a remote image URL (it does for some providers,
+        // e.g. Discogs → i.discogs.com), keep that DIRECT image URL alongside the page URL.
+        const directUrl = /^https?:/i.test(src) ? src : '';
+        metas.push({ types, comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url, provImageUrl: directUrl });
       }
       return { files, metas };
     }
@@ -1453,6 +1456,7 @@
     return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment, order: 0, w: 0, h: 0,
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
       _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '', _provUrl: (meta && meta.provUrl) || '',   // #249 where this image was sourced (shown until committed)
+      _provImageUrl: (meta && meta.provImageUrl) || '',   // #260 direct image URL when the provider exposes one (e.g. Discogs)
       _seedSrc: (meta && meta.seedSrc) || '', _seedTypes: (meta && meta.seedTypes) ? meta.seedTypes.slice() : null,   // #248 native-uploader row + last types synced from it
       _seedBlobSrc: (meta && meta.seedBlobSrc) || '',   // #253 the row's current blob URL (changes when ECAU maximises)
       _contentKey: (meta && meta.contentKey) || '',     // #253 image-content fingerprint, to drop duplicate sourced/seeded covers
@@ -1544,9 +1548,14 @@
   const sourceLine = it => {
     if (!it) return '';
     const who = (it._provider && String(it._provider).trim()) || '';
-    const url = (it._provUrl && String(it._provUrl).trim()) || '';
-    if (!who && !url) return '';
-    return `Cover art sourced from ${who || 'an external provider'}${url ? ` — ${url}` : ''}`;
+    const page = (it._provUrl && String(it._provUrl).trim()) || '';
+    const img = (it._provImageUrl && String(it._provImageUrl).trim()) || '';
+    const main = page || img;
+    if (!who && !main) return '';
+    let s = `Cover art sourced from ${who || 'an external provider'}`;
+    if (main) s += ` — ${main}`;
+    if (img && img !== main) s += `\nImage: ${img}`;   // #260 the direct image URL, when distinct from the page
+    return s;
   };
   const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
   async function getPostForm(url) {
