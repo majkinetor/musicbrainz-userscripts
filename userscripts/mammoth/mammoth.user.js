@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20
+// @version      2026.6.20.233000
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -30,7 +30,7 @@
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false };   // defaultInsert: 'replace' | 'append'
-  const VERSION = '2026.6.20.202500';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.6.20.233000';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -130,12 +130,16 @@
   // ── styles ───────────────────────────────────────────────────────────────────
   const css = `
   fieldset.editnote, .editnote { max-width:100% !important; }
-  /* On the release editor the edit note sits in a 540px .half-width column (its
-     only sibling is the changes warning, not a guidelines column), so give that
-     column the full form width when Mammoth is active. The :has() selector
-     scopes it to our column only. min-width:0 lets the editnote fieldset
-     (min-content by default) take that width so margin:auto can center it. */
-  .half-width:has(> .editnote.mmth-on), .col:has(> .editnote.mmth-on) { width:100% !important; max-width:100% !important; }
+  /* On the release editor the edit note sits in a 540px .half-width column whose
+     only sibling is the changes warning (not a guidelines column), so give that
+     column the full form width when Mammoth is active. The :has() selector scopes
+     it to our column. min-width:0 lets the editnote fieldset (min-content by
+     default) take that width so margin:auto can center it.
+     SCOPED to the release editor (body.mmth-reledit): on entity-creation/edit
+     pages (artist/label/… /create, /edit) the .editnote sits in a genuine
+     half-width column beside the guidelines, and widening it to 100% broke that
+     two-column layout — visibly so alongside scripts that write into it (#268). */
+  .mmth-reledit .half-width:has(> .editnote.mmth-on), .mmth-reledit .col:has(> .editnote.mmth-on) { width:100% !important; max-width:100% !important; }
   .editnote.mmth-on { width:100% !important; max-width:100% !important; min-width:0 !important; box-sizing:border-box; }
   .editnote.mmth-on > .row { width:100% !important; box-sizing:border-box; }
   /* hide only the redundant inline "Edit note:" label next to the field — keep
@@ -206,8 +210,26 @@
   .mmth-toast { position:fixed; z-index:100000; background:#2c3a33; color:#fff; padding:6px 12px; border-radius:6px; font:13px sans-serif; box-shadow:0 4px 14px rgba(0,0,0,.25); left:50%; top:14px; transform:translateX(-50%); }
   `;
   (function () { const s = document.createElement('style'); s.textContent = css; (document.head || document.documentElement).appendChild(s); })();
+  // #268: only the release editor wants its edit-note .half-width column widened to
+  // full width. Tag it so the widening rule above is scoped to it and never disturbs
+  // the two-column layout of entity create/edit pages (artist, label, work, …).
+  if (/^\/release\/(?:add|[0-9a-f-]{36}\/edit)(?:[/?#]|$)/.test(location.pathname)) document.documentElement.classList.add('mmth-reledit');
 
-  function toast(msg) { const t = document.createElement('div'); t.className = 'mmth-toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 1500); }
+  // Show a toast near where the user is acting (the Mammoth panel / button they just
+  // clicked) instead of pinned to the top of the page, which reads as unrelated (#268
+  // follow-up). Falls back to top-centre when there's no recent Mammoth interaction.
+  let _toastPt = null;
+  document.addEventListener('pointerdown', e => { const t = e.target.closest && e.target.closest('.mmth-side, .mmth-pop, .mmth-wrap, .mmth-badge'); if (t) _toastPt = { x: e.clientX, y: e.clientY }; }, true);
+  function toast(msg) {
+    const t = document.createElement('div'); t.className = 'mmth-toast'; t.textContent = msg; document.body.appendChild(t);
+    if (_toastPt) {   // anchor just above the click point, clamped into the viewport
+      const w = t.offsetWidth, h = t.offsetHeight;
+      const left = Math.max(6, Math.min(window.innerWidth - w - 6, _toastPt.x - w / 2));
+      const top = Math.max(6, Math.min(window.innerHeight - h - 6, _toastPt.y - h - 10));
+      t.style.left = left + 'px'; t.style.top = top + 'px'; t.style.transform = 'none';
+    }
+    setTimeout(() => t.remove(), 1500);
+  }
 
   // ── popovers (settings + syntax help) ────────────────────────────────────────
   let pop = null;
