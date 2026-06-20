@@ -27,6 +27,7 @@
  *  publisher registered", filtered out by default. */
 export const TIDAL_ROLE_MAP = {
     'Producer':          { target: 'recording', rel: 'producer' },
+    'Remixer':           { target: 'recording', rel: 'remixer' },   // #257 artist→recording remixer (was unrecognized → dropped)
     'Mixing Engineer':   { target: 'recording', rel: 'mix' },
     'Recording Engineer':{ target: 'recording', rel: 'recording' },
     'Sound Engineer':    { target: 'recording', rel: 'sound engineer' },

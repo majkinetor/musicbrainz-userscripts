@@ -695,6 +695,11 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             return null;
         }
 
+        // #257 a recording must never get more than one freshly-created work in a single
+        // run. The loop keys on unique recording GIDs so this can't happen normally — if it
+        // ever does it's a logic error, so we surface it (error + skip) instead of silently
+        // creating a duplicate work, which is what made the remix tracks in #257 confusing.
+        const createdWorkRecGids = new Set();
         for (const [recGid, entries] of workOnlyByGid) {
             // entries may be empty when createWorksMode='when-missing' adds all recordings (no work-only roles)
             const recEntity  = entries[0]?.recEntity  ?? recordingByGid.get(recGid);
@@ -732,6 +737,13 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 continue;
             }
             if (!workEntity) {
+                // #257 guard: refuse to create a second work for a recording we already
+                // created one for this run (should be impossible — keys are unique).
+                if (createdWorkRecGids.has(recGid)) {
+                    log.error(`Track ${trackPos} "${trackTitle}": a work was already created for this recording in this run — skipping to avoid a duplicate work`);
+                    failed++;
+                    continue;
+                }
                 // Use MB's own batch-create-works mechanism:
                 //   1. Build a work object matching MB's createWorkObject() output
                 //   2. Register it via mergeLinkedEntities so the editor knows about it
@@ -781,6 +793,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                         linkTypeID: recordingOfLinkTypeId,
                     },
                 });
+                createdWorkRecGids.add(recGid);
                 log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
                 added++;
                 tickProgress();

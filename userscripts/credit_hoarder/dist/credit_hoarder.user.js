@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.19.180443
+// @version      2026.6.20.122826
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -1979,6 +1979,8 @@
   // src/sources/tidal.js
   var TIDAL_ROLE_MAP = {
     "Producer": { target: "recording", rel: "producer" },
+    "Remixer": { target: "recording", rel: "remixer" },
+    // #257 artist→recording remixer (was unrecognized → dropped)
     "Mixing Engineer": { target: "recording", rel: "mix" },
     "Recording Engineer": { target: "recording", rel: "recording" },
     "Sound Engineer": { target: "recording", rel: "sound engineer" },
@@ -4416,6 +4418,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         }
         return null;
       }
+      const createdWorkRecGids = /* @__PURE__ */ new Set();
       for (const [recGid, entries] of workOnlyByGid) {
         const recEntity = entries[0]?.recEntity ?? recordingByGid.get(recGid);
         const trackTitle = entries[0]?.role.track.title || recEntity?.name || recGid;
@@ -4438,6 +4441,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           continue;
         }
         if (!workEntity) {
+          if (createdWorkRecGids.has(recGid)) {
+            log.error(`Track ${trackPos} "${trackTitle}": a work was already created for this recording in this run \u2014 skipping to avoid a duplicate work`);
+            failed++;
+            continue;
+          }
           const newWorkId = re.getRelationshipStateId();
           workEntity = {
             _fromBatchCreateWorksDialog: true,
@@ -4480,6 +4488,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               linkTypeID: recordingOfLinkTypeId
             }
           });
+          createdWorkRecGids.add(recGid);
           log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
           added++;
           tickProgress();
