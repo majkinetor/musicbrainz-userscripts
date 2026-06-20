@@ -190,6 +190,8 @@ If any of the following options is on, script replaces the native interface elem
 
 All configured modifications are toggled on/off using the switcher button.
 
+**Auto confirm release submissions** (on by default) — when another site *seeds* the Add/Edit-release form, MusicBrainz shows a confirmation page before opening the editor. With this on, Apollo clicks its submit button for you so you skip that step — integrating [chaban's *Auto click confirm form submission*](https://greasyfork.org/en/scripts/536999) script. It only acts on that seed-confirmation page; add `?skip_confirmation` to a seed URL to bypass it once.
+
 ### Matching options
 
 | Option | Default | What it does |
