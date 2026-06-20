@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.160000
+// @version      2026.6.20.153000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
 // @match        *://*.musicbrainz.org/release/*/cover-art
+// @match        *://*.musicbrainz.org/release/*/add-cover-art
 // @match        *://*.musicbrainz.org/event/*/event-art
+// @match        *://*.musicbrainz.org/event/*/add-event-art
 // @grant        GM.xmlHttpRequest
 // @grant        GM_xmlhttpRequest
 // @connect      *
@@ -22,10 +24,14 @@
   // Works on BOTH a release's cover art and an event's event art — same gallery,
   // same flow, only the entity differs (archive host, the */-art endpoint suffix,
   // and the type vocabulary). Everything downstream goes through ENT. (#241)
-  const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(?:cover|event)-art/i);
+  const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(add-)?(?:cover|event)-art/i);
   if (!M) return;
   const IS_EVENT = M[1].toLowerCase() === 'event';
   const MBID = M[2];
+  // #248 the native "add cover art" uploader page (also where integrations like
+  // Harmony land, sometimes pre-seeded with images). Art Station fully takes it
+  // over: same gallery, plus it harvests any seeded images as staged new covers.
+  const IS_ADD = !!M[3];
   const ENT = IS_EVENT
     ? { kind: 'event',   base: `/event/${MBID}`,   art: 'event-art', archive: `https://eventartarchive.org/event/${MBID}`, noun: 'event art', Noun: 'Event art' }
     : { kind: 'release', base: `/release/${MBID}`, art: 'cover-art', archive: `https://coverartarchive.org/release/${MBID}`, noun: 'cover art', Noun: 'Cover art' };
@@ -53,6 +59,18 @@
   let _savedPrefs = {}; try { _savedPrefs = JSON.parse(localStorage.getItem('artstation:settings') || '{}'); } catch (e) {}
   earlyHide.disabled = !!_savedPrefs.showOrig;
   footerStyle.disabled = !!_savedPrefs.showOrig || _savedPrefs.hideMbFooter === false;
+  // #248 the add page: take the whole thing over. Move the native uploader form
+  // OFF-SCREEN (not display:none) so it stays functional — integrations (ECAU /
+  // Harmony) still seed it and we harvest the resulting preview rows — while every
+  // bit of its UI (and any plugin UI inside it) is invisible. mount() hides the
+  // rest of #content. Disabled in "Show original".
+  let addHide = null;
+  if (IS_ADD) {
+    addHide = document.createElement('style');
+    addHide.textContent = 'form#add-cover-art,form#add-event-art{position:fixed!important;left:-99999px!important;top:0!important;width:1000px!important;opacity:0!important;pointer-events:none!important}';
+    appendEl(addHide);
+    addHide.disabled = !!_savedPrefs.showOrig;
+  }
 
   // Proper edit-note attribution, like the other scripts: "Name vX by author - url".
   // GM_info is exposed even under @grant none on the common managers; fall back to
@@ -166,6 +184,7 @@
   // MB's page (its DB) is the source of truth for the cover list — it includes images
   // that aren't on the Cover Art Archive yet (just added). CAA only enriches comments.
   function parsePageArt() {
+    if (IS_ADD) return null;   // #248 the add page has no native gallery to parse — use CAA only
     const blocks = [...document.querySelectorAll('.artwork-cont')];
     if (!blocks.length) return null;
     return blocks.map((b, i) => {
@@ -253,18 +272,32 @@
     // hide the native cover-art UI between the tabs and the page footer: the type
     // <h2>s, the .artwork-cont blocks and the trailing "These images…" note.
     const hide = el => { el.style.display = 'none'; _native.push(el); };
-    [...anchor.children].forEach(ch => {
-      if (ch === root || ch === afterTabs || ch === afterH1) return;
-      if (ch.tagName === 'H2' || ch.tagName === 'P') hide(ch);
-      else if (ch.querySelector && ch.querySelector('.artwork-cont')) hide(ch);
-      else if (ch.classList && ch.classList.contains('artwork-cont')) hide(ch);
-    });
-    document.querySelectorAll('.artwork-cont').forEach(hide);
+    if (IS_ADD) {
+      // #248 full takeover: hide every #content child except the header, the tabs,
+      // the title and our gallery. The uploader form is left alone — it's already
+      // off-screen (addHide) and must stay live so seeds populate it for harvest.
+      [...anchor.children].forEach(ch => {
+        if (ch === root || ch === afterTabs || ch === afterH1) return;
+        if (/^(SCRIPT|NOSCRIPT|STYLE|LINK)$/.test(ch.tagName)) return;
+        if (ch.id === 'add-cover-art' || ch.id === 'add-event-art') return;   // the off-screen uploader (harvest source)
+        if (ch.classList && ch.classList.contains('releaseheader')) return;
+        hide(ch);
+      });
+    } else {
+      [...anchor.children].forEach(ch => {
+        if (ch === root || ch === afterTabs || ch === afterH1) return;
+        if (ch.tagName === 'H2' || ch.tagName === 'P') hide(ch);
+        else if (ch.querySelector && ch.querySelector('.artwork-cont')) hide(ch);
+        else if (ch.classList && ch.classList.contains('artwork-cont')) hide(ch);
+      });
+      document.querySelectorAll('.artwork-cont').forEach(hide);
+    }
   }
   // "Show original" (View): un-hide MB's native cover-art UI and collapse our
   // gallery to just the toolbar — like Apollo's native/script switcher. #234
   function applyOriginal() {
     earlyHide.disabled = _showOrig;                                  // the document-start hiding style
+    if (addHide) addHide.disabled = _showOrig;                       // #248 reveal the native uploader in Original
     _native.forEach(el => { el.style.display = _showOrig ? '' : 'none'; });
     root.classList.toggle('as-orig', _showOrig);                     // hides the whole Art Station UI
     ensureSwitch();
@@ -504,11 +537,13 @@
     const tip = `Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `\n${it._provUrl}` : '');   // #249 URL on a second line
     return `<span class="as-prov" title="${esc(tip)}"><img src="${esc(it._provIcon)}" alt=""></span>`;
   }
+  // #248 (vzell) tooltip for a locally-uploaded cover — its original file name.
+  const uploadTip = it => (it._new && it._uploadName) ? ` title="${esc(it._uploadName)}"` : '';
   function card(it) {
     if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}">`
       + `<div class="as-srcing-thumb"><div class="as-spinner"></div><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
     return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
-      <div class="as-thumb">${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
+      <div class="as-thumb"${uploadTip(it)}>${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
         ${it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${provBadge(it)}
@@ -565,7 +600,7 @@
     return `<div class="as-drow${it._new ? ' new' : ''}${it._pending ? ' pending' : ''}${it._sel ? ' sel' : ''}" data-id="${esc(it.id)}">
       <input type="checkbox" class="as-dsel" title="select"${it._sel ? ' checked' : ''}>
       <div class="as-dleft">
-        <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${provBadge(it)}${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
+        <div class="as-dthumb"${uploadTip(it)}>${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${provBadge(it)}${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
         <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span></div>
         ${it._new ? '' : `<div class="as-did">#${esc(it.id)}</div>`}
       </div>
@@ -696,7 +731,7 @@
     // click the THUMB (not just the <img>, which is display:none on a not-yet-propagated
     // cover) → lightbox; PDFs open in a new tab. right-click card → toggle selection
     root.querySelectorAll('.as-thumb').forEach(th => {
-      th.onclick = e => { if (e.target.closest('button')) return; const it = byId(cardId(e.target)); if (!it) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
+      th.onclick = e => { if (e.target.closest('button') || _lpSwallow) return; const it = byId(cardId(e.target)); if (!it) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
       const img = th.querySelector('img'); if (!img) return;
       // A freshly-added cover has its original uploaded but the CAA thumbnails
       // (250/500) aren't generated yet — so the thumb URL 404s and native MB
@@ -720,6 +755,7 @@
         e.preventDefault(); const it = byId(c.dataset.id); if (!it) return;
         _paint = { value: !it._sel }; paintCard(c);
       };
+      wireCardTouch(c);   // #251 long-press to select, drag-handle to reorder (mobile)
     });
     wireSel();
     wireDrag();
@@ -758,6 +794,73 @@
     if (c && root.contains(c)) paintCard(c);
   });
   document.addEventListener('mouseup', () => { _paint = null; });
+
+  // ── #251 touch support: long-press to select, long-press-then-drag to reorder ───
+  // A tap opens the viewer; _lpSwallow eats the click synthesised after a long-press
+  // so it doesn't ALSO open the viewer.
+  let _lpSwallow = false;
+  const swallowTap = () => { _lpSwallow = true; setTimeout(() => { _lpSwallow = false; }, 450); };
+  function toggleSel(c) {
+    const it = byId(c.dataset.id); if (!it || it._del) return;
+    it._sel = !it._sel; c.classList.toggle('sel', it._sel);
+    const cb = c.querySelector('.as-dsel'); if (cb) cb.checked = it._sel;
+    syncSel();
+  }
+  let _tdrag = null;   // active touch reorder: { block, ghost, tgt }
+  function wireCardTouch(c) {
+    if (c.classList.contains('del')) return;
+    let timer = null, start = null, engaged = false, moved = false;
+    c.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0]; start = { x: t.clientX, y: t.clientY }; engaged = false; moved = false;
+      timer = setTimeout(() => {
+        engaged = true; try { navigator.vibrate && navigator.vibrate(15); } catch (x) {}
+        const it = byId(c.dataset.id);
+        if (canReorder() && it && !it._del) startTouchDrag(c, it, start);   // pick up to reorder
+        else toggleSel(c);                                                  // otherwise select
+      }, 420);
+    }, { passive: true });
+    c.addEventListener('touchmove', e => {
+      if (!start) return;
+      const t = e.touches[0], far = Math.hypot(t.clientX - start.x, t.clientY - start.y) > 12;
+      if (!engaged) { if (far) { clearTimeout(timer); timer = null; start = null; } return; }   // pre-engage move = page scroll
+      e.preventDefault(); moved = true;
+      if (_tdrag) moveTouchDrag(t);
+    }, { passive: false });
+    c.addEventListener('touchend', e => {
+      clearTimeout(timer); timer = null;
+      if (_tdrag) { e.preventDefault(); const dropped = endTouchDrag(); if (!dropped && !moved) toggleSel(c); swallowTap(); start = null; return; }
+      if (engaged) { e.preventDefault(); swallowTap(); }   // long-press select already done
+      start = null;
+    }, { passive: false });
+    c.addEventListener('touchcancel', () => { clearTimeout(timer); timer = null; if (_tdrag) endTouchDrag(); start = null; });
+  }
+  function startTouchDrag(c, it, start) {
+    _drag = it; const block = dragBlock(); block.forEach(g => cardEl(g)?.classList.add('as-dragging'));
+    const r = c.getBoundingClientRect();
+    const ghost = c.cloneNode(true); ghost.className = 'as-card as-ghost';
+    ghost.style.cssText = `position:fixed;left:0;top:0;width:${r.width}px;z-index:100050;pointer-events:none;opacity:.92;transform:translate(${r.left}px,${r.top}px) scale(1.04);box-shadow:0 10px 30px rgba(0,0,0,.4)`;
+    document.body.appendChild(ghost);
+    _tdrag = { block, ghost, off: { x: start.x - r.left, y: start.y - r.top }, tgt: null };
+  }
+  function moveTouchDrag(t) {
+    const g = _tdrag.ghost; g.style.transform = `translate(${t.clientX - _tdrag.off.x}px,${t.clientY - _tdrag.off.y}px) scale(1.04)`;
+    g.style.visibility = 'hidden'; const under = document.elementFromPoint(t.clientX, t.clientY); g.style.visibility = '';
+    const card = under && under.closest && under.closest('.as-card[draggable="true"]');
+    root.querySelectorAll('.as-drop').forEach(c => c.classList.remove('as-drop'));
+    const tgt = card && byId(card.dataset.id);
+    _tdrag.tgt = (tgt && !_tdrag.block.includes(tgt)) ? tgt : null;
+    if (_tdrag.tgt) card.classList.add('as-drop');
+  }
+  function endTouchDrag() {
+    const { block, ghost, tgt } = _tdrag; _tdrag = null;
+    ghost.remove();
+    root.querySelectorAll('.as-dragging').forEach(c => c.classList.remove('as-dragging'));
+    root.querySelectorAll('.as-drop').forEach(c => c.classList.remove('as-drop'));
+    _drag = null;
+    if (tgt) { reorder(block, tgt); render(); return true; }
+    return false;
+  }
   window.addEventListener('resize', () => { if (root.isConnected) fitToolbar(); });
   // right-click is our selection gesture across the gallery — suppress the native menu there
   document.addEventListener('contextmenu', e => { if (root.contains(e.target)) e.preventDefault(); });
@@ -1093,8 +1196,8 @@
       const type = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
       const file = new File([blob], `mh-${Date.now()}.${ext}`, { type });
       const prov = mhProvider(o);
-      addFiles([file], [{ provider: prov.name, provIcon: prov.icon, provUrl: url }]);
-      toast('Added cover from MH Covers ✓');
+      const added = await addFilesDeduped([file], [{ provider: prov.name, provIcon: prov.icon, provUrl: url }]);   // #253
+      toast(added ? 'Added cover from MH Covers ✓' : 'That cover is already added');
     } catch (e) { toast('Could not fetch the cover — ' + e.message, 5000); }
   }
 
@@ -1119,6 +1222,25 @@
     if (!txt) return null;
     if (/failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to/i.test(txt)) return txt.slice(-160);
     return null;
+  }
+  // ECAU injects its own UI into the add page (the paste-URL box, the "Import from …"
+  // buttons, the supported-providers link). Its presence is how we tell the manager
+  // actually loaded it — used to warn in the source popover and to fail a sourcing
+  // attempt fast (instead of spinning to ECAU_TIMEOUT) when it isn't there. #242
+  const ecauUI = doc => !!(doc && doc.querySelector('#ROpdebee_paste_url, .ROpdebee_import_url_buttons, #ROpdebee_ecau_providers_link'));
+  const NO_ECAU = 'Enhanced Cover Art Uploads isn’t installed or is disabled — it powers provider / URL sourcing.';
+  let _ecauProbe = null;   // cached: load the add page once in a hidden frame and see if ECAU injects its UI
+  function ecauInstalled() {
+    return _ecauProbe || (_ecauProbe = new Promise(resolve => {
+      const ifr = document.createElement('iframe');
+      ifr.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;height:700px;border:0;opacity:0;pointer-events:none';
+      let done = false;
+      const finish = v => { if (done) return; done = true; clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} resolve(v); };
+      const poll = setInterval(() => { let d; try { d = ifr.contentDocument; } catch (e) { return; } if (ecauUI(d)) finish(true); }, 300);
+      const killer = setTimeout(() => finish(false), 9000);
+      ifr.src = `${R}/add-${ART}`;
+      document.body.appendChild(ifr);
+    }));
   }
   // a placeholder card (spinner + label) shown at the front of the gallery while ECAU
   // works, so the (sometimes slow) provider fetch has visible in-grid progress. It's
@@ -1215,7 +1337,7 @@
     document.body.appendChild(ifr);
     ifr.src = `${R}/add-${ART}?${p}`;
     const slot = addSourcingSlot(prov ? `Sourcing ${prov.name}…` : 'Sourcing…');
-    let done = false, lastN = 0, settleAt = 0;
+    let done = false, lastN = 0, settleAt = 0, noUiSince = 0;
     const stop = () => { clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} };
     // a preview is the uploader's rendered image — usually a blob:, but in some browsers
     // ECAU leaves it as the remote provider URL (e.g. i.discogs.com). Fetch blobs in-frame;
@@ -1225,24 +1347,17 @@
     async function harvest(doc, win) {
       const files = [], metas = [];
       const seen = new Set();
-      // ECAU sets the cover type/comment (e.g. "Front" from Bandcamp) on the uploader, but MB
-      // does NOT nest those checkboxes inside the preview image's row — so a row-scoped read
-      // missed them. We seed exactly one image per iframe, so read them doc-wide. #242
-      const types = [...doc.querySelectorAll('input[name*="type_id"]:checked')]
-        .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
-        .filter(t => ALL_TYPES.includes(t));
-      const ci = doc.querySelector('input[name*="comment"], textarea[name*="comment"]');
-      const comment = ci ? (ci.value || '') : '';
       for (const img of [...doc.querySelectorAll(previewSel)]) {
         const src = img.src || img.getAttribute('src'); if (!src || seen.has(src)) continue; seen.add(src);
         let blob; try { blob = /^blob:/i.test(src) ? await win.fetch(src).then(r => r.blob()) : await gmFetch(src); } catch (e) { continue; }
         // skip a provider's logo/favicon (e.g. Amazon's smile) — decode the actual blob,
         // not the preview <img> (MB may downscale that), and drop sub-cover-sized art. #242
         try { const bmp = await (win.createImageBitmap || createImageBitmap)(blob); const big = Math.max(bmp.width, bmp.height); bmp.close && bmp.close(); if (big && big < MIN_ART_PX) continue; } catch (e) {}
+        const { types, comment } = readArtMeta(img);   // #253 THIS image's own type/comment block (never doc-wide)
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-        metas.push({ types: types.slice(), comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url });
+        metas.push({ types, comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url });
       }
       return { files, metas };
     }
@@ -1253,7 +1368,13 @@
       const n = doc.querySelectorAll(previewSel).length;
       if (!n) {   // nothing yet — but if ECAU has reported a failure, stop now (don't spin)
         const err = ecauError(doc);
-        if (err) { done = true; stop(); dropSourcingSlot(slot); render(); toast('Couldn’t source that URL — ' + err, 8000); }
+        if (err) { done = true; stop(); dropSourcingSlot(slot); render(); toast('Couldn’t source that URL — ' + err, 8000); return; }
+        // ECAU absent: the add page has fully loaded but ECAU never injected its UI →
+        // fail fast (~6s) with a clear message instead of spinning to the 45s timeout.
+        if (doc.readyState === 'complete' && !ecauUI(doc)) {
+          if (!noUiSince) noUiSince = performance.now();
+          else if (performance.now() - noUiSince > 6000) { done = true; stop(); dropSourcingSlot(slot); render(); toast(NO_ECAU, 9000); }
+        } else noUiSince = 0;
         return;
       }
       if (n !== lastN) { lastN = n; settleAt = performance.now() + 1500; setSourcingLabel(slot, 'Adding…'); return; }  // still arriving → wait
@@ -1261,8 +1382,9 @@
       done = true;
       const { files, metas } = await harvest(doc, win);
       stop(); dropSourcingSlot(slot);
-      if (files.length) { addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from provider ✓`); }
-      else { render(); toast('Provider returned no image', 5000); }
+      const added = files.length ? await addFilesDeduped(files, metas) : 0;   // #253 skip an image already staged
+      if (added) toast(`Added ${added} image${added > 1 ? 's' : ''} from provider ✓`);
+      else { render(); toast(files.length ? 'That image is already added' : 'Provider returned no image', 5000); }
     }, 400);
     const killer = setTimeout(() => {
       if (done) return; done = true; stop(); dropSourcingSlot(slot); render();
@@ -1348,6 +1470,16 @@
       box.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });   // hide a missing favicon (no inline handler — CSP)
       placePop(pop, btn.getBoundingClientRect());
     });
+    // detect a missing/disabled ECAU and turn the footer note into a clear warning,
+    // so the user knows BEFORE fetching (sourcing also fails fast if they try anyway).
+    ecauInstalled().then(ok => {
+      if (ok || !pop.isConnected) return;
+      const note = pop.querySelector('.as-pop-note:last-child');
+      if (!note) return;
+      note.classList.add('as-src-warn');
+      note.innerHTML = `⚠ ${esc(NO_ECAU)} <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Install / enable →</a>`;
+      placePop(pop, btn.getBoundingClientRect());
+    });
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -1365,6 +1497,13 @@
     return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment, order: 0, w: 0, h: 0,
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
       _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '', _provUrl: (meta && meta.provUrl) || '',   // #249 where this image was sourced (shown until committed)
+      _seedSrc: (meta && meta.seedSrc) || '', _seedTypes: (meta && meta.seedTypes) ? meta.seedTypes.slice() : null,   // #248 native-uploader row + last types synced from it
+      _seedBlobSrc: (meta && meta.seedBlobSrc) || '',   // #253 the row's current blob URL (changes when ECAU maximises)
+      _contentKey: (meta && meta.contentKey) || '',     // #253 image-content fingerprint, to drop duplicate sourced/seeded covers
+      // #248 (vzell) original file name for a locally-picked/dropped upload — shown in the
+      // thumb tooltip. Sourced/seeded covers carry a synthetic File name, so skip those
+      // (they show their provider/source via provBadge instead). Disk path isn't recoverable.
+      _uploadName: (meta && (meta.provider || meta.seedSrc)) ? '' : ((f && f.name) || ''),
       _origTypes: [], _origComment: '', _origOrder: -1 };
   }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
@@ -1379,6 +1518,31 @@
     MODEL.forEach((it, i) => it.order = i);
     news.forEach(measure);   // fill in each new cover's resolution from its local file
     _dropZone = false; render();
+  }
+  // #253 a content fingerprint so the same image isn't staged twice. Sourcing
+  // (ECAU/MH/providers) and the add-page harvest can surface the SAME cover more
+  // than once — ECAU re-fires as it maximises, a provider may return dups, etc.
+  async function fileKey(file) {
+    try {
+      const buf = await file.arrayBuffer();
+      const h = await crypto.subtle.digest('SHA-1', buf);
+      return file.size + ':' + [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) { return 'sz' + file.size; }   // fallback: byte length only
+  }
+  // stage files, skipping any whose content already exists as a staged NEW cover
+  // (or repeats within this batch). Returns how many were actually added.
+  async function addFilesDeduped(files, metas) {
+    const have = new Set(MODEL.filter(m => m._new && !m._del && m._contentKey).map(m => m._contentKey));
+    const outF = [], outM = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i]; if (!(f.type.startsWith('image/') || f.type === 'application/pdf')) continue;
+      const k = await fileKey(f);
+      if (have.has(k)) continue;
+      have.add(k);
+      outF.push(f); outM.push(Object.assign({}, metas && metas[i], { contentKey: k }));
+    }
+    if (outF.length) addFiles(outF, outM);
+    return outF.length;
   }
   // #243 a drop can include whole FOLDERS — recurse the directory entries to collect every
   // file. webkitGetAsEntry() must be read synchronously while the drop event is live.
@@ -1440,15 +1604,30 @@
     return { method: 'POST', url: form._action, body: p };
   }
   // Phase 2b: upload a new image. (1) sign via MB, (2) POST file to archive.org, (3) register.
-  async function signUpload(mime, ctl) {
-    const r = await fetch(`/ws/js/${ART}-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin', signal: ctl && ctl.ac.signal });
-    if (!r.ok) throw new Error('sign ' + r.status);
-    return r.json();   // { action, image_id, formdata, nonce }
+  // The sign endpoint reserves an image_id/nonce per call and fetches an S3 policy from the
+  // Internet Archive, so concurrent calls for the same release RACE and 500 — committing 6
+  // covers, only the 1st succeeded and the rest failed "sign 500". So serialise signing
+  // through a gate (the slow S3 PUT still overlaps) and retry transient 5xx/429 (IA flakes).
+  let _signGate = Promise.resolve();
+  async function signUploadRaw(mime, ctl) {
+    for (let attempt = 1; ; attempt++) {
+      if (ctl && ctl.aborted) throw new Error('cancelled');
+      const r = await fetch(`/ws/js/${ART}-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin', signal: ctl && ctl.ac.signal });
+      if (r.ok) return r.json();   // { action, image_id, formdata, nonce }
+      if (attempt >= 4 || ![429, 500, 502, 503, 504].includes(r.status)) throw new Error('sign ' + r.status);
+      await new Promise(res => setTimeout(res, 500 * attempt + Math.floor(Math.random() * 400)));   // backoff + jitter
+    }
+  }
+  function signUpload(mime, ctl) {
+    const run = () => signUploadRaw(mime, ctl);
+    const p = _signGate.then(run, run);   // one sign at a time, regardless of prior failures
+    _signGate = p.catch(() => {});
+    return p;
   }
   let _addForm = null;
   const addForm = () => (_addForm = _addForm || getPostForm(`${R}/add-${ART}`));
-  // step 1 (parallel-safe): sign + PUT the file to archive.org. Stores the signed
-  // upload on the item; the slow network part — like Turbo, run these concurrently.
+  // step 1: sign (serialised by the gate above) then PUT the file to archive.org. Stores
+  // the signed upload on the item; the slow PUT is the part that overlaps across items.
   async function uploadStep(it, onProgress, ctl) {
     if (ctl && ctl.aborted) throw new Error('cancelled');
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
@@ -1544,6 +1723,7 @@
       <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
     </div>`;
     document.body.appendChild(ov);
+    if (IS_ADD && _seedNote) ov.querySelector('.as-cm-note').value = _seedNote;   // #248 carry over the add page's edit note
     ov.onclick = e => { if (e.target === ov) ov.remove(); };
     ov.querySelector('.as-cm-cancel').onclick = () => ov.remove();
     const dryEl = ov.querySelector('.as-cm-dryrun');
@@ -1641,8 +1821,10 @@
       if (!errs) {
         // #234: clean run → reload automatically so the gallery shows the new
         // state (brief pause so the ✅s are visible first).
-        b.textContent = 'Done — reloading…'; b.disabled = true;
-        setTimeout(() => location.reload(), 900);
+        // #248 on the add page there's nothing to reload INTO — land on the cover-art
+        // tab so the freshly-uploaded covers show in the normal gallery.
+        b.textContent = IS_ADD ? 'Done — opening cover art…' : 'Done — reloading…'; b.disabled = true;
+        setTimeout(() => { if (IS_ADD) location.href = `${ENT.base}/${ENT.art}`; else location.reload(); }, 900);
       } else {
         // something failed — leave it up so the user can read the ❌ rows.
         b.textContent = `Reload (${errs} failed)`; b.disabled = false; b.onclick = () => location.reload();
@@ -1654,6 +1836,7 @@
   // ── lightbox (#230: click image → popup, ←→↑↓ navigate) ───────────────────────
   let _lb = null;          // current lightbox image id
   let _z = { s: 1, x: 0, y: 0 };   // wheel-zoom state (scale + translate)
+  let _pinch = null, _pan = null;  // #251 active touch pinch-zoom / one-finger pan
   function applyZoom(img) { img.style.transform = `translate(${_z.x}px,${_z.y}px) scale(${_z.s})`; img.style.cursor = _z.s > 1 ? 'grab' : ''; }
   function resetZoom() { _z = { s: 1, x: 0, y: 0 }; const img = document.querySelector('.as-lb-img'); if (img) applyZoom(img); }
   // keyboard zoom (↑/↓ in the lightbox) — anchored on the image centre, same step as the wheel
@@ -1716,8 +1899,46 @@
         const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
         document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
       });
+      // #251 mobile: just the full image — swipe left/right to navigate, swipe down
+      // to close, tap toggles the controls; pinch to zoom, one finger to pan, tap to
+      // reset. (hidden chrome by default on a touch screen.)
+      ov.classList.toggle('as-lb-touch', matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window);
+      let tsx = 0, tsy = 0, tmoved = false, tmulti = false;
+      ov.addEventListener('touchstart', e => { tmulti = e.touches.length > 1; if (tmulti) return; tsx = e.touches[0].clientX; tsy = e.touches[0].clientY; tmoved = false; }, { passive: true });
+      ov.addEventListener('touchmove', e => { if (tmulti || e.touches.length > 1) { tmulti = true; return; } if (Math.hypot(e.touches[0].clientX - tsx, e.touches[0].clientY - tsy) > 8) tmoved = true; }, { passive: true });
+      ov.addEventListener('touchend', e => {
+        if (tmulti) return;                               // a pinch/2-finger gesture, not a swipe
+        if (_z.s > 1) { if (!tmoved && !_pinch) resetZoom(); return; }   // zoomed: tap → fit, else pan handled it
+        const t = e.changedTouches[0], dx = t.clientX - tsx, dy = t.clientY - tsy;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3) { lbNav(dx < 0 ? 1 : -1); return; }
+        if (dy > 80 && dy > Math.abs(dx) * 1.3) { closeLightbox(); return; }
+        if (!tmoved) ov.classList.toggle('as-lb-chrome');   // tap toggles the controls
+      }, { passive: true });
+      // pinch-zoom toward the pinch midpoint (mirrors the wheel zoom), one-finger pan when zoomed
+      const limg = ov.querySelector('.as-lb-img');
+      const tdist = (a, b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      limg.addEventListener('touchstart', e => {
+        if (e.touches.length === 2) { e.preventDefault(); const m = { x: (e.touches[0].clientX + e.touches[1].clientX) / 2, y: (e.touches[0].clientY + e.touches[1].clientY) / 2 }; _pinch = { d0: tdist(e.touches[0], e.touches[1]), s0: _z.s, x0: _z.x, y0: _z.y, m }; _pan = null; }
+        else if (e.touches.length === 1 && _z.s > 1) { _pan = { x: e.touches[0].clientX, y: e.touches[0].clientY, x0: _z.x, y0: _z.y }; }
+      }, { passive: false });
+      limg.addEventListener('touchmove', e => {
+        if (_pinch && e.touches.length === 2) {
+          e.preventDefault();
+          const ns = Math.min(8, Math.max(1, _pinch.s0 * tdist(e.touches[0], e.touches[1]) / _pinch.d0));
+          const r = limg.getBoundingClientRect(), cx = r.left + r.width / 2 - _z.x, cy = r.top + r.height / 2 - _z.y;
+          const relx = _pinch.m.x - cx, rely = _pinch.m.y - cy;
+          _z.x = relx - ns * (relx - _pinch.x0) / _pinch.s0; _z.y = rely - ns * (rely - _pinch.y0) / _pinch.s0; _z.s = ns;
+          if (ns === 1) { _z.x = 0; _z.y = 0; }
+          applyZoom(limg);
+        } else if (_pan && e.touches.length === 1 && _z.s > 1) {
+          e.preventDefault();
+          _z.x = _pan.x0 + (e.touches[0].clientX - _pan.x); _z.y = _pan.y0 + (e.touches[0].clientY - _pan.y); applyZoom(limg);
+        }
+      }, { passive: false });
+      limg.addEventListener('touchend', e => { if (e.touches.length < 2) _pinch = null; if (e.touches.length === 0) _pan = null; }, { passive: false });
     }
     resetZoom();   // a fresh open starts un-zoomed; ←/→ navigation keeps the zoom
+    ov.classList.remove('as-lb-chrome');   // #251 touch: start as just-the-image, tap to reveal controls
     paintLightbox();
     preloadNeighbors();
     ov.style.display = 'flex';
@@ -2243,6 +2464,8 @@
   .as-src-or{margin:9px 0 0;color:#9a8ccb;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
   .as-src-inp{width:100%;box-sizing:border-box;margin:4px 0 2px;padding:6px 8px;border:1px solid #cfc6e6;border-radius:6px;font:13px inherit}
   .as-src-pop > .as-pop-note:last-child{padding:6px 4px 2px;line-height:1.4;white-space:nowrap}
+  .as-src-pop > .as-pop-note.as-src-warn{white-space:normal;color:#a85a00;font-weight:600}
+  .as-src-pop > .as-pop-note.as-src-warn a{color:#a85a00;text-decoration:underline}
   .as-bulk-cmt{width:100%;box-sizing:border-box;font:13px inherit;border:1px solid #d8ccf5;border-radius:6px;padding:5px 8px;margin:2px 0 2px;background:#faf9fe;color:#333}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
@@ -2292,6 +2515,22 @@
   .as-lb-cmt:focus{outline:none;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.14)}
   .as-lb-cmtadd{font:12px inherit;color:rgba(255,255,255,.6);background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:4px 13px;cursor:pointer}
   .as-lb-cmtadd:hover{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
+  /* #251 touch viewer: show only the full image; tap reveals the controls, swipe navigates */
+  #as-lb.as-lb-touch .as-lb-img{max-width:100vw;max-height:100vh;border-radius:0}
+  #as-lb.as-lb-touch .as-lb-nav{display:none}
+  #as-lb.as-lb-touch .as-lb-del,#as-lb.as-lb-touch .as-lb-dlwrap,#as-lb.as-lb-touch .as-lb-top,#as-lb.as-lb-touch .as-lb-bar{opacity:0;pointer-events:none;transition:opacity .15s}
+  #as-lb.as-lb-touch.as-lb-chrome .as-lb-del,#as-lb.as-lb-touch.as-lb-chrome .as-lb-dlwrap,#as-lb.as-lb-touch.as-lb-chrome .as-lb-top,#as-lb.as-lb-touch.as-lb-chrome .as-lb-bar{opacity:1;pointer-events:auto}
+  .as-ghost{border-radius:9px;background:#fff}
+  /* #251 bigger tap targets on a touch screen (≈44px), incl. the full-screen controls */
+  @media (pointer: coarse) {
+    #as-root .as-btn,#as-root .as-ic,#as-root select{min-height:40px;padding-top:8px;padding-bottom:8px}
+    #as-root .as-type,#as-root .as-type-add{padding-top:7px;padding-bottom:7px}
+    #as-root .as-pencil{min-height:34px;padding:0 12px}
+    #as-root .as-tbtn{opacity:1;padding:8px 11px}
+    .as-lb-x,.as-lb-play,.as-lb-del,.as-lb-dl,.as-lb-dlcaret{min-width:46px;min-height:46px;font-size:18px}
+    .as-lb-cmtadd,.as-lb-type{min-height:40px;padding:9px 16px}
+    .as-lb-dlmenu button{padding:12px 14px}
+  }
   /* commit panel */
   #as-commit,#as-report{position:fixed;inset:0;z-index:9998;background:rgba(15,12,28,.55);display:flex;align-items:center;justify-content:center;padding:24px}
   .as-rp-opts{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:10px}
@@ -2323,7 +2562,130 @@
   `;
   const st = document.createElement('style'); st.textContent = css; appendEl(st);
 
+  // ── #248 add page: harvest images seeded into the native uploader ───────────────
+  // Integrations (ECAU / Harmony) drop images into MB's add-cover-art uploader. We
+  // read each preview row's blob and stage it as a NEW cover. Runs on load and via an
+  // observer because the seed is async (ECAU fetches + maximises after the page settles).
+  // NOTE: we deliberately do NOT scrape the row's type/comment checkboxes — ECAU sets
+  // them via Knockout and re-renders rows when maximising, so the checked state is only
+  // momentarily readable and racing it was unreliable (#253). Types are set instead from
+  // the file-name option or in AS itself.
+  // #253 read each preview image's OWN type + comment — NEVER doc-wide (that smears
+  // every image's types onto every cover). The native uploader nests an image's
+  // checkbox grid in an ancestor it shares with nothing else (imageScope finds it);
+  // ECAU lays the preview out apart from the grid, so as a fallback the Nth preview
+  // image is matched to the Nth visible type group by render order.
+  function imageScope(img) {
+    let n = img.parentElement, scope = null;
+    while (n) {
+      if (n.querySelectorAll('img.uploader-preview-image, img[src^="blob:"]').length > 1) break;   // climbed past this image
+      if (n.querySelector('.cover-art-types input[type=checkbox], input[name*="type_id"]')) scope = n;   // widest single-image block holding this image's grid
+      if (n.tagName === 'FORM' || !n.parentElement) break;
+      n = n.parentElement;
+    }
+    return scope;
+  }
+  function readTypeGroup(group, block) {
+    const types = [...group.querySelectorAll('input[type=checkbox]:checked, input[name*="type_id"]:checked')]
+      .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
+      .filter(t => ALL_TYPES.includes(t));
+    const sel = 'input[name*="comment"], textarea[name*="comment"], input.comment, textarea.comment';
+    let ci = group.querySelector(sel);                                          // the group's own comment, if nested
+    if (!ci && block && block !== group) { const cs = block.querySelectorAll(sel); if (cs.length === 1) ci = cs[0]; }   // else a single-image block's lone comment (never a shared one)
+    return { types, comment: ci ? (ci.value || '') : '' };
+  }
+  const visibleTypeGroups = root => [...root.querySelectorAll('.cover-art-types')]
+    .filter(g => g.querySelector('input[type=checkbox]') && g.offsetParent !== null);   // skip the hidden knockout template
+  function readArtMeta(img) {
+    const scope = imageScope(img);
+    if (scope) return readTypeGroup(scope.querySelector('.cover-art-types') || scope, scope);
+    // ECAU/other restructured uploader → match the Nth image to the Nth type group
+    const root = img.closest('form') || img.getRootNode();
+    const imgs = [...root.querySelectorAll('img.uploader-preview-image, img[src^="blob:"]')];
+    const groups = visibleTypeGroups(root);
+    const i = imgs.indexOf(img);
+    if (i >= 0 && groups.length === imgs.length && groups[i]) return readTypeGroup(groups[i], groups[i].closest('td, li, tr') || groups[i].parentElement);
+    return { types: [], comment: '' };
+  }
+  // harvest is idempotent + re-runnable: a NEW row is staged; a row we've already
+  // staged has its type/comment SYNCED if the integration set them after the image
+  // appeared (common with ECAU) — but only while the user hasn't edited that cover.
+  let _seedNote = '';   // #248 an edit note an integration pre-filled on the native add page → moved to our commit panel
+  // #253 harvest keys on the uploader ROW (tagged once), NOT the blob URL: ECAU
+  // maximises the preview in place — the blob URL changes — so blob-keying re-staged
+  // the SAME image on every pass (multiple identical covers from one seed). Reentrancy
+  // is guarded with a trailing re-run so overlapping passes can't double-add either.
+  let _harvesting = false, _harvestPending = false, _rowSeq = 0;
+  async function harvestSeeds() {
+    if (_harvesting) { _harvestPending = true; return; }
+    _harvesting = true; _harvestPending = false;
+    try {
+      const form = document.getElementById('add-' + ART); if (!form) return;
+      const en = form.querySelector('textarea.edit-note, textarea[name*="edit_note"]');   // capture a seeded edit note
+      if (en && en.value && en.value.trim()) _seedNote = en.value.trim();
+      const rows = [...form.querySelectorAll('tr')].filter(tr => tr.querySelector('img.uploader-preview-image, img[src^="blob:"]'));
+      const files = [], metas = []; let dirty = false;
+      for (const tr of rows) {
+        const img = tr.querySelector('img.uploader-preview-image, img[src^="blob:"]');
+        const src = img && (img.src || img.getAttribute('src'));
+        if (!src || !/^blob:/i.test(src)) continue;
+        const rowId = tr.dataset.asRow;
+        if (rowId) {   // this row is already staged — swap in a maximised image, never re-add
+          const existing = MODEL.find(m => m._seedSrc === rowId);
+          if (!existing || existing._del) continue;
+          if (src !== existing._seedBlobSrc) {   // ECAU maximised → replace the staged blob with the bigger one
+            let blob; try { blob = await fetch(src).then(r => r.ok ? r.blob() : null); } catch (e) { blob = null; }
+            if (blob) {
+              try { URL.revokeObjectURL(existing._file); } catch (e) {}
+              const m = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+              existing._file = URL.createObjectURL(blob);
+              existing._fileObj = new File([blob], (existing._fileObj && existing._fileObj.name) || 'seed.jpg', { type: m });
+              existing._seedBlobSrc = src; existing.bytes = blob.size; existing.w = 0; existing.h = 0; existing._contentKey = await fileKey(existing._fileObj);
+              _imgCache.delete(String(existing.id)); measure(existing); dirty = true;
+            }
+          }
+          continue;
+        }
+        let blob; try { blob = await fetch(src).then(r => r.ok ? r.blob() : null); } catch (e) { blob = null; }
+        if (!blob) continue;   // not decodable yet — a later pass will pick it up
+        const id = 'srow' + (++_rowSeq);
+        tr.dataset.asRow = id;   // tag BEFORE staging so a racing pass sees it taken
+        const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+        const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        files.push(new File([blob], `seed-${Date.now()}-${files.length}.${ext}`, { type: mime }));
+        metas.push({ seedSrc: id, seedBlobSrc: src });   // #253 image only — types are set via the file-name option or in AS, not scraped from ECAU's transient checkboxes
+      }
+      const added = files.length ? await addFilesDeduped(files, metas) : 0;
+      if (added) toast(`Imported ${added} pre-added ${added > 1 ? ITEMS : ITEM} ✓`);
+      else if (dirty) { refreshStaged(); render(); }
+    } finally {
+      _harvesting = false;
+      if (_harvestPending) { _harvestPending = false; harvestSeeds(); }
+    }
+  }
+  function initAdd() {
+    if (!IS_ADD) return;
+    const form = document.getElementById('add-' + ART);
+    if (!form) {   // uploader not in the DOM yet — wait for it
+      const o = new MutationObserver(() => { if (document.getElementById('add-' + ART)) { o.disconnect(); initAdd(); } });
+      o.observe(document.documentElement, { childList: true, subtree: true });
+      return;
+    }
+    let t; const soon = () => { clearTimeout(t); t = setTimeout(harvestSeeds, 250); };
+    harvestSeeds();
+    // a new row, a maximised image (src swap), or a type/comment change all re-harvest.
+    new MutationObserver(soon).observe(form, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+    form.addEventListener('change', soon);
+    form.addEventListener('input', soon);
+    // MB applies seeded types/comments by setting the checkbox `checked` PROPERTY (no
+    // change event) a beat after the image, so neither the observer nor the listeners
+    // fire — poll-resync for a while so the per-row type/comment still gets picked up. #253
+    let polls = 0;
+    const poll = setInterval(() => { if (++polls > 24 || !document.getElementById('as-root')) { clearInterval(poll); return; } harvestSeeds(); }, 800);
+    window.addEventListener('beforeunload', () => clearInterval(poll));
+  }
+
   // we run at document-start; wait for #content before mounting the gallery
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadArt, { once: true });
-  else loadArt();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => loadArt().then(initAdd), { once: true });
+  else loadArt().then(initAdd);
 })();

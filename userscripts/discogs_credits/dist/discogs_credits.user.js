@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.18.2
+// @version      2026.6.20.152223
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -4007,6 +4007,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         }
         return null;
       }
+      const createdWorkRecGids = /* @__PURE__ */ new Set();
       for (const [recGid, entries] of workOnlyByGid) {
         const recEntity = entries[0]?.recEntity ?? recordingByGid.get(recGid);
         const trackTitle = entries[0]?.role.track.title || recEntity?.name || recGid;
@@ -4029,6 +4030,11 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           continue;
         }
         if (!workEntity) {
+          if (createdWorkRecGids.has(recGid)) {
+            log.error(`Track ${trackPos} "${trackTitle}": a work was already created for this recording in this run \u2014 skipping to avoid a duplicate work`);
+            failed++;
+            continue;
+          }
           const newWorkId = re.getRelationshipStateId();
           workEntity = {
             _fromBatchCreateWorksDialog: true,
@@ -4071,6 +4077,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               linkTypeID: recordingOfLinkTypeId
             }
           });
+          createdWorkRecGids.add(recGid);
           log.info(`Track ${trackPos} "${trackTitle}": created new work "${trackTitle}"`);
           added++;
           tickProgress();
