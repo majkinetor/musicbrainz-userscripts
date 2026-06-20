@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.180000
+// @version      2026.6.20.182000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1454,6 +1454,26 @@
 
   let _dropZone = false;
   function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
+  // Reveal the drop zone automatically when files are dragged onto the page, so you don't
+  // have to click "Add image" first; the whole gallery then accepts the drop (the browser
+  // won't navigate to the file). Internal reorder drags carry no Files, so they're ignored;
+  // the zone auto-hides after a drop or when the drag leaves the window.
+  let _autoDz = false;
+  const isFileDrag = e => { try { return [...((e.dataTransfer && e.dataTransfer.types) || [])].includes('Files'); } catch (x) { return false; } };
+  window.addEventListener('dragover', e => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    if (!_dropZone) { _dropZone = true; _autoDz = true; render(); root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
+  });
+  window.addEventListener('drop', async e => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault(); e.stopPropagation();   // stage every file drop here (a near-miss outside the zone still works); also stops the zone's own ondrop double-adding
+    _autoDz = false;
+    root.querySelector('.as-dropzone')?.classList.remove('over');
+    const files = await filesFromDrop(e.dataTransfer);
+    if (files && files.length) addFiles(files); else { _dropZone = false; render(); }
+  }, true);
+  window.addEventListener('dragleave', e => { if (_autoDz && !e.relatedTarget) { _dropZone = false; _autoDz = false; render(); } });
   function newItem(f, meta) {
     let types = (meta && meta.types && meta.types.length) ? meta.types.slice() : [];
     let comment = (meta && meta.comment) || '';
@@ -1735,8 +1755,8 @@
     const ov = document.createElement('div'); ov.id = 'as-commit';
     ov.innerHTML = `<div class="as-cm-box">
       <div class="as-cm-h">Apply ${plan.length} change${plan.length===1?'':'s'} as MusicBrainz edits</div>
-      <textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea>
       <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<div class="as-cm-payload"></div></div>`).join('')}</div>
+      <textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea>
       <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
     </div>`;
     document.body.appendChild(ov);
@@ -2563,15 +2583,17 @@
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:#555}
   .as-cm-hint{font-size:11px;color:#9a8ccb;font-weight:400}
   .as-cm-note{font:13px inherit;border:1px solid #cfc6e6;border-radius:7px;padding:6px 9px;resize:vertical;width:100%;box-sizing:border-box;display:block;margin-bottom:12px}
-  /* #263 if Mammoth is installed it auto-enhances the .edit-note field above (saved notes /
-     history panel). It wraps the textarea in .mmth-wrap + a 300px side panel; the 680px modal
-     fits that, just give the wrap the note's old bottom margin and let it use the full width. */
-  #as-commit .mmth-wrap{margin:0 0 12px;max-width:none}
+  /* #263 if Mammoth is installed it auto-enhances the .edit-note field (saved notes / history
+     panel), which sits below the operations list. It wraps the textarea in .mmth-wrap + a
+     300px side panel; the 680px modal fits that — give the wrap the note's bottom margin and
+     full width, and hide the drag splitter (it overhangs below the shorter panel in a modal). */
+  #as-commit .mmth-wrap{margin:0 0 12px;max-width:none;gap:10px}
+  #as-commit .mmth-vsep{display:none}
   .as-cm-chk{display:flex;align-items:center;gap:6px;cursor:pointer;color:#555}
   .as-cm-opts{flex-direction:row;gap:18px;flex-wrap:wrap}
   .as-cm-opts label{display:flex;align-items:center;gap:6px;cursor:pointer;color:#444}
   .as-cm-dry{color:#a05a00;display:flex;align-items:center;gap:6px;cursor:pointer}
-  .as-cm-list{overflow:auto;border:1px solid #eee;border-radius:8px;padding:6px;margin:4px 0 12px;background:#fafafa}
+  .as-cm-list{overflow:auto;border:1px solid #eee;border-radius:8px;padding:6px;margin:4px 0 12px;background:#fafafa;flex:1 1 auto;min-height:0}   /* #263 flex so the note + buttons below stay pinned and the list scrolls */
   .as-cm-op{padding:5px 6px;border-radius:6px;font-size:13px}
   .as-cm-op.dry{background:#f3eefe}.as-cm-op.err{background:#fdecea}
   .as-cm-st{display:inline-block;min-width:18px;white-space:nowrap;text-align:center}
