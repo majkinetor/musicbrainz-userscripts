@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20
+// @version      2026.6.20.234500
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1761,7 +1761,10 @@
     </div>`;
     document.body.appendChild(ov);
     if (IS_ADD && _seedNote) ov.querySelector('.as-cm-note').value = _seedNote;   // #248 carry over the add page's edit note
-    ov.onclick = e => { if (e.target === ov) ov.remove(); };
+    // backdrop click closes — but NOT while a live run is in flight (#269): that
+    // path bypassed the abort, orphaning the in-flight edits. During a run the only
+    // exits are Cancel (aborts) or Close (after it finishes).
+    ov.onclick = e => { if (e.target === ov && !ov._running) ov.remove(); };
     ov.querySelector('.as-cm-cancel').onclick = () => ov.remove();
     const dryEl = ov.querySelector('.as-cm-dryrun');
     const goBtn = ov.querySelector('.as-cm-go');
@@ -1829,6 +1832,18 @@
     plan.forEach((op, i) => { op._i = i; });
     // ctl carries the abort flag + the live xhrs/fetch-signal so Cancel works mid-run
     const ctl = { aborted: false, xhrs: new Set(), ac: new AbortController() };
+    // #269 while a live run is in flight: block accidental backdrop dismissal (see
+    // enterEdit) AND warn before the page is unloaded, so edits can't be silently
+    // orphaned by clicking out or navigating away. Both are cleared the moment the
+    // run finishes — the unload guard BEFORE the clean-run auto-reload below, or it
+    // would block its own reload.
+    let unloadGuard = null;
+    if (!meta.dry) {
+      ov._running = true;
+      unloadGuard = e => { e.preventDefault(); e.returnValue = ''; return ''; };
+      window.addEventListener('beforeunload', unloadGuard);
+    }
+    const endRun = () => { ov._running = false; if (unloadGuard) { window.removeEventListener('beforeunload', unloadGuard); unloadGuard = null; } };
     if (meta.dry) { cancelBtn.disabled = true; }
     else {
       cancelBtn.disabled = false; cancelBtn.textContent = 'Cancel';
@@ -1842,9 +1857,13 @@
     }
     const CONC = meta.dry ? 8 : 4;   // modest concurrency live to stay friendly to MB
     // uploads run in parallel (register stays ordered); edits/removes parallel; reorder last.
-    await runAdds(ov, plan.filter(o => o.kind === 'add'), meta, ctl);
-    if (!ctl.aborted) await runPool(plan.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta, ctl);
-    if (!ctl.aborted) await runPool(plan.filter(o => o.kind === 'reorder'), 1, ov, meta, ctl);
+    try {
+      await runAdds(ov, plan.filter(o => o.kind === 'add'), meta, ctl);
+      if (!ctl.aborted) await runPool(plan.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta, ctl);
+      if (!ctl.aborted) await runPool(plan.filter(o => o.kind === 'reorder'), 1, ov, meta, ctl);
+    } finally {
+      endRun();   // run finished/failed — re-allow backdrop close and drop the unload guard (before any auto-reload)
+    }
     cancelBtn.disabled = false;
     cancelBtn.textContent = 'Close';
     cancelBtn.onclick = () => ov.remove();
