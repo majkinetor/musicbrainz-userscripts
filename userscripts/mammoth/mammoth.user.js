@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.193000
+// @version      2026.6.20.202500
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
-// @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPCEtLSBzaGFnZ3kgYm9keSArIGRvbWVkIGhlYWQgLS0+DQogIDxwYXRoIGQ9Ik0yOCA4MmMwLTEwIDQtMTcgMTEtMjEgMy0xNSAxNS0yNSAzMS0yNXMyNyAxMCAzMCAyNGM3IDMgMTAgOSAxMCAxN3YxMGMwIDQtMyA3LTcgN2gtN3YtOWgtOHY5SDY2di05aC04djloLTljLTUgMC05LTQtOS05di0zYy00LTItNy02LTctMTFaIiBmaWxsPSIjOGQ2NDQyIi8+DQogIDwhLS0gZWFyIC0tPg0KICA8cGF0aCBkPSJNNzQgNDZjMTEtNyAyMi0zIDIyIDgtOS01LTE2LTMtMjAgM1oiIGZpbGw9IiM3YTU0MzYiLz4NCiAgPCEtLSB0cnVuayAtLT4NCiAgPHBhdGggZD0iTTQyIDY0Yy05IDYtMTMgMTktNyAzMSAzIDYgMTEgMyA5LTMtMi04IDAtMTUgNy0xOVoiIGZpbGw9IiM4ZDY0NDIiLz4NCiAgPCEtLSB0dXNrIC0tPg0KICA8cGF0aCBkPSJNNDYgODZjLTkgNS0xOCAyLTIyLTcgNyA3IDE1IDYgMjAtMVoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzZmNGEyZSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4NCiAgPCEtLSBleWUgLS0+DQogIDxjaXJjbGUgY3g9IjU0IiBjeT0iNTYiIHI9IjQiIGZpbGw9IiMyYTIwMTciLz4NCjwvc3ZnPg0K
+// @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md
 // @match        https://*.musicbrainz.org/*
 // @grant        GM_setValue
@@ -30,8 +30,7 @@
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false };   // defaultInsert: 'replace' | 'append'
-  const VERSION = '2026.6.20.193000';   // keep in sync with @version (fallback when GM_info is unavailable)
-  const ICON = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPCEtLSBzaGFnZ3kgYm9keSArIGRvbWVkIGhlYWQgLS0+DQogIDxwYXRoIGQ9Ik0yOCA4MmMwLTEwIDQtMTcgMTEtMjEgMy0xNSAxNS0yNSAzMS0yNXMyNyAxMCAzMCAyNGM3IDMgMTAgOSAxMCAxN3YxMGMwIDQtMyA3LTcgN2gtN3YtOWgtOHY5SDY2di05aC04djloLTljLTUgMC05LTQtOS05di0zYy00LTItNy02LTctMTFaIiBmaWxsPSIjOGQ2NDQyIi8+DQogIDwhLS0gZWFyIC0tPg0KICA8cGF0aCBkPSJNNzQgNDZjMTEtNyAyMi0zIDIyIDgtOS01LTE2LTMtMjAgM1oiIGZpbGw9IiM3YTU0MzYiLz4NCiAgPCEtLSB0cnVuayAtLT4NCiAgPHBhdGggZD0iTTQyIDY0Yy05IDYtMTMgMTktNyAzMSAzIDYgMTEgMyA5LTMtMi04IDAtMTUgNy0xOVoiIGZpbGw9IiM4ZDY0NDIiLz4NCiAgPCEtLSB0dXNrIC0tPg0KICA8cGF0aCBkPSJNNDYgODZjLTkgNS0xOCAyLTIyLTcgNyA3IDE1IDYgMjAtMVoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzZmNGEyZSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4NCiAgPCEtLSBleWUgLS0+DQogIDxjaXJjbGUgY3g9IjU0IiBjeT0iNTYiIHI9IjQiIGZpbGw9IiMyYTIwMTciLz4NCjwvc3ZnPg0K';
+  const VERSION = '2026.6.20.202500';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -159,8 +158,7 @@
   .mmth-badge { display:none; position:absolute; top:4px; right:5px; z-index:61; width:25px; height:25px;
                 align-items:center; justify-content:center; cursor:pointer; border:1px solid #cfd9d3;
                 border-radius:7px; background:#fbfdfc; box-shadow:0 1px 3px rgba(0,0,0,.12);
-                line-height:1; user-select:none; }
-  .mmth-badge img { display:block; pointer-events:none; }
+                font-size:15px; line-height:1; user-select:none; }
   .mmth-badge:hover { background:#eaf5ee; border-color:#5aa67e; }
   .mmth-min > .mmth-badge { display:flex; }
   .mmth-vsep { flex:none; width:9px; align-self:stretch; cursor:col-resize; position:relative; }
@@ -447,7 +445,7 @@
       // #265 minimized mode: badge in the field's top-right corner; hover (or click
       // to pin) floats the panel back in. mouseleave closes after a short grace.
       const badge = document.createElement('div'); badge.className = 'mmth-badge'; badge.title = 'Mammoth — saved notes (click or hover)';
-      badge.innerHTML = `<img src="${ICON}" width="18" height="18" alt="Mammoth" draggable="false">`;
+      badge.textContent = '🦣';
       wrap.appendChild(badge); inst.badge = badge;
       let closeT = null, pinned = false;
       const openFloat = () => { clearTimeout(closeT); if (SET.minimized) side.classList.add('mmth-open'); };
