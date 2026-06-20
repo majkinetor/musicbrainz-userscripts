@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.154500
+// @version      2026.6.20.164500
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -177,7 +177,7 @@
     } catch (e) { /* size is a nicety — never block the gallery */ }
   }
   let SETTINGS = load();
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone' }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -331,18 +331,20 @@
     const help = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/README.md';
     const panel = document.createElement('div'); panel.id = 'as-setup';
     panel.innerHTML = `<div class="as-setup-h"><img class="as-setup-ic" src="${ICON_URL}" alt=""><b>Art Station</b> <span class="as-setup-ver">v${esc(ver)}</span>`
-      + `<a class="as-setup-help" href="${help}" target="_blank" rel="noopener">Help ↗</a>`
-      + `<button class="as-setup-x" title="close">✕</button></div>`
+      + `<a class="as-setup-help" href="${help}" target="_blank" rel="noopener">Help ↗</a></div>`
       + `<div class="as-setup-body">`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-hidefoot"${SETTINGS.hideMbFooter ? ' checked' : ''}> Hide MB native buttons (Add / Reorder / Import…)</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-autotype"${SETTINGS.autoType ? ' checked' : ''}> Set ${ITEM} type from the file name (Front, Back, Booklet…)</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-autocomment"${SETTINGS.autoComment ? ' checked' : ''}> Set comment from the file name (text after the type)</label>`
+      + `<div class="as-setup-opt"><label class="as-setup-optlbl"><input type="checkbox" class="as-setup-autofront"${SETTINGS.autoFront ? ' checked' : ''}> Set type to “Front” on first import</label>`
+      + ` <select class="as-setup-autofront-mode"><option value="whenNone"${SETTINGS.autoFrontMode !== 'always' ? ' selected' : ''}>when none exists</option><option value="always"${SETTINGS.autoFrontMode === 'always' ? ' selected' : ''}>always</option></select></div>`
       + `</div>`;
     document.body.appendChild(panel);
-    panel.querySelector('.as-setup-x').onclick = () => panel.remove();
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
     panel.querySelector('.as-setup-autotype').onchange = e => { SETTINGS.autoType = e.target.checked; save(); };
     panel.querySelector('.as-setup-autocomment').onchange = e => { SETTINGS.autoComment = e.target.checked; save(); };
+    panel.querySelector('.as-setup-autofront').onchange = e => { SETTINGS.autoFront = e.target.checked; save(); };
+    panel.querySelector('.as-setup-autofront-mode').onchange = e => { SETTINGS.autoFrontMode = e.target.value; save(); };
     const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -444,7 +446,7 @@
       <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
       ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
       ${IS_EVENT ? '' : `<button class="as-btn as-src" title="Source a cover from a linked platform or any URL, via ECAU (#242)"><span class="as-bi">🔗</span><span class="as-bt">URL<span class="as-src-n"></span></span></button>`}
-      <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size"></span>
+      <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size — scroll the wheel over the slider, or hold right-click and scroll the wheel anywhere in the gallery"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
       <span class="as-selbox">${selBox()}</span>
@@ -683,24 +685,26 @@
       // selection: the checkbox is the certain indicator; right-click also paints
       const sel = row.querySelector('.as-dsel');
       if (sel) sel.onchange = () => { it._sel = sel.checked; row.classList.toggle('sel', it._sel); syncSel(); };
-      row.onmousedown = e => { if (e.button !== 2) return; e.preventDefault(); _paint = { value: !it._sel }; paintCard(row); };
+      row.onmousedown = e => { if (e.button !== 2) return; e.preventDefault(); _paint = { value: !it._sel, cards: [] }; paintCard(row); };
     });
   }
 
+  // bump the thumbnail size by one notch (dir +1 bigger / -1 smaller), update the live
+  // CSS var + slider, and persist/re-fit once changes settle. Shared by the size slider's
+  // wheel and the right-click+wheel gallery shortcut (#259).
+  let _szT = null;
+  function resizeTile(dir) {
+    SETTINGS.tile = Math.max(120, Math.min(340, SETTINGS.tile + (dir > 0 ? 25 : -25)));   // #259 bigger step → less scrolling
+    const sizeEl = root.querySelector('.as-size'); if (sizeEl) sizeEl.value = SETTINGS.tile;
+    document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); fitFooters();
+    clearTimeout(_szT); _szT = setTimeout(() => { save(); render(); }, 250);   // persist + re-fit once scrolling settles
+  }
   function wire() {
     const sizeEl = root.querySelector('.as-size');
     sizeEl.oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); };
     sizeEl.onchange = () => { save(); render(); };
     // scroll the wheel over the slider to resize (no need to drag it)
-    let _szT = null;
-    sizeEl.onwheel = e => {
-      e.preventDefault();
-      const min = +sizeEl.min || 120, max = +sizeEl.max || 340;
-      SETTINGS.tile = Math.max(min, Math.min(max, SETTINGS.tile + (e.deltaY < 0 ? 15 : -15)));
-      sizeEl.value = SETTINGS.tile;
-      document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); applyZoomClass(); fitTypePills(); fitFooters();
-      clearTimeout(_szT); _szT = setTimeout(() => { save(); render(); }, 250);   // persist + re-fit once scrolling settles
-    };
+    sizeEl.onwheel = e => { e.preventDefault(); e.stopPropagation(); resizeTile(e.deltaY < 0 ? 1 : -1); };   // stopProp: don't also trigger the RMB+wheel root handler (#259)
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
@@ -754,7 +758,7 @@
       c.onmousedown = e => {
         if (e.button !== 2 || c.classList.contains('del')) return;
         e.preventDefault(); const it = byId(c.dataset.id); if (!it) return;
-        _paint = { value: !it._sel }; paintCard(c);
+        _paint = { value: !it._sel, cards: [] }; paintCard(c);
       };
       wireCardTouch(c);   // #251 long-press to select, drag-handle to reorder (mobile)
     });
@@ -787,14 +791,34 @@
     const it = byId(c.dataset.id); if (!it || it._sel === _paint.value) return;
     it._sel = _paint.value; c.classList.toggle('sel', it._sel);
     const cb = c.querySelector('.as-dsel'); if (cb) cb.checked = it._sel;   // keep the row checkbox in sync
+    _paint.cards.push(c);
     syncSel();
+  }
+  // #259 the right-click+wheel resize shares the RMB-down with paint-select; if the user
+  // wheels, the gesture was a resize, so undo any cards toggled on the way in.
+  function cancelPaint() {
+    if (!_paint) return;
+    const prev = !_paint.value;
+    for (const c of _paint.cards) { const it = byId(c.dataset.id); if (!it) continue; it._sel = prev; c.classList.toggle('sel', it._sel); const cb = c.querySelector('.as-dsel'); if (cb) cb.checked = it._sel; }
+    _paint = null; syncSel();
   }
   document.addEventListener('mousemove', e => {
     if (!_paint || !e.buttons) return;   // e.buttons falls to 0 if the button was released off-window
     const c = e.target.closest && e.target.closest('.as-card, .as-drow');
     if (c && root.contains(c)) paintCard(c);
   });
-  document.addEventListener('mouseup', () => { _paint = null; });
+  document.addEventListener('mouseup', e => { _paint = null; if (e.button === 2) _rmb = false; });
+  // #259 hold the right mouse button and scroll the wheel anywhere in the gallery to set
+  // thumbnail size. RMB is also paint-select, so a wheel cancels the in-flight select.
+  let _rmb = false;
+  root.addEventListener('mousedown', e => { if (e.button === 2) _rmb = true; });
+  window.addEventListener('blur', () => { _rmb = false; });
+  root.addEventListener('wheel', e => {
+    if (!_rmb) return;
+    e.preventDefault();              // don't scroll the page while resizing
+    cancelPaint();                   // the RMB-down was the start of a resize, not a select
+    resizeTile(e.deltaY < 0 ? 1 : -1);
+  }, { passive: false });
 
   // ── #251 touch support: long-press to select, long-press-then-drag to reorder ───
   // A tap opens the viewer; _lpSwallow eats the click synthesised after a long-press
@@ -1375,7 +1399,10 @@
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-        metas.push({ types, comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url });
+        // #260 if ECAU left the preview as a remote image URL (it does for some providers,
+        // e.g. Discogs → i.discogs.com), keep that DIRECT image URL alongside the page URL.
+        const directUrl = /^https?:/i.test(src) ? src : '';
+        metas.push({ types, comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url, provImageUrl: directUrl });
       }
       return { files, metas };
     }
@@ -1534,6 +1561,7 @@
     return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment, order: 0, w: 0, h: 0,
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
       _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '', _provUrl: (meta && meta.provUrl) || '',   // #249 where this image was sourced (shown until committed)
+      _provImageUrl: (meta && meta.provImageUrl) || '',   // #260 direct image URL when the provider exposes one (e.g. Discogs)
       _seedSrc: (meta && meta.seedSrc) || '', _seedTypes: (meta && meta.seedTypes) ? meta.seedTypes.slice() : null,   // #248 native-uploader row + last types synced from it
       _seedBlobSrc: (meta && meta.seedBlobSrc) || '',   // #253 the row's current blob URL (changes when ECAU maximises)
       _contentKey: (meta && meta.contentKey) || '',     // #253 image-content fingerprint, to drop duplicate sourced/seeded covers
@@ -1543,12 +1571,25 @@
       _uploadName: (meta && (meta.provider || meta.seedSrc)) ? '' : ((f && f.name) || ''),
       _origTypes: [], _origComment: '', _origOrder: -1 };
   }
+  // #262 AS doesn't import a source's per-cover types (dropped as unreliable, #253), so
+  // imports arrive untyped. Front is by far the most common, so optionally type the FIRST
+  // imported cover Front. Only touches a cover with no type yet (a file-name type wins), and
+  // in "when none exists" mode only when no Front is already present (existing or staged) —
+  // which is the safe default: it can't create a duplicate Front. "always" can (see #262).
+  function maybeAutoFront(news) {
+    if (!SETTINGS.autoFront || !news.length) return;
+    const first = news.find(it => !it.types.length);   // first untyped cover of this import
+    if (!first) return;
+    if (SETTINGS.autoFrontMode !== 'always' && MODEL.some(it => !it._del && it.types.includes('Front'))) return;   // a Front already exists
+    first.types = ['Front'];
+  }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
   // that already know their type/comment (e.g. ECAU provider import, #242)
   function addFiles(files, metas) {
     const news = [...files].map((f, i) => ({ f, meta: metas && metas[i] }))
       .filter(x => x.f.type.startsWith('image/') || x.f.type === 'application/pdf').map(x => newItem(x.f, x.meta));
     if (!news.length) return;
+    maybeAutoFront(news);   // #262 type the first untyped imported cover Front (per setting), before they're inserted
     // new covers go FIRST (majkinetor: they were landing last), then existing in order
     const rest = MODEL.slice().sort((a, b) => a.order - b.order);
     MODEL = [...news, ...rest];
@@ -1606,6 +1647,22 @@
   const ART = ENT.art;         // cover-art | event-art — the MB endpoint + form-field suffix
   // credit the tool in every edit note (user's note first, then the attribution)
   const editNote = m => [m.note && m.note.trim(), ATTRIBUTION].filter(Boolean).join('\n\n');
+  // #260 a sourced cover records where it came from in ITS OWN add edit note. The commit
+  // note is shared across all ops, so this per-cover provenance is appended only to that
+  // upload (sourced covers carry _provider/_provUrl; local uploads have neither → nothing added).
+  const sourceLine = it => {
+    if (!it) return '';
+    const who = (it._provider && String(it._provider).trim()) || '';
+    const page = (it._provUrl && String(it._provUrl).trim()) || '';
+    const img = (it._provImageUrl && String(it._provImageUrl).trim()) || '';
+    const main = page || img;
+    if (!who && !main) return '';
+    let s = `Cover art sourced from ${who || 'an external provider'}`;
+    if (main) s += ` — ${main}`;
+    if (img && img !== main) s += `\nImage: ${img}`;   // #260 the direct image URL, when distinct from the page
+    return s;
+  };
+  const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
   async function getPostForm(url) {
     const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET ' + r.status); return r.text(); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -1704,7 +1761,7 @@
     p.append(`add-${ART}.mime_type`, mime);   // required Select (MB Form::Role::AddArt)
     typeIds.forEach(id => p.append(`add-${ART}.type_id`, id));
     p.append(`add-${ART}.comment`, it.comment);
-    p.append(`add-${ART}.edit_note`, editNote(meta));
+    p.append(`add-${ART}.edit_note`, editNoteFor(meta, it));   // #260 include this cover's source, if any
     if (meta.votable) p.append(`add-${ART}.make_votable`, '1');
     const add = await fetch(`${R}/add-${ART}`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
     if (!add.ok) throw new Error('add ' + add.status);
@@ -1716,14 +1773,25 @@
     report(`1. GET /ws/js/${ART}-upload/${MBID}?mime_type=${mime}  → {action,image_id,formdata,nonce}\n`
       + `2. POST ‹signed archive.org action›  multipart: ‹policy,signature,key,AWSAccessKeyId…› + file (${(it._fileObj && it._fileObj.name) || 'file'}, ${(it._fileObj && it._fileObj.size) || '?'}b)\n`
       + `3. POST ${R}/add-${ART}\n   add-${ART}.id=‹image_id›\n   add-${ART}.position=${it.order + 1}\n   add-${ART}.nonce=‹nonce›\n   add-${ART}.mime_type=${mime}\n`
-      + `   add-${ART}.type_id=${typeIds.join(',') || '(none)'}\n   add-${ART}.comment=${it.comment}\n   add-${ART}.edit_note=${editNote(meta).replace(/\n+/g, ' / ')}`
+      + `   add-${ART}.type_id=${typeIds.join(',') || '(none)'}\n   add-${ART}.comment=${it.comment}\n   add-${ART}.edit_note=${editNoteFor(meta, it).replace(/\n+/g, ' / ')}`
       + (meta.votable ? `\n   add-${ART}.make_votable=1` : ''));
   }
   async function buildReorder(meta) {     // single edit: full ordered artwork list
     const form = await getPostForm(`${R}/reorder-${ART}`);
     const p = new URLSearchParams(); copyHidden(form, p, /\.artwork\./);
-    const seq = MODEL.filter(it => !it._del && !it._new).sort((a, b) => a.order - b.order);
-    seq.forEach((it, i) => { p.append(`reorder-${ART}.artwork.${i}.id`, it.id); p.append(`reorder-${ART}.artwork.${i}.position`, String(i + 1)); });
+    // #261 the full final order — NEW covers included by their post-upload image_id (runs
+    // after the uploads register). MB's add `position` only places the whole upload as a
+    // group, so without this the relative order of multiple new covers (or a new cover
+    // slotted among existing ones) isn't preserved.
+    const seq = MODEL.filter(it => !it._del && !it._sourcing).sort((a, b) => a.order - b.order);
+    let n = 0;
+    for (const it of seq) {
+      const id = it._new ? (it._signed && it._signed.image_id) : it.id;
+      if (!id) continue;   // a new cover whose upload failed — leave it out of the ordering
+      p.append(`reorder-${ART}.artwork.${n}.id`, id);
+      p.append(`reorder-${ART}.artwork.${n}.position`, String(n + 1));
+      n++;
+    }
     p.append(`reorder-${ART}.edit_note`, editNote(meta));
     if (meta.votable) p.append(`reorder-${ART}.make_votable`, '1');
     return { method: 'POST', url: form._action, body: p };
@@ -1745,7 +1813,11 @@
     const ex = MODEL.filter(it => !it._del && !it._new);
     const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
     const orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
-    if (now !== orig) plan.push({ label: 'Reorder ' + ITEMS, kind: 'reorder', build: m => buildReorder(m) });
+    // #261 reorder when the existing order changed OR new covers were uploaded among
+    // others (their order isn't honoured by the per-upload position alone). Needs ≥2 covers.
+    const all = MODEL.filter(it => !it._del && !it._sourcing);
+    const reorderNeeded = all.length >= 2 && (now !== orig || all.some(it => it._new));
+    if (reorderNeeded) plan.push({ label: 'Reorder ' + ITEMS, kind: 'reorder', build: m => buildReorder(m) });
     return plan;
   }
 
@@ -2337,10 +2409,12 @@
   .as-setup-help:hover{background:#f0ecfa}
   .as-setup-x{border:none;background:none;color:#999;font-size:14px;cursor:pointer;padding:0 2px}
   .as-setup-x:hover{color:#555}
-  .as-setup-body{padding:10px 12px}
+  .as-setup-body{padding:11px 12px;display:flex;flex-direction:column;gap:11px}   /* #262 a bit more breathing room between options */
   .as-setup-info{margin:0 0 10px;color:#666;font-size:12px;line-height:1.45}
-  .as-setup-opt{display:flex;gap:8px;align-items:center;cursor:pointer;white-space:nowrap}
+  .as-setup-opt{display:flex;gap:8px;align-items:center;cursor:pointer;white-space:nowrap;line-height:1.4}
   .as-setup-opt input{margin:0}
+  .as-setup-optlbl{display:inline-flex;gap:8px;align-items:center;cursor:pointer}   /* #262 label wraps only checkbox+text so the mode select stays independent */
+  .as-setup-autofront-mode{font-size:12px;padding:1px 3px}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
   #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer;white-space:nowrap}

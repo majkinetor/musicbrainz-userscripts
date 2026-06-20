@@ -92,6 +92,14 @@ where `none` is used where no type is given
 | `P` | play / pause the slideshow |
 | `Esc` | close (dismisses an open popover or comment edit first) |
 
+**Mouse:**
+
+| Gesture | Action |
+|---|---|
+| right-click / right-drag | select / paint-select covers |
+| scroll wheel over the size slider | resize thumbnails |
+| **hold right-click + scroll wheel** (anywhere in the gallery) | resize thumbnails |
+
 ## Applying changes
 
 Every change is staged. **Enter edit** opens a panel that lists the pending operations and submits them as real MusicBrainz edits — remove, retype/comment, reorder and new-image uploads — each crediting *Art Station* in the edit note.
