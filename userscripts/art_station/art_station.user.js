@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.160000
+// @version      2026.6.20.161000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -177,7 +177,7 @@
     } catch (e) { /* size is a nicety — never block the gallery */ }
   }
   let SETTINGS = load();
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone' }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -331,18 +331,20 @@
     const help = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/README.md';
     const panel = document.createElement('div'); panel.id = 'as-setup';
     panel.innerHTML = `<div class="as-setup-h"><img class="as-setup-ic" src="${ICON_URL}" alt=""><b>Art Station</b> <span class="as-setup-ver">v${esc(ver)}</span>`
-      + `<a class="as-setup-help" href="${help}" target="_blank" rel="noopener">Help ↗</a>`
-      + `<button class="as-setup-x" title="close">✕</button></div>`
+      + `<a class="as-setup-help" href="${help}" target="_blank" rel="noopener">Help ↗</a></div>`
       + `<div class="as-setup-body">`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-hidefoot"${SETTINGS.hideMbFooter ? ' checked' : ''}> Hide MB native buttons (Add / Reorder / Import…)</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-autotype"${SETTINGS.autoType ? ' checked' : ''}> Set ${ITEM} type from the file name (Front, Back, Booklet…)</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-autocomment"${SETTINGS.autoComment ? ' checked' : ''}> Set comment from the file name (text after the type)</label>`
+      + `<div class="as-setup-opt"><label class="as-setup-optlbl"><input type="checkbox" class="as-setup-autofront"${SETTINGS.autoFront ? ' checked' : ''}> Set type to “Front” on first import</label>`
+      + ` <select class="as-setup-autofront-mode"><option value="whenNone"${SETTINGS.autoFrontMode !== 'always' ? ' selected' : ''}>when none exists</option><option value="always"${SETTINGS.autoFrontMode === 'always' ? ' selected' : ''}>always</option></select></div>`
       + `</div>`;
     document.body.appendChild(panel);
-    panel.querySelector('.as-setup-x').onclick = () => panel.remove();
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
     panel.querySelector('.as-setup-autotype').onchange = e => { SETTINGS.autoType = e.target.checked; save(); };
     panel.querySelector('.as-setup-autocomment').onchange = e => { SETTINGS.autoComment = e.target.checked; save(); };
+    panel.querySelector('.as-setup-autofront').onchange = e => { SETTINGS.autoFront = e.target.checked; save(); };
+    panel.querySelector('.as-setup-autofront-mode').onchange = e => { SETTINGS.autoFrontMode = e.target.value; save(); };
     const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -1460,12 +1462,25 @@
       _uploadName: (meta && (meta.provider || meta.seedSrc)) ? '' : ((f && f.name) || ''),
       _origTypes: [], _origComment: '', _origOrder: -1 };
   }
+  // #262 AS doesn't import a source's per-cover types (dropped as unreliable, #253), so
+  // imports arrive untyped. Front is by far the most common, so optionally type the FIRST
+  // imported cover Front. Only touches a cover with no type yet (a file-name type wins), and
+  // in "when none exists" mode only when no Front is already present (existing or staged) —
+  // which is the safe default: it can't create a duplicate Front. "always" can (see #262).
+  function maybeAutoFront(news) {
+    if (!SETTINGS.autoFront || !news.length) return;
+    const first = news.find(it => !it.types.length);   // first untyped cover of this import
+    if (!first) return;
+    if (SETTINGS.autoFrontMode !== 'always' && MODEL.some(it => !it._del && it.types.includes('Front'))) return;   // a Front already exists
+    first.types = ['Front'];
+  }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
   // that already know their type/comment (e.g. ECAU provider import, #242)
   function addFiles(files, metas) {
     const news = [...files].map((f, i) => ({ f, meta: metas && metas[i] }))
       .filter(x => x.f.type.startsWith('image/') || x.f.type === 'application/pdf').map(x => newItem(x.f, x.meta));
     if (!news.length) return;
+    maybeAutoFront(news);   // #262 type the first untyped imported cover Front (per setting), before they're inserted
     // new covers go FIRST (majkinetor: they were landing last), then existing in order
     const rest = MODEL.slice().sort((a, b) => a.order - b.order);
     MODEL = [...news, ...rest];
@@ -2280,10 +2295,12 @@
   .as-setup-help:hover{background:#f0ecfa}
   .as-setup-x{border:none;background:none;color:#999;font-size:14px;cursor:pointer;padding:0 2px}
   .as-setup-x:hover{color:#555}
-  .as-setup-body{padding:10px 12px}
+  .as-setup-body{padding:11px 12px;display:flex;flex-direction:column;gap:11px}   /* #262 a bit more breathing room between options */
   .as-setup-info{margin:0 0 10px;color:#666;font-size:12px;line-height:1.45}
-  .as-setup-opt{display:flex;gap:8px;align-items:center;cursor:pointer;white-space:nowrap}
+  .as-setup-opt{display:flex;gap:8px;align-items:center;cursor:pointer;white-space:nowrap;line-height:1.4}
   .as-setup-opt input{margin:0}
+  .as-setup-optlbl{display:inline-flex;gap:8px;align-items:center;cursor:pointer}   /* #262 label wraps only checkbox+text so the mode select stays independent */
+  .as-setup-autofront-mode{font-size:12px;padding:1px 3px}
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:#555;white-space:nowrap}
   .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
   #as-root select,.as-btn{font:13px inherit;border:1px solid #cfc6e6;background:#fff;border-radius:6px;padding:4px 9px;color:#333;cursor:pointer;white-space:nowrap}
