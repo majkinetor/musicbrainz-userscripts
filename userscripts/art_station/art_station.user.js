@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.163000
+// @version      2026.6.20.170000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -215,10 +215,15 @@
       ? pageArt.map(p => ({ id: p.id, types: p.types, comment: p.comment || (byId.get(String(p.id)) || {}).comment || '', pending: p.pending, img: p.img || (byId.get(String(p.id)) || {}).image || imgUrl(p.id), pdf: p.pdf }))
       : caa.map(im => ({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '', pending: false, img: im.image || imgUrl(im.id), pdf: /\.pdf(\?|$)/i.test(im.image || '') }));
     // a partial page parse (e.g. a block without an edit link) must not DROP a cover the
-    // CAA knows about — append any CAA image missing from the page list so none vanish.
+    // CAA knows about — append a CAA image missing from the parsed list. BUT only if the
+    // page actually references that id somewhere (a block we failed to parse): a CAA image
+    // absent from the page ENTIRELY is a stale CAA entry for a just-removed cover (MB's DB
+    // drops it immediately while coverartarchive.org lags), and resurrecting it shows a
+    // phantom that 404s when removed again. MB's page is authoritative for what exists. #264
     if (pageArt && pageArt.length && caa.length) {
       const have = new Set(source.map(s => String(s.id)));
-      for (const im of caa) if (!have.has(String(im.id))) source.push({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '', pending: false, img: im.image || imgUrl(im.id), pdf: /\.pdf(\?|$)/i.test(im.image || '') });
+      const pageRefs = (document.getElementById('content') || document.body).innerHTML;
+      for (const im of caa) if (!have.has(String(im.id)) && pageRefs.includes(String(im.id))) source.push({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '', pending: false, img: im.image || imgUrl(im.id), pdf: /\.pdf(\?|$)/i.test(im.image || '') });
     }
     MODEL = source.map((s, i) => ({
       id: s.id, types: s.types.slice(), comment: s.comment,
@@ -1586,7 +1591,11 @@
     return { method: 'POST', url: form._action, body: p };
   }
   async function buildRemove(it, meta) {
-    const form = await getPostForm(`${R}/remove-${ART}/${it.id}`);
+    // #264 if the cover is already gone (e.g. removed in a prior edit but lingering in a
+    // stale CAA listing), the remove form 404s — treat that as "already removed", not an error.
+    let form;
+    try { form = await getPostForm(`${R}/remove-${ART}/${it.id}`); }
+    catch (e) { if (/\b404\b/.test(String((e && e.message) || e))) return { noop: true, note: 'already removed (not on the release)' }; throw e; }
     const p = new URLSearchParams(); copyHidden(form, p);
     p.append('confirm.edit_note', editNote(meta));
     if (meta.votable) p.append('confirm.make_votable', '1');
@@ -1748,6 +1757,7 @@
         st.textContent = meta.dry ? '👁' : '✅'; if (meta.dry) row.classList.add('dry');
       } else {
         const req = await op.build(meta);
+        if (req && req.noop) { st.textContent = '✅'; pay.textContent = req.note || 'nothing to do'; return; }   // #264 already-done op (e.g. removing a cover that's already gone)
         if (meta.dry) {
           st.textContent = '👁'; row.classList.add('dry');
           pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/\+/g, ' ').replace(/&/g, '\n  ')}`;
