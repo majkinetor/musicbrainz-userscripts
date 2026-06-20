@@ -45,6 +45,27 @@ Accessesd using ⚙ button:
 | **Items shown** | `6` | How many list rows to render before the list scrolls. |
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 
+## Using Mammoth from another userscript
+
+Mammoth enhances **any `textarea.edit-note` on the page**, not just MusicBrainz's own — a `MutationObserver` picks up fields added dynamically too. So another userscript that has its own edit-note field (e.g. [Art Station](../art_station)'s "Enter edit" dialog) can host the full Mammoth panel **with no API and no changes to Mammoth** — it's pure convention:
+
+1. **Give your edit-note field `class="edit-note"`.** Mammoth wraps it (`.mmth-wrap`) and attaches the saved-notes / history panel.
+
+   ```html
+   <textarea class="edit-note"></textarea>
+   ```
+
+2. **History capture is automatic** if your submit button matches Mammoth's heuristic — a document-wide click on a button whose text starts with `enter edit` / `submit` / `add edit` / `save`, or that has class `submit`, records the field into history. (A button labelled e.g. *"Dry run"* deliberately won't, so previews aren't recorded.)
+
+3. **You own the layout.** Mammoth lays the field out beside a ~300px panel (`.mmth-side`) with a drag splitter (`.mmth-vsep`); scope your own CSS to fit it into your container — e.g. hide the splitter and give the wrap a bottom margin inside a modal:
+
+   ```css
+   #your-dialog .mmth-wrap { margin: 0 0 12px; max-width: none; gap: 10px; }
+   #your-dialog .mmth-vsep { display: none; }
+   ```
+
+When Mammoth isn't installed the field is just a plain textarea, so the integration is a no-op.
+
 ##  Notes
 
 - Inspired by [Elephant Editor](https://github.com/jesus2099/konami-command/blob/master/mb_ELEPHANT-EDITOR.user.js).
