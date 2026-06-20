@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.155000
+// @version      2026.6.20.160000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1523,6 +1523,17 @@
   const ART = ENT.art;         // cover-art | event-art — the MB endpoint + form-field suffix
   // credit the tool in every edit note (user's note first, then the attribution)
   const editNote = m => [m.note && m.note.trim(), ATTRIBUTION].filter(Boolean).join('\n\n');
+  // #260 a sourced cover records where it came from in ITS OWN add edit note. The commit
+  // note is shared across all ops, so this per-cover provenance is appended only to that
+  // upload (sourced covers carry _provider/_provUrl; local uploads have neither → nothing added).
+  const sourceLine = it => {
+    if (!it) return '';
+    const who = (it._provider && String(it._provider).trim()) || '';
+    const url = (it._provUrl && String(it._provUrl).trim()) || '';
+    if (!who && !url) return '';
+    return `Cover art sourced from ${who || 'an external provider'}${url ? ` — ${url}` : ''}`;
+  };
+  const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
   async function getPostForm(url) {
     const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET ' + r.status); return r.text(); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -1621,7 +1632,7 @@
     p.append(`add-${ART}.mime_type`, mime);   // required Select (MB Form::Role::AddArt)
     typeIds.forEach(id => p.append(`add-${ART}.type_id`, id));
     p.append(`add-${ART}.comment`, it.comment);
-    p.append(`add-${ART}.edit_note`, editNote(meta));
+    p.append(`add-${ART}.edit_note`, editNoteFor(meta, it));   // #260 include this cover's source, if any
     if (meta.votable) p.append(`add-${ART}.make_votable`, '1');
     const add = await fetch(`${R}/add-${ART}`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
     if (!add.ok) throw new Error('add ' + add.status);
@@ -1633,14 +1644,25 @@
     report(`1. GET /ws/js/${ART}-upload/${MBID}?mime_type=${mime}  → {action,image_id,formdata,nonce}\n`
       + `2. POST ‹signed archive.org action›  multipart: ‹policy,signature,key,AWSAccessKeyId…› + file (${(it._fileObj && it._fileObj.name) || 'file'}, ${(it._fileObj && it._fileObj.size) || '?'}b)\n`
       + `3. POST ${R}/add-${ART}\n   add-${ART}.id=‹image_id›\n   add-${ART}.position=${it.order + 1}\n   add-${ART}.nonce=‹nonce›\n   add-${ART}.mime_type=${mime}\n`
-      + `   add-${ART}.type_id=${typeIds.join(',') || '(none)'}\n   add-${ART}.comment=${it.comment}\n   add-${ART}.edit_note=${editNote(meta).replace(/\n+/g, ' / ')}`
+      + `   add-${ART}.type_id=${typeIds.join(',') || '(none)'}\n   add-${ART}.comment=${it.comment}\n   add-${ART}.edit_note=${editNoteFor(meta, it).replace(/\n+/g, ' / ')}`
       + (meta.votable ? `\n   add-${ART}.make_votable=1` : ''));
   }
   async function buildReorder(meta) {     // single edit: full ordered artwork list
     const form = await getPostForm(`${R}/reorder-${ART}`);
     const p = new URLSearchParams(); copyHidden(form, p, /\.artwork\./);
-    const seq = MODEL.filter(it => !it._del && !it._new).sort((a, b) => a.order - b.order);
-    seq.forEach((it, i) => { p.append(`reorder-${ART}.artwork.${i}.id`, it.id); p.append(`reorder-${ART}.artwork.${i}.position`, String(i + 1)); });
+    // #261 the full final order — NEW covers included by their post-upload image_id (runs
+    // after the uploads register). MB's add `position` only places the whole upload as a
+    // group, so without this the relative order of multiple new covers (or a new cover
+    // slotted among existing ones) isn't preserved.
+    const seq = MODEL.filter(it => !it._del && !it._sourcing).sort((a, b) => a.order - b.order);
+    let n = 0;
+    for (const it of seq) {
+      const id = it._new ? (it._signed && it._signed.image_id) : it.id;
+      if (!id) continue;   // a new cover whose upload failed — leave it out of the ordering
+      p.append(`reorder-${ART}.artwork.${n}.id`, id);
+      p.append(`reorder-${ART}.artwork.${n}.position`, String(n + 1));
+      n++;
+    }
     p.append(`reorder-${ART}.edit_note`, editNote(meta));
     if (meta.votable) p.append(`reorder-${ART}.make_votable`, '1');
     return { method: 'POST', url: form._action, body: p };
@@ -1662,7 +1684,11 @@
     const ex = MODEL.filter(it => !it._del && !it._new);
     const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
     const orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
-    if (now !== orig) plan.push({ label: 'Reorder ' + ITEMS, kind: 'reorder', build: m => buildReorder(m) });
+    // #261 reorder when the existing order changed OR new covers were uploaded among
+    // others (their order isn't honoured by the per-upload position alone). Needs ≥2 covers.
+    const all = MODEL.filter(it => !it._del && !it._sourcing);
+    const reorderNeeded = all.length >= 2 && (now !== orig || all.some(it => it._new));
+    if (reorderNeeded) plan.push({ label: 'Reorder ' + ITEMS, kind: 'reorder', build: m => buildReorder(m) });
     return plan;
   }
 
