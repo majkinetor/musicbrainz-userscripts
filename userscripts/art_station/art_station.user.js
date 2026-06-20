@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.153000
+// @version      2026.6.20.154500
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -520,6 +520,7 @@
       if (!img) {                                  // first sighting — build + load it once
         img = new Image(); img.loading = 'lazy'; img.draggable = false; img.alt = '';
         img.onerror = () => {                      // pending thumb not ready → show the original
+          if (it._new) { img.closest('.as-thumb, .as-dthumb')?.classList.add('na', 'as-na-new'); return; }   // #250 a staged blob that won't decode — no CAA fallback exists
           const orig = !it._pdf ? (it._img || imgUrl(it.id)) : null;
           if (orig && img.getAttribute('src') !== orig) img.src = orig;
           else img.closest('.as-thumb, .as-dthumb')?.classList.add('na');
@@ -1267,11 +1268,26 @@
   const _customProviders = [];
   let _srcBtn = null;   // the button that opened the Source popover (to re-open on late registration)
   const hostIcon = u => { try { return provIconUrl(new URL(u).hostname.replace(/^www\./, '')); } catch (e) { return ''; } };
+  // #250 (vzell) a provider may declare `match` — host string / array / RegExp / predicate —
+  // so its "Import from …" button only appears when the release actually links that site,
+  // and the matched external link(s) are handed to run() (ctx.link / ctx.links). Normalise
+  // any of those forms to a (url)=>bool. No match → button always shows (legacy).
+  function normMatch(m) {
+    if (!m) return null;
+    if (typeof m === 'function') return m;
+    if (m instanceof RegExp) return u => { try { return m.test(u); } catch (e) { return false; } };
+    const needles = (Array.isArray(m) ? m : [m]).map(s => String(s).toLowerCase()).filter(Boolean);
+    return u => {
+      const lu = String(u || '').toLowerCase();
+      let h = ''; try { h = new URL(u).hostname.toLowerCase(); } catch (e) {}
+      return needles.some(s => h === s || h.endsWith('.' + s) || lu.includes(s));
+    };
+  }
   function registerProvider(p) {
     if (!p || typeof p.run !== 'function' || !p.name) return false;
     const id = p.id || p.name;
     if (_customProviders.some(x => x.id === id)) return false;   // de-dupe
-    _customProviders.push({ id, name: String(p.name), icon: p.icon || '', run: p.run });
+    _customProviders.push({ id, name: String(p.name), icon: p.icon || '', run: p.run, match: normMatch(p.match) });
     if (document.querySelector('.as-src-pop') && _srcBtn) openSourcePop(_srcBtn);   // reflect in an open popover
     return true;
   }
@@ -1283,10 +1299,12 @@
     if (it.url) return gmFetch(it.url);        // Art Station fetches plain (non-locked) URLs
     return null;
   }
-  function sourceFromProvider(prov) {
+  function sourceFromProvider(prov, links) {
     const slot = addSourcingSlot(`Sourcing ${prov.name}…`);
     const info = releaseInfo();
-    const ctx = { mbid: MBID, entity: ENT.kind, artist: info.artists.map(a => a.name).join(', '), title: info.title, url: info.url };
+    // #250 (vzell) ctx.link/links = the release's external link(s) this provider matched,
+    // so run() can key off them instead of guessing the source page. ctx.url stays the MB page.
+    const ctx = { mbid: MBID, entity: ENT.kind, artist: info.artists.map(a => a.name).join(', '), title: info.title, url: info.url, link: (links && links[0]) || '', links: links || [] };
     let done = false;
     const finish = () => { done = true; dropSourcingSlot(slot); };
     const killer = setTimeout(() => { if (done) return; finish(); render(); toast(`${prov.name} timed out`, 6000); }, 90000);
@@ -1414,20 +1432,34 @@
   // serves a blank placeholder for some, e.g. Spotify).
   const provIconUrl = d => `https://www.google.com/s2/favicons?sz=64&domain=${d}`;
   function providerOf(url) { let h = ''; try { h = new URL(url).hostname; } catch (e) { return null; } return ART_PROVIDERS.find(x => x.re.test(h)) || null; }
-  // the release/event's external links → the recognised art providers, deduped
-  async function artProviderLinks() {
+  // ALL of the release/event's external link URLs (one WS2 fetch, cached) — used both by
+  // the recognised-provider list and by #250 custom-provider link matching.
+  let _urlRels = null;
+  async function releaseUrls() {
+    if (_urlRels) return _urlRels;
     try {
       const j = await fetch(`https://musicbrainz.org/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
-      if (!j || !j.relations) return [];
-      const seen = new Set(), out = [];
-      for (const rel of j.relations) {
-        const u = rel.url && rel.url.resource; if (!u) continue;
-        const prov = providerOf(u); if (!prov) continue;
-        const key = prov.name + '|' + u; if (seen.has(key)) continue; seen.add(key);
-        out.push({ name: prov.name, url: u, icon: provIconUrl(prov.domain) });
-      }
-      return out;
-    } catch (e) { return []; }
+      _urlRels = [...new Set(((j && j.relations) || []).map(rel => rel.url && rel.url.resource).filter(Boolean))];
+    } catch (e) { _urlRels = []; }
+    return _urlRels;
+  }
+  // the release/event's external links → the recognised art providers, deduped
+  async function artProviderLinks() {
+    const seen = new Set(), out = [];
+    for (const u of await releaseUrls()) {
+      const prov = providerOf(u); if (!prov) continue;
+      const key = prov.name + '|' + u; if (seen.has(key)) continue; seen.add(key);
+      out.push({ name: prov.name, url: u, icon: provIconUrl(prov.domain) });
+    }
+    return out;
+  }
+  // #250 (vzell) custom providers whose declared `match` hits a link on THIS release,
+  // each with the matched URL(s). A provider that declared no match is always offered.
+  async function matchedCustomProviders() {
+    const links = await releaseUrls();
+    return _customProviders
+      .map(p => ({ p, urls: p.match ? links.filter(u => { try { return p.match(u); } catch (e) { return false; } }) : [] }))
+      .filter(x => !x.p.match || x.urls.length);
   }
   let _provLinks = null;   // fetched once per page; reused by the button count + the popover
   function getProvLinks() { return _provLinks ? Promise.resolve(_provLinks) : artProviderLinks().then(l => (_provLinks = l)); }
@@ -1443,12 +1475,17 @@
       + `<div class="as-pop-f"><button class="as-btn as-src-go">Fetch</button></div>`
       + `<div class="as-pop-note">Powered by ROpdebee's <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Enhanced Cover Art Uploads</a> (must be installed).</div>`;
     document.body.appendChild(pop); placePop(pop, btn.getBoundingClientRect());
-    // #250 custom providers registered by other userscripts — their own Import buttons
+    // #250 custom providers registered by other userscripts — one stacked "Import from …"
+    // button each, but only for providers whose declared `match` hits a link on this release.
     const cbox = pop.querySelector('.as-src-custom');
     if (cbox && _customProviders.length) {
-      cbox.innerHTML = _customProviders.map((p, i) => `<button class="as-btn as-src-prov-b" data-ci="${i}">${p.icon ? `<img class="as-src-ic" src="${esc(p.icon)}" alt="">` : '🧩 '}⬇ Import from ${esc(p.name)}</button>`).join('');
-      cbox.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { const p = _customProviders[+b.dataset.ci]; pop.remove(); sourceFromProvider(p); });
-      cbox.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });
+      matchedCustomProviders().then(matched => {
+        if (!cbox.isConnected || !matched.length) return;
+        cbox.innerHTML = matched.map((x, i) => `<button class="as-btn as-src-prov-b" data-ci="${i}">${x.p.icon ? `<img class="as-src-ic" src="${esc(x.p.icon)}" alt="">` : '🧩 '}⬇ Import from ${esc(x.p.name)}</button>`).join('');
+        cbox.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { const x = matched[+b.dataset.ci]; pop.remove(); sourceFromProvider(x.p, x.urls); });
+        cbox.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });
+        placePop(pop, btn.getBoundingClientRect());
+      });
     }
     const inp = pop.querySelector('.as-src-inp'); inp.focus();
     const go = () => { const v = inp.value; pop.remove(); sourceFromUrl(v); };
@@ -2350,6 +2387,7 @@
   .as-dthumb img{width:100%;height:100%;object-fit:contain;display:block}
   .as-dthumb.na img{display:none}
   .as-dthumb.na::after{content:'not on CAA yet';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9a8ccb;font-size:11px;font-weight:600;text-align:center;padding:0 8px}
+  .as-dthumb.na.as-na-new::after{content:'preview unavailable'}
   .as-dcap{font-size:11px;font-weight:600;color:#6b5fa0;margin-top:5px;white-space:nowrap}
   .as-did{font-size:11px;color:#a99fc4;font-variant-numeric:tabular-nums;word-break:break-all;line-height:1.3;margin-top:1px}
   .as-dmeta{flex:1 1 auto;min-width:0}
@@ -2399,6 +2437,7 @@
   .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#faf8ff,#efeafb)}
   .as-thumb.na img{display:none}
   .as-thumb.na::after{content:'Not on the Cover Art Archive yet';text-align:center;color:#9a8ccb;font-size:12px;font-weight:600;line-height:1.45;padding:0 16px}
+  .as-thumb.na.as-na-new::after{content:'Preview unavailable — the image couldn’t be decoded'}   /* #250 a staged blob that won't render (no CAA fallback) */
   .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;flex:0 0 auto;margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 7px}
   .as-dim-sz,.as-dim-px{white-space:nowrap}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
@@ -2456,6 +2495,8 @@
   .as-src-pop{min-width:340px;max-width:90vw;width:max-content;max-height:calc(100vh - 20px);overflow-x:hidden;scrollbar-width:none}
   .as-src-pop::-webkit-scrollbar{display:none}
   .as-src-prov{display:flex;flex-direction:column;gap:5px;margin:6px 0 2px}
+  .as-src-custom{display:flex;flex-direction:column;gap:5px}   /* #250 stacked custom-provider buttons */
+  .as-src-custom:not(:empty){margin:6px 0 2px}
   .as-src-prov-b{justify-content:flex-start;font-weight:600;color:#3b2c70;gap:8px}
   .as-src-all{justify-content:center;font-weight:700;color:#fff;background:var(--as-acc);border-color:var(--as-acc);margin-top:3px}
   .as-src-all:hover{background:#4e329f;border-color:#4e329f}
