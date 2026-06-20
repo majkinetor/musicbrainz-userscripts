@@ -1315,12 +1315,18 @@
     if (document.querySelector('.as-src-pop') && _srcBtn) openSourcePop(_srcBtn);   // reflect in an open popover
     return true;
   }
-  async function providerBlob(it) {            // one provider result → a Blob
+  async function providerBlob(it) {            // one provider result → a Blob in OUR realm
     if (it == null) return null;
-    if (it.blob instanceof Blob) return it.blob;
-    if (it.file instanceof Blob) return it.file;
     if (it.dataUrl) return fetch(it.dataUrl).then(r => r.blob());
-    if (it.url) return gmFetch(it.url);        // Art Station fetches plain (non-locked) URLs
+    // A provider fetches images in ITS OWN userscript sandbox, so the Blob/File it hands
+    // back belongs to a different realm: `instanceof Blob` can be false here, and an object
+    // URL we make from it won't render (#250 — vzell's Jungleland blobs were valid JPEGs but
+    // showed blank). So duck-type it and COPY the bytes into a fresh same-realm Blob.
+    const raw = it.blob || it.file;
+    if (raw && typeof raw.arrayBuffer === 'function') {
+      try { const buf = await raw.arrayBuffer(); return new Blob([buf], { type: raw.type || 'image/jpeg' }); } catch (e) {}
+    }
+    if (it.url) return gmFetch(it.url);        // else Art Station fetches a plain (non-locked) URL itself
     return null;
   }
   function sourceFromProvider(prov, links) {
