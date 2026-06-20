@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.19.100000
+// @version      2026.6.20.202500
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
-// @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPCEtLSBzaGFnZ3kgYm9keSArIGRvbWVkIGhlYWQgLS0+DQogIDxwYXRoIGQ9Ik0yOCA4MmMwLTEwIDQtMTcgMTEtMjEgMy0xNSAxNS0yNSAzMS0yNXMyNyAxMCAzMCAyNGM3IDMgMTAgOSAxMCAxN3YxMGMwIDQtMyA3LTcgN2gtN3YtOWgtOHY5SDY2di05aC04djloLTljLTUgMC05LTQtOS05di0zYy00LTItNy02LTctMTFaIiBmaWxsPSIjOGQ2NDQyIi8+DQogIDwhLS0gZWFyIC0tPg0KICA8cGF0aCBkPSJNNzQgNDZjMTEtNyAyMi0zIDIyIDgtOS01LTE2LTMtMjAgM1oiIGZpbGw9IiM3YTU0MzYiLz4NCiAgPCEtLSB0cnVuayAtLT4NCiAgPHBhdGggZD0iTTQyIDY0Yy05IDYtMTMgMTktNyAzMSAzIDYgMTEgMyA5LTMtMi04IDAtMTUgNy0xOVoiIGZpbGw9IiM4ZDY0NDIiLz4NCiAgPCEtLSB0dXNrIC0tPg0KICA8cGF0aCBkPSJNNDYgODZjLTkgNS0xOCAyLTIyLTcgNyA3IDE1IDYgMjAtMVoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzZmNGEyZSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4NCiAgPCEtLSBleWUgLS0+DQogIDxjaXJjbGUgY3g9IjU0IiBjeT0iNTYiIHI9IjQiIGZpbGw9IiMyYTIwMTciLz4NCjwvc3ZnPg0K
+// @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md
 // @match        https://*.musicbrainz.org/*
 // @grant        GM_setValue
@@ -29,8 +29,8 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true };   // defaultInsert: 'replace' | 'append'
-  const VERSION = '2026.6.19.100000';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false };   // defaultInsert: 'replace' | 'append'
+  const VERSION = '2026.6.20.202500';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -146,8 +146,21 @@
      (field min-height = panel height) then fed back through it — each pass added
      the field's padding/border, inflating both without bound (#245). The field is
      still floored to the panel via JS, so it's never shorter. */
-  .mmth-wrap { display:flex; gap:0; align-items:flex-start; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; }
+  .mmth-wrap { display:flex; gap:0; align-items:flex-start; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; position:relative; }
   .mmth-wrap > textarea.edit-note { flex:1 1 auto; width:auto !important; min-width:0; }
+  /* Minimized mode (#265): the panel collapses to a small Mammoth badge in the
+     field's top-right corner; the field takes the full width and the panel floats
+     in only on hover. No width/height coupling, so it can't feed the #245 loop. */
+  .mmth-min .mmth-vsep { display:none !important; }
+  .mmth-min > .mmth-side { position:absolute; top:30px; right:2px; z-index:60; display:none;
+                           box-shadow:0 8px 26px rgba(20,50,35,.22); }
+  .mmth-min > .mmth-side.mmth-open { display:flex; }
+  .mmth-badge { display:none; position:absolute; top:4px; right:5px; z-index:61; width:25px; height:25px;
+                align-items:center; justify-content:center; cursor:pointer; border:1px solid #cfd9d3;
+                border-radius:7px; background:#fbfdfc; box-shadow:0 1px 3px rgba(0,0,0,.12);
+                font-size:15px; line-height:1; user-select:none; }
+  .mmth-badge:hover { background:#eaf5ee; border-color:#5aa67e; }
+  .mmth-min > .mmth-badge { display:flex; }
   .mmth-vsep { flex:none; width:9px; align-self:stretch; cursor:col-resize; position:relative; }
   .mmth-vsep::before { content:''; position:absolute; left:4px; top:0; bottom:0; width:1px; background:#d7e0db; }
   .mmth-vsep:hover::before, .mmth-vsep.mmth-dragv::before { background:#5aa67e; width:3px; left:3px; }
@@ -263,11 +276,44 @@
 
   function setSideWidth(side, w) { w = Math.max(160, Math.min(640, Math.round(w))); side.style.flex = '0 0 ' + w + 'px'; side.style.maxWidth = w + 'px'; return w; }
 
+  // #263: never let the panel be wider than the field — cap it to half the row so
+  // the ratio is at most 1:1 (was up to ~1:10 in a narrow Art Station modal). The
+  // cap reads ONLY the wrap's width, which the container fixes and setting the
+  // panel never changes, so this can't oscillate (unlike a field-width-based cap,
+  // which would: shrinking the panel grows the field, re-raising the cap…).
+  function capPanel(wrap, vsep, side) {
+    if (SET.minimized) return;   // panel is out of flow when minimized
+    const row = wrap.clientWidth - (vsep ? vsep.offsetWidth : 0); if (!(row > 0)) return;
+    const max = Math.floor(row / 2);
+    const want = Math.max(160, Math.min(SET.sideWidth || 300, max));
+    if (Math.round(side.getBoundingClientRect().width) !== want) { side.style.flex = '0 0 ' + want + 'px'; side.style.maxWidth = want + 'px'; }
+  }
+
+  // ── minimized mode (#265) ─────────────────────────────────────────────────────
+  // A less-intrusive mode: the panel collapses to a small Mammoth badge in the
+  // field's top-right corner and floats back in on hover. Persisted, so it stays
+  // minimized across edit pages. WIDTH/position only — never touches the field's
+  // height, so it can't reintroduce the #245 growth loop.
+  function applyMinState(inst) {
+    const wrap = inst.ta && inst.ta.closest('.mmth-wrap'); if (!wrap) return;
+    const on = !!SET.minimized;
+    wrap.classList.toggle('mmth-min', on);
+    if (inst.minBtn) { inst.minBtn.textContent = on ? '⤢' : '–'; inst.minBtn.title = on ? 'Restore the panel' : 'Minimize to corner'; }
+    if (on) { try { inst.ta.style.minHeight = ''; } catch (x) {} }       // drop the panel-height floor — panel is out of flow now
+    if (!on) { if (inst.unpin) inst.unpin(); if (inst.side) inst.side.classList.remove('mmth-open'); }
+  }
+  function setMinimized(on) { SET.minimized = !!on; persistSet(); instances.forEach(i => { applyMinState(i); if (i.recap) i.recap(); }); }
+
   // drag the separator to resize the panel vs. the field (persisted)
   function wireResize(vsep, side) {
     let startX = 0, startW = 0, on = false;
     vsep.addEventListener('pointerdown', e => { on = true; startX = e.clientX; startW = side.getBoundingClientRect().width; try { vsep.setPointerCapture(e.pointerId); } catch (x) {} vsep.classList.add('mmth-dragv'); document.body.style.userSelect = 'none'; e.preventDefault(); });
-    vsep.addEventListener('pointermove', e => { if (on) setSideWidth(side, startW - (e.clientX - startX)); });   // panel is on the right → drag left widens it
+    vsep.addEventListener('pointermove', e => {   // panel is on the right → drag left widens it; cap at half the row (#263)
+      if (!on) return;
+      const wrap = side.parentNode, row = (wrap ? wrap.clientWidth : 0) - vsep.offsetWidth;
+      const max = row > 0 ? Math.floor(row / 2) : 640;
+      setSideWidth(side, Math.min(max, startW - (e.clientX - startX)));
+    });
     const end = e => { if (!on) return; on = false; vsep.classList.remove('mmth-dragv'); document.body.style.userSelect = ''; SET.sideWidth = setSideWidth(side, side.getBoundingClientRect().width); saveSet(); try { vsep.releasePointerCapture(e.pointerId); } catch (x) {} };
     vsep.addEventListener('pointerup', end); vsep.addEventListener('pointercancel', end);
   }
@@ -279,7 +325,7 @@
     const list = document.createElement('div'); list.className = 'mmth-list';
     side.appendChild(ft); side.appendChild(list);
 
-    const inst = { ta, list, view: 'saved', cyc: -1 };
+    const inst = { ta, list, side, view: 'saved', cyc: -1 };
     instances.push(inst);
 
     const fb = (glyph, title, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-fb' + (cls ? ' ' + cls : ''); b.textContent = glyph; b.title = title; b.onclick = fn; return b; };
@@ -289,6 +335,8 @@
     ft.appendChild(bSaved); ft.appendChild(bHist);
     ft.appendChild(fb('✕', 'Clear the edit note', 'mmth-grp', () => { setValue(ta, ''); ta.focus(); }));
     const sp = document.createElement('span'); sp.className = 'mmth-fb mmth-spacer'; ft.appendChild(sp);
+    inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => setMinimized(!SET.minimized));   // #265: left of the ? button
+    ft.appendChild(inst.minBtn);
     ft.appendChild(fb('?', 'Edit-note syntax', 'mmth-pop-anchor', e => openSyntax(e.currentTarget)));
     ft.appendChild(fb('⚙', 'Settings', 'mmth-pop-anchor', e => openSettings(e.currentTarget)));
     inst.tabs = { saved: bSaved, history: bHist };
@@ -318,7 +366,7 @@
     });
 
     renderInst(inst);
-    return side;
+    return inst;
   }
 
   function renderInst(inst) {
@@ -391,13 +439,41 @@
         if (h > 40 && h !== was && h !== SET.taHeight) { SET.taHeight = h; ta.style.height = h + 'px'; persistSet(); }
       });
       const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; vsep.title = 'Drag to resize'; wrap.appendChild(vsep);   // resizable separator between field & panel (#212)
-      const side = buildSide(ta); wrap.appendChild(side);
+      const inst = buildSide(ta); const side = inst.side; wrap.appendChild(side);
       wireResize(vsep, side);
+
+      // #265 minimized mode: badge in the field's top-right corner; hover (or click
+      // to pin) floats the panel back in. mouseleave closes after a short grace.
+      const badge = document.createElement('div'); badge.className = 'mmth-badge'; badge.title = 'Mammoth — saved notes (click or hover)';
+      badge.textContent = '🦣';
+      wrap.appendChild(badge); inst.badge = badge;
+      let closeT = null, pinned = false;
+      const openFloat = () => { clearTimeout(closeT); if (SET.minimized) side.classList.add('mmth-open'); };
+      const closeFloat = () => { clearTimeout(closeT); if (pinned) return; closeT = setTimeout(() => side.classList.remove('mmth-open'), 220); };
+      badge.addEventListener('mouseenter', openFloat);
+      badge.addEventListener('mouseleave', closeFloat);
+      side.addEventListener('mouseenter', openFloat);
+      side.addEventListener('mouseleave', closeFloat);
+      // click the badge to pin the panel open (so it survives mouse-out); click again to unpin
+      badge.addEventListener('click', () => { if (!SET.minimized) return; pinned = !pinned; pinned ? openFloat() : side.classList.remove('mmth-open'); });
+      inst.unpin = () => { pinned = false; };
+      applyMinState(inst);
+
+      // #263: keep the panel ≤ half the row (never wider than the field). Driven by
+      // the WRAP's width only — stable, no feedback loop.
+      const cap = () => capPanel(wrap, vsep, side);
+      cap(); requestAnimationFrame(cap); setTimeout(cap, 200);
+      try { new ResizeObserver(cap).observe(wrap); } catch (x) {}
+      inst.recap = cap;
       // The saved-notes panel's height (driven by the Items Shown setting) is the
       // field's floor, so it's never shorter than the sidebar. With no user-saved
       // height the field STARTS at exactly that height too — so its initial size
       // tracks Items Shown — until the user drags the grip (which is remembered).
       const syncFloor = () => { try {
+        // Minimized: the panel floats out of flow, so the field needs no floor —
+        // applying one here while the panel shows on hover would couple field
+        // height to panel height (the #245 loop). Clear it and bail.
+        if (SET.minimized) { if (ta.style.minHeight) ta.style.minHeight = ''; return; }
         const h = side.offsetHeight; if (!(h > 0)) return;
         if ((parseInt(ta.style.minHeight, 10) || 0) !== h) ta.style.minHeight = h + 'px';
         if (!SET.taHeight && (parseInt(ta.style.height, 10) || 0) !== h) ta.style.height = h + 'px';
