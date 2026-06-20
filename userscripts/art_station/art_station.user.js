@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.183000
+// @version      2026.6.20.184000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2586,11 +2586,11 @@
   /* #263 if Mammoth is installed it auto-enhances the .edit-note field (saved notes / history
      panel), which sits below the operations list. It wraps the textarea in .mmth-wrap + a
      300px side panel; the 680px modal fits that — give the wrap the note's bottom margin and
-     full width. Keep Mammoth's resize splitter (so the field stays adjustable in the modal),
-     and stretch the panel to the field's height so the splitter doesn't overhang below it
-     (the field is always >= the panel via Mammoth's own min-height). */
+     full width. Hide Mammoth's WIDTH splitter in the modal: it overhangs a shorter panel, and
+     stretching the panel to size-match the field feeds Mammoth's height observer into a
+     runaway (infinite growth, #245). The field stays HEIGHT-resizable via its own corner grip. */
   #as-commit .mmth-wrap{margin:0 0 12px;max-width:none}
-  #as-commit .mmth-side{align-self:stretch}
+  #as-commit .mmth-vsep{display:none}
   .as-cm-chk{display:flex;align-items:center;gap:6px;cursor:pointer;color:#555}
   .as-cm-opts{flex-direction:row;gap:18px;flex-wrap:wrap}
   .as-cm-opts label{display:flex;align-items:center;gap:6px;cursor:pointer;color:#444}
