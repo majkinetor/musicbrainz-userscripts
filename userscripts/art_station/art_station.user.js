@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.203000
+// @version      2026.6.20.213000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1330,7 +1330,12 @@
     // the robust default; the raw Blob is only used when no URL is available (e.g. a session-
     // locked image the provider could fetch but we can't).
     const directUrl = it.url || it.source || '';
-    if (directUrl) { try { const b = await gmFetch(directUrl); if (b && (b.type === 'application/pdf' || await decodesImg(b))) return b; } catch (e) {} }
+    if (directUrl) {
+      try { const b = await gmFetch(directUrl);
+        console.info('[ArtStation #250] gmFetch', directUrl, '→', b && b.type, b && (b.size + 'B'), 'decodes=', b && await decodesImg(b));   // #250 TEMP
+        if (b && (b.type === 'application/pdf' || await decodesImg(b))) return b;
+      } catch (e) { console.warn('[ArtStation #250] gmFetch failed', directUrl, (e && e.message) || e); }   // #250 TEMP
+    }
     // No usable URL — launder the provider's own bytes into a fresh same-realm Blob, and verify
     // it actually decodes (a cross-realm copy can have the right length but unreadable content).
     const raw = it.blob || it.file;
@@ -1368,6 +1373,11 @@
         metas.push({ types, comment: it.comment || '', provider: prov.name, provIcon: prov.icon || hostIcon(srcUrl), provUrl: srcUrl });
       }
       finish();
+      // #250 TEMP diagnostics (remove once vzell's render issue is pinned) — does each staged
+      // File's object URL actually render as an <img>? This isolates "bad bytes / wrong path"
+      // from "blob: URLs don't render here" (CSP / manager).
+      console.info('[ArtStation #250]', prov.name, '→', items.length, 'item(s),', files.length, 'file(s) staged');
+      files.forEach(f => { const u = URL.createObjectURL(f); const im = new Image(); im.onload = () => console.info('[ArtStation #250] object URL renders OK:', f.name, f.type, f.size + 'B', im.naturalWidth + 'x' + im.naturalHeight); im.onerror = () => console.warn('[ArtStation #250] object URL FAILED to render:', f.name, f.type, f.size + 'B', u); im.src = u; });
       if (files.length) { addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from ${prov.name} ✓`); }
       else { render(); toast(`${prov.name} returned no image`, 5000); }
     }).catch(e => { if (done) return; clearTimeout(killer); finish(); render(); toast(`${prov.name} failed — ${(e && e.message) || e}`, 8000); });
