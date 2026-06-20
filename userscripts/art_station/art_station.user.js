@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.175000
+// @version      2026.6.20.180000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -547,7 +547,7 @@
   // #248 (vzell) tooltip for a locally-uploaded cover — its original file name.
   const uploadTip = it => (it._new && it._uploadName) ? ` title="${esc(it._uploadName)}"` : '';
   function card(it) {
-    if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}">`
+    if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}" title="${esc(it._srcLabel || 'Sourcing…')}">`
       + `<div class="as-srcing-thumb"><div class="as-spinner"></div><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
     return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
       <div class="as-thumb"${uploadTip(it)}>${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
@@ -588,7 +588,7 @@
   // full comment field beside it. No per-row toolbar actions (selection / delete
   // live on the main toolbar).
   function detailRow(it) {
-    if (it._sourcing) return `<div class="as-drow new as-sourcing" data-id="${esc(it.id)}">
+    if (it._sourcing) return `<div class="as-drow new as-sourcing" data-id="${esc(it.id)}" title="${esc(it._srcLabel || 'Sourcing…')}">
       <div class="as-dthumb as-srcing-thumb"><div class="as-spinner"></div></div>
       <div class="as-dmeta"><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
     if (it._del) return `<div class="as-drow del" data-id="${esc(it.id)}">
@@ -626,11 +626,14 @@
   // Wire the comment controls. #234 split the footer (pencil on row 1, comment
   // on row 2 which only exists when there's a comment), so entering/leaving edit
   // re-renders — render() keeps the viewport put, so the page still doesn't jump.
+  // focus a comment input with the caret at the END — re-rendering then plain .focus()
+  // drops the cursor at position 0, which is jarring when editing an existing comment.
+  const focusCmtEnd = inp => { if (!inp) return; inp.focus(); const n = inp.value.length; try { inp.setSelectionRange(n, n); } catch (e) {} };
   function wireComments() {
     root.querySelectorAll('.as-pencil, .as-cmt-text').forEach(el => el.onclick = e => {
       e.stopPropagation(); const it = byId(cardId(el)); if (!it) return;
       it._editcmt = true; render();
-      root.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-cmt`)?.focus();
+      focusCmtEnd(root.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-cmt`));
     });
     root.querySelectorAll('.as-cmt').forEach(inp => {
       inp.oninput = () => { const it = byId(cardId(inp)); if (it) { it.comment = inp.value; refreshStaged(); } };
@@ -648,7 +651,7 @@
         const nextIt = (idx >= 0 && cards[idx + 1]) ? byId(cards[idx + 1].dataset.id) : null;
         if (nextIt) nextIt._editcmt = true;
         refreshStaged(); render();
-        if (nextIt) root.querySelector(`.as-card[data-id="${CSS.escape(String(nextIt.id))}"] .as-cmt`)?.focus();
+        if (nextIt) focusCmtEnd(root.querySelector(`.as-card[data-id="${CSS.escape(String(nextIt.id))}"] .as-cmt`));
       };
     });
   }
@@ -1218,16 +1221,17 @@
   }
   async function addCoverFromMH(o) {
     const url = o.bigCoverUrl || o.smallCoverUrl; if (!url) return;
-    toast('Fetching cover from MH…', 120000);
+    const prov = mhProvider(o);
+    const slot = addSourcingSlot(`Sourcing ${prov.name}…`);   // show the in-grid spinner placeholder, same as URL/provider sourcing
     try {
-      const blob = await gmFetch(url, (l, t) => toast(`Fetching cover from MH… ${Math.round(l / t * 100)}%`, 120000));
+      const blob = await gmFetch(url, (l, t) => setSourcingLabel(slot, `Fetching ${prov.name}… ${Math.round(l / t * 100)}%`));
       const ext = (String(url).match(/\.(jpe?g|png|gif|webp)(?:$|\?)/i) || [, 'jpg'])[1].toLowerCase().replace('jpeg', 'jpg');
       const type = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
       const file = new File([blob], `mh-${Date.now()}.${ext}`, { type });
-      const prov = mhProvider(o);
+      dropSourcingSlot(slot);
       const added = await addFilesDeduped([file], [{ provider: prov.name, provIcon: prov.icon, provUrl: url }]);   // #253
-      toast(added ? 'Added cover from MH Covers ✓' : 'That cover is already added');
-    } catch (e) { toast('Could not fetch the cover — ' + e.message, 5000); }
+      if (added) toast('Added cover from MH Covers ✓'); else { render(); toast('That cover is already added'); }
+    } catch (e) { dropSourcingSlot(slot); render(); toast('Could not fetch the cover — ' + e.message, 5000); }
   }
 
   // ── #242 Source from any provider via ECAU (ROpdebee's Enhanced Cover Art Uploads). ──
