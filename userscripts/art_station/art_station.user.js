@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.201500
+// @version      2026.6.20.203000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1322,26 +1322,26 @@
   async function providerBlob(it) {            // one provider result → a Blob in OUR realm
     if (it == null) return null;
     if (it.dataUrl) { try { return await fetch(it.dataUrl).then(r => r.blob()); } catch (e) {} }
-    const directUrl = it.url || it.source || '';   // a re-fetchable image URL, if the provider gave one
-    // A provider fetches images in ITS OWN userscript sandbox, so the Blob/File it hands
-    // back belongs to a different realm. Copying its bytes into a fresh same-realm Blob is
-    // enough on most managers — but a cross-realm ArrayBuffer can copy the right byte LENGTH
-    // yet not the actual content (#250 — vzell's Jungleland blobs reported the correct size
-    // but never decoded). So launder it AND verify it actually decodes before trusting it.
+    // A provider fetches images in ITS OWN userscript sandbox, so the Blob/File it hands back
+    // belongs to a different realm. On some managers (notably Firefox's Xray wrappers) those
+    // bytes don't survive the boundary — the blob reports the right size but never decodes or
+    // renders (#250, vzell's Jungleland). So whenever the provider also gave us a URL, we fetch
+    // the image OURSELVES, in our own realm, and never touch the foreign object at all. This is
+    // the robust default; the raw Blob is only used when no URL is available (e.g. a session-
+    // locked image the provider could fetch but we can't).
+    const directUrl = it.url || it.source || '';
+    if (directUrl) { try { const b = await gmFetch(directUrl); if (b && (b.type === 'application/pdf' || await decodesImg(b))) return b; } catch (e) {} }
+    // No usable URL — launder the provider's own bytes into a fresh same-realm Blob, and verify
+    // it actually decodes (a cross-realm copy can have the right length but unreadable content).
     const raw = it.blob || it.file;
     if (raw && typeof raw.arrayBuffer === 'function') {
       try {
         const buf = await raw.arrayBuffer();
         const u8 = new Uint8Array(buf), copy = new Uint8Array(u8.length); copy.set(u8);   // explicit same-realm byte copy
         const b = new Blob([copy], { type: raw.type || 'image/jpeg' });
-        // PDFs can't be decode-checked; trust them. Images must decode, else fall through.
-        if ((raw.type === 'application/pdf') || await decodesImg(b)) return b;
+        if ((raw.type === 'application/pdf') || await decodesImg(b)) return b;   // PDFs can't be decode-checked; trust them
       } catch (e) {}
     }
-    // Fallback: fetch the image URL ourselves, in OUR realm — no cross-realm object at all.
-    // This rescues a provider that only hands back a Blob whose bytes don't survive the
-    // sandbox boundary, as long as it also told us the URL (it.url / it.source).
-    if (directUrl) { try { return await gmFetch(directUrl); } catch (e) {} }
     return null;
   }
   function sourceFromProvider(prov, links) {
