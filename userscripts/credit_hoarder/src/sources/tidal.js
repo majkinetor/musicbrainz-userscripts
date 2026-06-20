@@ -31,6 +31,7 @@ export const TIDAL_ROLE_MAP = {
     'Mixing Engineer':   { target: 'recording', rel: 'mix' },
     'Recording Engineer':{ target: 'recording', rel: 'recording' },
     'Sound Engineer':    { target: 'recording', rel: 'sound engineer' },
+    'Lead Vocalist':     { target: 'recording', rel: 'vocal', attributes: [{ _type: 'vocal', value: 'lead vocals' }] },   // #257
     'Composer':          { target: 'work',      rel: 'composer' },
     'Lyricist':          { target: 'work',      rel: 'lyricist' },
     'Writer':            { target: 'work',      rel: 'writer' },
@@ -267,15 +268,6 @@ function tidalCompany(name, entityTypeName) {
 }
 
 export function tidalToEngine(tracks) {
-    // Derive the per-track role→linkType map straight from TIDAL_ROLE_MAP so the two
-    // can't drift — a hardcoded copy here is exactly why a freshly-mapped role (Remixer,
-    // #257) passed filterTidalCredits but was then dropped as "Not imported (v1 scope)".
-    // Publisher / Music Publisher are handled separately below (label→work), so exclude them.
-    const IMPORT_ROLES = Object.fromEntries(
-        Object.entries(TIDAL_ROLE_MAP)
-            .filter(([role]) => role !== 'Publisher' && role !== 'Music Publisher')
-            .map(([role, { rel }]) => [role, rel]),
-    );
     const tracklistRels = [];
     const tracklist = [];
     const skipped = [];
@@ -298,16 +290,19 @@ export function tidalToEngine(tracks) {
                 }
                 continue;
             }
-            const linkType  = IMPORT_ROLES[base];
+            // Drive the rel straight off TIDAL_ROLE_MAP (rel + any attributes, e.g. Lead
+            // Vocalist → vocal[lead vocals]). filterTidalCredits already kept only mapped
+            // roles, so a miss here is a real gap worth reporting, not silent. #257
+            const mapping = TIDAL_ROLE_MAP[base];
             for (const n of c.names) {
-                if (!linkType) {
+                if (!mapping) {
                     skipped.push(`track ${position} "${t.title}": ${c.role} — ${n.name}`);
                     continue;
                 }
                 tracklistRels.push({
-                    linkType,
+                    linkType: mapping.rel,
                     entityType: 'artist',
-                    attributes: assistant ? ['assistant'] : [],
+                    attributes: [...(mapping.attributes || []), ...(assistant ? ['assistant'] : [])],
                     artist: {
                         id:           n.tidalId ? `tidal-${n.tidalId}` : undefined,
                         name:         n.name,
