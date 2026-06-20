@@ -278,6 +278,19 @@
 
   function setSideWidth(side, w) { w = Math.max(160, Math.min(640, Math.round(w))); side.style.flex = '0 0 ' + w + 'px'; side.style.maxWidth = w + 'px'; return w; }
 
+  // #263: never let the panel be wider than the field — cap it to half the row so
+  // the ratio is at most 1:1 (was up to ~1:10 in a narrow Art Station modal). The
+  // cap reads ONLY the wrap's width, which the container fixes and setting the
+  // panel never changes, so this can't oscillate (unlike a field-width-based cap,
+  // which would: shrinking the panel grows the field, re-raising the cap…).
+  function capPanel(wrap, vsep, side) {
+    if (SET.minimized) return;   // panel is out of flow when minimized
+    const row = wrap.clientWidth - (vsep ? vsep.offsetWidth : 0); if (!(row > 0)) return;
+    const max = Math.floor(row / 2);
+    const want = Math.max(160, Math.min(SET.sideWidth || 300, max));
+    if (Math.round(side.getBoundingClientRect().width) !== want) { side.style.flex = '0 0 ' + want + 'px'; side.style.maxWidth = want + 'px'; }
+  }
+
   // ── minimized mode (#265) ─────────────────────────────────────────────────────
   // A less-intrusive mode: the panel collapses to a small Mammoth badge in the
   // field's top-right corner and floats back in on hover. Persisted, so it stays
@@ -291,13 +304,18 @@
     if (on) { try { inst.ta.style.minHeight = ''; } catch (x) {} }       // drop the panel-height floor — panel is out of flow now
     if (!on) { if (inst.unpin) inst.unpin(); if (inst.side) inst.side.classList.remove('mmth-open'); }
   }
-  function setMinimized(on) { SET.minimized = !!on; persistSet(); instances.forEach(applyMinState); }
+  function setMinimized(on) { SET.minimized = !!on; persistSet(); instances.forEach(i => { applyMinState(i); if (i.recap) i.recap(); }); }
 
   // drag the separator to resize the panel vs. the field (persisted)
   function wireResize(vsep, side) {
     let startX = 0, startW = 0, on = false;
     vsep.addEventListener('pointerdown', e => { on = true; startX = e.clientX; startW = side.getBoundingClientRect().width; try { vsep.setPointerCapture(e.pointerId); } catch (x) {} vsep.classList.add('mmth-dragv'); document.body.style.userSelect = 'none'; e.preventDefault(); });
-    vsep.addEventListener('pointermove', e => { if (on) setSideWidth(side, startW - (e.clientX - startX)); });   // panel is on the right → drag left widens it
+    vsep.addEventListener('pointermove', e => {   // panel is on the right → drag left widens it; cap at half the row (#263)
+      if (!on) return;
+      const wrap = side.parentNode, row = (wrap ? wrap.clientWidth : 0) - vsep.offsetWidth;
+      const max = row > 0 ? Math.floor(row / 2) : 640;
+      setSideWidth(side, Math.min(max, startW - (e.clientX - startX)));
+    });
     const end = e => { if (!on) return; on = false; vsep.classList.remove('mmth-dragv'); document.body.style.userSelect = ''; SET.sideWidth = setSideWidth(side, side.getBoundingClientRect().width); saveSet(); try { vsep.releasePointerCapture(e.pointerId); } catch (x) {} };
     vsep.addEventListener('pointerup', end); vsep.addEventListener('pointercancel', end);
   }
@@ -319,7 +337,7 @@
     ft.appendChild(bSaved); ft.appendChild(bHist);
     ft.appendChild(fb('✕', 'Clear the edit note', 'mmth-grp', () => { setValue(ta, ''); ta.focus(); }));
     const sp = document.createElement('span'); sp.className = 'mmth-fb mmth-spacer'; ft.appendChild(sp);
-    inst.minBtn = fb('–', 'Minimize to corner', '', () => setMinimized(!SET.minimized));   // #265: left of the ? button
+    inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => setMinimized(!SET.minimized));   // #265: left of the ? button
     ft.appendChild(inst.minBtn);
     ft.appendChild(fb('?', 'Edit-note syntax', 'mmth-pop-anchor', e => openSyntax(e.currentTarget)));
     ft.appendChild(fb('⚙', 'Settings', 'mmth-pop-anchor', e => openSettings(e.currentTarget)));
@@ -442,6 +460,13 @@
       badge.addEventListener('click', () => { if (!SET.minimized) return; pinned = !pinned; pinned ? openFloat() : side.classList.remove('mmth-open'); });
       inst.unpin = () => { pinned = false; };
       applyMinState(inst);
+
+      // #263: keep the panel ≤ half the row (never wider than the field). Driven by
+      // the WRAP's width only — stable, no feedback loop.
+      const cap = () => capPanel(wrap, vsep, side);
+      cap(); requestAnimationFrame(cap); setTimeout(cap, 200);
+      try { new ResizeObserver(cap).observe(wrap); } catch (x) {}
+      inst.recap = cap;
       // The saved-notes panel's height (driven by the Items Shown setting) is the
       // field's floor, so it's never shorter than the sidebar. With no user-saved
       // height the field STARTS at exactly that height too — so its initial size
