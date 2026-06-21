@@ -26,7 +26,7 @@
 
 import { mbThrottle }                       from './api-mb.js';
 import { readIdbRecord, writeIdbRecord, deleteIdbRecord } from './storage.js';
-import { parseSourceEntityUrl }             from './sources/registry.js';
+import { parseSourceEntityUrl, idbKeyForEntity } from './sources/registry.js';
 import { ENTITY_TYPE_MAP }                  from './data/entity-map.js';
 import { _setProgressPct }                  from './progress-bar.js';
 import { logDebug }                         from './log.js';
@@ -55,7 +55,9 @@ async function resolveEntity(entity, kind, opts) {
     const { searchLimit, resultKey, incRels } = KIND_TABLE[kind];
 
     const parsed     = parseSourceEntityUrl(entity.resource_url);
-    const key        = parsed?.key;
+    // Name-only entities (Qobuz, #271 derived remixers) have no source URL but
+    // may carry a release-scoped `_cacheKey` so their resolution still persists.
+    const key        = parsed?.key || entity._cacheKey || null;
     const searchName = entity.name;
     const displayName = kind === 'artist'
         ? (entity.anv && entity.anv.trim()) || entity.name

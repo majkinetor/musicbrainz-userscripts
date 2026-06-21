@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.21.204328
+// @version      2026.6.21.205158
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2323,6 +2323,10 @@
     if (!url) return null;
     return parseDiscogsUrl(url) || parseTidalArtistUrl(url);
   }
+  function idbKeyForEntity(entity) {
+    if (!entity) return null;
+    return parseSourceEntityUrl(entity.resource_url)?.key || entity._cacheKey || null;
+  }
   function sourceNameForUrl(url) {
     if (/tidal\.com\//i.test(url || "")) return "Tidal";
     if (/qobuz\.com\//i.test(url || "")) return "Qobuz";
@@ -2348,7 +2352,7 @@
     const { bypassIdb } = opts;
     const { searchLimit, resultKey, incRels } = KIND_TABLE[kind];
     const parsed = parseSourceEntityUrl(entity.resource_url);
-    const key = parsed?.key;
+    const key = parsed?.key || entity._cacheKey || null;
     const searchName = entity.name;
     const displayName = kind === "artist" ? entity.anv && entity.anv.trim() || entity.name : entity.name;
     const discogsHref = entity.resource_url.replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, "https://www.discogs.com/$1/$2");
@@ -2740,7 +2744,7 @@
     }
     return result;
   }
-  function deriveRemixRoles(tracklist) {
+  function deriveRemixRoles(tracklist, releaseMbid) {
     if (!Array.isArray(tracklist)) return [];
     const roles = [];
     for (const track of tracklist) {
@@ -2748,9 +2752,11 @@
       if (!track.title) continue;
       const { remixers } = parseRemixTitle(track.title);
       for (const name of remixers) {
+        const artist = { name, anv: "", resource_url: "", _derived: true };
+        if (releaseMbid) artist._cacheKey = `titles-remix/${releaseMbid}/${name.toLowerCase().trim()}`;
         roles.push({
           linkType: "remixer",
-          artist: { name, anv: "", resource_url: "", _derived: true },
+          artist,
           track,
           creditedAs: name,
           attributes: [],
@@ -2812,7 +2818,7 @@
     for (const r of _nullNames) {
       const rUrl = r.entity?.resource_url;
       try {
-        const idbKey = parseSourceEntityUrl(rUrl)?.key;
+        const idbKey = idbKeyForEntity(r.entity);
         const rec = await readIdbRecord(idbKey);
         if (rec?.name) {
           _preloadedNames.set(rUrl, { name: rec.name, dis: rec.disambiguation || "" });
@@ -3163,7 +3169,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           refreshCredBg();
           clearTimeout(_credSaveTimer);
           _credSaveTimer = setTimeout(() => {
-            const idbKey = parseSourceEntityUrl(r.entity?.resource_url)?.key;
+            const idbKey = idbKeyForEntity(r.entity);
             if (idbKey) writeIdbRecord(idbKey, { creditOverride: credInput.value });
           }, 500);
         });
@@ -3300,7 +3306,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             refreshCredBg();
             if (r._refreshCredBtns) r._refreshCredBtns();
           }
-          const _idbKey = r.entity?.resource_url ? parseSourceEntityUrl(r.entity.resource_url)?.key : null;
+          const _idbKey = idbKeyForEntity(r.entity);
           if (_idbKey) {
             writeIdbRecord(_idbKey, {
               mbid: a.id,
@@ -5995,7 +6001,7 @@ ${lines}
     }
     log.info("Reading track titles from MusicBrainz to derive remixer credits\u2026");
     return buildTitlesTracklist(m[1]).then((tracklist) => {
-      const tracklistRels = deriveRemixRoles(tracklist);
+      const tracklistRels = deriveRemixRoles(tracklist, m[1]);
       log.info(`Derived <strong>${tracklistRels.length}</strong> remixer credit(s) from ${tracklist.length} track title(s)`);
       if (!tracklistRels.length) {
         log.warn("No named remixes found in the track titles \u2014 nothing to import.");

@@ -7,7 +7,7 @@
 import { readIdbRecord, writeIdbRecord }   from './storage.js';
 import { mbThrottle, fetchWithRetry, fetchArtistRelTypes } from './api-mb.js';
 import { getDiscogsEntityData }            from './api-discogs.js';
-import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId } from './sources/registry.js';
+import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId, idbKeyForEntity } from './sources/registry.js';
 import { guessSortName }                   from './mappers.js';
 import { buildCreateNote }                 from './edit-note.js';
 import { getLogContainer, getReviewContainer } from './log.js';
@@ -53,7 +53,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
     for (const r of _nullNames) {
         const rUrl = r.entity?.resource_url;
         try {
-            const idbKey = parseSourceEntityUrl(rUrl)?.key;
+            const idbKey = idbKeyForEntity(r.entity);
             const rec = await readIdbRecord(idbKey);
             if (rec?.name) {
                 _preloadedNames.set(rUrl, { name: rec.name, dis: rec.disambiguation || '' });
@@ -564,7 +564,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 refreshCredBg();
                 clearTimeout(_credSaveTimer);
                 _credSaveTimer = setTimeout(() => {
-                    const idbKey = parseSourceEntityUrl(r.entity?.resource_url)?.key;
+                    const idbKey = idbKeyForEntity(r.entity);
                     if (idbKey) writeIdbRecord(idbKey, { creditOverride: credInput.value });
                 }, 500);
             });
@@ -734,8 +734,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     refreshCredBg();
                     if (r._refreshCredBtns) r._refreshCredBtns();
                 }
-                // Persist to IDB immediately so selection survives even without clicking Start import
-                const _idbKey = r.entity?.resource_url ? parseSourceEntityUrl(r.entity.resource_url)?.key : null;
+                // Persist to IDB immediately so selection survives even without clicking Start import.
+                // idbKeyForEntity also handles name-only entities that carry a
+                // release-scoped `_cacheKey` (#271 derived remixers) — so a manual
+                // pick on a derived remixer is reused on the next run of this release.
+                const _idbKey = idbKeyForEntity(r.entity);
                 if (_idbKey) {
                     writeIdbRecord(_idbKey, {
                         mbid:           a.id,

@@ -137,8 +137,14 @@ export function parseRemixTitle(title) {
  * rows (`type_ !== 'track'`) are skipped. The emitted role mirrors a provider
  * tracklist role — name-only artist (no URL, like Qobuz), so preflight keys it
  * as `_nourl_<name>` and resolves it via name search + the review table.
+ *
+ * `releaseMbid` (optional) gives each derived artist a release-scoped
+ * `_cacheKey`, so a manual review pick (or auto-match) for a name-only remixer
+ * persists across sessions of THIS release — without a bare name like "Friends"
+ * leaking a resolution onto other releases. Omit it (e.g. the load-time probe,
+ * which only counts) and no cache key is set.
  */
-export function deriveRemixRoles(tracklist) {
+export function deriveRemixRoles(tracklist, releaseMbid) {
     if (!Array.isArray(tracklist)) return [];
     const roles = [];
     for (const track of tracklist) {
@@ -146,9 +152,11 @@ export function deriveRemixRoles(tracklist) {
         if (!track.title) continue;
         const { remixers } = parseRemixTitle(track.title);
         for (const name of remixers) {
+            const artist = { name, anv: '', resource_url: '', _derived: true };
+            if (releaseMbid) artist._cacheKey = `titles-remix/${releaseMbid}/${name.toLowerCase().trim()}`;
             roles.push({
                 linkType: 'remixer',
-                artist: { name, anv: '', resource_url: '', _derived: true },
+                artist,
                 track,
                 creditedAs: name,
                 attributes: [],

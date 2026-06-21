@@ -1449,7 +1449,7 @@ function runTitlesImport(getOpts) {
     log.info('Reading track titles from MusicBrainz to derive remixer credits…');
     return buildTitlesTracklist(m[1])
         .then(tracklist => {
-            const tracklistRels = deriveRemixRoles(tracklist);
+            const tracklistRels = deriveRemixRoles(tracklist, m[1]);   // release-scoped cache keys (#271)
             log.info(`Derived <strong>${tracklistRels.length}</strong> remixer credit(s) from ${tracklist.length} track title(s)`);
             if (!tracklistRels.length) {
                 log.warn('No named remixes found in the track titles — nothing to import.');

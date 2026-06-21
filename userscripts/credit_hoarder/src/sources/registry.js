@@ -20,6 +20,16 @@ export function parseSourceEntityUrl(url) {
     return parseDiscogsUrl(url) || parseTidalArtistUrl(url);
 }
 
+/** The IDB `entity_cache` key for an entity. Normally derived from its source
+ *  URL, but name-only entities (Qobuz credits, #271 title-derived remixers)
+ *  carry no URL — they instead set an explicit `_cacheKey` (release-scoped, so
+ *  a bare name like "Friends" can't leak a resolution across releases). Returns
+ *  null when neither is present (→ no caching, the prior name-only behaviour). */
+export function idbKeyForEntity(entity) {
+    if (!entity) return null;
+    return parseSourceEntityUrl(entity.resource_url)?.key || entity._cacheKey || null;
+}
+
 /** Which source a credited entity's external URL belongs to — drives UI
  *  labels ("Add Tidal link") and the link-type choice below. */
 export function sourceNameForUrl(url) {

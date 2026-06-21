@@ -262,5 +262,17 @@ assert.deepEqual(dr.map(r => [r.track.position, r.linkType, r.artist.name, r.cre
     ['2', 'remixer', 'KiNK', 'KiNK'],
 ]);
 assert.ok(dr.every(r => r.artist.resource_url === '' && r.entityType === 'artist'));
+// No release MBID → no cache key (load-time count-only probe).
+assert.ok(dr.every(r => r.artist._cacheKey === undefined));
+
+// With a release MBID → release-scoped, name-normalised cache key (#271 caching).
+const drk = deriveRemixRoles([{ position: '1', title: 'Boom (KiNK Remix)', type_: 'track' }], 'REL-MBID');
+assert.equal(drk[0].artist._cacheKey, 'titles-remix/REL-MBID/kink');
+// Same name on two tracks → identical key, so one resolution is reused for both.
+const drk2 = deriveRemixRoles([
+    { position: '1', title: 'A (Cartier Saucier Remix)', type_: 'track' },
+    { position: '2', title: 'B (Cartier Saucier Remix)', type_: 'track' },
+], 'REL-MBID');
+assert.equal(drk2[0].artist._cacheKey, drk2[1].artist._cacheKey);
 
 console.log('sources-parse: all assertions passed');
