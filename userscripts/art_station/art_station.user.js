@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.20.234500
+// @version      2026.6.21.110000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -450,7 +450,7 @@
     return `<div class="as-bar">
       <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="as-bt">Add image</span></button>
       ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
-      ${IS_EVENT ? '' : `<button class="as-btn as-src" title="Source a cover from a linked platform or any URL, via ECAU (#242)"><span class="as-bi">🔗</span><span class="as-bt">URL<span class="as-src-n"></span></span></button>`}
+      <button class="as-btn as-src" title="Source ${ENT.noun} from a linked platform, a registered provider, or any URL"><span class="as-bi">🔗</span><span class="as-bt">URL<span class="as-src-n"></span></span></button>
       <span class="as-ctl"><span class="as-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size — scroll the wheel over the slider, or hold right-click and scroll the wheel anywhere in the gallery"></span>
       <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
@@ -527,6 +527,7 @@
       if (!img) {                                  // first sighting — build + load it once
         img = new Image(); img.loading = 'lazy'; img.draggable = false; img.alt = '';
         img.onerror = () => {                      // pending thumb not ready → show the original
+          if (it._new) { img.closest('.as-thumb, .as-dthumb')?.classList.add('na', 'as-na-new'); return; }   // #250 a staged blob that won't decode — no CAA fallback exists
           const orig = !it._pdf ? (it._img || imgUrl(it.id)) : null;
           if (orig && img.getAttribute('src') !== orig) img.src = orig;
           else img.closest('.as-thumb, .as-dthumb')?.classList.add('na');
@@ -664,7 +665,7 @@
       const th = row.querySelector('.as-dthumb');
       if (th) {
         th.onclick = e => { if (e.target.closest('button')) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
-        const img = th.querySelector('img');
+        const img = th.querySelector(':scope > img');   // #250 gallery img only — never the .as-prov favicon (see wire())
         if (img) {
           img.onerror = () => { const orig = !it._pdf ? (it._img || imgUrl(it.id)) : null; if (orig && img.getAttribute('src') !== orig) img.src = orig; else th.classList.add('na'); };
           if (img.complete && !img.naturalWidth && img.getAttribute('src')) img.onerror();
@@ -720,7 +721,7 @@
     if (src) {
       src.onclick = e => { e.stopPropagation(); openSourcePop(src); };
       // show the number of linked platforms on the button: "URL (2)"
-      getProvLinks().then(l => { const n = src.querySelector('.as-src-n'); if (n) { n.textContent = l.length ? ` (${l.length})` : ''; if (l.length) src.title = `Source a cover — ${l.length} linked platform${l.length > 1 ? 's' : ''} or any URL, via ECAU (#242)`; } });
+      getProvLinks().then(l => { const n = src.querySelector('.as-src-n'); if (n) { n.textContent = l.length ? ` (${l.length})` : ''; if (l.length) src.title = `Source ${ENT.noun} — ${l.length} linked platform${l.length > 1 ? 's' : ''}, a registered provider, or any URL`; } });
     }
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
     root.querySelectorAll('.as-prov img').forEach(img => img.onerror = () => { const s = img.closest('.as-prov'); if (s) s.style.display = 'none'; });   // #249 hide a missing provider favicon
@@ -744,7 +745,13 @@
     // cover) → lightbox; PDFs open in a new tab. right-click card → toggle selection
     root.querySelectorAll('.as-thumb').forEach(th => {
       th.onclick = e => { if (e.target.closest('button') || _lpSwallow) return; const it = byId(cardId(e.target)); if (!it) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
-      const img = th.querySelector('img'); if (!img) return;
+      // #250 (vzell) only wire the GALLERY image, which is a direct child of the thumb.
+      // A new cover's gallery <img> isn't here yet (it's an .as-imghost placeholder until
+      // hydrateImgs runs), and the only <img> present is the provider-badge favicon nested
+      // in .as-prov — a plain querySelector('img') grabbed THAT, so a 404 favicon fired
+      // this onerror and added .na, whose CSS hid the real JPEG. `:scope > img` never
+      // matches the badge; new covers are left to hydrateImgs, which owns their onerror.
+      const img = th.querySelector(':scope > img'); if (!img) return;
       // A freshly-added cover has its original uploaded but the CAA thumbnails
       // (250/500) aren't generated yet — so the thumb URL 404s and native MB
       // shows a placeholder. We can do better: fall back to the full original
@@ -1290,6 +1297,105 @@
     const el = document.querySelector(`.as-card[data-id="${CSS.escape(id)}"] .as-srcing-lbl`); if (el) el.textContent = text;
   }
   function dropSourcingSlot(id) { MODEL = MODEL.filter(it => it.id !== id); MODEL.forEach((it, i) => it.order = i); }
+
+  // ── #250 Plugin API ─────────────────────────────────────────────────────────
+  // Third-party userscripts register a custom cover provider — it shows as its own
+  // "Import from <name>" button in the Source popover. The provider's run(ctx)
+  // returns the images it fetched ITSELF (a Blob — so the provider's own
+  // authenticated, e.g. CloudFlare-cleared, session does the fetch) OR plain URLs
+  // (Art Station fetches those via GM xhr). Each cover keeps the provider's badge.
+  const _customProviders = [];
+  let _srcBtn = null;   // the button that opened the Source popover (to re-open on late registration)
+  const hostIcon = u => { try { return provIconUrl(new URL(u).hostname.replace(/^www\./, '')); } catch (e) { return ''; } };
+  // #250 (vzell) a provider may declare `match` — host string / array / RegExp / predicate —
+  // so its "Import from …" button only appears when the release actually links that site,
+  // and the matched external link(s) are handed to run() (ctx.link / ctx.links). Normalise
+  // any of those forms to a (url)=>bool. No match → button always shows (legacy).
+  function normMatch(m) {
+    if (!m) return null;
+    if (typeof m === 'function') return m;
+    if (m instanceof RegExp) return u => { try { return m.test(u); } catch (e) { return false; } };
+    const needles = (Array.isArray(m) ? m : [m]).map(s => String(s).toLowerCase()).filter(Boolean);
+    return u => {
+      const lu = String(u || '').toLowerCase();
+      let h = ''; try { h = new URL(u).hostname.toLowerCase(); } catch (e) {}
+      return needles.some(s => h === s || h.endsWith('.' + s) || lu.includes(s));
+    };
+  }
+  function registerProvider(p) {
+    if (!p || typeof p.run !== 'function' || !p.name) return false;
+    const id = p.id || p.name;
+    if (_customProviders.some(x => x.id === id)) return false;   // de-dupe
+    _customProviders.push({ id, name: String(p.name), icon: p.icon || '', run: p.run, match: normMatch(p.match) });
+    if (document.querySelector('.as-src-pop') && _srcBtn) openSourcePop(_srcBtn);   // reflect in an open popover
+    return true;
+  }
+  // does a blob decode as a real image in OUR realm? (the true test of a usable cover)
+  async function decodesImg(blob) {
+    try { const bmp = await createImageBitmap(blob); bmp.close && bmp.close(); return true; } catch (e) { return false; }
+  }
+  async function providerBlob(it) {            // one provider result → a Blob in OUR realm
+    if (it == null) return null;
+    if (it.dataUrl) { try { return await fetch(it.dataUrl).then(r => r.blob()); } catch (e) {} }
+    // A provider fetches images in ITS OWN userscript sandbox, so the Blob/File it hands back
+    // belongs to a different realm. On some managers (notably Firefox's Xray wrappers) those
+    // bytes don't survive the boundary — the blob reports the right size but never decodes or
+    // renders (#250, vzell's Jungleland). So whenever the provider also gave us a URL, we fetch
+    // the image OURSELVES, in our own realm, and never touch the foreign object at all. This is
+    // the robust default; the raw Blob is only used when no URL is available (e.g. a session-
+    // locked image the provider could fetch but we can't).
+    const directUrl = it.url || it.source || '';
+    if (directUrl) {
+      try { const b = await gmFetch(directUrl); if (b && (b.type === 'application/pdf' || await decodesImg(b))) return b; } catch (e) {}
+    }
+    // No usable URL — launder the provider's own bytes into a fresh same-realm Blob, and verify
+    // it actually decodes (a cross-realm copy can have the right length but unreadable content).
+    const raw = it.blob || it.file;
+    if (raw && typeof raw.arrayBuffer === 'function') {
+      try {
+        const buf = await raw.arrayBuffer();
+        const u8 = new Uint8Array(buf), copy = new Uint8Array(u8.length); copy.set(u8);   // explicit same-realm byte copy
+        const b = new Blob([copy], { type: raw.type || 'image/jpeg' });
+        if ((raw.type === 'application/pdf') || await decodesImg(b)) return b;   // PDFs can't be decode-checked; trust them
+      } catch (e) {}
+    }
+    return null;
+  }
+  function sourceFromProvider(prov, links) {
+    const slot = addSourcingSlot(`Sourcing ${prov.name}…`);
+    const info = releaseInfo();
+    // #250 (vzell) ctx.link/links = the release's external link(s) this provider matched,
+    // so run() can key off them instead of guessing the source page. ctx.url stays the MB page.
+    const ctx = { mbid: MBID, entity: ENT.kind, artist: info.artists.map(a => a.name).join(', '), title: info.title, url: info.url, link: (links && links[0]) || '', links: links || [] };
+    let done = false;
+    const finish = () => { done = true; dropSourcingSlot(slot); };
+    const killer = setTimeout(() => { if (done) return; finish(); render(); toast(`${prov.name} timed out`, 6000); }, 90000);
+    Promise.resolve().then(() => prov.run(ctx)).then(async list => {
+      if (done) return; clearTimeout(killer);
+      const items = Array.isArray(list) ? list : (list ? [list] : []);
+      const files = [], metas = [];
+      for (const it of items) {
+        let blob; try { blob = await providerBlob(it); } catch (e) { blob = null; }
+        if (!blob) continue;
+        const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
+        const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        const types = Array.isArray(it.types) ? it.types.filter(t => ALL_TYPES.includes(t)) : [];
+        const srcUrl = it.source || it.url || '';
+        files.push(new File([blob], `prov-${Date.now()}-${files.length}.${ext}`, { type: mime }));
+        metas.push({ types, comment: it.comment || '', provider: prov.name, provIcon: prov.icon || hostIcon(srcUrl), provUrl: srcUrl });
+      }
+      finish();
+      if (files.length) { addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from ${prov.name} ✓`); }
+      else { render(); toast(`${prov.name} returned no image`, 5000); }
+    }).catch(e => { if (done) return; clearTimeout(killer); finish(); render(); toast(`${prov.name} failed — ${(e && e.message) || e}`, 8000); });
+  }
+  // expose the registry on the page (and a CustomEvent fallback for managers that
+  // isolate `window` from other userscripts). Either way is fine to call repeatedly.
+  (function exposeApi() {
+    const api = { apiVersion: 1, registerProvider };
+    try { (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).ArtStation = api; } catch (e) { try { window.ArtStation = api; } catch (x) {} }
+    try { document.addEventListener('artstation:register-provider', e => { try { registerProvider(e.detail); } catch (x) {} }); } catch (e) {}
+  })();
   // prov (optional) = { name, icon } the cover is being sourced from — passed by the
   // "Import from <provider>" buttons, else derived from the URL. Stamped on each new
   // cover so the gallery shows where it came from until commit (#249).
@@ -1391,33 +1497,61 @@
   // serves a blank placeholder for some, e.g. Spotify).
   const provIconUrl = d => `https://www.google.com/s2/favicons?sz=64&domain=${d}`;
   function providerOf(url) { let h = ''; try { h = new URL(url).hostname; } catch (e) { return null; } return ART_PROVIDERS.find(x => x.re.test(h)) || null; }
-  // the release/event's external links → the recognised art providers, deduped
-  async function artProviderLinks() {
+  // ALL of the release/event's external link URLs (one WS2 fetch, cached) — used both by
+  // the recognised-provider list and by #250 custom-provider link matching.
+  let _urlRels = null;
+  async function releaseUrls() {
+    if (_urlRels) return _urlRels;
     try {
       const j = await fetch(`https://musicbrainz.org/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
-      if (!j || !j.relations) return [];
-      const seen = new Set(), out = [];
-      for (const rel of j.relations) {
-        const u = rel.url && rel.url.resource; if (!u) continue;
-        const prov = providerOf(u); if (!prov) continue;
-        const key = prov.name + '|' + u; if (seen.has(key)) continue; seen.add(key);
-        out.push({ name: prov.name, url: u, icon: provIconUrl(prov.domain) });
-      }
-      return out;
-    } catch (e) { return []; }
+      _urlRels = [...new Set(((j && j.relations) || []).map(rel => rel.url && rel.url.resource).filter(Boolean))];
+    } catch (e) { _urlRels = []; }
+    return _urlRels;
+  }
+  // the release/event's external links → the recognised art providers, deduped
+  async function artProviderLinks() {
+    const seen = new Set(), out = [];
+    for (const u of await releaseUrls()) {
+      const prov = providerOf(u); if (!prov) continue;
+      const key = prov.name + '|' + u; if (seen.has(key)) continue; seen.add(key);
+      out.push({ name: prov.name, url: u, icon: provIconUrl(prov.domain) });
+    }
+    return out;
+  }
+  // #250 (vzell) custom providers whose declared `match` hits a link on THIS release,
+  // each with the matched URL(s). A provider that declared no match is always offered.
+  async function matchedCustomProviders() {
+    const links = await releaseUrls();
+    return _customProviders
+      .map(p => ({ p, urls: p.match ? links.filter(u => { try { return p.match(u); } catch (e) { return false; } }) : [] }))
+      .filter(x => !x.p.match || x.urls.length);
   }
   let _provLinks = null;   // fetched once per page; reused by the button count + the popover
   function getProvLinks() { return _provLinks ? Promise.resolve(_provLinks) : artProviderLinks().then(l => (_provLinks = l)); }
   function openSourcePop(btn) {
+    _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
-    pop.innerHTML = `<div class="as-pop-h">Source a cover</div>`
+    pop.innerHTML = `<div class="as-pop-h">Source ${ENT.noun}</div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
+      + `<div class="as-src-custom"></div>`
       + `<div class="as-src-or">or paste any URL</div>`
       + `<input class="as-src-inp" placeholder="https://… provider page or image URL" spellcheck="false">`
       + `<div class="as-pop-f"><button class="as-btn as-src-go">Fetch</button></div>`
       + `<div class="as-pop-note">Powered by ROpdebee's <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Enhanced Cover Art Uploads</a> (must be installed).</div>`;
     document.body.appendChild(pop); placePop(pop, btn.getBoundingClientRect());
+    // #250 custom providers registered by other userscripts — one stacked "Import from …"
+    // button each, but only for providers whose declared `match` hits a link on this release.
+    const cbox = pop.querySelector('.as-src-custom');
+    if (cbox && _customProviders.length) {
+      matchedCustomProviders().then(matched => {
+        if (!cbox.isConnected || !matched.length) return;
+        cbox.innerHTML = matched.map((x, i) => `<button class="as-btn as-src-prov-b" data-ci="${i}">${x.p.icon ? `<img class="as-src-ic" src="${esc(x.p.icon)}" alt="">` : '🧩 '}⬇ Import from ${esc(x.p.name)}</button>`).join('');
+        cbox.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { const x = matched[+b.dataset.ci]; pop.remove(); sourceFromProvider(x.p, x.urls); });
+        cbox.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });
+        placePop(pop, btn.getBoundingClientRect());
+      });
+    }
     const inp = pop.querySelector('.as-src-inp'); inp.focus();
     const go = () => { const v = inp.value; pop.remove(); sourceFromUrl(v); };
     pop.querySelector('.as-src-go').onclick = go;
@@ -1428,7 +1562,7 @@
     // populate "Import from <provider>" buttons from the release's linked platforms
     getProvLinks().then(provs => {
       const box = pop.querySelector('.as-src-prov'); if (!box) return;
-      if (!provs.length) { box.textContent = 'No supported platforms linked on this release.'; placePop(pop, btn.getBoundingClientRect()); return; }
+      if (!provs.length) { box.textContent = `No supported platforms linked on this ${ENT.kind}.`; placePop(pop, btn.getBoundingClientRect()); return; }
       box.classList.remove('as-pop-note');
       box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('')
         + (provs.length > 1 ? `<button class="as-btn as-src-all">⬇ Import all ${provs.length} sources</button>` : '');
@@ -2409,6 +2543,7 @@
   .as-dthumb img{width:100%;height:100%;object-fit:contain;display:block}
   .as-dthumb.na img{display:none}
   .as-dthumb.na::after{content:'not on CAA yet';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9a8ccb;font-size:11px;font-weight:600;text-align:center;padding:0 8px}
+  .as-dthumb.na.as-na-new::after{content:'preview unavailable'}
   .as-dcap{font-size:11px;font-weight:600;color:#6b5fa0;margin-top:5px;white-space:nowrap}
   .as-did{font-size:11px;color:#a99fc4;font-variant-numeric:tabular-nums;word-break:break-all;line-height:1.3;margin-top:1px}
   .as-dmeta{flex:1 1 auto;min-width:0}
@@ -2458,6 +2593,7 @@
   .as-thumb.na{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#faf8ff,#efeafb)}
   .as-thumb.na img{display:none}
   .as-thumb.na::after{content:'Not on the Cover Art Archive yet';text-align:center;color:#9a8ccb;font-size:12px;font-weight:600;line-height:1.45;padding:0 16px}
+  .as-thumb.na.as-na-new::after{content:'Preview unavailable — the image couldn’t be decoded'}   /* #250 a staged blob that won't render (no CAA fallback) */
   .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;flex:0 0 auto;margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 7px}
   .as-dim-sz,.as-dim-px{white-space:nowrap}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
@@ -2515,6 +2651,8 @@
   .as-src-pop{min-width:340px;max-width:90vw;width:max-content;max-height:calc(100vh - 20px);overflow-x:hidden;scrollbar-width:none}
   .as-src-pop::-webkit-scrollbar{display:none}
   .as-src-prov{display:flex;flex-direction:column;gap:5px;margin:6px 0 2px}
+  .as-src-custom{display:flex;flex-direction:column;gap:5px}   /* #250 stacked custom-provider buttons */
+  .as-src-custom:not(:empty){margin:6px 0 2px}
   .as-src-prov-b{justify-content:flex-start;font-weight:600;color:#3b2c70;gap:8px}
   .as-src-all{justify-content:center;font-weight:700;color:#fff;background:var(--as-acc);border-color:var(--as-acc);margin-top:3px}
   .as-src-all:hover{background:#4e329f;border-color:#4e329f}
