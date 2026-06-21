@@ -54,8 +54,8 @@ const STRONG = new Set([
     'unplugged', 'demo', 'remastered',
     // remix-family words, in case a lead carries a second one
     // ("Extended Remix Edit"): strip them off the trailing edge too.
-    'dub', 'edit', 'mix', 'remix', 'rework', 'remodel', 'reshuffle', 'version',
-    're-edit', 'reedit',
+    'dub', 'edit', 'mix', 'remix', 'rework', 'remodel', 'reshuffle', 'reprise',
+    'version', 're-edit', 'reedit',
 ]);
 const WEAK = new Set([
     'club', 'deep', 'tech', 'soulful', 'disco', 'electro', 'house', 'techno',
@@ -75,9 +75,9 @@ const isStrong    = t => { const l = norm(t); return STRONG.has(l) || isVinyl(l)
 const isDecorator = t => { const l = norm(t); return STRONG.has(l) || WEAK.has(l) || isVinyl(l); };
 
 // Trailing form: "<name> [qualifiers] <keyword>" — the keyword sits at the end.
-// Covers remix / rework / remodel / reshuffle / edit / dub / mix, with an
-// optional re- / re_ / re-space prefix and an -ed/-es/-s/-d inflection.
-const TRAILING_RE = /^(.+?)\s+((?:re[-_ ]?)?(?:remix|rework|remodel|reshuffle|edit|dub|mix))(?:es|ed|s|d)?$/i;
+// Covers remix / rework / remodel / reshuffle / reprise / edit / dub / mix, with
+// an optional re- / re_ / re-space prefix and an -ed/-es/-s/-d inflection.
+const TRAILING_RE = /^(.+?)\s+((?:re[-_ ]?)?(?:remix|rework|remodel|reshuffle|reprise|edit|dub|mix))(?:es|ed|s|d)?$/i;
 
 // "…by <name>" form — only true remix verbs. NOT "mixed by"/"edited by", which
 // credit an engineer rather than a remixer.

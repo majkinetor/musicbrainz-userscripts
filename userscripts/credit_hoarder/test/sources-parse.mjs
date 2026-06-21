@@ -216,6 +216,9 @@ assert.deepEqual(rmx("Cut (Aphex Twin's Remix)"),          ['Aphex Twin']);
 // Possessive form "<Artist>'s <remix title> <keyword>" → just the artist (#271).
 assert.deepEqual(rmx("lla sera (Kettenkarussell's Triangle Player rework)"), ['Kettenkarussell']);
 assert.deepEqual(rmx("Horizon (Funk D'Void's Hope mix)"),  ["Funk D'Void"]);   // internal apostrophe kept, only the trailing 's is the possessive
+// "reprise" recognised as a remix keyword (#271 review).
+assert.deepEqual(rmx('In White Rooms (Jonas Rathsman reprise)'), ['Jonas Rathsman']);
+assert.deepEqual(rmx('Theme (Reprise)'), []);   // anonymous reprise → no credit
 
 // Trailing STRONG descriptors stripped; the keyword itself sits at the end.
 assert.deepEqual(rmx('Song (KiNK Extended Remix)'),        ['KiNK']);
