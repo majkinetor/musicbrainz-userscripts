@@ -1426,14 +1426,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         function updateImportBtn() {
             const unresolved = [...rowState.values()].filter(s => !s.confirmed).length;
             if (unresolved === 0) {
-                importBtn.innerHTML = sourceIcon + ' Start import \u2192';
+                importBtn.innerHTML = 'Start import \u2192';   // #272: source icon now lives in the toolbar \u2014 don't double it here
                 importBtn.style.background = '#2ecc40';
                 importBtn.style.color = '#fff';
                 issueNote.textContent = '';
                 issueNote.classList.remove('clickable');
                 issueNote.removeAttribute('title');
             } else {
-                importBtn.innerHTML = sourceIcon + ` Start import anyway \u2192`;
+                importBtn.innerHTML = 'Start import anyway \u2192';   // #272: icon shown in the toolbar
                 importBtn.style.background = '#e0a800';
                 importBtn.style.color = '#fff';
                 issueNote.textContent = `\u26a0 ${unresolved} unresolved`;
