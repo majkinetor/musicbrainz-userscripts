@@ -14,7 +14,7 @@
 // load time — opening IndexedDB and running the localStorage-cleanup IIFE.
 
 import { getSourceUrlsForRelease } from './api-mb.js';
-import { insertDiscogsBar }      from './ui-bar.js';
+import { insertDiscogsBar, probeTitleRemixes } from './ui-bar.js';
 import { DISCOGS_CHANNEL }       from './constants.js';
 import { installHoverHighlight } from './hover-highlight.js';
 import { installBatchRemove }    from './batch-remove.js';
@@ -102,11 +102,18 @@ if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function () 
     // `src/batch-remove.js`.
     installBatchRemove();
     // One rel probe, every import source (#193): detect the linked providers
-    // (Discogs / Tidal / Qobuz). The bar mounts UNCONDITIONALLY (#271) — even
-    // with no linked provider it still offers the title-derived "Titles" source
-    // (remixers parsed from the track titles), which is the only action when
-    // nothing else is linked.
-    getSourceUrlsForRelease(m[1])
-        .then(sources => insertDiscogsBar(sources.discogs, sources))
-        .catch(() => insertDiscogsBar(null, {}));
+    // (Discogs / Tidal / Qobuz), and in parallel probe the track titles for any
+    // derivable remixers (#271). The bar mounts only when there's something to
+    // do — a linked provider OR at least one title-derived remixer — so CH stays
+    // out of the way on releases it can't help with. The "Titles" source is then
+    // offered only when that probe found remixes.
+    Promise.all([
+        getSourceUrlsForRelease(m[1]).catch(() => ({})),
+        probeTitleRemixes(m[1]),
+    ]).then(([sources, remix]) => {
+        const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz);
+        const remixCount  = remix?.count || 0;
+        if (!hasProvider && remixCount === 0) return;   // nothing to import — don't mount
+        insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount });
+    });
 });

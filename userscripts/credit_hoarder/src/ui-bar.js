@@ -70,7 +70,7 @@ const SRC_ICON = {
 };
 const srcIconByUrl = url => SRC_ICON[sourceNameForUrl(url)] || '';
 
-export function insertDiscogsBar(discogsUrl, sources = {}) {
+export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // Inject styles
     const style = document.createElement('style');
     style.innerText = `
@@ -459,10 +459,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: g => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: g => runTidalImport(sources.tidal, g) });
     if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: g => runQobuzImport(sources.qobuz, g) });
-    // #271: "Titles" — derive remixer credits from the track titles. Always
-    // available, pushed LAST so it shows in the submenu when a provider is
-    // linked and becomes the sole/default action when none is.
-    importSources.push({ name: 'Titles', url: '', run: g => runTitlesImport(g) });
+    // #271: "Titles" — derive remixer credits from the track titles. Offered
+    // ONLY when the titles actually yield ≥1 remixer (probed at page load), so
+    // CH doesn't surface an action with nothing behind it. Pushed LAST so it
+    // shows in the submenu when a provider is linked and is the sole/default
+    // action when none is.
+    if ((meta.titlesRemixCount || 0) > 0) {
+        importSources.push({ name: 'Titles', url: '', run: g => runTitlesImport(g) });
+    }
     const multiSource = importSources.length > 1;
     const importSplit = document.createElement('span');
     importSplit.className = 'discogs-import-split';
@@ -1405,28 +1409,46 @@ function runQobuzImport(qobuzUrl, getOpts) {
 // through the existing recording→artist `remixer` path. Behaves like any other
 // import source: it's in the submenu when a provider is linked, and the sole
 // action when none is.
+// Build the release's tracklist (position + title) from MB's WS2 recordings —
+// the raw material the Titles source parses. Positions mirror what dispatch's
+// getRecordingEntity expects: compound "<medium>-<track>" on multi-medium
+// releases, plain otherwise.
+function buildTitlesTracklist(mbid) {
+    return fetchWithRetry(`/ws/2/release/${mbid}?inc=recordings&fmt=json`).then(json => {
+        const media = json?.media || [];
+        const multiMedium = media.length > 1;
+        const tracklist = [];
+        for (const medium of media) {
+            const medPos = medium.position;
+            for (const t of (medium.tracks || [])) {
+                const pos = t.position != null ? t.position : t.number;
+                tracklist.push({
+                    position: multiMedium && medPos != null && pos != null ? `${medPos}-${pos}` : String(pos != null ? pos : ''),
+                    title: t.title || t.recording?.title || '',
+                    type_: 'track',
+                });
+            }
+        }
+        return tracklist;
+    });
+}
+
+// Quick page-load probe (#271): does this release's track titles yield any
+// derivable remixer? Used to decide whether to offer the Titles source / mount
+// the bar at all, so CH stays silent on releases where it has nothing to do.
+export function probeTitleRemixes(mbid) {
+    if (!mbid) return Promise.resolve({ count: 0, tracklist: [] });
+    return buildTitlesTracklist(mbid)
+        .then(tracklist => ({ count: deriveRemixRoles(tracklist).length, tracklist }))
+        .catch(() => ({ count: 0, tracklist: [] }));
+}
+
 function runTitlesImport(getOpts) {
     const m = location.pathname.match(/release\/([0-9a-f-]{36})/i);
     if (!m) { log.error('Not on a release page — cannot read track titles.'); return Promise.resolve(); }
     log.info('Reading track titles from MusicBrainz to derive remixer credits…');
-    return fetchWithRetry(`/ws/2/release/${m[1]}?inc=recordings&fmt=json`)
-        .then(json => {
-            const media = json?.media || [];
-            const multiMedium = media.length > 1;
-            const tracklist = [];
-            for (const medium of media) {
-                const medPos = medium.position;
-                for (const t of (medium.tracks || [])) {
-                    const pos = t.position != null ? t.position : t.number;
-                    tracklist.push({
-                        // Mirror the position shape dispatch's getRecordingEntity expects:
-                        // compound "<medium>-<track>" on multi-medium releases, plain otherwise.
-                        position: multiMedium && medPos != null && pos != null ? `${medPos}-${pos}` : String(pos != null ? pos : ''),
-                        title: t.title || t.recording?.title || '',
-                        type_: 'track',
-                    });
-                }
-            }
+    return buildTitlesTracklist(m[1])
+        .then(tracklist => {
             const tracklistRels = deriveRemixRoles(tracklist);
             log.info(`Derived <strong>${tracklistRels.length}</strong> remixer credit(s) from ${tracklist.length} track title(s)`);
             if (!tracklistRels.length) {

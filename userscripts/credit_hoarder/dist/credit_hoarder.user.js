@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.21.200213
+// @version      2026.6.21.204328
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -4835,7 +4835,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     Titles: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>'
   };
   var srcIconByUrl = (url) => SRC_ICON[sourceNameForUrl(url)] || "";
-  function insertDiscogsBar(discogsUrl, sources = {}) {
+  function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     const style = document.createElement("style");
     style.innerText = `
         .discogs-bar {
@@ -5210,7 +5210,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g) => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g) => runTidalImport(sources.tidal, g) });
     if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g) => runQobuzImport(sources.qobuz, g) });
-    importSources.push({ name: "Titles", url: "", run: (g) => runTitlesImport(g) });
+    if ((meta.titlesRemixCount || 0) > 0) {
+      importSources.push({ name: "Titles", url: "", run: (g) => runTitlesImport(g) });
+    }
     const multiSource = importSources.length > 1;
     const importSplit = document.createElement("span");
     importSplit.className = "discogs-import-split";
@@ -5962,14 +5964,8 @@ ${lines}
       log.error(err.message || String(err));
     });
   }
-  function runTitlesImport(getOpts) {
-    const m = location.pathname.match(/release\/([0-9a-f-]{36})/i);
-    if (!m) {
-      log.error("Not on a release page \u2014 cannot read track titles.");
-      return Promise.resolve();
-    }
-    log.info("Reading track titles from MusicBrainz to derive remixer credits\u2026");
-    return fetchWithRetry(`/ws/2/release/${m[1]}?inc=recordings&fmt=json`).then((json) => {
+  function buildTitlesTracklist(mbid) {
+    return fetchWithRetry(`/ws/2/release/${mbid}?inc=recordings&fmt=json`).then((json) => {
       const media = json?.media || [];
       const multiMedium = media.length > 1;
       const tracklist = [];
@@ -5978,14 +5974,27 @@ ${lines}
         for (const t of medium.tracks || []) {
           const pos = t.position != null ? t.position : t.number;
           tracklist.push({
-            // Mirror the position shape dispatch's getRecordingEntity expects:
-            // compound "<medium>-<track>" on multi-medium releases, plain otherwise.
             position: multiMedium && medPos != null && pos != null ? `${medPos}-${pos}` : String(pos != null ? pos : ""),
             title: t.title || t.recording?.title || "",
             type_: "track"
           });
         }
       }
+      return tracklist;
+    });
+  }
+  function probeTitleRemixes(mbid) {
+    if (!mbid) return Promise.resolve({ count: 0, tracklist: [] });
+    return buildTitlesTracklist(mbid).then((tracklist) => ({ count: deriveRemixRoles(tracklist).length, tracklist })).catch(() => ({ count: 0, tracklist: [] }));
+  }
+  function runTitlesImport(getOpts) {
+    const m = location.pathname.match(/release\/([0-9a-f-]{36})/i);
+    if (!m) {
+      log.error("Not on a release page \u2014 cannot read track titles.");
+      return Promise.resolve();
+    }
+    log.info("Reading track titles from MusicBrainz to derive remixer credits\u2026");
+    return buildTitlesTracklist(m[1]).then((tracklist) => {
       const tracklistRels = deriveRemixRoles(tracklist);
       log.info(`Derived <strong>${tracklistRels.length}</strong> remixer credit(s) from ${tracklist.length} track title(s)`);
       if (!tracklistRels.length) {
@@ -6763,6 +6772,14 @@ ${lines}
     if (!m) return;
     installHoverHighlight();
     installBatchRemove();
-    getSourceUrlsForRelease(m[1]).then((sources) => insertDiscogsBar(sources.discogs, sources)).catch(() => insertDiscogsBar(null, {}));
+    Promise.all([
+      getSourceUrlsForRelease(m[1]).catch(() => ({})),
+      probeTitleRemixes(m[1])
+    ]).then(([sources, remix]) => {
+      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz);
+      const remixCount = remix?.count || 0;
+      if (!hasProvider && remixCount === 0) return;
+      insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount });
+    });
   });
 })();
