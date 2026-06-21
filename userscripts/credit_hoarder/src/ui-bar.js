@@ -38,6 +38,7 @@ import {
     COMPANY_KIND,
 }                                        from './preflight.js';
 import { deriveRemixRoles }              from './derive/remix.js';
+import { fetchWithRetry }                from './api-mb.js';
 import { showReviewTable }               from './review-table.js';
 import { dispatchAllRelationships }      from './dispatch.js';
 import { buildEditNote }                 from './edit-note.js';
@@ -63,6 +64,9 @@ const SRC_ICON = {
     Discogs: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
     Tidal:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
     Qobuz:   '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    // #271: the "Titles" source derives remixer credits from the track titles
+    // themselves — no provider. A small text/lines glyph.
+    Titles:  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>',
 };
 const srcIconByUrl = url => SRC_ICON[sourceNameForUrl(url)] || '';
 
@@ -455,6 +459,10 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: g => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: g => runTidalImport(sources.tidal, g) });
     if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: g => runQobuzImport(sources.qobuz, g) });
+    // #271: "Titles" — derive remixer credits from the track titles. Always
+    // available, pushed LAST so it shows in the submenu when a provider is
+    // linked and becomes the sole/default action when none is.
+    importSources.push({ name: 'Titles', url: '', run: g => runTitlesImport(g) });
     const multiSource = importSources.length > 1;
     const importSplit = document.createElement('span');
     importSplit.className = 'discogs-import-split';
@@ -784,17 +792,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         'Skip a role when an equivalent role already exists on the target (writer ≡ composer).');
     const dedupeDupCb = makeCheckbox('Duplicate roles',   bv('dedupeDuplicateRoles', true),
         'Skip adding a role when the target already has the same role (regardless of task / dates / attributes).');
-    // ── Title derivation section (#271) ───────────────────────────────────
-    // Derive remixer credits from track titles ("Song (Artist Remix)") and
-    // fold them into the same review → import flow as provider credits. On by
-    // default — the review table is the safety net, so a heuristic parse never
-    // commits anything unreviewed.
-    const deriveHd = document.createElement('div');
-    deriveHd.className = 'discogs-opts-panel-hd';
-    deriveHd.textContent = 'Title derivation';
-    optsPanel.appendChild(deriveHd);
-    const deriveRemixCb = makeCheckbox('Remixer from titles', bv('deriveRemix', true),
-        'Read remixer credits from track titles like "Song (Artist Remix)" and add them as remixer relationships (reviewed before import).');
     _optsHost = optsWrap;    // back to the inline strip
     optsWrap.appendChild(optsBtn);
     document.body.appendChild(optsPanel);   // floating; positioned when opened
@@ -815,10 +812,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
             createWorksMode: createWorksMode.value,
             dedupeEquivalenceSets: dedupeEqCb.checked,
             dedupeDuplicateRoles:  dedupeDupCb.checked,
-            deriveRemix:           deriveRemixCb.checked,
         })); } catch(e) {}
     };
-    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb, deriveRemixCb].forEach(cb =>
+    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener('change', saveOpts);
 
@@ -1151,7 +1147,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
             createWorksMode:         createWorksMode.value,
             dedupeEquivalenceSets:   dedupeEqCb.checked,
             dedupeDuplicateRoles:    dedupeDupCb.checked,
-            deriveRemix:             deriveRemixCb.checked,
         });
         const _click = getOpts();
         const opts = `per-track:${_click.processTracklist?'on':'off'}, move-to-tracks:${_click.applyToTracks?'on':'off'}, create-works:${_click.createWorksMode}`;
@@ -1403,27 +1398,51 @@ function runQobuzImport(qobuzUrl, getOpts) {
         .catch(err => { log.error(err.message || String(err)); });
 }
 
+// Titles "source" (#271): no provider — read the release's own track titles
+// from MB (WS2) and derive remixer credits from the disambiguation convention
+// ("Song (Artist Remix)"). The derived roles are name-only artists (no URL,
+// like Qobuz), so they resolve via name search + the review table and dispatch
+// through the existing recording→artist `remixer` path. Behaves like any other
+// import source: it's in the submenu when a provider is linked, and the sole
+// action when none is.
+function runTitlesImport(getOpts) {
+    const m = location.pathname.match(/release\/([0-9a-f-]{36})/i);
+    if (!m) { log.error('Not on a release page — cannot read track titles.'); return Promise.resolve(); }
+    log.info('Reading track titles from MusicBrainz to derive remixer credits…');
+    return fetchWithRetry(`/ws/2/release/${m[1]}?inc=recordings&fmt=json`)
+        .then(json => {
+            const media = json?.media || [];
+            const multiMedium = media.length > 1;
+            const tracklist = [];
+            for (const medium of media) {
+                const medPos = medium.position;
+                for (const t of (medium.tracks || [])) {
+                    const pos = t.position != null ? t.position : t.number;
+                    tracklist.push({
+                        // Mirror the position shape dispatch's getRecordingEntity expects:
+                        // compound "<medium>-<track>" on multi-medium releases, plain otherwise.
+                        position: multiMedium && medPos != null && pos != null ? `${medPos}-${pos}` : String(pos != null ? pos : ''),
+                        title: t.title || t.recording?.title || '',
+                        type_: 'track',
+                    });
+                }
+            }
+            const tracklistRels = deriveRemixRoles(tracklist);
+            log.info(`Derived <strong>${tracklistRels.length}</strong> remixer credit(s) from ${tracklist.length} track title(s)`);
+            if (!tracklistRels.length) {
+                log.warn('No named remixes found in the track titles — nothing to import.');
+                document.querySelector('.discogs-bar')?._setStopMessage?.('No remixes found in titles');
+                return;
+            }
+            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: '', processTracklist: true, getOpts });
+        })
+        .catch(err => { log.error(err.message || String(err)); });
+}
+
 // The source-agnostic pipeline (#193): unique-entity collection → preflight
 // resolution → review table → confirmed-IDB sweep → dispatch. Extracted from
 // runImport unchanged so every source feeds the same engine.
 function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts }) {
-            // ── Title-derived remixers (#271) ────────────────────────────────
-            // When enabled (default), read remixer credits straight from the
-            // track titles ("Song (Artist Remix)") and fold them into the same
-            // tracklist roles. Provider data wins where it overlaps — the
-            // dispatcher's session/MB dedup collapses any duplicate that also
-            // resolves to the same artist. flattenTracklist normalises Discogs
-            // index/sub-track shapes; non-Discogs tracklists pass through.
-            try {
-                if (getOpts().deriveRemix !== false) {
-                    const derived = deriveRemixRoles(flattenTracklist(tracklist));
-                    if (derived.length) {
-                        log.info(`Derived <strong>${derived.length}</strong> remixer credit(s) from track titles`);
-                        tracklistRels = tracklistRels.concat(derived);
-                    }
-                }
-            } catch (e) { log.warn(`Remix derivation from titles failed: ${e.message}`); }
-
             // Collect all unique artist entities referenced across release-level and tracklist roles
             const allArtistRoles = artistRoles.concat(tracklistRels);
             const uniqueArtists = [];

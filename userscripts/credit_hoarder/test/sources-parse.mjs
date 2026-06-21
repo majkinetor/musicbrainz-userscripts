@@ -214,27 +214,36 @@ assert.deepEqual(rmx('Tune (Joey Negro Edit)'),            ['Joey Negro']);
 assert.deepEqual(rmx('Thing (Remixed by Larry Levan)'),    ['Larry Levan']);
 assert.deepEqual(rmx("Cut (Aphex Twin's Remix)"),          ['Aphex Twin']);
 
-// Qualifiers stripped off the name, keyword anywhere it really sits.
+// Trailing STRONG descriptors stripped; the keyword itself sits at the end.
 assert.deepEqual(rmx('Song (KiNK Extended Remix)'),        ['KiNK']);
-assert.deepEqual(rmx('Song (Extended KiNK Remix)'),        ['KiNK']);
-assert.deepEqual(rmx('Song (X 12" Club Mix)'),             ['X']);
+assert.deepEqual(rmx('Song (KiNK 12" Mix)'),               ['KiNK']);   // vinyl size stripped
+assert.deepEqual(rmx('Sound of the Samba (Masters at Work main mix)'), ['Masters at Work']);  // "main" stripped
+
+// WEAK genre words that are part of a real band name are KEPT — the two cases
+// that pull opposite ways, from the same release (#271 review):
+assert.deepEqual(rmx('Better Place (Cotton Club remix)'), ['Cotton Club']);   // "Club" kept
+assert.deepEqual(rmx('Song (Deep Dish Remix)'),           ['Deep Dish']);     // "Deep" kept
+assert.deepEqual(rmx('Song (The Orb Remix)'),             ['The Orb']);       // article kept mid-name
 
 // Multiple remixers in one parenthetical.
 assert.deepEqual(rmx('Song (Masters at Work & Louie Vega Remix)'), ['Masters at Work', 'Louie Vega']);
 assert.deepEqual(rmx('Song (Danny Tenaglia, Peter Rauhofer Remix)'), ['Danny Tenaglia', 'Peter Rauhofer']);
 
 // Anonymous descriptors → NO credit (edits/versions of the original, out of scope).
-assert.deepEqual(rmx('Song (Extended Mix)'),  []);
-assert.deepEqual(rmx('Song (Radio Edit)'),    []);
-assert.deepEqual(rmx('Song (Original Mix)'),  []);
-assert.deepEqual(rmx('Song (Album Version)'), []);   // "version" is not a remix keyword
-assert.deepEqual(rmx('Song (Remix)'),         []);   // no name
-assert.deepEqual(rmx('Song (Dub)'),           []);   // no name
-assert.deepEqual(rmx('Song (Instrumental)'),  []);
-assert.deepEqual(rmx('Song (feat. Guest)'),   []);   // featuring is not a remix
-assert.deepEqual(rmx('Song (Live)'),          []);
-assert.deepEqual(rmx('Song (Remastered)'),    []);
-assert.deepEqual(rmx('Plain Title'),          []);
+assert.deepEqual(rmx('Song (Extended Mix)'),      []);
+assert.deepEqual(rmx('Song (Radio Edit)'),        []);
+assert.deepEqual(rmx('Song (Original Mix)'),      []);
+assert.deepEqual(rmx('Song (Club Mix)'),          []);   // WEAK alone → anonymous
+assert.deepEqual(rmx('Song (Extended Club Mix)'), []);   // all-decorator → anonymous
+assert.deepEqual(rmx('Song (The Remix)'),         []);   // article alone → anonymous
+assert.deepEqual(rmx('Song (Album Version)'),     []);   // "version" is not a remix keyword
+assert.deepEqual(rmx('Song (Remix)'),             []);   // no name
+assert.deepEqual(rmx('Song (Dub)'),               []);   // no name
+assert.deepEqual(rmx('Song (Instrumental)'),      []);
+assert.deepEqual(rmx('Song (feat. Guest)'),       []);   // featuring is not a remix
+assert.deepEqual(rmx('Song (Live)'),              []);
+assert.deepEqual(rmx('Song (Remastered)'),        []);
+assert.deepEqual(rmx('Plain Title'),              []);
 
 // "Mixed by"/"Edited by" name an engineer, not a remixer — must not fire.
 assert.deepEqual(rmx('Song (Mixed by Bob)'),  []);

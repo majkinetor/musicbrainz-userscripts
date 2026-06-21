@@ -25,26 +25,52 @@
 //
 // Pure module: no DOM, no MB API, no IDB. Unit-tested in test/sources-parse.mjs.
 
-// Words that decorate a remix but are not part of the remixer's name. Stripped
-// from both ends of the captured text, so "(KiNK Extended Remix)" → "KiNK" and
-// '(X 12" Club Mix)' → "X". If nothing survives the strip, the parenthetical is
-// anonymous and yields no credit.
-const QUALIFIERS = new Set([
-    'extended', 'club', 'radio', 'dub', 'instrumental', 'acapella', 'acappella',
-    'acoustic', 'original', 'album', 'single', 'main', 'long', 'short', 'full',
-    'special', 'bonus', 'alternative', 'alternate', 'vip', 'rmx', 'redux',
-    'deep', 'tech', 'soulful', 'disco', 'electro', 'house', 'techno',
-    'progressive', 'tribal', 'vocal', 'dancefloor', 'classic', 'clean', 'dirty',
-    'censored', 'uncensored', 'studio', 'live', 'demo', 'rough', 'final',
-    'new', 'old', 'remastered', 're-edit', 'reedit',
+// Naming a remixer from a parenthetical is a lexical guess, and two real cases
+// pull in opposite directions in the SAME kind of title:
+//
+//   "(Masters at Work main mix)"  → name is "Masters at Work"   (drop "main")
+//   "(Cotton Club remix)"         → name is "Cotton Club"        (KEEP "Club")
+//
+// So we split the decorator vocabulary in two:
+//
+//   STRONG — pure mix descriptors that are essentially never the LAST word of
+//            an artist name ("extended", "original", "radio", "main", a vinyl
+//            size, …). These are trimmed off the *trailing* edge of the name
+//            (between the name and the keyword). Leading-edge trimming is NOT
+//            done — it would maim "Main Source", "The Orb", "A Guy Called
+//            Gerald", etc.
+//   WEAK   — genre/vibe words that often ARE part of a band name ("club",
+//            "deep", "house", "disco", articles, …). Never trimmed; they only
+//            count toward the "all-decorator" test below.
+//
+// After trailing-trim, if every surviving token is a decorator (STRONG ∪ WEAK ∪
+// vinyl size) the parenthetical is anonymous — "(Extended Club Mix)",
+// "(Club Mix)", "(The Remix)" → no credit — while a name with a real token
+// ("Cotton Club", "Deep Dish") survives intact.
+const STRONG = new Set([
+    'extended', 'original', 'radio', 'instrumental', 'acapella', 'acappella',
+    'acoustic', 'album', 'single', 'main', 'long', 'short', 'full', 'special',
+    'bonus', 'alternative', 'alternate', 'vip', 'rmx', 'redux', 'dancefloor',
+    'unplugged', 'demo', 'remastered',
+    // remix-family words, in case a lead carries a second one
+    // ("Extended Remix Edit"): strip them off the trailing edge too.
+    'dub', 'edit', 'mix', 'remix', 'rework', 'remodel', 'reshuffle', 'version',
+    're-edit', 'reedit',
 ]);
-
-// Articles dropped from the front of a captured name ("(The Remix)" → no name).
-const ARTICLES = new Set(['the', 'a', 'an']);
+const WEAK = new Set([
+    'club', 'deep', 'tech', 'soulful', 'disco', 'electro', 'house', 'techno',
+    'progressive', 'tribal', 'vocal', 'classic', 'clean', 'dirty', 'censored',
+    'uncensored', 'studio', 'live', 'the', 'a', 'an',
+]);
 
 // Separators between co-remixers inside one parenthetical. Conservative — only
 // unambiguous joiners, NOT bare "and"/"x" which appear inside real names.
 const SEP_RE = /\s*(?:&|\+|,|\/|\bvs\.?\b|\bversus\b|\bfeat\.?\b|\bft\.?\b|\bfeaturing\b)\s*/i;
+
+const isVinyl     = t => /^\d+(?:"|''|”|inch|in)?$/.test(t);
+const norm        = t => t.toLowerCase().replace(/[.''`]+$/, '');
+const isStrong    = t => { const l = norm(t); return STRONG.has(l) || isVinyl(l); };
+const isDecorator = t => { const l = norm(t); return STRONG.has(l) || WEAK.has(l) || isVinyl(l); };
 
 // Trailing form: "<name> [qualifiers] <keyword>" — the keyword sits at the end.
 // Covers remix / rework / remodel / reshuffle / edit / dub / mix, with an
@@ -55,19 +81,14 @@ const TRAILING_RE = /^(.+?)\s+((?:re[-_ ]?)?(?:remix|rework|remodel|reshuffle|ed
 // credit an engineer rather than a remixer.
 const BY_RE = /^(?:re[-_ ]?)?(?:remix|rework|remodel|reshuffle|rerub)(?:es|ed|s|d)?\s+by\s+(.+)$/i;
 
-function isQualifierToken(tok) {
-    const t = tok.toLowerCase().replace(/[.''`]+$/, '');
-    return QUALIFIERS.has(t) || ARTICLES.has(t) || /^\d+(?:"|''|”|inch|in)?$/.test(t);
-}
-
-// Trim qualifier/article/vinyl-size tokens off both ends; drop a trailing
-// possessive ("Aphex Twin's" → "Aphex Twin"). Returns null when nothing
-// name-like remains.
+// Trim STRONG mix-descriptors off the trailing edge, then reject the whole
+// thing if nothing but decorators is left. Drops a trailing possessive
+// ("Aphex Twin's" → "Aphex Twin"). Returns null for an anonymous descriptor.
 function cleanName(raw) {
     let tokens = String(raw || '').trim().split(/\s+/).filter(Boolean);
-    while (tokens.length && isQualifierToken(tokens[tokens.length - 1])) tokens.pop();
-    while (tokens.length && isQualifierToken(tokens[0])) tokens.shift();
+    while (tokens.length && isStrong(tokens[tokens.length - 1])) tokens.pop();
     if (!tokens.length) return null;
+    if (tokens.every(isDecorator)) return null;   // "(Extended Club Mix)", "(The Remix)" → anonymous
     const name = tokens.join(' ').replace(/['']s$/i, '').trim();
     if (!/[A-Za-z0-9]/.test(name)) return null;
     return name;

@@ -101,11 +101,12 @@ if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function () 
     // click on any MB `×` button opens our confirmation popup. See
     // `src/batch-remove.js`.
     installBatchRemove();
-    // One rel probe, every import source (#193): mount the bar when the
-    // release links ANY of them (Discogs / Tidal / Qobuz).
-    getSourceUrlsForRelease(m[1]).then(sources => {
-        if (sources.discogs || sources.tidal || sources.qobuz) {
-            insertDiscogsBar(sources.discogs, sources);
-        }
-    });
+    // One rel probe, every import source (#193): detect the linked providers
+    // (Discogs / Tidal / Qobuz). The bar mounts UNCONDITIONALLY (#271) — even
+    // with no linked provider it still offers the title-derived "Titles" source
+    // (remixers parsed from the track titles), which is the only action when
+    // nothing else is linked.
+    getSourceUrlsForRelease(m[1])
+        .then(sources => insertDiscogsBar(sources.discogs, sources))
+        .catch(() => insertDiscogsBar(null, {}));
 });
