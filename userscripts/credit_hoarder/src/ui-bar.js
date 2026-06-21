@@ -94,7 +94,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             border-bottom: 1px solid #eeddb0;
         }
         /* inline options strip in the single bar (#139) */
-        .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-left: 0.9rem; }
         .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
         .discogs-opts-btn { font-size: 0.8rem; color: #555; background: #fffdf7; border: 1px solid #d8c8a0; border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
         .discogs-opts-btn:hover { border-color: #e8771d; color: #333; }
@@ -245,25 +245,24 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             font-weight: bold;
         }
         .discogs-bar .discogs-source a:hover { text-decoration: underline; }
-        .discogs-import-btn {
-            flex-shrink: 0;
-            padding: 0.3rem 1rem;
-            background: #e8771d;
-            color: #fff;
-            border: none;
-            border-radius: 0.25rem;
-            cursor: pointer;
-            font-size: 0.88rem;
-            font-weight: bold;
-            letter-spacing: 0.01em;
+        /* #272: "Import credits:" label + a row of clickable source icons */
+        .discogs-import-label { flex-shrink: 0; font-size: 0.88rem; font-weight: bold; color: #444; letter-spacing: 0.01em; }
+        /* #272: drop the "Import credits:" label once a run is underway — only the
+           active source icon + progress/Start-import matter then. */
+        .discogs-bar.is-importing .discogs-import-label,
+        .discogs-bar.is-reviewing .discogs-import-label { display: none; }
+        .discogs-src-icons { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .discogs-src-ico {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 2rem; height: 2rem; padding: 0; cursor: pointer;
+            border: 1px solid #d6d6d6; border-radius: 0.3rem; background: #fff; color: #555;
         }
-        .discogs-import-btn:hover { background: #cf6618; }
-        .discogs-import-btn:disabled { background: #c8a070; cursor: default; }
-        .discogs-import-btn svg { vertical-align: -2px; margin-right: 2px; }
-        /* split button (#193): main + attached caret read as one control */
-        .discogs-import-split { display: inline-flex; align-items: stretch; }
-        .discogs-import-btn.has-caret { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-        .discogs-import-caret { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 1px solid rgba(255,255,255,.4); padding-left: 0.4rem; padding-right: 0.55rem; font-weight: normal; }
+        .discogs-src-ico:hover { background: #fff3e8; border-color: #e8771d; color: #e8771d; }
+        .discogs-src-ico:disabled { opacity: 0.5; cursor: default; }
+        .discogs-src-ico svg { width: 18px; height: 18px; }
+        .discogs-src-ico img.discogs-logo { height: 18px; width: auto; opacity: 1; }
+        .discogs-src-ico.importing { background: #fff3e8; border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
+        @keyframes discogs-ico-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,119,29,.5); } 50% { box-shadow: 0 0 0 4px rgba(232,119,29,0); } }
         .discogs-log-menu button svg { vertical-align: -2px; margin-right: 4px; }
         .discogs-bar-row2 {
             display: flex;
@@ -451,10 +450,10 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     const row1 = document.createElement('div');
     row1.className = 'discogs-bar-row1';
 
-    // ONE split Import button for all sources (#193): the main button runs the
-    // FIRST linked source (priority Discogs, Tidal, Qobuz) with its icon; the
-    // attached ▾ opens a submenu of the OTHER sources (the default isn't repeated).
-    const importHtml = s => (SRC_ICON[s.name] || '') + ' Import from ' + s.name;
+    // #272: every available source is shown up-front as a row of brand icons
+    // after an "Import credits:" label — left-click an icon to import from that
+    // source, right-click to open its page. Replaces the old split Import button
+    // + submenu, and folds in the source icons that used to sit on the right.
     const importSources = [];
     if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: g => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: g => runTidalImport(sources.tidal, g) });
@@ -467,22 +466,45 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     if ((meta.titlesRemixCount || 0) > 0) {
         importSources.push({ name: 'Titles', url: '', run: g => runTitlesImport(g) });
     }
-    const multiSource = importSources.length > 1;
-    const importSplit = document.createElement('span');
-    importSplit.className = 'discogs-import-split';
-    const importBtn = document.createElement('button');
-    importBtn.className = 'discogs-import-btn' + (multiSource ? ' has-caret' : '');
-    importBtn.innerHTML = importHtml(importSources[0]);
-    const importCaretBtn = document.createElement('button');
-    importCaretBtn.className = 'discogs-import-btn discogs-import-caret';
-    importCaretBtn.textContent = '▾';
-    importCaretBtn.title = 'Import from another source';
-    if (!multiSource) importCaretBtn.style.display = 'none';
-    importSplit.append(importBtn, importCaretBtn);
+    const importLabel = document.createElement('span');
+    importLabel.className = 'discogs-import-label';
+    importLabel.textContent = 'Import credits:';
+    const srcIcons = document.createElement('span');
+    srcIcons.className = 'discogs-src-icons';
+    // Original provider logos (the marks that used to sit on the right of the
+    // bar). Titles has no brand, so it keeps its lines glyph.
+    const ORIG_ICON = {
+        Discogs: `<img src="${DISCOGS_LOGO_URL}" alt="Discogs" class="discogs-logo">`,
+        Tidal:   '<svg viewBox="0 0 24 24" fill="#000" aria-label="Tidal"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
+        Qobuz:   '<svg viewBox="0 0 24 24" aria-label="Qobuz"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 L19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>',
+        Titles:  SRC_ICON.Titles,
+    };
+    const srcButtons = [];
+    // #272: re-entrancy guard for left-click. We deliberately DON'T use the
+    // native `disabled` attribute during a run — a disabled <button> swallows
+    // contextmenu too, so right-click (open the source page) would stop working
+    // mid-import. Guard the click instead and leave the element interactive.
+    let importing = false;
+    importSources.forEach(s => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'discogs-src-ico';
+        b._icon = ORIG_ICON[s.name] || SRC_ICON[s.name] || s.name;
+        b.innerHTML = b._icon;
+        b.dataset.src = s.name;
+        b.title = s.url
+            ? `Import credits from ${s.name}  ·  right-click to open the ${s.name} page`
+            : 'Import remixer credits derived from the track titles';
+        b.addEventListener('click', () => { if (!importing) startImport(b, s.url, s.run); });
+        if (s.url) b.addEventListener('contextmenu', e => { e.preventDefault(); window.open(s.url, '_blank', 'noopener,noreferrer'); });
+        srcButtons.push(b);
+        srcIcons.appendChild(b);
+    });
     const progressPct = document.createElement('span');
     progressPct.id = 'discogs-progress-pct';
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;';
-    row1.appendChild(importSplit);
+    row1.appendChild(importLabel);
+    row1.appendChild(srcIcons);
     row1.appendChild(progressPct);
 
     // Action slot — the review "Start import" button + unresolved message get
@@ -559,19 +581,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     logCaretBtn.title = 'More log actions (copy)';
     logSplit.append(logToggleBtn, logCaretBtn);
 
-    const logoLink = document.createElement('a');
-    logoLink.href = discogsUrl || sources.tidal || '#';
-    logoLink.target = '_blank';
-    logoLink.rel = 'noopener noreferrer nofollow';
-    logoLink.className = 'discogs-source-icon';
-    logoLink.title = discogsUrl || sources.tidal || '';   // hover shows the full source URL
-    if (!discogsUrl) logoLink.style.display = 'none';     // logo is Discogs-branded
-    const logo = document.createElement('img');
-    logo.src = DISCOGS_LOGO_URL;
-    logo.className = 'discogs-logo';
-    logo.alt = 'Discogs';
-    logoLink.appendChild(logo);
-
     // Documentation link (#90). URL falls back the same way `buildEditNote`
     // resolves it: the manager-injected `@homepageURL`, then `@homepage`, then a
     // hard-coded README.md link so it works even if the manager strips metadata.
@@ -586,39 +595,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     docsLink.title = 'Open the script\'s README in a new tab';
     docsLink.style.cssText = 'flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;';
 
-    // Tidal source icon — sits where the Discogs logo does, links the album.
-    const tidalLink = document.createElement('a');
-    tidalLink.className = 'discogs-source-icon';
-    tidalLink.target = '_blank';
-    tidalLink.rel = 'noopener noreferrer nofollow';
-    if (sources.tidal) {
-        tidalLink.href = sources.tidal;
-        tidalLink.title = sources.tidal;   // hover shows the full Tidal URL
-        // Official Tidal mark: three interlocking diamonds + one below center.
-        tidalLink.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="#000" aria-label="Tidal" style="vertical-align:middle;">'
-            + '<path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>';
-    } else {
-        tidalLink.style.display = 'none';
-    }
-
-    // Qobuz source icon — same spot, links the album store page.
-    const qobuzLink = document.createElement('a');
-    qobuzLink.className = 'discogs-source-icon';
-    qobuzLink.target = '_blank';
-    qobuzLink.rel = 'noopener noreferrer nofollow';
-    if (sources.qobuz) {
-        qobuzLink.href = sources.qobuz;
-        qobuzLink.title = sources.qobuz;   // hover shows the full Qobuz URL
-        // Simple Qobuz-blue "Q" roundel stand-in.
-        qobuzLink.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-label="Qobuz" style="vertical-align:middle;">'
-            + '<circle cx="12" cy="12" r="10" fill="#0070ef"/>'
-            + '<circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/>'
-            + '<path d="M14.5 14.5 L19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>';
-    } else {
-        qobuzLink.style.display = 'none';
-    }
-
-    rightGroup.append(logSplit, logoLink, tidalLink, qobuzLink, docsLink);
+    // #272: source icons moved to the left ("Import credits: …") — the right
+    // cluster keeps just the Log toggle and Help.
+    rightGroup.append(logSplit, docsLink);
 
     row1.appendChild(rightGroup);
 
@@ -962,10 +941,17 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // `srcBtn`/`restoreLabel` drive the button state, `sourceUrl` feeds the
     // edit note, `runner(getOpts)` is the source-specific import entry
     // (`runImport` for Discogs, `runTidalImport` for Tidal).
-    function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
-        importBtn.disabled = true;
-        importCaretBtn.disabled = true;
-        srcBtn.innerHTML = srcIconByUrl(sourceUrl) + ' Importing…';   // keep the source icon visible (#193)
+    function startImport(srcBtn, sourceUrl, runner) {
+        // #272: during a run only the active source icon shows — you can't start
+        // another import anyway — so hide the others and mark the active one.
+        // (Left-click is gated by `importing`; the active icon stays interactive
+        // so right-click still opens its page.)
+        importing = true;
+        srcButtons.forEach(b => {
+            const active = b === srcBtn;
+            b.classList.toggle('importing', active);
+            b.style.display = active ? '' : 'none';
+        });
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
 
@@ -1162,9 +1148,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             log.info(html);
         });
         runner(getOpts).finally(() => {
-            importBtn.disabled = false;
-            importCaretBtn.disabled = false;
-            srcBtn.innerHTML = restoreLabel;   // restore icon + label (#193)
+            importing = false;
+            srcButtons.forEach(b => { b.classList.remove('importing'); b.style.display = ''; });
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
             bar.classList.remove('is-reviewing');   // #139: safety — clear if the flow ended during review
@@ -1183,44 +1168,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             delete bar._setProgress;
         });
     }
-    // Import-source submenu (#193): one button, dropdown when the release
-    // links several sources. Reuses the Log ▾ dropdown styling/behavior.
-    let srcMenu = null;
-    if (multiSource) {
-        srcMenu = document.createElement('div');
-        srcMenu.className = 'discogs-log-menu';
-        for (const s of importSources.slice(1)) {   // skip the default — it's the main button (#193)
-            const b = document.createElement('button');
-            b.type = 'button';
-            b.innerHTML = (SRC_ICON[s.name] || '') + ' from ' + s.name;
-            b.title = s.url;
-            b.addEventListener('click', () => {
-                srcMenu.classList.remove('open');
-                startImport(importBtn, importHtml(importSources[0]), s.url, s.run);
-            });
-            srcMenu.appendChild(b);
-        }
-        document.body.appendChild(srcMenu);
-    }
-    // Main button: always the first (default) source. Caret: the submenu.
-    importBtn.addEventListener('click', () =>
-        startImport(importBtn, importHtml(importSources[0]), importSources[0].url, importSources[0].run));
-    importCaretBtn.addEventListener('click', (e) => {
-        if (!srcMenu) return;
-        e.stopPropagation();
-        const open = srcMenu.classList.toggle('open');
-        if (!open) return;
-        const r = importCaretBtn.getBoundingClientRect();
-        srcMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - srcMenu.offsetWidth - 8)) + 'px';
-        srcMenu.style.top  = (r.bottom + 4) + 'px';
-        const off = ev => {
-            if (!srcMenu.contains(ev.target) && ev.target !== importCaretBtn && !importCaretBtn.contains(ev.target)) {
-                srcMenu.classList.remove('open');
-                document.removeEventListener('mousedown', off);
-            }
-        };
-        setTimeout(() => document.addEventListener('mousedown', off), 0);
-    });
+    // #272: source icons (built above) carry their own click/right-click
+    // handlers — no separate Import button or submenu.
 
     bar.appendChild(outputDiv);
 

@@ -133,7 +133,11 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     //                 page, no MB ID, no review-table confirmation, etc.)
     //   failed      — errors (bad MBID, deprecated link type, entity fetch
     //                 failure, etc.)
-    let added = 0, existedInMb = 0, dedupedThisSession = 0, skipped = 0, failed = 0;
+    // existedStaged (#272): matched a rel ADDED THIS SESSION (status 1) — e.g.
+    // a previous source already staged this exact credit. Reported apart from
+    // existedInMb (persisted, status 0) so a 2nd source's note reads honestly
+    // ("2 added, 4 already added this session") instead of claiming "in MB".
+    let added = 0, existedInMb = 0, existedStaged = 0, dedupedThisSession = 0, skipped = 0, failed = 0;
     // Track dispatched relationships this session to catch same-run duplicates
     const dispatchedThisSession = new Set(); // "sourceGid|linkTypeID|targetGid"
 
@@ -422,14 +426,19 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             const existingAttrs = (r.attributes || []).map(a => ({ typeID: a.typeID, text_value: a.text_value || '', credited_as: a.credited_as || '' }));
             const exactMatch = (sigOf(existingAttrs) === candSig);
             if (exactMatch) {
-                return { kind: isEquivalent ? 'equivalence' : 'exact', existingLinkName: lookupName(r.linkTypeID) };
+                // #272: r._status === 1 means this rel was ADDED THIS SESSION
+                // (e.g. by a previous source's import, or manually) — not
+                // persisted in MB. The caller reports those distinctly so a
+                // multi-source run doesn't claim "already in MB" for credits a
+                // prior source just staged.
+                return { kind: isEquivalent ? 'equivalence' : 'exact', existingLinkName: lookupName(r.linkTypeID), status: r._status };
             }
             // Attrs differ. It's a duplicate *role* only when the identifying
             // instrument/vocal attributes are the same (e.g. "guitar" vs
             // "guitar (solo)"). Different instruments (synthesizer vs drum
             // machine) are distinct performances and must both be added (#225).
             if (dedupeDuplicateRoles && !dupMatch && idSigOf(existingAttrs) === candIdSig) {
-                dupMatch = { kind: isEquivalent ? 'equivalence' : 'duplicate-role', existingLinkName: lookupName(r.linkTypeID) };
+                dupMatch = { kind: isEquivalent ? 'equivalence' : 'duplicate-role', existingLinkName: lookupName(r.linkTypeID), status: r._status };
             }
         }
         return dupMatch;
@@ -528,14 +537,18 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             //                    the "Duplicate roles" option is on)
             const pair = `${sourceEntity.name} ↔ ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ''}`;
             const existing = dedupHit.existingLinkName;
+            // #272: a match against a rel added THIS session (status 1) is not
+            // "in MB" — it was staged by a previous source (or by hand).
+            const staged = dedupHit.status === 1;
+            const where = staged ? 'already added this session' : 'already in MB';
             if (dedupHit.kind === 'equivalence') {
-                log.info(`Deduplication (equivalence sets): <strong>${linkTypeName}</strong> not added — equivalent <strong>${existing}</strong> already on ${pair}`);
+                log.info(`Deduplication (equivalence sets): <strong>${linkTypeName}</strong> not added — equivalent <strong>${existing}</strong> ${where} on ${pair}`);
             } else if (dedupHit.kind === 'duplicate-role') {
-                log.info(`Deduplication (duplicate roles): <strong>${linkTypeName}</strong> not added — same role already exists with different attributes on ${pair}`);
+                log.info(`Deduplication (duplicate roles): <strong>${linkTypeName}</strong> not added — same role ${where} with different attributes on ${pair}`);
             } else {
-                log.info(`Already in MB: <strong>${linkTypeName}</strong>: ${pair}`);
+                log.info(`${staged ? 'Already added this session' : 'Already in MB'}: <strong>${linkTypeName}</strong>: ${pair}`);
             }
-            existedInMb++;
+            if (staged) existedStaged++; else existedInMb++;
             return;
         }
 
@@ -892,7 +905,10 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         const editNoteDedupPart = dedupedThisSession > 0
             ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? '' : 's'}`
             : '';
-        const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteDedupPart}, ${skipped} skipped, ${failed} failed`;
+        const editNoteStagedPart = existedStaged > 0
+            ? `, ${existedStaged} already added this session`
+            : '';
+        const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteStagedPart}${editNoteDedupPart}, ${skipped} skipped, ${failed} failed`;
         const ourNote = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean));
         // Preserve any note another script already wrote — append ours instead
         // of overwriting (issue #174). Read the live textarea value as the base.
@@ -908,5 +924,8 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     const dedupPart = dedupedThisSession > 0
         ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? '' : 's'}`
         : '';
-    log.info(`<strong>Done: ${added} added, ${existedInMb} already in MB${dedupPart}, ${skipped} skipped, ${failed} failed</strong>`);
+    const stagedPart = existedStaged > 0
+        ? `, ${existedStaged} already added this session`
+        : '';
+    log.info(`<strong>Done: ${added} added, ${existedInMb} already in MB${stagedPart}${dedupPart}, ${skipped} skipped, ${failed} failed</strong>`);
 }

@@ -58,23 +58,60 @@ export function buildCreateNote(action = 'Created the entity') {
     return header + '\n\n' + action + ' while importing credits onto ' + mbUrl;
 }
 
+// Split a note into our part vs anything that preceded it (another script's
+// note). Our part is `header`, the shared `Release URL:` line, and `body` — the
+// stacked per-source blocks below it. Returns null when our header isn't found.
+function splitOurNote(note) {
+    const headerPrefix = GM_info.script.name + ' v';
+    const lines = String(note || '').split('\n');
+    const idx = lines.findIndex(l => l.startsWith(headerPrefix));
+    if (idx === -1) return null;
+    const pre = lines.slice(0, idx).join('\n').replace(/\s+$/, '');
+    const our = lines.slice(idx);
+    const relIdx = our.findIndex(l => /^Release URL:/i.test(l));
+    return {
+        pre,
+        header: our[0],
+        releaseLine: relIdx !== -1 ? our[relIdx] : '',
+        body: (relIdx !== -1 ? our.slice(relIdx + 1) : our.slice(1)).join('\n').trim(),
+    };
+}
+
+// Which source a stacked block belongs to, from its first line:
+//   "Discogs URL: …" / "Tidal URL: …" / "Qobuz URL: …" → that provider
+//   "Source: track titles"                              → Titles (#271)
+function blockSourceKey(block) {
+    const first = (String(block).split('\n')[0] || '').trim();
+    const m = first.match(/^([A-Za-z][A-Za-z ]*?)\s+URL:/);
+    if (m) return m[1].trim().toLowerCase();
+    if (/^Source:\s*track titles/i.test(first)) return 'titles';
+    return first.toLowerCase();
+}
+
 /**
- * Merge our edit note onto whatever is already in the edit-note field instead
- * of clobbering it — other scripts (Harmony seeder, Seed-URLs, …) set their own
- * note first and we were overwriting it (issue #174). Our block is APPENDED
- * after the existing text with one empty line between them.
+ * Merge our edit note onto whatever is already in the edit-note field.
  *
- * A previously-appended block authored by THIS script is dropped first, so
- * re-running an import in the same session refreshes our note rather than
- * stacking a second copy. Our block always begins at our header line and runs
- * to the end (we append last), so truncating from that header is sufficient.
+ *  - Never clobbers another script's note (Harmony seeder, Seed-URLs, …): that
+ *    text is preserved ahead of our block (issue #174).
+ *  - #272: multiple sources can run in one session, and the final submit applies
+ *    every staged edit with this one note — so each source's block STACKS under a
+ *    single shared header + `Release URL:` line, newest on top, **one block per
+ *    source** (re-running a source replaces its block rather than piling up).
+ *    Each block keeps its own per-run stats, so they never sum into a misleading
+ *    total — Discogs "10 added", Tidal "2 added, 4 already added this session".
  */
 export function combineEditNote(existingNote, ourNote) {
-    const headerPrefix = GM_info.script.name + ' v';
-    let base = String(existingNote || '');
-    const lines = base.split('\n');
-    const ourIdx = lines.findIndex(l => l.startsWith(headerPrefix));
-    if (ourIdx !== -1) base = lines.slice(0, ourIdx).join('\n');
-    base = base.replace(/\s+$/, '');
-    return base ? base + '\n\n' + ourNote : ourNote;
+    const fresh = splitOurNote(ourNote);
+    if (!fresh) return ourNote;   // ourNote always carries our header — defensive
+    const newKey = blockSourceKey(fresh.body);
+
+    const prev = splitOurNote(existingNote);
+    const keptBlocks = prev
+        ? prev.body.split(/\n\n+/).map(b => b.trim()).filter(Boolean).filter(b => blockSourceKey(b) !== newKey)
+        : [];
+    const stacked = [fresh.body, ...keptBlocks].join('\n\n');
+    const ourBlock = `${fresh.header}\n\n${fresh.releaseLine}\n${stacked}`;
+
+    const pre = prev ? prev.pre : String(existingNote || '').replace(/\s+$/, '');
+    return pre ? `${pre}\n\n${ourBlock}` : ourBlock;
 }
