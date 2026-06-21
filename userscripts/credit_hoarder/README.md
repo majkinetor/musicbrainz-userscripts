@@ -7,7 +7,7 @@ Import track and release credits from streaming and database providers into Musi
 
 > Credit Hoarder is the multi-source successor to the single-source [Discogs Importer](../discogs_credits/README.md). It reuses that engine's resolution/review core but treats every provider as a peer. If you only ever import from Discogs, either works; for Tidal/Qobuz (and future providers), use Credit Hoarder.
 
-The script presents itself on the **Edit relationships** screen of a MusicBrainz release that has a linked (or [Platform Check](../platform_check/README.md)–found) provider. Make sure to read [Style / Relationships](https://musicbrainz.org/doc/Style/Relationships) for the general guidelines.
+The script presents itself on the **Edit relationships** screen of a MusicBrainz release when there's something to import — a linked provider (or one [Platform Check](../platform_check/README.md) found), **or** track titles that name a remixer (the **Titles** source). On a release with neither it stays out of the way. Make sure to read [Style / Relationships](https://musicbrainz.org/doc/Style/Relationships) for the general guidelines.
 
 ## Workflow
 
@@ -35,7 +35,6 @@ The UI strip at the top of the page with the source picker, the option toggles, 
 - **Dedup**
     - **Equivalence sets** — skip a role when an equivalent role already exists on the target (writer ≡ composer).
     - **Duplicate roles** — skip a role when the target recording already has the same role (regardless of attributes / dates / tasks).
-
 ### Credit Review Table
 
 A single-row-per-entity table for confirming source ↔ MusicBrainz matches before dispatch.
@@ -54,7 +53,7 @@ A single-row-per-entity table for confirming source ↔ MusicBrainz matches befo
 Efficiency features:
 
 - **Parallel lookup** — all artists, labels and places are checked against MB through a shared throttle.
-- **Cache** — resolved source ↔ MB MBID mappings persist across sessions and are checked first; each record shows a badge with how it was originally resolved (`name` / `url` / `name+url` / `user`).
+- **Cache** — resolved source ↔ MB MBID mappings persist across sessions and are checked first; each record shows a badge with how it was originally resolved (`name` / `url` / `name+url` / `user`). Sources that expose a per-credit URL (Discogs, Tidal) cache globally by that URL; **name-only** credits (Qobuz, the title-derived remixers) cache **per release** — keyed by the release and the name — so re-running the same release reuses your picks without a bare name leaking a resolution onto a different release.
 - **Inline MB search** — a live search field on every row; type a name or paste an MBID / MB URL.
 - **Auto-match** — name search and source-URL lookup run in parallel; auto-resolution only when trustworthy:
     - **Both agree** on the same MB entity → resolved with high confidence.
@@ -109,6 +108,11 @@ Providers differ in how rich their credits are and — crucially — whether the
 | **Discogs** | Fullest — performers + instruments, engineering, production, artwork, mastering, … | Discogs **artist IDs** → exact MB resolution via URL relationships | Discogs API | none |
 | **Tidal** | Per-track: Producer, Mixing/Recording/Sound Engineer, Composer, Lyricist, Writer, Orchestrator, (Music) Publisher. **Plus release-level credits** from the Info tab — instruments, vocals, conductor, artwork, etc. (album-wide credits Tidal only lists once) | **Tidal artist IDs** on ~99% of credits → exact MB resolution via URL relationships | companion harvest in an anonymously-opened `tidal.com/album/<id>/credits` tab (per-track **and** the Info tab's "Additional Credits"), relayed back cross-tab | none |
 | **Qobuz** | Composer, Lyricist, Producer, Publisher, performers | **names only** — Qobuz exposes no artist/profile links on credits, so each name is resolved by MB **name search + your review** | direct page fetch (credits are server-rendered into the store page) | none |
+| **Titles** | **Remixers only**, derived from the release's own track titles — no external provider | **names only** — resolved by MB **name search + your review** | reads the track titles already on the MB release | none |
+
+The **Titles** source parses remixer credits straight from the track-title disambiguation convention, for releases where the remix is named in the title but no provider lists it. A track titled *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)* or *Cut (Remixed by Someone)* contributes a **remixer** relationship for that recording. Only the reliable *named-remix* convention fires — anonymous descriptors like *(Extended Mix)*, *(Radio Edit)*, *(Original Mix)* or a bare *(Remix)* (edits/versions of the original, not a remix by a named artist) are ignored, and *(Mixed by …)* is left alone (that's an engineer). It's offered only when the titles actually contain a named remix (probed when the page loads): in the **▾** submenu when a provider is linked, and as the sole import action when none is. Everything still goes through the review table before it's committed. Because these remixers carry no source URL, your review picks for them are cached **per release** (keyed by the release and the parsed name) — so re-running the Titles source on the same release reuses your matches instead of re-asking, while a bare name like *Friends* never leaks a resolution onto a different release.
+
+It's a heuristic over a naming convention, so it won't catch every wording (an unusual phrasing, or a remix named after the *track* rather than an artist) — anything it misses you add by hand as usual. The entity-name tooltip shows the full source title, which helps when the parser had to trim part of a name (e.g. *Europa 51* → *Europa*).
 
 Notes & limitations:
 

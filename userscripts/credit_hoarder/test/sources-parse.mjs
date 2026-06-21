@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { parseQobuzCreditLine, extractQobuzCredits, parseQobuzAlbumUrl, decodeEntities, qobuzToEngine, extractQobuzAlbumInfo } from '../src/sources/qobuz.js';
 import { parseTidalAlbumUrl, parseTidalArtistUrl, tidalToEngine, tidalReleaseArtists, TIDAL_ROLE_MAP } from '../src/sources/tidal.js';
 import { parseSourceEntityUrl } from '../src/sources/registry.js';
+import { parseRemixTitle, deriveRemixRoles } from '../src/derive/remix.js';
 
 // ── Qobuz credit line (verbatim from album vft3hpnx5c3lc, track 1) ──────────
 const line1 = 'Copyright Control, MusicPublisher - Kwadwo Donkoh, Producer - Wulomei, MainArtist - Nii Tei Ashitey, Composer, Lyricist';
@@ -201,5 +202,88 @@ assert.ok(qEng.tracklistRels.every(r => r.artist.resource_url === '' && r.entity
 // og:title → album info
 assert.equal(extractQobuzAlbumInfo('<meta property="og:title" content="Walatu Walasa, Wulomei - Qobuz"/>'),
     'Walatu Walasa, Wulomei');
+
+// ── Remix derivation from titles (#271) ─────────────────────────────────────
+const rmx = t => parseRemixTitle(t).remixers;
+
+// Named remixes → a remixer name (the clear win).
+assert.deepEqual(rmx('Around the World (Daft Punk Remix)'), ['Daft Punk']);
+assert.deepEqual(rmx('Song (KiNK Dub)'),                     ['KiNK']);
+assert.deepEqual(rmx('Track (Tom Moulton Mix)'),            ['Tom Moulton']);
+assert.deepEqual(rmx('Tune (Joey Negro Edit)'),            ['Joey Negro']);
+assert.deepEqual(rmx('Thing (Remixed by Larry Levan)'),    ['Larry Levan']);
+assert.deepEqual(rmx("Cut (Aphex Twin's Remix)"),          ['Aphex Twin']);
+// Possessive form "<Artist>'s <remix title> <keyword>" → just the artist (#271).
+assert.deepEqual(rmx("lla sera (Kettenkarussell's Triangle Player rework)"), ['Kettenkarussell']);
+assert.deepEqual(rmx("Horizon (Funk D'Void's Hope mix)"),  ["Funk D'Void"]);   // internal apostrophe kept, only the trailing 's is the possessive
+// "reprise" recognised as a remix keyword (#271 review).
+assert.deepEqual(rmx('In White Rooms (Jonas Rathsman reprise)'), ['Jonas Rathsman']);
+assert.deepEqual(rmx('Theme (Reprise)'), []);   // anonymous reprise → no credit
+
+// Trailing STRONG descriptors stripped; the keyword itself sits at the end.
+assert.deepEqual(rmx('Song (KiNK Extended Remix)'),        ['KiNK']);
+assert.deepEqual(rmx('Song (KiNK 12" Mix)'),               ['KiNK']);   // vinyl size stripped
+assert.deepEqual(rmx('Sound of the Samba (Masters at Work main mix)'), ['Masters at Work']);  // "main" stripped
+
+// WEAK genre words that are part of a real band name are KEPT — the two cases
+// that pull opposite ways, from the same release (#271 review):
+assert.deepEqual(rmx('Better Place (Cotton Club remix)'), ['Cotton Club']);   // "Club" kept
+assert.deepEqual(rmx('Song (Deep Dish Remix)'),           ['Deep Dish']);     // "Deep" kept
+assert.deepEqual(rmx('Song (The Orb Remix)'),             ['The Orb']);       // article kept mid-name
+
+// "X vs. Y" is a single MB collaboration artist — NOT split (#271 review).
+assert.deepEqual(rmx('X (Fetisch Park vs. Bob Humid Remix)'), ['Fetisch Park vs. Bob Humid']);
+// Nested parenthetical (alias disambig) → keep the primary name, drop the nest.
+assert.deepEqual(rmx('Training (remix by Carlsbop (Fetisch Park vs. Bob Humid))'), ['Carlsbop']);
+
+// Multiple remixers in one parenthetical.
+assert.deepEqual(rmx('Song (Masters at Work & Louie Vega Remix)'), ['Masters at Work', 'Louie Vega']);
+assert.deepEqual(rmx('Song (Danny Tenaglia, Peter Rauhofer Remix)'), ['Danny Tenaglia', 'Peter Rauhofer']);
+
+// Anonymous descriptors → NO credit (edits/versions of the original, out of scope).
+assert.deepEqual(rmx('Song (Extended Mix)'),      []);
+assert.deepEqual(rmx('Song (Radio Edit)'),        []);
+assert.deepEqual(rmx('Song (Original Mix)'),      []);
+assert.deepEqual(rmx('Song (Club Mix)'),          []);   // WEAK alone → anonymous
+assert.deepEqual(rmx('Song (Extended Club Mix)'), []);   // all-decorator → anonymous
+assert.deepEqual(rmx('Song (The Remix)'),         []);   // article alone → anonymous
+assert.deepEqual(rmx('Song (Album Version)'),     []);   // "version" is not a remix keyword
+assert.deepEqual(rmx('Song (Remix)'),             []);   // no name
+assert.deepEqual(rmx('Song (Dub)'),               []);   // no name
+assert.deepEqual(rmx('Song (Instrumental)'),      []);
+assert.deepEqual(rmx('Song (feat. Guest)'),       []);   // featuring is not a remix
+assert.deepEqual(rmx('Song (Live)'),              []);
+assert.deepEqual(rmx('Song (Remastered)'),        []);
+assert.deepEqual(rmx('Plain Title'),              []);
+
+// "Mixed by"/"Edited by" name an engineer, not a remixer — must not fire.
+assert.deepEqual(rmx('Song (Mixed by Bob)'),  []);
+assert.deepEqual(rmx('Song (Edited by Bob)'), []);
+
+// base strips the matched group.
+assert.equal(parseRemixTitle('Around the World (Daft Punk Remix)').base, 'Around the World');
+
+// deriveRemixRoles → tracklist roles shaped like a name-only provider credit.
+const dr = deriveRemixRoles([
+    { position: '1', title: 'Intro (Original Mix)', type_: 'track' },
+    { position: '2', title: 'Banger (KiNK Remix)',  type_: 'track' },
+    { position: 'X', title: 'Heading', type_: 'heading' },   // non-track → skipped
+]);
+assert.deepEqual(dr.map(r => [r.track.position, r.linkType, r.artist.name, r.creditedAs]), [
+    ['2', 'remixer', 'KiNK', 'KiNK'],
+]);
+assert.ok(dr.every(r => r.artist.resource_url === '' && r.entityType === 'artist'));
+// No release MBID → no cache key (load-time count-only probe).
+assert.ok(dr.every(r => r.artist._cacheKey === undefined));
+
+// With a release MBID → release-scoped, name-normalised cache key (#271 caching).
+const drk = deriveRemixRoles([{ position: '1', title: 'Boom (KiNK Remix)', type_: 'track' }], 'REL-MBID');
+assert.equal(drk[0].artist._cacheKey, 'titles-remix/REL-MBID/kink');
+// Same name on two tracks → identical key, so one resolution is reused for both.
+const drk2 = deriveRemixRoles([
+    { position: '1', title: 'A (Cartier Saucier Remix)', type_: 'track' },
+    { position: '2', title: 'B (Cartier Saucier Remix)', type_: 'track' },
+], 'REL-MBID');
+assert.equal(drk2[0].artist._cacheKey, drk2[1].artist._cacheKey);
 
 console.log('sources-parse: all assertions passed');

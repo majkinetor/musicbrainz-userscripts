@@ -35,7 +35,9 @@ export function buildEditNote(sourceUrl, opts, extraLines) {
         header,
         '',
         'Release URL: ' + mbUrl,
-        sourceName + ' URL: ' + cleanSource,
+        // No source URL → the title-derived "Titles" source (#271): credits come
+        // from the release's own track titles, not an external page.
+        cleanSource ? sourceName + ' URL: ' + cleanSource : 'Source: track titles',
     ];
     if (opts) lines.push('Options: ' + opts);
     if (extraLines) lines.push(...(Array.isArray(extraLines) ? extraLines : [extraLines]));

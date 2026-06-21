@@ -7,7 +7,7 @@
 import { readIdbRecord, writeIdbRecord }   from './storage.js';
 import { mbThrottle, fetchWithRetry, fetchArtistRelTypes } from './api-mb.js';
 import { getDiscogsEntityData }            from './api-discogs.js';
-import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId } from './sources/registry.js';
+import { parseSourceEntityUrl, sourceNameForUrl, sourceUrlLinkTypeId, idbKeyForEntity } from './sources/registry.js';
 import { guessSortName }                   from './mappers.js';
 import { buildCreateNote }                 from './edit-note.js';
 import { getLogContainer, getReviewContainer } from './log.js';
@@ -53,7 +53,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
     for (const r of _nullNames) {
         const rUrl = r.entity?.resource_url;
         try {
-            const idbKey = parseSourceEntityUrl(rUrl)?.key;
+            const idbKey = idbKeyForEntity(r.entity);
             const rec = await readIdbRecord(idbKey);
             if (rec?.name) {
                 _preloadedNames.set(rUrl, { name: rec.name, dis: rec.disambiguation || '' });
@@ -430,6 +430,13 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // Used by the issue-#63 hover-highlight to identify entity-name
             // elements regardless of href presence.
             if (!hasDiscogsUrl) dlA.className = 'discogs-entity-name';
+            // #271: tooltip the originating track title(s). The parsed name can
+            // legitimately drop part of the real artist ("Europa 51" → "Europa",
+            // the trailing number being indistinguishable from a mix qualifier),
+            // so seeing the full title gives the context to pick the right MB
+            // entity. Multiple titles when the same name remixes several tracks.
+            const _srcTitles = [...new Set((r._roles || []).map(x => x.trackTitle).filter(Boolean))];
+            if (_srcTitles.length) dlA.title = _srcTitles.join('\n');
             nameWrap.appendChild(dlA);
             // Distinct warning badges per #81. Both warnings used to be
             // the same icon, distinguishable only via tooltip. Now each
@@ -438,10 +445,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                'padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;' +
                                'border-radius:0.7rem;letter-spacing:0.01em;cursor:help;' +
                                'text-transform:lowercase;line-height:1.4;';
-            if (!hasDiscogsUrl) {
+            // The Titles source (#271) derives names from track titles — there's
+            // no external entity page to miss, so the "no profile" badge is pure
+            // noise on every row; skip it. For real URL sources, a URL-less row
+            // genuinely lacks a profile, so keep the badge (source-worded).
+            if (!hasDiscogsUrl && srcName !== 'Titles') {
                 const noUrl = document.createElement('span');
                 noUrl.textContent = 'no profile';
-                noUrl.title = 'No Discogs artist page — name lookup unavailable, search MB manually';
+                noUrl.title = `No ${srcName} artist page — name lookup unavailable, search MB manually`;
                 noUrl.style.cssText = BADGE_BASE + 'background:#fde0e0;color:#a02020;border:1px solid #d44040;';
                 nameWrap.appendChild(noUrl);
             }
@@ -535,7 +546,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             //      — set by preflight from the IDB record).
             //   2. MB's most-frequent existing credit on this release for the
             //      resolved entity.
-            //   3. Discogs display name.
+            //   3. #271 Titles source — the resolved MB entity name (the parsed
+            //      remix name is unreliable, e.g. "Kenneth Bager Ambient" from
+            //      "… Ambient Remix"; default to the MB name as if "MB" clicked).
+            //   4. Source/parsed display name.
             function pickPrefill(mbUrl) {
                 if (r.creditOverride !== undefined && r.creditOverride !== null && r.creditOverride !== '') {
                     return r.creditOverride;
@@ -543,6 +557,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 if (mbUrl) {
                     const mbid = (String(mbUrl).split('/').pop() || '').replace(/[^a-f0-9-]/gi, '').slice(0, 36);
                     if (mbid && existingCreditByMbid.has(mbid)) return existingCreditByMbid.get(mbid);
+                }
+                if (srcName === 'Titles') {
+                    const mbName = rowState.get(_entityKey)?.mbName || r.mbName;
+                    if (mbName) return mbName;
                 }
                 return displayName;
             }
@@ -564,7 +582,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 refreshCredBg();
                 clearTimeout(_credSaveTimer);
                 _credSaveTimer = setTimeout(() => {
-                    const idbKey = parseSourceEntityUrl(r.entity?.resource_url)?.key;
+                    const idbKey = idbKeyForEntity(r.entity);
                     if (idbKey) writeIdbRecord(idbKey, { creditOverride: credInput.value });
                 }, 500);
             });
@@ -734,8 +752,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     refreshCredBg();
                     if (r._refreshCredBtns) r._refreshCredBtns();
                 }
-                // Persist to IDB immediately so selection survives even without clicking Start import
-                const _idbKey = r.entity?.resource_url ? parseSourceEntityUrl(r.entity.resource_url)?.key : null;
+                // Persist to IDB immediately so selection survives even without clicking Start import.
+                // idbKeyForEntity also handles name-only entities that carry a
+                // release-scoped `_cacheKey` (#271 derived remixers) — so a manual
+                // pick on a derived remixer is reused on the next run of this release.
+                const _idbKey = idbKeyForEntity(r.entity);
                 if (_idbKey) {
                     writeIdbRecord(_idbKey, {
                         mbid:           a.id,
@@ -918,9 +939,16 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     }
 
                     if (!discogsHref) {
-                        // No external URL — skip URL check entirely
-                        linkSlot.textContent = `⚠ No ${srcName} page`;
-                        linkSlot.style.color = '#c80';
+                        // No external URL — skip URL check entirely. The Titles
+                        // source has no per-entity page concept at all, so show
+                        // nothing (the "no page" chip would just be noise on
+                        // every row); other sources keep the informational chip.
+                        if (srcName === 'Titles') {
+                            linkSlot.remove();
+                        } else {
+                            linkSlot.textContent = `⚠ No ${srcName} page`;
+                            linkSlot.style.color = '#c80';
+                        }
                     } else if (urlCheckCached !== null) {
                         // Session-cache always takes precedence over the
                         // preflight `urlLinkedIds` snapshot. The cache is

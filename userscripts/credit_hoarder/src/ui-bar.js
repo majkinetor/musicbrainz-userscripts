@@ -37,6 +37,8 @@ import {
     ENTITY_KIND,
     COMPANY_KIND,
 }                                        from './preflight.js';
+import { deriveRemixRoles }              from './derive/remix.js';
+import { fetchWithRetry }                from './api-mb.js';
 import { showReviewTable }               from './review-table.js';
 import { dispatchAllRelationships }      from './dispatch.js';
 import { buildEditNote }                 from './edit-note.js';
@@ -62,10 +64,13 @@ const SRC_ICON = {
     Discogs: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
     Tidal:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
     Qobuz:   '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    // #271: the "Titles" source derives remixer credits from the track titles
+    // themselves — no provider. A small text/lines glyph.
+    Titles:  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>',
 };
 const srcIconByUrl = url => SRC_ICON[sourceNameForUrl(url)] || '';
 
-export function insertDiscogsBar(discogsUrl, sources = {}) {
+export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // Inject styles
     const style = document.createElement('style');
     style.innerText = `
@@ -454,6 +459,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
     if (discogsUrl)    importSources.push({ name: 'Discogs', url: discogsUrl,    run: g => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: 'Tidal',   url: sources.tidal, run: g => runTidalImport(sources.tidal, g) });
     if (sources.qobuz) importSources.push({ name: 'Qobuz',   url: sources.qobuz, run: g => runQobuzImport(sources.qobuz, g) });
+    // #271: "Titles" — derive remixer credits from the track titles. Offered
+    // ONLY when the titles actually yield ≥1 remixer (probed at page load), so
+    // CH doesn't surface an action with nothing behind it. Pushed LAST so it
+    // shows in the submenu when a provider is linked and is the sole/default
+    // action when none is.
+    if ((meta.titlesRemixCount || 0) > 0) {
+        importSources.push({ name: 'Titles', url: '', run: g => runTitlesImport(g) });
+    }
     const multiSource = importSources.length > 1;
     const importSplit = document.createElement('span');
     importSplit.className = 'discogs-import-split';
@@ -1389,6 +1402,65 @@ function runQobuzImport(qobuzUrl, getOpts) {
         .catch(err => { log.error(err.message || String(err)); });
 }
 
+// Titles "source" (#271): no provider — read the release's own track titles
+// from MB (WS2) and derive remixer credits from the disambiguation convention
+// ("Song (Artist Remix)"). The derived roles are name-only artists (no URL,
+// like Qobuz), so they resolve via name search + the review table and dispatch
+// through the existing recording→artist `remixer` path. Behaves like any other
+// import source: it's in the submenu when a provider is linked, and the sole
+// action when none is.
+// Build the release's tracklist (position + title) from MB's WS2 recordings —
+// the raw material the Titles source parses. Positions mirror what dispatch's
+// getRecordingEntity expects: compound "<medium>-<track>" on multi-medium
+// releases, plain otherwise.
+function buildTitlesTracklist(mbid) {
+    return fetchWithRetry(`/ws/2/release/${mbid}?inc=recordings&fmt=json`).then(json => {
+        const media = json?.media || [];
+        const multiMedium = media.length > 1;
+        const tracklist = [];
+        for (const medium of media) {
+            const medPos = medium.position;
+            for (const t of (medium.tracks || [])) {
+                const pos = t.position != null ? t.position : t.number;
+                tracklist.push({
+                    position: multiMedium && medPos != null && pos != null ? `${medPos}-${pos}` : String(pos != null ? pos : ''),
+                    title: t.title || t.recording?.title || '',
+                    type_: 'track',
+                });
+            }
+        }
+        return tracklist;
+    });
+}
+
+// Quick page-load probe (#271): does this release's track titles yield any
+// derivable remixer? Used to decide whether to offer the Titles source / mount
+// the bar at all, so CH stays silent on releases where it has nothing to do.
+export function probeTitleRemixes(mbid) {
+    if (!mbid) return Promise.resolve({ count: 0, tracklist: [] });
+    return buildTitlesTracklist(mbid)
+        .then(tracklist => ({ count: deriveRemixRoles(tracklist).length, tracklist }))
+        .catch(() => ({ count: 0, tracklist: [] }));
+}
+
+function runTitlesImport(getOpts) {
+    const m = location.pathname.match(/release\/([0-9a-f-]{36})/i);
+    if (!m) { log.error('Not on a release page — cannot read track titles.'); return Promise.resolve(); }
+    log.info('Reading track titles from MusicBrainz to derive remixer credits…');
+    return buildTitlesTracklist(m[1])
+        .then(tracklist => {
+            const tracklistRels = deriveRemixRoles(tracklist, m[1]);   // release-scoped cache keys (#271)
+            log.info(`Derived <strong>${tracklistRels.length}</strong> remixer credit(s) from ${tracklist.length} track title(s)`);
+            if (!tracklistRels.length) {
+                log.warn('No named remixes found in the track titles — nothing to import.');
+                document.querySelector('.discogs-bar')?._setStopMessage?.('No remixes found in titles');
+                return;
+            }
+            return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: '', processTracklist: true, getOpts });
+        })
+        .catch(err => { log.error(err.message || String(err)); });
+}
+
 // The source-agnostic pipeline (#193): unique-entity collection → preflight
 // resolution → review table → confirmed-IDB sweep → dispatch. Extracted from
 // runImport unchanged so every source feeds the same engine.
@@ -1427,6 +1499,20 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     uniqueArtists.push(role.artist);
                 }
             });
+            // #271: give every name-only artist (no source URL — Qobuz credits,
+            // Tidal name-only credits, and title-derived remixers that didn't
+            // already set their own) a RELEASE-SCOPED cache key, so their review
+            // resolutions persist across sessions instead of forcing a re-match
+            // every time. Scoped by the MB release MBID so a bare name like
+            // "John Smith" can't leak a resolution onto a different release.
+            const _relMbid = (location.pathname.match(/release\/([0-9a-f-]{36})/i) || [])[1];
+            if (_relMbid) {
+                for (const a of uniqueArtists) {
+                    if (a && !a.resource_url && !a._cacheKey && a.name) {
+                        a._cacheKey = `nameonly/${_relMbid}/${a.name.toLowerCase().trim()}`;
+                    }
+                }
+            }
             // Also add company roles to a companiesRolesMap
             const companiesRolesMap = new Map();
             companies.forEach(c => {
@@ -1531,9 +1617,11 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     // separate function from the bar builder that owns the slot.
                     headerSlot: document.querySelector('.discogs-bar-action'),
                     // Label fallback for URL-less credits (#193): a Qobuz row
-                    // must say "No Qobuz page", not "No Discogs page".
-                    sourceName: sourceNameForUrl(sourceUrl),
-                    sourceIcon: srcIconByUrl(sourceUrl),   // #193 — shown on the "Start import" button
+                    // must say "No Qobuz page", not "No Discogs page". The
+                    // URL-less Titles source (#271) reports as 'Titles' so the
+                    // review table drops Discogs-specific wording/elements.
+                    sourceName: sourceUrl ? sourceNameForUrl(sourceUrl) : 'Titles',
+                    sourceIcon: sourceUrl ? srcIconByUrl(sourceUrl) : (SRC_ICON.Titles || ''),   // #193 — shown on the "Start import" button
                     // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
                     // every entity via MB API. Used when a cached MBID is stale.
                     onRefresh: () => runPreflight(true).then(freshResults => {

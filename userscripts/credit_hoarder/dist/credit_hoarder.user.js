@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.20
+// @version      2026.6.21.221154
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2323,6 +2323,10 @@
     if (!url) return null;
     return parseDiscogsUrl(url) || parseTidalArtistUrl(url);
   }
+  function idbKeyForEntity(entity) {
+    if (!entity) return null;
+    return parseSourceEntityUrl(entity.resource_url)?.key || entity._cacheKey || null;
+  }
   function sourceNameForUrl(url) {
     if (/tidal\.com\//i.test(url || "")) return "Tidal";
     if (/qobuz\.com\//i.test(url || "")) return "Qobuz";
@@ -2348,7 +2352,7 @@
     const { bypassIdb } = opts;
     const { searchLimit, resultKey, incRels } = KIND_TABLE[kind];
     const parsed = parseSourceEntityUrl(entity.resource_url);
-    const key = parsed?.key;
+    const key = parsed?.key || entity._cacheKey || null;
     const searchName = entity.name;
     const displayName = kind === "artist" ? entity.anv && entity.anv.trim() || entity.name : entity.name;
     const discogsHref = entity.resource_url.replace(/https:\/\/api\.discogs\.com\/(\w+?)s\/(\d+)/, "https://www.discogs.com/$1/$2");
@@ -2628,6 +2632,148 @@
   var ENTITY_KIND = (e) => e?.entityType || "artist";
   var COMPANY_KIND = (c) => ENTITY_TYPE_MAP[c.entity_type_name]?.entityType ?? null;
 
+  // src/derive/remix.js
+  var STRONG = /* @__PURE__ */ new Set([
+    "extended",
+    "original",
+    "radio",
+    "instrumental",
+    "acapella",
+    "acappella",
+    "acoustic",
+    "album",
+    "single",
+    "main",
+    "long",
+    "short",
+    "full",
+    "special",
+    "bonus",
+    "alternative",
+    "alternate",
+    "vip",
+    "rmx",
+    "redux",
+    "dancefloor",
+    "unplugged",
+    "demo",
+    "remastered",
+    // remix-family words, in case a lead carries a second one
+    // ("Extended Remix Edit"): strip them off the trailing edge too.
+    "dub",
+    "edit",
+    "mix",
+    "remix",
+    "rework",
+    "remodel",
+    "reshuffle",
+    "reprise",
+    "version",
+    "re-edit",
+    "reedit"
+  ]);
+  var WEAK = /* @__PURE__ */ new Set([
+    "club",
+    "deep",
+    "tech",
+    "soulful",
+    "disco",
+    "electro",
+    "house",
+    "techno",
+    "progressive",
+    "tribal",
+    "vocal",
+    "classic",
+    "clean",
+    "dirty",
+    "censored",
+    "uncensored",
+    "studio",
+    "live",
+    "the",
+    "a",
+    "an"
+  ]);
+  var SEP_RE = /\s*(?:&|\+|,|\/|\bfeat\.?\b|\bft\.?\b|\bfeaturing\b)\s*/i;
+  var isVinyl = (t) => /^\d+(?:"|''|”|inch|in)?$/.test(t);
+  var norm = (t) => t.toLowerCase().replace(/[.''`]+$/, "");
+  var isStrong = (t) => {
+    const l = norm(t);
+    return STRONG.has(l) || isVinyl(l);
+  };
+  var isDecorator = (t) => {
+    const l = norm(t);
+    return STRONG.has(l) || WEAK.has(l) || isVinyl(l);
+  };
+  var TRAILING_RE = /^(.+?)\s+((?:re[-_ ]?)?(?:remix|rework|remodel|reshuffle|reprise|edit|dub|mix))(?:es|ed|s|d)?$/i;
+  var BY_RE = /^(?:re[-_ ]?)?(?:remix|rework|remodel|reshuffle|rerub)(?:es|ed|s|d)?\s+by\s+(.+)$/i;
+  function cleanName(raw) {
+    let s = String(raw || "").replace(/\s*[([].*$/, "").replace(/[)\]]+\s*$/, "");
+    let tokens = s.trim().split(/\s+/).filter(Boolean);
+    const pIdx = tokens.findIndex((t) => /['']s$/i.test(t));
+    if (pIdx !== -1) {
+      tokens = tokens.slice(0, pIdx + 1);
+      tokens[pIdx] = tokens[pIdx].replace(/['']s$/i, "");
+    }
+    while (tokens.length && isStrong(tokens[tokens.length - 1])) tokens.pop();
+    if (!tokens.length) return null;
+    if (tokens.every(isDecorator)) return null;
+    const name = tokens.join(" ").replace(/['']s$/i, "").trim();
+    if (!/[A-Za-z0-9]/.test(name)) return null;
+    return name;
+  }
+  function parseRemixTitle(title) {
+    const result = { base: title || "", remixers: [], kind: null };
+    if (!title || typeof title !== "string") return result;
+    const groups = title.match(/[([][^)\]]*[)\]]/g);
+    if (!groups) return result;
+    for (const g of groups) {
+      const inner = g.slice(1, -1).trim();
+      let captured = null, kind = null;
+      let m = BY_RE.exec(inner);
+      if (m) {
+        captured = m[1];
+        kind = "remix";
+      } else {
+        m = TRAILING_RE.exec(inner);
+        if (m) {
+          captured = m[1];
+          kind = /mix$/i.test(m[2]) && !/remix$/i.test(m[2]) ? "mix" : /edit$/i.test(m[2]) ? "edit" : /dub$/i.test(m[2]) ? "dub" : "remix";
+        }
+      }
+      if (!captured) continue;
+      const names = captured.split(SEP_RE).map(cleanName).filter(Boolean);
+      if (!names.length) continue;
+      result.kind = result.kind || kind;
+      for (const n of names) if (!result.remixers.includes(n)) result.remixers.push(n);
+      result.base = result.base.replace(g, "").replace(/\s{2,}/g, " ").trim();
+    }
+    return result;
+  }
+  function deriveRemixRoles(tracklist, releaseMbid) {
+    if (!Array.isArray(tracklist)) return [];
+    const roles = [];
+    for (const track of tracklist) {
+      if (!track || track.type_ && track.type_ !== "track") continue;
+      if (!track.title) continue;
+      const { remixers } = parseRemixTitle(track.title);
+      for (const name of remixers) {
+        const artist = { name, anv: "", resource_url: "", _derived: true };
+        if (releaseMbid) artist._cacheKey = `titles-remix/${releaseMbid}/${name.toLowerCase().trim()}`;
+        roles.push({
+          linkType: "remixer",
+          artist,
+          track,
+          creditedAs: name,
+          attributes: [],
+          entityType: "artist"
+        });
+      }
+    }
+    return roles;
+  }
+
   // src/edit-note.js
   function buildEditNote(sourceUrl, opts, extraLines) {
     const s = GM_info.script;
@@ -2640,7 +2786,9 @@
       header,
       "",
       "Release URL: " + mbUrl,
-      sourceName + " URL: " + cleanSource
+      // No source URL → the title-derived "Titles" source (#271): credits come
+      // from the release's own track titles, not an external page.
+      cleanSource ? sourceName + " URL: " + cleanSource : "Source: track titles"
     ];
     if (opts) lines.push("Options: " + opts);
     if (extraLines) lines.push(...Array.isArray(extraLines) ? extraLines : [extraLines]);
@@ -2677,7 +2825,7 @@
     for (const r of _nullNames) {
       const rUrl = r.entity?.resource_url;
       try {
-        const idbKey = parseSourceEntityUrl(rUrl)?.key;
+        const idbKey = idbKeyForEntity(r.entity);
         const rec = await readIdbRecord(idbKey);
         if (rec?.name) {
           _preloadedNames.set(rUrl, { name: rec.name, dis: rec.disambiguation || "" });
@@ -2940,12 +3088,14 @@
         dlA.rel = "noopener noreferrer nofollow";
         dlA.textContent = displayName;
         if (!hasDiscogsUrl) dlA.className = "discogs-entity-name";
+        const _srcTitles = [...new Set((r._roles || []).map((x) => x.trackTitle).filter(Boolean))];
+        if (_srcTitles.length) dlA.title = _srcTitles.join("\n");
         nameWrap.appendChild(dlA);
         const BADGE_BASE = "display:inline-flex;align-items:center;margin-left:0.35rem;padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;border-radius:0.7rem;letter-spacing:0.01em;cursor:help;text-transform:lowercase;line-height:1.4;";
-        if (!hasDiscogsUrl) {
+        if (!hasDiscogsUrl && srcName !== "Titles") {
           const noUrl = document.createElement("span");
           noUrl.textContent = "no profile";
-          noUrl.title = "No Discogs artist page \u2014 name lookup unavailable, search MB manually";
+          noUrl.title = `No ${srcName} artist page \u2014 name lookup unavailable, search MB manually`;
           noUrl.style.cssText = BADGE_BASE + "background:#fde0e0;color:#a02020;border:1px solid #d44040;";
           nameWrap.appendChild(noUrl);
         }
@@ -3015,6 +3165,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             const mbid = (String(mbUrl).split("/").pop() || "").replace(/[^a-f0-9-]/gi, "").slice(0, 36);
             if (mbid && existingCreditByMbid.has(mbid)) return existingCreditByMbid.get(mbid);
           }
+          if (srcName === "Titles") {
+            const mbName = rowState.get(_entityKey)?.mbName || r.mbName;
+            if (mbName) return mbName;
+          }
           return displayName;
         }
         credInput.value = pickPrefill(r.mbUrl);
@@ -3028,7 +3182,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           refreshCredBg();
           clearTimeout(_credSaveTimer);
           _credSaveTimer = setTimeout(() => {
-            const idbKey = parseSourceEntityUrl(r.entity?.resource_url)?.key;
+            const idbKey = idbKeyForEntity(r.entity);
             if (idbKey) writeIdbRecord(idbKey, { creditOverride: credInput.value });
           }, 500);
         });
@@ -3165,7 +3319,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             refreshCredBg();
             if (r._refreshCredBtns) r._refreshCredBtns();
           }
-          const _idbKey = r.entity?.resource_url ? parseSourceEntityUrl(r.entity.resource_url)?.key : null;
+          const _idbKey = idbKeyForEntity(r.entity);
           if (_idbKey) {
             writeIdbRecord(_idbKey, {
               mbid: a.id,
@@ -3305,8 +3459,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               if (urlCheckCached !== null) _urlCheckSessionCache.set(urlCheckCacheKey, urlCheckCached);
             }
             if (!discogsHref) {
-              linkSlot.textContent = `\u26A0 No ${srcName} page`;
-              linkSlot.style.color = "#c80";
+              if (srcName === "Titles") {
+                linkSlot.remove();
+              } else {
+                linkSlot.textContent = `\u26A0 No ${srcName} page`;
+                linkSlot.style.color = "#c80";
+              }
             } else if (urlCheckCached !== null) {
               applyUrlCheckResult(urlCheckCached);
             } else if (Array.isArray(r.urlLinkedIds)) {
@@ -4694,10 +4852,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   var SRC_ICON = {
     Discogs: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
     Tidal: '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
-    Qobuz: '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>'
+    Qobuz: '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    // #271: the "Titles" source derives remixer credits from the track titles
+    // themselves — no provider. A small text/lines glyph.
+    Titles: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>'
   };
   var srcIconByUrl = (url) => SRC_ICON[sourceNameForUrl(url)] || "";
-  function insertDiscogsBar(discogsUrl, sources = {}) {
+  function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     const style = document.createElement("style");
     style.innerText = `
         .discogs-bar {
@@ -5072,6 +5233,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g) => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g) => runTidalImport(sources.tidal, g) });
     if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g) => runQobuzImport(sources.qobuz, g) });
+    if ((meta.titlesRemixCount || 0) > 0) {
+      importSources.push({ name: "Titles", url: "", run: (g) => runTitlesImport(g) });
+    }
     const multiSource = importSources.length > 1;
     const importSplit = document.createElement("span");
     importSplit.className = "discogs-import-split";
@@ -5823,6 +5987,49 @@ ${lines}
       log.error(err.message || String(err));
     });
   }
+  function buildTitlesTracklist(mbid) {
+    return fetchWithRetry(`/ws/2/release/${mbid}?inc=recordings&fmt=json`).then((json) => {
+      const media = json?.media || [];
+      const multiMedium = media.length > 1;
+      const tracklist = [];
+      for (const medium of media) {
+        const medPos = medium.position;
+        for (const t of medium.tracks || []) {
+          const pos = t.position != null ? t.position : t.number;
+          tracklist.push({
+            position: multiMedium && medPos != null && pos != null ? `${medPos}-${pos}` : String(pos != null ? pos : ""),
+            title: t.title || t.recording?.title || "",
+            type_: "track"
+          });
+        }
+      }
+      return tracklist;
+    });
+  }
+  function probeTitleRemixes(mbid) {
+    if (!mbid) return Promise.resolve({ count: 0, tracklist: [] });
+    return buildTitlesTracklist(mbid).then((tracklist) => ({ count: deriveRemixRoles(tracklist).length, tracklist })).catch(() => ({ count: 0, tracklist: [] }));
+  }
+  function runTitlesImport(getOpts) {
+    const m = location.pathname.match(/release\/([0-9a-f-]{36})/i);
+    if (!m) {
+      log.error("Not on a release page \u2014 cannot read track titles.");
+      return Promise.resolve();
+    }
+    log.info("Reading track titles from MusicBrainz to derive remixer credits\u2026");
+    return buildTitlesTracklist(m[1]).then((tracklist) => {
+      const tracklistRels = deriveRemixRoles(tracklist, m[1]);
+      log.info(`Derived <strong>${tracklistRels.length}</strong> remixer credit(s) from ${tracklist.length} track title(s)`);
+      if (!tracklistRels.length) {
+        log.warn("No named remixes found in the track titles \u2014 nothing to import.");
+        document.querySelector(".discogs-bar")?._setStopMessage?.("No remixes found in titles");
+        return;
+      }
+      return runSourcePipeline({ companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: "", processTracklist: true, getOpts });
+    }).catch((err) => {
+      log.error(err.message || String(err));
+    });
+  }
   function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts }) {
     const allArtistRoles = artistRoles.concat(tracklistRels);
     const uniqueArtists = [];
@@ -5850,6 +6057,14 @@ ${lines}
         uniqueArtists.push(role.artist);
       }
     });
+    const _relMbid = (location.pathname.match(/release\/([0-9a-f-]{36})/i) || [])[1];
+    if (_relMbid) {
+      for (const a of uniqueArtists) {
+        if (a && !a.resource_url && !a._cacheKey && a.name) {
+          a._cacheKey = `nameonly/${_relMbid}/${a.name.toLowerCase().trim()}`;
+        }
+      }
+    }
     const companiesRolesMap = /* @__PURE__ */ new Map();
     companies.forEach((c) => {
       if (!c.resource_url) return;
@@ -5916,9 +6131,11 @@ ${lines}
         // separate function from the bar builder that owns the slot.
         headerSlot: document.querySelector(".discogs-bar-action"),
         // Label fallback for URL-less credits (#193): a Qobuz row
-        // must say "No Qobuz page", not "No Discogs page".
-        sourceName: sourceNameForUrl(sourceUrl),
-        sourceIcon: srcIconByUrl(sourceUrl),
+        // must say "No Qobuz page", not "No Discogs page". The
+        // URL-less Titles source (#271) reports as 'Titles' so the
+        // review table drops Discogs-specific wording/elements.
+        sourceName: sourceUrl ? sourceNameForUrl(sourceUrl) : "Titles",
+        sourceIcon: sourceUrl ? srcIconByUrl(sourceUrl) : SRC_ICON.Titles || "",
         // #193 — shown on the "Start import" button
         // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
         // every entity via MB API. Used when a cached MBID is stale.
@@ -6588,10 +6805,14 @@ ${lines}
     if (!m) return;
     installHoverHighlight();
     installBatchRemove();
-    getSourceUrlsForRelease(m[1]).then((sources) => {
-      if (sources.discogs || sources.tidal || sources.qobuz) {
-        insertDiscogsBar(sources.discogs, sources);
-      }
+    Promise.all([
+      getSourceUrlsForRelease(m[1]).catch(() => ({})),
+      probeTitleRemixes(m[1])
+    ]).then(([sources, remix]) => {
+      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz);
+      const remixCount = remix?.count || 0;
+      if (!hasProvider && remixCount === 0) return;
+      insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount });
     });
   });
 })();
