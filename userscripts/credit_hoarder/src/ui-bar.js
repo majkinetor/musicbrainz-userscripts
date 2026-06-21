@@ -247,6 +247,10 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         .discogs-bar .discogs-source a:hover { text-decoration: underline; }
         /* #272: "Import credits:" label + a row of clickable source icons */
         .discogs-import-label { flex-shrink: 0; font-size: 0.88rem; font-weight: bold; color: #444; letter-spacing: 0.01em; }
+        /* #272: drop the "Import credits:" label once a run is underway — only the
+           active source icon + progress/Start-import matter then. */
+        .discogs-bar.is-importing .discogs-import-label,
+        .discogs-bar.is-reviewing .discogs-import-label { display: none; }
         .discogs-src-icons { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.3rem; }
         .discogs-src-ico {
             display: inline-flex; align-items: center; justify-content: center;
@@ -476,6 +480,11 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         Titles:  SRC_ICON.Titles,
     };
     const srcButtons = [];
+    // #272: re-entrancy guard for left-click. We deliberately DON'T use the
+    // native `disabled` attribute during a run — a disabled <button> swallows
+    // contextmenu too, so right-click (open the source page) would stop working
+    // mid-import. Guard the click instead and leave the element interactive.
+    let importing = false;
     importSources.forEach(s => {
         const b = document.createElement('button');
         b.type = 'button';
@@ -486,7 +495,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         b.title = s.url
             ? `Import credits from ${s.name}  ·  right-click to open the ${s.name} page`
             : 'Import remixer credits derived from the track titles';
-        b.addEventListener('click', () => startImport(b, s.url, s.run));
+        b.addEventListener('click', () => { if (!importing) startImport(b, s.url, s.run); });
         if (s.url) b.addEventListener('contextmenu', e => { e.preventDefault(); window.open(s.url, '_blank', 'noopener,noreferrer'); });
         srcButtons.push(b);
         srcIcons.appendChild(b);
@@ -933,11 +942,13 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // edit note, `runner(getOpts)` is the source-specific import entry
     // (`runImport` for Discogs, `runTidalImport` for Tidal).
     function startImport(srcBtn, sourceUrl, runner) {
-        // #272: during a run only the active source icon shows — you can't use
-        // the others anyway — so hide them and mark the active one.
+        // #272: during a run only the active source icon shows — you can't start
+        // another import anyway — so hide the others and mark the active one.
+        // (Left-click is gated by `importing`; the active icon stays interactive
+        // so right-click still opens its page.)
+        importing = true;
         srcButtons.forEach(b => {
             const active = b === srcBtn;
-            b.disabled = true;
             b.classList.toggle('importing', active);
             b.style.display = active ? '' : 'none';
         });
@@ -1137,7 +1148,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             log.info(html);
         });
         runner(getOpts).finally(() => {
-            srcButtons.forEach(b => { b.disabled = false; b.classList.remove('importing'); b.style.display = ''; });
+            importing = false;
+            srcButtons.forEach(b => { b.classList.remove('importing'); b.style.display = ''; });
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
             bar.classList.remove('is-reviewing');   // #139: safety — clear if the flow ended during review

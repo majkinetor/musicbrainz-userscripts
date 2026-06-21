@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.21.232155
+// @version      2026.6.21.232859
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -5068,6 +5068,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-bar .discogs-source a:hover { text-decoration: underline; }
         /* #272: "Import credits:" label + a row of clickable source icons */
         .discogs-import-label { flex-shrink: 0; font-size: 0.88rem; font-weight: bold; color: #444; letter-spacing: 0.01em; }
+        /* #272: drop the "Import credits:" label once a run is underway \u2014 only the
+           active source icon + progress/Start-import matter then. */
+        .discogs-bar.is-importing .discogs-import-label,
+        .discogs-bar.is-reviewing .discogs-import-label { display: none; }
         .discogs-src-icons { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.3rem; }
         .discogs-src-ico {
             display: inline-flex; align-items: center; justify-content: center;
@@ -5276,6 +5280,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       Titles: SRC_ICON.Titles
     };
     const srcButtons = [];
+    let importing = false;
     importSources.forEach((s) => {
       const b = document.createElement("button");
       b.type = "button";
@@ -5284,7 +5289,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       b.innerHTML = b._icon;
       b.dataset.src = s.name;
       b.title = s.url ? `Import credits from ${s.name}  \xB7  right-click to open the ${s.name} page` : "Import remixer credits derived from the track titles";
-      b.addEventListener("click", () => startImport(b, s.url, s.run));
+      b.addEventListener("click", () => {
+        if (!importing) startImport(b, s.url, s.run);
+      });
       if (s.url) b.addEventListener("contextmenu", (e) => {
         e.preventDefault();
         window.open(s.url, "_blank", "noopener,noreferrer");
@@ -5640,9 +5647,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       statusEl.classList.toggle("discogs-bar-status-final", !!msg);
     };
     function startImport(srcBtn, sourceUrl, runner) {
+      importing = true;
       srcButtons.forEach((b) => {
         const active = b === srcBtn;
-        b.disabled = true;
         b.classList.toggle("importing", active);
         b.style.display = active ? "" : "none";
       });
@@ -5795,8 +5802,8 @@ ${lines}
         log.info(html);
       });
       runner(getOpts).finally(() => {
+        importing = false;
         srcButtons.forEach((b) => {
-          b.disabled = false;
           b.classList.remove("importing");
           b.style.display = "";
         });
