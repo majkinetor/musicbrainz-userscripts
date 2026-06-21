@@ -430,6 +430,13 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // Used by the issue-#63 hover-highlight to identify entity-name
             // elements regardless of href presence.
             if (!hasDiscogsUrl) dlA.className = 'discogs-entity-name';
+            // #271: tooltip the originating track title(s). The parsed name can
+            // legitimately drop part of the real artist ("Europa 51" → "Europa",
+            // the trailing number being indistinguishable from a mix qualifier),
+            // so seeing the full title gives the context to pick the right MB
+            // entity. Multiple titles when the same name remixes several tracks.
+            const _srcTitles = [...new Set((r._roles || []).map(x => x.trackTitle).filter(Boolean))];
+            if (_srcTitles.length) dlA.title = _srcTitles.join('\n');
             nameWrap.appendChild(dlA);
             // Distinct warning badges per #81. Both warnings used to be
             // the same icon, distinguishable only via tooltip. Now each
