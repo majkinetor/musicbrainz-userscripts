@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.21.224843
+// @version      2026.6.21.232155
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -59,6 +59,7 @@
     EditNote: "#edit-note-text",
     TaskInput: "#add-relationship-dialog .attribute-container.task input"
   };
+  var DISCOGS_LOGO_URL = "https://volkerzell.de/favicons/discogs.png";
   var EQUIVALENCE_SETS = [
     ["writer", "composer"]
   ];
@@ -5076,6 +5077,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         .discogs-src-ico:hover { background: #fff3e8; border-color: #e8771d; color: #e8771d; }
         .discogs-src-ico:disabled { opacity: 0.5; cursor: default; }
         .discogs-src-ico svg { width: 18px; height: 18px; }
+        .discogs-src-ico img.discogs-logo { height: 18px; width: auto; opacity: 1; }
         .discogs-src-ico.importing { background: #fff3e8; border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
         @keyframes discogs-ico-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,119,29,.5); } 50% { box-shadow: 0 0 0 4px rgba(232,119,29,0); } }
         .discogs-log-menu button svg { vertical-align: -2px; margin-right: 4px; }
@@ -5267,12 +5269,18 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     importLabel.textContent = "Import credits:";
     const srcIcons = document.createElement("span");
     srcIcons.className = "discogs-src-icons";
+    const ORIG_ICON = {
+      Discogs: `<img src="${DISCOGS_LOGO_URL}" alt="Discogs" class="discogs-logo">`,
+      Tidal: '<svg viewBox="0 0 24 24" fill="#000" aria-label="Tidal"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
+      Qobuz: '<svg viewBox="0 0 24 24" aria-label="Qobuz"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 L19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>',
+      Titles: SRC_ICON.Titles
+    };
     const srcButtons = [];
     importSources.forEach((s) => {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "discogs-src-ico";
-      b._icon = SRC_ICON[s.name] || s.name;
+      b._icon = ORIG_ICON[s.name] || SRC_ICON[s.name] || s.name;
       b.innerHTML = b._icon;
       b.dataset.src = s.name;
       b.title = s.url ? `Import credits from ${s.name}  \xB7  right-click to open the ${s.name} page` : "Import remixer credits derived from the track titles";
@@ -5633,8 +5641,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     };
     function startImport(srcBtn, sourceUrl, runner) {
       srcButtons.forEach((b) => {
+        const active = b === srcBtn;
         b.disabled = true;
-        b.classList.toggle("importing", b === srcBtn);
+        b.classList.toggle("importing", active);
+        b.style.display = active ? "" : "none";
       });
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
@@ -5788,6 +5798,7 @@ ${lines}
         srcButtons.forEach((b) => {
           b.disabled = false;
           b.classList.remove("importing");
+          b.style.display = "";
         });
         progressPct.textContent = "100%";
         setTimeout(() => {

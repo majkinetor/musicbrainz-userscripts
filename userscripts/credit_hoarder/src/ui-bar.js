@@ -256,6 +256,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         .discogs-src-ico:hover { background: #fff3e8; border-color: #e8771d; color: #e8771d; }
         .discogs-src-ico:disabled { opacity: 0.5; cursor: default; }
         .discogs-src-ico svg { width: 18px; height: 18px; }
+        .discogs-src-ico img.discogs-logo { height: 18px; width: auto; opacity: 1; }
         .discogs-src-ico.importing { background: #fff3e8; border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
         @keyframes discogs-ico-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,119,29,.5); } 50% { box-shadow: 0 0 0 4px rgba(232,119,29,0); } }
         .discogs-log-menu button svg { vertical-align: -2px; margin-right: 4px; }
@@ -466,12 +467,20 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     importLabel.textContent = 'Import credits:';
     const srcIcons = document.createElement('span');
     srcIcons.className = 'discogs-src-icons';
+    // Original provider logos (the marks that used to sit on the right of the
+    // bar). Titles has no brand, so it keeps its lines glyph.
+    const ORIG_ICON = {
+        Discogs: `<img src="${DISCOGS_LOGO_URL}" alt="Discogs" class="discogs-logo">`,
+        Tidal:   '<svg viewBox="0 0 24 24" fill="#000" aria-label="Tidal"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>',
+        Qobuz:   '<svg viewBox="0 0 24 24" aria-label="Qobuz"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 L19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>',
+        Titles:  SRC_ICON.Titles,
+    };
     const srcButtons = [];
     importSources.forEach(s => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'discogs-src-ico';
-        b._icon = SRC_ICON[s.name] || s.name;
+        b._icon = ORIG_ICON[s.name] || SRC_ICON[s.name] || s.name;
         b.innerHTML = b._icon;
         b.dataset.src = s.name;
         b.title = s.url
@@ -924,8 +933,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // edit note, `runner(getOpts)` is the source-specific import entry
     // (`runImport` for Discogs, `runTidalImport` for Tidal).
     function startImport(srcBtn, sourceUrl, runner) {
-        // #272: disable every source icon during the run; mark the active one.
-        srcButtons.forEach(b => { b.disabled = true; b.classList.toggle('importing', b === srcBtn); });
+        // #272: during a run only the active source icon shows — you can't use
+        // the others anyway — so hide them and mark the active one.
+        srcButtons.forEach(b => {
+            const active = b === srcBtn;
+            b.disabled = true;
+            b.classList.toggle('importing', active);
+            b.style.display = active ? '' : 'none';
+        });
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
 
@@ -1122,7 +1137,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             log.info(html);
         });
         runner(getOpts).finally(() => {
-            srcButtons.forEach(b => { b.disabled = false; b.classList.remove('importing'); });
+            srcButtons.forEach(b => { b.disabled = false; b.classList.remove('importing'); b.style.display = ''; });
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
             bar.classList.remove('is-reviewing');   // #139: safety — clear if the flow ended during review
