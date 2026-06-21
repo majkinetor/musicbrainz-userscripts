@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.21.110000
+// @version      2026.6.21.120000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -720,8 +720,7 @@
     const src = root.querySelector('.as-src');
     if (src) {
       src.onclick = e => { e.stopPropagation(); openSourcePop(src); };
-      // show the number of linked platforms on the button: "URL (2)"
-      getProvLinks().then(l => { const n = src.querySelector('.as-src-n'); if (n) { n.textContent = l.length ? ` (${l.length})` : ''; if (l.length) src.title = `Source ${ENT.noun} — ${l.length} linked platform${l.length > 1 ? 's' : ''}, a registered provider, or any URL`; } });
+      refreshSrcCount();   // show how many import sources are available on the button: "URL (3)"
     }
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
     root.querySelectorAll('.as-prov img').forEach(img => img.onerror = () => { const s = img.closest('.as-prov'); if (s) s.style.display = 'none'; });   // #249 hide a missing provider favicon
@@ -1327,6 +1326,7 @@
     const id = p.id || p.name;
     if (_customProviders.some(x => x.id === id)) return false;   // de-dupe
     _customProviders.push({ id, name: String(p.name), icon: p.icon || '', run: p.run, match: normMatch(p.match) });
+    refreshSrcCount();   // #270 keep the button count right when a provider registers after the toolbar built
     if (document.querySelector('.as-src-pop') && _srcBtn) openSourcePop(_srcBtn);   // reflect in an open popover
     return true;
   }
@@ -1528,6 +1528,19 @@
   }
   let _provLinks = null;   // fetched once per page; reused by the button count + the popover
   function getProvLinks() { return _provLinks ? Promise.resolve(_provLinks) : artProviderLinks().then(l => (_provLinks = l)); }
+  // the count on the Source button = built-in linked platforms + matched custom providers
+  // (#270 — it was only counting the platforms, so "URL (1)" showed beside a 3-button popover).
+  // Re-run on render and whenever a provider registers (which may happen after the toolbar built).
+  function refreshSrcCount() {
+    const src = document.querySelector('.as-src'); const n = src && src.querySelector('.as-src-n'); if (!n) return;
+    Promise.all([getProvLinks(), matchedCustomProviders()]).then(([l, m]) => {
+      const total = l.length + m.length;
+      n.textContent = total ? ` (${total})` : '';
+      src.title = total
+        ? `Source ${ENT.noun} — ${total} source${total > 1 ? 's' : ''} (linked platform${l.length === 1 && !m.length ? '' : 's'}, registered providers, or any URL)`
+        : `Source ${ENT.noun} from a linked platform, a registered provider, or any URL`;
+    }).catch(() => {});
+  }
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
