@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.21.221154
+// @version      2026.6.21.224843
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -59,7 +59,6 @@
     EditNote: "#edit-note-text",
     TaskInput: "#add-relationship-dialog .attribute-container.task input"
   };
-  var DISCOGS_LOGO_URL = "https://volkerzell.de/favicons/discogs.png";
   var EQUIVALENCE_SETS = [
     ["writer", "composer"]
   ];
@@ -2801,14 +2800,43 @@
     const mbUrl = location.href.split(/[?#]/)[0].replace(/\/edit(-relationships)?$/, "");
     return header + "\n\n" + action + " while importing credits onto " + mbUrl;
   }
-  function combineEditNote(existingNote, ourNote) {
+  function splitOurNote(note) {
     const headerPrefix = GM_info.script.name + " v";
-    let base = String(existingNote || "");
-    const lines = base.split("\n");
-    const ourIdx = lines.findIndex((l) => l.startsWith(headerPrefix));
-    if (ourIdx !== -1) base = lines.slice(0, ourIdx).join("\n");
-    base = base.replace(/\s+$/, "");
-    return base ? base + "\n\n" + ourNote : ourNote;
+    const lines = String(note || "").split("\n");
+    const idx = lines.findIndex((l) => l.startsWith(headerPrefix));
+    if (idx === -1) return null;
+    const pre = lines.slice(0, idx).join("\n").replace(/\s+$/, "");
+    const our = lines.slice(idx);
+    const relIdx = our.findIndex((l) => /^Release URL:/i.test(l));
+    return {
+      pre,
+      header: our[0],
+      releaseLine: relIdx !== -1 ? our[relIdx] : "",
+      body: (relIdx !== -1 ? our.slice(relIdx + 1) : our.slice(1)).join("\n").trim()
+    };
+  }
+  function blockSourceKey(block) {
+    const first = (String(block).split("\n")[0] || "").trim();
+    const m = first.match(/^([A-Za-z][A-Za-z ]*?)\s+URL:/);
+    if (m) return m[1].trim().toLowerCase();
+    if (/^Source:\s*track titles/i.test(first)) return "titles";
+    return first.toLowerCase();
+  }
+  function combineEditNote(existingNote, ourNote) {
+    const fresh = splitOurNote(ourNote);
+    if (!fresh) return ourNote;
+    const newKey = blockSourceKey(fresh.body);
+    const prev = splitOurNote(existingNote);
+    const keptBlocks = prev ? prev.body.split(/\n\n+/).map((b) => b.trim()).filter(Boolean).filter((b) => blockSourceKey(b) !== newKey) : [];
+    const stacked = [fresh.body, ...keptBlocks].join("\n\n");
+    const ourBlock = `${fresh.header}
+
+${fresh.releaseLine}
+${stacked}`;
+    const pre = prev ? prev.pre : String(existingNote || "").replace(/\s+$/, "");
+    return pre ? `${pre}
+
+${ourBlock}` : ourBlock;
   }
 
   // src/review-table.js
@@ -4157,7 +4185,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       return m;
     })();
     const releaseEntity = re.state.entity;
-    let added = 0, existedInMb = 0, dedupedThisSession = 0, skipped = 0, failed = 0;
+    let added = 0, existedInMb = 0, existedStaged = 0, dedupedThisSession = 0, skipped = 0, failed = 0;
     const dispatchedThisSession = /* @__PURE__ */ new Set();
     const RECORDING_LINK_TYPES = /* @__PURE__ */ new Set([
       "performer",
@@ -4371,10 +4399,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         const existingAttrs = (r.attributes || []).map((a) => ({ typeID: a.typeID, text_value: a.text_value || "", credited_as: a.credited_as || "" }));
         const exactMatch = sigOf(existingAttrs) === candSig;
         if (exactMatch) {
-          return { kind: isEquivalent ? "equivalence" : "exact", existingLinkName: lookupName(r.linkTypeID) };
+          return { kind: isEquivalent ? "equivalence" : "exact", existingLinkName: lookupName(r.linkTypeID), status: r._status };
         }
         if (dedupeDuplicateRoles && !dupMatch && idSigOf(existingAttrs) === candIdSig) {
-          dupMatch = { kind: isEquivalent ? "equivalence" : "duplicate-role", existingLinkName: lookupName(r.linkTypeID) };
+          dupMatch = { kind: isEquivalent ? "equivalence" : "duplicate-role", existingLinkName: lookupName(r.linkTypeID), status: r._status };
         }
       }
       return dupMatch;
@@ -4448,14 +4476,17 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       if (dedupHit) {
         const pair = `${sourceEntity.name} \u2194 ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ""}`;
         const existing = dedupHit.existingLinkName;
+        const staged = dedupHit.status === 1;
+        const where = staged ? "already added this session" : "already in MB";
         if (dedupHit.kind === "equivalence") {
-          log.info(`Deduplication (equivalence sets): <strong>${linkTypeName}</strong> not added \u2014 equivalent <strong>${existing}</strong> already on ${pair}`);
+          log.info(`Deduplication (equivalence sets): <strong>${linkTypeName}</strong> not added \u2014 equivalent <strong>${existing}</strong> ${where} on ${pair}`);
         } else if (dedupHit.kind === "duplicate-role") {
-          log.info(`Deduplication (duplicate roles): <strong>${linkTypeName}</strong> not added \u2014 same role already exists with different attributes on ${pair}`);
+          log.info(`Deduplication (duplicate roles): <strong>${linkTypeName}</strong> not added \u2014 same role ${where} with different attributes on ${pair}`);
         } else {
-          log.info(`Already in MB: <strong>${linkTypeName}</strong>: ${pair}`);
+          log.info(`${staged ? "Already added this session" : "Already in MB"}: <strong>${linkTypeName}</strong>: ${pair}`);
         }
-        existedInMb++;
+        if (staged) existedStaged++;
+        else existedInMb++;
         return;
       }
       dispatchRelationship(re, sourceEntity, targetEntity, resolvedLinkTypeID, credit, attrTree, trackPos);
@@ -4717,7 +4748,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const totalEntities = confirmedMap?.totalEntities || 0;
       const unresolvedLine = unresolvedCount > 0 ? `Unresolved: ${unresolvedCount} of ${totalEntities} entit${totalEntities === 1 ? "y" : "ies"} skipped in review` : null;
       const editNoteDedupPart = dedupedThisSession > 0 ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? "" : "s"}` : "";
-      const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteDedupPart}, ${skipped} skipped, ${failed} failed`;
+      const editNoteStagedPart = existedStaged > 0 ? `, ${existedStaged} already added this session` : "";
+      const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteStagedPart}${editNoteDedupPart}, ${skipped} skipped, ${failed} failed`;
       const ourNote = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean));
       const existingNote = document.querySelector(SELECTORS.EditNote)?.value || "";
       const note = combineEditNote(existingNote, ourNote);
@@ -4725,7 +4757,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     } catch (e) {
     }
     const dedupPart = dedupedThisSession > 0 ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? "" : "s"}` : "";
-    log.info(`<strong>Done: ${added} added, ${existedInMb} already in MB${dedupPart}, ${skipped} skipped, ${failed} failed</strong>`);
+    const stagedPart = existedStaged > 0 ? `, ${existedStaged} already added this session` : "";
+    log.info(`<strong>Done: ${added} added, ${existedInMb} already in MB${stagedPart}${dedupPart}, ${skipped} skipped, ${failed} failed</strong>`);
   }
 
   // src/sources/qobuz.js
@@ -5032,25 +5065,19 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             font-weight: bold;
         }
         .discogs-bar .discogs-source a:hover { text-decoration: underline; }
-        .discogs-import-btn {
-            flex-shrink: 0;
-            padding: 0.3rem 1rem;
-            background: #e8771d;
-            color: #fff;
-            border: none;
-            border-radius: 0.25rem;
-            cursor: pointer;
-            font-size: 0.88rem;
-            font-weight: bold;
-            letter-spacing: 0.01em;
+        /* #272: "Import credits:" label + a row of clickable source icons */
+        .discogs-import-label { flex-shrink: 0; font-size: 0.88rem; font-weight: bold; color: #444; letter-spacing: 0.01em; }
+        .discogs-src-icons { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .discogs-src-ico {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 2rem; height: 2rem; padding: 0; cursor: pointer;
+            border: 1px solid #d6d6d6; border-radius: 0.3rem; background: #fff; color: #555;
         }
-        .discogs-import-btn:hover { background: #cf6618; }
-        .discogs-import-btn:disabled { background: #c8a070; cursor: default; }
-        .discogs-import-btn svg { vertical-align: -2px; margin-right: 2px; }
-        /* split button (#193): main + attached caret read as one control */
-        .discogs-import-split { display: inline-flex; align-items: stretch; }
-        .discogs-import-btn.has-caret { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-        .discogs-import-caret { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 1px solid rgba(255,255,255,.4); padding-left: 0.4rem; padding-right: 0.55rem; font-weight: normal; }
+        .discogs-src-ico:hover { background: #fff3e8; border-color: #e8771d; color: #e8771d; }
+        .discogs-src-ico:disabled { opacity: 0.5; cursor: default; }
+        .discogs-src-ico svg { width: 18px; height: 18px; }
+        .discogs-src-ico.importing { background: #fff3e8; border-color: #e8771d; animation: discogs-ico-pulse 1s ease-in-out infinite; }
+        @keyframes discogs-ico-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,119,29,.5); } 50% { box-shadow: 0 0 0 4px rgba(232,119,29,0); } }
         .discogs-log-menu button svg { vertical-align: -2px; margin-right: 4px; }
         .discogs-bar-row2 {
             display: flex;
@@ -5228,7 +5255,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     bar.className = "discogs-bar";
     const row1 = document.createElement("div");
     row1.className = "discogs-bar-row1";
-    const importHtml = (s) => (SRC_ICON[s.name] || "") + " Import from " + s.name;
     const importSources = [];
     if (discogsUrl) importSources.push({ name: "Discogs", url: discogsUrl, run: (g) => runImport(discogsUrl, g) });
     if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g) => runTidalImport(sources.tidal, g) });
@@ -5236,22 +5262,33 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if ((meta.titlesRemixCount || 0) > 0) {
       importSources.push({ name: "Titles", url: "", run: (g) => runTitlesImport(g) });
     }
-    const multiSource = importSources.length > 1;
-    const importSplit = document.createElement("span");
-    importSplit.className = "discogs-import-split";
-    const importBtn = document.createElement("button");
-    importBtn.className = "discogs-import-btn" + (multiSource ? " has-caret" : "");
-    importBtn.innerHTML = importHtml(importSources[0]);
-    const importCaretBtn = document.createElement("button");
-    importCaretBtn.className = "discogs-import-btn discogs-import-caret";
-    importCaretBtn.textContent = "\u25BE";
-    importCaretBtn.title = "Import from another source";
-    if (!multiSource) importCaretBtn.style.display = "none";
-    importSplit.append(importBtn, importCaretBtn);
+    const importLabel = document.createElement("span");
+    importLabel.className = "discogs-import-label";
+    importLabel.textContent = "Import credits:";
+    const srcIcons = document.createElement("span");
+    srcIcons.className = "discogs-src-icons";
+    const srcButtons = [];
+    importSources.forEach((s) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "discogs-src-ico";
+      b._icon = SRC_ICON[s.name] || s.name;
+      b.innerHTML = b._icon;
+      b.dataset.src = s.name;
+      b.title = s.url ? `Import credits from ${s.name}  \xB7  right-click to open the ${s.name} page` : "Import remixer credits derived from the track titles";
+      b.addEventListener("click", () => startImport(b, s.url, s.run));
+      if (s.url) b.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        window.open(s.url, "_blank", "noopener,noreferrer");
+      });
+      srcButtons.push(b);
+      srcIcons.appendChild(b);
+    });
     const progressPct = document.createElement("span");
     progressPct.id = "discogs-progress-pct";
     progressPct.style.cssText = "display:none; margin-left:0.5rem; font-size:0.85rem; color:#e8771d; font-weight:bold; min-width:3.5rem;";
-    row1.appendChild(importSplit);
+    row1.appendChild(importLabel);
+    row1.appendChild(srcIcons);
     row1.appendChild(progressPct);
     const actionSlot = document.createElement("div");
     actionSlot.className = "discogs-bar-action";
@@ -5298,18 +5335,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     logCaretBtn.textContent = "\u25BE";
     logCaretBtn.title = "More log actions (copy)";
     logSplit.append(logToggleBtn, logCaretBtn);
-    const logoLink = document.createElement("a");
-    logoLink.href = discogsUrl || sources.tidal || "#";
-    logoLink.target = "_blank";
-    logoLink.rel = "noopener noreferrer nofollow";
-    logoLink.className = "discogs-source-icon";
-    logoLink.title = discogsUrl || sources.tidal || "";
-    if (!discogsUrl) logoLink.style.display = "none";
-    const logo = document.createElement("img");
-    logo.src = DISCOGS_LOGO_URL;
-    logo.className = "discogs-logo";
-    logo.alt = "Discogs";
-    logoLink.appendChild(logo);
     const docsHref = typeof GM_info !== "undefined" && (GM_info?.script?.homepageURL || GM_info?.script?.homepage) || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md";
     const docsLink = document.createElement("a");
     docsLink.href = docsHref;
@@ -5318,29 +5343,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     docsLink.textContent = "? Help";
     docsLink.title = "Open the script's README in a new tab";
     docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:#7a5000;text-decoration:none;padding:0.1rem 0.45rem;border:1px solid #d4b800;border-radius:0.25rem;background:#fff8e6;";
-    const tidalLink = document.createElement("a");
-    tidalLink.className = "discogs-source-icon";
-    tidalLink.target = "_blank";
-    tidalLink.rel = "noopener noreferrer nofollow";
-    if (sources.tidal) {
-      tidalLink.href = sources.tidal;
-      tidalLink.title = sources.tidal;
-      tidalLink.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="#000" aria-label="Tidal" style="vertical-align:middle;"><path d="M6 5l3 3-3 3-3-3zM12 5l3 3-3 3-3-3zM18 5l3 3-3 3-3-3zM12 11l3 3-3 3-3-3z"/></svg>';
-    } else {
-      tidalLink.style.display = "none";
-    }
-    const qobuzLink = document.createElement("a");
-    qobuzLink.className = "discogs-source-icon";
-    qobuzLink.target = "_blank";
-    qobuzLink.rel = "noopener noreferrer nofollow";
-    if (sources.qobuz) {
-      qobuzLink.href = sources.qobuz;
-      qobuzLink.title = sources.qobuz;
-      qobuzLink.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-label="Qobuz" style="vertical-align:middle;"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 L19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>';
-    } else {
-      qobuzLink.style.display = "none";
-    }
-    rightGroup.append(logSplit, logoLink, tidalLink, qobuzLink, docsLink);
+    rightGroup.append(logSplit, docsLink);
     row1.appendChild(rightGroup);
     bar.appendChild(row1);
     const stickySpacer = document.createElement("div");
@@ -5628,10 +5631,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       statusEl.style.display = msg ? "" : "none";
       statusEl.classList.toggle("discogs-bar-status-final", !!msg);
     };
-    function startImport(srcBtn, restoreLabel, sourceUrl, runner) {
-      importBtn.disabled = true;
-      importCaretBtn.disabled = true;
-      srcBtn.innerHTML = srcIconByUrl(sourceUrl) + " Importing\u2026";
+    function startImport(srcBtn, sourceUrl, runner) {
+      srcButtons.forEach((b) => {
+        b.disabled = true;
+        b.classList.toggle("importing", b === srcBtn);
+      });
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
       bar.classList.add("is-importing", "is-pinned");
@@ -5781,9 +5785,10 @@ ${lines}
         log.info(html);
       });
       runner(getOpts).finally(() => {
-        importBtn.disabled = false;
-        importCaretBtn.disabled = false;
-        srcBtn.innerHTML = restoreLabel;
+        srcButtons.forEach((b) => {
+          b.disabled = false;
+          b.classList.remove("importing");
+        });
         progressPct.textContent = "100%";
         setTimeout(() => {
           progressPct.style.display = "none";
@@ -5797,40 +5802,6 @@ ${lines}
         delete bar._setProgress;
       });
     }
-    let srcMenu = null;
-    if (multiSource) {
-      srcMenu = document.createElement("div");
-      srcMenu.className = "discogs-log-menu";
-      for (const s of importSources.slice(1)) {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.innerHTML = (SRC_ICON[s.name] || "") + " from " + s.name;
-        b.title = s.url;
-        b.addEventListener("click", () => {
-          srcMenu.classList.remove("open");
-          startImport(importBtn, importHtml(importSources[0]), s.url, s.run);
-        });
-        srcMenu.appendChild(b);
-      }
-      document.body.appendChild(srcMenu);
-    }
-    importBtn.addEventListener("click", () => startImport(importBtn, importHtml(importSources[0]), importSources[0].url, importSources[0].run));
-    importCaretBtn.addEventListener("click", (e) => {
-      if (!srcMenu) return;
-      e.stopPropagation();
-      const open = srcMenu.classList.toggle("open");
-      if (!open) return;
-      const r = importCaretBtn.getBoundingClientRect();
-      srcMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - srcMenu.offsetWidth - 8)) + "px";
-      srcMenu.style.top = r.bottom + 4 + "px";
-      const off = (ev) => {
-        if (!srcMenu.contains(ev.target) && ev.target !== importCaretBtn && !importCaretBtn.contains(ev.target)) {
-          srcMenu.classList.remove("open");
-          document.removeEventListener("mousedown", off);
-        }
-      };
-      setTimeout(() => document.addEventListener("mousedown", off), 0);
-    });
     bar.appendChild(outputDiv);
     function insertBar() {
       const anchor = document.querySelector(".release-rel-editor") || // MB React wrapper
