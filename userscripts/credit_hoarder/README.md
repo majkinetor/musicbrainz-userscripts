@@ -53,7 +53,7 @@ A single-row-per-entity table for confirming source ↔ MusicBrainz matches befo
 Efficiency features:
 
 - **Parallel lookup** — all artists, labels and places are checked against MB through a shared throttle.
-- **Cache** — resolved source ↔ MB MBID mappings persist across sessions and are checked first; each record shows a badge with how it was originally resolved (`name` / `url` / `name+url` / `user`).
+- **Cache** — resolved source ↔ MB MBID mappings persist across sessions and are checked first; each record shows a badge with how it was originally resolved (`name` / `url` / `name+url` / `user`). Sources that expose a per-credit URL (Discogs, Tidal) cache globally by that URL; **name-only** credits (Qobuz, the title-derived remixers) cache **per release** — keyed by the release and the name — so re-running the same release reuses your picks without a bare name leaking a resolution onto a different release.
 - **Inline MB search** — a live search field on every row; type a name or paste an MBID / MB URL.
 - **Auto-match** — name search and source-URL lookup run in parallel; auto-resolution only when trustworthy:
     - **Both agree** on the same MB entity → resolved with high confidence.

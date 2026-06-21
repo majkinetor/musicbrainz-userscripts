@@ -1499,6 +1499,20 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     uniqueArtists.push(role.artist);
                 }
             });
+            // #271: give every name-only artist (no source URL — Qobuz credits,
+            // Tidal name-only credits, and title-derived remixers that didn't
+            // already set their own) a RELEASE-SCOPED cache key, so their review
+            // resolutions persist across sessions instead of forcing a re-match
+            // every time. Scoped by the MB release MBID so a bare name like
+            // "John Smith" can't leak a resolution onto a different release.
+            const _relMbid = (location.pathname.match(/release\/([0-9a-f-]{36})/i) || [])[1];
+            if (_relMbid) {
+                for (const a of uniqueArtists) {
+                    if (a && !a.resource_url && !a._cacheKey && a.name) {
+                        a._cacheKey = `nameonly/${_relMbid}/${a.name.toLowerCase().trim()}`;
+                    }
+                }
+            }
             // Also add company roles to a companiesRolesMap
             const companiesRolesMap = new Map();
             companies.forEach(c => {
