@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.21.124000
+// @version      2026.6.21.223000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -35,6 +35,12 @@
   const ENT = IS_EVENT
     ? { kind: 'event',   base: `/event/${MBID}`,   art: 'event-art', archive: `https://eventartarchive.org/event/${MBID}`, noun: 'event art', Noun: 'Event art' }
     : { kind: 'release', base: `/release/${MBID}`, art: 'cover-art', archive: `https://coverartarchive.org/release/${MBID}`, noun: 'cover art', Noun: 'Cover art' };
+
+  // Deep-link to the current user's Cover/Event Art edit history — the MB edit
+  // search pre-filtered to the cover-art + event-art edit types, scoped to "me".
+  // Shown as a button in the Enter-edit dialog header. location.origin so it
+  // follows to beta.musicbrainz.org too.
+  const ART_EDITS_URL = location.origin + '/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=314&conditions.0.args=158&conditions.0.args=316&conditions.0.args=1510&conditions.0.args=315&conditions.0.args=159&conditions.0.args=317&conditions.0.args=1511&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0=';
 
   // append a node to <head>/<html>, deferring if neither exists yet (document-start)
   function appendEl(el) {
@@ -1901,7 +1907,7 @@
     const plan = buildPlan();
     const ov = document.createElement('div'); ov.id = 'as-commit';
     ov.innerHTML = `<div class="as-cm-box">
-      <div class="as-cm-h">Apply ${plan.length} change${plan.length===1?'':'s'} as MusicBrainz edits</div>
+      <div class="as-cm-h"><span class="as-cm-h-t">Apply ${plan.length} change${plan.length===1?'':'s'} as MusicBrainz edits</span><a class="as-cm-hist" href="${ART_EDITS_URL}" target="_blank" rel="noopener noreferrer" title="Your ${ENT.noun} edits on MusicBrainz">🕓 My ${ENT.Noun} edits</a></div>
       <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<div class="as-cm-payload"></div></div>`).join('')}</div>
       <textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea>
       <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
@@ -2749,7 +2755,10 @@
   .as-rp-note{font-size:12px;color:#a05a00}
   .as-rp-copy{font-weight:600;color:var(--as-acc)}
   .as-cm-box{background:#fff;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);max-height:88vh;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222}
-  .as-cm-h{font-size:16px;font-weight:700;color:#3b2c70;margin-bottom:12px}
+  .as-cm-h{font-size:16px;font-weight:700;color:#3b2c70;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+  .as-cm-h-t{flex:1;min-width:0}
+  .as-cm-hist{flex:none;font-size:13px;font-weight:600;color:#6f42c1;text-decoration:none;white-space:nowrap;padding:4px 12px;border:1px solid #d9d2ee;border-radius:8px;background:#fff}
+  .as-cm-hist:hover{background:#f4f1fb;border-color:#c3b6e6}
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:#555}
   .as-cm-hint{font-size:11px;color:#9a8ccb;font-weight:400}
   .as-cm-note{font:13px inherit;border:1px solid #cfc6e6;border-radius:7px;padding:6px 9px;resize:vertical;width:100%;box-sizing:border-box;display:block;margin-bottom:12px}
