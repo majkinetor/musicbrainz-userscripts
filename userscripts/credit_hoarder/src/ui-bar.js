@@ -94,7 +94,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             border-bottom: 1px solid #eeddb0;
         }
         /* inline options strip in the single bar (#139) */
-        .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-left: 0.9rem; }
         .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
         .discogs-opts-btn { font-size: 0.8rem; color: #555; background: #fffdf7; border: 1px solid #d8c8a0; border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
         .discogs-opts-btn:hover { border-color: #e8771d; color: #333; }
