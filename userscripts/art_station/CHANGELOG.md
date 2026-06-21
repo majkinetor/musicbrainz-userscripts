@@ -1,5 +1,15 @@
 # Art Station Changelog
 
+## [2026.6.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.21)
+
+### Features
+
+1. Plugin API ([#270](https://github.com/majkinetor/musicbrainz-userscripts/issues/270))
+
+### Fixes
+
+1. Commit dialog can be closed mid-run ([#269](https://github.com/majkinetor/musicbrainz-userscripts/issues/269))
+
 ## [2026.6.20](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.20)
 
 ### Features

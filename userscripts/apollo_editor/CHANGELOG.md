@@ -1,5 +1,11 @@
 # Apollo Editor Changelog
 
+## [2026.6.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.21)
+
+### Features
+
+1. Auto confirm release submissions ([#267](https://github.com/majkinetor/musicbrainz-userscripts/issues/267))
+
 ## [2026.6.20](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.20)
 
 ### Fixes

@@ -1,5 +1,12 @@
 # Credit Hoarder Changelog
 
+## [2026.6.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.21)
+
+### Features
+
+1. All import sources in toolbar ([#272](https://github.com/majkinetor/musicbrainz-userscripts/issues/272))
+1. Derive remixer credits from track titles ([#271](https://github.com/majkinetor/musicbrainz-userscripts/issues/271))
+
 ## [2026.6.20](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.20)
 
 ### Fixes

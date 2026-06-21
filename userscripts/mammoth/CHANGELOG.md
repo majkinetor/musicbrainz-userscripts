@@ -1,5 +1,11 @@
 # Mammoth Changelog
 
+## [2026.6.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.21)
+
+### Fixes
+
+1. Mammoth breaks layout on entity creation pages with other scripts ([#268](https://github.com/majkinetor/musicbrainz-userscripts/issues/268))
+
 ## [2026.6.20](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.20)
 
 ### Features
