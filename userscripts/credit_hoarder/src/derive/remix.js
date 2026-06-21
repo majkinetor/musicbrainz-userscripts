@@ -92,6 +92,16 @@ function cleanName(raw) {
     // captures "Carlsbop (Fetisch Park vs. Bob Humid"; keep just "Carlsbop".
     let s = String(raw || '').replace(/\s*[([].*$/, '').replace(/[)\]]+\s*$/, '');
     let tokens = s.trim().split(/\s+/).filter(Boolean);
+    // Possessive form "<Artist>'s <remix title> <keyword>" — the owner of the
+    // possessive is the artist; everything after it names the remix, not a
+    // person. "Kettenkarussell's Triangle Player" → "Kettenkarussell",
+    // "Funk D'Void's Hope" → "Funk D'Void" (the LAST apostrophe-s is the
+    // possessive, so the internal one in "D'Void" is preserved). #271.
+    const pIdx = tokens.findIndex(t => /['']s$/i.test(t));
+    if (pIdx !== -1) {
+        tokens = tokens.slice(0, pIdx + 1);
+        tokens[pIdx] = tokens[pIdx].replace(/['']s$/i, '');
+    }
     while (tokens.length && isStrong(tokens[tokens.length - 1])) tokens.pop();
     if (!tokens.length) return null;
     if (tokens.every(isDecorator)) return null;   // "(Extended Club Mix)", "(The Remix)" → anonymous

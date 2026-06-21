@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.21.210423
+// @version      2026.6.21.213512
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2710,6 +2710,11 @@
   function cleanName(raw) {
     let s = String(raw || "").replace(/\s*[([].*$/, "").replace(/[)\]]+\s*$/, "");
     let tokens = s.trim().split(/\s+/).filter(Boolean);
+    const pIdx = tokens.findIndex((t) => /['']s$/i.test(t));
+    if (pIdx !== -1) {
+      tokens = tokens.slice(0, pIdx + 1);
+      tokens[pIdx] = tokens[pIdx].replace(/['']s$/i, "");
+    }
     while (tokens.length && isStrong(tokens[tokens.length - 1])) tokens.pop();
     if (!tokens.length) return null;
     if (tokens.every(isDecorator)) return null;
@@ -3084,10 +3089,10 @@
         if (!hasDiscogsUrl) dlA.className = "discogs-entity-name";
         nameWrap.appendChild(dlA);
         const BADGE_BASE = "display:inline-flex;align-items:center;margin-left:0.35rem;padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;border-radius:0.7rem;letter-spacing:0.01em;cursor:help;text-transform:lowercase;line-height:1.4;";
-        if (!hasDiscogsUrl) {
+        if (!hasDiscogsUrl && srcName !== "Titles") {
           const noUrl = document.createElement("span");
           noUrl.textContent = "no profile";
-          noUrl.title = "No Discogs artist page \u2014 name lookup unavailable, search MB manually";
+          noUrl.title = `No ${srcName} artist page \u2014 name lookup unavailable, search MB manually`;
           noUrl.style.cssText = BADGE_BASE + "background:#fde0e0;color:#a02020;border:1px solid #d44040;";
           nameWrap.appendChild(noUrl);
         }
@@ -3447,8 +3452,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               if (urlCheckCached !== null) _urlCheckSessionCache.set(urlCheckCacheKey, urlCheckCached);
             }
             if (!discogsHref) {
-              linkSlot.textContent = `\u26A0 No ${srcName} page`;
-              linkSlot.style.color = "#c80";
+              if (srcName === "Titles") {
+                linkSlot.remove();
+              } else {
+                linkSlot.textContent = `\u26A0 No ${srcName} page`;
+                linkSlot.style.color = "#c80";
+              }
             } else if (urlCheckCached !== null) {
               applyUrlCheckResult(urlCheckCached);
             } else if (Array.isArray(r.urlLinkedIds)) {
@@ -6115,9 +6124,11 @@ ${lines}
         // separate function from the bar builder that owns the slot.
         headerSlot: document.querySelector(".discogs-bar-action"),
         // Label fallback for URL-less credits (#193): a Qobuz row
-        // must say "No Qobuz page", not "No Discogs page".
-        sourceName: sourceNameForUrl(sourceUrl),
-        sourceIcon: srcIconByUrl(sourceUrl),
+        // must say "No Qobuz page", not "No Discogs page". The
+        // URL-less Titles source (#271) reports as 'Titles' so the
+        // review table drops Discogs-specific wording/elements.
+        sourceName: sourceUrl ? sourceNameForUrl(sourceUrl) : "Titles",
+        sourceIcon: sourceUrl ? srcIconByUrl(sourceUrl) : SRC_ICON.Titles || "",
         // #193 — shown on the "Start import" button
         // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
         // every entity via MB API. Used when a cached MBID is stale.

@@ -438,10 +438,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                'padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;' +
                                'border-radius:0.7rem;letter-spacing:0.01em;cursor:help;' +
                                'text-transform:lowercase;line-height:1.4;';
-            if (!hasDiscogsUrl) {
+            // The Titles source (#271) derives names from track titles — there's
+            // no external entity page to miss, so the "no profile" badge is pure
+            // noise on every row; skip it. For real URL sources, a URL-less row
+            // genuinely lacks a profile, so keep the badge (source-worded).
+            if (!hasDiscogsUrl && srcName !== 'Titles') {
                 const noUrl = document.createElement('span');
                 noUrl.textContent = 'no profile';
-                noUrl.title = 'No Discogs artist page — name lookup unavailable, search MB manually';
+                noUrl.title = `No ${srcName} artist page — name lookup unavailable, search MB manually`;
                 noUrl.style.cssText = BADGE_BASE + 'background:#fde0e0;color:#a02020;border:1px solid #d44040;';
                 nameWrap.appendChild(noUrl);
             }
@@ -921,9 +925,16 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     }
 
                     if (!discogsHref) {
-                        // No external URL — skip URL check entirely
-                        linkSlot.textContent = `⚠ No ${srcName} page`;
-                        linkSlot.style.color = '#c80';
+                        // No external URL — skip URL check entirely. The Titles
+                        // source has no per-entity page concept at all, so show
+                        // nothing (the "no page" chip would just be noise on
+                        // every row); other sources keep the informational chip.
+                        if (srcName === 'Titles') {
+                            linkSlot.remove();
+                        } else {
+                            linkSlot.textContent = `⚠ No ${srcName} page`;
+                            linkSlot.style.color = '#c80';
+                        }
                     } else if (urlCheckCached !== null) {
                         // Session-cache always takes precedence over the
                         // preflight `urlLinkedIds` snapshot. The cache is

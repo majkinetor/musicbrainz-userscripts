@@ -1617,9 +1617,11 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     // separate function from the bar builder that owns the slot.
                     headerSlot: document.querySelector('.discogs-bar-action'),
                     // Label fallback for URL-less credits (#193): a Qobuz row
-                    // must say "No Qobuz page", not "No Discogs page".
-                    sourceName: sourceNameForUrl(sourceUrl),
-                    sourceIcon: srcIconByUrl(sourceUrl),   // #193 — shown on the "Start import" button
+                    // must say "No Qobuz page", not "No Discogs page". The
+                    // URL-less Titles source (#271) reports as 'Titles' so the
+                    // review table drops Discogs-specific wording/elements.
+                    sourceName: sourceUrl ? sourceNameForUrl(sourceUrl) : 'Titles',
+                    sourceIcon: sourceUrl ? srcIconByUrl(sourceUrl) : (SRC_ICON.Titles || ''),   // #193 — shown on the "Start import" button
                     // "🔄 Refresh from MB" — bypass the IDB cache and re-resolve
                     // every entity via MB API. Used when a cached MBID is stale.
                     onRefresh: () => runPreflight(true).then(freshResults => {
