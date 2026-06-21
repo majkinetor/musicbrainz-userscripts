@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.21
+// @version      2026.6.22.001106
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3449,7 +3449,17 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                   if (!ltId) return;
                   const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId, [`edit-${entityType}.edit_note`]: buildCreateNote(`Added ${srcName} link`) });
                   const mbid = selected.id.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
-                  window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, "_blank", "noopener,noreferrer");
+                  const linkTab = window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, "_blank");
+                  if (linkTab) {
+                    const trySet = () => {
+                      try {
+                        linkTab.sessionStorage.setItem("discogs-importer-close-after-edit", "1");
+                      } catch (e2) {
+                        setTimeout(trySet, 50);
+                      }
+                    };
+                    trySet();
+                  }
                   linkSlot.innerHTML = "";
                   linkSlot.textContent = "\u2026";
                   linkSlot.title = `Verifying ${srcName} link on return to this tab\u2026`;
@@ -6767,6 +6777,14 @@ ${lines}
     if (!entityMatch) return;
     const entityType = entityMatch[1];
     const mbid = entityMatch[2];
+    try {
+      if (sessionStorage.getItem("discogs-importer-close-after-edit")) {
+        sessionStorage.removeItem("discogs-importer-close-after-edit");
+        setTimeout(() => window.close(), 50);
+        return;
+      }
+    } catch (e) {
+    }
     const pendingKey = "discogs-importer-pending-artist";
     const pending = sessionStorage.getItem(pendingKey);
     if (!pending) return;

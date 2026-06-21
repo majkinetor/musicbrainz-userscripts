@@ -908,7 +908,18 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                 if (!ltId) return;
                                 const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId, [`edit-${entityType}.edit_note`]: buildCreateNote(`Added ${srcName} link`) });
                                 const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
-                                window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, '_blank', 'noopener,noreferrer');
+                                // Open WITHOUT noopener so we keep the tab reference and can flag
+                                // it to auto-close once the link edit submits (it redirects to the
+                                // entity page) — same UX as the create-artist tab. The opener's
+                                // focus-return handler below then re-checks and flips the chip to ✓.
+                                const linkTab = window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, '_blank');
+                                if (linkTab) {
+                                    const trySet = () => {
+                                        try { linkTab.sessionStorage.setItem('discogs-importer-close-after-edit', '1'); }
+                                        catch (e) { setTimeout(trySet, 50); }
+                                    };
+                                    trySet();
+                                }
                                 // Replace button with a "pending verification" badge.
                                 // When the user comes back to this tab, we re-run the
                                 // URL check (cache-bypassed) and the row flips to

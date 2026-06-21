@@ -48,6 +48,20 @@ if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
     const entityType = entityMatch[1];
     const mbid       = entityMatch[2];
 
+    // A tab opened just to ADD A URL LINK to an existing entity (the review
+    // table's 🔗 "Add link" chip) closes itself once the edit submits and
+    // redirects here. The marker is only seen on the clean entity page — the
+    // `/<type>/<mbid>/edit` form page fails `entityMatch` above, so we never
+    // close before the user submits. No postback needed: the opener re-checks
+    // the link when it regains focus.
+    try {
+        if (sessionStorage.getItem('discogs-importer-close-after-edit')) {
+            sessionStorage.removeItem('discogs-importer-close-after-edit');
+            setTimeout(() => window.close(), 50);
+            return;
+        }
+    } catch (e) {}
+
     // Check if we were opened by the importer
     const pendingKey = 'discogs-importer-pending-artist';
     const pending = sessionStorage.getItem(pendingKey);
