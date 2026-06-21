@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.21.090000
+// @version      2026.6.21.110000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -657,7 +657,7 @@
       const th = row.querySelector('.as-dthumb');
       if (th) {
         th.onclick = e => { if (e.target.closest('button')) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
-        const img = th.querySelector('img');
+        const img = th.querySelector(':scope > img');   // #250 gallery img only — never the .as-prov favicon (see wire())
         if (img) {
           img.onerror = () => { const orig = !it._pdf ? (it._img || imgUrl(it.id)) : null; if (orig && img.getAttribute('src') !== orig) img.src = orig; else th.classList.add('na'); };
           if (img.complete && !img.naturalWidth && img.getAttribute('src')) img.onerror();
@@ -737,7 +737,13 @@
     // cover) → lightbox; PDFs open in a new tab. right-click card → toggle selection
     root.querySelectorAll('.as-thumb').forEach(th => {
       th.onclick = e => { if (e.target.closest('button') || _lpSwallow) return; const it = byId(cardId(e.target)); if (!it) return; if (it._pdf) window.open(it._img, '_blank', 'noopener'); else openLightbox(it.id); };
-      const img = th.querySelector('img'); if (!img) return;
+      // #250 (vzell) only wire the GALLERY image, which is a direct child of the thumb.
+      // A new cover's gallery <img> isn't here yet (it's an .as-imghost placeholder until
+      // hydrateImgs runs), and the only <img> present is the provider-badge favicon nested
+      // in .as-prov — a plain querySelector('img') grabbed THAT, so a 404 favicon fired
+      // this onerror and added .na, whose CSS hid the real JPEG. `:scope > img` never
+      // matches the badge; new covers are left to hydrateImgs, which owns their onerror.
+      const img = th.querySelector(':scope > img'); if (!img) return;
       // A freshly-added cover has its original uploaded but the CAA thumbnails
       // (250/500) aren't generated yet — so the thumb URL 404s and native MB
       // shows a placeholder. We can do better: fall back to the full original
@@ -1331,10 +1337,7 @@
     // locked image the provider could fetch but we can't).
     const directUrl = it.url || it.source || '';
     if (directUrl) {
-      try { const b = await gmFetch(directUrl);
-        console.info('[ArtStation #250] gmFetch', directUrl, '→', b && b.type, b && (b.size + 'B'), 'decodes=', b && await decodesImg(b));   // #250 TEMP
-        if (b && (b.type === 'application/pdf' || await decodesImg(b))) return b;
-      } catch (e) { console.warn('[ArtStation #250] gmFetch failed', directUrl, (e && e.message) || e); }   // #250 TEMP
+      try { const b = await gmFetch(directUrl); if (b && (b.type === 'application/pdf' || await decodesImg(b))) return b; } catch (e) {}
     }
     // No usable URL — launder the provider's own bytes into a fresh same-realm Blob, and verify
     // it actually decodes (a cross-realm copy can have the right length but unreadable content).
@@ -1373,11 +1376,6 @@
         metas.push({ types, comment: it.comment || '', provider: prov.name, provIcon: prov.icon || hostIcon(srcUrl), provUrl: srcUrl });
       }
       finish();
-      // #250 TEMP diagnostics (remove once vzell's render issue is pinned) — does each staged
-      // File's object URL actually render as an <img>? This isolates "bad bytes / wrong path"
-      // from "blob: URLs don't render here" (CSP / manager).
-      console.info('[ArtStation #250]', prov.name, '→', items.length, 'item(s),', files.length, 'file(s) staged');
-      files.forEach(f => { const u = URL.createObjectURL(f); const im = new Image(); im.onload = () => console.info('[ArtStation #250] object URL renders OK:', f.name, f.type, f.size + 'B', im.naturalWidth + 'x' + im.naturalHeight); im.onerror = () => console.warn('[ArtStation #250] object URL FAILED to render:', f.name, f.type, f.size + 'B', u); im.src = u; });
       if (files.length) { addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from ${prov.name} ✓`); }
       else { render(); toast(`${prov.name} returned no image`, 5000); }
     }).catch(e => { if (done) return; clearTimeout(killer); finish(); render(); toast(`${prov.name} failed — ${(e && e.message) || e}`, 8000); });
