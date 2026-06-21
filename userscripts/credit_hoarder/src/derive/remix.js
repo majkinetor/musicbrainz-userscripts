@@ -64,8 +64,10 @@ const WEAK = new Set([
 ]);
 
 // Separators between co-remixers inside one parenthetical. Conservative — only
-// unambiguous joiners, NOT bare "and"/"x" which appear inside real names.
-const SEP_RE = /\s*(?:&|\+|,|\/|\bvs\.?\b|\bversus\b|\bfeat\.?\b|\bft\.?\b|\bfeaturing\b)\s*/i;
+// unambiguous joiners. NOT bare "and"/"x" (appear inside real names), and NOT
+// "vs"/"versus": "Fetisch Park vs. Bob Humid" is a *single* MB collaboration
+// artist, so splitting it would be wrong (#271 review).
+const SEP_RE = /\s*(?:&|\+|,|\/|\bfeat\.?\b|\bft\.?\b|\bfeaturing\b)\s*/i;
 
 const isVinyl     = t => /^\d+(?:"|''|”|inch|in)?$/.test(t);
 const norm        = t => t.toLowerCase().replace(/[.''`]+$/, '');
@@ -85,7 +87,11 @@ const BY_RE = /^(?:re[-_ ]?)?(?:remix|rework|remodel|reshuffle|rerub)(?:es|ed|s|
 // thing if nothing but decorators is left. Drops a trailing possessive
 // ("Aphex Twin's" → "Aphex Twin"). Returns null for an anonymous descriptor.
 function cleanName(raw) {
-    let tokens = String(raw || '').trim().split(/\s+/).filter(Boolean);
+    // Drop a nested/trailing parenthetical and any stray bracket the group regex
+    // left unbalanced — e.g. "remix by Carlsbop (Fetisch Park vs. Bob Humid)"
+    // captures "Carlsbop (Fetisch Park vs. Bob Humid"; keep just "Carlsbop".
+    let s = String(raw || '').replace(/\s*[([].*$/, '').replace(/[)\]]+\s*$/, '');
+    let tokens = s.trim().split(/\s+/).filter(Boolean);
     while (tokens.length && isStrong(tokens[tokens.length - 1])) tokens.pop();
     if (!tokens.length) return null;
     if (tokens.every(isDecorator)) return null;   // "(Extended Club Mix)", "(The Remix)" → anonymous

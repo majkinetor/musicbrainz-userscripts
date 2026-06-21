@@ -225,6 +225,11 @@ assert.deepEqual(rmx('Better Place (Cotton Club remix)'), ['Cotton Club']);   //
 assert.deepEqual(rmx('Song (Deep Dish Remix)'),           ['Deep Dish']);     // "Deep" kept
 assert.deepEqual(rmx('Song (The Orb Remix)'),             ['The Orb']);       // article kept mid-name
 
+// "X vs. Y" is a single MB collaboration artist — NOT split (#271 review).
+assert.deepEqual(rmx('X (Fetisch Park vs. Bob Humid Remix)'), ['Fetisch Park vs. Bob Humid']);
+// Nested parenthetical (alias disambig) → keep the primary name, drop the nest.
+assert.deepEqual(rmx('Training (remix by Carlsbop (Fetisch Park vs. Bob Humid))'), ['Carlsbop']);
+
 // Multiple remixers in one parenthetical.
 assert.deepEqual(rmx('Song (Masters at Work & Louie Vega Remix)'), ['Masters at Work', 'Louie Vega']);
 assert.deepEqual(rmx('Song (Danny Tenaglia, Peter Rauhofer Remix)'), ['Danny Tenaglia', 'Peter Rauhofer']);
