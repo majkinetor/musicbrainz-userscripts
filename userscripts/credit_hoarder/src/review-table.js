@@ -539,7 +539,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             //      — set by preflight from the IDB record).
             //   2. MB's most-frequent existing credit on this release for the
             //      resolved entity.
-            //   3. Discogs display name.
+            //   3. #271 Titles source — the resolved MB entity name (the parsed
+            //      remix name is unreliable, e.g. "Kenneth Bager Ambient" from
+            //      "… Ambient Remix"; default to the MB name as if "MB" clicked).
+            //   4. Source/parsed display name.
             function pickPrefill(mbUrl) {
                 if (r.creditOverride !== undefined && r.creditOverride !== null && r.creditOverride !== '') {
                     return r.creditOverride;
@@ -547,6 +550,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 if (mbUrl) {
                     const mbid = (String(mbUrl).split('/').pop() || '').replace(/[^a-f0-9-]/gi, '').slice(0, 36);
                     if (mbid && existingCreditByMbid.has(mbid)) return existingCreditByMbid.get(mbid);
+                }
+                if (srcName === 'Titles') {
+                    const mbName = rowState.get(_entityKey)?.mbName || r.mbName;
+                    if (mbName) return mbName;
                 }
                 return displayName;
             }
