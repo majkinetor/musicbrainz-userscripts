@@ -106,4 +106,35 @@ Every change is staged. **Enter edit** opens a panel that lists the pending oper
 
 - Edits and removes run in parallel; uploads run in parallel and register in order so positions stay correct; reorder runs last.
 - A shared **edit note** and **make votable** apply to every edit.
+- While a run is in progress the dialog can't be dismissed by clicking outside, and leaving the page warns first — so edits are never silently cut off. Use **Cancel** to abort.
+
+## Plugin API
+
+Another userscript can register its own cover/event-art **provider** — it appears as an `⬇ Import from <name>` button in the **Source** popover, alongside the built-in ECAU platforms, and its images stage into the gallery like any other. This lets a site-specific script (e.g. one that's already logged in to a fan site) do the fetch with its own session and hand the bytes to Art Station.
+
+```js
+window.ArtStation?.registerProvider({
+  name: 'SpringsteenLyrics',          // required — the button label
+  id:   'springsteen',                // optional — de-dupe key (defaults to name)
+  icon: 'https://example.com/favicon.ico',  // optional — badge favicon (a missing/404 one is fine)
+  match: 'springsteenlyrics.com',     // optional — string | string[] | RegExp | (url)=>boolean
+  async run(ctx) {
+    // ctx = { mbid, entity:'release'|'event', artist, title, url, link, links }
+    //   link  = the first release/event external link your `match` hit (links = all of them)
+    const html = await fetchWithYourSession(ctx.link);
+    return [
+      { url: 'https://…/front.jpg', types: ['Front'], comment: '' },
+      // or { dataUrl }, or { blob, source } — see below
+    ];
+  }
+});
+```
+
+- **`match`** gates the button: it only shows when the release/event actually links a matching URL, and those link(s) are passed to `run()` as `ctx.link` / `ctx.links`. Omit `match` and the button always shows.
+- **`run(ctx)`** returns one item or an array of items. Each item is `{ types?, comment? }` plus **one** image source:
+  - **`url`** or **`dataUrl`** — Art Station fetches/decodes it in its own realm (most robust; prefer this).
+  - **`blob`** (or `file`) — bytes your script fetched itself (e.g. behind an authenticated session). Also include **`source`** (the image URL) so Art Station can re-fetch if a cross-sandbox blob can't be used directly.
+- Works on both **release cover art** and **event event art** — the button, matching and `ctx.entity` are entity-aware.
+- If a manager isolates `window` between userscripts, register via the event fallback instead: `document.dispatchEvent(new CustomEvent('artstation:register-provider', { detail: provider }))`.
+- When Art Station isn't installed, `window.ArtStation` is simply absent, so the `?.` call is a no-op.
 
