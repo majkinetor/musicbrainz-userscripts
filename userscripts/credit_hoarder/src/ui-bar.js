@@ -37,6 +37,7 @@ import {
     ENTITY_KIND,
     COMPANY_KIND,
 }                                        from './preflight.js';
+import { deriveRemixRoles }              from './derive/remix.js';
 import { showReviewTable }               from './review-table.js';
 import { dispatchAllRelationships }      from './dispatch.js';
 import { buildEditNote }                 from './edit-note.js';
@@ -783,6 +784,17 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
         'Skip a role when an equivalent role already exists on the target (writer ≡ composer).');
     const dedupeDupCb = makeCheckbox('Duplicate roles',   bv('dedupeDuplicateRoles', true),
         'Skip adding a role when the target already has the same role (regardless of task / dates / attributes).');
+    // ── Title derivation section (#271) ───────────────────────────────────
+    // Derive remixer credits from track titles ("Song (Artist Remix)") and
+    // fold them into the same review → import flow as provider credits. On by
+    // default — the review table is the safety net, so a heuristic parse never
+    // commits anything unreviewed.
+    const deriveHd = document.createElement('div');
+    deriveHd.className = 'discogs-opts-panel-hd';
+    deriveHd.textContent = 'Title derivation';
+    optsPanel.appendChild(deriveHd);
+    const deriveRemixCb = makeCheckbox('Remixer from titles', bv('deriveRemix', true),
+        'Read remixer credits from track titles like "Song (Artist Remix)" and add them as remixer relationships (reviewed before import).');
     _optsHost = optsWrap;    // back to the inline strip
     optsWrap.appendChild(optsBtn);
     document.body.appendChild(optsPanel);   // floating; positioned when opened
@@ -803,9 +815,10 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
             createWorksMode: createWorksMode.value,
             dedupeEquivalenceSets: dedupeEqCb.checked,
             dedupeDuplicateRoles:  dedupeDupCb.checked,
+            deriveRemix:           deriveRemixCb.checked,
         })); } catch(e) {}
     };
-    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
+    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb, deriveRemixCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener('change', saveOpts);
 
@@ -1138,6 +1151,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}) {
             createWorksMode:         createWorksMode.value,
             dedupeEquivalenceSets:   dedupeEqCb.checked,
             dedupeDuplicateRoles:    dedupeDupCb.checked,
+            deriveRemix:             deriveRemixCb.checked,
         });
         const _click = getOpts();
         const opts = `per-track:${_click.processTracklist?'on':'off'}, move-to-tracks:${_click.applyToTracks?'on':'off'}, create-works:${_click.createWorksMode}`;
@@ -1393,6 +1407,23 @@ function runQobuzImport(qobuzUrl, getOpts) {
 // resolution → review table → confirmed-IDB sweep → dispatch. Extracted from
 // runImport unchanged so every source feeds the same engine.
 function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts }) {
+            // ── Title-derived remixers (#271) ────────────────────────────────
+            // When enabled (default), read remixer credits straight from the
+            // track titles ("Song (Artist Remix)") and fold them into the same
+            // tracklist roles. Provider data wins where it overlaps — the
+            // dispatcher's session/MB dedup collapses any duplicate that also
+            // resolves to the same artist. flattenTracklist normalises Discogs
+            // index/sub-track shapes; non-Discogs tracklists pass through.
+            try {
+                if (getOpts().deriveRemix !== false) {
+                    const derived = deriveRemixRoles(flattenTracklist(tracklist));
+                    if (derived.length) {
+                        log.info(`Derived <strong>${derived.length}</strong> remixer credit(s) from track titles`);
+                        tracklistRels = tracklistRels.concat(derived);
+                    }
+                }
+            } catch (e) { log.warn(`Remix derivation from titles failed: ${e.message}`); }
+
             // Collect all unique artist entities referenced across release-level and tracklist roles
             const allArtistRoles = artistRoles.concat(tracklistRels);
             const uniqueArtists = [];

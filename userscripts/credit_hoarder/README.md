@@ -35,6 +35,7 @@ The UI strip at the top of the page with the source picker, the option toggles, 
 - **Dedup**
     - **Equivalence sets** — skip a role when an equivalent role already exists on the target (writer ≡ composer).
     - **Duplicate roles** — skip a role when the target recording already has the same role (regardless of attributes / dates / tasks).
+- **Remixer from titles** (on by default) — derive remixer credits straight from the track titles when the provider doesn't give them. A track titled *Song (Artist Remix)*, *Track (KiNK Dub)* or *Tune (Remixed by Someone)* contributes a **remixer** relationship for that recording, folded into the same review → import flow as any other credit. Only the reliable *named-remix* convention is parsed — anonymous descriptors like *(Extended Mix)*, *(Radio Edit)* or *(Original Mix)* (edits/versions of the original, not a remix by a named artist) are ignored, and *(Mixed by …)* is left alone (that's an engineer, not a remixer). Every derived remixer goes through the Credit Review Table, so nothing is committed unreviewed.
 
 ### Credit Review Table
 

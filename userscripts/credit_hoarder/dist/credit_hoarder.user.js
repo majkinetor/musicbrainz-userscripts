@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.20
+// @version      2026.6.21.175030
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2627,6 +2627,123 @@
   }
   var ENTITY_KIND = (e) => e?.entityType || "artist";
   var COMPANY_KIND = (c) => ENTITY_TYPE_MAP[c.entity_type_name]?.entityType ?? null;
+
+  // src/derive/remix.js
+  var QUALIFIERS = /* @__PURE__ */ new Set([
+    "extended",
+    "club",
+    "radio",
+    "dub",
+    "instrumental",
+    "acapella",
+    "acappella",
+    "acoustic",
+    "original",
+    "album",
+    "single",
+    "main",
+    "long",
+    "short",
+    "full",
+    "special",
+    "bonus",
+    "alternative",
+    "alternate",
+    "vip",
+    "rmx",
+    "redux",
+    "deep",
+    "tech",
+    "soulful",
+    "disco",
+    "electro",
+    "house",
+    "techno",
+    "progressive",
+    "tribal",
+    "vocal",
+    "dancefloor",
+    "classic",
+    "clean",
+    "dirty",
+    "censored",
+    "uncensored",
+    "studio",
+    "live",
+    "demo",
+    "rough",
+    "final",
+    "new",
+    "old",
+    "remastered",
+    "re-edit",
+    "reedit"
+  ]);
+  var ARTICLES = /* @__PURE__ */ new Set(["the", "a", "an"]);
+  var SEP_RE = /\s*(?:&|\+|,|\/|\bvs\.?\b|\bversus\b|\bfeat\.?\b|\bft\.?\b|\bfeaturing\b)\s*/i;
+  var TRAILING_RE = /^(.+?)\s+((?:re[-_ ]?)?(?:remix|rework|remodel|reshuffle|edit|dub|mix))(?:es|ed|s|d)?$/i;
+  var BY_RE = /^(?:re[-_ ]?)?(?:remix|rework|remodel|reshuffle|rerub)(?:es|ed|s|d)?\s+by\s+(.+)$/i;
+  function isQualifierToken(tok) {
+    const t = tok.toLowerCase().replace(/[.''`]+$/, "");
+    return QUALIFIERS.has(t) || ARTICLES.has(t) || /^\d+(?:"|''|”|inch|in)?$/.test(t);
+  }
+  function cleanName(raw) {
+    let tokens = String(raw || "").trim().split(/\s+/).filter(Boolean);
+    while (tokens.length && isQualifierToken(tokens[tokens.length - 1])) tokens.pop();
+    while (tokens.length && isQualifierToken(tokens[0])) tokens.shift();
+    if (!tokens.length) return null;
+    const name = tokens.join(" ").replace(/['']s$/i, "").trim();
+    if (!/[A-Za-z0-9]/.test(name)) return null;
+    return name;
+  }
+  function parseRemixTitle(title) {
+    const result = { base: title || "", remixers: [], kind: null };
+    if (!title || typeof title !== "string") return result;
+    const groups = title.match(/[([][^)\]]*[)\]]/g);
+    if (!groups) return result;
+    for (const g of groups) {
+      const inner = g.slice(1, -1).trim();
+      let captured = null, kind = null;
+      let m = BY_RE.exec(inner);
+      if (m) {
+        captured = m[1];
+        kind = "remix";
+      } else {
+        m = TRAILING_RE.exec(inner);
+        if (m) {
+          captured = m[1];
+          kind = /mix$/i.test(m[2]) && !/remix$/i.test(m[2]) ? "mix" : /edit$/i.test(m[2]) ? "edit" : /dub$/i.test(m[2]) ? "dub" : "remix";
+        }
+      }
+      if (!captured) continue;
+      const names = captured.split(SEP_RE).map(cleanName).filter(Boolean);
+      if (!names.length) continue;
+      result.kind = result.kind || kind;
+      for (const n of names) if (!result.remixers.includes(n)) result.remixers.push(n);
+      result.base = result.base.replace(g, "").replace(/\s{2,}/g, " ").trim();
+    }
+    return result;
+  }
+  function deriveRemixRoles(tracklist) {
+    if (!Array.isArray(tracklist)) return [];
+    const roles = [];
+    for (const track of tracklist) {
+      if (!track || track.type_ && track.type_ !== "track") continue;
+      if (!track.title) continue;
+      const { remixers } = parseRemixTitle(track.title);
+      for (const name of remixers) {
+        roles.push({
+          linkType: "remixer",
+          artist: { name, anv: "", resource_url: "", _derived: true },
+          track,
+          creditedAs: name,
+          attributes: [],
+          entityType: "artist"
+        });
+      }
+    }
+    return roles;
+  }
 
   // src/edit-note.js
   function buildEditNote(sourceUrl, opts, extraLines) {
@@ -5313,6 +5430,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       bv("dedupeDuplicateRoles", true),
       "Skip adding a role when the target already has the same role (regardless of task / dates / attributes)."
     );
+    const deriveHd = document.createElement("div");
+    deriveHd.className = "discogs-opts-panel-hd";
+    deriveHd.textContent = "Title derivation";
+    optsPanel.appendChild(deriveHd);
+    const deriveRemixCb = makeCheckbox(
+      "Remixer from titles",
+      bv("deriveRemix", true),
+      'Read remixer credits from track titles like "Song (Artist Remix)" and add them as remixer relationships (reviewed before import).'
+    );
     _optsHost = optsWrap;
     optsWrap.appendChild(optsBtn);
     document.body.appendChild(optsPanel);
@@ -5338,12 +5464,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           applyTracks: applyTracksCb.checked,
           createWorksMode: createWorksMode.value,
           dedupeEquivalenceSets: dedupeEqCb.checked,
-          dedupeDuplicateRoles: dedupeDupCb.checked
+          dedupeDuplicateRoles: dedupeDupCb.checked,
+          deriveRemix: deriveRemixCb.checked
         }));
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, dedupeEqCb, dedupeDupCb, deriveRemixCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output empty";
@@ -5606,7 +5733,8 @@ ${lines}
         applyToTracks: applyTracksCb.checked,
         createWorksMode: createWorksMode.value,
         dedupeEquivalenceSets: dedupeEqCb.checked,
-        dedupeDuplicateRoles: dedupeDupCb.checked
+        dedupeDuplicateRoles: dedupeDupCb.checked,
+        deriveRemix: deriveRemixCb.checked
       });
       const _click = getOpts();
       const opts = `per-track:${_click.processTracklist ? "on" : "off"}, move-to-tracks:${_click.applyToTracks ? "on" : "off"}, create-works:${_click.createWorksMode}`;
@@ -5824,6 +5952,17 @@ ${lines}
     });
   }
   function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl, processTracklist, getOpts }) {
+    try {
+      if (getOpts().deriveRemix !== false) {
+        const derived = deriveRemixRoles(flattenTracklist(tracklist));
+        if (derived.length) {
+          log.info(`Derived <strong>${derived.length}</strong> remixer credit(s) from track titles`);
+          tracklistRels = tracklistRels.concat(derived);
+        }
+      }
+    } catch (e) {
+      log.warn(`Remix derivation from titles failed: ${e.message}`);
+    }
     const allArtistRoles = artistRoles.concat(tracklistRels);
     const uniqueArtists = [];
     const seenResourceUrls = /* @__PURE__ */ new Set();
