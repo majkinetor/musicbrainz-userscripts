@@ -733,6 +733,15 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
             function setRowResolved(a) {
                 // a = { id, name, disambiguation }
+                // #273: don't let the page jump. When a row the user has scrolled
+                // PAST (e.g. while a background create/link finishes) collapses its
+                // search results into the compact resolved entity, the content above
+                // the viewport shrinks and the view would lurch. Snapshot the page
+                // height + whether this row sits entirely above the viewport now, and
+                // compensate the scroll after the rebuild below.
+                const _scrollEl = document.scrollingElement || document.documentElement;
+                const _hBefore = _scrollEl.scrollHeight;
+                const _rowWasAbove = tr.getBoundingClientRect().bottom <= 0;
                 const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
                 rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', confirmed: true, via: 'user', fromCache: false });
                 // Re-target the Credited-as override for this row to the
@@ -797,6 +806,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // Actions: Add Discogs link + Create fallback
                 renderActions(a);
                 updateImportBtn();
+                // #273: keep the viewport steady — if this (now-collapsed) row was
+                // entirely above the viewport, shift the scroll by the height the
+                // page just lost so what the user is looking at doesn't move.
+                if (_rowWasAbove) { const _d = _scrollEl.scrollHeight - _hBefore; if (_d) window.scrollBy(0, _d); }
             }
 
             function setRowUnresolved() {
