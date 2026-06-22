@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.221210
+// @version      2026.6.22.222712
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -896,7 +896,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.221210';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.222712';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1162,10 +1162,10 @@
     .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:#999;margin-left:12px;font-size:11px}
     .tc-mirror th .tc-hstatus.tc-unres{font-style:normal;font-weight:bold;color:#fff;background:#d6342c;padding:1px 7px;border-radius:9px;font-size:11px}
     .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:#444;margin-right:14px;max-width:140px}
-    .tc-tools{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;min-width:0;flex:0 1 auto}   /* #280 */
-    .tc-toolslabel{flex:none;font:800 11px Arial;letter-spacing:.03em;text-transform:uppercase;color:#6f42c1;cursor:pointer;white-space:nowrap;border-bottom:1px dotted #b9a4e0;line-height:1.5}
+    .tc-tools{display:flex;align-items:flex-start;gap:8px;flex:1 1 auto;min-width:0}   /* #280: take the row, let the buttons wrap */
+    .tc-toolslabel{flex:none;font:800 11px Arial;letter-spacing:.03em;text-transform:uppercase;color:#6f42c1;cursor:pointer;white-space:nowrap;border-bottom:1px dotted #b9a4e0;line-height:1.5;margin-top:5px}
     .tc-toolslabel:hover{color:#4b2e83}
-    .tc-toolbtns{display:flex;align-items:center;gap:6px;flex:none}
+    .tc-toolbtns{display:flex;align-items:center;gap:6px;flex:1 1 auto;min-width:0;flex-wrap:wrap}   /* #280: grow then wrap (flex) instead of pushing Match off */
     .tc-toolbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid #d8d0ec;background:linear-gradient(#fff,#f4f1fb);border-radius:5px;padding:4px 9px;font:13px Arial;color:#4a4a4a;cursor:pointer;white-space:nowrap;flex:none}
     .tc-toolbtn:hover{border-color:#bcaae6;background:#f3eefe}
     .tc-toolbtn.active{background:#5f3ec0;border-color:#4f33a3;color:#fff;font-weight:600}
@@ -1217,7 +1217,8 @@
     .tc-tc-row{display:flex;align-items:center;gap:8px;padding:5px 12px}
     .tc-tc-row:hover{background:#f6f2fd}
     .tc-tc-row.off{opacity:.6}
-    .tc-tc-row.over{box-shadow:inset 0 -2px 0 #8a72c8}
+    .tc-tc-row.over-bottom{box-shadow:inset 0 -2px 0 #8a72c8}
+    .tc-tc-row.over-top{box-shadow:inset 0 2px 0 #8a72c8}
     .tc-tc-row.drag{opacity:.4}
     .tc-tc-grab{color:#c3bbd8;cursor:grab;font-size:13px;flex:none}
     .tc-tc-ic{width:26px;text-align:center;color:#7a68b8;flex:none}
@@ -2286,11 +2287,11 @@
       const s = byAct[act] || {};
       let icon = s.icon !== false, text = s.text !== false;
       if (!icon && !text) text = true;   // at least one of icon/text
-      return { act, onBar: s.onBar != null ? !!s.onBar : !!TOOL_ON_BAR_DEFAULT[act], pinned: hasParams(act) ? !!s.pinned : false, icon, text };
+      return { act, onBar: s.onBar != null ? !!s.onBar : !!TOOL_ON_BAR_DEFAULT[act], icon, text };
     });
   }
-  function saveToolCfg(cfg) { SETTINGS.toolCfg = cfg.map(t => ({ act: t.act, onBar: !!t.onBar, pinned: !!t.pinned, icon: t.icon !== false, text: t.text !== false })); saveSettings(); }
-  const cfgOf = act => getToolCfg().find(t => t.act === act) || { act, onBar: false, pinned: false, icon: true, text: true };
+  function saveToolCfg(cfg) { SETTINGS.toolCfg = cfg.map(t => ({ act: t.act, onBar: !!t.onBar, icon: t.icon !== false, text: t.text !== false })); saveSettings(); }
+  const cfgOf = act => getToolCfg().find(t => t.act === act) || { act, onBar: false, icon: true, text: true };
 
   // hovering the "Guess case" tool button previews the guessed form on every differing title
   function previewAllGuess(on) {
@@ -2306,33 +2307,28 @@
     document.querySelectorAll('.tc-toolbtn[data-act="guesscase"]').forEach(b => { b.onmouseenter = () => previewAllGuess(true); b.onmouseleave = () => previewAllGuess(false); });
   }
 
-  // render the visible tool buttons (in order, per-tool icon/text) + the ⋯ overflow
+  // #280: render every on-bar tool inline at its position — a plain button when it
+  // has no params, or a group (icon/name trigger + its params) when it does. The
+  // toolbar grows and WRAPS (flex) when it runs out of room (CSS), never shoving Match.
   function renderToolbar() {
     const host = document.querySelector('.tc-toolbtns'); if (!host) return;
-    const cfg = getToolCfg(); host.innerHTML = '';
-    // #280: a pinned tool lives on row 2 only — its row-1 button would be redundant
-    cfg.filter(t => t.onBar && !t.pinned).forEach(t => {
-      const m = TOOL[t.act];
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'tc-toolbtn' + (m.instant ? ' instant' : '') + (SETTINGS.lastTool === t.act && !t.pinned ? ' active' : '');
-      b.dataset.act = t.act;
-      b.innerHTML = (t.icon ? `<span class="tc-tbic">${esc(m.icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(m.label)}</span>` : '');
-      if (!t.text) b.title = m.label;
-      b.onclick = () => pickTool(t.act);
-      host.appendChild(b);
-    });
-    wireToolHover();
+    host.innerHTML = '';
+    getToolCfg().filter(t => t.onBar).forEach(t => host.appendChild(hasInlineParams(t.act) ? makeToolGroup(t) : makeToolButton(t)));
+  }
+  function makeToolButton(t) {
+    const m = TOOL[t.act];
+    const b = document.createElement('button'); b.type = 'button';
+    b.className = 'tc-toolbtn' + (m.instant ? ' instant' : '');
+    b.dataset.act = t.act;
+    b.innerHTML = (t.icon ? `<span class="tc-tbic">${esc(m.icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(m.label)}</span>` : '');
+    if (!t.text) b.title = m.label;
+    b.onclick = () => pickTool(t.act);
+    return b;
   }
   function pickTool(act) {
-    if (OPTLESS.has(act)) { runAction(act); return; }                                   // instant, non-sticky
-    if (MEDIUM_TOOLS.has(act) && mediums().length <= 1) { runMediumTool(act, 0); return; } // single medium → run now
-    if (act === 'sr' && SETTINGS.lastTool === 'sr') {                                    // re-pick S&R → fresh session
-      const f = document.querySelector('.tc-sr-find'), r = document.querySelector('.tc-sr-rep'); if (f) f.value = ''; if (r) r.value = ''; srActivate(); MODEL && MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender();
-    }
-    SETTINGS.lastTool = act; saveSettings(); renderToolbar(); renderToolOpts();
-    if (cfgOf(act).pinned) { const p = document.querySelector(`#tc-bar2 [data-tool="${act}"]`); if (p) p.scrollIntoView({ inline: 'nearest', block: 'nearest' }); }
-    const f = document.querySelector('.tc-sr-find'); if (act === 'sr' && f) f.focus();
+    if (OPTLESS.has(act)) return runAction(act);                 // instant (Guess feat.)
+    if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium());
+    runAction(act);
   }
   function runActiveTool() { const act = SETTINGS.lastTool; if (!act) return; if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium()); runAction(act); }
   // #280: a pinned tool's panel icon runs its primary action (what the row-1 button did)
@@ -2399,40 +2395,27 @@
     }
   }
   const hasInlineParams = act => hasParams(act) || (MEDIUM_TOOLS.has(act) && mediums().length > 1);
-  // active tool's params inline (row 1), then the pinned tools' params on row 2
-  function renderToolOpts() {
-    const host = document.querySelector('.tc-toolopts');
-    if (host) { host.innerHTML = ''; const act = SETTINGS.lastTool; if (act && cfgOf(act).onBar && !cfgOf(act).pinned && hasInlineParams(act)) buildToolParams(act, host); }
-    renderRow2();
+  // an inline param tool: a clickable icon/name trigger (obeys icon/text cfg) + its params
+  function makeToolGroup(t) {
+    const act = t.act;
+    const grp = document.createElement('span'); grp.className = 'tc-opt'; grp.dataset.tool = act;
+    const name = document.createElement('span'); name.className = 'tc-optname tc-opttrig';
+    name.innerHTML = (t.icon ? `<span class="tc-tbic">${esc(TOOL[act].icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(TOOL[act].label)}</span>` : '');
+    name.title = TOOL[act].label + ' — click to run';
+    name.onclick = () => triggerTool(act);
+    if (act === 'guesscase') { name.onmouseenter = () => previewAllGuess(true); name.onmouseleave = () => previewAllGuess(false); }
+    grp.appendChild(name);
+    buildToolParams(act, grp);
+    return grp;
   }
-  // pinned tools' params on the 2nd row (flex). No pin glyph here (#280).
-  function renderRow2() {
-    const row = document.getElementById('tc-bar2'); if (!row) return;
-    const pinned = getToolCfg().filter(t => t.onBar && t.pinned && hasParams(t.act));
-    row.innerHTML = '';
-    if (!pinned.length) { row.style.display = 'none'; return; }
-    row.style.display = '';
-    pinned.forEach(t => {
-      const panel = document.createElement('span'); panel.className = 'tc-opt'; panel.dataset.tool = t.act;
-      const name = document.createElement('span'); name.className = 'tc-optname tc-opttrig';
-      // #280: obey the tool's icon/text config here too (default both; set icon-only to save space)
-      name.innerHTML = (t.icon ? `<span class="tc-tbic">${esc(TOOL[t.act].icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(TOOL[t.act].label)}</span>` : '');
-      name.title = TOOL[t.act].label + ' — click to run';
-      name.onclick = () => triggerTool(t.act);   // #280: the panel icon is the run trigger (replaces the row-1 button)
-      if (t.act === 'guesscase') { name.onmouseenter = () => previewAllGuess(true); name.onmouseleave = () => previewAllGuess(false); }
-      panel.appendChild(name);
-      buildToolParams(t.act, panel);
-      row.appendChild(panel);
-    });
-  }
-  function initTools() { renderToolbar(); renderToolOpts(); }
+  function initTools() { renderToolbar(); }
 
   // ── "Customize tools" popover (opens from the Tools label) ──
   function openToolsConfig(anchor) {
     let p = document.getElementById('tc-toolcfg'); if (p) { p.remove(); return; }
     p = document.createElement('div'); p.id = 'tc-toolcfg'; p.className = 'tc-toolcfg';
     let dragAct = null;
-    const apply = () => { renderToolbar(); renderToolOpts(); };
+    const apply = () => { renderToolbar(); };
     const update = (act, patch) => {
       const cfg = getToolCfg(); const t = cfg.find(x => x.act === act); if (!t) return;
       Object.assign(t, patch);
@@ -2444,9 +2427,10 @@
       const item = cfg.splice(fi, 1)[0]; let ti = cfg.findIndex(t => t.act === toAct); if (ti < 0) ti = cfg.length - 1; if (after) ti += 1;
       cfg.splice(ti, 0, item); saveToolCfg(cfg); render(); apply();
     };
+    const below = (e, row) => { const rc = row.getBoundingClientRect(); return e.clientY > rc.top + rc.height / 2; };   // drop after/before per cursor (#280)
     function render() {
       p.innerHTML = '<div class="tc-tc-h">Customize tools</div><div class="tc-tc-list"></div>'
-        + '<div class="tc-tc-hint">Drag ☰ to reorder · ☑ shows it on the bar (else under ⋯) · 📌 keeps its settings on the 2nd row</div>';
+        + '<div class="tc-tc-hint">Drag ☰ to reorder · ☑ shows it on the bar (else under the Tools menu) · tools with settings show them inline</div>';
       const list = p.querySelector('.tc-tc-list');
       getToolCfg().forEach(t => {
         const m = TOOL[t.act];
@@ -2455,8 +2439,7 @@
           '<span class="tc-tc-grab" title="drag to reorder">☰</span>'
           + `<label class="tc-tc-onbar" title="show on the toolbar"><input type="checkbox" class="cb-onbar"${t.onBar ? ' checked' : ''}></label>`
           + `<span class="tc-tc-ic">${esc(m.icon)}</span><span class="tc-tc-lab">${esc(m.label)}</span>`
-          + `<span class="tc-tc-dens" title="what shows on the button — icon and/or text"><button type="button" class="tc-tc-seg cb-icon${t.icon ? ' on' : ''}" title="show the icon">${esc(m.icon)}</button><button type="button" class="tc-tc-seg cb-text${t.text ? ' on' : ''}" title="show the text">T</button></span>`
-          + (hasParams(t.act) ? `<button type="button" class="tc-tc-pin${t.pinned ? ' on' : ''}" title="keep this tool's settings on the 2nd row">📌</button>` : '<span class="tc-tc-pin none"></span>');
+          + `<span class="tc-tc-dens" title="what shows on the button — icon and/or text"><button type="button" class="tc-tc-seg cb-icon${t.icon ? ' on' : ''}" title="show the icon">${esc(m.icon)}</button><button type="button" class="tc-tc-seg cb-text${t.text ? ' on' : ''}" title="show the text">T</button></span>`;
         list.appendChild(row);
       });
       list.querySelectorAll('.tc-tc-row').forEach(row => {
@@ -2464,12 +2447,11 @@
         row.querySelector('.cb-onbar').onchange = e => update(act, { onBar: e.target.checked });
         row.querySelector('.cb-icon').onclick = () => update(act, { icon: !cfgOf(act).icon });
         row.querySelector('.cb-text').onclick = () => update(act, { text: !cfgOf(act).text });
-        const pin = row.querySelector('button.tc-tc-pin'); if (pin) pin.onclick = () => update(act, { pinned: !cfgOf(act).pinned });
         row.ondragstart = e => { dragAct = act; row.classList.add('drag'); try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', act); } catch (x) {} };
-        row.ondragend = () => { dragAct = null; p.querySelectorAll('.tc-tc-row').forEach(r => r.classList.remove('drag', 'over')); };
-        row.ondragover = e => { e.preventDefault(); row.classList.add('over'); };
-        row.ondragleave = () => row.classList.remove('over');
-        row.ondrop = e => { e.preventDefault(); row.classList.remove('over'); const from = dragAct || (e.dataTransfer && e.dataTransfer.getData('text/plain')); if (from && from !== act) { const rc = row.getBoundingClientRect(); reorder(from, act, e.clientY > rc.top + rc.height / 2); } };
+        row.ondragend = () => { dragAct = null; p.querySelectorAll('.tc-tc-row').forEach(r => r.classList.remove('drag', 'over-top', 'over-bottom')); };
+        row.ondragover = e => { e.preventDefault(); row.classList.toggle('over-bottom', below(e, row)); row.classList.toggle('over-top', !below(e, row)); };   // #280: indicate drop direction
+        row.ondragleave = () => row.classList.remove('over-top', 'over-bottom');
+        row.ondrop = e => { e.preventDefault(); const dir = below(e, row); row.classList.remove('over-top', 'over-bottom'); const from = dragAct || (e.dataTransfer && e.dataTransfer.getData('text/plain')); if (from && from !== act) reorder(from, act, dir); };
       });
     }
     render();
@@ -2592,8 +2574,8 @@
     setTimeout(() => document.addEventListener('mousedown', _srPopOff, true), 0);
   }
 
-  const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolsmenu" title="more tools &amp; customize">Tools ▾</span><span class="tc-toolbtns"></span><span class="tc-toolopts"></span></div>`
-    + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-disc-msg"></span><span class="tc-discstat"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
+  const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolsmenu" title="more tools &amp; customize">Tools ▾</span><span class="tc-toolbtns"></span></div>`
+    + `<span class="tc-toast"></span><span class="tc-disc-msg"></span><span class="tc-discstat"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
     + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
@@ -2720,7 +2702,7 @@
     const firstFs = document.querySelector('fieldset.advanced-medium');
     if (firstFs && firstFs.parentElement) firstFs.parentElement.insertBefore(wrap, firstFs);
     else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
-    wrap.innerHTML = `<div id="tc-bar">${BAR}</div><div id="tc-bar2" class="tc-bar2" style="display:none"></div>`;
+    wrap.innerHTML = `<div id="tc-bar">${BAR}</div>`;
     ACTIVE = { mode: 'mirror', sections: [] };
     syncNative();   // hide the native tracklist NOW (before the async match/render) so a fresh mount shows no native flash #145
     bindActions(wrap); initTools(); wireApplyMode(wrap); subscribeTracks();

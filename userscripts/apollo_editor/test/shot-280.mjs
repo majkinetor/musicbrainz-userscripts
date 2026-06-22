@@ -44,25 +44,16 @@ const main = async () => {
   await page.waitForSelector('#tc-toolcfg', { timeout: 5000 });
   await page.screenshot({ path: resolve(DEV, '_i280_config.png'), clip: await page.evaluate(() => { const p = document.getElementById('tc-toolcfg'); const r = p.getBoundingClientRect(); return { x: Math.max(0, r.left - 6), y: Math.max(0, r.top - 6), width: r.width + 12, height: r.height + 12 }; }) });
 
-  // pin guesscase + sr from the popover
-  for (const act of ['guesscase', 'sr']) {
-    const pin = await page.$(`#tc-toolcfg .tc-tc-row[data-act="${act}"] button.tc-tc-pin`);
-    if (pin) await pin.click();
-    await page.waitForTimeout(150);
-  }
-  // close popover, then make "cols" the active tool (inline params on row 1)
-  await page.click('#tc-bar', { position: { x: 5, y: 5 } });
-  await page.waitForTimeout(200);
-  const cols = await page.$('.tc-toolbtn[data-act="cols"]'); if (cols) await cols.click();
-  await page.waitForTimeout(400);
-  await shotBar('_i280_pinned.png');
+  // close popover and shoot the wrapping bar at a narrower width
+  await page.keyboard.press('Escape').catch(() => {});
+  await page.mouse.click(5, 400).catch(() => {});
+  await page.setViewportSize({ width: 1150, height: 1000 }); await page.waitForTimeout(300);
+  await shotBar('_i280_wrap.png');
 
   const state = await page.evaluate(() => ({
-    buttons: [...document.querySelectorAll('.tc-toolbtns .tc-toolbtn')].map(b => b.dataset.act || b.textContent),
-    row2: [...document.querySelectorAll('#tc-bar2 .tc-opt')].map(o => o.dataset.tool),
-    row2visible: getComputedStyle(document.getElementById('tc-bar2')).display !== 'none',
-    inline: !!document.querySelector('.tc-toolopts .tc-colso'),
-    barHeight: document.getElementById('tc-bar').getBoundingClientRect().height,
+    items: [...document.querySelectorAll('.tc-toolbtns > *')].map(e => e.dataset.tool || e.dataset.act),
+    toolbtnsRows: Math.round(document.querySelector('.tc-toolbtns').getBoundingClientRect().height),
+    barHeight: Math.round(document.getElementById('tc-bar').getBoundingClientRect().height),
   }));
   console.log('[280] state:', JSON.stringify(state));
   console.log('[280] console errors:', errs.length ? JSON.stringify(errs.slice(0, 5)) : 'none');

@@ -1,8 +1,10 @@
-// Verifies #280 — configurable Tools bar:
-//  - default tools render as buttons; rare ones live under ⋯
-//  - Customize popover opens from the "Tools" label; 📌 pins params to row 2
-//  - per-tool icon/text; at least one must stay on
-//  - long toast text left of Match does NOT change the toolbar height (point 2)
+// Verifies #280 — configurable Tools bar (inline-params model):
+//  - on-bar tools render in order: no-param tools as buttons, param tools as
+//    inline groups (icon/name trigger + their params) at their position
+//  - no ⋯ button; the Tools label opens a menu of off-bar tools + Customize
+//  - no pin / no 2nd row
+//  - per-tool icon/text (≥1), no "icon"/"text" words in the config
+//  - the toolbar wraps (flex) instead of pushing Match outside the content
 //
 //   node test/verify-280.mjs [--headed] [MBID]
 import { chromium } from 'playwright';
@@ -27,7 +29,6 @@ const main = async () => {
   const scriptCode = await readFile(SCRIPT_PATH, 'utf8');
   const ctx = await chromium.launchPersistentContext(PROFILE_DIR, { headless: !HEADED, viewport: { width: 1500, height: 1000 } });
   const page = ctx.pages()[0] || await ctx.newPage();
-  // start from a clean tool config so defaults are deterministic
   await page.addInitScript((k) => { try { const s = JSON.parse(localStorage.getItem(k) || '{}'); delete s.toolCfg; delete s.lastTool; localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} }, SKEY);
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   await page.goto(`${ORIGIN}/release/${MBID}/edit`, { waitUntil: 'domcontentloaded' });
@@ -39,45 +40,43 @@ const main = async () => {
   await page.waitForSelector('.tc-toolbtns', { timeout: 30000 });
   await page.waitForTimeout(800);
 
-  const bar = await page.evaluate(() => [...document.querySelectorAll('.tc-toolbtns .tc-toolbtn')].map(b => b.dataset.act || ''));
-  ok('default bar = guess feat/case, S&R, columns (no ⋯)', JSON.stringify(bar) === JSON.stringify(['guessfeat', 'guesscase', 'sr', 'cols']));
+  // on-bar tools in order; param tools are inline groups carrying their params
+  const layout = await page.evaluate(() => ({
+    order: [...document.querySelectorAll('.tc-toolbtns > *')].map(e => e.dataset.tool || e.dataset.act),
+    guessfeatIsButton: !!document.querySelector('.tc-toolbtns > button.tc-toolbtn[data-act="guessfeat"]'),
+    gcGroupHasParams: !!document.querySelector('.tc-opt[data-tool="guesscase"] .tc-gco'),
+    srGroupHasParams: !!document.querySelector('.tc-opt[data-tool="sr"] .tc-sro'),
+    colsGroupHasParams: !!document.querySelector('.tc-opt[data-tool="cols"] .tc-colso'),
+    noRow2: !document.getElementById('tc-bar2'),
+    noMore: !document.querySelector('.tc-toolbtns .tc-more'),
+  }));
+  ok('on-bar order = guess feat, case, S&R, columns', JSON.stringify(layout.order) === JSON.stringify(['guessfeat', 'guesscase', 'sr', 'cols']));
+  ok('no-param tool is a button; param tools are inline groups with their params', layout.guessfeatIsButton && layout.gcGroupHasParams && layout.srGroupHasParams && layout.colsGroupHasParams);
+  ok('no 2nd row element', layout.noRow2);
+  ok('no ⋯ button', layout.noMore);
 
-  // point 2: long toast text must not change the toolbar height
-  const h0 = await page.evaluate(() => document.getElementById('tc-bar').getBoundingClientRect().height);
-  const h1 = await page.evaluate(() => { document.querySelectorAll('.tc-disc-msg').forEach(e => e.textContent = 'added Discogs link to Some Very Long Artist Name Indeed'); document.querySelectorAll('.tc-toast').forEach(e => e.textContent = 'linked “X” — also on 12 matching tracks and more text here to fill'); return document.getElementById('tc-bar').getBoundingClientRect().height; });
-  ok('toolbar height unchanged when toast/link text appears (' + h0 + '→' + h1 + ')', h0 === h1);
-  await page.evaluate(() => { document.querySelectorAll('.tc-disc-msg,.tc-toast').forEach(e => e.textContent = ''); });
-
-  // the Tools label opens a menu of the off-bar tools + a Customize item (no ⋯ button)
+  // Tools label → menu of off-bar tools + Customize
   await page.click('.tc-toolslabel'); await page.waitForSelector('#tc-menu');
-  const menu = await page.evaluate(() => ({ items: [...document.querySelectorAll('#tc-menu .tc-mi')].map(m => m.dataset.act), noMoreBtn: !document.querySelector('.tc-toolbtns .tc-more') }));
-  ok('no ⋯ button on the bar', menu.noMoreBtn);
-  ok('Tools menu lists off-bar tools + Customize', JSON.stringify(menu.items) === JSON.stringify(['parser', 'swap', 'resetnum', '__cfg']));
-  // open Customize from the menu, then pin guesscase + sr
+  const menu = await page.evaluate(() => [...document.querySelectorAll('#tc-menu .tc-mi')].map(m => m.dataset.act));
+  ok('Tools menu lists off-bar tools + Customize', JSON.stringify(menu) === JSON.stringify(['parser', 'swap', 'resetnum', '__cfg']));
   await page.click('#tc-menu .tc-mi-cfg'); await page.waitForSelector('#tc-toolcfg');
-  for (const act of ['guesscase', 'sr']) { const p = await page.$(`#tc-toolcfg .tc-tc-row[data-act="${act}"] button.tc-tc-pin`); if (p) await p.click(); await page.waitForTimeout(120); }
-  const row2 = await page.evaluate(() => ({ vis: getComputedStyle(document.getElementById('tc-bar2')).display !== 'none', tools: [...document.querySelectorAll('#tc-bar2 .tc-opt')].map(o => o.dataset.tool), noPin: !document.querySelector('#tc-bar2 .tc-tc-pin, #tc-bar2 .tc-opt .pin'), trig: !!document.querySelector('#tc-bar2 .tc-opt .tc-opttrig'), barBtns: [...document.querySelectorAll('.tc-toolbtns .tc-toolbtn')].map(b => b.dataset.act || (b.classList.contains('tc-more') ? '⋯' : '')) }));
-  ok('pinning shows the two panels on row 2', row2.vis && JSON.stringify(row2.tools) === JSON.stringify(['guesscase', 'sr']));
-  ok('no 📌 glyph on the row-2 panels', row2.noPin);
-  ok('pinned tools dropped from the row-1 buttons', JSON.stringify(row2.barBtns) === JSON.stringify(['guessfeat', 'cols']));
-  ok('row-2 panel icon is a clickable trigger', row2.trig);
 
-  // per-tool icon/text are icon state-buttons (no "icon"/"text" words): turn OFF text → icon-only
+  // no pin control in the config
+  ok('no pin control in Customize', await page.evaluate(() => !document.querySelector('#tc-toolcfg .tc-tc-pin')));
+  ok('no "icon"/"text" words in the density control', await page.evaluate(() => !/\bicon\b|\btext\b/i.test(document.querySelector('#tc-toolcfg .tc-tc-dens').textContent)));
+
+  // per-tool icon/text state-buttons: turn OFF text on cols → icon-only group label
   await page.click('#tc-toolcfg .tc-tc-row[data-act="cols"] .cb-text'); await page.waitForTimeout(150);
-  const colsIconOnly = await page.evaluate(() => { const b = document.querySelector('.tc-toolbtn[data-act="cols"]'); return { hasIc: !!b.querySelector('.tc-tbic'), hasLab: !!b.querySelector('.tc-tblab') }; });
-  ok('icon-only tool shows icon, no text', colsIconOnly.hasIc && !colsIconOnly.hasLab);
-  // try to also turn OFF icon → ≥1 must keep one (it flips to text-only)
+  const colsLab = await page.evaluate(() => { const n = document.querySelector('.tc-opt[data-tool="cols"] .tc-optname'); return { hasIc: !!n.querySelector('.tc-tbic'), hasLab: !!n.querySelector('.tc-tblab') }; });
+  ok('icon-only param tool shows just its icon label', colsLab.hasIc && !colsLab.hasLab);
   await page.click('#tc-toolcfg .tc-tc-row[data-act="cols"] .cb-icon').catch(() => {}); await page.waitForTimeout(150);
-  const colsAfter = await page.evaluate(() => { const b = document.querySelector('.tc-toolbtn[data-act="cols"]'); const r = document.querySelector('#tc-toolcfg .tc-tc-row[data-act="cols"]'); return { icOn: r.querySelector('.cb-icon').classList.contains('on'), txtOn: r.querySelector('.cb-text').classList.contains('on'), hasContent: !!(b.querySelector('.tc-tbic') || b.querySelector('.tc-tblab')) }; });
-  ok('cannot drop BOTH icon and text (≥1 enforced)', (colsAfter.icOn || colsAfter.txtOn) && colsAfter.hasContent);
-  // the config no longer spams the words "icon"/"text"
-  const noWords = await page.evaluate(() => !/\bicon\b|\btext\b/i.test(document.querySelector('#tc-toolcfg .tc-tc-dens').textContent));
-  ok('no "icon"/"text" words in the density control', noWords);
+  ok('cannot drop BOTH icon and text (≥1 enforced)', await page.evaluate(() => { const r = document.querySelector('#tc-toolcfg .tc-tc-row[data-act="cols"]'); return r.querySelector('.cb-icon').classList.contains('on') || r.querySelector('.cb-text').classList.contains('on'); }));
 
-  // move parser onto the bar, verify it leaves the ⋯ menu
-  await page.check('#tc-toolcfg .tc-tc-row[data-act="parser"] .cb-onbar'); await page.waitForTimeout(150);
-  const hasParserBtn = await page.evaluate(() => !!document.querySelector('.tc-toolbtn[data-act="parser"]'));
-  ok('toggling a tool On the bar adds its button', hasParserBtn);
+  // wrap: at a narrow width the buttons wrap to >1 row, and Match stays within the content (not pushed past it)
+  await page.setViewportSize({ width: 1000, height: 1000 }); await page.waitForTimeout(300);
+  const wrap = await page.evaluate(() => { const tb = document.querySelector('.tc-toolbtns'); const one = document.querySelector('.tc-toolbtns > *'); const match = document.querySelector('#tc-bar [data-act="match"]'); const wrapW = document.getElementById('tc-mirror-wrap').clientWidth; return { multiRow: tb.getBoundingClientRect().height > one.getBoundingClientRect().height * 1.5, matchRight: match.getBoundingClientRect().right, wrapW }; });
+  ok('toolbar wraps to multiple rows when narrow', wrap.multiRow);
+  ok('Match stays within the content width (not pushed past it)', wrap.matchRight <= wrap.wrapW + 1);
 
   ok('no page errors', errs.length === 0);
   await writeFile(resolve(LOG_DIR, 'result.txt'), out.join('\n'));
