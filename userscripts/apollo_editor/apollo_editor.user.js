@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.191152
+// @version      2026.6.22.192331
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -289,19 +289,39 @@
     const url = discogsReleaseUrlFromPage();
     if (!url) { _discogsMap = { url: null, map: null }; return null; }
     if (!force && _discogsMap.url === url && _discogsMap.map) return _discogsMap.map;
-    let json = null;
-    try { json = await fetch(`${url.replace('https://www.discogs.com/release/', 'https://api.discogs.com/releases/')}?token=${DISCOGS_TOKEN}`).then(r => r.ok ? r.json() : null); }
-    catch (e) { Log.warn('Discogs match: fetch failed —', e.message); }
-    const map = new Map();
-    if (json && Array.isArray(json.tracklist)) {
-      json.tracklist.filter(t => (t.type_ || 'track') === 'track').forEach(t => {
-        const key = fold(t.title || ''); if (!key || map.has(key)) return;
-        map.set(key, (t.artists || []).map(a => (a && a.id) ? `https://www.discogs.com/artist/${a.id}` : null));
-      });
-      Log.info('Discogs match: mapped', map.size, 'track titles from', url);
-    } else { Log.warn('Discogs match: release JSON had no tracklist'); }
-    _discogsMap = { url, map };
-    return map;
+    const api = `${url.replace('https://www.discogs.com/release/', 'https://api.discogs.com/releases/')}?token=${DISCOGS_TOKEN}`;
+    // #281: the Discogs API (one shared token) is rate-limited — a 429 used to make
+    // the fetch return null, which was then CACHED as an empty map, so the whole
+    // session showed no links until a full page reload. Retry with backoff, and
+    // crucially never cache a FAILED fetch (return null → caller retries / shows a
+    // retry affordance). Only a real JSON response is cached (success or genuine
+    // empty), keyed by URL.
+    for (let attempt = 0; attempt < 4; attempt++) {
+      let r;
+      try { r = await fetch(api); }
+      catch (e) { Log.warn('Discogs match: fetch failed —', e.message); await _sleep(800 * (attempt + 1)); continue; }   // network → retry, don't cache
+      if (r.status === 429 || r.status === 503) {                       // rate limited → back off, don't cache
+        const ra = parseInt(r.headers.get('retry-after') || '', 10);
+        Log.warn('Discogs match: rate limited (HTTP', r.status + ') — backing off');
+        await _sleep(Math.max(1000, (ra > 0 ? ra : 2) * 1000));
+        continue;
+      }
+      if (!r.ok) { Log.warn('Discogs match: HTTP', r.status); await _sleep(800 * (attempt + 1)); continue; }   // transient → retry, don't cache
+      let json = null;
+      try { json = await r.json(); } catch (e) { await _sleep(800); continue; }
+      const map = new Map();
+      if (json && Array.isArray(json.tracklist)) {
+        json.tracklist.filter(t => (t.type_ || 'track') === 'track').forEach(t => {
+          const key = fold(t.title || ''); if (!key || map.has(key)) return;
+          map.set(key, (t.artists || []).map(a => (a && a.id) ? `https://www.discogs.com/artist/${a.id}` : null));
+        });
+        Log.info('Discogs match: mapped', map.size, 'track titles from', url);
+      } else { Log.warn('Discogs match: release JSON had no tracklist'); }
+      _discogsMap = { url, map };   // cache ONLY a real response (success or genuine empty)
+      return map;
+    }
+    Log.warn('Discogs match: could not load release JSON after retries (rate-limited?) — leaving uncached');
+    return null;   // all retries exhausted → unknown, NOT cached, so the next call retries
   }
   // Resolve a Discogs artist URL to MB artist(s) via its URL relationship.
   // Returns [{ gid, name }] (0 / 1 / many) on success, or `null` when the lookup
@@ -458,6 +478,7 @@
     }
   }
   let _tagDiscogsRunning = false;
+  let _discMapFailed = false, _discMapRetried = false;   // #281: Discogs API unreachable → retry affordance
   async function tagDiscogsForAll() {
     if (!MODEL || SETTINGS.discogsUrlMatch === false || _tagDiscogsRunning) return;
     _tagDiscogsRunning = true;
@@ -465,9 +486,19 @@
       // wait for the release Discogs link to exist before deciding there's nothing
       // to do — this is the #1 reason a first visit showed a blank badge.
       const relUrl = await discogsReleaseUrlSoon();
-      if (!relUrl) { setDiscProgress(''); return; }   // genuinely no Discogs link on this release
+      if (!relUrl) { _discMapFailed = false; setDiscProgress(''); return; }   // genuinely no Discogs link on this release
       setDiscProgress('checking Discogs links…');   // now that we know there's work, show it
       const dmap = await loadDiscogsMap();
+      if (dmap === null) {
+        // #281: couldn't reach the Discogs API (rate-limited / network) after retries.
+        // DON'T show a misleading blank (which looked like "no links, all good") — flag
+        // it so the badge offers a one-click retry, and auto-retry once shortly so it
+        // usually self-heals without the user having to reload the page.
+        _discMapFailed = true;
+        if (!_discMapRetried) { _discMapRetried = true; setTimeout(() => { if (_discMapFailed) tagDiscogsForAll(); }, 6000); }
+        return;
+      }
+      _discMapFailed = false; _discMapRetried = false;
       const jobs = [];
       if (dmap) for (const t of MODEL.tracks) { const durls = dmap.get(fold(t.title)); if (durls) t.slots.forEach((s, i) => { if (durls[i]) jobs.push([s, durls[i]]); }); }
       if (!jobs.length) { setDiscProgress(''); return; }
@@ -850,7 +881,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.191152';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.192331';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1358,6 +1389,19 @@
   }
   const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (discNeedsAttention(s)) n++; })); return n; };
   const setDiscStat = () => {
+    // #281: Discogs API unreachable → an amber, clickable "retry" badge instead of a
+    // blank that reads as "nothing to do". (It also auto-retries once on its own.)
+    if (_discMapFailed) {
+      document.querySelectorAll('.tc-discstat').forEach(e => {
+        e.classList.remove('tc-disc-badge', 'tc-disc-ok');
+        e.classList.add('tc-disc-pend');
+        e.textContent = '🔗 Discogs ⟳';
+        e.style.cursor = 'pointer';
+        e.title = 'Couldn’t reach Discogs (rate-limited) — click to retry';
+        e.onclick = () => tagDiscogsForAll();
+      });
+      return;
+    }
     let miss = 0, mism = 0, pend = 0, checked = false;
     if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => {
       if (s._discogsUrl) checked = true;   // this slot carried a Discogs URL → the check ran on it
