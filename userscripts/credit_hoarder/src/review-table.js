@@ -1009,7 +1009,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // URL relation, optionally also `comment` (= disambiguation).
                 // Used by both "Create in MB" (default-name, no disambiguation)
                 // and the "Create (adv)" popup flow (issue #5).
-                function openCreateTab({ name, disambiguation } = {}) {
+                function openCreateTab({ name, disambiguation, background } = {}) {
                     const finalName = (name || displayName).trim();
                     let createUrl;
                     let createParams;
@@ -1041,7 +1041,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         createUrl = `https://musicbrainz.org/${entityType}/create`;
                     }
                     const p = new URLSearchParams(createParams);
-                    const newTab = window.open(`${createUrl}?${p}`, '_blank');
                     // Identity for the cross-tab postback. MUST be truthy even
                     // for URL-less credits (all of Qobuz): an empty
                     // `resource_url` made the created-artist tab bail at its
@@ -1049,17 +1048,36 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     // closing (#193 live-test round 3). Use the same synthetic
                     // key the rest of the table keys rows by.
                     const pendingKey = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || displayName}`;
-                    if (newTab) {
-                        const trySet = () => {
-                            try { newTab.sessionStorage.setItem('discogs-importer-pending-artist', pendingKey); }
-                            catch(e) { setTimeout(trySet, 50); }
-                        };
-                        trySet();
+                    let bgTab = null;   // #273: GM_openInTab handle, closed from here on postback
+                    if (background && typeof GM_openInTab === 'function') {
+                        // #273: create silently in a BACKGROUND tab and auto-submit.
+                        // GM_openInTab gives no window handle to the new tab, so we pass
+                        // the postback identity in the hash; the create-page bootstrap
+                        // reads it, stores the pending marker itself, and clicks "Enter
+                        // edit". The hash is dropped on form submit, but the marker (in
+                        // the tab's sessionStorage) survives to the entity page, which
+                        // posts back + closes — same path as the foreground create. We
+                        // also keep the GM tab handle to close it from here on postback
+                        // (a GM-opened tab can't always self-close via window.close()).
+                        const url = `${createUrl}?${p}#ch-autocommit=${encodeURIComponent(pendingKey)}`;
+                        bgTab = GM_openInTab(url, { active: false, insert: true });
+                    } else {
+                        const newTab = window.open(`${createUrl}?${p}`, '_blank');
+                        if (newTab) {
+                            const trySet = () => {
+                                try { newTab.sessionStorage.setItem('discogs-importer-pending-artist', pendingKey); }
+                                catch(e) { setTimeout(trySet, 50); }
+                            };
+                            trySet();
+                        }
                     }
                     const onCreated = (evt) => {
                         if (evt.data?.type !== 'artist-created') return;
                         if (evt.data.resourceUrl !== pendingKey) return;
                         DISCOGS_CHANNEL.removeEventListener('message', onCreated);
+                        // #273: ensure the background create tab is gone (its own
+                        // window.close() may be a no-op for a GM-opened tab).
+                        try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (e) {}
                         // Issue #78: `openCreateTab` puts the Discogs URL
                         // straight into MB's create form (`edit-<type>.url.0.text`
                         // + `link_type_id`), so when the entity is born the
@@ -1083,11 +1101,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // accessibility.
                 const createBtn = document.createElement('button');
                 createBtn.textContent = '+';
-                createBtn.title = discogsHref
+                createBtn.title = (discogsHref
                     ? `Create in MB with default ${srcName} name + URL`
-                    : 'Create in MB with the credited name';
+                    : 'Create in MB with the credited name')
+                    + '  ·  right-click: create silently in a background tab (auto-submitted)';
                 createBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#2a7;font-size:1.15rem;font-weight:600;'; // bigger, bolder plus
                 createBtn.addEventListener('click', () => openCreateTab());
+                // #273: right-click creates in the background and auto-commits.
+                createBtn.addEventListener('contextmenu', e => { e.preventDefault(); openCreateTab({ background: true }); });
 
                 const createAdvBtn = document.createElement('button');
                 createAdvBtn.textContent = '▾';

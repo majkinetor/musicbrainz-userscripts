@@ -38,6 +38,35 @@ if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
 // detects the successful creation (URL contains a MBID), posts the new entity
 // back to the opener tab via the channel, then closes itself.
 
+// ── Background create + auto-commit (#273) ───────────────────────────────────
+// The review table's "+" chip, right-clicked, opens the MB create form in a
+// BACKGROUND tab (GM_openInTab) with the postback identity in the URL hash
+// (`#ch-autocommit=…`). Here on the create page we stash that identity as the
+// pending marker (so the post-submit entity page closes + posts back, exactly
+// like a foreground create) and click MB's "Enter edit" button. The form is
+// already pre-filled from the query string, so submitting needs no input.
+(function handleCreatePageAutoCommit() {
+    if (!/\/(artist|label|place)\/create\b/i.test(location.pathname)) return;
+    const m = location.hash.match(/ch-autocommit=([^&]+)/);
+    if (!m) return;
+    let identity = '';
+    try { identity = decodeURIComponent(m[1]); } catch (e) { identity = m[1]; }
+    try { sessionStorage.setItem('discogs-importer-pending-artist', identity); } catch (e) {}
+
+    // Click "Enter edit" once the (React) editor has rendered it and it's
+    // enabled. Poll briefly; give up quietly if MB's form never offers it
+    // (e.g. a validation block) — the tab just stays open for the user.
+    let tries = 0;
+    const submit = () => {
+        const btn = document.querySelector('button.submit.positive')
+            || [...document.querySelectorAll('button[type="submit"]')].find(b => /enter edit/i.test(b.textContent || ''));
+        if (btn && !btn.disabled) { btn.click(); return; }
+        if (tries++ < 60) setTimeout(submit, 200);   // ~12s grace for hydration
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', submit);
+    else submit();
+})();
+
 (function handleEntityPageIfNeeded() {
     // Match artist, label, or place pages with a MBID
     const entityMatch = location.href.match(

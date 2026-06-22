@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.22.001106
+// @version      2026.6.22.124529
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3531,7 +3531,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               );
             }
           }
-          function openCreateTab({ name, disambiguation } = {}) {
+          function openCreateTab({ name, disambiguation, background } = {}) {
             const finalName = (name || displayName).trim();
             let createUrl;
             let createParams;
@@ -3563,22 +3563,32 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               createUrl = `https://musicbrainz.org/${entityType}/create`;
             }
             const p = new URLSearchParams(createParams);
-            const newTab = window.open(`${createUrl}?${p}`, "_blank");
             const pendingKey = r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || displayName}`;
-            if (newTab) {
-              const trySet = () => {
-                try {
-                  newTab.sessionStorage.setItem("discogs-importer-pending-artist", pendingKey);
-                } catch (e2) {
-                  setTimeout(trySet, 50);
-                }
-              };
-              trySet();
+            let bgTab = null;
+            if (background && typeof GM_openInTab === "function") {
+              const url = `${createUrl}?${p}#ch-autocommit=${encodeURIComponent(pendingKey)}`;
+              bgTab = GM_openInTab(url, { active: false, insert: true });
+            } else {
+              const newTab = window.open(`${createUrl}?${p}`, "_blank");
+              if (newTab) {
+                const trySet = () => {
+                  try {
+                    newTab.sessionStorage.setItem("discogs-importer-pending-artist", pendingKey);
+                  } catch (e2) {
+                    setTimeout(trySet, 50);
+                  }
+                };
+                trySet();
+              }
             }
             const onCreated = (evt) => {
               if (evt.data?.type !== "artist-created") return;
               if (evt.data.resourceUrl !== pendingKey) return;
               DISCOGS_CHANNEL.removeEventListener("message", onCreated);
+              try {
+                if (bgTab && typeof bgTab.close === "function") bgTab.close();
+              } catch (e2) {
+              }
               _urlCheckSessionCache.set(`${evt.data.id}|${discogsHref}`, "linked");
               setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
             };
@@ -3586,9 +3596,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           }
           const createBtn = document.createElement("button");
           createBtn.textContent = "+";
-          createBtn.title = discogsHref ? `Create in MB with default ${srcName} name + URL` : "Create in MB with the credited name";
+          createBtn.title = (discogsHref ? `Create in MB with default ${srcName} name + URL` : "Create in MB with the credited name") + "  \xB7  right-click: create silently in a background tab (auto-submitted)";
           createBtn.style.cssText = ACTION_CHIP_STYLE + "color:#2a7;font-size:1.15rem;font-weight:600;";
           createBtn.addEventListener("click", () => openCreateTab());
+          createBtn.addEventListener("contextmenu", (e2) => {
+            e2.preventDefault();
+            openCreateTab({ background: true });
+          });
           const createAdvBtn = document.createElement("button");
           createAdvBtn.textContent = "\u25BE";
           createAdvBtn.title = "Create in MB with editable name + disambiguation" + (srcName === "Discogs" && discogsHref ? ", pre-filled from the Discogs profile" : "");
@@ -6770,6 +6784,32 @@ ${lines}
   if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
     runTidalHarvestPage();
   }
+  (function handleCreatePageAutoCommit() {
+    if (!/\/(artist|label|place)\/create\b/i.test(location.pathname)) return;
+    const m = location.hash.match(/ch-autocommit=([^&]+)/);
+    if (!m) return;
+    let identity = "";
+    try {
+      identity = decodeURIComponent(m[1]);
+    } catch (e) {
+      identity = m[1];
+    }
+    try {
+      sessionStorage.setItem("discogs-importer-pending-artist", identity);
+    } catch (e) {
+    }
+    let tries = 0;
+    const submit = () => {
+      const btn = document.querySelector("button.submit.positive") || [...document.querySelectorAll('button[type="submit"]')].find((b) => /enter edit/i.test(b.textContent || ""));
+      if (btn && !btn.disabled) {
+        btn.click();
+        return;
+      }
+      if (tries++ < 60) setTimeout(submit, 200);
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", submit);
+    else submit();
+  })();
   (function handleEntityPageIfNeeded() {
     const entityMatch = location.href.match(
       /musicbrainz\.org\/(artist|label|place)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:[^/]|$)/i
