@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22
+// @version      2026.6.22.180408
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -183,7 +183,7 @@
     } catch (e) { /* size is a nicety — never block the gallery */ }
   }
   let SETTINGS = load();
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone' }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -349,6 +349,7 @@
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-autocomment"${SETTINGS.autoComment ? ' checked' : ''}> Set comment from the file name (text after the type)</label>`
       + `<div class="as-setup-opt"><label class="as-setup-optlbl"><input type="checkbox" class="as-setup-autofront"${SETTINGS.autoFront ? ' checked' : ''}> Set type to “Front” on first import</label>`
       + ` <select class="as-setup-autofront-mode"><option value="whenNone"${SETTINGS.autoFrontMode !== 'always' ? ' selected' : ''}>when none exists</option><option value="always"${SETTINGS.autoFrontMode === 'always' ? ' selected' : ''}>always</option></select></div>`
+      + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-clearsel"${SETTINGS.clearSelAfterOp ? ' checked' : ''}> Clear the selection after a batch action (type, comment, download, report)</label>`
       + `</div>`;
     document.body.appendChild(panel);
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
@@ -356,6 +357,7 @@
     panel.querySelector('.as-setup-autocomment').onchange = e => { SETTINGS.autoComment = e.target.checked; save(); };
     panel.querySelector('.as-setup-autofront').onchange = e => { SETTINGS.autoFront = e.target.checked; save(); };
     panel.querySelector('.as-setup-autofront-mode').onchange = e => { SETTINGS.autoFrontMode = e.target.value; save(); };
+    panel.querySelector('.as-setup-clearsel').onchange = e => { SETTINGS.clearSelAfterOp = e.target.checked; save(); };
     const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -788,16 +790,17 @@
   function wireSel() {
     const q = s => root.querySelector(s);
     q('.as-selall') && (q('.as-selall').onclick = () => { selectable().forEach(it => it._sel = true); root.querySelectorAll('.as-card:not(.del), .as-drow').forEach(c => c.classList.add('sel')); root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = true); syncSel(); });
-    q('.as-selclr') && (q('.as-selclr').onclick = () => { MODEL.forEach(it => it._sel = false); root.querySelectorAll('.as-card.sel, .as-drow.sel').forEach(c => c.classList.remove('sel')); root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = false); syncSel(); });
+    q('.as-selclr') && (q('.as-selclr').onclick = () => clearSel());
     q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; } }); render(); });
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = async e => {
       const sel = MODEL.filter(it => it._sel && !it._del && !it._sourcing); if (!sel.length) return;   // include NEW covers (download their local blob)
-      if (sel.length === 1) return dlOne(sel[0]);           // single → save the image directly
+      if (sel.length === 1) { dlOne(sel[0]); maybeClearSel(); return; }   // single → save the image directly
       const b = e.currentTarget, lbl = b.querySelector('.as-bt'), old = lbl ? lbl.textContent : '';
       b.disabled = true; if (lbl) lbl.style.display = 'inline';   // show progress even in compact mode
       const prog = (d, t) => { if (lbl) lbl.textContent = `Zipping ${d}/${t}…`; };
       prog(0, sel.length);
       try { await dlZip(sel, prog); } finally { b.disabled = false; if (lbl) { lbl.textContent = old; lbl.style.display = ''; } }   // multiple → one .zip (#240)
+      maybeClearSel();   // #277
     });
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
     q('.as-bk-cmt') && (q('.as-bk-cmt').onclick = e => { e.stopPropagation(); openBulkCommentPop(q('.as-bk-cmt')); });
@@ -915,6 +918,16 @@
     const box = root.querySelector('.as-selbox');
     if (box) { box.innerHTML = selBox(); wireSel(); fitToolbar(); }
   }
+  // drop the whole selection (model flags + on-screen cards/checkboxes + toolbar).
+  function clearSel() {
+    MODEL.forEach(it => it._sel = false);
+    root.querySelectorAll('.as-card.sel, .as-drow.sel').forEach(c => c.classList.remove('sel'));
+    root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = false);
+    syncSel();
+  }
+  // #277: after a batch op (type / comment / download / report), drop the
+  // selection — on by default, opt-out in the gear panel.
+  const maybeClearSel = () => { if (SETTINGS.clearSelAfterOp) clearSel(); };
   function refreshStaged() {
     const n = opsCount(); const c = root.querySelector('.as-commit');
     if (c) { c.innerHTML = commitInner(n); c.disabled = !n; if (!c.disabled) c.onclick = enterEdit; fitToolbar(); }
@@ -2395,8 +2408,8 @@
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     const picked = () => ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
-    pop.querySelector('.as-pop-apply').onclick = () => { const ts = picked(); sel.forEach(it => it.types = ts.slice()); pop.remove(); render(); };
-    pop.querySelector('.as-pop-add').onclick = () => { const ts = picked(); sel.forEach(it => it.types = [...new Set([...it.types, ...ts])]); pop.remove(); render(); };
+    pop.querySelector('.as-pop-apply').onclick = () => { const ts = picked(); sel.forEach(it => it.types = ts.slice()); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
+    pop.querySelector('.as-pop-add').onclick = () => { const ts = picked(); sel.forEach(it => it.types = [...new Set([...it.types, ...ts])]); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
     const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -2414,7 +2427,7 @@
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     const inp = pop.querySelector('.as-bulk-cmt'); inp.focus(); inp.select();
-    const apply = v => { sel.forEach(it => it.comment = v); pop.remove(); render(); };
+    const apply = v => { sel.forEach(it => it.comment = v); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
     pop.querySelector('.as-pop-apply').onclick = () => apply(inp.value);
     pop.querySelector('.as-bulk-cmt-clr').onclick = () => apply('');
     inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); apply(inp.value); } else if (e.key === 'Escape') { e.preventDefault(); pop.remove(); } };
@@ -2531,8 +2544,9 @@
       <div class="as-cm-f"><span class="as-rp-note">${omitted ? `${omitted} unsaved upload${omitted===1?'':'s'} omitted (no CAA URL yet)` : ''}</span><span class="as-sp"></span><button class="as-btn as-rp-copy">📋 Copy</button><button class="as-btn as-cm-cancel">Close</button></div>
     </div>`;
     document.body.appendChild(ov);
-    ov.onclick = e => { if (e.target === ov) ov.remove(); };
-    ov.querySelector('.as-cm-cancel').onclick = () => ov.remove();
+    const close = () => { ov.remove(); maybeClearSel(); };   // #277: report counts as "using" the selection → clear on close
+    ov.onclick = e => { if (e.target === ov) close(); };
+    ov.querySelector('.as-cm-cancel').onclick = close;
     const ta = ov.querySelector('.as-rp-out');
     const regen = async () => {
       const opts = { format: ov.querySelector('.as-rp-fmt').value, size: ov.querySelector('.as-rp-size').value, layout: ov.querySelector('.as-rp-layout').value };
