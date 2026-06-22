@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.150000
+// @version      2026.6.22.154000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1989,7 +1989,7 @@
     } catch (e) {
       const cancelled = ctl && ctl.aborted;
       st.textContent = cancelled ? '⛔' : '❌'; pay.textContent = String(e && e.message || e);
-      if (!cancelled) row.classList.add('err');
+      if (!cancelled) { row.classList.add('err'); op._err = true; }   // #275: flag for the Repeat retry
     }
   }
   // bounded-concurrency map
@@ -2018,10 +2018,19 @@
       catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
     }
   }
-  async function runPlan(ov, plan, meta) {
+  async function runPlan(ov, plan, meta, opsToRun) {
     const goBtn = ov.querySelector('.as-cm-go'), cancelBtn = ov.querySelector('.as-cm-cancel');
     goBtn.disabled = true;
-    plan.forEach((op, i) => { op._i = i; });
+    // #275: `opsToRun` set → Repeat run (just the failed ops). Keep the original
+    // `_i` row mapping; reset each retried row's ❌/error back to pending first.
+    const isRepeat = !!opsToRun;
+    const ops = opsToRun || plan;
+    if (!isRepeat) plan.forEach((op, i) => { op._i = i; });
+    else ops.forEach(op => {
+      op._err = false;
+      const row = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`);
+      if (row) { row.classList.remove('err'); const st = row.querySelector('.as-cm-st'); if (st) st.textContent = '○'; const pl = row.querySelector('.as-cm-payload'); if (pl) pl.textContent = ''; }
+    });
     // ctl carries the abort flag + the live xhrs/fetch-signal so Cancel works mid-run
     const ctl = { aborted: false, xhrs: new Set(), ac: new AbortController() };
     // #269 while a live run is in flight: block accidental backdrop dismissal (see
@@ -2050,9 +2059,9 @@
     const CONC = meta.dry ? 8 : 4;   // modest concurrency live to stay friendly to MB
     // uploads run in parallel (register stays ordered); edits/removes parallel; reorder last.
     try {
-      await runAdds(ov, plan.filter(o => o.kind === 'add'), meta, ctl);
-      if (!ctl.aborted) await runPool(plan.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta, ctl);
-      if (!ctl.aborted) await runPool(plan.filter(o => o.kind === 'reorder'), 1, ov, meta, ctl);
+      await runAdds(ov, ops.filter(o => o.kind === 'add'), meta, ctl);
+      if (!ctl.aborted) await runPool(ops.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta, ctl);
+      if (!ctl.aborted) await runPool(ops.filter(o => o.kind === 'reorder'), 1, ov, meta, ctl);
     } finally {
       endRun();   // run finished/failed — re-allow backdrop close and drop the unload guard (before any auto-reload)
     }
@@ -2073,10 +2082,16 @@
         // #248 on the add page there's nothing to reload INTO — land on the cover-art
         // tab so the freshly-uploaded covers show in the normal gallery.
         b.textContent = IS_ADD ? 'Done — opening cover art…' : 'Done — reloading…'; b.disabled = true;
+        b.classList.remove('as-cm-repeat');   // clear the error styling if a repeat just went clean
         setTimeout(() => { if (IS_ADD) location.href = `${ENT.base}/${ENT.art}`; else location.reload(); }, 900);
       } else {
-        // something failed — leave it up so the user can read the ❌ rows.
-        b.textContent = `Reload (${errs} failed)`; b.disabled = false; b.onclick = () => location.reload();
+        // #275: something failed — offer to RE-RUN just the failed ops in place
+        // (uploads / comment / type changes are expensive to redo by hand, so
+        // don't force a full reload that throws the staged work away). Reddish to
+        // signal the error state.
+        b.textContent = `Repeat (${errs} failed)`; b.disabled = false;
+        b.classList.add('as-cm-repeat');
+        b.onclick = () => runPlan(ov, plan, meta, plan.filter(o => o._err));
       }
     }
     else ov.querySelector('.as-cm-go').disabled = false;
@@ -2569,6 +2584,9 @@
   .as-btn:hover{background:#f6f3fd}
   /* accent (white-on-purple) buttons must darken on hover, not lighten — else the white text vanishes */
   .as-commit:hover:not(:disabled),.as-pop-apply:hover:not(:disabled),.as-cm-go:hover:not(:disabled){background:#4e329f;color:#fff;border-color:#4e329f}
+  /* #275: the Repeat (failed) button is red to signal the error state */
+  .as-cm-go.as-cm-repeat{background:#d9463f;border-color:#b53a34;color:#fff}
+  .as-cm-go.as-cm-repeat:hover:not(:disabled){background:#c43c36;border-color:#a5342f}
   .as-add{font-weight:600;color:var(--as-acc)}
   .as-mh{padding:3px 7px}
   .as-mh-ic{display:block;background:#80a32b;padding:2px;border-radius:5px;width:14px;height:14px}   /* green chip so the white MH icon shows; sized so it doesn't out-tall the text buttons */
