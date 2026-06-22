@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.201556
+// @version      2026.6.22.213917
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -896,7 +896,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.201556';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.213917';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1141,9 +1141,10 @@
     /* the global toolbar stays pinned at the top while scrolling the tracklist */
     #tc-mirror-wrap{margin:4px 0 6px;position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e3dcf2;box-shadow:0 3px 8px rgba(40,20,80,.07)}
     .tc-medsec{margin:2px 0 14px}
-    #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 4px}
-    #tc-bar b{color:#563b8f}#tc-bar .sp{flex:1}
-    .tc-toast{flex:none;max-width:46%;color:#5f3ec0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+    #tc-bar{display:flex;align-items:center;gap:8px;padding:6px 4px;flex-wrap:nowrap;min-width:0}   /* #280: never wrap → toast / "added link" text can't push the toolbar taller */
+    #tc-bar b{color:#563b8f}#tc-bar .sp{flex:1 1 0;min-width:0}
+    #tc-bar > .tc-btn{flex:none;white-space:nowrap}   /* #280: Match / ▾ never shrink → never wrap to 2 lines when toast text appears */
+    .tc-toast{flex:0 1 auto;min-width:0;color:#5f3ec0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}   /* #280: shrink (ellipsis) instead of forcing a wrap */
     .tc-globalstat{flex:none;font-size:12px;color:#999;font-style:italic;white-space:nowrap}
     .tc-am-lbl{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#555;white-space:nowrap}.tc-am-lbl select{font:12px Arial;padding:1px 3px}
     .tc-globalstat.tc-unres{font-style:normal;font-weight:bold;color:#fff;background:#d6342c;padding:1px 8px;border-radius:9px}
@@ -1161,9 +1162,19 @@
     .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:#999;margin-left:12px;font-size:11px}
     .tc-mirror th .tc-hstatus.tc-unres{font-style:normal;font-weight:bold;color:#fff;background:#d6342c;padding:1px 7px;border-radius:9px;font-size:11px}
     .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:#444;margin-right:14px;max-width:140px}
-    .tc-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .tc-toolopts{display:flex;align-items:center;gap:6px}
-    .tc-toolopts .tc-gco,.tc-toolopts .tc-sro,.tc-toolopts .tc-colso{display:flex;align-items:center;gap:8px}
+    .tc-tools{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;min-width:0;flex:0 1 auto}   /* #280 */
+    .tc-toolslabel{flex:none;font:800 11px Arial;letter-spacing:.03em;text-transform:uppercase;color:#6f42c1;cursor:pointer;white-space:nowrap;border-bottom:1px dotted #b9a4e0;line-height:1.5}
+    .tc-toolslabel:hover{color:#4b2e83}
+    .tc-toolbtns{display:flex;align-items:center;gap:6px;flex:none}
+    .tc-toolbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid #d8d0ec;background:linear-gradient(#fff,#f4f1fb);border-radius:5px;padding:4px 9px;font:13px Arial;color:#4a4a4a;cursor:pointer;white-space:nowrap;flex:none}
+    .tc-toolbtn:hover{border-color:#bcaae6;background:#f3eefe}
+    .tc-toolbtn.active{background:#5f3ec0;border-color:#4f33a3;color:#fff;font-weight:600}
+    .tc-toolbtn .tc-tbic{font-size:13px;line-height:1}
+    .tc-toolbtn.instant .tc-tbic{color:#2e9b57}
+    .tc-toolbtn.active .tc-tbic{color:#fff}
+    .tc-toolbtn.tc-more{font-weight:bold;color:#7a68b8;border-style:dashed}
+    .tc-toolopts{display:flex;align-items:center;gap:6px;min-width:0}
+    .tc-gco,.tc-sro,.tc-colso,.tc-medo{display:flex;align-items:center;gap:8px}
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid #bbb;border-radius:4px;background:#fff;cursor:pointer;color:#333}
     .tc-colbtn:hover{background:#f0ecfa;border-color:#a98fe0}
@@ -1188,15 +1199,36 @@
     .tc-srtpl-newlbl{color:#777;margin-bottom:4px}
     .tc-srtpl-name{width:100%;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:4px 7px;font:13px Arial}
     .tc-srtpl-name:focus{border-color:#8a72c8;outline:none}
-    .tc-toolopts label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}
-    .tc-toolopts input[type=text]{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:120px}
-    .tc-toolopts input[type=text]::placeholder{color:#c2c2c2}
-    .tc-toolopts select{font:12px Arial;padding:1px}
-    /* the Tools split-button always keeps the bordered/filled button look (not flat) */
-    .tc-split{display:inline-flex}
-    .tc-split .tc-btn{border-radius:3px 0 0 3px;border-color:#bbb;background:linear-gradient(#fff,#eee)}
-    .tc-split .tc-caret{border-radius:0 3px 3px 0;padding:4px 7px;border-left:1px solid #ccc}
-    .tc-split .tc-btn:hover{background:linear-gradient(#fff,#e4e4e4)}
+    .tc-toolopts label,.tc-opt label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}
+    .tc-toolopts input[type=text],.tc-opt input[type=text]{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:120px}
+    .tc-toolopts input[type=text]::placeholder,.tc-opt input[type=text]::placeholder{color:#c2c2c2}
+    .tc-toolopts select,.tc-opt select{font:12px Arial;padding:1px}
+    /* #280 — pinned tools' params on the 2nd toolbar row (scrolls if they overflow) */
+    .tc-bar2{display:flex;align-items:center;gap:10px;padding:2px 4px 7px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+    .tc-opt{display:inline-flex;align-items:center;gap:7px;background:#faf8fe;border:1px solid #ece5f8;border-radius:7px;padding:3px 9px;flex:none}
+    .tc-optname{font:700 12px Arial;color:#5f3ec0;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+    .tc-opt .tc-tbic{font-size:13px}
+    /* #280 — Customize tools popover */
+    .tc-toolcfg{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:9px;box-shadow:0 10px 30px rgba(40,20,80,.32);padding:8px 0 4px;font:13px Arial;width:340px}
+    .tc-tc-h{font-weight:800;color:#4b2e83;padding:3px 14px 8px}
+    .tc-tc-list{max-height:62vh;overflow:auto}
+    .tc-tc-row{display:flex;align-items:center;gap:8px;padding:5px 12px}
+    .tc-tc-row:hover{background:#f6f2fd}
+    .tc-tc-row.off{opacity:.6}
+    .tc-tc-row.over{box-shadow:inset 0 -2px 0 #8a72c8}
+    .tc-tc-row.drag{opacity:.4}
+    .tc-tc-grab{color:#c3bbd8;cursor:grab;font-size:13px;flex:none}
+    .tc-tc-ic{width:18px;text-align:center;color:#7a68b8;flex:none}
+    .tc-tc-lab{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tc-tc-onbar{display:inline-flex;flex:none}.tc-tc-onbar input{accent-color:#6f42c1}
+    .tc-tc-dens{display:inline-flex;gap:8px;flex:none}
+    .tc-tc-dens label{font-size:11px;color:#777;display:inline-flex;align-items:center;gap:3px;cursor:pointer}
+    .tc-tc-dens input{accent-color:#6f42c1}
+    .tc-tc-pin{flex:none;border:none;background:none;cursor:pointer;font-size:13px;line-height:1;filter:grayscale(1);opacity:.35;padding:1px 2px}
+    .tc-tc-pin.on{filter:none;opacity:1}
+    .tc-tc-pin.none{visibility:hidden}
+    .tc-tc-hint{font-size:11px;color:#999;padding:8px 14px 2px;border-top:1px solid #f0ebfa;margin-top:5px}
+    .tc-mi-ic{display:inline-block;width:18px;text-align:center;color:#7a68b8;margin-right:6px}
     .tc-menu{position:fixed;z-index:100001;background:#fff;border:1px solid #b9a4e0;border-radius:6px;box-shadow:0 6px 22px rgba(40,20,80,.3);padding:4px 0;font:13px Arial;min-width:170px}
     .tc-menu.tc-mini{width:max-content;max-width:260px}.tc-menu.tc-mini .tc-mi{white-space:nowrap}
     .tc-menu .tc-mi{padding:6px 15px;cursor:pointer;color:#333;font-weight:bold}.tc-menu .tc-mi:hover{background:#ede9f6;color:#4b2e83}
@@ -2181,7 +2213,7 @@
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
-      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'unselect every track artist, keeping the credited-as text (titles and lengths kept)', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
+      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'toolscfg') openToolsConfig(b); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'unselect every track artist, keeping the credited-as text (titles and lengths kept)', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
     });
   }
   // a small one-off dropdown (e.g. the ▾ next to "Revert all"); items: {label, title?, onClick}
@@ -2214,15 +2246,47 @@
     Log.info('cleared all track artist selections (kept credited-as text)'); rebuild(true);   // no re-match, or it would instantly re-link the kept text
   }
 
-  /* ── the Tools split-button: last-used tool is the button's label + default action; ▾ picks another ── */
-  const MENU = [{ act: 'parser', label: 'Track parser' }, { act: 'swap', label: 'Swap' }, { act: 'resetnum', label: 'Reset #' }, { sep: 1 }, { act: 'guessfeat', label: 'Guess feat.' }, { act: 'guesscase', label: 'Guess case' }, { act: 'sr', label: 'Search and Replace' }, { sep: 1 }, { act: 'cols', label: 'Resize columns' }];
-  const LABELS = Object.fromEntries(MENU.filter(m => !m.sep).map(m => [m.act, m.label]));
+  /* ── Configurable Tools bar (#280) ───────────────────────────────────────────
+     A row of tool buttons you choose (the rest live behind ⋯). The ACTIVE tool's
+     params render inline, right after the buttons; tools you "pin" keep their
+     params on a 2nd row. Click the "Tools" label to customise (visibility, order,
+     per-tool icon/text, pinning). ── */
+  const MENU = [
+    { act: 'parser',    label: 'Track parser',       icon: '☰' },           // ☰
+    { act: 'swap',      label: 'Swap',               icon: '⇅' },           // ⇅
+    { act: 'resetnum',  label: 'Reset #',            icon: '#' },
+    { act: 'guessfeat', label: 'Guess feat.',        icon: 'ft', instant: true },
+    { act: 'guesscase', label: 'Guess case',         icon: 'Aa', params: true },
+    { act: 'sr',        label: 'Search and Replace', icon: '⇆', params: true }, // ⇆
+    { act: 'cols',      label: 'Resize columns',     icon: '↔', params: true }, // ↔
+  ];
+  const TOOL = Object.fromEntries(MENU.map(m => [m.act, m]));
+  const LABELS = Object.fromEntries(MENU.map(m => [m.act, m.label]));
   const MEDIUM_TOOLS = new Set(['parser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
-  const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick
+  const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
+  const hasParams = act => !!(TOOL[act] && TOOL[act].params);
+  const TOOL_ON_BAR_DEFAULT = { guessfeat: true, guesscase: true, sr: true, cols: true };   // others default to the ⋯ menu
   let _toolMedium = 0;   // the medium chosen in the inline combo — shared across all medium-scoped tools
   const toolMedium = () => Math.min(Math.max(0, _toolMedium), mediums().length - 1);
-  function toolBtnEl() { return document.querySelector('#tc-bar [data-act="tool"], #tc-hdr [data-act="tool"]'); }
-  function updateToolBtn() { const b = toolBtnEl(); if (b) b.textContent = SETTINGS.lastTool ? (LABELS[SETTINGS.lastTool] || 'Tools') : 'Tools'; }
+
+  // per-tool config: { act, onBar, pinned, icon, text } in display order. Saved
+  // tools merge over defaults; any tool not yet saved (a future one) is appended
+  // and defaults to the ⋯ menu.
+  function getToolCfg() {
+    const saved = Array.isArray(SETTINGS.toolCfg) ? SETTINGS.toolCfg.filter(t => t && TOOL[t.act]) : [];
+    const order = saved.map(t => t.act);
+    MENU.forEach(m => { if (!order.includes(m.act)) order.push(m.act); });
+    const byAct = Object.fromEntries(saved.map(t => [t.act, t]));
+    return order.map(act => {
+      const s = byAct[act] || {};
+      let icon = s.icon !== false, text = s.text !== false;
+      if (!icon && !text) text = true;   // at least one of icon/text
+      return { act, onBar: s.onBar != null ? !!s.onBar : !!TOOL_ON_BAR_DEFAULT[act], pinned: hasParams(act) ? !!s.pinned : false, icon, text };
+    });
+  }
+  function saveToolCfg(cfg) { SETTINGS.toolCfg = cfg.map(t => ({ act: t.act, onBar: !!t.onBar, pinned: !!t.pinned, icon: t.icon !== false, text: t.text !== false })); saveSettings(); }
+  const cfgOf = act => getToolCfg().find(t => t.act === act) || { act, onBar: false, pinned: false, icon: true, text: true };
+
   // hovering the "Guess case" tool button previews the guessed form on every differing title
   function previewAllGuess(on) {
     if (!MODEL) return;
@@ -2233,29 +2297,50 @@
       if (on) { tin.value = t.guessTitle; tin.classList.add('gcpreview'); } else { tin.value = t.title; tin.classList.remove('gcpreview'); }
     });
   }
-  function wireToolHover() { const b = toolBtnEl(); if (!b) return; b.onmouseenter = b.onmouseleave = null; if (SETTINGS.lastTool === 'guesscase') { b.onmouseenter = () => previewAllGuess(true); b.onmouseleave = () => previewAllGuess(false); } }
-  function runActiveTool() {
-    const act = SETTINGS.lastTool;
-    if (!act) return openToolsMenu(toolBtnEl());
-    // clicking "Search and Replace" starts a fresh session: clear the fields and re-snapshot (prior replaces stay applied)
-    if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'), r = document.querySelector('.tc-toolopts .tc-sr-rep'); if (f) f.value = ''; if (r) r.value = ''; srActivate(); MODEL && MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender(); if (f) f.focus(); return; }
-    if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium());
-    runAction(act);
+  function wireToolHover() {
+    document.querySelectorAll('.tc-toolbtn[data-act="guesscase"]').forEach(b => { b.onmouseenter = () => previewAllGuess(true); b.onmouseleave = () => previewAllGuess(false); });
+  }
+
+  // render the visible tool buttons (in order, per-tool icon/text) + the ⋯ overflow
+  function renderToolbar() {
+    const host = document.querySelector('.tc-toolbtns'); if (!host) return;
+    const cfg = getToolCfg(); host.innerHTML = '';
+    cfg.filter(t => t.onBar).forEach(t => {
+      const m = TOOL[t.act];
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tc-toolbtn' + (m.instant ? ' instant' : '') + (SETTINGS.lastTool === t.act && !t.pinned ? ' active' : '');
+      b.dataset.act = t.act;
+      b.innerHTML = (t.icon ? `<span class="tc-tbic">${esc(m.icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(m.label)}</span>` : '');
+      if (!t.text) b.title = m.label;
+      b.onclick = () => pickTool(t.act);
+      host.appendChild(b);
+    });
+    if (cfg.some(t => !t.onBar)) {
+      const more = document.createElement('button'); more.type = 'button'; more.className = 'tc-toolbtn tc-more'; more.textContent = '⋯'; more.title = 'more tools'; // ⋯
+      more.onclick = () => openToolsMenu(more);
+      host.appendChild(more);
+    }
+    wireToolHover();
   }
   function pickTool(act) {
-    SETTINGS.lastTool = act; saveSettings(); updateToolBtn(); renderToolOpts(); wireToolHover();
-    if (MEDIUM_TOOLS.has(act)) { if (mediums().length <= 1) runMediumTool(act, 0); }   // single medium → run now (no combo); multi → choose via the inline medium combo (shared across tools), then the Tools button
-    else if (OPTLESS.has(act)) runAction(act);   // global option-less tools fire immediately
-    else if (act === 'sr') { const f = document.querySelector('.tc-toolopts .tc-sr-find'); if (f) f.focus(); }
+    if (OPTLESS.has(act)) { runAction(act); return; }                                   // instant, non-sticky
+    if (MEDIUM_TOOLS.has(act) && mediums().length <= 1) { runMediumTool(act, 0); return; } // single medium → run now
+    if (act === 'sr' && SETTINGS.lastTool === 'sr') {                                    // re-pick S&R → fresh session
+      const f = document.querySelector('.tc-sr-find'), r = document.querySelector('.tc-sr-rep'); if (f) f.value = ''; if (r) r.value = ''; srActivate(); MODEL && MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender();
+    }
+    SETTINGS.lastTool = act; saveSettings(); renderToolbar(); renderToolOpts();
+    if (cfgOf(act).pinned) { const p = document.querySelector(`#tc-bar2 [data-tool="${act}"]`); if (p) p.scrollIntoView({ inline: 'nearest', block: 'nearest' }); }
+    const f = document.querySelector('.tc-sr-find'); if (act === 'sr' && f) f.focus();
   }
+  function runActiveTool() { const act = SETTINGS.lastTool; if (!act) return; if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium()); runAction(act); }
+  // ⋯ menu lists only the tools NOT on the bar
   function openToolsMenu(anchor) {
     let m = document.getElementById('tc-menu'); if (m) { m.remove(); return; }
+    const off = getToolCfg().filter(t => !t.onBar); if (!off.length) return;
     m = document.createElement('div'); m.id = 'tc-menu'; m.className = 'tc-menu';
-    m.innerHTML = MENU.map(it => it.sep ? '<div class="tc-sep"></div>' : `<div class="tc-mi" data-act="${it.act}">${it.label}</div>`).join('');
+    m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${esc(TOOL[t.act].icon)}</span>${esc(TOOL[t.act].label)}</div>`).join('');
     document.body.appendChild(m);
-    // measure now it's in the DOM, then open below the button — but flip ABOVE when
-    // it would overflow the viewport bottom (the Tools button can sit low on the
-    // tracklist of the full release editor), and clamp so it's never clipped. #247
     const r = anchor.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
     const below = r.bottom + 4, above = r.top - 4 - mh;
     let top = (below + mh > window.innerHeight - 8 && above >= 8) ? above : below;
@@ -2263,17 +2348,16 @@
     m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - mw - 8)) + 'px';
     m.style.top = top + 'px';
     m.querySelectorAll('.tc-mi').forEach(el => el.onclick = () => { m.remove(); pickTool(el.dataset.act); });
-    const off = e => { if (!m.contains(e.target) && e.target !== anchor) { m.remove(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
+    const off2 = e => { if (!m.contains(e.target) && e.target !== anchor) { m.remove(); document.removeEventListener('mousedown', off2); } }; setTimeout(() => document.addEventListener('mousedown', off2), 0);
   }
-  // render the active tool's inline options to the right of the Tools button (if it has any)
-  function renderToolOpts() {
-    const host = document.querySelector('.tc-toolopts'); if (!host) return; host.innerHTML = '';
-    const act = SETTINGS.lastTool;
+  // build a tool's parameter controls into `host` (used both inline on row 1 and on row 2)
+  function buildToolParams(act, host) {
     if (act === 'guesscase') {
       const g = gcNative(); const box = document.createElement('span'); box.className = 'tc-gco';
       if (g && g.lang) { const sel = g.lang.cloneNode(true); sel.className = 'tc-gc-lang'; sel.value = g.lang.value; sel.title = 'Guess Case language'; sel.onchange = () => { setNative(g.lang, sel.value); recomputeGuesses(); }; box.appendChild(sel); }
       const mkChk = (text, el) => { const l = document.createElement('label'); const c = document.createElement('input'); c.type = 'checkbox'; c.checked = el ? el.checked : false; c.disabled = !el; c.onchange = () => { setNative(el, c.checked); recomputeGuesses(); }; l.append(c, document.createTextNode(' ' + text)); return l; };
       if (g) { box.appendChild(mkChk('Keep uppercased', g.keepUC)); box.appendChild(mkChk('Uppercase Roman numerals', g.roman)); }
+      const apply = document.createElement('button'); apply.type = 'button'; apply.className = 'tc-colbtn'; apply.textContent = 'Apply'; apply.title = 'guess-case every title'; apply.onclick = guessCaseAll; box.appendChild(apply);
       host.appendChild(box);
     } else if (act === 'sr') {
       srActivate(); const box = document.createElement('span'); box.className = 'tc-sro';
@@ -2281,11 +2365,9 @@
       const rep = document.createElement('input'); rep.type = 'text'; rep.className = 'tc-sr-rep'; rep.placeholder = 'replace';
       const run = () => srLive(find.value, rep.value, true);
       find.oninput = rep.oninput = run;
-      // RE toggle — regular expressions in search + $N in replace (#152)
       const re = document.createElement('button'); re.type = 'button'; re.className = 'tc-srbtn tc-sr-re' + (srRegexOn() ? ' on' : ''); re.textContent = 'RE';
       re.title = 'Use regular expressions (search is a regex; $1, $<name> work in replace)';
       re.onclick = () => { SETTINGS.srRegex = !srRegexOn(); saveSettings(); re.classList.toggle('on', srRegexOn()); find.placeholder = srRegexOn() ? 'search (regex)' : 'search'; run(); };
-      // Templates — save/load named patterns (#152)
       const tpl = document.createElement('button'); tpl.type = 'button'; tpl.className = 'tc-srbtn tc-sr-tpl'; tpl.textContent = 'Templates ▾'; tpl.title = 'Save / load search-and-replace templates';
       tpl.onclick = () => openSrTemplates(tpl, find, rep, re);
       box.append(find, rep, re, tpl); host.appendChild(box);
@@ -2299,15 +2381,91 @@
       );
       host.appendChild(box);
     } else if (MEDIUM_TOOLS.has(act) && mediums().length > 1) {
-      // which medium this tool acts on (only shown when there's more than one); the choice is shared
-      // across all medium-scoped tools and the Tools button runs it
+      const box = document.createElement('span'); box.className = 'tc-medo';
       const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.title = 'which medium';
       mediums().forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = 'Medium ' + (i + 1); sel.appendChild(o); });
       sel.value = String(toolMedium()); sel.onchange = () => { _toolMedium = parseInt(sel.value, 10) || 0; };
-      host.appendChild(sel);
+      const run = document.createElement('button'); run.type = 'button'; run.className = 'tc-colbtn'; run.textContent = 'Run'; run.onclick = () => runMediumTool(act, toolMedium());
+      box.append(sel, run); host.appendChild(box);
     }
   }
-  function initTools() { updateToolBtn(); renderToolOpts(); wireToolHover(); }
+  const hasInlineParams = act => hasParams(act) || (MEDIUM_TOOLS.has(act) && mediums().length > 1);
+  // active tool's params inline (row 1), then the pinned tools' params on row 2
+  function renderToolOpts() {
+    const host = document.querySelector('.tc-toolopts');
+    if (host) { host.innerHTML = ''; const act = SETTINGS.lastTool; if (act && cfgOf(act).onBar && !cfgOf(act).pinned && hasInlineParams(act)) buildToolParams(act, host); }
+    renderRow2();
+  }
+  // pinned tools' params on the 2nd row (flex). No pin glyph here (#280).
+  function renderRow2() {
+    const row = document.getElementById('tc-bar2'); if (!row) return;
+    const pinned = getToolCfg().filter(t => t.onBar && t.pinned && hasParams(t.act));
+    row.innerHTML = '';
+    if (!pinned.length) { row.style.display = 'none'; return; }
+    row.style.display = '';
+    pinned.forEach(t => {
+      const panel = document.createElement('span'); panel.className = 'tc-opt'; panel.dataset.tool = t.act;
+      const name = document.createElement('span'); name.className = 'tc-optname';
+      name.innerHTML = (cfgOf(t.act).icon ? `<span class="tc-tbic">${esc(TOOL[t.act].icon)}</span> ` : '') + esc(TOOL[t.act].label);
+      panel.appendChild(name);
+      buildToolParams(t.act, panel);
+      row.appendChild(panel);
+    });
+  }
+  function initTools() { renderToolbar(); renderToolOpts(); }
+
+  // ── "Customize tools" popover (opens from the Tools label) ──
+  function openToolsConfig(anchor) {
+    let p = document.getElementById('tc-toolcfg'); if (p) { p.remove(); return; }
+    p = document.createElement('div'); p.id = 'tc-toolcfg'; p.className = 'tc-toolcfg';
+    let dragAct = null;
+    const apply = () => { renderToolbar(); renderToolOpts(); };
+    const update = (act, patch) => {
+      const cfg = getToolCfg(); const t = cfg.find(x => x.act === act); if (!t) return;
+      Object.assign(t, patch);
+      if (!t.icon && !t.text) { if ('icon' in patch) t.text = true; else t.icon = true; }   // keep ≥1
+      saveToolCfg(cfg); render(); apply();
+    };
+    const reorder = (fromAct, toAct, after) => {
+      const cfg = getToolCfg(); const fi = cfg.findIndex(t => t.act === fromAct); if (fi < 0) return;
+      const item = cfg.splice(fi, 1)[0]; let ti = cfg.findIndex(t => t.act === toAct); if (ti < 0) ti = cfg.length - 1; if (after) ti += 1;
+      cfg.splice(ti, 0, item); saveToolCfg(cfg); render(); apply();
+    };
+    function render() {
+      p.innerHTML = '<div class="tc-tc-h">Customize tools</div><div class="tc-tc-list"></div>'
+        + '<div class="tc-tc-hint">Drag ☰ to reorder · ☑ shows it on the bar (else under ⋯) · 📌 keeps its settings on the 2nd row</div>';
+      const list = p.querySelector('.tc-tc-list');
+      getToolCfg().forEach(t => {
+        const m = TOOL[t.act];
+        const row = document.createElement('div'); row.className = 'tc-tc-row' + (t.onBar ? '' : ' off'); row.dataset.act = t.act; row.draggable = true;
+        row.innerHTML =
+          '<span class="tc-tc-grab" title="drag to reorder">☰</span>'
+          + `<label class="tc-tc-onbar" title="show on the toolbar"><input type="checkbox" class="cb-onbar"${t.onBar ? ' checked' : ''}></label>`
+          + `<span class="tc-tc-ic">${esc(m.icon)}</span><span class="tc-tc-lab">${esc(m.label)}</span>`
+          + `<span class="tc-tc-dens"><label title="show the icon"><input type="checkbox" class="cb-icon"${t.icon ? ' checked' : ''}> icon</label><label title="show the text"><input type="checkbox" class="cb-text"${t.text ? ' checked' : ''}> text</label></span>`
+          + (hasParams(t.act) ? `<button type="button" class="tc-tc-pin${t.pinned ? ' on' : ''}" title="keep this tool's settings on the 2nd row">📌</button>` : '<span class="tc-tc-pin none"></span>');
+        list.appendChild(row);
+      });
+      list.querySelectorAll('.tc-tc-row').forEach(row => {
+        const act = row.dataset.act;
+        row.querySelector('.cb-onbar').onchange = e => update(act, { onBar: e.target.checked });
+        row.querySelector('.cb-icon').onchange = e => update(act, { icon: e.target.checked });
+        row.querySelector('.cb-text').onchange = e => update(act, { text: e.target.checked });
+        const pin = row.querySelector('button.tc-tc-pin'); if (pin) pin.onclick = () => update(act, { pinned: !cfgOf(act).pinned });
+        row.ondragstart = e => { dragAct = act; row.classList.add('drag'); try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', act); } catch (x) {} };
+        row.ondragend = () => { dragAct = null; p.querySelectorAll('.tc-tc-row').forEach(r => r.classList.remove('drag', 'over')); };
+        row.ondragover = e => { e.preventDefault(); row.classList.add('over'); };
+        row.ondragleave = () => row.classList.remove('over');
+        row.ondrop = e => { e.preventDefault(); row.classList.remove('over'); const from = dragAct || (e.dataTransfer && e.dataTransfer.getData('text/plain')); if (from && from !== act) { const rc = row.getBoundingClientRect(); reorder(from, act, e.clientY > rc.top + rc.height / 2); } };
+      });
+    }
+    render();
+    document.body.appendChild(p);
+    const r = anchor.getBoundingClientRect();
+    p.style.left = Math.max(8, Math.min(r.left, window.innerWidth - p.offsetWidth - 8)) + 'px';
+    p.style.top = Math.max(8, Math.min(r.bottom + 6, window.innerHeight - p.offsetHeight - 8)) + 'px';
+    const off = e => { if (!p.contains(e.target) && e.target !== anchor) { p.remove(); document.removeEventListener('mousedown', off); } }; setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
 
   // proxy MusicBrainz's own (hidden) Guess-case options so they actually affect its guessing
   function gcNative() {
@@ -2341,7 +2499,7 @@
     if (!MODEL) return; if (!_srSnap || _srSnap.length !== MODEL.tracks.length) srActivate();
     const re = find ? srRe(find, ci, true) : null;
     const bad = !!(find && srRegexOn() && !re);   // invalid user regex — flag the field, change nothing
-    const findEl = document.querySelector('.tc-toolopts .tc-sr-find'); if (findEl) findEl.classList.toggle('tc-sr-bad', bad);
+    const findEl = document.querySelector('.tc-sr-find'); if (findEl) findEl.classList.toggle('tc-sr-bad', bad);
     if (bad) { srRememberLast(find, replace); return; }
     const repl = srRepl(replace); let changed = 0;
     MODEL.tracks.forEach((t, i) => {
@@ -2421,7 +2579,7 @@
     setTimeout(() => document.addEventListener('mousedown', _srPopOff, true), 0);
   }
 
-  const BAR = `<div class="tc-tools"><div class="tc-split"><button class="tc-btn" data-act="tool" title="run the selected tool">Tools</button><button class="tc-btn tc-caret" data-act="menu" title="choose a tool">▾</button></div><span class="tc-toolopts"></span></div>`
+  const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolscfg" title="customize tools — pick which tools show, reorder, icon/text, pin settings">Tools ▾</span><span class="tc-toolbtns"></span><span class="tc-toolopts"></span></div>`
     + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-disc-msg"></span><span class="tc-discstat"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
     + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
 
@@ -2549,7 +2707,7 @@
     const firstFs = document.querySelector('fieldset.advanced-medium');
     if (firstFs && firstFs.parentElement) firstFs.parentElement.insertBefore(wrap, firstFs);
     else (document.querySelector('#tracklist, .tracklist, #content') || document.body).prepend(wrap);
-    wrap.innerHTML = `<div id="tc-bar">${BAR}</div>`;
+    wrap.innerHTML = `<div id="tc-bar">${BAR}</div><div id="tc-bar2" class="tc-bar2" style="display:none"></div>`;
     ACTIVE = { mode: 'mirror', sections: [] };
     syncNative();   // hide the native tracklist NOW (before the async match/render) so a fresh mount shows no native flash #145
     bindActions(wrap); initTools(); wireApplyMode(wrap); subscribeTracks();

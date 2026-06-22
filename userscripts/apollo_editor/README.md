@@ -134,16 +134,23 @@ The score is computed from the data shown in the native row (no extra requests);
 | **Change** | all matching tracks | Scope of **every** artist action (pick, *Credited as*, join, add/remove/reorder/split): apply to just the edited track, or propagate to every track sharing the same artist credit (whole-credit match, like MB's native "change all matching tracks") |
 | **⚡ Match** | — | Match all still-unresolved track artists or recordings (used when *Auto-match on start* is off)|
 | **▾** | — | **↺ Revert all** — every track back to page-load state<br>**✕ Clear all** — empty all artists in tracklist or set new recordings|
-| **Tool** | last used | A single always-visible button holding all the tools. The last tool used becomes the default |
+| **Tools** | — | A row of the tools you choose. Click a tool to use it; the active tool's parameters appear inline right after the buttons. Tools you don't put on the bar live under **⋯**. Click the **Tools** label to customize |
 | **Cutoff** | 🟡 near | Matches only records at or above the chosen confidence level and leave other unmatched |
 
 ### Tools
 
-Native tools are hidden and moved to the single **Tool** button at the top of the table that stays always visible. All tools are reachable from the button's menu and the last one used becomes the default. Tools with parameters show them next to the button; parameterless tools fire on pick.
+Native tools are hidden and replaced by a configurable **Tools** bar. The tools you pick show as buttons; clicking one uses it, and the **active** tool's parameters render inline immediately after the buttons. Parameterless tools (e.g. *Guess feat.*) just fire on click. The rest of the tools stay tucked behind the **⋯** button.
+
+Click the **Tools** label to open **Customize tools**:
+
+- **Show on the bar** — tick which tools appear as buttons; unticked ones live under **⋯**.
+- **Reorder** — drag the ☰ handle to set the button order.
+- **Icon / text** — per tool, show the icon, the text, or both (at least one).
+- **📌 Pin params** — for tools with settings (Guess case, Search & Replace, Resize columns), pin their parameters to a **second toolbar row** so they're always visible (and editable) instead of only when the tool is active. Several can be pinned side by side.
 
 Besides the integrated tools, there are a few new ones:
 
-- **Search & Replace** — search a string within track titles and replace it. Clicking the button starts a fresh session with any existing parameters applied and cleared.
+- **Search & Replace** — search a string within track titles and replace it. Re-picking the tool starts a fresh session with any existing parameters applied and cleared.
 - **Resize Columns** — set column sizes to predefined variants (auto-fit, centered, default).
 
 ## Annotation editor
