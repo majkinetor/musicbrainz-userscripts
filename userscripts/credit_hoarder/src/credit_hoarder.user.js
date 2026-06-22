@@ -63,15 +63,23 @@ if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
         try { sessionStorage.setItem('discogs-importer-close-after-edit', '1'); } catch (e) {}
     }
 
-    // Click "Enter edit" once the (React) editor has rendered it and it's
-    // enabled. Poll briefly; give up quietly if MB's form never offers it
-    // (e.g. a validation block) — the tab just stays open for the user.
+    // Click "Enter edit" — but ONLY once the seeded change has actually RENDERED.
+    // The "Enter edit" button appears before MB's React external-links editor has
+    // applied the seeded URL relation from the query string, so clicking too early
+    // submits an EMPTY edit (no link added, no redirect → tab stays open). So we
+    // first wait for the seeded URL to appear in the rendered form. Give up quietly
+    // if it never does — the tab just stays open for the user.
+    const et = (location.pathname.match(/\/(artist|label|place)\//) || [])[1] || 'artist';
+    const seedUrl = new URLSearchParams(location.search).get(`edit-${et}.url.0.text`) || '';
+    // host+path key (drop scheme / www / trailing slash) — matches MB's rendered href
+    const seedKey = seedUrl ? seedUrl.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/+$/, '').toLowerCase() : '';
     let tries = 0;
     const submit = () => {
+        const seedReady = !seedKey || document.body.innerHTML.toLowerCase().includes(seedKey);
         const btn = document.querySelector('button.submit.positive')
             || [...document.querySelectorAll('button[type="submit"]')].find(b => /enter edit/i.test(b.textContent || ''));
-        if (btn && !btn.disabled) { btn.click(); return; }
-        if (tries++ < 60) setTimeout(submit, 200);   // ~12s grace for hydration
+        if (seedReady && btn && !btn.disabled) { btn.click(); return; }
+        if (tries++ < 100) setTimeout(submit, 200);   // ~20s grace (background tabs are slower)
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', submit);
     else submit();
