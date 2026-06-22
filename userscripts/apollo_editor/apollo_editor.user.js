@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.225955
+// @version      2026.6.22.230347
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -896,7 +896,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.225955';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.230347';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1210,6 +1210,11 @@
     .tc-opttrig{cursor:pointer;border-radius:5px;padding:2px 5px;border:1px solid transparent}
     .tc-opttrig:hover{background:#efe7fb;border-color:#dccff5}
     .tc-opt .tc-tbic{font-size:13px}
+    /* #280 — right-click a tool name to collapse its params; they flyout on hover/focus */
+    .tc-opt.tc-collapsed{position:relative}
+    .tc-opt.tc-collapsed > .tc-optname{border-bottom:1px dotted #b6a3e6}
+    .tc-opt.tc-collapsed > :not(.tc-optname){display:none;position:absolute;top:100%;left:-1px;z-index:100000;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 6px 22px rgba(40,20,80,.3);padding:6px 9px;margin-top:3px}
+    .tc-opt.tc-collapsed:hover > :not(.tc-optname),.tc-opt.tc-collapsed:focus-within > :not(.tc-optname){display:flex}
     /* #280 — Customize tools popover */
     .tc-toolcfg{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:9px;box-shadow:0 10px 30px rgba(40,20,80,.32);padding:8px 0 4px;font:13px Arial;width:340px}
     .tc-tc-h{font-weight:800;color:#4b2e83;padding:3px 14px 8px}
@@ -2287,10 +2292,10 @@
       const s = byAct[act] || {};
       let icon = s.icon !== false, text = s.text !== false;
       if (!icon && !text) text = true;   // at least one of icon/text
-      return { act, onBar: s.onBar != null ? !!s.onBar : !!TOOL_ON_BAR_DEFAULT[act], icon, text };
+      return { act, onBar: s.onBar != null ? !!s.onBar : !!TOOL_ON_BAR_DEFAULT[act], icon, text, hideParams: !!s.hideParams };
     });
   }
-  function saveToolCfg(cfg) { SETTINGS.toolCfg = cfg.map(t => ({ act: t.act, onBar: !!t.onBar, icon: t.icon !== false, text: t.text !== false })); saveSettings(); }
+  function saveToolCfg(cfg) { SETTINGS.toolCfg = cfg.map(t => ({ act: t.act, onBar: !!t.onBar, icon: t.icon !== false, text: t.text !== false, hideParams: !!t.hideParams })); saveSettings(); }
   const cfgOf = act => getToolCfg().find(t => t.act === act) || { act, onBar: false, icon: true, text: true };
   // tools surfaced on the bar for THIS session only (picked from the Tools menu) —
   // never persisted; they fall back to the menu next session (#280).
@@ -2410,9 +2415,18 @@
     const grp = document.createElement('span'); grp.className = 'tc-opt'; grp.dataset.tool = act;
     const name = document.createElement('span'); name.className = 'tc-optname tc-opttrig';
     name.innerHTML = (t.icon ? `<span class="tc-tbic">${esc(TOOL[act].icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(TOOL[act].label)}</span>` : '');
-    name.title = TOOL[act].label + ' — click to run';
+    name.title = TOOL[act].label + ' — click to run, right-click to collapse parameters';
     name.onclick = () => triggerTool(act);
+    // #280: right-click the name collapses/expands its params (state remembered);
+    // collapsed params fly out on hover/focus. Toggle in place so typed S&R text survives.
+    name.oncontextmenu = (e) => {
+      e.preventDefault();
+      const now = !grp.classList.contains('tc-collapsed');
+      grp.classList.toggle('tc-collapsed', now);
+      const cfg = getToolCfg(); const c = cfg.find(x => x.act === act); if (c) { c.hideParams = now; saveToolCfg(cfg); }
+    };
     if (act === 'guesscase') { name.onmouseenter = () => previewAllGuess(true); name.onmouseleave = () => previewAllGuess(false); }
+    if (t.hideParams) grp.classList.add('tc-collapsed');
     grp.appendChild(name);
     buildToolParams(act, grp);
     return grp;
