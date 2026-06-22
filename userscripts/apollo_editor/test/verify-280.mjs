@@ -39,8 +39,8 @@ const main = async () => {
   await page.waitForSelector('.tc-toolbtns', { timeout: 30000 });
   await page.waitForTimeout(800);
 
-  const bar = await page.evaluate(() => [...document.querySelectorAll('.tc-toolbtns .tc-toolbtn')].map(b => b.dataset.act || (b.classList.contains('tc-more') ? '⋯' : '')));
-  ok('default bar = guess feat/case, S&R, columns + ⋯', JSON.stringify(bar) === JSON.stringify(['guessfeat', 'guesscase', 'sr', 'cols', '⋯']));
+  const bar = await page.evaluate(() => [...document.querySelectorAll('.tc-toolbtns .tc-toolbtn')].map(b => b.dataset.act || ''));
+  ok('default bar = guess feat/case, S&R, columns (no ⋯)', JSON.stringify(bar) === JSON.stringify(['guessfeat', 'guesscase', 'sr', 'cols']));
 
   // point 2: long toast text must not change the toolbar height
   const h0 = await page.evaluate(() => document.getElementById('tc-bar').getBoundingClientRect().height);
@@ -48,12 +48,19 @@ const main = async () => {
   ok('toolbar height unchanged when toast/link text appears (' + h0 + '→' + h1 + ')', h0 === h1);
   await page.evaluate(() => { document.querySelectorAll('.tc-disc-msg,.tc-toast').forEach(e => e.textContent = ''); });
 
-  // open Customize, pin guesscase + sr
-  await page.click('.tc-toolslabel'); await page.waitForSelector('#tc-toolcfg');
+  // the Tools label opens a menu of the off-bar tools + a Customize item (no ⋯ button)
+  await page.click('.tc-toolslabel'); await page.waitForSelector('#tc-menu');
+  const menu = await page.evaluate(() => ({ items: [...document.querySelectorAll('#tc-menu .tc-mi')].map(m => m.dataset.act), noMoreBtn: !document.querySelector('.tc-toolbtns .tc-more') }));
+  ok('no ⋯ button on the bar', menu.noMoreBtn);
+  ok('Tools menu lists off-bar tools + Customize', JSON.stringify(menu.items) === JSON.stringify(['parser', 'swap', 'resetnum', '__cfg']));
+  // open Customize from the menu, then pin guesscase + sr
+  await page.click('#tc-menu .tc-mi-cfg'); await page.waitForSelector('#tc-toolcfg');
   for (const act of ['guesscase', 'sr']) { const p = await page.$(`#tc-toolcfg .tc-tc-row[data-act="${act}"] button.tc-tc-pin`); if (p) await p.click(); await page.waitForTimeout(120); }
-  const row2 = await page.evaluate(() => ({ vis: getComputedStyle(document.getElementById('tc-bar2')).display !== 'none', tools: [...document.querySelectorAll('#tc-bar2 .tc-opt')].map(o => o.dataset.tool), noPin: !document.querySelector('#tc-bar2 .tc-tc-pin, #tc-bar2 .tc-opt .pin') }));
+  const row2 = await page.evaluate(() => ({ vis: getComputedStyle(document.getElementById('tc-bar2')).display !== 'none', tools: [...document.querySelectorAll('#tc-bar2 .tc-opt')].map(o => o.dataset.tool), noPin: !document.querySelector('#tc-bar2 .tc-tc-pin, #tc-bar2 .tc-opt .pin'), trig: !!document.querySelector('#tc-bar2 .tc-opt .tc-opttrig'), barBtns: [...document.querySelectorAll('.tc-toolbtns .tc-toolbtn')].map(b => b.dataset.act || (b.classList.contains('tc-more') ? '⋯' : '')) }));
   ok('pinning shows the two panels on row 2', row2.vis && JSON.stringify(row2.tools) === JSON.stringify(['guesscase', 'sr']));
   ok('no 📌 glyph on the row-2 panels', row2.noPin);
+  ok('pinned tools dropped from the row-1 buttons', JSON.stringify(row2.barBtns) === JSON.stringify(['guessfeat', 'cols']));
+  ok('row-2 panel icon is a clickable trigger', row2.trig);
 
   // per-tool icon/text are icon state-buttons (no "icon"/"text" words): turn OFF text → icon-only
   await page.click('#tc-toolcfg .tc-tc-row[data-act="cols"] .cb-text'); await page.waitForTimeout(150);

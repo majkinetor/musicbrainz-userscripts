@@ -35,8 +35,12 @@ const main = async () => {
   // 1) default bar
   await shotBar('_i280_default.png');
 
-  // 2) open Customize popover (from the Tools label)
+  // 2) the Tools label opens a menu (off-bar tools + Customize)
   await page.click('.tc-toolslabel');
+  await page.waitForSelector('#tc-menu', { timeout: 5000 });
+  await page.screenshot({ path: resolve(DEV, '_i280_menu.png'), clip: await page.evaluate(() => { const p = document.getElementById('tc-menu'); const r = p.getBoundingClientRect(); return { x: Math.max(0, r.left - 6), y: Math.max(0, r.top - 6), width: r.width + 12, height: r.height + 12 }; }) });
+  // 3) Customize popover
+  await page.click('#tc-menu .tc-mi-cfg');
   await page.waitForSelector('#tc-toolcfg', { timeout: 5000 });
   await page.screenshot({ path: resolve(DEV, '_i280_config.png'), clip: await page.evaluate(() => { const p = document.getElementById('tc-toolcfg'); const r = p.getBoundingClientRect(); return { x: Math.max(0, r.left - 6), y: Math.max(0, r.top - 6), width: r.width + 12, height: r.height + 12 }; }) });
 

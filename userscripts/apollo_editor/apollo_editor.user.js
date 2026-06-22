@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.215604
+// @version      2026.6.22.220611
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -896,7 +896,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.215604';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.220611';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1207,6 +1207,8 @@
     .tc-bar2{display:flex;align-items:center;gap:10px;padding:2px 4px 7px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
     .tc-opt{display:inline-flex;align-items:center;gap:7px;background:#faf8fe;border:1px solid #ece5f8;border-radius:7px;padding:3px 9px;flex:none}
     .tc-optname{font:700 12px Arial;color:#5f3ec0;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+    .tc-opttrig{cursor:pointer;border-radius:5px;padding:2px 5px;border:1px solid transparent}
+    .tc-opttrig:hover{background:#efe7fb;border-color:#dccff5}
     .tc-opt .tc-tbic{font-size:13px}
     /* #280 — Customize tools popover */
     .tc-toolcfg{position:fixed;z-index:100002;background:#fff;border:1px solid #b9a4e0;border-radius:9px;box-shadow:0 10px 30px rgba(40,20,80,.32);padding:8px 0 4px;font:13px Arial;width:340px}
@@ -2216,7 +2218,7 @@
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
-      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'toolscfg') openToolsConfig(b); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'unselect every track artist, keeping the credited-as text (titles and lengths kept)', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
+      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'toolsmenu') openToolsMenu(b); else if (a === 'toolscfg') openToolsConfig(b); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'unselect every track artist, keeping the credited-as text (titles and lengths kept)', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
     });
   }
   // a small one-off dropdown (e.g. the ▾ next to "Revert all"); items: {label, title?, onClick}
@@ -2308,7 +2310,8 @@
   function renderToolbar() {
     const host = document.querySelector('.tc-toolbtns'); if (!host) return;
     const cfg = getToolCfg(); host.innerHTML = '';
-    cfg.filter(t => t.onBar).forEach(t => {
+    // #280: a pinned tool lives on row 2 only — its row-1 button would be redundant
+    cfg.filter(t => t.onBar && !t.pinned).forEach(t => {
       const m = TOOL[t.act];
       const b = document.createElement('button');
       b.type = 'button';
@@ -2319,11 +2322,6 @@
       b.onclick = () => pickTool(t.act);
       host.appendChild(b);
     });
-    if (cfg.some(t => !t.onBar)) {
-      const more = document.createElement('button'); more.type = 'button'; more.className = 'tc-toolbtn tc-more'; more.textContent = '⋯'; more.title = 'more tools'; // ⋯
-      more.onclick = () => openToolsMenu(more);
-      host.appendChild(more);
-    }
     wireToolHover();
   }
   function pickTool(act) {
@@ -2337,12 +2335,20 @@
     const f = document.querySelector('.tc-sr-find'); if (act === 'sr' && f) f.focus();
   }
   function runActiveTool() { const act = SETTINGS.lastTool; if (!act) return; if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium()); runAction(act); }
-  // ⋯ menu lists only the tools NOT on the bar
+  // #280: a pinned tool's panel icon runs its primary action (what the row-1 button did)
+  function triggerTool(act) {
+    if (act === 'sr') { const f = document.querySelector('.tc-sr-find'), r = document.querySelector('.tc-sr-rep'); if (f) f.value = ''; if (r) r.value = ''; srActivate(); MODEL && MODEL.tracks.forEach(t => { delete t._srFlash; }); rerender(); if (f) f.focus(); return; }
+    if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium());
+    runAction(act);   // guesscase → guess-case all · cols → Fit
+  }
+  // the "Tools" label menu: the tools NOT on the bar, then Customize…
   function openToolsMenu(anchor) {
     let m = document.getElementById('tc-menu'); if (m) { m.remove(); return; }
-    const off = getToolCfg().filter(t => !t.onBar); if (!off.length) return;
+    const off = getToolCfg().filter(t => !t.onBar);
     m = document.createElement('div'); m.id = 'tc-menu'; m.className = 'tc-menu';
-    m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${esc(TOOL[t.act].icon)}</span>${esc(TOOL[t.act].label)}</div>`).join('');
+    m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${esc(TOOL[t.act].icon)}</span>${esc(TOOL[t.act].label)}</div>`).join('')
+      + (off.length ? '<div class="tc-sep"></div>' : '')
+      + '<div class="tc-mi tc-mi-cfg" data-act="__cfg"><span class="tc-mi-ic">⚙</span>Customize…</div>';
     document.body.appendChild(m);
     const r = anchor.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
     const below = r.bottom + 4, above = r.top - 4 - mh;
@@ -2350,7 +2356,7 @@
     top = Math.max(8, Math.min(top, window.innerHeight - mh - 8));
     m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - mw - 8)) + 'px';
     m.style.top = top + 'px';
-    m.querySelectorAll('.tc-mi').forEach(el => el.onclick = () => { m.remove(); pickTool(el.dataset.act); });
+    m.querySelectorAll('.tc-mi').forEach(el => el.onclick = () => { m.remove(); if (el.dataset.act === '__cfg') openToolsConfig(anchor); else pickTool(el.dataset.act); });
     const off2 = e => { if (!m.contains(e.target) && e.target !== anchor) { m.remove(); document.removeEventListener('mousedown', off2); } }; setTimeout(() => document.addEventListener('mousedown', off2), 0);
   }
   // build a tool's parameter controls into `host` (used both inline on row 1 and on row 2)
@@ -2408,9 +2414,11 @@
     row.style.display = '';
     pinned.forEach(t => {
       const panel = document.createElement('span'); panel.className = 'tc-opt'; panel.dataset.tool = t.act;
-      const name = document.createElement('span'); name.className = 'tc-optname';
+      const name = document.createElement('span'); name.className = 'tc-optname tc-opttrig';
       name.innerHTML = `<span class="tc-tbic">${esc(TOOL[t.act].icon)}</span>`;   // #280: icon only — save horizontal space (full name in the tooltip)
-      name.title = TOOL[t.act].label;
+      name.title = TOOL[t.act].label + ' — click to run';
+      name.onclick = () => triggerTool(t.act);   // #280: the panel icon is the run trigger (replaces the row-1 button)
+      if (t.act === 'guesscase') { name.onmouseenter = () => previewAllGuess(true); name.onmouseleave = () => previewAllGuess(false); }
       panel.appendChild(name);
       buildToolParams(t.act, panel);
       row.appendChild(panel);
@@ -2583,7 +2591,7 @@
     setTimeout(() => document.addEventListener('mousedown', _srPopOff, true), 0);
   }
 
-  const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolscfg" title="customize tools — pick which tools show, reorder, icon/text, pin settings">Tools ▾</span><span class="tc-toolbtns"></span><span class="tc-toolopts"></span></div>`
+  const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolsmenu" title="more tools &amp; customize">Tools ▾</span><span class="tc-toolbtns"></span><span class="tc-toolopts"></span></div>`
     + `<span class="sp"></span><span class="tc-toast"></span><span class="sp"></span><span class="tc-disc-msg"></span><span class="tc-discstat"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
     + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
 
