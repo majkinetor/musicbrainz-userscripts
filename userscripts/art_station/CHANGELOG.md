@@ -1,5 +1,12 @@
 # Art Station Changelog
 
+## [2026.6.22.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.22.2)
+
+### Features
+
+1. Progress improvements when applying operations ([#278](https://github.com/majkinetor/musicbrainz-userscripts/issues/278))
+1. Clear selection after applying batch operation ([#277](https://github.com/majkinetor/musicbrainz-userscripts/issues/277))
+
 ## [2026.6.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.22)
 
 ### Features

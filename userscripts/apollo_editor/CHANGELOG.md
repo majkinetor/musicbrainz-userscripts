@@ -1,5 +1,16 @@
 # Apollo Editor Changelog
 
+## [2026.6.22.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.22.2)
+
+### Features
+
+1. Tools configurator ([#280](https://github.com/majkinetor/musicbrainz-userscripts/issues/280))
+1. Keep caret position on row navigation ([#279](https://github.com/majkinetor/musicbrainz-userscripts/issues/279))
+
+### Fixes
+
+1. Discogs URL checks do not show until reloading ([#281](https://github.com/majkinetor/musicbrainz-userscripts/issues/281))
+
 ## [2026.6.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.22)
 
 ### Features
