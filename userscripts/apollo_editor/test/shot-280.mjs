@@ -52,7 +52,7 @@ const main = async () => {
 
   const state = await page.evaluate(() => ({
     items: [...document.querySelectorAll('.tc-toolbtns > *')].map(e => e.dataset.tool || e.dataset.act),
-    toolbtnsRows: Math.round(document.querySelector('.tc-toolbtns').getBoundingClientRect().height),
+    toolbtnsRows: Math.round(document.querySelector('.tc-tools').getBoundingClientRect().height),
     barHeight: Math.round(document.getElementById('tc-bar').getBoundingClientRect().height),
   }));
   console.log('[280] state:', JSON.stringify(state));

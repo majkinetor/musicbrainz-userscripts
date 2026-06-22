@@ -74,7 +74,7 @@ const main = async () => {
 
   // wrap: at a narrow width the buttons wrap to >1 row, and Match stays within the content (not pushed past it)
   await page.setViewportSize({ width: 1000, height: 1000 }); await page.waitForTimeout(300);
-  const wrap = await page.evaluate(() => { const tb = document.querySelector('.tc-toolbtns'); const one = document.querySelector('.tc-toolbtns > *'); const match = document.querySelector('#tc-bar [data-act="match"]'); const wrapW = document.getElementById('tc-mirror-wrap').clientWidth; return { multiRow: tb.getBoundingClientRect().height > one.getBoundingClientRect().height * 1.5, matchRight: match.getBoundingClientRect().right, wrapW }; });
+  const wrap = await page.evaluate(() => { const tb = document.querySelector('.tc-tools'); const one = document.querySelector('.tc-toolbtns > *'); const match = document.querySelector('#tc-bar [data-act="match"]'); const wrapW = document.getElementById('tc-mirror-wrap').clientWidth; return { multiRow: tb.getBoundingClientRect().height > one.getBoundingClientRect().height * 1.5, matchRight: match.getBoundingClientRect().right, wrapW }; });
   ok('toolbar wraps to multiple rows when narrow', wrap.multiRow);
   ok('Match stays within the content width (not pushed past it)', wrap.matchRight <= wrap.wrapW + 1);
 
