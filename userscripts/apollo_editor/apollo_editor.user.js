@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.192624
+// @version      2026.6.22.194259
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -477,10 +477,15 @@
       await _sleep(400);
     }
   }
-  let _tagDiscogsRunning = false;
+  let _tagDiscogsRunning = false, _tagDiscogsQueued = false;
   let _discMapFailed = false, _discMapRetried = false;   // #281: Discogs API unreachable → retry affordance
   async function tagDiscogsForAll() {
-    if (!MODEL || SETTINGS.discogsUrlMatch === false || _tagDiscogsRunning) return;
+    if (!MODEL || SETTINGS.discogsUrlMatch === false) return;
+    // #281: MB lazy-loads the rest of the tracks a beat after we start, which rebuilds
+    // the model (fresh slots) and calls us again mid-run. The old guard DROPPED that
+    // call, so the rebuilt model was never checked and the badge went blank until a
+    // reload. Queue the call and re-run against the latest model when this run ends.
+    if (_tagDiscogsRunning) { _tagDiscogsQueued = true; return; }
     _tagDiscogsRunning = true;
     try {
       // wait for the release Discogs link to exist before deciding there's nothing
@@ -525,7 +530,10 @@
       if (!isEditingNow()) rerender();
     } finally {
       _tagDiscogsRunning = false;
-      setDiscStat();   // #227: settle into the persistent "N missing Discogs links" badge
+      // #281: if a rebuild raced us, re-run for the latest model (it repaints the
+      // badge); otherwise settle the persistent badge now. (#227)
+      if (_tagDiscogsQueued) { _tagDiscogsQueued = false; tagDiscogsForAll(); }
+      else setDiscStat();
     }
   }
   // chain glyph shown in place of the artist-type icon when a Discogs link can be added
@@ -881,7 +889,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.192624';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.194259';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
