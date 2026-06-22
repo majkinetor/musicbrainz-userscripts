@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.213917
+// @version      2026.6.22.214539
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -896,7 +896,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.213917';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.214539';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1221,9 +1221,12 @@
     .tc-tc-ic{width:18px;text-align:center;color:#7a68b8;flex:none}
     .tc-tc-lab{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tc-tc-onbar{display:inline-flex;flex:none}.tc-tc-onbar input{accent-color:#6f42c1}
-    .tc-tc-dens{display:inline-flex;gap:8px;flex:none}
-    .tc-tc-dens label{font-size:11px;color:#777;display:inline-flex;align-items:center;gap:3px;cursor:pointer}
-    .tc-tc-dens input{accent-color:#6f42c1}
+    .tc-tc-dens{display:inline-flex;flex:none;border:1px solid #d6cdec;border-radius:5px;overflow:hidden}
+    .tc-tc-seg{border:none;border-left:1px solid #e6ddf3;background:#fff;color:#a99fc4;font:bold 12px Arial;min-width:26px;height:22px;padding:0 6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+    .tc-tc-seg:first-child{border-left:none}
+    .tc-tc-seg:hover{background:#f3eefe}
+    .tc-tc-seg.on{background:#6f42c1;color:#fff}
+    .tc-tc-seg.on:hover{background:#5f3ec0}
     .tc-tc-pin{flex:none;border:none;background:none;cursor:pointer;font-size:13px;line-height:1;filter:grayscale(1);opacity:.35;padding:1px 2px}
     .tc-tc-pin.on{filter:none;opacity:1}
     .tc-tc-pin.none{visibility:hidden}
@@ -2442,15 +2445,15 @@
           '<span class="tc-tc-grab" title="drag to reorder">☰</span>'
           + `<label class="tc-tc-onbar" title="show on the toolbar"><input type="checkbox" class="cb-onbar"${t.onBar ? ' checked' : ''}></label>`
           + `<span class="tc-tc-ic">${esc(m.icon)}</span><span class="tc-tc-lab">${esc(m.label)}</span>`
-          + `<span class="tc-tc-dens"><label title="show the icon"><input type="checkbox" class="cb-icon"${t.icon ? ' checked' : ''}> icon</label><label title="show the text"><input type="checkbox" class="cb-text"${t.text ? ' checked' : ''}> text</label></span>`
+          + `<span class="tc-tc-dens" title="what shows on the button — icon and/or text"><button type="button" class="tc-tc-seg cb-icon${t.icon ? ' on' : ''}" title="show the icon">${esc(m.icon)}</button><button type="button" class="tc-tc-seg cb-text${t.text ? ' on' : ''}" title="show the text">T</button></span>`
           + (hasParams(t.act) ? `<button type="button" class="tc-tc-pin${t.pinned ? ' on' : ''}" title="keep this tool's settings on the 2nd row">📌</button>` : '<span class="tc-tc-pin none"></span>');
         list.appendChild(row);
       });
       list.querySelectorAll('.tc-tc-row').forEach(row => {
         const act = row.dataset.act;
         row.querySelector('.cb-onbar').onchange = e => update(act, { onBar: e.target.checked });
-        row.querySelector('.cb-icon').onchange = e => update(act, { icon: e.target.checked });
-        row.querySelector('.cb-text').onchange = e => update(act, { text: e.target.checked });
+        row.querySelector('.cb-icon').onclick = () => update(act, { icon: !cfgOf(act).icon });
+        row.querySelector('.cb-text').onclick = () => update(act, { text: !cfgOf(act).text });
         const pin = row.querySelector('button.tc-tc-pin'); if (pin) pin.onclick = () => update(act, { pinned: !cfgOf(act).pinned });
         row.ondragstart = e => { dragAct = act; row.classList.add('drag'); try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', act); } catch (x) {} };
         row.ondragend = () => { dragAct = null; p.querySelectorAll('.tc-tc-row').forEach(r => r.classList.remove('drag', 'over')); };

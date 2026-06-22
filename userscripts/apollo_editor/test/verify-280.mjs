@@ -55,13 +55,17 @@ const main = async () => {
   ok('pinning shows the two panels on row 2', row2.vis && JSON.stringify(row2.tools) === JSON.stringify(['guesscase', 'sr']));
   ok('no 📌 glyph on the row-2 panels', row2.noPin);
 
-  // per-tool icon/text: make "cols" icon-only, assert no label; then try to also remove icon → must keep ≥1
-  await page.uncheck('#tc-toolcfg .tc-tc-row[data-act="cols"] .cb-text'); await page.waitForTimeout(150);
+  // per-tool icon/text are icon state-buttons (no "icon"/"text" words): turn OFF text → icon-only
+  await page.click('#tc-toolcfg .tc-tc-row[data-act="cols"] .cb-text'); await page.waitForTimeout(150);
   const colsIconOnly = await page.evaluate(() => { const b = document.querySelector('.tc-toolbtn[data-act="cols"]'); return { hasIc: !!b.querySelector('.tc-tbic'), hasLab: !!b.querySelector('.tc-tblab') }; });
   ok('icon-only tool shows icon, no text', colsIconOnly.hasIc && !colsIconOnly.hasLab);
-  await page.uncheck('#tc-toolcfg .tc-tc-row[data-act="cols"] .cb-icon').catch(() => {}); await page.waitForTimeout(150);
-  const colsAfter = await page.evaluate(() => { const b = document.querySelector('.tc-toolbtn[data-act="cols"]'); const r = document.querySelector('#tc-toolcfg .tc-tc-row[data-act="cols"]'); return { icChecked: r.querySelector('.cb-icon').checked, txtChecked: r.querySelector('.cb-text').checked, hasContent: !!(b.querySelector('.tc-tbic') || b.querySelector('.tc-tblab')) }; });
-  ok('cannot drop BOTH icon and text (≥1 enforced)', (colsAfter.icChecked || colsAfter.txtChecked) && colsAfter.hasContent);
+  // try to also turn OFF icon → ≥1 must keep one (it flips to text-only)
+  await page.click('#tc-toolcfg .tc-tc-row[data-act="cols"] .cb-icon').catch(() => {}); await page.waitForTimeout(150);
+  const colsAfter = await page.evaluate(() => { const b = document.querySelector('.tc-toolbtn[data-act="cols"]'); const r = document.querySelector('#tc-toolcfg .tc-tc-row[data-act="cols"]'); return { icOn: r.querySelector('.cb-icon').classList.contains('on'), txtOn: r.querySelector('.cb-text').classList.contains('on'), hasContent: !!(b.querySelector('.tc-tbic') || b.querySelector('.tc-tblab')) }; });
+  ok('cannot drop BOTH icon and text (≥1 enforced)', (colsAfter.icOn || colsAfter.txtOn) && colsAfter.hasContent);
+  // the config no longer spams the words "icon"/"text"
+  const noWords = await page.evaluate(() => !/\bicon\b|\btext\b/i.test(document.querySelector('#tc-toolcfg .tc-tc-dens').textContent));
+  ok('no "icon"/"text" words in the density control', noWords);
 
   // move parser onto the bar, verify it leaves the ⋯ menu
   await page.check('#tc-toolcfg .tc-tc-row[data-act="parser"] .cb-onbar'); await page.waitForTimeout(150);
