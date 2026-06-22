@@ -222,7 +222,7 @@ Applied to **both** tables (Tracklist and Recordings).
 | Tab                 | focus cell in the next column     |
 | SHIFT+Tab           | focus cell in the previous column |
 
-Moving between cells keeps the **caret column** where it was (clamped to the destination's length) instead of selecting the whole field — so you can keep typing or fix casing at the same spot rather than overwriting.
+By default, moving between cells keeps the **caret column** where it was (clamped to the destination's length) instead of selecting the whole field — so you can keep typing or fix casing at the same spot rather than overwriting. Turn off **Keep caret position on row navigation** (gear → Appearance) to restore the old behavior, where arriving on a cell selects the whole field so the next keystroke replaces it.
 
 ## Persistence
 

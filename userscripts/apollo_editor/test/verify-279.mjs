@@ -1,10 +1,9 @@
-// Verifies #279: tracklist keyboard navigation carries the caret COLUMN to the
-// destination field instead of selecting the whole field (jesus2099-style).
+// Verifies #279: tracklist keyboard navigation caret behavior + its toggle.
 //
-// Loads a real release editor, injects the script, opens the Apollo Tracklist,
-// puts the caret mid-word in a title input, presses ArrowDown, and asserts the
-// next row's title input is focused with a COLLAPSED caret at the same column
-// (clamped to its length) — not a full selection.
+//   Default (Keep caret position ON):  ↓ carries the caret COLUMN to the next
+//     row's field (collapsed caret, clamped), never a select-all.
+//   Toggle OFF:                        ↓ selects the whole destination field
+//     (the old behavior), so the next keystroke overwrites it.
 //
 //   node test/verify-279.mjs [--headed] [MBID]
 import { chromium } from 'playwright';
@@ -18,73 +17,52 @@ const SCRIPT_PATH = resolve(HERE, '..', 'apollo_editor.user.js');
 const ORIGIN = 'https://musicbrainz.org';
 const HEADED = process.argv.includes('--headed');
 const MBID = process.argv.find(a => /^[a-f0-9-]{36}$/.test(a)) || '51bdb849-5dfc-40c0-9fcb-f49fe7395cc7';
+const SKEY = 'apolloEditor.settings.v1';
 const LOG_DIR = resolve(HERE, 'logs', 'verify-279');
+const COL = 3;
+
+const out = [];
+const say = (...a) => { const s = a.join(' '); out.push(s); console.log('[279]', s); };
+
+async function pass(page, scriptCode, keepCaret) {
+  // set the toggle BEFORE injecting so the script loads with it
+  await page.evaluate(({ k, keep }) => { const s = JSON.parse(localStorage.getItem(k) || '{}'); s.keepCaretColumn = keep; localStorage.setItem(k, JSON.stringify(s)); }, { k: SKEY, keep: keepCaret });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootField.release().mediums().some(m => m.tracks().length); } catch { return false; } }, null, { timeout: 120000 });
+  await page.addScriptTag({ content: scriptCode });
+  await page.waitForTimeout(1000);
+  await page.evaluate(() => { const a = document.querySelector('#release-editor ul.ui-tabs-nav a[href="#tracklist"]'); if (a) a.click(); });
+  await page.waitForSelector('.t-title', { timeout: 30000 });
+
+  await page.evaluate((col) => { const t = document.querySelectorAll('.t-title')[0]; t.focus(); t.setSelectionRange(col, col); }, COL);
+  await page.keyboard.press('ArrowDown');
+  await page.waitForTimeout(150);
+  return page.evaluate(() => {
+    const el = document.activeElement; const titles = [...document.querySelectorAll('.t-title')];
+    return { idx: titles.indexOf(el), len: (el.value || '').length, selStart: el.selectionStart, selEnd: el.selectionEnd };
+  });
+}
 
 const main = async () => {
   await mkdir(LOG_DIR, { recursive: true });
   const scriptCode = await readFile(SCRIPT_PATH, 'utf8');
   const ctx = await chromium.launchPersistentContext(PROFILE_DIR, { headless: !HEADED, viewport: { width: 1500, height: 1000 } });
   const page = ctx.pages()[0] || await ctx.newPage();
-  const out = [];
-  const say = (...a) => { const s = a.join(' '); out.push(s); console.log('[279]', s); };
-
   await page.goto(`${ORIGIN}/release/${MBID}/edit`, { waitUntil: 'domcontentloaded' });
-  if (page.url().includes('/login')) { console.error('NOT LOGGED IN — re-auth .pw-profile'); await ctx.close(); process.exit(3); }
-  await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootField.release().mediums().some(m => m.tracks().length); } catch { return false; } }, null, { timeout: 120000 });
-  await page.addScriptTag({ content: scriptCode });
-  await page.waitForTimeout(1200);
+  if (page.url().includes('/login')) { console.error('NOT LOGGED IN'); await ctx.close(); process.exit(3); }
 
-  // open the Tracklist tab so the Apollo mirror mounts
-  await page.evaluate(() => { const a = document.querySelector('#release-editor ul.ui-tabs-nav a[href="#tracklist"]'); if (a) a.click(); });
-  await page.waitForSelector('.tc-medsec .t-title, #tc-panel .t-title', { timeout: 30000 });
-  const nTitles = await page.$$eval('.t-title', els => els.length);
-  say('title inputs found:', nTitles);
-  if (nTitles < 2) { console.error('need >=2 title rows to test vertical nav'); await ctx.close(); process.exit(4); }
+  const on = await pass(page, scriptCode, true);
+  say('keepCaret ON  → moved to row', on.idx, 'caret', on.selStart + '/' + on.selEnd, '(len ' + on.len + ')');
+  const onOk = on.idx === 1 && on.selStart === on.selEnd && on.selStart === Math.min(COL, on.len);
 
-  // Put the caret at column 3 in the first title input, then ArrowDown.
-  const COL = 3;
-  const res = await page.evaluate((col) => {
-    const titles = [...document.querySelectorAll('.t-title')];
-    const a = titles[0];
-    a.focus();
-    a.setSelectionRange(col, col);
-    return { srcLen: (a.value || '').length, srcVal: a.value };
-  }, COL);
-  say('source field value:', JSON.stringify(res.srcVal), 'caret col:', COL);
+  const off = await pass(page, scriptCode, false);
+  say('keepCaret OFF → moved to row', off.idx, 'caret', off.selStart + '/' + off.selEnd, '(len ' + off.len + ')');
+  const offOk = off.idx === 1 && off.selStart === 0 && off.selEnd === off.len && off.len > 0;   // select-all
 
-  await page.keyboard.press('ArrowDown');
-  await page.waitForTimeout(150);
-
-  const after = await page.evaluate(() => {
-    const el = document.activeElement;
-    if (!el || !el.classList || !el.classList.contains('t-title')) return { focusedTitle: false, cls: el ? el.className : null };
-    const titles = [...document.querySelectorAll('.t-title')];
-    return {
-      focusedTitle: true,
-      idx: titles.indexOf(el),
-      val: el.value,
-      len: (el.value || '').length,
-      selStart: el.selectionStart,
-      selEnd: el.selectionEnd,
-      selectedAll: el.selectionStart === 0 && el.selectionEnd === (el.value || '').length && (el.value || '').length > 0,
-    };
-  });
-  say('after ArrowDown:', JSON.stringify(after));
-
-  const expectCol = Math.min(COL, after.len ?? 0);
-  const pass =
-    after.focusedTitle === true &&
-    after.idx === 1 &&
-    after.selStart === after.selEnd &&            // collapsed caret, NOT a selection
-    after.selStart === expectCol &&               // same column, clamped
-    after.selectedAll === false;
-
-  say(pass ? 'PASS — caret carried to the destination (collapsed, same column), no select-all'
-           : 'FAIL — expected collapsed caret at col ' + expectCol + ' on row idx 1');
-
-  await page.screenshot({ path: resolve(LOG_DIR, 'after.png') }).catch(() => {});
+  const okPass = onOk && offOk;
+  say(okPass ? 'PASS — ON preserves the caret column; OFF selects the whole field' : `FAIL — onOk=${onOk} offOk=${offOk}`);
   await writeFile(resolve(LOG_DIR, 'result.txt'), out.join('\n'));
   await ctx.close();
-  process.exit(pass ? 0 : 1);
+  process.exit(okPass ? 0 : 1);
 };
 main().catch(e => { console.error(e); process.exit(2); });
