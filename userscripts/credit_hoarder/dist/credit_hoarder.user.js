@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.22.124529
+// @version      2026.6.22.135320
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3442,14 +3442,34 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                 linkSlot.style.color = "";
                 const addLinkBtn = document.createElement("button");
                 addLinkBtn.textContent = "\u{1F517}";
-                addLinkBtn.title = `Add ${srcName} link to MB ` + entityType;
+                addLinkBtn.title = `Add ${srcName} link to MB ${entityType}  \xB7  right-click: add it silently in the background`;
                 addLinkBtn.style.cssText = ACTION_CHIP_STYLE + "color:#e8771d;";
-                addLinkBtn.addEventListener("click", () => {
+                const openLinkEdit = (background) => {
                   const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
                   if (!ltId) return;
                   const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId, [`edit-${entityType}.edit_note`]: buildCreateNote(`Added ${srcName} link`) });
                   const mbid = selected.id.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
-                  const linkTab = window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, "_blank");
+                  const editUrl = `https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`;
+                  if (background && typeof GM_openInTab === "function") {
+                    const editTab = GM_openInTab(`${editUrl}#ch-autocommit`, { active: false, insert: true });
+                    const onCommitted = (evt) => {
+                      if (evt.data?.type !== "edit-committed" || evt.data.id !== mbid) return;
+                      DISCOGS_CHANNEL.removeEventListener("message", onCommitted);
+                      try {
+                        if (editTab && typeof editTab.close === "function") editTab.close();
+                      } catch (e2) {
+                      }
+                      recheckUrlBypassCache();
+                    };
+                    DISCOGS_CHANNEL.addEventListener("message", onCommitted);
+                    linkSlot.innerHTML = "";
+                    linkSlot.textContent = "\u2026";
+                    linkSlot.title = `Adding ${srcName} link in the background\u2026`;
+                    linkSlot.style.color = "#888";
+                    linkSlot.style.fontStyle = "italic";
+                    return;
+                  }
+                  const linkTab = window.open(editUrl, "_blank");
                   if (linkTab) {
                     const trySet = () => {
                       try {
@@ -3473,6 +3493,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                   };
                   document.addEventListener("visibilitychange", onReturn);
                   window.addEventListener("focus", onReturn);
+                };
+                addLinkBtn.addEventListener("click", () => openLinkEdit(false));
+                addLinkBtn.addEventListener("contextmenu", (e2) => {
+                  e2.preventDefault();
+                  openLinkEdit(true);
                 });
                 linkSlot.appendChild(addLinkBtn);
               }
@@ -6785,18 +6810,27 @@ ${lines}
     runTidalHarvestPage();
   }
   (function handleCreatePageAutoCommit() {
-    if (!/\/(artist|label|place)\/create\b/i.test(location.pathname)) return;
-    const m = location.hash.match(/ch-autocommit=([^&]+)/);
+    const onCreate = /\/(artist|label|place)\/create\b/i.test(location.pathname);
+    const onEdit = /\/(artist|label|place)\/[a-f0-9-]{36}\/edit\b/i.test(location.pathname);
+    if (!onCreate && !onEdit) return;
+    const m = location.hash.match(/ch-autocommit(?:=([^&]+))?/);
     if (!m) return;
-    let identity = "";
-    try {
-      identity = decodeURIComponent(m[1]);
-    } catch (e) {
-      identity = m[1];
-    }
-    try {
-      sessionStorage.setItem("discogs-importer-pending-artist", identity);
-    } catch (e) {
+    if (onCreate) {
+      let identity = "";
+      try {
+        identity = decodeURIComponent(m[1] || "");
+      } catch (e) {
+        identity = m[1] || "";
+      }
+      try {
+        sessionStorage.setItem("discogs-importer-pending-artist", identity);
+      } catch (e) {
+      }
+    } else {
+      try {
+        sessionStorage.setItem("discogs-importer-close-after-edit", "1");
+      } catch (e) {
+      }
     }
     let tries = 0;
     const submit = () => {
@@ -6820,6 +6854,10 @@ ${lines}
     try {
       if (sessionStorage.getItem("discogs-importer-close-after-edit")) {
         sessionStorage.removeItem("discogs-importer-close-after-edit");
+        try {
+          DISCOGS_CHANNEL.postMessage({ type: "edit-committed", id: mbid });
+        } catch (e) {
+        }
         setTimeout(() => window.close(), 50);
         return;
       }

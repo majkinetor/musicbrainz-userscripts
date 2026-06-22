@@ -901,18 +901,41 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             linkSlot.style.color = '';
                             const addLinkBtn = document.createElement('button');
                             addLinkBtn.textContent = '\ud83d\udd17'; // \ud83d\udd17
-                            addLinkBtn.title = `Add ${srcName} link to MB ` + entityType;
+                            addLinkBtn.title = `Add ${srcName} link to MB ${entityType}  ·  right-click: add it silently in the background`;
                             addLinkBtn.style.cssText = ACTION_CHIP_STYLE + 'color:#e8771d;'; // Discogs orange accent
-                            addLinkBtn.addEventListener('click', () => {
+                            // #273: left-click = foreground (focus-return recheck); right-click =
+                            // background via GM_openInTab + auto-submit, rechecked on `edit-committed`.
+                            const openLinkEdit = (background) => {
                                 const ltId = sourceUrlLinkTypeId(discogsHref, entityType);
                                 if (!ltId) return;
                                 const p = new URLSearchParams({ [`edit-${entityType}.url.0.text`]: discogsHref, [`edit-${entityType}.url.0.link_type_id`]: ltId, [`edit-${entityType}.edit_note`]: buildCreateNote(`Added ${srcName} link`) });
                                 const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
+                                const editUrl = `https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`;
+                                if (background && typeof GM_openInTab === 'function') {
+                                    // #273: add the link silently in a background tab + auto-submit.
+                                    // The edit-page bootstrap (hash flag) clicks "Enter edit" and
+                                    // marks the tab to close; the entity page posts `edit-committed`
+                                    // back, and we recheck the chip + close the GM tab here (no focus
+                                    // return happens for a background tab).
+                                    const editTab = GM_openInTab(`${editUrl}#ch-autocommit`, { active: false, insert: true });
+                                    const onCommitted = (evt) => {
+                                        if (evt.data?.type !== 'edit-committed' || evt.data.id !== mbid) return;
+                                        DISCOGS_CHANNEL.removeEventListener('message', onCommitted);
+                                        try { if (editTab && typeof editTab.close === 'function') editTab.close(); } catch (e) {}
+                                        recheckUrlBypassCache();
+                                    };
+                                    DISCOGS_CHANNEL.addEventListener('message', onCommitted);
+                                    linkSlot.innerHTML = '';
+                                    linkSlot.textContent = '…';
+                                    linkSlot.title = `Adding ${srcName} link in the background…`;
+                                    linkSlot.style.color = '#888';
+                                    linkSlot.style.fontStyle = 'italic';
+                                    return;
+                                }
                                 // Open WITHOUT noopener so we keep the tab reference and can flag
                                 // it to auto-close once the link edit submits (it redirects to the
-                                // entity page) — same UX as the create-artist tab. The opener's
-                                // focus-return handler below then re-checks and flips the chip to ✓.
-                                const linkTab = window.open(`https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`, '_blank');
+                                // entity page). The focus-return handler below then re-checks the chip.
+                                const linkTab = window.open(editUrl, '_blank');
                                 if (linkTab) {
                                     const trySet = () => {
                                         try { linkTab.sessionStorage.setItem('discogs-importer-close-after-edit', '1'); }
@@ -944,7 +967,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                 };
                                 document.addEventListener('visibilitychange', onReturn);
                                 window.addEventListener('focus', onReturn);
-                            });
+                            };
+                            addLinkBtn.addEventListener('click', () => openLinkEdit(false));
+                            addLinkBtn.addEventListener('contextmenu', e => { e.preventDefault(); openLinkEdit(true); });
                             linkSlot.appendChild(addLinkBtn);
                         }
                     }
