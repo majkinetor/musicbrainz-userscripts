@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22
+// @version      2026.6.22.175205
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -444,13 +444,29 @@
   // Tag every slot in the model — covers page-load 'set' artists, which skip the
   // match pass (#227). Updates each row as it resolves (real-time) and shows
   // progress in the always-visible toolbar status. Cached resolves are instant.
+  // The release's Discogs link can land in the DOM a beat after we're invoked —
+  // it lives on the Release-Information tab and switching to Tracklist first
+  // races its render. Poll briefly (silently — blank badge, not "checking…") so
+  // the check still runs on the FIRST visit instead of bailing to nothing. A
+  // release that genuinely has no Discogs link just polls out and stays blank.
+  async function discogsReleaseUrlSoon(maxMs = 8000) {
+    const t0 = Date.now();
+    for (;;) {
+      const u = discogsReleaseUrlFromPage();
+      if (u || Date.now() - t0 >= maxMs) return u || null;
+      await _sleep(400);
+    }
+  }
   let _tagDiscogsRunning = false;
   async function tagDiscogsForAll() {
     if (!MODEL || SETTINGS.discogsUrlMatch === false || _tagDiscogsRunning) return;
-    if (!discogsReleaseUrlFromPage()) return;   // nothing to check on this page
     _tagDiscogsRunning = true;
-    setDiscProgress('checking Discogs links…');   // show immediately in the badge slot, before the JSON fetch / lookups
     try {
+      // wait for the release Discogs link to exist before deciding there's nothing
+      // to do — this is the #1 reason a first visit showed a blank badge.
+      const relUrl = await discogsReleaseUrlSoon();
+      if (!relUrl) { setDiscProgress(''); return; }   // genuinely no Discogs link on this release
+      setDiscProgress('checking Discogs links…');   // now that we know there's work, show it
       const dmap = await loadDiscogsMap();
       const jobs = [];
       if (dmap) for (const t of MODEL.tracks) { const durls = dmap.get(fold(t.title)); if (durls) t.slots.forEach((s, i) => { if (durls[i]) jobs.push([s, durls[i]]); }); }
@@ -463,6 +479,17 @@
         // rerender so refreshStatus can't blank it
         const now = Date.now();
         if (now - lastRender > 300) { if (!isEditingNow()) rerender(); setDiscProgress(`checking Discogs links ${done}/${jobs.length}…`); lastRender = now; }
+      }
+      // A slot whose lookup returned null (cold cache / a transient rate-limit) is
+      // left "pending" and never shows in the badge — that's why the FIRST visit
+      // could read "0 links" while the SECOND (warm persistent cache) suddenly
+      // revealed them. Retry the pending slots once now that the per-request gate
+      // has paced out and the caches are partly warm, so the count settles on the
+      // first visit. Anything still pending is surfaced by the badge (not hidden).
+      const pend = jobs.filter(([s]) => s._discogsPending);
+      if (pend.length) {
+        let r = 0;
+        for (const [s, durl] of pend) { setDiscProgress(`re-checking Discogs links ${++r}/${pend.length}…`); await tagDiscogsAddable(s, durl); }
       }
       if (!isEditingNow()) rerender();
     } finally {
@@ -651,7 +678,10 @@
     } finally { setMatching(false); refreshStatus(); }   // set the final per-medium badges once the pass is done
     // #227: tag/resolve Discogs links AFTER the match finally (so its summary
     // message isn't overwritten by refreshStatus) — covers 'set' artists too.
-    await tagDiscogsForAll();
+    // Not awaited: tagDiscogsForAll may now poll a few seconds for the release
+    // Discogs link to load, and we don't want that holding up the caller's
+    // alias-enrichment. It owns the badge and updates it when it settles.
+    tagDiscogsForAll();
   }
   // (re-)match every still-unmatched slot — the "Match" button / used when auto-match is off
   async function matchAll() { if (!MODEL) return; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && !s.committed) s._pending = true; })); await matchModel((d, n) => updateStatus(`matching ${d}/${n}…`)); }
@@ -820,7 +850,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.162000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.175205';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1074,6 +1104,8 @@
     /* #227: persistent "N missing Discogs links" badge (teal, like the DISC match badge) */
     .tc-discstat{flex:none;font-size:12px;color:#999;font-style:italic;white-space:nowrap}
     .tc-discstat.tc-disc-badge{font-style:normal;font-weight:bold;color:#fff;background:#0a7a8c;padding:1px 8px;border-radius:9px}
+    .tc-discstat.tc-disc-ok{font-style:normal;font-weight:bold;color:#1a7a3c}
+    .tc-discstat.tc-disc-pend{font-style:normal;font-weight:bold;color:#fff;background:#c98a00;padding:1px 8px;border-radius:9px}
     .tc-tablewrap{overflow-x:auto}
     .tc-addrow{padding:8px 4px;font-size:13px;color:#555;display:flex;align-items:center;gap:6px}
     .tc-addrow input.tc-addn{width:54px;font:13px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px}
@@ -1326,19 +1358,43 @@
   }
   const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (discNeedsAttention(s)) n++; })); return n; };
   const setDiscStat = () => {
-    let miss = 0, mism = 0;
-    if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s._discogsMismatch) mism++; else if (s._discogsAddable) miss++; }));
+    let miss = 0, mism = 0, pend = 0, checked = false;
+    if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => {
+      if (s._discogsUrl) checked = true;   // this slot carried a Discogs URL → the check ran on it
+      if (s._discogsMismatch) mism++;
+      else if (s._discogsAddable) miss++;
+      else if (s._discogsPending) pend++;
+    }));
     const n = miss + mism;
     document.querySelectorAll('.tc-discstat').forEach(e => {
-      e.textContent = n ? `🔗 ${n} link${n === 1 ? '' : 's'}` : '';
-      e.classList.toggle('tc-disc-badge', n > 0);
-      e.onclick = n > 0 ? focusNextMissingDiscogs : null;
-      e.style.cursor = n > 0 ? 'pointer' : '';
-      e.title = n > 0 ? `${miss} missing, ${mism} mismatched Discogs link${n === 1 ? '' : 's'} — click to step to the next` : '';
+      e.classList.remove('tc-disc-badge', 'tc-disc-ok', 'tc-disc-pend');
+      e.onclick = null; e.style.cursor = ''; e.title = '';
+      if (n) {
+        // links to add / mismatches → teal action badge, click steps to the next
+        e.textContent = `🔗 ${n} link${n === 1 ? '' : 's'}` + (pend ? ` · ${pend}?` : '');
+        e.classList.add('tc-disc-badge');
+        e.onclick = focusNextMissingDiscogs; e.style.cursor = 'pointer';
+        e.title = `${miss} missing, ${mism} mismatched Discogs link${n === 1 ? '' : 's'}` + (pend ? `, ${pend} unchecked` : '') + ' — click to step to the next';
+      } else if (pend) {
+        // every job ran but some lookups couldn't complete (rate-limited / cold) →
+        // say so honestly and let a click retry, rather than reading as "all OK"
+        e.textContent = `🔗 ${pend} unchecked`;
+        e.classList.add('tc-disc-pend');
+        e.onclick = () => tagDiscogsForAll(); e.style.cursor = 'pointer';
+        e.title = `${pend} Discogs link${pend === 1 ? '' : 's'} couldn't be checked (rate-limited) — click to retry`;
+      } else if (checked) {
+        // the check ran and every Discogs artist credit is already linked in MB —
+        // a positive confirmation so a blank badge no longer means "did it run?"
+        e.textContent = '✓ Discogs links OK';
+        e.classList.add('tc-disc-ok');
+        e.title = 'every Discogs artist credit on this release is already linked in MusicBrainz';
+      } else {
+        e.textContent = '';   // no Discogs link on the release / not checked yet
+      }
     });
   };
   // transient progress text in the same slot, while the check runs (not a pill)
-  const setDiscProgress = (t) => document.querySelectorAll('.tc-discstat').forEach(e => { e.textContent = t || ''; e.classList.remove('tc-disc-badge'); e.onclick = null; e.style.cursor = ''; e.title = ''; });
+  const setDiscProgress = (t) => document.querySelectorAll('.tc-discstat').forEach(e => { e.textContent = t || ''; e.classList.remove('tc-disc-badge', 'tc-disc-ok', 'tc-disc-pend'); e.onclick = null; e.style.cursor = ''; e.title = ''; });
   // transient action feedback (a pick propagated, S&R count, …) — lives in the toolbar so it never
   // overwrites a medium's unresolved badge; auto-clears
   let _toastTimer = null;
