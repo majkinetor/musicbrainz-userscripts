@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.180408
+// @version      2026.6.22.182656
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1964,7 +1964,8 @@
     const ov = document.createElement('div'); ov.id = 'as-commit';
     ov.innerHTML = `<div class="as-cm-box">
       <div class="as-cm-h"><span class="as-cm-h-t">Apply ${plan.length} change${plan.length===1?'':'s'} as MusicBrainz edits</span><a class="as-cm-hist" href="${ART_EDITS_URL}" target="_blank" rel="noopener noreferrer" title="Your ${ENT.noun} edits on MusicBrainz">🕓 My ${ENT.Noun} edits</a></div>
-      <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<div class="as-cm-payload"></div></div>`).join('')}</div>
+      <div class="as-cm-prog" hidden><div class="as-cm-prog-track"><div class="as-cm-prog-fill"></div></div><span class="as-cm-prog-txt"></span></div>
+      <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><div class="as-cm-line"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<span class="as-cm-bar"><span class="as-cm-bfill"></span></span></div><div class="as-cm-payload"></div></div>`).join('')}</div>
       <textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea>
       <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
     </div>`;
@@ -1981,31 +1982,45 @@
     dryEl.onchange = setGoLabel; setGoLabel();
     goBtn.onclick = () => runPlan(ov, plan, { note: ov.querySelector('.as-cm-note').value, votable: ov.querySelector('.as-cm-vote').checked, dry: dryEl.checked });
   }
+  // #278: per-row progress bar pinned on the right of each op row. `pct` null →
+  // leave the width; `state` colours it (busy=indeterminate sweep, ''=in-progress
+  // accent, done=green, dry=muted, err=red, cancel=grey).
+  function setRowBar(row, pct, state) {
+    if (!row) return;
+    const bar = row.querySelector('.as-cm-bar'); if (!bar) return;
+    bar.classList.add('on');
+    bar.classList.remove('busy', 'done', 'dry', 'err', 'cancel');
+    if (state) bar.classList.add(state);
+    if (pct != null) { const f = bar.querySelector('.as-cm-bfill'); if (f) f.style.width = Math.max(0, Math.min(100, pct)) + '%'; }
+  }
   async function runOp(ov, op, meta, ctl) {
     const row = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`);
     const st = row.querySelector('.as-cm-st'), pay = row.querySelector('.as-cm-payload');
     if (op.skip) { st.textContent = '⏭'; return; }
-    if (ctl && ctl.aborted) { st.textContent = '⛔'; return; }
-    st.textContent = '⏳';
+    if (ctl && ctl.aborted) { st.textContent = '⛔'; setRowBar(row, 100, 'cancel'); return; }
+    st.textContent = '⏳'; setRowBar(row, null, 'busy');
     try {
       if (op.run) {                         // multi-step op (uploads) reports its own payload
         await op.run(meta, meta.dry, txt => { pay.textContent = txt; });
         st.textContent = meta.dry ? '👁' : '✅'; if (meta.dry) row.classList.add('dry');
+        setRowBar(row, 100, meta.dry ? 'dry' : 'done');
       } else {
         const req = await op.build(meta);
-        if (req && req.noop) { st.textContent = '✅'; pay.textContent = req.note || 'nothing to do'; return; }   // #264 already-done op (e.g. removing a cover that's already gone)
+        if (req && req.noop) { st.textContent = '✅'; pay.textContent = req.note || 'nothing to do'; setRowBar(row, 100, 'done'); return; }   // #264 already-done op (e.g. removing a cover that's already gone)
         if (meta.dry) {
           st.textContent = '👁'; row.classList.add('dry');
           pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/\+/g, ' ').replace(/&/g, '\n  ')}`;
+          setRowBar(row, 100, 'dry');
         } else {
           const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
           if (!r.ok) throw new Error('HTTP ' + r.status);
-          st.textContent = '✅';
+          st.textContent = '✅'; setRowBar(row, 100, 'done');
         }
       }
     } catch (e) {
       const cancelled = ctl && ctl.aborted;
       st.textContent = cancelled ? '⛔' : '❌'; pay.textContent = String(e && e.message || e);
+      setRowBar(row, 100, cancelled ? 'cancel' : 'err');
       if (!cancelled) { row.classList.add('err'); op._err = true; }   // #275: flag for the Repeat retry
     }
   }
@@ -2019,19 +2034,21 @@
   // adds: parallel UPLOAD to archive.org, then SEQUENTIAL register (positions stay correct) — like Turbo
   async function runAdds(ov, addOps, meta, ctl) {
     if (meta.dry || !addOps.length) return runPool(addOps, meta.dry ? 8 : 1, ov, meta, ctl);
-    const setSt = (op, s) => { ov.querySelector(`.as-cm-op[data-i="${op._i}"] .as-cm-st`).textContent = s; };
-    const fail = (op, e) => { const row = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`); row.querySelector('.as-cm-st').textContent = '❌'; row.querySelector('.as-cm-payload').textContent = String(e && e.message || e); row.classList.add('err'); op._err = true; };
-    const stop = (op) => { setSt(op, '⛔'); op._err = true; };
-    addOps.forEach(op => setSt(op, '⏳'));
+    const rowOf = op => ov.querySelector(`.as-cm-op[data-i="${op._i}"]`);
+    const setSt = (op, s) => { rowOf(op).querySelector('.as-cm-st').textContent = s; };
+    const fail = (op, e) => { const row = rowOf(op); row.querySelector('.as-cm-st').textContent = '❌'; row.querySelector('.as-cm-payload').textContent = String(e && e.message || e); row.classList.add('err'); op._err = true; setRowBar(row, 100, 'err'); };
+    const stop = (op) => { setSt(op, '⛔'); op._err = true; setRowBar(rowOf(op), 100, 'cancel'); };
+    addOps.forEach(op => { setSt(op, '⏳'); setRowBar(rowOf(op), null, 'busy'); });
     await pool(addOps, 4, async op => {
       if (ctl && ctl.aborted) return stop(op);
-      try { await uploadStep(op.it, (l, t) => setSt(op, `⏫${Math.round(l / t * 100)}%`), ctl); setSt(op, '⏫'); }
+      // #278: the live upload % drives the per-row bar (was a cramped inline "⏫94%")
+      try { await uploadStep(op.it, (l, t) => { setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl); setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); }
       catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
     });  // parallel upload w/ progress (abortable via ctl)
     for (const op of addOps) {                                   // ordered register
       if (op._err) continue;
       if (ctl && ctl.aborted) { stop(op); continue; }
-      try { await registerStep(op.it, meta, ctl); setSt(op, '✅'); }
+      try { await registerStep(op.it, meta, ctl); setSt(op, '✅'); setRowBar(rowOf(op), 100, 'done'); }
       catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
     }
   }
@@ -2074,19 +2091,35 @@
       };
     }
     const CONC = meta.dry ? 8 : 4;   // modest concurrency live to stay friendly to MB
+    // #278: overall progress — a big batch buries "how much is left" in a long scroll,
+    // so show a header bar + "done / total" that ticks as each op reaches a terminal
+    // state. Polled (not threaded through every status-set site) so the count is robust.
+    const prog = ov.querySelector('.as-cm-prog');
+    const progFill = prog.querySelector('.as-cm-prog-fill'), progTxt = prog.querySelector('.as-cm-prog-txt');
+    const tickOverall = () => {
+      let done = 0;
+      for (const op of ops) { const r = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`); const s = r ? r.querySelector('.as-cm-st').textContent : ''; if ('✅👁❌⛔⏭'.includes(s)) done++; }
+      const total = ops.length, pct = total ? Math.round(done / total * 100) : 100;
+      progFill.style.width = pct + '%';
+      progTxt.textContent = `${done} / ${total} · ${pct}%`;
+    };
+    prog.hidden = false; tickOverall();
+    const progTimer = setInterval(tickOverall, 150);
     // uploads run in parallel (register stays ordered); edits/removes parallel; reorder last.
     try {
       await runAdds(ov, ops.filter(o => o.kind === 'add'), meta, ctl);
       if (!ctl.aborted) await runPool(ops.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta, ctl);
       if (!ctl.aborted) await runPool(ops.filter(o => o.kind === 'reorder'), 1, ov, meta, ctl);
     } finally {
+      clearInterval(progTimer); tickOverall();   // settle the overall bar on the final tally
       endRun();   // run finished/failed — re-allow backdrop close and drop the unload guard (before any auto-reload)
     }
     cancelBtn.disabled = false;
     cancelBtn.textContent = 'Close';
     cancelBtn.onclick = () => ov.remove();
     if (ctl.aborted) {   // mark any not-yet-started ops as cancelled, leave the modal up
-      ov.querySelectorAll('.as-cm-op .as-cm-st').forEach(s => { if (s.textContent === '○' || s.textContent === '⏳') s.textContent = '⛔'; });
+      ov.querySelectorAll('.as-cm-op').forEach(r => { const s = r.querySelector('.as-cm-st'); if (s.textContent === '○' || s.textContent === '⏳') { s.textContent = '⛔'; setRowBar(r, 100, 'cancel'); } });
+      tickOverall();
       goBtn.textContent = 'Cancelled'; goBtn.disabled = true;
       return;
     }
@@ -2857,12 +2890,29 @@
   .as-cm-list{overflow:auto;border:1px solid #eee;border-radius:8px;padding:6px;margin:4px 0 12px;background:#fafafa;flex:1 1 auto;min-height:0}   /* #263 flex so the note + buttons below stay pinned and the list scrolls */
   .as-cm-op{padding:5px 6px;border-radius:6px;font-size:13px}
   .as-cm-op.dry{background:#f3eefe}.as-cm-op.err{background:#fdecea}
-  .as-cm-st{display:inline-block;min-width:18px;white-space:nowrap;text-align:center}
-  .as-cm-skip{font-size:11px;color:#999;margin-left:6px;background:#eee;border-radius:10px;padding:1px 7px}
+  .as-cm-line{display:flex;align-items:center;gap:6px}   /* #278: keep the row on one flex line so the bar can pin right */
+  .as-cm-st{display:inline-block;min-width:18px;white-space:nowrap;text-align:center;flex:none}
+  .as-cm-lb{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .as-cm-skip{font-size:11px;color:#999;margin-left:6px;background:#eee;border-radius:10px;padding:1px 7px;flex:none}
   .as-cm-payload{white-space:pre-wrap;font:11px/1.4 ui-monospace,Consolas,monospace;color:#555;margin:4px 0 2px 18px;display:none}
   .as-cm-op.dry .as-cm-payload,.as-cm-op.err .as-cm-payload{display:block}
+  /* #278 per-row progress bar (right side, was empty) */
+  .as-cm-bar{flex:0 0 110px;margin-left:auto;height:7px;border-radius:5px;background:#e9e4f3;overflow:hidden;position:relative;display:none}
+  .as-cm-bar.on{display:block}
+  .as-cm-bfill{display:block;height:100%;width:0;background:var(--as-acc);border-radius:5px;transition:width .15s linear}
+  .as-cm-bar.done .as-cm-bfill{background:#2e9b57}
+  .as-cm-bar.dry .as-cm-bfill{background:#b9a4e0}
+  .as-cm-bar.err .as-cm-bfill{background:var(--as-warn)}
+  .as-cm-bar.cancel .as-cm-bfill{background:#bbb}
+  .as-cm-bar.busy .as-cm-bfill{position:absolute;width:40%;left:0;animation:as-cm-ind 1.1s ease-in-out infinite}
+  @keyframes as-cm-ind{0%{left:-40%}100%{left:100%}}
+  /* #278 overall progress (header) */
+  .as-cm-prog{display:flex;align-items:center;gap:10px;margin:-2px 0 12px}
+  .as-cm-prog-track{flex:1 1 auto;height:8px;border-radius:6px;background:#e9e4f3;overflow:hidden}
+  .as-cm-prog-fill{height:100%;width:0;background:var(--as-acc);border-radius:6px;transition:width .2s linear}
+  .as-cm-prog-txt{flex:none;font-size:12px;font-weight:600;color:#5f3ec0;font-variant-numeric:tabular-nums;white-space:nowrap}
   .as-cm-f{display:flex;align-items:center;gap:8px}
-  .as-cm-id{color:#a99fc4;font-size:12px;font-variant-numeric:tabular-nums}
+  .as-cm-id{color:#a99fc4;font-size:12px;font-variant-numeric:tabular-nums;flex:none}
   .as-cm-go{background:var(--as-acc);color:#fff;border-color:var(--as-acc);font-weight:600}
   .as-cm-go:disabled{opacity:.5}
   .as-cm-note2{font-size:11px;color:#9a8ccb;margin-top:8px;text-align:center}
