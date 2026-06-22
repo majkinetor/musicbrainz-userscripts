@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.161000
+// @version      2026.6.22.162000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -11,6 +11,7 @@
 // @match        https://*.musicbrainz.org/release/*/edit_annotation
 // @match        https://*.musicbrainz.org/artist/*
 // @grant        GM_xmlhttpRequest
+// @grant        GM_openInTab
 // @connect      *
 // @run-at       document-start
 // ==/UserScript==
@@ -87,6 +88,8 @@
     // artist is already indexed — the create tab fetched it before posting back). #191
     fetchEntity(d.gid).then(ent => {
       pickArtist(pend.slot, ent || { gid: d.gid, name: d.name, id: d.id });
+      // #273: close the background create tab via its handle (a GM-opened tab can't always self-close).
+      try { if (pend.bgTab && typeof pend.bgTab.close === 'function') pend.bgTab.close(); } catch (x) {}
       Log.info('inserted newly-created artist', JSON.stringify(d.name), 'into the table' + (ent ? '' : ' (plain fallback — native link may be incomplete)'));
     });
   });
@@ -471,33 +474,50 @@
   const DISCOGS_LINK_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
   // warning triangle shown when the Discogs URL links a DIFFERENT MB artist (#227)
   const DISCOGS_WARN_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
-  function addOrCreateDiscogsLink(slot) {
+  // after the artist's Discogs link changes (foreground return or background
+  // postback): drop the stale caches and re-tag every slot crediting that artist.
+  async function reTagAfterDiscogsLink(gid, url, name) {
+    _artistRelsCache.delete(gid); _ddrop('rels', gid);
+    _discogsResolveCache.delete(url); _ddrop('resolve', url);
+    const own = await artistDiscogsUrls(gid);
+    if (own && own.some(u => discogsIdOf(u) === discogsIdOf(url))) { MODEL && MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid === gid) s._flash = true; })); toast(`added Discogs link to ${name}`); }
+    await tagDiscogsForAll();
+  }
+  function addOrCreateDiscogsLink(slot, background) {
     const url = slot._discogsUrl; if (!url) return;
     if (slot.gid) {
-      // add the link to the existing artist — open its edit form pre-seeded, verify on return
-      const p = new URLSearchParams({ 'edit-artist.url.0.text': url, 'edit-artist.url.0.link_type_id': DISCOGS_ARTIST_LINK_TYPE, 'edit-artist.edit_note': entityActionNote('Added Discogs link') });
-      // open WITHOUT noopener so we can flag the tab to auto-close once the edit
-      // submits (it redirects to the clean /artist/<gid> page); the focus-return
-      // handler below then re-verifies the link. Same UX as Credit Hoarder.
-      const tab = W.open(`${ORIGIN}/artist/${slot.gid}/edit?${p}`, '_blank');
-      if (tab) { const trySet = () => { try { tab.sessionStorage.setItem(CLOSE_KEY, '1'); } catch (e) { setTimeout(trySet, 50); } }; trySet(); }
-      Log.info('Discogs link: opening edit for', slot.name || slot.gid, '→', url);
       const gid = slot.gid;
+      const p = new URLSearchParams({ 'edit-artist.url.0.text': url, 'edit-artist.url.0.link_type_id': DISCOGS_ARTIST_LINK_TYPE, 'edit-artist.edit_note': entityActionNote('Added Discogs link') });
+      const editUrl = `${ORIGIN}/artist/${gid}/edit?${p}`;
+      // #273: right-click → add the link SILENTLY in a background tab + auto-submit.
+      // The edit-page bootstrap clicks "Enter edit"; the saved entity page posts
+      // `tc-edit-committed` back, and we re-tag + close the GM tab here (no focus
+      // return happens for a background tab).
+      if (background && typeof GM_openInTab === 'function' && ART_CHANNEL) {
+        const bgTab = GM_openInTab(`${editUrl}#tc-autocommit`, { active: false, insert: true });
+        const onCommitted = (e) => {
+          if (!e.data || e.data.type !== 'tc-edit-committed' || e.data.gid !== gid) return;
+          ART_CHANNEL.removeEventListener('message', onCommitted);
+          try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (x) {}
+          reTagAfterDiscogsLink(gid, url, slot.name);
+        };
+        ART_CHANNEL.addEventListener('message', onCommitted);
+        Log.info('Discogs link (background) for', slot.name || gid, '→', url);
+        return;
+      }
+      // foreground: open the edit form, flag it to auto-close after submit, verify on return
+      const tab = W.open(editUrl, '_blank');
+      if (tab) { const trySet = () => { try { tab.sessionStorage.setItem(CLOSE_KEY, '1'); } catch (e) { setTimeout(trySet, 50); } }; trySet(); }
+      Log.info('Discogs link: opening edit for', slot.name || gid, '→', url);
       const onReturn = async () => {
         if (document.visibilityState !== 'visible') return;
         document.removeEventListener('visibilitychange', onReturn);
-        // the artist's links changed — drop the stale caches and re-tag EVERY slot,
-        // so other slots crediting the SAME artist update too (#227)
-        _artistRelsCache.delete(gid); _ddrop('rels', gid);
-        _discogsResolveCache.delete(url); _ddrop('resolve', url);
-        const own = await artistDiscogsUrls(gid);
-        if (own && own.some(u => discogsIdOf(u) === discogsIdOf(url))) { MODEL && MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid === gid) s._flash = true; })); toast(`added Discogs link to ${slot.name}`); }
-        await tagDiscogsForAll();
+        await reTagAfterDiscogsLink(gid, url, slot.name);
       };
       document.addEventListener('visibilitychange', onReturn);
     } else {
       // no MB artist yet — create one seeded with the link (same as ＋)
-      createArtist((slot.creditedAs || '').trim() || slot.name || '', slot, url);
+      createArtist((slot.creditedAs || '').trim() || slot.name || '', slot, url, background);
     }
   }
 
@@ -722,14 +742,27 @@
   }
   // open MB's create-artist form; when it's saved, the new artist page posts the MBID back over the
   // channel (handshake via sessionStorage token) and closes itself, and we drop it into the slot.
-  function createArtist(name, slot, discogsUrl) {
+  function createArtist(name, slot, discogsUrl, background) {
     let url = `${ORIGIN}/artist/create?edit-artist.name=${encodeURIComponent(name)}&edit-artist.sort_name=${encodeURIComponent(guessSortName(name))}`;
     // #227: seed the Discogs link so the new artist is born already linked
     if (discogsUrl) { url += `&edit-artist.url.0.text=${encodeURIComponent(discogsUrl)}&edit-artist.url.0.link_type_id=${DISCOGS_ARTIST_LINK_TYPE}`; _discogsResolveCache.delete(discogsUrl); }
     url += `&edit-artist.edit_note=${encodeURIComponent(entityActionNote('Created this artist'))}`;   // proper attribution on the created artist
+    const token = (slot && ART_CHANNEL) ? ('tc-' + Date.now() + '-' + (++_createSeq)) : null;
+    // #273: right-click → create SILENTLY in a background tab and auto-submit.
+    // GM_openInTab gives no tab handle to write sessionStorage on, so we carry the
+    // postback token in the URL hash; the create-page bootstrap stores it as the
+    // pending marker, waits for the seeded form to render, and clicks "Enter edit".
+    // The saved /artist/<gid> page posts the MBID back (existing handler) and we
+    // close the GM tab here on that postback.
+    if (background && token && typeof GM_openInTab === 'function') {
+      const bgTab = GM_openInTab(`${url}#tc-autocommit=${encodeURIComponent(token)}`, { active: false, insert: true });
+      _pendingCreates.set(token, { slot, bgTab });
+      Log.info('create-artist (background) for', JSON.stringify(name), '— will auto-insert on save');
+      return;
+    }
     const tab = W.open(url, '_blank');   // NOT noopener — we set a token on the new tab's sessionStorage
-    if (tab && slot && ART_CHANNEL) {
-      const token = 'tc-' + Date.now() + '-' + (++_createSeq); _pendingCreates.set(token, { slot });
+    if (tab && token) {
+      _pendingCreates.set(token, { slot });
       const trySet = () => { try { tab.sessionStorage.setItem(PENDING_KEY, token); } catch (e) { setTimeout(trySet, 50); } }; trySet();
       Log.info('create-artist for', JSON.stringify(name), '— will auto-insert on save');
     } else { Log.info('open MB create-artist for', JSON.stringify(name)); }
@@ -748,16 +781,46 @@
   // to the clean entity page ($-anchored, so NOT /artist/<gid>/edit) — it never
   // closes before the user submits. The opener re-verifies on focus return.
   function handleEditLinkClose() {
-    if (!new RegExp('^/artist/' + MBID_RE.source + '$', 'i').test(location.pathname)) return false;
+    const m = location.pathname.match(new RegExp('^/artist/(' + MBID_RE.source + ')$', 'i')); if (!m) return false;
     let mark = null; try { mark = sessionStorage.getItem(CLOSE_KEY); } catch (e) {} if (!mark) return false;
     try { sessionStorage.removeItem(CLOSE_KEY); } catch (e) {}
+    // #273: tell the opener the link edit committed so a BACKGROUND add-link (which
+    // never regains focus) can re-tag the slots + close this GM tab. A foreground
+    // add-link has no listener for it — harmless there (it uses focus-return).
+    if (ART_CHANNEL) { try { ART_CHANNEL.postMessage({ type: 'tc-edit-committed', gid: m[1].toLowerCase() }); } catch (e) {} }
     setTimeout(() => { try { W.close(); } catch (e) {} }, 80);
+    return true;
+  }
+  // #273: on the MB create/edit form opened in a BACKGROUND tab (hash flag), store
+  // the right marker (so the saved entity page posts back / closes), wait for the
+  // seeded change to RENDER — the "Enter edit" button shows before MB's React
+  // external-links editor applies the seeded URL, so an early click would submit
+  // an empty edit — then click it.
+  function handleAutoCommit() {
+    const onCreate = /\/(artist|label|place)\/create\b/i.test(location.pathname);
+    const onEdit   = new RegExp('/(artist|label|place)/' + MBID_RE.source + '/edit\\b', 'i').test(location.pathname);
+    if (!onCreate && !onEdit) return false;
+    const hm = location.hash.match(/tc-autocommit(?:=([^&]+))?/); if (!hm) return false;
+    if (onCreate) { let tok = ''; try { tok = decodeURIComponent(hm[1] || ''); } catch (e) { tok = hm[1] || ''; } try { sessionStorage.setItem(PENDING_KEY, tok); } catch (e) {} }
+    else { try { sessionStorage.setItem(CLOSE_KEY, '1'); } catch (e) {} }
+    const et = (location.pathname.match(/\/(artist|label|place)\//) || [])[1] || 'artist';
+    const seedUrl = new URLSearchParams(location.search).get(`edit-${et}.url.0.text`) || '';
+    const seedKey = seedUrl ? seedUrl.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/+$/, '').toLowerCase() : '';
+    let tries = 0;
+    const submit = () => {
+      const seedReady = !seedKey || document.body.innerHTML.toLowerCase().includes(seedKey);
+      const btn = document.querySelector('button.submit.positive')
+        || [...document.querySelectorAll('button[type="submit"]')].find(b => /enter edit/i.test(b.textContent || ''));
+      if (seedReady && btn && !btn.disabled) { btn.click(); return; }
+      if (tries++ < 100) setTimeout(submit, 200);   // ~20s grace (background tabs are slower)
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', submit); else submit();
     return true;
   }
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.161000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.162000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1603,7 +1666,7 @@
     // special-purpose artists like [unknown], whose alias is suppressed. #195
     const dis = slot.committed ? getDisamb(slot.gid) : '';
     if (dis) { const ds = document.createElement('span'); ds.className = 'tc-bar-disamb'; ds.textContent = '(' + dis + ')'; ds.title = dis; search.insertBefore(ds, ref); }
-    if (!slot.committed) { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz'; mk.onmousedown = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null); }; search.insertBefore(mk, ref); }
+    if (!slot.committed) { const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz  ·  right-click: create silently in a background tab'; mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null); }; mk.oncontextmenu = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null, true); }; search.insertBefore(mk, ref); }
   }
   // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
   function renderBadgeCell(cell, track) {
@@ -1757,8 +1820,10 @@
       ic.title = mism ? `Discogs mismatch: this artist links discogs.com/artist/${discogsIdOf(mism)}, the release credits discogs.com/artist/${discogsIdOf(s._discogsUrl)} — click to add the release's link anyway`
                : conf ? `Discogs links a different MB artist: ${conf.name} — click to add it to ${s.name || 'this artist'} anyway`
                       : (s.gid ? 'Add the Discogs link to this artist' : 'Create this artist with its Discogs link');
+      ic.title += '  ·  right-click: do it silently in a background tab';
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreateDiscogsLink(s); };
+      ic.oncontextmenu = e => { e.preventDefault(); addOrCreateDiscogsLink(s, true); };   // #273 background
     } else if (s._discogsConflict) {
       // unresolved slot whose Discogs URL already belongs to an MB artist — info only (pick that artist)
       ic = document.createElement('a'); ic.className = 'tc-tic discogs-warn'; ic.innerHTML = DISCOGS_WARN_SVG;
@@ -5246,6 +5311,7 @@
   }
 
   (async function main() {
+    if (handleAutoCommit()) { Log.info('auto-commit (background create/link) — submitting the seeded form'); return; }
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
     if (handleEditLinkClose()) { Log.info('Discogs-link edit committed — closing tab'); return; }
     if (await autoConfirmSeed()) return;   // handled the seed-confirmation interstitial (clicked, or option off) — no editor here
