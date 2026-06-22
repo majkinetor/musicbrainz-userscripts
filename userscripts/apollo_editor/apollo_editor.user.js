@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.175205
+// @version      2026.6.22.191152
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -850,7 +850,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.175205';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.191152';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1422,12 +1422,20 @@
     // remember the destination by row + its slot index within that row (survives a commit-rebuild)
     const destRow = dest.closest('tr[data-tk]'); const destTk = destRow ? destRow.dataset.tk : null;
     const destIdx = destRow ? [...destRow.querySelectorAll(sel)].indexOf(dest) : 0; const destPos = cur + dir;
+    // #279: carry the caret COLUMN across the move instead of selecting the whole
+    // field (jesus2099's keyboard-select behaviour) — so you keep typing / fix
+    // casing at the same spot rather than overwriting. Clamped to the destination's
+    // length, so a shorter field just drops the caret at its end.
+    const caret = (inp.selectionStart != null) ? inp.selectionStart : (inp.value || '').length;
     inp.blur();   // committing the current field on blur can rebuild the rows — focus AFTER, from the fresh DOM
     const go = () => {
       let t = null;
       if (destTk) { const d = document.querySelector(`${scope} tr[data-tk="${destTk}"]`); if (d) { const xs = [...d.querySelectorAll(sel)]; t = xs[Math.min(destIdx, xs.length - 1)]; } }
       if (!t) t = [...document.querySelectorAll(`${scope} ${sel}`)][destPos];
-      if (t && document.activeElement !== t) { t.focus(); if (t.select && !t.classList.contains('nm')) t.select(); }
+      if (t && document.activeElement !== t) {
+        t.focus();
+        if (typeof t.setSelectionRange === 'function') { const p = Math.min(caret, (t.value || '').length); try { t.setSelectionRange(p, p); } catch (e) {} }
+      }
     };
     go(); setTimeout(go, 0);
     return true;
