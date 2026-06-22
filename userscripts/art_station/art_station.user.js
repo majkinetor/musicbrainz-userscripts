@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.154000
+// @version      2026.6.22.171000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1122,15 +1122,19 @@
       const timer = setTimeout(() => ctrl.abort(), 120000);   // 2 min per attempt
       try {
         const r = await fetch(url, { cache: 'no-store', signal: ctrl.signal });
+        clearTimeout(timer);
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        const buf = await r.arrayBuffer();
-        clearTimeout(timer);
-        return new Uint8Array(buf);
-      } catch (e) {
-        clearTimeout(timer);
-        lastErr = e;
-        if (i < attempts - 1) await new Promise(res => setTimeout(res, 800 * (i + 1)));
-      }
+        return new Uint8Array(await r.arrayBuffer());
+      } catch (e) { clearTimeout(timer); lastErr = e; }
+      // #274: plain fetch() is CORS-bound — a PDF booklet on archive.org carries
+      // no Access-Control-Allow-Origin, so fetch() ALWAYS fails it even though the
+      // browser views it fine. GM_xmlhttpRequest is not CORS-bound; use it as the
+      // fallback (it also recovers transient image failures).
+      try {
+        const blob = await gmFetch(url);
+        if (blob) return new Uint8Array(await blob.arrayBuffer());
+      } catch (e) { lastErr = e; }
+      if (i < attempts - 1) await new Promise(res => setTimeout(res, 800 * (i + 1)));
     }
     throw lastErr;
   }
