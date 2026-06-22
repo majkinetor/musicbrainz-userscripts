@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.21
+// @version      2026.6.22.150000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1111,7 +1111,36 @@
       return { url, name, it };
     });
   }
-  const fetchBytes = async url => new Uint8Array(await fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }));
+  // #274: covers (esp. big ones from coverartarchive.org → archive.org) fail
+  // intermittently — a transient 5xx / network hiccup / slow large transfer.
+  // Without a retry those covers were silently dropped from the archive. Retry
+  // with backoff, and abort a stalled attempt so it retries instead of hanging.
+  async function fetchBytes(url, attempts = 4) {
+    let lastErr;
+    for (let i = 0; i < attempts; i++) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 120000);   // 2 min per attempt
+      try {
+        const r = await fetch(url, { cache: 'no-store', signal: ctrl.signal });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const buf = await r.arrayBuffer();
+        clearTimeout(timer);
+        return new Uint8Array(buf);
+      } catch (e) {
+        clearTimeout(timer);
+        lastErr = e;
+        if (i < attempts - 1) await new Promise(res => setTimeout(res, 800 * (i + 1)));
+      }
+    }
+    throw lastErr;
+  }
+  // #274: warn the user (clearly, and in the archive's own README) when covers
+  // couldn't be downloaded, instead of silently shipping an incomplete zip.
+  function warnDropped(failed, total) {
+    const n = failed.length;
+    const list = failed.slice(0, 4).join(', ') + (n > 4 ? `, +${n - 4} more` : '');
+    toast(`⚠ ${n}/${total} file${n === 1 ? '' : 's'} failed to download — missing from the archive: ${list}. See README.md inside.`, 14000);
+  }
   // capture the original's resolution from its bytes (no extra request) so the manifest table has it
   async function measureBytes(it, data) {
     if (it.w || it._pdf || !data) return;
@@ -1128,7 +1157,7 @@
       try { handle = await window.showSaveFilePicker({ suggestedName: `${MBID}-${ITEMS}.zip`, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
       catch (e) { return; }   // user cancelled the save dialog
       const w = await handle.createWritable();
-      const central = []; let offset = 0, done = 0;
+      const central = []; let offset = 0, done = 0; const failed = [];
       const writeEntry = async (nameStr, data) => {
         const name = enc.encode(nameStr), crc = crc32(data);
         await w.write(zipLocal(crc, data.length, name.length)); await w.write(name); await w.write(data);
@@ -1136,31 +1165,41 @@
         offset += 30 + name.length + data.length;
       };
       for (const o of items) {
-        let data; try { data = await fetchBytes(o.url); } catch (e) { onProgress && onProgress(++done, items.length); continue; }
+        let data; try { data = await fetchBytes(o.url); } catch (e) { failed.push(o.name); onProgress && onProgress(++done, items.length); continue; }   // #274: record, don't silently drop
         await measureBytes(o.it, data);
         await writeEntry(o.name, data);
         onProgress && onProgress(++done, items.length);
       }
-      await writeEntry('README.md', enc.encode(manifestMd(sel)));   // manifest last — now has resolutions
+      await writeEntry('README.md', enc.encode(manifestMd(sel, failed)));   // manifest last — now has resolutions + any drops
       let cdSize = 0;
       for (const c of central) { await w.write(zipCentral(c.crc, c.size, c.name.length, c.offset)); await w.write(c.name); cdSize += 46 + c.name.length; }
       await w.write(zipEOCD(central.length, cdSize, offset));
       await w.close();
+      if (failed.length) warnDropped(failed, items.length);
       return;
     }
-    // fallback: fetch all in PARALLEL (fast), then one blob download
-    let done = 0;
-    const results = await Promise.all(items.map(async o => {
-      try { const data = await fetchBytes(o.url); await measureBytes(o.it, data); onProgress && onProgress(++done, items.length); return { name: o.name, data }; }
-      catch (e) { onProgress && onProgress(++done, items.length); return null; }
-    }));
-    const covers = results.filter(Boolean);
-    if (!covers.length) return;
-    const entries = [...covers, { name: 'README.md', data: enc.encode(manifestMd(sel)) }];   // manifest last — now has resolutions
+    // fallback: fetch with a small concurrency pool (NOT all at once — flooding
+    // the network with many big covers is what made them fail/drop, #274), keep
+    // original order, then one blob download.
+    let done = 0; const out = new Array(items.length).fill(null); const failed = []; let idx = 0;
+    const worker = async () => {
+      while (true) {
+        const i = idx++; if (i >= items.length) break;
+        const o = items[i];
+        try { const data = await fetchBytes(o.url); await measureBytes(o.it, data); out[i] = { name: o.name, data }; }
+        catch (e) { failed.push(o.name); }
+        onProgress && onProgress(++done, items.length);
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(4, items.length) }, worker));
+    const covers = out.filter(Boolean);
+    if (!covers.length) { toast('⚠ Download failed — could not fetch any cover. Try again.', 10000); return; }
+    const entries = [...covers, { name: 'README.md', data: enc.encode(manifestMd(sel, failed)) }];   // manifest last — now has resolutions
     const obj = URL.createObjectURL(makeZip(entries));
     const a = document.createElement('a'); a.href = obj; a.download = `${MBID}-${ITEMS}.zip`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(obj), 8000);
+    if (failed.length) warnDropped(failed, items.length);
   }
   // ── #235 source covers from covers.musichoarders.xyz (the sanctioned MH Covers
   //    integration — same window.open + postMessage protocol the "Ame" script uses;
@@ -2402,11 +2441,16 @@
     return { info, date, by: mbUser() };
   }
   // #244 markdown manifest (README.md in the archive + the Markdown "Detailed table" report)
-  function manifestMd(sel) {
+  function manifestMd(sel, failed) {
     const { info, date, by } = manifestHead();
     const artists = info.artists.length ? info.artists.map(a => `[${a.name}](${a.url})`).join(', ') : 'Unknown artist';
     const out = [`# ${artists} - [${info.title}](${info.url})`, '', `- **Export date:** ${date}`];
     if (by) out.push(`- **Exported by:** ${by}`);
+    // #274: if any cover couldn't be downloaded, flag it loudly at the top of the
+    // manifest so an incomplete archive is never mistaken for a complete one.
+    if (failed && failed.length) {
+      out.push('', `> ⚠ **${failed.length} file${failed.length === 1 ? '' : 's'} could not be downloaded** and ${failed.length === 1 ? 'is' : 'are'} **missing** from this archive — re-download to get ${failed.length === 1 ? 'it' : 'them'}:`, '', ...failed.map(f => `> - ${f}`));
+    }
     out.push('', '## Artwork', '', '| Position | Cover | Resolution | Size |', '| --- | --- | --- | --- |');
     manifestRows(sel).forEach(r => out.push(`| ${r.pos} | [${r.name}](${r.orig}) | ${r.res} | ${r.size} |`));
     out.push('', `*Report created with [Art Station](${SCRIPT_URL})${_gm ? ' v' + _gm.version : ''}*`);
