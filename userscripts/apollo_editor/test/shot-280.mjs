@@ -17,6 +17,7 @@ const main = async () => {
   const scriptCode = await readFile(SCRIPT_PATH, 'utf8');
   const ctx = await chromium.launchPersistentContext(PROFILE_DIR, { headless: true, viewport: { width: 1500, height: 1000 }, deviceScaleFactor: 2.5 });
   const page = ctx.pages()[0] || await ctx.newPage();
+  await page.addInitScript((k) => { try { const s = JSON.parse(localStorage.getItem(k) || '{}'); delete s.toolCfg; delete s.lastTool; localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} }, 'apolloEditor.settings.v1');
   const errs = [];
   page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   page.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
