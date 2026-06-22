@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.21
+// @version      2026.6.22.141500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -72,6 +72,7 @@
   /* ── create-artist-in-a-tab → auto-insert (BroadcastChannel handshake, like the Discogs importer) ── */
   const ART_CHANNEL = ('BroadcastChannel' in W) ? new W.BroadcastChannel('apollo-editor-artist') : null;
   const PENDING_KEY = 'apolloEditor.pendingArtist';
+  const CLOSE_KEY   = 'apolloEditor.closeAfterEdit';   // tab opened just to add a Discogs link → self-close after submit
   const _pendingCreates = new Map(); let _createSeq = 0;
   if (ART_CHANNEL) ART_CHANNEL.addEventListener('message', e => {
     const d = e.data; if (!d || d.type !== 'tc-artist-created') return;
@@ -475,7 +476,11 @@
     if (slot.gid) {
       // add the link to the existing artist — open its edit form pre-seeded, verify on return
       const p = new URLSearchParams({ 'edit-artist.url.0.text': url, 'edit-artist.url.0.link_type_id': DISCOGS_ARTIST_LINK_TYPE, 'edit-artist.edit_note': entityActionNote('Added Discogs link') });
-      W.open(`${ORIGIN}/artist/${slot.gid}/edit?${p}`, '_blank');
+      // open WITHOUT noopener so we can flag the tab to auto-close once the edit
+      // submits (it redirects to the clean /artist/<gid> page); the focus-return
+      // handler below then re-verifies the link. Same UX as Credit Hoarder.
+      const tab = W.open(`${ORIGIN}/artist/${slot.gid}/edit?${p}`, '_blank');
+      if (tab) { const trySet = () => { try { tab.sessionStorage.setItem(CLOSE_KEY, '1'); } catch (e) { setTimeout(trySet, 50); } }; trySet(); }
       Log.info('Discogs link: opening edit for', slot.name || slot.gid, '→', url);
       const gid = slot.gid;
       const onReturn = async () => {
@@ -738,10 +743,21 @@
     fetchEntity(gid).then(ent => { if (ART_CHANNEL) ART_CHANNEL.postMessage({ type: 'tc-artist-created', token, gid, id: ent ? ent.id : null, name: ent ? ent.name : '' }); setTimeout(() => { try { W.close(); } catch (e) {} }, 80); });
     return true;
   }
+  // a tab opened just to ADD a Discogs link to an existing artist closes itself
+  // once the edit submits and redirects to the clean /artist/<gid> page. Guarded
+  // to the clean entity page ($-anchored, so NOT /artist/<gid>/edit) — it never
+  // closes before the user submits. The opener re-verifies on focus return.
+  function handleEditLinkClose() {
+    if (!new RegExp('^/artist/' + MBID_RE.source + '$', 'i').test(location.pathname)) return false;
+    let mark = null; try { mark = sessionStorage.getItem(CLOSE_KEY); } catch (e) {} if (!mark) return false;
+    try { sessionStorage.removeItem(CLOSE_KEY); } catch (e) {}
+    setTimeout(() => { try { W.close(); } catch (e) {} }, 80);
+    return true;
+  }
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.20.210000';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.141500';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -5231,6 +5247,7 @@
 
   (async function main() {
     if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
+    if (handleEditLinkClose()) { Log.info('Discogs-link edit committed — closing tab'); return; }
     if (await autoConfirmSeed()) return;   // handled the seed-confirmation interstitial (clicked, or option off) — no editor here
     if (/^\/release\/[0-9a-f-]{36}\/edit_annotation/.test(location.pathname)) {   // standalone Edit annotation page (no releaseEditor)
       const tryMount = () => { if (document.querySelector('textarea[name="edit-annotation.text"]')) { applyAnnotationPage(); return true; } return false; };
