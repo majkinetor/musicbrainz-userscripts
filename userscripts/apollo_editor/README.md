@@ -139,9 +139,9 @@ The score is computed from the data shown in the native row (no extra requests);
 
 ### Tools
 
-Native tools are hidden and replaced by a configurable **Tools** bar. Every tool you put on the bar renders **inline at its place** — a plain button when it has no settings, or a small group (a clickable name/icon that runs the tool, followed by its parameters) when it does. The bar **grows and wraps** to a second row when it runs out of room, so **⚡ Match** and friends never get pushed away. Parameterless tools (e.g. *Guess feat.*) just fire on click.
+Native tools are hidden and replaced by a configurable **Tools** bar. Every tool put on the bar renders inline at its place — a plain button when it has no settings, or a small group (a clickable name/icon that runs the tool, followed by its parameters) when it does. Parameterless tools (e.g. *Guess feat.*) just fire on click.
 
-The **Tools ▾** label opens a menu of the tools you *haven't* put on the bar, plus **Customize…**. Picking a tool from that menu uses it right away; a tool with parameters joins the bar **for the current session** so its controls are reachable — it returns to the menu next time (use Customize to keep it).
+The **Tools ▾** label opens a menu of the tools that *haven't* been put on the bar. Picking a tool from that menu uses it right away; a tool with parameters joins the bar **for the current session** so its controls are reachable — it returns to the menu next time (use Customize to keep it).
 
 **Customize…** lets you, per tool:
 
@@ -149,13 +149,14 @@ The **Tools ▾** label opens a menu of the tools you *haven't* put on the bar, 
 - **Reorder** — drag the ☰ handle to set the order (a line shows where the tool will land).
 - **Icon / text** — toggle the `[icon]` and `[text]` segments to show either or both (at least one).
 
-**Collapsing a tool's parameters.** Right-click a tool's name to collapse it to just the name (dotted underline); its parameters then **fly out on hover** (and stay open while you're typing in them). Right-click again to pin them back inline. The collapsed/expanded choice is remembered per tool.
+**Collapsing a tool's parameters.**<br>
+Right-click a tool's name to collapse it to just the name (dotted underline); its parameters then **fly out on hover** (and stay open while you're typing in them). Right-click again to pin them back inline. The collapsed/expanded choice is remembered per tool.
 
 Besides the integrated tools, there are a few new ones:
 
 - **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared.
 - **Resize Columns** — set column sizes to predefined variants (Fit, Centered, Default).
-- **Guess case** — clicking the name guess-cases every title; hovering it previews the result in the tracklist before you commit. Its options (language, *Keep uppercased*, *Keep Roman*) sit alongside.
+
 
 ## Annotation editor
 
