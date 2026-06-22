@@ -40,40 +40,47 @@ const main = async () => {
   await page.waitForSelector('.tc-toolbtns', { timeout: 30000 });
   await page.waitForTimeout(800);
 
-  // on-bar tools in order; param tools are inline groups carrying their params
-  const layout = await page.evaluate(() => ({
-    order: [...document.querySelectorAll('.tc-toolbtns > *')].map(e => e.dataset.tool || e.dataset.act),
-    guessfeatIsButton: !!document.querySelector('.tc-toolbtns > button.tc-toolbtn[data-act="guessfeat"]'),
-    gcGroupHasParams: !!document.querySelector('.tc-opt[data-tool="guesscase"] .tc-gco'),
-    srGroupHasParams: !!document.querySelector('.tc-opt[data-tool="sr"] .tc-sro'),
-    colsGroupHasParams: !!document.querySelector('.tc-opt[data-tool="cols"] .tc-colso'),
-    noRow2: !document.getElementById('tc-bar2'),
-    noMore: !document.querySelector('.tc-toolbtns .tc-more'),
-  }));
-  ok('on-bar order = guess feat, case, S&R, columns', JSON.stringify(layout.order) === JSON.stringify(['guessfeat', 'guesscase', 'sr', 'cols']));
-  ok('no-param tool is a button; param tools are inline groups with their params', layout.guessfeatIsButton && layout.gcGroupHasParams && layout.srGroupHasParams && layout.colsGroupHasParams);
+  // default bar (#280): Guess case (icon, collapsed) · Resize columns (text, collapsed) · S&R (icon, params shown)
+  const layout = await page.evaluate(() => {
+    const lab = (sel) => { const n = document.querySelector(sel); return n ? { ic: !!n.querySelector('.tc-tbic'), lab: !!n.querySelector('.tc-tblab') } : null; };
+    const collapsed = (act) => { const o = document.querySelector(`.tc-opt[data-tool="${act}"]`); return o ? o.classList.contains('tc-collapsed') : null; };
+    return {
+      order: [...document.querySelectorAll('.tc-toolbtns > *')].map(e => e.dataset.tool || e.dataset.act),
+      gcGroupHasParams: !!document.querySelector('.tc-opt[data-tool="guesscase"] .tc-gco'),
+      srGroupHasParams: !!document.querySelector('.tc-opt[data-tool="sr"] .tc-sro'),
+      colsGroupHasParams: !!document.querySelector('.tc-opt[data-tool="cols"] .tc-colso'),
+      gcLabel: lab('.tc-opt[data-tool="guesscase"] .tc-optname'),
+      colsLabel: lab('.tc-opt[data-tool="cols"] .tc-optname'),
+      srLabel: lab('.tc-opt[data-tool="sr"] .tc-optname'),
+      gcCollapsed: collapsed('guesscase'), colsCollapsed: collapsed('cols'), srCollapsed: collapsed('sr'),
+      noRow2: !document.getElementById('tc-bar2'),
+      noMore: !document.querySelector('.tc-toolbtns .tc-more'),
+    };
+  });
+  ok('default on-bar order = Guess case, Resize columns, S&R', JSON.stringify(layout.order) === JSON.stringify(['guesscase', 'cols', 'sr']));
+  ok('param tools are inline groups carrying their params', layout.gcGroupHasParams && layout.srGroupHasParams && layout.colsGroupHasParams);
+  ok('default icon/text: Guess case icon-only, Resize columns text-only, S&R icon-only',
+     layout.gcLabel.ic && !layout.gcLabel.lab && !layout.colsLabel.ic && layout.colsLabel.lab && layout.srLabel.ic && !layout.srLabel.lab);
+  ok('default collapse: Guess case + Resize columns collapsed, S&R expanded', layout.gcCollapsed && layout.colsCollapsed && !layout.srCollapsed);
   ok('no 2nd row element', layout.noRow2);
   ok('no ⋯ button', layout.noMore);
 
   // Tools label → menu of off-bar tools + Customize
   await page.click('.tc-toolslabel'); await page.waitForSelector('#tc-menu');
   const menu = await page.evaluate(() => [...document.querySelectorAll('#tc-menu .tc-mi')].map(m => m.dataset.act));
-  ok('Tools menu lists off-bar tools + Customize', JSON.stringify(menu) === JSON.stringify(['parser', 'swap', 'resetnum', '__cfg']));
+  ok('Tools menu lists off-bar tools + Customize', JSON.stringify(menu) === JSON.stringify(['parser', 'swap', 'resetnum', 'guessfeat', '__cfg']));
   await page.click('#tc-menu .tc-mi-cfg'); await page.waitForSelector('#tc-toolcfg');
 
   // no pin control in the config
   ok('no pin control in Customize', await page.evaluate(() => !document.querySelector('#tc-toolcfg .tc-tc-pin')));
   ok('no "icon"/"text" words in the density control', await page.evaluate(() => !/\bicon\b|\btext\b/i.test(document.querySelector('#tc-toolcfg .tc-tc-dens').textContent)));
 
-  // per-tool icon/text state-buttons: turn OFF text on cols → icon-only group label
-  await page.click('#tc-toolcfg .tc-tc-row[data-act="cols"] .cb-text'); await page.waitForTimeout(150);
-  const colsLab = await page.evaluate(() => { const n = document.querySelector('.tc-opt[data-tool="cols"] .tc-optname'); return { hasIc: !!n.querySelector('.tc-tbic'), hasLab: !!n.querySelector('.tc-tblab') }; });
-  ok('icon-only param tool shows just its icon label', colsLab.hasIc && !colsLab.hasLab);
-  await page.click('#tc-toolcfg .tc-tc-row[data-act="cols"] .cb-icon').catch(() => {}); await page.waitForTimeout(150);
-  ok('cannot drop BOTH icon and text (≥1 enforced)', await page.evaluate(() => { const r = document.querySelector('#tc-toolcfg .tc-tc-row[data-act="cols"]'); return r.querySelector('.cb-icon').classList.contains('on') || r.querySelector('.cb-text').classList.contains('on'); }));
+  // ≥1 enforced: Guess case defaults to icon-only — clicking its (sole-on) icon segment can't drop it
+  await page.click('#tc-toolcfg .tc-tc-row[data-act="guesscase"] .cb-icon').catch(() => {}); await page.waitForTimeout(150);
+  ok('cannot drop BOTH icon and text (≥1 enforced)', await page.evaluate(() => { const r = document.querySelector('#tc-toolcfg .tc-tc-row[data-act="guesscase"]'); return r.querySelector('.cb-icon').classList.contains('on') || r.querySelector('.cb-text').classList.contains('on'); }));
 
   // wrap: at a narrow width the buttons wrap to >1 row, and Match stays within the content (not pushed past it)
-  await page.setViewportSize({ width: 1000, height: 1000 }); await page.waitForTimeout(300);
+  await page.setViewportSize({ width: 680, height: 1000 }); await page.waitForTimeout(300);
   const wrap = await page.evaluate(() => { const tb = document.querySelector('.tc-tools'); const one = document.querySelector('.tc-toolbtns > *'); const match = document.querySelector('#tc-bar [data-act="match"]'); const wrapW = document.getElementById('tc-mirror-wrap').clientWidth; return { multiRow: tb.getBoundingClientRect().height > one.getBoundingClientRect().height * 1.5, matchRight: match.getBoundingClientRect().right, wrapW }; });
   ok('toolbar wraps to multiple rows when narrow', wrap.multiRow);
   ok('Match stays within the content width (not pushed past it)', wrap.matchRight <= wrap.wrapW + 1);

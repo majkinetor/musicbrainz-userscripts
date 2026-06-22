@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.22.232121
+// @version      2026.6.22.233033
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -896,7 +896,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.22.232121';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.22.233033';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2278,7 +2278,15 @@
   const MEDIUM_TOOLS = new Set(['parser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
   const hasParams = act => !!(TOOL[act] && TOOL[act].params);
-  const TOOL_ON_BAR_DEFAULT = { guessfeat: true, guesscase: true, sr: true, cols: true };   // others default to the ⋯ menu
+  // default Tools bar (in display order) for a fresh install — every other tool starts
+  // in the Tools ▾ menu. Each entry sets the tool's icon/text and whether its params
+  // start collapsed (right-click a name toggles that later).
+  const TOOL_DEFAULTS = [
+    { act: 'guesscase', icon: true,  text: false, hideParams: true  },   // Aa, collapsed
+    { act: 'cols',      icon: false, text: true,  hideParams: true  },   // Resize columns, collapsed
+    { act: 'sr',        icon: true,  text: false, hideParams: false },   // S&R, params shown
+  ];
+  const TOOL_DEF = Object.fromEntries(TOOL_DEFAULTS.map(d => [d.act, d]));
   let _toolMedium = 0;   // the medium chosen in the inline combo — shared across all medium-scoped tools
   const toolMedium = () => Math.min(Math.max(0, _toolMedium), mediums().length - 1);
 
@@ -2288,13 +2296,18 @@
   function getToolCfg() {
     const saved = Array.isArray(SETTINGS.toolCfg) ? SETTINGS.toolCfg.filter(t => t && TOOL[t.act]) : [];
     const order = saved.map(t => t.act);
+    // fresh install: the default on-bar tools lead (in their order), then the rest
+    TOOL_DEFAULTS.forEach(d => { if (!order.includes(d.act)) order.push(d.act); });
     MENU.forEach(m => { if (!order.includes(m.act)) order.push(m.act); });
     const byAct = Object.fromEntries(saved.map(t => [t.act, t]));
     return order.map(act => {
-      const s = byAct[act] || {};
-      let icon = s.icon !== false, text = s.text !== false;
+      const s = byAct[act] || {}, d = TOOL_DEF[act];
+      let icon = s.icon != null ? !!s.icon : (d ? d.icon : true);
+      let text = s.text != null ? !!s.text : (d ? d.text : true);
       if (!icon && !text) text = true;   // at least one of icon/text
-      return { act, onBar: s.onBar != null ? !!s.onBar : !!TOOL_ON_BAR_DEFAULT[act], icon, text, hideParams: !!s.hideParams };
+      const onBar = s.onBar != null ? !!s.onBar : !!d;
+      const hideParams = s.hideParams != null ? !!s.hideParams : (d ? !!d.hideParams : false);
+      return { act, onBar, icon, text, hideParams };
     });
   }
   function saveToolCfg(cfg) { SETTINGS.toolCfg = cfg.map(t => ({ act: t.act, onBar: !!t.onBar, icon: t.icon !== false, text: t.text !== false, hideParams: !!t.hideParams })); saveSettings(); }
