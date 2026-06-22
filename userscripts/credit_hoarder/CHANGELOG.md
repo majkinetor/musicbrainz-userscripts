@@ -1,5 +1,11 @@
 # Credit Hoarder Changelog
 
+## [2026.6.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.22)
+
+### Features
+
+1. Create and update entity in the background ([#273](https://github.com/majkinetor/musicbrainz-userscripts/issues/273))
+
 ## [2026.6.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.21)
 
 ### Features

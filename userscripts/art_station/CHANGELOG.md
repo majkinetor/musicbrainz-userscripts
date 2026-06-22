@@ -1,5 +1,15 @@
 # Art Station Changelog
 
+## [2026.6.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.22)
+
+### Features
+
+1. Option to repeat failed operations ([#275](https://github.com/majkinetor/musicbrainz-userscripts/issues/275))
+
+### Fixes
+
+1. Downloaded archive is missing covers ([#274](https://github.com/majkinetor/musicbrainz-userscripts/issues/274))
+
 ## [2026.6.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.21)
 
 ### Features
