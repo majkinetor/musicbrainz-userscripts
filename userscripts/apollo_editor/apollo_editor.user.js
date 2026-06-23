@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.120711
+// @version      2026.6.23.122842
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -61,6 +61,8 @@
     debug:(...a) => { _logRecord('debug', a); console.debug(TAG, tss(), ...a); },
   };
   const _logCounts = () => LOG.reduce((acc, e) => { if (e.sev === 'warn') acc.warn++; else if (e.sev === 'error') acc.error++; return acc; }, { warn: 0, error: 0 });
+  // escape, then turn http(s) URLs into clickable links for the log viewer
+  const _logLinkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
   // copy/pastable Markdown — collapsed <details> wrapping a fenced log block.
   function logMarkdown() {
     const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
@@ -81,16 +83,15 @@
   function openLog() {
     document.getElementById('tc-logpop')?.remove();
     const pop = document.createElement('div'); pop.id = 'tc-logpop';
-    pop.innerHTML = `<div class="tc-logpop-box">`
-      + `<div class="tc-logpop-h"><b>Activity log</b> <span class="tc-log-badge"></span><span class="tc-logpop-sp"></span>`
+    pop.innerHTML = `<div class="tc-logpop-h"><b>Activity log</b> <span class="tc-log-badge"></span><span class="tc-logpop-sp"></span>`
       + `<button class="tc-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
       + `<button class="tc-logpop-x" type="button" title="Close">✕</button></div>`
-      + `<div class="tc-log-list"></div></div>`;
+      + `<div class="tc-log-list"></div>`;
     document.body.appendChild(pop);
     const renderList = () => {
       const list = pop.querySelector('.tc-log-list');
       list.innerHTML = LOG.length
-        ? LOG.map(e => `<div class="tc-log-li tc-log-${e.sev}"><span class="tc-log-t">${_logTs(e.t)}</span><span class="tc-log-m">${esc(e.msg)}</span></div>`).join('')
+        ? LOG.map(e => `<div class="tc-log-li tc-log-${e.sev}"><span class="tc-log-t">${_logTs(e.t)}</span><span class="tc-log-m">${_logLinkify(e.msg)}</span></div>`).join('')
         : '<div class="tc-log-empty">No activity yet.</div>';
       const c = _logCounts();
       pop.querySelector('.tc-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
@@ -102,17 +103,22 @@
     const close = () => { _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
     pop.querySelector('.tc-logpop-copy').onclick = () => copyLog(pop.querySelector('.tc-logpop-copy'));
     pop.querySelector('.tc-logpop-x').onclick = close;
-    pop.onclick = e => { if (e.target === pop) close(); };
+    // floating, non-modal window — draggable by its header
+    pop.querySelector('.tc-logpop-h').addEventListener('mousedown', (e) => {
+      if (e.target.closest('button')) return;
+      e.preventDefault();
+      const r = pop.getBoundingClientRect();
+      pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+      const ox = e.clientX - r.left, oy = e.clientY - r.top;
+      const mv = ev => { pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px'; pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px'; };
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    });
     document.addEventListener('keydown', onKey);
   }
-  // first two log lines: the script + version, then the MB release being edited
+  // first log line: the script + version. The MB release line is logged once the
+  // editor is ready (so it carries the real title) — see init().
   Log.info('Apollo Editor' + (() => { try { return ' v' + GM_info.script.version; } catch (e) { return ''; } })());
-  Log.info('Release:', (() => {
-    const mbid = (location.pathname.match(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/i) || [''])[0];
-    const h = document.querySelector('h1 bdi') || document.querySelector('h1');
-    const title = h ? h.textContent.replace(/\s+/g, ' ').trim() : '';
-    return (title ? title + ' ' : '') + (mbid ? '(' + mbid + ')' : '') || location.href;
-  })());
 
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
   const ORIGIN = location.origin;
@@ -591,9 +597,11 @@
       const jobs = [];
       if (dmap) for (const t of MODEL.tracks) { const durls = dmap.get(fold(t.title)); if (durls) t.slots.forEach((s, i) => { if (durls[i]) jobs.push([s, durls[i]]); }); }
       if (!jobs.length) { setDiscProgress(''); return; }
+      Log.info('Discogs check: verifying', jobs.length, 'track-artist link(s)…');
       let done = 0, lastRender = 0;
       for (const [s, durl] of jobs) {
         await tagDiscogsAddable(s, durl);
+        Log.debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsAddable ? 'link can be added to MB' : s._discogsPending ? 'pending (will re-check)' : 'already linked');
         done++;
         // update rows + the progress text together, throttled — set the text AFTER
         // rerender so refreshStatus can't blank it
@@ -612,7 +620,10 @@
         for (const [s, durl] of pend) { setDiscProgress(`re-checking Discogs links ${++r}/${pend.length}…`); await tagDiscogsAddable(s, durl); }
       }
       const addable = jobs.filter(([s]) => s._discogsAddable).length;
-      Log.info('Discogs check:', jobs.length, 'track-artist link(s) checked,', addable, 'addable to MB');
+      const pendLeft = jobs.filter(([s]) => s._discogsPending).length;
+      Log.info('Discogs check:', addable === 0
+        ? `all ${jobs.length} track-artist link(s) already in MusicBrainz ✓`
+        : `${addable} of ${jobs.length} link(s) can be added to MusicBrainz`, pendLeft ? `(${pendLeft} pending)` : '');
       if (!isEditingNow()) rerender();
     } finally {
       _tagDiscogsRunning = false;
@@ -975,7 +986,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.120711';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.122842';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1340,9 +1351,10 @@
     #tc-settings h4 .tc-logbtn{margin-left:auto;flex:none;font:normal 12px Arial;color:#5f3ec0;background:none;border:1px solid transparent;border-radius:4px;padding:1px 8px;cursor:pointer}
     #tc-settings h4 .tc-logbtn:hover{background:#f3eefb;border-color:#c9b8ee}
     /* #283 activity-log popup */
-    #tc-logpop{position:fixed;inset:0;z-index:100002;background:rgba(20,12,40,.34);display:flex;align-items:center;justify-content:center}
-    #tc-logpop .tc-logpop-box{display:flex;flex-direction:column;width:min(720px,94vw);max-height:82vh;background:#fff;border:1px solid #b9a4e0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px Arial;color:#222;overflow:hidden}
-    #tc-logpop .tc-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #e3dcf2;color:#563b8f}
+    /* floating, movable, NON-modal window (no backdrop) */
+    #tc-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:100002;display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:#fff;border:1px solid #b9a4e0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px Arial;color:#222;overflow:hidden}
+    #tc-logpop .tc-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #e3dcf2;color:#563b8f;cursor:move;user-select:none}
+    #tc-logpop .tc-log-m a{color:#5f3ec0}
     #tc-logpop .tc-logpop-sp{margin-left:auto}
     #tc-logpop .tc-logpop-copy,#tc-logpop .tc-logpop-x{font:12px Arial;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer}
     #tc-logpop .tc-logpop-copy:hover,#tc-logpop .tc-logpop-x:hover{background:#e9e0f8}
@@ -5762,6 +5774,13 @@
     if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) return;   // /artist/* (non-callback) just loads the channel listener
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.err('MB.releaseEditor never became ready'); return; }
+    try {   // line 2: the MB release, as a full link (real title now the editor is up)
+      const rel = u(ed.rootField.release);
+      const nm = rel ? (u(rel.name) || '') : '';
+      const gid = rel ? (u(rel.gid) || '') : '';
+      const mbid = gid || (location.pathname.match(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/i) || [''])[0];
+      Log.info('Release:', (nm ? nm + ' — ' : '') + (mbid ? ORIGIN + '/release/' + mbid : location.href));
+    } catch (e) {}
     Log.info('editor ready');
     snapshotOriginals();
     const tl = readTracklist();

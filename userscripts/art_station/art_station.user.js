@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.120951
+// @version      2026.6.23.122843
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -217,7 +217,7 @@
     if (!_booted) {   // first two log lines: the script + version, then the MB entity
       _booted = true;
       asLog.info('Art Station' + ((_gm && _gm.version) ? ' v' + _gm.version : ''));
-      try { const t = (releaseInfo().title || '').trim(); asLog.info('Release: ' + (t ? t + ' ' : '') + '(' + MBID + ')'); } catch (e) { asLog.info('Release: (' + MBID + ')'); }
+      try { const ri = releaseInfo(); const t = (ri.title || '').trim(); asLog.info('Release: ' + (t ? t + ' — ' : '') + (ri.url || ('https://musicbrainz.org/' + ENT.kind + '/' + MBID))); } catch (e) { asLog.info('Release: https://musicbrainz.org/release/' + MBID); }
     }
     const pageArt = parsePageArt();
     let caa = [];
@@ -375,16 +375,15 @@
   function openLog() {
     document.getElementById('as-logpop')?.remove();
     const pop = document.createElement('div'); pop.id = 'as-logpop';
-    pop.innerHTML = `<div class="as-logpop-box">`
-      + `<div class="as-logpop-h"><b>Activity log</b> <span class="as-log-badge"></span><span class="as-logpop-sp"></span>`
+    pop.innerHTML = `<div class="as-logpop-h"><b>Activity log</b> <span class="as-log-badge"></span><span class="as-logpop-sp"></span>`
       + `<button class="as-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
       + `<button class="as-logpop-x" type="button" title="Close">✕</button></div>`
-      + `<div class="as-log-list"></div></div>`;
+      + `<div class="as-log-list"></div>`;
     document.body.appendChild(pop);
     const renderList = () => {
       const list = pop.querySelector('.as-log-list');
       list.innerHTML = LOG.length
-        ? LOG.map(e => `<div class="as-log-li as-log-${e.sev}"><span class="as-log-t">${_ts(e.t)}</span><span class="as-log-m">${esc(e.msg)}</span></div>`).join('')
+        ? LOG.map(e => `<div class="as-log-li as-log-${e.sev}"><span class="as-log-t">${_ts(e.t)}</span><span class="as-log-m">${_logLinkify(e.msg)}</span></div>`).join('')
         : '<div class="as-log-empty">No activity yet.</div>';
       const c = logCounts();
       pop.querySelector('.as-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
@@ -396,7 +395,17 @@
     const close = () => { _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
     pop.querySelector('.as-logpop-copy').onclick = () => copyLog(pop.querySelector('.as-logpop-copy'));
     pop.querySelector('.as-logpop-x').onclick = close;
-    pop.onclick = e => { if (e.target === pop) close(); };   // backdrop
+    // floating, non-modal window — draggable by its header
+    pop.querySelector('.as-logpop-h').addEventListener('mousedown', (e) => {
+      if (e.target.closest('button')) return;
+      e.preventDefault();
+      const r = pop.getBoundingClientRect();
+      pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+      const ox = e.clientX - r.left, oy = e.clientY - r.top;
+      const mv = ev => { pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px'; pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px'; };
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    });
     document.addEventListener('keydown', onKey);
   }
   // at big tile sizes the selection outline alone is plenty obvious, so drop the
@@ -1305,6 +1314,8 @@
   // standard shape for a caught error: "<context> — <message>"
   const logErr = (ctx, e) => asLog('error', ctx + ' — ' + ((e && e.message) || e || 'unknown error'));
   const logCounts = () => LOG.reduce((a, e) => { if (e.sev === 'warn') a.warn++; else if (e.sev === 'error') a.error++; return a; }, { warn: 0, error: 0 });
+  // escape, then turn http(s) URLs into clickable links for the log viewer
+  const _logLinkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
   const _ts = d => { const p = (n, w = 2) => String(n).padStart(w, '0'); return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`; };
   const fmtBytes = n => (n == null) ? '?' : n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
   // Build the copy/pastable Markdown: a collapsed <details> wrapping a fenced log
@@ -2725,9 +2736,10 @@
   .as-setup-logbtn{margin-left:auto;font-size:12px;color:#5f3ec0;background:none;border:1px solid transparent;border-radius:4px;padding:1px 8px;cursor:pointer;font-family:inherit}
   .as-setup-logbtn:hover{background:#f3eefb;border-color:#c9b8ee}
   /* #283 activity-log popup */
-  #as-logpop{position:fixed;inset:0;z-index:100020;background:rgba(20,12,40,.34);display:flex;align-items:center;justify-content:center}
-  .as-logpop-box{display:flex;flex-direction:column;width:min(720px,94vw);max-height:82vh;background:#fff;border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px Arial;color:#222;overflow:hidden}
-  .as-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #ece6f8;color:#563b8f}
+  /* floating, movable, NON-modal window (no backdrop) */
+  #as-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:100020;display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:#fff;border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px Arial;color:#222;overflow:hidden}
+  .as-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #ece6f8;color:#563b8f;cursor:move;user-select:none}
+  #as-logpop .as-log-m a{color:#5f3ec0}
   .as-logpop-sp{margin-left:auto}
   .as-logpop-copy,.as-logpop-x{font-size:12px;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}
   .as-logpop-copy:hover,.as-logpop-x:hover{background:#e9e0f8}
