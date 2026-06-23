@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.140454
+// @version      2026.6.23.191445
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2971,7 +2971,10 @@
   .as-lb-img.loading{visibility:hidden}
   #as-lb.na .as-lb-img{display:none}
   #as-lb.na::after{content:'Image not available, please try again later';color:#f0c4da;font-style:italic;font-size:16px}
-  .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:42px;line-height:1;color:#fff;background:transparent;border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
+  /* z-index keeps BOTH arrows above the image: applyZoom always sets a transform
+     on .as-lb-img (a stacking context), so without this the prev arrow — a DOM
+     sibling BEFORE the image — gets painted over while next (after it) stays on top. */
+  .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);z-index:2;font-size:42px;line-height:1;color:#fff;background:transparent;border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
   .as-lb-nav:hover{background:rgba(255,255,255,.25)}
   .as-lb-prev{left:18px}.as-lb-next{right:18px}
   .as-lb-top{position:fixed;top:16px;right:20px;display:flex;gap:10px;align-items:center}
