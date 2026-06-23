@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.120302
+// @version      2026.6.23.141305
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1802,12 +1802,13 @@
 
     overlay = document.createElement('div');
     overlay.id = 'ii-overlay';
-    // Intentionally NO overlay-click or Esc close — only the ✕ button closes,
-    // so a stray click/keypress can't discard entered ISRCs.
+    // #285: click the backdrop (or Esc) to close — safe now, since closeModal only
+    // HIDES the window; everything entered stays in the DOM and is restored on reopen.
+    overlay.addEventListener('click', () => closeModal());
 
     modal = document.createElement('div');
     modal.id = 'ii-modal';
-    modal.addEventListener('click', e => e.stopPropagation());
+    modal.addEventListener('click', e => e.stopPropagation());   // clicks inside don't reach the backdrop
     modal.innerHTML = `
       <div id="ii-hdr">
         <h2><svg class="ii-logo" width="22" height="22" viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/><g fill="none" stroke="#6f42c1" stroke-width="7"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="5" stroke="#b9a3e8"/><circle cx="64" cy="64" r="13" stroke-width="5" stroke="#b9a3e8"/></g><line x1="64" y1="64" x2="64" y2="24" stroke="#6f42c1" stroke-width="7" stroke-linecap="round"/><circle cx="86" cy="50" r="8" fill="#4b2e83"/></svg> <em>ISRC Scout</em><span class="ii-sub" id="ii-rel-sub"></span></h2>
@@ -2723,6 +2724,14 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && sxPanel.classList.contains('open')) { e.stopPropagation(); closePanel(); }
     }, true);
+    // #285: Esc closes the window (sub-popups consume it first). Data is preserved.
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !modal.classList.contains('open')) return;
+      if (sxPanel.classList.contains('open')) return;                                   // handled by its own (capture) listener above
+      const pm = modal.querySelector('#ii-prov-menu'); if (pm && pm.classList.contains('open')) { closeProvMenu(); return; }
+      const ua = modal.querySelector('#ii-urladd'); if (ua && ua.classList.contains('open')) return;   // the url-add field closes itself
+      closeModal();
+    });
     document.addEventListener('mousedown', e => {
       if (!sxPanel.classList.contains('open')) return;
       // ignore clicks inside the panel, and on a "refine search" entry (which re-opens it)
@@ -3030,6 +3039,10 @@
       _deferVerify = false;
     }
     flushDeferredVerify();   // verify this batch's rows now, decoupled from the import
+    // #285: the provider just used to match all tracks becomes the per-track default
+    // (no-op for non-per-track providers like Spotify, and when already selected).
+    const _provKey = (label || '').toLowerCase();
+    if (trackProv !== _provKey) setTrackProvider(_provKey);
     const total = (res && res.total != null) ? res.total : st.cursor;
     const next  = (res && res.next  != null) ? res.next  : null;
     const parts = [counts.filled + ' filled'];
