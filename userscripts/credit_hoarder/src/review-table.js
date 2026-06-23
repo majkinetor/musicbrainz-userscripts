@@ -17,6 +17,15 @@ import { DISCOGS_CHANNEL, pageWindow }     from './constants.js';
 // Session-level URL check cache (avoids localStorage key mismatches across sessions)
 const _urlCheckSessionCache = new Map();
 
+// #273: one-time spinner keyframes for the background-create placeholder.
+function ensureCreatingStyle() {
+    if (document.getElementById('ch-creating-style')) return;
+    const st = document.createElement('style');
+    st.id = 'ch-creating-style';
+    st.textContent = '@keyframes ch-creating-spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(st);
+}
+
 /**
  * Unified artist review table shown after the pre-flight check.
  * ALL artists appear here — auto-resolved ones are pre-filled and editable,
@@ -731,17 +740,80 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 return wrap;
             }
 
+            // #273: background-create placeholder. When the user right-clicks "+"
+            // to create the entity in a background tab, we don't want the row to
+            // sit there showing its search candidates and then REFLOW (changing
+            // height, lurching the page) when the postback finally swaps in the
+            // resolved entity — especially when the user has scrolled past it.
+            // Instead we collapse the row to its FINAL (resolved) height right
+            // away and show a "Creating … in the background" placeholder exactly
+            // where the resolved name will land, so the eventual swap is a no-op
+            // for layout. `_creatingTimer` is a safety net: if the create never
+            // posts back (tab closed, MB error) we restore the live UI.
+            let _creatingEl = null;
+            let _creatingTimer = null;
+            let _creatingCancel = null;   // tears down the pending postback listener + bg tab
+            function setRowCreating(name, onCancel) {
+                ensureCreatingStyle();
+                if (_creatingTimer) { clearTimeout(_creatingTimer); _creatingTimer = null; }
+                if (_creatingEl) _creatingEl.remove();
+                _creatingCancel = onCancel || null;
+                candidateList.style.display = 'none';   // hide candidates (keep them — restored on cancel)
+                tdAction.innerHTML = '';                // remove create/link chips while it commits
+                searchInput.disabled = true;
+                searchBtn.disabled = true;
+                // Same box metrics as the resolved selRow so the name lands in place.
+                const ph = document.createElement('div');
+                ph.className = 'ch-creating';
+                ph.style.cssText = 'padding:0.15rem 0.4rem;border:1px dashed #8a8ad0;border-radius:3px;background:#f4f4ff;'
+                    + 'display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:#55557a;font-style:italic;margin-bottom:0.3rem;';
+                const spin = document.createElement('span');
+                spin.textContent = '⟳';   // ⟳
+                spin.style.cssText = 'display:inline-block;animation:ch-creating-spin 0.9s linear infinite;';
+                ph.appendChild(spin);
+                const txt = document.createElement('span');
+                txt.textContent = `Creating ${name} in the background…`;
+                ph.appendChild(txt);
+                // #273: manual cancel — the bg tab can get stuck (user closed it
+                // before it submitted), so let the user dismiss the placeholder and
+                // get the live row back instead of waiting out the safety timeout.
+                const x = document.createElement('button');
+                x.textContent = '✕';
+                x.title = 'Cancel — stop waiting and restore the row';
+                x.style.cssText = 'margin-left:auto;font-size:0.75rem;line-height:1;cursor:pointer;border:none;background:none;color:#55557a;padding:0 0.2rem;';
+                x.addEventListener('click', () => cancelCreating());
+                ph.appendChild(x);
+                tdMb.insertBefore(ph, candidateList);
+                _creatingEl = ph;
+                tr.style.background = '#f6f6ff';
+                _creatingTimer = setTimeout(() => { _creatingTimer = null; cancelCreating(); }, 90000);
+            }
+            // User clicked ✕ (or the safety timeout fired): stop listening for the
+            // background create's postback, close its tab if we can, restore the row.
+            function cancelCreating() {
+                if (_creatingCancel) { try { _creatingCancel(); } catch (e) {} }
+                clearRowCreating(true);
+            }
+            // Tear down the placeholder. `restore` = re-enable search + re-render the
+            // action chips so the user can retry. setRowResolved/setRowUnresolved call
+            // it WITHOUT restore (they re-render the row themselves right after); the
+            // ✕ button and the safety timeout call it WITH restore (via cancelCreating).
+            function clearRowCreating(restore) {
+                if (_creatingTimer) { clearTimeout(_creatingTimer); _creatingTimer = null; }
+                _creatingCancel = null;
+                if (_creatingEl) { _creatingEl.remove(); _creatingEl = null; }
+                candidateList.style.display = '';
+                if (restore) {
+                    searchInput.disabled = false;
+                    searchBtn.disabled = false;
+                    tr.style.background = '';
+                    renderActions(null);
+                }
+            }
+
             function setRowResolved(a) {
                 // a = { id, name, disambiguation }
-                // #273: don't let the page jump. When a row the user has scrolled
-                // PAST (e.g. while a background create/link finishes) collapses its
-                // search results into the compact resolved entity, the content above
-                // the viewport shrinks and the view would lurch. Snapshot the page
-                // height + whether this row sits entirely above the viewport now, and
-                // compensate the scroll after the rebuild below.
-                const _scrollEl = document.scrollingElement || document.documentElement;
-                const _hBefore = _scrollEl.scrollHeight;
-                const _rowWasAbove = tr.getBoundingClientRect().bottom <= 0;
+                clearRowCreating();   // #273: drop any background-create placeholder
                 const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
                 rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', confirmed: true, via: 'user', fromCache: false });
                 // Re-target the Credited-as override for this row to the
@@ -806,13 +878,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // Actions: Add Discogs link + Create fallback
                 renderActions(a);
                 updateImportBtn();
-                // #273: keep the viewport steady — if this (now-collapsed) row was
-                // entirely above the viewport, shift the scroll by the height the
-                // page just lost so what the user is looking at doesn't move.
-                if (_rowWasAbove) { const _d = _scrollEl.scrollHeight - _hBefore; if (_d) window.scrollBy(0, _d); }
             }
 
             function setRowUnresolved() {
+                clearRowCreating();   // #273: drop any background-create placeholder
                 rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: '', confirmed: false, via: null, fromCache: false });
                 // Clear the Credited-as override now that there's no
                 // resolved entity to attach it to (#62). Input value is
@@ -1130,6 +1199,17 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
                     };
                     DISCOGS_CHANNEL.addEventListener('message', onCreated);
+                    // #273: collapse the row to its final height now + show a
+                    // "Creating … in the background" placeholder, so the postback swap
+                    // (setRowResolved) doesn't reflow/lurch the page. The ✕ on the
+                    // placeholder (or the 90s timeout) cancels: drop the postback
+                    // listener and close the bg tab so a stuck create can be dismissed.
+                    if (background && typeof GM_openInTab === 'function') {
+                        setRowCreating(finalName, () => {
+                            DISCOGS_CHANNEL.removeEventListener('message', onCreated);
+                            try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (e) {}
+                        });
+                    }
                 }
 
                 // Inline icon chips (Proposal C from #77). All three

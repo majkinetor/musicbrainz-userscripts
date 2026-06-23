@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.23.154441
+// @version      2026.6.23.155209
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2851,6 +2851,13 @@ ${ourBlock}` : ourBlock;
 
   // src/review-table.js
   var _urlCheckSessionCache = /* @__PURE__ */ new Map();
+  function ensureCreatingStyle() {
+    if (document.getElementById("ch-creating-style")) return;
+    const st = document.createElement("style");
+    st.id = "ch-creating-style";
+    st.textContent = "@keyframes ch-creating-spin { to { transform: rotate(360deg); } }";
+    document.head.appendChild(st);
+  }
   async function showReviewTable(allResults, rolesMap, companiesRolesMap, opts) {
     rolesMap = rolesMap || /* @__PURE__ */ new Map();
     companiesRolesMap = companiesRolesMap || /* @__PURE__ */ new Map();
@@ -3342,10 +3349,74 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           wrap.appendChild(trigger);
           return wrap;
         }
+        let _creatingEl = null;
+        let _creatingTimer = null;
+        let _creatingCancel = null;
+        function setRowCreating(name, onCancel) {
+          ensureCreatingStyle();
+          if (_creatingTimer) {
+            clearTimeout(_creatingTimer);
+            _creatingTimer = null;
+          }
+          if (_creatingEl) _creatingEl.remove();
+          _creatingCancel = onCancel || null;
+          candidateList.style.display = "none";
+          tdAction.innerHTML = "";
+          searchInput.disabled = true;
+          searchBtn.disabled = true;
+          const ph = document.createElement("div");
+          ph.className = "ch-creating";
+          ph.style.cssText = "padding:0.15rem 0.4rem;border:1px dashed #8a8ad0;border-radius:3px;background:#f4f4ff;display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:#55557a;font-style:italic;margin-bottom:0.3rem;";
+          const spin = document.createElement("span");
+          spin.textContent = "\u27F3";
+          spin.style.cssText = "display:inline-block;animation:ch-creating-spin 0.9s linear infinite;";
+          ph.appendChild(spin);
+          const txt = document.createElement("span");
+          txt.textContent = `Creating ${name} in the background\u2026`;
+          ph.appendChild(txt);
+          const x = document.createElement("button");
+          x.textContent = "\u2715";
+          x.title = "Cancel \u2014 stop waiting and restore the row";
+          x.style.cssText = "margin-left:auto;font-size:0.75rem;line-height:1;cursor:pointer;border:none;background:none;color:#55557a;padding:0 0.2rem;";
+          x.addEventListener("click", () => cancelCreating());
+          ph.appendChild(x);
+          tdMb.insertBefore(ph, candidateList);
+          _creatingEl = ph;
+          tr.style.background = "#f6f6ff";
+          _creatingTimer = setTimeout(() => {
+            _creatingTimer = null;
+            cancelCreating();
+          }, 9e4);
+        }
+        function cancelCreating() {
+          if (_creatingCancel) {
+            try {
+              _creatingCancel();
+            } catch (e2) {
+            }
+          }
+          clearRowCreating(true);
+        }
+        function clearRowCreating(restore) {
+          if (_creatingTimer) {
+            clearTimeout(_creatingTimer);
+            _creatingTimer = null;
+          }
+          _creatingCancel = null;
+          if (_creatingEl) {
+            _creatingEl.remove();
+            _creatingEl = null;
+          }
+          candidateList.style.display = "";
+          if (restore) {
+            searchInput.disabled = false;
+            searchBtn.disabled = false;
+            tr.style.background = "";
+            renderActions(null);
+          }
+        }
         function setRowResolved(a) {
-          const _scrollEl = document.scrollingElement || document.documentElement;
-          const _hBefore = _scrollEl.scrollHeight;
-          const _rowWasAbove = tr.getBoundingClientRect().bottom <= 0;
+          clearRowCreating();
           const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
           rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || "", confirmed: true, via: "user", fromCache: false });
           if (r._credInput) {
@@ -3397,12 +3468,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           candidateList.appendChild(selRow);
           renderActions(a);
           updateImportBtn();
-          if (_rowWasAbove) {
-            const _d = _scrollEl.scrollHeight - _hBefore;
-            if (_d) window.scrollBy(0, _d);
-          }
         }
         function setRowUnresolved() {
+          clearRowCreating();
           rowState.set(_entityKey, { mbUrl: null, mbName: null, mbDisambig: "", confirmed: false, via: null, fromCache: false });
           if (r._credInput && r._credInput._activeMbUrl) {
             creditOverrides.delete(r._credInput._activeMbUrl);
@@ -3634,6 +3702,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
             };
             DISCOGS_CHANNEL.addEventListener("message", onCreated);
+            if (background && typeof GM_openInTab === "function") {
+              setRowCreating(finalName, () => {
+                DISCOGS_CHANNEL.removeEventListener("message", onCreated);
+                try {
+                  if (bgTab && typeof bgTab.close === "function") bgTab.close();
+                } catch (e2) {
+                }
+              });
+            }
           }
           const createBtn = document.createElement("button");
           createBtn.textContent = "+";
