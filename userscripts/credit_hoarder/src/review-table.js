@@ -106,14 +106,40 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         // "N links" badge (count of 'none'). `linksNote` is the badge element,
         // assigned once the header mounts; `updateLinksBadge` is a no-op until then.
         const linkState = new Map();
+        const rowLinkChips = new Map();   // _entityKey → the 🔗 add-link button, for jump-to
         let linksNote = null;
         function updateLinksBadge() {
             if (!linksNote) return;
             const n = [...linkState.values()].filter(v => v === 'none').length;
             linksNote.textContent = n ? `🔗 ${n} link${n === 1 ? '' : 's'}` : '';
             linksNote.style.display = n ? '' : 'none';
+            linksNote.classList.toggle('clickable', n > 0);
         }
         const keyOf = r => r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
+        // Cycle through the rows whose source URL still needs linking (linkState
+        // 'none'), scrolling each into view and pulsing its 🔗 chip — same UX as
+        // the "N unresolved" jump. Scans live `linkState` so added links drop out.
+        let _linkJumpIdx = -1;
+        function jumpNextLink() {
+            const n = allResults.length;
+            let found = -1;
+            for (let step = 1; step <= n; step++) {
+                const i = (_linkJumpIdx + step) % n;
+                if (linkState.get(keyOf(allResults[i])) === 'none') { found = i; break; }
+            }
+            if (found === -1) return;
+            _linkJumpIdx = found;
+            const key = keyOf(allResults[found]);
+            const chip = rowLinkChips.get(key);
+            const target = chip || rowSearchInputs.get(key);
+            if (!target) return;
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (chip) {
+                const o = chip.style.boxShadow;
+                chip.style.boxShadow = '0 0 0 3px rgba(232,119,29,0.6)';
+                setTimeout(() => { chip.style.boxShadow = o; }, 1200);
+            }
+        }
 
         const attentionCount = allResults.filter(r => r.type === 'attention').length;
         const mismatchCount  = allResults.filter(r => {
@@ -933,7 +959,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
             function renderActions(selected) {
                 tdAction.innerHTML = '';
-                if (!selected) { linkState.delete(_entityKey); updateLinksBadge(); }
+                if (!selected) { linkState.delete(_entityKey); rowLinkChips.delete(_entityKey); updateLinksBadge(); }
                 if (selected) {
                     // Link state lives in a single chip (Proposal C from #77):
                     //   🔗 — needs adding (default action)
@@ -990,6 +1016,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
                     function applyUrlCheckResult(result) {
                         linkState.set(_entityKey, result);   // 'linked' | 'other' | 'none'
+                        if (result !== 'none') rowLinkChips.delete(_entityKey);
                         updateLinksBadge();
                         if (result === 'linked') {
                             linkSlot.textContent = '\u2713';
@@ -1075,6 +1102,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             addLinkBtn.addEventListener('click', () => openLinkEdit(false));
                             addLinkBtn.addEventListener('contextmenu', e => { e.preventDefault(); openLinkEdit(true); });
                             linkSlot.appendChild(addLinkBtn);
+                            rowLinkChips.set(_entityKey, addLinkBtn);   // jump target for the "N links" badge
                         }
                     }
 
@@ -1083,7 +1111,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         // source has no per-entity page concept at all, so show
                         // nothing (the "no page" chip would just be noise on
                         // every row); other sources keep the informational chip.
-                        linkState.set(_entityKey, 'na'); updateLinksBadge();   // no link to add
+                        linkState.set(_entityKey, 'na'); rowLinkChips.delete(_entityKey); updateLinksBadge();   // no link to add
                         if (srcName === 'Titles') {
                             linkSlot.remove();
                         } else {
@@ -1581,7 +1609,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         linksNote = document.createElement('span');
         linksNote.className = 'discogs-issue-note discogs-links-note';
         linksNote.style.cssText = 'font-size:0.85rem;color:#e8771d;display:none;';
-        linksNote.title = `Confirmed matches whose ${importSourceName} URL isn't linked in MB yet — use the 🔗 chip on each row to add it`;
+        linksNote.title = `Confirmed matches whose ${importSourceName} URL isn't linked in MB yet — click to jump to the next one; use its 🔗 chip to add the link`;
+        linksNote.addEventListener('click', jumpNextLink);
         updateLinksBadge();
 
         // #139/#177: clicking the "N unresolved" message scrolls to and focuses

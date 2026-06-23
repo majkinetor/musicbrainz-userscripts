@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.23.161232
+// @version      2026.6.23.161749
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2915,14 +2915,42 @@ ${ourBlock}` : ourBlock;
       const rowState = /* @__PURE__ */ new Map();
       const rowSearchInputs = /* @__PURE__ */ new Map();
       const linkState = /* @__PURE__ */ new Map();
+      const rowLinkChips = /* @__PURE__ */ new Map();
       let linksNote = null;
       function updateLinksBadge() {
         if (!linksNote) return;
         const n = [...linkState.values()].filter((v) => v === "none").length;
         linksNote.textContent = n ? `\u{1F517} ${n} link${n === 1 ? "" : "s"}` : "";
         linksNote.style.display = n ? "" : "none";
+        linksNote.classList.toggle("clickable", n > 0);
       }
       const keyOf = (r) => r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
+      let _linkJumpIdx = -1;
+      function jumpNextLink() {
+        const n = allResults.length;
+        let found = -1;
+        for (let step = 1; step <= n; step++) {
+          const i = (_linkJumpIdx + step) % n;
+          if (linkState.get(keyOf(allResults[i])) === "none") {
+            found = i;
+            break;
+          }
+        }
+        if (found === -1) return;
+        _linkJumpIdx = found;
+        const key = keyOf(allResults[found]);
+        const chip = rowLinkChips.get(key);
+        const target = chip || rowSearchInputs.get(key);
+        if (!target) return;
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (chip) {
+          const o = chip.style.boxShadow;
+          chip.style.boxShadow = "0 0 0 3px rgba(232,119,29,0.6)";
+          setTimeout(() => {
+            chip.style.boxShadow = o;
+          }, 1200);
+        }
+      }
       const attentionCount = allResults.filter((r) => r.type === "attention").length;
       const mismatchCount = allResults.filter((r) => {
         if (r.type !== "resolved") return false;
@@ -3517,6 +3545,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           tdAction.innerHTML = "";
           if (!selected) {
             linkState.delete(_entityKey);
+            rowLinkChips.delete(_entityKey);
             updateLinksBadge();
           }
           if (selected) {
@@ -3542,6 +3571,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               );
             }, applyUrlCheckResult = function(result) {
               linkState.set(_entityKey, result);
+              if (result !== "none") rowLinkChips.delete(_entityKey);
               updateLinksBadge();
               if (result === "linked") {
                 linkSlot.textContent = "\u2713";
@@ -3615,6 +3645,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                   openLinkEdit(true);
                 });
                 linkSlot.appendChild(addLinkBtn);
+                rowLinkChips.set(_entityKey, addLinkBtn);
               }
             };
             const linkSlot = document.createElement("span");
@@ -3639,6 +3670,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             }
             if (!discogsHref) {
               linkState.set(_entityKey, "na");
+              rowLinkChips.delete(_entityKey);
               updateLinksBadge();
               if (srcName === "Titles") {
                 linkSlot.remove();
@@ -4028,7 +4060,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       linksNote = document.createElement("span");
       linksNote.className = "discogs-issue-note discogs-links-note";
       linksNote.style.cssText = "font-size:0.85rem;color:#e8771d;display:none;";
-      linksNote.title = `Confirmed matches whose ${importSourceName} URL isn't linked in MB yet \u2014 use the \u{1F517} chip on each row to add it`;
+      linksNote.title = `Confirmed matches whose ${importSourceName} URL isn't linked in MB yet \u2014 click to jump to the next one; use its \u{1F517} chip to add the link`;
+      linksNote.addEventListener("click", jumpNextLink);
       updateLinksBadge();
       let _jumpIdx = -1;
       function jumpNextUnresolved() {
@@ -5247,6 +5280,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             text-decoration: underline dotted;
         }
         .discogs-bar-action .discogs-issue-note.clickable:hover { color: #a06000; }
+        /* "N links" badge \u2014 orange, short, clickable to cycle through the rows
+           whose source URL still needs linking. No wide min-width reservation. */
+        .discogs-bar-action .discogs-links-note { min-width: 0; color: #e8771d; }
+        .discogs-bar-action .discogs-links-note.clickable:hover { color: #c25e0a; }
         .discogs-bar .discogs-source a {
             color: #e8771d;
             text-decoration: none;

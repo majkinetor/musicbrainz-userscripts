@@ -48,13 +48,14 @@ try {
         return out;
     });
 
-    // ── Task C: links badge == number of 🔗 chips ─────────────────────────
-    const taskC = await page.evaluate(() => {
+    // ── Task C: links badge == number of 🔗 chips, click jumps to a chip ───
+    const taskC = await page.evaluate(async () => {
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
         const out = { steps: [], ok: true };
         const fail = m => { out.ok = false; out.steps.push('FAIL(C): ' + m); };
-        // 🔗 add-link chips actually rendered in the review table
-        const chips = [...document.querySelectorAll('.discogs-review-slot button, table button')]
-            .filter(b => b.textContent.trim() === '🔗').length;
+        const linkChips = () => [...document.querySelectorAll('.discogs-review-slot button, table button')]
+            .filter(b => b.textContent.trim() === '🔗');
+        const chips = linkChips().length;
         const badge = document.querySelector('.discogs-links-note');
         const shown = badge && badge.style.display !== 'none';
         const badgeN = shown ? parseInt((badge.textContent.match(/(\d+)/) || [])[1] || '0', 10) : 0;
@@ -62,6 +63,15 @@ try {
         if (chips !== badgeN) fail(`badge count ${badgeN} != ${chips} rendered 🔗 chips`);
         if (chips > 0 && !shown) fail('chips exist but badge hidden');
         if (chips === 0 && shown) fail('no chips but badge shown');
+        // clicking the badge should be clickable + pulse a 🔗 chip (jump target)
+        if (chips > 0) {
+            if (!badge.classList.contains('clickable')) fail('badge not marked clickable');
+            badge.click();
+            await sleep(60);
+            const pulsed = linkChips().some(b => /rgba\(232, ?119, ?29/.test(b.style.boxShadow));
+            out.steps.push(`after click: a 🔗 chip pulsed = ${pulsed}`);
+            if (!pulsed) fail('clicking badge did not pulse any 🔗 chip (no jump)');
+        }
         return out;
     });
 

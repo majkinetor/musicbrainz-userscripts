@@ -239,6 +239,10 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             text-decoration: underline dotted;
         }
         .discogs-bar-action .discogs-issue-note.clickable:hover { color: #a06000; }
+        /* "N links" badge — orange, short, clickable to cycle through the rows
+           whose source URL still needs linking. No wide min-width reservation. */
+        .discogs-bar-action .discogs-links-note { min-width: 0; color: #e8771d; }
+        .discogs-bar-action .discogs-links-note.clickable:hover { color: #c25e0a; }
         .discogs-bar .discogs-source a {
             color: #e8771d;
             text-decoration: none;
