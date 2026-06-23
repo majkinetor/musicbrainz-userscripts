@@ -239,6 +239,10 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             text-decoration: underline dotted;
         }
         .discogs-bar-action .discogs-issue-note.clickable:hover { color: #a06000; }
+        /* "N links" badge — orange, short, clickable to cycle through the rows
+           whose source URL still needs linking. No wide min-width reservation. */
+        .discogs-bar-action .discogs-links-note { min-width: 0; color: #e8771d; }
+        .discogs-bar-action .discogs-links-note.clickable:hover { color: #c25e0a; }
         .discogs-bar .discogs-source a {
             color: #e8771d;
             text-decoration: none;
@@ -726,6 +730,25 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     try { savedOpts = JSON.parse(localStorage.getItem(OPTS_KEY) || '{}'); } catch(e) {}
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
 
+    // ── Options popover — ALL options live behind "Options ▾" now ──────────
+    // The bar carries only the "Options ▾" button; every toggle/select opens in
+    // this floating panel so the single bar stays uncluttered. Two sections:
+    // "Import" (the primary options that used to sit inline on the bar) and
+    // "Deduplication" (#62, already in the popover before).
+    const optsBtn = document.createElement('button');
+    optsBtn.type = 'button';
+    optsBtn.className = 'discogs-opts-btn';
+    optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">▾</span>';
+    optsBtn.title = 'Import & deduplication options';
+    const optsPanel = document.createElement('div');
+    optsPanel.className = 'discogs-opts-panel';
+
+    // Import section — the primary options (were inline on the bar before).
+    const importHd = document.createElement('div');
+    importHd.className = 'discogs-opts-panel-hd';
+    importHd.textContent = 'Import';
+    optsPanel.appendChild(importHd);
+    _optsHost = optsPanel;
     const tracklistCb    = makeCheckbox('Per-track credits',              bv('tracklist', true),
         'Import per-track artist credits.');
     const applyTracksCb  = makeCheckbox('Move release credits to tracks', bv('applyTracks', false),
@@ -757,20 +780,10 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // already there" against MB's pre-existing state. The third part of
     // #62 — editable "Credited as" per entity — lives in the review
     // table, not as a checkbox.
-    // The secondary Dedup toggles fold into an "Options ▾" popover to keep the
-    // single bar compact (#139).
-    const optsBtn = document.createElement('button');
-    optsBtn.type = 'button';
-    optsBtn.className = 'discogs-opts-btn';
-    optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">▾</span>';
-    optsBtn.title = 'Deduplication options';
-    const optsPanel = document.createElement('div');
-    optsPanel.className = 'discogs-opts-panel';
     const dedupHd = document.createElement('div');
     dedupHd.className = 'discogs-opts-panel-hd';
     dedupHd.textContent = 'Deduplication';
     optsPanel.appendChild(dedupHd);
-    _optsHost = optsPanel;   // the next two toggles land inside the popover
     const dedupeEqCb  = makeCheckbox('Equivalence sets',  bv('dedupeEquivalenceSets', true),
         'Skip a role when an equivalent role already exists on the target (writer ≡ composer).');
     const dedupeDupCb = makeCheckbox('Duplicate roles',   bv('dedupeDuplicateRoles', true),

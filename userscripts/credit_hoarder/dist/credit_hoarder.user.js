@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.23.155209
+// @version      2026.6.23.161749
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -280,9 +280,23 @@
       `//musicbrainz.org/ws/2/artist/${mbid}?inc=recording-rels+release-rels+release-group-rels+work-rels&fmt=json&limit=100`
     );
     if (!json) return null;
-    const types = [...new Set((json.relations || []).map((r) => r.type).filter(Boolean))].sort();
+    const types = relRoleLabels(json.relations);
     _relTypeCache.set(mbid, types);
     return types;
+  }
+  var MODIFIER_ATTRS = /* @__PURE__ */ new Set(["additional", "guest", "solo", "minor", "bonus"]);
+  function relRoleLabels(relations) {
+    const labels = /* @__PURE__ */ new Set();
+    for (const r of relations || []) {
+      if (!r.type) continue;
+      const attrs = (Array.isArray(r.attributes) ? r.attributes : []).filter((a) => a && !MODIFIER_ATTRS.has(String(a).toLowerCase()));
+      if ((r.type === "instrument" || r.type === "vocal") && attrs.length) {
+        attrs.forEach((a) => labels.add(a));
+      } else {
+        labels.add(r.type);
+      }
+    }
+    return [...labels].sort();
   }
   function getSourceUrlsForRelease(mbid) {
     const url = `/ws/js/release/${mbid}?fmt=json&inc=rels`;
@@ -2900,7 +2914,43 @@ ${ourBlock}` : ourBlock;
     return new Promise((resolve) => {
       const rowState = /* @__PURE__ */ new Map();
       const rowSearchInputs = /* @__PURE__ */ new Map();
+      const linkState = /* @__PURE__ */ new Map();
+      const rowLinkChips = /* @__PURE__ */ new Map();
+      let linksNote = null;
+      function updateLinksBadge() {
+        if (!linksNote) return;
+        const n = [...linkState.values()].filter((v) => v === "none").length;
+        linksNote.textContent = n ? `\u{1F517} ${n} link${n === 1 ? "" : "s"}` : "";
+        linksNote.style.display = n ? "" : "none";
+        linksNote.classList.toggle("clickable", n > 0);
+      }
       const keyOf = (r) => r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
+      let _linkJumpIdx = -1;
+      function jumpNextLink() {
+        const n = allResults.length;
+        let found = -1;
+        for (let step = 1; step <= n; step++) {
+          const i = (_linkJumpIdx + step) % n;
+          if (linkState.get(keyOf(allResults[i])) === "none") {
+            found = i;
+            break;
+          }
+        }
+        if (found === -1) return;
+        _linkJumpIdx = found;
+        const key = keyOf(allResults[found]);
+        const chip = rowLinkChips.get(key);
+        const target = chip || rowSearchInputs.get(key);
+        if (!target) return;
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (chip) {
+          const o = chip.style.boxShadow;
+          chip.style.boxShadow = "0 0 0 3px rgba(232,119,29,0.6)";
+          setTimeout(() => {
+            chip.style.boxShadow = o;
+          }, 1200);
+        }
+      }
       const attentionCount = allResults.filter((r) => r.type === "attention").length;
       const mismatchCount = allResults.filter((r) => {
         if (r.type !== "resolved") return false;
@@ -3295,7 +3345,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         tr.appendChild(tdMb);
         const tdAction = actionsLine;
         tbody.appendChild(tr);
-        function buildMbRolesEl() {
+        function buildMbRolesEl(explicitMbid) {
           if (entityType !== "artist") return null;
           const wrap = document.createElement("span");
           wrap.style.cssText = "display:inline-flex;align-items:center;gap:0.25rem;margin-left:0.5rem;min-width:0;overflow:hidden;font-size:0.72rem;";
@@ -3306,9 +3356,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           trigger.title = "Fetch this artist's existing MB relationship types to compare with the Discogs role";
           trigger.addEventListener("click", async (ev) => {
             ev.preventDefault();
-            const st = rowState.get(_entityKey);
-            const curUrl = st?.mbUrl || r.mbUrl;
-            const mbid = (String(curUrl || "").split("/").pop() || "").replace(/[^a-f0-9-]/gi, "").slice(0, 36);
+            let mbid = (String(explicitMbid || "").match(/[a-f0-9-]{36}/i) || [])[0];
+            if (!mbid) {
+              const st = rowState.get(_entityKey);
+              const curUrl = st?.mbUrl || r.mbUrl;
+              mbid = (String(curUrl || "").split("/").pop() || "").replace(/[^a-f0-9-]/gi, "").slice(0, 36);
+            }
             if (!mbid) {
               trigger.textContent = "MB roles: (none selected)";
               return;
@@ -3490,6 +3543,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         const ACTION_CHIP_STYLE = "display:inline-flex;align-items:center;justify-content:center;min-width:1.6rem;height:1.6rem;padding:0 0.35rem;font-size:0.95rem;line-height:1;cursor:pointer;border:1px solid #d6d6d6;border-radius:0.3rem;background:#fafafa;";
         function renderActions(selected) {
           tdAction.innerHTML = "";
+          if (!selected) {
+            linkState.delete(_entityKey);
+            rowLinkChips.delete(_entityKey);
+            updateLinksBadge();
+          }
           if (selected) {
             let recheckUrlBypassCache = function() {
               _urlCheckSessionCache.delete(urlCheckCacheKey);
@@ -3512,6 +3570,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                 }).catch(() => applyUrlCheckResult("none"))
               );
             }, applyUrlCheckResult = function(result) {
+              linkState.set(_entityKey, result);
+              if (result !== "none") rowLinkChips.delete(_entityKey);
+              updateLinksBadge();
               if (result === "linked") {
                 linkSlot.textContent = "\u2713";
                 linkSlot.title = srcName + " URL already linked to this MB " + entityType;
@@ -3584,6 +3645,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                   openLinkEdit(true);
                 });
                 linkSlot.appendChild(addLinkBtn);
+                rowLinkChips.set(_entityKey, addLinkBtn);
               }
             };
             const linkSlot = document.createElement("span");
@@ -3607,6 +3669,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               if (urlCheckCached !== null) _urlCheckSessionCache.set(urlCheckCacheKey, urlCheckCached);
             }
             if (!discogsHref) {
+              linkState.set(_entityKey, "na");
+              rowLinkChips.delete(_entityKey);
+              updateLinksBadge();
               if (srcName === "Titles") {
                 linkSlot.remove();
               } else {
@@ -3876,6 +3941,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             info.appendChild(d);
           }
           row.appendChild(info);
+          const rolesEl = buildMbRolesEl(a.id);
+          if (rolesEl) {
+            rolesEl.style.marginLeft = "auto";
+            row.appendChild(rolesEl);
+          }
           return row;
         }
         function extractMbid(q) {
@@ -3987,6 +4057,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const issueNote = document.createElement("span");
       issueNote.className = "discogs-issue-note";
       issueNote.style.cssText = "font-size:0.85rem;color:#7a5c00;";
+      linksNote = document.createElement("span");
+      linksNote.className = "discogs-issue-note discogs-links-note";
+      linksNote.style.cssText = "font-size:0.85rem;color:#e8771d;display:none;";
+      linksNote.title = `Confirmed matches whose ${importSourceName} URL isn't linked in MB yet \u2014 click to jump to the next one; use its \u{1F517} chip to add the link`;
+      linksNote.addEventListener("click", jumpNextLink);
+      updateLinksBadge();
       let _jumpIdx = -1;
       function jumpNextUnresolved() {
         const n = allResults.length;
@@ -4105,12 +4181,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         resolve(confirmedMap);
       });
       if (headerSlot) {
-        headerSlot.replaceChildren(importBtn, issueNote);
+        headerSlot.replaceChildren(importBtn, issueNote, linksNote);
       } else {
         btnRow.appendChild(importBtn);
         btnRow.appendChild(issueNote);
+        btnRow.appendChild(linksNote);
         panel.appendChild(btnRow);
       }
+      updateLinksBadge();
       const panelLi = document.createElement("li");
       panelLi.style.cssText = "list-style:none;margin:0;padding:0;";
       panelLi.classList.add("discogs-review-panel-li");
@@ -5202,6 +5280,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             text-decoration: underline dotted;
         }
         .discogs-bar-action .discogs-issue-note.clickable:hover { color: #a06000; }
+        /* "N links" badge \u2014 orange, short, clickable to cycle through the rows
+           whose source URL still needs linking. No wide min-width reservation. */
+        .discogs-bar-action .discogs-links-note { min-width: 0; color: #e8771d; }
+        .discogs-bar-action .discogs-links-note.clickable:hover { color: #c25e0a; }
         .discogs-bar .discogs-source a {
             color: #e8771d;
             text-decoration: none;
@@ -5595,6 +5677,18 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     } catch (e) {
     }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
+    const optsBtn = document.createElement("button");
+    optsBtn.type = "button";
+    optsBtn.className = "discogs-opts-btn";
+    optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">\u25BE</span>';
+    optsBtn.title = "Import & deduplication options";
+    const optsPanel = document.createElement("div");
+    optsPanel.className = "discogs-opts-panel";
+    const importHd = document.createElement("div");
+    importHd.className = "discogs-opts-panel-hd";
+    importHd.textContent = "Import";
+    optsPanel.appendChild(importHd);
+    _optsHost = optsPanel;
     const tracklistCb = makeCheckbox(
       "Per-track credits",
       bv("tracklist", true),
@@ -5615,18 +5709,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       { value: "when-missing", label: "when missing" },
       { value: "never", label: "never" }
     ], "when needed: create a work only when there is a composer/lyricist/writer credit to attach. when missing: create a work for every recording without one. never: do not create works \u2014 work-only credits with no existing work are logged and skipped.");
-    const optsBtn = document.createElement("button");
-    optsBtn.type = "button";
-    optsBtn.className = "discogs-opts-btn";
-    optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">\u25BE</span>';
-    optsBtn.title = "Deduplication options";
-    const optsPanel = document.createElement("div");
-    optsPanel.className = "discogs-opts-panel";
     const dedupHd = document.createElement("div");
     dedupHd.className = "discogs-opts-panel-hd";
     dedupHd.textContent = "Deduplication";
     optsPanel.appendChild(dedupHd);
-    _optsHost = optsPanel;
     const dedupeEqCb = makeCheckbox(
       "Equivalence sets",
       bv("dedupeEquivalenceSets", true),
