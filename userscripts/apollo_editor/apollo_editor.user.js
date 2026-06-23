@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.125452
+// @version      2026.6.23.130009
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -709,21 +709,26 @@
   }
 
   async function matchSlot(creditedAs, sib, discogsUrl) {
+    const who = creditedAs || '(track artist)';
     // #224: a Discogs artist-link match outranks the name search.
     if (SETTINGS.discogsUrlMatch !== false && discogsUrl) {
       const hits = await resolveByDiscogsUrl(discogsUrl);
       if (hits && hits.length === 1) {
         const e = await fetchEntity(hits[0].gid);
-        if (e && e.gid) return { entity: e, source: 'discogs', confidence: 'high', candidates: [e] };
+        if (e && e.gid) { Log.info('Match:', who, '→', e.name, '— via Discogs URL'); return { entity: e, source: 'discogs', confidence: 'high', candidates: [e] }; }
       } else if (hits && hits.length > 1) {
         // ambiguous — surface every linked artist plus the name-search hits and let the user pick
         const named = await searchArtist(creditedAs);
         const ents = [];
         for (const h of hits) { const e = await fetchEntity(h.gid); if (e && e.gid) ents.push(e); }
         const merged = [...ents, ...named.filter(c => !ents.some(e => e.gid === (c.gid || c.id)))];
-        if (ents.length) return { entity: ents[0], source: 'discogs', confidence: 'low', candidates: merged };
+        if (ents.length) { Log.info('Match:', who, '—', ents.length, 'MB artists link that Discogs URL; pick one'); return { entity: ents[0], source: 'discogs', confidence: 'low', candidates: merged }; }
       }
-      // 0 hits → fall through to the name / sibling logic below
+      // couldn't resolve via the URL → fall back to name search. 0 hits = the
+      // Discogs URL the release credits isn't linked to any MB artist (e.g. the
+      // mismatch case); null = the lookup was rate-limited.
+      if (hits && hits.length === 0) Log.debug('Match:', who, '— Discogs URL not linked to any MB artist → name search');
+      else if (hits == null) Log.debug('Match:', who, '— Discogs URL lookup unavailable (rate-limited) → name search');
     }
     let candidates = await searchArtist(creditedAs);
     let entity = null, source = 'search', confidence = 'low';
@@ -1010,7 +1015,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.125452';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.130009';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
