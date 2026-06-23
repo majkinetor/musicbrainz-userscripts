@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.21
+// @version      2026.6.23.195828
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -30,7 +30,7 @@
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false };   // defaultInsert: 'replace' | 'append'
-  const VERSION = '2026.6.20.233000';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.6.23.195828';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -150,8 +150,17 @@
      (field min-height = panel height) then fed back through it — each pass added
      the field's padding/border, inflating both without bound (#245). The field is
      still floored to the panel via JS, so it's never shorter. */
-  .mmth-wrap { display:flex; gap:0; align-items:flex-start; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; position:relative; }
+  .mmth-wrap { display:flex; flex-wrap:wrap; gap:0; align-items:flex-start; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; position:relative; }
   .mmth-wrap > textarea.edit-note { flex:1 1 auto; width:auto !important; min-width:0; }
+  /* #288: MB (and other scripts, e.g. jesus2099's MERGE HELPOR) insert edit-note
+     error/warning <p>s as siblings of the textarea — which now lives inside our
+     flex row, so they were laid out BESIDE the field. Force any non-Mammoth child
+     onto its own full-width line: the "invalid" / generic notices below the field,
+     the destructive-merge warning above it (order). */
+  .mmth-wrap > :not(textarea.edit-note):not(.mmth-vsep):not(.mmth-side):not(.mmth-badge) {
+    flex:1 0 100%; max-width:100%; min-width:0; order:1; margin:4px 0 0; }
+  /* !important so this beats the higher-specificity :not() catch-all above */
+  .mmth-wrap > .error:not(.invalid) { order:-1 !important; margin:0 0 4px; }
   /* Minimized mode (#265): the panel collapses to a small Mammoth badge in the
      field's top-right corner; the field takes the full width and the panel floats
      in only on hover. No width/height coupling, so it can't feed the #245 loop. */
@@ -404,7 +413,7 @@
       const row = document.createElement('div'); row.className = 'mmth-row';
       if (saved && idx === inst.cyc) row.classList.add('mmth-cyc');
       const dflt = SET.defaultInsert;
-      row.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'})`;
+      row.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · shift-click: set + submit)`;
 
       const txt = document.createElement('span'); txt.className = 'mmth-txt'; txt.textContent = it.text.replace(/\s+/g, ' ').trim();
       row.appendChild(txt);
@@ -423,7 +432,12 @@
         row.appendChild(grab);
       }
 
-      row.onclick = () => applyNote(ta, it.text, SET.defaultInsert === 'replace');
+      row.onclick = e => {
+        // #289: shift-click sets the note (replace) AND submits the edit — like
+        // Ctrl+Enter (reuses findSubmitBtn) — a time-saver for repetitive merges.
+        if (e.shiftKey) { applyNote(ta, it.text, true); const b = findSubmitBtn(ta); if (b) b.click(); return; }
+        applyNote(ta, it.text, SET.defaultInsert === 'replace');
+      };
       row.oncontextmenu = e => { e.preventDefault(); applyNote(ta, it.text, SET.defaultInsert !== 'replace'); };
       if (saved) {
         row.addEventListener('dragover', e => { if (!_drag) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; clearMarks(list); row.classList.add(after(e, row) ? 'mmth-drop-after' : 'mmth-drop-before'); });
