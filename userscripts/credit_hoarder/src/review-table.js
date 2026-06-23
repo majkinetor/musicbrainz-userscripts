@@ -101,6 +101,18 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         // Per-entity search input, so the header's "N unresolved" message can
         // focus the first still-unresolved row (#139). Keyed like `rowState`.
         const rowSearchInputs = new Map();
+        // Per-row Discogs-link state, keyed like `rowState`: 'linked' | 'other' |
+        // 'none' (= addable: the 🔗 chip is showing) | 'na'. Drives the header's
+        // "N links" badge (count of 'none'). `linksNote` is the badge element,
+        // assigned once the header mounts; `updateLinksBadge` is a no-op until then.
+        const linkState = new Map();
+        let linksNote = null;
+        function updateLinksBadge() {
+            if (!linksNote) return;
+            const n = [...linkState.values()].filter(v => v === 'none').length;
+            linksNote.textContent = n ? `🔗 ${n} link${n === 1 ? '' : 's'}` : '';
+            linksNote.style.display = n ? '' : 'none';
+        }
         const keyOf = r => r.entity?.resource_url || r.entity?._syntheticKey || `_nourl_${r.entity?.name || r.displayName}`;
 
         const attentionCount = allResults.filter(r => r.type === 'attention').length;
@@ -694,7 +706,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // shows them as tags, so the reviewer can compare against the Discogs
             // role. Lazy by design — fetching isn't free (one MB request/artist),
             // so nothing loads until clicked; session-cached per MBID. Artists only.
-            function buildMbRolesEl() {
+            // `explicitMbid` (optional) targets a SPECIFIC artist — used by the
+            // unselected search candidates so each one can preview its own MB
+            // roles before you pick it. Without it, the chip reads the row's
+            // currently-resolved artist (the green header use).
+            function buildMbRolesEl(explicitMbid) {
                 if (entityType !== 'artist') return null;
                 const wrap = document.createElement('span');
                 wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.25rem;margin-left:0.5rem;min-width:0;overflow:hidden;font-size:0.72rem;';
@@ -705,9 +721,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 trigger.title = "Fetch this artist's existing MB relationship types to compare with the Discogs role";
                 trigger.addEventListener('click', async (ev) => {
                     ev.preventDefault();
-                    const st = rowState.get(_entityKey);
-                    const curUrl = st?.mbUrl || r.mbUrl;
-                    const mbid = (String(curUrl || '').split('/').pop() || '').replace(/[^a-f0-9-]/gi, '').slice(0, 36);
+                    let mbid = (String(explicitMbid || '').match(/[a-f0-9-]{36}/i) || [])[0];
+                    if (!mbid) {
+                        const st = rowState.get(_entityKey);
+                        const curUrl = st?.mbUrl || r.mbUrl;
+                        mbid = (String(curUrl || '').split('/').pop() || '').replace(/[^a-f0-9-]/gi, '').slice(0, 36);
+                    }
                     if (!mbid) { trigger.textContent = 'MB roles: (none selected)'; return; }
                     trigger.textContent = 'MB roles…';
                     const types = await fetchArtistRelTypes(mbid);
@@ -914,6 +933,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
             function renderActions(selected) {
                 tdAction.innerHTML = '';
+                if (!selected) { linkState.delete(_entityKey); updateLinksBadge(); }
                 if (selected) {
                     // Link state lives in a single chip (Proposal C from #77):
                     //   🔗 — needs adding (default action)
@@ -969,6 +989,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     }
 
                     function applyUrlCheckResult(result) {
+                        linkState.set(_entityKey, result);   // 'linked' | 'other' | 'none'
+                        updateLinksBadge();
                         if (result === 'linked') {
                             linkSlot.textContent = '\u2713';
                             linkSlot.title = srcName + ' URL already linked to this MB ' + entityType;
@@ -1061,6 +1083,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         // source has no per-entity page concept at all, so show
                         // nothing (the "no page" chip would just be noise on
                         // every row); other sources keep the informational chip.
+                        linkState.set(_entityKey, 'na'); updateLinksBadge();   // no link to add
                         if (srcName === 'Titles') {
                             linkSlot.remove();
                         } else {
@@ -1420,6 +1443,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     info.appendChild(d);
                 }
                 row.appendChild(info);
+                // Preview THIS candidate's existing MB roles before picking it.
+                const rolesEl = buildMbRolesEl(a.id);
+                if (rolesEl) { rolesEl.style.marginLeft = 'auto'; row.appendChild(rolesEl); }
                 return row;
             }
 
@@ -1548,6 +1574,15 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         const issueNote = document.createElement('span');
         issueNote.className = 'discogs-issue-note';
         issueNote.style.cssText = 'font-size:0.85rem;color:#7a5c00;';
+
+        // "N links" badge — count of confirmed artists whose Discogs URL isn't yet
+        // linked in MB (the 🔗 add-link chip), shown right of "N unresolved" (like
+        // Apollo's links badge). Updated live by the per-row URL checks.
+        linksNote = document.createElement('span');
+        linksNote.className = 'discogs-issue-note discogs-links-note';
+        linksNote.style.cssText = 'font-size:0.85rem;color:#e8771d;display:none;';
+        linksNote.title = `Confirmed matches whose ${importSourceName} URL isn't linked in MB yet — use the 🔗 chip on each row to add it`;
+        updateLinksBadge();
 
         // #139/#177: clicking the "N unresolved" message scrolls to and focuses
         // the next still-unresolved row's search box. The first click lands on
@@ -1702,12 +1737,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         // always-visible header (`headerSlot`) instead of below the table.
         // Fall back to a footer row under the table when no slot was provided.
         if (headerSlot) {
-            headerSlot.replaceChildren(importBtn, issueNote);
+            headerSlot.replaceChildren(importBtn, issueNote, linksNote);
         } else {
             btnRow.appendChild(importBtn);
             btnRow.appendChild(issueNote);
+            btnRow.appendChild(linksNote);
             panel.appendChild(btnRow);
         }
+        updateLinksBadge();   // paint initial count now that the badge is mounted
 
         const panelLi = document.createElement('li');
         panelLi.style.cssText = 'list-style:none;margin:0;padding:0;';

@@ -189,9 +189,36 @@ export async function fetchArtistRelTypes(mbid) {
         `//musicbrainz.org/ws/2/artist/${mbid}?inc=recording-rels+release-rels+release-group-rels+work-rels&fmt=json&limit=100`
     );
     if (!json) return null;
-    const types = [...new Set((json.relations || []).map(r => r.type).filter(Boolean))].sort();
+    const types = relRoleLabels(json.relations);
     _relTypeCache.set(mbid, types);
     return types;
+}
+
+/**
+ * Collapse an artist's MB relations to a sorted, de-duped set of role labels.
+ *
+ * For instrument/vocal relationships the useful detail is the SPECIFIC
+ * instrument / vocal — which MB carries as the relation's `attributes` (e.g.
+ * `instrument` + `["koto"]`). Surface those instead of the generic
+ * "instrument"/"vocal" type so the roles chip reads "koto", "lead vocals", … .
+ * Pure performance modifiers ("additional", "guest", …) are dropped so they
+ * don't masquerade as instruments. Every other relationship keeps its plain
+ * type name. Exported for unit testing.
+ */
+const MODIFIER_ATTRS = new Set(['additional', 'guest', 'solo', 'minor', 'bonus']);
+export function relRoleLabels(relations) {
+    const labels = new Set();
+    for (const r of (relations || [])) {
+        if (!r.type) continue;
+        const attrs = (Array.isArray(r.attributes) ? r.attributes : [])
+            .filter(a => a && !MODIFIER_ATTRS.has(String(a).toLowerCase()));
+        if ((r.type === 'instrument' || r.type === 'vocal') && attrs.length) {
+            attrs.forEach(a => labels.add(a));
+        } else {
+            labels.add(r.type);
+        }
+    }
+    return [...labels].sort();
 }
 
 /**
