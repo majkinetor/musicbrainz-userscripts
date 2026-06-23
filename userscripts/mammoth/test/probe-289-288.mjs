@@ -45,9 +45,10 @@ check(/shift-click: set \+ submit/.test(r289.title || ''), '#289 tooltip documen
 await page.evaluate(() => { window.__clicked = null; document.querySelector('textarea.edit-note').value = ''; document.querySelector('.mmth-list .mmth-row').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
 check(await page.evaluate(() => window.__clicked) === null, '#289 plain click does NOT submit');
 
-// ── #288: foreign error <p>s stack full-width (not beside the field) ────────
+// ── #288: foreign error <p>s get RELOCATED OUT of the wrap (warning above the
+//    field, invalid below) — and the panel stays beside the field ─────────────
 await load('<form><fieldset class="editnote"><div class="row"><label for="en2">Edit note:</label><textarea id="en2" class="edit-note" rows="5"></textarea></div></fieldset></form>');
-const r288 = await page.evaluate(() => {
+const r288 = await page.evaluate(async () => {
   const ta = document.querySelector('textarea.edit-note');
   const wrap = ta.closest('.mmth-wrap');
   // simulate MB / MERGE HELPOR inserting siblings of the textarea (inside the wrap)
@@ -55,20 +56,30 @@ const r288 = await page.evaluate(() => {
   const bad = document.createElement('p'); bad.className = 'error invalid'; bad.textContent = 'Your edit note seems to have no actual content.';
   wrap.insertBefore(warn, ta);
   wrap.insertBefore(bad, ta.nextSibling);
+  await new Promise(r => setTimeout(r, 50));   // let the MutationObserver relocate them
   const R = el => el.getBoundingClientRect();
-  const w = R(wrap), t = R(ta), wa = R(warn), ba = R(bad);
+  const t = R(ta), wa = R(warn), ba = R(bad), side = R(document.querySelector('.mmth-side'));
   return {
-    wrapW: Math.round(w.width), taW: Math.round(t.width),
-    warnFull: wa.width > w.width * 0.9, badFull: ba.width > w.width * 0.9,
+    warnOutOfWrap: !wrap.contains(warn), badOutOfWrap: !wrap.contains(bad),
     warnAbove: wa.bottom <= t.top + 1, badBelow: ba.top >= t.bottom - 1,
-    warnBeside: wa.right <= t.left + 1 || wa.left >= t.right - 1,
+    sideBeside: side.left >= t.right - 1 && Math.abs(side.top - t.top) < 40,
   };
 });
-check(r288.warnFull, `#288 warning spans full width (own line), not beside the field`);
-check(r288.badFull, `#288 invalid-note error spans full width (own line)`);
+check(r288.warnOutOfWrap, '#288 warning relocated OUT of the flex wrap');
+check(r288.badOutOfWrap, '#288 invalid error relocated OUT of the flex wrap');
 check(r288.warnAbove, '#288 warning sits ABOVE the field');
 check(r288.badBelow, '#288 invalid error sits BELOW the field');
-check(!r288.warnBeside, '#288 warning is NOT beside the field');
+check(r288.sideBeside, '#288 panel still BESIDE the field (not wrapped below)');
+
+// ── #290: in a NARROW left-column layout the panel must stay beside the field ─
+await load('<div style="width:520px"><form><fieldset class="editnote"><div class="row"><label for="en3">Edit note:</label><textarea id="en3" class="edit-note" rows="5"></textarea></div></fieldset></form></div>');
+const r290 = await page.evaluate(() => {
+  const ta = document.querySelector('textarea.edit-note');
+  const R = el => el.getBoundingClientRect();
+  const t = R(ta), side = R(document.querySelector('.mmth-side'));
+  return { sideBeside: side.left >= t.right - 1 && Math.abs(side.top - t.top) < 40, taW: Math.round(t.width), sideW: Math.round(side.width) };
+});
+check(r290.sideBeside, `#290 narrow column: panel beside the field (field ${r290.taW}px + panel ${r290.sideW}px on one row)`);
 
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 await ctx.close();
