@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.133821
+// @version      2026.6.23.135704
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1060,7 +1060,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.133821';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.135704';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1240,6 +1240,9 @@
     .tc-nm-clr:hover{color:#c0392b}
     .tc-search:focus-within{box-shadow:inset 0 0 0 1px #b9a4e0}
     .tc-search.matched{background:#e3f4e7}
+    /* #284: hover-highlight every instance of the same artist (ring keeps the underlying matched/unmatched colour) */
+    .tc-aslot.tc-arthl .tc-search{box-shadow:inset 0 0 0 2px #7a4fd0}
+    .tc-aslot.tc-arthl .tc-cred{color:#5f3ec0;font-weight:600}
     /* "Alternate row colors": tint the matched box a touch deeper on every other track (per row, so a
        multi-artist group stays one shade) — the only way the banding shows through the green fill */
     .tc-mirror.alt tbody tr:nth-child(even) .tc-search.matched{background:#d6ecdd}
@@ -2159,9 +2162,22 @@
     inp.onblur = () => setTimeout(close, 160);   // keep whatever the user typed (no reset)
   }
 
+  // #284: hovering an artist highlights every OTHER instance of that same artist in
+  // the tracklist (matched by gid when resolved, else by the typed/credited name) —
+  // the same idea as the green "matched" bars, but live on hover.
+  function hlArtist(id) {
+    document.querySelectorAll('.tc-aslot.tc-arthl').forEach(e => e.classList.remove('tc-arthl'));
+    if (!id || id === 'n:' || id === 'g:') return;
+    const matches = [...document.querySelectorAll('.tc-aslot')].filter(e => e.dataset.art === id);
+    if (matches.length > 1) matches.forEach(e => e.classList.add('tc-arthl'));   // only when it actually appears elsewhere
+  }
+  const slotArtId = s => (s.committed && s.gid) ? 'g:' + s.gid : 'n:' + fold(s.creditedAs || s.name || s.query || '');
   // one artist = one aligned line: [credited-as][icon][green/white search bar][join][↵ hover][✕ hover]
   function slotEl(entry, s, idx, refreshBadges) {
     const line = document.createElement('div'); line.className = 'tc-aslot';
+    line.dataset.art = slotArtId(s);
+    line.addEventListener('mouseenter', () => hlArtist(line.dataset.art));
+    line.addEventListener('mouseleave', () => hlArtist(null));
     // "splittable" (several artists) drives both the credited-as highlight and the ⋔ button, via a line
     // class that updates live as you edit
     if (splitArtistText(s.creditedAs || s.name || s.query || '').length > 1) line.classList.add('tc-can-split');
