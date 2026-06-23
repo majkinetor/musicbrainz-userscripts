@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.193635
+// @version      2026.6.24.002321
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1232,14 +1232,21 @@
   async function dlZip(sel, onProgress) {
     const items = zipNames(sel), enc = new TextEncoder();
     asLog.info(`Download: zipping ${items.length} ${items.length === 1 ? ITEM : ITEMS}`);
-    await loadSizes();   // byte sizes for the manifest; resolutions are captured during the fetch below
     // #240: stream the zip straight to disk when the browser supports it — the
     // download starts immediately (first cover written as soon as it arrives) and
     // the whole archive is never buffered in memory.
+    // Grab the save handle FIRST, while we still hold the user gesture.
+    // showSaveFilePicker needs transient user activation; awaiting loadSizes (an
+    // archive.org fetch) before it lets that activation expire, so in Chrome the
+    // picker threw SecurityError — which we swallowed as "cancelled", and the zip
+    // download silently did nothing. Pick the file, THEN do the slow work.
+    let handle = null;
     if (window.showSaveFilePicker) {
-      let handle;
       try { handle = await window.showSaveFilePicker({ suggestedName: `${MBID}-${ITEMS}.zip`, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
       catch (e) { return; }   // user cancelled the save dialog
+    }
+    await loadSizes();   // byte sizes for the manifest; resolutions are captured during the fetch below
+    if (handle) {
       const w = await handle.createWritable();
       const central = []; let offset = 0, done = 0; const failed = [];
       const writeEntry = async (nameStr, data) => {
