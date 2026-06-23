@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.110115
+// @version      2026.6.23.111728
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -344,7 +344,7 @@
     const help = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/README.md';
     const panel = document.createElement('div'); panel.id = 'as-setup';
     panel.innerHTML = `<div class="as-setup-h"><img class="as-setup-ic" src="${ICON_URL}" alt=""><b>Art Station</b> <span class="as-setup-ver">v${esc(ver)}</span>`
-      + `<button class="as-setup-copylog" type="button" title="Copy the session log as Markdown (paste into a GitHub issue)">⧉ Copy log</button>`
+      + `<button class="as-setup-logbtn" type="button" title="Open the activity log">🗒 Log</button>`
       + `<a class="as-setup-help" href="${help}" target="_blank" rel="noopener">Help ↗</a></div>`
       + `<div class="as-setup-body">`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-hidefoot"${SETTINGS.hideMbFooter ? ' checked' : ''}> Hide MB native buttons (Add / Reorder / Import…)</label>`
@@ -353,7 +353,6 @@
       + `<div class="as-setup-opt"><label class="as-setup-optlbl"><input type="checkbox" class="as-setup-autofront"${SETTINGS.autoFront ? ' checked' : ''}> Set type to “Front” on first import</label>`
       + ` <select class="as-setup-autofront-mode"><option value="whenNone"${SETTINGS.autoFrontMode !== 'always' ? ' selected' : ''}>when none exists</option><option value="always"${SETTINGS.autoFrontMode === 'always' ? ' selected' : ''}>always</option></select></div>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-clearsel"${SETTINGS.clearSelAfterOp ? ' checked' : ''}> Clear the selection after a batch action (type, comment, download, report)</label>`
-      + `<details class="as-setup-log"><summary class="as-log-sum">Activity log <span class="as-log-badge"></span></summary><div class="as-log-list"></div></details>`
       + `</div>`;
     document.body.appendChild(panel);
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
@@ -362,22 +361,37 @@
     panel.querySelector('.as-setup-autofront').onchange = e => { SETTINGS.autoFront = e.target.checked; save(); };
     panel.querySelector('.as-setup-autofront-mode').onchange = e => { SETTINGS.autoFrontMode = e.target.value; save(); };
     panel.querySelector('.as-setup-clearsel').onchange = e => { SETTINGS.clearSelAfterOp = e.target.checked; save(); };
-    // #283 activity log: render current entries, keep it live while the panel is open
-    const renderLogList = () => {
-      const list = panel.querySelector('.as-log-list'); if (!list) return;
+    const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
+    panel.querySelector('.as-setup-logbtn').onclick = () => { panel.remove(); document.removeEventListener('mousedown', off); openLog(); };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
+  // #283 the Log button opens this popup: the full session log + a Copy control.
+  function openLog() {
+    document.getElementById('as-logpop')?.remove();
+    const pop = document.createElement('div'); pop.id = 'as-logpop';
+    pop.innerHTML = `<div class="as-logpop-box">`
+      + `<div class="as-logpop-h"><b>Activity log</b> <span class="as-log-badge"></span><span class="as-logpop-sp"></span>`
+      + `<button class="as-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
+      + `<button class="as-logpop-x" type="button" title="Close">✕</button></div>`
+      + `<div class="as-log-list"></div></div>`;
+    document.body.appendChild(pop);
+    const renderList = () => {
+      const list = pop.querySelector('.as-log-list');
       list.innerHTML = LOG.length
         ? LOG.map(e => `<div class="as-log-li as-log-${e.sev}"><span class="as-log-t">${_ts(e.t)}</span><span class="as-log-m">${esc(e.msg)}</span></div>`).join('')
         : '<div class="as-log-empty">No activity yet.</div>';
       const c = logCounts();
-      const badge = panel.querySelector('.as-log-badge');
-      if (badge) badge.textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
+      pop.querySelector('.as-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
       list.scrollTop = list.scrollHeight;
     };
-    renderLogList();
-    panel.querySelector('.as-setup-copylog').onclick = () => copyLog(panel.querySelector('.as-setup-copylog'));
-    _logListeners.add(renderLogList);
-    const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { _logListeners.delete(renderLogList); panel.remove(); document.removeEventListener('mousedown', off); } };
-    setTimeout(() => document.addEventListener('mousedown', off), 0);
+    renderList();
+    _logListeners.add(renderList);
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    const close = () => { _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
+    pop.querySelector('.as-logpop-copy').onclick = () => copyLog(pop.querySelector('.as-logpop-copy'));
+    pop.querySelector('.as-logpop-x').onclick = close;
+    pop.onclick = e => { if (e.target === pop) close(); };   // backdrop
+    document.addEventListener('keydown', onKey);
   }
   // at big tile sizes the selection outline alone is plenty obvious, so drop the
   // per-card ✓ badge — keeps large artwork uncluttered. #234
@@ -1281,18 +1295,17 @@
   // standard shape for a caught error: "<context> — <message>"
   const logErr = (ctx, e) => asLog('error', ctx + ' — ' + ((e && e.message) || e || 'unknown error'));
   const logCounts = () => LOG.reduce((a, e) => { if (e.sev === 'warn') a.warn++; else if (e.sev === 'error') a.error++; return a; }, { warn: 0, error: 0 });
-  const _ts = d => { const p = n => String(n).padStart(2, '0'); return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; };
+  const _ts = d => { const p = (n, w = 2) => String(n).padStart(w, '0'); return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`; };
   // Build the copy/pastable Markdown: a collapsed <details> wrapping a fenced log
   // block (same shape as the other scripts — paste straight into a GitHub issue).
   function logMarkdown() {
     const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
     const body = LOG.length ? LOG.map(e => `${_ts(e.t)}  ${PRE[e.sev] || ''}${e.msg}`).join('\n') : '(no activity logged)';
     const c = logCounts();
-    let title = 'Art Station';
+    let title = 'Art Station' + ((_gm && _gm.version) ? ' v' + _gm.version : '');   // version next to the script name
     try { const t = (releaseInfo().title || '').trim(); if (t) title += ' — ' + t; } catch (e) {}
-    const ver = (_gm && _gm.version) ? ' v' + _gm.version : '';
     const tally = (c.warn || c.error) ? ` (${c.warn} warning${c.warn === 1 ? '' : 's'}, ${c.error} error${c.error === 1 ? '' : 's'})` : '';
-    return `<details><summary>${title}${ver} — session log${tally}</summary>\n\n` + '```log\n' + body + '\n```' + `\n\n</details>`;
+    return `<details><summary>${title} — session log${tally}</summary>\n\n` + '```log\n' + body + '\n```' + `\n\n</details>`;
   }
   async function copyLog(btn) {
     const md = logMarkdown();
@@ -2696,20 +2709,24 @@
   .as-setup-ver{font-size:11px;font-weight:normal;color:#999}
   .as-setup-help{font-size:12px;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
   .as-setup-help:hover{background:#f0ecfa}
-  .as-setup-copylog{margin-left:auto;font-size:12px;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px;cursor:pointer;font-family:inherit}
-  .as-setup-copylog:hover{background:#e9e0f8}
-  /* #283 activity log */
-  .as-setup-log{margin-top:4px;border-top:1px solid #ece6f8;padding-top:7px}
-  .as-log-sum{cursor:pointer;font-size:12px;color:#6a5a8f;user-select:none}
+  .as-setup-logbtn{margin-left:auto;font-size:12px;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px;cursor:pointer;font-family:inherit}
+  .as-setup-logbtn:hover{background:#e9e0f8}
+  /* #283 activity-log popup */
+  #as-logpop{position:fixed;inset:0;z-index:100020;background:rgba(20,12,40,.34);display:flex;align-items:center;justify-content:center}
+  .as-logpop-box{display:flex;flex-direction:column;width:min(720px,94vw);max-height:82vh;background:#fff;border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px Arial;color:#222;overflow:hidden}
+  .as-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #ece6f8;color:#563b8f}
+  .as-logpop-sp{margin-left:auto}
+  .as-logpop-copy,.as-logpop-x{font-size:12px;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}
+  .as-logpop-copy:hover,.as-logpop-x:hover{background:#e9e0f8}
   .as-log-badge{color:#9a8cba;font-size:11px}
-  .as-log-list{margin-top:6px;max-height:220px;overflow:auto;background:#faf8fe;border:1px solid #ece6f8;border-radius:5px;padding:5px 7px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.5}
-  .as-log-li{display:flex;gap:7px;white-space:pre-wrap;word-break:break-word}
+  .as-log-list{flex:1 1 auto;overflow:auto;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
+  .as-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}
   .as-log-t{color:#a99fc2;flex:0 0 auto}
   .as-log-m{flex:1 1 auto;color:#444}
   .as-log-ok .as-log-m{color:#2e7d4f}
   .as-log-warn .as-log-m{color:#b06a00}
   .as-log-error .as-log-m{color:#c0344d}
-  .as-log-debug{opacity:.7}
+  .as-log-debug{opacity:.72}
   .as-log-debug .as-log-m{color:#7a7a7a}
   .as-log-empty{color:#9a8cba}
   .as-setup-x{border:none;background:none;color:#999;font-size:14px;cursor:pointer;padding:0 2px}
