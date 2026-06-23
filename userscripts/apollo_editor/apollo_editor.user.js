@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.115916
+// @version      2026.6.23.120711
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -105,7 +105,14 @@
     pop.onclick = e => { if (e.target === pop) close(); };
     document.addEventListener('keydown', onKey);
   }
-  Log.info('boot —', location.href);
+  // first two log lines: the script + version, then the MB release being edited
+  Log.info('Apollo Editor' + (() => { try { return ' v' + GM_info.script.version; } catch (e) { return ''; } })());
+  Log.info('Release:', (() => {
+    const mbid = (location.pathname.match(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/i) || [''])[0];
+    const h = document.querySelector('h1 bdi') || document.querySelector('h1');
+    const title = h ? h.textContent.replace(/\s+/g, ' ').trim() : '';
+    return (title ? title + ' ' : '') + (mbid ? '(' + mbid + ')' : '') || location.href;
+  })());
 
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
   const ORIGIN = location.origin;
@@ -341,11 +348,14 @@
   const DISCOGS_TOKEN = 'gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ';
   // Scrape the release's Discogs link from the page — edit-relationships anchors
   // or the release editor's external-link inputs. First match wins (#224).
+  let _discogsUrlLogged = false;
   function discogsReleaseUrlFromPage() {
     const re = /discogs\.com\/(?:[a-z]{2}\/)?(?:[^/\s"']*\/)?release\/(\d+)/i;
-    for (const a of document.querySelectorAll('a[href*="discogs.com/release/"]')) { const m = re.exec(a.getAttribute('href') || ''); if (m) return `https://www.discogs.com/release/${m[1]}`; }
-    for (const inp of document.querySelectorAll('input')) { const m = re.exec(inp.value || ''); if (m) return `https://www.discogs.com/release/${m[1]}`; }
-    return null;
+    let url = null;
+    for (const a of document.querySelectorAll('a[href*="discogs.com/release/"]')) { const m = re.exec(a.getAttribute('href') || ''); if (m) { url = `https://www.discogs.com/release/${m[1]}`; break; } }
+    if (!url) for (const inp of document.querySelectorAll('input')) { const m = re.exec(inp.value || ''); if (m) { url = `https://www.discogs.com/release/${m[1]}`; break; } }
+    if (url && !_discogsUrlLogged) { _discogsUrlLogged = true; Log.info('Discogs: release link found —', url); }
+    return url;
   }
   // Map folded track title → array of Discogs artist www-URLs (one per credited
   // track artist, in order). Keyed by title like the sibling map, so it's robust
@@ -601,6 +611,8 @@
         let r = 0;
         for (const [s, durl] of pend) { setDiscProgress(`re-checking Discogs links ${++r}/${pend.length}…`); await tagDiscogsAddable(s, durl); }
       }
+      const addable = jobs.filter(([s]) => s._discogsAddable).length;
+      Log.info('Discogs check:', jobs.length, 'track-artist link(s) checked,', addable, 'addable to MB');
       if (!isEditingNow()) rerender();
     } finally {
       _tagDiscogsRunning = false;
@@ -963,7 +975,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.115916';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.120711';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
