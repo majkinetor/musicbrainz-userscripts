@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.122842
+// @version      2026.6.23.123950
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -30,13 +30,10 @@
 (function () {
   'use strict';
 
-  const T0 = Date.now();
-  const TAG = '[ApolloEditor]';
-  const tss = () => ((Date.now() - T0) / 1000).toFixed(3) + 's';
-  // #283 every Log.* call is captured into an in-page buffer (as well as the
-  // console) and surfaced in a dedicated log viewer — opened from a Log button
-  // next to "? Help" — copy/pastable as a Markdown <details> block, like the
-  // other scripts.
+  // #283 every Log.* call is captured into an in-page buffer and surfaced in a
+  // dedicated log viewer — opened from a Log button next to "? Help" —
+  // copy/pastable as a Markdown <details> block, like the other scripts. (The
+  // console output was dropped: it just duplicated this buffer.)
   const LOG = [];
   const _logListeners = new Set();
   const _lpad = (n, w = 2) => String(n).padStart(w, '0');
@@ -54,11 +51,11 @@
     _logListeners.forEach(f => { try { f(); } catch (e) {} });
   }
   const Log = {
-    info: (...a) => { _logRecord('info', a); console.info(TAG, tss(), ...a); },
-    warn: (...a) => { _logRecord('warn', a); console.warn(TAG, tss(), ...a); },
-    err:  (...a) => { _logRecord('error', a); console.error(TAG, tss(), ...a); },
-    ok:   (...a) => { _logRecord('ok', a); console.info(TAG, tss(), ...a); },
-    debug:(...a) => { _logRecord('debug', a); console.debug(TAG, tss(), ...a); },
+    info:  (...a) => _logRecord('info', a),
+    warn:  (...a) => _logRecord('warn', a),
+    err:   (...a) => _logRecord('error', a),
+    ok:    (...a) => _logRecord('ok', a),
+    debug: (...a) => _logRecord('debug', a),
   };
   const _logCounts = () => LOG.reduce((acc, e) => { if (e.sev === 'warn') acc.warn++; else if (e.sev === 'error') acc.error++; return acc; }, { warn: 0, error: 0 });
   // escape, then turn http(s) URLs into clickable links for the log viewer
@@ -355,6 +352,7 @@
   // Scrape the release's Discogs link from the page — edit-relationships anchors
   // or the release editor's external-link inputs. First match wins (#224).
   let _discogsUrlLogged = false;
+  let _discVerifyUrl = null, _lastDiscCheck = null;   // dedupe the per-run "verifying…"/outcome log lines
   function discogsReleaseUrlFromPage() {
     const re = /discogs\.com\/(?:[a-z]{2}\/)?(?:[^/\s"']*\/)?release\/(\d+)/i;
     let url = null;
@@ -393,13 +391,18 @@
       let json = null;
       try { json = await r.json(); } catch (e) { await _sleep(800); continue; }
       const map = new Map();
+      // #283: the release-level artist(s) (194 = Discogs "Various", skip) — used as a
+      // fallback for tracks that credit no per-track artist (single-artist releases).
+      map.releaseArtists = (json && Array.isArray(json.artists)) ? json.artists.filter(a => a && a.id && a.id !== 194).map(a => `https://www.discogs.com/artist/${a.id}`) : [];
       if (json && Array.isArray(json.tracklist)) {
         json.tracklist.filter(t => (t.type_ || 'track') === 'track').forEach(t => {
           const key = fold(t.title || ''); if (!key || map.has(key)) return;
           map.set(key, (t.artists || []).map(a => (a && a.id) ? `https://www.discogs.com/artist/${a.id}` : null));
         });
-        Log.info('Discogs match: mapped', map.size, 'track titles from', url);
-      } else { Log.warn('Discogs match: release JSON had no tracklist'); }
+        // this loads the Discogs release for the link CHECK (and for URL-matching unset
+        // artists) — not re-matching already-set ones, hence "loaded" not "matched".
+        Log.info('Discogs: loaded release —', map.size, 'track title(s)' + (map.releaseArtists.length ? ` + ${map.releaseArtists.length} release artist(s)` : ''), 'from', url);
+      } else { Log.warn('Discogs: release JSON had no tracklist'); }
       _discogsMap = { url, map };   // cache ONLY a real response (success or genuine empty)
       return map;
     }
@@ -595,13 +598,30 @@
       }
       _discMapFailed = false; _discMapRetried = false;
       const jobs = [];
-      if (dmap) for (const t of MODEL.tracks) { const durls = dmap.get(fold(t.title)); if (durls) t.slots.forEach((s, i) => { if (durls[i]) jobs.push([s, durls[i]]); }); }
-      if (!jobs.length) { setDiscProgress(''); return; }
-      Log.info('Discogs check: verifying', jobs.length, 'track-artist link(s)…');
+      const relArtists = (dmap && dmap.releaseArtists) || [];
+      if (dmap) for (const t of MODEL.tracks) {
+        const durls = dmap.get(fold(t.title)) || [];
+        const hasTrackArtists = durls.some(Boolean);
+        t.slots.forEach((s, i) => {
+          // per-track Discogs artist, else inherit the release-level artist (#283) —
+          // a track with no Discogs artists is credited to the release artist
+          const durl = durls[i] || (!hasTrackArtists ? (relArtists[i] || (relArtists.length === 1 ? relArtists[0] : null)) : null);
+          if (durl) jobs.push([s, durl]);
+        });
+      }
+      if (!jobs.length) {
+        setDiscProgress('');
+        // nothing to check (no per-track and no release-level artist links). Empty
+        // model = still loading → stay silent; dedupe so re-runs don't repeat it.
+        if (MODEL.tracks && MODEL.tracks.length && _lastDiscCheck !== 'none') { _lastDiscCheck = 'none'; Log.info('Discogs check: no artist links to verify'); }
+        return;
+      }
+      const firstCheck = _discVerifyUrl !== relUrl;
+      if (firstCheck) { _discVerifyUrl = relUrl; Log.info('Discogs check: verifying', jobs.length, 'artist link(s)…'); }
       let done = 0, lastRender = 0;
       for (const [s, durl] of jobs) {
         await tagDiscogsAddable(s, durl);
-        Log.debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsAddable ? 'link can be added to MB' : s._discogsPending ? 'pending (will re-check)' : 'already linked');
+        if (firstCheck) Log.debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsAddable ? 'link can be added to MB' : s._discogsPending ? 'pending (will re-check)' : 'already linked');
         done++;
         // update rows + the progress text together, throttled — set the text AFTER
         // rerender so refreshStatus can't blank it
@@ -621,9 +641,10 @@
       }
       const addable = jobs.filter(([s]) => s._discogsAddable).length;
       const pendLeft = jobs.filter(([s]) => s._discogsPending).length;
-      Log.info('Discogs check:', addable === 0
-        ? `all ${jobs.length} track-artist link(s) already in MusicBrainz ✓`
-        : `${addable} of ${jobs.length} link(s) can be added to MusicBrainz`, pendLeft ? `(${pendLeft} pending)` : '');
+      const outcome = (addable === 0
+        ? `all ${jobs.length} artist link(s) already in MusicBrainz ✓`
+        : `${addable} of ${jobs.length} link(s) can be added to MusicBrainz`) + (pendLeft ? ` (${pendLeft} pending)` : '');
+      if (outcome !== _lastDiscCheck) { _lastDiscCheck = outcome; Log.info('Discogs check:', outcome); }   // dedupe identical re-run results
       if (!isEditingNow()) rerender();
     } finally {
       _tagDiscogsRunning = false;
@@ -986,7 +1007,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.122842';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.123950';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
