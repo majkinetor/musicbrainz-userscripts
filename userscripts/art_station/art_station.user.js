@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.111728
+// @version      2026.6.23.113540
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -344,7 +344,7 @@
     const help = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/README.md';
     const panel = document.createElement('div'); panel.id = 'as-setup';
     panel.innerHTML = `<div class="as-setup-h"><img class="as-setup-ic" src="${ICON_URL}" alt=""><b>Art Station</b> <span class="as-setup-ver">v${esc(ver)}</span>`
-      + `<button class="as-setup-logbtn" type="button" title="Open the activity log">🗒 Log</button>`
+      + `<button class="as-setup-logbtn" type="button" title="Open the activity log">Log</button>`
       + `<a class="as-setup-help" href="${help}" target="_blank" rel="noopener">Help ↗</a></div>`
       + `<div class="as-setup-body">`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-hidefoot"${SETTINGS.hideMbFooter ? ' checked' : ''}> Hide MB native buttons (Add / Reorder / Import…)</label>`
@@ -823,7 +823,7 @@
     const q = s => root.querySelector(s);
     q('.as-selall') && (q('.as-selall').onclick = () => { selectable().forEach(it => it._sel = true); root.querySelectorAll('.as-card:not(.del), .as-drow').forEach(c => c.classList.add('sel')); root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = true); syncSel(); });
     q('.as-selclr') && (q('.as-selclr').onclick = () => clearSel());
-    q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; } }); render(); });
+    q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { let n = 0; MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; n++; } }); asLog.info(`Batch: marked ${n} ${n === 1 ? ITEM : ITEMS} for removal`); render(); });
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = async e => {
       const sel = MODEL.filter(it => it._sel && !it._del && !it._sourcing); if (!sel.length) return;   // include NEW covers (download their local blob)
       if (sel.length === 1) { dlOne(sel[0]); maybeClearSel(); return; }   // single → save the image directly
@@ -1216,18 +1216,20 @@
         offset += 30 + name.length + data.length;
       };
       for (const o of items) {
-        let data; try { data = await fetchBytes(o.url); } catch (e) { failed.push(o.name); logErr(`Download: ${o.name}`, e); onProgress && onProgress(++done, items.length); continue; }   // #274: record, don't silently drop
+        asLog.debug(`Zip: fetching ${o.name} ← ${o.url}`);
+        let data; try { data = await fetchBytes(o.url); } catch (e) { failed.push(o.name); logErr(`Zip: ${o.name}`, e); onProgress && onProgress(++done, items.length); continue; }   // #274: record, don't silently drop
         await measureBytes(o.it, data);
         await writeEntry(o.name, data);
-        asLog.debug(`Download: wrote ${o.name} (${data.length} bytes)`);
+        asLog.info(`Zip + ${o.name} — ${fmtBytes(data.length)}${o.it && o.it.w ? `, ${o.it.w}×${o.it.h}` : ''}${o.it && o.it._pdf ? ', PDF' : ''}`);
         onProgress && onProgress(++done, items.length);
       }
       await writeEntry('README.md', enc.encode(manifestMd(sel, failed)));   // manifest last — now has resolutions + any drops
+      asLog.debug('Zip + README.md (manifest)');
       let cdSize = 0;
       for (const c of central) { await w.write(zipCentral(c.crc, c.size, c.name.length, c.offset)); await w.write(c.name); cdSize += 46 + c.name.length; }
       await w.write(zipEOCD(central.length, cdSize, offset));
       await w.close();
-      asLog.ok(`Download: saved ${MBID}-${ITEMS}.zip — ${central.length} file${central.length === 1 ? '' : 's'} (streamed)${failed.length ? `, ${failed.length} dropped` : ''}`);
+      asLog.ok(`Download: saved ${MBID}-${ITEMS}.zip — ${central.length} file${central.length === 1 ? '' : 's'} · ${fmtBytes(offset)} (streamed)${failed.length ? `, ${failed.length} dropped` : ''}`);
       if (failed.length) warnDropped(failed, items.length);
       return;
     }
@@ -1239,8 +1241,9 @@
       while (true) {
         const i = idx++; if (i >= items.length) break;
         const o = items[i];
-        try { const data = await fetchBytes(o.url); await measureBytes(o.it, data); out[i] = { name: o.name, data }; }
-        catch (e) { failed.push(o.name); logErr(`Download: ${o.name}`, e); }
+        asLog.debug(`Zip: fetching ${o.name} ← ${o.url}`);
+        try { const data = await fetchBytes(o.url); await measureBytes(o.it, data); out[i] = { name: o.name, data }; asLog.info(`Zip + ${o.name} — ${fmtBytes(data.length)}${o.it && o.it.w ? `, ${o.it.w}×${o.it.h}` : ''}${o.it && o.it._pdf ? ', PDF' : ''}`); }
+        catch (e) { failed.push(o.name); logErr(`Zip: ${o.name}`, e); }
         onProgress && onProgress(++done, items.length);
       }
     };
@@ -1248,11 +1251,12 @@
     const covers = out.filter(Boolean);
     if (!covers.length) { toast('⚠ Download failed — could not fetch any cover. Try again.', 10000); return; }
     const entries = [...covers, { name: 'README.md', data: enc.encode(manifestMd(sel, failed)) }];   // manifest last — now has resolutions
+    const total = entries.reduce((s, e) => s + e.data.length, 0);
     const obj = URL.createObjectURL(makeZip(entries));
     const a = document.createElement('a'); a.href = obj; a.download = `${MBID}-${ITEMS}.zip`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(obj), 8000);
-    asLog.ok(`Download: saved ${MBID}-${ITEMS}.zip — ${covers.length} file${covers.length === 1 ? '' : 's'}${failed.length ? `, ${failed.length} dropped` : ''}`);
+    asLog.ok(`Download: saved ${MBID}-${ITEMS}.zip — ${covers.length} file${covers.length === 1 ? '' : 's'} · ${fmtBytes(total)}${failed.length ? `, ${failed.length} dropped` : ''}`);
     if (failed.length) warnDropped(failed, items.length);
   }
   // ── #235 source covers from covers.musichoarders.xyz (the sanctioned MH Covers
@@ -1296,6 +1300,7 @@
   const logErr = (ctx, e) => asLog('error', ctx + ' — ' + ((e && e.message) || e || 'unknown error'));
   const logCounts = () => LOG.reduce((a, e) => { if (e.sev === 'warn') a.warn++; else if (e.sev === 'error') a.error++; return a; }, { warn: 0, error: 0 });
   const _ts = d => { const p = (n, w = 2) => String(n).padStart(w, '0'); return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`; };
+  const fmtBytes = n => (n == null) ? '?' : n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
   // Build the copy/pastable Markdown: a collapsed <details> wrapping a fenced log
   // block (same shape as the other scripts — paste straight into a GitHub issue).
   function logMarkdown() {
@@ -2532,8 +2537,9 @@
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     const picked = () => ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
-    pop.querySelector('.as-pop-apply').onclick = () => { const ts = picked(); sel.forEach(it => it.types = ts.slice()); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
-    pop.querySelector('.as-pop-add').onclick = () => { const ts = picked(); sel.forEach(it => it.types = [...new Set([...it.types, ...ts])]); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
+    const lbl = n => `${n} ${n === 1 ? ITEM : ITEMS}`;
+    pop.querySelector('.as-pop-apply').onclick = () => { const ts = picked(); sel.forEach(it => it.types = ts.slice()); asLog.info(`Batch: set type [${ts.join(', ') || 'none'}] on ${lbl(sel.length)}`); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
+    pop.querySelector('.as-pop-add').onclick = () => { const ts = picked(); sel.forEach(it => it.types = [...new Set([...it.types, ...ts])]); asLog.info(`Batch: added type [${ts.join(', ') || 'none'}] to ${lbl(sel.length)}`); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
     const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -2551,7 +2557,7 @@
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     const inp = pop.querySelector('.as-bulk-cmt'); inp.focus(); inp.select();
-    const apply = v => { sel.forEach(it => it.comment = v); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
+    const apply = v => { sel.forEach(it => it.comment = v); asLog.info(`Batch: ${v ? `set comment “${v}”` : 'cleared comment'} on ${sel.length} ${sel.length === 1 ? ITEM : ITEMS}`); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
     pop.querySelector('.as-pop-apply').onclick = () => apply(inp.value);
     pop.querySelector('.as-bulk-cmt-clr').onclick = () => apply('');
     inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); apply(inp.value); } else if (e.key === 'Escape') { e.preventDefault(); pop.remove(); } };
@@ -2680,6 +2686,7 @@
     ov.querySelectorAll('select').forEach(s => s.onchange = regen);
     ov.querySelector('.as-rp-copy').onclick = async () => {
       ta.select(); try { await navigator.clipboard.writeText(ta.value); } catch (e) { document.execCommand('copy'); }
+      asLog.info(`Batch: copied ${ov.querySelector('.as-rp-fmt').value} report — ${sel.length} ${sel.length === 1 ? ITEM : ITEMS} (${ov.querySelector('.as-rp-layout').value})`);
       const b = ov.querySelector('.as-rp-copy'); b.textContent = '✓ Copied'; setTimeout(() => { b.textContent = '📋 Copy'; }, 1200);
     };
     regen();
@@ -2709,8 +2716,8 @@
   .as-setup-ver{font-size:11px;font-weight:normal;color:#999}
   .as-setup-help{font-size:12px;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
   .as-setup-help:hover{background:#f0ecfa}
-  .as-setup-logbtn{margin-left:auto;font-size:12px;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px;cursor:pointer;font-family:inherit}
-  .as-setup-logbtn:hover{background:#e9e0f8}
+  .as-setup-logbtn{margin-left:auto;font-size:12px;color:#5f3ec0;background:none;border:1px solid transparent;border-radius:4px;padding:1px 8px;cursor:pointer;font-family:inherit}
+  .as-setup-logbtn:hover{background:#f3eefb;border-color:#c9b8ee}
   /* #283 activity-log popup */
   #as-logpop{position:fixed;inset:0;z-index:100020;background:rgba(20,12,40,.34);display:flex;align-items:center;justify-content:center}
   .as-logpop-box{display:flex;flex-direction:column;width:min(720px,94vw);max-height:82vh;background:#fff;border:1px solid #cbbdf0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px Arial;color:#222;overflow:hidden}
