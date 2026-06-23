@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.23.151609
+// @version      2026.6.23.152519
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -3342,13 +3342,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         }
         let _creatingEl = null;
         let _creatingTimer = null;
-        function setRowCreating(name) {
+        let _creatingCancel = null;
+        function setRowCreating(name, onCancel) {
           ensureCreatingStyle();
           if (_creatingTimer) {
             clearTimeout(_creatingTimer);
             _creatingTimer = null;
           }
           if (_creatingEl) _creatingEl.remove();
+          _creatingCancel = onCancel || null;
           candidateList.style.display = "none";
           tdAction.innerHTML = "";
           searchInput.disabled = true;
@@ -3363,19 +3365,35 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const txt = document.createElement("span");
           txt.textContent = `Creating ${name} in the background\u2026`;
           ph.appendChild(txt);
+          const x = document.createElement("button");
+          x.textContent = "\u2715";
+          x.title = "Cancel \u2014 stop waiting and restore the row";
+          x.style.cssText = "margin-left:auto;font-size:0.75rem;line-height:1;cursor:pointer;border:none;background:none;color:#55557a;padding:0 0.2rem;";
+          x.addEventListener("click", () => cancelCreating());
+          ph.appendChild(x);
           tdMb.insertBefore(ph, candidateList);
           _creatingEl = ph;
           tr.style.background = "#f6f6ff";
           _creatingTimer = setTimeout(() => {
             _creatingTimer = null;
-            clearRowCreating(true);
+            cancelCreating();
           }, 9e4);
+        }
+        function cancelCreating() {
+          if (_creatingCancel) {
+            try {
+              _creatingCancel();
+            } catch (e2) {
+            }
+          }
+          clearRowCreating(true);
         }
         function clearRowCreating(restore) {
           if (_creatingTimer) {
             clearTimeout(_creatingTimer);
             _creatingTimer = null;
           }
+          _creatingCancel = null;
           if (_creatingEl) {
             _creatingEl.remove();
             _creatingEl = null;
@@ -3650,7 +3668,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             if (background && typeof GM_openInTab === "function") {
               const url = `${createUrl}?${p}#ch-autocommit=${encodeURIComponent(pendingKey)}`;
               bgTab = GM_openInTab(url, { active: false, insert: true });
-              setRowCreating(finalName);
             } else {
               const newTab = window.open(`${createUrl}?${p}`, "_blank");
               if (newTab) {
@@ -3676,6 +3693,15 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
             };
             DISCOGS_CHANNEL.addEventListener("message", onCreated);
+            if (background && typeof GM_openInTab === "function") {
+              setRowCreating(finalName, () => {
+                DISCOGS_CHANNEL.removeEventListener("message", onCreated);
+                try {
+                  if (bgTab && typeof bgTab.close === "function") bgTab.close();
+                } catch (e2) {
+                }
+              });
+            }
           }
           const createBtn = document.createElement("button");
           createBtn.textContent = "+";

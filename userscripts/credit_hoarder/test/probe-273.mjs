@@ -81,19 +81,42 @@ try {
         note('pendingKey:      ' + (pendingKey || '(none)'));
         if (!pendingKey) { fail('no ch-autocommit pendingKey in bg url'); return out; }
 
-        // 4. post a fake artist-created back (sibling BroadcastChannel delivers to the module's)
-        const ch = new BroadcastChannel('discogs-importer-artist');
-        ch.postMessage({ type: 'artist-created', id: '11111111-2222-3333-4444-555555555555',
-                         name: 'Probe Artist', disambiguation: '', resourceUrl: pendingKey });
-        await sleep(300);
+        // 4. ✕ cancel restores the row (and drops the postback listener)
+        const cancelBtn = ph.querySelector('button');
+        if (!cancelBtn || cancelBtn.textContent.trim() !== '✕') { fail('no ✕ cancel button on placeholder'); return out; }
+        cancelBtn.click();
+        await sleep(40);
+        if (tr.querySelector('.ch-creating')) fail('placeholder still present after ✕ cancel');
+        const candBack = tr.querySelector('td div[style*="flex-direction:column"]');
+        if (candBack && candBack.style.display === 'none') fail('candidate list still hidden after cancel');
+        note('cancel restored row ✓');
+        // a late postback after cancel must NOT resurrect the row (listener dropped)
+        new BroadcastChannel('discogs-importer-artist').postMessage({
+            type: 'artist-created', id: '99999999-9999-9999-9999-999999999999',
+            name: 'Should Not Appear', disambiguation: '', resourceUrl: pendingKey });
+        await sleep(200);
+        if ([...tr.querySelectorAll('a')].some(a => /Should Not Appear/.test(a.textContent)))
+            fail('cancelled create still resolved on a late postback (listener not dropped)');
+        note('late postback after cancel ignored ✓');
 
-        // 5. placeholder gone, resolved row in, no height jump
+        // 5. fresh create → postback resolves with no height jump
+        createBtn.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        await sleep(60);
+        const ph2 = tr.querySelector('.ch-creating');
+        if (!ph2) { fail('placeholder not shown on 2nd create'); return out; }
+        const hCreating2 = tr.getBoundingClientRect().height;
+        const bg2 = (window.__bgUrls[window.__bgUrls.length - 1] || '').match(/ch-autocommit=([^&]+)/);
+        const pk2 = bg2 ? decodeURIComponent(bg2[1]) : pendingKey;
+        new BroadcastChannel('discogs-importer-artist').postMessage({
+            type: 'artist-created', id: '11111111-2222-3333-4444-555555555555',
+            name: 'Probe Artist', disambiguation: '', resourceUrl: pk2 });
+        await sleep(300);
         if (tr.querySelector('.ch-creating')) fail('placeholder still present after postback');
         const resolved = [...tr.querySelectorAll('a')].some(a => /Probe Artist/.test(a.textContent));
         if (!resolved) fail('resolved "Probe Artist" row not found after postback');
         const hResolved = tr.getBoundingClientRect().height;
         note('height resolved: ' + hResolved.toFixed(1));
-        const jump = Math.abs(hResolved - hCreating);
+        const jump = Math.abs(hResolved - hCreating2);
         note('creating→resolved jump: ' + jump.toFixed(1) + 'px');
         if (jump > 8) fail('row reflowed by ' + jump.toFixed(1) + 'px between creating and resolved (expected ~0)');
 

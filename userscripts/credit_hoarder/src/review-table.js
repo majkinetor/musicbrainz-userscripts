@@ -752,11 +752,13 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // posts back (tab closed, MB error) we restore the live UI.
             let _creatingEl = null;
             let _creatingTimer = null;
-            function setRowCreating(name) {
+            let _creatingCancel = null;   // tears down the pending postback listener + bg tab
+            function setRowCreating(name, onCancel) {
                 ensureCreatingStyle();
                 if (_creatingTimer) { clearTimeout(_creatingTimer); _creatingTimer = null; }
                 if (_creatingEl) _creatingEl.remove();
-                candidateList.style.display = 'none';   // hide candidates (keep them — restored on timeout)
+                _creatingCancel = onCancel || null;
+                candidateList.style.display = 'none';   // hide candidates (keep them — restored on cancel)
                 tdAction.innerHTML = '';                // remove create/link chips while it commits
                 searchInput.disabled = true;
                 searchBtn.disabled = true;
@@ -772,17 +774,33 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const txt = document.createElement('span');
                 txt.textContent = `Creating ${name} in the background…`;
                 ph.appendChild(txt);
+                // #273: manual cancel — the bg tab can get stuck (user closed it
+                // before it submitted), so let the user dismiss the placeholder and
+                // get the live row back instead of waiting out the safety timeout.
+                const x = document.createElement('button');
+                x.textContent = '✕';
+                x.title = 'Cancel — stop waiting and restore the row';
+                x.style.cssText = 'margin-left:auto;font-size:0.75rem;line-height:1;cursor:pointer;border:none;background:none;color:#55557a;padding:0 0.2rem;';
+                x.addEventListener('click', () => cancelCreating());
+                ph.appendChild(x);
                 tdMb.insertBefore(ph, candidateList);
                 _creatingEl = ph;
                 tr.style.background = '#f6f6ff';
-                _creatingTimer = setTimeout(() => { _creatingTimer = null; clearRowCreating(true); }, 90000);
+                _creatingTimer = setTimeout(() => { _creatingTimer = null; cancelCreating(); }, 90000);
             }
-            // Tear down the placeholder. `restore` = the safety-net path (timed out
-            // with no postback): re-enable search + re-render the action chips so the
-            // user can retry. setRowResolved/setRowUnresolved call it WITHOUT restore
-            // (they re-render the row themselves right after).
+            // User clicked ✕ (or the safety timeout fired): stop listening for the
+            // background create's postback, close its tab if we can, restore the row.
+            function cancelCreating() {
+                if (_creatingCancel) { try { _creatingCancel(); } catch (e) {} }
+                clearRowCreating(true);
+            }
+            // Tear down the placeholder. `restore` = re-enable search + re-render the
+            // action chips so the user can retry. setRowResolved/setRowUnresolved call
+            // it WITHOUT restore (they re-render the row themselves right after); the
+            // ✕ button and the safety timeout call it WITH restore (via cancelCreating).
             function clearRowCreating(restore) {
                 if (_creatingTimer) { clearTimeout(_creatingTimer); _creatingTimer = null; }
+                _creatingCancel = null;
                 if (_creatingEl) { _creatingEl.remove(); _creatingEl = null; }
                 candidateList.style.display = '';
                 if (restore) {
@@ -1150,10 +1168,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         // (a GM-opened tab can't always self-close via window.close()).
                         const url = `${createUrl}?${p}#ch-autocommit=${encodeURIComponent(pendingKey)}`;
                         bgTab = GM_openInTab(url, { active: false, insert: true });
-                        // #273: collapse the row to its final height now + show a
-                        // "Creating … in the background" placeholder, so the postback
-                        // swap (setRowResolved) doesn't reflow/lurch the page.
-                        setRowCreating(finalName);
                     } else {
                         const newTab = window.open(`${createUrl}?${p}`, '_blank');
                         if (newTab) {
@@ -1185,6 +1199,17 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
                     };
                     DISCOGS_CHANNEL.addEventListener('message', onCreated);
+                    // #273: collapse the row to its final height now + show a
+                    // "Creating … in the background" placeholder, so the postback swap
+                    // (setRowResolved) doesn't reflow/lurch the page. The ✕ on the
+                    // placeholder (or the 90s timeout) cancels: drop the postback
+                    // listener and close the bg tab so a stuck create can be dismissed.
+                    if (background && typeof GM_openInTab === 'function') {
+                        setRowCreating(finalName, () => {
+                            DISCOGS_CHANNEL.removeEventListener('message', onCreated);
+                            try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (e) {}
+                        });
+                    }
                 }
 
                 // Inline icon chips (Proposal C from #77). All three
