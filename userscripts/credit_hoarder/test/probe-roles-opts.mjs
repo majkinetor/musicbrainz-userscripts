@@ -26,24 +26,28 @@ try {
     await page.locator('button', { hasText: /^Start import/i }).first().waitFor({ state: 'visible', timeout: 20 * 60_000 });
     await page.waitForTimeout(1500); // let per-row URL checks settle
 
-    // ── Task D: options under the button ──────────────────────────────────
+    // ── Task D (reverted): primary options inline on the bar; only the
+    //    dedup toggles live behind "Options ▾" ──────────────────────────────
     const taskD = await page.evaluate(() => {
         const out = { steps: [], ok: true };
         const fail = m => { out.ok = false; out.steps.push('FAIL(D): ' + m); };
         const optsWrap = document.querySelector('.discogs-bar .discogs-bar-opts');
         const btn = optsWrap?.querySelector('.discogs-opts-btn');
         if (!btn) { fail('no Options button on the bar'); return out; }
-        // the inline strip should hold ONLY the button (no toggles/selects)
-        const strayToggles = optsWrap.querySelectorAll('.discogs-toggle, select').length;
-        if (strayToggles) fail(`${strayToggles} option control(s) still inline on the bar`);
-        // open the popover and confirm every option moved inside it
+        // the primary options are back inline on the bar
+        const inlineTxt = optsWrap.textContent;
+        ['Per-track credits', 'Move release credits to tracks', 'Create works']
+            .forEach(o => { if (!inlineTxt.includes(o)) fail(`"${o}" not inline on the bar`); });
+        if (!optsWrap.querySelector('select')) fail('"Create works" select not inline on the bar');
+        out.steps.push(`inline options: ${[...optsWrap.querySelectorAll('.discogs-toggle')].map(t => t.textContent.trim()).join(' | ')} + select`);
+        // the popover holds ONLY the dedup toggles
         btn.click();
         const panel = document.querySelector('.discogs-opts-panel.open');
         if (!panel) { fail('Options popover did not open'); return out; }
-        const txt = panel.textContent;
-        ['Per-track credits', 'Move release credits to tracks', 'Create works', 'Equivalence sets', 'Duplicate roles']
-            .forEach(o => { if (!txt.includes(o)) fail(`"${o}" missing from popover`); });
-        out.steps.push(`popover options: ${[...panel.querySelectorAll('.discogs-toggle')].map(t => t.textContent.trim()).join(' | ')} + select`);
+        const ptxt = panel.textContent;
+        ['Equivalence sets', 'Duplicate roles'].forEach(o => { if (!ptxt.includes(o)) fail(`"${o}" missing from popover`); });
+        if (/Per-track credits|Move release credits|Create works/.test(ptxt)) fail('primary options still in the popover');
+        out.steps.push(`popover: ${[...panel.querySelectorAll('.discogs-toggle')].map(t => t.textContent.trim()).join(' | ')}`);
         btn.click(); // close
         return out;
     });
