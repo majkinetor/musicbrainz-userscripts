@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.133822
+// @version      2026.6.23.140454
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1444,13 +1444,16 @@
   // alongside the real covers. Those are tiny; real cover art is never this small.
   // Drop anything whose longest side is under this so the brand glyph isn't staged. #242
   const MIN_ART_PX = 200;
-  // ECAU writes progress/errors into its .ROpdebee_log_container; read it to fail fast
-  // on a bad / non-image URL instead of spinning until the timeout.
+  // ECAU writes progress/errors into #ROpdebee_log_container (an ID, not a class —
+  // the old `.`-selector matched nothing, so failures spun to the timeout). Each
+  // message is a .msg.<level> span; a real failure is .msg.error / .msg.warning.
+  // Return that exact text so we can show ECAU's own message (#286). #242
   function ecauError(doc) {
-    const log = doc.querySelector('.ROpdebee_log_container'); if (!log) return null;
-    const txt = (log.textContent || '').replace(/\s+/g, ' ').trim();
-    if (!txt) return null;
-    if (/failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to/i.test(txt)) return txt.slice(-160);
+    const cont = doc.querySelector('#ROpdebee_log_container'); if (!cont) return null;
+    const msgs = [...cont.querySelectorAll('.msg.error, .msg.warning')];
+    if (msgs.length) return (msgs[msgs.length - 1].textContent || '').replace(/\s+/g, ' ').trim() || null;
+    const txt = (cont.textContent || '').replace(/\s+/g, ' ').trim();
+    if (txt && /failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to|refusing to/i.test(txt)) return txt.slice(-220);
     return null;
   }
   // ECAU injects its own UI into the add page (the paste-URL box, the "Import from …"
@@ -1608,6 +1611,7 @@
     ifr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1100px;height:900px;border:0;opacity:0;pointer-events:none';
     document.body.appendChild(ifr);
     ifr.src = `${R}/add-${ART}?${p}`;
+    asLog.info(`Source: ${(prov && prov.name) || 'URL'} — ${url}`);   // name the source attempted (mirrors tooltip)
     const slot = addSourcingSlot(prov ? `Sourcing ${prov.name}…` : 'Sourcing…');
     let done = false, lastN = 0, settleAt = 0, noUiSince = 0;
     const stop = () => { clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} };
@@ -1643,7 +1647,7 @@
       const n = doc.querySelectorAll(previewSel).length;
       if (!n) {   // nothing yet — but if ECAU has reported a failure, stop now (don't spin)
         const err = ecauError(doc);
-        if (err) { done = true; stop(); dropSourcingSlot(slot); render(); toast('Couldn’t source that URL — ' + err, 8000); return; }
+        if (err) { done = true; stop(); dropSourcingSlot(slot); render(); toast('⚠ ' + (prov && prov.name ? prov.name + ': ' : '') + err, 13000); return; }   // #286 surface ECAU's own message (mirrors to the log)
         // ECAU absent: the add page has fully loaded but ECAU never injected its UI →
         // fail fast (~6s) with a clear message instead of spinning to the 45s timeout.
         if (doc.readyState === 'complete' && !ecauUI(doc)) {
@@ -1658,12 +1662,16 @@
       const { files, metas } = await harvest(doc, win);
       stop(); dropSourcingSlot(slot);
       const added = files.length ? await addFilesDeduped(files, metas) : 0;   // #253 skip an image already staged
-      if (added) toast(`Added ${added} image${added > 1 ? 's' : ''} from provider ✓`);
-      else { render(); toast(files.length ? 'That image is already added' : 'Provider returned no image', 5000); }
+      if (added) toast(`Added ${added} image${added > 1 ? 's' : ''} from ${(prov && prov.name) || 'provider'} ✓`);   // name the source in the log/toast
+      else { render(); toast(files.length ? 'That image is already added' : `${(prov && prov.name) || 'Provider'} returned no image`, 5000); }
     }, 400);
     const killer = setTimeout(() => {
-      if (done) return; done = true; stop(); dropSourcingSlot(slot); render();
-      toast('No image returned — is “Enhanced Cover Art Uploads” installed? It powers provider sourcing.', 9000);
+      if (done) return; done = true; stop();
+      let edoc; try { edoc = ifr.contentDocument; } catch (e) {}
+      const err = edoc && ecauError(edoc);   // #286 even at timeout, prefer ECAU's own failure message
+      dropSourcingSlot(slot); render();
+      toast(err ? ('⚠ ' + (prov && prov.name ? prov.name + ': ' : '') + err)
+                : 'No image returned — is “Enhanced Cover Art Uploads” installed? It powers provider sourcing.', err ? 13000 : 9000);
     }, ECAU_TIMEOUT);
   }
   // ECAU-supported art providers we recognise on a release's external links, so the
