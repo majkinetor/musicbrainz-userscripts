@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.140454
+// @version      2026.6.23.193635
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2314,13 +2314,13 @@
     if (!ov) {
       ov = document.createElement('div'); ov.id = 'as-lb';
       ov.innerHTML = `<button class="as-lb-del" title="Mark for removal (Del)">🗑️</button>
-        <div class="as-lb-dlwrap"><button class="as-lb-dl" title="Download original">⬇ Download</button><button class="as-lb-dlcaret" title="Other sizes">▾</button>
-          <div class="as-lb-dlmenu"><button data-sz="original">Original</button><button data-sz="1200">1200 px</button><button data-sz="500">500 px</button><button data-sz="250">250 px</button></div></div>
         <div class="as-lb-top"><button class="as-lb-play" title="slideshow (P)">▶ Play</button><button class="as-lb-x" title="close (Esc)">✕</button></div>
         <button class="as-lb-nav as-lb-prev" title="previous (←)">‹</button>
         <img class="as-lb-img" alt="">
         <button class="as-lb-nav as-lb-next" title="next (→)">›</button>
-        <div class="as-lb-bar"><div class="as-lb-cap"></div>
+        <div class="as-lb-bar"><div class="as-lb-caprow"><div class="as-lb-cap"></div>
+          <div class="as-lb-dlwrap"><button class="as-lb-dl" title="Download original">⬇ Download</button><button class="as-lb-dlcaret" title="Other sizes">▾</button>
+            <div class="as-lb-dlmenu"><button data-sz="original">Original</button><button data-sz="1200">1200 px</button><button data-sz="500">500 px</button><button data-sz="250">250 px</button></div></div></div>
           <div class="as-lb-cmtarea"></div></div>`;
       document.body.appendChild(ov);
       ov.querySelector('.as-lb-x').onclick = closeLightbox;
@@ -2971,7 +2971,10 @@
   .as-lb-img.loading{visibility:hidden}
   #as-lb.na .as-lb-img{display:none}
   #as-lb.na::after{content:'Image not available, please try again later';color:#f0c4da;font-style:italic;font-size:16px}
-  .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:42px;line-height:1;color:#fff;background:transparent;border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
+  /* z-index keeps BOTH arrows above the image: applyZoom always sets a transform
+     on .as-lb-img (a stacking context), so without this the prev arrow — a DOM
+     sibling BEFORE the image — gets painted over while next (after it) stays on top. */
+  .as-lb-nav{position:fixed;top:50%;transform:translateY(-50%);z-index:2;font-size:42px;line-height:1;color:#fff;background:transparent;border:none;border-radius:50%;width:54px;height:54px;cursor:pointer}
   .as-lb-nav:hover{background:rgba(255,255,255,.25)}
   .as-lb-prev{left:18px}.as-lb-next{right:18px}
   .as-lb-top{position:fixed;top:16px;right:20px;display:flex;gap:10px;align-items:center}
@@ -2983,13 +2986,16 @@
      its menu is open so the menu stays usable. */
   .as-lb-del{position:fixed;top:16px;left:20px;font-size:18px;line-height:1;color:#fff;background:transparent;border:none;border-radius:8px;height:42px;width:46px;cursor:pointer}
   .as-lb-del:hover{background:var(--as-warn)}
-  .as-lb-dlwrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center}
+  /* Download moved into the bottom bar (right of the resolution): at the top it
+     was painted over by the image even at 0 zoom. In-flow now; its size menu
+     opens UPWARD so it doesn't fall off the bottom edge. */
+  .as-lb-dlwrap{position:relative;display:inline-flex;align-items:center}
   .as-lb-dlwrap:has(.as-lb-dlmenu.open){z-index:3}
-  .as-lb-dl,.as-lb-dlcaret{font:600 14px Arial;color:#fff;background:transparent;border:none;height:42px;cursor:pointer}
-  .as-lb-dl{padding:0 14px;border-radius:8px 0 0 8px}
-  .as-lb-dlcaret{padding:0 11px;border-radius:0 8px 8px 0;border-left:1px solid rgba(255,255,255,.25);font-size:12px}
+  .as-lb-dl,.as-lb-dlcaret{font:600 13px Arial;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.28);height:34px;cursor:pointer}
+  .as-lb-dl{padding:0 14px;border-radius:8px 0 0 8px;border-right:none}
+  .as-lb-dlcaret{padding:0 11px;border-radius:0 8px 8px 0;font-size:12px}
   .as-lb-dl:hover,.as-lb-dlcaret:hover{background:rgba(255,255,255,.25)}
-  .as-lb-dlmenu{position:absolute;top:48px;left:0;min-width:130px;background:#fff;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.4);padding:5px;display:none;flex-direction:column}
+  .as-lb-dlmenu{position:absolute;bottom:40px;left:0;min-width:130px;background:#fff;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.4);padding:5px;display:none;flex-direction:column}
   .as-lb-dlmenu.open{display:flex}
   .as-lb-dlmenu button{text-align:left;background:none;border:none;color:#333;font:13px Arial;padding:7px 10px;border-radius:6px;cursor:pointer}
   .as-lb-dlmenu button:hover{background:#f0ecfa;color:var(--as-acc)}
@@ -3000,6 +3006,7 @@
      field / type chip are invisible over a light image */
   .as-lb-bar:focus-within{position:relative;z-index:2;background:rgba(15,12,28,.88);padding:11px 16px;border-radius:13px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
   .as-lb-bar:focus-within .as-lb-cmt{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5)}
+  .as-lb-caprow{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
   .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
   .as-lb-type{font:700 12px inherit;color:#e7dffb;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:3px 14px;cursor:pointer}
   .as-lb-type:hover{background:rgba(255,255,255,.2);color:#fff}
