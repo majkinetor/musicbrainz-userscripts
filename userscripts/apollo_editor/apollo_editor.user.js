@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.132449
+// @version      2026.6.23.133821
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -80,9 +80,16 @@
     catch (e) { try { const ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (x) {} }
     if (btn) { const o = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = o; btn.textContent = ok ? 'Copied ✓' : 'Copy failed'; setTimeout(() => { btn.textContent = o; }, 1500); }
   }
+  // #283 remember the log window across sessions: open?/minimized?/position
+  const LOGWIN_KEY = 'apolloEditor.logwin';
+  const loadLogWin = () => { try { return JSON.parse(localStorage.getItem(LOGWIN_KEY) || '{}'); } catch (e) { return {}; } };
+  const saveLogWin = (patch) => { try { localStorage.setItem(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWin(), patch))); } catch (e) {} };
   // the Log button opens this popup: the full session log + a Copy control.
   function openLog() {
     document.getElementById('tc-logpop')?.remove();
+    style();   // ensure the popup CSS is injected (e.g. on auto-open before settings is opened)
+    saveLogWin({ open: true });
+    const st = loadLogWin();
     const pop = document.createElement('div'); pop.id = 'tc-logpop';
     pop.innerHTML = `<div class="tc-logpop-h"><b>Activity log</b> <span class="tc-log-badge"></span><span class="tc-logpop-sp"></span>`
       + `<button class="tc-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
@@ -90,6 +97,9 @@
       + `<button class="tc-logpop-x" type="button" title="Close">✕</button></div>`
       + `<div class="tc-log-list"></div>`;
     document.body.appendChild(pop);
+    // restore saved open position (used when not minimized, and remembered for restore)
+    if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+    pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
     const renderList = () => {
       const list = pop.querySelector('.tc-log-list');
       list.innerHTML = LOG.length
@@ -102,17 +112,16 @@
     renderList();
     _logListeners.add(renderList);
     const onKey = e => { if (e.key === 'Escape') close(); };
-    const close = () => { _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
+    const close = () => { saveLogWin({ open: false }); _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
     pop.querySelector('.tc-logpop-copy').onclick = () => copyLog(pop.querySelector('.tc-logpop-copy'));
     const minBtn = pop.querySelector('.tc-logpop-min');
-    minBtn.onclick = () => {
-      const m = pop.classList.toggle('min');
+    const setMin = (m) => {
       minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
-      if (m) {   // dock to the bottom of the screen, remembering the open position
-        pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-        pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none';
-      } else if (pop._restore) { Object.assign(pop.style, pop._restore); }
+      if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to bottom
+      else if (pop._restore) { Object.assign(pop.style, pop._restore); }
     };
+    minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWin({ min: m }); };
+    if (st.min) { pop.classList.add('min'); setMin(true); }   // restore minimized state
     pop.querySelector('.tc-logpop-x').onclick = close;
     // floating, non-modal window — draggable by its header
     pop.querySelector('.tc-logpop-h').addEventListener('mousedown', (e) => {
@@ -122,7 +131,7 @@
       pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
       const ox = e.clientX - r.left, oy = e.clientY - r.top;
       const mv = ev => { pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px'; pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px'; };
-      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); if (!pop.classList.contains('min')) { pop._restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' }; saveLogWin({ left: pop.style.left, top: pop.style.top }); } };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     });
     document.addEventListener('keydown', onKey);
@@ -135,7 +144,9 @@
   const ORIGIN = location.origin;
   const u = v => { try { return typeof v === 'function' ? v() : v; } catch (e) { return undefined; } };
   const getEditor = () => { try { return W.MB && W.MB.releaseEditor; } catch (e) { return null; } };
-  const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/\s+/g, ' ').trim();
+  // normalize hyphen/dash look-alikes (MB uses ‐ U+2010, others use - U+002D, en/em
+  // dashes, minus…) to a plain '-' so e.g. "Gol‐e Yakh" folds the same as "Gol-e Yakh"
+  const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
   const sameName = (a, b) => fold(a) === fold(b);
   // gid → artist disambiguation, harvested from every WS2/js artist-credit the
   // script fetches (search results, recording lookups). The MB page (KO) model
@@ -408,10 +419,16 @@
       // #283: the release-level artist(s) (194 = Discogs "Various", skip) — used as a
       // fallback for tracks that credit no per-track artist (single-artist releases).
       map.releaseArtists = (json && Array.isArray(json.artists)) ? json.artists.filter(a => a && a.id && a.id !== 194).map(a => `https://www.discogs.com/artist/${a.id}`) : [];
+      // #283: also keep the per-track artist URLs in Discogs order, so a track whose
+      // TITLE doesn't match (transliteration / punctuation the fold can't catch) can
+      // still be matched BY POSITION when the two tracklists are the same length.
+      map.byPos = [];
       if (json && Array.isArray(json.tracklist)) {
         json.tracklist.filter(t => (t.type_ || 'track') === 'track').forEach(t => {
+          const urls = (t.artists || []).map(a => (a && a.id) ? `https://www.discogs.com/artist/${a.id}` : null);
+          map.byPos.push(urls);
           const key = fold(t.title || ''); if (!key || map.has(key)) return;
-          map.set(key, (t.artists || []).map(a => (a && a.id) ? `https://www.discogs.com/artist/${a.id}` : null));
+          map.set(key, urls);
         });
         // this loads the Discogs release for the link CHECK (and for URL-matching unset
         // artists) — not re-matching already-set ones, hence "loaded" not "matched".
@@ -422,6 +439,16 @@
     }
     Log.warn('Discogs match: could not load release JSON after retries (rate-limited?) — leaving uncached');
     return null;   // all retries exhausted → unknown, NOT cached, so the next call retries
+  }
+  // #283: a track's per-slot Discogs artist URLs — by folded title, falling back to
+  // POSITION when the title doesn't match and the two tracklists are the same length
+  // (so subtle title differences don't drop the track). { urls, byPos }.
+  function discogsUrlsForTrack(dmap, title, index, total) {
+    if (!dmap) return { urls: null, byPos: false };
+    const byTitle = dmap.get(fold(title));
+    if (byTitle) return { urls: byTitle, byPos: false };
+    if (dmap.byPos && dmap.byPos.length === total && total > 0) return { urls: dmap.byPos[index] || null, byPos: true };
+    return { urls: null, byPos: false };
   }
   // Resolve a Discogs artist URL to MB artist(s) via its URL relationship.
   // Returns [{ gid, name }] (0 / 1 / many) on success, or `null` when the lookup
@@ -613,16 +640,20 @@
       _discMapFailed = false; _discMapRetried = false;
       const jobs = [];
       const relArtists = (dmap && dmap.releaseArtists) || [];
-      if (dmap) for (const t of MODEL.tracks) {
-        const durls = dmap.get(fold(t.title)) || [];
+      let posUsed = 0;
+      const total = MODEL.tracks.length;
+      if (dmap) MODEL.tracks.forEach((t, ti) => {
+        const { urls, byPos } = discogsUrlsForTrack(dmap, t.title, ti, total);
+        const durls = urls || [];
         const hasTrackArtists = durls.some(Boolean);
+        if (byPos && hasTrackArtists) posUsed++;
         t.slots.forEach((s, i) => {
-          // per-track Discogs artist, else inherit the release-level artist (#283) —
-          // a track with no Discogs artists is credited to the release artist
+          // per-track Discogs artist (by title, else by position), else inherit the
+          // release-level artist (#283) — a track with no Discogs artists is the release artist
           const durl = durls[i] || (!hasTrackArtists ? (relArtists[i] || (relArtists.length === 1 ? relArtists[0] : null)) : null);
-          if (durl) jobs.push([s, durl]);
+          if (durl) { s._discByPos = !!(durls[i] && byPos); jobs.push([s, durl]); }
         });
-      }
+      });
       if (!jobs.length) {
         setDiscProgress('');
         // nothing to check (no per-track and no release-level artist links). Empty
@@ -631,11 +662,11 @@
         return;
       }
       const firstCheck = _discVerifyUrl !== relUrl;
-      if (firstCheck) { _discVerifyUrl = relUrl; Log.info('Discogs check: verifying', jobs.length, 'artist link(s)…'); }
+      if (firstCheck) { _discVerifyUrl = relUrl; Log.info('Discogs check: verifying', jobs.length, 'artist link(s) across', total, total === 1 ? 'track' : 'tracks', (posUsed ? `(${posUsed} matched by position)` : '') + '…'); }
       let done = 0, lastRender = 0;
       for (const [s, durl] of jobs) {
         await tagDiscogsAddable(s, durl);
-        if (firstCheck) Log.debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsPending ? 'pending (will re-check)' : !s._discogsAddable ? 'already linked' : discAddTooltip(s));
+        if (firstCheck) Log.debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsPending ? 'pending (will re-check)' : !s._discogsAddable ? 'already linked' : discAddTooltip(s), s._discByPos ? '(matched by position)' : '');
         done++;
         // update rows + the progress text together, throttled — set the text AFTER
         // rerender so refreshStatus can't blank it
@@ -770,9 +801,10 @@
     const tracks = [];
     const todo = tl.filter(t => t.names.some(n => !n.artistGid));
     let done = 0;
-    for (const t of tl) {
+    for (let ti = 0; ti < tl.length; ti++) {
+      const t = tl[ti];
       const sib = siblings.get(fold(t.title)) || null;
-      const durls = dmap ? dmap.get(fold(t.title)) : null;
+      const durls = discogsUrlsForTrack(dmap, t.title, ti, tl.length).urls;   // title, else by position (#283)
       const slots = [];
       for (let i = 0; i < t.names.length; i++) {
         const n = t.names[i];
@@ -837,10 +869,12 @@
       const siblings = await loadSiblingMap();
       const dmap = await loadDiscogsMap();
       const todo = MODEL.tracks.filter(t => t.slots.some(s => s._pending)); let done = 0;
-      for (const t of MODEL.tracks) {
+      const total = MODEL.tracks.length;
+      for (let ti = 0; ti < MODEL.tracks.length; ti++) {
+        const t = MODEL.tracks[ti];
         if (!t.slots.some(s => s._pending)) continue;
         const sib = siblings.get(fold(t.title)) || null;
-        const durls = dmap ? dmap.get(fold(t.title)) : null;
+        const durls = discogsUrlsForTrack(dmap, t.title, ti, total).urls;   // title, else by position (#283)
         for (let i = 0; i < t.slots.length; i++) {
           const s = t.slots[i]; if (!s._pending) continue;
           const m = await matchSlot(s.creditedAs, sib && sib[i], durls && durls[i]);
@@ -1026,7 +1060,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.132449';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.133821';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1398,8 +1432,9 @@
     #tc-logpop .tc-logpop-sp{margin-left:auto}
     #tc-logpop .tc-logpop-copy,#tc-logpop .tc-logpop-x,#tc-logpop .tc-logpop-min{font:12px Arial;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer}
     #tc-logpop .tc-logpop-copy:hover,#tc-logpop .tc-logpop-x:hover,#tc-logpop .tc-logpop-min:hover{background:#e9e0f8}
-    #tc-logpop.min .tc-log-list{display:none}
+    #tc-logpop.min .tc-log-list,#tc-logpop.min .tc-logpop-copy,#tc-logpop.min .tc-logpop-x{display:none}
     #tc-logpop.min{max-height:none;width:auto}
+    #tc-logpop.min .tc-logpop-sp{display:none}
     #tc-logpop .tc-log-badge{color:#9a8cba;font-size:11px}
     #tc-logpop .tc-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
     #tc-logpop .tc-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}
@@ -5830,6 +5865,7 @@
       Log.info('Release:', (nm ? nm + ' — ' : '') + (mbid ? ORIGIN + '/release/' + mbid : location.href));
     } catch (e) {}
     Log.info('editor ready');
+    if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
     snapshotOriginals();
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.132450
+// @version      2026.6.23.133822
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -218,6 +218,7 @@
       _booted = true;
       asLog.info('Art Station' + ((_gm && _gm.version) ? ' v' + _gm.version : ''));
       try { const ri = releaseInfo(); const t = (ri.title || '').trim(); asLog.info('Release: ' + (t ? t + ' — ' : '') + (ri.url || ('https://musicbrainz.org/' + ENT.kind + '/' + MBID))); } catch (e) { asLog.info('Release: https://musicbrainz.org/release/' + MBID); }
+      if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 600);   // #283 reopen the log if it was left open
     }
     const pageArt = parsePageArt();
     let caa = [];
@@ -371,9 +372,15 @@
     panel.querySelector('.as-setup-logbtn').onclick = () => { panel.remove(); document.removeEventListener('mousedown', off); openLog(); };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
+  // #283 remember the log window across sessions: open?/minimized?/position
+  const LOGWIN_KEY = 'artstation:logwin';
+  const loadLogWin = () => { try { return JSON.parse(localStorage.getItem(LOGWIN_KEY) || '{}'); } catch (e) { return {}; } };
+  const saveLogWin = (patch) => { try { localStorage.setItem(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWin(), patch))); } catch (e) {} };
   // #283 the Log button opens this popup: the full session log + a Copy control.
   function openLog() {
     document.getElementById('as-logpop')?.remove();
+    saveLogWin({ open: true });
+    const st = loadLogWin();
     const pop = document.createElement('div'); pop.id = 'as-logpop';
     pop.innerHTML = `<div class="as-logpop-h"><b>Activity log</b> <span class="as-log-badge"></span><span class="as-logpop-sp"></span>`
       + `<button class="as-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
@@ -381,6 +388,8 @@
       + `<button class="as-logpop-x" type="button" title="Close">✕</button></div>`
       + `<div class="as-log-list"></div>`;
     document.body.appendChild(pop);
+    if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+    pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
     const renderList = () => {
       const list = pop.querySelector('.as-log-list');
       list.innerHTML = LOG.length
@@ -393,17 +402,16 @@
     renderList();
     _logListeners.add(renderList);
     const onKey = e => { if (e.key === 'Escape') close(); };
-    const close = () => { _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
+    const close = () => { saveLogWin({ open: false }); _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
     pop.querySelector('.as-logpop-copy').onclick = () => copyLog(pop.querySelector('.as-logpop-copy'));
     const minBtn = pop.querySelector('.as-logpop-min');
-    minBtn.onclick = () => {
-      const m = pop.classList.toggle('min');
+    const setMin = (m) => {
       minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
-      if (m) {   // dock to the bottom of the screen, remembering the open position
-        pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-        pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none';
-      } else if (pop._restore) { Object.assign(pop.style, pop._restore); }
+      if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to bottom
+      else if (pop._restore) { Object.assign(pop.style, pop._restore); }
     };
+    minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWin({ min: m }); };
+    if (st.min) { pop.classList.add('min'); setMin(true); }   // restore minimized state
     pop.querySelector('.as-logpop-x').onclick = close;
     // floating, non-modal window — draggable by its header
     pop.querySelector('.as-logpop-h').addEventListener('mousedown', (e) => {
@@ -413,7 +421,7 @@
       pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
       const ox = e.clientX - r.left, oy = e.clientY - r.top;
       const mv = ev => { pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px'; pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px'; };
-      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); if (!pop.classList.contains('min')) { pop._restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' }; saveLogWin({ left: pop.style.left, top: pop.style.top }); } };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     });
     document.addEventListener('keydown', onKey);
@@ -2757,8 +2765,9 @@
   .as-logpop-sp{margin-left:auto}
   .as-logpop-copy,.as-logpop-x,.as-logpop-min{font-size:12px;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}
   .as-logpop-copy:hover,.as-logpop-x:hover,.as-logpop-min:hover{background:#e9e0f8}
-  #as-logpop.min .as-log-list{display:none}
+  #as-logpop.min .as-log-list,#as-logpop.min .as-logpop-copy,#as-logpop.min .as-logpop-x{display:none}
   #as-logpop.min{max-height:none;width:auto}
+  #as-logpop.min .as-logpop-sp{display:none}
   .as-log-badge{color:#9a8cba;font-size:11px}
   .as-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
   .as-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}
