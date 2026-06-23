@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.152953
+// @version      2026.6.23.230949
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1062,7 +1062,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.152953';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.230949';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -4577,6 +4577,12 @@
     body.tc-zen-on #tc-nav-title{display:flex;flex-direction:column;justify-content:center;flex:1 1 0;min-width:0;text-align:center;line-height:1.15;padding:0 14px}
     #tc-nav-title a{color:inherit;text-decoration:none}#tc-nav-title a:hover{text-decoration:underline}
     #tc-nav-title .tc-nav-title-album{font:600 12px Arial;color:#5a3e94;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* #290: mirror MB's native "modification pending" mark (span.mp, #ffdd99) on the
+       release name — the native header that carries it is hidden by zen. Inline span
+       so it hugs the text; same gold as native. */
+    #tc-nav-title .tc-nav-title-name{border-radius:3px;padding:0 1px}
+    #tc-nav-title.tc-nav-title-pending .tc-nav-title-name{background:#ffdd99;padding:0 5px}
+    #tc-nav-title.tc-nav-title-pending .tc-nav-title-name a{color:#33291a}
     #tc-nav-title .tc-nav-title-artist{font:11px Arial;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #tc-nav-title .tc-nav-title-ver{color:#999}
     body.tc-zen-on .header,body.tc-zen-on .releaseheader,body.tc-zen-on #page > .tabs,body.tc-zen-on #footer{display:none!important}
@@ -4659,7 +4665,7 @@
     const rh = document.querySelector('.releaseheader');
     const va = rh && [...rh.querySelectorAll('a')].find(a => /version/i.test(a.textContent || ''));
     if (va) { const m = (va.textContent.match(/(\d+)/) || [])[1]; ver = ' <a href="' + esc(va.href) + '" target="_blank" rel="noopener" class="tc-nav-title-ver">(' + (m ? m + ' versions' : 'all versions') + ')</a>'; }
-    el.innerHTML = '<div class="tc-nav-title-album">' + album + '</div>'
+    el.innerHTML = '<div class="tc-nav-title-album"><span class="tc-nav-title-name">' + album + '</span></div>'
                  + '<div class="tc-nav-title-artist">' + artist + ver + '</div>';
   }
   // keep the proxies in sync with the native state each tick
@@ -4679,6 +4685,13 @@
     });
     const f = navFooterEl();
     const changed = hasChanges();   // the submit button appears only when there are pending changes
+    // #290: MIRROR MB's native "modification pending" mark. MB wraps the release
+    // title in <span class="mp"> (gold #ffdd99) when the entity has open edits —
+    // it's there on entrance. Zen hides the native header, so reflect that exact
+    // state onto the release name in our toolbar — read straight from the DOM, no
+    // logic of our own. The .mp node stays in the DOM even while the header is hidden.
+    const navTitle = document.getElementById('tc-nav-title');
+    if (navTitle) navTitle.classList.toggle('tc-nav-title-pending', !!document.querySelector('.releaseheader h1 .mp'));
     WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); proxy.style.display = (vis(nat) && changed) ? '' : 'none'; });
     // paginators stay in a fixed position — Prev/Next are never hidden, just disabled
     // when MB's native button isn't applicable (Prev on the first step, Next on the last) (#140)
