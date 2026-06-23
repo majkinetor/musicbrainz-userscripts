@@ -144,6 +144,15 @@ export const ENTITY_TYPE_MAP = {
         entityType: 'artist',
         linkType: 'performer',
     },
+    // Discogs "Ensemble" — a group/ensemble credited as performing (e.g. a
+    // vocal quartet or jazz ensemble). MB has no dedicated "ensemble" link
+    // type, so the conventional fit is the generic `performer` relationship
+    // (same as Discogs "Performer"). Without this it fell through to the
+    // INSTRUMENTS table (`Ensemble: null`) and was dropped as unmapped.
+    Ensemble: {
+        entityType: 'artist',
+        linkType: 'performer',
+    },
     // Discogs role "Accompanied By" → MB has no dedicated link type or
     // attribute for this. Closest semantic fit is `performer` with the
     // `additional` attribute (used elsewhere in MB for non-primary

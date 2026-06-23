@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.20
+// @version      2026.6.23.154626
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -653,6 +653,15 @@
     "Exported By": null,
     // Artists
     Performer: {
+      entityType: "artist",
+      linkType: "performer"
+    },
+    // Discogs "Ensemble" — a group/ensemble credited as performing (e.g. a
+    // vocal quartet or jazz ensemble). MB has no dedicated "ensemble" link
+    // type, so the conventional fit is the generic `performer` relationship
+    // (same as Discogs "Performer"). Without this it fell through to the
+    // INSTRUMENTS table (`Ensemble: null`) and was dropped as unmapped.
+    Ensemble: {
       entityType: "artist",
       linkType: "performer"
     },
