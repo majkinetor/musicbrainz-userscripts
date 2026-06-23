@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.015001
+// @version      2026.6.23.114042
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -33,11 +33,78 @@
   const T0 = Date.now();
   const TAG = '[ApolloEditor]';
   const tss = () => ((Date.now() - T0) / 1000).toFixed(3) + 's';
-  const Log = {
-    info: (...a) => console.info(TAG, tss(), ...a),
-    warn: (...a) => console.warn(TAG, tss(), ...a),
-    err:  (...a) => console.error(TAG, tss(), ...a),
+  // #283 every Log.* call is captured into an in-page buffer (as well as the
+  // console) and surfaced in a dedicated log viewer — opened from a Log button
+  // next to "? Help" — copy/pastable as a Markdown <details> block, like the
+  // other scripts.
+  const LOG = [];
+  const _logListeners = new Set();
+  const _lpad = (n, w = 2) => String(n).padStart(w, '0');
+  const _logTs = d => `${_lpad(d.getHours())}:${_lpad(d.getMinutes())}:${_lpad(d.getSeconds())}.${_lpad(d.getMilliseconds(), 3)}`;
+  const _logStr = v => {
+    if (typeof v === 'string') return v;
+    if (v instanceof Error) return v.message || String(v);
+    if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+    try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
   };
+  function _logRecord(sev, args) {
+    const msg = args.map(_logStr).join(' ').replace(/\s+/g, ' ').trim();
+    if (!msg) return;
+    LOG.push({ t: new Date(), sev, msg });
+    _logListeners.forEach(f => { try { f(); } catch (e) {} });
+  }
+  const Log = {
+    info: (...a) => { _logRecord('info', a); console.info(TAG, tss(), ...a); },
+    warn: (...a) => { _logRecord('warn', a); console.warn(TAG, tss(), ...a); },
+    err:  (...a) => { _logRecord('error', a); console.error(TAG, tss(), ...a); },
+    ok:   (...a) => { _logRecord('ok', a); console.info(TAG, tss(), ...a); },
+    debug:(...a) => { _logRecord('debug', a); console.debug(TAG, tss(), ...a); },
+  };
+  const _logCounts = () => LOG.reduce((acc, e) => { if (e.sev === 'warn') acc.warn++; else if (e.sev === 'error') acc.error++; return acc; }, { warn: 0, error: 0 });
+  // copy/pastable Markdown — collapsed <details> wrapping a fenced log block.
+  function logMarkdown() {
+    const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+    const body = LOG.length ? LOG.map(e => `${_logTs(e.t)}  ${PRE[e.sev] || ''}${e.msg}`).join('\n') : '(no activity logged)';
+    const c = _logCounts();
+    let title = 'Apollo Editor';
+    try { title += ' v' + scriptVersion(); } catch (e) {}
+    const tally = (c.warn || c.error) ? ` (${c.warn} warning${c.warn === 1 ? '' : 's'}, ${c.error} error${c.error === 1 ? '' : 's'})` : '';
+    return `<details><summary>${title} — session log${tally}</summary>\n\n` + '```log\n' + body + '\n```' + `\n\n</details>`;
+  }
+  async function copyLog(btn) {
+    const md = logMarkdown(); let ok = false;
+    try { await navigator.clipboard.writeText(md); ok = true; }
+    catch (e) { try { const ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (x) {} }
+    if (btn) { const o = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = o; btn.textContent = ok ? 'Copied ✓' : 'Copy failed'; setTimeout(() => { btn.textContent = o; }, 1500); }
+  }
+  // the Log button opens this popup: the full session log + a Copy control.
+  function openLog() {
+    document.getElementById('tc-logpop')?.remove();
+    const pop = document.createElement('div'); pop.id = 'tc-logpop';
+    pop.innerHTML = `<div class="tc-logpop-box">`
+      + `<div class="tc-logpop-h"><b>Activity log</b> <span class="tc-log-badge"></span><span class="tc-logpop-sp"></span>`
+      + `<button class="tc-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
+      + `<button class="tc-logpop-x" type="button" title="Close">✕</button></div>`
+      + `<div class="tc-log-list"></div></div>`;
+    document.body.appendChild(pop);
+    const renderList = () => {
+      const list = pop.querySelector('.tc-log-list');
+      list.innerHTML = LOG.length
+        ? LOG.map(e => `<div class="tc-log-li tc-log-${e.sev}"><span class="tc-log-t">${_logTs(e.t)}</span><span class="tc-log-m">${esc(e.msg)}</span></div>`).join('')
+        : '<div class="tc-log-empty">No activity yet.</div>';
+      const c = _logCounts();
+      pop.querySelector('.tc-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
+      list.scrollTop = list.scrollHeight;
+    };
+    renderList();
+    _logListeners.add(renderList);
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    const close = () => { _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
+    pop.querySelector('.tc-logpop-copy').onclick = () => copyLog(pop.querySelector('.tc-logpop-copy'));
+    pop.querySelector('.tc-logpop-x').onclick = close;
+    pop.onclick = e => { if (e.target === pop) close(); };
+    document.addEventListener('keydown', onKey);
+  }
   Log.info('boot —', location.href);
 
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
@@ -896,7 +963,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.015001';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.114042';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1256,8 +1323,28 @@
     #tc-settings h4{display:flex;align-items:center;gap:6px;margin:0 0 9px;padding-bottom:8px;border-bottom:1px solid #e3dcf2;color:#563b8f;font-size:13px}
     #tc-settings h4 .tc-ver{font-size:11px;font-weight:normal;color:#999}
     #tc-settings h4{flex-wrap:wrap}
-    #tc-settings h4 .tc-help{margin-left:auto;flex:none;white-space:nowrap;font-size:12px;font-weight:normal;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
+    #tc-settings h4 .tc-help{margin-left:8px;flex:none;white-space:nowrap;font-size:12px;font-weight:normal;text-decoration:none;color:#5f3ec0;border:1px solid #c9b8ee;border-radius:4px;padding:1px 8px}
     #tc-settings h4 .tc-help:hover{background:#f0ecfa}
+    #tc-settings h4 .tc-logbtn{margin-left:auto;flex:none;font:normal 12px Arial;color:#5f3ec0;background:none;border:1px solid transparent;border-radius:4px;padding:1px 8px;cursor:pointer}
+    #tc-settings h4 .tc-logbtn:hover{background:#f3eefb;border-color:#c9b8ee}
+    /* #283 activity-log popup */
+    #tc-logpop{position:fixed;inset:0;z-index:100002;background:rgba(20,12,40,.34);display:flex;align-items:center;justify-content:center}
+    #tc-logpop .tc-logpop-box{display:flex;flex-direction:column;width:min(720px,94vw);max-height:82vh;background:#fff;border:1px solid #b9a4e0;border-radius:11px;box-shadow:0 12px 40px rgba(40,20,80,.4);font:13px Arial;color:#222;overflow:hidden}
+    #tc-logpop .tc-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #e3dcf2;color:#563b8f}
+    #tc-logpop .tc-logpop-sp{margin-left:auto}
+    #tc-logpop .tc-logpop-copy,#tc-logpop .tc-logpop-x{font:12px Arial;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer}
+    #tc-logpop .tc-logpop-copy:hover,#tc-logpop .tc-logpop-x:hover{background:#e9e0f8}
+    #tc-logpop .tc-log-badge{color:#9a8cba;font-size:11px}
+    #tc-logpop .tc-log-list{flex:1 1 auto;overflow:auto;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
+    #tc-logpop .tc-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}
+    #tc-logpop .tc-log-t{color:#a99fc2;flex:0 0 auto}
+    #tc-logpop .tc-log-m{flex:1 1 auto;color:#444}
+    #tc-logpop .tc-log-ok .tc-log-m{color:#2e7d4f}
+    #tc-logpop .tc-log-warn .tc-log-m{color:#b06a00}
+    #tc-logpop .tc-log-error .tc-log-m{color:#c0344d}
+    #tc-logpop .tc-log-debug{opacity:.72}
+    #tc-logpop .tc-log-debug .tc-log-m{color:#7a7a7a}
+    #tc-logpop .tc-log-empty{color:#9a8cba}
     #tc-settings label{display:flex;gap:8px;align-items:center;margin:7px 0;color:#333}
     #tc-settings label input[type=checkbox]{margin:0;flex:none}
     #tc-settings .hint{color:#777;font-size:11px;margin:0 0 4px 24px}
@@ -1344,7 +1431,7 @@
   function openSettings(anchor) {
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
-    s.innerHTML = `<h4>${ICON} Apollo Editor <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
+    s.innerHTML = `<h4>${ICON} Apollo Editor <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><button class="tc-logbtn" type="button" title="Open the activity log">Log</button><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
       <div class="tc-s-group tc-s-top">
         <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
         <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
@@ -1417,6 +1504,7 @@
     const aconf = s.querySelector('#tc-s-autoconfirm'); if (aconf) { aconf.checked = SETTINGS.autoConfirmSeed !== false; aconf.onchange = () => { SETTINGS.autoConfirmSeed = aconf.checked; saveSettings(); }; }
     const kcaret = s.querySelector('#tc-s-keepcaret'); if (kcaret) { kcaret.checked = SETTINGS.keepCaretColumn !== false; kcaret.onchange = () => { SETTINGS.keepCaretColumn = kcaret.checked; saveSettings(); }; }   // #279
     const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
+    const lbtn = s.querySelector('.tc-logbtn'); if (lbtn) lbtn.onclick = () => { s.remove(); document.removeEventListener('mousedown', off); openLog(); };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
 
