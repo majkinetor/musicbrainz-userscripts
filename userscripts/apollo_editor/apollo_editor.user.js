@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.145257
+// @version      2026.6.23.152953
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1060,7 +1060,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.145257';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.152953';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2165,16 +2165,17 @@
   // #284: hovering an artist highlights every OTHER instance of that same artist in
   // the tracklist (matched by gid when resolved, else by the typed/credited name) —
   // the same idea as the green "matched" bars, but live on hover. STICKY: the last
-  // highlighted artist stays lit even when the mouse isn't over it; only hovering a
-  // DIFFERENT artist (that appears more than once) switches it — no clear on leave,
-  // so moving the mouse across rows/gaps never flickers.
+  // highlighted artist stays lit even when the mouse isn't over it; moving onto a
+  // DIFFERENT real artist clears the previous highlight (and lights the new one up if
+  // it appears more than once). Only empty slots / gaps keep the previous highlight —
+  // so moving the mouse across rows/gaps never flickers, but landing on another artist
+  // (even a one-off) drops the stale highlight.
   function hlArtist(id) {
-    if (!id || id === 'n:' || id === 'g:' || id === _hlCur) return;   // not a real artist, or already current → keep current
-    const matches = [...document.querySelectorAll('.tc-aslot')].filter(e => e.dataset.art === id);
-    if (matches.length <= 1) return;   // appears only once → nothing to highlight; keep the previous
+    if (!id || id === 'n:' || id === 'g:' || id === _hlCur) return;   // empty slot or already current → keep current
     _hlCur = id;
     document.querySelectorAll('.tc-aslot.tc-arthl').forEach(e => e.classList.remove('tc-arthl'));
-    matches.forEach(e => e.classList.add('tc-arthl'));
+    const matches = [...document.querySelectorAll('.tc-aslot')].filter(e => e.dataset.art === id);
+    if (matches.length > 1) matches.forEach(e => e.classList.add('tc-arthl'));   // single instance → nothing to show
   }
   let _hlCur = null;
   const slotArtId = s => (s.committed && s.gid) ? 'g:' + s.gid : 'n:' + fold(s.creditedAs || s.name || s.query || '');
