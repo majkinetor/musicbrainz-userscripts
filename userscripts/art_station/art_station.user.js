@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.113540
+// @version      2026.6.23.115948
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2726,7 +2726,7 @@
   .as-logpop-copy,.as-logpop-x{font-size:12px;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}
   .as-logpop-copy:hover,.as-logpop-x:hover{background:#e9e0f8}
   .as-log-badge{color:#9a8cba;font-size:11px}
-  .as-log-list{flex:1 1 auto;overflow:auto;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
+  .as-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
   .as-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}
   .as-log-t{color:#a99fc2;flex:0 0 auto}
   .as-log-m{flex:1 1 auto;color:#444}
