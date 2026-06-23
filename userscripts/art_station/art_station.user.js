@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.115948
+// @version      2026.6.23.120951
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -147,6 +147,7 @@
   }
 
   let MODEL = [];       // [{ id, types:[], comment, order, w, h, bytes, _del, _new, _file }]
+  let _booted = false;  // #283 emit the name+version / release log lines once
   const SIZES = new Map(); // CAA image id -> original file size in bytes (from archive.org metadata)
   const fmtSize = b => b >= 1048576 ? (b / 1048576).toFixed(1) + 'Mb' : Math.max(1, Math.round(b / 1024)) + 'Kb';
   // footer line under the image: "1.2Mb   600 × 600" — size first, then resolution,
@@ -213,6 +214,11 @@
     }).filter(Boolean);
   }
   async function loadArt() {
+    if (!_booted) {   // first two log lines: the script + version, then the MB entity
+      _booted = true;
+      asLog.info('Art Station' + ((_gm && _gm.version) ? ' v' + _gm.version : ''));
+      try { const t = (releaseInfo().title || '').trim(); asLog.info('Release: ' + (t ? t + ' ' : '') + '(' + MBID + ')'); } catch (e) { asLog.info('Release: (' + MBID + ')'); }
+    }
     const pageArt = parsePageArt();
     let caa = [];
     try { const j = await fetch(CAA, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null); if (j) caa = j.images || []; }
@@ -238,7 +244,7 @@
       _origTypes: s.types.slice(), _origComment: s.comment, _origOrder: i,
     }));
     render();
-    asLog.info(`Loaded ${MODEL.length} ${MODEL.length === 1 ? ITEM : ITEMS} for ${ENT.kind} ${MBID}`);
+    asLog.info(`Loaded ${MODEL.length} ${MODEL.length === 1 ? ITEM : ITEMS}`);
     MODEL.forEach(measure);   // lazy-fill dimensions
     loadSizes();              // lazy-fill file sizes (single archive.org request)
   }
