@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.122843
+// @version      2026.6.23.125454
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -377,6 +377,7 @@
     const pop = document.createElement('div'); pop.id = 'as-logpop';
     pop.innerHTML = `<div class="as-logpop-h"><b>Activity log</b> <span class="as-log-badge"></span><span class="as-logpop-sp"></span>`
       + `<button class="as-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
+      + `<button class="as-logpop-min" type="button" title="Minimize">–</button>`
       + `<button class="as-logpop-x" type="button" title="Close">✕</button></div>`
       + `<div class="as-log-list"></div>`;
     document.body.appendChild(pop);
@@ -394,6 +395,8 @@
     const onKey = e => { if (e.key === 'Escape') close(); };
     const close = () => { _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
     pop.querySelector('.as-logpop-copy').onclick = () => copyLog(pop.querySelector('.as-logpop-copy'));
+    const minBtn = pop.querySelector('.as-logpop-min');
+    minBtn.onclick = () => { const m = pop.classList.toggle('min'); minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize'; };
     pop.querySelector('.as-logpop-x').onclick = close;
     // floating, non-modal window — draggable by its header
     pop.querySelector('.as-logpop-h').addEventListener('mousedown', (e) => {
@@ -2741,8 +2744,10 @@
   .as-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #ece6f8;color:#563b8f;cursor:move;user-select:none}
   #as-logpop .as-log-m a{color:#5f3ec0}
   .as-logpop-sp{margin-left:auto}
-  .as-logpop-copy,.as-logpop-x{font-size:12px;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}
-  .as-logpop-copy:hover,.as-logpop-x:hover{background:#e9e0f8}
+  .as-logpop-copy,.as-logpop-x,.as-logpop-min{font-size:12px;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}
+  .as-logpop-copy:hover,.as-logpop-x:hover,.as-logpop-min:hover{background:#e9e0f8}
+  #as-logpop.min .as-log-list{display:none}
+  #as-logpop.min{max-height:none}
   .as-log-badge{color:#9a8cba;font-size:11px}
   .as-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
   .as-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}

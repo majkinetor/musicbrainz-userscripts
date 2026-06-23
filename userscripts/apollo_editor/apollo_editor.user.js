@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.123950
+// @version      2026.6.23.125452
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -82,6 +82,7 @@
     const pop = document.createElement('div'); pop.id = 'tc-logpop';
     pop.innerHTML = `<div class="tc-logpop-h"><b>Activity log</b> <span class="tc-log-badge"></span><span class="tc-logpop-sp"></span>`
       + `<button class="tc-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
+      + `<button class="tc-logpop-min" type="button" title="Minimize">–</button>`
       + `<button class="tc-logpop-x" type="button" title="Close">✕</button></div>`
       + `<div class="tc-log-list"></div>`;
     document.body.appendChild(pop);
@@ -99,6 +100,8 @@
     const onKey = e => { if (e.key === 'Escape') close(); };
     const close = () => { _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
     pop.querySelector('.tc-logpop-copy').onclick = () => copyLog(pop.querySelector('.tc-logpop-copy'));
+    const minBtn = pop.querySelector('.tc-logpop-min');
+    minBtn.onclick = () => { const m = pop.classList.toggle('min'); minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize'; };
     pop.querySelector('.tc-logpop-x').onclick = close;
     // floating, non-modal window — draggable by its header
     pop.querySelector('.tc-logpop-h').addEventListener('mousedown', (e) => {
@@ -621,7 +624,7 @@
       let done = 0, lastRender = 0;
       for (const [s, durl] of jobs) {
         await tagDiscogsAddable(s, durl);
-        if (firstCheck) Log.debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsAddable ? 'link can be added to MB' : s._discogsPending ? 'pending (will re-check)' : 'already linked');
+        if (firstCheck) Log.debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsPending ? 'pending (will re-check)' : !s._discogsAddable ? 'already linked' : discAddTooltip(s));
         done++;
         // update rows + the progress text together, throttled — set the text AFTER
         // rerender so refreshStatus can't blank it
@@ -1007,7 +1010,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.123950';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.125452';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1377,8 +1380,10 @@
     #tc-logpop .tc-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #e3dcf2;color:#563b8f;cursor:move;user-select:none}
     #tc-logpop .tc-log-m a{color:#5f3ec0}
     #tc-logpop .tc-logpop-sp{margin-left:auto}
-    #tc-logpop .tc-logpop-copy,#tc-logpop .tc-logpop-x{font:12px Arial;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer}
-    #tc-logpop .tc-logpop-copy:hover,#tc-logpop .tc-logpop-x:hover{background:#e9e0f8}
+    #tc-logpop .tc-logpop-copy,#tc-logpop .tc-logpop-x,#tc-logpop .tc-logpop-min{font:12px Arial;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer}
+    #tc-logpop .tc-logpop-copy:hover,#tc-logpop .tc-logpop-x:hover,#tc-logpop .tc-logpop-min:hover{background:#e9e0f8}
+    #tc-logpop.min .tc-log-list{display:none}
+    #tc-logpop.min{max-height:none}
     #tc-logpop .tc-log-badge{color:#9a8cba;font-size:11px}
     #tc-logpop .tc-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
     #tc-logpop .tc-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}
@@ -1573,6 +1578,14 @@
   // an artist whose Discogs link needs attention: missing (addable) OR mismatched
   // (links a different Discogs page than the release credits). #227
   const discNeedsAttention = s => !!s._discogsAddable;   // mismatch is now addable too (offer the release's link, flagged ⚠)
+  // The tooltip text for an addable slot's link/⚠ icon — shared so the log shows
+  // the exact same message (a mismatch/conflict reads differently from a plain add).
+  function discAddTooltip(s) {
+    const mism = s._discogsMismatch, conf = s._discogsConflict;
+    return mism ? `Discogs mismatch: this artist links discogs.com/artist/${discogsIdOf(mism)}, the release credits discogs.com/artist/${discogsIdOf(s._discogsUrl)} — click to add the release's link anyway`
+         : conf ? `Discogs links a different MB artist: ${conf.name} — click to add it to ${s.name || 'this artist'} anyway`
+                : (s.gid ? 'Add the Discogs link to this artist' : 'Create this artist with its Discogs link');
+  }
   function focusNextMissingDiscogs() {
     const list = [];
     MODEL.tracks.forEach(t => t.slots.forEach((s, i) => { if (discNeedsAttention(s)) list.push([t, i]); }));
@@ -2128,9 +2141,7 @@
       // Discogs page (mismatch); plain teal link icon otherwise.
       const conf = s._discogsConflict, mism = s._discogsMismatch;
       ic = document.createElement('a'); ic.className = 'tc-tic ' + ((conf || mism) ? 'discogs-warn' : 'discogs-add'); ic.href = '#'; ic.innerHTML = (conf || mism) ? DISCOGS_WARN_SVG : DISCOGS_LINK_SVG;
-      ic.title = mism ? `Discogs mismatch: this artist links discogs.com/artist/${discogsIdOf(mism)}, the release credits discogs.com/artist/${discogsIdOf(s._discogsUrl)} — click to add the release's link anyway`
-               : conf ? `Discogs links a different MB artist: ${conf.name} — click to add it to ${s.name || 'this artist'} anyway`
-                      : (s.gid ? 'Add the Discogs link to this artist' : 'Create this artist with its Discogs link');
+      ic.title = discAddTooltip(s);
       ic.title += '  ·  right-click: do it silently in a background tab';
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreateDiscogsLink(s); };
