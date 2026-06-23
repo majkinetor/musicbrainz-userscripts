@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.125454
+// @version      2026.6.23.132450
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -396,7 +396,14 @@
     const close = () => { _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
     pop.querySelector('.as-logpop-copy').onclick = () => copyLog(pop.querySelector('.as-logpop-copy'));
     const minBtn = pop.querySelector('.as-logpop-min');
-    minBtn.onclick = () => { const m = pop.classList.toggle('min'); minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize'; };
+    minBtn.onclick = () => {
+      const m = pop.classList.toggle('min');
+      minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+      if (m) {   // dock to the bottom of the screen, remembering the open position
+        pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+        pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none';
+      } else if (pop._restore) { Object.assign(pop.style, pop._restore); }
+    };
     pop.querySelector('.as-logpop-x').onclick = close;
     // floating, non-modal window — draggable by its header
     pop.querySelector('.as-logpop-h').addEventListener('mousedown', (e) => {
@@ -1318,7 +1325,11 @@
   const logErr = (ctx, e) => asLog('error', ctx + ' — ' + ((e && e.message) || e || 'unknown error'));
   const logCounts = () => LOG.reduce((a, e) => { if (e.sev === 'warn') a.warn++; else if (e.sev === 'error') a.error++; return a; }, { warn: 0, error: 0 });
   // escape, then turn http(s) URLs into clickable links for the log viewer
-  const _logLinkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  const _logLinkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, (m) => {
+    const t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];   // keep trailing punctuation out of the URL
+    const url = m.slice(0, m.length - t.length);
+    return `<a href="${url}" target="_blank" rel="noopener">${url}</a>${t}`;
+  });
   const _ts = d => { const p = (n, w = 2) => String(n).padStart(w, '0'); return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`; };
   const fmtBytes = n => (n == null) ? '?' : n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
   // Build the copy/pastable Markdown: a collapsed <details> wrapping a fenced log
@@ -2747,7 +2758,7 @@
   .as-logpop-copy,.as-logpop-x,.as-logpop-min{font-size:12px;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}
   .as-logpop-copy:hover,.as-logpop-x:hover,.as-logpop-min:hover{background:#e9e0f8}
   #as-logpop.min .as-log-list{display:none}
-  #as-logpop.min{max-height:none}
+  #as-logpop.min{max-height:none;width:auto}
   .as-log-badge{color:#9a8cba;font-size:11px}
   .as-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
   .as-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}

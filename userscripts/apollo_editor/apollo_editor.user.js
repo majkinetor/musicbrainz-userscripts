@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.23.130009
+// @version      2026.6.23.132449
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -59,7 +59,11 @@
   };
   const _logCounts = () => LOG.reduce((acc, e) => { if (e.sev === 'warn') acc.warn++; else if (e.sev === 'error') acc.error++; return acc; }, { warn: 0, error: 0 });
   // escape, then turn http(s) URLs into clickable links for the log viewer
-  const _logLinkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  const _logLinkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, (m) => {
+    const t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];   // keep trailing punctuation out of the URL
+    const url = m.slice(0, m.length - t.length);
+    return `<a href="${url}" target="_blank" rel="noopener">${url}</a>${t}`;
+  });
   // copy/pastable Markdown — collapsed <details> wrapping a fenced log block.
   function logMarkdown() {
     const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
@@ -101,7 +105,14 @@
     const close = () => { _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
     pop.querySelector('.tc-logpop-copy').onclick = () => copyLog(pop.querySelector('.tc-logpop-copy'));
     const minBtn = pop.querySelector('.tc-logpop-min');
-    minBtn.onclick = () => { const m = pop.classList.toggle('min'); minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize'; };
+    minBtn.onclick = () => {
+      const m = pop.classList.toggle('min');
+      minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+      if (m) {   // dock to the bottom of the screen, remembering the open position
+        pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+        pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none';
+      } else if (pop._restore) { Object.assign(pop.style, pop._restore); }
+    };
     pop.querySelector('.tc-logpop-x').onclick = close;
     // floating, non-modal window — draggable by its header
     pop.querySelector('.tc-logpop-h').addEventListener('mousedown', (e) => {
@@ -1015,7 +1026,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.23.130009';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.23.132449';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1388,7 +1399,7 @@
     #tc-logpop .tc-logpop-copy,#tc-logpop .tc-logpop-x,#tc-logpop .tc-logpop-min{font:12px Arial;color:#5f3ec0;background:#f3eefb;border:1px solid #c9b8ee;border-radius:5px;padding:2px 9px;cursor:pointer}
     #tc-logpop .tc-logpop-copy:hover,#tc-logpop .tc-logpop-x:hover,#tc-logpop .tc-logpop-min:hover{background:#e9e0f8}
     #tc-logpop.min .tc-log-list{display:none}
-    #tc-logpop.min{max-height:none}
+    #tc-logpop.min{max-height:none;width:auto}
     #tc-logpop .tc-log-badge{color:#9a8cba;font-size:11px}
     #tc-logpop .tc-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;background:#faf8fe;padding:8px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55}
     #tc-logpop .tc-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}
@@ -1587,7 +1598,7 @@
   // the exact same message (a mismatch/conflict reads differently from a plain add).
   function discAddTooltip(s) {
     const mism = s._discogsMismatch, conf = s._discogsConflict;
-    return mism ? `Discogs mismatch: this artist links discogs.com/artist/${discogsIdOf(mism)}, the release credits discogs.com/artist/${discogsIdOf(s._discogsUrl)} — click to add the release's link anyway`
+    return mism ? `Discogs mismatch: this artist links ${mism}, the release credits ${s._discogsUrl} — click to add the release's link anyway`
          : conf ? `Discogs links a different MB artist: ${conf.name} — click to add it to ${s.name || 'this artist'} anyway`
                 : (s.gid ? 'Add the Discogs link to this artist' : 'Create this artist with its Discogs link');
   }
