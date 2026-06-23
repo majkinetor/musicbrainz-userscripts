@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.015712
+// @version      2026.6.24.122021
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2151,6 +2151,7 @@
     if (op.skip) { st.textContent = '⏭'; return; }
     if (ctl && ctl.aborted) { st.textContent = '⛔'; setRowBar(row, 100, 'cancel'); return; }
     st.textContent = '⏳'; setRowBar(row, null, 'busy');
+    if (!meta.dry && !op.run) asLog.info(`${op.label} — applying…`);   // make each commit operation visible as it runs
     try {
       if (op.run) {                         // multi-step op (uploads) reports its own payload
         await op.run(meta, meta.dry, txt => { pay.textContent = txt; });
@@ -2195,13 +2196,15 @@
     await pool(addOps, 4, async op => {
       if (ctl && ctl.aborted) return stop(op);
       // #278: the live upload % drives the per-row bar (was a cramped inline "⏫94%")
-      try { await uploadStep(op.it, (l, t) => { setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl); setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); }
+      const sz = (op.it && op.it._fileObj && op.it._fileObj.size) ? ` (${fmtBytes(op.it._fileObj.size)})` : '';
+      asLog.info(`Upload: ${op.label}${sz} — uploading to archive.org…`);
+      try { await uploadStep(op.it, (l, t) => { setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl); setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); asLog.debug(`Upload: ${op.label} — uploaded, awaiting register`); }
       catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
     });  // parallel upload w/ progress (abortable via ctl)
     for (const op of addOps) {                                   // ordered register
       if (op._err) continue;
       if (ctl && ctl.aborted) { stop(op); continue; }
-      try { await registerStep(op.it, meta, ctl); setSt(op, '✅'); setRowBar(rowOf(op), 100, 'done'); asLog.ok(`Upload: ${op.label} registered`); }
+      try { await registerStep(op.it, meta, ctl); setSt(op, '✅'); setRowBar(rowOf(op), 100, 'done'); asLog.ok(`Upload: ${op.label} — registered on MusicBrainz ✓`); }
       catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
     }
   }
