@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.141606
+// @version      2026.6.24.151100
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -91,6 +91,15 @@
   const CAA = ENT.archive;                            // CAA for releases, EAA for events
   const imgUrl  = id => `${CAA}/${id}.jpg`;          // original
   const thumb   = (id, n) => `${CAA}/${id}-${n}.jpg`; // 250 / 500 / 1200
+
+  // reverse-image-search engines (find a higher-resolution copy of a cover) — each
+  // opens pre-loaded with the cover's public URL, so there's no download + drop.
+  const IMG_SEARCH_ENGINES = [
+    { name: 'Yandex',      u: url => `https://yandex.com/images/search?rpt=imageview&url=${encodeURIComponent(url)}` },
+    { name: 'Google Lens', u: url => `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(url)}` },
+    { name: 'TinEye',      u: url => `https://tineye.com/search?url=${encodeURIComponent(url)}` },
+    { name: 'Bing',        u: url => `https://www.bing.com/images/searchbyimage?cbir=sbi&imgurl=${encodeURIComponent(url)}` },
+  ];
 
   // canonical MB art types per entity, in a sensible display order; "(none)" is virtual.
   // Event art has its own vocabulary (Poster/Flyer/Setlist/…) — wholly distinct from cover art.
@@ -543,6 +552,7 @@
       ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Type ▾</button>
       <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="as-bt">Comment ▾</span></button>
       <button class="as-btn as-bk-dl" title="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="as-bt">Download</span></button>
+      <button class="as-btn as-bk-search" title="Reverse-image search the selected ${ITEM} for a higher-resolution copy"><span class="as-bi">🔍</span><span class="as-bt">Search</span></button>
       <button class="as-btn as-bk-report" title="Postable Markdown / HTML report of the selection"><span class="as-bi">📋</span><span class="as-bt">Report</span></button>
       <button class="as-btn as-bk-rm" title="Mark the selected ${ITEMS} for removal"><span class="as-bi">🗑️</span><span class="as-bt">Delete</span></button>` : ''}`;
   }
@@ -869,6 +879,7 @@
     });
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
     q('.as-bk-cmt') && (q('.as-bk-cmt').onclick = e => { e.stopPropagation(); openBulkCommentPop(q('.as-bk-cmt')); });
+    q('.as-bk-search') && (q('.as-bk-search').onclick = e => { e.stopPropagation(); openImageSearchPop(q('.as-bk-search')); });
     q('.as-bk-report') && (q('.as-bk-report').onclick = e => { e.stopPropagation(); openReport(); });
   }
   // right-button paint selection (held + move)
@@ -2611,6 +2622,30 @@
 
   // #236: set one comment on every selected cover at once. Pre-fills the shared
   // comment if they already agree; Apply writes it, Clear blanks them all.
+  // Reverse-image search a selected cover for a higher-res copy. Uses the first
+  // selected cover that has a public CAA URL (a still-local NEW file has no URL to
+  // search by). Each engine opens pre-loaded with that URL — no download + drop.
+  function openImageSearchPop(btn) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
+    const sel = MODEL.filter(it => it._sel && !it._del);
+    const it = sel.find(c => !c._new) || null;   // need a published (CAA) image
+    if (!it) { toast(sel.length ? 'Reverse search needs a published image — the selection is still local file(s)' : 'Select a cover first'); return; }
+    const url = imgUrl(it.id);   // the original full-size CAA image
+    const pop = document.createElement('div'); pop.className = 'as-pop as-search-pop';
+    pop.innerHTML = `<div class="as-pop-h">Search for a higher-res copy</div>`
+      + IMG_SEARCH_ENGINES.map((e, i) => `<button class="as-btn as-search-eng" data-i="${i}">${esc(e.name)}</button>`).join('');
+    document.body.appendChild(pop);
+    placePop(pop, btn.getBoundingClientRect());
+    pop.querySelectorAll('.as-search-eng').forEach(b => b.onclick = () => {
+      const eng = IMG_SEARCH_ENGINES[+b.dataset.i];
+      asLog.info(`Search: ${eng.name} ← ${it.types && it.types.length ? it.types.join('/') : ITEM} ${it.id}`);
+      window.open(eng.u(url), '_blank', 'noopener,noreferrer');
+      pop.remove();
+    });
+    const off = e => { if (!pop.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
+
   function openBulkCommentPop(btn) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
@@ -2965,6 +3000,8 @@
   .as-pop-f{display:flex;gap:6px;padding:6px 4px 2px;border-top:1px solid #eee;margin-top:4px;position:sticky;bottom:0;background:#fff}
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   .as-cmt-pop{min-width:220px}
+  .as-search-pop{display:flex;flex-direction:column;gap:2px;min-width:160px}
+  .as-search-pop .as-search-eng{display:block;width:100%;text-align:left}
   /* grow to fit all providers when the screen allows; no horizontal bar, and hide the
      vertical scrollbar chrome (still wheel-scrollable on a very short screen) */
   .as-src-pop{min-width:340px;max-width:90vw;width:max-content;max-height:calc(100vh - 20px);overflow-x:hidden;scrollbar-width:none}
