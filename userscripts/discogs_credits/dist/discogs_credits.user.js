@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.23.154626
+// @version      2026.6.24.140657
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -952,6 +952,12 @@
       linkType: "liner notes"
     },
     "A&R": {
+      entityType: "artist",
+      linkType: "misc"
+    },
+    // #291: no dedicated MB rel — the generic "misc" relationship carries the
+    // role name as its `task` attribute (mappers.js), so this lands as misc + task "research".
+    Research: {
       entityType: "artist",
       linkType: "misc"
     },
