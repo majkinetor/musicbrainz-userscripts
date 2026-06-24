@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station Picker
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.164210
+// @version      2026.6.24.164609
 // @description  Companion to Art Station: after you click "Search" on a cover in Art Station, click the higher-resolution image anywhere (the search results or the source site) and it's sent straight back to the Art Station gallery — no download + drop.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/as_picker/README.md
@@ -111,9 +111,12 @@
   const PROXY = /(\.mm\.bing\.net|th\.bing\.com|encrypted-tbn\d*\.gstatic\.com|tse\d*\.(?:mm\.bing\.net|explicit\.bing\.net))/i;
 
   const bestUrl = img => {
-    // Bing image search: the visible <img> is a proxy thumbnail; the real source URL
-    // lives in the result anchor's JSON `m` attribute (`murl`). Grab that instead.
+    // Bing image search: the visible <img> is a proxy thumbnail; the real source URL is
+    // elsewhere. In the detail/lightbox view it's the `mediaurl` URL param (the image
+    // you're looking at); in the results grid it's the result tile's JSON `m` attribute
+    // (`murl`). So clicking the badge works whether you open a thumb or not.
     if (/(^|\.)bing\.com$/i.test(location.hostname)) {
+      try { const mu = new URL(location.href).searchParams.get('mediaurl'); if (/^https?:\/\//i.test(mu || '')) return mu; } catch (e) {}
       const ius = img.closest && img.closest('.iusc, a.iusc, [m]');
       const m = ius && ius.getAttribute && ius.getAttribute('m');
       if (m) { try { const murl = JSON.parse(m).murl; if (/^https?:\/\//i.test(murl || '')) return murl; } catch (e) {} }
