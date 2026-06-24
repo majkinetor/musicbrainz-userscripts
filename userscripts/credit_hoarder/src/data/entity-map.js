@@ -443,6 +443,12 @@ export const ENTITY_TYPE_MAP = {
         entityType: 'artist',
         linkType: 'misc',
     },
+    // #291: no dedicated MB rel — the generic "misc" relationship carries the
+    // role name as its `task` attribute (mappers.js), so this lands as misc + task "research".
+    Research: {
+        entityType: 'artist',
+        linkType: 'misc',
+    },
     Advisor: {
         entityType: 'artist',
         linkType: 'misc',
