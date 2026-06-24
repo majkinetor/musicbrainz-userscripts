@@ -5,6 +5,9 @@ reverse-image **Search** action round-trip: after you click *Search* on a cover 
 Art Station and pick a higher-resolution copy somewhere, it's sent straight back to
 the gallery — no download-and-drop.
 
+<details><summary>Screenshot</summary><img src="./screenshot.png" width="60%" /></details>
+
+
 ## Why it's a separate script
 
 Art Station runs only on MusicBrainz cover-art pages. To grab the *full-resolution*
