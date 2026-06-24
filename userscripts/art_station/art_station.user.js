@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.164639
+// @version      2026.6.24.164722
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -3018,7 +3018,8 @@
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   .as-cmt-pop{min-width:220px}
   .as-search-pop{display:flex;flex-direction:column;gap:2px;min-width:160px}
-  .as-search-pop .as-search-eng{display:block;width:100%;text-align:left;border:none;background:none}
+  .as-search-pop .as-search-eng{display:block;width:100%;text-align:left;border:1px solid transparent;background:none}   /* borderless until hover (transparent border keeps it from shifting) */
+  .as-search-pop .as-search-eng:hover{border-color:#cfc6e6}
   .as-search-pop .as-search-foot{margin-top:6px;padding:7px 6px 2px;border-top:1px solid #eee;font-size:11px;line-height:1.45;color:#9a8ccb}
   .as-search-pop .as-search-foot a{color:var(--as-acc);font-weight:600;text-decoration:none}
   .as-search-pop .as-search-foot a:hover{text-decoration:underline}
