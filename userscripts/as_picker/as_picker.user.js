@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station Picker
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.171023
+// @version      2026.6.24.174906
 // @description  Companion to Art Station: after you click "Search" on a cover in Art Station, click the higher-resolution image anywhere (the search results or the source site) and it's sent straight back to the Art Station gallery — no download + drop.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/as_picker/README.md
@@ -65,22 +65,27 @@
       if (!q.length) return;
       if (!pageWin().ArtStation) { setTimeout(flush, 400); return; }   // wait for AS to load
       flushing = true;
-      // Only take picks tagged for THIS release (or untagged/legacy); leave the rest
-      // queued for the release they belong to. Expire orphans older than 2h.
-      const mine = [], rest = [], cutoff = now() - 2 * 60 * 60 * 1000;
+      // Claim a pick only if it's tagged for THIS release (our MBID). An UNTAGGED pick
+      // (old Art Station, or a capture failure) is claimed ONLY by the focused tab —
+      // never broadcast to every open release, which is what made one grab land on all
+      // of them. CRUCIAL: only a tab that actually claims (or expires) something rewrites
+      // the queue — a non-claiming tab leaving it alone can't race-restore an item that
+      // another tab took at the same instant (the other half of the "added to all" bug).
+      const mine = [], rest = [], cutoff = now() - 2 * 60 * 60 * 1000; let changed = false;
       q.forEach(it => {
         const o = (typeof it === 'string') ? { url: it, mbid: '' } : (it || {});
-        if (!o.url) return;
-        if (o.t && o.t < cutoff) return;
-        if (!o.mbid || o.mbid === pageMbid) mine.push(o.url); else rest.push(it);
+        if (!o.url || (o.t && o.t < cutoff)) { changed = true; return; }   // drop blanks / expired orphans
+        const isMine = o.mbid ? (o.mbid === pageMbid) : document.hasFocus();
+        if (isMine) { mine.push(o.url); changed = true; } else rest.push(it);
       });
-      setArr(QUEUE, rest);                                             // write back first → no double-add from another MB tab
+      if (changed) setArr(QUEUE, rest);
       mine.forEach(url => { try { document.dispatchEvent(new CustomEvent('artstation:add-image', { detail: { url } })); } catch (e) {} });
       flushing = false;
     };
     flush();
     try { GM_addValueChangeListener(QUEUE, () => flush()); } catch (e) {}                 // instant pick → appear, even in the background
     document.addEventListener('visibilitychange', () => { if (!document.hidden) flush(); });
+    window.addEventListener('focus', flush);                                             // untagged picks land on the tab you focus
     return;
   }
 
