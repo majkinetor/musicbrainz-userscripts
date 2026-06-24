@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24
+// @version      2026.6.24.195310
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1062,7 +1062,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.24.125100';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.24.195310';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1222,7 +1222,7 @@
     .tc-mirror tr.tc-changed td:first-child{box-shadow:inset 3px 0 0 #5f3ec0}   /* a track that differs from its page-load state */
     /* one artist = one aligned fixed-height line: credited-as · icon · search box · acts (no line between artists) */
     .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box}
-    .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px 1px 15px}
+    .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:#1c1c1c;border:1px solid transparent;background:transparent;padding:1px 4px 1px 15px;transition:color .12s}
     .tc-cred::placeholder{color:#cfcfcf}
     .tc-credwrap{position:relative;flex:none;display:inline-flex;align-items:center}
     .tc-cred-clr{position:absolute;left:2px;top:50%;transform:translateY(-50%);z-index:2;display:none;border:none;background:none;color:#bbb;cursor:pointer;font-size:12px;line-height:1;padding:0}
@@ -1236,15 +1236,18 @@
     .tc-tic.discogs-add{color:#0a7a8c;cursor:pointer;background:#d6eff3;border-radius:4px}.tc-tic.discogs-add:hover{color:#075e6b;background:#bfe6ed}
     .tc-tic.discogs-warn{color:#b26a00;cursor:pointer;background:#fdecc8;border-radius:4px}.tc-tic.discogs-warn:hover{color:#915700;background:#fbe0a8}
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
-    .tc-search{flex:1 1 0;min-width:0;align-self:stretch;display:flex;align-items:center;gap:4px;border:none;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden}   /* unmatched = plain white; the green fill marks a match */
+    .tc-search{flex:1 1 0;min-width:0;align-self:stretch;display:flex;align-items:center;gap:4px;border:none;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden;transition:box-shadow .12s}   /* unmatched = plain white; the green fill marks a match. transition: fade the #284 hover-highlight ring in/out */
     .tc-nm-clr{flex:none;display:none;border:none;background:none;color:#bbb;cursor:pointer;font-size:13px;line-height:1;padding:0 1px}
     .tc-search.tc-has-nm:hover .tc-nm-clr{display:inline-flex}
     .tc-nm-clr:hover{color:#c0392b}
     .tc-search:focus-within{box-shadow:inset 0 0 0 1px #b9a4e0}
     .tc-search.matched{background:#e3f4e7}
     /* #284: hover-highlight every instance of the same artist (ring keeps the underlying matched/unmatched colour) */
-    .tc-aslot.tc-arthl .tc-search{box-shadow:inset 0 0 0 2px #7a4fd0}
-    .tc-aslot.tc-arthl .tc-cred{color:#5f3ec0;font-weight:600}
+    /* #284 hover-highlight: a soft 1px ring + faint inset wash (box-shadow, so it doesn't
+       disturb the matched-green BACKGROUND), and no bold (which reflowed → the "jump").
+       The base .tc-search/.tc-cred carry a short transition so it fades in AND out. */
+    .tc-aslot.tc-arthl .tc-search{box-shadow:inset 0 0 0 1px #b79ee8, inset 0 0 0 100px rgba(123,79,208,.06)}
+    .tc-aslot.tc-arthl .tc-cred{color:#6a4fb0}
     /* "Alternate row colors": tint the matched box a touch deeper on every other track (per row, so a
        multi-artist group stays one shade) — the only way the banding shows through the green fill */
     .tc-mirror.alt tbody tr:nth-child(even) .tc-search.matched{background:#d6ecdd}
