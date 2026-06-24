@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.151100
+// @version      2026.6.24.152414
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1611,9 +1611,14 @@
   // expose the registry on the page (and a CustomEvent fallback for managers that
   // isolate `window` from other userscripts). Either way is fine to call repeatedly.
   (function exposeApi() {
-    const api = { apiVersion: 1, registerProvider };
+    // addImageUrl: bring an image in by URL — the bridge the reverse-image-search
+    // picker companion (as_picker.user.js) calls when it lands on the MB page with
+    // images the user picked elsewhere. Returns true so the companion knows AS is here.
+    const api = { apiVersion: 1, registerProvider, addImageUrl: (url, prov) => { sourceFromUrl(url, prov); return true; } };   // no prov → sourceFromUrl derives name+favicon from the host
     try { (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).ArtStation = api; } catch (e) { try { window.ArtStation = api; } catch (x) {} }
     try { document.addEventListener('artstation:register-provider', e => { try { registerProvider(e.detail); } catch (x) {} }); } catch (e) {}
+    // also accept picks via a DOM event (the companion may prefer this over the API object)
+    try { document.addEventListener('artstation:add-image', e => { try { if (e.detail && e.detail.url) api.addImageUrl(e.detail.url, e.detail.prov); } catch (x) {} }); } catch (e) {}
   })();
   // prov (optional) = { name, icon } the cover is being sourced from — passed by the
   // "Import from <provider>" buttons, else derived from the URL. Stamped on each new
@@ -2639,7 +2644,10 @@
     pop.querySelectorAll('.as-search-eng').forEach(b => b.onclick = () => {
       const eng = IMG_SEARCH_ENGINES[+b.dataset.i];
       asLog.info(`Search: ${eng.name} ← ${it.types && it.types.length ? it.types.join('/') : ITEM} ${it.id}`);
-      window.open(eng.u(url), '_blank', 'noopener,noreferrer');
+      // #mb-as-pick activates the picker companion (as_picker.user.js, if installed):
+      // it lets you click the higher-res image anywhere and sends it back here. Harmless
+      // if the companion isn't installed (engines ignore the unknown hash).
+      window.open(eng.u(url) + '#mb-as-pick', '_blank', 'noopener,noreferrer');
       pop.remove();
     });
     const off = e => { if (!pop.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
