@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station Picker
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.165118
+// @version      2026.6.24.170958
 // @description  Companion to Art Station: after you click "Search" on a cover in Art Station, click the higher-resolution image anywhere (the search results or the source site) and it's sent straight back to the Art Station gallery — no download + drop.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/as_picker/README.md
@@ -29,21 +29,31 @@
 
 (function () {
   'use strict';
-  const SESS = 'aspick:until', QUEUE = 'aspick:queue';
+  const SESS = 'aspick:until', QUEUE = 'aspick:queue', MBKEY = 'aspick:mbid';
   const now = () => Date.now();
   const getNum = k => { try { return +GM_getValue(k, 0) || 0; } catch (e) { return 0; } };
   const getArr = k => { try { return JSON.parse(GM_getValue(k, '[]') || '[]'); } catch (e) { return []; } };
   const setArr = (k, v) => { try { GM_setValue(k, JSON.stringify(v)); } catch (e) {} };
   const pageWin = () => (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
-  // Art Station opened us with mb_as_pick=1 → open a 30-min picking window. It's a
-  // query param (not a #hash): Yandex's image SPA blanks its results when there's an
-  // unexpected hash, but ignores an unknown query param. The /mb[-_]as[-_]pick/ regex
-  // still also matches the legacy `#mb-as-pick` hash, for older Art Station builds.
-  if (/mb[-_]as[-_]pick/i.test(location.href)) { try { GM_setValue(SESS, now() + 30 * 60 * 1000); } catch (e) {} }
+  // Art Station opened us with mb_as_pick=<release MBID> → open a 30-min picking window
+  // and remember which release it's for, so every pick is tagged with that MBID and can
+  // only ever land back on THAT release's cover-art page (not whatever release you open
+  // next). It's a query param (not a #hash): Yandex's image SPA blanks its results on an
+  // unexpected hash but ignores an unknown query param. The regex also matches a bare
+  // `mb_as_pick` / legacy `#mb-as-pick` (no value) → empty MBID = add anywhere.
+  const sig = location.href.match(/mb[-_]as[-_]pick(?:=([^&#]*))?/i);
+  if (sig) {
+    try {
+      GM_setValue(SESS, now() + 30 * 60 * 1000);
+      let v = ''; try { v = decodeURIComponent(sig[1] || ''); } catch (e) { v = sig[1] || ''; }
+      GM_setValue(MBKEY, /^[0-9a-f-]{36}$/i.test(v) ? v : '');
+    } catch (e) {}
+  }
 
   const onMB = /(^|\.)musicbrainz\.org$/i.test(location.hostname)
     && /\/(release|event)\/[0-9a-f-]{36}\/(add-)?(cover|event)-art/i.test(location.pathname);
+  const pageMbid = (location.pathname.match(/\/(?:release|event)\/([0-9a-f-]{36})/i) || [])[1] || '';
 
   // ── On the MB art page: drain the queue into Art Station ────────────────────
   if (onMB) {
@@ -53,8 +63,18 @@
       const q = getArr(QUEUE);
       if (!q.length) return;
       if (!pageWin().ArtStation) { setTimeout(flush, 400); return; }   // wait for AS to load
-      flushing = true; setArr(QUEUE, []);                              // clear first → no double-add from another MB tab
-      q.forEach(url => { try { document.dispatchEvent(new CustomEvent('artstation:add-image', { detail: { url } })); } catch (e) {} });
+      flushing = true;
+      // Only take picks tagged for THIS release (or untagged/legacy); leave the rest
+      // queued for the release they belong to. Expire orphans older than 2h.
+      const mine = [], rest = [], cutoff = now() - 2 * 60 * 60 * 1000;
+      q.forEach(it => {
+        const o = (typeof it === 'string') ? { url: it, mbid: '' } : (it || {});
+        if (!o.url) return;
+        if (o.t && o.t < cutoff) return;
+        if (!o.mbid || o.mbid === pageMbid) mine.push(o.url); else rest.push(it);
+      });
+      setArr(QUEUE, rest);                                             // write back first → no double-add from another MB tab
+      mine.forEach(url => { try { document.dispatchEvent(new CustomEvent('artstation:add-image', { detail: { url } })); } catch (e) {} });
       flushing = false;
     };
     flush();
@@ -148,7 +168,8 @@
     const url = bestUrl(curImg);
     if (!/^https?:\/\//i.test(url)) { toast('Open the full image first — that looks like an inline / preview image', '#c0392b'); return; }
     if (PROXY.test(url)) { toast("That's a search-engine thumbnail proxy, not the original — open the result on its source site, then click here", '#c0392b'); return; }
-    const q = getArr(QUEUE); q.push(url); setArr(QUEUE, q);
+    let mbid = ''; try { mbid = GM_getValue(MBKEY, '') || ''; } catch (e) {}   // the release this search was launched from
+    const q = getArr(QUEUE); q.push({ url, mbid, t: now() }); setArr(QUEUE, q);
     toast('Sent to Art Station ✓'); hide();
   };
 

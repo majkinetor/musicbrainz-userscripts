@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.165702
+// @version      2026.6.24.170958
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2648,12 +2648,14 @@
     pop.querySelectorAll('.as-search-eng').forEach(b => b.onclick = () => {
       const eng = IMG_SEARCH_ENGINES[+b.dataset.i];
       asLog.info(`Search: ${eng.name} ← ${it.types && it.types.length ? it.types.join('/') : ITEM} ${it.id}`);
-      // mb_as_pick=1 activates the picker companion (as_picker.user.js, if installed):
-      // it lets you click the higher-res image anywhere and sends it back here. Harmless
-      // if the companion isn't installed (engines ignore the unknown query param). NB: a
-      // *query* param, not a #hash — Yandex's SPA blanks its results when there's an
-      // unexpected hash, but ignores an unknown query param (verified).
-      window.open(eng.u(url) + '&mb_as_pick=1', '_blank', 'noopener,noreferrer');
+      // mb_as_pick=<MBID> activates the picker companion (as_picker.user.js, if installed):
+      // it lets you click the higher-res image anywhere and sends it back here. The value
+      // is THIS release's MBID so the companion tags each pick with it — a pick stays
+      // destined for this release even if this tab is closed, so it can't leak onto some
+      // other release's cover-art page. Harmless if the companion isn't installed (engines
+      // ignore the unknown query param). NB: a *query* param, not a #hash — Yandex's SPA
+      // blanks its results on an unexpected hash, but ignores an unknown query param.
+      window.open(eng.u(url) + '&mb_as_pick=' + MBID, '_blank', 'noopener,noreferrer');
       pop.remove();
     });
     const off = e => { if (!pop.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
