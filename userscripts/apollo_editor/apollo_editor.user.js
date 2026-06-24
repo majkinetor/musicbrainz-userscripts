@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24
+// @version      2026.6.24.193425
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -201,6 +201,7 @@
   function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
+  let _cfgTab = 'general';   // remembered settings tab (#294), per session
 
   // FOUC guard (we run at document-start): on the standalone Edit annotation page, hide the native form until our
   // editor mounts (and removes #tc-anno-fouc), so the original interface never flashes. Skipped when off.
@@ -1062,7 +1063,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.24.125100';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.24.193425';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1464,6 +1465,13 @@
     #tc-settings .tc-s-row input[type=radio]{margin:0}
     #tc-settings #tc-s-lentol,#tc-settings #tc-s-titletol,#tc-settings #tc-s-punctsize{width:48px;font:13px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px}
     #tc-settings #tc-s-hlcolor{width:34px;height:22px;padding:0;border:1px solid #bbb;border-radius:3px;cursor:pointer;background:none}
+    /* #294 tabbed config: one short pane at a time instead of one tall column */
+    #tc-settings .tc-tabs{display:flex;gap:2px;margin:0 0 8px;border-bottom:1px solid #e3dcf2}
+    #tc-settings .tc-tab-btn{flex:1;font:600 12px Arial;color:#888;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;padding:5px 4px 7px;cursor:pointer}
+    #tc-settings .tc-tab-btn:hover{color:#5f3ec0}
+    #tc-settings .tc-tab-btn.active{color:#563b8f;border-bottom-color:#7d4fd0}
+    #tc-settings .tc-tab-pane[hidden]{display:none}
+    #tc-settings .tc-tab-pane .tc-s-top{margin-top:0}
     #tc-settings .tc-s-row.lentol{gap:7px}
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:99998;display:inline-flex;align-items:stretch;background:#5f3ec0;color:#fff;border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
     #tc-launch .tc-launch-lbl{padding:8px 13px;cursor:pointer}
@@ -1538,47 +1546,64 @@
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
     s.innerHTML = `<h4>${ICON} Apollo Editor <span class="tc-ver" title="installed script version">v${scriptVersion()}</span><button class="tc-logbtn" type="button" title="Open the activity log">Log</button><a class="tc-help" href="${HELP_URL}" target="_blank" rel="noopener" title="open the README in a new tab">? Help</a></h4>
-      <div class="tc-s-group tc-s-top">
-        <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
-        <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
-        <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
-        <label title="On the Add-release Duplicates tab, add a Similarity column scoring how closely each existing release matches the one you are entering (by track-title overlap), coloured red→green — so you can pick the right release to base yours on."><input type="checkbox" id="tc-s-moddupes"> <span>Modify Duplicates</span></label>
-        <label title="Edit the annotation as Markdown with a live preview, in the release editor's Additional information and on the standalone Edit annotation page."><input type="checkbox" id="tc-s-modanno"> <span>Modify annotations with Markdown</span></label>
-        <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
-        <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
-        <label title="When another site seeds the Add/Edit-release form, MusicBrainz shows a confirmation page before the editor — automatically click its submit button to skip that step (integrates chaban's auto-confirm script). Add ?skip_confirmation to a seed URL to bypass it once."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
+      <div class="tc-tabs" role="tablist">
+        <button type="button" class="tc-tab-btn" data-tab="general">General</button>
+        <button type="button" class="tc-tab-btn" data-tab="matching">Matching</button>
+        <button type="button" class="tc-tab-btn" data-tab="appearance">Appearance</button>
       </div>
-      <div class="tc-s-sec">Matching</div>
-      <div class="tc-s-group">
-        <div class="tc-s-row"><b class="tc-s-sub">Auto-match on start</b><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label></div>
-        <label title="When the release has a Discogs link, match each track artist by its Discogs URL (a strong, human-verified signal) before the name search. A single linked MusicBrainz artist is used directly; several are offered as candidates."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
-        <div class="tc-s-sub">Recording</div>
-        <div class="tc-s-group">
-          <div class="tc-s-row lentol" title="A length difference up to this many seconds counts as a match (not a length mismatch)."><span>Length tolerance</span><input type="number" id="tc-s-lentol" min="0" max="60" step="1"> <span>seconds</span></div>
-          <div class="tc-s-row lentol" title="Allow up to this many differing characters in the title (edit distance) and still count it as a match. 0 = exact."><span>Title tolerance</span><input type="number" id="tc-s-titletol" min="0" max="20" step="1"> <span>characters</span></div>
-          <label title="Treat a case / accent / spacing-only difference in title or artist as a match (recommended)."><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
-          <label title="Ignore punctuation &amp; symbols in titles/artists (&amp; → and, brackets, quotes, dashes, dots…)."><input type="checkbox" id="tc-s-ignorepunct"> <span>Ignore punctuation</span></label>
-          <div class="tc-s-row" style="gap:8px"><label title="Highlight the exact differing characters in a mismatching title (instead of the whole field), and shade a length mismatch by how large the gap is."><input type="checkbox" id="tc-s-detailhl"> <span>Enable detailed highlighting</span></label><input type="color" id="tc-s-hlcolor" title="Highlight colour — the differing characters and the length-mismatch shading"></div>
+      <div class="tc-tab-pane" data-pane="general">
+        <div class="tc-s-group tc-s-top">
+          <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
+          <label title="Replace the native Tracklist editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
+          <label title="Replace the native Recordings editor with the Apollo table on page load. The Original/Apollo button still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
+          <label title="On the Add-release Duplicates tab, add a Similarity column scoring how closely each existing release matches the one you are entering (by track-title overlap), coloured red→green — so you can pick the right release to base yours on."><input type="checkbox" id="tc-s-moddupes"> <span>Modify Duplicates</span></label>
+          <label title="Edit the annotation as Markdown with a live preview, in the release editor's Additional information and on the standalone Edit annotation page."><input type="checkbox" id="tc-s-modanno"> <span>Modify annotations with Markdown</span></label>
+          <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
+          <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
+          <label title="When another site seeds the Add/Edit-release form, MusicBrainz shows a confirmation page before the editor — automatically click its submit button to skip that step (integrates chaban's auto-confirm script). Add ?skip_confirmation to a seed URL to bypass it once."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
         </div>
       </div>
-      <div class="tc-s-sec">Appearance</div>
-      <div class="tc-s-group">
-        <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="normal"> normal</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
-        <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
-        <div class="tc-s-row"><span>Show grid</span><label class="tc-s-rad" title="vertical column separators"><input type="checkbox" id="tc-s-gridcols"> columns</label><label class="tc-s-rad" title="horizontal lines between tracks"><input type="checkbox" id="tc-s-gridrows"> rows</label></div>
-        <div class="tc-s-row" title="In the detailed-highlight diff, enlarge a differing punctuation / confusable / invisible character (straight vs curly quote, hyphen vs dash, no-break space…) by this many pixels so look-alikes are obvious. 0 = no enlargement (hover tooltip still names the character)."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = off)</span></div>
-        <label title="Moving between tracklist cells with ↑ / ↓ / Enter keeps the text caret at the same column (clamped to the field's length) so you can fix casing or edit in place. Off: select the whole field on arrival (so the next keystroke overwrites it)."><input type="checkbox" id="tc-s-keepcaret"> <span>Keep caret position on row navigation</span></label>
-        <label title="When you hover an artist in the tracklist, highlight every other slot where that same artist appears (#284). Off by default."><input type="checkbox" id="tc-s-hoverhl"> <span>Highlight all instances of an artist on hover</span></label>
+      <div class="tc-tab-pane" data-pane="matching" hidden>
+        <div class="tc-s-group">
+          <div class="tc-s-row"><b class="tc-s-sub">Auto-match on start</b><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label></div>
+          <label title="When the release has a Discogs link, match each track artist by its Discogs URL (a strong, human-verified signal) before the name search. A single linked MusicBrainz artist is used directly; several are offered as candidates."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
+          <div class="tc-s-sub">Recording</div>
+          <div class="tc-s-group">
+            <div class="tc-s-row lentol" title="A length difference up to this many seconds counts as a match (not a length mismatch)."><span>Length tolerance</span><input type="number" id="tc-s-lentol" min="0" max="60" step="1"> <span>seconds</span></div>
+            <div class="tc-s-row lentol" title="Allow up to this many differing characters in the title (edit distance) and still count it as a match. 0 = exact."><span>Title tolerance</span><input type="number" id="tc-s-titletol" min="0" max="20" step="1"> <span>characters</span></div>
+            <label title="Treat a case / accent / spacing-only difference in title or artist as a match (recommended)."><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
+            <label title="Ignore punctuation &amp; symbols in titles/artists (&amp; → and, brackets, quotes, dashes, dots…)."><input type="checkbox" id="tc-s-ignorepunct"> <span>Ignore punctuation</span></label>
+            <div class="tc-s-row" style="gap:8px"><label title="Highlight the exact differing characters in a mismatching title (instead of the whole field), and shade a length mismatch by how large the gap is."><input type="checkbox" id="tc-s-detailhl"> <span>Enable detailed highlighting</span></label><input type="color" id="tc-s-hlcolor" title="Highlight colour — the differing characters and the length-mismatch shading"></div>
+          </div>
+        </div>
+      </div>
+      <div class="tc-tab-pane" data-pane="appearance" hidden>
+        <div class="tc-s-group">
+          <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="normal"> normal</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
+          <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
+          <div class="tc-s-row"><span>Show grid</span><label class="tc-s-rad" title="vertical column separators"><input type="checkbox" id="tc-s-gridcols"> columns</label><label class="tc-s-rad" title="horizontal lines between tracks"><input type="checkbox" id="tc-s-gridrows"> rows</label></div>
+          <div class="tc-s-row" title="In the detailed-highlight diff, enlarge a differing punctuation / confusable / invisible character (straight vs curly quote, hyphen vs dash, no-break space…) by this many pixels so look-alikes are obvious. 0 = no enlargement (hover tooltip still names the character)."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = off)</span></div>
+          <label title="Moving between tracklist cells with ↑ / ↓ / Enter keeps the text caret at the same column (clamped to the field's length) so you can fix casing or edit in place. Off: select the whole field on arrival (so the next keystroke overwrites it)."><input type="checkbox" id="tc-s-keepcaret"> <span>Keep caret position on row navigation</span></label>
+          <label title="When you hover an artist in the tracklist, highlight every other slot where that same artist appears (#284). Off by default."><input type="checkbox" id="tc-s-hoverhl"> <span>Highlight all instances of an artist on hover</span></label>
+        </div>
       </div>`;
     document.body.appendChild(s);
-    const r = anchor ? anchor.getBoundingClientRect() : { left: 60, bottom: 80 };
+    const r = anchor ? anchor.getBoundingClientRect() : { left: 60, right: 60, bottom: 80 };
     // keep it fully on-screen — right-align to the gear if it would overflow (uses the real width), and
-    // clamp/scroll vertically so a tall dialog never runs off the bottom (#119)
-    s.style.left = Math.max(8, Math.min(r.right - s.offsetWidth, window.innerWidth - s.offsetWidth - 10)) + 'px';
+    // clamp/scroll vertically so a tall dialog never runs off the bottom (#119). Re-run on each tab
+    // switch since panes differ in height.
     const maxH = window.innerHeight - 16; s.style.maxHeight = maxH + 'px'; s.style.overflowY = 'auto';
-    const h = Math.min(s.offsetHeight, maxH); let top = r.bottom + 6;
-    if (top + h > window.innerHeight - 8) top = Math.max(8, window.innerHeight - h - 8);
-    s.style.top = top + 'px';
+    const place = () => {
+      s.style.left = Math.max(8, Math.min(r.right - s.offsetWidth, window.innerWidth - s.offsetWidth - 10)) + 'px';
+      const h = Math.min(s.offsetHeight, maxH); let top = r.bottom + 6;
+      if (top + h > window.innerHeight - 8) top = Math.max(8, window.innerHeight - h - 8);
+      s.style.top = top + 'px';
+    };
+    // tabs: show one pane at a time so the panel stays short (#294)
+    const tabBtns = s.querySelectorAll('.tc-tab-btn'), panes = s.querySelectorAll('.tc-tab-pane');
+    const showTab = name => { _cfgTab = name; tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name)); panes.forEach(p => { p.hidden = p.dataset.pane !== name; }); place(); };
+    tabBtns.forEach(b => b.onclick = () => showTab(b.dataset.tab));
+    showTab(_cfgTab);
     const am = s.querySelector('#tc-s-automatch'), amRec = s.querySelector('#tc-s-automatchrec'), alt = s.querySelector('#tc-s-alt'), gridcols = s.querySelector('#tc-s-gridcols'), gridrows = s.querySelector('#tc-s-gridrows');
     am.checked = SETTINGS.autoMatch !== false; amRec.checked = !!SETTINGS.autoMatchRec; alt.checked = !!SETTINGS.altRows; gridcols.checked = !!SETTINGS.gridCols; gridrows.checked = SETTINGS.gridRows !== false;
     const curLayout = SETTINGS.layout || 'normal';
