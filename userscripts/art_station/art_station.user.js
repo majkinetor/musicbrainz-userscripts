@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.122021
+// @version      2026.6.24.141606
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1922,7 +1922,9 @@
     return Promise.all(entries.map(walk)).then(() => out);
   }
   function pickFiles() {
-    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*,.pdf'; inp.multiple = true;
+    // Only the types MusicBrainz / the Cover Art Archive accept — `image/*` was too
+    // broad (it offered webp, bmp, … which CAA rejects). JPEG · PNG · GIF · PDF.
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/gif,application/pdf'; inp.multiple = true;
     inp.onchange = () => addFiles(inp.files);
     inp.click();
   }
