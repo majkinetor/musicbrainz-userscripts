@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.195310
+// @version      2026.6.24.202508
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -202,6 +202,16 @@
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   let _cfgTab = 'general';   // remembered settings tab (#294), per session
+  // measure a name's pixel width so an artist input can shrink-wrap to its text (so the
+  // clear × hugs the name instead of sitting at the box's far right). #284 follow-up.
+  const _nmMeasCtx = (() => { try { return document.createElement('canvas').getContext('2d'); } catch (e) { return null; } })();
+  const fitNmWidth = inp => {
+    if (!_nmMeasCtx) return;
+    const v = inp.value;
+    if (!v) { inp.style.width = ''; return; }   // empty → let flex give it the full width
+    _nmMeasCtx.font = '13px Arial';   // matches .tc-search .nm
+    inp.style.width = (Math.ceil(_nmMeasCtx.measureText(v).width) + 5) + 'px';
+  };
 
   // FOUC guard (we run at document-start): on the standalone Edit annotation page, hide the native form until our
   // editor mounts (and removes #tc-anno-fouc), so the original interface never flashes. Skipped when off.
@@ -1063,7 +1073,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.24.195310';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.24.202508';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1238,8 +1248,10 @@
     .tc-tic.discogs-warn{color:#b26a00;cursor:pointer;background:#fdecc8;border-radius:4px}.tc-tic.discogs-warn:hover{color:#915700;background:#fbe0a8}
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
     .tc-search{flex:1 1 0;min-width:0;align-self:stretch;display:flex;align-items:center;gap:4px;border:none;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden;transition:box-shadow .12s}   /* unmatched = plain white; the green fill marks a match. transition: fade the #284 hover-highlight ring in/out */
-    .tc-nm-clr{flex:none;display:none;border:none;background:none;color:#bbb;cursor:pointer;font-size:13px;line-height:1;padding:0 1px}
-    .tc-search.tc-has-nm:hover .tc-nm-clr{display:inline-flex}
+    .tc-nm-clr{flex:none;display:none;align-items:center;border:none;background:none;color:#bbb;cursor:pointer;font-size:16px;line-height:1;padding:0 2px;visibility:hidden}   /* a little bigger */
+    .tc-search.tc-has-nm .tc-nm-clr{display:inline-flex}              /* a filled slot always reserves the × slot (invisible) → hover doesn't shift the text */
+    .tc-search.tc-has-nm:hover .tc-nm-clr{visibility:visible}
+    .tc-search.tc-has-nm .nm:not(:focus){flex:0 1 auto}              /* when not editing, size the input to the name (its size attr) so the × sits right after it. Focused stays full-width for comfortable typing */
     .tc-nm-clr:hover{color:#c0392b}
     .tc-search:focus-within{box-shadow:inset 0 0 0 1px #b9a4e0}
     .tc-search.matched{background:#e3f4e7}
@@ -2269,7 +2281,9 @@
     // #228: hover × right after the name clears the field (and unsets a matched
     // artist — the input handler un-links on an empty value)
     const nmClr = document.createElement('button'); nmClr.type = 'button'; nmClr.className = 'tc-nm-clr'; nmClr.textContent = '×'; nmClr.title = 'clear / unset the artist';
-    const updNmClr = () => search.classList.toggle('tc-has-nm', !!inp.value.trim());
+    // size the input to its text (so the clear × hugs the name when not editing — #284 follow-up);
+    // `size` is in characters, close enough. Min 2 keeps a clicked-but-empty field usable.
+    const updNmClr = () => { const v = inp.value.trim(); search.classList.toggle('tc-has-nm', !!v); fitNmWidth(inp); };
     nmClr.onmousedown = e => e.preventDefault();
     nmClr.onclick = () => { inp.value = ''; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.focus(); updNmClr(); };
     inp.addEventListener('input', updNmClr);
