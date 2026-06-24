@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station Picker
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.181311
+// @version      2026.6.24.182319
 // @description  Companion to Art Station: after you click "Search" on a cover in Art Station, click the higher-resolution image anywhere (the search results or the source site) and it's sent straight back to the Art Station gallery — no download + drop.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/as_picker/README.md
@@ -37,6 +37,31 @@
   const setArr = (k, v) => { try { GM_setValue(k, JSON.stringify(v)); } catch (e) {} };
   const pageWin = () => (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
+  // ── auto-stop: keep the session alive only while a DRIVER tab is open ──────────────
+  // A driver is a tab that launched a search (saw mb_as_pick) or where you clicked a
+  // pick. Each driver writes a liveness "beat" into shared GM storage (keyed by a
+  // per-tab id kept in sessionStorage, so it survives the tab's own navigations to a
+  // source site but dies when the tab is closed). EVERY tab prunes stale beats and, if
+  // none remain while a session is active, ends the session — so closing your search
+  // tab makes the picking bar disappear everywhere. STALE is generous so a backgrounded
+  // (timer-throttled) but still-open tab isn't mistaken for closed.
+  const BEATS = 'aspick:beats', STALE = 90000, BEAT_MS = 20000;
+  let onSessionEnd = null;   // a picker tab sets this to tear down its own bar
+  const driverId = () => { try { return sessionStorage.getItem('aspick:tab'); } catch (e) { return null; } };
+  const becomeDriver = () => { try { if (!sessionStorage.getItem('aspick:tab')) sessionStorage.setItem('aspick:tab', 'd' + now() + Math.random().toString(36).slice(2, 6)); } catch (e) {} };
+  function beatTick() {
+    if (getNum(SESS) <= now()) return;   // no active session → nothing to keep alive or watch (keeps idle tabs cheap)
+    let beats; try { beats = JSON.parse(GM_getValue(BEATS, '{}') || '{}'); } catch (e) { beats = {}; }
+    const id = driverId(); if (id) beats[id] = now();        // I'm a driver → record liveness
+    const cutoff = now() - STALE;
+    for (const k of Object.keys(beats)) if (beats[k] < cutoff) delete beats[k];
+    try { GM_setValue(BEATS, JSON.stringify(beats)); } catch (e) {}
+    if (!Object.keys(beats).length) {   // every driver tab gone → stop everywhere
+      try { GM_setValue(SESS, 0); } catch (e) {}
+      if (onSessionEnd) onSessionEnd();
+    }
+  }
+
   // Art Station opened us with mb_as_pick=<release MBID> → open a 30-min picking window
   // and remember which release it's for, so every pick is tagged with that MBID and can
   // only ever land back on THAT release's cover-art page (not whatever release you open
@@ -50,8 +75,17 @@
       GM_setValue(SESS, now() + 30 * 60 * 1000);
       let v = ''; try { v = decodeURIComponent(sig[1] || ''); } catch (e) { v = sig[1] || ''; }
       GM_setValue(MBKEY, /^[0-9a-f-]{36}$/i.test(v) ? v : '');
+      becomeDriver(); beatTick();   // this tab drives the session; beat NOW so no other tab sees an active-but-driverless session
     } catch (e) {}
   }
+
+  // run the liveness watchdog in EVERY tab (incl. the MB tab and unrelated pages) so any
+  // open tab can notice the driver tab(s) closed and stop the session. Refresh on focus /
+  // becoming visible so returning to a tab beats immediately.
+  setInterval(beatTick, BEAT_MS);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) beatTick(); });
+  window.addEventListener('focus', beatTick);
+  beatTick();
 
   const onMB = /(^|\.)musicbrainz\.org$/i.test(location.hostname)
     && /\/(release|event)\/[0-9a-f-]{36}\/(add-)?(cover|event)-art/i.test(location.pathname);
@@ -175,6 +209,7 @@
     const url = bestUrl(curImg);
     if (!/^https?:\/\//i.test(url)) { toast('Open the full image first — that looks like an inline / preview image', '#c0392b'); return; }
     if (PROXY.test(url)) { toast("That's a search-engine thumbnail proxy, not the original — open the result on its source site, then click here", '#c0392b'); return; }
+    becomeDriver(); beatTick();   // picking HERE makes this tab a driver, so the session lives until you close it (covers results opened in a new tab)
     let mbid = ''; try { mbid = GM_getValue(MBKEY, '') || ''; } catch (e) {}   // the release this search was launched from
     const q = getArr(QUEUE); q.push({ url, mbid, t: now() }); setArr(QUEUE, q);
     toast('Sent to Art Station ✓'); hide();
@@ -192,4 +227,11 @@
 
   const mount = () => { const b = document.body || document.documentElement; if (b && !document.getElementById('aspick-bar')) { b.appendChild(bar); b.appendChild(badge); } };
   mount(); setTimeout(mount, 1000);
+
+  // tear down this tab's bar when the session ends — whether ended here (Stop / the
+  // watchdog noticing the driver tab(s) closed) or in another tab (cross-tab via the
+  // value-change listener). This is what makes "close the search tab → bar gone" work.
+  const teardown = () => { try { bar.remove(); badge.remove(); } catch (e) {} };
+  onSessionEnd = teardown;
+  try { GM_addValueChangeListener(SESS, (k, o, n) => { if ((+n || 0) <= now()) teardown(); }); } catch (e) {}
 })();
