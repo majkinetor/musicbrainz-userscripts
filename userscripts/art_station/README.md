@@ -25,7 +25,7 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
 - **Reorder** by dragging single cover or a whole selection together.
 - **Select** with right-click or right-drag
 - **Single or bulk mode**
-    - **Set type**
+    - **Set type** — tick checkboxes for one or more types, or **right-click a type to set *only* that one and close** (in bulk mode this replaces the type on every selected cover) ([#293](https://github.com/majkinetor/musicbrainz-userscripts/issues/293))
     - **Set comment** with auto focusing next comment field on `<ENTER>`
     - **Remove** and **Download** as a zip archive — files named by type so they round-trip (see below), plus a `README.md` manifest
     - **Reports** in HTML or Markdown — inline, captioned, or a **Detailed table** (position · type-named file · resolution · size) that doubles as the archive `README.md`
@@ -33,6 +33,7 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
   - **File drop** — choose local file and upload to the Cover Art Archive in parallel; the **type is guessed from the file name** (see below)
   - **URL link** — use [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch cover from Discogs, Apple, Spotify, Bandcamp…
   - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover via integration.
+  - **Reverse-image Search** (the 🔍 on each cover) — look for a higher-resolution copy on Yandex / Google Lens / TinEye / Bing. With the optional [Art Station Picker](../as_picker/README.md) companion installed, click the better copy on the results (or its source site) and it's sent straight back into the gallery — no download + drop ([#292](https://github.com/majkinetor/musicbrainz-userscripts/issues/292))
   - Fresh covers shown faster than native UI
 - **Full-screen viewer**
   - Arrow keys for navigation (left/right) and zoom (up/down) with zoom level remembered
