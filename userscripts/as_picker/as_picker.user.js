@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station Picker
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.170958
+// @version      2026.6.24.171023
 // @description  Companion to Art Station: after you click "Search" on a cover in Art Station, click the higher-resolution image anywhere (the search results or the source site) and it's sent straight back to the Art Station gallery — no download + drop.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/as_picker/README.md
@@ -16,10 +16,11 @@
 // How it works — the companion has its OWN GM storage, which (unlike Art Station's)
 // is shared across every origin it runs on, so it carries picks from any site back
 // to MusicBrainz:
-//   1. Art Station opens a reverse-image search with `mb_as_pick=1` in the URL. Seeing
-//      that param, this script starts a 30-minute "picking" window (persisted in GM
-//      storage, so it survives navigating to the source site). On a Google Lens result
-//      page it also auto-switches to the "Exact matches" tab (same art, every res).
+//   1. Art Station opens a reverse-image search with `mb_as_pick=<release MBID>` in the
+//      URL. Seeing that param, this script starts a 30-minute "picking" window (persisted
+//      in GM storage, so it survives navigating to the source site) and remembers the
+//      release, so every pick is tagged for it and can't land on another release. On a
+//      Google Lens result page it also auto-switches to the "Exact matches" tab.
 //   2. While picking, hovering any reasonably-sized image shows a "＋ Art Station"
 //      badge; clicking it queues that image's URL.
 //   3. On the MusicBrainz cover-art page, this script drains the queue and hands each
