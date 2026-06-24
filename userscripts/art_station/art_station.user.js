@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.173759
+// @version      2026.6.24.174906
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2986,7 +2986,7 @@
   .as-thumb.na img{display:none}
   .as-thumb.na::after{content:'Not on the Cover Art Archive yet';text-align:center;color:#9a8ccb;font-size:12px;font-weight:600;line-height:1.45;padding:0 16px}
   .as-thumb.na.as-na-new::after{content:'Preview unavailable — the image couldn’t be decoded'}   /* #250 a staged blob that won't render (no CAA fallback) */
-  .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;flex:0 0 auto;margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 7px}
+  .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;flex:0 0 auto;margin-left:auto;display:flex;flex-wrap:nowrap;justify-content:flex-end;gap:0 7px;white-space:nowrap}   /* nowrap: the size + resolution must never wrap to a 2nd (clipped) line when the hover 🔍 narrows the row */
   .as-dim-sz,.as-dim-px{white-space:nowrap}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
@@ -2994,9 +2994,8 @@
   .as-undo{opacity:1;background:#fff;color:var(--as-acc);font-size:12px;font-weight:600}
   /* #234: footer (mockup) — row 1: comment (left) · dimensions+size (right); row 2: centered type pill on a divider */
   .as-foot{padding:5px 8px 0;display:flex;flex-direction:column;gap:6px;border-top:1px solid #efeaf8}
-  .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px;position:relative}
+  .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px}
   .as-foot-cmt{flex:0 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
-  .as-card:hover .as-foot-cmt{padding-left:17px}   /* make room for the absolutely-placed 🔍 so it doesn't sit over the comment/pencil */
   .as-foot-cmt.as-cmt-collapsed{display:none}
   .as-cmt-text{font:11px inherit;color:#5a5470;line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .as-cmt-text:hover{color:var(--as-acc)}
@@ -3011,9 +3010,9 @@
   .as-pencil{font:11px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
   .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
-  /* flat reverse-image-search magnifier — absolutely placed at the row's left so it takes
-     NO flow width: otherwise its 16px tipped wide dims (1200×1200 + size) into wrapping. */
-  .as-fsearch{position:absolute;left:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;color:#8a7fb8;background:none;border:none;cursor:pointer;padding:0;line-height:0;opacity:0;transition:opacity .1s}
+  /* flat reverse-image-search magnifier — in the comment row, after the comment/pencil,
+     revealed on card hover. The dim's nowrap (above) keeps the resolution from wrapping. */
+  .as-fsearch{display:inline-flex;align-items:center;color:#8a7fb8;background:none;border:none;cursor:pointer;padding:0 2px;flex:none;line-height:0;opacity:0;transition:opacity .1s}
   .as-card:hover .as-fsearch{opacity:.85}
   .as-fsearch:hover{opacity:1;color:var(--as-acc)}
   /* selection + keyboard cursor */
