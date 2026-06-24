@@ -9,6 +9,10 @@
 1. Show ECAU failure message ([#286](https://github.com/majkinetor/musicbrainz-userscripts/issues/286))
 1. Logging improvements ([#283](https://github.com/majkinetor/musicbrainz-userscripts/issues/283))
 
+### Fixes
+
+1. Downloading covers doesn't work in Chrome ([#282](https://github.com/majkinetor/musicbrainz-userscripts/issues/282))
+
 ## [2026.6.22.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.22.2)
 
 ### Features
