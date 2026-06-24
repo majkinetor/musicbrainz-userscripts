@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.141606
+// @version      2026.6.24.174906
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -91,6 +91,15 @@
   const CAA = ENT.archive;                            // CAA for releases, EAA for events
   const imgUrl  = id => `${CAA}/${id}.jpg`;          // original
   const thumb   = (id, n) => `${CAA}/${id}-${n}.jpg`; // 250 / 500 / 1200
+
+  // reverse-image-search engines (find a higher-resolution copy of a cover) — each
+  // opens pre-loaded with the cover's public URL, so there's no download + drop.
+  const IMG_SEARCH_ENGINES = [
+    { name: 'Yandex',      u: url => `https://yandex.com/images/search?rpt=imageview&url=${encodeURIComponent(url)}` },
+    { name: 'Google Lens', u: url => `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(url)}` },
+    { name: 'TinEye',      u: url => `https://tineye.com/search?url=${encodeURIComponent(url)}&sort=size&order=desc` },   // biggest copy first
+    { name: 'Bing',        u: url => `https://www.bing.com/images/searchbyimage?cbir=sbi&imgurl=${encodeURIComponent(url)}` },
+  ];
 
   // canonical MB art types per entity, in a sensible display order; "(none)" is virtual.
   // Event art has its own vocabulary (Poster/Flyer/Setlist/…) — wholly distinct from cover art.
@@ -653,8 +662,12 @@
       : (it.comment
           ? `<span class="as-cmt-text" title="edit comment">${esc(it.comment)}</span>`
           : `<button class="as-pencil" title="add a comment">✎</button>`);
+    // reverse-image search this cover (published covers only) — flat magnifier,
+    // hover-revealed, in the comment row next to the comment.
+    const search = (!it._del && !it._new)
+      ? `<button class="as-fsearch" title="Search the web for a higher-resolution copy of this image"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg></button>` : '';
     return `<div class="as-foot">
-      <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${dim}</div>
+      <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${search}${dim}</div>
       ${typeRow}
     </div>`;
   }
@@ -704,6 +717,7 @@
   // drops the cursor at position 0, which is jarring when editing an existing comment.
   const focusCmtEnd = inp => { if (!inp) return; inp.focus(); const n = inp.value.length; try { inp.setSelectionRange(n, n); } catch (e) {} };
   function wireComments() {
+    root.querySelectorAll('.as-fsearch').forEach(b => b.onclick = e => { e.stopPropagation(); openImageSearchPop(b, byId(cardId(b))); });
     root.querySelectorAll('.as-pencil, .as-cmt-text').forEach(el => el.onclick = e => {
       e.stopPropagation(); const it = byId(cardId(el)); if (!it) return;
       it._editcmt = true; render();
@@ -1075,14 +1089,21 @@
   function openTypePopFor(it, anchor, onChange) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop';
-    pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
+    pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label title="Right-click: set only this type"><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
     document.body.appendChild(pop);
     placePop(pop, anchor.getBoundingClientRect());
+    const close = () => { pop.remove(); document.removeEventListener('mousedown', off); _popJustClosed = true; setTimeout(() => { _popJustClosed = false; }, 0); };
     pop.querySelectorAll('input').forEach(cb => cb.onchange = () => {
       it.types = ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
       onChange && onChange();
     });
-    const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); _popJustClosed = true; setTimeout(() => { _popJustClosed = false; }, 0); } };
+    // right-click a type → set ONLY that type and close (quick single-type set)
+    pop.querySelectorAll('.as-type-grid label').forEach(lab => lab.oncontextmenu = e => {
+      e.preventDefault(); e.stopPropagation();
+      it.types = [lab.querySelector('input').value];
+      onChange && onChange(); close();
+    });
+    const off = e => { if (!pop.contains(e.target)) close(); };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
     return pop;
   }
@@ -1600,9 +1621,14 @@
   // expose the registry on the page (and a CustomEvent fallback for managers that
   // isolate `window` from other userscripts). Either way is fine to call repeatedly.
   (function exposeApi() {
-    const api = { apiVersion: 1, registerProvider };
+    // addImageUrl: bring an image in by URL — the bridge the reverse-image-search
+    // picker companion (as_picker.user.js) calls when it lands on the MB page with
+    // images the user picked elsewhere. Returns true so the companion knows AS is here.
+    const api = { apiVersion: 1, registerProvider, addImageUrl: (url, prov) => { sourceFromUrl(url, prov); return true; } };   // no prov → sourceFromUrl derives name+favicon from the host
     try { (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).ArtStation = api; } catch (e) { try { window.ArtStation = api; } catch (x) {} }
     try { document.addEventListener('artstation:register-provider', e => { try { registerProvider(e.detail); } catch (x) {} }); } catch (e) {}
+    // also accept picks via a DOM event (the companion may prefer this over the API object)
+    try { document.addEventListener('artstation:add-image', e => { try { if (e.detail && e.detail.url) api.addImageUrl(e.detail.url, e.detail.prov); } catch (x) {} }); } catch (e) {}
   })();
   // prov (optional) = { name, icon } the cover is being sourced from — passed by the
   // "Import from <provider>" buttons, else derived from the URL. Stamped on each new
@@ -2344,16 +2370,25 @@
       ov.querySelector('.as-lb-x').onclick = closeLightbox;
       ov.querySelector('.as-lb-del').onclick = e => { e.stopPropagation(); deleteLbCover(); };
       const dlMenu = ov.querySelector('.as-lb-dlmenu');
+      let _dlJustClosed = false;
       ov.querySelector('.as-lb-dl').onclick = e => { e.stopPropagation(); dlMenu.classList.remove('open'); const it = byId(_lb); if (it) dlOne(it); };
       ov.querySelector('.as-lb-dlcaret').onclick = e => { e.stopPropagation(); dlMenu.classList.toggle('open'); };
       dlMenu.querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); dlMenu.classList.remove('open'); const it = byId(_lb); if (it) dlOne(it, b.dataset.sz); });
+      // click anywhere outside the Download control closes its size menu (capture so it
+      // fires regardless of stopPropagation). _dlJustClosed bridges the mousedown→click
+      // gap so a backdrop click that dismisses the menu doesn't also close the viewer.
+      document.addEventListener('mousedown', e => {
+        if (dlMenu.classList.contains('open') && !(e.target.closest && e.target.closest('.as-lb-dlwrap'))) {
+          dlMenu.classList.remove('open'); _dlJustClosed = true; setTimeout(() => { _dlJustClosed = false; }, 0);
+        }
+      }, true);
       ov.querySelector('.as-lb-play').onclick = e => { e.stopPropagation(); togglePlay(); };
       ov.querySelector('.as-lb-prev').onclick = e => { e.stopPropagation(); lbNav(-1); };
       ov.querySelector('.as-lb-next').onclick = e => { e.stopPropagation(); lbNav(1); };
       // a backdrop click while a type popover is open OR the comment is focused
       // should dismiss THAT (handled by their own outside-click/blur), not close
       // the whole viewer — _popJustClosed / _lbJustBlurred bridge the mousedown→click gap
-      ov.onclick = e => { if (e.target === ov && !_popJustClosed && !_lbJustBlurred && !document.querySelector('.as-pop')) closeLightbox(); };
+      ov.onclick = e => { if (e.target === ov && !_popJustClosed && !_lbJustBlurred && !_dlJustClosed && !document.querySelector('.as-pop')) closeLightbox(); };
       // wheel zooms the image toward the cursor (instead of scrolling the page behind)
       ov.addEventListener('wheel', e => {
         e.preventDefault();
@@ -2491,6 +2526,7 @@
   function closeLightbox() {
     stopPlay(); resetZoom(); _lb = null;
     const ov = document.getElementById('as-lb'); if (ov) ov.style.display = 'none';
+    const dm = ov && ov.querySelector('.as-lb-dlmenu'); if (dm) dm.classList.remove('open');   // don't reopen with the menu still showing
     if (_lbDirty) { _lbDirty = false; render(); }   // reflect comment edits in the grid
   }
   let _play = null;
@@ -2597,20 +2633,57 @@
     const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
     const pop = document.createElement('div'); pop.className = 'as-pop';
     pop.innerHTML = `<div class="as-pop-h">Set type on ${sel.length} ${ITEM}${sel.length===1?'':'s'}</div>`
-      + `<div class="as-type-grid">${ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>`
+      + `<div class="as-type-grid">${ALL_TYPES.map(t => `<label title="Right-click: replace with only this type"><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>`
       + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply (replace)</button><button class="as-btn as-pop-add">Add</button></div>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     const picked = () => ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
     const lbl = n => `${n} ${n === 1 ? ITEM : ITEMS}`;
-    pop.querySelector('.as-pop-apply').onclick = () => { const ts = picked(); sel.forEach(it => it.types = ts.slice()); asLog.info(`Batch: set type [${ts.join(', ') || 'none'}] on ${lbl(sel.length)}`); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
+    const replace = ts => { sel.forEach(it => it.types = ts.slice()); asLog.info(`Batch: set type [${ts.join(', ') || 'none'}] on ${lbl(sel.length)}`); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
+    pop.querySelector('.as-pop-apply').onclick = () => replace(picked());
     pop.querySelector('.as-pop-add').onclick = () => { const ts = picked(); sel.forEach(it => it.types = [...new Set([...it.types, ...ts])]); asLog.info(`Batch: added type [${ts.join(', ') || 'none'}] to ${lbl(sel.length)}`); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
+    // right-click a type → replace all selected with ONLY that type and close
+    pop.querySelectorAll('.as-type-grid label').forEach(lab => lab.oncontextmenu = e => {
+      e.preventDefault(); e.stopPropagation(); document.removeEventListener('mousedown', off); replace([lab.querySelector('input').value]);
+    });
     const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
 
   // #236: set one comment on every selected cover at once. Pre-fills the shared
   // comment if they already agree; Apply writes it, Clear blanks them all.
+  // Reverse-image search one cover for a higher-res copy. Per-card (the 🔍 on each
+  // tile) so it's unambiguously one image; a still-local NEW file has no public URL
+  // to search by. Each engine opens pre-loaded with that URL — no download + drop.
+  function openImageSearchPop(btn, it) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
+    if (!it || it._new) { toast('Reverse search needs a published image (this one is still a local file)'); return; }
+    const url = imgUrl(it.id);   // the original full-size CAA image
+    const pop = document.createElement('div'); pop.className = 'as-pop as-search-pop';
+    // latest (main-branch) install link for the companion — never a feature branch
+    const COMPANION_URL = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/as_picker/as_picker.user.js';
+    pop.innerHTML = `<div class="as-pop-h">Search for a higher-res copy</div>`
+      + IMG_SEARCH_ENGINES.map((e, i) => `<button class="as-btn as-search-eng" data-i="${i}">${esc(e.name)}</button>`).join('')
+      + `<div class="as-search-foot">Requires the <a href="${COMPANION_URL}" target="_blank" rel="noopener">Art Station Picker</a> script for click-capture.</div>`;
+    document.body.appendChild(pop);
+    placePop(pop, btn.getBoundingClientRect());
+    pop.querySelectorAll('.as-search-eng').forEach(b => b.onclick = () => {
+      const eng = IMG_SEARCH_ENGINES[+b.dataset.i];
+      asLog.info(`Search: ${eng.name} ← ${it.types && it.types.length ? it.types.join('/') : ITEM} ${it.id}`);
+      // mb_as_pick=<MBID> activates the picker companion (as_picker.user.js, if installed):
+      // it lets you click the higher-res image anywhere and sends it back here. The value
+      // is THIS release's MBID so the companion tags each pick with it — a pick stays
+      // destined for this release even if this tab is closed, so it can't leak onto some
+      // other release's cover-art page. Harmless if the companion isn't installed (engines
+      // ignore the unknown query param). NB: a *query* param, not a #hash — Yandex's SPA
+      // blanks its results on an unexpected hash, but ignores an unknown query param.
+      window.open(eng.u(url) + '&mb_as_pick=' + MBID, '_blank', 'noopener,noreferrer');
+      pop.remove();
+    });
+    const off = e => { if (!pop.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
+
   function openBulkCommentPop(btn) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
@@ -2913,7 +2986,7 @@
   .as-thumb.na img{display:none}
   .as-thumb.na::after{content:'Not on the Cover Art Archive yet';text-align:center;color:#9a8ccb;font-size:12px;font-weight:600;line-height:1.45;padding:0 16px}
   .as-thumb.na.as-na-new::after{content:'Preview unavailable — the image couldn’t be decoded'}   /* #250 a staged blob that won't render (no CAA fallback) */
-  .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;flex:0 0 auto;margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 7px}
+  .as-dim{font-size:12px;font-weight:600;color:#6b5fa0;flex:0 0 auto;margin-left:auto;display:flex;flex-wrap:nowrap;justify-content:flex-end;gap:0 7px;white-space:nowrap}   /* nowrap: the size + resolution must never wrap to a 2nd (clipped) line when the hover 🔍 narrows the row */
   .as-dim-sz,.as-dim-px{white-space:nowrap}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:6px;background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
@@ -2937,6 +3010,11 @@
   .as-pencil{font:11px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
   .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
+  /* flat reverse-image-search magnifier — in the comment row, after the comment/pencil,
+     revealed on card hover. The dim's nowrap (above) keeps the resolution from wrapping. */
+  .as-fsearch{display:inline-flex;align-items:center;color:#8a7fb8;background:none;border:none;cursor:pointer;padding:0 2px;flex:none;line-height:0;opacity:0;transition:opacity .1s}
+  .as-card:hover .as-fsearch{opacity:.85}
+  .as-fsearch:hover{opacity:1;color:var(--as-acc)}
   /* selection + keyboard cursor */
   .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
   .as-selmark{position:absolute;right:7px;bottom:7px;width:21px;height:21px;line-height:21px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:12px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:6;display:none}
@@ -2965,6 +3043,12 @@
   .as-pop-f{display:flex;gap:6px;padding:6px 4px 2px;border-top:1px solid #eee;margin-top:4px;position:sticky;bottom:0;background:#fff}
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   .as-cmt-pop{min-width:220px}
+  .as-search-pop{display:flex;flex-direction:column;gap:2px;min-width:160px}
+  .as-search-pop .as-search-eng{display:block;width:100%;text-align:left;border:1px solid transparent;background:none}   /* borderless until hover (transparent border keeps it from shifting) */
+  .as-search-pop .as-search-eng:hover{border-color:#cfc6e6}
+  .as-search-pop .as-search-foot{margin-top:6px;padding:7px 6px 2px;border-top:1px solid #eee;font-size:11px;line-height:1.45;color:#9a8ccb}
+  .as-search-pop .as-search-foot a{color:var(--as-acc);font-weight:600;text-decoration:none}
+  .as-search-pop .as-search-foot a:hover{text-decoration:underline}
   /* grow to fit all providers when the screen allows; no horizontal bar, and hide the
      vertical scrollbar chrome (still wheel-scrollable on a very short screen) */
   .as-src-pop{min-width:340px;max-width:90vw;width:max-content;max-height:calc(100vh - 20px);overflow-x:hidden;scrollbar-width:none}
@@ -3009,20 +3093,21 @@
      opens UPWARD so it doesn't fall off the bottom edge. */
   .as-lb-dlwrap{position:relative;display:inline-flex;align-items:center}
   .as-lb-dlwrap:has(.as-lb-dlmenu.open){z-index:3}
-  .as-lb-dl,.as-lb-dlcaret{font:600 13px Arial;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.28);height:34px;cursor:pointer}
+  .as-lb-dl,.as-lb-dlcaret{font:600 13px Arial;color:#fff;background:rgba(255,255,255,.08);border:1px solid transparent;height:34px;cursor:pointer}
   .as-lb-dl{padding:0 14px;border-radius:8px 0 0 8px;border-right:none}
   .as-lb-dlcaret{padding:0 11px;border-radius:0 8px 8px 0;font-size:12px}
   .as-lb-dl:hover,.as-lb-dlcaret:hover{background:rgba(255,255,255,.25)}
+  .as-lb-dlwrap:hover .as-lb-dl,.as-lb-dlwrap:hover .as-lb-dlcaret{border-color:rgba(255,255,255,.28)}   /* border only while hovering the Download control */
   .as-lb-dlmenu{position:absolute;bottom:40px;left:0;min-width:130px;background:#fff;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.4);padding:5px;display:none;flex-direction:column}
   .as-lb-dlmenu.open{display:flex}
   .as-lb-dlmenu button{text-align:left;background:none;border:none;color:#333;font:13px Arial;padding:7px 10px;border-radius:6px;cursor:pointer}
   .as-lb-dlmenu button:hover{background:#f0ecfa;color:var(--as-acc)}
-  .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw)}
-  /* default: a zoomed image may cover the bar (image takes priority). Only when the
-     caption/comment is focused (editing) does it lift above the image. */
+  /* z-index:2 keeps the footer above a ZOOMED image — the image's transform makes a
+     stacking context that would otherwise paint over the bar (it sits below in flow). */
+  .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw);position:relative;z-index:2}
   /* while editing (focused), give the bar a readable dark backdrop — otherwise the comment
      field / type chip are invisible over a light image */
-  .as-lb-bar:focus-within{position:relative;z-index:2;background:rgba(15,12,28,.88);padding:11px 16px;border-radius:13px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+  .as-lb-bar:focus-within{background:rgba(15,12,28,.88);padding:11px 16px;border-radius:13px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
   .as-lb-bar:focus-within .as-lb-cmt{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5)}
   .as-lb-caprow{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
   .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
