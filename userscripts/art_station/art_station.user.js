@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.181311
+// @version      2026.6.24.185113
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -91,9 +91,14 @@
   const CAA = ENT.archive;                            // CAA for releases, EAA for events
   const imgUrl  = id => `${CAA}/${id}.jpg`;          // original
   // the public image URL we can hand to a reverse-image engine: CAA for a published
-  // cover, or the provider's direct image URL for a sourced new cover (e.g. i.discogs.com).
-  // A purely local (dropped) file has no public URL, so it can't be reverse-searched.
-  const searchUrlFor = it => it._del ? '' : (it._new ? (it._provImageUrl || '') : imgUrl(it.id));
+  // cover, or — for a sourced new cover — its provider direct-image URL (_provImageUrl,
+  // e.g. i.discogs.com) or its source URL when that itself points at an image file (a
+  // picker round-trip / pasted image URL, e.g. an Apple mzstatic .jpg). A purely local
+  // (dropped) file, or one sourced only via a provider *page*, has no image URL to search.
+  const isImgUrl = u => /^https?:\/\/\S+\.(jpe?g|png|gif|webp|bmp|tiff?)(\?|#|$)/i.test(u || '');
+  const searchUrlFor = it => it._del ? '' : (it._new
+    ? (it._provImageUrl || (isImgUrl(it._provUrl) ? it._provUrl : ''))
+    : imgUrl(it.id));
   const thumb   = (id, n) => `${CAA}/${id}-${n}.jpg`; // 250 / 500 / 1200
 
   // reverse-image-search engines (find a higher-resolution copy of a cover) — each
