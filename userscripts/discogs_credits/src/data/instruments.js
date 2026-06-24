@@ -311,7 +311,7 @@ export const INSTRUMENTS = {
     Dutar: 'dutar',
     'Đàn bầu': 'đàn bầu',
     Ektare: null,
-    'Electric Bass': null,
+    'Electric Bass': 'bass guitar',   // MB's "bass guitar" IS the electric bass (was falling through to generic "instrument")
     'Electric Guitar': 'electric guitar',
     'Electric Upright Bass': 'electric upright bass',
     'Electric Violin': 'electric violin',

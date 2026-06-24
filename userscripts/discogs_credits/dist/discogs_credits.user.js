@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.24
+// @version      2026.6.24.221603
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -1319,7 +1319,8 @@
     Dutar: "dutar",
     "\u0110\xE0n b\u1EA7u": "\u0111\xE0n b\u1EA7u",
     Ektare: null,
-    "Electric Bass": null,
+    "Electric Bass": "bass guitar",
+    // MB's "bass guitar" IS the electric bass (was falling through to generic "instrument")
     "Electric Guitar": "electric guitar",
     "Electric Upright Bass": "electric upright bass",
     "Electric Violin": "electric violin",
