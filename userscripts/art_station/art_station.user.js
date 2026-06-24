@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.171318
+// @version      2026.6.24.172739
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1089,14 +1089,21 @@
   function openTypePopFor(it, anchor, onChange) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop';
-    pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
+    pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label title="Right-click: set only this type"><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
     document.body.appendChild(pop);
     placePop(pop, anchor.getBoundingClientRect());
+    const close = () => { pop.remove(); document.removeEventListener('mousedown', off); _popJustClosed = true; setTimeout(() => { _popJustClosed = false; }, 0); };
     pop.querySelectorAll('input').forEach(cb => cb.onchange = () => {
       it.types = ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
       onChange && onChange();
     });
-    const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); _popJustClosed = true; setTimeout(() => { _popJustClosed = false; }, 0); } };
+    // right-click a type → set ONLY that type and close (quick single-type set)
+    pop.querySelectorAll('.as-type-grid label').forEach(lab => lab.oncontextmenu = e => {
+      e.preventDefault(); e.stopPropagation();
+      it.types = [lab.querySelector('input').value];
+      onChange && onChange(); close();
+    });
+    const off = e => { if (!pop.contains(e.target)) close(); };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
     return pop;
   }
@@ -2626,14 +2633,19 @@
     const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
     const pop = document.createElement('div'); pop.className = 'as-pop';
     pop.innerHTML = `<div class="as-pop-h">Set type on ${sel.length} ${ITEM}${sel.length===1?'':'s'}</div>`
-      + `<div class="as-type-grid">${ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>`
+      + `<div class="as-type-grid">${ALL_TYPES.map(t => `<label title="Right-click: replace with only this type"><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>`
       + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply (replace)</button><button class="as-btn as-pop-add">Add</button></div>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     const picked = () => ALL_TYPES.filter(t => pop.querySelector(`input[value="${CSS.escape(t)}"]`).checked);
     const lbl = n => `${n} ${n === 1 ? ITEM : ITEMS}`;
-    pop.querySelector('.as-pop-apply').onclick = () => { const ts = picked(); sel.forEach(it => it.types = ts.slice()); asLog.info(`Batch: set type [${ts.join(', ') || 'none'}] on ${lbl(sel.length)}`); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
+    const replace = ts => { sel.forEach(it => it.types = ts.slice()); asLog.info(`Batch: set type [${ts.join(', ') || 'none'}] on ${lbl(sel.length)}`); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
+    pop.querySelector('.as-pop-apply').onclick = () => replace(picked());
     pop.querySelector('.as-pop-add').onclick = () => { const ts = picked(); sel.forEach(it => it.types = [...new Set([...it.types, ...ts])]); asLog.info(`Batch: added type [${ts.join(', ') || 'none'}] to ${lbl(sel.length)}`); if (SETTINGS.clearSelAfterOp) sel.forEach(it => it._sel = false); pop.remove(); render(); };   // #277
+    // right-click a type → replace all selected with ONLY that type and close
+    pop.querySelectorAll('.as-type-grid label').forEach(lab => lab.oncontextmenu = e => {
+      e.preventDefault(); e.stopPropagation(); document.removeEventListener('mousedown', off); replace([lab.querySelector('input').value]);
+    });
     const off = e => { if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
