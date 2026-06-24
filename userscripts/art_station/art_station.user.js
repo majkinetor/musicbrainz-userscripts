@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.152414
+// @version      2026.6.24.160505
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -552,7 +552,6 @@
       ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Type ▾</button>
       <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="as-bt">Comment ▾</span></button>
       <button class="as-btn as-bk-dl" title="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="as-bt">Download</span></button>
-      <button class="as-btn as-bk-search" title="Reverse-image search the selected ${ITEM} for a higher-resolution copy"><span class="as-bi">🔍</span><span class="as-bt">Search</span></button>
       <button class="as-btn as-bk-report" title="Postable Markdown / HTML report of the selection"><span class="as-bi">📋</span><span class="as-bt">Report</span></button>
       <button class="as-btn as-bk-rm" title="Mark the selected ${ITEMS} for removal"><span class="as-bi">🗑️</span><span class="as-bt">Delete</span></button>` : ''}`;
   }
@@ -663,8 +662,12 @@
       : (it.comment
           ? `<span class="as-cmt-text" title="edit comment">${esc(it.comment)}</span>`
           : `<button class="as-pencil" title="add a comment">✎</button>`);
+    // 🔍 reverse-image search this cover (published covers only) — hover-revealed,
+    // sitting under the comment row.
+    const search = (!it._del && !it._new)
+      ? `<button class="as-fsearch" title="Search the web for a higher-resolution copy of this image">🔍</button>` : '';
     return `<div class="as-foot">
-      <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${dim}</div>
+      <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${search}${dim}</div>
       ${typeRow}
     </div>`;
   }
@@ -714,6 +717,7 @@
   // drops the cursor at position 0, which is jarring when editing an existing comment.
   const focusCmtEnd = inp => { if (!inp) return; inp.focus(); const n = inp.value.length; try { inp.setSelectionRange(n, n); } catch (e) {} };
   function wireComments() {
+    root.querySelectorAll('.as-fsearch').forEach(b => b.onclick = e => { e.stopPropagation(); openImageSearchPop(b, byId(cardId(b))); });
     root.querySelectorAll('.as-pencil, .as-cmt-text').forEach(el => el.onclick = e => {
       e.stopPropagation(); const it = byId(cardId(el)); if (!it) return;
       it._editcmt = true; render();
@@ -879,7 +883,6 @@
     });
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
     q('.as-bk-cmt') && (q('.as-bk-cmt').onclick = e => { e.stopPropagation(); openBulkCommentPop(q('.as-bk-cmt')); });
-    q('.as-bk-search') && (q('.as-bk-search').onclick = e => { e.stopPropagation(); openImageSearchPop(q('.as-bk-search')); });
     q('.as-bk-report') && (q('.as-bk-report').onclick = e => { e.stopPropagation(); openReport(); });
   }
   // right-button paint selection (held + move)
@@ -2627,14 +2630,12 @@
 
   // #236: set one comment on every selected cover at once. Pre-fills the shared
   // comment if they already agree; Apply writes it, Clear blanks them all.
-  // Reverse-image search a selected cover for a higher-res copy. Uses the first
-  // selected cover that has a public CAA URL (a still-local NEW file has no URL to
-  // search by). Each engine opens pre-loaded with that URL — no download + drop.
-  function openImageSearchPop(btn) {
+  // Reverse-image search one cover for a higher-res copy. Per-card (the 🔍 on each
+  // tile) so it's unambiguously one image; a still-local NEW file has no public URL
+  // to search by. Each engine opens pre-loaded with that URL — no download + drop.
+  function openImageSearchPop(btn, it) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
-    const sel = MODEL.filter(it => it._sel && !it._del);
-    const it = sel.find(c => !c._new) || null;   // need a published (CAA) image
-    if (!it) { toast(sel.length ? 'Reverse search needs a published image — the selection is still local file(s)' : 'Select a cover first'); return; }
+    if (!it || it._new) { toast('Reverse search needs a published image (this one is still a local file)'); return; }
     const url = imgUrl(it.id);   // the original full-size CAA image
     const pop = document.createElement('div'); pop.className = 'as-pop as-search-pop';
     pop.innerHTML = `<div class="as-pop-h">Search for a higher-res copy</div>`
@@ -2980,6 +2981,9 @@
   .as-pencil{font:11px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
   .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
+  .as-fsearch{font:13px inherit;border:none;background:none;color:#8a7fb8;cursor:pointer;padding:0 2px;flex:none;line-height:1;opacity:0;transition:.1s}   /* 🔍 reverse-image search — hover-revealed, next to the comment (dim keeps its own right margin) */
+  .as-card:hover .as-fsearch{opacity:.85}
+  .as-fsearch:hover{opacity:1;color:var(--as-acc)}
   /* selection + keyboard cursor */
   .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
   .as-selmark{position:absolute;right:7px;bottom:7px;width:21px;height:21px;line-height:21px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:12px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:6;display:none}
