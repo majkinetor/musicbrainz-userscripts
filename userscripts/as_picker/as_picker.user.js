@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station Picker
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.164609
+// @version      2026.6.24.165118
 // @description  Companion to Art Station: after you click "Search" on a cover in Art Station, click the higher-resolution image anywhere (the search results or the source site) and it's sent straight back to the Art Station gallery — no download + drop.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/as_picker/README.md
@@ -95,13 +95,20 @@
   };
   const hide = () => { badge.style.display = 'none'; curImg = null; };
   const MIN = 80;
-  document.addEventListener('mouseover', e => {
+  const onPoint = e => {
     const t = e.target;
     if (t === badge) return;                                   // moving onto the badge keeps curImg
     const img = t && t.closest && t.closest('img');
-    if (img && img.naturalWidth >= MIN && img.naturalHeight >= MIN) { curImg = img; place(img); }
-    else hide();
-  }, true);
+    if (img && img.naturalWidth >= MIN && img.naturalHeight >= MIN) {
+      if (img === curImg && badge.style.display !== 'none') return;   // already shown for this image — cheap no-op on mousemove
+      curImg = img; place(img);
+    } else hide();
+  };
+  // mouseover catches entering an image; mousemove also covers the case where the cursor
+  // is ALREADY over the image when the picker mounts (e.g. a standalone-image page) —
+  // mouseover never fires there until you leave and come back.
+  document.addEventListener('mouseover', onPoint, true);
+  document.addEventListener('mousemove', onPoint, true);
   window.addEventListener('scroll', hide, true);
   window.addEventListener('resize', hide);
 
