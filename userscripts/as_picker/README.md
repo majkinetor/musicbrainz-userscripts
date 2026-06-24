@@ -15,9 +15,12 @@ loaded on every page you visit.
 
 ## How it works
 
-1. In Art Station, select a cover → **🔍 Search** → choose Yandex / Google Lens /
-   TinEye / Bing. Art Station opens that engine pre-loaded with the cover's URL and
-   tags the tab with `#mb-as-pick`.
+1. In Art Station, hover a cover → **🔍 Search** (below the comment) → choose Yandex /
+   Google Lens / TinEye / Bing. Art Station opens that engine pre-loaded with the
+   cover's URL and tags the tab with `mb_as_pick=1` (a query param, not a `#hash` —
+   Yandex blanks its results on an unexpected hash). On a Google Lens result page the
+   companion also auto-switches to the **Exact matches** tab, which lists the same
+   artwork at every resolution found on the web.
 2. Seeing that tag, this companion opens a 30-minute **picking** window (stored in
    its own GM storage, which is shared across every site it runs on, so it survives
    following a result to the source site).

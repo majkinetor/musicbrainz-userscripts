@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station Picker
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.152414
+// @version      2026.6.24.162121
 // @description  Companion to Art Station: after you click "Search" on a cover in Art Station, click the higher-resolution image anywhere (the search results or the source site) and it's sent straight back to the Art Station gallery — no download + drop.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/as_picker/README.md
@@ -16,9 +16,10 @@
 // How it works — the companion has its OWN GM storage, which (unlike Art Station's)
 // is shared across every origin it runs on, so it carries picks from any site back
 // to MusicBrainz:
-//   1. Art Station opens a reverse-image search with `#mb-as-pick` in the URL. Seeing
-//      that hash, this script starts a 30-minute "picking" window (persisted in GM
-//      storage, so it survives navigating to the source site).
+//   1. Art Station opens a reverse-image search with `mb_as_pick=1` in the URL. Seeing
+//      that param, this script starts a 30-minute "picking" window (persisted in GM
+//      storage, so it survives navigating to the source site). On a Google Lens result
+//      page it also auto-switches to the "Exact matches" tab (same art, every res).
 //   2. While picking, hovering any reasonably-sized image shows a "＋ Art Station"
 //      badge; clicking it queues that image's URL.
 //   3. On the MusicBrainz cover-art page, this script drains the queue and hands each
@@ -35,8 +36,11 @@
   const setArr = (k, v) => { try { GM_setValue(k, JSON.stringify(v)); } catch (e) {} };
   const pageWin = () => (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
-  // Art Station opened us with #mb-as-pick → open a 30-min picking window.
-  if (/mb-as-pick/.test(location.hash)) { try { GM_setValue(SESS, now() + 30 * 60 * 1000); } catch (e) {} }
+  // Art Station opened us with mb_as_pick=1 → open a 30-min picking window. It's a
+  // query param (not a #hash): Yandex's image SPA blanks its results when there's an
+  // unexpected hash, but ignores an unknown query param. The /mb[-_]as[-_]pick/ regex
+  // still also matches the legacy `#mb-as-pick` hash, for older Art Station builds.
+  if (/mb[-_]as[-_]pick/i.test(location.href)) { try { GM_setValue(SESS, now() + 30 * 60 * 1000); } catch (e) {} }
 
   const onMB = /(^|\.)musicbrainz\.org$/i.test(location.hostname)
     && /\/(release|event)\/[0-9a-f-]{36}\/(add-)?(cover|event)-art/i.test(location.pathname);
@@ -61,6 +65,22 @@
 
   // ── Everywhere else: the picker, only while a session is active ─────────────
   if (getNum(SESS) <= now()) return;
+
+  // On a Google Lens results page, jump straight to the "Exact matches" tab — it lists
+  // the very same artwork at every resolution found on the web, which is exactly what
+  // you're after when hunting a higher-res copy. (Google can't be deep-linked to that
+  // tab: its URL carries post-upload session tokens, so we click it client-side.)
+  if (/(^|\.)google\.[a-z.]+$/i.test(location.hostname)) {
+    let done = false;
+    const toExact = () => {
+      if (done) return;
+      const tab = [...document.querySelectorAll('a,[role="link"],[role="tab"],span,div')]
+        .find(e => e.offsetParent && /^exact\s*matches$/i.test((e.textContent || '').trim()));
+      if (tab) { done = true; (tab.closest('a,[role="link"],[role="tab"],button') || tab).click(); }
+    };
+    const iv = setInterval(toExact, 400);
+    setTimeout(() => clearInterval(iv), 9000);
+  }
 
   const badge = document.createElement('div');
   badge.id = 'aspick-badge';
