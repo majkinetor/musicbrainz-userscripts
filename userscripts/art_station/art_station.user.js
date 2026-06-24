@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.172739
+// @version      2026.6.24.173759
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2994,8 +2994,9 @@
   .as-undo{opacity:1;background:#fff;color:var(--as-acc);font-size:12px;font-weight:600}
   /* #234: footer (mockup) — row 1: comment (left) · dimensions+size (right); row 2: centered type pill on a divider */
   .as-foot{padding:5px 8px 0;display:flex;flex-direction:column;gap:6px;border-top:1px solid #efeaf8}
-  .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px}
+  .as-foot-row{display:flex;align-items:center;gap:6px;min-height:17px;position:relative}
   .as-foot-cmt{flex:0 1 auto;min-width:0;display:flex;align-items:center;overflow:hidden}
+  .as-card:hover .as-foot-cmt{padding-left:17px}   /* make room for the absolutely-placed 🔍 so it doesn't sit over the comment/pencil */
   .as-foot-cmt.as-cmt-collapsed{display:none}
   .as-cmt-text{font:11px inherit;color:#5a5470;line-height:1.3;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .as-cmt-text:hover{color:var(--as-acc)}
@@ -3010,7 +3011,9 @@
   .as-pencil{font:11px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
   .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
-  .as-fsearch{display:inline-flex;align-items:center;color:#8a7fb8;background:none;border:none;cursor:pointer;padding:0 2px;flex:none;line-height:0;opacity:0;transition:.1s}   /* flat reverse-image-search magnifier — in the comment row, revealed on card hover (dim keeps its own right margin) */
+  /* flat reverse-image-search magnifier — absolutely placed at the row's left so it takes
+     NO flow width: otherwise its 16px tipped wide dims (1200×1200 + size) into wrapping. */
+  .as-fsearch{position:absolute;left:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;color:#8a7fb8;background:none;border:none;cursor:pointer;padding:0;line-height:0;opacity:0;transition:opacity .1s}
   .as-card:hover .as-fsearch{opacity:.85}
   .as-fsearch:hover{opacity:1;color:var(--as-acc)}
   /* selection + keyboard cursor */
