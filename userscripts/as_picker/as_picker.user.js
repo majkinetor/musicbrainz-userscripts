@@ -42,7 +42,8 @@
   // only ever land back on THAT release's cover-art page (not whatever release you open
   // next). It's a query param (not a #hash): Yandex's image SPA blanks its results on an
   // unexpected hash but ignores an unknown query param. The regex also matches a bare
-  // `mb_as_pick` / legacy `#mb-as-pick` (no value) → empty MBID = add anywhere.
+  // `mb_as_pick` / legacy `#mb-as-pick` (no value) → empty MBID, which the drain then
+  // only delivers to the focused tab (never broadcast to every open release).
   const sig = location.href.match(/mb[-_]as[-_]pick(?:=([^&#]*))?/i);
   if (sig) {
     try {
