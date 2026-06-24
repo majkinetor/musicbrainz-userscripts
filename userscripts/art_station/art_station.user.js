@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.170958
+// @version      2026.6.24.171318
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2363,16 +2363,25 @@
       ov.querySelector('.as-lb-x').onclick = closeLightbox;
       ov.querySelector('.as-lb-del').onclick = e => { e.stopPropagation(); deleteLbCover(); };
       const dlMenu = ov.querySelector('.as-lb-dlmenu');
+      let _dlJustClosed = false;
       ov.querySelector('.as-lb-dl').onclick = e => { e.stopPropagation(); dlMenu.classList.remove('open'); const it = byId(_lb); if (it) dlOne(it); };
       ov.querySelector('.as-lb-dlcaret').onclick = e => { e.stopPropagation(); dlMenu.classList.toggle('open'); };
       dlMenu.querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); dlMenu.classList.remove('open'); const it = byId(_lb); if (it) dlOne(it, b.dataset.sz); });
+      // click anywhere outside the Download control closes its size menu (capture so it
+      // fires regardless of stopPropagation). _dlJustClosed bridges the mousedown→click
+      // gap so a backdrop click that dismisses the menu doesn't also close the viewer.
+      document.addEventListener('mousedown', e => {
+        if (dlMenu.classList.contains('open') && !(e.target.closest && e.target.closest('.as-lb-dlwrap'))) {
+          dlMenu.classList.remove('open'); _dlJustClosed = true; setTimeout(() => { _dlJustClosed = false; }, 0);
+        }
+      }, true);
       ov.querySelector('.as-lb-play').onclick = e => { e.stopPropagation(); togglePlay(); };
       ov.querySelector('.as-lb-prev').onclick = e => { e.stopPropagation(); lbNav(-1); };
       ov.querySelector('.as-lb-next').onclick = e => { e.stopPropagation(); lbNav(1); };
       // a backdrop click while a type popover is open OR the comment is focused
       // should dismiss THAT (handled by their own outside-click/blur), not close
       // the whole viewer — _popJustClosed / _lbJustBlurred bridge the mousedown→click gap
-      ov.onclick = e => { if (e.target === ov && !_popJustClosed && !_lbJustBlurred && !document.querySelector('.as-pop')) closeLightbox(); };
+      ov.onclick = e => { if (e.target === ov && !_popJustClosed && !_lbJustBlurred && !_dlJustClosed && !document.querySelector('.as-pop')) closeLightbox(); };
       // wheel zooms the image toward the cursor (instead of scrolling the page behind)
       ov.addEventListener('wheel', e => {
         e.preventDefault();
@@ -2510,6 +2519,7 @@
   function closeLightbox() {
     stopPlay(); resetZoom(); _lb = null;
     const ov = document.getElementById('as-lb'); if (ov) ov.style.display = 'none';
+    const dm = ov && ov.querySelector('.as-lb-dlmenu'); if (dm) dm.classList.remove('open');   // don't reopen with the menu still showing
     if (_lbDirty) { _lbDirty = false; render(); }   // reflect comment edits in the grid
   }
   let _play = null;
