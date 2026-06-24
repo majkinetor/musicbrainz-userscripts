@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24
+// @version      2026.6.24.202659
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2674,22 +2674,23 @@
     const COMPANION_URL = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/as_picker/as_picker.user.js';
     pop.innerHTML = `<div class="as-pop-h">Search for a higher-res copy</div>`
       + IMG_SEARCH_ENGINES.map((e, i) => `<button class="as-btn as-search-eng" data-i="${i}">${esc(e.name)}</button>`).join('')
+      + `<button class="as-btn as-search-eng as-search-all" title="Open every engine in its own tab">⧉ Open all</button>`
       + `<div class="as-search-foot">Requires the <a href="${COMPANION_URL}" target="_blank" rel="noopener">Art Station Picker</a> script for click-capture.</div>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
-    pop.querySelectorAll('.as-search-eng').forEach(b => b.onclick = () => {
-      const eng = IMG_SEARCH_ENGINES[+b.dataset.i];
+    // mb_as_pick=<MBID> activates the picker companion (as_picker.user.js, if installed): it
+    // lets you click the higher-res image anywhere and sends it back here. The value is THIS
+    // release's MBID so the companion tags each pick with it — a pick stays destined for this
+    // release even if this tab is closed, so it can't leak onto some other release's cover-art
+    // page. Harmless if the companion isn't installed (engines ignore the unknown query param).
+    // NB: a *query* param, not a #hash — Yandex's SPA blanks on an unexpected hash, not a param.
+    const openEng = eng => {
       asLog.info(`Search: ${eng.name} ← ${it.types && it.types.length ? it.types.join('/') : ITEM} ${it.id}`);
-      // mb_as_pick=<MBID> activates the picker companion (as_picker.user.js, if installed):
-      // it lets you click the higher-res image anywhere and sends it back here. The value
-      // is THIS release's MBID so the companion tags each pick with it — a pick stays
-      // destined for this release even if this tab is closed, so it can't leak onto some
-      // other release's cover-art page. Harmless if the companion isn't installed (engines
-      // ignore the unknown query param). NB: a *query* param, not a #hash — Yandex's SPA
-      // blanks its results on an unexpected hash, but ignores an unknown query param.
       window.open(eng.u(url) + '&mb_as_pick=' + MBID, '_blank', 'noopener,noreferrer');
-      pop.remove();
-    });
+    };
+    pop.querySelectorAll('.as-search-eng:not(.as-search-all)').forEach(b => b.onclick = () => { openEng(IMG_SEARCH_ENGINES[+b.dataset.i]); pop.remove(); });
+    const allBtn = pop.querySelector('.as-search-all');
+    if (allBtn) allBtn.onclick = () => { IMG_SEARCH_ENGINES.forEach(openEng); pop.remove(); };   // each in its own tab (the browser may ask to allow multiple popups the first time)
     const off = e => { if (!pop.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -3056,6 +3057,7 @@
   .as-search-pop{display:flex;flex-direction:column;gap:2px;min-width:160px}
   .as-search-pop .as-search-eng{display:block;width:100%;text-align:left;border:1px solid transparent;background:none}   /* borderless until hover (transparent border keeps it from shifting) */
   .as-search-pop .as-search-eng:hover{border-color:#cfc6e6}
+  .as-search-pop .as-search-all{margin-top:3px;font-weight:600;color:var(--as-acc)}   /* open every engine at once */
   .as-search-pop .as-search-foot{margin-top:6px;padding:7px 6px 2px;border-top:1px solid #eee;font-size:11px;line-height:1.45;color:#9a8ccb}
   .as-search-pop .as-search-foot a{color:var(--as-acc);font-weight:600;text-decoration:none}
   .as-search-pop .as-search-foot a:hover{text-decoration:underline}
