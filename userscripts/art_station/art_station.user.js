@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.174906
+// @version      2026.6.24.181311
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -90,6 +90,10 @@
 
   const CAA = ENT.archive;                            // CAA for releases, EAA for events
   const imgUrl  = id => `${CAA}/${id}.jpg`;          // original
+  // the public image URL we can hand to a reverse-image engine: CAA for a published
+  // cover, or the provider's direct image URL for a sourced new cover (e.g. i.discogs.com).
+  // A purely local (dropped) file has no public URL, so it can't be reverse-searched.
+  const searchUrlFor = it => it._del ? '' : (it._new ? (it._provImageUrl || '') : imgUrl(it.id));
   const thumb   = (id, n) => `${CAA}/${id}-${n}.jpg`; // 250 / 500 / 1200
 
   // reverse-image-search engines (find a higher-resolution copy of a cover) — each
@@ -662,9 +666,10 @@
       : (it.comment
           ? `<span class="as-cmt-text" title="edit comment">${esc(it.comment)}</span>`
           : `<button class="as-pencil" title="add a comment">✎</button>`);
-    // reverse-image search this cover (published covers only) — flat magnifier,
-    // hover-revealed, in the comment row next to the comment.
-    const search = (!it._del && !it._new)
+    // reverse-image search this cover — flat magnifier, hover-revealed, in the comment
+    // row. Shown for any cover with a public URL: a published cover, or a new cover
+    // sourced from a URL (a purely local dropped file has no URL to search by).
+    const search = searchUrlFor(it)
       ? `<button class="as-fsearch" title="Search the web for a higher-resolution copy of this image"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg></button>` : '';
     return `<div class="as-foot">
       <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${search}${dim}</div>
@@ -2657,11 +2662,11 @@
   // to search by. Each engine opens pre-loaded with that URL — no download + drop.
   function openImageSearchPop(btn, it) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
-    if (!it || it._new) { toast('Reverse search needs a published image (this one is still a local file)'); return; }
-    const url = imgUrl(it.id);   // the original full-size CAA image
+    const url = it && searchUrlFor(it);   // CAA original, or a sourced new cover's provider URL
+    if (!url) { toast(it && it._new ? 'Reverse search needs a public image URL — this one is a local file (source it from a URL instead)' : 'Reverse search needs a published image'); return; }
     const pop = document.createElement('div'); pop.className = 'as-pop as-search-pop';
     // latest (main-branch) install link for the companion — never a feature branch
-    const COMPANION_URL = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/as_picker/as_picker.user.js';
+    const COMPANION_URL = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/as_picker/as_picker.user.js';
     pop.innerHTML = `<div class="as-pop-h">Search for a higher-res copy</div>`
       + IMG_SEARCH_ENGINES.map((e, i) => `<button class="as-btn as-search-eng" data-i="${i}">${esc(e.name)}</button>`).join('')
       + `<div class="as-search-foot">Requires the <a href="${COMPANION_URL}" target="_blank" rel="noopener">Art Station Picker</a> script for click-capture.</div>`;
