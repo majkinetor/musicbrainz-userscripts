@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station Picker
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.162121
+// @version      2026.6.24.164210
 // @description  Companion to Art Station: after you click "Search" on a cover in Art Station, click the higher-resolution image anywhere (the search results or the source site) and it's sent straight back to the Art Station gallery — no download + drop.
 // @author       majkinetor
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/as_picker/README.md
@@ -105,7 +105,19 @@
   window.addEventListener('scroll', hide, true);
   window.addEventListener('resize', hide);
 
+  // Thumbnail/proxy CDNs that serve a downscaled, hotlink-protected copy — never the
+  // original. Bing's "view image" lands you on one of these; sending it just makes
+  // Art Station fail ("returned no image"), and it wouldn't be higher-res anyway.
+  const PROXY = /(\.mm\.bing\.net|th\.bing\.com|encrypted-tbn\d*\.gstatic\.com|tse\d*\.(?:mm\.bing\.net|explicit\.bing\.net))/i;
+
   const bestUrl = img => {
+    // Bing image search: the visible <img> is a proxy thumbnail; the real source URL
+    // lives in the result anchor's JSON `m` attribute (`murl`). Grab that instead.
+    if (/(^|\.)bing\.com$/i.test(location.hostname)) {
+      const ius = img.closest && img.closest('.iusc, a.iusc, [m]');
+      const m = ius && ius.getAttribute && ius.getAttribute('m');
+      if (m) { try { const murl = JSON.parse(m).murl; if (/^https?:\/\//i.test(murl || '')) return murl; } catch (e) {} }
+    }
     const a = img.closest && img.closest('a');                 // a thumbnail linking to the full file → prefer the link
     if (a && a.href && /\.(jpe?g|png|gif|webp|bmp|tiff?)(\?|$)/i.test(a.href)) return a.href;
     if (img.srcset) {                                          // else the widest srcset candidate
@@ -125,6 +137,7 @@
     if (!curImg) return;
     const url = bestUrl(curImg);
     if (!/^https?:\/\//i.test(url)) { toast('Open the full image first — that looks like an inline / preview image', '#c0392b'); return; }
+    if (PROXY.test(url)) { toast("That's a search-engine thumbnail proxy, not the original — open the result on its source site, then click here", '#c0392b'); return; }
     const q = getArr(QUEUE); q.push(url); setArr(QUEUE, q);
     toast('Sent to Art Station ✓'); hide();
   };
