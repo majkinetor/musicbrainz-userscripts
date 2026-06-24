@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.162121
+// @version      2026.6.24.163008
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -663,12 +663,11 @@
           ? `<span class="as-cmt-text" title="edit comment">${esc(it.comment)}</span>`
           : `<button class="as-pencil" title="add a comment">✎</button>`);
     // reverse-image search this cover (published covers only) — flat magnifier,
-    // hover-revealed, on its own line directly below the comment.
+    // hover-revealed, in the comment row next to the comment.
     const search = (!it._del && !it._new)
       ? `<button class="as-fsearch" title="Search the web for a higher-resolution copy of this image"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg></button>` : '';
     return `<div class="as-foot">
-      <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${dim}</div>
-      ${search}
+      <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${search}${dim}</div>
       ${typeRow}
     </div>`;
   }
@@ -2984,9 +2983,9 @@
   .as-pencil{font:11px inherit;border:1px dashed #d8ccf5;background:#fff;color:#8a7fb8;border-radius:6px;padding:0 7px;cursor:pointer;opacity:0;transition:.1s}
   .as-card:hover .as-pencil{opacity:1}
   .as-pencil:hover{background:#f6f3fd;color:var(--as-acc)}
-  .as-fsearch{display:none;align-items:center;color:#8a7fb8;background:none;border:none;cursor:pointer;padding:2px 2px 0;margin-top:1px;line-height:0;transition:color .1s}   /* flat reverse-image-search magnifier — its own line below the comment, revealed on card hover */
-  .as-card:hover .as-fsearch{display:inline-flex}
-  .as-fsearch:hover{color:var(--as-acc)}
+  .as-fsearch{display:inline-flex;align-items:center;color:#8a7fb8;background:none;border:none;cursor:pointer;padding:0 2px;flex:none;line-height:0;opacity:0;transition:.1s}   /* flat reverse-image-search magnifier — in the comment row, revealed on card hover (dim keeps its own right margin) */
+  .as-card:hover .as-fsearch{opacity:.85}
+  .as-fsearch:hover{opacity:1;color:var(--as-acc)}
   /* selection + keyboard cursor */
   .as-card.sel{outline:3px solid var(--as-acc);outline-offset:-1px;box-shadow:0 3px 14px rgba(95,62,192,.3)}
   .as-selmark{position:absolute;right:7px;bottom:7px;width:21px;height:21px;line-height:21px;text-align:center;background:var(--as-acc);color:#fff;border-radius:50%;font-size:12px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:6;display:none}
