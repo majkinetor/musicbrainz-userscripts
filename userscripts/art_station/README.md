@@ -3,7 +3,7 @@
 A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reorder, retype, comment, remove, download, add and source a release's cover and event art — all staged, then applied on **Enter edit**.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/art_station/art_station.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/art_station/art_station.user.js)
-- Optional companion for reverse-image **Search** (click a higher-res result anywhere → straight back to the gallery): [Art Station Picker](../as_picker/README.md) — [install (latest)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/as_picker/as_picker.user.js)
+    - [picker](../as_picker/README.md) helper script: [install](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/as_picker/as_picker.user.js)
 - [Changelog](./CHANGELOG.md)
 
 ![](./screens/screenshot.png)
