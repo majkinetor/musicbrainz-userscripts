@@ -378,12 +378,12 @@ export async function probeLinkTypesByPhrase(page, needles) {
 
 /** Get the Discogs URL the script auto-detected for this release (from the import bar). */
 export async function getDetectedDiscogsUrl(page) {
-    return await page.evaluate(() => {
-        // Single-bar redesign (#139) made the source link the Discogs logo icon
-        // itself (`a.discogs-source-icon`); there's no `.discogs-source a` child
-        // anymore. Fall back to the old selector for safety.
-        const a = document.querySelector('.discogs-bar a.discogs-source-icon')
-               || document.querySelector('.discogs-bar .discogs-source a');
-        return a?.href || null;
-    });
+    // #272 turned the bar's Discogs source from an <a> link into a button with no
+    // href, so the URL is no longer in the bar DOM. Read it from MB's own URL
+    // relationships instead — the same source of truth the script imports from.
+    const mbid = (page.url().match(/release\/([0-9a-f-]{36})/i) || [])[1];
+    if (!mbid) return null;
+    const j = await fetchJsonWithRetry(page, `https://musicbrainz.org/ws/2/release/${mbid}?inc=url-rels&fmt=json`, 'MB url-rels').catch(() => null);
+    const rel = j && (j.relations || []).find(r => r.url && /discogs\.com\/(?:[a-z]{2}\/)?(?:release|master)\//i.test(r.url.resource || ''));
+    return rel ? rel.url.resource : null;
 }

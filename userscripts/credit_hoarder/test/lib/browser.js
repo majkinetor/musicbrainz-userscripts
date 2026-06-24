@@ -170,8 +170,10 @@ export async function injectUserscript(page) {
         };
     `;
     await page.addScriptTag({ content: shim + code });
-    // Wait for the script's import bar to appear (means it's bootstrapped).
-    await page.waitForSelector('.discogs-bar .discogs-import-btn', { timeout: 30_000 });
+    // Wait for the script's import bar to appear (means it's bootstrapped). The
+    // pre-#272 single "Import from Discogs" button is now per-source icons, so the
+    // bar itself is the bootstrap signal.
+    await page.waitForSelector('.discogs-bar', { timeout: 30_000 });
 }
 
 /**
@@ -385,10 +387,14 @@ export async function hasSubmitButton(page) {
 }
 
 /**
- * Clicks "Import from Discogs". Returns nothing; caller waits for the review table.
+ * Starts the Discogs import. Returns nothing; caller waits for the review table.
+ * #272: the single "Import from Discogs" button became per-source icons — start
+ * the run by clicking the Discogs source icon (fall back to the first icon).
  */
 export async function clickImport(page) {
-    await page.locator('.discogs-bar .discogs-import-btn').first().click();
+    const discogs = page.locator('.discogs-bar .discogs-src-ico[data-src="Discogs"]');
+    if (await discogs.count()) await discogs.first().click();
+    else await page.locator('.discogs-bar .discogs-src-ico').first().click();
 }
 
 /**
@@ -444,7 +450,9 @@ export async function readImportLog(page) {
 }
 
 /**
- * Waits for the import to finish (import button returns to 'Import from Discogs').
+ * Waits for the import to finish. #272: the bar marks an active run with the
+ * `is-importing` class (added in startImport, removed when the runner settles),
+ * so "done" = the bar exists and is no longer importing.
  * Returns `{ log, timedOut }`. On timeout, captures whatever log was produced up to
  * that point — caller decides whether to treat as failure or proceed.
  */
@@ -453,8 +461,8 @@ export async function waitForImportDone(page, { timeout = 5 * 60_000 } = {}) {
     try {
         await page.waitForFunction(
             () => {
-                const btn = document.querySelector('.discogs-bar .discogs-import-btn');
-                return btn && !btn.disabled && /^Import from Discogs$/i.test(btn.textContent || '');
+                const bar = document.querySelector('.discogs-bar');
+                return bar && !bar.classList.contains('is-importing');
             },
             null,                            // no arg passed to the page function
             { timeout, polling: 500 },       // 3rd positional = options
