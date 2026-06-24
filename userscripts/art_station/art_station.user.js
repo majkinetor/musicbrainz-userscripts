@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.163008
+// @version      2026.6.24.163917
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -97,7 +97,7 @@
   const IMG_SEARCH_ENGINES = [
     { name: 'Yandex',      u: url => `https://yandex.com/images/search?rpt=imageview&url=${encodeURIComponent(url)}` },
     { name: 'Google Lens', u: url => `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(url)}` },
-    { name: 'TinEye',      u: url => `https://tineye.com/search?url=${encodeURIComponent(url)}` },
+    { name: 'TinEye',      u: url => `https://tineye.com/search?url=${encodeURIComponent(url)}&sort=size&order=desc` },   // biggest copy first
     { name: 'Bing',        u: url => `https://www.bing.com/images/searchbyimage?cbir=sbi&imgurl=${encodeURIComponent(url)}` },
   ];
 
@@ -2638,8 +2638,11 @@
     if (!it || it._new) { toast('Reverse search needs a published image (this one is still a local file)'); return; }
     const url = imgUrl(it.id);   // the original full-size CAA image
     const pop = document.createElement('div'); pop.className = 'as-pop as-search-pop';
+    // latest (main-branch) install link for the companion — never a feature branch
+    const COMPANION_URL = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/as_picker/as_picker.user.js';
     pop.innerHTML = `<div class="as-pop-h">Search for a higher-res copy</div>`
-      + IMG_SEARCH_ENGINES.map((e, i) => `<button class="as-btn as-search-eng" data-i="${i}">${esc(e.name)}</button>`).join('');
+      + IMG_SEARCH_ENGINES.map((e, i) => `<button class="as-btn as-search-eng" data-i="${i}">${esc(e.name)}</button>`).join('')
+      + `<div class="as-search-foot">Install the <a href="${COMPANION_URL}" target="_blank" rel="noopener">Art Station Picker</a> companion to click the higher-res result on any site and send it straight back here.</div>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     pop.querySelectorAll('.as-search-eng').forEach(b => b.onclick = () => {
@@ -3015,7 +3018,10 @@
   .as-pop-apply{background:var(--as-acc);color:#fff;border-color:var(--as-acc)}
   .as-cmt-pop{min-width:220px}
   .as-search-pop{display:flex;flex-direction:column;gap:2px;min-width:160px}
-  .as-search-pop .as-search-eng{display:block;width:100%;text-align:left}
+  .as-search-pop .as-search-eng{display:block;width:100%;text-align:left;border:none;background:none}
+  .as-search-pop .as-search-foot{margin-top:6px;padding:7px 6px 2px;border-top:1px solid #eee;font-size:11px;line-height:1.45;color:#9a8ccb}
+  .as-search-pop .as-search-foot a{color:var(--as-acc);font-weight:600;text-decoration:none}
+  .as-search-pop .as-search-foot a:hover{text-decoration:underline}
   /* grow to fit all providers when the screen allows; no horizontal bar, and hide the
      vertical scrollbar chrome (still wheel-scrollable on a very short screen) */
   .as-src-pop{min-width:340px;max-width:90vw;width:max-content;max-height:calc(100vh - 20px);overflow-x:hidden;scrollbar-width:none}
