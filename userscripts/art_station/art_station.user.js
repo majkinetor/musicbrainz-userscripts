@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.164722
+// @version      2026.6.24.165702
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -3067,20 +3067,21 @@
      opens UPWARD so it doesn't fall off the bottom edge. */
   .as-lb-dlwrap{position:relative;display:inline-flex;align-items:center}
   .as-lb-dlwrap:has(.as-lb-dlmenu.open){z-index:3}
-  .as-lb-dl,.as-lb-dlcaret{font:600 13px Arial;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.28);height:34px;cursor:pointer}
+  .as-lb-dl,.as-lb-dlcaret{font:600 13px Arial;color:#fff;background:rgba(255,255,255,.08);border:1px solid transparent;height:34px;cursor:pointer}
   .as-lb-dl{padding:0 14px;border-radius:8px 0 0 8px;border-right:none}
   .as-lb-dlcaret{padding:0 11px;border-radius:0 8px 8px 0;font-size:12px}
   .as-lb-dl:hover,.as-lb-dlcaret:hover{background:rgba(255,255,255,.25)}
+  .as-lb-dlwrap:hover .as-lb-dl,.as-lb-dlwrap:hover .as-lb-dlcaret{border-color:rgba(255,255,255,.28)}   /* border only while hovering the Download control */
   .as-lb-dlmenu{position:absolute;bottom:40px;left:0;min-width:130px;background:#fff;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.4);padding:5px;display:none;flex-direction:column}
   .as-lb-dlmenu.open{display:flex}
   .as-lb-dlmenu button{text-align:left;background:none;border:none;color:#333;font:13px Arial;padding:7px 10px;border-radius:6px;cursor:pointer}
   .as-lb-dlmenu button:hover{background:#f0ecfa;color:var(--as-acc)}
-  .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw)}
-  /* default: a zoomed image may cover the bar (image takes priority). Only when the
-     caption/comment is focused (editing) does it lift above the image. */
+  /* z-index:2 keeps the footer above a ZOOMED image — the image's transform makes a
+     stacking context that would otherwise paint over the bar (it sits below in flow). */
+  .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw);position:relative;z-index:2}
   /* while editing (focused), give the bar a readable dark backdrop — otherwise the comment
      field / type chip are invisible over a light image */
-  .as-lb-bar:focus-within{position:relative;z-index:2;background:rgba(15,12,28,.88);padding:11px 16px;border-radius:13px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+  .as-lb-bar:focus-within{background:rgba(15,12,28,.88);padding:11px 16px;border-radius:13px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
   .as-lb-bar:focus-within .as-lb-cmt{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5)}
   .as-lb-caprow{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
   .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
