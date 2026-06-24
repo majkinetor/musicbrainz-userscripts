@@ -1,6 +1,6 @@
 # Art Station Picker
 
-A small companion to **[Art Station](../art_station/README.md)** that makes the
+A small companion to **[Art Station](../README.md)** that makes the
 reverse-image **Search** action round-trip: after you click *Search* on a cover in
 Art Station and pick a higher-resolution copy somewhere, it's sent straight back to
 the gallery — no download-and-drop.

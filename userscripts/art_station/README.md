@@ -3,7 +3,7 @@
 A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reorder, retype, comment, remove, download, add and source a release's cover and event art — all staged, then applied on **Enter edit**.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/art_station/art_station.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/art_station/art_station.user.js)
-    - [picker](../as_picker/README.md) helper script: [install](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/as_picker/as_picker.user.js)
+    - [picker](./as_picker/README.md) helper script: [install](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/art_station/as_picker/as_picker.user.js)
 - [Changelog](./CHANGELOG.md)
 
 ![](./screens/screenshot.png)
@@ -34,7 +34,7 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
   - **File drop** — choose local file and upload to the Cover Art Archive in parallel; the **type is guessed from the file name** (see below)
   - **URL link** — use [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch cover from Discogs, Apple, Spotify, Bandcamp…
   - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover via integration.
-  - **Reverse-image Search** (the 🔍 on each cover) — look for a higher-resolution copy on Yandex / Google Lens / TinEye / Bing. With the optional [Art Station Picker](../as_picker/README.md) companion installed, click the better copy on the results (or its source site) and it's sent straight back into the gallery — no download + drop ([#292](https://github.com/majkinetor/musicbrainz-userscripts/issues/292))
+  - **Reverse-image Search** (the 🔍 on each cover) — look for a higher-resolution copy on Yandex / Google Lens / TinEye / Bing. With the optional [Art Station Picker](./as_picker/README.md) companion installed, click the better copy on the results (or its source site) and it's sent straight back into the gallery — no download + drop ([#292](https://github.com/majkinetor/musicbrainz-userscripts/issues/292))
   - Fresh covers shown faster than native UI
 - **Full-screen viewer**
   - Arrow keys for navigation (left/right) and zoom (up/down) with zoom level remembered
