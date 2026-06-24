@@ -1,5 +1,15 @@
 # Mammoth Changelog
 
+## [2026.6.24](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.24)
+
+### Features
+
+1. Submit edit with note on Shift-Click ([#289](https://github.com/majkinetor/musicbrainz-userscripts/issues/289))
+
+### Fixes
+
+1. Mammoth breaks layout when submitting edit without note ([#288](https://github.com/majkinetor/musicbrainz-userscripts/issues/288))
+
 ## [2026.6.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.21)
 
 ### Fixes

@@ -1,5 +1,9 @@
 # Credit Hoarder Changelog
 
+## [2026.6.24](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.24)
+
+- Small improvements
+
 ## [2026.6.22](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.22)
 
 ### Features

@@ -1,5 +1,17 @@
 # Apollo Editor Changelog
 
+## [2026.6.24](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.24)
+
+### Features
+
+1. Highlight all artist instances in the tracklist ([#284](https://github.com/majkinetor/musicbrainz-userscripts/issues/284))
+1. Logging improvements ([#283](https://github.com/majkinetor/musicbrainz-userscripts/issues/283))
+
+### Fixes
+
+1. Release "pending change" highlight not shown ([#290](https://github.com/majkinetor/musicbrainz-userscripts/issues/290))
+1. Mathing artist linked to release artist instead of featured one ([#287](https://github.com/majkinetor/musicbrainz-userscripts/issues/287))
+
 ## [2026.6.22.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.22.2)
 
 ### Features

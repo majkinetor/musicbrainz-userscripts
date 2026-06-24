@@ -1,5 +1,11 @@
 # ISRC Scout Changelog
 
+## [2026.6.24](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.24)
+
+### Features
+
+1. Auto set track provider to the one used to match all tracks ([#285](https://github.com/majkinetor/musicbrainz-userscripts/issues/285))
+
 ## [2026.6.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.16)
 
 ### Features

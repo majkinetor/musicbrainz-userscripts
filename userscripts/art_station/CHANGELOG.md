@@ -1,5 +1,14 @@
 # Art Station Changelog
 
+## [2026.6.24](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.24)
+
+### Features
+
+1. Right-click a type to replace all types with it and close popup ([#293](https://github.com/majkinetor/musicbrainz-userscripts/issues/293))
+1. Reverse-image search a cover ([#292](https://github.com/majkinetor/musicbrainz-userscripts/issues/292))
+1. Show ECAU failure message ([#286](https://github.com/majkinetor/musicbrainz-userscripts/issues/286))
+1. Logging improvements ([#283](https://github.com/majkinetor/musicbrainz-userscripts/issues/283))
+
 ## [2026.6.22.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.22.2)
 
 ### Features
