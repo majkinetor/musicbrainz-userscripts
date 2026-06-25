@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.25.124048
+// @version      2026.6.25.144245
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -82,6 +82,11 @@
   // GM_info is exposed even under @grant none on the common managers; fall back to
   // the hard-coded repo URL so the note never reads "v undefined".
   const _gm = (typeof GM_info !== 'undefined' && GM_info.script) ? GM_info.script : null;
+  // which userscript manager is running us (Violentmonkey / Tampermonkey / Greasemonkey / …)
+  // + its version — surfaced in the session log to help diagnose manager-specific issues (#282)
+  const _mgr = (typeof GM_info !== 'undefined' && GM_info)
+    ? ((GM_info.scriptHandler || 'unknown manager') + (GM_info.version ? ' ' + GM_info.version : ''))
+    : '';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station';
   const ICON_URL = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png';
   const ATTRIBUTION = _gm
@@ -234,7 +239,7 @@
   async function loadArt() {
     if (!_booted) {   // first two log lines: the script + version, then the MB entity
       _booted = true;
-      asLog.info('Art Station' + ((_gm && _gm.version) ? ' v' + _gm.version : ''));
+      asLog.info('Art Station' + ((_gm && _gm.version) ? ' v' + _gm.version : '') + (_mgr ? ' · ' + _mgr : ''));
       try { const ri = releaseInfo(); const t = (ri.title || '').trim(); asLog.info('Release: ' + (t ? t + ' — ' : '') + (ri.url || ('https://musicbrainz.org/' + ENT.kind + '/' + MBID))); } catch (e) { asLog.info('Release: https://musicbrainz.org/release/' + MBID); }
       if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 600);   // #283 reopen the log if it was left open
     }
@@ -1278,8 +1283,13 @@
     // failure (gesture lost, blocked by the userscript manager, API unavailable) log
     // the reason and fall through to the blob download so the zip still saves.
     let handle = null;
-    if (window.showSaveFilePicker) {
-      try { handle = await window.showSaveFilePicker({ suggestedName: zipName, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
+    // Call showSaveFilePicker on the REAL window (unsafeWindow): on the userscript-sandboxed
+    // `window` proxy some managers (e.g. Tampermonkey) throw TypeError "illegal invocation",
+    // which forced the blob fallback — and Chromium then silently blocks the 2nd+ of those
+    // repeat downloads. The native Save dialog isn't subject to that gate. #282
+    const _win = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
+    if (_win.showSaveFilePicker) {
+      try { handle = await _win.showSaveFilePicker({ suggestedName: zipName, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
       catch (e) {
         if (e && e.name === 'AbortError') return;   // genuine user cancel — respect it
         asLog.warn(`Save dialog unavailable (${(e && e.name) || e}) — saving via direct download instead`);
