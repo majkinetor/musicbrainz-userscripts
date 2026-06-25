@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.24.221510
+// @version      2026.6.25.210628
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -4272,12 +4272,19 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       }
     });
   }
-  function buildAttributes(rawAttributes) {
+  function buildAttributes(rawAttributes, linkTypeID) {
     if (!rawAttributes || rawAttributes.length === 0) return null;
     const MB = pageWindow.MB;
     const tree = MB?.tree;
     const lat = MB?.linkedEntities?.link_attribute_type;
     if (!tree || !lat) return null;
+    const linkType = linkTypeID != null ? MB?.linkedEntities?.link_type?.[linkTypeID] : null;
+    const supportedRoots = linkType ? new Set(Object.keys(linkType.attributes || {})) : null;
+    const attrSupported = (found) => {
+      if (!supportedRoots) return true;
+      const rootId = found.root_id != null ? found.root_id : found.id;
+      return supportedRoots.has(String(rootId));
+    };
     function findAttrByName(name) {
       const lower = name.toLowerCase().trim();
       for (const v of Object.values(lat)) {
@@ -4320,6 +4327,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       if (!attrName) continue;
       const found = findAttrByName(attrName);
       if (!found || seen.has(found.id)) continue;
+      if (!attrSupported(found)) {
+        log.warn(`Attribute "${found.name}" isn't supported by link type "${linkType.name || linkTypeID}" \u2014 dropping it (keeping the rel)`);
+        continue;
+      }
       seen.add(found.id);
       attrObjs.push({ type: found, typeID: found.id, credited_as: creditedAs, text_value: textValue });
     }
@@ -4651,7 +4662,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         failed++;
         return;
       }
-      const attrTree = buildAttributes(rawAttributes);
+      const attrTree = buildAttributes(rawAttributes, linkTypeID);
       const attrSig = attrTree ? (() => {
         try {
           return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => (a.typeID || "") + (a.credited_as ? "~" + a.credited_as : "")).join(",");
@@ -4924,7 +4935,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               const mbid = mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
               try {
                 const artistEntity = await fetchMBEntity(mbid);
-                dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || []));
+                dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || [], linkTypeID));
                 added++;
               } catch (e) {
                 log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);

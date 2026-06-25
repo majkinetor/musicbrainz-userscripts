@@ -146,13 +146,28 @@ export function runAssertions({ existingRels, finalRels, newRels, discogsJson, m
     }
 
     // ── Assertion 3: every attribute exists in MB.linkedEntities.link_attribute_type
+    //    AND is SUPPORTED by the rel's link type (its root is listed in
+    //    link_type.attributes). An unsupported attribute makes MB reject the whole
+    //    commit ("Attribute N is unsupported for link type M" — #295).
     for (const r of newRels) {
+        const lt = linkTypes[r.linkTypeID];
+        const supportedRoots = lt ? new Set(Object.keys(lt.attributes || {})) : null;
         for (const a of (r.attrs || [])) {
-            if (!attrTypes[a.typeID]) {
+            const at = attrTypes[a.typeID];
+            if (!at) {
                 failures.push({
                     kind: 'unknown_attribute',
                     rel: r,
                     msg: `attribute typeID ${a.typeID} (text=${JSON.stringify(a.text_value)}) not in MB.linkedEntities.link_attribute_type`,
+                });
+                continue;
+            }
+            const rootId = (at.root_id != null) ? at.root_id : at.id;
+            if (supportedRoots && !supportedRoots.has(String(rootId))) {
+                failures.push({
+                    kind: 'unsupported_attribute',
+                    rel: r,
+                    msg: `attribute "${at.name}" (typeID ${a.typeID}) is unsupported by link type ${r.linkTypeID} (${lt.name}) — MB would reject the commit`,
                 });
             }
         }

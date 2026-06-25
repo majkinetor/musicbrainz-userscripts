@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.24.221603
+// @version      2026.6.25.211832
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3470,12 +3470,19 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       }
     });
   }
-  function buildAttributes(rawAttributes) {
+  function buildAttributes(rawAttributes, linkTypeID) {
     if (!rawAttributes || rawAttributes.length === 0) return null;
     const MB = pageWindow.MB;
     const tree = MB?.tree;
     const lat = MB?.linkedEntities?.link_attribute_type;
     if (!tree || !lat) return null;
+    const linkType = linkTypeID != null ? MB?.linkedEntities?.link_type?.[linkTypeID] : null;
+    const supportedRoots = linkType ? new Set(Object.keys(linkType.attributes || {})) : null;
+    const attrSupported = (found) => {
+      if (!supportedRoots) return true;
+      const rootId = found.root_id != null ? found.root_id : found.id;
+      return supportedRoots.has(String(rootId));
+    };
     function findAttrByName(name) {
       const lower = name.toLowerCase().trim();
       for (const v of Object.values(lat)) {
@@ -3518,6 +3525,10 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
       if (!attrName) continue;
       const found = findAttrByName(attrName);
       if (!found || seen.has(found.id)) continue;
+      if (!attrSupported(found)) {
+        log.warn(`Attribute "${found.name}" isn't supported by link type "${linkType.name || linkTypeID}" \u2014 dropping it (keeping the rel)`);
+        continue;
+      }
       seen.add(found.id);
       attrObjs.push({ type: found, typeID: found.id, credited_as: creditedAs, text_value: textValue });
     }
@@ -3845,7 +3856,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
         failed++;
         return;
       }
-      const attrTree = buildAttributes(rawAttributes);
+      const attrTree = buildAttributes(rawAttributes, linkTypeID);
       const attrSig = attrTree ? (() => {
         try {
           return [...pageWindow.MB.tree.iterate(attrTree)].map((a) => (a.typeID || "") + (a.credited_as ? "~" + a.credited_as : "")).join(",");
@@ -4114,7 +4125,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
               const mbid = mbUrl.replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
               try {
                 const artistEntity = await fetchMBEntity(mbid);
-                dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || []));
+                dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || [], linkTypeID));
                 added++;
               } catch (e) {
                 log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);

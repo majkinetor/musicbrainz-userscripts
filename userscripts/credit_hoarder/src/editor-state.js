@@ -107,12 +107,26 @@ export function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID,
  *
  * Returns the ImmutableTree, or `null` if no attributes survive.
  */
-export function buildAttributes(rawAttributes) {
+export function buildAttributes(rawAttributes, linkTypeID) {
     if (!rawAttributes || rawAttributes.length === 0) return null;
     const MB = pageWindow.MB;
     const tree = MB?.tree;
     const lat = MB?.linkedEntities?.link_attribute_type;
     if (!tree || !lat) return null;
+
+    // Attributes a link type accepts are listed (by ROOT attribute id) on the
+    // link type itself — e.g. the "instrument" rel keys its instrument root (14),
+    // the "misc" rel (id 25) keys only "task" (1150). Adding one it doesn't accept
+    // makes MB reject the WHOLE commit ("Attribute N is unsupported for link type M",
+    // #295 — `assistant` on a misc role). Drop the unsupported attribute and keep the
+    // rel, same as we already do for unknown attributes.
+    const linkType = (linkTypeID != null) ? MB?.linkedEntities?.link_type?.[linkTypeID] : null;
+    const supportedRoots = linkType ? new Set(Object.keys(linkType.attributes || {})) : null;
+    const attrSupported = found => {
+        if (!supportedRoots) return true;   // no link type context → can't check; leave as-is
+        const rootId = (found.root_id != null) ? found.root_id : found.id;
+        return supportedRoots.has(String(rootId));
+    };
 
     function findAttrByName(name) {
         const lower = name.toLowerCase().trim();
@@ -171,6 +185,10 @@ export function buildAttributes(rawAttributes) {
         if (!attrName) continue;
         const found = findAttrByName(attrName);
         if (!found || seen.has(found.id)) continue;
+        if (!attrSupported(found)) {
+            log.warn(`Attribute "${found.name}" isn't supported by link type "${linkType.name || linkTypeID}" — dropping it (keeping the rel)`);
+            continue;
+        }
         seen.add(found.id);
         attrObjs.push({ type: found, typeID: found.id, credited_as: creditedAs, text_value: textValue });
     }

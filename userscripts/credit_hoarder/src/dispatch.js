@@ -465,7 +465,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             failed++; return;
         }
 
-        const attrTree = buildAttributes(rawAttributes);
+        const attrTree = buildAttributes(rawAttributes, linkTypeID);   // #295: drop attributes this link type doesn't support
         // #233: fold each attribute's credited-as into the signature so two
         // spoken-vocals rels that differ only by character ("spoken vocals
         // [Michal]" vs "[Tonda]") aren't collapsed by the session dedup.
@@ -834,7 +834,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                         const mbid = mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
                         try {
                             const artistEntity = await fetchMBEntity(mbid);
-                            dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || []));
+                            dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || [], linkTypeID));
                             added++;
                         } catch(e) {
                             log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);
