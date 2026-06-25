@@ -120,10 +120,15 @@ export function buildAttributes(rawAttributes, linkTypeID) {
     // makes MB reject the WHOLE commit ("Attribute N is unsupported for link type M",
     // #295 — `assistant` on a misc role). Drop the unsupported attribute and keep the
     // rel, same as we already do for unknown attributes.
+    // FAIL OPEN: only filter when this link type's attribute list is actually present.
+    // An explicit `{}` means "accepts no attributes" (filter). A missing `.attributes`
+    // means the definition wasn't loaded (today MB loads them all, but if it ever moves
+    // to partial/lazy loading) — then we can't tell, so we DON'T filter and let MB
+    // validate, rather than silently dropping a valid attribute.
     const linkType = (linkTypeID != null) ? MB?.linkedEntities?.link_type?.[linkTypeID] : null;
-    const supportedRoots = linkType ? new Set(Object.keys(linkType.attributes || {})) : null;
+    const supportedRoots = (linkType && linkType.attributes) ? new Set(Object.keys(linkType.attributes)) : null;
     const attrSupported = found => {
-        if (!supportedRoots) return true;   // no link type context → can't check; leave as-is
+        if (!supportedRoots) return true;   // no link type context / attributes not loaded → can't check; leave as-is
         const rootId = (found.root_id != null) ? found.root_id : found.id;
         return supportedRoots.has(String(rootId));
     };

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.25.211832
+// @version      2026.6.25.215429
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3477,7 +3477,7 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     const lat = MB?.linkedEntities?.link_attribute_type;
     if (!tree || !lat) return null;
     const linkType = linkTypeID != null ? MB?.linkedEntities?.link_type?.[linkTypeID] : null;
-    const supportedRoots = linkType ? new Set(Object.keys(linkType.attributes || {})) : null;
+    const supportedRoots = linkType && linkType.attributes ? new Set(Object.keys(linkType.attributes)) : null;
     const attrSupported = (found) => {
       if (!supportedRoots) return true;
       const rootId = found.root_id != null ? found.root_id : found.id;
