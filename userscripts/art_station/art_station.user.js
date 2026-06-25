@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24.203643
+// @version      2026.6.25.124048
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1262,6 +1262,10 @@
   }
   async function dlZip(sel, onProgress) {
     const items = zipNames(sel), enc = new TextEncoder();
+    // unique, sortable archive name: "<MBID> <YYYY-MM-DDThh-mm-ss> <N> <covers>.zip" — the
+    // export timestamp + file count make every download distinct (no overwrite / same-name reuse).
+    const _p = n => String(n).padStart(2, '0'), _d = new Date();
+    const zipName = `${MBID} ${_d.getFullYear()}-${_p(_d.getMonth() + 1)}-${_p(_d.getDate())}T${_p(_d.getHours())}-${_p(_d.getMinutes())}-${_p(_d.getSeconds())} ${items.length} ${ITEMS}.zip`;
     asLog.info(`Download: zipping ${items.length} ${items.length === 1 ? ITEM : ITEMS}`);
     // #240: stream the zip straight to disk when the browser supports it — the
     // download starts immediately (first cover written as soon as it arrives) and
@@ -1275,7 +1279,7 @@
     // the reason and fall through to the blob download so the zip still saves.
     let handle = null;
     if (window.showSaveFilePicker) {
-      try { handle = await window.showSaveFilePicker({ suggestedName: `${MBID}-${ITEMS}.zip`, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
+      try { handle = await window.showSaveFilePicker({ suggestedName: zipName, types: [{ description: 'ZIP archive', accept: { 'application/zip': ['.zip'] } }] }); }
       catch (e) {
         if (e && e.name === 'AbortError') return;   // genuine user cancel — respect it
         asLog.warn(`Save dialog unavailable (${(e && e.name) || e}) — saving via direct download instead`);
@@ -1306,7 +1310,7 @@
       for (const c of central) { await w.write(zipCentral(c.crc, c.size, c.name.length, c.offset)); await w.write(c.name); cdSize += 46 + c.name.length; }
       await w.write(zipEOCD(central.length, cdSize, offset));
       await w.close();
-      asLog.ok(`Download: saved ${MBID}-${ITEMS}.zip — ${central.length} file${central.length === 1 ? '' : 's'} · ${fmtBytes(offset)} (streamed)${failed.length ? `, ${failed.length} dropped` : ''}`);
+      asLog.ok(`Download: saved ${zipName} — ${central.length} file${central.length === 1 ? '' : 's'} · ${fmtBytes(offset)} (streamed)${failed.length ? `, ${failed.length} dropped` : ''}`);
       if (failed.length) warnDropped(failed, items.length);
       return;
     }
@@ -1330,10 +1334,10 @@
     const entries = [...covers, { name: 'README.md', data: enc.encode(manifestMd(sel, failed)) }];   // manifest last — now has resolutions
     const total = entries.reduce((s, e) => s + e.data.length, 0);
     const obj = URL.createObjectURL(makeZip(entries));
-    const a = document.createElement('a'); a.href = obj; a.download = `${MBID}-${ITEMS}.zip`;
+    const a = document.createElement('a'); a.href = obj; a.download = zipName;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(obj), 8000);
-    asLog.ok(`Download: saved ${MBID}-${ITEMS}.zip — ${covers.length} file${covers.length === 1 ? '' : 's'} · ${fmtBytes(total)}${failed.length ? `, ${failed.length} dropped` : ''}`);
+    asLog.ok(`Download: saved ${zipName} — ${covers.length} file${covers.length === 1 ? '' : 's'} · ${fmtBytes(total)}${failed.length ? `, ${failed.length} dropped` : ''}`);
     if (failed.length) warnDropped(failed, items.length);
   }
   // ── #235 source covers from covers.musichoarders.xyz (the sanctioned MH Covers
