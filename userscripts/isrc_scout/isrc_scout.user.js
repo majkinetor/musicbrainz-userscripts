@@ -2536,11 +2536,18 @@
     }
 
     // Show/label the toolbar "Add N links" button based on resolved candidates.
+    // A track is "missing" links when it has none of our providers linked
+    // (at least one link → not missing) — parallels the ISRC "N missing" badge.
+    function missingCount() {
+      let n = 0;
+      (RELEASE ? RELEASE.tracks : []).forEach(t => { if (t.recId && !providersFor(t).some(p => linkedUrl(t, p))) n++; });
+      return n;
+    }
     function updateAddBtn() {
+      const badge = modal.querySelector('#ii-badge-links');   // tab badge = tracks with no link
+      if (badge) { const m = missingCount(); badge.textContent = m ? (m + ' missing') : ''; }
+      const n = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;   // resolved + addable now
       const btn = modal.querySelector('#ii-addlinks-btn');
-      const n = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;
-      const badge = modal.querySelector('#ii-badge-links');
-      if (badge) badge.textContent = n ? (n + ' to add') : '';
       if (!btn) return;
       btn.style.display = n ? '' : 'none';
       btn.textContent = '➕ Add ' + n + ' link' + (n === 1 ? '' : 's');
@@ -2583,7 +2590,7 @@
       }
     }
 
-    return { linkedHtml, addHtml, resolve, addAll };
+    return { linkedHtml, addHtml, resolve, addAll, refresh: updateAddBtn };
   })();
 
   /* ── render the track table ── */
@@ -2709,6 +2716,7 @@
       tr.querySelector('.ii-cands').appendChild(rf);
     });
     updateSummary();
+    TrackLinks.refresh();   // #301: set the Links tab "N missing" badge
   }
   function existingHtml(arr, pending) {
     if (!arr || !arr.length) return '<span class="none">none</span>';
