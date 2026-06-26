@@ -516,8 +516,8 @@
     .ii-track-links { display: flex; align-items: center; gap: 7px; margin-top: 3px; min-height: 15px; }
     .ii-tl { display: inline-flex; align-items: center; line-height: 0; text-decoration: none; }
     .ii-tl svg { width: 15px; height: 15px; display: block; }
-    .ii-tl.linked  { color: #adb5bd; opacity: .55; filter: grayscale(1); }          /* already on MB → muted */
-    .ii-tl.linked:hover { opacity: .85; }
+    .ii-tl.linked  { color: #868e96; }                                               /* already on MB → monochrome (solid, not faded) */
+    .ii-tl.linked:hover { color: #495057; }
     .ii-tl.new     { /* brand colour set inline */ }                                  /* resolved, not linked → add candidate */
     .ii-tl.new:hover { filter: brightness(1.12); }
     .ii-tl.cand    { color: #ced4da; opacity: .5; }                                   /* not yet resolved */
@@ -826,7 +826,10 @@
 
   function fetchRelease() {
     return gmGet(
-      MB_WS2 + 'release/' + mbid + '?inc=recordings+artist-credits+isrcs+url-rels+release-groups&fmt=json',
+      // recording-level-rels folds each recording's URL relationships into this one
+      // call (same data the overview's "Display credits inline" shows) — so the
+      // #219 track-link icons know what's already linked with no extra request.
+      MB_WS2 + 'release/' + mbid + '?inc=recordings+artist-credits+isrcs+url-rels+recording-level-rels+release-groups&fmt=json',
       { 'Accept': 'application/json', 'User-Agent': UA }
     ).then(r => {
       if (r.status !== 200) throw new Error('MB ' + r.status);
@@ -845,6 +848,7 @@
             trackPos:  trk.position,
             number:    trk.number,
             existing:  (rec.isrcs || []).slice(),
+            recUrls:   (rec.relations || []).map(rel => rel.url && rel.url.resource).filter(Boolean),   // #219: existing url rels on the recording
             pending:   '',
           });
         });
@@ -2135,21 +2139,15 @@
       window.visualViewport.addEventListener('scroll', _vvSync);
     }
     refreshAuthState();
-    // Render the table, then fetch existing recording links once and paint the
-    // already-linked icons. MUST run in BOTH branches: updateBtnStatus() already
-    // calls fetchRelease() on page load, so RELEASE is usually set by the time the
-    // modal opens — and the old code only refreshed links in the !RELEASE branch,
-    // so the browse never fired and every icon stayed a "not linked" candidate.
-    const afterRelease = () => { renderTracks(); if (!TrackLinks.hasData()) TrackLinks.refreshExisting(); };
     if (!RELEASE) {
       tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#adb5bd">Loading release…</td></tr>';
       fetchRelease()
-        .then(afterRelease)
+        .then(renderTracks)   // existing track links ride along on the release fetch (recording-level-rels), so the strip renders linked immediately
         .catch(err => {
           tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#dc3545">Failed to load release: ' + esc(err.message) + '</td></tr>';
         });
     } else {
-      afterRelease();
+      renderTracks();
     }
   }
   function closeModal() {
@@ -2195,8 +2193,11 @@
      adding URL relationships needs MB's website edit API, not submitIsrcs().
   ═══════════════════════════════════════════════════════════════════════ */
   const TrackLinks = (function () {
+    // linkTypeID: recording↔url relationship type (confirmed live against MB's
+    // editor): 268 = "free streaming" (Deezer/Spotify free tier), 979 =
+    // "streaming" / streaming page (Tidal, subscription).
     const PROV = [
-      { code: 'dz', name: 'Deezer', color: _PROV_COLOR.deezer, icon: SRC_ICON.dz,
+      { code: 'dz', name: 'Deezer', color: _PROV_COLOR.deezer, icon: SRC_ICON.dz, linkTypeID: 268,
         test: u => /(?:^|\.)deezer\.com\/(?:[a-z]{2}\/)?track\/\d+/i.test(u),
         async resolve(isrc) {
           const r = await gmGet('https://api.deezer.com/track/isrc:' + encodeURIComponent(isrc), { 'Accept': 'application/json' });
@@ -2205,7 +2206,7 @@
           if (!j || j.error || !j.id) return null;
           return j.link || ('https://www.deezer.com/track/' + j.id);
         } },
-      { code: 'td', name: 'Tidal', color: _PROV_COLOR.tidal, icon: SRC_ICON.td,
+      { code: 'td', name: 'Tidal', color: _PROV_COLOR.tidal, icon: SRC_ICON.td, linkTypeID: 979,
         test: u => /tidal\.com\/(?:browse\/)?track\/\d+/i.test(u),
         async resolve(isrc) {
           const token = await tidalToken();
@@ -2218,85 +2219,17 @@
         } },
     ];
 
-    let recLinks = {};      // recId -> [resource, …]  (existing url rels on the recording)
-    let fetched = false;
     let resolving = false;
 
-    // MB's main server rate-limits at ~1 req/s and answers 503 (with Retry-After)
-    // when you burst — which we do, since this fires right after fetchRelease().
-    // Retry on 503/429/5xx so the browse RECOVERS instead of silently coming back
-    // empty (which painted every track as "not linked", #219 bug).
-    async function mbGet(url) {
-      for (let attempt = 0; ; attempt++) {
-        const r = await gmGet(url, { 'Accept': 'application/json', 'User-Agent': UA });
-        if (r.status === 200) return r;
-        if ((r.status === 503 || r.status === 429 || r.status >= 500) && attempt < 4) {
-          const wait = retryAfterMs(r, Math.min(1200 * Math.pow(2, attempt), 8000));
-          Log.warn('Track links: recording browse ' + r.status + ' — backing off ' + wait + 'ms (retry ' + (attempt + 1) + '/4)');
-          await sleep(wait);
-          continue;
-        }
-        return r;   // 200 handled above; non-retryable or out of retries
-      }
-    }
+    // Existing url rels come free with fetchRelease (inc=recording-level-rels), so
+    // we read what's already linked straight off the track — no extra request.
+    const linkedUrl = (t, p) => (t.recUrls || []).find(u => p.test(u)) || null;
 
-    // One browse call returns every recording on the release WITH its url rels,
-    // so we know up-front which providers are already linked (no per-row fetch).
-    async function fetchExisting() {
-      recLinks = {};
-      Log.info('Track links: fetching existing recording links…');
-      let offset = 0, total = 0, withLinks = 0;
-      for (let guard = 0; guard < 20; guard++) {
-        const r = await mbGet(MB_WS2 + 'recording?release=' + mbid + '&inc=url-rels&limit=100&offset=' + offset + '&fmt=json');
-        if (r.status !== 200) { Log.warn('Track links: recording browse gave ' + r.status + ' — icons stay as candidates'); break; }
-        let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { break; }
-        (j.recordings || []).forEach(rec => {
-          const urls = (rec.relations || []).map(rel => rel.url && rel.url.resource).filter(Boolean);
-          recLinks[rec.id] = urls; total++; if (urls.length) withLinks++;
-        });
-        const count = j['recording-count'] || 0;
-        offset += 100;
-        if (offset >= count) break;
-        await sleep(1100);   // stay under MB's ~1 req/s when paging
-      }
-      fetched = true;
-      Log.info('Track links: ' + total + ' recording(s), ' + withLinks + ' with existing provider links');
-    }
-
-    // Fetch existing links in the BACKGROUND (don't block the table render) and
-    // then upgrade the already-linked icons in place. A slow/failed fetch just
-    // leaves the candidate icons as-is instead of holding up the whole table.
-    function refreshExisting() {
-      return fetchExisting().then(paintExisting).catch(e => Log.warn('Track links: existing-link fetch failed — ' + errText(e)));
-    }
-
-    const linkedUrl = (recId, p) => (recLinks[recId] || []).find(u => p.test(u)) || null;
-
-    // Repaint: turn candidate icons into faded "already linked" links wherever the
-    // recording has that provider's URL. Runs after the background fetch resolves.
-    function paintExisting() {
-      RELEASE.tracks.forEach((t, idx) => {
-        if (!t.recId) return;
-        PROV.forEach(p => {
-          const ex = linkedUrl(t.recId, p);
-          if (!ex) return;
-          const el = cell(idx, p.code);
-          if (!el || el.classList.contains('linked')) return;
-          const a = document.createElement('a');
-          a.className = 'ii-tl linked'; a.dataset.code = p.code;
-          a.href = ex; a.target = '_blank'; a.rel = 'noopener';
-          a.title = p.name + ' — already linked on MusicBrainz';
-          a.innerHTML = p.icon;
-          el.replaceWith(a);
-        });
-      });
-    }
-
-    // Build the strip for one track. Linked providers paint immediately (faded);
-    // the rest start as faint candidates and are filled by resolve().
+    // Build the strip for one track. Already-linked providers paint immediately
+    // (faded); the rest start as faint candidates and are filled by resolve().
     function stripHtml(t) {
       const cells = PROV.map(p => {
-        const ex = t.recId ? linkedUrl(t.recId, p) : null;
+        const ex = t.recId ? linkedUrl(t, p) : null;
         if (ex) return '<a class="ii-tl linked" data-code="' + p.code + '" href="' + esc(ex) + '" target="_blank" rel="noopener" ' +
           'title="' + esc(p.name) + ' — already linked on MusicBrainz">' + p.icon + '</a>';
         return '<span class="ii-tl cand" data-code="' + p.code + '" title="' + esc(p.name) + ' — not linked yet">' + p.icon + '</span>';
@@ -2323,7 +2256,7 @@
             const t = RELEASE.tracks[idx];
             const isrc = normalizeIsrc(t.pending) || normalizeIsrc((t.existing || [])[0] || '');
             if (!t.recId || !isValidIsrc(isrc)) continue;
-            if (linkedUrl(t.recId, p)) continue;           // already linked → leave faded
+            if (linkedUrl(t, p)) continue;                 // already linked → leave faded
             const el = cell(idx, p.code);
             if (!el || !el.classList.contains('cand')) continue;
             el.className = 'ii-tl spin'; el.dataset.code = p.code;
@@ -2351,7 +2284,7 @@
       }
     }
 
-    return { refreshExisting, stripHtml, resolve, hasData: () => fetched };
+    return { stripHtml, resolve };
   })();
 
   /* ── render the track table ── */
