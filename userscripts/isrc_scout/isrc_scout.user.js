@@ -25,6 +25,7 @@
 // @connect      volumo.com
 // @connect      hdtracks.azurewebsites.net
 // @connect      api.beatport.com
+// @connect      bandcamp.com
 // @run-at       document-start
 // ==/UserScript==
 
@@ -203,6 +204,8 @@
     vo: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M7.5 8h2l2.5 5.5L14.5 8h2l-3.5 8h-2z"/></svg>',
     // HDtracks: "HD" monogram (clean stand-in — the brand has no public glyph mark)
     hd: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M2 6h2.4v4h4V6h2.4v12H8.4v-5.6h-4V18H2z"/><path d="M12 6h4.2c3 0 5 2.4 5 6s-2 6-5 6H12zm2.4 2.2v7.6h1.6c1.7 0 2.8-1.5 2.8-3.8s-1.1-3.8-2.8-3.8z"/></svg>',
+    // Bandcamp: the brand logomark is a parallelogram
+    bc: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M2 16.5l5-9h15l-5 9z"/></svg>',
   };
 
   const mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/)?.[1];
@@ -854,11 +857,14 @@
         });
       });
       const rels = data.relations || [];
-      let deezerId = null, spotifyId = null, beatportId = null, tidalId = null, volumoId = null, hdtracksId = null;
+      let deezerId = null, spotifyId = null, beatportId = null, tidalId = null, volumoId = null, hdtracksId = null, bandcampUrl = null;
       rels.forEach(rel => {
         const u = rel.url && rel.url.resource;
         if (!u) return;
         let m;
+        // #300: the release's Bandcamp album page lists every track's URL, so we can
+        // add per-track links by position (Bandcamp has no ISRC).
+        if ((m = u.match(/^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\/[^?#]+/i))) bandcampUrl = m[0];
         if ((m = u.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/))) spotifyId = m[1];
         if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))   deezerId  = m[1];
         if ((m = u.match(/beatport\.com\/release\/[^/]+\/(\d+)/)))       beatportId = m[1];
@@ -893,7 +899,7 @@
       });
       Object.keys(pend).forEach(rid => { if (!tracks.some(t => t.recId === rid)) { delete pend[rid]; pendChanged = true; } });
       if (pendChanged) savePendingRemovals(pend);
-      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, beatportId, tidalId, volumoId, hdtracksId, releaseYear, artist };
+      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, beatportId, tidalId, volumoId, hdtracksId, bandcampUrl, releaseYear, artist };
       Log.info('Release "' + RELEASE.title + '"' + (releaseYear ? ' (' + releaseYear + ')' : '') + ': ' + tracks.length + ' track(s), ' +
         tracks.filter(t => !t.existing.length).length + ' missing ISRC' +
         '; links: ' + [deezerId ? 'Deezer ' + deezerId : null, spotifyId ? 'Spotify ' + spotifyId : null,
@@ -1161,7 +1167,7 @@
     volumo:   { source: 'Volumo',   idField: 'volumoId',   fetcher: fetchVolumo,   code: 'vo' },
     hdtracks: { source: 'HDtracks', idField: 'hdtracksId', fetcher: fetchHDtracks, code: 'hd' },
   };
-  const _PROV_COLOR = { sx: '#6f42c1', deezer: '#ef5466', spotify: '#1db954', beatport: '#0a8754', tidal: '#1f2d3d', volumo: '#7c4dff', hdtracks: '#e63329' };
+  const _PROV_COLOR = { sx: '#6f42c1', deezer: '#ef5466', spotify: '#1db954', beatport: '#0a8754', tidal: '#1f2d3d', volumo: '#7c4dff', hdtracks: '#e63329', bandcamp: '#1da0c3' };
   const TRACK_PROV = { sx: { name: 'SoundExchange', short: 'SX', code: 'sx', color: _PROV_COLOR.sx, kind: 'search' } };
   Object.keys(ALBUM_PROVIDERS).forEach(k => {
     const p = ALBUM_PROVIDERS[k];
@@ -2055,6 +2061,12 @@
       if (e.key === 'Enter') { submitUrlAdd(urlInput.value); closeUrlAdd(); }
       else if (e.key === 'Escape') closeUrlAdd();
     });
+    // Auto-import on paste — no Enter needed when a recognized album URL is pasted
+    // (#300). Unrecognized text pastes normally so it can still be edited + Entered.
+    urlInput.addEventListener('paste', e => {
+      const v = ((e.clipboardData && e.clipboardData.getData('text')) || '').trim();
+      if (v && detectSource(v)) { e.preventDefault(); reflectDetectedSource(v); submitUrlAdd(v); closeUrlAdd(); }
+    });
     // collapse on click-outside (only when empty, so a half-typed URL isn't lost)
     document.addEventListener('mousedown', e => {
       if (!urlWrap.classList.contains('open')) return;
@@ -2219,6 +2231,13 @@
           const t = (j.data || [])[0];
           return t && t.id ? ('https://tidal.com/browse/track/' + t.id) : null;
         } },
+      // Bandcamp (#300): no ISRC — resolve by ALBUM. The release's Bandcamp album
+      // page lists every track's URL in order, so we match by position (with a
+      // title sanity-check). Only offered when the release has a Bandcamp album link.
+      { code: 'bc', name: 'Bandcamp', color: _PROV_COLOR.bandcamp, icon: SRC_ICON.bc, linkTypeID: 268,
+        album: true, urlKey: 'bandcampUrl',
+        test: u => /\.bandcamp\.com\/track\//i.test(u),
+        resolve: (isrc, t, idx) => bcResolve(t, idx) },
     ];
 
     let resolving = false;
@@ -2227,10 +2246,47 @@
     // we read what's already linked straight off the track — no extra request.
     const linkedUrl = (t, p) => (t.recUrls || []).find(u => p.test(u)) || null;
 
+    // Bandcamp album page (fetched once): ordered [{title, url}] from data-tralbum.
+    let _bcList = null, _bcPromise = null;
+    async function bcAlbum() {
+      if (_bcList) return _bcList;
+      if (_bcPromise) return _bcPromise;
+      const url = RELEASE && RELEASE.bandcampUrl;
+      if (!url) { _bcList = []; return _bcList; }
+      _bcPromise = (async () => {
+        const r = await gmGet(url, { 'Accept': 'text/html' });
+        if (r.status !== 200) return [];
+        const m = (r.responseText || '').match(/data-tralbum="([^"]+)"/);
+        if (!m) return [];
+        const json = m[1].replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&amp;/g, '&');
+        let j; try { j = JSON.parse(json); } catch (e) { return []; }
+        let origin = ''; try { origin = new URL(j.url).origin; } catch (e) { origin = url.replace(/\/album\/.*$/, ''); }
+        return (j.trackinfo || []).map(ti => ({ title: ti.title || '', url: ti.title_link ? origin + ti.title_link : '' })).filter(ti => ti.url);
+      })();
+      _bcList = await _bcPromise.catch(() => []); _bcPromise = null;
+      return _bcList;
+    }
+    const _nrm = s => [...(s || '').toLowerCase().normalize('NFD')].filter(c => { const x = c.charCodeAt(0); return x < 0x300 || x > 0x36f; }).join('').replace(/[^a-z0-9]+/g, ' ').trim();
+    async function bcResolve(t, idx) {
+      const list = await bcAlbum();
+      const e = list[idx];
+      if (!e) return null;
+      const a = _nrm(e.title), b = _nrm(t.title);
+      // position match must agree on title (else the editions are out of sync) — don't add a likely-wrong link
+      return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
+    }
+
+    // Which providers to show for a track: by-ISRC ones always; album ones (Bandcamp)
+    // only when the release has that album link (resolvable) or the recording is
+    // already linked to it.
+    function providersFor(t) {
+      return PROV.filter(p => !p.album || linkedUrl(t, p) || (RELEASE && RELEASE[p.urlKey]));
+    }
+
     // Build the strip for one track. Already-linked providers paint immediately
-    // (faded); the rest start as faint candidates and are filled by resolve().
+    // (monochrome); the rest start as faint candidates and are filled by resolve().
     function stripHtml(t) {
-      const cells = PROV.map(p => {
+      const cells = providersFor(t).map(p => {
         const ex = t.recId ? linkedUrl(t, p) : null;
         if (ex) return '<a class="ii-tl linked" data-code="' + p.code + '" href="' + esc(ex) + '" target="_blank" rel="noopener" ' +
           'title="' + esc(p.name) + ' — already linked on MusicBrainz">' + p.icon + '</a>';
@@ -2279,9 +2335,18 @@
       el.replaceWith(a);
     }
 
+    // Same shape as ISRC Scout's standard edit note (noteHeader + Release line +
+    // an "Added …" summary), so link edits read like the script's ISRC edits.
     function noteFor(provs) {
-      const names = [...new Set(provs.map(p => p.name))].join(' / ');
-      return 'Linked ' + names + ' track' + (provs.length > 1 ? 's' : '') + ' to the recording, matched by ISRC — via ISRC Scout';
+      const counts = {};
+      provs.forEach(p => { counts[p.name] = (counts[p.name] || 0) + 1; });
+      const breakdown = Object.keys(counts).sort().map(n => n + ' (' + counts[n] + ')').join(', ');
+      return [
+        noteHeader(),
+        '',
+        'Release: ' + MB_ROOT + '/release/' + mbid,
+        'Added ' + provs.length + ' streaming link' + (provs.length === 1 ? '' : 's') + (breakdown ? ': ' + breakdown : ''),
+      ].join('\n');
     }
 
     // Add recording→url relationships in the background via MB's internal edit API
@@ -2371,21 +2436,23 @@
       if (btn) { btn.disabled = true; btn.dataset.busy = '1'; }
       try {
         for (const p of PROV) {
+          if (p.album && !(RELEASE && RELEASE[p.urlKey])) continue;   // album provider with no album link → nothing to resolve
           for (let idx = 0; idx < RELEASE.tracks.length; idx++) {
             const t = RELEASE.tracks[idx];
+            if (!t.recId) continue;
             const isrc = normalizeIsrc(t.pending) || normalizeIsrc((t.existing || [])[0] || '');
-            if (!t.recId || !isValidIsrc(isrc)) continue;
+            if (!p.album && !isValidIsrc(isrc)) continue;  // by-ISRC providers need an ISRC; album ones (Bandcamp) don't
             if (linkedUrl(t, p)) continue;                 // already linked → leave monochrome
             const el = cell(idx, p.code);
             if (!el || !el.classList.contains('cand')) continue;
             el.className = 'ii-tl spin'; el.dataset.code = p.code;
             let url = null;
-            try { url = await p.resolve(isrc); } catch (e) { /* rate-limited / not found */ }
+            try { url = await p.resolve(isrc, t, idx); } catch (e) { /* rate-limited / not found */ }
             const fresh = cell(idx, p.code);
             if (!fresh) continue;
             if (url) makeNew(idx, p, url);
             else { fresh.className = 'ii-tl absent'; fresh.dataset.code = p.code; }
-            await sleep(p.code === 'td' ? 350 : 120);       // space out (Tidal is rate-limited)
+            await sleep(p.code === 'td' ? 350 : p.album ? 0 : 120);   // Tidal is rate-limited; Bandcamp is one cached fetch
           }
         }
       } finally {
