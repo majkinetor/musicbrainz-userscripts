@@ -689,11 +689,11 @@
       .mmthf-row:first-child { border-top:none; }
       .mmthf-row:hover { background:#eaf5ee; }
       .mmthf-rtxt { flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-      .mmthf-ra { flex:none; border:none; background:none; color:#7d8a82; cursor:pointer; font-size:11px; padding:1px 3px; border-radius:3px; opacity:0; }
+      .mmthf-ra { flex:none; width:18px; box-sizing:border-box; text-align:center; border:none; background:none; color:#7d8a82; cursor:pointer; font-size:11px; padding:1px 0; border-radius:3px; opacity:0; }
       .mmthf-row:hover .mmthf-ra { opacity:.85; }
       .mmthf-ra:hover { background:#cfe9d8; color:#1f5c3d; opacity:1; }
       .mmthf-row.mmthf-pinned .mmthf-star { opacity:1; color:#2c7a51; }
-      .mmthf-grab { flex:none; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; opacity:0; }
+      .mmthf-grab { flex:none; width:14px; text-align:center; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; opacity:0; }
       .mmthf-row:hover .mmthf-grab { opacity:1; }
       .mmthf-grab:active { cursor:grabbing; }
       .mmthf-row.mmthf-dragging { opacity:.45; }
@@ -714,12 +714,15 @@
         if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
         el.dataset.mmthf = '1';
         const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'mmthf-pin'; btn.textContent = '🦣';
-        const sel = isSelect(el), auto = isAuto(el);
-        // shift the pin left of a native affordance: <select> arrow (~22) or an
-        // autocomplete lookup magnifier (~28). `dx` (def.dx / data-mmth-dx) overrides
-        // it per target, for the odd field whose native icon sits elsewhere.
+        const sel = isSelect(el);
+        // shift the pin left of a native affordance: the <select> arrow (~22) or an
+        // autocomplete magnifier that sits INSIDE the box (~24 — label, release group;
+        // class ui-autocomplete-input). The artist field is `lookup-performed` only —
+        // its magnifier is OUTSIDE the box — so it needs no shift. `dx` (def.dx /
+        // data-mmth-dx) overrides per target.
+        const innerIcon = el.classList.contains('ui-autocomplete-input');
         const dxRaw = def.dx != null ? def.dx : (el.dataset.mmthDx != null ? +el.dataset.mmthDx : null);
-        const dx = dxRaw != null ? dxRaw : (sel ? 22 : auto ? 28 : 3);
+        const dx = dxRaw != null ? dxRaw : (sel ? 22 : innerIcon ? 24 : 3);
         if (!sel) try { const need = dx + 18; const pr = parseInt(getComputedStyle(el).paddingRight, 10) || 0; if (pr < need) el.style.paddingRight = need + 'px'; } catch (e) {}
         const bar = document.createElement('div'); bar.className = 'mmthf-bar';
         const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx };
