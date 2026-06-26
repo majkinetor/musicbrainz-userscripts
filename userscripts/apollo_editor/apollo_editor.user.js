@@ -3111,31 +3111,25 @@
   // from the native row) to the release being entered. Multiplicative penalties,
   // in the spirit of MB Release Seeding Helper: a steep title base, softened by an
   // artist mismatch and a track-count gap (our proxy for its per-track length check).
-  // #187/#298: similarity = how many ENTERED tracks have a matching track in the
-  // candidate release, over the larger of the two tracklists. A track matches when
-  // its TITLE matches (greedy 1:1, exact-fold then fuzzy ≥0.85) AND its per-track
-  // ARTIST agrees — so a different release that merely shares the track TITLES (a
-  // VA comp re-using the same songs with different performers) no longer reads 100%
-  // (#298). Release-level metadata (name/count) is still deliberately ignored.
+  // #187/#298: similarity = how many tracks line up AT THE SAME POSITION between the
+  // candidate release and the one being entered, over the larger tracklist — the very
+  // pairing the comparison view (buildDupDetail) reds row by row. Greedy any-position
+  // matching read 100% for a release with the SAME songs in a DIFFERENT order, while
+  // the position-by-position comparison showed those rows red (#298). A position
+  // matches when its TITLE matches (fold-equal or fuzzy ≥0.85) AND its ARTIST agrees
+  // (folded; empty on either side — single-artist releases — falls back to title).
+  // Release-level metadata (name/count) is still deliberately ignored.
   const _simRatio = (a, b) => a === b ? 1 : 1 - recLev(a, b) / Math.max(a.length, b.length, 1);
-  // lenient: an empty per-track artist on either side (single-artist releases inherit
-  // the release artist) falls back to title-only; else fold-equal / fuzzy / containment
-  // ("X" vs "X feat. Y").
-  const _artistOk = (a, b) => !a || !b || a === b || _simRatio(a, b) >= 0.85 || a.includes(b) || b.includes(a);
+  const _titleOk = (a, b) => a === b || _simRatio(a, b) >= 0.85;
+  const _artistOk = (a, b) => !a || !b || a === b;
   function dupTrackScore(media, entered) {
     const cand = [];
-    (media || []).forEach(m => (m.tracks || []).forEach(t => { const f = fold(t.title || ''); if (f) cand.push({ t: f, a: fold(t.artist || '') }); }));
-    const ent = (entered || []).map(t => ({ t: fold(t.title || ''), a: fold(t.artist || '') })).filter(x => x.t);
-    if (!ent.length || !cand.length) return null;   // can't judge overlap → no confident score
-    const pool = cand.slice(); let matched = 0;
-    for (const e of ent) {
-      let best = -1, bestTs = 0;
-      for (let i = 0; i < pool.length; i++) {
-        const ts = e.t === pool[i].t ? 1 : _simRatio(e.t, pool[i].t);
-        if (ts >= 0.85 && ts > bestTs && _artistOk(e.a, pool[i].a)) { bestTs = ts; best = i; }
-      }
-      if (best >= 0) { matched++; pool.splice(best, 1); }
-    }
+    (media || []).forEach(m => (m.tracks || []).forEach(t => cand.push({ t: fold(t.title || ''), a: fold(t.artist || '') })));
+    const ent = (entered || []).map(t => ({ t: fold(t.title || ''), a: fold(t.artist || '') }));   // keep positions
+    if (!ent.some(x => x.t) || !cand.length) return null;   // can't judge overlap → no confident score
+    let matched = 0;
+    const n = Math.min(ent.length, cand.length);
+    for (let i = 0; i < n; i++) { const e = ent[i], c = cand[i]; if (e.t && c.t && _titleOk(e.t, c.t) && _artistOk(e.a, c.a)) matched++; }
     return matched / Math.max(ent.length, cand.length);
   }
   // one WS fetch per existing release, shared between the score and the expand view
