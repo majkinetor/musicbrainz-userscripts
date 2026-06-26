@@ -611,6 +611,14 @@
     const togglePin = (key, v) => { const e = listFor(key).find(x => x.v === v); if (e) { e.pinned = !e.pinned; saveF(); } };
     function setDefault(key, v) { const a = listFor(key); const e = a.find(x => x.v === v); if (!e) return; const was = e.default; a.forEach(x => x.default = false); e.default = !was; saveF(); }
     const defaultOf = key => listFor(key).find(x => x.default);
+    // drag-reorder a saved value relative to another (like the edit-note panel's ⠿)
+    function reorder(key, srcV, tgtV, before) {
+      if (srcV === tgtV) return;
+      const a = listFor(key); const si = a.findIndex(x => x.v === srcV); if (si < 0) return;
+      const [it] = a.splice(si, 1);
+      let ti = a.findIndex(x => x.v === tgtV); if (ti < 0) { a.splice(si, 0, it); return; }
+      a.splice(before ? ti : ti + 1, 0, it); saveF();
+    }
     function firstToken(s) { s = (s || '').trim(); const m = s.match(/^\[[^\]]*\]/); return m ? m[0] : (s.split(/\s+/)[0] || s); }
     const captionOf = it => it.cap || firstToken(it.label || it.v);
 
@@ -646,7 +654,9 @@
     }
 
     const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    let pins = [], pop = null, mo = null, raf = 0, running = false;
+    const after = (e, el) => (e.clientY - el.getBoundingClientRect().top) > el.offsetHeight / 2;
+    const clearMarks = host => host && host.querySelectorAll('.mmthf-drop-before,.mmthf-drop-after').forEach(r => r.classList.remove('mmthf-drop-before', 'mmthf-drop-after'));
+    let pins = [], pop = null, mo = null, raf = 0, running = false, _fdrag = null;
     const listeners = [];
 
     function injectCss() {
@@ -678,6 +688,12 @@
       .mmthf-row:hover .mmthf-ra { opacity:.85; }
       .mmthf-ra:hover { background:#cfe9d8; color:#1f5c3d; opacity:1; }
       .mmthf-row.mmthf-pinned .mmthf-star { opacity:1; color:#2c7a51; }
+      .mmthf-grab { flex:none; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; opacity:0; }
+      .mmthf-row:hover .mmthf-grab { opacity:1; }
+      .mmthf-grab:active { cursor:grabbing; }
+      .mmthf-row.mmthf-dragging { opacity:.45; }
+      .mmthf-row.mmthf-drop-before { box-shadow:inset 0 2px 0 #2c7a51; }
+      .mmthf-row.mmthf-drop-after { box-shadow:inset 0 -2px 0 #2c7a51; }
       .mmthf-ein { flex:1 1 auto; min-width:0; border:1px solid #5aa67e; border-radius:4px; padding:2px 5px; font:inherit; color:#222; }
       .mmthf-empty { padding:10px; color:#9aa6a0; font-style:italic; text-align:center; }
       `;
@@ -768,28 +784,36 @@
     function togglePop(p) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p); }
     function openPop(p) {
       const cur = readField(p.el);
-      const items = listFor(p.key).slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+      const items = listFor(p.key);   // raw order — drag (⠿) reorders it freely, like the edit-note panel
       const el = document.createElement('div'); el.className = 'mmthf-pop'; el._key = p.key; el._anchor = p.btn;
       const rowHtml = (it, i) => {
         const star = `<button class="mmthf-ra mmthf-star" title="${it.pinned ? 'Unpin from buttons' : 'Pin as a button'}">${it.pinned ? '★' : '☆'}</button>`;
         const def = `<button class="mmthf-ra mmthf-def" title="${it.default ? 'Default — auto-fills an empty field (click to unset)' : 'Make default (auto-fills an empty field)'}" style="${it.default ? 'opacity:1;color:#2c7a51' : ''}">${it.default ? '◉' : '◯'}</button>`;
         const edit = p.sel ? '' : '<button class="mmthf-ra mmthf-edit" title="Edit">✏️</button>';
-        return `<div class="mmthf-row${it.pinned ? ' mmthf-pinned' : ''}" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${star}${def}${edit}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button></div>`;
+        return `<div class="mmthf-row${it.pinned ? ' mmthf-pinned' : ''}" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${star}${def}${edit}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
       };
       el.innerHTML =
         `<h4><span class="mmthf-htxt">🦣 ${esc(p.label)}</span><button class="mmthf-save" ${cur.v ? '' : 'aria-disabled="true"'} title="${cur.v ? 'Save current value: ' + esc(cur.label) : 'Field is empty'}">＋</button></h4>
          <div class="mmthf-list">${items.map(rowHtml).join('') || '<div class="mmthf-empty">No saved values yet</div>'}</div>`;
       document.body.appendChild(el); pop = el;
+      const list = el.querySelector('.mmthf-list');
       el.querySelector('.mmthf-save').addEventListener('click', () => { if (!cur.v) return; rememberValue(p.key, cur); refreshState(p); reopen(p); });
       el.querySelectorAll('.mmthf-row').forEach(row => {
         const it = items[+row.dataset.i];
         row.addEventListener('click', e => {
+          if (e.target.closest('.mmthf-grab')) return;
           if (e.target.closest('.mmthf-edit')) { startEdit(row, it, p); return; }
           if (e.target.closest('.mmthf-star')) { togglePin(p.key, it.v); refreshState(p); reopen(p); return; }
           if (e.target.closest('.mmthf-def')) { setDefault(p.key, it.v); applyDefault(p); reopen(p); return; }
           if (e.target.closest('.mmthf-del')) { forgetValue(p.key, it.v); refreshState(p); reopen(p); return; }
           writeField(p.el, it); closePop();
         });
+        const grab = row.querySelector('.mmthf-grab');
+        grab.addEventListener('dragstart', e => { _fdrag = { v: it.v }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'row'); } catch (x) {} row.classList.add('mmthf-dragging'); });
+        grab.addEventListener('dragend', () => { row.classList.remove('mmthf-dragging'); clearMarks(list); _fdrag = null; });
+        row.addEventListener('dragover', e => { if (!_fdrag) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; clearMarks(list); row.classList.add(after(e, row) ? 'mmthf-drop-after' : 'mmthf-drop-before'); });
+        row.addEventListener('dragleave', () => row.classList.remove('mmthf-drop-before', 'mmthf-drop-after'));
+        row.addEventListener('drop', e => { if (!_fdrag) return; e.preventDefault(); reorder(p.key, _fdrag.v, it.v, !after(e, row)); clearMarks(list); _fdrag = null; refreshState(p); reopen(p); });
       });
       place(el, p.btn);
       setTimeout(() => document.addEventListener('mousedown', onDown, true), 0);
