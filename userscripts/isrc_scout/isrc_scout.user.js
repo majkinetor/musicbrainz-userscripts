@@ -2422,8 +2422,8 @@
     function cell(idx, code) { const c = addBox(idx); return c ? c.querySelector('.ii-tl[data-code="' + code + '"]') : null; }
 
     // Replace a row's ADD-column slot with a coloured "add" candidate: a link to the
-    // resolved provider URL whose click ADDS the relationship (A). Ctrl/middle-click
-    // still opens the provider page.
+    // resolved provider URL. Left-click opens the track; RIGHT-click adds the
+    // relationship in the background.
     function makeNew(idx, p, url) {
       const el = cell(idx, p.code);
       if (!el) return;
@@ -2434,14 +2434,10 @@
       // #302: mark candidates resolved via an album link pulled from a sibling release
       const rg = p.urlKey && RELEASE.rgFrom && RELEASE.rgFrom[p.urlKey];
       if (rg) a.classList.add('ii-rg');
-      a.title = p.name + ' — click to add this link to MusicBrainz  (ctrl-click to open the track)' +
+      a.title = p.name + ' — left-click opens the track · right-click adds it to MusicBrainz' +
         (rg ? '  ·  ' + p.name + ' album link from another release in this group' : '');
       a.innerHTML = p.icon;
-      a.addEventListener('click', e => {
-        if (e.ctrlKey || e.metaKey || e.button === 1) return;   // let ctrl/middle-click open the provider page
-        e.preventDefault();
-        addOne(idx, p, url);
-      });
+      a.addEventListener('contextmenu', e => { e.preventDefault(); addOne(idx, p, url); });   // right-click → add in background
       el.replaceWith(a);
     }
 
