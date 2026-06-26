@@ -731,6 +731,7 @@
       .mmthf-row.mmthf-drop-before { box-shadow:inset 0 2px 0 #2c7a51; }
       .mmthf-row.mmthf-drop-after { box-shadow:inset 0 -2px 0 #2c7a51; }
       .mmthf-empty { padding:10px; color:#9aa6a0; font-style:italic; text-align:center; }
+      tr.mmthf-rrow > td { vertical-align:top; }   /* keep sibling cells from dropping when a cell reserves strip space */
       `;
       (document.head || document.documentElement).appendChild(s);
     }
@@ -774,8 +775,21 @@
     function setReserve(p, on) {
       const host = p.el.closest('td') || p.el;
       const prop = host === p.el ? 'marginBottom' : 'paddingBottom';
-      if (on) { if (!p._rh) { p._rh = host; p._rp = prop; p._ro = host.style[prop] || ''; host.style[prop] = ((parseFloat(getComputedStyle(host)[prop]) || 0) + BAR_RESERVE) + 'px'; } }
-      else if (p._rh) { p._rh.style[p._rp] = p._ro; p._rh = null; }
+      // When the host is a <td> in a MULTI-cell row (artist-credit bubble: Artist /
+      // as-credited / join-phrase share one <tr>), padding it taller would drop the
+      // sibling cells (they're vertically centred). Top-align the row's cells so the
+      // padding grows downward into the strip's gap and the siblings stay put.
+      const tr = prop === 'paddingBottom' ? host.parentElement : null;
+      if (on) {
+        if (!p._rh) {
+          p._rh = host; p._rp = prop; p._ro = host.style[prop] || '';
+          host.style[prop] = ((parseFloat(getComputedStyle(host)[prop]) || 0) + BAR_RESERVE) + 'px';
+          if (tr && tr.children.length > 1) { p._rtr = tr; tr.classList.add('mmthf-rrow'); }
+        }
+      } else if (p._rh) {
+        p._rh.style[p._rp] = p._ro; p._rh = null;
+        if (p._rtr) { p._rtr.classList.remove('mmthf-rrow'); p._rtr = null; }
+      }
     }
     function renderBar(p) {
       const items = listFor(p.key).filter(x => x.pinned);
