@@ -576,8 +576,24 @@
   function createBabyMammoths() {
     const FKEY = 'mammoth-fields:data';          // { [fieldKey]: [{ v, label, ts, pinned?, default? }] }
     const MAX_PER_FIELD = 25;
+    // #296 follow-up — capture the selected ENTITY's MBID for autocomplete fields,
+    // so a saved Label/Artist resolves the real entity on recall (writeField pastes
+    // the MBID, which MB resolves) instead of being text-only. The gid comes from
+    // the live release editor model; unsafeWindow reaches the page's MB from the
+    // userscript sandbox. Falls back to text when nothing is selected / off-editor.
+    const PAGEWIN = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
+    const relEntity = () => { try { return PAGEWIN.MB.releaseEditor.rootField.release(); } catch (e) { return null; } };
+    const labelGid = el => { const i = +((String(el.id).match(/-(\d+)$/) || [])[1] || 0); const r = relEntity(); const labs = r && r.labels && r.labels(); const L = labs && labs[i] && labs[i].label && labs[i].label(); return (L && L.gid) || null; };
+    const _unwrap = x => (typeof x === 'function' ? x() : x);
+    const artistGid = () => {   // single-artist box only: exactly one real artist (names has a trailing blank)
+      const r = relEntity(); const ac = r && r.artistCredit && r.artistCredit();
+      let ns = ac && ac.names; ns = _unwrap(ns); if (!ns) return null;
+      const real = [...ns].map(n => _unwrap(n.artist)).filter(a => a && a.gid);
+      return real.length === 1 ? real[0].gid : null;
+    };
     // Built-in release add/edit targets. `key` is a STABLE, index-free storage key
-    // (catno-0/label-0 are per-medium, but saved values are shared).
+    // (catno-0/label-0 are per-medium, but saved values are shared). `gid` (entity
+    // fields) resolves the selected entity's MBID for capture.
     const PREDEF = [
       { match: 'input[id^="catno-"]',      key: 'release.catno',        label: 'Catalog number' },
       { match: '#primary-type',            key: 'release.primary_type', label: 'Primary type' },
@@ -586,8 +602,8 @@
       { match: '#language',                key: 'release.language',     label: 'Language' },
       { match: '#script',                  key: 'release.script',       label: 'Script' },
       { match: 'select[id^="country-"]',   key: 'release.country',      label: 'Country' },
-      { match: 'input[id^="label-"]',      key: 'release.label',        label: 'Label' },
-      { match: '#ac-source-single-artist', key: 'release.artist',       label: 'Artist' },
+      { match: 'input[id^="label-"]',      key: 'release.label',        label: 'Label',  gid: labelGid },
+      { match: '#ac-source-single-artist', key: 'release.artist',       label: 'Artist', gid: artistGid },
     ];
 
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
@@ -632,6 +648,15 @@
     function readField(el) {
       if (isSelect(el)) { const o = el.options[el.selectedIndex]; return { v: el.value, label: o ? o.textContent.trim() : el.value }; }
       const v = el.value || ''; return { v, label: v.trim() };
+    }
+    // What to STORE for the current value. Entity fields (p.gid) store the selected
+    // MBID as the value with the visible name as the label, so recall resolves the
+    // real entity; everything else (and unresolved/empty entity fields) stores text.
+    function captureField(p) {
+      const t = readField(p.el);
+      if (!t.v || !p.gid) return t;
+      let g; try { g = p.gid(p.el); } catch (e) {}
+      return g ? { v: g, label: t.label || g } : t;
     }
     function writeField(el, rec) {
       if (isSelect(el)) {
@@ -730,7 +755,7 @@
         const dx = dxRaw != null ? dxRaw : (sel ? 22 : innerIcon ? 24 : 3);
         if (!sel) try { const need = dx + 18; const pr = parseInt(getComputedStyle(el).paddingRight, 10) || 0; if (pr < need) el.style.paddingRight = need + 'px'; } catch (e) {}
         const bar = document.createElement('div'); bar.className = 'mmthf-bar';
-        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx };
+        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null };
         btn.title = `Mammoth field memory — ${p.label}`;
         btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
         btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));
@@ -801,7 +826,7 @@
     function place(el, anchor) { const r = anchor.getBoundingClientRect(); el.style.left = Math.max(6, Math.min(innerWidth - el.offsetWidth - 6, r.left)) + 'px'; el.style.top = Math.min(innerHeight - el.offsetHeight - 6, r.bottom + 4) + 'px'; }
     function togglePop(p) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p); }
     function openPop(p) {
-      const cur = readField(p.el);
+      const cur = captureField(p);   // entity fields capture the selected MBID (#296)
       const items = listFor(p.key);   // raw order — drag (⠿) reorders it freely, like the edit-note panel
       const el = document.createElement('div'); el.className = 'mmthf-pop'; el._key = p.key; el._anchor = p.btn;
       const rowHtml = (it, i) => {
