@@ -2046,17 +2046,16 @@
     // scope tabs (#301): the two operations on a record
     modal.querySelectorAll('.ii-tab').forEach(t => t.addEventListener('click', () => setScope(t.dataset.scope)));
     // #301: remove links from the LINKED column (symmetric to Add) — right-click
-    // removes one, Ctrl removes all on the track, Alt removes the provider everywhere.
+    // removes one, Ctrl+right-click removes all on the track, Alt+right-click removes
+    // the provider everywhere. Left-click just opens the link.
     tbody.addEventListener('contextmenu', e => {
       const a = e.target.closest('.ii-tl-linked .ii-tl.linked'); if (!a) return;
-      e.preventDefault(); const tr = a.closest('tr[data-idx]'); if (tr) TrackLinks.removeOne(+tr.dataset.idx, a.dataset.code);
-    });
-    tbody.addEventListener('click', e => {
-      const a = e.target.closest('.ii-tl-linked .ii-tl.linked'); if (!a) return;
+      e.preventDefault();
       const tr = a.closest('tr[data-idx]'); if (!tr) return;
-      if (e.ctrlKey || e.metaKey) { e.preventDefault(); TrackLinks.removeTrack(+tr.dataset.idx); }
-      else if (e.altKey) { e.preventDefault(); TrackLinks.removeProvider(a.dataset.code); }
-      // plain click → open the link
+      const idx = +tr.dataset.idx;
+      if (e.ctrlKey || e.metaKey) TrackLinks.removeTrack(idx);
+      else if (e.altKey) TrackLinks.removeProvider(a.dataset.code);
+      else TrackLinks.removeOne(idx, a.dataset.code);
     });
     // Esc closes the modal (no ✕ in the header) — but first let an open pane close,
     // and ignore it while typing in a field.
@@ -2419,7 +2418,7 @@
     // them, and an added one moves over to the LINKED column).
     function linkedIcon(p, url) {
       return '<a class="ii-tl linked" data-code="' + p.code + '" style="color:' + p.color + '" href="' + esc(url) + '" target="_blank" rel="noopener" ' +
-        'title="' + esc(p.name) + ' — linked on MusicBrainz · left-click opens · right-click removes · Ctrl-click removes all on this track · Alt-click removes ' + esc(p.name) + ' on every track">' + p.icon + '</a>';
+        'title="' + esc(p.name) + ' — linked on MusicBrainz · left-click opens · right-click removes · Ctrl+right-click removes all on this track · Alt+right-click removes ' + esc(p.name) + ' on every track">' + p.icon + '</a>';
     }
     function linkedHtml(t) {
       const cells = providersFor(t).map(p => { const ex = t.recId ? linkedUrl(t, p) : null; return ex ? linkedIcon(p, ex) : ''; }).filter(Boolean).join('');
@@ -2449,15 +2448,17 @@
       // #302: mark candidates resolved via an album link pulled from a sibling release
       const rg = p.urlKey && RELEASE.rgFrom && RELEASE.rgFrom[p.urlKey];
       if (rg) a.classList.add('ii-rg');
-      a.title = p.name + ' — left-click opens · right-click adds this · Ctrl-click adds all links on this track · Alt-click adds ' + p.name + ' on every track' +
+      a.title = p.name + ' — left-click opens · right-click adds this · Ctrl+right-click adds all links on this track · Alt+right-click adds ' + p.name + ' on every track' +
         (rg ? '  ·  ' + p.name + ' album link from another release in this group' : '');
       a.innerHTML = p.icon;
-      a.addEventListener('click', e => {
-        if (e.ctrlKey || e.metaKey) { e.preventDefault(); addTrack(idx); }       // Ctrl/⌘ → all links for this track
-        else if (e.altKey) { e.preventDefault(); addProvider(p.code); }          // Alt → this provider across all tracks
-        // plain click falls through → opens the provider track
+      // all add actions on right-click (left-click just opens the track); modifiers
+      // scope it: Ctrl/⌘ = whole track, Alt = this provider across every track.
+      a.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        if (e.ctrlKey || e.metaKey) addTrack(idx);
+        else if (e.altKey) addProvider(p.code);
+        else addOne(idx, p, url);
       });
-      a.addEventListener('contextmenu', e => { e.preventDefault(); addOne(idx, p, url); });   // right-click → add just this one
       el.replaceWith(a);
     }
 
