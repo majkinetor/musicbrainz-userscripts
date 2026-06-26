@@ -700,9 +700,11 @@
                    border:none; background:none; box-shadow:none; padding:0; font-size:13px; line-height:1; user-select:none; opacity:.35; transition:opacity .12s; filter:grayscale(.3); }
       .mmthf-pin:hover { opacity:1; filter:none; }
       .mmthf-pin.has { opacity:.8; filter:none; }
-      /* #296: hide the overlays while the release editor is still reflowing on load,
-         so they don't visibly jump around — revealed once the layout goes quiet. */
-      html.mmthf-settling .mmthf-pin, html.mmthf-settling .mmthf-bar { visibility:hidden !important; }
+      /* #296: keep the overlays invisible while the release editor is still
+         reflowing on load (so they don't visibly jump), then FADE them in once the
+         layout goes quiet — instead of bumping into place. */
+      html.mmthf-settling .mmthf-pin, html.mmthf-settling .mmthf-bar { opacity:0 !important; pointer-events:none !important; }
+      html.mmthf-fadein .mmthf-pin, html.mmthf-fadein .mmthf-bar { transition:opacity .4s ease !important; }
       .mmthf-hl { outline:2px solid #5aa67e !important; outline-offset:1px; }
       .mmthf-bar { position:absolute; z-index:9996; display:none; }
       .mmthf-seg { display:inline-flex; border:1px solid #cfd9d3; border-radius:7px; overflow:hidden; background:#fbfdfc; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; box-shadow:0 1px 2px rgba(0,0,0,.06); max-width:100%; }
@@ -910,7 +912,11 @@
       const html = document.documentElement;
       html.classList.add('mmthf-settling');
       let revealed = false, quietT = 0;
-      const reveal = () => { if (revealed) return; revealed = true; clearTimeout(quietT); clearTimeout(settleCap); html.classList.remove('mmthf-settling'); relayout(); };
+      const reveal = () => {
+        if (revealed) return; revealed = true; clearTimeout(quietT); clearTimeout(settleCap);
+        html.classList.remove('mmthf-settling'); html.classList.add('mmthf-fadein'); relayout();
+        setTimeout(() => html.classList.remove('mmthf-fadein'), 450);   // drop the slow transition once faded in
+      };
       const bump = () => { if (revealed) return; clearTimeout(quietT); quietT = setTimeout(reveal, 300); };
       settleCap = setTimeout(reveal, 1500);
       let st = 0; mo = new MutationObserver(() => { clearTimeout(st); st = setTimeout(scan, 150); bump(); }); mo.observe(document.documentElement, { childList: true, subtree: true });
@@ -920,7 +926,7 @@
     function stop() {
       if (!running) return; running = false;
       if (mo) { mo.disconnect(); mo = null; }
-      clearTimeout(settleCap); document.documentElement.classList.remove('mmthf-settling');
+      clearTimeout(settleCap); document.documentElement.classList.remove('mmthf-settling', 'mmthf-fadein');
       listeners.forEach(([t, ev, fn, cap]) => t.removeEventListener(ev, fn, cap)); listeners.length = 0;
       closePop();
       pins.forEach(p => { try { setReserve(p, false); } catch (e) {} p.btn.remove(); p.bar.remove(); delete p.el.dataset.mmthf; });
