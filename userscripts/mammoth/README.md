@@ -23,6 +23,8 @@ Click does your default (replace/append); right-click does the other. Append ski
 The native edit-note field is widened and centered (it spans the full form width on the release editor). **Drag the separator** to resize the field vs. the panel, and the field's own height; both are remembered.
 - **Minimized mode**<br>
 The **–** button (left of **?**) collapses the panel to a small Mammoth icon in the field's top-right corner, giving the edit note the full width. **Hover** the icon to float the panel back in (click it to pin it open); **⤢** restores it. The mode is remembered across edit pages.
+- **Baby mammoths** *(optional — ⚙ "Show baby mammoths", on by default)*<br>
+The same save/reuse idea on **other controls** — catalog number, label, artist, status, language, script, country, primary type. A small **🦣** pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The pin opens a compact panel with a toolbar — **＋** save the current value, **✕** clear the field, **⚙** open Mammoth's settings — and one row per saved value. In the row menu: **★** pins a value as an always-visible **button under the field**, **◉** marks one entry as the **default** (auto-fills the field when it's empty), **✏️** edits, **🗑** forgets, and the **⠿** handle (on hover) drags to reorder — just like the edit-note panel. The pin auto-shifts left of a field's native control (the `<select>` arrow or an autocomplete's magnifier); `data-mmth-dx="<px>"` overrides that nudge for a specific control. Other scripts can opt a control in by tagging it `class="mmth-pin"` (optional `data-mmth-key` / `data-mmth-label`). Stored separately under `mammoth-fields:data`.
 
 ## Keyboard shortcuts
 
@@ -46,6 +48,7 @@ Accessesd using ⚙ button:
 | **Insert new line when appending** | on | Append a blank line before note. |
 | **Items shown** | `6` | How many list rows to render before the list scrolls. |
 | **History size** | `10` | How many submitted notes to remember (1–50). |
+| **Show baby mammoths** | on | Field memory on other controls (catalog №, label, artist, status…). Toggles on/off live. |
 
 ## Using Mammoth from another userscript
 
