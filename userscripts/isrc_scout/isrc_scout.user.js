@@ -2403,7 +2403,7 @@
     // MB; ADD = a hidden candidate slot per not-yet-linked provider (Find links fills
     // them, and an added one moves over to the LINKED column).
     function linkedIcon(p, url) {
-      return '<a class="ii-tl linked" data-code="' + p.code + '" href="' + esc(url) + '" target="_blank" rel="noopener" ' +
+      return '<a class="ii-tl linked" data-code="' + p.code + '" style="color:' + p.color + '" href="' + esc(url) + '" target="_blank" rel="noopener" ' +
         'title="' + esc(p.name) + ' — linked on MusicBrainz">' + p.icon + '</a>';
     }
     function linkedHtml(t) {
