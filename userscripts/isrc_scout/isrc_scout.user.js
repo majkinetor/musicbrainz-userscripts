@@ -1957,17 +1957,32 @@
       </div>
 
       <div class="ii-pane" id="ii-bulk-pane">
-        <h3><button class="ii-pane-x" title="Close">✕</button>Bulk paste / import / export</h3>
-        <div class="ii-help" style="margin-top:0">
-          Paste one ISRC per line, in track order (blank line = skip a track). Lines like <code>3=USABC1234567</code>
-          or <code>USABC1234567 | 1.3</code> target a specific track number. Or paste JSON exported below.
+        <h3><button class="ii-pane-x" title="Close">✕</button>Bulk / Export</h3>
+        <!-- ISRC scope: paste / apply / export ISRCs -->
+        <div class="ii-only-isrc">
+          <div class="ii-help" style="margin-top:0">
+            Paste one ISRC per line, in track order (blank line = skip a track). Lines like <code>3=USABC1234567</code>
+            or <code>USABC1234567 | 1.3</code> target a specific track number. Or paste JSON exported below.
+          </div>
+          <textarea id="ii-bulk-text" placeholder="USABC1234567&#10;USABC1234568&#10;..."></textarea>
+          <div class="row" style="margin-top:8px">
+            <button class="ii-tbtn primary" id="ii-bulk-apply">Apply to empty fields</button>
+            <button class="ii-tbtn" id="ii-bulk-apply-all">Apply (overwrite)</button>
+            <button class="ii-tbtn" id="ii-export-text">Export text</button>
+            <button class="ii-tbtn" id="ii-export-json">Export JSON</button>
+          </div>
         </div>
-        <textarea id="ii-bulk-text" placeholder="USABC1234567&#10;USABC1234568&#10;..."></textarea>
-        <div class="row" style="margin-top:8px">
-          <button class="ii-tbtn primary" id="ii-bulk-apply">Apply to empty fields</button>
-          <button class="ii-tbtn" id="ii-bulk-apply-all">Apply (overwrite)</button>
-          <button class="ii-tbtn" id="ii-export-text">Export text</button>
-          <button class="ii-tbtn" id="ii-export-json">Export JSON</button>
+        <!-- Links scope: export the per-track streaming links (#301) -->
+        <div class="ii-only-links">
+          <div class="ii-help" style="margin-top:0">
+            Export this release's recording streaming links — what's already linked plus what <b>🔗 Find links</b> resolved (Deezer / Tidal / Bandcamp / Apple Music). Copied to the clipboard.
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button class="ii-tbtn" id="ii-link-export-csv">Export CSV</button>
+            <button class="ii-tbtn" id="ii-link-export-json">Export JSON</button>
+            <button class="ii-tbtn" id="ii-link-copy-urls">Copy URLs</button>
+          </div>
+          <div class="ii-help" id="ii-link-export-note" style="margin-top:8px"></div>
         </div>
       </div>
 
@@ -2225,6 +2240,10 @@
     modal.querySelector('#ii-bulk-apply-all').addEventListener('click', () => applyBulk(true));
     modal.querySelector('#ii-export-text').addEventListener('click', exportText);
     modal.querySelector('#ii-export-json').addEventListener('click', exportJson);
+    // #301: link export (Links scope)
+    modal.querySelector('#ii-link-export-csv').addEventListener('click', () => exportLinks('csv'));
+    modal.querySelector('#ii-link-export-json').addEventListener('click', () => exportLinks('json'));
+    modal.querySelector('#ii-link-copy-urls').addEventListener('click', () => exportLinks('urls'));
 
     // each sub-pane closes via its own ✕ (next to the title)
     modal.querySelectorAll('.ii-pane-x').forEach(b =>
@@ -2712,7 +2731,21 @@
       }
     }
 
-    return { linkedHtml, addHtml, resolve, addAll, refresh: updateAddBtn, removeOne, removeTrack, removeProvider };
+    // #301: per-track streaming links for export — what's linked plus what Find
+    // links resolved, across our providers.
+    function linkRows() {
+      const rows = [];
+      (RELEASE ? RELEASE.tracks : []).forEach((t, idx) => {
+        if (!t.recId) return;
+        const seen = new Set();
+        (t.recUrls || []).forEach(u => { const p = PROV.find(x => x.test(u)); if (p && !seen.has(u)) { seen.add(u); rows.push({ recording: t.recId, track: t.title || '', provider: p.name, url: u, status: 'linked' }); } });
+        const tr = tbody.querySelector('tr[data-idx="' + idx + '"]');
+        if (tr) tr.querySelectorAll('.ii-tl-add .ii-tl.new').forEach(a => { const p = PROV.find(x => x.code === a.dataset.code); const u = a.getAttribute('href'); if (p && u && !seen.has(u)) { seen.add(u); rows.push({ recording: t.recId, track: t.title || '', provider: p.name, url: u, status: 'to add' }); } });
+      });
+      return rows;
+    }
+
+    return { linkedHtml, addHtml, resolve, addAll, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, linkRows };
   })();
 
   /* ── render the track table ── */
@@ -3185,6 +3218,24 @@
       if (v && t.recId) obj[t.recId] = v;
     });
     copyToClipboard(JSON.stringify(obj, null, 2), 'JSON copied');
+  }
+  // #301: export the per-track streaming links (linked + resolved) as CSV / JSON / URL list
+  function exportLinks(fmt) {
+    const rows = TrackLinks.linkRows();
+    const note = modal.querySelector('#ii-link-export-note');
+    if (!rows.length) { if (note) note.textContent = 'No links yet — run 🔗 Find links first (or this release has none of our providers linked).'; toast('No links to export', 'err'); return; }
+    let out, msg;
+    if (fmt === 'urls') {
+      out = [...new Set(rows.map(r => r.url))].join('\n'); msg = out.split('\n').length + ' URLs copied';
+    } else if (fmt === 'json') {
+      out = JSON.stringify(rows, null, 2); msg = rows.length + ' links copied (JSON)';
+    } else {
+      const esc = s => /[",\n]/.test(s) ? '"' + String(s).replace(/"/g, '""') + '"' : s;
+      out = ['recording,track,provider,url,status'].concat(rows.map(r => [r.recording, r.track, r.provider, r.url, r.status].map(esc).join(','))).join('\n');
+      msg = rows.length + ' links copied (CSV)';
+    }
+    copyToClipboard(out, msg);
+    if (note) { const linked = rows.filter(r => r.status === 'linked').length; note.textContent = rows.length + ' links · ' + linked + ' linked · ' + (rows.length - linked) + ' to add'; }
   }
   function copyToClipboard(text, msg) {
     const ta = modal.querySelector('#ii-bulk-text');
