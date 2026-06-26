@@ -817,7 +817,7 @@
            <button class="mmthf-fb mmthf-save" ${cur.v ? '' : 'aria-disabled="true"'} title="${cur.v ? 'Save current value: ' + esc(cur.label) : 'Field is empty'}">＋</button>
            <button class="mmthf-fb mmthf-clear" title="Clear the field">✕</button>
            <span class="mmthf-ft-title"></span>
-           <button class="mmthf-fb mmthf-cfg" title="Mammoth settings">⚙</button>
+           <button class="mmthf-fb mmthf-cfg" title="Mammoth settings">⚙︎</button>
          </div>
          <div class="mmthf-list">${items.map(rowHtml).join('') || '<div class="mmthf-empty">No saved values yet</div>'}</div>`;
       document.body.appendChild(el); pop = el;
