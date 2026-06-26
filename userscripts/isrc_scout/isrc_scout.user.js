@@ -2135,15 +2135,21 @@
       window.visualViewport.addEventListener('scroll', _vvSync);
     }
     refreshAuthState();
+    // Render the table, then fetch existing recording links once and paint the
+    // already-linked icons. MUST run in BOTH branches: updateBtnStatus() already
+    // calls fetchRelease() on page load, so RELEASE is usually set by the time the
+    // modal opens — and the old code only refreshed links in the !RELEASE branch,
+    // so the browse never fired and every icon stayed a "not linked" candidate.
+    const afterRelease = () => { renderTracks(); if (!TrackLinks.hasData()) TrackLinks.refreshExisting(); };
     if (!RELEASE) {
       tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#adb5bd">Loading release…</td></tr>';
       fetchRelease()
-        .then(() => { renderTracks(); TrackLinks.refreshExisting(); })   // #219 PoC: render now, paint already-linked icons when the browse returns
+        .then(afterRelease)
         .catch(err => {
           tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#dc3545">Failed to load release: ' + esc(err.message) + '</td></tr>';
         });
     } else {
-      renderTracks();
+      afterRelease();
     }
   }
   function closeModal() {
@@ -2238,13 +2244,15 @@
     // so we know up-front which providers are already linked (no per-row fetch).
     async function fetchExisting() {
       recLinks = {};
-      let offset = 0;
+      Log.info('Track links: fetching existing recording links…');
+      let offset = 0, total = 0, withLinks = 0;
       for (let guard = 0; guard < 20; guard++) {
         const r = await mbGet(MB_WS2 + 'recording?release=' + mbid + '&inc=url-rels&limit=100&offset=' + offset + '&fmt=json');
-        if (r.status !== 200) break;
+        if (r.status !== 200) { Log.warn('Track links: recording browse gave ' + r.status + ' — icons stay as candidates'); break; }
         let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { break; }
         (j.recordings || []).forEach(rec => {
-          recLinks[rec.id] = (rec.relations || []).map(rel => rel.url && rel.url.resource).filter(Boolean);
+          const urls = (rec.relations || []).map(rel => rel.url && rel.url.resource).filter(Boolean);
+          recLinks[rec.id] = urls; total++; if (urls.length) withLinks++;
         });
         const count = j['recording-count'] || 0;
         offset += 100;
@@ -2252,6 +2260,7 @@
         await sleep(1100);   // stay under MB's ~1 req/s when paging
       }
       fetched = true;
+      Log.info('Track links: ' + total + ' recording(s), ' + withLinks + ' with existing provider links');
     }
 
     // Fetch existing links in the BACKGROUND (don't block the table render) and
