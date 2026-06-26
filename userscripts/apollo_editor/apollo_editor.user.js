@@ -4650,14 +4650,14 @@
     /* two lines (album / artist + versions), centred, tight so they fit the nav button height (#141) */
     body.tc-zen-on #tc-nav-title{display:flex;flex-direction:column;justify-content:center;flex:1 1 0;min-width:0;text-align:center;line-height:1.15;padding:0 14px}
     #tc-nav-title a{color:inherit;text-decoration:none}#tc-nav-title a:hover{text-decoration:underline}
-    #tc-nav-title .tc-nav-title-album{font:600 12px Arial;color:#5a3e94;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #tc-nav-title .tc-nav-title-album{font:600 14px Arial;color:#5a3e94;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     /* #290: mirror MB's native "modification pending" mark (span.mp, #ffdd99) on the
        release name — the native header that carries it is hidden by zen. Inline span
        so it hugs the text; same gold as native. */
     #tc-nav-title .tc-nav-title-name{border-radius:3px;padding:0 1px}
     #tc-nav-title.tc-nav-title-pending .tc-nav-title-name{background:#ffdd99;padding:0 5px}
     #tc-nav-title.tc-nav-title-pending .tc-nav-title-name a{color:#33291a}
-    #tc-nav-title .tc-nav-title-artist{font:11px Arial;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #tc-nav-title .tc-nav-title-artist{font:12px Arial;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #tc-nav-title .tc-nav-title-ver{color:#999}
     body.tc-zen-on .header,body.tc-zen-on .releaseheader,body.tc-zen-on #page > .tabs,body.tc-zen-on #footer{display:none!important}
     /* zen: drop the page's top spacing so the sticky nav bar pins flush to the top and doesn't drift on scroll (#141) */
@@ -4916,6 +4916,10 @@
     body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0;max-width:100%;min-width:0;box-sizing:border-box;border:none;padding:0}
     body.tc-ri-on #tc-ri-rightcol > fieldset > legend{font:600 11px Arial;letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 4px;border-bottom:1px solid #ece7f6;width:100%;box-sizing:border-box}
     body.tc-ri-on #tc-ri-rightcol #external-links-editor{max-width:100%;box-sizing:border-box}
+    /* #297: front cover thumbnail under the external-links section (display only) */
+    #tc-ri-cover{margin:14px 0 0}
+    #tc-ri-cover .tc-ri-cover-h{font:600 11px Arial;letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 6px;border-bottom:1px solid #ece7f6}
+    #tc-ri-cover img{display:block;width:180px;max-width:100%;height:auto;border:1px solid #e0d9f0;border-radius:6px;box-shadow:0 1px 5px rgba(40,20,80,.14)}
 
     /* ---- external links as a grid: the URL row spans every column, the link's type combos flow into aligned
        columns beneath it, and "Add another relationship" (the [+]) lands in the last cell. ---- */
@@ -5146,13 +5150,39 @@
       if (!col) { col = document.createElement('div'); col.id = 'tc-ri-rightcol'; panel.appendChild(col); }
       if (fs.parentElement !== col) { if (!fs._tcHome) fs._tcHome = { parent: fs.parentElement, next: fs.nextElementSibling }; col.appendChild(fs); }
       ensureCheckToolbar(col);
+      riCover(col);   // #297: front cover thumbnail below the external-links section
     } else if (fs._tcHome && fs.parentElement !== fs._tcHome.parent) {
       // the Check-links toolbar is appended *inside* the fieldset, so it would travel home with it and orphan
       // onto the native Release-information tab (#160) — drop it before moving the fieldset back
       fs.querySelector(':scope > #tc-ri-toolbar')?.remove();
       fs._tcHome.parent.insertBefore(fs, fs._tcHome.next && fs._tcHome.next.isConnected ? fs._tcHome.next : null);
-      const col = panel.querySelector(':scope > #tc-ri-rightcol'); if (col && !col.children.length) col.remove();
+      const col = panel.querySelector(':scope > #tc-ri-rightcol');
+      col?.querySelector(':scope > #tc-ri-cover')?.remove();
+      if (col && !col.children.length) col.remove();
     }
+  }
+  // #297: the current release MBID (live editor gid, else from the URL); '' on /release/add
+  function currentMbid() {
+    try { const r = u(getEditor().rootField.release); const g = r && u(r.gid); if (g) return g; } catch (e) {}
+    return (location.pathname.match(MBID_RE) || [''])[0];
+  }
+  // Append/refresh a front-cover thumbnail (Cover Art Archive) at the bottom of the
+  // right column, below external links. Display only; hides itself when there's no art.
+  function riCover(col) {
+    const mbid = currentMbid();
+    let box = col.querySelector(':scope > #tc-ri-cover');
+    if (!mbid) { box?.remove(); return; }
+    if (box && box.dataset.mbid === mbid) { col.appendChild(box); return; }   // keep, just ensure it's last
+    box?.remove();
+    box = document.createElement('div'); box.id = 'tc-ri-cover'; box.dataset.mbid = mbid;
+    box.innerHTML = '<div class="tc-ri-cover-h">Front cover</div>';
+    const a = document.createElement('a');
+    a.href = ORIGIN + '/release/' + mbid + '/cover-art'; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Cover art (Cover Art Archive)';
+    const img = document.createElement('img');
+    img.alt = 'Front cover'; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
+    img.onerror = () => box.remove();   // no front cover → remove the whole block
+    img.src = 'https://coverartarchive.org/release/' + mbid + '/front-250';
+    a.appendChild(img); box.appendChild(a); col.appendChild(box);
   }
   // ---- dead-link checker (#138): check each external link's HTTP status, fade the dead ones, and turn on
   //      "This relationship has ended" for each of a dead link's relationship types ----
