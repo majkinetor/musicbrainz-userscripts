@@ -52,6 +52,7 @@ Each takeover is optional and you can flip back to the native editor at any time
 - **Release Information** tab
     - The **annotation editor** (above) lives here, in *Additional information*.
     - External links moved to a right column with a dead-link checker; right-click a favicon/type to edit it
+    - A **front-cover thumbnail** (from the Cover Art Archive) sits under the external links, linking to the release's cover-art page — shown only when the release actually has front art
 - **[Duplicates](#duplicates)** tab — a red→green **Similarity** score per existing release, clickable for a track-by-track comparison, so you can pick the right release to base yours on.
 
 ## Matching

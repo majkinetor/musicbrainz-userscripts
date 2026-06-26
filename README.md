@@ -14,7 +14,7 @@ Cover/event-art editor: view, group, sort, reorder, retype, comment, remove, dow
 Import per-track release credits from several providers (Discogs, Tidal, Qobuz) as MusicBrainz relationships, with a review phase
 
 [ISRC Scout](./userscripts/isrc_scout/README.md)<img src="./userscripts/isrc_scout/icon.svg" align="left" width="32"><br>
-Reads the release's existing ISRCs and fill in the missing ones from several sources
+Reads the release's existing ISRCs and fills in the missing ones from several sources, and finds & adds streaming **track links** (Deezer, Tidal, Bandcamp, Apple Music) to the recordings
 
 [Mammoth](./userscripts/mammoth/README.md)<img src="./userscripts/mammoth/icon.svg" align="left" width="32"><br>
 Edit-note memory: remembers your recent edit notes and lets you save and recall reusable ones on every edit form — plus optional "baby mammoths" that bring the same save/reuse to other fields (catalog number, label, artist, status…)
