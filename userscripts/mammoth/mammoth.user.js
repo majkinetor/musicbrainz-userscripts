@@ -619,12 +619,6 @@
       saveF(); return true;
     }
     const forgetValue = (key, v) => { FDATA[key] = listFor(key).filter(x => x.v !== v); saveF(); };
-    function editValue(key, oldV, newV) {
-      newV = (newV || '').trim(); if (!newV) return false;
-      const a = listFor(key); const e = a.find(x => x.v === oldV); if (!e) return false;
-      e.v = newV; e.label = newV; e.ts = Date.now();
-      FDATA[key] = a.filter((x, i) => a.findIndex(y => y.v === x.v) === i); saveF(); return true;
-    }
     const togglePin = (key, v) => { const e = listFor(key).find(x => x.v === v); if (e) { e.pinned = !e.pinned; saveF(); } };
     function setDefault(key, v) { const a = listFor(key); const e = a.find(x => x.v === v); if (!e) return; const was = e.default; a.forEach(x => x.default = false); e.default = !was; saveF(); }
     const defaultOf = key => listFor(key).find(x => x.default);
@@ -721,7 +715,6 @@
       .mmthf-acts { position:absolute; right:5px; top:2px; bottom:2px; display:none; align-items:center; gap:1px; padding:0 3px 0 12px; border-radius:5px; background:#eaf5ee; }
       .mmthf-row:hover .mmthf-acts { display:flex; }
       .mmthf-row:hover .mmthf-ind { display:none; }
-      .mmthf-row.mmthf-editing .mmthf-ind, .mmthf-row.mmthf-editing .mmthf-acts { display:none; }
       .mmthf-ra { width:18px; box-sizing:border-box; text-align:center; border:none; background:none; color:#7d8a82; cursor:pointer; font-size:11px; padding:1px 0; border-radius:3px; }
       .mmthf-ra:hover { background:#cfe9d8; color:#1f5c3d; }
       .mmthf-grab { width:14px; text-align:center; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; }
@@ -729,7 +722,6 @@
       .mmthf-row.mmthf-dragging { opacity:.45; }
       .mmthf-row.mmthf-drop-before { box-shadow:inset 0 2px 0 #2c7a51; }
       .mmthf-row.mmthf-drop-after { box-shadow:inset 0 -2px 0 #2c7a51; }
-      .mmthf-ein { flex:1 1 auto; min-width:0; border:1px solid #5aa67e; border-radius:4px; padding:2px 5px; font:inherit; color:#222; }
       .mmthf-empty { padding:10px; color:#9aa6a0; font-style:italic; text-align:center; }
       `;
       (document.head || document.documentElement).appendChild(s);
@@ -832,8 +824,7 @@
       const rowHtml = (it, i) => {
         const star = `<button class="mmthf-ra mmthf-star" title="${it.pinned ? 'Unpin from buttons' : 'Pin as a button'}">${it.pinned ? '★' : '☆'}</button>`;
         const def = `<button class="mmthf-ra mmthf-def" title="${it.default ? 'Default — auto-fills an empty field (click to unset)' : 'Make default (auto-fills an empty field)'}">${it.default ? '◉' : '◯'}</button>`;
-        const edit = p.sel ? '' : '<button class="mmthf-ra mmthf-edit" title="Edit">✏️</button>';
-        const acts = `<div class="mmthf-acts">${star}${def}${edit}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
+        const acts = `<div class="mmthf-acts">${star}${def}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
         const ind = `<span class="mmthf-ind">${it.default ? '<span>◉</span>' : ''}${it.pinned ? '<span>★</span>' : ''}</span>`;
         return `<div class="mmthf-row" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${ind}${acts}</div>`;
       };
@@ -854,7 +845,6 @@
         const it = items[+row.dataset.i];
         row.addEventListener('click', e => {
           if (e.target.closest('.mmthf-grab')) return;
-          if (e.target.closest('.mmthf-edit')) { startEdit(row, it, p); return; }
           if (e.target.closest('.mmthf-star')) { togglePin(p.key, it.v); refreshState(p); reopen(p); return; }
           if (e.target.closest('.mmthf-def')) { setDefault(p.key, it.v); applyDefault(p); reopen(p); return; }
           if (e.target.closest('.mmthf-del')) { forgetValue(p.key, it.v); refreshState(p); reopen(p); return; }
@@ -871,17 +861,6 @@
       setTimeout(() => document.addEventListener('mousedown', onDown, true), 0);
     }
     const reopen = p => { closePop(); openPop(p); };
-    function startEdit(row, it, p) {
-      if (row.querySelector('.mmthf-ein')) return;
-      const txt = row.querySelector('.mmthf-rtxt');
-      const inp = document.createElement('input'); inp.className = 'mmthf-ein'; inp.value = it.v;
-      row.classList.add('mmthf-editing'); txt.replaceWith(inp); inp.focus(); inp.select();
-      let done = false;
-      const commit = save => { if (done) return; done = true; if (save) { editValue(p.key, it.v, inp.value); refreshState(p); } if (row.isConnected) reopen(p); };
-      inp.addEventListener('click', e => e.stopPropagation());
-      inp.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); commit(true); } else if (e.key === 'Escape') { e.preventDefault(); commit(false); } });
-      inp.addEventListener('blur', () => commit(true));
-    }
 
     const relayout = () => { if (running && !raf) raf = requestAnimationFrame(() => { raf = 0; layout(); }); };
     function start() {
