@@ -597,9 +597,10 @@
     const listFor = key => (FDATA[key] = FDATA[key] || []);
     function rememberValue(key, rec) {
       if (!rec || !rec.v) return false;
-      const a = listFor(key).filter(x => x.v !== rec.v);
-      a.unshift({ v: rec.v, label: rec.label || rec.v, ts: Date.now() });
-      FDATA[key] = a.slice(0, MAX_PER_FIELD); saveF(); return true;
+      const a = listFor(key); const e = a.find(x => x.v === rec.v);
+      if (e) { e.label = rec.label || e.label; e.ts = Date.now(); }   // already saved → keep it (and its ★ / default / order)
+      else { a.unshift({ v: rec.v, label: rec.label || rec.v, ts: Date.now() }); FDATA[key] = a.slice(0, MAX_PER_FIELD); }
+      saveF(); return true;
     }
     const forgetValue = (key, v) => { FDATA[key] = listFor(key).filter(x => x.v !== v); saveF(); };
     function editValue(key, oldV, newV) {
