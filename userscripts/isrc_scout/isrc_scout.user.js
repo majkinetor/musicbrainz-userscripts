@@ -518,7 +518,7 @@
     .ii-tl svg { width: 15px; height: 15px; display: block; }
     .ii-tl.linked  { color: #868e96; }                                               /* already on MB → monochrome (solid, not faded) */
     .ii-tl.linked:hover { color: #495057; }
-    .ii-tl.new     { /* brand colour set inline */ }                                  /* resolved, not linked → add candidate */
+    .ii-tl.new     { cursor: pointer; }                                              /* resolved, not linked → click to add (brand colour set inline) */
     .ii-tl.new:hover { filter: brightness(1.12); }
     .ii-tl.cand    { color: #ced4da; opacity: .5; }                                   /* not yet resolved */
     .ii-tl.spin    { color: #ced4da; opacity: .9; animation: ii-tl-pulse 1s ease-in-out infinite; }
@@ -1917,7 +1917,8 @@
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
         <span class="ii-prog" id="ii-prog"></span>
-        <button class="ii-tbtn" id="ii-links-btn" title="PoC (#219): resolve each track on Deezer / Tidal by ISRC and show per-track link icons under the title — faded = already linked in MB, colour = found but not linked yet">🔗 Track links</button>
+        <button class="ii-tbtn" id="ii-links-btn" title="#219: resolve each track on Deezer / Tidal by ISRC and show per-track link icons under the title — grey = already linked in MB, colour = found but not linked yet">🔗 Track links</button>
+        <button class="ii-tbtn" id="ii-addlinks-btn" style="display:none" title="Add every resolved (coloured) streaming link to MusicBrainz as a recording relationship, in one background batch">➕ Add links</button>
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear</button>
       </div>
 
@@ -1959,7 +1960,8 @@
     modal.querySelector('#ii-setup-toggle').addEventListener('click', () => togglePane('ii-setup-pane'));
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-clear-pending').addEventListener('click', clearPending);
-    modal.querySelector('#ii-links-btn').addEventListener('click', () => TrackLinks.resolve());   // #219 PoC
+    modal.querySelector('#ii-links-btn').addEventListener('click', () => TrackLinks.resolve());        // #219: resolve candidates
+    modal.querySelector('#ii-addlinks-btn').addEventListener('click', () => TrackLinks.addAll());      // #219: batch-add (B)
     modal.querySelector('#ii-sx-all').addEventListener('click', runSxAll);   // bulk SoundExchange — unchanged (#181)
 
     // Track-ISRC-provider menu (#181): the per-track [SX] buttons carry a ▾ that
@@ -2242,9 +2244,126 @@
       return tr ? tr.querySelector('.ii-track-links .ii-tl[data-code="' + code + '"]') : null;
     }
 
-    // Throttled resolve pass: for every track with an ISRC and no existing link
-    // on a provider, look the track up by ISRC and, if found, turn the icon into
-    // a coloured "add" link to the resolved URL.
+    // Replace a row's icon with a coloured "add" candidate: a link to the resolved
+    // provider URL whose click ADDS the relationship (A). Ctrl/middle-click still
+    // opens the provider page.
+    function makeNew(idx, p, url) {
+      const el = cell(idx, p.code);
+      if (!el) return;
+      const a = document.createElement('a');
+      a.className = 'ii-tl new'; a.dataset.code = p.code;
+      a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      a.style.color = p.color;
+      a.title = p.name + ' — click to add this link to MusicBrainz  (ctrl-click to open the track)';
+      a.innerHTML = p.icon;
+      a.addEventListener('click', e => {
+        if (e.ctrlKey || e.metaKey || e.button === 1) return;   // let ctrl/middle-click open the provider page
+        e.preventDefault();
+        addOne(idx, p, url);
+      });
+      el.replaceWith(a);
+    }
+
+    // Turn an icon into the monochrome "already linked" state and record the URL
+    // on the track so it won't be offered again.
+    function markLinked(idx, p, url) {
+      const t = RELEASE.tracks[idx];
+      if (t && !(t.recUrls || []).includes(url)) (t.recUrls = t.recUrls || []).push(url);
+      const el = cell(idx, p.code);
+      if (!el) return;
+      const a = document.createElement('a');
+      a.className = 'ii-tl linked'; a.dataset.code = p.code;
+      a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      a.title = p.name + ' — linked on MusicBrainz';
+      a.innerHTML = p.icon;
+      el.replaceWith(a);
+    }
+
+    function noteFor(provs) {
+      const names = [...new Set(provs.map(p => p.name))].join(' / ');
+      return 'Linked ' + names + ' track' + (provs.length > 1 ? 's' : '') + ' to the recording, matched by ISRC — via ISRC Scout';
+    }
+
+    // Add recording→url relationships in the background via MB's internal edit API
+    // (same endpoint the native relationship editor uses). Authenticated by the
+    // logged-in session cookie (same-origin) — no OAuth, no CSRF. One POST carries
+    // the whole batch (auto-applied for auto-editors, else queued). items:
+    // [{ recGid, url, linkTypeID }].
+    async function submitRels(items, note) {
+      const body = {
+        edits: items.map(it => ({
+          edit_type: 90, linkTypeID: it.linkTypeID, attributes: [],
+          entities: [{ entityType: 'recording', gid: it.recGid }, { entityType: 'url', name: it.url }],
+        })),
+        editNote: note || '', makeVotable: 0,
+      };
+      const r = await fetch(MB_ROOT + '/ws/js/edit/create', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const text = await r.text().catch(() => '');
+      let j = null; try { j = JSON.parse(text); } catch (e) {}
+      if (!r.ok || (j && j.error)) {
+        const m = (j && (j.error.message || j.error)) || ('HTTP ' + r.status);
+        throw new Error((typeof m === 'string' ? m : JSON.stringify(m)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200));
+      }
+      return j;
+    }
+
+    // (A) add a single link from its row icon
+    async function addOne(idx, p, url) {
+      const el = cell(idx, p.code);
+      if (!el || el.classList.contains('spin')) return;
+      el.className = 'ii-tl spin'; el.dataset.code = p.code;
+      try {
+        await submitRels([{ recGid: RELEASE.tracks[idx].recId, url, linkTypeID: p.linkTypeID }], noteFor([p]));
+        Log.ok ? Log.ok('Linked ' + p.name + ': ' + url) : Log.info('Linked ' + p.name + ': ' + url);
+        markLinked(idx, p, url);
+      } catch (e) {
+        Log.err('Add ' + p.name + ' link failed: ' + errText(e));
+        makeNew(idx, p, url);   // restore the add affordance
+      }
+      updateAddBtn();
+    }
+
+    // (B) add every resolved-but-unlinked candidate across the release in one batch
+    async function addAll() {
+      const items = [];
+      modal.querySelectorAll('.ii-track-links .ii-tl.new').forEach(a => {
+        const p = PROV.find(x => x.code === a.dataset.code);
+        const tr = a.closest('tr[data-idx]');
+        if (p && tr) items.push({ idx: +tr.dataset.idx, p, url: a.getAttribute('href') });
+      });
+      if (!items.length) return;
+      if (!confirm('Add ' + items.length + ' streaming link' + (items.length > 1 ? 's' : '') + ' to MusicBrainz as recording relationships?')) return;
+      const btn = modal.querySelector('#ii-addlinks-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
+      items.forEach(it => { const el = cell(it.idx, it.p.code); if (el) { el.className = 'ii-tl spin'; el.dataset.code = it.p.code; } });
+      try {
+        await submitRels(items.map(it => ({ recGid: RELEASE.tracks[it.idx].recId, url: it.url, linkTypeID: it.p.linkTypeID })), noteFor(items.map(it => it.p)));
+        items.forEach(it => markLinked(it.idx, it.p, it.url));
+        Log.info('Linked ' + items.length + ' track(s) on MusicBrainz');
+      } catch (e) {
+        Log.err('Add links failed: ' + errText(e));
+        items.forEach(it => makeNew(it.idx, it.p, it.url));   // restore all
+      }
+      if (btn) btn.disabled = false;
+      updateAddBtn();
+    }
+
+    // Show/label the toolbar "Add N links" button based on resolved candidates.
+    function updateAddBtn() {
+      const btn = modal.querySelector('#ii-addlinks-btn');
+      if (!btn) return;
+      const n = modal.querySelectorAll('.ii-track-links .ii-tl.new').length;
+      btn.style.display = n ? '' : 'none';
+      btn.textContent = '➕ Add ' + n + ' link' + (n === 1 ? '' : 's');
+      btn.disabled = !n;
+    }
+
+    // Throttled resolve pass: for every track with an ISRC and no existing link on
+    // a provider, look the track up by ISRC and, if found, turn the icon into a
+    // coloured "add" candidate (resolve only — no edits are made here).
     async function resolve() {
       if (resolving) return;
       resolving = true;
@@ -2256,7 +2375,7 @@
             const t = RELEASE.tracks[idx];
             const isrc = normalizeIsrc(t.pending) || normalizeIsrc((t.existing || [])[0] || '');
             if (!t.recId || !isValidIsrc(isrc)) continue;
-            if (linkedUrl(t, p)) continue;                 // already linked → leave faded
+            if (linkedUrl(t, p)) continue;                 // already linked → leave monochrome
             const el = cell(idx, p.code);
             if (!el || !el.classList.contains('cand')) continue;
             el.className = 'ii-tl spin'; el.dataset.code = p.code;
@@ -2264,27 +2383,19 @@
             try { url = await p.resolve(isrc); } catch (e) { /* rate-limited / not found */ }
             const fresh = cell(idx, p.code);
             if (!fresh) continue;
-            if (url) {
-              const a = document.createElement('a');
-              a.className = 'ii-tl new'; a.dataset.code = p.code;
-              a.href = url; a.target = '_blank'; a.rel = 'noopener';
-              a.style.color = p.color;
-              a.title = p.name + ' — open track (not linked in MB yet)';
-              a.innerHTML = p.icon;
-              fresh.replaceWith(a);
-            } else {
-              fresh.className = 'ii-tl absent'; fresh.dataset.code = p.code;
-            }
+            if (url) makeNew(idx, p, url);
+            else { fresh.className = 'ii-tl absent'; fresh.dataset.code = p.code; }
             await sleep(p.code === 'td' ? 350 : 120);       // space out (Tidal is rate-limited)
           }
         }
       } finally {
         resolving = false;
         if (btn) { btn.disabled = false; delete btn.dataset.busy; }
+        updateAddBtn();
       }
     }
 
-    return { stripHtml, resolve };
+    return { stripHtml, resolve, addAll };
   })();
 
   /* ── render the track table ── */
