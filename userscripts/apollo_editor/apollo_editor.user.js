@@ -5175,15 +5175,16 @@
     if (box && box.dataset.mbid === mbid) { col.appendChild(box); return; }   // keep, just ensure it's last
     box?.remove();
     box = document.createElement('div'); box.id = 'tc-ri-cover'; box.dataset.mbid = mbid;
+    box.style.display = 'none';   // hidden until the cover actually loads — no "FRONT COVER" flash on coverless releases
     box.innerHTML = '<div class="tc-ri-cover-h">Front cover</div>';
     const a = document.createElement('a');
     a.href = ORIGIN + '/release/' + mbid + '/cover-art'; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Cover art (Cover Art Archive)';
     const img = document.createElement('img');
-    img.alt = 'Front cover'; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
-    // no front cover → HIDE the block but KEEP it (marked for this mbid) so riCover
-    // doesn't rebuild + re-request it on every relayout tick (#297: endless front-250
-    // requests / OpaqueResponseBlocking when a release has no cover art)
-    img.onerror = () => { box.style.display = 'none'; };
+    img.alt = 'Front cover'; img.referrerPolicy = 'no-referrer';   // not lazy: a hidden (display:none) box would never load a lazy image
+    // reveal only once the image loads. On error the box stays hidden — but is KEPT
+    // (marked for this mbid) so riCover doesn't rebuild + re-request it every relayout
+    // tick (#297: front-250 request loop / OpaqueResponseBlocking on coverless releases).
+    img.onload = () => { box.style.display = ''; };
     img.src = 'https://coverartarchive.org/release/' + mbid + '/front-250';
     a.appendChild(img); box.appendChild(a); col.appendChild(box);
   }
