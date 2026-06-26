@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.24
+// @version      2026.6.26
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -23,14 +23,20 @@
 //     right-click does the other. Ctrl/⌘ + ↑/↓ cycles saved notes, replacing the
 //     field. Append skips a line already present. Never auto-overwrites blindly,
 //     so it won't clobber notes Apollo / Credit Hoarder / Platform Check write.
+//   - BABY MAMMOTHS (⚙ "Show baby mammoths"): the same save/reuse idea on other
+//     controls — catalog number, label, artist, status, language… A small 🦣 pin
+//     on each field recalls values you've saved for it; ★ pins one as an always-
+//     visible button under the field; one entry can be the default (auto-fills an
+//     empty field). Targets: a built-in release-editor set + any element another
+//     script tags class="mmth-pin". Stored separately (mammoth-fields:data).
 
 (function () {
   'use strict';
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false };   // defaultInsert: 'replace' | 'append'
-  const VERSION = '2026.6.23.221528';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true };   // defaultInsert: 'replace' | 'append'
+  const VERSION = '2026.6.26';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -44,6 +50,7 @@
   let DATA = loadData();
   let SET = loadSet();
   const uid = () => 'n' + Math.random().toString(36).slice(2, 9);
+  const babyMammoths = createBabyMammoths();   // field-memory module (gated by SET.showBabies)
 
   // ── data ops ─────────────────────────────────────────────────────────────────
   function recordHistory(text) {
@@ -257,7 +264,9 @@
       <div class="mmth-tip">Right-click does the other action.</div>
       <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
       <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
-      <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>`;
+      <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
+      <label><input type="checkbox" class="mmth-s-babies"> Show baby mammoths</label>
+      <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>`;
     document.body.appendChild(p); pop = p;
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
     const ins = p.querySelector('.mmth-s-ins'); ins.value = SET.defaultInsert;
@@ -269,6 +278,8 @@
     nl.onchange = () => { SET.appendNewline = nl.checked; saveSet(); };
     rows.onchange = () => { SET.visibleRows = Math.max(1, Math.min(30, parseInt(rows.value, 10) || 6)); rows.value = SET.visibleRows; saveSet(); };
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
+    const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
+    babies.onchange = () => { SET.showBabies = babies.checked; persistSet(); babyMammoths.toggle(babies.checked); };
     placePop(p, anchor);
   }
   function openSyntax(anchor) {
@@ -555,4 +566,261 @@
   });
 
   injectAll();
+  if (SET.showBabies !== false) babyMammoths.start();
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  BABY MAMMOTHS — field memory for arbitrary input controls
+  //  Self-contained (own storage key, own CSS, own DOM), gated by SET.showBabies.
+  //  start()/stop() let the ⚙ toggle add/remove it cleanly at runtime.
+  // ════════════════════════════════════════════════════════════════════════════
+  function createBabyMammoths() {
+    const FKEY = 'mammoth-fields:data';          // { [fieldKey]: [{ v, label, ts, pinned?, default? }] }
+    const MAX_PER_FIELD = 25;
+    // Built-in release add/edit targets. `key` is a STABLE, index-free storage key
+    // (catno-0/label-0 are per-medium, but saved values are shared).
+    const PREDEF = [
+      { match: 'input[id^="catno-"]',      key: 'release.catno',        label: 'Catalog number' },
+      { match: '#primary-type',            key: 'release.primary_type', label: 'Primary type' },
+      { match: '#packaging',               key: 'release.packaging',    label: 'Packaging' },
+      { match: '#status',                  key: 'release.status',       label: 'Status' },
+      { match: '#language',                key: 'release.language',     label: 'Language' },
+      { match: '#script',                  key: 'release.script',       label: 'Script' },
+      { match: 'select[id^="country-"]',   key: 'release.country',      label: 'Country' },
+      { match: 'input[id^="label-"]',      key: 'release.label',        label: 'Label' },
+      { match: '#ac-source-single-artist', key: 'release.artist',       label: 'Artist' },
+    ];
+
+    const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
+    const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
+    let FDATA = loadF();
+
+    const listFor = key => (FDATA[key] = FDATA[key] || []);
+    function rememberValue(key, rec) {
+      if (!rec || !rec.v) return false;
+      const a = listFor(key).filter(x => x.v !== rec.v);
+      a.unshift({ v: rec.v, label: rec.label || rec.v, ts: Date.now() });
+      FDATA[key] = a.slice(0, MAX_PER_FIELD); saveF(); return true;
+    }
+    const forgetValue = (key, v) => { FDATA[key] = listFor(key).filter(x => x.v !== v); saveF(); };
+    function editValue(key, oldV, newV) {
+      newV = (newV || '').trim(); if (!newV) return false;
+      const a = listFor(key); const e = a.find(x => x.v === oldV); if (!e) return false;
+      e.v = newV; e.label = newV; e.ts = Date.now();
+      FDATA[key] = a.filter((x, i) => a.findIndex(y => y.v === x.v) === i); saveF(); return true;
+    }
+    const togglePin = (key, v) => { const e = listFor(key).find(x => x.v === v); if (e) { e.pinned = !e.pinned; saveF(); } };
+    function setDefault(key, v) { const a = listFor(key); const e = a.find(x => x.v === v); if (!e) return; const was = e.default; a.forEach(x => x.default = false); e.default = !was; saveF(); }
+    const defaultOf = key => listFor(key).find(x => x.default);
+    function firstToken(s) { s = (s || '').trim(); const m = s.match(/^\[[^\]]*\]/); return m ? m[0] : (s.split(/\s+/)[0] || s); }
+    const captionOf = it => it.cap || firstToken(it.label || it.v);
+
+    const isSelect = el => el.tagName === 'SELECT';
+    const isAuto = el => el.classList.contains('ui-autocomplete-input') || el.classList.contains('lookup-performed');
+    function setNative(el, val) {
+      const proto = isSelect(el) ? HTMLSelectElement.prototype : el.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+      const d = Object.getOwnPropertyDescriptor(proto, 'value'); if (d && d.set) d.set.call(el, val); else el.value = val;
+    }
+    function readField(el) {
+      if (isSelect(el)) { const o = el.options[el.selectedIndex]; return { v: el.value, label: o ? o.textContent.trim() : el.value }; }
+      const v = el.value || ''; return { v, label: v.trim() };
+    }
+    function writeField(el, rec) {
+      if (isSelect(el)) {
+        let opt = [...el.options].find(o => o.value === rec.v);
+        if (!opt && rec.label) opt = [...el.options].find(o => o.textContent.trim() === rec.label.trim());
+        if (!opt) return false;
+        setNative(el, opt.value); el.dispatchEvent(new Event('change', { bubbles: true })); return true;
+      }
+      setNative(el, rec.v);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      if (isAuto(el)) { el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' })); el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); }
+      return true;
+    }
+    const fLabelText = el => { const l = el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`); return (l && l.textContent.trim().replace(/:$/, '')) || el.getAttribute('aria-label') || el.placeholder || ''; };
+    function keyFor(el, def) {
+      if (def && def.key) return def.key;
+      if (el.dataset.mmthKey) return 'k:' + el.dataset.mmthKey;
+      const base = el.id ? el.id.replace(/-\d+$/, '') : (el.name || '');
+      return 'auto:' + (base || fLabelText(el).toLowerCase().replace(/\s+/g, '-') || 'field');
+    }
+
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let pins = [], pop = null, mo = null, raf = 0, running = false;
+    const listeners = [];
+
+    function injectCss() {
+      if (document.getElementById('mmthf-css')) return;
+      const s = document.createElement('style'); s.id = 'mmthf-css';
+      s.textContent = `
+      .mmthf-pin { position:fixed; z-index:9998; width:16px; height:16px; display:flex; align-items:center; justify-content:center; cursor:pointer;
+                   border:none; background:none; box-shadow:none; padding:0; font-size:13px; line-height:1; user-select:none; opacity:.35; transition:opacity .12s; filter:grayscale(.3); }
+      .mmthf-pin:hover { opacity:1; filter:none; }
+      .mmthf-pin.has { opacity:.8; filter:none; }
+      .mmthf-hl { outline:2px solid #5aa67e !important; outline-offset:1px; }
+      .mmthf-bar { position:fixed; z-index:9996; display:none; }
+      .mmthf-seg { display:inline-flex; border:1px solid #cfd9d3; border-radius:7px; overflow:hidden; background:#fbfdfc; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; box-shadow:0 1px 2px rgba(0,0,0,.06); max-width:100%; }
+      .mmthf-segb { border:none; background:none; padding:4px 12px; font-size:12px; color:#27483a; cursor:pointer; border-right:1px solid #e7eee9; white-space:nowrap; max-width:160px; overflow:hidden; text-overflow:ellipsis; }
+      .mmthf-segb:last-child { border-right:none; }
+      .mmthf-segb:hover { background:#eaf5ee; }
+      .mmthf-pop { position:fixed; z-index:9999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:260px; overflow:hidden; }
+      .mmthf-pop h4 { margin:0; padding:6px 6px 6px 10px; font-size:12px; display:flex; align-items:center; gap:6px; background:#f1f6f3; border-bottom:1px solid #e7eee9; }
+      .mmthf-pop h4 .mmthf-htxt { flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .mmthf-save { flex:none; border:1px solid #cfd9d3; background:#fbfdfc; border-radius:5px; cursor:pointer; color:#1f5c3d; font-size:13px; line-height:1; padding:3px 7px; }
+      .mmthf-save:hover { background:#cfe9d8; border-color:#5aa67e; }
+      .mmthf-save[aria-disabled="true"] { color:#b7c2bb; cursor:default; background:#f3f5f4; border-color:#e2e7e4; }
+      .mmthf-list { max-height:240px; overflow-y:auto; }
+      .mmthf-row { display:flex; align-items:center; gap:6px; padding:5px 10px; border-top:1px solid #f0f4f2; cursor:pointer; }
+      .mmthf-row:first-child { border-top:none; }
+      .mmthf-row:hover { background:#eaf5ee; }
+      .mmthf-rtxt { flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .mmthf-ra { flex:none; border:none; background:none; color:#7d8a82; cursor:pointer; font-size:11px; padding:1px 3px; border-radius:3px; opacity:0; }
+      .mmthf-row:hover .mmthf-ra { opacity:.85; }
+      .mmthf-ra:hover { background:#cfe9d8; color:#1f5c3d; opacity:1; }
+      .mmthf-row.mmthf-pinned .mmthf-star { opacity:1; color:#2c7a51; }
+      .mmthf-ein { flex:1 1 auto; min-width:0; border:1px solid #5aa67e; border-radius:4px; padding:2px 5px; font:inherit; color:#222; }
+      .mmthf-empty { padding:10px; color:#9aa6a0; font-style:italic; text-align:center; }
+      `;
+      (document.head || document.documentElement).appendChild(s);
+    }
+
+    function scan() {
+      const map = new Map();
+      const add = (el, def) => { if (el && !map.has(el)) map.set(el, def || {}); };
+      for (const d of PREDEF) document.querySelectorAll(d.match).forEach(el => add(el, d));
+      document.querySelectorAll('.mmth-pin').forEach(el => add(el, { key: el.dataset.mmthKey ? 'k:' + el.dataset.mmthKey : null, label: el.dataset.mmthLabel || '' }));
+      for (const [el, def] of map) {
+        if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
+        el.dataset.mmthf = '1';
+        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'mmthf-pin'; btn.textContent = '🦣';
+        const sel = isSelect(el);
+        if (!sel) try { const pr = parseInt(getComputedStyle(el).paddingRight, 10) || 0; if (pr < 22) el.style.paddingRight = '22px'; } catch (e) {}
+        const bar = document.createElement('div'); bar.className = 'mmthf-bar';
+        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel };
+        btn.title = `Mammoth field memory — ${p.label}`;
+        btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
+        btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));
+        btn.addEventListener('mouseleave', () => el.classList.remove('mmthf-hl'));
+        document.body.appendChild(btn); document.body.appendChild(bar);
+        pins.push(p); refreshState(p); applyDefault(p);
+      }
+      layout();
+    }
+
+    function refreshState(p) { p.btn.classList.toggle('has', listFor(p.key).length > 0); renderBar(p); }
+    const BAR_RESERVE = 30;
+    function setReserve(p, on) {
+      const host = p.el.closest('td') || p.el;
+      const prop = host === p.el ? 'marginBottom' : 'paddingBottom';
+      if (on) { if (!p._rh) { p._rh = host; p._rp = prop; p._ro = host.style[prop] || ''; host.style[prop] = ((parseFloat(getComputedStyle(host)[prop]) || 0) + BAR_RESERVE) + 'px'; } }
+      else if (p._rh) { p._rh.style[p._rp] = p._ro; p._rh = null; }
+    }
+    function renderBar(p) {
+      const items = listFor(p.key).filter(x => x.pinned);
+      p.bar.innerHTML = '';
+      setReserve(p, items.length > 0);
+      if (!items.length) { p.bar.style.display = 'none'; return; }
+      const seg = document.createElement('div'); seg.className = 'mmthf-seg';
+      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); }); seg.appendChild(b); });
+      p.bar.appendChild(seg);
+    }
+    function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) writeField(p.el, d); }
+
+    function fieldOnTop(el, r) {
+      const x = r.left + r.width / 2, y = r.top + r.height / 2;
+      if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return false;
+      const t = document.elementFromPoint(x, y);
+      return !!t && (t === el || el.contains(t) || t.contains(el));
+    }
+    function gapClear(bar, r) {
+      const x = r.left + Math.min(20, r.width / 2), y = r.bottom + 6;
+      if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return true;
+      const prev = bar.style.display; bar.style.display = 'none';
+      const t = document.elementFromPoint(x, y); bar.style.display = prev;
+      if (!t || t.closest('.mmthf-bar,.mmthf-pin,.mmthf-pop')) return true;
+      for (let n = t; n && n !== document.body; n = n.parentElement) { const pos = getComputedStyle(n).position; if (pos === 'absolute' || pos === 'fixed' || pos === 'sticky') return false; }
+      return true;
+    }
+    function layout() {
+      for (const p of pins) {
+        if (!p.el.isConnected) { p.btn.remove(); p.bar.remove(); p.dead = true; continue; }
+        const el = p.el, r = el.getBoundingClientRect();
+        let vis = r.width > 0 && r.height > 0 && el.offsetParent !== null && !el.disabled;
+        if (vis) vis = fieldOnTop(el, r);
+        p.btn.style.display = vis ? 'flex' : 'none';
+        const hasBar = vis && !!p.bar.firstChild && gapClear(p.bar, r);
+        p.bar.style.display = hasBar ? 'block' : 'none';
+        if (!vis) continue;
+        p.btn.style.top = (r.top + (r.height - 16) / 2) + 'px';
+        p.btn.style.left = (r.right - 16 - (p.sel ? 22 : 3)) + 'px';
+        if (hasBar) { p.bar.style.top = (r.bottom + 3) + 'px'; p.bar.style.left = r.left + 'px'; p.bar.style.maxWidth = Math.max(140, r.width) + 'px'; }
+      }
+      if (pins.some(p => p.dead)) pins = pins.filter(p => !p.dead);
+    }
+
+    function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('mousedown', onDown, true); } }
+    function onDown(e) { if (pop && !pop.contains(e.target) && !e.target.classList.contains('mmthf-pin')) closePop(); }
+    function place(el, anchor) { const r = anchor.getBoundingClientRect(); el.style.left = Math.max(6, Math.min(innerWidth - el.offsetWidth - 6, r.left)) + 'px'; el.style.top = Math.min(innerHeight - el.offsetHeight - 6, r.bottom + 4) + 'px'; }
+    function togglePop(p) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p); }
+    function openPop(p) {
+      const cur = readField(p.el);
+      const items = listFor(p.key).slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+      const el = document.createElement('div'); el.className = 'mmthf-pop'; el._key = p.key; el._anchor = p.btn;
+      const rowHtml = (it, i) => {
+        const star = `<button class="mmthf-ra mmthf-star" title="${it.pinned ? 'Unpin from buttons' : 'Pin as a button'}">${it.pinned ? '★' : '☆'}</button>`;
+        const def = `<button class="mmthf-ra mmthf-def" title="${it.default ? 'Default — auto-fills an empty field (click to unset)' : 'Make default (auto-fills an empty field)'}" style="${it.default ? 'opacity:1;color:#2c7a51' : ''}">${it.default ? '◉' : '◯'}</button>`;
+        const edit = p.sel ? '' : '<button class="mmthf-ra mmthf-edit" title="Edit">✏️</button>';
+        return `<div class="mmthf-row${it.pinned ? ' mmthf-pinned' : ''}" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${star}${def}${edit}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button></div>`;
+      };
+      el.innerHTML =
+        `<h4><span class="mmthf-htxt">🦣 ${esc(p.label)}</span><button class="mmthf-save" ${cur.v ? '' : 'aria-disabled="true"'} title="${cur.v ? 'Save current value: ' + esc(cur.label) : 'Field is empty'}">＋</button></h4>
+         <div class="mmthf-list">${items.map(rowHtml).join('') || '<div class="mmthf-empty">No saved values yet</div>'}</div>`;
+      document.body.appendChild(el); pop = el;
+      el.querySelector('.mmthf-save').addEventListener('click', () => { if (!cur.v) return; rememberValue(p.key, cur); refreshState(p); reopen(p); });
+      el.querySelectorAll('.mmthf-row').forEach(row => {
+        const it = items[+row.dataset.i];
+        row.addEventListener('click', e => {
+          if (e.target.closest('.mmthf-edit')) { startEdit(row, it, p); return; }
+          if (e.target.closest('.mmthf-star')) { togglePin(p.key, it.v); refreshState(p); reopen(p); return; }
+          if (e.target.closest('.mmthf-def')) { setDefault(p.key, it.v); applyDefault(p); reopen(p); return; }
+          if (e.target.closest('.mmthf-del')) { forgetValue(p.key, it.v); refreshState(p); reopen(p); return; }
+          writeField(p.el, it); closePop();
+        });
+      });
+      place(el, p.btn);
+      setTimeout(() => document.addEventListener('mousedown', onDown, true), 0);
+    }
+    const reopen = p => { closePop(); openPop(p); };
+    function startEdit(row, it, p) {
+      if (row.querySelector('.mmthf-ein')) return;
+      const txt = row.querySelector('.mmthf-rtxt');
+      const inp = document.createElement('input'); inp.className = 'mmthf-ein'; inp.value = it.v;
+      row.classList.add('mmthf-editing'); txt.replaceWith(inp); inp.focus(); inp.select();
+      let done = false;
+      const commit = save => { if (done) return; done = true; if (save) { editValue(p.key, it.v, inp.value); refreshState(p); } if (row.isConnected) reopen(p); };
+      inp.addEventListener('click', e => e.stopPropagation());
+      inp.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); commit(true); } else if (e.key === 'Escape') { e.preventDefault(); commit(false); } });
+      inp.addEventListener('blur', () => commit(true));
+    }
+
+    const relayout = () => { if (running && !raf) raf = requestAnimationFrame(() => { raf = 0; layout(); }); };
+    function start() {
+      if (running) return; running = true;
+      injectCss();
+      const on = (t, ev, fn, cap) => { t.addEventListener(ev, fn, cap); listeners.push([t, ev, fn, cap]); };
+      on(window, 'scroll', relayout, true); on(window, 'resize', relayout, false);
+      ['focusin', 'focusout', 'click', 'input', 'keyup'].forEach(ev => on(document, ev, relayout, true));
+      let st = 0; mo = new MutationObserver(() => { clearTimeout(st); st = setTimeout(scan, 150); }); mo.observe(document.documentElement, { childList: true, subtree: true });
+      scan();
+    }
+    function stop() {
+      if (!running) return; running = false;
+      if (mo) { mo.disconnect(); mo = null; }
+      listeners.forEach(([t, ev, fn, cap]) => t.removeEventListener(ev, fn, cap)); listeners.length = 0;
+      closePop();
+      pins.forEach(p => { try { setReserve(p, false); } catch (e) {} p.btn.remove(); p.bar.remove(); delete p.el.dataset.mmthf; });
+      pins = [];
+    }
+    return { start, stop, toggle(on) { on ? start() : stop(); } };
+  }
 })();
