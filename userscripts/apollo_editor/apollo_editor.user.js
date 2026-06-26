@@ -5180,7 +5180,10 @@
     a.href = ORIGIN + '/release/' + mbid + '/cover-art'; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Cover art (Cover Art Archive)';
     const img = document.createElement('img');
     img.alt = 'Front cover'; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
-    img.onerror = () => box.remove();   // no front cover → remove the whole block
+    // no front cover → HIDE the block but KEEP it (marked for this mbid) so riCover
+    // doesn't rebuild + re-request it on every relayout tick (#297: endless front-250
+    // requests / OpaqueResponseBlocking when a release has no cover art)
+    img.onerror = () => { box.style.display = 'none'; };
     img.src = 'https://coverartarchive.org/release/' + mbid + '/front-250';
     a.appendChild(img); box.appendChild(a); col.appendChild(box);
   }
