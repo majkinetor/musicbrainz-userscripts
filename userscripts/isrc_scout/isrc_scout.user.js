@@ -2531,13 +2531,13 @@
     const addTrack = idx => addBatch(newItems('tr[data-idx="' + idx + '"] .ii-tl-add .ii-tl.new'));
     // alt-click → add every resolved link for THIS provider across all tracks
     const addProvider = code => addBatch(newItems('.ii-tl-add .ii-tl.new[data-code="' + code + '"]'));
-    // footer button → add everything resolved (with a confirm)
+    // footer button → add everything resolved (no confirm — auto-applied edits)
     async function addAll() {
       const items = newItems('.ii-tl-add .ii-tl.new');
       if (!items.length) return;
       const btn = modal.querySelector('#ii-addlinks-btn');
       if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
-      await addBatch(items, 'Add ' + items.length + ' streaming link' + (items.length > 1 ? 's' : '') + ' to MusicBrainz as recording relationships?');
+      await addBatch(items);
       if (btn) btn.disabled = false;
     }
 
