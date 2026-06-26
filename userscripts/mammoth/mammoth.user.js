@@ -685,16 +685,20 @@
       .mmthf-fb[aria-disabled="true"] { color:#b7c2bb; cursor:default; background:none; }
       .mmthf-ft-title { flex:1 1 auto; min-width:0; text-align:center; font-weight:700; font-size:13px; color:#293330; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 4px; }
       .mmthf-list { max-height:240px; overflow-y:auto; }
-      .mmthf-row { display:flex; align-items:center; gap:6px; padding:5px 10px; border-top:1px solid #f0f4f2; cursor:pointer; }
+      .mmthf-row { position:relative; display:flex; align-items:center; gap:6px; padding:5px 10px; border-top:1px solid #f0f4f2; cursor:pointer; }
       .mmthf-row:first-child { border-top:none; }
       .mmthf-row:hover { background:#eaf5ee; }
-      .mmthf-rtxt { flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-      .mmthf-ra { flex:none; width:18px; box-sizing:border-box; text-align:center; border:none; background:none; color:#7d8a82; cursor:pointer; font-size:11px; padding:1px 0; border-radius:3px; opacity:0; }
-      .mmthf-row:hover .mmthf-ra { opacity:.85; }
-      .mmthf-ra:hover { background:#cfe9d8; color:#1f5c3d; opacity:1; }
-      .mmthf-row.mmthf-pinned .mmthf-star { opacity:1; color:#2c7a51; }
-      .mmthf-grab { flex:none; width:14px; text-align:center; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; opacity:0; }
-      .mmthf-row:hover .mmthf-grab { opacity:1; }
+      .mmthf-rtxt { flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:42px; }
+      /* stationary indicators at the right edge (★ rightmost so it stays aligned; ◉ when default). Non-interactive — no reserved hover slots. */
+      .mmthf-ind { position:absolute; right:10px; top:0; height:100%; display:flex; align-items:center; gap:5px; font-size:12px; color:#2c7a51; pointer-events:none; }
+      /* the full action toolbar OVERLAYS the right on hover — reserves no space when idle */
+      .mmthf-acts { position:absolute; right:5px; top:2px; bottom:2px; display:none; align-items:center; gap:1px; padding:0 3px 0 12px; border-radius:5px; background:#eaf5ee; }
+      .mmthf-row:hover .mmthf-acts { display:flex; }
+      .mmthf-row:hover .mmthf-ind { display:none; }
+      .mmthf-row.mmthf-editing .mmthf-ind, .mmthf-row.mmthf-editing .mmthf-acts { display:none; }
+      .mmthf-ra { width:18px; box-sizing:border-box; text-align:center; border:none; background:none; color:#7d8a82; cursor:pointer; font-size:11px; padding:1px 0; border-radius:3px; }
+      .mmthf-ra:hover { background:#cfe9d8; color:#1f5c3d; }
+      .mmthf-grab { width:14px; text-align:center; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; }
       .mmthf-grab:active { cursor:grabbing; }
       .mmthf-row.mmthf-dragging { opacity:.45; }
       .mmthf-row.mmthf-drop-before { box-shadow:inset 0 2px 0 #2c7a51; }
@@ -801,15 +805,17 @@
       const el = document.createElement('div'); el.className = 'mmthf-pop'; el._key = p.key; el._anchor = p.btn;
       const rowHtml = (it, i) => {
         const star = `<button class="mmthf-ra mmthf-star" title="${it.pinned ? 'Unpin from buttons' : 'Pin as a button'}">${it.pinned ? '★' : '☆'}</button>`;
-        const def = `<button class="mmthf-ra mmthf-def" title="${it.default ? 'Default — auto-fills an empty field (click to unset)' : 'Make default (auto-fills an empty field)'}" style="${it.default ? 'opacity:1;color:#2c7a51' : ''}">${it.default ? '◉' : '◯'}</button>`;
+        const def = `<button class="mmthf-ra mmthf-def" title="${it.default ? 'Default — auto-fills an empty field (click to unset)' : 'Make default (auto-fills an empty field)'}">${it.default ? '◉' : '◯'}</button>`;
         const edit = p.sel ? '' : '<button class="mmthf-ra mmthf-edit" title="Edit">✏️</button>';
-        return `<div class="mmthf-row${it.pinned ? ' mmthf-pinned' : ''}" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${star}${def}${edit}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
+        const acts = `<div class="mmthf-acts">${star}${def}${edit}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
+        const ind = `<span class="mmthf-ind">${it.default ? '<span>◉</span>' : ''}${it.pinned ? '<span>★</span>' : ''}</span>`;
+        return `<div class="mmthf-row" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${ind}${acts}</div>`;
       };
       el.innerHTML =
         `<div class="mmthf-ft">
            <button class="mmthf-fb mmthf-save" ${cur.v ? '' : 'aria-disabled="true"'} title="${cur.v ? 'Save current value: ' + esc(cur.label) : 'Field is empty'}">＋</button>
            <button class="mmthf-fb mmthf-clear" title="Clear the field">✕</button>
-           <span class="mmthf-ft-title">🦣 ${esc(p.label)}</span>
+           <span class="mmthf-ft-title"></span>
            <button class="mmthf-fb mmthf-cfg" title="Mammoth settings">⚙</button>
          </div>
          <div class="mmthf-list">${items.map(rowHtml).join('') || '<div class="mmthf-empty">No saved values yet</div>'}</div>`;
