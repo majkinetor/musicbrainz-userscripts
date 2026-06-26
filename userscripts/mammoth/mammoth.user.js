@@ -689,7 +689,7 @@
     const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const after = (e, el) => (e.clientY - el.getBoundingClientRect().top) > el.offsetHeight / 2;
     const clearMarks = host => host && host.querySelectorAll('.mmthf-drop-before,.mmthf-drop-after').forEach(r => r.classList.remove('mmthf-drop-before', 'mmthf-drop-after'));
-    let pins = [], pop = null, mo = null, raf = 0, running = false, _fdrag = null;
+    let pins = [], pop = null, mo = null, raf = 0, running = false, _fdrag = null, settleCap = 0;
     const listeners = [];
 
     function injectCss() {
@@ -700,6 +700,9 @@
                    border:none; background:none; box-shadow:none; padding:0; font-size:13px; line-height:1; user-select:none; opacity:.35; transition:opacity .12s; filter:grayscale(.3); }
       .mmthf-pin:hover { opacity:1; filter:none; }
       .mmthf-pin.has { opacity:.8; filter:none; }
+      /* #296: hide the overlays while the release editor is still reflowing on load,
+         so they don't visibly jump around — revealed once the layout goes quiet. */
+      html.mmthf-settling .mmthf-pin, html.mmthf-settling .mmthf-bar { visibility:hidden !important; }
       .mmthf-hl { outline:2px solid #5aa67e !important; outline-offset:1px; }
       .mmthf-bar { position:absolute; z-index:9996; display:none; }
       .mmthf-seg { display:inline-flex; border:1px solid #cfd9d3; border-radius:7px; overflow:hidden; background:#fbfdfc; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; box-shadow:0 1px 2px rgba(0,0,0,.06); max-width:100%; }
@@ -900,12 +903,24 @@
       const on = (t, ev, fn, cap) => { t.addEventListener(ev, fn, cap); listeners.push([t, ev, fn, cap]); };
       on(window, 'scroll', relayout, true); on(window, 'resize', relayout, false);
       ['focusin', 'focusout', 'click', 'input', 'keyup'].forEach(ev => on(document, ev, relayout, true));
-      let st = 0; mo = new MutationObserver(() => { clearTimeout(st); st = setTimeout(scan, 150); }); mo.observe(document.documentElement, { childList: true, subtree: true });
+      // #296: the release editor keeps reflowing for a few hundred ms after load, so
+      // the absolutely-positioned overlays would chase the moving fields and visibly
+      // jump. Keep them hidden until the DOM goes quiet for 300ms (capped at 1.5s),
+      // then reveal them already in their final spots.
+      const html = document.documentElement;
+      html.classList.add('mmthf-settling');
+      let revealed = false, quietT = 0;
+      const reveal = () => { if (revealed) return; revealed = true; clearTimeout(quietT); clearTimeout(settleCap); html.classList.remove('mmthf-settling'); relayout(); };
+      const bump = () => { if (revealed) return; clearTimeout(quietT); quietT = setTimeout(reveal, 300); };
+      settleCap = setTimeout(reveal, 1500);
+      let st = 0; mo = new MutationObserver(() => { clearTimeout(st); st = setTimeout(scan, 150); bump(); }); mo.observe(document.documentElement, { childList: true, subtree: true });
+      bump();
       scan();
     }
     function stop() {
       if (!running) return; running = false;
       if (mo) { mo.disconnect(); mo = null; }
+      clearTimeout(settleCap); document.documentElement.classList.remove('mmthf-settling');
       listeners.forEach(([t, ev, fn, cap]) => t.removeEventListener(ev, fn, cap)); listeners.length = 0;
       closePop();
       pins.forEach(p => { try { setReserve(p, false); } catch (e) {} p.btn.remove(); p.bar.remove(); delete p.el.dataset.mmthf; });
