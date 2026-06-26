@@ -23,7 +23,7 @@
 //     right-click does the other. Ctrl/⌘ + ↑/↓ cycles saved notes, replacing the
 //     field. Append skips a line already present. Never auto-overwrites blindly,
 //     so it won't clobber notes Apollo / Credit Hoarder / Platform Check write.
-//   - BABY MAMMOTHS (⚙ "Show baby mammoths"): the same save/reuse idea on other
+//   - BABY MAMMOTHS (⚙ "Show mammoth babies"): the same save/reuse idea on other
 //     controls — catalog number, label, artist, status, language… A small 🦣 pin
 //     on each field recalls values you've saved for it; ★ pins one as an always-
 //     visible button under the field; one entry can be the default (auto-fills an
@@ -265,7 +265,7 @@
       <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
       <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
       <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
-      <label><input type="checkbox" class="mmth-s-babies"> Show baby mammoths</label>
+      <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
       <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>`;
     document.body.appendChild(p); pop = p;
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
@@ -576,8 +576,31 @@
   function createBabyMammoths() {
     const FKEY = 'mammoth-fields:data';          // { [fieldKey]: [{ v, label, ts, pinned?, default? }] }
     const MAX_PER_FIELD = 25;
+    // #296 follow-up — capture the selected ENTITY's MBID for autocomplete fields,
+    // so a saved Label/Artist resolves the real entity on recall (writeField pastes
+    // the MBID, which MB resolves) instead of being text-only. The gid comes from
+    // the live release editor model; unsafeWindow reaches the page's MB from the
+    // userscript sandbox. Falls back to text when nothing is selected / off-editor.
+    const PAGEWIN = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
+    const relEntity = () => { try { return PAGEWIN.MB.releaseEditor.rootField.release(); } catch (e) { return null; } };
+    const labelGid = el => { const i = +((String(el.id).match(/-(\d+)$/) || [])[1] || 0); const r = relEntity(); const labs = r && r.labels && r.labels(); const L = labs && labs[i] && labs[i].label && labs[i].label(); return (L && L.gid) || null; };
+    const _unwrap = x => (typeof x === 'function' ? x() : x);
+    const artistGid = () => {   // single-artist box only: exactly one real artist (names has a trailing blank)
+      const r = relEntity(); const ac = r && r.artistCredit && r.artistCredit();
+      let ns = ac && ac.names; ns = _unwrap(ns); if (!ns) return null;
+      const real = [...ns].map(n => _unwrap(n.artist)).filter(a => a && a.gid);
+      return real.length === 1 ? real[0].gid : null;
+    };
+    // a specific row of the artist-credit editor bubble (ac-source-artist-<i>)
+    const artistRowGid = el => {
+      const i = +((String(el.id).match(/-(\d+)$/) || [])[1] || 0);
+      const r = relEntity(); const ac = r && r.artistCredit && r.artistCredit();
+      const ns = _unwrap(ac && ac.names); const a = ns && ns[i] && _unwrap(ns[i].artist);
+      return (a && a.gid) || null;
+    };
     // Built-in release add/edit targets. `key` is a STABLE, index-free storage key
-    // (catno-0/label-0 are per-medium, but saved values are shared).
+    // (catno-0/label-0 are per-medium, but saved values are shared). `gid` (entity
+    // fields) resolves the selected entity's MBID for capture.
     const PREDEF = [
       { match: 'input[id^="catno-"]',      key: 'release.catno',        label: 'Catalog number' },
       { match: '#primary-type',            key: 'release.primary_type', label: 'Primary type' },
@@ -586,8 +609,9 @@
       { match: '#language',                key: 'release.language',     label: 'Language' },
       { match: '#script',                  key: 'release.script',       label: 'Script' },
       { match: 'select[id^="country-"]',   key: 'release.country',      label: 'Country' },
-      { match: 'input[id^="label-"]',      key: 'release.label',        label: 'Label' },
-      { match: '#ac-source-single-artist', key: 'release.artist',       label: 'Artist' },
+      { match: 'input[id^="label-"]',      key: 'release.label',        label: 'Label',  gid: labelGid },
+      { match: '#ac-source-single-artist', key: 'release.artist',       label: 'Artist', gid: artistGid },
+      { match: 'input[id^="ac-source-artist-"]', key: 'release.artist', label: 'Artist', gid: artistRowGid },   // artist-credit editor bubble rows
     ];
 
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
@@ -603,12 +627,6 @@
       saveF(); return true;
     }
     const forgetValue = (key, v) => { FDATA[key] = listFor(key).filter(x => x.v !== v); saveF(); };
-    function editValue(key, oldV, newV) {
-      newV = (newV || '').trim(); if (!newV) return false;
-      const a = listFor(key); const e = a.find(x => x.v === oldV); if (!e) return false;
-      e.v = newV; e.label = newV; e.ts = Date.now();
-      FDATA[key] = a.filter((x, i) => a.findIndex(y => y.v === x.v) === i); saveF(); return true;
-    }
     const togglePin = (key, v) => { const e = listFor(key).find(x => x.v === v); if (e) { e.pinned = !e.pinned; saveF(); } };
     function setDefault(key, v) { const a = listFor(key); const e = a.find(x => x.v === v); if (!e) return; const was = e.default; a.forEach(x => x.default = false); e.default = !was; saveF(); }
     const defaultOf = key => listFor(key).find(x => x.default);
@@ -632,6 +650,15 @@
     function readField(el) {
       if (isSelect(el)) { const o = el.options[el.selectedIndex]; return { v: el.value, label: o ? o.textContent.trim() : el.value }; }
       const v = el.value || ''; return { v, label: v.trim() };
+    }
+    // What to STORE for the current value. Entity fields (p.gid) store the selected
+    // MBID as the value with the visible name as the label, so recall resolves the
+    // real entity; everything else (and unresolved/empty entity fields) stores text.
+    function captureField(p) {
+      const t = readField(p.el);
+      if (!t.v || !p.gid) return t;
+      let g; try { g = p.gid(p.el); } catch (e) {}
+      return g ? { v: g, label: t.label || g } : t;
     }
     function writeField(el, rec) {
       if (isSelect(el)) {
@@ -696,7 +723,6 @@
       .mmthf-acts { position:absolute; right:5px; top:2px; bottom:2px; display:none; align-items:center; gap:1px; padding:0 3px 0 12px; border-radius:5px; background:#eaf5ee; }
       .mmthf-row:hover .mmthf-acts { display:flex; }
       .mmthf-row:hover .mmthf-ind { display:none; }
-      .mmthf-row.mmthf-editing .mmthf-ind, .mmthf-row.mmthf-editing .mmthf-acts { display:none; }
       .mmthf-ra { width:18px; box-sizing:border-box; text-align:center; border:none; background:none; color:#7d8a82; cursor:pointer; font-size:11px; padding:1px 0; border-radius:3px; }
       .mmthf-ra:hover { background:#cfe9d8; color:#1f5c3d; }
       .mmthf-grab { width:14px; text-align:center; cursor:grab; color:#b7c2bb; font-size:12px; user-select:none; }
@@ -704,7 +730,6 @@
       .mmthf-row.mmthf-dragging { opacity:.45; }
       .mmthf-row.mmthf-drop-before { box-shadow:inset 0 2px 0 #2c7a51; }
       .mmthf-row.mmthf-drop-after { box-shadow:inset 0 -2px 0 #2c7a51; }
-      .mmthf-ein { flex:1 1 auto; min-width:0; border:1px solid #5aa67e; border-radius:4px; padding:2px 5px; font:inherit; color:#222; }
       .mmthf-empty { padding:10px; color:#9aa6a0; font-style:italic; text-align:center; }
       `;
       (document.head || document.documentElement).appendChild(s);
@@ -730,7 +755,7 @@
         const dx = dxRaw != null ? dxRaw : (sel ? 22 : innerIcon ? 24 : 3);
         if (!sel) try { const need = dx + 18; const pr = parseInt(getComputedStyle(el).paddingRight, 10) || 0; if (pr < need) el.style.paddingRight = need + 'px'; } catch (e) {}
         const bar = document.createElement('div'); bar.className = 'mmthf-bar';
-        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx };
+        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null };
         btn.title = `Mammoth field memory — ${p.label}`;
         btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
         btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));
@@ -741,7 +766,10 @@
       layout();
     }
 
-    function refreshState(p) { p.btn.classList.toggle('has', listFor(p.key).length > 0); renderBar(p); }
+    // refresh every field sharing this key (e.g. the single-artist box + the
+    // artist-credit bubble rows all use release.artist), so a pin/default/save in
+    // one reflects on the others.
+    function refreshState(p) { for (const q of pins) if (q.key === p.key) { q.btn.classList.toggle('has', listFor(q.key).length > 0); renderBar(q); } }
     const BAR_RESERVE = 30;
     function setReserve(p, on) {
       const host = p.el.closest('td') || p.el;
@@ -766,13 +794,19 @@
       const t = document.elementFromPoint(x, y);
       return !!t && (t === el || el.contains(t) || t.contains(el));
     }
-    function gapClear(bar, r) {
+    function gapClear(el, bar, r) {
       const x = r.left + Math.min(20, r.width / 2), y = r.bottom + 6;
       if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return true;
       const prev = bar.style.display; bar.style.display = 'none';
       const t = document.elementFromPoint(x, y); bar.style.display = prev;
       if (!t || t.closest('.mmthf-bar,.mmthf-pin,.mmthf-pop')) return true;
-      for (let n = t; n && n !== document.body; n = n.parentElement) { const pos = getComputedStyle(n).position; if (pos === 'absolute' || pos === 'fixed' || pos === 'sticky') return false; }
+      // a positioned overlay over the gap hides the strip — UNLESS it's the field's
+      // OWN positioned container (e.g. the artist-credit editor bubble), which isn't
+      // covering the field, it holds it. Only flag overlays that don't contain el.
+      for (let n = t; n && n !== document.body; n = n.parentElement) {
+        const pos = getComputedStyle(n).position;
+        if ((pos === 'absolute' || pos === 'fixed' || pos === 'sticky') && !n.contains(el)) return false;
+      }
       return true;
     }
     function layout() {
@@ -782,7 +816,7 @@
         let vis = r.width > 0 && r.height > 0 && el.offsetParent !== null && !el.disabled;
         if (vis) vis = fieldOnTop(el, r);
         p.btn.style.display = vis ? 'flex' : 'none';
-        const hasBar = vis && !!p.bar.firstChild && gapClear(p.bar, r);
+        const hasBar = vis && !!p.bar.firstChild && gapClear(el, p.bar, r);
         p.bar.style.display = hasBar ? 'block' : 'none';
         if (!vis) continue;
         // position in DOCUMENT coords (position:absolute) so the overlays scroll WITH
@@ -801,14 +835,13 @@
     function place(el, anchor) { const r = anchor.getBoundingClientRect(); el.style.left = Math.max(6, Math.min(innerWidth - el.offsetWidth - 6, r.left)) + 'px'; el.style.top = Math.min(innerHeight - el.offsetHeight - 6, r.bottom + 4) + 'px'; }
     function togglePop(p) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p); }
     function openPop(p) {
-      const cur = readField(p.el);
+      const cur = captureField(p);   // entity fields capture the selected MBID (#296)
       const items = listFor(p.key);   // raw order — drag (⠿) reorders it freely, like the edit-note panel
       const el = document.createElement('div'); el.className = 'mmthf-pop'; el._key = p.key; el._anchor = p.btn;
       const rowHtml = (it, i) => {
         const star = `<button class="mmthf-ra mmthf-star" title="${it.pinned ? 'Unpin from buttons' : 'Pin as a button'}">${it.pinned ? '★' : '☆'}</button>`;
         const def = `<button class="mmthf-ra mmthf-def" title="${it.default ? 'Default — auto-fills an empty field (click to unset)' : 'Make default (auto-fills an empty field)'}">${it.default ? '◉' : '◯'}</button>`;
-        const edit = p.sel ? '' : '<button class="mmthf-ra mmthf-edit" title="Edit">✏️</button>';
-        const acts = `<div class="mmthf-acts">${star}${def}${edit}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
+        const acts = `<div class="mmthf-acts">${star}${def}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
         const ind = `<span class="mmthf-ind">${it.default ? '<span>◉</span>' : ''}${it.pinned ? '<span>★</span>' : ''}</span>`;
         return `<div class="mmthf-row" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${ind}${acts}</div>`;
       };
@@ -829,7 +862,6 @@
         const it = items[+row.dataset.i];
         row.addEventListener('click', e => {
           if (e.target.closest('.mmthf-grab')) return;
-          if (e.target.closest('.mmthf-edit')) { startEdit(row, it, p); return; }
           if (e.target.closest('.mmthf-star')) { togglePin(p.key, it.v); refreshState(p); reopen(p); return; }
           if (e.target.closest('.mmthf-def')) { setDefault(p.key, it.v); applyDefault(p); reopen(p); return; }
           if (e.target.closest('.mmthf-del')) { forgetValue(p.key, it.v); refreshState(p); reopen(p); return; }
@@ -846,17 +878,6 @@
       setTimeout(() => document.addEventListener('mousedown', onDown, true), 0);
     }
     const reopen = p => { closePop(); openPop(p); };
-    function startEdit(row, it, p) {
-      if (row.querySelector('.mmthf-ein')) return;
-      const txt = row.querySelector('.mmthf-rtxt');
-      const inp = document.createElement('input'); inp.className = 'mmthf-ein'; inp.value = it.v;
-      row.classList.add('mmthf-editing'); txt.replaceWith(inp); inp.focus(); inp.select();
-      let done = false;
-      const commit = save => { if (done) return; done = true; if (save) { editValue(p.key, it.v, inp.value); refreshState(p); } if (row.isConnected) reopen(p); };
-      inp.addEventListener('click', e => e.stopPropagation());
-      inp.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); commit(true); } else if (e.key === 'Escape') { e.preventDefault(); commit(false); } });
-      inp.addEventListener('blur', () => commit(true));
-    }
 
     const relayout = () => { if (running && !raf) raf = requestAnimationFrame(() => { raf = 0; layout(); }); };
     function start() {
