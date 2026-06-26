@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.25.144245
+// @version      2026.6.26
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -359,7 +359,7 @@
       wrap = document.createElement('div'); wrap.id = 'as-switch-wrap';
       const sw = document.createElement('button'); sw.id = 'as-switch';
       sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
-      const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = '⚙'; gear.title = 'Art Station setup';
+      const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = '⚙︎'; gear.title = 'Art Station setup';
       gear.onclick = openSetup;
       wrap.append(sw, gear); document.body.appendChild(wrap);   // label left, gear right — one pill
     }
