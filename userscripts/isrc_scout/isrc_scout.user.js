@@ -424,18 +424,27 @@
       display: none; flex-direction: column; font-family: system-ui, sans-serif;
       color: #212529; overflow: hidden !important; }
     #ii-modal.open { display: flex; }
-    #ii-hdr { display: flex; align-items: center; gap: 10px; padding: 11px 16px;
-      background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0; }
-    #ii-hdr h2 { font-size: 15px; font-weight: 700; margin: 0; flex: 1; }
-    #ii-hdr h2 em { color: #6f42c1; font-style: normal; }
-    #ii-hdr h2 .ii-logo { vertical-align: -5px; }
-    #ii-hdr .ii-sub { font-size: 13.5px; color: #6c757d; font-weight: 700; margin-left: 7px; }
-    #ii-help { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
-      width: 21px; height: 21px; border-radius: 50%; border: 1px solid #ccc; color: #999;
-      font-size: 12px; font-weight: 700; text-decoration: none; box-sizing: border-box; }
-    #ii-help:hover { color: #6f42c1; border-color: #b9a3e8; text-decoration: none; }
-    #ii-close { background: none; border: none; font-size: 20px; color: #6c757d; cursor: pointer; line-height: 1; }
-    #ii-close:hover { color: #212529; }
+    /* header: tabs (left) · centered release (Zen) · bulk + config (right) */
+    #ii-hdr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+      padding: 6px 14px 0; background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0; }
+    .ii-tabs { display: flex; gap: 2px; }
+    .ii-tab { background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer;
+      padding: 8px 14px 9px; font: 600 12.5px system-ui; color: #868e96; display: inline-flex; align-items: center; gap: 7px; }
+    .ii-tab:hover { color: #6c757d; }
+    .ii-tab.on { color: #6f42c1; border-bottom-color: #6f42c1; }
+    .ii-tab-badge { font: 700 10px system-ui; background: #eceff2; color: #6c757d; border-radius: 9px; padding: 1px 6px; }
+    .ii-tab-badge:empty { display: none; }
+    .ii-tab.on .ii-tab-badge { background: #efe9fb; color: #6f42c1; }
+    .ii-zen { text-align: center; padding-bottom: 7px; min-width: 0; }
+    .ii-zen-t { font: 600 12px system-ui; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ii-zen-s { font: 10.5px system-ui; color: #c3c8ce; }
+    .ii-hicons { display: flex; gap: 6px; justify-self: end; padding-bottom: 5px; }
+    .ii-hico { width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid #e3e3e8; border-radius: 6px; background: #fff; color: #6c757d; font-size: 14px; cursor: pointer; }
+    .ii-hico:hover { background: #f1f3f5; color: #6f42c1; border-color: #d6c7ee; }
+    .ii-hico.on { background: #efe9fb; color: #6f42c1; border-color: #d6c7ee; }
+    /* scope visibility — elements tagged .ii-only-isrc / .ii-only-links show with the active tab */
+    #ii-modal.ii-scope-links .ii-only-isrc, #ii-modal.ii-scope-isrc .ii-only-links { display: none !important; }
 
     /* toolbar */
     #ii-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
@@ -513,18 +522,18 @@
     .ii-track-title a:hover { color: #6f42c1; text-decoration: underline; }
     .ii-track-artist { color: #6c757d; font-size: 11.5px; }
     .ii-track-dur { color: #adb5bd; font-size: 11px; font-family: 'Courier New', monospace; }
-    /* #219 PoC — per-track provider link icons under the artist line.
-       Faded monochrome = recording already links to that provider in MB;
-       full brand colour = the track resolves on the provider but isn't linked yet. */
-    .ii-track-links { display: flex; align-items: center; gap: 7px; margin-top: 3px; min-height: 15px; }
+    /* #219/#301 — provider link icons live in the LINKED / ADD columns. Grey
+       monochrome = already linked on MB; brand colour = resolved + addable. */
+    .ii-tl-linked, .ii-tl-add { display: flex; align-items: center; gap: 9px; min-height: 18px; flex-wrap: wrap; }
+    .ii-tl-add:empty::before, .ii-tl-linked:empty::before { content: '—'; color: #d0d4d9; }
     .ii-tl { display: inline-flex; align-items: center; line-height: 0; text-decoration: none; }
-    .ii-tl svg { width: 15px; height: 15px; display: block; }
-    .ii-tl.linked  { color: #868e96; }                                               /* already on MB → monochrome (solid, not faded) */
-    .ii-tl.linked:hover { color: #495057; }
+    .ii-tl svg { width: 16px; height: 16px; display: block; }
+    .ii-tl.linked  { color: #adb5bd; }                                               /* already on MB → quiet monochrome */
+    .ii-tl.linked:hover { color: #6c757d; }
     .ii-tl.new     { cursor: pointer; }                                              /* resolved, not linked → click to add (brand colour set inline) */
     .ii-tl.new:hover { filter: brightness(1.12); }
-    .ii-tl.cand    { color: #ced4da; opacity: .5; }                                   /* not yet resolved */
-    .ii-tl.spin    { color: #ced4da; opacity: .9; animation: ii-tl-pulse 1s ease-in-out infinite; }
+    .ii-tl.cand    { display: none; }                                               /* not resolved yet → hidden until Find links */
+    .ii-tl.spin    { color: #ced4da; animation: ii-tl-pulse 1s ease-in-out infinite; }
     .ii-tl.absent  { display: none; }                                                /* track not found on provider */
     @keyframes ii-tl-pulse { 0%,100% { opacity: .35; } 50% { opacity: .9; } }
     .ii-existing { width: 150px; }
@@ -606,6 +615,15 @@
     .ii-pane-x { flex-shrink: 0; width: 19px; height: 19px; line-height: 1; padding: 0; font-size: 13px;
       color: #6c757d; background: #fff; border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer; }
     .ii-pane-x:hover { background: #f1f3f5; color: #212529; border-color: #adb5bd; }
+    /* #301 standard config-window header: icon · name · version · Log · ? Help */
+    .ii-cfg-hdr { margin: -2px 0 4px !important; padding-bottom: 9px; border-bottom: 1px solid #e9ecef; font-size: 14px !important; }
+    .ii-cfg-hdr .ii-logo { vertical-align: -4px; }
+    .ii-cfg-name { font-weight: 700; color: #6f42c1; }
+    .ii-cfg-ver { font: 400 11px system-ui; color: #adb5bd; }
+    .ii-cfg-lnk { font: 600 12px system-ui; color: #6f42c1; text-decoration: none; cursor: pointer;
+      background: none; border: none; padding: 2px 4px; }
+    .ii-cfg-lnk:hover { text-decoration: underline; }
+    .ii-cfg-grp { font: 700 10.5px system-ui; text-transform: uppercase; letter-spacing: .3px; color: #adb5bd; margin: 4px 0 6px; }
     .ii-pane label { display: block; font-size: 11.5px; color: #495057; margin: 6px 0 2px; }
     .ii-pane input[type=text], .ii-pane textarea {
       width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #ced4da;
@@ -1873,19 +1891,30 @@
     modal.addEventListener('click', e => e.stopPropagation());   // clicks inside don't reach the backdrop
     modal.innerHTML = `
       <div id="ii-hdr">
-        <h2><svg class="ii-logo" width="22" height="22" viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/><g fill="none" stroke="#6f42c1" stroke-width="7"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="5" stroke="#b9a3e8"/><circle cx="64" cy="64" r="13" stroke-width="5" stroke="#b9a3e8"/></g><line x1="64" y1="64" x2="64" y2="24" stroke="#6f42c1" stroke-width="7" stroke-linecap="round"/><circle cx="86" cy="50" r="8" fill="#4b2e83"/></svg> <em>ISRC Scout</em><span class="ii-sub" id="ii-rel-sub"></span></h2>
-        <a class="ii-tbtn" id="ii-history" target="_blank" rel="noopener"
-           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
-           title="Your Add/Remove ISRC edits on MusicBrainz">🕓 My ISRC edits</a>
-        <button class="ii-tbtn" id="ii-bulk-toggle" title="Bulk paste / import / export">⇪ Bulk / Export</button>
-        <button class="ii-tbtn" id="ii-log-toggle" title="Activity log">Log</button>
-        <button class="ii-tbtn" id="ii-setup-toggle" title="OAuth setup">⚙︎ Setup</button>
-        <a id="ii-help" href="${SCRIPT_URL}#readme" target="_blank" rel="noopener" title="Open the ISRC Scout README">?</a>
-        <button id="ii-close" title="Close">✕</button>
+        <!-- the two operations on a record: ISRCs and Links -->
+        <div class="ii-tabs">
+          <button class="ii-tab" data-scope="isrc" type="button">ISRCs <span class="ii-tab-badge" id="ii-badge-isrc"></span></button>
+          <button class="ii-tab" data-scope="links" type="button">Links <span class="ii-tab-badge" id="ii-badge-links"></span></button>
+        </div>
+        <!-- centered release / artist (Apollo Zen style) -->
+        <div class="ii-zen"><div class="ii-zen-t" id="ii-rel-title"></div><div class="ii-zen-s" id="ii-rel-sub"></div></div>
+        <!-- only Bulk/Export + config in the header; name/version/Log/Help live in the config window -->
+        <div class="ii-hicons">
+          <button class="ii-hico" id="ii-bulk-toggle" type="button" title="Bulk / Export">▤</button>
+          <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings, log &amp; help">⚙︎</button>
+        </div>
       </div>
 
       <div class="ii-pane" id="ii-setup-pane">
-        <h3><button class="ii-pane-x" title="Close">✕</button>One-time MusicBrainz authorization</h3>
+        <!-- #301: standard config-window header — icon · name · version · Log · ? Help (no ✕) -->
+        <h3 class="ii-cfg-hdr">
+          <svg class="ii-logo" width="18" height="18" viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/><g fill="none" stroke="#6f42c1" stroke-width="7"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="5" stroke="#b9a3e8"/><circle cx="64" cy="64" r="13" stroke-width="5" stroke="#b9a3e8"/></g><line x1="64" y1="64" x2="64" y2="24" stroke="#6f42c1" stroke-width="7" stroke-linecap="round"/><circle cx="86" cy="50" r="8" fill="#4b2e83"/></svg>
+          <span class="ii-cfg-name">ISRC Scout</span><span class="ii-cfg-ver">v${SCRIPT_VERSION}</span>
+          <span style="margin-left:auto"></span>
+          <button class="ii-cfg-lnk" id="ii-log-link" type="button" title="Activity log">Log</button>
+          <a class="ii-cfg-lnk" href="${SCRIPT_URL}#readme" target="_blank" rel="noopener" title="Open the ISRC Scout README">? Help</a>
+        </h3>
+        <div class="ii-cfg-grp">MusicBrainz</div>
         <div class="ii-authstate" id="ii-auth-state"></div>
         <div class="row" style="margin-top:8px; flex-wrap:nowrap">
           <button class="ii-tbtn primary" id="ii-authorize" style="flex-shrink:0">Authorize</button>
@@ -1896,18 +1925,23 @@
           Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
           If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
         </div>
-        <div style="margin-top:14px; padding-top:11px; border-top:1px solid #eee">
+        <div class="ii-cfg-grp" style="margin-top:16px">Settings</div>
+        <div>
           <label style="display:block; font-size:11.5px; color:#495057; margin-bottom:5px; font-weight:600">Import-source buttons</label>
           <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; margin-right:16px; cursor:pointer"><input type="checkbox" id="ii-show-icons">Show icons</label>
           <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; cursor:pointer"><input type="checkbox" id="ii-show-text">Show text</label>
         </div>
-        <div style="margin-top:14px; padding-top:11px; border-top:1px solid #eee">
+        <div style="margin-top:12px">
           <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
             <input type="checkbox" id="ii-rg-providers" style="margin-top:2px">
             <span>Use providers from the whole release group<br>
               <span style="color:#868e96; font-size:11px">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group — recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span>
           </label>
         </div>
+        <div class="ii-cfg-grp" style="margin-top:16px">More</div>
+        <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
+           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
+           title="Your Add/Remove ISRC edits on MusicBrainz">🕓 My ISRC edits on MusicBrainz</a>
       </div>
 
       <div class="ii-pane" id="ii-bulk-pane">
@@ -1942,7 +1976,7 @@
       </div>
 
       <div id="ii-tools">
-        <span class="ii-sx-group" id="ii-sx-group">
+        <span class="ii-sx-group ii-only-isrc" id="ii-sx-group">
           <button class="ii-tbtn sx" id="ii-sx-all" title="Search every track on SoundExchange">⟳ SoundExchange</button>
           <button class="ii-exact-toggle" id="ii-exact-toggle" type="button" title="Exact-match options" aria-expanded="false">exact <span class="ii-exact-car">▾</span></button>
           <span class="ii-exact-set" id="ii-exact-set" title="Wrap the SoundExchange query in quotes for an exact match">
@@ -1951,20 +1985,19 @@
             <label><input type="checkbox" id="ii-ex-release">release</label>
           </span>
         </span>
-        <button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from Deezer"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button>
-        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from Spotify"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
-        <button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
-        <button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
-        <button class="ii-tbtn vo" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
-        <button class="ii-tbtn hd" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
-        <span class="ii-urladd" id="ii-urladd">
+        <button class="ii-tbtn dz ii-only-isrc" id="ii-dz-all" title="Import ISRCs from Deezer"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button>
+        <button class="ii-tbtn sp ii-only-isrc" id="ii-sp-all" title="Import ISRCs from Spotify"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
+        <button class="ii-tbtn bp ii-only-isrc" id="ii-bp-all" title="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
+        <button class="ii-tbtn td ii-only-isrc" id="ii-td-all" title="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
+        <button class="ii-tbtn vo ii-only-isrc" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
+        <button class="ii-tbtn hd ii-only-isrc" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
+        <span class="ii-urladd ii-only-isrc" id="ii-urladd">
           <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks) — auto-detected and imported">+</button>
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
+        <button class="ii-tbtn sx ii-only-links" id="ii-links-btn" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable">🔗 Find links</button>
         <span class="ii-prog" id="ii-prog"></span>
-        <button class="ii-tbtn" id="ii-links-btn" title="#219: resolve each track on Deezer / Tidal by ISRC and show per-track link icons under the title — grey = already linked in MB, colour = found but not linked yet">🔗 Track links</button>
-        <button class="ii-tbtn" id="ii-addlinks-btn" style="display:none" title="Add every resolved (coloured) streaming link to MusicBrainz as a recording relationship, in one background batch">➕ Add links</button>
-        <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear</button>
+        <button class="ii-tbtn ghost ii-only-isrc" id="ii-clear-pending" title="Clear all entered ISRCs">Clear</button>
       </div>
 
       <!-- floating provider menu (#181) — opened from any per-track button's ▾ -->
@@ -1972,13 +2005,13 @@
 
       <div id="ii-body">
         <table id="ii-table">
-          <colgroup>
+          <colgroup id="ii-colgroup">
             <col style="width:32px"><col><col style="width:44px"><col style="width:124px"><col style="width:560px">
           </colgroup>
           <thead><tr>
             <th>#</th><th>Track</th><th></th>
-            <th><label class="ii-ex-all-lbl" title="Select all existing ISRCs for removal"><input type="checkbox" id="ii-ex-all">Existing</label></th>
-            <th>New ISRC</th>
+            <th><label class="ii-ex-all-lbl ii-only-isrc" title="Select all existing ISRCs for removal"><input type="checkbox" id="ii-ex-all">Existing</label><span class="ii-only-links">Linked</span></th>
+            <th><span class="ii-only-isrc">New ISRC</span><span class="ii-only-links">Add</span></th>
           </tr></thead>
           <tbody id="ii-tbody"></tbody>
         </table>
@@ -1986,9 +2019,10 @@
 
       <div id="ii-foot">
         <span class="ii-summary" id="ii-summary"></span>
-        <button class="ii-tbtn" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete checked</button>
+        <button class="ii-tbtn ii-only-isrc" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete checked</button>
         <button class="ii-tbtn ghost" id="ii-note-toggle" title="Edit note">✎ Edit note</button>
-        <button class="ii-tbtn primary" id="ii-submit">Submit to MusicBrainz</button>
+        <button class="ii-tbtn primary ii-only-isrc" id="ii-submit">Submit to MusicBrainz</button>
+        <button class="ii-tbtn primary ii-only-links" id="ii-addlinks-btn" style="display:none" title="Add every resolved (coloured) streaming link to MusicBrainz in one background batch">➕ Add links</button>
       </div>
     `;
 
@@ -2001,7 +2035,18 @@
     progEl    = modal.querySelector('#ii-prog');
     submitBtn = modal.querySelector('#ii-submit');
 
-    modal.querySelector('#ii-close').addEventListener('click', closeModal);
+    // scope tabs (#301): the two operations on a record
+    modal.querySelectorAll('.ii-tab').forEach(t => t.addEventListener('click', () => setScope(t.dataset.scope)));
+    // Esc closes the modal (no ✕ in the header) — but first let an open pane close,
+    // and ignore it while typing in a field.
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !modal.classList.contains('open')) return;
+      const openPane = modal.querySelector('.ii-pane.open');
+      if (openPane) { openPane.classList.remove('open'); return; }
+      const a = document.activeElement;
+      if (a && /^(INPUT|TEXTAREA)$/.test(a.tagName)) return;
+      closeModal();
+    });
     modal.querySelector('#ii-setup-toggle').addEventListener('click', () => togglePane('ii-setup-pane'));
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-clear-pending').addEventListener('click', clearPending);
@@ -2020,9 +2065,9 @@
       closeProvMenu();
     });
 
-    // log pane
+    // log pane — opened from the config window's "Log" link (#301)
     Log.setPane(modal.querySelector('#ii-log-out'));
-    modal.querySelector('#ii-log-toggle').addEventListener('click', () => togglePane('ii-log-pane'));
+    modal.querySelector('#ii-log-link').addEventListener('click', () => togglePane('ii-log-pane'));
     modal.querySelector('#ii-log-copy').addEventListener('click', () => {
       // Wrap in a collapsed <details> + fenced block so it pastes into a GitHub
       // issue/comment as a tidy, foldable log rather than a wall of text.
@@ -2168,6 +2213,21 @@
     });
   }
 
+  // #301: the active scope (ISRCs / Links) — drives column labels, toolbar, footer
+  // (via .ii-only-isrc / .ii-only-links visibility) and the table column widths.
+  let scope = store.get('scope', 'isrc') === 'links' ? 'links' : 'isrc';
+  function setScope(s) {
+    scope = (s === 'links') ? 'links' : 'isrc';
+    store.set('scope', scope);
+    modal.classList.toggle('ii-scope-isrc', scope === 'isrc');
+    modal.classList.toggle('ii-scope-links', scope === 'links');
+    modal.querySelectorAll('.ii-tab').forEach(t => t.classList.toggle('on', t.dataset.scope === scope));
+    const cg = modal.querySelector('#ii-colgroup');
+    if (cg) cg.innerHTML = (scope === 'links')
+      ? '<col style="width:32px"><col><col style="width:44px"><col style="width:150px"><col style="width:230px">'
+      : '<col style="width:32px"><col><col style="width:44px"><col style="width:124px"><col style="width:560px">';
+  }
+
   // Some tablets render MusicBrainz's desktop layout wider than the browser's
   // layout viewport, so the page overflows and the browser zooms-to-fit. A
   // position:fixed modal is then sized/anchored to the (narrow) layout viewport
@@ -2202,10 +2262,11 @@
       window.visualViewport.addEventListener('scroll', _vvSync);
     }
     refreshAuthState();
+    setScope(scope);   // #301: apply the active-scope classes + column widths before render
     if (!RELEASE) {
       tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#adb5bd">Loading release…</td></tr>';
       fetchRelease()
-        .then(renderTracks)   // existing track links ride along on the release fetch (recording-level-rels), so the strip renders linked immediately
+        .then(renderTracks)   // existing track links ride along on the release fetch (recording-level-rels)
         .catch(err => {
           tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#dc3545">Failed to load release: ' + esc(err.message) + '</td></tr>';
         });
@@ -2332,26 +2393,31 @@
       return PROV.filter(p => !p.album || linkedUrl(t, p) || (RELEASE && RELEASE[p.urlKey]));
     }
 
-    // Build the strip for one track. Already-linked providers paint immediately
-    // (monochrome); the rest start as faint candidates and are filled by resolve().
-    function stripHtml(t) {
-      const cells = providersFor(t).map(p => {
-        const ex = t.recId ? linkedUrl(t, p) : null;
-        if (ex) return '<a class="ii-tl linked" data-code="' + p.code + '" href="' + esc(ex) + '" target="_blank" rel="noopener" ' +
-          'title="' + esc(p.name) + ' — already linked on MusicBrainz">' + p.icon + '</a>';
-        return '<span class="ii-tl cand" data-code="' + p.code + '" title="' + esc(p.name) + ' — not linked yet">' + p.icon + '</span>';
-      }).join('');
-      return '<div class="ii-track-links" data-rec="' + esc(t.recId || '') + '">' + cells + '</div>';
+    // #301: two columns. LINKED = monochrome icons for providers already linked on
+    // MB; ADD = a hidden candidate slot per not-yet-linked provider (Find links fills
+    // them, and an added one moves over to the LINKED column).
+    function linkedIcon(p, url) {
+      return '<a class="ii-tl linked" data-code="' + p.code + '" href="' + esc(url) + '" target="_blank" rel="noopener" ' +
+        'title="' + esc(p.name) + ' — linked on MusicBrainz">' + p.icon + '</a>';
+    }
+    function linkedHtml(t) {
+      const cells = providersFor(t).map(p => { const ex = t.recId ? linkedUrl(t, p) : null; return ex ? linkedIcon(p, ex) : ''; }).filter(Boolean).join('');
+      return '<div class="ii-tl-linked" data-rec="' + esc(t.recId || '') + '">' + cells + '</div>';
+    }
+    function addHtml(t) {
+      const cells = providersFor(t).map(p =>
+        (!t.recId || linkedUrl(t, p)) ? '' : '<span class="ii-tl cand" data-code="' + p.code + '" title="' + esc(p.name) + '">' + p.icon + '</span>'
+      ).filter(Boolean).join('');
+      return '<div class="ii-tl-add" data-rec="' + esc(t.recId || '') + '">' + cells + '</div>';
     }
 
-    function cell(idx, code) {
-      const tr = tbody.querySelector('tr[data-idx="' + idx + '"]');
-      return tr ? tr.querySelector('.ii-track-links .ii-tl[data-code="' + code + '"]') : null;
-    }
+    const addBox = idx => { const tr = tbody.querySelector('tr[data-idx="' + idx + '"]'); return tr ? tr.querySelector('.ii-tl-add') : null; };
+    const linkedBox = idx => { const tr = tbody.querySelector('tr[data-idx="' + idx + '"]'); return tr ? tr.querySelector('.ii-tl-linked') : null; };
+    function cell(idx, code) { const c = addBox(idx); return c ? c.querySelector('.ii-tl[data-code="' + code + '"]') : null; }
 
-    // Replace a row's icon with a coloured "add" candidate: a link to the resolved
-    // provider URL whose click ADDS the relationship (A). Ctrl/middle-click still
-    // opens the provider page.
+    // Replace a row's ADD-column slot with a coloured "add" candidate: a link to the
+    // resolved provider URL whose click ADDS the relationship (A). Ctrl/middle-click
+    // still opens the provider page.
     function makeNew(idx, p, url) {
       const el = cell(idx, p.code);
       if (!el) return;
@@ -2369,19 +2435,17 @@
       el.replaceWith(a);
     }
 
-    // Turn an icon into the monochrome "already linked" state and record the URL
-    // on the track so it won't be offered again.
+    // On a successful add: drop the candidate from the ADD column and add a
+    // monochrome icon to the LINKED column; record the URL on the track.
     function markLinked(idx, p, url) {
       const t = RELEASE.tracks[idx];
       if (t && !(t.recUrls || []).includes(url)) (t.recUrls = t.recUrls || []).push(url);
-      const el = cell(idx, p.code);
-      if (!el) return;
-      const a = document.createElement('a');
-      a.className = 'ii-tl linked'; a.dataset.code = p.code;
-      a.href = url; a.target = '_blank'; a.rel = 'noopener';
-      a.title = p.name + ' — linked on MusicBrainz';
-      a.innerHTML = p.icon;
-      el.replaceWith(a);
+      const el = cell(idx, p.code); if (el) el.remove();
+      const lb = linkedBox(idx);
+      if (lb && !lb.querySelector('.ii-tl[data-code="' + p.code + '"]')) {
+        const tmp = document.createElement('div'); tmp.innerHTML = linkedIcon(p, url);
+        lb.appendChild(tmp.firstChild);
+      }
     }
 
     // Same shape as ISRC Scout's standard edit note (noteHeader + Release line +
@@ -2443,7 +2507,7 @@
     // (B) add every resolved-but-unlinked candidate across the release in one batch
     async function addAll() {
       const items = [];
-      modal.querySelectorAll('.ii-track-links .ii-tl.new').forEach(a => {
+      modal.querySelectorAll('.ii-tl-add .ii-tl.new').forEach(a => {
         const p = PROV.find(x => x.code === a.dataset.code);
         const tr = a.closest('tr[data-idx]');
         if (p && tr) items.push({ idx: +tr.dataset.idx, p, url: a.getAttribute('href') });
@@ -2468,8 +2532,10 @@
     // Show/label the toolbar "Add N links" button based on resolved candidates.
     function updateAddBtn() {
       const btn = modal.querySelector('#ii-addlinks-btn');
+      const n = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;
+      const badge = modal.querySelector('#ii-badge-links');
+      if (badge) badge.textContent = n ? (n + ' to add') : '';
       if (!btn) return;
-      const n = modal.querySelectorAll('.ii-track-links .ii-tl.new').length;
       btn.style.display = n ? '' : 'none';
       btn.textContent = '➕ Add ' + n + ' link' + (n === 1 ? '' : 's');
       btn.disabled = !n;
@@ -2511,13 +2577,14 @@
       }
     }
 
-    return { stripHtml, resolve, addAll };
+    return { linkedHtml, addHtml, resolve, addAll };
   })();
 
   /* ── render the track table ── */
   function renderTracks() {
-    modal.querySelector('#ii-rel-sub').textContent =
-      RELEASE.title ? '· ' + [RELEASE.title, RELEASE.releaseYear, RELEASE.artist].filter(Boolean).join(' · ') : '';
+    // #301: release title centered (Zen), artist + year on the line below
+    modal.querySelector('#ii-rel-title').textContent = RELEASE.title || '';
+    modal.querySelector('#ii-rel-sub').textContent = [RELEASE.artist, RELEASE.releaseYear].filter(Boolean).join(' · ');
     // Provider buttons (#180): show a provider only when the release has its
     // link in MB OR Platform Check found one. MB-linked buttons are marked
     // (ring + brand tint via .ii-mb); an unmarked button = a PC-found link.
@@ -2555,11 +2622,13 @@
         '<td class="ii-pos">' + esc(t.number || t.trackPos) + '</td>' +
         '<td><div class="ii-track-title">' +
           (t.recId ? '<a href="' + MB_ROOT + '/recording/' + t.recId + '" target="_blank" rel="noopener" title="' + esc(t.title) + '">' + esc(t.title) + '</a>' : esc(t.title)) +
-          '</div><div class="ii-track-artist">' + esc(t.artist) + '</div>' +
-          TrackLinks.stripHtml(t) + '</td>' +
+          '</div><div class="ii-track-artist">' + esc(t.artist) + '</div></td>' +
         '<td class="ii-track-dur">' + esc(t.dur) + '</td>' +
-        '<td class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval) + '</td>' +
-        '<td><div class="ii-inwrap">' +
+        // col 4 — Existing ISRC (ISRC scope) / Linked providers (Links scope)
+        '<td><div class="ii-existing ii-only-isrc">' + existingHtml(t.existing, t.pendingRemoval) + '</div>' +
+          '<div class="ii-only-links">' + TrackLinks.linkedHtml(t) + '</div></td>' +
+        // col 5 — New ISRC input (ISRC scope) / Add candidates (Links scope)
+        '<td><div class="ii-inwrap ii-only-isrc">' +
           '<div class="ii-input-box">' +
             '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
             '<button class="ii-clear" type="button" tabindex="-1" title="Clear this field">×</button>' +
@@ -2571,7 +2640,8 @@
             '<button class="ii-sxprov" type="button" tabindex="-1" title="Choose the ISRC provider for all tracks">▾</button>' +
           '</span>' +
           '<span class="ii-lookup"></span>' +
-          '</div><div class="ii-cands"></div></td>';
+          '<div class="ii-cands"></div></div>' +
+          '<div class="ii-only-links">' + TrackLinks.addHtml(t) + '</div></td>';
       const input = tr.querySelector('.ii-input');
       tr.querySelector('.ii-clear').addEventListener('click', () => clearRow(idx));
       input.addEventListener('input', () => {
@@ -2844,6 +2914,8 @@
       if (dupSet.has(v)) { crossDup++; return; }            // same ISRC on another recording → blocked
       valid++;
     });
+    const isrcBadge = modal.querySelector('#ii-badge-isrc');   // #301: tab count
+    if (isrcBadge) isrcBadge.textContent = missing ? (missing + ' missing') : '';
     const seq = iterativeSequence();
     summaryEl.innerHTML =
       '<b>' + RELEASE.tracks.length + '</b> tracks' +
