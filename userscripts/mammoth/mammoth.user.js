@@ -645,6 +645,11 @@
       if (isAuto(el)) { el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' })); el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); }
       return true;
     }
+    function clearField(el) {
+      if (isSelect(el)) { const o = [...el.options].find(o => o.value === ''); if (!o) return; setNative(el, ''); el.dispatchEvent(new Event('change', { bubbles: true })); }
+      else { setNative(el, ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }
+      try { el.focus(); } catch (e) {}
+    }
     const fLabelText = el => { const l = el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`); return (l && l.textContent.trim().replace(/:$/, '')) || el.getAttribute('aria-label') || el.placeholder || ''; };
     function keyFor(el, def) {
       if (def && def.key) return def.key;
@@ -674,11 +679,11 @@
       .mmthf-segb:last-child { border-right:none; }
       .mmthf-segb:hover { background:#eaf5ee; }
       .mmthf-pop { position:fixed; z-index:9999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:260px; overflow:hidden; }
-      .mmthf-pop h4 { margin:0; padding:6px 6px 6px 10px; font-size:12px; display:flex; align-items:center; gap:6px; background:#f1f6f3; border-bottom:1px solid #e7eee9; }
-      .mmthf-pop h4 .mmthf-htxt { flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-      .mmthf-save { flex:none; border:1px solid #cfd9d3; background:#fbfdfc; border-radius:5px; cursor:pointer; color:#1f5c3d; font-size:13px; line-height:1; padding:3px 7px; }
-      .mmthf-save:hover { background:#cfe9d8; border-color:#5aa67e; }
-      .mmthf-save[aria-disabled="true"] { color:#b7c2bb; cursor:default; background:#f3f5f4; border-color:#e2e7e4; }
+      .mmthf-ft { display:flex; align-items:center; gap:1px; padding:3px 5px; background:#f1f6f3; border-bottom:1px solid #e7eee9; }
+      .mmthf-fb { cursor:pointer; border:none; background:none; font-size:14px; line-height:1; padding:3px 7px; border-radius:5px; color:#566; }
+      .mmthf-fb:hover { background:#dcefe2; }
+      .mmthf-fb[aria-disabled="true"] { color:#b7c2bb; cursor:default; background:none; }
+      .mmthf-ft-title { flex:1 1 auto; min-width:0; text-align:center; font-weight:700; font-size:13px; color:#293330; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 4px; }
       .mmthf-list { max-height:240px; overflow-y:auto; }
       .mmthf-row { display:flex; align-items:center; gap:6px; padding:5px 10px; border-top:1px solid #f0f4f2; cursor:pointer; }
       .mmthf-row:first-child { border-top:none; }
@@ -709,10 +714,15 @@
         if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
         el.dataset.mmthf = '1';
         const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'mmthf-pin'; btn.textContent = '🦣';
-        const sel = isSelect(el);
-        if (!sel) try { const pr = parseInt(getComputedStyle(el).paddingRight, 10) || 0; if (pr < 22) el.style.paddingRight = '22px'; } catch (e) {}
+        const sel = isSelect(el), auto = isAuto(el);
+        // shift the pin left of a native affordance: <select> arrow (~22) or an
+        // autocomplete lookup magnifier (~28). `dx` (def.dx / data-mmth-dx) overrides
+        // it per target, for the odd field whose native icon sits elsewhere.
+        const dxRaw = def.dx != null ? def.dx : (el.dataset.mmthDx != null ? +el.dataset.mmthDx : null);
+        const dx = dxRaw != null ? dxRaw : (sel ? 22 : auto ? 28 : 3);
+        if (!sel) try { const need = dx + 18; const pr = parseInt(getComputedStyle(el).paddingRight, 10) || 0; if (pr < need) el.style.paddingRight = need + 'px'; } catch (e) {}
         const bar = document.createElement('div'); bar.className = 'mmthf-bar';
-        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel };
+        const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx };
         btn.title = `Mammoth field memory — ${p.label}`;
         btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
         btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));
@@ -772,7 +782,7 @@
         // ClientRect is viewport-relative, so add the scroll offset back.
         const sx = window.scrollX, sy = window.scrollY;
         p.btn.style.top = (r.top + sy + (r.height - 16) / 2) + 'px';
-        p.btn.style.left = (r.right + sx - 16 - (p.sel ? 22 : 3)) + 'px';
+        p.btn.style.left = (r.right + sx - 16 - p.dx) + 'px';
         if (hasBar) { p.bar.style.top = (r.bottom + sy + 3) + 'px'; p.bar.style.left = (r.left + sx) + 'px'; p.bar.style.maxWidth = Math.max(140, r.width) + 'px'; }
       }
       if (pins.some(p => p.dead)) pins = pins.filter(p => !p.dead);
@@ -793,11 +803,18 @@
         return `<div class="mmthf-row${it.pinned ? ' mmthf-pinned' : ''}" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${star}${def}${edit}<button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
       };
       el.innerHTML =
-        `<h4><span class="mmthf-htxt">🦣 ${esc(p.label)}</span><button class="mmthf-save" ${cur.v ? '' : 'aria-disabled="true"'} title="${cur.v ? 'Save current value: ' + esc(cur.label) : 'Field is empty'}">＋</button></h4>
+        `<div class="mmthf-ft">
+           <button class="mmthf-fb mmthf-save" ${cur.v ? '' : 'aria-disabled="true"'} title="${cur.v ? 'Save current value: ' + esc(cur.label) : 'Field is empty'}">＋</button>
+           <button class="mmthf-fb mmthf-clear" title="Clear the field">✕</button>
+           <span class="mmthf-ft-title">🦣 ${esc(p.label)}</span>
+           <button class="mmthf-fb mmthf-cfg" title="Mammoth settings">⚙</button>
+         </div>
          <div class="mmthf-list">${items.map(rowHtml).join('') || '<div class="mmthf-empty">No saved values yet</div>'}</div>`;
       document.body.appendChild(el); pop = el;
       const list = el.querySelector('.mmthf-list');
       el.querySelector('.mmthf-save').addEventListener('click', () => { if (!cur.v) return; rememberValue(p.key, cur); refreshState(p); reopen(p); });
+      el.querySelector('.mmthf-clear').addEventListener('click', () => { clearField(p.el); reopen(p); });
+      el.querySelector('.mmthf-cfg').addEventListener('click', () => { const a = p.btn; closePop(); openSettings(a); });
       el.querySelectorAll('.mmthf-row').forEach(row => {
         const it = items[+row.dataset.i];
         row.addEventListener('click', e => {
