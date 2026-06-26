@@ -2134,8 +2134,7 @@
     if (!RELEASE) {
       tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#adb5bd">Loading release…</td></tr>';
       fetchRelease()
-        .then(() => TrackLinks.fetchExisting().catch(() => {}))   // #219 PoC: paint already-linked icons up-front (best-effort)
-        .then(renderTracks)
+        .then(() => { renderTracks(); TrackLinks.refreshExisting(); })   // #219 PoC: render now, paint already-linked icons when the browse returns
         .catch(err => {
           tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#dc3545">Failed to load release: ' + esc(err.message) + '</td></tr>';
         });
@@ -2213,14 +2212,31 @@
     let fetched = false;
     let resolving = false;
 
+    // MB's main server rate-limits at ~1 req/s and answers 503 (with Retry-After)
+    // when you burst — which we do, since this fires right after fetchRelease().
+    // Retry on 503/429/5xx so the browse RECOVERS instead of silently coming back
+    // empty (which painted every track as "not linked", #219 bug).
+    async function mbGet(url) {
+      for (let attempt = 0; ; attempt++) {
+        const r = await gmGet(url, { 'Accept': 'application/json', 'User-Agent': UA });
+        if (r.status === 200) return r;
+        if ((r.status === 503 || r.status === 429 || r.status >= 500) && attempt < 4) {
+          const wait = retryAfterMs(r, Math.min(1200 * Math.pow(2, attempt), 8000));
+          Log.warn('Track links: recording browse ' + r.status + ' — backing off ' + wait + 'ms (retry ' + (attempt + 1) + '/4)');
+          await sleep(wait);
+          continue;
+        }
+        return r;   // 200 handled above; non-retryable or out of retries
+      }
+    }
+
     // One browse call returns every recording on the release WITH its url rels,
     // so we know up-front which providers are already linked (no per-row fetch).
     async function fetchExisting() {
       recLinks = {};
       let offset = 0;
       for (let guard = 0; guard < 20; guard++) {
-        const r = await gmGet(MB_WS2 + 'recording?release=' + mbid + '&inc=url-rels&limit=100&offset=' + offset + '&fmt=json',
-          { 'Accept': 'application/json', 'User-Agent': UA });
+        const r = await mbGet(MB_WS2 + 'recording?release=' + mbid + '&inc=url-rels&limit=100&offset=' + offset + '&fmt=json');
         if (r.status !== 200) break;
         let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { break; }
         (j.recordings || []).forEach(rec => {
@@ -2229,11 +2245,39 @@
         const count = j['recording-count'] || 0;
         offset += 100;
         if (offset >= count) break;
+        await sleep(1100);   // stay under MB's ~1 req/s when paging
       }
       fetched = true;
     }
 
+    // Fetch existing links in the BACKGROUND (don't block the table render) and
+    // then upgrade the already-linked icons in place. A slow/failed fetch just
+    // leaves the candidate icons as-is instead of holding up the whole table.
+    function refreshExisting() {
+      return fetchExisting().then(paintExisting).catch(e => Log.warn('Track links: existing-link fetch failed — ' + errText(e)));
+    }
+
     const linkedUrl = (recId, p) => (recLinks[recId] || []).find(u => p.test(u)) || null;
+
+    // Repaint: turn candidate icons into faded "already linked" links wherever the
+    // recording has that provider's URL. Runs after the background fetch resolves.
+    function paintExisting() {
+      RELEASE.tracks.forEach((t, idx) => {
+        if (!t.recId) return;
+        PROV.forEach(p => {
+          const ex = linkedUrl(t.recId, p);
+          if (!ex) return;
+          const el = cell(idx, p.code);
+          if (!el || el.classList.contains('linked')) return;
+          const a = document.createElement('a');
+          a.className = 'ii-tl linked'; a.dataset.code = p.code;
+          a.href = ex; a.target = '_blank'; a.rel = 'noopener';
+          a.title = p.name + ' — already linked on MusicBrainz';
+          a.innerHTML = p.icon;
+          el.replaceWith(a);
+        });
+      });
+    }
 
     // Build the strip for one track. Linked providers paint immediately (faded);
     // the rest start as faint candidates and are filled by resolve().
@@ -2294,7 +2338,7 @@
       }
     }
 
-    return { fetchExisting, stripHtml, resolve, hasData: () => fetched };
+    return { refreshExisting, stripHtml, resolve, hasData: () => fetched };
   })();
 
   /* ── render the track table ── */
