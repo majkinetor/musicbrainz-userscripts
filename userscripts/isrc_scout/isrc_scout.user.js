@@ -827,6 +827,50 @@
   ═══════════════════════════════════════════════════════════════════════ */
   let RELEASE = null; // { title, tracks:[{recId, title, artist, dur, mediumPos, trackPos, existing:[], pending:''}], deezerId, spotifyId }
 
+  // Recognise an album/release provider link → { k: RELEASE field, v: id/url }, or
+  // null. One place so the per-release parse and the release-group scan (#302) agree.
+  function matchProviderLink(u) {
+    let m;
+    if ((m = u.match(/^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\/[^?#]+/i))) return { k: 'bandcampUrl', v: m[0] };  // #300: per-track URLs by position
+    if ((m = u.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/)))            return { k: 'spotifyId', v: m[1] };
+    if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))             return { k: 'deezerId', v: m[1] };
+    if ((m = u.match(/beatport\.com\/release\/[^/]+\/(\d+)/)))                 return { k: 'beatportId', v: m[1] };
+    if ((m = u.match(/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/)))   return { k: 'tidalId', v: m[1] };
+    if ((m = u.match(/volumo\.com\/album\/(\d+)/)))                            return { k: 'volumoId', v: m[1] };   // id or leading ICPN
+    // HDtracks: new #/album/<24-hex ObjectId> resolves directly; legacy 5009 rels carry the
+    // UPC in valbum_code (fetchHDtracks resolves it via barcode search). Slug-id / artist-page
+    // legacy forms have no clean id mapping and are skipped (Platform Check handles by barcode).
+    if ((m = u.match(/hdtracks\.com\/(?:#\/)?album\/([a-f0-9]{24})/i)))        return { k: 'hdtracksId', v: m[1] };
+    if ((m = u.match(/hdtracks\.com\/[^?]*[?&]valbum_code=(\d{8,})/i)))        return { k: 'hdtracksId', v: m[1] };
+    return null;
+  }
+
+  const rgProvidersEnabled = () => !!store.get('rg_providers', false);
+
+  // #302: releases in a release group are often split by platform (one has Deezer,
+  // another Spotify, …). ISRC and track-link edits target recordings, which are
+  // shared across the RG — so, when the option is on, fill any provider link the
+  // current release lacks from its sibling releases (one browse, fill-if-empty).
+  async function augmentProvidersFromRG(rgId) {
+    if (!rgId) return;
+    try {
+      const r = await gmGet(MB_WS2 + 'release?release-group=' + rgId + '&inc=url-rels&limit=100&fmt=json', { 'Accept': 'application/json', 'User-Agent': UA });
+      if (r.status !== 200) { Log.warn('Release group: sibling scan gave ' + r.status); return; }
+      const j = JSON.parse(r.responseText || '{}');
+      const added = [];
+      (j.releases || []).forEach(rel => {
+        if (rel.id === mbid) return;
+        (rel.relations || []).forEach(rl => {
+          const u = rl.url && rl.url.resource; if (!u) return;
+          const hit = matchProviderLink(u);
+          if (hit && !RELEASE[hit.k]) { RELEASE[hit.k] = hit.v; added.push(hit.k.replace(/Id|Url$/, '')); }
+        });
+      });
+      if (added.length) Log.info('Release group: pulled provider links from sibling releases — ' + [...new Set(added)].join(', '));
+      else Log.info('Release group: no extra provider links on sibling releases');
+    } catch (e) { Log.warn('Release group provider scan failed: ' + errText(e)); }
+  }
+
   function fetchRelease() {
     return gmGet(
       // recording-level-rels folds each recording's URL relationships into this one
@@ -834,7 +878,7 @@
       // #219 track-link icons know what's already linked with no extra request.
       MB_WS2 + 'release/' + mbid + '?inc=recordings+artist-credits+isrcs+url-rels+recording-level-rels+release-groups&fmt=json',
       { 'Accept': 'application/json', 'User-Agent': UA }
-    ).then(r => {
+    ).then(async r => {
       if (r.status !== 200) throw new Error('MB ' + r.status);
       const data = JSON.parse(r.responseText);
       const tracks = [];
@@ -857,25 +901,12 @@
         });
       });
       const rels = data.relations || [];
-      let deezerId = null, spotifyId = null, beatportId = null, tidalId = null, volumoId = null, hdtracksId = null, bandcampUrl = null;
+      const prov = { deezerId: null, spotifyId: null, beatportId: null, tidalId: null, volumoId: null, hdtracksId: null, bandcampUrl: null };
       rels.forEach(rel => {
         const u = rel.url && rel.url.resource;
         if (!u) return;
-        let m;
-        // #300: the release's Bandcamp album page lists every track's URL, so we can
-        // add per-track links by position (Bandcamp has no ISRC).
-        if ((m = u.match(/^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\/[^?#]+/i))) bandcampUrl = m[0];
-        if ((m = u.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/))) spotifyId = m[1];
-        if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))   deezerId  = m[1];
-        if ((m = u.match(/beatport\.com\/release\/[^/]+\/(\d+)/)))       beatportId = m[1];
-        if ((m = u.match(/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/))) tidalId = m[1];
-        if ((m = u.match(/volumo\.com\/album\/(\d+)/)))                  volumoId = m[1];   // id or leading ICPN
-        // HDtracks: new API form #/album/<24-hex ObjectId> resolves directly; the
-        // 5009 legacy MB rels carry the UPC in valbum_code, which fetchHDtracks
-        // resolves via barcode search. The slug-id / artist-page legacy forms have
-        // no clean id mapping and are skipped (handled by Platform Check by barcode).
-        if (!hdtracksId && (m = u.match(/hdtracks\.com\/(?:#\/)?album\/([a-f0-9]{24})/i))) hdtracksId = m[1];
-        if (!hdtracksId && (m = u.match(/hdtracks\.com\/[^?]*[?&]valbum_code=(\d{8,})/i))) hdtracksId = m[1];
+        const hit = matchProviderLink(u);
+        if (hit && !prov[hit.k]) prov[hit.k] = hit.v;   // first match per provider
       });
       // THIS release's year — what the header shows AND what the SX "recording newer
       // than the release" check uses. Prefer the release's own date; only fall back to
@@ -899,12 +930,13 @@
       });
       Object.keys(pend).forEach(rid => { if (!tracks.some(t => t.recId === rid)) { delete pend[rid]; pendChanged = true; } });
       if (pendChanged) savePendingRemovals(pend);
-      RELEASE = { title: data.title || '', tracks, deezerId, spotifyId, beatportId, tidalId, volumoId, hdtracksId, bandcampUrl, releaseYear, artist };
+      RELEASE = Object.assign({ title: data.title || '', tracks, rgId: rg.id || '', releaseYear, artist }, prov);
+      // #302: when enabled, fill missing provider links from sibling releases in the RG.
+      if (rgProvidersEnabled() && RELEASE.rgId) await augmentProvidersFromRG(RELEASE.rgId);
+      const linkStr = ['deezer', 'spotify', 'beatport', 'tidal', 'volumo', 'hdtracks', 'bandcamp']
+        .map(k => { const f = k === 'bandcamp' ? 'bandcampUrl' : k + 'Id'; return RELEASE[f] ? k[0].toUpperCase() + k.slice(1) + ' ' + RELEASE[f] : null; }).filter(Boolean).join(', ');
       Log.info('Release "' + RELEASE.title + '"' + (releaseYear ? ' (' + releaseYear + ')' : '') + ': ' + tracks.length + ' track(s), ' +
-        tracks.filter(t => !t.existing.length).length + ' missing ISRC' +
-        '; links: ' + [deezerId ? 'Deezer ' + deezerId : null, spotifyId ? 'Spotify ' + spotifyId : null,
-          beatportId ? 'Beatport ' + beatportId : null, tidalId ? 'Tidal ' + tidalId : null, volumoId ? 'Volumo ' + volumoId : null,
-          hdtracksId ? 'HDtracks ' + hdtracksId : null].filter(Boolean).join(', '));
+        tracks.filter(t => !t.existing.length).length + ' missing ISRC' + (linkStr ? '; links: ' + linkStr : ''));
       return RELEASE;
     });
   }
@@ -1869,6 +1901,13 @@
           <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; margin-right:16px; cursor:pointer"><input type="checkbox" id="ii-show-icons">Show icons</label>
           <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; cursor:pointer"><input type="checkbox" id="ii-show-text">Show text</label>
         </div>
+        <div style="margin-top:14px; padding-top:11px; border-top:1px solid #eee">
+          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
+            <input type="checkbox" id="ii-rg-providers" style="margin-top:2px">
+            <span>Use providers from the whole release group<br>
+              <span style="color:#868e96; font-size:11px">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group — recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span>
+          </label>
+        </div>
       </div>
 
       <div class="ii-pane" id="ii-bulk-pane">
@@ -2040,6 +2079,16 @@
     };
     cbIcons.addEventListener('change', () => onSrcDispChange(cbIcons));
     cbText.addEventListener('change', () => onSrcDispChange(cbText));
+
+    // #302: pull provider links from the whole release group (opt-in)
+    const cbRg = modal.querySelector('#ii-rg-providers');
+    if (cbRg) {
+      cbRg.checked = rgProvidersEnabled();
+      cbRg.addEventListener('change', () => {
+        store.set('rg_providers', cbRg.checked);
+        Log.info('Release-group providers: ' + (cbRg.checked ? 'on' : 'off') + (cbRg.checked ? ' — reopen / reload to rescan' : ''));
+      });
+    }
 
     modal.querySelector('#ii-dz-all').addEventListener('click', runDeezer);
     modal.querySelector('#ii-sp-all').addEventListener('click', runSpotify);
