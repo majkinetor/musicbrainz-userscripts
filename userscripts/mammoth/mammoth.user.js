@@ -766,7 +766,10 @@
       layout();
     }
 
-    function refreshState(p) { p.btn.classList.toggle('has', listFor(p.key).length > 0); renderBar(p); }
+    // refresh every field sharing this key (e.g. the single-artist box + the
+    // artist-credit bubble rows all use release.artist), so a pin/default/save in
+    // one reflects on the others.
+    function refreshState(p) { for (const q of pins) if (q.key === p.key) { q.btn.classList.toggle('has', listFor(q.key).length > 0); renderBar(q); } }
     const BAR_RESERVE = 30;
     function setReserve(p, on) {
       const host = p.el.closest('td') || p.el;
@@ -791,13 +794,19 @@
       const t = document.elementFromPoint(x, y);
       return !!t && (t === el || el.contains(t) || t.contains(el));
     }
-    function gapClear(bar, r) {
+    function gapClear(el, bar, r) {
       const x = r.left + Math.min(20, r.width / 2), y = r.bottom + 6;
       if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return true;
       const prev = bar.style.display; bar.style.display = 'none';
       const t = document.elementFromPoint(x, y); bar.style.display = prev;
       if (!t || t.closest('.mmthf-bar,.mmthf-pin,.mmthf-pop')) return true;
-      for (let n = t; n && n !== document.body; n = n.parentElement) { const pos = getComputedStyle(n).position; if (pos === 'absolute' || pos === 'fixed' || pos === 'sticky') return false; }
+      // a positioned overlay over the gap hides the strip — UNLESS it's the field's
+      // OWN positioned container (e.g. the artist-credit editor bubble), which isn't
+      // covering the field, it holds it. Only flag overlays that don't contain el.
+      for (let n = t; n && n !== document.body; n = n.parentElement) {
+        const pos = getComputedStyle(n).position;
+        if ((pos === 'absolute' || pos === 'fixed' || pos === 'sticky') && !n.contains(el)) return false;
+      }
       return true;
     }
     function layout() {
@@ -807,7 +816,7 @@
         let vis = r.width > 0 && r.height > 0 && el.offsetParent !== null && !el.disabled;
         if (vis) vis = fieldOnTop(el, r);
         p.btn.style.display = vis ? 'flex' : 'none';
-        const hasBar = vis && !!p.bar.firstChild && gapClear(p.bar, r);
+        const hasBar = vis && !!p.bar.firstChild && gapClear(el, p.bar, r);
         p.bar.style.display = hasBar ? 'block' : 'none';
         if (!vis) continue;
         // position in DOCUMENT coords (position:absolute) so the overlays scroll WITH
