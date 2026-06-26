@@ -3109,25 +3109,30 @@
   // from the native row) to the release being entered. Multiplicative penalties,
   // in the spirit of MB Release Seeding Helper: a steep title base, softened by an
   // artist mismatch and a track-count gap (our proxy for its per-track length check).
-  // #187: similarity = how many of the ENTERED tracks have a title match in the
-  // candidate release (greedy 1:1, exact-fold then fuzzy ≥0.85), over the larger of
-  // the two tracklists. Metadata (title/artist/count) is deliberately NOT used —
-  // two unrelated "Best of …" VA comps share a title but no tracks, and would read
-  // 100% on the old metadata score; on track overlap they read ~0%.
+  // #187/#298: similarity = how many ENTERED tracks have a matching track in the
+  // candidate release, over the larger of the two tracklists. A track matches when
+  // its TITLE matches (greedy 1:1, exact-fold then fuzzy ≥0.85) AND its per-track
+  // ARTIST agrees — so a different release that merely shares the track TITLES (a
+  // VA comp re-using the same songs with different performers) no longer reads 100%
+  // (#298). Release-level metadata (name/count) is still deliberately ignored.
+  const _simRatio = (a, b) => a === b ? 1 : 1 - recLev(a, b) / Math.max(a.length, b.length, 1);
+  // lenient: an empty per-track artist on either side (single-artist releases inherit
+  // the release artist) falls back to title-only; else fold-equal / fuzzy / containment
+  // ("X" vs "X feat. Y").
+  const _artistOk = (a, b) => !a || !b || a === b || _simRatio(a, b) >= 0.85 || a.includes(b) || b.includes(a);
   function dupTrackScore(media, entered) {
     const cand = [];
-    (media || []).forEach(m => (m.tracks || []).forEach(t => { const f = fold(t.title || ''); if (f) cand.push(f); }));
-    const ent = (entered || []).map(t => fold(t.title || '')).filter(Boolean);
+    (media || []).forEach(m => (m.tracks || []).forEach(t => { const f = fold(t.title || ''); if (f) cand.push({ t: f, a: fold(t.artist || '') }); }));
+    const ent = (entered || []).map(t => ({ t: fold(t.title || ''), a: fold(t.artist || '') })).filter(x => x.t);
     if (!ent.length || !cand.length) return null;   // can't judge overlap → no confident score
     const pool = cand.slice(); let matched = 0;
     for (const e of ent) {
-      let idx = pool.indexOf(e);
-      if (idx < 0) {   // fuzzy fallback: best edit-distance ratio that clears 0.85
-        let bi = -1, br = 0;
-        for (let i = 0; i < pool.length; i++) { const r = 1 - recLev(e, pool[i]) / Math.max(e.length, pool[i].length, 1); if (r > br) { br = r; bi = i; } }
-        if (br >= 0.85) idx = bi;
+      let best = -1, bestTs = 0;
+      for (let i = 0; i < pool.length; i++) {
+        const ts = e.t === pool[i].t ? 1 : _simRatio(e.t, pool[i].t);
+        if (ts >= 0.85 && ts > bestTs && _artistOk(e.a, pool[i].a)) { bestTs = ts; best = i; }
       }
-      if (idx >= 0) { matched++; pool.splice(idx, 1); }
+      if (best >= 0) { matched++; pool.splice(best, 1); }
     }
     return matched / Math.max(ent.length, cand.length);
   }
