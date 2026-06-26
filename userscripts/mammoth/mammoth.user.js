@@ -375,7 +375,7 @@
     inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => setMinimized(!SET.minimized));   // #265: left of the ? button
     ft.appendChild(inst.minBtn);
     ft.appendChild(fb('?', 'Edit-note syntax', 'mmth-pop-anchor', e => openSyntax(e.currentTarget)));
-    ft.appendChild(fb('⚙', 'Settings', 'mmth-pop-anchor', e => openSettings(e.currentTarget)));
+    ft.appendChild(fb('⚙︎', 'Settings', 'mmth-pop-anchor', e => openSettings(e.currentTarget)));
     inst.tabs = { saved: bSaved, history: bHist };
 
     ta.addEventListener('keydown', e => {
