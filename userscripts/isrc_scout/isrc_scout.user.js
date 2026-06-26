@@ -153,7 +153,11 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  const SCRIPT_VERSION = '2026.6.12';
+  // Derive from the installed @version so the banner/CLIENT never drift out of
+  // sync with the metadata again (the hardcoded constant kept lagging behind).
+  const SCRIPT_VERSION = (() => {
+    try { return (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '2026.6.26'; } catch (e) { return '2026.6.26'; }
+  })();
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
   const UA       = 'MB-ISRC-Scout/1.0';
