@@ -506,6 +506,20 @@
     .ii-track-title a:hover { color: #6f42c1; text-decoration: underline; }
     .ii-track-artist { color: #6c757d; font-size: 11.5px; }
     .ii-track-dur { color: #adb5bd; font-size: 11px; font-family: 'Courier New', monospace; }
+    /* #219 PoC — per-track provider link icons under the artist line.
+       Faded monochrome = recording already links to that provider in MB;
+       full brand colour = the track resolves on the provider but isn't linked yet. */
+    .ii-track-links { display: flex; align-items: center; gap: 7px; margin-top: 3px; min-height: 15px; }
+    .ii-tl { display: inline-flex; align-items: center; line-height: 0; text-decoration: none; }
+    .ii-tl svg { width: 15px; height: 15px; display: block; }
+    .ii-tl.linked  { color: #adb5bd; opacity: .55; filter: grayscale(1); }          /* already on MB → muted */
+    .ii-tl.linked:hover { opacity: .85; }
+    .ii-tl.new     { /* brand colour set inline */ }                                  /* resolved, not linked → add candidate */
+    .ii-tl.new:hover { filter: brightness(1.12); }
+    .ii-tl.cand    { color: #ced4da; opacity: .5; }                                   /* not yet resolved */
+    .ii-tl.spin    { color: #ced4da; opacity: .9; animation: ii-tl-pulse 1s ease-in-out infinite; }
+    .ii-tl.absent  { display: none; }                                                /* track not found on provider */
+    @keyframes ii-tl-pulse { 0%,100% { opacity: .35; } 50% { opacity: .9; } }
     .ii-existing { width: 150px; }
     .ii-existing samp { display: block; font-size: 11px; font-weight: 700; color: #198754; font-family: 'Courier New', monospace; }
     .ii-existing samp.dup { color: #d63384; background: #ffe3ef; border-radius: 3px; padding: 0 3px; }
@@ -1895,6 +1909,7 @@
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
         <span class="ii-prog" id="ii-prog"></span>
+        <button class="ii-tbtn" id="ii-links-btn" title="PoC (#219): resolve each track on Deezer / Tidal by ISRC and show per-track link icons under the title — faded = already linked in MB, colour = found but not linked yet">🔗 Track links</button>
         <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear</button>
       </div>
 
@@ -1936,6 +1951,7 @@
     modal.querySelector('#ii-setup-toggle').addEventListener('click', () => togglePane('ii-setup-pane'));
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-clear-pending').addEventListener('click', clearPending);
+    modal.querySelector('#ii-links-btn').addEventListener('click', () => TrackLinks.resolve());   // #219 PoC
     modal.querySelector('#ii-sx-all').addEventListener('click', runSxAll);   // bulk SoundExchange — unchanged (#181)
 
     // Track-ISRC-provider menu (#181): the per-track [SX] buttons carry a ▾ that
@@ -2117,9 +2133,12 @@
     refreshAuthState();
     if (!RELEASE) {
       tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#adb5bd">Loading release…</td></tr>';
-      fetchRelease().then(renderTracks).catch(err => {
-        tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#dc3545">Failed to load release: ' + esc(err.message) + '</td></tr>';
-      });
+      fetchRelease()
+        .then(() => TrackLinks.fetchExisting().catch(() => {}))   // #219 PoC: paint already-linked icons up-front (best-effort)
+        .then(renderTracks)
+        .catch(err => {
+          tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#dc3545">Failed to load release: ' + esc(err.message) + '</td></tr>';
+        });
     } else {
       renderTracks();
     }
@@ -2154,6 +2173,129 @@
       pane.classList.add('open'); // nudge first-time users
     }
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     TRACK LINKS (#219 PoC) — per-track provider link icons under the artist
+     line. Two streaming providers that expose a stable, public per-track URL
+     resolvable by ISRC (and already wired in Scout): Deezer and Tidal.
+       • faded monochrome  → the recording already links to that provider in MB
+                             (read once from a recording browse with url-rels)
+       • full brand colour → the track resolves on the provider by ISRC but
+                             isn't linked yet — an "add" candidate
+     The actual background add is the next spike: WS2 only submits ISRCs, so
+     adding URL relationships needs MB's website edit API, not submitIsrcs().
+  ═══════════════════════════════════════════════════════════════════════ */
+  const TrackLinks = (function () {
+    const PROV = [
+      { code: 'dz', name: 'Deezer', color: _PROV_COLOR.deezer, icon: SRC_ICON.dz,
+        test: u => /(?:^|\.)deezer\.com\/(?:[a-z]{2}\/)?track\/\d+/i.test(u),
+        async resolve(isrc) {
+          const r = await gmGet('https://api.deezer.com/track/isrc:' + encodeURIComponent(isrc), { 'Accept': 'application/json' });
+          if (r.status !== 200) return null;
+          let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { return null; }
+          if (!j || j.error || !j.id) return null;
+          return j.link || ('https://www.deezer.com/track/' + j.id);
+        } },
+      { code: 'td', name: 'Tidal', color: _PROV_COLOR.tidal, icon: SRC_ICON.td,
+        test: u => /tidal\.com\/(?:browse\/)?track\/\d+/i.test(u),
+        async resolve(isrc) {
+          const token = await tidalToken();
+          const headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.api+json' };
+          const r = await tidalGet(TIDAL.api + '/tracks?countryCode=' + TIDAL.country + '&filter%5Bisrc%5D=' + encodeURIComponent(isrc), headers);
+          if (r.status !== 200) return null;
+          let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { return null; }
+          const t = (j.data || [])[0];
+          return t && t.id ? ('https://tidal.com/browse/track/' + t.id) : null;
+        } },
+    ];
+
+    let recLinks = {};      // recId -> [resource, …]  (existing url rels on the recording)
+    let fetched = false;
+    let resolving = false;
+
+    // One browse call returns every recording on the release WITH its url rels,
+    // so we know up-front which providers are already linked (no per-row fetch).
+    async function fetchExisting() {
+      recLinks = {};
+      let offset = 0;
+      for (let guard = 0; guard < 20; guard++) {
+        const r = await gmGet(MB_WS2 + 'recording?release=' + mbid + '&inc=url-rels&limit=100&offset=' + offset + '&fmt=json',
+          { 'Accept': 'application/json', 'User-Agent': UA });
+        if (r.status !== 200) break;
+        let j; try { j = JSON.parse(r.responseText || '{}'); } catch (e) { break; }
+        (j.recordings || []).forEach(rec => {
+          recLinks[rec.id] = (rec.relations || []).map(rel => rel.url && rel.url.resource).filter(Boolean);
+        });
+        const count = j['recording-count'] || 0;
+        offset += 100;
+        if (offset >= count) break;
+      }
+      fetched = true;
+    }
+
+    const linkedUrl = (recId, p) => (recLinks[recId] || []).find(u => p.test(u)) || null;
+
+    // Build the strip for one track. Linked providers paint immediately (faded);
+    // the rest start as faint candidates and are filled by resolve().
+    function stripHtml(t) {
+      const cells = PROV.map(p => {
+        const ex = t.recId ? linkedUrl(t.recId, p) : null;
+        if (ex) return '<a class="ii-tl linked" data-code="' + p.code + '" href="' + esc(ex) + '" target="_blank" rel="noopener" ' +
+          'title="' + esc(p.name) + ' — already linked on MusicBrainz">' + p.icon + '</a>';
+        return '<span class="ii-tl cand" data-code="' + p.code + '" title="' + esc(p.name) + ' — not linked yet">' + p.icon + '</span>';
+      }).join('');
+      return '<div class="ii-track-links" data-rec="' + esc(t.recId || '') + '">' + cells + '</div>';
+    }
+
+    function cell(idx, code) {
+      const tr = tbody.querySelector('tr[data-idx="' + idx + '"]');
+      return tr ? tr.querySelector('.ii-track-links .ii-tl[data-code="' + code + '"]') : null;
+    }
+
+    // Throttled resolve pass: for every track with an ISRC and no existing link
+    // on a provider, look the track up by ISRC and, if found, turn the icon into
+    // a coloured "add" link to the resolved URL.
+    async function resolve() {
+      if (resolving) return;
+      resolving = true;
+      const btn = modal.querySelector('#ii-links-btn');
+      if (btn) { btn.disabled = true; btn.dataset.busy = '1'; }
+      try {
+        for (const p of PROV) {
+          for (let idx = 0; idx < RELEASE.tracks.length; idx++) {
+            const t = RELEASE.tracks[idx];
+            const isrc = normalizeIsrc(t.pending) || normalizeIsrc((t.existing || [])[0] || '');
+            if (!t.recId || !isValidIsrc(isrc)) continue;
+            if (linkedUrl(t.recId, p)) continue;           // already linked → leave faded
+            const el = cell(idx, p.code);
+            if (!el || !el.classList.contains('cand')) continue;
+            el.className = 'ii-tl spin'; el.dataset.code = p.code;
+            let url = null;
+            try { url = await p.resolve(isrc); } catch (e) { /* rate-limited / not found */ }
+            const fresh = cell(idx, p.code);
+            if (!fresh) continue;
+            if (url) {
+              const a = document.createElement('a');
+              a.className = 'ii-tl new'; a.dataset.code = p.code;
+              a.href = url; a.target = '_blank'; a.rel = 'noopener';
+              a.style.color = p.color;
+              a.title = p.name + ' — open track (not linked in MB yet)';
+              a.innerHTML = p.icon;
+              fresh.replaceWith(a);
+            } else {
+              fresh.className = 'ii-tl absent'; fresh.dataset.code = p.code;
+            }
+            await sleep(p.code === 'td' ? 350 : 120);       // space out (Tidal is rate-limited)
+          }
+        }
+      } finally {
+        resolving = false;
+        if (btn) { btn.disabled = false; delete btn.dataset.busy; }
+      }
+    }
+
+    return { fetchExisting, stripHtml, resolve, hasData: () => fetched };
+  })();
 
   /* ── render the track table ── */
   function renderTracks() {
@@ -2196,7 +2338,8 @@
         '<td class="ii-pos">' + esc(t.number || t.trackPos) + '</td>' +
         '<td><div class="ii-track-title">' +
           (t.recId ? '<a href="' + MB_ROOT + '/recording/' + t.recId + '" target="_blank" rel="noopener" title="' + esc(t.title) + '">' + esc(t.title) + '</a>' : esc(t.title)) +
-          '</div><div class="ii-track-artist">' + esc(t.artist) + '</div></td>' +
+          '</div><div class="ii-track-artist">' + esc(t.artist) + '</div>' +
+          TrackLinks.stripHtml(t) + '</td>' +
         '<td class="ii-track-dur">' + esc(t.dur) + '</td>' +
         '<td class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval) + '</td>' +
         '<td><div class="ii-inwrap">' +
