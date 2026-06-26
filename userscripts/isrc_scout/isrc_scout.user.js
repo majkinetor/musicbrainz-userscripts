@@ -26,6 +26,7 @@
 // @connect      hdtracks.azurewebsites.net
 // @connect      api.beatport.com
 // @connect      bandcamp.com
+// @connect      music.apple.com
 // @run-at       document-start
 // ==/UserScript==
 
@@ -206,6 +207,8 @@
     hd: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M2 6h2.4v4h4V6h2.4v12H8.4v-5.6h-4V18H2z"/><path d="M12 6h4.2c3 0 5 2.4 5 6s-2 6-5 6H12zm2.4 2.2v7.6h1.6c1.7 0 2.8-1.5 2.8-3.8s-1.1-3.8-2.8-3.8z"/></svg>',
     // Bandcamp: the brand logomark is a parallelogram
     bc: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M2 16.5l5-9h15l-5 9z"/></svg>',
+    // Apple Music: the Apple logomark
+    am: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>',
   };
 
   const mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/)?.[1];
@@ -424,18 +427,27 @@
       display: none; flex-direction: column; font-family: system-ui, sans-serif;
       color: #212529; overflow: hidden !important; }
     #ii-modal.open { display: flex; }
-    #ii-hdr { display: flex; align-items: center; gap: 10px; padding: 11px 16px;
-      background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0; }
-    #ii-hdr h2 { font-size: 15px; font-weight: 700; margin: 0; flex: 1; }
-    #ii-hdr h2 em { color: #6f42c1; font-style: normal; }
-    #ii-hdr h2 .ii-logo { vertical-align: -5px; }
-    #ii-hdr .ii-sub { font-size: 13.5px; color: #6c757d; font-weight: 700; margin-left: 7px; }
-    #ii-help { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
-      width: 21px; height: 21px; border-radius: 50%; border: 1px solid #ccc; color: #999;
-      font-size: 12px; font-weight: 700; text-decoration: none; box-sizing: border-box; }
-    #ii-help:hover { color: #6f42c1; border-color: #b9a3e8; text-decoration: none; }
-    #ii-close { background: none; border: none; font-size: 20px; color: #6c757d; cursor: pointer; line-height: 1; }
-    #ii-close:hover { color: #212529; }
+    /* header: tabs (left) · centered release (Zen) · bulk + config (right) */
+    #ii-hdr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+      padding: 6px 14px 0; background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0; }
+    .ii-tabs { display: flex; gap: 2px; }
+    .ii-tab { background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer;
+      padding: 8px 16px 9px; font: 600 15px system-ui; color: #868e96; display: inline-flex; align-items: center; gap: 8px; }
+    .ii-tab:hover { color: #6c757d; }
+    .ii-tab.on { color: #6f42c1; border-bottom-color: #6f42c1; }
+    .ii-tab-badge { font: 700 10px system-ui; background: #eceff2; color: #6c757d; border-radius: 9px; padding: 1px 6px; }
+    .ii-tab-badge:empty { display: none; }
+    .ii-tab.on .ii-tab-badge { background: #efe9fb; color: #6f42c1; }
+    .ii-zen { text-align: center; padding-bottom: 7px; min-width: 0; }
+    .ii-zen-t { font: 600 12px system-ui; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ii-zen-s { font: 10.5px system-ui; color: #c3c8ce; }
+    .ii-hicons { display: flex; gap: 6px; justify-self: end; padding-bottom: 5px; }
+    .ii-hico { width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid #e3e3e8; border-radius: 6px; background: #fff; color: #6c757d; font-size: 14px; cursor: pointer; }
+    .ii-hico:hover { background: #f1f3f5; color: #6f42c1; border-color: #d6c7ee; }
+    .ii-hico.on { background: #efe9fb; color: #6f42c1; border-color: #d6c7ee; }
+    /* scope visibility — elements tagged .ii-only-isrc / .ii-only-links show with the active tab */
+    #ii-modal.ii-scope-links .ii-only-isrc, #ii-modal.ii-scope-isrc .ii-only-links { display: none !important; }
 
     /* toolbar */
     #ii-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
@@ -465,6 +477,11 @@
     .ii-tbtn.primary { background: #198754; color: #fff; border-color: #198754; }
     .ii-tbtn.primary:hover { background: #157347; }
     .ii-tbtn.ghost { border-color: transparent; }
+    /* #302: a small purple dot marks a provider whose link was pulled from another
+       release in the group (not this release). Same dot on RG-sourced add candidates. */
+    .ii-tbtn.ii-rg, .ii-tl.ii-rg { position: relative; }
+    .ii-tbtn.ii-rg::after, .ii-tl.ii-rg::after { content: ''; position: absolute; top: -3px; right: -3px;
+      width: 7px; height: 7px; border-radius: 50%; background: #6f42c1; border: 1.5px solid #fff; }
     /* In-MB marker (#180): a provider button gets a ring around its icon + a
        brand tint when the release already has that platform's URL in MB; an
        un-tinted/un-ringed button means the link was found by Platform Check. */
@@ -513,18 +530,19 @@
     .ii-track-title a:hover { color: #6f42c1; text-decoration: underline; }
     .ii-track-artist { color: #6c757d; font-size: 11.5px; }
     .ii-track-dur { color: #adb5bd; font-size: 11px; font-family: 'Courier New', monospace; }
-    /* #219 PoC — per-track provider link icons under the artist line.
-       Faded monochrome = recording already links to that provider in MB;
-       full brand colour = the track resolves on the provider but isn't linked yet. */
-    .ii-track-links { display: flex; align-items: center; gap: 7px; margin-top: 3px; min-height: 15px; }
+    /* #219/#301 — provider link icons live in the LINKED / ADD columns. Grey
+       monochrome = already linked on MB; brand colour = resolved + addable. */
+    .ii-tl-linked, .ii-tl-add { display: flex; align-items: center; gap: 9px; min-height: 18px; flex-wrap: wrap; }
+    .ii-tl-add:empty::before, .ii-tl-linked:empty::before { content: '—'; color: #d0d4d9; }
     .ii-tl { display: inline-flex; align-items: center; line-height: 0; text-decoration: none; }
-    .ii-tl svg { width: 15px; height: 15px; display: block; }
-    .ii-tl.linked  { color: #868e96; }                                               /* already on MB → monochrome (solid, not faded) */
-    .ii-tl.linked:hover { color: #495057; }
+    .ii-tl svg { width: 16px; height: 16px; display: block; }
+    .ii-tl.linked  { color: #adb5bd; }                                               /* already on MB → quiet monochrome */
+    .ii-tl.linked:hover { color: #6c757d; }
     .ii-tl.new     { cursor: pointer; }                                              /* resolved, not linked → click to add (brand colour set inline) */
     .ii-tl.new:hover { filter: brightness(1.12); }
-    .ii-tl.cand    { color: #ced4da; opacity: .5; }                                   /* not yet resolved */
-    .ii-tl.spin    { color: #ced4da; opacity: .9; animation: ii-tl-pulse 1s ease-in-out infinite; }
+    .ii-tl.cand    { display: none; }                                               /* not resolved yet → hidden until Find links */
+    .ii-tl.spin    { color: #ced4da; animation: ii-tl-pulse 1s ease-in-out infinite; }
+    .ii-tl.removing { opacity: .35; animation: ii-tl-pulse 1s ease-in-out infinite; }
     .ii-tl.absent  { display: none; }                                                /* track not found on provider */
     @keyframes ii-tl-pulse { 0%,100% { opacity: .35; } 50% { opacity: .9; } }
     .ii-existing { width: 150px; }
@@ -606,6 +624,15 @@
     .ii-pane-x { flex-shrink: 0; width: 19px; height: 19px; line-height: 1; padding: 0; font-size: 13px;
       color: #6c757d; background: #fff; border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer; }
     .ii-pane-x:hover { background: #f1f3f5; color: #212529; border-color: #adb5bd; }
+    /* #301 standard config-window header: icon · name · version · Log · ? Help */
+    .ii-cfg-hdr { margin: -2px 0 4px !important; padding-bottom: 9px; border-bottom: 1px solid #e9ecef; font-size: 14px !important; }
+    .ii-cfg-hdr .ii-logo { vertical-align: -4px; }
+    .ii-cfg-name { font-weight: 700; color: #6f42c1; }
+    .ii-cfg-ver { font: 400 11px system-ui; color: #adb5bd; }
+    .ii-cfg-lnk { font: 600 12px system-ui; color: #6f42c1; text-decoration: none; cursor: pointer;
+      background: none; border: none; padding: 2px 4px; }
+    .ii-cfg-lnk:hover { text-decoration: underline; }
+    .ii-cfg-grp { font: 700 10.5px system-ui; text-transform: uppercase; letter-spacing: .3px; color: #adb5bd; margin: 4px 0 6px; }
     .ii-pane label { display: block; font-size: 11.5px; color: #495057; margin: 6px 0 2px; }
     .ii-pane input[type=text], .ii-pane textarea {
       width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #ced4da;
@@ -832,6 +859,7 @@
   function matchProviderLink(u) {
     let m;
     if ((m = u.match(/^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\/[^?#]+/i))) return { k: 'bandcampUrl', v: m[0] };  // #300: per-track URLs by position
+    if ((m = u.match(/^(https?:\/\/music\.apple\.com\/[a-z]{2}\/album\/(?:[^/?#]+\/)?\d+)/i))) return { k: 'appleUrl', v: m[1] };  // album page ld+json lists every track URL
     if ((m = u.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/)))            return { k: 'spotifyId', v: m[1] };
     if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))             return { k: 'deezerId', v: m[1] };
     if ((m = u.match(/beatport\.com\/release\/[^/]+\/(\d+)/)))                 return { k: 'beatportId', v: m[1] };
@@ -858,12 +886,13 @@
       if (r.status !== 200) { Log.warn('Release group: sibling scan gave ' + r.status); return; }
       const j = JSON.parse(r.responseText || '{}');
       const added = [];
+      RELEASE.rgFrom = RELEASE.rgFrom || {};   // provider field -> { release, title } it was pulled from (#302)
       (j.releases || []).forEach(rel => {
         if (rel.id === mbid) return;
         (rel.relations || []).forEach(rl => {
           const u = rl.url && rl.url.resource; if (!u) return;
           const hit = matchProviderLink(u);
-          if (hit && !RELEASE[hit.k]) { RELEASE[hit.k] = hit.v; added.push(hit.k.replace(/Id|Url$/, '')); }
+          if (hit && !RELEASE[hit.k]) { RELEASE[hit.k] = hit.v; RELEASE.rgFrom[hit.k] = { release: rel.id, title: rel.title || '' }; added.push(hit.k.replace(/Id|Url$/, '')); }
         });
       });
       if (added.length) Log.info('Release group: pulled provider links from sibling releases — ' + [...new Set(added)].join(', '));
@@ -901,7 +930,7 @@
         });
       });
       const rels = data.relations || [];
-      const prov = { deezerId: null, spotifyId: null, beatportId: null, tidalId: null, volumoId: null, hdtracksId: null, bandcampUrl: null };
+      const prov = { deezerId: null, spotifyId: null, beatportId: null, tidalId: null, volumoId: null, hdtracksId: null, bandcampUrl: null, appleUrl: null };
       rels.forEach(rel => {
         const u = rel.url && rel.url.resource;
         if (!u) return;
@@ -933,8 +962,9 @@
       RELEASE = Object.assign({ title: data.title || '', tracks, rgId: rg.id || '', releaseYear, artist }, prov);
       // #302: when enabled, fill missing provider links from sibling releases in the RG.
       if (rgProvidersEnabled() && RELEASE.rgId) await augmentProvidersFromRG(RELEASE.rgId);
-      const linkStr = ['deezer', 'spotify', 'beatport', 'tidal', 'volumo', 'hdtracks', 'bandcamp']
-        .map(k => { const f = k === 'bandcamp' ? 'bandcampUrl' : k + 'Id'; return RELEASE[f] ? k[0].toUpperCase() + k.slice(1) + ' ' + RELEASE[f] : null; }).filter(Boolean).join(', ');
+      const _pf = { bandcamp: 'bandcampUrl', apple: 'appleUrl' };
+      const linkStr = ['deezer', 'spotify', 'beatport', 'tidal', 'volumo', 'hdtracks', 'bandcamp', 'apple']
+        .map(k => { const f = _pf[k] || k + 'Id'; return RELEASE[f] ? k[0].toUpperCase() + k.slice(1) + ' ' + RELEASE[f] : null; }).filter(Boolean).join(', ');
       Log.info('Release "' + RELEASE.title + '"' + (releaseYear ? ' (' + releaseYear + ')' : '') + ': ' + tracks.length + ' track(s), ' +
         tracks.filter(t => !t.existing.length).length + ' missing ISRC' + (linkStr ? '; links: ' + linkStr : ''));
       return RELEASE;
@@ -1199,7 +1229,7 @@
     volumo:   { source: 'Volumo',   idField: 'volumoId',   fetcher: fetchVolumo,   code: 'vo' },
     hdtracks: { source: 'HDtracks', idField: 'hdtracksId', fetcher: fetchHDtracks, code: 'hd' },
   };
-  const _PROV_COLOR = { sx: '#6f42c1', deezer: '#ef5466', spotify: '#1db954', beatport: '#0a8754', tidal: '#1f2d3d', volumo: '#7c4dff', hdtracks: '#e63329', bandcamp: '#1da0c3' };
+  const _PROV_COLOR = { sx: '#6f42c1', deezer: '#ef5466', spotify: '#1db954', beatport: '#0a8754', tidal: '#1f2d3d', volumo: '#7c4dff', hdtracks: '#e63329', bandcamp: '#1da0c3', apple: '#fc3c44' };
   const TRACK_PROV = { sx: { name: 'SoundExchange', short: 'SX', code: 'sx', color: _PROV_COLOR.sx, kind: 'search' } };
   Object.keys(ALBUM_PROVIDERS).forEach(k => {
     const p = ALBUM_PROVIDERS[k];
@@ -1873,19 +1903,30 @@
     modal.addEventListener('click', e => e.stopPropagation());   // clicks inside don't reach the backdrop
     modal.innerHTML = `
       <div id="ii-hdr">
-        <h2><svg class="ii-logo" width="22" height="22" viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/><g fill="none" stroke="#6f42c1" stroke-width="7"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="5" stroke="#b9a3e8"/><circle cx="64" cy="64" r="13" stroke-width="5" stroke="#b9a3e8"/></g><line x1="64" y1="64" x2="64" y2="24" stroke="#6f42c1" stroke-width="7" stroke-linecap="round"/><circle cx="86" cy="50" r="8" fill="#4b2e83"/></svg> <em>ISRC Scout</em><span class="ii-sub" id="ii-rel-sub"></span></h2>
-        <a class="ii-tbtn" id="ii-history" target="_blank" rel="noopener"
-           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
-           title="Your Add/Remove ISRC edits on MusicBrainz">🕓 My ISRC edits</a>
-        <button class="ii-tbtn" id="ii-bulk-toggle" title="Bulk paste / import / export">⇪ Bulk / Export</button>
-        <button class="ii-tbtn" id="ii-log-toggle" title="Activity log">Log</button>
-        <button class="ii-tbtn" id="ii-setup-toggle" title="OAuth setup">⚙︎ Setup</button>
-        <a id="ii-help" href="${SCRIPT_URL}#readme" target="_blank" rel="noopener" title="Open the ISRC Scout README">?</a>
-        <button id="ii-close" title="Close">✕</button>
+        <!-- the two operations on a record: ISRCs and Links -->
+        <div class="ii-tabs">
+          <button class="ii-tab" data-scope="isrc" type="button">ISRCs <span class="ii-tab-badge" id="ii-badge-isrc"></span></button>
+          <button class="ii-tab" data-scope="links" type="button">Links <span class="ii-tab-badge" id="ii-badge-links"></span></button>
+        </div>
+        <!-- centered release / artist (Apollo Zen style) -->
+        <div class="ii-zen"><div class="ii-zen-t" id="ii-rel-title"></div><div class="ii-zen-s" id="ii-rel-sub"></div></div>
+        <!-- only Bulk/Export + config in the header; name/version/Log/Help live in the config window -->
+        <div class="ii-hicons">
+          <button class="ii-hico" id="ii-bulk-toggle" type="button" title="Bulk / Export">▤</button>
+          <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings, log &amp; help">⚙︎</button>
+        </div>
       </div>
 
       <div class="ii-pane" id="ii-setup-pane">
-        <h3><button class="ii-pane-x" title="Close">✕</button>One-time MusicBrainz authorization</h3>
+        <!-- #301: standard config-window header — icon · name · version · Log · ? Help (no ✕) -->
+        <h3 class="ii-cfg-hdr">
+          <svg class="ii-logo" width="18" height="18" viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/><g fill="none" stroke="#6f42c1" stroke-width="7"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="5" stroke="#b9a3e8"/><circle cx="64" cy="64" r="13" stroke-width="5" stroke="#b9a3e8"/></g><line x1="64" y1="64" x2="64" y2="24" stroke="#6f42c1" stroke-width="7" stroke-linecap="round"/><circle cx="86" cy="50" r="8" fill="#4b2e83"/></svg>
+          <span class="ii-cfg-name">ISRC Scout</span><span class="ii-cfg-ver">v${SCRIPT_VERSION}</span>
+          <span style="margin-left:auto"></span>
+          <button class="ii-cfg-lnk" id="ii-log-link" type="button" title="Activity log">Log</button>
+          <a class="ii-cfg-lnk" href="${SCRIPT_URL}#readme" target="_blank" rel="noopener" title="Open the ISRC Scout README">? Help</a>
+        </h3>
+        <div class="ii-cfg-grp">MusicBrainz</div>
         <div class="ii-authstate" id="ii-auth-state"></div>
         <div class="row" style="margin-top:8px; flex-wrap:nowrap">
           <button class="ii-tbtn primary" id="ii-authorize" style="flex-shrink:0">Authorize</button>
@@ -1896,18 +1937,23 @@
           Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
           If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
         </div>
-        <div style="margin-top:14px; padding-top:11px; border-top:1px solid #eee">
+        <div class="ii-cfg-grp" style="margin-top:16px">Settings</div>
+        <div>
           <label style="display:block; font-size:11.5px; color:#495057; margin-bottom:5px; font-weight:600">Import-source buttons</label>
           <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; margin-right:16px; cursor:pointer"><input type="checkbox" id="ii-show-icons">Show icons</label>
           <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; cursor:pointer"><input type="checkbox" id="ii-show-text">Show text</label>
         </div>
-        <div style="margin-top:14px; padding-top:11px; border-top:1px solid #eee">
+        <div style="margin-top:12px">
           <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
             <input type="checkbox" id="ii-rg-providers" style="margin-top:2px">
             <span>Use providers from the whole release group<br>
               <span style="color:#868e96; font-size:11px">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group — recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span>
           </label>
         </div>
+        <div class="ii-cfg-grp" style="margin-top:16px">More</div>
+        <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
+           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
+           title="Your Add/Remove ISRC edits on MusicBrainz">🕓 My ISRC edits on MusicBrainz</a>
       </div>
 
       <div class="ii-pane" id="ii-bulk-pane">
@@ -1942,7 +1988,7 @@
       </div>
 
       <div id="ii-tools">
-        <span class="ii-sx-group" id="ii-sx-group">
+        <span class="ii-sx-group ii-only-isrc" id="ii-sx-group">
           <button class="ii-tbtn sx" id="ii-sx-all" title="Search every track on SoundExchange">⟳ SoundExchange</button>
           <button class="ii-exact-toggle" id="ii-exact-toggle" type="button" title="Exact-match options" aria-expanded="false">exact <span class="ii-exact-car">▾</span></button>
           <span class="ii-exact-set" id="ii-exact-set" title="Wrap the SoundExchange query in quotes for an exact match">
@@ -1951,20 +1997,19 @@
             <label><input type="checkbox" id="ii-ex-release">release</label>
           </span>
         </span>
-        <button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from Deezer"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button>
-        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from Spotify"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
-        <button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
-        <button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
-        <button class="ii-tbtn vo" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
-        <button class="ii-tbtn hd" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
-        <span class="ii-urladd" id="ii-urladd">
+        <button class="ii-tbtn dz ii-only-isrc" id="ii-dz-all" title="Import ISRCs from Deezer"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button>
+        <button class="ii-tbtn sp ii-only-isrc" id="ii-sp-all" title="Import ISRCs from Spotify"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
+        <button class="ii-tbtn bp ii-only-isrc" id="ii-bp-all" title="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
+        <button class="ii-tbtn td ii-only-isrc" id="ii-td-all" title="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
+        <button class="ii-tbtn vo ii-only-isrc" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
+        <button class="ii-tbtn hd ii-only-isrc" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
+        <span class="ii-urladd ii-only-isrc" id="ii-urladd">
           <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks) — auto-detected and imported">+</button>
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
+        <button class="ii-tbtn sx ii-only-links" id="ii-links-btn" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable">🔗 Find links</button>
         <span class="ii-prog" id="ii-prog"></span>
-        <button class="ii-tbtn" id="ii-links-btn" title="#219: resolve each track on Deezer / Tidal by ISRC and show per-track link icons under the title — grey = already linked in MB, colour = found but not linked yet">🔗 Track links</button>
-        <button class="ii-tbtn" id="ii-addlinks-btn" style="display:none" title="Add every resolved (coloured) streaming link to MusicBrainz as a recording relationship, in one background batch">➕ Add links</button>
-        <button class="ii-tbtn ghost" id="ii-clear-pending" title="Clear all entered ISRCs">Clear</button>
+        <button class="ii-tbtn ghost ii-only-isrc" id="ii-clear-pending" title="Clear all entered ISRCs">Clear</button>
       </div>
 
       <!-- floating provider menu (#181) — opened from any per-track button's ▾ -->
@@ -1972,23 +2017,25 @@
 
       <div id="ii-body">
         <table id="ii-table">
-          <colgroup>
+          <colgroup id="ii-colgroup">
             <col style="width:32px"><col><col style="width:44px"><col style="width:124px"><col style="width:560px">
           </colgroup>
           <thead><tr>
             <th>#</th><th>Track</th><th></th>
-            <th><label class="ii-ex-all-lbl" title="Select all existing ISRCs for removal"><input type="checkbox" id="ii-ex-all">Existing</label></th>
-            <th>New ISRC</th>
+            <th><label class="ii-ex-all-lbl ii-only-isrc" title="Select all existing ISRCs for removal"><input type="checkbox" id="ii-ex-all">Existing</label><span class="ii-only-links">Linked</span></th>
+            <th><span class="ii-only-isrc">New ISRC</span><span class="ii-only-links">Add</span></th>
           </tr></thead>
           <tbody id="ii-tbody"></tbody>
         </table>
       </div>
 
       <div id="ii-foot">
-        <span class="ii-summary" id="ii-summary"></span>
-        <button class="ii-tbtn" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete checked</button>
+        <span class="ii-summary ii-only-isrc" id="ii-summary"></span>
+        <span class="ii-summary ii-only-links" id="ii-summary-links"></span>
+        <button class="ii-tbtn ii-only-isrc" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete checked</button>
         <button class="ii-tbtn ghost" id="ii-note-toggle" title="Edit note">✎ Edit note</button>
-        <button class="ii-tbtn primary" id="ii-submit">Submit to MusicBrainz</button>
+        <button class="ii-tbtn primary ii-only-isrc" id="ii-submit">Submit to MusicBrainz</button>
+        <button class="ii-tbtn primary ii-only-links" id="ii-addlinks-btn" style="display:none" title="Add every resolved (coloured) streaming link to MusicBrainz in one background batch">➕ Add links</button>
       </div>
     `;
 
@@ -2001,7 +2048,30 @@
     progEl    = modal.querySelector('#ii-prog');
     submitBtn = modal.querySelector('#ii-submit');
 
-    modal.querySelector('#ii-close').addEventListener('click', closeModal);
+    // scope tabs (#301): the two operations on a record
+    modal.querySelectorAll('.ii-tab').forEach(t => t.addEventListener('click', () => setScope(t.dataset.scope)));
+    // #301: remove links from the LINKED column (symmetric to Add) — right-click
+    // removes one, Ctrl+right-click removes all on the track, Alt+right-click removes
+    // the provider everywhere. Left-click just opens the link.
+    tbody.addEventListener('contextmenu', e => {
+      const a = e.target.closest('.ii-tl-linked .ii-tl.linked'); if (!a) return;
+      e.preventDefault();
+      const tr = a.closest('tr[data-idx]'); if (!tr) return;
+      const idx = +tr.dataset.idx;
+      if (e.ctrlKey || e.metaKey) TrackLinks.removeTrack(idx);
+      else if (e.altKey) TrackLinks.removeProvider(a.dataset.code);
+      else TrackLinks.removeOne(idx, a.dataset.code);
+    });
+    // Esc closes the modal (no ✕ in the header) — but first let an open pane close,
+    // and ignore it while typing in a field.
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !modal.classList.contains('open')) return;
+      const openPane = modal.querySelector('.ii-pane.open');
+      if (openPane) { openPane.classList.remove('open'); return; }
+      const a = document.activeElement;
+      if (a && /^(INPUT|TEXTAREA)$/.test(a.tagName)) return;
+      closeModal();
+    });
     modal.querySelector('#ii-setup-toggle').addEventListener('click', () => togglePane('ii-setup-pane'));
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-clear-pending').addEventListener('click', clearPending);
@@ -2020,9 +2090,9 @@
       closeProvMenu();
     });
 
-    // log pane
+    // log pane — opened from the config window's "Log" link (#301)
     Log.setPane(modal.querySelector('#ii-log-out'));
-    modal.querySelector('#ii-log-toggle').addEventListener('click', () => togglePane('ii-log-pane'));
+    modal.querySelector('#ii-log-link').addEventListener('click', () => togglePane('ii-log-pane'));
     modal.querySelector('#ii-log-copy').addEventListener('click', () => {
       // Wrap in a collapsed <details> + fenced block so it pastes into a GitHub
       // issue/comment as a tidy, foldable log rather than a wall of text.
@@ -2168,6 +2238,21 @@
     });
   }
 
+  // #301: the active scope (ISRCs / Links) — drives column labels, toolbar, footer
+  // (via .ii-only-isrc / .ii-only-links visibility) and the table column widths.
+  let scope = store.get('scope', 'isrc') === 'links' ? 'links' : 'isrc';
+  function setScope(s) {
+    scope = (s === 'links') ? 'links' : 'isrc';
+    store.set('scope', scope);
+    modal.classList.toggle('ii-scope-isrc', scope === 'isrc');
+    modal.classList.toggle('ii-scope-links', scope === 'links');
+    modal.querySelectorAll('.ii-tab').forEach(t => t.classList.toggle('on', t.dataset.scope === scope));
+    const cg = modal.querySelector('#ii-colgroup');
+    if (cg) cg.innerHTML = (scope === 'links')
+      ? '<col style="width:32px"><col><col style="width:44px"><col style="width:150px"><col style="width:230px">'
+      : '<col style="width:32px"><col><col style="width:44px"><col style="width:124px"><col style="width:560px">';
+  }
+
   // Some tablets render MusicBrainz's desktop layout wider than the browser's
   // layout viewport, so the page overflows and the browser zooms-to-fit. A
   // position:fixed modal is then sized/anchored to the (narrow) layout viewport
@@ -2202,10 +2287,11 @@
       window.visualViewport.addEventListener('scroll', _vvSync);
     }
     refreshAuthState();
+    setScope(scope);   // #301: apply the active-scope classes + column widths before render
     if (!RELEASE) {
       tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#adb5bd">Loading release…</td></tr>';
       fetchRelease()
-        .then(renderTracks)   // existing track links ride along on the release fetch (recording-level-rels), so the strip renders linked immediately
+        .then(renderTracks)   // existing track links ride along on the release fetch (recording-level-rels)
         .catch(err => {
           tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:#dc3545">Failed to load release: ' + esc(err.message) + '</td></tr>';
         });
@@ -2287,6 +2373,12 @@
         album: true, urlKey: 'bandcampUrl',
         test: u => /\.bandcamp\.com\/track\//i.test(u),
         resolve: (isrc, t, idx) => bcResolve(t, idx) },
+      // Apple Music (#like Bandcamp): the album page's ld+json lists every track URL,
+      // matched by position. Subscription streaming → linkType 979.
+      { code: 'am', name: 'Apple Music', color: _PROV_COLOR.apple, icon: SRC_ICON.am, linkTypeID: 979,
+        album: true, urlKey: 'appleUrl',
+        test: u => /music\.apple\.com\/[a-z]{2}\/(?:song\/|album\/[^"\s]*[?&]i=)/i.test(u),
+        resolve: (isrc, t, idx) => amResolve(t, idx) },
     ];
 
     let resolving = false;
@@ -2325,6 +2417,32 @@
       return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
     }
 
+    // Apple Music album page (fetched once): ordered [{title, url}] from its ld+json.
+    let _amList = null, _amPromise = null;
+    async function amAlbum() {
+      if (_amList) return _amList;
+      if (_amPromise) return _amPromise;
+      const url = RELEASE && RELEASE.appleUrl;
+      if (!url) { _amList = []; return _amList; }
+      _amPromise = (async () => {
+        const r = await gmGet(url, { 'Accept': 'text/html' });
+        if (r.status !== 200) return [];
+        const m = (r.responseText || '').match(/<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i);
+        if (!m) return [];
+        let j; try { j = JSON.parse(m[1]); } catch (e) { return []; }
+        return (j.tracks || []).map(t => ({ title: t.name || '', url: t.url || '' })).filter(t => t.url);
+      })();
+      _amList = await _amPromise.catch(() => []); _amPromise = null;
+      return _amList;
+    }
+    async function amResolve(t, idx) {
+      const list = await amAlbum();
+      const e = list[idx];
+      if (!e) return null;
+      const a = _nrm(e.title), b = _nrm(t.title);
+      return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
+    }
+
     // Which providers to show for a track: by-ISRC ones always; album ones (Bandcamp)
     // only when the release has that album link (resolvable) or the recording is
     // already linked to it.
@@ -2332,26 +2450,31 @@
       return PROV.filter(p => !p.album || linkedUrl(t, p) || (RELEASE && RELEASE[p.urlKey]));
     }
 
-    // Build the strip for one track. Already-linked providers paint immediately
-    // (monochrome); the rest start as faint candidates and are filled by resolve().
-    function stripHtml(t) {
-      const cells = providersFor(t).map(p => {
-        const ex = t.recId ? linkedUrl(t, p) : null;
-        if (ex) return '<a class="ii-tl linked" data-code="' + p.code + '" href="' + esc(ex) + '" target="_blank" rel="noopener" ' +
-          'title="' + esc(p.name) + ' — already linked on MusicBrainz">' + p.icon + '</a>';
-        return '<span class="ii-tl cand" data-code="' + p.code + '" title="' + esc(p.name) + ' — not linked yet">' + p.icon + '</span>';
-      }).join('');
-      return '<div class="ii-track-links" data-rec="' + esc(t.recId || '') + '">' + cells + '</div>';
+    // #301: two columns. LINKED = monochrome icons for providers already linked on
+    // MB; ADD = a hidden candidate slot per not-yet-linked provider (Find links fills
+    // them, and an added one moves over to the LINKED column).
+    function linkedIcon(p, url) {
+      return '<a class="ii-tl linked" data-code="' + p.code + '" style="color:' + p.color + '" href="' + esc(url) + '" target="_blank" rel="noopener" ' +
+        'title="' + esc(p.name) + ' — linked on MusicBrainz · left-click opens · right-click removes · Ctrl+right-click removes all on this track · Alt+right-click removes ' + esc(p.name) + ' on every track">' + p.icon + '</a>';
+    }
+    function linkedHtml(t) {
+      const cells = providersFor(t).map(p => { const ex = t.recId ? linkedUrl(t, p) : null; return ex ? linkedIcon(p, ex) : ''; }).filter(Boolean).join('');
+      return '<div class="ii-tl-linked" data-rec="' + esc(t.recId || '') + '">' + cells + '</div>';
+    }
+    function addHtml(t) {
+      const cells = providersFor(t).map(p =>
+        (!t.recId || linkedUrl(t, p)) ? '' : '<span class="ii-tl cand" data-code="' + p.code + '" title="' + esc(p.name) + '">' + p.icon + '</span>'
+      ).filter(Boolean).join('');
+      return '<div class="ii-tl-add" data-rec="' + esc(t.recId || '') + '">' + cells + '</div>';
     }
 
-    function cell(idx, code) {
-      const tr = tbody.querySelector('tr[data-idx="' + idx + '"]');
-      return tr ? tr.querySelector('.ii-track-links .ii-tl[data-code="' + code + '"]') : null;
-    }
+    const addBox = idx => { const tr = tbody.querySelector('tr[data-idx="' + idx + '"]'); return tr ? tr.querySelector('.ii-tl-add') : null; };
+    const linkedBox = idx => { const tr = tbody.querySelector('tr[data-idx="' + idx + '"]'); return tr ? tr.querySelector('.ii-tl-linked') : null; };
+    function cell(idx, code) { const c = addBox(idx); return c ? c.querySelector('.ii-tl[data-code="' + code + '"]') : null; }
 
-    // Replace a row's icon with a coloured "add" candidate: a link to the resolved
-    // provider URL whose click ADDS the relationship (A). Ctrl/middle-click still
-    // opens the provider page.
+    // Replace a row's ADD-column slot with a coloured "add" candidate: a link to the
+    // resolved provider URL. Left-click opens the track; RIGHT-click adds the
+    // relationship in the background.
     function makeNew(idx, p, url) {
       const el = cell(idx, p.code);
       if (!el) return;
@@ -2359,29 +2482,34 @@
       a.className = 'ii-tl new'; a.dataset.code = p.code;
       a.href = url; a.target = '_blank'; a.rel = 'noopener';
       a.style.color = p.color;
-      a.title = p.name + ' — click to add this link to MusicBrainz  (ctrl-click to open the track)';
+      // #302: mark candidates resolved via an album link pulled from a sibling release
+      const rg = p.urlKey && RELEASE.rgFrom && RELEASE.rgFrom[p.urlKey];
+      if (rg) a.classList.add('ii-rg');
+      a.title = p.name + ' — left-click opens · right-click adds this · Ctrl+right-click adds all links on this track · Alt+right-click adds ' + p.name + ' on every track' +
+        (rg ? '  ·  ' + p.name + ' album link from another release in this group' : '');
       a.innerHTML = p.icon;
-      a.addEventListener('click', e => {
-        if (e.ctrlKey || e.metaKey || e.button === 1) return;   // let ctrl/middle-click open the provider page
+      // all add actions on right-click (left-click just opens the track); modifiers
+      // scope it: Ctrl/⌘ = whole track, Alt = this provider across every track.
+      a.addEventListener('contextmenu', e => {
         e.preventDefault();
-        addOne(idx, p, url);
+        if (e.ctrlKey || e.metaKey) addTrack(idx);
+        else if (e.altKey) addProvider(p.code);
+        else addOne(idx, p, url);
       });
       el.replaceWith(a);
     }
 
-    // Turn an icon into the monochrome "already linked" state and record the URL
-    // on the track so it won't be offered again.
+    // On a successful add: drop the candidate from the ADD column and add a
+    // monochrome icon to the LINKED column; record the URL on the track.
     function markLinked(idx, p, url) {
       const t = RELEASE.tracks[idx];
       if (t && !(t.recUrls || []).includes(url)) (t.recUrls = t.recUrls || []).push(url);
-      const el = cell(idx, p.code);
-      if (!el) return;
-      const a = document.createElement('a');
-      a.className = 'ii-tl linked'; a.dataset.code = p.code;
-      a.href = url; a.target = '_blank'; a.rel = 'noopener';
-      a.title = p.name + ' — linked on MusicBrainz';
-      a.innerHTML = p.icon;
-      el.replaceWith(a);
+      const el = cell(idx, p.code); if (el) el.remove();
+      const lb = linkedBox(idx);
+      if (lb && !lb.querySelector('.ii-tl[data-code="' + p.code + '"]')) {
+        const tmp = document.createElement('div'); tmp.innerHTML = linkedIcon(p, url);
+        lb.appendChild(tmp.firstChild);
+      }
     }
 
     // Same shape as ISRC Scout's standard edit note (noteHeader + Release line +
@@ -2424,52 +2552,125 @@
       return j;
     }
 
-    // (A) add a single link from its row icon
-    async function addOne(idx, p, url) {
-      const el = cell(idx, p.code);
-      if (!el || el.classList.contains('spin')) return;
-      el.className = 'ii-tl spin'; el.dataset.code = p.code;
-      try {
-        await submitRels([{ recGid: RELEASE.tracks[idx].recId, url, linkTypeID: p.linkTypeID }], noteFor([p]));
-        Log.ok ? Log.ok('Linked ' + p.name + ': ' + url) : Log.info('Linked ' + p.name + ': ' + url);
-        markLinked(idx, p, url);
-      } catch (e) {
-        Log.err('Add ' + p.name + ' link failed: ' + errText(e));
-        makeNew(idx, p, url);   // restore the add affordance
-      }
-      updateAddBtn();
-    }
-
-    // (B) add every resolved-but-unlinked candidate across the release in one batch
-    async function addAll() {
+    // Collect resolved "new" candidates matching a selector into add items.
+    function newItems(selector) {
       const items = [];
-      modal.querySelectorAll('.ii-track-links .ii-tl.new').forEach(a => {
+      modal.querySelectorAll(selector).forEach(a => {
         const p = PROV.find(x => x.code === a.dataset.code);
         const tr = a.closest('tr[data-idx]');
         if (p && tr) items.push({ idx: +tr.dataset.idx, p, url: a.getAttribute('href') });
       });
+      return items;
+    }
+    // Submit a batch of add items in one POST; spin → linked, or restore on failure.
+    async function addBatch(items, confirmMsg) {
       if (!items.length) return;
-      if (!confirm('Add ' + items.length + ' streaming link' + (items.length > 1 ? 's' : '') + ' to MusicBrainz as recording relationships?')) return;
-      const btn = modal.querySelector('#ii-addlinks-btn');
-      if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
+      if (confirmMsg && !confirm(confirmMsg)) return;
       items.forEach(it => { const el = cell(it.idx, it.p.code); if (el) { el.className = 'ii-tl spin'; el.dataset.code = it.p.code; } });
       try {
         await submitRels(items.map(it => ({ recGid: RELEASE.tracks[it.idx].recId, url: it.url, linkTypeID: it.p.linkTypeID })), noteFor(items.map(it => it.p)));
         items.forEach(it => markLinked(it.idx, it.p, it.url));
-        Log.info('Linked ' + items.length + ' track(s) on MusicBrainz');
+        Log.info('Linked ' + items.length + ' track-link' + (items.length === 1 ? '' : 's') + ' on MusicBrainz');
       } catch (e) {
         Log.err('Add links failed: ' + errText(e));
-        items.forEach(it => makeNew(it.idx, it.p, it.url));   // restore all
+        items.forEach(it => makeNew(it.idx, it.p, it.url));   // restore the add affordances
       }
-      if (btn) btn.disabled = false;
       updateAddBtn();
     }
+    // right-click a candidate → add just that one
+    const addOne = (idx, p, url) => addBatch([{ idx, p, url }]);
+    // ctrl-click → add every resolved link for THIS track
+    const addTrack = idx => addBatch(newItems('tr[data-idx="' + idx + '"] .ii-tl-add .ii-tl.new'));
+    // alt-click → add every resolved link for THIS provider across all tracks
+    const addProvider = code => addBatch(newItems('.ii-tl-add .ii-tl.new[data-code="' + code + '"]'));
+    // footer button → add everything resolved (no confirm — auto-applied edits)
+    async function addAll() {
+      const items = newItems('.ii-tl-add .ii-tl.new');
+      if (!items.length) return;
+      const btn = modal.querySelector('#ii-addlinks-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
+      await addBatch(items);
+      if (btn) btn.disabled = false;
+    }
+
+    // ── DELETE (symmetric to add). Removing a relationship needs its internal id,
+    // which WS2 doesn't expose — fetch it from /ws/js/entity (the rel editor's API)
+    // and submit an EDIT_RELATIONSHIP_DELETE (91). ──
+    const _relCache = {};
+    async function recUrlRels(recGid) {
+      if (_relCache[recGid]) return _relCache[recGid];
+      const r = await fetch(MB_ROOT + '/ws/js/entity/' + recGid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } });
+      if (!r.ok) throw new Error('rels ' + r.status);
+      const j = await r.json();
+      return (_relCache[recGid] = (j.relationships || []).filter(x => x.target_type === 'url'));
+    }
+    function delNote(provs) {
+      const counts = {}; provs.forEach(p => { counts[p.name] = (counts[p.name] || 0) + 1; });
+      const breakdown = Object.keys(counts).sort().map(n => n + ' (' + counts[n] + ')').join(', ');
+      return [noteHeader(), '', 'Release: ' + MB_ROOT + '/release/' + mbid,
+        'Removed ' + provs.length + ' streaming link' + (provs.length === 1 ? '' : 's') + (breakdown ? ': ' + breakdown : '')].join('\n');
+    }
+    async function postEdits(edits, note) {
+      const r = await fetch(MB_ROOT + '/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note || '', makeVotable: 0 }) });
+      const text = await r.text().catch(() => ''); let j = null; try { j = JSON.parse(text); } catch (e) {}
+      if (!r.ok || (j && j.error)) { const m = (j && (j.error.message || j.error)) || ('HTTP ' + r.status); throw new Error((typeof m === 'string' ? m : JSON.stringify(m)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)); }
+      return j;
+    }
+    function linkedIcons(selector) {
+      const out = [];
+      modal.querySelectorAll(selector).forEach(a => { const p = PROV.find(x => x.code === a.dataset.code); const tr = a.closest('tr[data-idx]'); if (p && tr) out.push({ idx: +tr.dataset.idx, p, url: a.getAttribute('href'), el: a }); });
+      return out;
+    }
+    async function removeBatch(icons) {
+      if (!icons.length) return;
+      icons.forEach(ic => ic.el.classList.add('removing'));
+      try {
+        const edits = [], used = [];
+        for (const ic of icons) {
+          const t = RELEASE.tracks[ic.idx]; if (!t.recId) continue;
+          const rels = await recUrlRels(t.recId);
+          const rel = rels.find(r => (r.target && r.target.name) === ic.url) || rels.find(r => ic.p.test((r.target && r.target.name) || '') && r.linkTypeID === ic.p.linkTypeID);
+          if (!rel) { Log.warn('No ' + ic.p.name + ' relationship found to remove on "' + (t.title || t.recId) + '"'); continue; }
+          edits.push({ edit_type: 91, id: rel.id, linkTypeID: rel.linkTypeID, attributes: [], entities: [{ entityType: 'recording', gid: t.recId }, { entityType: 'url', gid: rel.target.gid, name: rel.target.name }] });
+          used.push(ic);
+        }
+        if (!edits.length) { icons.forEach(ic => ic.el.classList.remove('removing')); return; }
+        await postEdits(edits, delNote(used.map(ic => ic.p)));
+        used.forEach(ic => {
+          const t = RELEASE.tracks[ic.idx]; if (t) { t.recUrls = (t.recUrls || []).filter(u => u !== ic.url); delete _relCache[t.recId]; }
+          ic.el.remove();
+          const ab = addBox(ic.idx);   // re-offer as a hidden Add candidate so Find links can resolve it again
+          if (ab && !ab.querySelector('.ii-tl[data-code="' + ic.p.code + '"]')) { const s = document.createElement('span'); s.className = 'ii-tl cand'; s.dataset.code = ic.p.code; s.title = ic.p.name; s.innerHTML = ic.p.icon; ab.appendChild(s); }
+        });
+        Log.info('Removed ' + used.length + ' link' + (used.length === 1 ? '' : 's') + ' on MusicBrainz');
+      } catch (e) { Log.err('Remove links failed: ' + errText(e)); icons.forEach(ic => ic.el.classList.remove('removing')); }
+      updateAddBtn();
+    }
+    const removeOne = (idx, code) => removeBatch(linkedIcons('tr[data-idx="' + idx + '"] .ii-tl-linked .ii-tl.linked[data-code="' + code + '"]'));
+    const removeTrack = idx => removeBatch(linkedIcons('tr[data-idx="' + idx + '"] .ii-tl-linked .ii-tl.linked'));
+    const removeProvider = code => removeBatch(linkedIcons('.ii-tl-linked .ii-tl.linked[data-code="' + code + '"]'));
 
     // Show/label the toolbar "Add N links" button based on resolved candidates.
+    // A track is "missing" links when it has none of our providers linked
+    // (at least one link → not missing) — parallels the ISRC "N missing" badge.
+    function missingCount() {
+      let n = 0;
+      (RELEASE ? RELEASE.tracks : []).forEach(t => { if (t.recId && !providersFor(t).some(p => linkedUrl(t, p))) n++; });
+      return n;
+    }
     function updateAddBtn() {
+      const m = missingCount();
+      const badge = modal.querySelector('#ii-badge-links');   // tab badge = tracks with no link
+      if (badge) badge.textContent = m ? (m + ' missing') : '';
+      const n = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;   // resolved + addable now
+      const linked = modal.querySelectorAll('.ii-tl-linked .ii-tl.linked').length;
+      const total = RELEASE ? RELEASE.tracks.length : 0;
+      const sum = modal.querySelector('#ii-summary-links');   // #301: Links-scope status bar
+      if (sum) sum.innerHTML = '<b>' + total + '</b> tracks · <b>' + linked + '</b> link' + (linked === 1 ? '' : 's') +
+        (m ? ' · <span style="color:#fd7e14">' + m + ' track' + (m === 1 ? '' : 's') + ' with none</span>' : '') +
+        (n ? ' · <span style="color:#198754">' + n + ' to add</span>' : '');
       const btn = modal.querySelector('#ii-addlinks-btn');
       if (!btn) return;
-      const n = modal.querySelectorAll('.ii-track-links .ii-tl.new').length;
       btn.style.display = n ? '' : 'none';
       btn.textContent = '➕ Add ' + n + ' link' + (n === 1 ? '' : 's');
       btn.disabled = !n;
@@ -2511,30 +2712,35 @@
       }
     }
 
-    return { stripHtml, resolve, addAll };
+    return { linkedHtml, addHtml, resolve, addAll, refresh: updateAddBtn, removeOne, removeTrack, removeProvider };
   })();
 
   /* ── render the track table ── */
   function renderTracks() {
-    modal.querySelector('#ii-rel-sub').textContent =
-      RELEASE.title ? '· ' + [RELEASE.title, RELEASE.releaseYear, RELEASE.artist].filter(Boolean).join(' · ') : '';
+    // #301: release title centered (Zen), artist + year on the line below
+    modal.querySelector('#ii-rel-title').textContent = RELEASE.title || '';
+    modal.querySelector('#ii-rel-sub').textContent = [RELEASE.artist, RELEASE.releaseYear].filter(Boolean).join(' · ');
     // Provider buttons (#180): show a provider only when the release has its
     // link in MB OR Platform Check found one. MB-linked buttons are marked
     // (ring + brand tint via .ii-mb); an unmarked button = a PC-found link.
-    [['Deezer', 'ii-dz-all', RELEASE.deezerId],
-     ['Spotify', 'ii-sp-all', RELEASE.spotifyId],
-     ['Beatport', 'ii-bp-all', RELEASE.beatportId],
-     ['Tidal', 'ii-td-all', RELEASE.tidalId],
-     ['Volumo', 'ii-vo-all', RELEASE.volumoId],
-     ['HDtracks', 'ii-hd-all', RELEASE.hdtracksId]].forEach(([source, id, mbId]) => {
+    [['Deezer', 'ii-dz-all', 'deezerId'],
+     ['Spotify', 'ii-sp-all', 'spotifyId'],
+     ['Beatport', 'ii-bp-all', 'beatportId'],
+     ['Tidal', 'ii-td-all', 'tidalId'],
+     ['Volumo', 'ii-vo-all', 'volumoId'],
+     ['HDtracks', 'ii-hd-all', 'hdtracksId']].forEach(([source, id, field]) => {
       const btn = modal.querySelector('#' + id);
+      const mbId = RELEASE[field];
       // Spotify imports only via its MB-linked album (ISRC Hunt resolves the
       // release FROM the URL), so a PC-only Spotify link is not usable (#180).
       const hasPc = source !== 'Spotify' && !!platformCheckUrl(source);
+      const rg = RELEASE.rgFrom && RELEASE.rgFrom[field];   // #302: pulled from a sibling release in the RG
       btn.style.display = (mbId || hasPc) ? '' : 'none';
       btn.classList.toggle('ii-mb', !!mbId);
+      btn.classList.toggle('ii-rg', !!rg);
       btn.disabled = false;
-      btn.title = mbId ? ('Import from ' + source + ' (linked in MusicBrainz)')
+      btn.title = rg ? ('Import from ' + source + ' (link from another release in this group' + (rg.title ? ': ' + rg.title : '') + ')')
+        : mbId ? ('Import from ' + source + ' (linked in MusicBrainz)')
         : hasPc ? ('Import from ' + source + ' (link found by Platform Check — not yet in MB)')
         : ('No ' + source + ' link');
     });
@@ -2555,11 +2761,14 @@
         '<td class="ii-pos">' + esc(t.number || t.trackPos) + '</td>' +
         '<td><div class="ii-track-title">' +
           (t.recId ? '<a href="' + MB_ROOT + '/recording/' + t.recId + '" target="_blank" rel="noopener" title="' + esc(t.title) + '">' + esc(t.title) + '</a>' : esc(t.title)) +
-          '</div><div class="ii-track-artist">' + esc(t.artist) + '</div>' +
-          TrackLinks.stripHtml(t) + '</td>' +
+          '</div><div class="ii-track-artist">' + esc(t.artist) + '</div></td>' +
         '<td class="ii-track-dur">' + esc(t.dur) + '</td>' +
-        '<td class="ii-existing">' + existingHtml(t.existing, t.pendingRemoval) + '</td>' +
-        '<td><div class="ii-inwrap">' +
+        // col 4 — Existing ISRC (ISRC scope) / Linked providers (Links scope)
+        '<td><div class="ii-existing ii-only-isrc">' + existingHtml(t.existing, t.pendingRemoval) + '</div>' +
+          '<div class="ii-only-links">' + TrackLinks.linkedHtml(t) + '</div></td>' +
+        // col 5 — New ISRC input + SoundExchange candidates (ISRC scope) / Add (Links scope).
+        // .ii-cands is a sibling of .ii-inwrap (full-width, under the input), NOT inside it.
+        '<td><div class="ii-only-isrc"><div class="ii-inwrap">' +
           '<div class="ii-input-box">' +
             '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
             '<button class="ii-clear" type="button" tabindex="-1" title="Clear this field">×</button>' +
@@ -2571,7 +2780,8 @@
             '<button class="ii-sxprov" type="button" tabindex="-1" title="Choose the ISRC provider for all tracks">▾</button>' +
           '</span>' +
           '<span class="ii-lookup"></span>' +
-          '</div><div class="ii-cands"></div></td>';
+          '</div><div class="ii-cands"></div></div>' +
+          '<div class="ii-only-links">' + TrackLinks.addHtml(t) + '</div></td>';
       const input = tr.querySelector('.ii-input');
       tr.querySelector('.ii-clear').addEventListener('click', () => clearRow(idx));
       input.addEventListener('input', () => {
@@ -2629,6 +2839,7 @@
       tr.querySelector('.ii-cands').appendChild(rf);
     });
     updateSummary();
+    TrackLinks.refresh();   // #301: set the Links tab "N missing" badge
   }
   function existingHtml(arr, pending) {
     if (!arr || !arr.length) return '<span class="none">none</span>';
@@ -2844,6 +3055,8 @@
       if (dupSet.has(v)) { crossDup++; return; }            // same ISRC on another recording → blocked
       valid++;
     });
+    const isrcBadge = modal.querySelector('#ii-badge-isrc');   // #301: tab count
+    if (isrcBadge) isrcBadge.textContent = missing ? (missing + ' missing') : '';
     const seq = iterativeSequence();
     summaryEl.innerHTML =
       '<b>' + RELEASE.tracks.length + '</b> tracks' +
