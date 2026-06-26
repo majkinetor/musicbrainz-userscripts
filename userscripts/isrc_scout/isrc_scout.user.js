@@ -429,7 +429,7 @@
       padding: 6px 14px 0; background: #f8f9fa; border-bottom: 1px solid #dee2e6; flex-shrink: 0; }
     .ii-tabs { display: flex; gap: 2px; }
     .ii-tab { background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer;
-      padding: 8px 14px 9px; font: 600 12.5px system-ui; color: #868e96; display: inline-flex; align-items: center; gap: 7px; }
+      padding: 8px 16px 9px; font: 600 15px system-ui; color: #868e96; display: inline-flex; align-items: center; gap: 8px; }
     .ii-tab:hover { color: #6c757d; }
     .ii-tab.on { color: #6f42c1; border-bottom-color: #6f42c1; }
     .ii-tab-badge { font: 700 10px system-ui; background: #eceff2; color: #6c757d; border-radius: 9px; padding: 1px 6px; }
@@ -539,6 +539,7 @@
     .ii-tl.new:hover { filter: brightness(1.12); }
     .ii-tl.cand    { display: none; }                                               /* not resolved yet → hidden until Find links */
     .ii-tl.spin    { color: #ced4da; animation: ii-tl-pulse 1s ease-in-out infinite; }
+    .ii-tl.removing { opacity: .35; animation: ii-tl-pulse 1s ease-in-out infinite; }
     .ii-tl.absent  { display: none; }                                                /* track not found on provider */
     @keyframes ii-tl-pulse { 0%,100% { opacity: .35; } 50% { opacity: .9; } }
     .ii-existing { width: 150px; }
@@ -2044,6 +2045,19 @@
 
     // scope tabs (#301): the two operations on a record
     modal.querySelectorAll('.ii-tab').forEach(t => t.addEventListener('click', () => setScope(t.dataset.scope)));
+    // #301: remove links from the LINKED column (symmetric to Add) — right-click
+    // removes one, Ctrl removes all on the track, Alt removes the provider everywhere.
+    tbody.addEventListener('contextmenu', e => {
+      const a = e.target.closest('.ii-tl-linked .ii-tl.linked'); if (!a) return;
+      e.preventDefault(); const tr = a.closest('tr[data-idx]'); if (tr) TrackLinks.removeOne(+tr.dataset.idx, a.dataset.code);
+    });
+    tbody.addEventListener('click', e => {
+      const a = e.target.closest('.ii-tl-linked .ii-tl.linked'); if (!a) return;
+      const tr = a.closest('tr[data-idx]'); if (!tr) return;
+      if (e.ctrlKey || e.metaKey) { e.preventDefault(); TrackLinks.removeTrack(+tr.dataset.idx); }
+      else if (e.altKey) { e.preventDefault(); TrackLinks.removeProvider(a.dataset.code); }
+      // plain click → open the link
+    });
     // Esc closes the modal (no ✕ in the header) — but first let an open pane close,
     // and ignore it while typing in a field.
     document.addEventListener('keydown', e => {
@@ -2405,7 +2419,7 @@
     // them, and an added one moves over to the LINKED column).
     function linkedIcon(p, url) {
       return '<a class="ii-tl linked" data-code="' + p.code + '" style="color:' + p.color + '" href="' + esc(url) + '" target="_blank" rel="noopener" ' +
-        'title="' + esc(p.name) + ' — linked on MusicBrainz">' + p.icon + '</a>';
+        'title="' + esc(p.name) + ' — linked on MusicBrainz · left-click opens · right-click removes · Ctrl-click removes all on this track · Alt-click removes ' + esc(p.name) + ' on every track">' + p.icon + '</a>';
     }
     function linkedHtml(t) {
       const cells = providersFor(t).map(p => { const ex = t.recId ? linkedUrl(t, p) : null; return ex ? linkedIcon(p, ex) : ''; }).filter(Boolean).join('');
@@ -2541,6 +2555,63 @@
       if (btn) btn.disabled = false;
     }
 
+    // ── DELETE (symmetric to add). Removing a relationship needs its internal id,
+    // which WS2 doesn't expose — fetch it from /ws/js/entity (the rel editor's API)
+    // and submit an EDIT_RELATIONSHIP_DELETE (91). ──
+    const _relCache = {};
+    async function recUrlRels(recGid) {
+      if (_relCache[recGid]) return _relCache[recGid];
+      const r = await fetch(MB_ROOT + '/ws/js/entity/' + recGid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } });
+      if (!r.ok) throw new Error('rels ' + r.status);
+      const j = await r.json();
+      return (_relCache[recGid] = (j.relationships || []).filter(x => x.target_type === 'url'));
+    }
+    function delNote(provs) {
+      const counts = {}; provs.forEach(p => { counts[p.name] = (counts[p.name] || 0) + 1; });
+      const breakdown = Object.keys(counts).sort().map(n => n + ' (' + counts[n] + ')').join(', ');
+      return [noteHeader(), '', 'Release: ' + MB_ROOT + '/release/' + mbid,
+        'Removed ' + provs.length + ' streaming link' + (provs.length === 1 ? '' : 's') + (breakdown ? ': ' + breakdown : '')].join('\n');
+    }
+    async function postEdits(edits, note) {
+      const r = await fetch(MB_ROOT + '/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note || '', makeVotable: 0 }) });
+      const text = await r.text().catch(() => ''); let j = null; try { j = JSON.parse(text); } catch (e) {}
+      if (!r.ok || (j && j.error)) { const m = (j && (j.error.message || j.error)) || ('HTTP ' + r.status); throw new Error((typeof m === 'string' ? m : JSON.stringify(m)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)); }
+      return j;
+    }
+    function linkedIcons(selector) {
+      const out = [];
+      modal.querySelectorAll(selector).forEach(a => { const p = PROV.find(x => x.code === a.dataset.code); const tr = a.closest('tr[data-idx]'); if (p && tr) out.push({ idx: +tr.dataset.idx, p, url: a.getAttribute('href'), el: a }); });
+      return out;
+    }
+    async function removeBatch(icons) {
+      if (!icons.length) return;
+      icons.forEach(ic => ic.el.classList.add('removing'));
+      try {
+        const edits = [], used = [];
+        for (const ic of icons) {
+          const t = RELEASE.tracks[ic.idx]; if (!t.recId) continue;
+          const rels = await recUrlRels(t.recId);
+          const rel = rels.find(r => (r.target && r.target.name) === ic.url) || rels.find(r => ic.p.test((r.target && r.target.name) || '') && r.linkTypeID === ic.p.linkTypeID);
+          if (!rel) { Log.warn('No ' + ic.p.name + ' relationship found to remove on "' + (t.title || t.recId) + '"'); continue; }
+          edits.push({ edit_type: 91, id: rel.id, linkTypeID: rel.linkTypeID, attributes: [], entities: [{ entityType: 'recording', gid: t.recId }, { entityType: 'url', gid: rel.target.gid, name: rel.target.name }] });
+          used.push(ic);
+        }
+        if (!edits.length) { icons.forEach(ic => ic.el.classList.remove('removing')); return; }
+        await postEdits(edits, delNote(used.map(ic => ic.p)));
+        used.forEach(ic => {
+          const t = RELEASE.tracks[ic.idx]; if (t) { t.recUrls = (t.recUrls || []).filter(u => u !== ic.url); delete _relCache[t.recId]; }
+          ic.el.remove();
+          const ab = addBox(ic.idx);   // re-offer as a hidden Add candidate so Find links can resolve it again
+          if (ab && !ab.querySelector('.ii-tl[data-code="' + ic.p.code + '"]')) { const s = document.createElement('span'); s.className = 'ii-tl cand'; s.dataset.code = ic.p.code; s.title = ic.p.name; s.innerHTML = ic.p.icon; ab.appendChild(s); }
+        });
+        Log.info('Removed ' + used.length + ' link' + (used.length === 1 ? '' : 's') + ' on MusicBrainz');
+      } catch (e) { Log.err('Remove links failed: ' + errText(e)); icons.forEach(ic => ic.el.classList.remove('removing')); }
+      updateAddBtn();
+    }
+    const removeOne = (idx, code) => removeBatch(linkedIcons('tr[data-idx="' + idx + '"] .ii-tl-linked .ii-tl.linked[data-code="' + code + '"]'));
+    const removeTrack = idx => removeBatch(linkedIcons('tr[data-idx="' + idx + '"] .ii-tl-linked .ii-tl.linked'));
+    const removeProvider = code => removeBatch(linkedIcons('.ii-tl-linked .ii-tl.linked[data-code="' + code + '"]'));
+
     // Show/label the toolbar "Add N links" button based on resolved candidates.
     // A track is "missing" links when it has none of our providers linked
     // (at least one link → not missing) — parallels the ISRC "N missing" badge.
@@ -2603,7 +2674,7 @@
       }
     }
 
-    return { linkedHtml, addHtml, resolve, addAll, refresh: updateAddBtn };
+    return { linkedHtml, addHtml, resolve, addAll, refresh: updateAddBtn, removeOne, removeTrack, removeProvider };
   })();
 
   /* ── render the track table ── */
