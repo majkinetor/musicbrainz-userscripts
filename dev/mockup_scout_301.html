@@ -15,8 +15,8 @@
   .tab.on { color: #6f42c1; border-bottom-color: #6f42c1; }
   .tab.on .badge { background: #efe9fb; color: #6f42c1; }
   .zen { text-align: center; padding-bottom: 8px; }
-  .zen .t { font: 600 14px system-ui; color: #343a40; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 330px; }
-  .zen .s { font: 11.5px system-ui; color: #adb5bd; margin-top: 1px; }
+  .zen .t { font: 600 12px system-ui; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; }
+  .zen .s { font: 10.5px system-ui; color: #c3c8ce; margin-top: 0; }
   .hicons { display: flex; gap: 6px; justify-self: end; padding-bottom: 6px; }
   .ico { width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #e3e3e8; border-radius: 6px; background: #fff; color: #6c757d; font-size: 14px; cursor: pointer; }
   .ico:hover { background: #f1f3f5; color: #6f42c1; border-color: #d6c7ee; }
@@ -45,8 +45,12 @@
   .sum { font-size: 12px; color: #6c757d; }
 
   /* side panels */
-  .ph { padding: 11px 14px; border-bottom: 1px solid #eceff2; font: 700 13px system-ui; display: flex; align-items: center; gap: 8px; }
-  .ph .x { margin-left: auto; color: #adb5bd; }
+  .ph { padding: 10px 14px; border-bottom: 1px solid #eceff2; font: 700 13px system-ui; display: flex; align-items: center; gap: 7px; }
+  .ph .ver { font: 400 11px system-ui; color: #adb5bd; }
+  .ph .sp { margin-left: auto; }
+  .ph .lnk { font: 600 12px system-ui; color: #6f42c1; cursor: pointer; }
+  .ph .lnk.help { border: 1px solid #d6c7ee; border-radius: 6px; padding: 2px 8px; }
+  .ph .x { color: #adb5bd; cursor: pointer; }
   .pb { padding: 13px 14px; font-size: 12.5px; color: #495057; }
   .pb .grp { font: 700 10.5px system-ui; text-transform: uppercase; letter-spacing: .3px; color: #adb5bd; margin: 12px 0 6px; }
   .pb .grp:first-child { margin-top: 0; }
@@ -92,17 +96,15 @@
 
 <div class="row2">
   <div>
-    <div class="cap">⚙ config — Log, Help, About all moved here</div>
+    <div class="cap">⚙ config window — standard header (icon · name · version · Log · ? Help), like Apollo</div>
     <div class="panel">
-      <div class="ph">⚙︎ ISRC Scout <span class="x">✕</span></div>
+      <div class="ph"><svg class="logo" width="17" height="17"><use href="#radar"/></svg> ISRC Scout <span class="ver">v2026.6.26</span><span class="sp"></span><span class="lnk">Log</span><span class="lnk help">? Help</span><span class="x">✕</span></div>
       <div class="pb">
         <div class="grp">Settings</div>
-        <div class="item"><span class="k">Default ISRC provider, exact-match, history size…</span></div>
+        <div class="item"><span class="k">Default ISRC provider · exact-match · items shown · history size</span></div>
+        <div class="item"><span class="k">Use providers from the whole release group (#302)</span></div>
         <div class="grp">MusicBrainz</div>
-        <div class="item"><span class="k">OAuth authorization (ISRC submit)</span></div>
-        <div class="grp">More</div>
-        <div class="item">▤ Activity log &nbsp;·&nbsp; ? Help / README &nbsp;·&nbsp; 🕓 My edits</div>
-        <div class="item k">About — ISRC Scout v2026.6.26</div>
+        <div class="item"><span class="k">OAuth authorization (ISRC submit) &nbsp;·&nbsp; 🕓 My edits</span></div>
       </div>
     </div>
   </div>
