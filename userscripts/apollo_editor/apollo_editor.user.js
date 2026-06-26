@@ -1291,7 +1291,7 @@
     .tc-jp-notrail::after{content:'␣'}
     .tc-jp-nophrase::before{content:'␣?␣'}
     .tc-joinpop .tc-acrow{justify-content:space-between;gap:14px}.tc-joinpop .cmt{color:#999}
-    .tc-acts{flex:none;width:76px;display:flex;align-items:center;justify-content:flex-start;gap:4px;padding-left:4px}
+    .tc-acts{flex:none;width:76px;margin-left:auto;display:flex;align-items:center;justify-content:flex-start;gap:4px;padding-left:4px}   /* margin-left:auto keeps the + / actions at the right even when the artist field is content-width, not flex:1 */
     .tc-enter,.tc-slotx,.tc-splitb,.tc-slotgrab{cursor:pointer;border:none;background:none;padding:0 1px;visibility:hidden;line-height:1}
     .tc-enter{color:#7d6bc0;font-size:19px}.tc-enter:hover{color:#5f3ec0}
     .tc-splitb{color:#7d6bc0;font-size:16px;font-weight:bold}.tc-splitb:hover{color:#5f3ec0}
