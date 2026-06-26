@@ -1,0 +1,151 @@
+<!doctype html><html><head><meta charset="utf-8"><title>ISRC Scout #301 redesign mockup</title>
+<style>
+  body { margin: 0; background: #e9ecef; font-family: system-ui, sans-serif; color: #212529; padding: 22px; }
+  .wrap { display: flex; flex-direction: column; gap: 28px; align-items: center; }
+  .cap { font: 600 13px system-ui; color: #495057; align-self: flex-start; margin: 0 0 -16px 4px; }
+  .modal { width: 880px; background: #fff; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.22); overflow: hidden; }
+
+  /* ── compact, standardized header ── */
+  .hdr { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-bottom: 1px solid #e9ecef; background: #fbfafd; }
+  .logo { flex: none; }
+  .ttl { font: 700 14px system-ui; }
+  .ttl em { color: #6f42c1; font-style: normal; }
+  .rel { font-size: 11.5px; color: #adb5bd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 360px; }
+  .spacer { margin-left: auto; }
+  .ico { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+         border: 1px solid #e0e0e6; border-radius: 6px; background: #fff; color: #6c757d; font-size: 13px; cursor: pointer; }
+  .ico:hover { background: #f1f3f5; color: #6f42c1; border-color: #d6c7ee; }
+  .ico.x { border-color: transparent; }
+
+  /* ── scope tabs (the 2 operations) ── */
+  .tabs { display: flex; gap: 0; padding: 0 12px; border-bottom: 1px solid #e9ecef; background: #fff; }
+  .tab { padding: 9px 16px; font: 600 12.5px system-ui; color: #868e96; cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 7px; }
+  .tab .badge { font-size: 10.5px; background: #eceff2; color: #6c757d; border-radius: 9px; padding: 0 6px; font-weight: 700; }
+  .tab.on { color: #6f42c1; border-bottom-color: #6f42c1; }
+  .tab.on .badge { background: #efe9fb; color: #6f42c1; }
+
+  /* ── scope toolbar ── */
+  .tools { display: flex; align-items: center; gap: 7px; padding: 9px 12px; border-bottom: 1px solid #f1f3f5; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid #d6d9de; border-radius: 6px;
+         background: #fff; font: 600 12px system-ui; color: #343a40; cursor: pointer; }
+  .btn:hover { background: #f6f4fb; }
+  .btn.primary { background: #6f42c1; border-color: #6f42c1; color: #fff; }
+  .btn.go { background: #198754; border-color: #198754; color: #fff; }
+  .btn.sx { color: #6f42c1; border-color: #d6c7ee; }
+  .pill { display: inline-flex; border: 1px solid #d6c7ee; border-radius: 7px; overflow: hidden; }
+  .pill .seg { padding: 5px 10px; font: 600 12px system-ui; background: #fff; color: #6f42c1; }
+  .pill .seg+ .seg { border-left: 1px solid #ece4f7; color: #868e96; }
+  .src { width: 30px; height: 26px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: #fff; }
+  .muted { color: #adb5bd; font-size: 12px; }
+  .right { margin-left: auto; }
+
+  /* ── table ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+  th { text-align: left; font: 700 10.5px system-ui; letter-spacing: .3px; text-transform: uppercase; color: #adb5bd; padding: 7px 12px; border-bottom: 1px solid #eceff2; background: #fafbfc; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f4f5f7; vertical-align: middle; }
+  .pos { color: #c3c8ce; width: 30px; }
+  .tk { font-weight: 600; }
+  .ar { color: #9aa0a6; font-size: 11.5px; }
+  samp { font: 700 11px 'Courier New', monospace; color: #1a9461; display: block; }
+  .none { color: #d0d4d9; font-style: italic; font-size: 11px; }
+  .inp { width: 150px; border: 1px solid #d6d9de; border-radius: 6px; padding: 4px 8px; color: #adb5bd; font: 13px system-ui; }
+
+  /* link icons */
+  .lk { display: inline-flex; gap: 9px; align-items: center; }
+  .lk svg { width: 16px; height: 16px; display: block; }
+  .g { color: #b4bac0; }                /* linked → quiet monochrome */
+  .add { display: inline-flex; gap: 9px; align-items: center; }
+  .add a { cursor: pointer; display: inline-flex; }
+  .add svg { width: 16px; height: 16px; display: block; }
+  .dash { color: #d0d4d9; }
+
+  .foot { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border-top: 1px solid #eceff2; background: #fbfafd; }
+  .sum { font-size: 12px; color: #6c757d; }
+</style></head>
+<body><div class="wrap">
+
+<!-- shared logo -->
+<svg style="display:none"><symbol id="radar" viewBox="0 0 128 128"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/><g fill="none" stroke="#6f42c1" stroke-width="7"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="5" stroke="#b9a3e8"/><circle cx="64" cy="64" r="13" stroke-width="5" stroke="#b9a3e8"/></g><line x1="64" y1="64" x2="64" y2="24" stroke="#6f42c1" stroke-width="7" stroke-linecap="round"/><circle cx="86" cy="50" r="8" fill="#4b2e83"/></symbol>
+<symbol id="dz" viewBox="0 0 24 24"><rect x="1" y="14" width="4" height="6" rx=".6"/><rect x="6.7" y="10" width="4" height="10" rx=".6"/><rect x="12.4" y="6" width="4" height="14" rx=".6"/><rect x="18.1" y="11" width="4" height="9" rx=".6"/></symbol>
+<symbol id="td" viewBox="0 0 24 24"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></symbol>
+<symbol id="bc" viewBox="0 0 24 24"><path d="M2 16.5l5-9h15l-5 9z"/></symbol>
+</svg>
+
+<div class="cap">Redesign — <b>Links</b> tab active (compact header · scope tabs · LINKED / ADD columns)</div>
+<div class="modal">
+  <div class="hdr">
+    <svg class="logo" width="20" height="20"><use href="#radar"/></svg>
+    <span class="ttl"><em>ISRC Scout</em></span>
+    <span class="rel">Guasá, Cununo y Marimba… · 2020 · Various Artists</span>
+    <span class="spacer"></span>
+    <span class="ico" title="Log">▤</span>
+    <span class="ico" title="Settings">⚙︎</span>
+    <span class="ico" title="Help">?</span>
+    <span class="ico x" title="Close">✕</span>
+  </div>
+  <div class="tabs">
+    <div class="tab">ISRCs <span class="badge">4 missing</span></div>
+    <div class="tab on">Links <span class="badge">8 to add</span></div>
+  </div>
+  <div class="tools">
+    <button class="btn sx">🔗 Find links</button>
+    <button class="btn primary">＋ Add 8 links</button>
+    <span class="muted">Deezer · Tidal · Bandcamp</span>
+    <span class="right muted">resolved by ISRC / album</span>
+  </div>
+  <table>
+    <thead><tr><th class="pos">#</th><th>Track</th><th style="width:150px">Linked</th><th style="width:160px">Add</th></tr></thead>
+    <tbody>
+      <tr><td class="pos">1</td><td><div class="tk">Manuela la bullanguera</div><div class="ar">Gertrudis Bonilla</div></td>
+        <td><span class="lk"><svg class="g"><use href="#dz"/></svg><svg class="g"><use href="#td"/></svg></span></td>
+        <td><span class="dash">—</span></td></tr>
+      <tr><td class="pos">2</td><td><div class="tk">El coco de la vieja</div><div class="ar">Peregoyo y su Combo Vacaná</div></td>
+        <td><span class="dash">—</span></td>
+        <td><span class="add"><a title="Add Deezer"><svg style="color:#ef5466"><use href="#dz"/></svg></a><a title="Add Tidal"><svg style="color:#1f2d3d"><use href="#td"/></svg></a></span></td></tr>
+      <tr><td class="pos">3</td><td><div class="tk">La logia</div><div class="ar">Chencho Trompeta y Los Brujos</div></td>
+        <td><span class="lk"><svg class="g"><use href="#dz"/></svg></span></td>
+        <td><span class="add"><a title="Add Tidal"><svg style="color:#1f2d3d"><use href="#td"/></svg></a><a title="Add Bandcamp"><svg style="color:#1da0c3"><use href="#bc"/></svg></a></span></td></tr>
+    </tbody>
+  </table>
+  <div class="foot"><span class="sum">8 of 17 tracks have links to add</span><span class="right"></span><button class="btn">✎ Edit note</button><button class="btn go">Add all links</button></div>
+</div>
+
+<div class="cap">Same modal — <b>ISRCs</b> tab active (the existing workflow, restyled to match)</div>
+<div class="modal">
+  <div class="hdr">
+    <svg class="logo" width="20" height="20"><use href="#radar"/></svg>
+    <span class="ttl"><em>ISRC Scout</em></span>
+    <span class="rel">Guasá, Cununo y Marimba… · 2020 · Various Artists</span>
+    <span class="spacer"></span>
+    <span class="ico" title="Log">▤</span>
+    <span class="ico" title="Settings">⚙︎</span>
+    <span class="ico" title="Help">?</span>
+    <span class="ico x" title="Close">✕</span>
+  </div>
+  <div class="tabs">
+    <div class="tab on">ISRCs <span class="badge">4 missing</span></div>
+    <div class="tab">Links <span class="badge">8 to add</span></div>
+  </div>
+  <div class="tools">
+    <span class="pill"><span class="seg">⟳ SoundExchange</span><span class="seg">exact ▾</span></span>
+    <span class="src" style="background:#ef5466"><svg style="color:#fff;width:17px;height:17px"><use href="#dz"/></svg></span>
+    <span class="src" style="background:#1db954">♫</span>
+    <span class="src" style="background:#1f2d3d"><svg style="color:#fff;width:16px;height:16px"><use href="#td"/></svg></span>
+    <span class="ico" title="Paste album URL">＋</span>
+    <span class="right"><button class="btn">Clear</button></span>
+  </div>
+  <table>
+    <thead><tr><th class="pos">#</th><th>Track</th><th style="width:150px">Existing ISRC</th><th style="width:160px">New ISRC</th></tr></thead>
+    <tbody>
+      <tr><td class="pos">1</td><td><div class="tk">Manuela la bullanguera</div><div class="ar">Gertrudis Bonilla</div></td>
+        <td><samp>ES8591901640</samp></td><td><input class="inp" value="—"></td></tr>
+      <tr><td class="pos">2</td><td><div class="tk">El coco de la vieja</div><div class="ar">Peregoyo y su Combo Vacaná</div></td>
+        <td><samp>COF014900118</samp></td><td><input class="inp" value="—"></td></tr>
+      <tr><td class="pos">3</td><td><div class="tk">La logia</div><div class="ar">Chencho Trompeta y Los Brujos</div></td>
+        <td><span class="none">none</span></td><td><input class="inp" value="—"></td></tr>
+    </tbody>
+  </table>
+  <div class="foot"><span class="sum">13 ISRCs to submit · 4 missing</span><span class="right"></span><button class="btn">🗑 Delete</button><button class="btn">✎ Edit note</button><button class="btn go">Submit to MusicBrainz</button></div>
+</div>
+
+</div></body></html>
