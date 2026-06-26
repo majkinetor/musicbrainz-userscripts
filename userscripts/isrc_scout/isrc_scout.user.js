@@ -26,6 +26,7 @@
 // @connect      hdtracks.azurewebsites.net
 // @connect      api.beatport.com
 // @connect      bandcamp.com
+// @connect      music.apple.com
 // @run-at       document-start
 // ==/UserScript==
 
@@ -206,6 +207,8 @@
     hd: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M2 6h2.4v4h4V6h2.4v12H8.4v-5.6h-4V18H2z"/><path d="M12 6h4.2c3 0 5 2.4 5 6s-2 6-5 6H12zm2.4 2.2v7.6h1.6c1.7 0 2.8-1.5 2.8-3.8s-1.1-3.8-2.8-3.8z"/></svg>',
     // Bandcamp: the brand logomark is a parallelogram
     bc: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M2 16.5l5-9h15l-5 9z"/></svg>',
+    // Apple Music: the Apple logomark
+    am: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>',
   };
 
   const mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/)?.[1];
@@ -856,6 +859,7 @@
   function matchProviderLink(u) {
     let m;
     if ((m = u.match(/^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\/[^?#]+/i))) return { k: 'bandcampUrl', v: m[0] };  // #300: per-track URLs by position
+    if ((m = u.match(/^(https?:\/\/music\.apple\.com\/[a-z]{2}\/album\/(?:[^/?#]+\/)?\d+)/i))) return { k: 'appleUrl', v: m[1] };  // album page ld+json lists every track URL
     if ((m = u.match(/open\.spotify\.com\/album\/([A-Za-z0-9]+)/)))            return { k: 'spotifyId', v: m[1] };
     if ((m = u.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/)))             return { k: 'deezerId', v: m[1] };
     if ((m = u.match(/beatport\.com\/release\/[^/]+\/(\d+)/)))                 return { k: 'beatportId', v: m[1] };
@@ -926,7 +930,7 @@
         });
       });
       const rels = data.relations || [];
-      const prov = { deezerId: null, spotifyId: null, beatportId: null, tidalId: null, volumoId: null, hdtracksId: null, bandcampUrl: null };
+      const prov = { deezerId: null, spotifyId: null, beatportId: null, tidalId: null, volumoId: null, hdtracksId: null, bandcampUrl: null, appleUrl: null };
       rels.forEach(rel => {
         const u = rel.url && rel.url.resource;
         if (!u) return;
@@ -958,8 +962,9 @@
       RELEASE = Object.assign({ title: data.title || '', tracks, rgId: rg.id || '', releaseYear, artist }, prov);
       // #302: when enabled, fill missing provider links from sibling releases in the RG.
       if (rgProvidersEnabled() && RELEASE.rgId) await augmentProvidersFromRG(RELEASE.rgId);
-      const linkStr = ['deezer', 'spotify', 'beatport', 'tidal', 'volumo', 'hdtracks', 'bandcamp']
-        .map(k => { const f = k === 'bandcamp' ? 'bandcampUrl' : k + 'Id'; return RELEASE[f] ? k[0].toUpperCase() + k.slice(1) + ' ' + RELEASE[f] : null; }).filter(Boolean).join(', ');
+      const _pf = { bandcamp: 'bandcampUrl', apple: 'appleUrl' };
+      const linkStr = ['deezer', 'spotify', 'beatport', 'tidal', 'volumo', 'hdtracks', 'bandcamp', 'apple']
+        .map(k => { const f = _pf[k] || k + 'Id'; return RELEASE[f] ? k[0].toUpperCase() + k.slice(1) + ' ' + RELEASE[f] : null; }).filter(Boolean).join(', ');
       Log.info('Release "' + RELEASE.title + '"' + (releaseYear ? ' (' + releaseYear + ')' : '') + ': ' + tracks.length + ' track(s), ' +
         tracks.filter(t => !t.existing.length).length + ' missing ISRC' + (linkStr ? '; links: ' + linkStr : ''));
       return RELEASE;
@@ -1224,7 +1229,7 @@
     volumo:   { source: 'Volumo',   idField: 'volumoId',   fetcher: fetchVolumo,   code: 'vo' },
     hdtracks: { source: 'HDtracks', idField: 'hdtracksId', fetcher: fetchHDtracks, code: 'hd' },
   };
-  const _PROV_COLOR = { sx: '#6f42c1', deezer: '#ef5466', spotify: '#1db954', beatport: '#0a8754', tidal: '#1f2d3d', volumo: '#7c4dff', hdtracks: '#e63329', bandcamp: '#1da0c3' };
+  const _PROV_COLOR = { sx: '#6f42c1', deezer: '#ef5466', spotify: '#1db954', beatport: '#0a8754', tidal: '#1f2d3d', volumo: '#7c4dff', hdtracks: '#e63329', bandcamp: '#1da0c3', apple: '#fc3c44' };
   const TRACK_PROV = { sx: { name: 'SoundExchange', short: 'SX', code: 'sx', color: _PROV_COLOR.sx, kind: 'search' } };
   Object.keys(ALBUM_PROVIDERS).forEach(k => {
     const p = ALBUM_PROVIDERS[k];
@@ -2368,6 +2373,12 @@
         album: true, urlKey: 'bandcampUrl',
         test: u => /\.bandcamp\.com\/track\//i.test(u),
         resolve: (isrc, t, idx) => bcResolve(t, idx) },
+      // Apple Music (#like Bandcamp): the album page's ld+json lists every track URL,
+      // matched by position. Subscription streaming → linkType 979.
+      { code: 'am', name: 'Apple Music', color: _PROV_COLOR.apple, icon: SRC_ICON.am, linkTypeID: 979,
+        album: true, urlKey: 'appleUrl',
+        test: u => /music\.apple\.com\/[a-z]{2}\/(?:song\/|album\/[^"\s]*[?&]i=)/i.test(u),
+        resolve: (isrc, t, idx) => amResolve(t, idx) },
     ];
 
     let resolving = false;
@@ -2403,6 +2414,32 @@
       if (!e) return null;
       const a = _nrm(e.title), b = _nrm(t.title);
       // position match must agree on title (else the editions are out of sync) — don't add a likely-wrong link
+      return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
+    }
+
+    // Apple Music album page (fetched once): ordered [{title, url}] from its ld+json.
+    let _amList = null, _amPromise = null;
+    async function amAlbum() {
+      if (_amList) return _amList;
+      if (_amPromise) return _amPromise;
+      const url = RELEASE && RELEASE.appleUrl;
+      if (!url) { _amList = []; return _amList; }
+      _amPromise = (async () => {
+        const r = await gmGet(url, { 'Accept': 'text/html' });
+        if (r.status !== 200) return [];
+        const m = (r.responseText || '').match(/<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i);
+        if (!m) return [];
+        let j; try { j = JSON.parse(m[1]); } catch (e) { return []; }
+        return (j.tracks || []).map(t => ({ title: t.name || '', url: t.url || '' })).filter(t => t.url);
+      })();
+      _amList = await _amPromise.catch(() => []); _amPromise = null;
+      return _amList;
+    }
+    async function amResolve(t, idx) {
+      const list = await amAlbum();
+      const e = list[idx];
+      if (!e) return null;
+      const a = _nrm(e.title), b = _nrm(t.title);
       return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
     }
 
