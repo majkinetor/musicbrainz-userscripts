@@ -653,12 +653,12 @@
       if (document.getElementById('mmthf-css')) return;
       const s = document.createElement('style'); s.id = 'mmthf-css';
       s.textContent = `
-      .mmthf-pin { position:fixed; z-index:9998; width:16px; height:16px; display:flex; align-items:center; justify-content:center; cursor:pointer;
+      .mmthf-pin { position:absolute; z-index:9998; width:16px; height:16px; display:flex; align-items:center; justify-content:center; cursor:pointer;
                    border:none; background:none; box-shadow:none; padding:0; font-size:13px; line-height:1; user-select:none; opacity:.35; transition:opacity .12s; filter:grayscale(.3); }
       .mmthf-pin:hover { opacity:1; filter:none; }
       .mmthf-pin.has { opacity:.8; filter:none; }
       .mmthf-hl { outline:2px solid #5aa67e !important; outline-offset:1px; }
-      .mmthf-bar { position:fixed; z-index:9996; display:none; }
+      .mmthf-bar { position:absolute; z-index:9996; display:none; }
       .mmthf-seg { display:inline-flex; border:1px solid #cfd9d3; border-radius:7px; overflow:hidden; background:#fbfdfc; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; box-shadow:0 1px 2px rgba(0,0,0,.06); max-width:100%; }
       .mmthf-segb { border:none; background:none; padding:4px 12px; font-size:12px; color:#27483a; cursor:pointer; border-right:1px solid #e7eee9; white-space:nowrap; max-width:160px; overflow:hidden; text-overflow:ellipsis; }
       .mmthf-segb:last-child { border-right:none; }
@@ -751,9 +751,13 @@
         const hasBar = vis && !!p.bar.firstChild && gapClear(p.bar, r);
         p.bar.style.display = hasBar ? 'block' : 'none';
         if (!vis) continue;
-        p.btn.style.top = (r.top + (r.height - 16) / 2) + 'px';
-        p.btn.style.left = (r.right - 16 - (p.sel ? 22 : 3)) + 'px';
-        if (hasBar) { p.bar.style.top = (r.bottom + 3) + 'px'; p.bar.style.left = r.left + 'px'; p.bar.style.maxWidth = Math.max(140, r.width) + 'px'; }
+        // position in DOCUMENT coords (position:absolute) so the overlays scroll WITH
+        // the page natively — no per-frame JS reposition, so no scroll lag. getBounding
+        // ClientRect is viewport-relative, so add the scroll offset back.
+        const sx = window.scrollX, sy = window.scrollY;
+        p.btn.style.top = (r.top + sy + (r.height - 16) / 2) + 'px';
+        p.btn.style.left = (r.right + sx - 16 - (p.sel ? 22 : 3)) + 'px';
+        if (hasBar) { p.bar.style.top = (r.bottom + sy + 3) + 'px'; p.bar.style.left = (r.left + sx) + 'px'; p.bar.style.maxWidth = Math.max(140, r.width) + 'px'; }
       }
       if (pins.some(p => p.dead)) pins = pins.filter(p => !p.dead);
     }
