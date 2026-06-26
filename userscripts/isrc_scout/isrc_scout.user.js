@@ -474,6 +474,11 @@
     .ii-tbtn.primary { background: #198754; color: #fff; border-color: #198754; }
     .ii-tbtn.primary:hover { background: #157347; }
     .ii-tbtn.ghost { border-color: transparent; }
+    /* #302: a small purple dot marks a provider whose link was pulled from another
+       release in the group (not this release). Same dot on RG-sourced add candidates. */
+    .ii-tbtn.ii-rg, .ii-tl.ii-rg { position: relative; }
+    .ii-tbtn.ii-rg::after, .ii-tl.ii-rg::after { content: ''; position: absolute; top: -3px; right: -3px;
+      width: 7px; height: 7px; border-radius: 50%; background: #6f42c1; border: 1.5px solid #fff; }
     /* In-MB marker (#180): a provider button gets a ring around its icon + a
        brand tint when the release already has that platform's URL in MB; an
        un-tinted/un-ringed button means the link was found by Platform Check. */
@@ -876,12 +881,13 @@
       if (r.status !== 200) { Log.warn('Release group: sibling scan gave ' + r.status); return; }
       const j = JSON.parse(r.responseText || '{}');
       const added = [];
+      RELEASE.rgFrom = RELEASE.rgFrom || {};   // provider field -> { release, title } it was pulled from (#302)
       (j.releases || []).forEach(rel => {
         if (rel.id === mbid) return;
         (rel.relations || []).forEach(rl => {
           const u = rl.url && rl.url.resource; if (!u) return;
           const hit = matchProviderLink(u);
-          if (hit && !RELEASE[hit.k]) { RELEASE[hit.k] = hit.v; added.push(hit.k.replace(/Id|Url$/, '')); }
+          if (hit && !RELEASE[hit.k]) { RELEASE[hit.k] = hit.v; RELEASE.rgFrom[hit.k] = { release: rel.id, title: rel.title || '' }; added.push(hit.k.replace(/Id|Url$/, '')); }
         });
       });
       if (added.length) Log.info('Release group: pulled provider links from sibling releases — ' + [...new Set(added)].join(', '));
@@ -2425,7 +2431,11 @@
       a.className = 'ii-tl new'; a.dataset.code = p.code;
       a.href = url; a.target = '_blank'; a.rel = 'noopener';
       a.style.color = p.color;
-      a.title = p.name + ' — click to add this link to MusicBrainz  (ctrl-click to open the track)';
+      // #302: mark candidates resolved via an album link pulled from a sibling release
+      const rg = p.urlKey && RELEASE.rgFrom && RELEASE.rgFrom[p.urlKey];
+      if (rg) a.classList.add('ii-rg');
+      a.title = p.name + ' — click to add this link to MusicBrainz  (ctrl-click to open the track)' +
+        (rg ? '  ·  ' + p.name + ' album link from another release in this group' : '');
       a.innerHTML = p.icon;
       a.addEventListener('click', e => {
         if (e.ctrlKey || e.metaKey || e.button === 1) return;   // let ctrl/middle-click open the provider page
@@ -2588,20 +2598,24 @@
     // Provider buttons (#180): show a provider only when the release has its
     // link in MB OR Platform Check found one. MB-linked buttons are marked
     // (ring + brand tint via .ii-mb); an unmarked button = a PC-found link.
-    [['Deezer', 'ii-dz-all', RELEASE.deezerId],
-     ['Spotify', 'ii-sp-all', RELEASE.spotifyId],
-     ['Beatport', 'ii-bp-all', RELEASE.beatportId],
-     ['Tidal', 'ii-td-all', RELEASE.tidalId],
-     ['Volumo', 'ii-vo-all', RELEASE.volumoId],
-     ['HDtracks', 'ii-hd-all', RELEASE.hdtracksId]].forEach(([source, id, mbId]) => {
+    [['Deezer', 'ii-dz-all', 'deezerId'],
+     ['Spotify', 'ii-sp-all', 'spotifyId'],
+     ['Beatport', 'ii-bp-all', 'beatportId'],
+     ['Tidal', 'ii-td-all', 'tidalId'],
+     ['Volumo', 'ii-vo-all', 'volumoId'],
+     ['HDtracks', 'ii-hd-all', 'hdtracksId']].forEach(([source, id, field]) => {
       const btn = modal.querySelector('#' + id);
+      const mbId = RELEASE[field];
       // Spotify imports only via its MB-linked album (ISRC Hunt resolves the
       // release FROM the URL), so a PC-only Spotify link is not usable (#180).
       const hasPc = source !== 'Spotify' && !!platformCheckUrl(source);
+      const rg = RELEASE.rgFrom && RELEASE.rgFrom[field];   // #302: pulled from a sibling release in the RG
       btn.style.display = (mbId || hasPc) ? '' : 'none';
       btn.classList.toggle('ii-mb', !!mbId);
+      btn.classList.toggle('ii-rg', !!rg);
       btn.disabled = false;
-      btn.title = mbId ? ('Import from ' + source + ' (linked in MusicBrainz)')
+      btn.title = rg ? ('Import from ' + source + ' (link from another release in this group' + (rg.title ? ': ' + rg.title : '') + ')')
+        : mbId ? ('Import from ' + source + ' (linked in MusicBrainz)')
         : hasPc ? ('Import from ' + source + ' (link found by Platform Check — not yet in MB)')
         : ('No ' + source + ' link');
     });
