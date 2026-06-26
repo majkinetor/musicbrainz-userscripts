@@ -2024,7 +2024,8 @@
       </div>
 
       <div id="ii-foot">
-        <span class="ii-summary" id="ii-summary"></span>
+        <span class="ii-summary ii-only-isrc" id="ii-summary"></span>
+        <span class="ii-summary ii-only-links" id="ii-summary-links"></span>
         <button class="ii-tbtn ii-only-isrc" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete checked</button>
         <button class="ii-tbtn ghost" id="ii-note-toggle" title="Edit note">✎ Edit note</button>
         <button class="ii-tbtn primary ii-only-isrc" id="ii-submit">Submit to MusicBrainz</button>
@@ -2434,10 +2435,15 @@
       // #302: mark candidates resolved via an album link pulled from a sibling release
       const rg = p.urlKey && RELEASE.rgFrom && RELEASE.rgFrom[p.urlKey];
       if (rg) a.classList.add('ii-rg');
-      a.title = p.name + ' — left-click opens the track · right-click adds it to MusicBrainz' +
+      a.title = p.name + ' — left-click opens · right-click adds this · Ctrl-click adds all links on this track · Alt-click adds ' + p.name + ' on every track' +
         (rg ? '  ·  ' + p.name + ' album link from another release in this group' : '');
       a.innerHTML = p.icon;
-      a.addEventListener('contextmenu', e => { e.preventDefault(); addOne(idx, p, url); });   // right-click → add in background
+      a.addEventListener('click', e => {
+        if (e.ctrlKey || e.metaKey) { e.preventDefault(); addTrack(idx); }       // Ctrl/⌘ → all links for this track
+        else if (e.altKey) { e.preventDefault(); addProvider(p.code); }          // Alt → this provider across all tracks
+        // plain click falls through → opens the provider track
+      });
+      a.addEventListener('contextmenu', e => { e.preventDefault(); addOne(idx, p, url); });   // right-click → add just this one
       el.replaceWith(a);
     }
 
@@ -2494,45 +2500,45 @@
       return j;
     }
 
-    // (A) add a single link from its row icon
-    async function addOne(idx, p, url) {
-      const el = cell(idx, p.code);
-      if (!el || el.classList.contains('spin')) return;
-      el.className = 'ii-tl spin'; el.dataset.code = p.code;
-      try {
-        await submitRels([{ recGid: RELEASE.tracks[idx].recId, url, linkTypeID: p.linkTypeID }], noteFor([p]));
-        Log.ok ? Log.ok('Linked ' + p.name + ': ' + url) : Log.info('Linked ' + p.name + ': ' + url);
-        markLinked(idx, p, url);
-      } catch (e) {
-        Log.err('Add ' + p.name + ' link failed: ' + errText(e));
-        makeNew(idx, p, url);   // restore the add affordance
-      }
-      updateAddBtn();
-    }
-
-    // (B) add every resolved-but-unlinked candidate across the release in one batch
-    async function addAll() {
+    // Collect resolved "new" candidates matching a selector into add items.
+    function newItems(selector) {
       const items = [];
-      modal.querySelectorAll('.ii-tl-add .ii-tl.new').forEach(a => {
+      modal.querySelectorAll(selector).forEach(a => {
         const p = PROV.find(x => x.code === a.dataset.code);
         const tr = a.closest('tr[data-idx]');
         if (p && tr) items.push({ idx: +tr.dataset.idx, p, url: a.getAttribute('href') });
       });
+      return items;
+    }
+    // Submit a batch of add items in one POST; spin → linked, or restore on failure.
+    async function addBatch(items, confirmMsg) {
       if (!items.length) return;
-      if (!confirm('Add ' + items.length + ' streaming link' + (items.length > 1 ? 's' : '') + ' to MusicBrainz as recording relationships?')) return;
-      const btn = modal.querySelector('#ii-addlinks-btn');
-      if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
+      if (confirmMsg && !confirm(confirmMsg)) return;
       items.forEach(it => { const el = cell(it.idx, it.p.code); if (el) { el.className = 'ii-tl spin'; el.dataset.code = it.p.code; } });
       try {
         await submitRels(items.map(it => ({ recGid: RELEASE.tracks[it.idx].recId, url: it.url, linkTypeID: it.p.linkTypeID })), noteFor(items.map(it => it.p)));
         items.forEach(it => markLinked(it.idx, it.p, it.url));
-        Log.info('Linked ' + items.length + ' track(s) on MusicBrainz');
+        Log.info('Linked ' + items.length + ' track-link' + (items.length === 1 ? '' : 's') + ' on MusicBrainz');
       } catch (e) {
         Log.err('Add links failed: ' + errText(e));
-        items.forEach(it => makeNew(it.idx, it.p, it.url));   // restore all
+        items.forEach(it => makeNew(it.idx, it.p, it.url));   // restore the add affordances
       }
-      if (btn) btn.disabled = false;
       updateAddBtn();
+    }
+    // right-click a candidate → add just that one
+    const addOne = (idx, p, url) => addBatch([{ idx, p, url }]);
+    // ctrl-click → add every resolved link for THIS track
+    const addTrack = idx => addBatch(newItems('tr[data-idx="' + idx + '"] .ii-tl-add .ii-tl.new'));
+    // alt-click → add every resolved link for THIS provider across all tracks
+    const addProvider = code => addBatch(newItems('.ii-tl-add .ii-tl.new[data-code="' + code + '"]'));
+    // footer button → add everything resolved (with a confirm)
+    async function addAll() {
+      const items = newItems('.ii-tl-add .ii-tl.new');
+      if (!items.length) return;
+      const btn = modal.querySelector('#ii-addlinks-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
+      await addBatch(items, 'Add ' + items.length + ' streaming link' + (items.length > 1 ? 's' : '') + ' to MusicBrainz as recording relationships?');
+      if (btn) btn.disabled = false;
     }
 
     // Show/label the toolbar "Add N links" button based on resolved candidates.
@@ -2544,9 +2550,16 @@
       return n;
     }
     function updateAddBtn() {
+      const m = missingCount();
       const badge = modal.querySelector('#ii-badge-links');   // tab badge = tracks with no link
-      if (badge) { const m = missingCount(); badge.textContent = m ? (m + ' missing') : ''; }
+      if (badge) badge.textContent = m ? (m + ' missing') : '';
       const n = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;   // resolved + addable now
+      const linked = modal.querySelectorAll('.ii-tl-linked .ii-tl.linked').length;
+      const total = RELEASE ? RELEASE.tracks.length : 0;
+      const sum = modal.querySelector('#ii-summary-links');   // #301: Links-scope status bar
+      if (sum) sum.innerHTML = '<b>' + total + '</b> tracks · <b>' + linked + '</b> link' + (linked === 1 ? '' : 's') +
+        (m ? ' · <span style="color:#fd7e14">' + m + ' track' + (m === 1 ? '' : 's') + ' with none</span>' : '') +
+        (n ? ' · <span style="color:#198754">' + n + ' to add</span>' : '');
       const btn = modal.querySelector('#ii-addlinks-btn');
       if (!btn) return;
       btn.style.display = n ? '' : 'none';
