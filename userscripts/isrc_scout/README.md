@@ -1,6 +1,8 @@
 # ISRC Scout <img src="icon.svg" align="left" width="48">
 
-Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads the release's existing ISRCs, lets you fill in the missing ones from several sources, and submits them straight to MusicBrainz.
+Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads the release's existing ISRCs, lets you fill in the missing ones from several sources, and submits them straight to MusicBrainz — and, on a second tab, finds and adds **streaming links to the recordings** (Deezer, Tidal, Bandcamp, Apple Music).
+
+The editor has two tabs for the two operations on a release's recordings: **ISRCs** and **Links**.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/isrc_scout/isrc_scout.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/isrc_scout/isrc_scout.user.js)
 - [Changelog](./CHANGELOG.md)
@@ -66,6 +68,36 @@ Check the box next to any existing ISRC and click **🗑 Delete checked**. Delet
 - **Paste** one ISRC per line in track order (blank line skips a track), or target specific tracks: `3=USABC1234567`, `USABC1234567 | 1.3` (medium.track), or `1.3 USABC1234567`.
 - **Apply to empty fields** / **Apply (overwrite)**.
 - **Export text** (one per line) / **Export JSON** (`{ recordingMBID: "ISRC" }`) — copied to clipboard.
+
+## Track links (Links tab)
+
+ISRC Scout also adds **streaming links to recordings** in the background. The **Links** tab shows two columns per track:
+
+- **Linked** — what the recording already links to on MusicBrainz (brand-coloured icon per provider).
+- **Add** — links found but not yet on MB.
+
+### Providers
+
+| Provider | How it resolves | MB link type |
+| --- | --- | --- |
+| **Deezer**, **Tidal** | by **ISRC** — a global by-ISRC lookup, so it works on any release whose tracks have ISRCs | free streaming / streaming |
+| **Bandcamp**, **Apple Music** | by **album page** — the release's Bandcamp/Apple album link lists every track URL, matched to the tracklist by **position + title** (a title mismatch is skipped, never guessed) | free streaming / streaming |
+
+A provider is offered for a track only when it's resolvable (Deezer/Tidal need that track's ISRC; Bandcamp/Apple need the release's album link) or the recording is already linked to it.
+
+### Finding & adding
+
+- **🔗 Find links** resolves every track on the available providers and lights up the **Add** column with what's addable (a coloured icon = found, not yet linked).
+- On an **Add** icon: **left-click** opens the provider track · **right-click** adds it · **Ctrl + right-click** adds every link on that track · **Alt + right-click** adds that provider across all tracks. **➕ Add links** in the footer adds everything found at once.
+- Adds happen **in the background** via MusicBrainz's internal edit API over your **logged-in session** — no OAuth needed (unlike ISRC submission); auto-applied if you're an auto-editor, otherwise queued. The edit note matches ISRC Scout's standard format.
+
+### Removing
+
+The **Linked** column works the same way in reverse: **left-click** opens · **right-click** removes that link · **Ctrl + right-click** removes all on the track · **Alt + right-click** removes that provider everywhere.
+
+### Use providers from the whole release group (option)
+
+Releases in a release group are often split by platform (one edition carries the Deezer link, another Spotify/Tidal, another Bandcamp). Since the recordings are shared, **⚙ → "Use providers from the whole release group"** (off by default) fills in any provider link the current edition is missing from its **sibling releases** — for both ISRC import and track links. A small **purple dot** marks links pulled this way, with a tooltip naming the sibling release.
 
 ## Submitting (one-time authorization)
 
