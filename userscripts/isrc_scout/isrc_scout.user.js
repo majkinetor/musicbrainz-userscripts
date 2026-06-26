@@ -2657,8 +2657,9 @@
         // col 4 — Existing ISRC (ISRC scope) / Linked providers (Links scope)
         '<td><div class="ii-existing ii-only-isrc">' + existingHtml(t.existing, t.pendingRemoval) + '</div>' +
           '<div class="ii-only-links">' + TrackLinks.linkedHtml(t) + '</div></td>' +
-        // col 5 — New ISRC input (ISRC scope) / Add candidates (Links scope)
-        '<td><div class="ii-inwrap ii-only-isrc">' +
+        // col 5 — New ISRC input + SoundExchange candidates (ISRC scope) / Add (Links scope).
+        // .ii-cands is a sibling of .ii-inwrap (full-width, under the input), NOT inside it.
+        '<td><div class="ii-only-isrc"><div class="ii-inwrap">' +
           '<div class="ii-input-box">' +
             '<input class="ii-input" type="text" maxlength="15" placeholder="—" value="' + esc(t.pending) + '">' +
             '<button class="ii-clear" type="button" tabindex="-1" title="Clear this field">×</button>' +
@@ -2670,7 +2671,7 @@
             '<button class="ii-sxprov" type="button" tabindex="-1" title="Choose the ISRC provider for all tracks">▾</button>' +
           '</span>' +
           '<span class="ii-lookup"></span>' +
-          '<div class="ii-cands"></div></div>' +
+          '</div><div class="ii-cands"></div></div>' +
           '<div class="ii-only-links">' + TrackLinks.addHtml(t) + '</div></td>';
       const input = tr.querySelector('.ii-input');
       tr.querySelector('.ii-clear').addEventListener('click', () => clearRow(idx));
