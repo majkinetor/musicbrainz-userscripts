@@ -23,7 +23,7 @@
 //     right-click does the other. Ctrl/⌘ + ↑/↓ cycles saved notes, replacing the
 //     field. Append skips a line already present. Never auto-overwrites blindly,
 //     so it won't clobber notes Apollo / Credit Hoarder / Platform Check write.
-//   - BABY MAMMOTHS (⚙ "Show baby mammoths"): the same save/reuse idea on other
+//   - BABY MAMMOTHS (⚙ "Show mammoth babies"): the same save/reuse idea on other
 //     controls — catalog number, label, artist, status, language… A small 🦣 pin
 //     on each field recalls values you've saved for it; ★ pins one as an always-
 //     visible button under the field; one entry can be the default (auto-fills an
@@ -265,7 +265,7 @@
       <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
       <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
       <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
-      <label><input type="checkbox" class="mmth-s-babies"> Show baby mammoths</label>
+      <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
       <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>`;
     document.body.appendChild(p); pop = p;
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
@@ -591,6 +591,13 @@
       const real = [...ns].map(n => _unwrap(n.artist)).filter(a => a && a.gid);
       return real.length === 1 ? real[0].gid : null;
     };
+    // a specific row of the artist-credit editor bubble (ac-source-artist-<i>)
+    const artistRowGid = el => {
+      const i = +((String(el.id).match(/-(\d+)$/) || [])[1] || 0);
+      const r = relEntity(); const ac = r && r.artistCredit && r.artistCredit();
+      const ns = _unwrap(ac && ac.names); const a = ns && ns[i] && _unwrap(ns[i].artist);
+      return (a && a.gid) || null;
+    };
     // Built-in release add/edit targets. `key` is a STABLE, index-free storage key
     // (catno-0/label-0 are per-medium, but saved values are shared). `gid` (entity
     // fields) resolves the selected entity's MBID for capture.
@@ -604,6 +611,7 @@
       { match: 'select[id^="country-"]',   key: 'release.country',      label: 'Country' },
       { match: 'input[id^="label-"]',      key: 'release.label',        label: 'Label',  gid: labelGid },
       { match: '#ac-source-single-artist', key: 'release.artist',       label: 'Artist', gid: artistGid },
+      { match: 'input[id^="ac-source-artist-"]', key: 'release.artist', label: 'Artist', gid: artistRowGid },   // artist-credit editor bubble rows
     ];
 
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
