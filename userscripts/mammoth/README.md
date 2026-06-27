@@ -11,30 +11,43 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 
 ## Features
 
-- **Per-type notes** *(#309 — ⚙ "Scope per resource", off by default)*<br>
-Turn this on to keep saved notes and history **separate per edit-note type** (release / artist / recording / label / work / …, detected from the page), so your release-only notes (covers, merges, ISRCs…) don't clutter an artist edit. A small chip in the toolbar shows the current type. Off, all notes share one pool shown everywhere.
+- **Per type notes**<br>
+Keep saved notes and history **separate per edit-note type** (release / artist / recording…). A small chip in the toolbar shows the current type. When off (default), all notes share one pool shown everywhere.
 - **History**<br>
 Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. 
 - **Saved notes**<br>
-**＋** saves the current text; in **History**, **★** on a row moves it to saved notes. Reorder by **drag** (the **⠿** handle on the right, shown on hover) and delete with **🗑**.
-- **Note search** *(for big lists, #304 — opt-in via ⚙ "Show note search", off by default)*<br>
-A **Search notes…** box narrows the list to notes containing what you type (matches the full note, not just the visible preview); the count shows **`matches / total`**. **Enter** uses the first result; `Esc` clears.
-- **Pinned quick-buttons** *(#304)*<br>
-**★** a saved note (row action) to pin it as a one-click **button below the edit-note field** — your most-used notes are always one click away, just like the baby-field pins.
-- **Sort** *(#304 — ⚙ "Sort saved notes")*<br>
-**Manual** (your drag order, the default), **Most used**, or **Recent** — usage is counted as you insert notes. Drag-reorder is available in Manual order.
-- **Bulk import / export** *(#304/#309 — ⚙ → Import / Export tab)*<br>
-Paste a block to **Import** many notes at once and **Export all** to copy them to the clipboard. A **1 note per line** / **empty line separates notes** toggle controls the format (so multi-line notes survive); duplicates are skipped on import. **It acts on whatever you opened it from** — the edit-note notes from the panel's ⚙, or a specific field's saved values when opened from a **baby field's ⚙** (entity fields like Artist/Label keep their MBID in the export, so a re-import resolves the real entity).
-- **Compact, one-line rows**<br>
+    - **＋** saves the current text; in **History**, `★` on a row moves it to saved notes. Reorder by **drag** (the `⠿` handle on the right, shown on hover) and delete with `🗑`.
+    - **Note search** — narrows the list to notes containing typeed phrase; `Enter` uses the first result, `Esc` clears.
+    - **Quick buttons** — click `★` on a saved note to pin it as a button below the input field
+    - **Sort** — **Manual** (using drag&drop, the default), **Most used** or **Recent**
+- **Import / export** — batch load/export multiple notes; it is contextual for given input type; entity fields like Artist/Label keep their MBID in the export, so a re-import resolves the real entity
+- **Compact, one-line rows**<br
 With the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
-- **Insert**<br>
+- **Replace or Insert**<br>
 Click does your default (replace/append); right-click does the other. Append skips a line already present in the field. Ctrl/⌘ + ↑/↓ cycles saved notes; **Ctrl/⌘ + B / I** wrap the selection — or the word at the caret — in bold / italic markup.
 - **Resizable**<br>
 The native edit-note field is widened and centered (it spans the full form width on the release editor). **Drag the separator** to resize the field vs. the panel, and the field's own height; both are remembered.
 - **Minimized mode**<br>
 The **–** button (left of **?**) collapses the panel to a small Mammoth icon in the field's top-right corner, giving the edit note the full width. **Hover** the icon to float the panel back in (click it to pin it open); **⤢** restores it. The mode is remembered across edit pages.
-- **Baby mammoths** *(optional — ⚙ "Show mammoth babies", on by default)*<br>
-The same save/reuse idea on **other controls** — catalog number, label, artist, status, language, script, country, primary type. A small **🦣** pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The pin opens a compact panel with a toolbar — **＋** save the current value, **✕** clear the field, **⚙** open Mammoth's settings — and one row per saved value. In the row menu: **★** pins a value as an always-visible **button under the field** (rounded "tag" buttons that wrap to new rows, labelled with the value truncated to the configured length — see **⚙ "Button label length"**), **◉** marks one entry as the **default** (auto-fills the field when it's empty), **🗑** forgets, and the **⠿** handle (on hover) drags to reorder — just like the edit-note panel. Entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity. The pin auto-shifts left of a field's native control (the `<select>` arrow or an autocomplete's magnifier); `data-mmth-dx="<px>"` overrides that nudge for a specific control. Other scripts can opt a control in by tagging it `class="mmth-pin"` (optional `data-mmth-key` / `data-mmth-label`). Stored separately under `mammoth-fields:data`.
+- **Mammoth babies** - The same save/reuse on **other controls** — catalog number, label, artist, status, language, script, country, primary type
+
+## Mammoth babies
+
+The same save/reuse on **other controls** — catalog number, label, artist, status, language, script, country, primary type. 
+
+A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The pin opens a compact panel with a toolbar:
+
+- `＋` - save the current value; entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity
+- `✕` - clear the field
+
+The pin auto-shifts left of a field's native control (the `<select>` arrow or an autocomplete's magnifier); `data-mmth-dx="<px>"` overrides that nudge for a specific control. Other scripts can opt a control in by tagging it `class="mmth-pin"` (optional `data-mmth-key` / `data-mmth-label`). Stored separately under `mammoth-fields:data`.
+
+Note actions:
+
+ - `★` pins a value as an always-visible **button under the field** (rounded "tag" buttons that wrap to new rows, labelled with the value truncated to the configured length — see **`⚙` "Button label length"**)
+ - `◉` marks one entry as the **default** (auto-fills the field when it's empty)
+ - `🗑` delete note
+ - `⠿` drag to reorder
 
 ## Keyboard shortcuts
 
@@ -64,7 +77,7 @@ Accessed using the ⚙ button. The config window has **Settings** and **Import /
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 | **Show mammoth babies** | on | Field memory on other controls (catalog №, label, artist, status…). Toggles on/off live. |
 
-The ⚙ window has two tabs: **Settings** (above) and **Import / Export** (paste to import many notes, or **Export all** to the clipboard — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
+The `⚙` window has two tabs: **Settings** (above) and **Import / Export** (paste to import many notes, or **Export all** to the clipboard — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
 
 ## Using Mammoth from another userscript
 
@@ -86,6 +99,8 @@ Mammoth enhances **any `textarea.edit-note` on the page**, not just MusicBrainz'
    ```
 
 When Mammoth isn't installed the field is just a plain textarea, so the integration is a no-op.
+
+Mammoth baby pin auto-shifts left of a field's native control (the `<select>` arrow or an autocomplete's magnifier); `data-mmth-dx="<px>"` overrides that nudge for a specific control. Other scripts can opt a control in by tagging it `class="mmth-pin"` (optional `data-mmth-key` / `data-mmth-label`). Stored separately under `mammoth-fields:data`.
 
 ##  Notes
 
