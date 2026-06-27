@@ -24,7 +24,7 @@ A **Search notes…** box narrows the list to notes containing what you type (ma
 - **Sort** *(#304 — ⚙ "Sort saved notes")*<br>
 **Manual** (your drag order, the default), **Most used**, or **Recent** — usage is counted as you insert notes. Drag-reorder is available in Manual order.
 - **Bulk import / export** *(#304/#309 — ⚙ → Import / Export tab)*<br>
-Paste a block to **Import** many notes at once and **Export all** to copy them to the clipboard. A **1 note per line** / **empty line separates notes** toggle controls the format (so multi-line notes survive); duplicates are skipped on import. **It acts on whatever you opened it from** — the edit-note notes from the panel's ⚙, or a specific field's saved values when opened from a **baby field's ⚙**.
+Paste a block to **Import** many notes at once and **Export all** to copy them to the clipboard. A **1 note per line** / **empty line separates notes** toggle controls the format (so multi-line notes survive); duplicates are skipped on import. **It acts on whatever you opened it from** — the edit-note notes from the panel's ⚙, or a specific field's saved values when opened from a **baby field's ⚙** (entity fields like Artist/Label keep their MBID in the export, so a re-import resolves the real entity).
 - **Compact, one-line rows**<br>
 With the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
 - **Insert**<br>
@@ -49,7 +49,7 @@ In the edit-note field (and Mammoth's panel):
 
 ## Settings 
 
-Accessesd using ⚙ button:
+Accessed using the ⚙ button. The config window has **Settings** and **Import / Export** tabs and can be **dragged by its header** to move it out of the way.
 
 | Setting | Default | Notes |
 |---|---|---|
