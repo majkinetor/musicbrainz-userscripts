@@ -15,14 +15,14 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. 
 - **Saved notes**<br>
 **＋** saves the current text; in **History**, **★** on a row moves it to saved notes. Reorder by **drag** (the **⠿** handle on the right, shown on hover) and delete with **🗑**.
-- **Filter + count** *(for big lists, #304)*<br>
-A **Filter notes…** box narrows the list to notes containing what you type (matches the full note, not just the visible preview); the count shows **`matches / total`**. `Esc` clears it.
+- **Note search** *(for big lists, #304 — opt-in via ⚙ "Show note search", off by default)*<br>
+A **Search notes…** box narrows the list to notes containing what you type (matches the full note, not just the visible preview); the count shows **`matches / total`**. **Enter** uses the first result; `Esc` clears.
 - **Pinned quick-buttons** *(#304)*<br>
-**★** a saved note (row action) to pin it as a one-click **button at the top of the panel** — your most-used notes are always one click away without scrolling or filtering. Same idea as baby-field pins.
-- **Sort** *(#304)*<br>
-A selector toggles **Manual** (your drag order, the default), **Most used**, or **Recent** — usage is counted as you insert notes. Drag-reorder is available in Manual order.
-- **Bulk import / export** *(#304)*<br>
-The **⇅** button in the panel toolbar opens an import/export popover: paste a block to **Import** many notes at once (one per line, or tick the box so a **blank line** separates multi-line notes; duplicates are skipped), and **Export all** to copy every saved note to the clipboard for backup.
+**★** a saved note (row action) to pin it as a one-click **button below the edit-note field** — your most-used notes are always one click away, just like the baby-field pins.
+- **Sort** *(#304 — ⚙ "Sort saved notes")*<br>
+**Manual** (your drag order, the default), **Most used**, or **Recent** — usage is counted as you insert notes. Drag-reorder is available in Manual order.
+- **Bulk import / export** *(#304 — ⚙ → Import / Export tab)*<br>
+Paste a block to **Import** many notes at once and **Export all** to copy every saved note to the clipboard. A **1 note per line** / **empty line separates notes** toggle applies to both directions (so multi-line notes survive); duplicates are skipped on import.
 - **Compact, one-line rows**<br>
 With the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
 - **Insert**<br>

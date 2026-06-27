@@ -102,7 +102,7 @@
     if (added) saveData();
     return { added, seen: notes.length };
   }
-  const exportNotes = () => DATA.saved.map(s => s.text).join('\n\n');
+  const exportNotes = byBlock => DATA.saved.map(s => s.text).join(byBlock ? '\n\n' : '\n');
 
   // ── insert (React-safe + undoable) ───────────────────────────────────────────
   const NATIVE_SET = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
@@ -216,25 +216,32 @@
   .mmth-fb.on { background:#cfe9d8; color:#1f5c3d; }
   .mmth-fb.mmth-spacer { flex:1; pointer-events:none; }
   .mmth-fb.mmth-grp { margin-left:10px; }
-  /* #304: type-ahead filter row + count + sort, between the toolbar and the list */
+  /* #304: opt-in search row (search box + count) between the toolbar and the list */
   .mmth-filterrow { display:flex; align-items:center; gap:5px; padding:3px 5px; border-bottom:1px solid #e7eee9; background:#f7faf8; }
-  /* width:auto !important defends against MB's form CSS (#content input/select), which
+  /* width:auto !important defends against MB's form CSS (#content input), which
      otherwise forces a fixed width and squashes the flex layout (#304) */
   .mmth-filter { flex:1 1 auto; min-width:0; width:auto !important; box-sizing:border-box; border:1px solid #d7e0db; border-radius:5px; padding:2px 6px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
   .mmth-filter:focus { outline:none; border-color:#5aa67e; }
   .mmth-count { flex:none; font-size:11px; color:#8a978f; white-space:nowrap; }
-  .mmth-sort { flex:0 0 auto; width:auto !important; min-width:74px; max-width:108px; box-sizing:border-box; border:1px solid #d7e0db; border-radius:5px; padding:1px 3px; font-size:11px; color:#566; background:#fff; }
-  /* #304: pinned saved notes as quick-insert buttons — mirrors the baby-field seg bar */
-  .mmth-pinbar { display:flex; flex-wrap:wrap; gap:4px; padding:5px; border-bottom:1px solid #e7eee9; background:#fbfdfc; }
-  .mmth-segb { border:1px solid #cfd9d3; background:#fff; border-radius:7px; padding:3px 9px; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; color:#27483a; cursor:pointer; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+  /* #304: pinned saved notes as quick-insert buttons BELOW the field (like baby-field bars) */
+  .mmth-pinbar { display:flex; flex-wrap:wrap; gap:5px; margin:5px 0 2px; }
+  .mmth-segb { border:1px solid #cfd9d3; background:#fbfdfc; border-radius:7px; padding:3px 10px; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; color:#27483a; cursor:pointer; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
   .mmth-segb:hover { background:#eaf5ee; border-color:#5aa67e; }
   .mmth-row.mmth-pinned .mmth-txt::before { content:'★'; color:#c2a93e; margin-right:4px; font-size:10px; vertical-align:1px; }
-  /* #304: import/export block in Settings */
-  .mmth-io { display:flex; flex-direction:column; gap:4px; margin:6px 0 2px; }
-  .mmth-io textarea { width:100%; box-sizing:border-box; height:64px; resize:vertical; border:1px solid #d7e0db; border-radius:5px; padding:4px 6px; font:11px/1.35 ui-monospace,Consolas,monospace; }
+  /* #304: tabbed config window (Settings / Import-Export) */
+  .mmth-cfgtabs { display:flex; gap:4px; margin:0 0 8px; border-bottom:1px solid #e7eee9; }
+  .mmth-cfgtab { border:none; background:none; padding:4px 9px; font-size:12px; color:#566; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .mmth-cfgtab:hover { color:#1f5c3d; }
+  .mmth-cfgtab.on { color:#1f5c3d; border-bottom-color:#5aa67e; font-weight:600; }
+  /* #304: import/export pane */
+  .mmth-io { display:flex; flex-direction:column; gap:5px; }
+  .mmth-io-modes { display:flex; flex-direction:column; gap:2px; font-size:12px; }
+  .mmth-io-modes label { margin:0; }
+  .mmth-io textarea { width:100%; box-sizing:border-box; height:80px; resize:vertical; border:1px solid #d7e0db; border-radius:5px; padding:4px 6px; font:11px/1.35 ui-monospace,Consolas,monospace; }
   .mmth-io-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
   .mmth-io-btn { cursor:pointer; border:1px solid #cfd9d3; background:#fff; border-radius:5px; padding:2px 8px; font-size:12px; color:#27483a; }
   .mmth-io-btn:hover { background:#eaf5ee; border-color:#5aa67e; }
+  .mmth-io-msg { font-size:11px; color:#8a978f; }
   .mmth-list { flex:1 1 auto; overflow-y:auto; scrollbar-width:none; }
   .mmth-list::-webkit-scrollbar { width:0; height:0; }
   .mmth-row { display:flex; align-items:center; gap:4px; padding:4px 6px; border-top:1px solid #f0f4f2; cursor:pointer; }
@@ -313,66 +320,82 @@
     p.style.left = Math.max(6, Math.min(window.innerWidth - p.offsetWidth - 6, r.right - p.offsetWidth)) + 'px';
     setTimeout(() => document.addEventListener('mousedown', onPopDown, true), 0);
   }
-  function openSettings(anchor) {
+  // #304: tabbed config window — a Settings tab and an Import / Export tab.
+  function openSettings(anchor, tab) {
     closePop();
-    const p = document.createElement('div'); p.className = 'mmth-pop';
+    const p = document.createElement('div'); p.className = 'mmth-pop mmth-cfg';
     p.innerHTML = `
       <h4><span class="mmth-h4ic">${MAMMOTH_SVG}</span> Mammoth <span class="mmth-ver">v${scriptVersion()}</span><a href="${HELP_URL}" target="_blank" rel="noopener" title="Open the README">? Help</a></h4>
-      <label><input type="checkbox" class="mmth-s-help"> Hide edit-note help text</label>
-      <label>Default click action
-        <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
-      </label>
-      <div class="mmth-tip">Right-click does the other action.</div>
-      <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
-      <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
-      <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
-      <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
-      <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>`;
+      <div class="mmth-cfgtabs">
+        <button type="button" class="mmth-cfgtab" data-tab="settings">Settings</button>
+        <button type="button" class="mmth-cfgtab" data-tab="io">Import / Export</button>
+      </div>
+      <div class="mmth-cfgpane" data-pane="settings">
+        <label><input type="checkbox" class="mmth-s-help"> Hide edit-note help text</label>
+        <label>Default click action
+          <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
+        </label>
+        <div class="mmth-tip">Right-click does the other action.</div>
+        <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
+        <label><input type="checkbox" class="mmth-s-search"> Show note search</label>
+        <label>Sort saved notes
+          <select class="mmth-s-sort"><option value="manual">Manual</option><option value="uses">Most used</option><option value="recent">Recent</option></select>
+        </label>
+        <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
+        <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
+        <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
+        <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>
+      </div>
+      <div class="mmth-cfgpane" data-pane="io" style="display:none">
+        <div class="mmth-tip" style="margin-left:0">Import adds to your saved notes; Export copies them all to the clipboard.</div>
+        <div class="mmth-io-modes">
+          <label><input type="radio" name="mmth-iomode" value="line" checked> 1 note per line</label>
+          <label><input type="radio" name="mmth-iomode" value="block"> empty line separates notes</label>
+        </div>
+        <textarea class="mmth-io-ta" placeholder="Paste notes to import, or press Export to fill this box."></textarea>
+        <div class="mmth-io-row">
+          <button type="button" class="mmth-io-btn mmth-io-import">Import</button>
+          <button type="button" class="mmth-io-btn mmth-io-export">Export all</button>
+          <span class="mmth-io-msg"></span>
+        </div>
+      </div>`;
     document.body.appendChild(p); pop = p;
+    // tab switching (re-place after the height changes so it stays anchored)
+    const tabs = [...p.querySelectorAll('.mmth-cfgtab')], panes = [...p.querySelectorAll('.mmth-cfgpane')];
+    const showTab = name => { tabs.forEach(t => t.classList.toggle('on', t.dataset.tab === name)); panes.forEach(pn => { pn.style.display = pn.dataset.pane === name ? '' : 'none'; }); placePop(p, anchor); };
+    tabs.forEach(t => t.onclick = () => showTab(t.dataset.tab));
+    // ── Settings pane ──
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
     const ins = p.querySelector('.mmth-s-ins'); ins.value = SET.defaultInsert;
     const nl = p.querySelector('.mmth-s-nl'); nl.checked = SET.appendNewline !== false;
+    const search = p.querySelector('.mmth-s-search'); search.checked = SET.noteSearch === true;
+    const sort = p.querySelector('.mmth-s-sort'); sort.value = SET.noteSort || 'manual';
     const rows = p.querySelector('.mmth-s-rows'); rows.value = SET.visibleRows;
     const hist = p.querySelector('.mmth-s-hist'); hist.value = SET.historySize;
     help.onchange = () => { SET.hideHelp = help.checked; saveSet(); };
     ins.onchange = () => { SET.defaultInsert = ins.value; saveSet(); };
     nl.onchange = () => { SET.appendNewline = nl.checked; saveSet(); };
+    search.onchange = () => { SET.noteSearch = search.checked; saveSet(); };
+    sort.onchange = () => { SET.noteSort = sort.value; persistSet(); render(); };
     rows.onchange = () => { SET.visibleRows = Math.max(1, Math.min(30, parseInt(rows.value, 10) || 6)); rows.value = SET.visibleRows; saveSet(); };
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
     babies.onchange = () => { SET.showBabies = babies.checked; persistSet(); babyMammoths.toggle(babies.checked); };
-    placePop(p, anchor);
-  }
-  // #304: dedicated Import / Export popover (was buried in Settings — bad UX).
-  function openIO(anchor) {
-    closePop();
-    const p = document.createElement('div'); p.className = 'mmth-pop';
-    p.innerHTML = `
-      <h4><span class="mmth-h4ic">${MAMMOTH_SVG}</span> Import / export notes</h4>
-      <div class="mmth-tip" style="margin-left:0">Import adds to your saved notes; Export copies them all to the clipboard.</div>
-      <div class="mmth-io">
-        <textarea class="mmth-io-ta" placeholder="Paste notes here to import — one per line."></textarea>
-        <label style="margin:2px 0;font-size:11px"><input type="checkbox" class="mmth-io-block"> a blank line separates notes (for multi-line notes)</label>
-        <div class="mmth-io-row">
-          <button type="button" class="mmth-io-btn mmth-io-import">Import</button>
-          <button type="button" class="mmth-io-btn mmth-io-export">Export all</button>
-          <span class="mmth-io-msg" style="font-size:11px;color:#8a978f"></span>
-        </div>
-      </div>`;
-    document.body.appendChild(p); pop = p;
-    const ioTa = p.querySelector('.mmth-io-ta'), ioBlock = p.querySelector('.mmth-io-block'), ioMsg = p.querySelector('.mmth-io-msg');
+    // ── Import / Export pane ── (line/blank-line mode applies to both directions) #304
+    const ioTa = p.querySelector('.mmth-io-ta'), ioMsg = p.querySelector('.mmth-io-msg');
+    const ioBlock = () => p.querySelector('input[name="mmth-iomode"]:checked').value === 'block';
     p.querySelector('.mmth-io-import').onclick = () => {
       const v = ioTa.value; if (!v.trim()) { ioMsg.textContent = 'Paste some notes first'; return; }
-      const r = importNotes(v, ioBlock.checked);
+      const r = importNotes(v, ioBlock());
       ioMsg.textContent = `Added ${r.added} of ${r.seen}` + (r.added < r.seen ? ' (rest were duplicates)' : '');
       if (r.added) ioTa.value = '';
     };
     p.querySelector('.mmth-io-export').onclick = async () => {
-      const text = exportNotes(); ioTa.value = text; ioTa.focus(); ioTa.select();
+      const text = exportNotes(ioBlock()); ioTa.value = text; ioTa.focus(); ioTa.select();
       let copied = false; try { await navigator.clipboard.writeText(text); copied = true; } catch (e) { try { copied = document.execCommand('copy'); } catch (x) {} }
       ioMsg.textContent = `${DATA.saved.length} note(s)` + (copied ? ' — copied to clipboard' : ' — select & copy');
     };
-    placePop(p, anchor);
+    showTab(tab === 'io' ? 'io' : 'settings');
   }
   function openSyntax(anchor) {
     closePop();
@@ -451,25 +474,24 @@
     const side = document.createElement('div'); side.className = 'mmth-side';
     setSideWidth(side, SET.sideWidth || 300);
     const ft = document.createElement('div'); ft.className = 'mmth-ft';            // toolbar ON TOP (#212)
-    const pinbar = document.createElement('div'); pinbar.className = 'mmth-pinbar';   // #304 pinned quick-buttons
-    const filterRow = document.createElement('div'); filterRow.className = 'mmth-filterrow';   // #304 filter + count + sort
+    const filterRow = document.createElement('div'); filterRow.className = 'mmth-filterrow';   // #304 search (opt-in)
     const list = document.createElement('div'); list.className = 'mmth-list';
-    side.appendChild(ft); side.appendChild(pinbar); side.appendChild(filterRow); side.appendChild(list);
+    const pinbar = document.createElement('div'); pinbar.className = 'mmth-pinbar';   // #304 pinned quick-buttons — placed BELOW the field (in injectAll)
+    side.appendChild(ft); side.appendChild(filterRow); side.appendChild(list);
 
     const inst = { ta, list, side, pinbar, filterRow, view: 'saved', cycId: null, filter: '', viewItems: [] };
     instances.push(inst);
 
-    // #304: filter input + N/total count + sort selector (Saved view only)
-    const fInput = document.createElement('input'); fInput.type = 'text'; fInput.className = 'mmth-filter'; fInput.placeholder = 'Filter notes…';
+    // #304: search box + N/total count (shown only when the "Show note search" option is on)
+    const fInput = document.createElement('input'); fInput.type = 'text'; fInput.className = 'mmth-filter'; fInput.placeholder = 'Search notes…';
     fInput.addEventListener('input', () => { inst.filter = fInput.value; renderInst(inst); });
-    fInput.addEventListener('keydown', e => { if (e.key === 'Escape') { fInput.value = ''; inst.filter = ''; renderInst(inst); } });
+    fInput.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { fInput.value = ''; inst.filter = ''; renderInst(inst); return; }
+      // #304: Enter uses the first result
+      if (e.key === 'Enter') { e.preventDefault(); const it = (inst.viewItems || [])[0]; if (it) { applyNote(ta, it.text, SET.defaultInsert === 'replace'); if (inst.view === 'saved') bumpUse(it.id); } }
+    });
     const fCount = document.createElement('span'); fCount.className = 'mmth-count'; inst.countEl = fCount;
-    const fSort = document.createElement('select'); fSort.className = 'mmth-sort'; fSort.title = 'Sort saved notes';
-    fSort.innerHTML = '<option value="manual">Manual</option><option value="uses">Most used</option><option value="recent">Recent</option>';
-    fSort.value = SET.noteSort || 'manual';
-    fSort.addEventListener('change', () => { SET.noteSort = fSort.value; persistSet(); render(); });
-    inst.sortEl = fSort;
-    filterRow.appendChild(fInput); filterRow.appendChild(fCount); filterRow.appendChild(fSort);
+    filterRow.appendChild(fInput); filterRow.appendChild(fCount); inst.filterInput = fInput;
 
     const fb = (glyph, title, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-fb' + (cls ? ' ' + cls : ''); b.textContent = glyph; b.title = title; b.onclick = fn; return b; };
     ft.appendChild(fb('＋', 'Save current edit note', '', () => { const v = (ta.value || '').trim(); if (!v) return toast('Edit note is empty'); toast(addSaved(v) ? 'Saved' : 'Already saved'); }));
@@ -478,7 +500,6 @@
     ft.appendChild(bSaved); ft.appendChild(bHist);
     ft.appendChild(fb('✕', 'Clear the edit note', 'mmth-grp', () => { setValue(ta, ''); ta.focus(); }));
     const sp = document.createElement('span'); sp.className = 'mmth-fb mmth-spacer'; ft.appendChild(sp);
-    ft.appendChild(fb('⇅', 'Import / export saved notes', 'mmth-pop-anchor', e => openIO(e.currentTarget)));   // #304: dedicated, not in Settings
     inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => setMinimized(!SET.minimized));   // #265: left of the ? button
     ft.appendChild(inst.minBtn);
     ft.appendChild(fb('?', 'Edit-note syntax', 'mmth-pop-anchor', e => openSyntax(e.currentTarget)));
@@ -518,10 +539,11 @@
     return inst;
   }
 
-  // #304: pinned saved notes shown as one-click quick-insert buttons (Saved view).
+  // #304: pinned saved notes shown as one-click quick-insert buttons BELOW the
+  // edit-note field (like baby-field bars) — always available, independent of view.
   function renderPinbar(inst) {
     const bar = inst.pinbar; bar.innerHTML = '';
-    const pinned = inst.view === 'saved' ? DATA.saved.filter(s => s.pinned) : [];
+    const pinned = DATA.saved.filter(s => s.pinned);
     if (!pinned.length) { bar.style.display = 'none'; return; }
     bar.style.display = 'flex';
     const cap = t => { t = t.replace(/\s+/g, ' ').trim(); return t.length > 24 ? t.slice(0, 24) + '…' : t; };
@@ -541,17 +563,20 @@
     list.innerHTML = '';
     if (inst.tabs) { inst.tabs.saved.classList.toggle('on', inst.view === 'saved'); inst.tabs.history.classList.toggle('on', inst.view === 'history'); }
     const saved = inst.view === 'saved';
-    if (inst.sortEl) { inst.sortEl.value = SET.noteSort || 'manual'; inst.sortEl.style.display = saved ? '' : 'none'; }
     renderPinbar(inst);
-    // #304: sort (Saved) then type-ahead filter on the full note text; show N/total
+    // #304: search is opt-in ("Show note search"); when off, no search row and no filtering
+    const searchOn = SET.noteSearch === true;
+    inst.filterRow.style.display = searchOn ? 'flex' : 'none';
+    if (!searchOn && inst.filter) { inst.filter = ''; if (inst.filterInput) inst.filterInput.value = ''; }
+    // #304: sort (Saved, from config) then search-filter on the full note text; show N/total
     const all = saved ? sortedSaved() : DATA.history;
-    const q = (inst.filter || '').trim().toLowerCase();
+    const q = searchOn ? (inst.filter || '').trim().toLowerCase() : '';
     const items = q ? all.filter(it => it.text.toLowerCase().includes(q)) : all;
-    inst.viewItems = items;   // Ctrl+↑/↓ cycles through exactly what's shown
+    inst.viewItems = items;   // Ctrl+↑/↓ and Enter-in-search use exactly what's shown
     if (inst.countEl) inst.countEl.textContent = q ? (items.length + ' / ' + all.length) : (all.length ? String(all.length) : '');
     // drag-reorder only makes sense in the unfiltered manual order
     const manual = saved && (SET.noteSort || 'manual') === 'manual' && !q;
-    if (!items.length) { const e = document.createElement('div'); e.className = 'mmth-empty'; e.textContent = all.length ? 'No notes match the filter' : (saved ? 'No saved notes — ＋ saves the current one' : 'No history yet'); list.appendChild(e); return; }
+    if (!items.length) { const e = document.createElement('div'); e.className = 'mmth-empty'; e.textContent = all.length ? 'No notes match the search' : (saved ? 'No saved notes — ＋ saves the current one' : 'No history yet'); list.appendChild(e); return; }
 
     items.forEach((it) => {
       const row = document.createElement('div'); row.className = 'mmth-row';
@@ -621,6 +646,7 @@
       });
       const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; vsep.title = 'Drag to resize'; wrap.appendChild(vsep);   // resizable separator between field & panel (#212)
       const inst = buildSide(ta); const side = inst.side; wrap.appendChild(side);
+      wrap.parentNode.insertBefore(inst.pinbar, wrap.nextSibling);   // #304: pinned quick-buttons sit BELOW the field
       wireResize(vsep, side);
 
       // #265 minimized mode: badge in the field's top-right corner; hover (or click
