@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.26
+// @version      2026.6.27
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -36,7 +36,7 @@
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true };   // defaultInsert: 'replace' | 'append'
-  const VERSION = '2026.6.26';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.6.27';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -242,10 +242,22 @@
     setTimeout(() => t.remove(), 1500);
   }
 
+  // #305: our popovers dismiss on an outside *mousedown* (capture). The click that
+  // completes that mousedown then lands on whatever was under the popover — and if
+  // that's a link/button (e.g. Apollo's cover-art thumbnail, a target=_blank anchor
+  // that can sit beneath a field popover before the layout settles), the dismiss
+  // click activates it: a stray "cover art opened when selecting a label". Swallow
+  // exactly that one click so a dismiss never doubles as activating something below.
+  function eatNextClick() {
+    const eat = ev => { ev.preventDefault(); ev.stopPropagation(); };
+    document.addEventListener('click', eat, true);
+    setTimeout(() => document.removeEventListener('click', eat, true), 0);
+  }
+
   // ── popovers (settings + syntax help) ────────────────────────────────────────
   let pop = null;
   function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('mousedown', onPopDown, true); } }
-  function onPopDown(e) { if (pop && !pop.contains(e.target) && !e.target.closest('.mmth-pop-anchor')) closePop(); }
+  function onPopDown(e) { if (pop && !pop.contains(e.target) && !e.target.closest('.mmth-pop-anchor')) { closePop(); eatNextClick(); } }
   function placePop(p, anchor) {
     const r = anchor.getBoundingClientRect();
     p.style.top = Math.max(6, r.top - p.offsetHeight - 6) + 'px';
@@ -850,7 +862,7 @@
     }
 
     function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('mousedown', onDown, true); } }
-    function onDown(e) { if (pop && !pop.contains(e.target) && !e.target.classList.contains('mmthf-pin')) closePop(); }
+    function onDown(e) { if (pop && !pop.contains(e.target) && !e.target.classList.contains('mmthf-pin')) { closePop(); eatNextClick(); } }
     function place(el, anchor) { const r = anchor.getBoundingClientRect(); el.style.left = Math.max(6, Math.min(innerWidth - el.offsetWidth - 6, r.left)) + 'px'; el.style.top = Math.min(innerHeight - el.offsetHeight - 6, r.bottom + 4) + 'px'; }
     function togglePop(p) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p); }
     function openPop(p) {
