@@ -75,8 +75,8 @@ const main = async () => {
   await page.waitForTimeout(120);
   out.grabShownManual = await page.evaluate(() => !!document.querySelector('.mmth-list .mmth-row .mmth-grab'));
 
-  // 6) bulk import via Settings
-  await page.evaluate(() => { const b = [...document.querySelectorAll('.mmth-ft .mmth-fb')].find(x => x.title === 'Settings'); b.click(); });
+  // 6) bulk import via the dedicated ⇅ popover (not Settings) #304
+  await page.evaluate(() => { const b = [...document.querySelectorAll('.mmth-ft .mmth-fb')].find(x => x.title === 'Import / export saved notes'); b.click(); });
   await page.waitForSelector('.mmth-io-ta', { timeout: 5000 });
   await page.fill('.mmth-io-ta', 'Imported one\nImported two\nSample edit note 001');   // 3rd is a dup
   await page.evaluate(() => document.querySelector('.mmth-io-import').click());

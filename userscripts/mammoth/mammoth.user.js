@@ -327,17 +327,7 @@
       <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
       <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
       <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
-      <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>
-      <div class="mmth-sub">Bulk notes (#304)</div>
-      <div class="mmth-io">
-        <textarea class="mmth-io-ta" placeholder="Paste notes to import here, or press Export to fill this box."></textarea>
-        <label style="margin:2px 0;font-size:11px"><input type="checkbox" class="mmth-io-block"> a blank line separates notes (for multi-line notes)</label>
-        <div class="mmth-io-row">
-          <button type="button" class="mmth-io-btn mmth-io-import">Import</button>
-          <button type="button" class="mmth-io-btn mmth-io-export">Export all</button>
-          <span class="mmth-io-msg" style="font-size:11px;color:#8a978f"></span>
-        </div>
-      </div>`;
+      <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>`;
     document.body.appendChild(p); pop = p;
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
     const ins = p.querySelector('.mmth-s-ins'); ins.value = SET.defaultInsert;
@@ -351,7 +341,25 @@
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
     babies.onchange = () => { SET.showBabies = babies.checked; persistSet(); babyMammoths.toggle(babies.checked); };
-    // #304 bulk import / export of saved notes
+    placePop(p, anchor);
+  }
+  // #304: dedicated Import / Export popover (was buried in Settings — bad UX).
+  function openIO(anchor) {
+    closePop();
+    const p = document.createElement('div'); p.className = 'mmth-pop';
+    p.innerHTML = `
+      <h4><span class="mmth-h4ic">${MAMMOTH_SVG}</span> Import / export notes</h4>
+      <div class="mmth-tip" style="margin-left:0">Import adds to your saved notes; Export copies them all to the clipboard.</div>
+      <div class="mmth-io">
+        <textarea class="mmth-io-ta" placeholder="Paste notes here to import — one per line."></textarea>
+        <label style="margin:2px 0;font-size:11px"><input type="checkbox" class="mmth-io-block"> a blank line separates notes (for multi-line notes)</label>
+        <div class="mmth-io-row">
+          <button type="button" class="mmth-io-btn mmth-io-import">Import</button>
+          <button type="button" class="mmth-io-btn mmth-io-export">Export all</button>
+          <span class="mmth-io-msg" style="font-size:11px;color:#8a978f"></span>
+        </div>
+      </div>`;
+    document.body.appendChild(p); pop = p;
     const ioTa = p.querySelector('.mmth-io-ta'), ioBlock = p.querySelector('.mmth-io-block'), ioMsg = p.querySelector('.mmth-io-msg');
     p.querySelector('.mmth-io-import').onclick = () => {
       const v = ioTa.value; if (!v.trim()) { ioMsg.textContent = 'Paste some notes first'; return; }
@@ -470,6 +478,7 @@
     ft.appendChild(bSaved); ft.appendChild(bHist);
     ft.appendChild(fb('✕', 'Clear the edit note', 'mmth-grp', () => { setValue(ta, ''); ta.focus(); }));
     const sp = document.createElement('span'); sp.className = 'mmth-fb mmth-spacer'; ft.appendChild(sp);
+    ft.appendChild(fb('⇅', 'Import / export saved notes', 'mmth-pop-anchor', e => openIO(e.currentTarget)));   // #304: dedicated, not in Settings
     inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => setMinimized(!SET.minimized));   // #265: left of the ? button
     ft.appendChild(inst.minBtn);
     ft.appendChild(fb('?', 'Edit-note syntax', 'mmth-pop-anchor', e => openSyntax(e.currentTarget)));
