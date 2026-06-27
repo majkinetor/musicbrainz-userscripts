@@ -19,9 +19,16 @@
 // turns out to unlock catalog reads, swapping fetchers is a 1-function
 // change — the parsed shape below stays.)
 
+import { getArtistRoles } from '../mappers.js';
+import { INSTRUMENTS }     from '../data/instruments.js';
+
 /** Role vocabulary seen in Qobuz `performers` strings → MB relationship plan.
- *  `null` = recognised but never imported (MainArtist duplicates the track
- *  artist credit; AssociatedPerformer/StudioPersonnel are too vague). */
+ *  Qobuz's vocabulary varies by album — some use camelCase tokens
+ *  (`MixingEngineer`), others spaced ones (`Mixing Engineer`) — so BOTH forms
+ *  are listed. `null` = recognised but never imported (Main Artist duplicates
+ *  the track artist credit; Associated Performer / Studio Personnel are too
+ *  vague). #311: instruments (Bass, Drums, Guitar…) aren't here — they're
+ *  recognised via INSTRUMENTS and resolved through getArtistRoles. */
 export const QOBUZ_ROLE_MAP = {
     'Composer':            { target: 'work',      rel: 'composer' },
     'Lyricist':            { target: 'work',      rel: 'lyricist' },
@@ -29,22 +36,48 @@ export const QOBUZ_ROLE_MAP = {
     'ComposerLyricist':    { target: 'work',      rel: 'writer' },
     'Writer':              { target: 'work',      rel: 'writer' },
     'Arranger':            { target: 'work',      rel: 'arranger' },
+    'Performance Arranger':{ target: 'recording', rel: 'arranger' },
     'Producer':            { target: 'recording', rel: 'producer' },
     'Co-Producer':         { target: 'recording', rel: 'producer' },
+    'Assistant Producer':  { target: 'recording', rel: 'producer', attributes: ['assistant'] },
     'Mixer':               { target: 'recording', rel: 'mix' },
     'MixingEngineer':      { target: 'recording', rel: 'mix' },
+    'Mixing Engineer':     { target: 'recording', rel: 'mix' },
     'Engineer':            { target: 'recording', rel: 'engineer' },
+    'Assistant Engineer':  { target: 'recording', rel: 'engineer', attributes: ['assistant'] },
     'RecordingEngineer':   { target: 'recording', rel: 'recording' },
+    'Recording Engineer':  { target: 'recording', rel: 'recording' },
     'MasteringEngineer':   { target: 'recording', rel: 'mastering' },
+    'Mastering Engineer':  { target: 'recording', rel: 'mastering' },
+    'Editor':              { target: 'recording', rel: 'editor' },
     'Remixer':             { target: 'recording', rel: 'remixer' },
     'Conductor':           { target: 'recording', rel: 'conductor' },
+    'Vocals':              { target: 'recording', rel: 'vocal' },
+    'Vocal':               { target: 'recording', rel: 'vocal' },
+    'Background Vocal':     { target: 'recording', rel: 'vocal', attributes: [{ _type: 'vocal', value: 'background vocals' }] },
+    'Background Vocals':    { target: 'recording', rel: 'vocal', attributes: [{ _type: 'vocal', value: 'background vocals' }] },
     'MusicPublisher':      { target: 'work',      rel: 'publisher' },
+    'Music Publisher':     { target: 'work',      rel: 'publisher' },
     'MainArtist':          null,
+    'Main Artist':         null,
     'FeaturedArtist':      null,
+    'Featured Artist':     null,
     'AssociatedPerformer': null,
+    'Associated Performer': null,
     'StudioPersonnel':     null,
-    'Vocals':              null,
+    'Studio Personnel':    null,
 };
+
+// Case-insensitive instrument lookup, so Qobuz instrument roles (Bass, Drums,
+// Guitar, Piano, Keyboards, Strings, Bass Guitar…) are recognised as roles and
+// resolved through the shared INSTRUMENTS table. #311
+const QOBUZ_INSTRUMENTS_CI = new Set(Object.keys(INSTRUMENTS).map(k => k.toLowerCase()));
+
+/** A credit-line token is a "role" if it's a known Qobuz role OR an instrument
+ *  — used to find where a name ends and its roles begin. #311 */
+export function isQobuzRole(token) {
+    return Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, token) || QOBUZ_INSTRUMENTS_CI.has(token.toLowerCase());
+}
 
 const QOBUZ_ALBUM_RE = /^(?:https?:)?\/\/(?:www\.|play\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/]+\/)?([a-z0-9]+)\/?(?:[?#]|$)/i;
 
@@ -76,28 +109,36 @@ export function decodeEntities(s) {
         .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ');
 }
 
+/** A copyright / publishing notice line, not a credit (e.g. "(P) 2016 Sony…"). */
+const QOBUZ_NOTICE_RE = /^\s*[(℗©]|\bcopyright\b/i;
+
 /**
  * Parse one `track__info` credit line into `[{ name, roles: [role…] }]`.
  *
- * Strategy: split on " - " into segments, then split each segment on ", ".
- * Tokens found in `QOBUZ_ROLE_MAP` are roles; everything before the first
- * role token is the name. A segment with no known role token is glued back
- * onto the previous segment's name (handles names containing " - ").
- * Known limitation: a *name* containing ", " followed by a token that
- * happens to be a known role would mis-split — not observed in practice.
+ * Strategy: split on " - " into segments ("Name, Role[, Role…]"), then split
+ * each segment on ", ". A token is a role if `isQobuzRole` (known role OR
+ * instrument); everything before the first role token is the name.
+ *
+ * #311: role recognition now covers Qobuz's spaced role names and instruments,
+ * so people are no longer glued into one garbled name. A segment with NO role
+ * token is a person Qobuz didn't label — kept as a role-less entry (reported
+ * as unresolved downstream), not glued onto the previous person. Copyright
+ * notices are dropped.
  */
 export function parseQobuzCreditLine(line) {
     const out = [];
     for (const seg of String(line).split(' - ')) {
-        const tokens   = seg.split(',').map(t => t.trim()).filter(Boolean);
-        const firstRole = tokens.findIndex(t => Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, t));
+        const raw = seg.trim();
+        if (!raw || QOBUZ_NOTICE_RE.test(raw)) continue;
+        const tokens   = raw.split(',').map(t => t.trim()).filter(Boolean);
+        const firstRole = tokens.findIndex(isQobuzRole);
         if (firstRole === -1) {
-            // No role token: part of a name containing " - ".
-            if (out.length) out[out.length - 1].name += ' - ' + seg.trim();
+            // No role token — a person Qobuz left unlabelled. Keep so it's reported.
+            out.push({ name: tokens.join(', '), roles: [] });
             continue;
         }
         const name  = tokens.slice(0, firstRole).join(', ');
-        const roles = tokens.slice(firstRole).filter(t => Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, t));
+        const roles = tokens.slice(firstRole).filter(isQobuzRole);
         if (name) out.push({ name, roles });
         else if (out.length) out[out.length - 1].roles.push(...roles); // role-only segment continues previous credit
     }
@@ -156,20 +197,39 @@ export function qobuzToEngine(parsedTracks) {
         const track = { position: String(t.index), title: '', type_: 'track' };
         tracklist.push(track);
         for (const credit of t.credits) {
+            if (!credit.roles.length) {   // #311: person Qobuz left unlabelled — can't import without a role
+                if (credit.name && !/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: (no role) — ${credit.name}`);
+                continue;
+            }
             for (const role of credit.roles) {
-                if (role === 'MusicPublisher') {
-                    if (!/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: MusicPublisher — ${credit.name}`);
+                if (role === 'MusicPublisher' || role === 'Music Publisher') {
+                    if (!/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: Music Publisher — ${credit.name}`);
                     continue;
                 }
-                const plan = QOBUZ_ROLE_MAP[role];
-                if (!plan) continue;   // MainArtist & friends — never imported
-                tracklistRels.push({
-                    linkType:   plan.rel,
-                    entityType: 'artist',
-                    attributes: [],
-                    artist: { name: credit.name, anv: '', resource_url: '' },
-                    track,
-                });
+                if (Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, role)) {
+                    const plan = QOBUZ_ROLE_MAP[role];
+                    if (!plan) continue;   // Main Artist & friends — never imported
+                    tracklistRels.push({
+                        linkType:   plan.rel,
+                        entityType: 'artist',
+                        attributes: [...(plan.attributes || [])],
+                        artist: { name: credit.name, anv: '', resource_url: '' },
+                        track,
+                    });
+                    continue;
+                }
+                // #311: instrument role → shared resolver (INSTRUMENTS → instrument rel)
+                const rels = getArtistRoles({ name: credit.name, anv: '', role, resource_url: '' });
+                if (!rels.length) { skipped.push(`track ${track.position}: ${role} — ${credit.name}`); continue; }
+                for (const r of rels) {
+                    tracklistRels.push({
+                        linkType:   r.linkType,
+                        entityType: 'artist',
+                        attributes: r.attributes || [],
+                        artist:     r.artist,
+                        track,
+                    });
+                }
             }
         }
     }

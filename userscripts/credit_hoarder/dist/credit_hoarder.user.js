@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.27.235219
+// @version      2026.6.28.001016
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -5041,22 +5041,41 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     "ComposerLyricist": { target: "work", rel: "writer" },
     "Writer": { target: "work", rel: "writer" },
     "Arranger": { target: "work", rel: "arranger" },
+    "Performance Arranger": { target: "recording", rel: "arranger" },
     "Producer": { target: "recording", rel: "producer" },
     "Co-Producer": { target: "recording", rel: "producer" },
+    "Assistant Producer": { target: "recording", rel: "producer", attributes: ["assistant"] },
     "Mixer": { target: "recording", rel: "mix" },
     "MixingEngineer": { target: "recording", rel: "mix" },
+    "Mixing Engineer": { target: "recording", rel: "mix" },
     "Engineer": { target: "recording", rel: "engineer" },
+    "Assistant Engineer": { target: "recording", rel: "engineer", attributes: ["assistant"] },
     "RecordingEngineer": { target: "recording", rel: "recording" },
+    "Recording Engineer": { target: "recording", rel: "recording" },
     "MasteringEngineer": { target: "recording", rel: "mastering" },
+    "Mastering Engineer": { target: "recording", rel: "mastering" },
+    "Editor": { target: "recording", rel: "editor" },
     "Remixer": { target: "recording", rel: "remixer" },
     "Conductor": { target: "recording", rel: "conductor" },
+    "Vocals": { target: "recording", rel: "vocal" },
+    "Vocal": { target: "recording", rel: "vocal" },
+    "Background Vocal": { target: "recording", rel: "vocal", attributes: [{ _type: "vocal", value: "background vocals" }] },
+    "Background Vocals": { target: "recording", rel: "vocal", attributes: [{ _type: "vocal", value: "background vocals" }] },
     "MusicPublisher": { target: "work", rel: "publisher" },
+    "Music Publisher": { target: "work", rel: "publisher" },
     "MainArtist": null,
+    "Main Artist": null,
     "FeaturedArtist": null,
+    "Featured Artist": null,
     "AssociatedPerformer": null,
+    "Associated Performer": null,
     "StudioPersonnel": null,
-    "Vocals": null
+    "Studio Personnel": null
   };
+  var QOBUZ_INSTRUMENTS_CI = new Set(Object.keys(INSTRUMENTS).map((k) => k.toLowerCase()));
+  function isQobuzRole(token) {
+    return Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, token) || QOBUZ_INSTRUMENTS_CI.has(token.toLowerCase());
+  }
   var QOBUZ_ALBUM_RE = /^(?:https?:)?\/\/(?:www\.|play\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/]+\/)?([a-z0-9]+)\/?(?:[?#]|$)/i;
   function parseQobuzAlbumUrl(url) {
     const m = QOBUZ_ALBUM_RE.exec(url || "");
@@ -5068,17 +5087,20 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   function decodeEntities(s) {
     return String(s).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ");
   }
+  var QOBUZ_NOTICE_RE = /^\s*[(℗©]|\bcopyright\b/i;
   function parseQobuzCreditLine(line) {
     const out = [];
     for (const seg of String(line).split(" - ")) {
-      const tokens = seg.split(",").map((t) => t.trim()).filter(Boolean);
-      const firstRole = tokens.findIndex((t) => Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, t));
+      const raw = seg.trim();
+      if (!raw || QOBUZ_NOTICE_RE.test(raw)) continue;
+      const tokens = raw.split(",").map((t) => t.trim()).filter(Boolean);
+      const firstRole = tokens.findIndex(isQobuzRole);
       if (firstRole === -1) {
-        if (out.length) out[out.length - 1].name += " - " + seg.trim();
+        out.push({ name: tokens.join(", "), roles: [] });
         continue;
       }
       const name = tokens.slice(0, firstRole).join(", ");
-      const roles = tokens.slice(firstRole).filter((t) => Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, t));
+      const roles = tokens.slice(firstRole).filter(isQobuzRole);
       if (name) out.push({ name, roles });
       else if (out.length) out[out.length - 1].roles.push(...roles);
     }
@@ -5111,20 +5133,41 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const track = { position: String(t.index), title: "", type_: "track" };
       tracklist.push(track);
       for (const credit of t.credits) {
+        if (!credit.roles.length) {
+          if (credit.name && !/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: (no role) \u2014 ${credit.name}`);
+          continue;
+        }
         for (const role of credit.roles) {
-          if (role === "MusicPublisher") {
-            if (!/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: MusicPublisher \u2014 ${credit.name}`);
+          if (role === "MusicPublisher" || role === "Music Publisher") {
+            if (!/^copyright control$/i.test(credit.name)) skipped.push(`track ${track.position}: Music Publisher \u2014 ${credit.name}`);
             continue;
           }
-          const plan = QOBUZ_ROLE_MAP[role];
-          if (!plan) continue;
-          tracklistRels.push({
-            linkType: plan.rel,
-            entityType: "artist",
-            attributes: [],
-            artist: { name: credit.name, anv: "", resource_url: "" },
-            track
-          });
+          if (Object.prototype.hasOwnProperty.call(QOBUZ_ROLE_MAP, role)) {
+            const plan = QOBUZ_ROLE_MAP[role];
+            if (!plan) continue;
+            tracklistRels.push({
+              linkType: plan.rel,
+              entityType: "artist",
+              attributes: [...plan.attributes || []],
+              artist: { name: credit.name, anv: "", resource_url: "" },
+              track
+            });
+            continue;
+          }
+          const rels = getArtistRoles({ name: credit.name, anv: "", role, resource_url: "" });
+          if (!rels.length) {
+            skipped.push(`track ${track.position}: ${role} \u2014 ${credit.name}`);
+            continue;
+          }
+          for (const r of rels) {
+            tracklistRels.push({
+              linkType: r.linkType,
+              entityType: "artist",
+              attributes: r.attributes || [],
+              artist: r.artist,
+              track
+            });
+          }
         }
       }
     }
