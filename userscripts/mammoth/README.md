@@ -30,12 +30,12 @@ Remembers the last **N edit notes you submit** (default 10, up to 50), most-rece
 - **Compact, one-line rows**<br
 With the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
 - **Replace or Insert**<br>
-Click does your default (replace/append); right-click does the other. Append skips a line already present in the field. Ctrl/⌘ + ↑/↓ cycles saved notes; **Ctrl/⌘ + B / I** wrap the selection — or the word at the caret — in bold / italic markup.
+Click does your default (replace/append); right-click does the other. Append skips a line already present in the field. Ctrl/⌘ + ↑/↓ cycles saved notes.
 - **Resizable**<br>
-The native edit-note field is widened and centered (it spans the full form width on the release editor). **Drag the separator** to resize the field vs. the panel, and the field's own height; both are remembered.
+The native edit-note field is widened and centered (it spans the full form width on the release editor). Drag the separator to resize the field vs. the panel, and the field's own height; both are remembered.
 - **Minimized mode**<br>
-The **–** button (left of **?**) collapses the panel to a small Mammoth icon in the field's top-right corner, giving the edit note the full width. **Hover** the icon to float the panel back in (click it to pin it open); **⤢** restores it. The mode is remembered across edit pages.
-- **Mammoth babies** - The same save/reuse on **other controls** — catalog number, label, artist, status, language, script, country, primary type
+The `–` button collapses the panel to a small Mammoth icon in the field's top-right corner, giving the edit note the full width. **Hover** the icon to float the panel back in (click it to pin it open); `⤢` restores it. The mode is remembered across edit pages.
+- **Mammoth babies** - The same save/reuse on other controls — catalog number, label, artist, status, language, script, country, primary type
 
 ## Mammoth babies
 
@@ -45,8 +45,6 @@ A small 🦣 pin sits in each field; click it to recall values you've saved for 
 
 - `＋` - save the current value; entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity
 - `✕` - clear the field
-
-The pin auto-shifts left of a field's native control (the `<select>` arrow or an autocomplete's magnifier); `data-mmth-dx="<px>"` overrides that nudge for a specific control. Other scripts can opt a control in by tagging it `class="mmth-pin"` (optional `data-mmth-key` / `data-mmth-label`). Stored separately under `mammoth-fields:data`.
 
 Note actions:
 
@@ -68,7 +66,7 @@ In the edit-note field (and Mammoth's panel):
 
 ## Settings 
 
-Accessed using the ⚙ button. The config window has **Settings** and **Import / Export** tabs and can be **dragged by its header** to move it out of the way.
+Accessed using the `⚙` button. 
 
 | Setting | Default | Notes |
 |---|---|---|
@@ -83,7 +81,7 @@ Accessed using the ⚙ button. The config window has **Settings** and **Import /
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 | **Show mammoth babies** | on | Field memory on other controls (catalog №, label, artist, status…). Toggles on/off live. |
 
-The `⚙` window has two tabs: **Settings** (above) and **Import / Export** (paste to import many notes, or **Export all** to the clipboard — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
+The `⚙` window has two tabs: **Settings** (above) and **Import / Export** (paste to import many notes, or **Export all** — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
 
 ## Using Mammoth from another userscript
 
