@@ -1,5 +1,14 @@
 # ISRC Scout Changelog
 
+## [2026.6.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.27)
+
+### Features
+
+1. Find links performance improvement ([#307](https://github.com/majkinetor/musicbrainz-userscripts/issues/307))
+1. Option to use providers from release group ([#302](https://github.com/majkinetor/musicbrainz-userscripts/issues/302))
+1. UI/UX improvements ([#301](https://github.com/majkinetor/musicbrainz-userscripts/issues/301))
+1. Track links management ([#300](https://github.com/majkinetor/musicbrainz-userscripts/issues/300))
+
 ## [2026.6.24](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.24)
 
 ### Features

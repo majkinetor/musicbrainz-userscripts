@@ -1,5 +1,18 @@
 # Apollo Editor Changelog
 
+## [2026.6.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.27)
+
+### Features
+
+1. Video indicators missing in recordings tab ([#303](https://github.com/majkinetor/musicbrainz-userscripts/issues/303))
+1. Front cover in release info ([#297](https://github.com/majkinetor/musicbrainz-userscripts/issues/297))
+1. Config redesign ([#294](https://github.com/majkinetor/musicbrainz-userscripts/issues/294))
+
+### Fixes
+
+1. Ignore link checks for special purpose artists ([#306](https://github.com/majkinetor/musicbrainz-userscripts/issues/306))
+1. 100% similarity on different release ([#298](https://github.com/majkinetor/musicbrainz-userscripts/issues/298))
+
 ## [2026.6.24](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.24)
 
 ### Features

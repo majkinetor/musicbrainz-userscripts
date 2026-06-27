@@ -1,5 +1,11 @@
 # Import Discogs Credits Changelog
 
+## [2026.6.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.27)
+
+### Fixes
+
+1. Attribute is unsupported for link type ([#295](https://github.com/majkinetor/musicbrainz-userscripts/issues/295))
+
 ## [2026.6.24](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.24)
 
 - Small improvements

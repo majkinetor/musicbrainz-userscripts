@@ -1,5 +1,17 @@
 # Mammoth Changelog
 
+## [2026.6.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.27)
+
+### Features
+
+1. Separate memories for different edit note types ([#309](https://github.com/majkinetor/musicbrainz-userscripts/issues/309))
+1. Options for work with big number of notes ([#304](https://github.com/majkinetor/musicbrainz-userscripts/issues/304))
+1. Mammoth babies: field memory, defaults and quick buttons for other controls ([#296](https://github.com/majkinetor/musicbrainz-userscripts/issues/296))
+
+### Fixes
+
+1. Cover art page opened when selecting label ([#305](https://github.com/majkinetor/musicbrainz-userscripts/issues/305))
+
 ## [2026.6.24](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.24)
 
 ### Features
