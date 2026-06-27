@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.26
+// @version      2026.6.27
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -158,7 +158,7 @@
   // Derive from the installed @version so the banner/CLIENT never drift out of
   // sync with the metadata again (the hardcoded constant kept lagging behind).
   const SCRIPT_VERSION = (() => {
-    try { return (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '2026.6.26'; } catch (e) { return '2026.6.26'; }
+    try { return (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '2026.6.27'; } catch (e) { return '2026.6.27'; }
   })();
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/isrc_scout';
   const CLIENT   = 'isrc_scout-' + SCRIPT_VERSION;
@@ -2366,15 +2366,23 @@
     // "streaming" / streaming page (Tidal, subscription).
     const PROV = [
       { code: 'dz', name: 'Deezer', color: _PROV_COLOR.deezer, icon: SRC_ICON.dz, linkTypeID: 268,
+        conc: 3, gap: 60,   // #307: a few in flight; a quota hit RECOVERS below (back off + retry) instead of false-negativing
         test: u => /(?:^|\.)deezer\.com\/(?:[a-z]{2}\/)?track\/\d+/i.test(u),
         async resolve(isrc) {
-          const r = await gmGet('https://api.deezer.com/track/isrc:' + encodeURIComponent(isrc), { 'Accept': 'application/json' });
-          if (r.status !== 200) return null;
-          let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { return null; }
-          if (!j || j.error || !j.id) return null;
-          return j.link || ('https://www.deezer.com/track/' + j.id);
+          // Deezer signals a rate limit as HTTP 429 or an error body with code 4 (quota) / 700 (busy);
+          // a genuine miss is code 800 ("no data"). Retry only the rate-limit cases, so throttling
+          // never looks like "not found". #307
+          for (let attempt = 0; ; attempt++) {
+            const r = await gmGet('https://api.deezer.com/track/isrc:' + encodeURIComponent(isrc), { 'Accept': 'application/json' });
+            let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) {}
+            const throttled = r.status === 429 || (j && j.error && (j.error.code === 4 || j.error.code === 700));
+            if (throttled && attempt < 4) { await sleep(Math.min(700 * Math.pow(2, attempt), 6000)); continue; }
+            if (r.status !== 200 || !j || j.error || !j.id) return null;
+            return j.link || ('https://www.deezer.com/track/' + j.id);
+          }
         } },
       { code: 'td', name: 'Tidal', color: _PROV_COLOR.tidal, icon: SRC_ICON.td, linkTypeID: 979,
+        conc: 3, gap: 0,   // #307: tidalGet() self-recovers from 429 (backoff+retry), so a burst is safe — it never false-negatives
         test: u => /tidal\.com\/(?:browse\/)?track\/\d+/i.test(u),
         async resolve(isrc) {
           const token = await tidalToken();
@@ -2389,13 +2397,13 @@
       // page lists every track's URL in order, so we match by position (with a
       // title sanity-check). Only offered when the release has a Bandcamp album link.
       { code: 'bc', name: 'Bandcamp', color: _PROV_COLOR.bandcamp, icon: SRC_ICON.bc, linkTypeID: 268,
-        album: true, urlKey: 'bandcampUrl',
+        album: true, urlKey: 'bandcampUrl', conc: 99, gap: 0,   // #307: one album fetch (cached), the rest is local
         test: u => /\.bandcamp\.com\/track\//i.test(u),
         resolve: (isrc, t, idx) => bcResolve(t, idx) },
       // Apple Music (#like Bandcamp): the album page's ld+json lists every track URL,
       // matched by position. Subscription streaming → linkType 979.
       { code: 'am', name: 'Apple Music', color: _PROV_COLOR.apple, icon: SRC_ICON.am, linkTypeID: 979,
-        album: true, urlKey: 'appleUrl',
+        album: true, urlKey: 'appleUrl', conc: 99, gap: 0,   // #307: one album fetch (cached), the rest is local
         test: u => /music\.apple\.com\/[a-z]{2}\/(?:song\/|album\/[^"\s]*[?&]i=)/i.test(u),
         resolve: (isrc, t, idx) => amResolve(t, idx) },
     ];
@@ -2698,32 +2706,48 @@
     // Throttled resolve pass: for every track with an ISRC and no existing link on
     // a provider, look the track up by ISRC and, if found, turn the icon into a
     // coloured "add" candidate (resolve only — no edits are made here).
+    // #307: resolve one provider across all its candidate tracks, with a bounded
+    // pool (p.conc workers) so a provider's own rate limit is respected while its
+    // requests still overlap. Album providers fetch once (cached) then resolve
+    // locally, so they run effectively instantly.
+    async function resolveProvider(p) {
+      if (p.album && !(RELEASE && RELEASE[p.urlKey])) return;   // album provider with no album link → nothing to resolve
+      const jobs = [];
+      for (let idx = 0; idx < RELEASE.tracks.length; idx++) {
+        const t = RELEASE.tracks[idx];
+        if (!t.recId) continue;
+        const isrc = normalizeIsrc(t.pending) || normalizeIsrc((t.existing || [])[0] || '');
+        if (!p.album && !isValidIsrc(isrc)) continue;  // by-ISRC providers need an ISRC; album ones don't
+        if (linkedUrl(t, p)) continue;                 // already linked → leave monochrome
+        const el = cell(idx, p.code);
+        if (!el || !el.classList.contains('cand')) continue;
+        el.className = 'ii-tl spin'; el.dataset.code = p.code;   // show all candidates spinning up front
+        jobs.push({ idx, isrc, t });
+      }
+      let next = 0;
+      const worker = async () => {
+        while (next < jobs.length) {
+          const j = jobs[next++];
+          let url = null;
+          try { url = await p.resolve(j.isrc, j.t, j.idx); } catch (e) { /* rate-limited / not found */ }
+          const fresh = cell(j.idx, p.code);
+          if (fresh) {
+            if (url) makeNew(j.idx, p, url);
+            else { fresh.className = 'ii-tl absent'; fresh.dataset.code = p.code; }
+          }
+          if (p.gap && next < jobs.length) await sleep(p.gap);
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(p.conc || 1, jobs.length) }, worker));
+    }
+
     async function resolve() {
       if (resolving) return;
       resolving = true;
       const btn = modal.querySelector('#ii-links-btn');
       if (btn) { btn.disabled = true; btn.dataset.busy = '1'; }
       try {
-        for (const p of PROV) {
-          if (p.album && !(RELEASE && RELEASE[p.urlKey])) continue;   // album provider with no album link → nothing to resolve
-          for (let idx = 0; idx < RELEASE.tracks.length; idx++) {
-            const t = RELEASE.tracks[idx];
-            if (!t.recId) continue;
-            const isrc = normalizeIsrc(t.pending) || normalizeIsrc((t.existing || [])[0] || '');
-            if (!p.album && !isValidIsrc(isrc)) continue;  // by-ISRC providers need an ISRC; album ones (Bandcamp) don't
-            if (linkedUrl(t, p)) continue;                 // already linked → leave monochrome
-            const el = cell(idx, p.code);
-            if (!el || !el.classList.contains('cand')) continue;
-            el.className = 'ii-tl spin'; el.dataset.code = p.code;
-            let url = null;
-            try { url = await p.resolve(isrc, t, idx); } catch (e) { /* rate-limited / not found */ }
-            const fresh = cell(idx, p.code);
-            if (!fresh) continue;
-            if (url) makeNew(idx, p, url);
-            else { fresh.className = 'ii-tl absent'; fresh.dataset.code = p.code; }
-            await sleep(p.code === 'td' ? 350 : p.album ? 0 : 120);   // Tidal is rate-limited; Bandcamp is one cached fetch
-          }
-        }
+        await Promise.all(PROV.map(resolveProvider));   // #307: providers run in parallel
       } finally {
         resolving = false;
         if (btn) { btn.disabled = false; delete btn.dataset.busy; }
