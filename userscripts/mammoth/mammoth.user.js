@@ -112,17 +112,20 @@
     else if (mode === 'recent') a.sort((x, y) => (y.lastUsed || y.ts || 0) - (x.lastUsed || x.ts || 0));
     return a;
   }
-  // bulk import: each line a note, or (byBlock) blank-line-separated blocks so
-  // multi-line notes survive. Dedups against existing text. Returns counts.
-  function importNotes(text, byBlock) {
+  // #304: parse pasted notes — each line a note, or (byBlock) blank-line-separated
+  // blocks so multi-line notes survive. Blank lines are dropped either way, so a
+  // readable (blank-line) export round-trips fine in "1 note per line" mode too.
+  function parseNotes(text, byBlock) {
     const parts = byBlock ? String(text || '').split(/\r?\n[ \t]*\r?\n/) : String(text || '').split(/\r?\n/);
-    const notes = parts.map(s => s.replace(/^\s+|\s+$/g, '')).filter(Boolean);
+    return parts.map(s => s.replace(/^\s+|\s+$/g, '')).filter(Boolean);
+  }
+  // add parsed notes to the edit-note saved list (dedup). Returns the added count.
+  function addSavedNotes(notes) {
     let added = 0; const have = new Set(DATA.saved.map(s => s.text));
     for (const t of notes) { if (have.has(t)) continue; have.add(t); DATA.saved.push({ id: uid(), text: t, ts: Date.now() }); added++; }
     if (added) saveData();
-    return { added, seen: notes.length };
+    return added;
   }
-  const exportNotes = byBlock => DATA.saved.map(s => s.text).join(byBlock ? '\n\n' : '\n');
 
   // ── insert (React-safe + undoable) ───────────────────────────────────────────
   const NATIVE_SET = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
@@ -226,7 +229,7 @@
                 font-size:15px; line-height:1; user-select:none; }
   .mmth-badge:hover { background:#eaf5ee; border-color:#5aa67e; }
   .mmth-min > .mmth-badge { display:flex; }
-  .mmth-vsep { flex:none; width:9px; align-self:stretch; cursor:col-resize; position:relative; }
+  .mmth-vsep { flex:none; width:9px; align-self:flex-start; cursor:col-resize; position:relative; }   /* #304: height synced to the field (not the field+pinbar column) */
   .mmth-vsep::before { content:''; position:absolute; left:4px; top:0; bottom:0; width:1px; background:#d7e0db; }
   .mmth-vsep:hover::before, .mmth-vsep.mmth-dragv::before { background:#5aa67e; width:3px; left:3px; }
   .mmth-hidehelp > p { display:none !important; }
@@ -239,7 +242,8 @@
   .mmth-fb.mmth-spacer { flex:1; pointer-events:none; }
   .mmth-fb.mmth-grp { margin-left:10px; }
   /* #309: per-type scope indicator (release / artist / recording / …) */
-  .mmth-scope { align-self:center; flex:none; font-size:10px; color:#6f7d75; background:#eef3f0; border:1px solid #dde7e1; border-radius:9px; padding:1px 7px; margin-right:4px; white-space:nowrap; max-width:90px; overflow:hidden; text-overflow:ellipsis; }
+  .mmth-scope { align-self:center; flex:none; font-size:10px; color:#6f7d75; background:#eef3f0; border:1px solid #dde7e1; border-radius:9px; padding:1px 7px; margin-right:4px; white-space:nowrap; max-width:72px; overflow:hidden; text-overflow:ellipsis; }
+  .mmth-ft { flex-wrap:wrap; }   /* #304: never clip toolbar buttons — wrap as a last resort below the min width */
   /* #304: opt-in search row (search box + count) between the toolbar and the list */
   .mmth-filterrow { display:flex; align-items:center; gap:5px; padding:3px 5px; border-bottom:1px solid #e7eee9; background:#f7faf8; }
   /* width:auto !important defends against MB's form CSS (#content input), which
@@ -358,8 +362,9 @@
     }
     setTimeout(() => document.addEventListener('mousedown', onPopDown, true), 0);
   }
-  // #304: tabbed config window — a Settings tab and an Import / Export tab.
-  function openSettings(anchor, tab) {
+  // #304/#309: tabbed config window — Settings + Import / Export. `io` lets the
+  // caller scope import/export to a specific field (e.g. a baby field's values).
+  function openSettings(anchor, tab, io) {
     closePop();
     const p = document.createElement('div'); p.className = 'mmth-pop mmth-cfg';
     p.innerHTML = `
@@ -386,7 +391,6 @@
         <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>
       </div>
       <div class="mmth-cfgpane" data-pane="io" style="display:none">
-        <div class="mmth-tip" style="margin-left:0">Import adds to your saved notes; Export copies them all to the clipboard.</div>
         <div class="mmth-io-modes">
           <label><input type="radio" name="mmth-iomode" value="line" checked> 1 note per line</label>
           <label><input type="radio" name="mmth-iomode" value="block"> empty line separates notes</label>
@@ -397,6 +401,7 @@
           <button type="button" class="mmth-io-btn mmth-io-export">Export all</button>
           <span class="mmth-io-msg"></span>
         </div>
+        <div class="mmth-tip mmth-io-help" style="margin-left:0"></div>
       </div>`;
     document.body.appendChild(p); pop = p;
     // tab switching (re-place after the height changes so it stays anchored)
@@ -422,19 +427,23 @@
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
     babies.onchange = () => { SET.showBabies = babies.checked; persistSet(); babyMammoths.toggle(babies.checked); };
-    // ── Import / Export pane ── (line/blank-line mode applies to both directions) #304
+    // ── Import / Export pane ── (#304/#309: scoped to `io` — edit-note notes by
+    // default, or a specific field's values when opened from a baby field)
+    const ctx = io || { items: () => DATA.saved.map(s => s.text), add: notes => addSavedNotes(notes), help: 'Import adds to your saved notes; Export copies them all to the clipboard.' };
     const ioTa = p.querySelector('.mmth-io-ta'), ioMsg = p.querySelector('.mmth-io-msg');
     const ioBlock = () => p.querySelector('input[name="mmth-iomode"]:checked').value === 'block';
+    p.querySelector('.mmth-io-help').textContent = ctx.help || '';
     p.querySelector('.mmth-io-import').onclick = () => {
-      const v = ioTa.value; if (!v.trim()) { ioMsg.textContent = 'Paste some notes first'; return; }
-      const r = importNotes(v, ioBlock());
-      ioMsg.textContent = `Added ${r.added} of ${r.seen}` + (r.added < r.seen ? ' (rest were duplicates)' : '');
-      if (r.added) ioTa.value = '';
+      const notes = parseNotes(ioTa.value, ioBlock());
+      if (!notes.length) { ioMsg.textContent = 'Paste some notes first'; return; }
+      const added = ctx.add(notes);
+      ioMsg.textContent = `Added ${added} of ${notes.length}` + (added < notes.length ? ' (rest were duplicates)' : '');
+      if (added) ioTa.value = '';
     };
     p.querySelector('.mmth-io-export').onclick = async () => {
-      const text = exportNotes(ioBlock()); ioTa.value = text; ioTa.focus(); ioTa.select();
+      const items = ctx.items(); const text = items.join(ioBlock() ? '\n\n' : '\n'); ioTa.value = text; ioTa.focus(); ioTa.select();
       let copied = false; try { await navigator.clipboard.writeText(text); copied = true; } catch (e) { try { copied = document.execCommand('copy'); } catch (x) {} }
-      ioMsg.textContent = `${DATA.saved.length} note(s)` + (copied ? ' — copied to clipboard' : ' — select & copy');
+      ioMsg.textContent = `${items.length} item(s)` + (copied ? ' — copied to clipboard' : ' — select & copy');
     };
     showTab(tab === 'io' ? 'io' : 'settings');
   }
@@ -467,7 +476,8 @@
   const clearMarks = host => host && host.querySelectorAll('.mmth-drop-before,.mmth-drop-after').forEach(r => r.classList.remove('mmth-drop-before', 'mmth-drop-after'));
   let _drag = null;
 
-  function setSideWidth(side, w) { w = Math.max(160, Math.min(640, Math.round(w))); side.style.flex = '0 0 ' + w + 'px'; side.style.maxWidth = w + 'px'; return w; }
+  const MIN_PANEL = 300;   // #304: keep the toolbar (incl. ⚙) from clipping when narrow
+  function setSideWidth(side, w) { w = Math.max(MIN_PANEL, Math.min(640, Math.round(w))); side.style.flex = '0 0 ' + w + 'px'; side.style.maxWidth = w + 'px'; return w; }
 
   // #263: never let the panel be wider than the field — cap it to half the row so
   // the ratio is at most 1:1 (was up to ~1:10 in a narrow Art Station modal). The
@@ -478,7 +488,7 @@
     if (SET.minimized) return;   // panel is out of flow when minimized
     const row = wrap.clientWidth - (vsep ? vsep.offsetWidth : 0); if (!(row > 0)) return;
     const max = Math.floor(row / 2);
-    const want = Math.max(160, Math.min(SET.sideWidth || 300, max));
+    const want = Math.max(MIN_PANEL, Math.min(SET.sideWidth || 300, max));
     if (Math.round(side.getBoundingClientRect().width) !== want) { side.style.flex = '0 0 ' + want + 'px'; side.style.maxWidth = want + 'px'; }
   }
 
@@ -754,10 +764,11 @@
         const h = side.offsetHeight; if (!(h > 0)) return;
         if ((parseInt(ta.style.minHeight, 10) || 0) !== h) ta.style.minHeight = h + 'px';
         if (!SET.taHeight && (parseInt(ta.style.height, 10) || 0) !== h) ta.style.height = h + 'px';
+        vsep.style.height = ta.offsetHeight + 'px';   // #304: separator spans only the field, not the field+pinbar column
       } catch (x) {} };
       syncFloor();
       requestAnimationFrame(syncFloor); setTimeout(syncFloor, 150); setTimeout(syncFloor, 600);   // catch the sidebar's final layout
-      try { new ResizeObserver(syncFloor).observe(side); } catch (x) {}
+      try { new ResizeObserver(syncFloor).observe(side); new ResizeObserver(syncFloor).observe(ta); } catch (x) {}
     });
   }
   new MutationObserver(() => injectAll()).observe(document.documentElement, { childList: true, subtree: true });
@@ -1104,7 +1115,16 @@
       const list = el.querySelector('.mmthf-list');
       el.querySelector('.mmthf-save').addEventListener('click', () => { if (!cur.v) return; rememberValue(p.key, cur); refreshState(p); reopen(p); });
       el.querySelector('.mmthf-clear').addEventListener('click', () => { clearField(p.el); reopen(p); });
-      el.querySelector('.mmthf-cfg').addEventListener('click', () => { const a = p.btn; closePop(); openSettings(a); });
+      // #309: open the config with Import/Export scoped to THIS field's values
+      el.querySelector('.mmthf-cfg').addEventListener('click', () => {
+        const a = p.btn;
+        const io = {
+          items: () => listFor(p.key).map(x => x.label || x.v),
+          add: notes => { const arr = listFor(p.key); let added = 0; const have = new Set(arr.map(x => x.v)); for (const t of notes) { if (have.has(t)) continue; have.add(t); arr.unshift({ v: t, label: t, ts: Date.now() }); added++; } FDATA[p.key] = arr.slice(0, MAX_PER_FIELD); if (added) { saveF(); refreshState(p); } return added; },
+          help: 'Import / export the “' + p.label + '” field values.',
+        };
+        closePop(); openSettings(a, 'io', io);
+      });
       el.querySelectorAll('.mmthf-row').forEach(row => {
         const it = items[+row.dataset.i];
         row.addEventListener('click', e => {
