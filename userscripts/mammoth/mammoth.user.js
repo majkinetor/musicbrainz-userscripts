@@ -35,7 +35,7 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true };   // defaultInsert: 'replace' | 'append'
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual' };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'
   const VERSION = '2026.6.27';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -79,6 +79,30 @@
     let ti = a.findIndex(s => s.id === tgtId); if (ti < 0) { a.splice(si, 0, it); return; }
     a.splice(before ? ti : ti + 1, 0, it); saveData();
   }
+  // #304: scaling helpers for big note lists.
+  const togglePinNote = id => { const s = DATA.saved.find(x => x.id === id); if (s) { s.pinned = !s.pinned; saveData(); } };
+  // record that a saved note was used (drives the "Most used" / "Recent" sort)
+  function bumpUse(id) { const s = DATA.saved.find(x => x.id === id); if (!s) return; s.uses = (s.uses | 0) + 1; s.lastUsed = Date.now(); saveData(); }
+  // display order for the Saved list — pinned never reorder the list (they get their
+  // own quick-button bar); only the chosen sort mode reshuffles. Manual = stored order.
+  function sortedSaved() {
+    const a = DATA.saved.slice();
+    const mode = SET.noteSort || 'manual';
+    if (mode === 'uses')   a.sort((x, y) => (y.uses | 0) - (x.uses | 0) || (y.lastUsed || y.ts || 0) - (x.lastUsed || x.ts || 0));
+    else if (mode === 'recent') a.sort((x, y) => (y.lastUsed || y.ts || 0) - (x.lastUsed || x.ts || 0));
+    return a;
+  }
+  // bulk import: each line a note, or (byBlock) blank-line-separated blocks so
+  // multi-line notes survive. Dedups against existing text. Returns counts.
+  function importNotes(text, byBlock) {
+    const parts = byBlock ? String(text || '').split(/\r?\n[ \t]*\r?\n/) : String(text || '').split(/\r?\n/);
+    const notes = parts.map(s => s.replace(/^\s+|\s+$/g, '')).filter(Boolean);
+    let added = 0; const have = new Set(DATA.saved.map(s => s.text));
+    for (const t of notes) { if (have.has(t)) continue; have.add(t); DATA.saved.push({ id: uid(), text: t, ts: Date.now() }); added++; }
+    if (added) saveData();
+    return { added, seen: notes.length };
+  }
+  const exportNotes = () => DATA.saved.map(s => s.text).join('\n\n');
 
   // ── insert (React-safe + undoable) ───────────────────────────────────────────
   const NATIVE_SET = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
@@ -192,6 +216,25 @@
   .mmth-fb.on { background:#cfe9d8; color:#1f5c3d; }
   .mmth-fb.mmth-spacer { flex:1; pointer-events:none; }
   .mmth-fb.mmth-grp { margin-left:10px; }
+  /* #304: type-ahead filter row + count + sort, between the toolbar and the list */
+  .mmth-filterrow { display:flex; align-items:center; gap:5px; padding:3px 5px; border-bottom:1px solid #e7eee9; background:#f7faf8; }
+  /* width:auto !important defends against MB's form CSS (#content input/select), which
+     otherwise forces a fixed width and squashes the flex layout (#304) */
+  .mmth-filter { flex:1 1 auto; min-width:0; width:auto !important; box-sizing:border-box; border:1px solid #d7e0db; border-radius:5px; padding:2px 6px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
+  .mmth-filter:focus { outline:none; border-color:#5aa67e; }
+  .mmth-count { flex:none; font-size:11px; color:#8a978f; white-space:nowrap; }
+  .mmth-sort { flex:0 0 auto; width:auto !important; min-width:74px; max-width:108px; box-sizing:border-box; border:1px solid #d7e0db; border-radius:5px; padding:1px 3px; font-size:11px; color:#566; background:#fff; }
+  /* #304: pinned saved notes as quick-insert buttons — mirrors the baby-field seg bar */
+  .mmth-pinbar { display:flex; flex-wrap:wrap; gap:4px; padding:5px; border-bottom:1px solid #e7eee9; background:#fbfdfc; }
+  .mmth-segb { border:1px solid #cfd9d3; background:#fff; border-radius:7px; padding:3px 9px; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; color:#27483a; cursor:pointer; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+  .mmth-segb:hover { background:#eaf5ee; border-color:#5aa67e; }
+  .mmth-row.mmth-pinned .mmth-txt::before { content:'★'; color:#c2a93e; margin-right:4px; font-size:10px; vertical-align:1px; }
+  /* #304: import/export block in Settings */
+  .mmth-io { display:flex; flex-direction:column; gap:4px; margin:6px 0 2px; }
+  .mmth-io textarea { width:100%; box-sizing:border-box; height:64px; resize:vertical; border:1px solid #d7e0db; border-radius:5px; padding:4px 6px; font:11px/1.35 ui-monospace,Consolas,monospace; }
+  .mmth-io-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .mmth-io-btn { cursor:pointer; border:1px solid #cfd9d3; background:#fff; border-radius:5px; padding:2px 8px; font-size:12px; color:#27483a; }
+  .mmth-io-btn:hover { background:#eaf5ee; border-color:#5aa67e; }
   .mmth-list { flex:1 1 auto; overflow-y:auto; scrollbar-width:none; }
   .mmth-list::-webkit-scrollbar { width:0; height:0; }
   .mmth-row { display:flex; align-items:center; gap:4px; padding:4px 6px; border-top:1px solid #f0f4f2; cursor:pointer; }
@@ -284,7 +327,17 @@
       <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
       <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
       <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
-      <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>`;
+      <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>
+      <div class="mmth-sub">Bulk notes (#304)</div>
+      <div class="mmth-io">
+        <textarea class="mmth-io-ta" placeholder="Paste notes to import here, or press Export to fill this box."></textarea>
+        <label style="margin:2px 0;font-size:11px"><input type="checkbox" class="mmth-io-block"> a blank line separates notes (for multi-line notes)</label>
+        <div class="mmth-io-row">
+          <button type="button" class="mmth-io-btn mmth-io-import">Import</button>
+          <button type="button" class="mmth-io-btn mmth-io-export">Export all</button>
+          <span class="mmth-io-msg" style="font-size:11px;color:#8a978f"></span>
+        </div>
+      </div>`;
     document.body.appendChild(p); pop = p;
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
     const ins = p.querySelector('.mmth-s-ins'); ins.value = SET.defaultInsert;
@@ -298,6 +351,19 @@
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
     babies.onchange = () => { SET.showBabies = babies.checked; persistSet(); babyMammoths.toggle(babies.checked); };
+    // #304 bulk import / export of saved notes
+    const ioTa = p.querySelector('.mmth-io-ta'), ioBlock = p.querySelector('.mmth-io-block'), ioMsg = p.querySelector('.mmth-io-msg');
+    p.querySelector('.mmth-io-import').onclick = () => {
+      const v = ioTa.value; if (!v.trim()) { ioMsg.textContent = 'Paste some notes first'; return; }
+      const r = importNotes(v, ioBlock.checked);
+      ioMsg.textContent = `Added ${r.added} of ${r.seen}` + (r.added < r.seen ? ' (rest were duplicates)' : '');
+      if (r.added) ioTa.value = '';
+    };
+    p.querySelector('.mmth-io-export').onclick = async () => {
+      const text = exportNotes(); ioTa.value = text; ioTa.focus(); ioTa.select();
+      let copied = false; try { await navigator.clipboard.writeText(text); copied = true; } catch (e) { try { copied = document.execCommand('copy'); } catch (x) {} }
+      ioMsg.textContent = `${DATA.saved.length} note(s)` + (copied ? ' — copied to clipboard' : ' — select & copy');
+    };
     placePop(p, anchor);
   }
   function openSyntax(anchor) {
@@ -377,11 +443,25 @@
     const side = document.createElement('div'); side.className = 'mmth-side';
     setSideWidth(side, SET.sideWidth || 300);
     const ft = document.createElement('div'); ft.className = 'mmth-ft';            // toolbar ON TOP (#212)
+    const pinbar = document.createElement('div'); pinbar.className = 'mmth-pinbar';   // #304 pinned quick-buttons
+    const filterRow = document.createElement('div'); filterRow.className = 'mmth-filterrow';   // #304 filter + count + sort
     const list = document.createElement('div'); list.className = 'mmth-list';
-    side.appendChild(ft); side.appendChild(list);
+    side.appendChild(ft); side.appendChild(pinbar); side.appendChild(filterRow); side.appendChild(list);
 
-    const inst = { ta, list, side, view: 'saved', cyc: -1 };
+    const inst = { ta, list, side, pinbar, filterRow, view: 'saved', cycId: null, filter: '', viewItems: [] };
     instances.push(inst);
+
+    // #304: filter input + N/total count + sort selector (Saved view only)
+    const fInput = document.createElement('input'); fInput.type = 'text'; fInput.className = 'mmth-filter'; fInput.placeholder = 'Filter notes…';
+    fInput.addEventListener('input', () => { inst.filter = fInput.value; renderInst(inst); });
+    fInput.addEventListener('keydown', e => { if (e.key === 'Escape') { fInput.value = ''; inst.filter = ''; renderInst(inst); } });
+    const fCount = document.createElement('span'); fCount.className = 'mmth-count'; inst.countEl = fCount;
+    const fSort = document.createElement('select'); fSort.className = 'mmth-sort'; fSort.title = 'Sort saved notes';
+    fSort.innerHTML = '<option value="manual">Manual</option><option value="uses">Most used</option><option value="recent">Recent</option>';
+    fSort.value = SET.noteSort || 'manual';
+    fSort.addEventListener('change', () => { SET.noteSort = fSort.value; persistSet(); render(); });
+    inst.sortEl = fSort;
+    filterRow.appendChild(fInput); filterRow.appendChild(fCount); filterRow.appendChild(fSort);
 
     const fb = (glyph, title, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-fb' + (cls ? ' ' + cls : ''); b.textContent = glyph; b.title = title; b.onclick = fn; return b; };
     ft.appendChild(fb('＋', 'Save current edit note', '', () => { const v = (ta.value || '').trim(); if (!v) return toast('Edit note is empty'); toast(addSaved(v) ? 'Saved' : 'Already saved'); }));
@@ -403,11 +483,16 @@
       if (k === 'b' || k === 'i') { e.preventDefault(); wrapSel(ta, k === 'b' ? "'''" : "''"); return; }
       // Ctrl/⌘+↑/↓ cycle through saved notes, replacing the field (focus stays here)
       if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
-      const items = DATA.saved; if (!items.length) return;
+      if (inst.view !== 'saved') { inst.view = 'saved'; inst.tabs && inst.tabs.saved.classList.add('on'); inst.tabs && inst.tabs.history.classList.remove('on'); renderInst(inst); }
+      // cycle through exactly what's shown (respects the current sort + filter) #304
+      const items = inst.viewItems; if (!items || !items.length) return;
       e.preventDefault();
-      inst.cyc = (inst.cyc + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
-      setValue(ta, items[inst.cyc].text);
-      if (inst.view !== 'saved') { inst.view = 'saved'; inst.tabs && inst.tabs.saved.classList.add('on'); inst.tabs && inst.tabs.history.classList.remove('on'); }
+      const dir = e.key === 'ArrowDown' ? 1 : -1;
+      let i = items.findIndex(x => x.id === inst.cycId);
+      if (i < 0) i = dir > 0 ? -1 : 0;
+      i = (i + dir + items.length) % items.length;
+      inst.cycId = items[i].id;
+      setValue(ta, items[i].text);
       renderInst(inst);
       // keep the highlighted item visible — scroll WITHIN the list only (not the page)
       const cur = inst.list.querySelector('.mmth-cyc');
@@ -424,32 +509,59 @@
     return inst;
   }
 
+  // #304: pinned saved notes shown as one-click quick-insert buttons (Saved view).
+  function renderPinbar(inst) {
+    const bar = inst.pinbar; bar.innerHTML = '';
+    const pinned = inst.view === 'saved' ? DATA.saved.filter(s => s.pinned) : [];
+    if (!pinned.length) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    const cap = t => { t = t.replace(/\s+/g, ' ').trim(); return t.length > 24 ? t.slice(0, 24) + '…' : t; };
+    const dflt = SET.defaultInsert;
+    pinned.forEach(it => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-segb'; b.textContent = cap(it.text);
+      b.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'})`;
+      b.onclick = e => { e.preventDefault(); applyNote(inst.ta, it.text, dflt === 'replace'); bumpUse(it.id); };
+      b.oncontextmenu = e => { e.preventDefault(); applyNote(inst.ta, it.text, dflt !== 'replace'); bumpUse(it.id); };
+      bar.appendChild(b);
+    });
+  }
+
   function renderInst(inst) {
     const { ta, list } = inst;
     list.style.maxHeight = (Math.max(1, Math.min(30, SET.visibleRows | 0 || 6)) * 26) + 'px';   // show N items, then scroll (#212)
     list.innerHTML = '';
     if (inst.tabs) { inst.tabs.saved.classList.toggle('on', inst.view === 'saved'); inst.tabs.history.classList.toggle('on', inst.view === 'history'); }
     const saved = inst.view === 'saved';
-    const items = saved ? DATA.saved : DATA.history;
-    if (!items.length) { const e = document.createElement('div'); e.className = 'mmth-empty'; e.textContent = saved ? 'No saved notes — ＋ saves the current one' : 'No history yet'; list.appendChild(e); return; }
+    if (inst.sortEl) { inst.sortEl.value = SET.noteSort || 'manual'; inst.sortEl.style.display = saved ? '' : 'none'; }
+    renderPinbar(inst);
+    // #304: sort (Saved) then type-ahead filter on the full note text; show N/total
+    const all = saved ? sortedSaved() : DATA.history;
+    const q = (inst.filter || '').trim().toLowerCase();
+    const items = q ? all.filter(it => it.text.toLowerCase().includes(q)) : all;
+    inst.viewItems = items;   // Ctrl+↑/↓ cycles through exactly what's shown
+    if (inst.countEl) inst.countEl.textContent = q ? (items.length + ' / ' + all.length) : (all.length ? String(all.length) : '');
+    // drag-reorder only makes sense in the unfiltered manual order
+    const manual = saved && (SET.noteSort || 'manual') === 'manual' && !q;
+    if (!items.length) { const e = document.createElement('div'); e.className = 'mmth-empty'; e.textContent = all.length ? 'No notes match the filter' : (saved ? 'No saved notes — ＋ saves the current one' : 'No history yet'); list.appendChild(e); return; }
 
-    items.forEach((it, idx) => {
+    items.forEach((it) => {
       const row = document.createElement('div'); row.className = 'mmth-row';
-      if (saved && idx === inst.cyc) row.classList.add('mmth-cyc');
+      if (saved && it.pinned) row.classList.add('mmth-pinned');
+      if (saved && it.id === inst.cycId) row.classList.add('mmth-cyc');
       const dflt = SET.defaultInsert;
       row.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · shift-click: set + submit)`;
 
       const txt = document.createElement('span'); txt.className = 'mmth-txt'; txt.textContent = it.text.replace(/\s+/g, ' ').trim();
       row.appendChild(txt);
 
-      // right-side hover actions (delete / pin), then the drag handle (saved only)
+      // right-side hover actions: pin/unpin + delete (saved); save + remove (history)
       const acts = document.createElement('div'); acts.className = 'mmth-rowacts';
       const ra = (glyph, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-ra'; b.textContent = glyph; b.title = title; b.onclick = e => { e.stopPropagation(); fn(); }; acts.appendChild(b); };
-      if (saved) ra('🗑', 'Delete', () => removeSaved(it.id));
+      if (saved) { ra(it.pinned ? '★' : '☆', it.pinned ? 'Unpin from quick buttons' : 'Pin as a quick button', () => togglePinNote(it.id)); ra('🗑', 'Delete', () => removeSaved(it.id)); }
       else { ra('★', 'Save (pin to Saved)', () => { if (addSaved(it.text)) toast('Saved'); }); ra('🗑', 'Remove', () => removeHistory(it.text)); }
       row.appendChild(acts);
 
-      if (saved) {
+      if (manual) {
         const grab = document.createElement('span'); grab.className = 'mmth-grab'; grab.textContent = '⠿'; grab.title = 'Drag to reorder'; grab.draggable = true;
         grab.addEventListener('dragstart', e => { _drag = { id: it.id }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'row'); } catch (x) {} row.classList.add('mmth-dragging'); });
         grab.addEventListener('dragend', () => { row.classList.remove('mmth-dragging'); clearMarks(list); _drag = null; });
@@ -459,11 +571,11 @@
       row.onclick = e => {
         // #289: shift-click sets the note (replace) AND submits the edit — like
         // Ctrl+Enter (reuses findSubmitBtn) — a time-saver for repetitive merges.
-        if (e.shiftKey) { applyNote(ta, it.text, true); const b = findSubmitBtn(ta); if (b) b.click(); return; }
-        applyNote(ta, it.text, SET.defaultInsert === 'replace');
+        if (e.shiftKey) { applyNote(ta, it.text, true); if (saved) bumpUse(it.id); const b = findSubmitBtn(ta); if (b) b.click(); return; }
+        applyNote(ta, it.text, SET.defaultInsert === 'replace'); if (saved) bumpUse(it.id);
       };
-      row.oncontextmenu = e => { e.preventDefault(); applyNote(ta, it.text, SET.defaultInsert !== 'replace'); };
-      if (saved) {
+      row.oncontextmenu = e => { e.preventDefault(); applyNote(ta, it.text, SET.defaultInsert !== 'replace'); if (saved) bumpUse(it.id); };
+      if (manual) {
         row.addEventListener('dragover', e => { if (!_drag) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; clearMarks(list); row.classList.add(after(e, row) ? 'mmth-drop-after' : 'mmth-drop-before'); });
         row.addEventListener('dragleave', () => row.classList.remove('mmth-drop-before', 'mmth-drop-after'));
         row.addEventListener('drop', e => { if (!_drag) return; e.preventDefault(); reorder(_drag.id, it.id, !after(e, row)); clearMarks(list); _drag = null; });
