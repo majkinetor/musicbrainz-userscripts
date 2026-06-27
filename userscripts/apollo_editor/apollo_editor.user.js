@@ -577,6 +577,9 @@
     // littered every row with chains/warnings. Skip those (the ＋ create button still
     // seeds slot._discogsUrl, so create-with-link is unaffected). Keep _discogsUrl set.
     if (!slot.committed || !slot.gid) { slot._discogsAddable = false; return; }
+    // #306 — special-purpose artists ([no artist], Various Artists, [Disney], …) must
+    // never carry a Discogs link (some can't even be edited), so never offer to add one.
+    if (SPECIAL_PURPOSE_ARTISTS.has(slot.gid)) { slot._discogsAddable = false; return; }
     slot._discogsChecked = true;
     if (slot.gid) {
       // FREE check first: this artist's own Discogs links (internal endpoint)
