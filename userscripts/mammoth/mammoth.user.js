@@ -35,7 +35,7 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual' };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24 };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length
   const VERSION = '2026.6.27';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -357,6 +357,7 @@
         <label>Sort saved notes
           <select class="mmth-s-sort"><option value="manual">Manual</option><option value="uses">Most used</option><option value="recent">Recent</option></select>
         </label>
+        <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
         <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
         <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
         <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
@@ -386,6 +387,7 @@
     const nl = p.querySelector('.mmth-s-nl'); nl.checked = SET.appendNewline !== false;
     const search = p.querySelector('.mmth-s-search'); search.checked = SET.noteSearch === true;
     const sort = p.querySelector('.mmth-s-sort'); sort.value = SET.noteSort || 'manual';
+    const btnc = p.querySelector('.mmth-s-btnchars'); btnc.value = SET.btnChars || 24;
     const rows = p.querySelector('.mmth-s-rows'); rows.value = SET.visibleRows;
     const hist = p.querySelector('.mmth-s-hist'); hist.value = SET.historySize;
     help.onchange = () => { SET.hideHelp = help.checked; saveSet(); };
@@ -393,6 +395,7 @@
     nl.onchange = () => { SET.appendNewline = nl.checked; saveSet(); };
     search.onchange = () => { SET.noteSearch = search.checked; saveSet(); };
     sort.onchange = () => { SET.noteSort = sort.value; persistSet(); render(); };
+    btnc.onchange = () => { SET.btnChars = Math.max(4, Math.min(80, parseInt(btnc.value, 10) || 24)); btnc.value = SET.btnChars; saveSet(); babyMammoths.relabel(); };
     rows.onchange = () => { SET.visibleRows = Math.max(1, Math.min(30, parseInt(rows.value, 10) || 6)); rows.value = SET.visibleRows; saveSet(); };
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
@@ -562,10 +565,11 @@
     const pinned = DATA.saved.filter(s => s.pinned);
     if (!pinned.length) { bar.style.display = 'none'; return; }
     bar.style.display = 'flex';
-    const cap = t => { t = t.replace(/\s+/g, ' ').trim(); return t.length > 24 ? t.slice(0, 24) + '…' : t; };
+    const n = Math.max(4, Math.min(80, SET.btnChars | 0 || 24));
+    const cap = t => { t = t.replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };
     const dflt = SET.defaultInsert;
     pinned.forEach(it => {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-segb'; b.textContent = cap(it.text);
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-segb'; b.textContent = cap(it.text); b.style.maxWidth = (n + 1) + 'ch';
       b.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'})`;
       b.onclick = e => { e.preventDefault(); applyNote(inst.ta, it.text, dflt === 'replace'); bumpUse(it.id); };
       b.oncontextmenu = e => { e.preventDefault(); applyNote(inst.ta, it.text, dflt !== 'replace'); bumpUse(it.id); };
@@ -827,8 +831,10 @@
       let ti = a.findIndex(x => x.v === tgtV); if (ti < 0) { a.splice(si, 0, it); return; }
       a.splice(before ? ti : ti + 1, 0, it); saveF();
     }
-    function firstToken(s) { s = (s || '').trim(); const m = s.match(/^\[[^\]]*\]/); return m ? m[0] : (s.split(/\s+/)[0] || s); }
-    const captionOf = it => it.cap || firstToken(it.label || it.v);
+    // #304: caption = the full label, truncated with an ellipsis at the configured
+    // length (⚙ "Button label length") — no longer just the first word.
+    const btnChars = () => Math.max(4, Math.min(80, SET.btnChars | 0 || 24));
+    const captionOf = it => { if (it.cap) return it.cap; const n = btnChars(); const t = (it.label || it.v || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };
 
     const isSelect = el => el.tagName === 'SELECT';
     const isAuto = el => el.classList.contains('ui-autocomplete-input') || el.classList.contains('lookup-performed');
@@ -896,10 +902,10 @@
       html.mmthf-fadein .mmthf-pin, html.mmthf-fadein .mmthf-bar { transition:opacity .4s ease !important; }
       .mmthf-hl { outline:2px solid #5aa67e !important; outline-offset:1px; }
       .mmthf-bar { position:absolute; z-index:9996; display:none; }
-      .mmthf-seg { display:inline-flex; border:1px solid #cfd9d3; border-radius:7px; overflow:hidden; background:#fbfdfc; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; box-shadow:0 1px 2px rgba(0,0,0,.06); max-width:100%; }
-      .mmthf-segb { border:none; background:none; padding:4px 12px; font-size:12px; color:#27483a; cursor:pointer; border-right:1px solid #e7eee9; white-space:nowrap; max-width:160px; overflow:hidden; text-overflow:ellipsis; }
-      .mmthf-segb:last-child { border-right:none; }
-      .mmthf-segb:hover { background:#eaf5ee; }
+      /* #304: individual rounded "tag" buttons that wrap to new rows — matches the main edit-note pins */
+      .mmthf-seg { display:flex; flex-wrap:wrap; gap:5px; max-width:100%; }
+      .mmthf-segb { border:1px solid #cfd9d3; background:#fbfdfc; border-radius:7px; padding:3px 10px; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; color:#27483a; cursor:pointer; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+      .mmthf-segb:hover { background:#eaf5ee; border-color:#5aa67e; }
       .mmthf-pop { position:fixed; z-index:9999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:260px; overflow:hidden; }
       .mmthf-ft { display:flex; align-items:center; gap:1px; padding:3px 5px; background:#f1f6f3; border-bottom:1px solid #e7eee9; }
       .mmthf-fb { cursor:pointer; border:none; background:none; font-size:14px; line-height:1; padding:3px 7px; border-radius:5px; color:#566; }
@@ -965,7 +971,6 @@
     // artist-credit bubble rows all use release.artist), so a pin/default/save in
     // one reflects on the others.
     function refreshState(p) { for (const q of pins) if (q.key === p.key) { q.btn.classList.toggle('has', listFor(q.key).length > 0); renderBar(q); } }
-    const BAR_RESERVE = 30;
     function setReserve(p, on) {
       const host = p.el.closest('td') || p.el;
       const prop = host === p.el ? 'marginBottom' : 'paddingBottom';
@@ -977,7 +982,7 @@
       if (on) {
         if (!p._rh) {
           p._rh = host; p._rp = prop; p._ro = host.style[prop] || '';
-          host.style[prop] = ((parseFloat(getComputedStyle(host)[prop]) || 0) + BAR_RESERVE) + 'px';
+          p._rbase = parseFloat(getComputedStyle(host)[prop]) || 0;   // base padding to add the strip onto
           if (tr && tr.children.length > 1) { p._rtr = tr; tr.classList.add('mmthf-rrow'); }
         }
       } else if (p._rh) {
@@ -985,13 +990,20 @@
         if (p._rtr) { p._rtr.classList.remove('mmthf-rrow'); p._rtr = null; }
       }
     }
+    // #304: size the reserved strip to the bar's ACTUAL height, so a bar that wraps to
+    // several rows pushes content down by the right amount (not a fixed one-row guess).
+    function sizeReserve(p) {
+      if (!p._rh) return;
+      const h = (p.bar.style.display !== 'none') ? p.bar.offsetHeight : 0;
+      p._rh.style[p._rp] = (p._rbase + (h ? h + 6 : 0)) + 'px';
+    }
     function renderBar(p) {
       const items = listFor(p.key).filter(x => x.pinned);
       p.bar.innerHTML = '';
       setReserve(p, items.length > 0);
       if (!items.length) { p.bar.style.display = 'none'; return; }
       const seg = document.createElement('div'); seg.className = 'mmthf-seg';
-      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); }); seg.appendChild(b); });
+      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); }); seg.appendChild(b); });
       p.bar.appendChild(seg);
     }
     function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) writeField(p.el, d); }
@@ -1034,6 +1046,7 @@
         p.btn.style.top = (r.top + sy + (r.height - 16) / 2) + 'px';
         p.btn.style.left = (r.right + sx - 16 - p.dx) + 'px';
         if (hasBar) { p.bar.style.top = (r.bottom + sy + 3) + 'px'; p.bar.style.left = (r.left + sx) + 'px'; p.bar.style.maxWidth = Math.max(140, r.width) + 'px'; }
+        sizeReserve(p);   // #304: match the field's reserved strip to the (possibly multi-row) bar height
       }
       if (pins.some(p => p.dead)) pins = pins.filter(p => !p.dead);
     }
@@ -1121,6 +1134,6 @@
       pins.forEach(p => { try { setReserve(p, false); } catch (e) {} p.btn.remove(); p.bar.remove(); delete p.el.dataset.mmthf; });
       pins = [];
     }
-    return { start, stop, toggle(on) { on ? start() : stop(); } };
+    return { start, stop, toggle(on) { on ? start() : stop(); }, relabel() { pins.forEach(p => renderBar(p)); } };
   }
 })();
