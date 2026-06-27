@@ -236,10 +236,10 @@
   .mmth-cfgtab:hover { color:#1f5c3d; }
   .mmth-cfgtab.on { color:#1f5c3d; border-bottom-color:#5aa67e; font-weight:600; }
   /* #304: import/export pane */
-  .mmth-io { display:flex; flex-direction:column; gap:5px; }
-  .mmth-io-modes { display:flex; flex-direction:column; gap:2px; font-size:12px; }
-  .mmth-io-modes label { margin:0; }
-  .mmth-io textarea { width:100%; box-sizing:border-box; height:80px; resize:vertical; border:1px solid #d7e0db; border-radius:5px; padding:4px 6px; font:11px/1.35 ui-monospace,Consolas,monospace; }
+  .mmth-io { display:flex; flex-direction:column; gap:8px; }
+  .mmth-io-modes { display:flex; flex-flow:row wrap; gap:6px 18px; font-size:12px; align-items:center; }
+  .mmth-io-modes label { margin:0; display:inline-flex; align-items:center; gap:6px; }
+  .mmth-io textarea { width:100%; box-sizing:border-box; height:150px; resize:vertical; border:1px solid #d7e0db; border-radius:5px; padding:6px 8px; font:13px/1.55 -apple-system,Segoe UI,Arial,sans-serif; }
   .mmth-io-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
   .mmth-io-btn { cursor:pointer; border:1px solid #cfd9d3; background:#fff; border-radius:5px; padding:2px 8px; font-size:12px; color:#27483a; }
   .mmth-io-btn:hover { background:#eaf5ee; border-color:#5aa67e; }
@@ -317,9 +317,23 @@
   function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('mousedown', onPopDown, true); } }
   function onPopDown(e) { if (pop && !pop.contains(e.target) && !e.target.closest('.mmth-pop-anchor')) { closePop(); eatNextClick(); } }
   function placePop(p, anchor) {
-    const r = anchor.getBoundingClientRect();
-    p.style.top = Math.max(6, r.top - p.offsetHeight - 6) + 'px';
-    p.style.left = Math.max(6, Math.min(window.innerWidth - p.offsetWidth - 6, r.right - p.offsetWidth)) + 'px';
+    const W = p.offsetWidth, H = p.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+    const r = anchor && anchor.getBoundingClientRect();
+    if (!r || (!r.width && !r.height)) {
+      // anchor gone/hidden (e.g. a baby pin that re-hid) — sensible centred fallback
+      p.style.left = Math.max(6, Math.round((vw - W) / 2)) + 'px'; p.style.top = '70px';
+    } else {
+      // #304: open just BELOW the trigger and clamp into the viewport, so the popover
+      // stays next to what opened it instead of jumping above (which clamped to the
+      // top-left corner when opened from a baby pin low on a tall page).
+      const left = Math.max(6, Math.min(vw - W - 6, r.left));
+      let top = r.bottom + 4;                              // below the trigger
+      if (top + H > vh - 6) {                              // would overflow the bottom
+        const above = r.top - H - 6;                       // try above if it fits, else clamp
+        top = above >= 6 ? above : (vh - H - 6);
+      }
+      p.style.left = left + 'px'; p.style.top = Math.max(6, top) + 'px';
+    }
     setTimeout(() => document.addEventListener('mousedown', onPopDown, true), 0);
   }
   // #304: tabbed config window — a Settings tab and an Import / Export tab.
