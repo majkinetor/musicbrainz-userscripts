@@ -41,8 +41,6 @@ The same save/reuse on other controls — catalog number, label, artist, status,
 
 ## Mammoth babies
 
-The same save/reuse on **other controls** — catalog number, label, artist, status, language, script, country, primary type. 
-
 A small 🦣 pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The pin opens a compact panel with a toolbar:
 
 - `＋` - save the current value; entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity
