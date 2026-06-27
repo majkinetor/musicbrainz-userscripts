@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.27
+// @version      2026.6.27.235219
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2007,6 +2007,12 @@
   }
 
   // src/sources/tidal.js
+  var TIDAL_PERTRACK_BRIDGE = {
+    "Vocal": "Vocals",
+    "Background Vocal": "Backing Vocals",
+    "Performance Arranger": "Arranged By"
+  };
+  var TIDAL_PERTRACK_SKIP = /* @__PURE__ */ new Set(["Mastering Engineer", "Associated Performer", "Studio Personnel"]);
   var TIDAL_ROLE_MAP = {
     "Producer": { target: "recording", rel: "producer" },
     "Remixer": { target: "recording", rel: "remixer" },
@@ -2127,7 +2133,7 @@
   function filterTidalCredits(tracks) {
     return tracks.map((t) => ({
       ...t,
-      credits: t.credits.filter((c) => TIDAL_ROLE_MAP[tidalRoleBase(c.role)]).map((c) => ({
+      credits: t.credits.map((c) => ({
         ...c,
         names: c.names.filter((n) => !(/^(?:Music )?Publisher$/.test(c.role) && isCopyrightControl(n)))
       })).filter((c) => c.names.length)
@@ -2179,23 +2185,50 @@
           continue;
         }
         const mapping = TIDAL_ROLE_MAP[base];
+        if (mapping) {
+          for (const n of c.names) {
+            tracklistRels.push({
+              linkType: mapping.rel,
+              entityType: "artist",
+              attributes: [...mapping.attributes || [], ...assistant ? ["assistant"] : []],
+              artist: {
+                id: n.tidalId ? `tidal-${n.tidalId}` : void 0,
+                name: n.name,
+                anv: "",
+                resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : ""
+              },
+              track
+            });
+          }
+          continue;
+        }
+        if (TIDAL_PERTRACK_SKIP.has(base)) {
+          for (const n of c.names) skipped.push(`track ${position} "${t.title}": ${c.role} \u2014 ${n.name}`);
+          continue;
+        }
+        const discogsRole = TIDAL_PERTRACK_BRIDGE[base] || base;
         for (const n of c.names) {
-          if (!mapping) {
+          const artist = {
+            id: n.tidalId ? `tidal-${n.tidalId}` : void 0,
+            name: n.name,
+            anv: "",
+            role: discogsRole,
+            resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : ""
+          };
+          const rels = getArtistRoles(artist);
+          if (!rels.length) {
             skipped.push(`track ${position} "${t.title}": ${c.role} \u2014 ${n.name}`);
             continue;
           }
-          tracklistRels.push({
-            linkType: mapping.rel,
-            entityType: "artist",
-            attributes: [...mapping.attributes || [], ...assistant ? ["assistant"] : []],
-            artist: {
-              id: n.tidalId ? `tidal-${n.tidalId}` : void 0,
-              name: n.name,
-              anv: "",
-              resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : ""
-            },
-            track
-          });
+          for (const r of rels) {
+            tracklistRels.push({
+              linkType: r.linkType,
+              entityType: "artist",
+              attributes: [...r.attributes || [], ...assistant ? ["assistant"] : []],
+              artist: r.artist,
+              track
+            });
+          }
         }
       }
     }

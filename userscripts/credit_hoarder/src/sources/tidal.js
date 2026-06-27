@@ -22,6 +22,23 @@
 // cross-tab handshake. BroadcastChannel does NOT work here — it is
 // same-origin only; GM storage is per-script and shared across origins.
 
+import { getArtistRoles } from '../mappers.js';
+
+// #310: per-track roles NOT in TIDAL_ROLE_MAP fall back to the shared resolver
+// (getArtistRoles → ENTITY_TYPE_MAP / INSTRUMENTS) — the same path the
+// release-level / Discogs credits use — so instruments, vocals, arranger,
+// editor, etc. import instead of being silently dropped. A few of this Tidal
+// vocabulary's role names are bridged to the Discogs strings the resolver knows.
+const TIDAL_PERTRACK_BRIDGE = {
+    'Vocal':               'Vocals',
+    'Background Vocal':    'Backing Vocals',
+    'Performance Arranger': 'Arranged By',
+};
+// Per-track roles we deliberately don't import (reported, not dropped silently):
+// Mastering Engineer (MB mastering is release-level, not per-recording) and
+// Associated Performer (just the track's main artist — redundant).
+const TIDAL_PERTRACK_SKIP = new Set(['Mastering Engineer', 'Associated Performer', 'Studio Personnel']);
+
 /** Roles Tidal exposes → MB relationship plan. `Copyright Control` under
  *  Music Publisher is Tidal artist 15780 — a placeholder meaning "no
  *  publisher registered", filtered out by default. */
@@ -196,15 +213,16 @@ export function tidalRoleBase(role) {
 }
 
 /**
- * Drop credits we never import: the Copyright Control placeholder publisher
- * and any role whose base is missing from `TIDAL_ROLE_MAP`. Pure filter —
- * keeps the raw harvest intact for the diagnostic log ("Copy Tidal").
+ * Strip the Copyright Control placeholder publisher; keep every other role so
+ * the engine can resolve it (TIDAL_ROLE_MAP fast-path or the getArtistRoles
+ * fallback). #310: previously this dropped anything not in TIDAL_ROLE_MAP,
+ * silently losing per-track instruments/vocals. Pure filter — leaves the raw
+ * harvest intact for the diagnostic log ("Copy Tidal").
  */
 export function filterTidalCredits(tracks) {
     return tracks.map(t => ({
         ...t,
         credits: t.credits
-            .filter(c => TIDAL_ROLE_MAP[tidalRoleBase(c.role)])
             .map(c => ({
                 ...c,
                 names: c.names.filter(n =>
@@ -295,27 +313,53 @@ export function tidalToEngine(tracks) {
                 }
                 continue;
             }
-            // Drive the rel straight off TIDAL_ROLE_MAP (rel + any attributes, e.g. Lead
-            // Vocalist → vocal[lead vocals]). filterTidalCredits already kept only mapped
-            // roles, so a miss here is a real gap worth reporting, not silent. #257
+            // Fast path: roles with a direct MB plan (rel + attributes, e.g. Lead
+            // Vocalist → vocal[lead vocals]; correct work/recording targeting). #257
             const mapping = TIDAL_ROLE_MAP[base];
-            for (const n of c.names) {
-                if (!mapping) {
-                    skipped.push(`track ${position} "${t.title}": ${c.role} — ${n.name}`);
-                    continue;
+            if (mapping) {
+                for (const n of c.names) {
+                    tracklistRels.push({
+                        linkType: mapping.rel,
+                        entityType: 'artist',
+                        attributes: [...(mapping.attributes || []), ...(assistant ? ['assistant'] : [])],
+                        artist: {
+                            id:           n.tidalId ? `tidal-${n.tidalId}` : undefined,
+                            name:         n.name,
+                            anv:          '',
+                            resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : '',
+                        },
+                        track,
+                    });
                 }
-                tracklistRels.push({
-                    linkType: mapping.rel,
-                    entityType: 'artist',
-                    attributes: [...(mapping.attributes || []), ...(assistant ? ['assistant'] : [])],
-                    artist: {
-                        id:           n.tidalId ? `tidal-${n.tidalId}` : undefined,
-                        name:         n.name,
-                        anv:          '',
-                        resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : '',
-                    },
-                    track,
-                });
+                continue;
+            }
+            // #310: everything else → shared resolver (instruments, vocals, arranger,
+            // editor, …). A few names are bridged to the Discogs vocabulary; genuinely
+            // unmappable / release-level roles are reported, not imported.
+            if (TIDAL_PERTRACK_SKIP.has(base)) {
+                for (const n of c.names) skipped.push(`track ${position} "${t.title}": ${c.role} — ${n.name}`);
+                continue;
+            }
+            const discogsRole = TIDAL_PERTRACK_BRIDGE[base] || base;
+            for (const n of c.names) {
+                const artist = {
+                    id:           n.tidalId ? `tidal-${n.tidalId}` : undefined,
+                    name:         n.name,
+                    anv:          '',
+                    role:         discogsRole,
+                    resource_url: n.tidalId ? `https://tidal.com/artist/${n.tidalId}` : '',
+                };
+                const rels = getArtistRoles(artist);
+                if (!rels.length) { skipped.push(`track ${position} "${t.title}": ${c.role} — ${n.name}`); continue; }
+                for (const r of rels) {
+                    tracklistRels.push({
+                        linkType: r.linkType,
+                        entityType: 'artist',
+                        attributes: [...(r.attributes || []), ...(assistant ? ['assistant'] : [])],
+                        artist: r.artist,
+                        track,
+                    });
+                }
             }
         }
     }
