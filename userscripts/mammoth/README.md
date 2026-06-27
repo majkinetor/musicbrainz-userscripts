@@ -5,7 +5,13 @@ Mammoth keeps your reusable edit notes in a compact panel **beside** the edit-no
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/mammoth/mammoth.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/mammoth/mammoth.user.js)
 - [Changelog](./CHANGELOG.md)
 
-![](./screenshot.png)
+<img src=./screenshots/main.png width=600 />
+
+<details><summary>More screenshots</summary>
+<img src=./screenshots/babies.png width=600 /><br>
+<img src=./screenshots/big-buttons.png width=600 /><br>
+<img src=screenshots/options.png width=350/>
+</details>
 
 Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the same notes constantly. Mammoth makes that painless.
 
