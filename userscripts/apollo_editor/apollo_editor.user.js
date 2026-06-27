@@ -3703,8 +3703,8 @@
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
       '.tc-rectbl .tc-rec-disamb{color:#999;font-weight:400}',   // recording disambiguation, grey like native #144
-      '.tc-rectbl .tc-rec-video{display:inline-flex;vertical-align:-2px;color:#6f42c1;margin-left:1px}',   // recording video marker #303
-      '.tc-rectbl .tc-rec-video svg{display:block}',
+      '.tc-rec-video{display:inline-flex;vertical-align:-2px;color:#6f42c1;margin-left:1px}',   // recording video marker (table + picker) #303
+      '.tc-rec-video svg{display:block}',
       '.tc-rectbl .tc-rpk-adis{color:#999;font-weight:400}',     // artist disambiguation in the table — grey like native, not black (tc-rpk-adis base style is picker-scoped) #186
       '.tc-rectbl td.tc-clickable{cursor:pointer}',
       '.tc-rectbl td.tc-clickable:hover{outline:1px solid #9cc6ab;outline-offset:-1px}',
@@ -4218,6 +4218,7 @@
       releases: (() => { const seen = new Set(), out = []; (r.releases || []).forEach(rl => { const k = rl.id || rl.title; if (rl.title && !seen.has(k)) { seen.add(k); const rg = rl['release-group']; out.push({ name: rl.title, gid: rl.id, rgGid: rg ? rg.id : null, rgName: rg ? rg.title : null }); } }); return out; })(),
       isrcs: r.isrcs || [],
       comment: r.disambiguation || '',
+      video: !!r.video,   // #303 — surface the video flag in the picker results
     };
   }
   // every recording in a release group, fetched ONCE (paginated) — the pool auto-match matches against
@@ -4290,7 +4291,7 @@
     const rels = []; const seen = new Set();
     if (ap && ap.results) ap.results.forEach(r => { const rr = u(r); const name = u(rr.name), gid = u(rr.gid); const rg = u(rr.releaseGroup); const k = gid || name; if (name && !seen.has(k)) { seen.add(k); rels.push({ name, gid, rgGid: rg ? u(rg.gid) : null, rgName: rg ? u(rg.name) : null }); } });
     const isrcs = (u(e.isrcs) || []).map(x => typeof x === 'string' ? x : (x && (x.isrc || u(x.isrc)))).filter(Boolean);
-    return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), artistGids: acArtistGids(u(e.artistCredit)), releases: rels, isrcs };
+    return { entity: e, gid: u(e.gid), name: u(e.name), length: u(e.length), artist: acText(u(e.artistCredit)), artistGids: acArtistGids(u(e.artistCredit)), releases: rels, isrcs, video: !!u(e.video) };   // #303 video flag
   }
   // confidence of a picker result vs the track that opened the picker (same scheme as the table dot)
   function resultConfClass(data, ctx) {
@@ -4359,6 +4360,7 @@
     const artistHtml = (data.ac && data.ac.length) ? acLinksWs(data.ac, true) : esc(data.artist || '');
     return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
       '<div class="tc-rpk-main"><span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + titleHtml + '</span>' +
+        (data.video ? ' ' + VIDEO_MARK : '') +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
         '<span class="tc-rpk-len' + (dL ? ' tc-rpk-fdiff' : '') + '">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
       (artistHtml ? '<div class="tc-rpk-by' + (dA ? ' tc-rpk-fdiff' : '') + '">by ' + artistHtml + '</div>' : '') +
@@ -4383,6 +4385,7 @@
       ? '<span class="tc-rpk-newcur">＋ new recording (created on submit)</span>'
       : curGid
         ? '<span class="tc-rpk-curmain"><a href="' + ORIGIN + '/recording/' + esc(curGid) + '" target="_blank" rel="noopener">' + esc(u(curRec.name) || '') + '</a>'
+            + (u(curRec.video) ? ' ' + VIDEO_MARK : '')   // #303 video flag on the linked recording
             + (u(curRec.comment) ? ' <span class="tc-rpk-cmt">(' + esc(u(curRec.comment)) + ')</span>' : '')   // disambiguation on selection #144
             + (curArtist ? ' <span class="tc-rpk-curby">- <span class="tc-rpk-curby-ac">' + acLinks(u(curRec.artistCredit), true) + '</span></span>' : '') + '</span>'
           + (u(curRec.length) ? '<span class="tc-rpk-curlen">' + fmtMs(u(curRec.length)) + '</span>' : '')

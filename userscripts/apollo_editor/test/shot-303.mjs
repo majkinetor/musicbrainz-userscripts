@@ -42,6 +42,24 @@ const main = async () => {
 
   const w = await page.$('#tc-recwrap');
   await w.screenshot({ path: resolve(DEV, '_i303_recordings.png') });
+
+  // open the recording picker on track 2 (a video recording) and search for a term
+  // that returns video recordings, to verify the dropdown shows the marker too.
+  await page.evaluate(() => { const c = document.querySelector('#tc-recwrap .tc-recrow[data-ti="1"] .tc-recname'); if (c) c.click(); });
+  await page.waitForSelector('.tc-recpop', { timeout: 10000 });
+  await page.waitForTimeout(500);
+  const curHasMark = await page.evaluate(() => !!document.querySelector('.tc-recpop .tc-rpk-curmain .tc-rec-video'));
+  // type a query to populate the search-results dropdown
+  await page.fill('.tc-recpop .tc-rpk-q', 'You Got the Moves');
+  await page.waitForTimeout(2500);
+  const resInfo = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.tc-recpop .tc-rpk-res .tc-rpk-row')];
+    return { count: rows.length, withVideo: rows.filter(r => r.querySelector('.tc-rec-video')).length };
+  });
+  console.log('[303] picker: current-linked marker =', curHasMark, '| result rows =', resInfo.count, 'video-marked =', resInfo.withVideo);
+  const pop = await page.$('.tc-recpop');
+  if (pop) await pop.screenshot({ path: resolve(DEV, '_i303_picker.png') });
+  console.log('[303] picker console errors:', errs.length ? JSON.stringify(errs.slice(0, 5)) : 'none');
   await ctx.close();
 };
 main().catch(e => { console.error(e); process.exit(2); });
