@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.26
+// @version      2026.6.27
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1073,7 +1073,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.26';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.27';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -3625,6 +3625,7 @@
         mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit), true), trackAc: acData(u(t.artistCredit)), trackLen: u(t.length),
         isNew,
         recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recComment: rec ? (u(rec.comment) || '') : '', recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit), true) : '', recAc: rec ? acData(u(rec.artistCredit)) : [], recLen: rec ? u(rec.length) : null,
+        recVideo: rec ? !!u(rec.video) : false,   // #303 — native recordings table shows a video marker; mirror it here
         // submit-flags: when on, the recording's title/artist will be overwritten with the track's on submit
         copyTitle: typeof t.updateRecordingTitle === 'function' ? !!u(t.updateRecordingTitle) : false,
         copyArtist: typeof t.updateRecordingArtist === 'function' ? !!u(t.updateRecordingArtist) : false,
@@ -3702,6 +3703,8 @@
       '.tc-rectbl td.tc-copy{background:#e3f4e7;color:#1f7a44;font-style:italic}',   // flagged to copy the track value on submit
       '.tc-rectbl .tc-rec-orig{text-decoration:line-through;opacity:.55;font-style:normal;font-weight:400}',   // recording original kept beside the → preview #146
       '.tc-rectbl .tc-rec-disamb{color:#999;font-weight:400}',   // recording disambiguation, grey like native #144
+      '.tc-rectbl .tc-rec-video{display:inline-flex;vertical-align:-2px;color:#6f42c1;margin-left:1px}',   // recording video marker #303
+      '.tc-rectbl .tc-rec-video svg{display:block}',
       '.tc-rectbl .tc-rpk-adis{color:#999;font-weight:400}',     // artist disambiguation in the table — grey like native, not black (tc-rpk-adis base style is picker-scoped) #186
       '.tc-rectbl td.tc-clickable{cursor:pointer}',
       '.tc-rectbl td.tc-clickable:hover{outline:1px solid #9cc6ab;outline-offset:-1px}',
@@ -3902,6 +3905,8 @@
     if (tr) tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
     openRecPicker(row, (tr && tr.querySelector('.tc-recname')) || wrap.querySelector('.tc-recwarn'));
   }
+  // #303 — recording video marker (mirrors the native recordings table's <span class="video">)
+  const VIDEO_MARK = '<span class="tc-rec-video" title="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
   // (re)render just the rows + the unset-count — leaves the toolbar (status/inputs) untouched
   function renderRecBody(wrap) {
     wrap = wrap || document.getElementById('tc-recwrap'); if (!wrap) return;
@@ -4028,7 +4033,7 @@
         '<td>' + trackArtistHtml2 + '</td>' +
         '<td class="c-len">' + fmtMs(r.trackLen) + '</td>' +
         '<td class="c-sep"><span class="tc-dot"></span></td>' +
-        '<td class="tc-recname ' + tCls + '">' + recTitleHtml + '</td>' +
+        '<td class="tc-recname ' + tCls + '">' + recTitleHtml + (r.recVideo ? ' ' + VIDEO_MARK : '') + '</td>' +
         '<td class="tc-recartist ' + aCls + '">' + recArtistCell + '</td>' +
         '<td class="c-len ' + recLenCls + '"' + recLenStyle + '>' + fmtMs(r.recLen) + '</td>';
       const dot = tr.querySelector('.tc-dot');

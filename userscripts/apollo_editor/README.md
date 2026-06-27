@@ -119,6 +119,10 @@ While a copy is on, the cell previews `→ New ` followed by the recording's ~~o
 
 This mirrors MusicBrainz's **native** update checkboxes exactly — so a copy is offered whenever the native editor would show its checkbox, **including casing-only differences** that Apollo's match tolerance / *Ignore casing* setting would otherwise treat as a match. The tolerance settings still drive the confidence colouring; they no longer hide the copy. Right-clicking a recording cell with no difference does nothing (the browser's context menu is suppressed there).
 
+### Video recordings
+
+A recording that's flagged as a **video** shows a small video-camera marker next to its name in the recording column (mirroring the native recordings table), so video recordings — easy to miss when checking for incorrectly linked or merged ones — stand out.
+
 ## Duplicates
 
 When you add a release, MusicBrainz's **Duplicates** tab lists existing releases you might want to *base your release on*. Apollo augments that native table (controlled by the **Modify Duplicates** [setting](#modify), **on by default**):
