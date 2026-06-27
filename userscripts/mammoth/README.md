@@ -11,8 +11,8 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 
 ## Features
 
-- **Per-type notes** *(#309)*<br>
-Saved notes and history are kept **separate per edit-note type** (release / artist / recording / label / work / …, detected from the page), so your release-only notes (covers, merges, ISRCs…) don't clutter an artist edit. A small chip in the toolbar shows which type you're looking at. (Existing notes are migrated to the **release** set.)
+- **Per-type notes** *(#309 — ⚙ "Scope per resource", off by default)*<br>
+Turn this on to keep saved notes and history **separate per edit-note type** (release / artist / recording / label / work / …, detected from the page), so your release-only notes (covers, merges, ISRCs…) don't clutter an artist edit. A small chip in the toolbar shows the current type. Off, all notes share one pool shown everywhere.
 - **History**<br>
 Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. 
 - **Saved notes**<br>
@@ -53,7 +53,8 @@ Accessesd using ⚙ button:
 
 | Setting | Default | Notes |
 |---|---|---|
-| **Hide edit-note help text** | off | Hides MusicBrainz's help paragraphs above the field. |
+| **Scope per resource** | off | Keep notes separate per edit-note type (release / artist / …). |
+| **Hide help text** | off | Hides MusicBrainz's help paragraphs above the field. |
 | **Default click action** | `replace` | What a left-click does (`replace`, or `append`). Right-click does the other. |
 | **Insert new line when appending** | on | Append a blank line before note. |
 | **Show note search** | off | Show the search box above the note list (for big lists). |

@@ -35,7 +35,7 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24 };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309)
   const VERSION = '2026.6.27';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -45,10 +45,11 @@
   // self-contained vector mammoth everywhere the icon shows, so it's font-independent.
   const MAMMOTH_SVG = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true" style="display:block"><g fill="#7a4a1f"><path d="M21 19C21 12.5 17.5 8.5 11.5 8.5C7 8.5 4.2 11.2 4.2 15L4.2 19Z"/><circle cx="7.6" cy="10.6" r="5"/><rect x="7" y="16.5" width="2.8" height="5.2" rx="1.3"/><rect x="15" y="16.5" width="2.8" height="5.2" rx="1.3"/></g><path d="M3.1 11.2C1.6 13.6 2 16.6 3.7 18.1C4.6 18.9 5.9 18.6 6.1 17.5C6.3 16.5 5.7 15.8 5.3 15.3" fill="none" stroke="#7a4a1f" stroke-width="2.7" stroke-linecap="round"/><path d="M5.2 15.2C4.1 16.6 4.3 18.2 5.6 18.9" fill="none" stroke="#efe7d2" stroke-width="1.4" stroke-linecap="round"/></svg>';
 
-  // #309: notes are kept SEPARATE per edit-note entity type (release / artist /
-  // recording / label / work / …), derived from the page URL. So release-only notes
-  // (covers, merges, ISRCs…) don't clutter an artist edit, and vice-versa.
+  // #309: optionally keep notes SEPARATE per edit-note entity type (release /
+  // artist / recording / …), derived from the page URL — opt-in via the
+  // "Scope per resource" setting. Off (default) = one shared pool ('all').
   const ENTITY_TYPES = ['area', 'artist', 'event', 'genre', 'instrument', 'label', 'place', 'recording', 'release', 'release-group', 'series', 'work'];
+  const GLOBAL_SCOPE = 'all';
   function noteScope() {
     const seg = (location.pathname.split('/').filter(Boolean)[0] || '').toLowerCase();
     return ENTITY_TYPES.includes(seg) ? seg : 'other';
@@ -56,23 +57,30 @@
   const SCOPE = noteScope();
   const scopeLabel = s => s === 'other' ? 'other' : s.replace(/-/g, ' ');
   // Multi-scope store: { [scope]: { saved, history } }. Migrate the old flat
-  // { saved, history } into the 'release' scope (where almost all existing notes live).
+  // { saved, history } into the shared 'all' pool (scoping is off by default).
   function loadStore() {
     let raw; try { raw = JSON.parse(GM_getValue(KEY, '{}') || '{}'); } catch (e) { raw = {}; }
     if (!raw || typeof raw !== 'object') raw = {};
-    if (Array.isArray(raw.saved) || Array.isArray(raw.history)) raw = { release: { saved: raw.saved || [], history: raw.history || [] } };
+    if (Array.isArray(raw.saved) || Array.isArray(raw.history)) raw = { [GLOBAL_SCOPE]: { saved: raw.saved || [], history: raw.history || [] } };
     return raw;
   }
   const loadSet = () => { try { return Object.assign({}, DEFAULTS, JSON.parse(GM_getValue(SKEY, '{}') || '{}')); } catch (e) { return Object.assign({}, DEFAULTS); } };
   const persistSet = () => { try { GM_setValue(SKEY, JSON.stringify(SET)); } catch (e) {} };           // quiet save (no re-render)
   const saveSet = () => { persistSet(); applyHelp(); render(); };
 
-  let STORE = loadStore();
-  let DATA = STORE[SCOPE] || (STORE[SCOPE] = { saved: [], history: [] });
-  if (!Array.isArray(DATA.saved)) DATA.saved = [];
-  if (!Array.isArray(DATA.history)) DATA.history = [];
-  const saveData = () => { try { GM_setValue(KEY, JSON.stringify(STORE)); } catch (e) {} render(); };
   let SET = loadSet();
+  let STORE = loadStore();
+  const dataKey = () => SET.scopePerResource ? SCOPE : GLOBAL_SCOPE;
+  let DATA;
+  function useScope() {   // (re)point DATA at the current pool (called on load + when the setting toggles)
+    const k = dataKey();
+    DATA = STORE[k] || (STORE[k] = { saved: [], history: [] });
+    if (!Array.isArray(DATA.saved)) DATA.saved = [];
+    if (!Array.isArray(DATA.history)) DATA.history = [];
+  }
+  useScope();
+  const saveData = () => { try { GM_setValue(KEY, JSON.stringify(STORE)); } catch (e) {} render(); };
+  const updateScopeChips = () => document.querySelectorAll('.mmth-scope').forEach(c => { c.style.display = SET.scopePerResource ? '' : 'none'; });
   const uid = () => 'n' + Math.random().toString(36).slice(2, 9);
   const babyMammoths = createBabyMammoths();   // field-memory module (gated by SET.showBabies)
 
@@ -261,11 +269,14 @@
   .mmth-cfgtab { border:none; background:none; padding:4px 9px; font-size:12px; color:#566; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
   .mmth-cfgtab:hover { color:#1f5c3d; }
   .mmth-cfgtab.on { color:#1f5c3d; border-bottom-color:#5aa67e; font-weight:600; }
-  /* #304: import/export pane */
-  .mmth-io { display:flex; flex-direction:column; gap:8px; }
+  .mmth-cfgsec { font-weight:600; font-size:11px; color:#6f7d75; text-transform:uppercase; letter-spacing:.04em; margin:10px 0 4px; padding-bottom:2px; border-bottom:1px solid #eef3f0; }
+  .mmth-cfgpane > .mmth-cfgsec:first-child { margin-top:2px; }
+  /* #304: import/export pane (the pane IS the flex column — no inner .mmth-io wrapper) */
+  .mmth-cfgpane[data-pane="io"] { display:flex; flex-direction:column; gap:8px; }
   .mmth-io-modes { display:flex; flex-flow:row wrap; gap:6px 18px; font-size:12px; align-items:center; }
   .mmth-io-modes label { margin:0; display:inline-flex; align-items:center; gap:6px; }
-  .mmth-io textarea { width:100%; box-sizing:border-box; height:150px; resize:vertical; border:1px solid #d7e0db; border-radius:5px; padding:6px 8px; font:13px/1.55 -apple-system,Segoe UI,Arial,sans-serif; }
+  /* width/height !important to beat MB's #content textarea form CSS (#304) */
+  .mmth-io-ta { width:100% !important; box-sizing:border-box; height:160px !important; min-height:120px; resize:vertical; border:1px solid #d7e0db; border-radius:5px; padding:6px 8px; font:13px/1.55 -apple-system,Segoe UI,Arial,sans-serif; }
   .mmth-io-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
   .mmth-io-btn { cursor:pointer; border:1px solid #cfd9d3; background:#fff; border-radius:5px; padding:2px 8px; font-size:12px; color:#27483a; }
   .mmth-io-btn:hover { background:#eaf5ee; border-color:#5aa67e; }
@@ -363,6 +374,24 @@
     }
     setTimeout(() => document.addEventListener('mousedown', onPopDown, true), 0);
   }
+  // #304: drag the popover by its header (so it can be moved out of the way).
+  function makeDraggable(popEl, handle) {
+    handle.classList.add('mmth-draghandle');
+    let sx = 0, sy = 0, sl = 0, st = 0, on = false;
+    const move = e => {
+      if (!on) return;
+      let l = sl + (e.clientX - sx), t = st + (e.clientY - sy);
+      l = Math.max(6, Math.min(window.innerWidth - popEl.offsetWidth - 6, l));
+      t = Math.max(6, Math.min(window.innerHeight - popEl.offsetHeight - 6, t));
+      popEl.style.left = l + 'px'; popEl.style.top = t + 'px';
+    };
+    const up = () => { on = false; document.removeEventListener('mousemove', move, true); document.removeEventListener('mouseup', up, true); };
+    handle.addEventListener('mousedown', e => {
+      if (e.target.closest('a, button, input, select, textarea')) return;   // don't hijack the Help link etc.
+      on = true; popEl.dataset.moved = '1'; const r = popEl.getBoundingClientRect(); sl = r.left; st = r.top; sx = e.clientX; sy = e.clientY;
+      e.preventDefault(); document.addEventListener('mousemove', move, true); document.addEventListener('mouseup', up, true);
+    });
+  }
   // #304/#309: tabbed config window — Settings + Import / Export. `io` lets the
   // caller scope import/export to a specific field (e.g. a baby field's values).
   function openSettings(anchor, tab, io) {
@@ -375,21 +404,22 @@
         <button type="button" class="mmth-cfgtab" data-tab="io">Import / Export</button>
       </div>
       <div class="mmth-cfgpane" data-pane="settings">
-        <label><input type="checkbox" class="mmth-s-help"> Hide edit-note help text</label>
-        <label>Default click action
-          <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
-        </label>
-        <div class="mmth-tip">Right-click does the other action.</div>
-        <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
+        <div class="mmth-cfgsec">Edit note settings</div>
+        <label title="Keep saved notes &amp; history separate per edit-note type (release / artist / recording / …)"><input type="checkbox" class="mmth-s-scope"> Scope per resource</label>
+        <label><input type="checkbox" class="mmth-s-help"> Hide help text</label>
         <label><input type="checkbox" class="mmth-s-search"> Show note search</label>
         <label>Sort saved notes
           <select class="mmth-s-sort"><option value="manual">Manual</option><option value="uses">Most used</option><option value="recent">Recent</option></select>
         </label>
-        <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
+        <label title="Right-click does the other action">Default click action
+          <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
+        </label>
+        <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
         <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
         <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
+        <div class="mmth-cfgsec">General</div>
         <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
-        <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>
+        <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
       </div>
       <div class="mmth-cfgpane" data-pane="io" style="display:none">
         <div class="mmth-io-modes">
@@ -405,11 +435,15 @@
         <div class="mmth-tip mmth-io-help" style="margin-left:0"></div>
       </div>`;
     document.body.appendChild(p); pop = p;
-    // tab switching (re-place after the height changes so it stays anchored)
+    makeDraggable(p, p.querySelector('h4'));   // #304: movable config window
+    // tab switching — only toggles the pane; position stays put (re-placing here made
+    // the window jump because the two tabs differ in height). #304
     const tabs = [...p.querySelectorAll('.mmth-cfgtab')], panes = [...p.querySelectorAll('.mmth-cfgpane')];
-    const showTab = name => { tabs.forEach(t => t.classList.toggle('on', t.dataset.tab === name)); panes.forEach(pn => { pn.style.display = pn.dataset.pane === name ? '' : 'none'; }); placePop(p, anchor); };
+    const showTab = name => { tabs.forEach(t => t.classList.toggle('on', t.dataset.tab === name)); panes.forEach(pn => { pn.style.display = pn.dataset.pane === name ? '' : 'none'; }); };
     tabs.forEach(t => t.onclick = () => showTab(t.dataset.tab));
     // ── Settings pane ──
+    const scope = p.querySelector('.mmth-s-scope'); scope.checked = SET.scopePerResource === true;
+    scope.onchange = () => { SET.scopePerResource = scope.checked; persistSet(); useScope(); updateScopeChips(); render(); };
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
     const ins = p.querySelector('.mmth-s-ins'); ins.value = SET.defaultInsert;
     const nl = p.querySelector('.mmth-s-nl'); nl.checked = SET.appendNewline !== false;
@@ -447,6 +481,7 @@
       ioMsg.textContent = `${items.length} item(s)` + (copied ? ' — copied to clipboard' : ' — select & copy');
     };
     showTab(tab === 'io' ? 'io' : 'settings');
+    placePop(p, anchor);   // position once; tab switches no longer move it
   }
   function openSyntax(anchor) {
     closePop();
@@ -555,6 +590,7 @@
     // #309: which edit-note type these notes belong to (notes are kept separate per type)
     const scopeChip = document.createElement('span'); scopeChip.className = 'mmth-scope'; scopeChip.textContent = scopeLabel(SCOPE);
     scopeChip.title = 'Saved notes & history are kept separate per edit-note type — these are your "' + scopeLabel(SCOPE) + '" notes (#309)';
+    scopeChip.style.display = SET.scopePerResource ? '' : 'none';   // only shown when scoping is on
     ft.appendChild(scopeChip);
     inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => setMinimized(!SET.minimized));   // #265: left of the ? button
     ft.appendChild(inst.minBtn);

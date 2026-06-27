@@ -19,8 +19,8 @@ for (let i = 1; i <= 30; i++) seed.saved.push({ id: 'seed' + i, text: (i === 7 |
 seed.saved[0].pinned = true; seed.saved[1].pinned = true;     // two pinned → pinbar
 seed.saved[4].uses = 9; seed.saved[4].lastUsed = 99999;        // "...005" most used
 
-// #309: notes are scoped per entity type — this probe runs on an /artist/ page, so seed the 'artist' scope
-const shim = `(() => { const s = new Map(); s.set('mammoth:data', ${JSON.stringify(JSON.stringify({ artist: seed }))}); window.GM_getValue=(k,d)=>s.has(k)?s.get(k):d; window.GM_setValue=(k,v)=>{s.set(k,v);}; window.unsafeWindow=window; })();`;
+// #309: scoping is opt-in (off by default → shared 'all' pool), so seed the 'all' scope
+const shim = `(() => { const s = new Map(); s.set('mammoth:data', ${JSON.stringify(JSON.stringify({ all: seed }))}); window.GM_getValue=(k,d)=>s.has(k)?s.get(k):d; window.GM_setValue=(k,v)=>{s.set(k,v);}; window.unsafeWindow=window; })();`;
 
 const main = async () => {
   const userJs = await readFile(SCRIPT_PATH, 'utf8');
