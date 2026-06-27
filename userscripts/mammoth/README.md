@@ -11,6 +11,8 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 
 ## Features
 
+- **Per-type notes** *(#309)*<br>
+Saved notes and history are kept **separate per edit-note type** (release / artist / recording / label / work / …, detected from the page), so your release-only notes (covers, merges, ISRCs…) don't clutter an artist edit. A small chip in the toolbar shows which type you're looking at. (Existing notes are migrated to the **release** set.)
 - **History**<br>
 Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. 
 - **Saved notes**<br>
@@ -32,7 +34,7 @@ The native edit-note field is widened and centered (it spans the full form width
 - **Minimized mode**<br>
 The **–** button (left of **?**) collapses the panel to a small Mammoth icon in the field's top-right corner, giving the edit note the full width. **Hover** the icon to float the panel back in (click it to pin it open); **⤢** restores it. The mode is remembered across edit pages.
 - **Baby mammoths** *(optional — ⚙ "Show mammoth babies", on by default)*<br>
-The same save/reuse idea on **other controls** — catalog number, label, artist, status, language, script, country, primary type. A small **🦣** pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The pin opens a compact panel with a toolbar — **＋** save the current value, **✕** clear the field, **⚙** open Mammoth's settings — and one row per saved value. In the row menu: **★** pins a value as an always-visible **button under the field**, **◉** marks one entry as the **default** (auto-fills the field when it's empty), **🗑** forgets, and the **⠿** handle (on hover) drags to reorder — just like the edit-note panel. Entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity. The pin auto-shifts left of a field's native control (the `<select>` arrow or an autocomplete's magnifier); `data-mmth-dx="<px>"` overrides that nudge for a specific control. Other scripts can opt a control in by tagging it `class="mmth-pin"` (optional `data-mmth-key` / `data-mmth-label`). Stored separately under `mammoth-fields:data`.
+The same save/reuse idea on **other controls** — catalog number, label, artist, status, language, script, country, primary type. A small **🦣** pin sits in each field; click it to recall values you've saved for that field (stored per field, shared across releases). The pin opens a compact panel with a toolbar — **＋** save the current value, **✕** clear the field, **⚙** open Mammoth's settings — and one row per saved value. In the row menu: **★** pins a value as an always-visible **button under the field** (rounded "tag" buttons that wrap to new rows, labelled with the value truncated to the configured length — see **⚙ "Button label length"**), **◉** marks one entry as the **default** (auto-fills the field when it's empty), **🗑** forgets, and the **⠿** handle (on hover) drags to reorder — just like the edit-note panel. Entity fields (Label, Artist) save the selected MBID, so a recalled value resolves the real entity. The pin auto-shifts left of a field's native control (the `<select>` arrow or an autocomplete's magnifier); `data-mmth-dx="<px>"` overrides that nudge for a specific control. Other scripts can opt a control in by tagging it `class="mmth-pin"` (optional `data-mmth-key` / `data-mmth-label`). Stored separately under `mammoth-fields:data`.
 
 ## Keyboard shortcuts
 
@@ -54,9 +56,14 @@ Accessesd using ⚙ button:
 | **Hide edit-note help text** | off | Hides MusicBrainz's help paragraphs above the field. |
 | **Default click action** | `replace` | What a left-click does (`replace`, or `append`). Right-click does the other. |
 | **Insert new line when appending** | on | Append a blank line before note. |
+| **Show note search** | off | Show the search box above the note list (for big lists). |
+| **Sort saved notes** | `Manual` | `Manual` (drag order), `Most used`, or `Recent`. |
+| **Button label length** | `24` | Character length of the pinned quick-buttons' labels (4–80), for both the main and baby pins. |
 | **Items shown** | `6` | How many list rows to render before the list scrolls. |
 | **History size** | `10` | How many submitted notes to remember (1–50). |
 | **Show mammoth babies** | on | Field memory on other controls (catalog №, label, artist, status…). Toggles on/off live. |
+
+The ⚙ window has two tabs: **Settings** (above) and **Import / Export** (paste to import many notes, or **Export all** to the clipboard — with a *1 note per line* / *empty line separates notes* toggle that applies both ways).
 
 ## Using Mammoth from another userscript
 

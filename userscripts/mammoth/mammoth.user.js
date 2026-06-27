@@ -45,13 +45,33 @@
   // self-contained vector mammoth everywhere the icon shows, so it's font-independent.
   const MAMMOTH_SVG = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true" style="display:block"><g fill="#7a4a1f"><path d="M21 19C21 12.5 17.5 8.5 11.5 8.5C7 8.5 4.2 11.2 4.2 15L4.2 19Z"/><circle cx="7.6" cy="10.6" r="5"/><rect x="7" y="16.5" width="2.8" height="5.2" rx="1.3"/><rect x="15" y="16.5" width="2.8" height="5.2" rx="1.3"/></g><path d="M3.1 11.2C1.6 13.6 2 16.6 3.7 18.1C4.6 18.9 5.9 18.6 6.1 17.5C6.3 16.5 5.7 15.8 5.3 15.3" fill="none" stroke="#7a4a1f" stroke-width="2.7" stroke-linecap="round"/><path d="M5.2 15.2C4.1 16.6 4.3 18.2 5.6 18.9" fill="none" stroke="#efe7d2" stroke-width="1.4" stroke-linecap="round"/></svg>';
 
-  const loadData = () => { try { return Object.assign({ saved: [], history: [] }, JSON.parse(GM_getValue(KEY, '{}') || '{}')); } catch (e) { return { saved: [], history: [] }; } };
-  const saveData = () => { try { GM_setValue(KEY, JSON.stringify(DATA)); } catch (e) {} render(); };
+  // #309: notes are kept SEPARATE per edit-note entity type (release / artist /
+  // recording / label / work / …), derived from the page URL. So release-only notes
+  // (covers, merges, ISRCs…) don't clutter an artist edit, and vice-versa.
+  const ENTITY_TYPES = ['area', 'artist', 'event', 'genre', 'instrument', 'label', 'place', 'recording', 'release', 'release-group', 'series', 'work'];
+  function noteScope() {
+    const seg = (location.pathname.split('/').filter(Boolean)[0] || '').toLowerCase();
+    return ENTITY_TYPES.includes(seg) ? seg : 'other';
+  }
+  const SCOPE = noteScope();
+  const scopeLabel = s => s === 'other' ? 'other' : s.replace(/-/g, ' ');
+  // Multi-scope store: { [scope]: { saved, history } }. Migrate the old flat
+  // { saved, history } into the 'release' scope (where almost all existing notes live).
+  function loadStore() {
+    let raw; try { raw = JSON.parse(GM_getValue(KEY, '{}') || '{}'); } catch (e) { raw = {}; }
+    if (!raw || typeof raw !== 'object') raw = {};
+    if (Array.isArray(raw.saved) || Array.isArray(raw.history)) raw = { release: { saved: raw.saved || [], history: raw.history || [] } };
+    return raw;
+  }
   const loadSet = () => { try { return Object.assign({}, DEFAULTS, JSON.parse(GM_getValue(SKEY, '{}') || '{}')); } catch (e) { return Object.assign({}, DEFAULTS); } };
   const persistSet = () => { try { GM_setValue(SKEY, JSON.stringify(SET)); } catch (e) {} };           // quiet save (no re-render)
   const saveSet = () => { persistSet(); applyHelp(); render(); };
 
-  let DATA = loadData();
+  let STORE = loadStore();
+  let DATA = STORE[SCOPE] || (STORE[SCOPE] = { saved: [], history: [] });
+  if (!Array.isArray(DATA.saved)) DATA.saved = [];
+  if (!Array.isArray(DATA.history)) DATA.history = [];
+  const saveData = () => { try { GM_setValue(KEY, JSON.stringify(STORE)); } catch (e) {} render(); };
   let SET = loadSet();
   const uid = () => 'n' + Math.random().toString(36).slice(2, 9);
   const babyMammoths = createBabyMammoths();   // field-memory module (gated by SET.showBabies)
@@ -218,6 +238,8 @@
   .mmth-fb.on { background:#cfe9d8; color:#1f5c3d; }
   .mmth-fb.mmth-spacer { flex:1; pointer-events:none; }
   .mmth-fb.mmth-grp { margin-left:10px; }
+  /* #309: per-type scope indicator (release / artist / recording / …) */
+  .mmth-scope { align-self:center; flex:none; font-size:10px; color:#6f7d75; background:#eef3f0; border:1px solid #dde7e1; border-radius:9px; padding:1px 7px; margin-right:4px; white-space:nowrap; max-width:90px; overflow:hidden; text-overflow:ellipsis; }
   /* #304: opt-in search row (search box + count) between the toolbar and the list */
   .mmth-filterrow { display:flex; align-items:center; gap:5px; padding:3px 5px; border-bottom:1px solid #e7eee9; background:#f7faf8; }
   /* width:auto !important defends against MB's form CSS (#content input), which
@@ -519,6 +541,10 @@
     ft.appendChild(bSaved); ft.appendChild(bHist);
     ft.appendChild(fb('✕', 'Clear the edit note', 'mmth-grp', () => { setValue(ta, ''); ta.focus(); }));
     const sp = document.createElement('span'); sp.className = 'mmth-fb mmth-spacer'; ft.appendChild(sp);
+    // #309: which edit-note type these notes belong to (notes are kept separate per type)
+    const scopeChip = document.createElement('span'); scopeChip.className = 'mmth-scope'; scopeChip.textContent = scopeLabel(SCOPE);
+    scopeChip.title = 'Saved notes & history are kept separate per edit-note type — these are your "' + scopeLabel(SCOPE) + '" notes (#309)';
+    ft.appendChild(scopeChip);
     inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => setMinimized(!SET.minimized));   // #265: left of the ? button
     ft.appendChild(inst.minBtn);
     ft.appendChild(fb('?', 'Edit-note syntax', 'mmth-pop-anchor', e => openSyntax(e.currentTarget)));
