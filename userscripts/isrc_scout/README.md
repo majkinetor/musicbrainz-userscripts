@@ -85,6 +85,8 @@ ISRC Scout also adds **streaming links to recordings** in the background. The **
 
 A provider is offered for a track only when it's resolvable (Deezer/Tidal need that track's ISRC; Bandcamp/Apple need the release's album link) or the recording is already linked to it.
 
+**Dead links aren't offered.** Deezer keeps an ISRC→track mapping even after it pulls the audio, so a by-ISRC lookup can return a track that no longer streams anywhere (Deezer reports it as unreadable, available in zero countries). Find links treats such a track as not found, so it won't offer a broken link to add.
+
 ### Finding & adding
 
 - **🔗 Find links** resolves every track on the available providers and lights up the **Add** column with what's addable (a coloured icon = found, not yet linked). Providers resolve **in parallel** (each with its own light rate-limiting), and the album-based ones (Bandcamp / Apple Music) fetch the album page just once — so a full release resolves in a few seconds rather than one request at a time.

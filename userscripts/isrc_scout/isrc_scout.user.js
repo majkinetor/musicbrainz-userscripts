@@ -2378,6 +2378,10 @@
             const throttled = r.status === 429 || (j && j.error && (j.error.code === 4 || j.error.code === 700));
             if (throttled && attempt < 4) { await sleep(Math.min(700 * Math.pow(2, attempt), 6000)); continue; }
             if (r.status !== 200 || !j || j.error || !j.id) return null;
+            // Don't offer a DEAD track: Deezer keeps the ISRC mapping after pulling the
+            // audio, returning a track that streams in zero countries (readable:false,
+            // available_countries:[]). That's a broken link, so treat it as not found.
+            if (j.readable === false && Array.isArray(j.available_countries) && j.available_countries.length === 0) return null;
             return j.link || ('https://www.deezer.com/track/' + j.id);
           }
         } },
