@@ -35,7 +35,7 @@
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
-  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true };   // defaultInsert: 'replace' | 'append'
+  const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309)
   const VERSION = '2026.6.27';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
@@ -45,14 +45,42 @@
   // self-contained vector mammoth everywhere the icon shows, so it's font-independent.
   const MAMMOTH_SVG = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true" style="display:block"><g fill="#7a4a1f"><path d="M21 19C21 12.5 17.5 8.5 11.5 8.5C7 8.5 4.2 11.2 4.2 15L4.2 19Z"/><circle cx="7.6" cy="10.6" r="5"/><rect x="7" y="16.5" width="2.8" height="5.2" rx="1.3"/><rect x="15" y="16.5" width="2.8" height="5.2" rx="1.3"/></g><path d="M3.1 11.2C1.6 13.6 2 16.6 3.7 18.1C4.6 18.9 5.9 18.6 6.1 17.5C6.3 16.5 5.7 15.8 5.3 15.3" fill="none" stroke="#7a4a1f" stroke-width="2.7" stroke-linecap="round"/><path d="M5.2 15.2C4.1 16.6 4.3 18.2 5.6 18.9" fill="none" stroke="#efe7d2" stroke-width="1.4" stroke-linecap="round"/></svg>';
 
-  const loadData = () => { try { return Object.assign({ saved: [], history: [] }, JSON.parse(GM_getValue(KEY, '{}') || '{}')); } catch (e) { return { saved: [], history: [] }; } };
-  const saveData = () => { try { GM_setValue(KEY, JSON.stringify(DATA)); } catch (e) {} render(); };
+  // #309: optionally keep notes SEPARATE per edit-note entity type (release /
+  // artist / recording / …), derived from the page URL — opt-in via the
+  // "Scope per resource" setting. Off (default) = one shared pool ('all').
+  const ENTITY_TYPES = ['area', 'artist', 'event', 'genre', 'instrument', 'label', 'place', 'recording', 'release', 'release-group', 'series', 'work'];
+  const GLOBAL_SCOPE = 'all';
+  function noteScope() {
+    const seg = (location.pathname.split('/').filter(Boolean)[0] || '').toLowerCase();
+    return ENTITY_TYPES.includes(seg) ? seg : 'other';
+  }
+  const SCOPE = noteScope();
+  const scopeLabel = s => s === 'other' ? 'other' : s.replace(/-/g, ' ');
+  // Multi-scope store: { [scope]: { saved, history } }. Migrate the old flat
+  // { saved, history } into the shared 'all' pool (scoping is off by default).
+  function loadStore() {
+    let raw; try { raw = JSON.parse(GM_getValue(KEY, '{}') || '{}'); } catch (e) { raw = {}; }
+    if (!raw || typeof raw !== 'object') raw = {};
+    if (Array.isArray(raw.saved) || Array.isArray(raw.history)) raw = { [GLOBAL_SCOPE]: { saved: raw.saved || [], history: raw.history || [] } };
+    return raw;
+  }
   const loadSet = () => { try { return Object.assign({}, DEFAULTS, JSON.parse(GM_getValue(SKEY, '{}') || '{}')); } catch (e) { return Object.assign({}, DEFAULTS); } };
   const persistSet = () => { try { GM_setValue(SKEY, JSON.stringify(SET)); } catch (e) {} };           // quiet save (no re-render)
   const saveSet = () => { persistSet(); applyHelp(); render(); };
 
-  let DATA = loadData();
   let SET = loadSet();
+  let STORE = loadStore();
+  const dataKey = () => SET.scopePerResource ? SCOPE : GLOBAL_SCOPE;
+  let DATA;
+  function useScope() {   // (re)point DATA at the current pool (called on load + when the setting toggles)
+    const k = dataKey();
+    DATA = STORE[k] || (STORE[k] = { saved: [], history: [] });
+    if (!Array.isArray(DATA.saved)) DATA.saved = [];
+    if (!Array.isArray(DATA.history)) DATA.history = [];
+  }
+  useScope();
+  const saveData = () => { try { GM_setValue(KEY, JSON.stringify(STORE)); } catch (e) {} render(); };
+  const updateScopeChips = () => document.querySelectorAll('.mmth-scope').forEach(c => { c.style.display = SET.scopePerResource ? '' : 'none'; });
   const uid = () => 'n' + Math.random().toString(36).slice(2, 9);
   const babyMammoths = createBabyMammoths();   // field-memory module (gated by SET.showBabies)
 
@@ -78,6 +106,33 @@
     const [it] = a.splice(si, 1);
     let ti = a.findIndex(s => s.id === tgtId); if (ti < 0) { a.splice(si, 0, it); return; }
     a.splice(before ? ti : ti + 1, 0, it); saveData();
+  }
+  // #304: scaling helpers for big note lists.
+  const togglePinNote = id => { const s = DATA.saved.find(x => x.id === id); if (s) { s.pinned = !s.pinned; saveData(); } };
+  // record that a saved note was used (drives the "Most used" / "Recent" sort)
+  function bumpUse(id) { const s = DATA.saved.find(x => x.id === id); if (!s) return; s.uses = (s.uses | 0) + 1; s.lastUsed = Date.now(); saveData(); }
+  // display order for the Saved list — pinned never reorder the list (they get their
+  // own quick-button bar); only the chosen sort mode reshuffles. Manual = stored order.
+  function sortedSaved() {
+    const a = DATA.saved.slice();
+    const mode = SET.noteSort || 'manual';
+    if (mode === 'uses')   a.sort((x, y) => (y.uses | 0) - (x.uses | 0) || (y.lastUsed || y.ts || 0) - (x.lastUsed || x.ts || 0));
+    else if (mode === 'recent') a.sort((x, y) => (y.lastUsed || y.ts || 0) - (x.lastUsed || x.ts || 0));
+    return a;
+  }
+  // #304: parse pasted notes — each line a note, or (byBlock) blank-line-separated
+  // blocks so multi-line notes survive. Blank lines are dropped either way, so a
+  // readable (blank-line) export round-trips fine in "1 note per line" mode too.
+  function parseNotes(text, byBlock) {
+    const parts = byBlock ? String(text || '').split(/\r?\n[ \t]*\r?\n/) : String(text || '').split(/\r?\n/);
+    return parts.map(s => s.replace(/^\s+|\s+$/g, '')).filter(Boolean);
+  }
+  // add parsed notes to the edit-note saved list (dedup). Returns the added count.
+  function addSavedNotes(notes) {
+    let added = 0; const have = new Set(DATA.saved.map(s => s.text));
+    for (const t of notes) { if (have.has(t)) continue; have.add(t); DATA.saved.push({ id: uid(), text: t, ts: Date.now() }); added++; }
+    if (added) saveData();
+    return added;
   }
 
   // ── insert (React-safe + undoable) ───────────────────────────────────────────
@@ -162,7 +217,9 @@
      the field's padding/border, inflating both without bound (#245). The field is
      still floored to the panel via JS, so it's never shorter. */
   .mmth-wrap { display:flex; gap:0; align-items:flex-start; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; position:relative; }
-  .mmth-wrap > textarea.edit-note { flex:1 1 auto; width:auto !important; min-width:0; }
+  /* #304: field column = textarea + pinned-quick-buttons bar, stacked */
+  .mmth-fieldcol { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; }
+  .mmth-fieldcol > textarea.edit-note { width:100% !important; min-width:0; box-sizing:border-box; }
   /* #288/#290: foreign edit-note error/warning <p>s that MB (and other scripts)
      insert next to the textarea are RELOCATED out of the flex row by JS (see
      relocateForeign) so they never sit beside the field. No flex-wrap here — that
@@ -180,7 +237,7 @@
                 font-size:15px; line-height:1; user-select:none; }
   .mmth-badge:hover { background:#eaf5ee; border-color:#5aa67e; }
   .mmth-min > .mmth-badge { display:flex; }
-  .mmth-vsep { flex:none; width:9px; align-self:stretch; cursor:col-resize; position:relative; }
+  .mmth-vsep { flex:none; width:9px; align-self:flex-start; cursor:col-resize; position:relative; }   /* #304: height synced to the field (not the field+pinbar column) */
   .mmth-vsep::before { content:''; position:absolute; left:4px; top:0; bottom:0; width:1px; background:#d7e0db; }
   .mmth-vsep:hover::before, .mmth-vsep.mmth-dragv::before { background:#5aa67e; width:3px; left:3px; }
   .mmth-hidehelp > p { display:none !important; }
@@ -192,6 +249,38 @@
   .mmth-fb.on { background:#cfe9d8; color:#1f5c3d; }
   .mmth-fb.mmth-spacer { flex:1; pointer-events:none; }
   .mmth-fb.mmth-grp { margin-left:10px; }
+  /* #309: per-type scope indicator (release / artist / recording / …) */
+  .mmth-scope { align-self:center; flex:none; font-size:10px; color:#6f7d75; background:#eef3f0; border:1px solid #dde7e1; border-radius:9px; padding:1px 7px; margin-right:4px; white-space:nowrap; max-width:72px; overflow:hidden; text-overflow:ellipsis; }
+  .mmth-ft { flex-wrap:wrap; }   /* #304: never clip toolbar buttons — wrap as a last resort below the min width */
+  /* #304: opt-in search row (search box + count) between the toolbar and the list */
+  .mmth-filterrow { display:flex; align-items:center; gap:5px; padding:3px 5px; border-bottom:1px solid #e7eee9; background:#f7faf8; }
+  /* width:auto !important defends against MB's form CSS (#content input), which
+     otherwise forces a fixed width and squashes the flex layout (#304) */
+  .mmth-filter { flex:1 1 auto; min-width:0; width:auto !important; box-sizing:border-box; border:1px solid #d7e0db; border-radius:5px; padding:2px 6px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
+  .mmth-filter:focus { outline:none; border-color:#5aa67e; }
+  .mmth-count { flex:none; font-size:11px; color:#8a978f; white-space:nowrap; }
+  /* #304: pinned saved notes as quick-insert buttons BELOW the field (like baby-field bars) */
+  .mmth-pinbar { display:flex; flex-wrap:wrap; gap:5px; margin:5px 0 2px; }
+  .mmth-segb { border:1px solid #cfd9d3; background:#fbfdfc; border-radius:7px; padding:3px 10px; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; color:#27483a; cursor:pointer; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+  .mmth-segb:hover { background:#eaf5ee; border-color:#5aa67e; }
+  .mmth-row.mmth-pinned .mmth-txt::before { content:'★'; color:#c2a93e; margin-right:4px; font-size:10px; vertical-align:1px; }
+  /* #304: tabbed config window (Settings / Import-Export) */
+  .mmth-cfgtabs { display:flex; gap:4px; margin:0 0 8px; border-bottom:1px solid #e7eee9; }
+  .mmth-cfgtab { border:none; background:none; padding:4px 9px; font-size:12px; color:#566; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .mmth-cfgtab:hover { color:#1f5c3d; }
+  .mmth-cfgtab.on { color:#1f5c3d; border-bottom-color:#5aa67e; font-weight:600; }
+  .mmth-cfgsec { font-weight:600; font-size:11px; color:#6f7d75; text-transform:uppercase; letter-spacing:.04em; margin:10px 0 4px; padding-bottom:2px; border-bottom:1px solid #eef3f0; }
+  .mmth-cfgpane > .mmth-cfgsec:first-child { margin-top:2px; }
+  /* #304: import/export pane (the pane IS the flex column — no inner .mmth-io wrapper) */
+  .mmth-cfgpane[data-pane="io"] { display:flex; flex-direction:column; gap:8px; }
+  .mmth-io-modes { display:flex; flex-flow:row wrap; gap:6px 18px; font-size:12px; align-items:center; }
+  .mmth-io-modes label { margin:0; display:inline-flex; align-items:center; gap:6px; }
+  /* width/height !important to beat MB's #content textarea form CSS (#304) */
+  .mmth-io-ta { width:100% !important; box-sizing:border-box; height:160px !important; min-height:120px; resize:vertical; border:1px solid #d7e0db; border-radius:5px; padding:6px 8px; font:13px/1.55 -apple-system,Segoe UI,Arial,sans-serif; }
+  .mmth-io-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .mmth-io-btn { cursor:pointer; border:1px solid #cfd9d3; background:#fff; border-radius:5px; padding:2px 8px; font-size:12px; color:#27483a; }
+  .mmth-io-btn:hover { background:#eaf5ee; border-color:#5aa67e; }
+  .mmth-io-msg { font-size:11px; color:#8a978f; }
   .mmth-list { flex:1 1 auto; overflow-y:auto; scrollbar-width:none; }
   .mmth-list::-webkit-scrollbar { width:0; height:0; }
   .mmth-row { display:flex; align-items:center; gap:4px; padding:4px 6px; border-top:1px solid #f0f4f2; cursor:pointer; }
@@ -212,6 +301,7 @@
   .mmth-empty { padding:12px 8px; color:#9aa6a0; font-style:italic; text-align:center; }
   .mmth-pop { position:fixed; z-index:99999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2);
               padding:10px 12px; font:13px/1.45 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:280px; }
+  .mmth-cfg { width:360px; }   /* #304: wider config window so the Import/Export radios sit on one row + a roomier textarea */
   .mmth-pop h4 { margin:-10px -12px 8px; padding:6px 10px; font-size:13px; display:flex; align-items:center; gap:6px; background:#f1f6f3; border-bottom:1px solid #e7eee9; border-radius:8px 8px 0 0; }
   .mmth-tip { color:#8a978f; font-size:11px; margin:0 0 4px 22px; }
   .mmth-pop h4 .mmth-ver { color:#8a978f; font-weight:400; font-size:11px; }
@@ -265,40 +355,133 @@
   function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('mousedown', onPopDown, true); } }
   function onPopDown(e) { if (pop && !pop.contains(e.target) && !e.target.closest('.mmth-pop-anchor')) { closePop(); eatNextClick(); } }
   function placePop(p, anchor) {
-    const r = anchor.getBoundingClientRect();
-    p.style.top = Math.max(6, r.top - p.offsetHeight - 6) + 'px';
-    p.style.left = Math.max(6, Math.min(window.innerWidth - p.offsetWidth - 6, r.right - p.offsetWidth)) + 'px';
+    const W = p.offsetWidth, H = p.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+    const r = anchor && anchor.getBoundingClientRect();
+    if (!r || (!r.width && !r.height)) {
+      // anchor gone/hidden (e.g. a baby pin that re-hid) — sensible centred fallback
+      p.style.left = Math.max(6, Math.round((vw - W) / 2)) + 'px'; p.style.top = '70px';
+    } else {
+      // #304: open just BELOW the trigger and clamp into the viewport, so the popover
+      // stays next to what opened it instead of jumping above (which clamped to the
+      // top-left corner when opened from a baby pin low on a tall page).
+      const left = Math.max(6, Math.min(vw - W - 6, r.left));
+      let top = r.bottom + 4;                              // below the trigger
+      if (top + H > vh - 6) {                              // would overflow the bottom
+        const above = r.top - H - 6;                       // try above if it fits, else clamp
+        top = above >= 6 ? above : (vh - H - 6);
+      }
+      p.style.left = left + 'px'; p.style.top = Math.max(6, top) + 'px';
+    }
     setTimeout(() => document.addEventListener('mousedown', onPopDown, true), 0);
   }
-  function openSettings(anchor) {
+  // #304: drag the popover by its header (so it can be moved out of the way).
+  function makeDraggable(popEl, handle) {
+    handle.classList.add('mmth-draghandle');
+    let sx = 0, sy = 0, sl = 0, st = 0, on = false;
+    const move = e => {
+      if (!on) return;
+      let l = sl + (e.clientX - sx), t = st + (e.clientY - sy);
+      l = Math.max(6, Math.min(window.innerWidth - popEl.offsetWidth - 6, l));
+      t = Math.max(6, Math.min(window.innerHeight - popEl.offsetHeight - 6, t));
+      popEl.style.left = l + 'px'; popEl.style.top = t + 'px';
+    };
+    const up = () => { on = false; document.removeEventListener('mousemove', move, true); document.removeEventListener('mouseup', up, true); };
+    handle.addEventListener('mousedown', e => {
+      if (e.target.closest('a, button, input, select, textarea')) return;   // don't hijack the Help link etc.
+      on = true; popEl.dataset.moved = '1'; const r = popEl.getBoundingClientRect(); sl = r.left; st = r.top; sx = e.clientX; sy = e.clientY;
+      e.preventDefault(); document.addEventListener('mousemove', move, true); document.addEventListener('mouseup', up, true);
+    });
+  }
+  // #304/#309: tabbed config window — Settings + Import / Export. `io` lets the
+  // caller scope import/export to a specific field (e.g. a baby field's values).
+  function openSettings(anchor, tab, io) {
     closePop();
-    const p = document.createElement('div'); p.className = 'mmth-pop';
+    const p = document.createElement('div'); p.className = 'mmth-pop mmth-cfg';
     p.innerHTML = `
       <h4><span class="mmth-h4ic">${MAMMOTH_SVG}</span> Mammoth <span class="mmth-ver">v${scriptVersion()}</span><a href="${HELP_URL}" target="_blank" rel="noopener" title="Open the README">? Help</a></h4>
-      <label><input type="checkbox" class="mmth-s-help"> Hide edit-note help text</label>
-      <label>Default click action
-        <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
-      </label>
-      <div class="mmth-tip">Right-click does the other action.</div>
-      <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
-      <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
-      <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
-      <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
-      <div class="mmth-tip">Save &amp; reuse values on other fields (catalog №, label, status…).</div>`;
+      <div class="mmth-cfgtabs">
+        <button type="button" class="mmth-cfgtab" data-tab="settings">Settings</button>
+        <button type="button" class="mmth-cfgtab" data-tab="io">Import / Export</button>
+      </div>
+      <div class="mmth-cfgpane" data-pane="settings">
+        <div class="mmth-cfgsec">Edit note settings</div>
+        <label title="Keep saved notes &amp; history separate per edit-note type (release / artist / recording / …)"><input type="checkbox" class="mmth-s-scope"> Scope per resource</label>
+        <label><input type="checkbox" class="mmth-s-help"> Hide help text</label>
+        <label><input type="checkbox" class="mmth-s-search"> Show note search</label>
+        <label>Sort saved notes
+          <select class="mmth-s-sort"><option value="manual">Manual</option><option value="uses">Most used</option><option value="recent">Recent</option></select>
+        </label>
+        <label title="Right-click does the other action">Default click action
+          <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
+        </label>
+        <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
+        <label>Items shown <input type="number" class="mmth-s-rows" min="1" max="30"></label>
+        <label>History size <input type="number" class="mmth-s-hist" min="1" max="50"></label>
+        <div class="mmth-cfgsec">General</div>
+        <label><input type="checkbox" class="mmth-s-babies"> Show mammoth babies</label>
+        <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
+      </div>
+      <div class="mmth-cfgpane" data-pane="io" style="display:none">
+        <div class="mmth-io-modes">
+          <label><input type="radio" name="mmth-iomode" value="line" checked> 1 note per line</label>
+          <label><input type="radio" name="mmth-iomode" value="block"> empty line separates notes</label>
+        </div>
+        <textarea class="mmth-io-ta" placeholder="Paste notes to import, or press Export to fill this box."></textarea>
+        <div class="mmth-io-row">
+          <button type="button" class="mmth-io-btn mmth-io-import">Import</button>
+          <button type="button" class="mmth-io-btn mmth-io-export">Export all</button>
+          <span class="mmth-io-msg"></span>
+        </div>
+        <div class="mmth-tip mmth-io-help" style="margin-left:0"></div>
+      </div>`;
     document.body.appendChild(p); pop = p;
+    makeDraggable(p, p.querySelector('h4'));   // #304: movable config window
+    // tab switching — only toggles the pane; position stays put (re-placing here made
+    // the window jump because the two tabs differ in height). #304
+    const tabs = [...p.querySelectorAll('.mmth-cfgtab')], panes = [...p.querySelectorAll('.mmth-cfgpane')];
+    const showTab = name => { tabs.forEach(t => t.classList.toggle('on', t.dataset.tab === name)); panes.forEach(pn => { pn.style.display = pn.dataset.pane === name ? '' : 'none'; }); };
+    tabs.forEach(t => t.onclick = () => showTab(t.dataset.tab));
+    // ── Settings pane ──
+    const scope = p.querySelector('.mmth-s-scope'); scope.checked = SET.scopePerResource === true;
+    scope.onchange = () => { SET.scopePerResource = scope.checked; persistSet(); useScope(); updateScopeChips(); render(); };
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
     const ins = p.querySelector('.mmth-s-ins'); ins.value = SET.defaultInsert;
     const nl = p.querySelector('.mmth-s-nl'); nl.checked = SET.appendNewline !== false;
+    const search = p.querySelector('.mmth-s-search'); search.checked = SET.noteSearch === true;
+    const sort = p.querySelector('.mmth-s-sort'); sort.value = SET.noteSort || 'manual';
+    const btnc = p.querySelector('.mmth-s-btnchars'); btnc.value = SET.btnChars || 24;
     const rows = p.querySelector('.mmth-s-rows'); rows.value = SET.visibleRows;
     const hist = p.querySelector('.mmth-s-hist'); hist.value = SET.historySize;
     help.onchange = () => { SET.hideHelp = help.checked; saveSet(); };
     ins.onchange = () => { SET.defaultInsert = ins.value; saveSet(); };
     nl.onchange = () => { SET.appendNewline = nl.checked; saveSet(); };
+    search.onchange = () => { SET.noteSearch = search.checked; saveSet(); };
+    sort.onchange = () => { SET.noteSort = sort.value; persistSet(); render(); };
+    btnc.onchange = () => { SET.btnChars = Math.max(4, Math.min(80, parseInt(btnc.value, 10) || 24)); btnc.value = SET.btnChars; saveSet(); babyMammoths.relabel(); };
     rows.onchange = () => { SET.visibleRows = Math.max(1, Math.min(30, parseInt(rows.value, 10) || 6)); rows.value = SET.visibleRows; saveSet(); };
     hist.onchange = () => { SET.historySize = Math.max(1, Math.min(50, parseInt(hist.value, 10) || 10)); hist.value = SET.historySize; saveSet(); recordHistory(''); };
     const babies = p.querySelector('.mmth-s-babies'); babies.checked = SET.showBabies !== false;
     babies.onchange = () => { SET.showBabies = babies.checked; persistSet(); babyMammoths.toggle(babies.checked); };
-    placePop(p, anchor);
+    // ── Import / Export pane ── (#304/#309: scoped to `io` — edit-note notes by
+    // default, or a specific field's values when opened from a baby field)
+    const ctx = io || { items: () => DATA.saved.map(s => s.text), add: notes => addSavedNotes(notes), help: 'Import adds to your saved notes; Export copies them all to the clipboard.' };
+    const ioTa = p.querySelector('.mmth-io-ta'), ioMsg = p.querySelector('.mmth-io-msg');
+    const ioBlock = () => p.querySelector('input[name="mmth-iomode"]:checked').value === 'block';
+    p.querySelector('.mmth-io-help').textContent = ctx.help || '';
+    p.querySelector('.mmth-io-import').onclick = () => {
+      const notes = parseNotes(ioTa.value, ioBlock());
+      if (!notes.length) { ioMsg.textContent = 'Paste some notes first'; return; }
+      const added = ctx.add(notes);
+      ioMsg.textContent = `Added ${added} of ${notes.length}` + (added < notes.length ? ' (rest were duplicates)' : '');
+      if (added) ioTa.value = '';
+    };
+    p.querySelector('.mmth-io-export').onclick = async () => {
+      const items = ctx.items(); const text = items.join(ioBlock() ? '\n\n' : '\n'); ioTa.value = text; ioTa.focus(); ioTa.select();
+      let copied = false; try { await navigator.clipboard.writeText(text); copied = true; } catch (e) { try { copied = document.execCommand('copy'); } catch (x) {} }
+      ioMsg.textContent = `${items.length} item(s)` + (copied ? ' — copied to clipboard' : ' — select & copy');
+    };
+    showTab(tab === 'io' ? 'io' : 'settings');
+    placePop(p, anchor);   // position once; tab switches no longer move it
   }
   function openSyntax(anchor) {
     closePop();
@@ -329,7 +512,8 @@
   const clearMarks = host => host && host.querySelectorAll('.mmth-drop-before,.mmth-drop-after').forEach(r => r.classList.remove('mmth-drop-before', 'mmth-drop-after'));
   let _drag = null;
 
-  function setSideWidth(side, w) { w = Math.max(160, Math.min(640, Math.round(w))); side.style.flex = '0 0 ' + w + 'px'; side.style.maxWidth = w + 'px'; return w; }
+  const MIN_PANEL = 300;   // #304: keep the toolbar (incl. ⚙) from clipping when narrow
+  function setSideWidth(side, w) { w = Math.max(MIN_PANEL, Math.min(640, Math.round(w))); side.style.flex = '0 0 ' + w + 'px'; side.style.maxWidth = w + 'px'; return w; }
 
   // #263: never let the panel be wider than the field — cap it to half the row so
   // the ratio is at most 1:1 (was up to ~1:10 in a narrow Art Station modal). The
@@ -340,7 +524,7 @@
     if (SET.minimized) return;   // panel is out of flow when minimized
     const row = wrap.clientWidth - (vsep ? vsep.offsetWidth : 0); if (!(row > 0)) return;
     const max = Math.floor(row / 2);
-    const want = Math.max(160, Math.min(SET.sideWidth || 300, max));
+    const want = Math.max(MIN_PANEL, Math.min(SET.sideWidth || 300, max));
     if (Math.round(side.getBoundingClientRect().width) !== want) { side.style.flex = '0 0 ' + want + 'px'; side.style.maxWidth = want + 'px'; }
   }
 
@@ -377,11 +561,24 @@
     const side = document.createElement('div'); side.className = 'mmth-side';
     setSideWidth(side, SET.sideWidth || 300);
     const ft = document.createElement('div'); ft.className = 'mmth-ft';            // toolbar ON TOP (#212)
+    const filterRow = document.createElement('div'); filterRow.className = 'mmth-filterrow';   // #304 search (opt-in)
     const list = document.createElement('div'); list.className = 'mmth-list';
-    side.appendChild(ft); side.appendChild(list);
+    const pinbar = document.createElement('div'); pinbar.className = 'mmth-pinbar';   // #304 pinned quick-buttons — placed BELOW the field (in injectAll)
+    side.appendChild(ft); side.appendChild(filterRow); side.appendChild(list);
 
-    const inst = { ta, list, side, view: 'saved', cyc: -1 };
+    const inst = { ta, list, side, pinbar, filterRow, view: 'saved', cycId: null, filter: '', viewItems: [] };
     instances.push(inst);
+
+    // #304: search box + N/total count (shown only when the "Show note search" option is on)
+    const fInput = document.createElement('input'); fInput.type = 'text'; fInput.className = 'mmth-filter'; fInput.placeholder = 'Search notes…';
+    fInput.addEventListener('input', () => { inst.filter = fInput.value; renderInst(inst); });
+    fInput.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { fInput.value = ''; inst.filter = ''; renderInst(inst); return; }
+      // #304: Enter uses the first result
+      if (e.key === 'Enter') { e.preventDefault(); const it = (inst.viewItems || [])[0]; if (it) { applyNote(ta, it.text, SET.defaultInsert === 'replace'); if (inst.view === 'saved') bumpUse(it.id); } }
+    });
+    const fCount = document.createElement('span'); fCount.className = 'mmth-count'; inst.countEl = fCount;
+    filterRow.appendChild(fInput); filterRow.appendChild(fCount); inst.filterInput = fInput;
 
     const fb = (glyph, title, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-fb' + (cls ? ' ' + cls : ''); b.textContent = glyph; b.title = title; b.onclick = fn; return b; };
     ft.appendChild(fb('＋', 'Save current edit note', '', () => { const v = (ta.value || '').trim(); if (!v) return toast('Edit note is empty'); toast(addSaved(v) ? 'Saved' : 'Already saved'); }));
@@ -390,6 +587,11 @@
     ft.appendChild(bSaved); ft.appendChild(bHist);
     ft.appendChild(fb('✕', 'Clear the edit note', 'mmth-grp', () => { setValue(ta, ''); ta.focus(); }));
     const sp = document.createElement('span'); sp.className = 'mmth-fb mmth-spacer'; ft.appendChild(sp);
+    // #309: which edit-note type these notes belong to (notes are kept separate per type)
+    const scopeChip = document.createElement('span'); scopeChip.className = 'mmth-scope'; scopeChip.textContent = scopeLabel(SCOPE);
+    scopeChip.title = 'Saved notes & history are kept separate per edit-note type — these are your "' + scopeLabel(SCOPE) + '" notes (#309)';
+    scopeChip.style.display = SET.scopePerResource ? '' : 'none';   // only shown when scoping is on
+    ft.appendChild(scopeChip);
     inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => setMinimized(!SET.minimized));   // #265: left of the ? button
     ft.appendChild(inst.minBtn);
     ft.appendChild(fb('?', 'Edit-note syntax', 'mmth-pop-anchor', e => openSyntax(e.currentTarget)));
@@ -403,11 +605,16 @@
       if (k === 'b' || k === 'i') { e.preventDefault(); wrapSel(ta, k === 'b' ? "'''" : "''"); return; }
       // Ctrl/⌘+↑/↓ cycle through saved notes, replacing the field (focus stays here)
       if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
-      const items = DATA.saved; if (!items.length) return;
+      if (inst.view !== 'saved') { inst.view = 'saved'; inst.tabs && inst.tabs.saved.classList.add('on'); inst.tabs && inst.tabs.history.classList.remove('on'); renderInst(inst); }
+      // cycle through exactly what's shown (respects the current sort + filter) #304
+      const items = inst.viewItems; if (!items || !items.length) return;
       e.preventDefault();
-      inst.cyc = (inst.cyc + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
-      setValue(ta, items[inst.cyc].text);
-      if (inst.view !== 'saved') { inst.view = 'saved'; inst.tabs && inst.tabs.saved.classList.add('on'); inst.tabs && inst.tabs.history.classList.remove('on'); }
+      const dir = e.key === 'ArrowDown' ? 1 : -1;
+      let i = items.findIndex(x => x.id === inst.cycId);
+      if (i < 0) i = dir > 0 ? -1 : 0;
+      i = (i + dir + items.length) % items.length;
+      inst.cycId = items[i].id;
+      setValue(ta, items[i].text);
       renderInst(inst);
       // keep the highlighted item visible — scroll WITHIN the list only (not the page)
       const cur = inst.list.querySelector('.mmth-cyc');
@@ -424,32 +631,64 @@
     return inst;
   }
 
+  // #304: pinned saved notes shown as one-click quick-insert buttons BELOW the
+  // edit-note field (like baby-field bars) — always available, independent of view.
+  function renderPinbar(inst) {
+    const bar = inst.pinbar; bar.innerHTML = '';
+    const pinned = DATA.saved.filter(s => s.pinned);
+    if (!pinned.length) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    const n = Math.max(4, Math.min(80, SET.btnChars | 0 || 24));
+    const cap = t => { t = t.replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };
+    const dflt = SET.defaultInsert;
+    pinned.forEach(it => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-segb'; b.textContent = cap(it.text); b.style.maxWidth = (n + 1) + 'ch';
+      b.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'})`;
+      b.onclick = e => { e.preventDefault(); applyNote(inst.ta, it.text, dflt === 'replace'); bumpUse(it.id); };
+      b.oncontextmenu = e => { e.preventDefault(); applyNote(inst.ta, it.text, dflt !== 'replace'); bumpUse(it.id); };
+      bar.appendChild(b);
+    });
+  }
+
   function renderInst(inst) {
     const { ta, list } = inst;
     list.style.maxHeight = (Math.max(1, Math.min(30, SET.visibleRows | 0 || 6)) * 26) + 'px';   // show N items, then scroll (#212)
     list.innerHTML = '';
     if (inst.tabs) { inst.tabs.saved.classList.toggle('on', inst.view === 'saved'); inst.tabs.history.classList.toggle('on', inst.view === 'history'); }
     const saved = inst.view === 'saved';
-    const items = saved ? DATA.saved : DATA.history;
-    if (!items.length) { const e = document.createElement('div'); e.className = 'mmth-empty'; e.textContent = saved ? 'No saved notes — ＋ saves the current one' : 'No history yet'; list.appendChild(e); return; }
+    renderPinbar(inst);
+    // #304: search is opt-in ("Show note search"); when off, no search row and no filtering
+    const searchOn = SET.noteSearch === true;
+    inst.filterRow.style.display = searchOn ? 'flex' : 'none';
+    if (!searchOn && inst.filter) { inst.filter = ''; if (inst.filterInput) inst.filterInput.value = ''; }
+    // #304: sort (Saved, from config) then search-filter on the full note text; show N/total
+    const all = saved ? sortedSaved() : DATA.history;
+    const q = searchOn ? (inst.filter || '').trim().toLowerCase() : '';
+    const items = q ? all.filter(it => it.text.toLowerCase().includes(q)) : all;
+    inst.viewItems = items;   // Ctrl+↑/↓ and Enter-in-search use exactly what's shown
+    if (inst.countEl) inst.countEl.textContent = q ? (items.length + ' / ' + all.length) : (all.length ? String(all.length) : '');
+    // drag-reorder only makes sense in the unfiltered manual order
+    const manual = saved && (SET.noteSort || 'manual') === 'manual' && !q;
+    if (!items.length) { const e = document.createElement('div'); e.className = 'mmth-empty'; e.textContent = all.length ? 'No notes match the search' : (saved ? 'No saved notes — ＋ saves the current one' : 'No history yet'); list.appendChild(e); return; }
 
-    items.forEach((it, idx) => {
+    items.forEach((it) => {
       const row = document.createElement('div'); row.className = 'mmth-row';
-      if (saved && idx === inst.cyc) row.classList.add('mmth-cyc');
+      if (saved && it.pinned) row.classList.add('mmth-pinned');
+      if (saved && it.id === inst.cycId) row.classList.add('mmth-cyc');
       const dflt = SET.defaultInsert;
       row.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · shift-click: set + submit)`;
 
       const txt = document.createElement('span'); txt.className = 'mmth-txt'; txt.textContent = it.text.replace(/\s+/g, ' ').trim();
       row.appendChild(txt);
 
-      // right-side hover actions (delete / pin), then the drag handle (saved only)
+      // right-side hover actions: pin/unpin + delete (saved); save + remove (history)
       const acts = document.createElement('div'); acts.className = 'mmth-rowacts';
       const ra = (glyph, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-ra'; b.textContent = glyph; b.title = title; b.onclick = e => { e.stopPropagation(); fn(); }; acts.appendChild(b); };
-      if (saved) ra('🗑', 'Delete', () => removeSaved(it.id));
+      if (saved) { ra(it.pinned ? '★' : '☆', it.pinned ? 'Unpin from quick buttons' : 'Pin as a quick button', () => togglePinNote(it.id)); ra('🗑', 'Delete', () => removeSaved(it.id)); }
       else { ra('★', 'Save (pin to Saved)', () => { if (addSaved(it.text)) toast('Saved'); }); ra('🗑', 'Remove', () => removeHistory(it.text)); }
       row.appendChild(acts);
 
-      if (saved) {
+      if (manual) {
         const grab = document.createElement('span'); grab.className = 'mmth-grab'; grab.textContent = '⠿'; grab.title = 'Drag to reorder'; grab.draggable = true;
         grab.addEventListener('dragstart', e => { _drag = { id: it.id }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'row'); } catch (x) {} row.classList.add('mmth-dragging'); });
         grab.addEventListener('dragend', () => { row.classList.remove('mmth-dragging'); clearMarks(list); _drag = null; });
@@ -459,11 +698,11 @@
       row.onclick = e => {
         // #289: shift-click sets the note (replace) AND submits the edit — like
         // Ctrl+Enter (reuses findSubmitBtn) — a time-saver for repetitive merges.
-        if (e.shiftKey) { applyNote(ta, it.text, true); const b = findSubmitBtn(ta); if (b) b.click(); return; }
-        applyNote(ta, it.text, SET.defaultInsert === 'replace');
+        if (e.shiftKey) { applyNote(ta, it.text, true); if (saved) bumpUse(it.id); const b = findSubmitBtn(ta); if (b) b.click(); return; }
+        applyNote(ta, it.text, SET.defaultInsert === 'replace'); if (saved) bumpUse(it.id);
       };
-      row.oncontextmenu = e => { e.preventDefault(); applyNote(ta, it.text, SET.defaultInsert !== 'replace'); };
-      if (saved) {
+      row.oncontextmenu = e => { e.preventDefault(); applyNote(ta, it.text, SET.defaultInsert !== 'replace'); if (saved) bumpUse(it.id); };
+      if (manual) {
         row.addEventListener('dragover', e => { if (!_drag) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; clearMarks(list); row.classList.add(after(e, row) ? 'mmth-drop-after' : 'mmth-drop-before'); });
         row.addEventListener('dragleave', () => row.classList.remove('mmth-drop-before', 'mmth-drop-after'));
         row.addEventListener('drop', e => { if (!_drag) return; e.preventDefault(); reorder(_drag.id, it.id, !after(e, row)); clearMarks(list); _drag = null; });
@@ -483,7 +722,11 @@
       const en = ta.closest('.editnote'); if (en) en.classList.add('mmth-on');   // hides the redundant inline "Edit note:" label (#212)
       const wrap = document.createElement('div'); wrap.className = 'mmth-wrap';
       ta.parentNode.insertBefore(wrap, ta);
-      wrap.appendChild(ta);
+      // #304: the textarea and its pinned-quick-buttons bar share one column, so the
+      // bar always sits directly below the field and tracks its left edge / width,
+      // whatever the surrounding form layout does.
+      const fieldCol = document.createElement('div'); fieldCol.className = 'mmth-fieldcol';
+      wrap.appendChild(fieldCol); fieldCol.appendChild(ta);
       // remember the textarea height the user sets with the native resize grip (vertical);
       // the splitter (below) remembers the field/panel split (horizontal).
       if (SET.taHeight) ta.style.height = SET.taHeight + 'px';
@@ -500,6 +743,7 @@
       });
       const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; vsep.title = 'Drag to resize'; wrap.appendChild(vsep);   // resizable separator between field & panel (#212)
       const inst = buildSide(ta); const side = inst.side; wrap.appendChild(side);
+      fieldCol.appendChild(inst.pinbar);   // #304: pinned quick-buttons directly below the field, in its column
       wireResize(vsep, side);
 
       // #265 minimized mode: badge in the field's top-right corner; hover (or click
@@ -515,14 +759,18 @@
       // OUT to normal flow: warnings above the wrap, validation/other notices below.
       // (Doing this in JS instead of flex-wrap avoids the panel itself wrapping below
       // the field in a narrow left-column layout — #290.)
-      const isOurs = el => el === ta || (el.classList && (el.classList.contains('mmth-vsep') || el.classList.contains('mmth-side') || el.classList.contains('mmth-badge')));
+      // #304: the textarea now lives in .mmth-fieldcol, so MB inserts those <p>s into
+      // fieldCol (not wrap) — observe both, and treat fieldCol/ta/pinbar as ours.
+      const isOurs = el => el === ta || el === inst.pinbar || (el.classList && (el.classList.contains('mmth-fieldcol') || el.classList.contains('mmth-vsep') || el.classList.contains('mmth-side') || el.classList.contains('mmth-badge')));
       const relocateForeign = node => {
         if (!node || node.nodeType !== 1 || isOurs(node) || !wrap.parentNode) return;
         const above = node.classList && node.classList.contains('error') && !node.classList.contains('invalid');
         wrap.parentNode.insertBefore(node, above ? wrap : wrap.nextSibling);
       };
-      [...wrap.children].forEach(relocateForeign);
-      new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(relocateForeign))).observe(wrap, { childList: true });
+      [...wrap.children, ...fieldCol.children].forEach(relocateForeign);
+      const fObs = muts => muts.forEach(m => m.addedNodes.forEach(relocateForeign));
+      new MutationObserver(fObs).observe(wrap, { childList: true });
+      new MutationObserver(fObs).observe(fieldCol, { childList: true });
       let closeT = null, pinned = false;
       const openFloat = () => { clearTimeout(closeT); if (SET.minimized) side.classList.add('mmth-open'); };
       const closeFloat = () => { clearTimeout(closeT); if (pinned) return; closeT = setTimeout(() => side.classList.remove('mmth-open'), 220); };
@@ -553,10 +801,11 @@
         const h = side.offsetHeight; if (!(h > 0)) return;
         if ((parseInt(ta.style.minHeight, 10) || 0) !== h) ta.style.minHeight = h + 'px';
         if (!SET.taHeight && (parseInt(ta.style.height, 10) || 0) !== h) ta.style.height = h + 'px';
+        vsep.style.height = ta.offsetHeight + 'px';   // #304: separator spans only the field, not the field+pinbar column
       } catch (x) {} };
       syncFloor();
       requestAnimationFrame(syncFloor); setTimeout(syncFloor, 150); setTimeout(syncFloor, 600);   // catch the sidebar's final layout
-      try { new ResizeObserver(syncFloor).observe(side); } catch (x) {}
+      try { new ResizeObserver(syncFloor).observe(side); new ResizeObserver(syncFloor).observe(ta); } catch (x) {}
     });
   }
   new MutationObserver(() => injectAll()).observe(document.documentElement, { childList: true, subtree: true });
@@ -656,8 +905,10 @@
       let ti = a.findIndex(x => x.v === tgtV); if (ti < 0) { a.splice(si, 0, it); return; }
       a.splice(before ? ti : ti + 1, 0, it); saveF();
     }
-    function firstToken(s) { s = (s || '').trim(); const m = s.match(/^\[[^\]]*\]/); return m ? m[0] : (s.split(/\s+/)[0] || s); }
-    const captionOf = it => it.cap || firstToken(it.label || it.v);
+    // #304: caption = the full label, truncated with an ellipsis at the configured
+    // length (⚙ "Button label length") — no longer just the first word.
+    const btnChars = () => Math.max(4, Math.min(80, SET.btnChars | 0 || 24));
+    const captionOf = it => { if (it.cap) return it.cap; const n = btnChars(); const t = (it.label || it.v || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };
 
     const isSelect = el => el.tagName === 'SELECT';
     const isAuto = el => el.classList.contains('ui-autocomplete-input') || el.classList.contains('lookup-performed');
@@ -725,10 +976,10 @@
       html.mmthf-fadein .mmthf-pin, html.mmthf-fadein .mmthf-bar { transition:opacity .4s ease !important; }
       .mmthf-hl { outline:2px solid #5aa67e !important; outline-offset:1px; }
       .mmthf-bar { position:absolute; z-index:9996; display:none; }
-      .mmthf-seg { display:inline-flex; border:1px solid #cfd9d3; border-radius:7px; overflow:hidden; background:#fbfdfc; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; box-shadow:0 1px 2px rgba(0,0,0,.06); max-width:100%; }
-      .mmthf-segb { border:none; background:none; padding:4px 12px; font-size:12px; color:#27483a; cursor:pointer; border-right:1px solid #e7eee9; white-space:nowrap; max-width:160px; overflow:hidden; text-overflow:ellipsis; }
-      .mmthf-segb:last-child { border-right:none; }
-      .mmthf-segb:hover { background:#eaf5ee; }
+      /* #304: individual rounded "tag" buttons that wrap to new rows — matches the main edit-note pins */
+      .mmthf-seg { display:flex; flex-wrap:wrap; gap:5px; max-width:100%; }
+      .mmthf-segb { border:1px solid #cfd9d3; background:#fbfdfc; border-radius:7px; padding:3px 10px; font:12px/1 -apple-system,Segoe UI,Arial,sans-serif; color:#27483a; cursor:pointer; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+      .mmthf-segb:hover { background:#eaf5ee; border-color:#5aa67e; }
       .mmthf-pop { position:fixed; z-index:9999; background:#fff; border:1px solid #c7d3cc; border-radius:8px; box-shadow:0 8px 26px rgba(20,50,35,.2); font:12px/1.35 -apple-system,Segoe UI,Arial,sans-serif; color:#222; width:260px; overflow:hidden; }
       .mmthf-ft { display:flex; align-items:center; gap:1px; padding:3px 5px; background:#f1f6f3; border-bottom:1px solid #e7eee9; }
       .mmthf-fb { cursor:pointer; border:none; background:none; font-size:14px; line-height:1; padding:3px 7px; border-radius:5px; color:#566; }
@@ -794,7 +1045,6 @@
     // artist-credit bubble rows all use release.artist), so a pin/default/save in
     // one reflects on the others.
     function refreshState(p) { for (const q of pins) if (q.key === p.key) { q.btn.classList.toggle('has', listFor(q.key).length > 0); renderBar(q); } }
-    const BAR_RESERVE = 30;
     function setReserve(p, on) {
       const host = p.el.closest('td') || p.el;
       const prop = host === p.el ? 'marginBottom' : 'paddingBottom';
@@ -806,7 +1056,7 @@
       if (on) {
         if (!p._rh) {
           p._rh = host; p._rp = prop; p._ro = host.style[prop] || '';
-          host.style[prop] = ((parseFloat(getComputedStyle(host)[prop]) || 0) + BAR_RESERVE) + 'px';
+          p._rbase = parseFloat(getComputedStyle(host)[prop]) || 0;   // base padding to add the strip onto
           if (tr && tr.children.length > 1) { p._rtr = tr; tr.classList.add('mmthf-rrow'); }
         }
       } else if (p._rh) {
@@ -814,13 +1064,20 @@
         if (p._rtr) { p._rtr.classList.remove('mmthf-rrow'); p._rtr = null; }
       }
     }
+    // #304: size the reserved strip to the bar's ACTUAL height, so a bar that wraps to
+    // several rows pushes content down by the right amount (not a fixed one-row guess).
+    function sizeReserve(p) {
+      if (!p._rh) return;
+      const h = (p.bar.style.display !== 'none') ? p.bar.offsetHeight : 0;
+      p._rh.style[p._rp] = (p._rbase + (h ? h + 6 : 0)) + 'px';
+    }
     function renderBar(p) {
       const items = listFor(p.key).filter(x => x.pinned);
       p.bar.innerHTML = '';
       setReserve(p, items.length > 0);
       if (!items.length) { p.bar.style.display = 'none'; return; }
       const seg = document.createElement('div'); seg.className = 'mmthf-seg';
-      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); }); seg.appendChild(b); });
+      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); }); seg.appendChild(b); });
       p.bar.appendChild(seg);
     }
     function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) writeField(p.el, d); }
@@ -863,6 +1120,7 @@
         p.btn.style.top = (r.top + sy + (r.height - 16) / 2) + 'px';
         p.btn.style.left = (r.right + sx - 16 - p.dx) + 'px';
         if (hasBar) { p.bar.style.top = (r.bottom + sy + 3) + 'px'; p.bar.style.left = (r.left + sx) + 'px'; p.bar.style.maxWidth = Math.max(140, r.width) + 'px'; }
+        sizeReserve(p);   // #304: match the field's reserved strip to the (possibly multi-row) bar height
       }
       if (pins.some(p => p.dead)) pins = pins.filter(p => !p.dead);
     }
@@ -894,7 +1152,22 @@
       const list = el.querySelector('.mmthf-list');
       el.querySelector('.mmthf-save').addEventListener('click', () => { if (!cur.v) return; rememberValue(p.key, cur); refreshState(p); reopen(p); });
       el.querySelector('.mmthf-clear').addEventListener('click', () => { clearField(p.el); reopen(p); });
-      el.querySelector('.mmthf-cfg').addEventListener('click', () => { const a = p.btn; closePop(); openSettings(a); });
+      // #309: open the config with Import/Export scoped to THIS field's values
+      el.querySelector('.mmthf-cfg').addEventListener('click', () => {
+        const a = p.btn;
+        // #309: entity fields (Artist/Label) store v=MBID, label=name. Export both as
+        // "name<TAB>MBID" so a re-import resolves the real entity (text fields stay plain).
+        const io = {
+          items: () => listFor(p.key).map(x => (x.v && x.label && x.v !== x.label) ? (x.label + '\t' + x.v) : (x.label || x.v)),
+          add: notes => {
+            const arr = listFor(p.key); let added = 0; const have = new Set(arr.map(x => x.v));
+            for (const line of notes) { const i = line.indexOf('\t'); const label = (i >= 0 ? line.slice(0, i) : line).trim(); const v = (i >= 0 ? line.slice(i + 1) : line).trim(); if (!v || have.has(v)) continue; have.add(v); arr.unshift({ v, label: label || v, ts: Date.now() }); added++; }
+            FDATA[p.key] = arr.slice(0, MAX_PER_FIELD); if (added) { saveF(); refreshState(p); } return added;
+          },
+          help: 'Import / export the “' + p.label + '” values (entity fields keep their MBID).',
+        };
+        closePop(); openSettings(a, 'io', io);
+      });
       el.querySelectorAll('.mmthf-row').forEach(row => {
         const it = items[+row.dataset.i];
         row.addEventListener('click', e => {
@@ -950,6 +1223,6 @@
       pins.forEach(p => { try { setReserve(p, false); } catch (e) {} p.btn.remove(); p.bar.remove(); delete p.el.dataset.mmthf; });
       pins = [];
     }
-    return { start, stop, toggle(on) { on ? start() : stop(); } };
+    return { start, stop, toggle(on) { on ? start() : stop(); }, relabel() { pins.forEach(p => renderBar(p)); } };
   }
 })();
