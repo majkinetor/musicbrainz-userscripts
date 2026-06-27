@@ -1155,10 +1155,16 @@
       // #309: open the config with Import/Export scoped to THIS field's values
       el.querySelector('.mmthf-cfg').addEventListener('click', () => {
         const a = p.btn;
+        // #309: entity fields (Artist/Label) store v=MBID, label=name. Export both as
+        // "name<TAB>MBID" so a re-import resolves the real entity (text fields stay plain).
         const io = {
-          items: () => listFor(p.key).map(x => x.label || x.v),
-          add: notes => { const arr = listFor(p.key); let added = 0; const have = new Set(arr.map(x => x.v)); for (const t of notes) { if (have.has(t)) continue; have.add(t); arr.unshift({ v: t, label: t, ts: Date.now() }); added++; } FDATA[p.key] = arr.slice(0, MAX_PER_FIELD); if (added) { saveF(); refreshState(p); } return added; },
-          help: 'Import / export the “' + p.label + '” field values.',
+          items: () => listFor(p.key).map(x => (x.v && x.label && x.v !== x.label) ? (x.label + '\t' + x.v) : (x.label || x.v)),
+          add: notes => {
+            const arr = listFor(p.key); let added = 0; const have = new Set(arr.map(x => x.v));
+            for (const line of notes) { const i = line.indexOf('\t'); const label = (i >= 0 ? line.slice(0, i) : line).trim(); const v = (i >= 0 ? line.slice(i + 1) : line).trim(); if (!v || have.has(v)) continue; have.add(v); arr.unshift({ v, label: label || v, ts: Date.now() }); added++; }
+            FDATA[p.key] = arr.slice(0, MAX_PER_FIELD); if (added) { saveF(); refreshState(p); } return added;
+          },
+          help: 'Import / export the “' + p.label + '” values (entity fields keep their MBID).',
         };
         closePop(); openSettings(a, 'io', io);
       });
