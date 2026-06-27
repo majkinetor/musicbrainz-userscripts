@@ -26,8 +26,9 @@ Remembers the last **N edit notes you submit** (default 10, up to 50), most-rece
     - **Note search** — narrows the list to notes containing typeed phrase; `Enter` uses the first result, `Esc` clears.
     - **Quick buttons** — click `★` on a saved note to pin it as a button below the input field
     - **Sort** — **Manual** (using drag&drop, the default), **Most used** or **Recent**
-- **Import / export** — batch load/export multiple notes; it is contextual for given input type; entity fields like Artist/Label keep their MBID in the export, so a re-import resolves the real entity
-- **Compact, one-line rows**<br
+- **Import / export**<br>
+Batch load/export multiple notes; it is contextual for given input type; entity fields like Artist/Label keep their MBID in the export, so a re-import resolves the real entity
+- **Compact, one-line rows**<br>
 With the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
 - **Replace or Insert**<br>
 Click does your default (replace/append); right-click does the other. Append skips a line already present in the field. Ctrl/⌘ + ↑/↓ cycles saved notes.
@@ -35,7 +36,8 @@ Click does your default (replace/append); right-click does the other. Append ski
 The native edit-note field is widened and centered (it spans the full form width on the release editor). Drag the separator to resize the field vs. the panel, and the field's own height; both are remembered.
 - **Minimized mode**<br>
 The `–` button collapses the panel to a small Mammoth icon in the field's top-right corner, giving the edit note the full width. **Hover** the icon to float the panel back in (click it to pin it open); `⤢` restores it. The mode is remembered across edit pages.
-- **Mammoth babies** - The same save/reuse on other controls — catalog number, label, artist, status, language, script, country, primary type
+- **Mammoth babies**<br>
+The same save/reuse on other controls — catalog number, label, artist, status, language, script, country, primary type
 
 ## Mammoth babies
 
