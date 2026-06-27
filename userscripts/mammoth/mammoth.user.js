@@ -40,6 +40,10 @@
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
+  // #308: the 🦣 emoji (U+1F9A3) renders as a tofu box in Chrome on systems whose
+  // emoji font lacks it (Firefox bundles its own, hence the inconsistency). Use a
+  // self-contained vector mammoth everywhere the icon shows, so it's font-independent.
+  const MAMMOTH_SVG = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true" style="display:block"><g fill="#7a4a1f"><path d="M21 19C21 12.5 17.5 8.5 11.5 8.5C7 8.5 4.2 11.2 4.2 15L4.2 19Z"/><circle cx="7.6" cy="10.6" r="5"/><rect x="7" y="16.5" width="2.8" height="5.2" rx="1.3"/><rect x="15" y="16.5" width="2.8" height="5.2" rx="1.3"/></g><path d="M3.1 11.2C1.6 13.6 2 16.6 3.7 18.1C4.6 18.9 5.9 18.6 6.1 17.5C6.3 16.5 5.7 15.8 5.3 15.3" fill="none" stroke="#7a4a1f" stroke-width="2.7" stroke-linecap="round"/><path d="M5.2 15.2C4.1 16.6 4.3 18.2 5.6 18.9" fill="none" stroke="#efe7d2" stroke-width="1.4" stroke-linecap="round"/></svg>';
 
   const loadData = () => { try { return Object.assign({ saved: [], history: [] }, JSON.parse(GM_getValue(KEY, '{}') || '{}')); } catch (e) { return { saved: [], history: [] }; } };
   const saveData = () => { try { GM_setValue(KEY, JSON.stringify(DATA)); } catch (e) {} render(); };
@@ -212,6 +216,8 @@
   .mmth-tip { color:#8a978f; font-size:11px; margin:0 0 4px 22px; }
   .mmth-pop h4 .mmth-ver { color:#8a978f; font-weight:400; font-size:11px; }
   .mmth-pop h4 a { margin-left:auto; font-size:11px; color:#2c7a51; text-decoration:none; font-weight:600; }
+  .mmth-pop h4 .mmth-h4ic { display:inline-flex; width:18px; height:18px; flex:none; }   /* #308 vector mammoth */
+  .mmth-badge svg { width:19px; height:19px; }                                            /* #308 vector mammoth */
   .mmth-pop label { display:flex; align-items:center; gap:6px; margin:5px 0; cursor:pointer; }
   .mmth-pop input[type="number"] { width:46px; border:1px solid #d7e0db; border-radius:4px; padding:1px 4px; }
   .mmth-pop select { border:1px solid #d7e0db; border-radius:4px; padding:1px 4px; }
@@ -268,7 +274,7 @@
     closePop();
     const p = document.createElement('div'); p.className = 'mmth-pop';
     p.innerHTML = `
-      <h4>🦣 Mammoth <span class="mmth-ver">v${scriptVersion()}</span><a href="${HELP_URL}" target="_blank" rel="noopener" title="Open the README">? Help</a></h4>
+      <h4><span class="mmth-h4ic">${MAMMOTH_SVG}</span> Mammoth <span class="mmth-ver">v${scriptVersion()}</span><a href="${HELP_URL}" target="_blank" rel="noopener" title="Open the README">? Help</a></h4>
       <label><input type="checkbox" class="mmth-s-help"> Hide edit-note help text</label>
       <label>Default click action
         <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
@@ -499,7 +505,7 @@
       // #265 minimized mode: badge in the field's top-right corner; hover (or click
       // to pin) floats the panel back in. mouseleave closes after a short grace.
       const badge = document.createElement('div'); badge.className = 'mmth-badge'; badge.title = 'Mammoth — saved notes (click or hover)';
-      badge.textContent = '🦣';
+      badge.innerHTML = MAMMOTH_SVG;   // #308 vector, not the 🦣 emoji
       wrap.appendChild(badge); inst.badge = badge;
 
       // #288/#290: MB (and other scripts, e.g. jesus2099's MERGE HELPOR) insert
@@ -761,7 +767,7 @@
       for (const [el, def] of map) {
         if (el.dataset.mmthf || !el.matches('input, select, textarea')) continue;
         el.dataset.mmthf = '1';
-        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'mmthf-pin'; btn.textContent = '🦣';
+        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'mmthf-pin'; btn.innerHTML = MAMMOTH_SVG;   // #308 vector, not the 🦣 emoji
         const sel = isSelect(el);
         // shift the pin left of a native affordance: the <select> arrow (~22) or an
         // autocomplete magnifier that sits INSIDE the box (~24 — label, release group;
