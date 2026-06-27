@@ -186,7 +186,9 @@
      the field's padding/border, inflating both without bound (#245). The field is
      still floored to the panel via JS, so it's never shorter. */
   .mmth-wrap { display:flex; gap:0; align-items:flex-start; width:100%; max-width:1040px; margin:6px auto; box-sizing:border-box; position:relative; }
-  .mmth-wrap > textarea.edit-note { flex:1 1 auto; width:auto !important; min-width:0; }
+  /* #304: field column = textarea + pinned-quick-buttons bar, stacked */
+  .mmth-fieldcol { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; }
+  .mmth-fieldcol > textarea.edit-note { width:100% !important; min-width:0; box-sizing:border-box; }
   /* #288/#290: foreign edit-note error/warning <p>s that MB (and other scripts)
      insert next to the textarea are RELOCATED out of the flex row by JS (see
      relocateForeign) so they never sit beside the field. No flex-wrap here — that
@@ -629,7 +631,11 @@
       const en = ta.closest('.editnote'); if (en) en.classList.add('mmth-on');   // hides the redundant inline "Edit note:" label (#212)
       const wrap = document.createElement('div'); wrap.className = 'mmth-wrap';
       ta.parentNode.insertBefore(wrap, ta);
-      wrap.appendChild(ta);
+      // #304: the textarea and its pinned-quick-buttons bar share one column, so the
+      // bar always sits directly below the field and tracks its left edge / width,
+      // whatever the surrounding form layout does.
+      const fieldCol = document.createElement('div'); fieldCol.className = 'mmth-fieldcol';
+      wrap.appendChild(fieldCol); fieldCol.appendChild(ta);
       // remember the textarea height the user sets with the native resize grip (vertical);
       // the splitter (below) remembers the field/panel split (horizontal).
       if (SET.taHeight) ta.style.height = SET.taHeight + 'px';
@@ -646,7 +652,7 @@
       });
       const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; vsep.title = 'Drag to resize'; wrap.appendChild(vsep);   // resizable separator between field & panel (#212)
       const inst = buildSide(ta); const side = inst.side; wrap.appendChild(side);
-      wrap.parentNode.insertBefore(inst.pinbar, wrap.nextSibling);   // #304: pinned quick-buttons sit BELOW the field
+      fieldCol.appendChild(inst.pinbar);   // #304: pinned quick-buttons directly below the field, in its column
       wireResize(vsep, side);
 
       // #265 minimized mode: badge in the field's top-right corner; hover (or click
@@ -662,14 +668,18 @@
       // OUT to normal flow: warnings above the wrap, validation/other notices below.
       // (Doing this in JS instead of flex-wrap avoids the panel itself wrapping below
       // the field in a narrow left-column layout — #290.)
-      const isOurs = el => el === ta || (el.classList && (el.classList.contains('mmth-vsep') || el.classList.contains('mmth-side') || el.classList.contains('mmth-badge')));
+      // #304: the textarea now lives in .mmth-fieldcol, so MB inserts those <p>s into
+      // fieldCol (not wrap) — observe both, and treat fieldCol/ta/pinbar as ours.
+      const isOurs = el => el === ta || el === inst.pinbar || (el.classList && (el.classList.contains('mmth-fieldcol') || el.classList.contains('mmth-vsep') || el.classList.contains('mmth-side') || el.classList.contains('mmth-badge')));
       const relocateForeign = node => {
         if (!node || node.nodeType !== 1 || isOurs(node) || !wrap.parentNode) return;
         const above = node.classList && node.classList.contains('error') && !node.classList.contains('invalid');
         wrap.parentNode.insertBefore(node, above ? wrap : wrap.nextSibling);
       };
-      [...wrap.children].forEach(relocateForeign);
-      new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(relocateForeign))).observe(wrap, { childList: true });
+      [...wrap.children, ...fieldCol.children].forEach(relocateForeign);
+      const fObs = muts => muts.forEach(m => m.addedNodes.forEach(relocateForeign));
+      new MutationObserver(fObs).observe(wrap, { childList: true });
+      new MutationObserver(fObs).observe(fieldCol, { childList: true });
       let closeT = null, pinned = false;
       const openFloat = () => { clearTimeout(closeT); if (SET.minimized) side.classList.add('mmth-open'); };
       const closeFloat = () => { clearTimeout(closeT); if (pinned) return; closeT = setTimeout(() => side.classList.remove('mmth-open'), 220); };
