@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.27
+// @version      2026.6.28
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -36,7 +36,7 @@
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309)
-  const VERSION = '2026.6.27';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.6.28';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -571,11 +571,31 @@
 
     // #304: search box + N/total count (shown only when the "Show note search" option is on)
     const fInput = document.createElement('input'); fInput.type = 'text'; fInput.className = 'mmth-filter'; fInput.placeholder = 'Search notes…';
-    fInput.addEventListener('input', () => { inst.filter = fInput.value; renderInst(inst); });
+    fInput.addEventListener('input', () => { inst.filter = fInput.value; inst.cycId = null; renderInst(inst); });
     fInput.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { fInput.value = ''; inst.filter = ''; renderInst(inst); return; }
-      // #304: Enter uses the first result
-      if (e.key === 'Enter') { e.preventDefault(); const it = (inst.viewItems || [])[0]; if (it) { applyNote(ta, it.text, SET.defaultInsert === 'replace'); if (inst.view === 'saved') bumpUse(it.id); } }
+      if (e.key === 'Escape') { fInput.value = ''; inst.filter = ''; inst.cycId = null; renderInst(inst); return; }
+      // #304: ↑/↓ move the highlighted match; Enter uses the highlighted one (or the first)
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const items = inst.viewItems || []; if (!items.length) return;
+        e.preventDefault();
+        const dir = e.key === 'ArrowDown' ? 1 : -1;
+        let i = items.findIndex(x => x.id === inst.cycId);
+        if (i < 0) i = dir > 0 ? -1 : 0;
+        i = (i + dir + items.length) % items.length;
+        inst.cycId = items[i].id;
+        renderInst(inst);
+        const cur = inst.list.querySelector('.mmth-cyc');   // keep the selection visible within the list
+        if (cur) { const lr = inst.list.getBoundingClientRect(), cr = cur.getBoundingClientRect();
+          if (cr.top < lr.top) inst.list.scrollTop -= (lr.top - cr.top);
+          else if (cr.bottom > lr.bottom) inst.list.scrollTop += (cr.bottom - lr.bottom); }
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const items = inst.viewItems || [];
+        const it = items.find(x => x.id === inst.cycId) || items[0];
+        if (it) { applyNote(ta, it.text, SET.defaultInsert === 'replace'); if (inst.view === 'saved') bumpUse(it.id); }
+      }
     });
     const fCount = document.createElement('span'); fCount.className = 'mmth-count'; inst.countEl = fCount;
     filterRow.appendChild(fInput); filterRow.appendChild(fCount); inst.filterInput = fInput;
@@ -674,7 +694,7 @@
     items.forEach((it) => {
       const row = document.createElement('div'); row.className = 'mmth-row';
       if (saved && it.pinned) row.classList.add('mmth-pinned');
-      if (saved && it.id === inst.cycId) row.classList.add('mmth-cyc');
+      if (it.id === inst.cycId) row.classList.add('mmth-cyc');   // arrow-key / cycle selection (both views) #304
       const dflt = SET.defaultInsert;
       row.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · shift-click: set + submit)`;
 

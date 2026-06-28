@@ -23,7 +23,7 @@ Keep saved notes and history **separate per edit-note type** (release / artist /
 Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. 
 - **Saved notes**<br>
     - **＋** saves the current text; in **History**, `★` on a row moves it to saved notes. Reorder by **drag** (the `⠿` handle on the right, shown on hover) and delete with `🗑`.
-    - **Note search** — narrows the list to notes containing typeed phrase; `Enter` uses the first result, `Esc` clears.
+    - **Note search** — narrows the list to notes containing the typed phrase; **↑/↓** move the highlighted match, `Enter` uses the highlighted one (or the first), `Esc` clears.
     - **Quick buttons** — click `★` on a saved note to pin it as a button below the input field
     - **Sort** — **Manual** (using drag&drop, the default), **Most used** or **Recent**
 - **Import / export**<br>
