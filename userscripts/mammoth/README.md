@@ -94,7 +94,12 @@ The `⚙` window has two tabs: **Settings** (above) and **Import / Export** (pas
 
 ## Using Mammoth from another userscript
 
-Mammoth enhances **any `textarea.edit-note` on the page**, not just MusicBrainz's own — a `MutationObserver` picks up fields added dynamically too. So another userscript that has its own edit-note field (e.g. [Art Station](../art_station)'s "Enter edit" dialog) can host the full Mammoth panel **with no API and no changes to Mammoth** — it's pure convention:
+Integration is done by convention:
+
+- Panel: any `textarea.edit-note` on the page gets the full Mammoth panel automatically.
+- Baby: use `class="mmth-pin"`
+
+Mammoth enhances **any `textarea.edit-note` on the page**, not just MusicBrainz's own — a `MutationObserver` picks up fields added dynamically too. So another userscript that has its own edit-note field (e.g. [Art Station](../art_station)'s "Enter edit" dialog) can host the full Mammoth panel **with no API and no changes to Mammoth**:
 
 1. **Give your edit-note field `class="edit-note"`.** Mammoth wraps it (`.mmth-wrap`) and attaches the saved-notes / history panel.
 
@@ -102,7 +107,7 @@ Mammoth enhances **any `textarea.edit-note` on the page**, not just MusicBrainz'
    <textarea class="edit-note"></textarea>
    ```
 
-2. **History capture is automatic** if your submit button matches Mammoth's heuristic — a document-wide click on a button whose text starts with `enter edit` / `submit` / `add edit` / `save`, or that has class `submit`, records the field into history. (A button labelled e.g. *"Dry run"* deliberately won't, so previews aren't recorded.)
+2. **History capture is automatic** if your submit button matches Mammoth's heuristic — a document-wide click on a button whose text starts with `enter edit` / `submit` / `add edit` / `save`, or that has class `submit`, records the field into history.
 
 3. **You own the layout.** Mammoth lays the field out beside a ~300px panel (`.mmth-side`) with a drag splitter (`.mmth-vsep`); scope your own CSS to fit it into your container — e.g. hide the splitter and give the wrap a bottom margin inside a modal:
 
@@ -111,9 +116,17 @@ Mammoth enhances **any `textarea.edit-note` on the page**, not just MusicBrainz'
    #your-dialog .mmth-vsep { display: none; }
    ```
 
-When Mammoth isn't installed the field is just a plain textarea, so the integration is a no-op.
+To get Mammoth baby on edit utilize `mmth-pin` class:
 
-Mammoth baby pin auto-shifts left of a field's native control (the `<select>` arrow or an autocomplete's magnifier); `data-mmth-dx="<px>"` overrides that nudge for a specific control. Other scripts can opt a control in by tagging it `class="mmth-pin"` (optional `data-mmth-key` / `data-mmth-label`). Stored separately under `mammoth-fields:data`.
+```html
+<input class="mmth-pin" data-mmth-key="my-cat-no" data-mmth-label="Catalogue №">
+```
+
+- `data-mmth-key` (optional) — storage key; fields sharing a key share their saved values. Omit it and Mammoth derives one from the element's id/name/label (keyFor, :996).
+- `data-mmth-label` (optional) — the popover title.
+- `data-mmth-dx="<px>"` (optional) — nudge the pin (e.g. past a custom affordance).
+
+Works on `<input>`, `<select>`, `<textarea>`. Stored under its own key mammoth-fields:data (separate from edit-note history).
 
 ##  Notes
 
