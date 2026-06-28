@@ -997,6 +997,10 @@
          layout goes quiet — instead of bumping into place. */
       html.mmthf-settling .mmthf-pin, html.mmthf-settling .mmthf-bar { opacity:0 !important; pointer-events:none !important; }
       html.mmthf-fadein .mmthf-pin, html.mmthf-fadein .mmthf-bar { transition:opacity .4s ease !important; }
+      /* MB's dialogs/popovers (Add/Edit relationship, …) carry no z-index, so our
+         high-z babies would float on top of them and their dropdowns. Hide the
+         babies while any MB dialog is open. */
+      html.mmthf-dialog .mmthf-pin, html.mmthf-dialog .mmthf-bar, html.mmthf-dialog .mmthf-pop { opacity:0 !important; pointer-events:none !important; }
       .mmthf-hl { outline:2px solid #5aa67e !important; outline-offset:1px; }
       .mmthf-bar { position:absolute; z-index:9996; display:none; }
       /* #304: individual rounded "tag" buttons that wrap to new rows — matches the main edit-note pins */
@@ -1212,7 +1216,10 @@
     }
     const reopen = p => { closePop(); openPop(p); };
 
-    const relayout = () => { if (running && !raf) raf = requestAnimationFrame(() => { raf = 0; layout(); }); };
+    // Toggle the "an MB dialog is open" flag so the babies hide under it (MB's
+    // dialogs/popovers carry no z-index, so they can't otherwise win the stack).
+    const syncDialog = () => document.documentElement.classList.toggle('mmthf-dialog', !!document.querySelector('.dialog.popover, .relationship-dialog'));
+    const relayout = () => { syncDialog(); if (running && !raf) raf = requestAnimationFrame(() => { raf = 0; layout(); }); };
     function start() {
       if (running) return; running = true;
       injectCss();
@@ -1233,7 +1240,7 @@
       };
       const bump = () => { if (revealed) return; clearTimeout(quietT); quietT = setTimeout(reveal, 300); };
       settleCap = setTimeout(reveal, 1500);
-      let st = 0; mo = new MutationObserver(() => { clearTimeout(st); st = setTimeout(scan, 150); bump(); }); mo.observe(document.documentElement, { childList: true, subtree: true });
+      let st = 0; mo = new MutationObserver(() => { syncDialog(); clearTimeout(st); st = setTimeout(scan, 150); bump(); }); mo.observe(document.documentElement, { childList: true, subtree: true });
       bump();
       scan();
     }
