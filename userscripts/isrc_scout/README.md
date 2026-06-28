@@ -12,6 +12,15 @@ The editor has two tabs for the two operations on a release's recordings: **ISRC
 
 https://github.com/user-attachments/assets/7549eacf-8993-4fd7-ad17-2566ad827da0
 
+## Features
+
+- **[ISRC editor](#the-editor)** — a per-track table of existing/new ISRCs with live validation, opened from an [ISRC button](#the-button) on the release title.
+- **[Import sources](#import-sources)** — fill the missing ISRCs from several providers.
+- **[Per-track helpers](#per-track-helpers)** — per-row provider lookup with metadata match checks and highlighting.
+- **[Delete existing ISRCs](#deleting-existing-isrcs)**, plus bulk fill / export.
+- **[Track links](#track-links-links-tab)** — find and add streaming links to recordings (Deezer, Tidal, Bandcamp, Apple Music).
+- **[Submit to MusicBrainz](#submitting-one-time-authorization)** — one-time OAuth, then submit straight from the editor.
+
 ## The button
 
 An **ISRC** button is injected next to the release title, showing how many tracks already have an ISRC (`✓ 12/12`) or pulsing pink when some are missing (`⚠ 9/12`). Click it to open the editor.

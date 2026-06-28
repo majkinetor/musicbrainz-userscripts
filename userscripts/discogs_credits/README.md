@@ -28,6 +28,11 @@ Make sure to read [Style / Relationships](https://musicbrainz.org/doc/Style/Rela
 
 ## Features
 
+- **[Import Bar](#import-bar)** — the import options (per-track credits, move-to-tracks, create-works, dedup) and the Import button.
+- **[Entity Review Table](#entity-review-table)** — confirm each Discogs ↔ MusicBrainz match before dispatch: parallel lookup, inline search, auto-match, entity creation.
+- **[Instant Fill](#instant-fill)** — write the confirmed relationships into the MB relationship editor in one pass.
+- **[Page-wide helpers](#page-wide-helpers)** — hover-highlight and batch-remove for existing relationships.
+
 ### Import Bar
 
 The UI strip at the top of the page with options, an Import button, log output, a documentation link, and Copy-log buttons.

@@ -18,30 +18,40 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
 
 ## Features
 
-- **Gallery**
-  - Adjustable thumbnail size 
-  - **Grid and Detailed view** 
-  - **Group by type**
-  - **Sort** by position, type, dimensions or newest.
-- **Reorder** by dragging single cover or a whole selection together.
-- **Select** with right-click or right-drag
-- **Single or bulk mode**
-    - **Set type** — tick checkboxes for one or more types, or **right-click a type to set *only* that one and close**
-    - **Set comment** with auto focusing next comment field on `<ENTER>`
-    - **Remove** and **Download** as a zip archive — files named by type so they round-trip (see below), plus a `README.md` manifest
-    - **Reports** in HTML or Markdown — inline, captioned, or a **Detailed table** (position · type-named file · resolution · size) that doubles as the archive `README.md`
-- **Add images**
-  - **File drop** — choose local file and upload to the Cover Art Archive in parallel; the **type is guessed from the file name** (see below)
-  - **URL link** — use [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch cover from Discogs, Apple, Spotify, Bandcamp…
-  - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover via integration.
-  - **Reverse-image Search** (the 🔍 on each cover) — look for a higher-resolution copy on Yandex / Google Lens / TinEye / Bing. With the optional [Art Station Picker](./as_picker/README.md) companion installed, click the better copy on the results (or any site reachable from there) and it's sent straight back into the gallery
-  - Fresh covers shown faster than native UI
-- **Full-screen viewer**
-  - Arrow keys for navigation (left/right) and zoom (up/down) with zoom level remembered
-  - **Mouse-follow pan** — when zoomed, just move the mouse to pan across the image (no click-and-drag). On by default; toggle in **Setup** (turn off to go back to drag-to-pan).
-  - Slideshow
-  - Set comment and type
-  - `<Delete>` key to remove image 
+- **Gallery** — adjustable thumbnail size, grid or detailed view, group by type, and sort by position / type / dimensions / newest.
+- **Reorder** by dragging a single cover or a whole selection together.
+- **Select** with right-click or right-drag.
+- **[Single or bulk actions](#single-or-bulk-actions)** — set type, set comment, remove, download (zip) and reports, on one cover or the whole selection.
+- **[Add images](#add-images)** — file drop, URL (Enhanced Cover Art Uploads), MH Covers, and reverse-image search.
+- **[Full-screen viewer](#full-screen-viewer)** — navigate, zoom, mouse-follow pan, slideshow, set type/comment, delete.
+- **[File names ⇄ types](#file-names--types)** — cover types and file names round-trip, so a downloaded archive re-adds with types intact.
+
+## Single or bulk actions
+
+Works on one cover or the whole selection:
+
+- **Set type** — tick checkboxes for one or more types, or **right-click a type to set *only* that one and close**.
+- **Set comment** — auto-focuses the next comment field on `<ENTER>`.
+- **Remove** and **Download** as a zip archive — files named by type so they round-trip (see [File names ⇄ types](#file-names--types)), plus a `README.md` manifest.
+- **Reports** in HTML or Markdown — inline, captioned, or a **Detailed table** (position · type-named file · resolution · size) that doubles as the archive `README.md`.
+
+## Add images
+
+- **File drop** — choose local files and upload to the Cover Art Archive in parallel; the **type is guessed from the file name** (see [File names ⇄ types](#file-names--types)).
+- **URL link** — uses [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch covers from Discogs, Apple, Spotify, Bandcamp…
+- **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover.
+- **Reverse-image search** (the 🔍 on each cover) — look for a higher-resolution copy on Yandex / Google Lens / TinEye / Bing. With the optional [Art Station Picker](./as_picker/README.md) companion installed, click the better copy on the results (or any site reachable from there) and it's sent straight back into the gallery.
+- Fresh covers shown faster than the native UI.
+
+## Full-screen viewer
+
+- Arrow keys for navigation (left/right) and zoom (up/down), with zoom level remembered.
+- **Mouse-follow pan** — when zoomed, just move the mouse to pan across the image (no click-and-drag). On by default; toggle in **Setup**.
+- Slideshow.
+- Set comment and type.
+- `<Delete>` key to remove the image.
+
+See [Keyboard shortcuts](#keyboard-shortcuts) for the full key/mouse list.
 
 ## File names ⇄ types
 

@@ -83,17 +83,21 @@ Tidal and Beatport specifics:
 
 ## Features
 
-- Info about MB's release year, format and label and track number in the header
-- **Insert links to release**: opens *edit* page of the release and inserts one or more links:
-    - `+` click - batch insert all links that have `✓` marker
-    - `✓`click - insert only particular link next to the marker
-    - On the edit page it fills the **edit note** (script name/version + the links added) and shows a small confirmation next to the *External links* heading — then you review and click **Enter edit**.
-- **Open all found** (`↗`): opens each **confirmed** (`✓`) platform page that isn't already in MB in its own new tab (plus the Discogs master if not yet added). Track-count mismatches (`~`) and unverifiable links (`?`, e.g. Beatport) are skipped — same bar as the `+` insert. **NOTE**: Watch for browser blocking multiple pop-ups!
-- **Options**:
-    - Toggle usage of each supported platform independently
-    - Reorder providers
-- **Refresh** (`↻`): clears the cache for the current release and re-runs every enabled scanner.
-- **Diagnostic log (`ⓘ`)**: every step of every scanner is logged with per-source filter chips so you can isolate a single platform's chain.
+- **Header info** — MB's release year, format, label and track count in the dashboard header.
+- **[Insert links to release](#inserting-links)** — open the release's edit page and insert one or all confirmed platform links (fills the edit note for you).
+- **Open all found** (`↗`) — open each confirmed (`✓`) platform page not yet in MB in its own tab (plus the Discogs master). Mismatches (`~`) and unverifiable (`?`) links are skipped. *(Watch for pop-up blocking.)*
+- **Options** — toggle each supported platform independently, and reorder providers.
+- **Refresh** (`↻`) — clear the cache for the current release and re-run every enabled scanner.
+- **Diagnostic log** (`ⓘ`) — every scanner step is logged, with per-source filter chips to isolate a single platform's chain.
+
+## Inserting links
+
+**Insert links to release** opens the release's *edit* page and inserts one or more links:
+
+- `+` click — batch-insert all links that have the `✓` marker.
+- `✓` click — insert only the link next to that marker.
+
+On the edit page it fills the **edit note** (script name/version + the links added) and shows a small confirmation next to the *External links* heading — then you review and click **Enter edit**.
 
 ## Shortcuts
 

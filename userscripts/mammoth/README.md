@@ -17,27 +17,22 @@ Every MusicBrainz edit form has an **Edit note** field. Power editors reuse the 
 
 ## Features
 
-- **Per type notes**<br>
-Keep saved notes and history **separate per edit-note type** (release / artist / recording…). A small chip in the toolbar shows the current type. When off (default), all notes share one pool shown everywhere.
-- **History**<br>
-Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. 
-- **Saved notes**<br>
-    - **＋** saves the current text; in **History**, `★` on a row moves it to saved notes. Reorder by **drag** (the `⠿` handle on the right, shown on hover) and delete with `🗑`.
-    - **Note search** — narrows the list to notes containing the typed phrase (see [Shortcuts](#shortcuts) for keys).
-    - **Quick buttons** — click `★` on a saved note to pin it as a button below the input field
-    - **Sort** — **Manual** (using drag&drop, the default), **Most used** or **Recent**
-- **Import / export**<br>
-Batch load/export multiple notes; it is contextual for given input type; entity fields like Artist/Label keep their MBID in the export, so a re-import resolves the real entity
-- **Compact, one-line rows**<br>
-With the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
-- **Replace or Insert**<br>
-Click does your default (replace/append); right-click does the other. Append skips a line already present in the field. (See [Shortcuts](#shortcuts) for keyboard shortcuts.)
-- **Resizable**<br>
-The native edit-note field is widened and centered (it spans the full form width on the release editor). Drag the separator to resize the field vs. the panel, and the field's own height; both are remembered.
-- **Minimized mode**<br>
-The `–` button collapses the panel to a small Mammoth icon in the field's top-right corner, giving the edit note the full width. **Hover** the icon to float the panel back in (click it to pin it open); `⤢` restores it. The mode is remembered across edit pages.
-- **Mammoth babies**<br>
-The same save/reuse on other controls — catalog number, label, artist, status, language, script, country, primary type
+- **Per-type notes** — keep saved notes and history separate per edit-note type (release / artist / recording…); off by default (see [Settings](#settings)).
+- **History** — remembers the last N submitted edit notes (default 10, up to 50), newest-first and de-duplicated.
+- **[Saved notes](#saved-notes)** — save, pin as quick-buttons, search, sort and reorder your reusable notes.
+- **Import / export** — batch load/export notes per input type; entity fields (Artist/Label) keep their MBID so a re-import resolves the real entity (see [Settings](#settings)).
+- **Compact, one-line rows** — full note on hover; choose how many show before the list scrolls.
+- **Replace or Insert** — left-click does your default, right-click the other; append skips a line already present (see [Shortcuts](#shortcuts)).
+- **Resizable** — the edit-note field is widened and centered; drag the separator to resize field vs. panel (and the field's height); remembered.
+- **Minimized mode** — collapse the panel to a small icon; hover to peek, click to pin; remembered across pages.
+- **[Mammoth babies](#mammoth-babies)** — the same save/reuse on other controls (catalogue №, label, artist, status, language, script, country, type).
+
+## Saved notes
+
+- **＋** saves the current text; in **History**, `★` on a row moves it to saved notes. Reorder by **drag** (the `⠿` handle on the right, shown on hover) and delete with `🗑`.
+- **Note search** — narrows the list to notes containing the typed phrase (see [Shortcuts](#shortcuts) for keys).
+- **Quick buttons** — click `★` on a saved note to pin it as a button below the input field.
+- **Sort** — **Manual** (drag & drop, default), **Most used** or **Recent**.
 
 ## Mammoth babies
 

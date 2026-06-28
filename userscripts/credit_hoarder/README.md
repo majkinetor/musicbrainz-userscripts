@@ -25,6 +25,11 @@ The script presents itself on the **Edit relationships** screen of a MusicBrainz
 
 ## Features
 
+- **[Import bar](#import-bar)** — pick a source (Discogs / Tidal / Qobuz / Titles) and the import options (per-track credits, move-to-tracks, create-works, dedup).
+- **[Credit Review Table](#credit-review-table)** — confirm each source ↔ MusicBrainz match before dispatch: parallel lookup, inline search, auto-match, entity creation.
+- **[Instant Fill](#instant-fill)** — write the confirmed relationships into the MB relationship editor in one pass.
+- **[Page-wide helpers](#page-wide-helpers)** — hover-highlight and batch-remove for existing relationships.
+
 ### Import bar
 
 The UI strip at the top of the page with the source picker, the option toggles, log output, a documentation link, and Copy-log buttons. Options are saved in localStorage and persist across sessions.
