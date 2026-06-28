@@ -1360,6 +1360,10 @@
     .tc-toolbtn:hover{border-color:#bcaae6;background:#f3eefe}
     .tc-toolbtn.active{background:#5f3ec0;border-color:#4f33a3;color:#fff;font-weight:600}
     .tc-toolbtn .tc-tbic{font-size:13px;line-height:1}
+    .tc-icimg{height:14px;width:auto;vertical-align:-2px;display:inline-block}   /* image-based tool icon (bridged tools can ship their own) */
+    .tc-mi-ic .tc-icimg{height:15px}
+    .tc-tc-ic .tc-icimg{height:16px}
+    .tc-tc-seg.cb-icon .tc-icimg{height:13px}
     .tc-toolbtn.instant .tc-tbic{color:#2e9b57}
     .tc-toolbtn.active .tc-tbic{color:#fff}
     .tc-toolbtn.tc-more{font-weight:bold;color:#7a68b8;border-style:dashed}
@@ -2572,7 +2576,7 @@
   // built-in registry: known external buttons, each with a STABLE `act` so its
   // bar/menu placement persists. Add one entry { act, label, icon, find } to bridge another.
   const BRIDGE = [
-    { act: 'x:gpunct', label: 'Guess punctuation', icon: '“”', find: () => bridgeBtn(/^guess\s+punctuation$/i) },
+    { act: 'x:gpunct', label: 'Guess punctuation', icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAHYgAAB2IBOHqZ2wAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAFpSURBVDiNpZOxjwFBGMV/e5FspZeoFETlL9Bug0RDL5FolVpRUqxCr1iNUelUEhmFZqlEVAolFRuxsswVl9uzWVfceeX73nvzfTPzaUIIxRuIAJTL5X+ZR6MRH++cDrwOOBwOdLtdbrdbqDafzxmPx78H2LZNtVplt9txPp993vM8TNOk1WoFeIQQ6htSSmUYhur3++rxePi853mq0WioUqmkttutzwshVOS57U6nQy6Xo1KpBLoaDAYsl0t6vR6pVOr1HViWheM4IfPlcmE4HJLNZkPmQMBqtSIajbJYLFiv175gs9lwvV653+/MZjOOx2MgwB/BdV1OpxPtdhuAYrFIvV73X0JKiZQSXdcxTZN0Oh3sIBaLBZInkwlKqRDvui7T6TQ8gmEYAWE8HkfTNBKJBMlkMlQLjVAoFHAcB9u20XWdWq3mi5rNJpZlsd/vyWQy5PP5n7Tnf/BXCCHU27sQga+t+i8+AYUS9lO02Bg3AAAAAElFTkSuQmCC', find: () => bridgeBtn(/^guess\s+punctuation$/i) },
   ];
   let _bridges = [], _bridgeMap = {};
   // refresh the tools available right now: built-in matches that resolve + elements
@@ -2591,6 +2595,10 @@
   }
   // tool-def accessor: native tools + present bridges, so render/customize treat them alike
   const TD = act => TOOL[act] || _bridgeMap[act] || { act, icon: '?', label: act };
+  // a tool icon is normally a short text glyph (Aa, S&R, ↔); a data:/http(s) URL
+  // renders as a small <img> instead, so a bridged tool can ship its own icon.
+  const isImgIcon = v => typeof v === 'string' && /^(?:data:|https?:\/\/)/.test(v);
+  const iconHtml = v => isImgIcon(v) ? `<img class="tc-icimg" src="${esc(v)}" alt="">` : esc(v == null ? '' : v);
   async function fireBridge(it) {
     if (!it || !it.el) { Log.warn('Apollo bridge: nothing to fire'); return; }
     Log.info('Apollo bridge: firing', it.label);
@@ -2670,7 +2678,7 @@
     const b = document.createElement('button'); b.type = 'button';
     b.className = 'tc-toolbtn' + (m.instant ? ' instant' : '');
     b.dataset.act = t.act;
-    b.innerHTML = (t.icon ? `<span class="tc-tbic">${esc(m.icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(m.label)}</span>` : '');
+    b.innerHTML = (t.icon ? `<span class="tc-tbic">${iconHtml(m.icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(m.label)}</span>` : '');
     if (!t.text) b.title = m.label;
     b.onclick = () => pickTool(t.act);
     return b;
@@ -2700,7 +2708,7 @@
     let m = document.getElementById('tc-menu'); if (m) { m.remove(); return; }
     const off = getToolCfg().filter(t => !t.onBar && !TEMP_BAR.has(t.act));   // includes off-bar bridges (#322)
     m = document.createElement('div'); m.id = 'tc-menu'; m.className = 'tc-menu';
-    m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${esc(TD(t.act).icon)}</span>${esc(TD(t.act).label)}</div>`).join('')
+    m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${iconHtml(TD(t.act).icon)}</span>${esc(TD(t.act).label)}</div>`).join('')
       + (off.length ? '<div class="tc-sep"></div>' : '')
       + '<div class="tc-mi tc-mi-cfg" data-act="__cfg"><span class="tc-mi-ic">⚙︎</span>Customize…</div>';
     document.body.appendChild(m);
@@ -2758,7 +2766,7 @@
     const act = t.act;
     const grp = document.createElement('span'); grp.className = 'tc-opt'; grp.dataset.tool = act;
     const name = document.createElement('span'); name.className = 'tc-optname tc-opttrig';
-    name.innerHTML = (t.icon ? `<span class="tc-tbic">${esc(TOOL[act].icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(TOOL[act].label)}</span>` : '');
+    name.innerHTML = (t.icon ? `<span class="tc-tbic">${iconHtml(TD(act).icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(TD(act).label)}</span>` : '');
     name.onclick = () => triggerTool(act);
     // collapsed: drop the title so the native tooltip can't pop up over the flyout
     const setTitle = () => { name.title = grp.classList.contains('tc-collapsed') ? '' : TOOL[act].label + ' — click to run, right-click to collapse parameters'; };
@@ -2810,8 +2818,8 @@
         row.innerHTML =
           '<span class="tc-tc-grab" title="drag to reorder">⠿</span>'
           + `<label class="tc-tc-onbar" title="show on the toolbar"><input type="checkbox" class="cb-onbar"${t.onBar ? ' checked' : ''}></label>`
-          + `<span class="tc-tc-ic">${esc(m.icon)}</span><span class="tc-tc-lab">${esc(m.label)}</span>`
-          + `<span class="tc-tc-dens" title="what shows on the button — icon and/or text"><button type="button" class="tc-tc-seg cb-icon${t.icon ? ' on' : ''}" title="show the icon">${esc(m.icon)}</button><button type="button" class="tc-tc-seg cb-text${t.text ? ' on' : ''}" title="show the text">T</button></span>`;
+          + `<span class="tc-tc-ic">${iconHtml(m.icon)}</span><span class="tc-tc-lab">${esc(m.label)}</span>`
+          + `<span class="tc-tc-dens" title="what shows on the button — icon and/or text"><button type="button" class="tc-tc-seg cb-icon${t.icon ? ' on' : ''}" title="show the icon">${iconHtml(m.icon)}</button><button type="button" class="tc-tc-seg cb-text${t.text ? ' on' : ''}" title="show the text">T</button></span>`;
         list.appendChild(row);
       });
       list.querySelectorAll('.tc-tc-row').forEach(row => {

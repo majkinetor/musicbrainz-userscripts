@@ -178,7 +178,7 @@ Apollo can surface a fire-and-forget button that *another* userscript adds to th
   ```
 
   - `data-apollo-label` *(optional)* — menu/button label (falls back to the element's text).
-  - `data-apollo-icon` *(optional)* — short icon glyph (default 🔧).
+  - `data-apollo-icon` *(optional)* — a short text glyph **or** a `data:` / `http(s)` image URL (rendered as a small image); default 🔧.
   - `data-apollo-id` *(optional)* — stable id for the saved bar/menu placement (falls back to the element's `id`, then a slug of the label).
 
 Activating either kind **clicks the element**, then Apollo re-reads the tracklist so its grid reflects the change. This fits tools that are **parameterless or pop their own settings on click** (e.g. a Track parser); tools that need their controls rendered *inline* in Apollo's bar aren't surfaced this way.
