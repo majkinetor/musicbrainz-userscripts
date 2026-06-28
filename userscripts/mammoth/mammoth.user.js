@@ -256,7 +256,10 @@
   .mmth-filterrow { display:flex; align-items:center; gap:5px; padding:3px 5px; border-bottom:1px solid #e7eee9; background:#f7faf8; }
   /* width:auto !important defends against MB's form CSS (#content input), which
      otherwise forces a fixed width and squashes the flex layout (#304) */
-  .mmth-filter { flex:1 1 auto; min-width:0; width:auto !important; box-sizing:border-box; border:1px solid #d7e0db; border-radius:5px; padding:2px 6px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
+  /* display:block !important beats MB's ".add-edit-note input { display:none }" (which
+     otherwise hides our search box on /edit and /edits pages); width:auto !important beats
+     MB's fixed input width. #304 */
+  .mmth-filter { display:block !important; flex:1 1 auto; min-width:0; width:auto !important; box-sizing:border-box; border:1px solid #d7e0db; border-radius:5px; padding:2px 6px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
   .mmth-filter:focus { outline:none; border-color:#5aa67e; }
   .mmth-count { flex:none; font-size:11px; color:#8a978f; white-space:nowrap; }
   /* #304: pinned saved notes as quick-insert buttons BELOW the field (like baby-field bars) */
