@@ -5,9 +5,13 @@ UI and tools for advanced adding and editing of a MusicBrainz release.
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/apollo_editor/apollo_editor.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/apollo_editor/apollo_editor.user.js)
 - [Changelog](./CHANGELOG.md)
 
-<img width="800" src="./screenshot.png" /> <img width="800" src="./screenshot2.png" />
+<img width="1200" src="./screenshots/tracklist.png.png" /> 
+<details><summary>More screenshots</summary>
+<img width="1200" src="./screenshots/recordings.png" /><br>
+<img width="1200" src="./screenshots/release.png" /><br>
+<img width="1200" src="./screenshots/tools.png" />
+</details>
 
-https://github.com/user-attachments/assets/b668f472-c3cc-4487-913c-50ff1d950c5b
 
 When you add a release, each track's artist may be set as **plain text with no MBID**, and the recordings are unset. Linking them one by one — searching, picking, occasionally splitting *A feat. B* into two credits — is the slowest part of adding a release. Apollo Editor does the whole tracklist and recording set in one pass and lets you apply the confident matches with one click.
 
