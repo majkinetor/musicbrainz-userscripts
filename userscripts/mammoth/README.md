@@ -23,7 +23,7 @@ Keep saved notes and history **separate per edit-note type** (release / artist /
 Remembers the last **N edit notes you submit** (default 10, up to 50), most-recent-first and de-duplicated. 
 - **Saved notes**<br>
     - **＋** saves the current text; in **History**, `★` on a row moves it to saved notes. Reorder by **drag** (the `⠿` handle on the right, shown on hover) and delete with `🗑`.
-    - **Note search** — narrows the list to notes containing the typed phrase; **↑/↓** move the highlighted match, `Enter` uses the highlighted one (or the first), `Esc` clears.
+    - **Note search** — narrows the list to notes containing the typed phrase (see [Shortcuts](#shortcuts) for keys).
     - **Quick buttons** — click `★` on a saved note to pin it as a button below the input field
     - **Sort** — **Manual** (using drag&drop, the default), **Most used** or **Recent**
 - **Import / export**<br>
@@ -31,7 +31,7 @@ Batch load/export multiple notes; it is contextual for given input type; entity 
 - **Compact, one-line rows**<br>
 With the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
 - **Replace or Insert**<br>
-Click does your default (replace/append); right-click does the other. Append skips a line already present in the field. Ctrl/⌘ + ↑/↓ cycles saved notes; Ctrl/⌘ + , focuses the search box.
+Click does your default (replace/append); right-click does the other. Append skips a line already present in the field. (See [Shortcuts](#shortcuts) for keyboard shortcuts.)
 - **Resizable**<br>
 The native edit-note field is widened and centered (it spans the full form width on the release editor). Drag the separator to resize the field vs. the panel, and the field's own height; both are remembered.
 - **Minimized mode**<br>
@@ -53,7 +53,7 @@ Note actions:
  - `🗑` delete note
  - `⠿` drag to reorder
 
-## Keyboard shortcuts
+## Shortcuts
 
 In the edit-note field (and Mammoth's panel):
 
@@ -63,6 +63,15 @@ In the edit-note field (and Mammoth's panel):
 | `Ctrl`/`⌘` + `↑` / `↓` | Cycle through your saved notes, replacing the field |
 | `Ctrl`/`⌘` + `B` | Wrap the selection — or the word at the caret — in **bold** markup |
 | `Ctrl`/`⌘` + `I` | Wrap the selection — or the word at the caret — in *italic* markup |
+| `Ctrl`/`⌘` + `,` | Focus the note search box |
+
+In the note search box:
+
+| Key | Action |
+|---|---|
+| `↑` / `↓` | Move the highlighted match |
+| `Enter` | Apply the highlighted match (or the first if none) |
+| `Esc` | Clear the search |
 
 ## Settings 
 

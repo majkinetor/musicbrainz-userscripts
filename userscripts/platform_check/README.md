@@ -94,3 +94,9 @@ Tidal and Beatport specifics:
     - Reorder providers
 - **Refresh** (`↻`): clears the cache for the current release and re-runs every enabled scanner.
 - **Diagnostic log (`ⓘ`)**: every step of every scanner is logged with per-source filter chips so you can isolate a single platform's chain.
+
+## Shortcuts
+
+| Key | Action |
+|---|---|
+| `Esc` | Close the open modal/dialog |

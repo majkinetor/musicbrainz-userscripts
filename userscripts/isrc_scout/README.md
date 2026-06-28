@@ -101,6 +101,25 @@ The **Linked** column works the same way in reverse: **left-click** opens · **r
 
 Releases in a release group are often split by platform (one edition carries the Deezer link, another Spotify/Tidal, another Bandcamp). Since the recordings are shared, **⚙ → "Use providers from the whole release group"** (off by default) fills in any provider link the current edition is missing from its **sibling releases** — for both ISRC import and track links. A small **purple dot** marks links pulled this way, with a tooltip naming the sibling release.
 
+## Shortcuts
+
+Keyboard, in the editor / Links modal:
+
+| Key | Action |
+|---|---|
+| `Esc` | Close the open sub-panel/popup, else the modal (ignored while typing in a field) |
+| `Esc` | Close the SoundExchange search panel |
+| `Enter` | Submit the focused **Add link** URL / code input, or run the SoundExchange search |
+
+Modifier-clicks on the **Links tab** Add / Linked icons (see [Track links](#track-links-links-tab) for the full description):
+
+| Click | Action |
+|---|---|
+| left-click | Open the provider track |
+| right-click | Add / remove that one link |
+| `Ctrl`/`⌘` + right-click | Add / remove every link on that track |
+| `Alt` + right-click | Add / remove that provider across all tracks |
+
 ## Submitting (one-time authorization)
 
 ISRC submission to MusicBrainz **requires OAuth**:
