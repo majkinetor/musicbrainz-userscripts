@@ -2788,7 +2788,23 @@
     buildToolParams(act, grp);
     return grp;
   }
-  function initTools() { renderToolbar(); }
+  let _bridgeKey = '', _bridgeT = 0, _bridgeObs = null;
+  const bridgeKeyNow = () => _bridges.map(b => b.act).sort().join('|');
+  function refreshBridgesIfChanged() {
+    if (!document.querySelector('.tc-toolbtns')) return;   // toolbar not mounted
+    syncBridges();
+    const key = bridgeKeyNow();
+    if (key !== _bridgeKey) { _bridgeKey = key; renderToolbar(); }
+  }
+  // #322: an external tool button (e.g. Guess punctuation) may be injected AFTER
+  // Apollo first builds its toolbar, so a pinned bridge wouldn't show until a
+  // re-render. Watch for the present-bridge set changing and re-render the bar.
+  function watchBridges() {
+    if (_bridgeObs) return;
+    _bridgeObs = new MutationObserver(() => { clearTimeout(_bridgeT); _bridgeT = setTimeout(refreshBridgesIfChanged, 300); });
+    _bridgeObs.observe(document.body, { childList: true, subtree: true });
+  }
+  function initTools() { renderToolbar(); _bridgeKey = bridgeKeyNow(); watchBridges(); }
 
   // ── "Customize tools" popover (opens from the Tools label) ──
   function openToolsConfig(anchor) {
