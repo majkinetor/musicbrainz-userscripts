@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.27
+// @version      2026.6.28
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -874,6 +874,10 @@
   }
 
   const rgProvidersEnabled = () => !!store.get('rg_providers', false);
+  // #314: by default respect Platform Check's link confidence — don't import from a
+  // PC link it withheld by a barcode/format mismatch (it can be a wrong release).
+  // Opt in to the old #211 behaviour (use it anyway) with this toggle.
+  const ignorePcConfidence = () => !!store.get('ignore_pc_confidence', false);
 
   // #302: releases in a release group are often split by platform (one has Deezer,
   // another Spotify, …). ISRC and track-link edits target recordings, which are
@@ -1950,6 +1954,13 @@
               <span style="color:#868e96; font-size:11px">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group — recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span>
           </label>
         </div>
+        <div style="margin-top:12px">
+          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
+            <input type="checkbox" id="ii-ignore-pc" style="margin-top:2px">
+            <span>Ignore Platform Check link confidence<br>
+              <span style="color:#868e96; font-size:11px">Import from a Platform-Check link even when PC withheld it for a barcode/format mismatch. Off by default — a mismatch can mean PC matched the wrong release, so its ISRCs would be wrong (#314).</span></span>
+          </label>
+        </div>
         <div class="ii-cfg-grp" style="margin-top:16px">More</div>
         <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
            href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
@@ -2172,6 +2183,16 @@
       cbRg.addEventListener('change', () => {
         store.set('rg_providers', cbRg.checked);
         Log.info('Release-group providers: ' + (cbRg.checked ? 'on' : 'off') + (cbRg.checked ? ' — reopen / reload to rescan' : ''));
+      });
+    }
+
+    // #314: respect / ignore Platform Check's barcode-mismatch link confidence
+    const cbPc = modal.querySelector('#ii-ignore-pc');
+    if (cbPc) {
+      cbPc.checked = ignorePcConfidence();
+      cbPc.addEventListener('change', () => {
+        store.set('ignore_pc_confidence', cbPc.checked);
+        Log.info('Ignore Platform Check link confidence: ' + (cbPc.checked ? 'on — barcode/format-mismatched PC links will be used' : 'off — PC-withheld links are skipped'));
       });
     }
 
@@ -3762,14 +3783,19 @@
     // (found but wrong — dimmed), or pc-st-notfound. Only trust a confident match (#180).
     const row = document.getElementById('row-' + key);
     if (row && !row.classList.contains('pc-st-match')) {
-      // #211: a link PC withheld ONLY by its barcode/format link-confidence is
-      // still the right album for ISRC purposes — an ISRC identifies a recording
-      // and is independent of the release's barcode/format. PC demotes such a row
-      // to pc-st-mismatch but flags it pc-blocked while leaving the content-match
-      // glyph intact (✓ = found+counts, ? = found). Accept those; still reject a
-      // genuine content mismatch (~) or not-found (×), and non-blocked mismatches.
+      // #211: a link PC withheld ONLY by its barcode/format link-confidence CAN still
+      // be the right album for ISRC purposes — an ISRC identifies a recording, which is
+      // independent of the release's barcode/format. PC demotes such a row to
+      // pc-st-mismatch but flags it pc-blocked while leaving the content-match glyph
+      // intact (✓ = found+counts, ? = found).
+      // #314: but a barcode mismatch can also mean PC simply matched the WRONG release
+      // (e.g. a 1-track Beatport single by a same-prefixed artist), so by DEFAULT we now
+      // respect PC's confidence and reject these too. Only accept them when the user has
+      // opted into "Ignore Platform Check link confidence". A genuine content mismatch (~)
+      // or not-found (×) is always rejected.
       const glyph = ((document.getElementById('ico-' + key) || {}).textContent || '').trim();
-      if (!(row.classList.contains('pc-blocked') && (glyph === '✓' || glyph === '?'))) return null;
+      const lenient = ignorePcConfidence() && row.classList.contains('pc-blocked') && (glyph === '✓' || glyph === '?');
+      if (!lenient) return null;
     }
     return parseStreamingId(source, href) ? href : null;    // only if it parses to an album id
   }
