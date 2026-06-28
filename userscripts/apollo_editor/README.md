@@ -4,6 +4,7 @@ UI and tools for advanced adding and editing of a MusicBrainz release.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/apollo_editor/apollo_editor.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/apollo_editor/apollo_editor.user.js)
 - [Changelog](./CHANGELOG.md)
+- [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.1.field=edit_note_content&conditions.1.operator=includes&conditions.1.args.0=Apollo+Editor)
 
 <img width="1200" src="./screenshots/tracklist.png" /> 
 <details><summary>More screenshots</summary>
