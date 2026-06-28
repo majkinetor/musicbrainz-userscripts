@@ -5,17 +5,17 @@ UI and tools for advanced adding and editing of a MusicBrainz release.
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/apollo_editor/apollo_editor.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/apollo_editor/apollo_editor.user.js)
 - [Changelog](./CHANGELOG.md)
 
-<img width="1200" src="./screenshots/tracklist.png.png" /> 
+<img width="1200" src="./screenshots/tracklist.png" /> 
 <details><summary>More screenshots</summary>
 <img width="1200" src="./screenshots/recordings.png" /><br>
 <img width="1200" src="./screenshots/release.png" /><br>
 <img width="1200" src="./screenshots/tools.png" />
+<img width="1200" src="./screenshots/duplicates.png" />
 </details>
-
 
 When you add a release, each track's artist may be set as **plain text with no MBID**, and the recordings are unset. Linking them one by one — searching, picking, occasionally splitting *A feat. B* into two credits — is the slowest part of adding a release. Apollo Editor does the whole tracklist and recording set in one pass and lets you apply the confident matches with one click.
 
-It replaces the native **Tracklist** and **Recordings** editors with two clean, consistent tables. It also makes **Release Information** tab more functional by suppresing help bubbles and external icons moved to right column. 
+It replaces the native **Tracklist** and **Recordings** editors with two clean, consistent tables with dozen of features. It also makes **Release Information** tab more functional by suppresing help bubbles and external icons moved to right column. When adding new releases, **Duplicates** tab provides similarity check.
 
 Each takeover is optional and you can flip back to the native editor at any time with the **Original / Apollo** switcher button.
 
