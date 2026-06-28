@@ -2493,7 +2493,7 @@
     else if (a === 'guessfeat') guessFeatAll();
     else if (a === 'cols') colsFit();   // the Columns button's default action is Fit
     else if (MEDIUM_TOOLS.has(a)) runMediumTool(a, 0);
-    else if (/^brx\d+$/.test(a)) fireBridge(_bridges[+a.slice(3)]);
+    else if (_bridgeMap[a]) fireBridge(_bridgeMap[a]);
   }
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
@@ -2569,21 +2569,28 @@
      Apollo doesn't watch per-value), so its grid reflects the change. ── */
   const bridgeBtn = re => [...document.querySelectorAll('button, input[type="button"], input[type="submit"]')]
     .find(b => b.offsetParent !== null && re.test((b.textContent || b.value || '').trim())) || null;
+  // built-in registry: known external buttons, each with a STABLE `act` so its
+  // bar/menu placement persists. Add one entry { act, label, icon, find } to bridge another.
   const BRIDGE = [
-    { label: 'Guess punctuation', icon: '“”', find: () => bridgeBtn(/^guess\s+punctuation$/i) },
+    { act: 'x:gpunct', label: 'Guess punctuation', icon: '“”', find: () => bridgeBtn(/^guess\s+punctuation$/i) },
   ];
-  // collect the tools available right now (built-in matches that resolve + tagged elements)
-  function bridgeItems() {
+  let _bridges = [], _bridgeMap = {};
+  // refresh the tools available right now: built-in matches that resolve + elements
+  // tagged class="apollo-tool" (self-registering). Each carries a stable act so the
+  // normal tool-config (bar / menu / Customize, persisted) treats it like a native tool.
+  function syncBridges() {
     const out = [];
-    for (const b of BRIDGE) { let el = null; try { el = b.find(); } catch (e) {} if (el) out.push({ label: b.label, icon: b.icon, el }); }
-    document.querySelectorAll('.apollo-tool').forEach(el => out.push({
-      label: el.dataset.apolloLabel || (el.textContent || '').trim() || 'Tool',
-      icon:  el.dataset.apolloIcon || '🔧',
-      el,
-    }));
+    for (const b of BRIDGE) { let el = null; try { el = b.find(); } catch (e) {} if (el) out.push({ act: b.act, label: b.label, icon: b.icon, el }); }
+    document.querySelectorAll('.apollo-tool').forEach(el => {
+      const label = el.dataset.apolloLabel || (el.textContent || '').trim() || 'Tool';
+      const act = 'x:' + (el.dataset.apolloId || el.id || label.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+      if (!out.some(o => o.act === act)) out.push({ act, label, icon: el.dataset.apolloIcon || '🔧', el });
+    });
+    _bridges = out; _bridgeMap = Object.fromEntries(out.map(b => [b.act, b]));
     return out;
   }
-  let _bridges = [];   // rebuilt when the Tools menu opens; indexes back the 'brx<N>' acts
+  // tool-def accessor: native tools + present bridges, so render/customize treat them alike
+  const TD = act => TOOL[act] || _bridgeMap[act] || { act, icon: '?', label: act };
   async function fireBridge(it) {
     if (!it || !it.el) { Log.warn('Apollo bridge: nothing to fire'); return; }
     Log.info('Apollo bridge: firing', it.label);
@@ -2606,11 +2613,14 @@
   // tools merge over defaults; any tool not yet saved (a future one) is appended
   // and defaults to the ⋯ menu.
   function getToolCfg() {
-    const saved = Array.isArray(SETTINGS.toolCfg) ? SETTINGS.toolCfg.filter(t => t && TOOL[t.act]) : [];
+    syncBridges();   // #322: present bridges become first-class tools (cfg/bar/menu/customize)
+    const known = act => !!(TOOL[act] || _bridgeMap[act]);   // drop saved entries for tools/bridges no longer present
+    const saved = Array.isArray(SETTINGS.toolCfg) ? SETTINGS.toolCfg.filter(t => t && known(t.act)) : [];
     const order = saved.map(t => t.act);
     // fresh install: the default on-bar tools lead (in their order), then the rest
     TOOL_DEFAULTS.forEach(d => { if (!order.includes(d.act)) order.push(d.act); });
     MENU.forEach(m => { if (!order.includes(m.act)) order.push(m.act); });
+    _bridges.forEach(b => { if (!order.includes(b.act)) order.push(b.act); });   // present bridges default to the Tools menu
     const byAct = Object.fromEntries(saved.map(t => [t.act, t]));
     return order.map(act => {
       const s = byAct[act] || {}, d = TOOL_DEF[act];
@@ -2656,7 +2666,7 @@
     getToolCfg().filter(t => t.onBar || TEMP_BAR.has(t.act)).forEach(t => host.appendChild(hasInlineParams(t.act) ? makeToolGroup(t) : makeToolButton(t)));
   }
   function makeToolButton(t) {
-    const m = TOOL[t.act];
+    const m = TD(t.act);
     const b = document.createElement('button'); b.type = 'button';
     b.className = 'tc-toolbtn' + (m.instant ? ' instant' : '');
     b.dataset.act = t.act;
@@ -2666,7 +2676,7 @@
     return b;
   }
   function pickTool(act) {
-    if (/^brx\d+$/.test(act)) return runAction(act);             // bridged external tool — fire-and-forget
+    if (_bridgeMap[act]) return runAction(act);                  // bridged external tool — fire-and-forget
     if (OPTLESS.has(act)) return runAction(act);                 // instant (Guess feat.)
     // #280: a param tool picked from the Tools menu has nowhere to show its controls
     // unless it's on the bar — so surface it there for THIS session (not persisted;
@@ -2688,13 +2698,10 @@
   // the "Tools" label menu: the tools NOT on the bar, then Customize…
   function openToolsMenu(anchor) {
     let m = document.getElementById('tc-menu'); if (m) { m.remove(); return; }
-    const off = getToolCfg().filter(t => !t.onBar && !TEMP_BAR.has(t.act));
-    _bridges = bridgeItems();   // external tools (built-in matches + tagged elements), only when present (#322)
+    const off = getToolCfg().filter(t => !t.onBar && !TEMP_BAR.has(t.act));   // includes off-bar bridges (#322)
     m = document.createElement('div'); m.id = 'tc-menu'; m.className = 'tc-menu';
-    m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${esc(TOOL[t.act].icon)}</span>${esc(TOOL[t.act].label)}</div>`).join('')
-      + (off.length && _bridges.length ? '<div class="tc-sep"></div>' : '')
-      + _bridges.map((it, i) => `<div class="tc-mi" data-act="brx${i}"><span class="tc-mi-ic">${esc(it.icon)}</span>${esc(it.label)}</div>`).join('')
-      + (off.length || _bridges.length ? '<div class="tc-sep"></div>' : '')
+    m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${esc(TD(t.act).icon)}</span>${esc(TD(t.act).label)}</div>`).join('')
+      + (off.length ? '<div class="tc-sep"></div>' : '')
       + '<div class="tc-mi tc-mi-cfg" data-act="__cfg"><span class="tc-mi-ic">⚙︎</span>Customize…</div>';
     document.body.appendChild(m);
     const r = anchor.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
@@ -2798,7 +2805,7 @@
         + '<div class="tc-tc-hint">Drag ⠿ to reorder · ☑ shows it on the bar (else under the Tools menu) · tools with settings show them inline</div>';
       const list = p.querySelector('.tc-tc-list');
       getToolCfg().forEach(t => {
-        const m = TOOL[t.act];
+        const m = TD(t.act);
         const row = document.createElement('div'); row.className = 'tc-tc-row' + (t.onBar ? '' : ' off'); row.dataset.act = t.act; row.draggable = true;
         row.innerHTML =
           '<span class="tc-tc-grab" title="drag to reorder">⠿</span>'

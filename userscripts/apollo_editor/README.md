@@ -162,14 +162,26 @@ Besides the integrated tools, there are a few new ones:
 - **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared.
 - **Resize Columns** — set column sizes to predefined variants (Fit, Centered, Default).
 
+External tools (need another userscript):
+
+- **Guess punctuation** — runs kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation) (curly quotes, dashes, ellipses…) over the release. **Requires that script installed** — the tool only appears when it is.
+
 #### Tools from other userscripts
 
-When another userscript adds a fire-and-forget button to the page, Apollo can surface it in the **Tools ▾** menu so you don't have to leave the Apollo view to use it. Two ways:
+Apollo can surface a fire-and-forget button that *another* userscript adds to the page, so you can use it without leaving the Apollo view. Such a tool behaves like any built-in one: it shows in the **Tools ▾** menu and in **Customize…**, where you can pin it to the bar, reorder it, and choose icon/text (the choice persists). It only appears while the providing script is present. Two ways in:
 
-- **Recognised buttons** — known buttons are adopted as-is. Currently **Guess punctuation** (kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation)) — it appears in the menu only when that script is installed.
-- **Convention** — any element a script tags `class="apollo-tool"` (optional `data-apollo-label` / `data-apollo-icon`) is offered too, so a cooperating script self-registers with no change to Apollo.
+- **Recognised buttons** — Apollo adopts a known button *unmodified*, matched by its visible text (e.g. **Guess punctuation** above). Adopting another is a one-line registry entry in Apollo.
+- **Convention (for script authors)** — tag any element `class="apollo-tool"` and Apollo offers it, no Apollo change needed:
 
-Activating either clicks the element, then re-reads the tracklist so the grid reflects the change. This covers tools that are parameterless or that pop their own settings on click (e.g. a Track parser); tools that need their controls *inline* in Apollo's bar aren't surfaced this way.
+  ```html
+  <button class="apollo-tool" data-apollo-label="My tool" data-apollo-icon="★">…</button>
+  ```
+
+  - `data-apollo-label` *(optional)* — menu/button label (falls back to the element's text).
+  - `data-apollo-icon` *(optional)* — short icon glyph (default 🔧).
+  - `data-apollo-id` *(optional)* — stable id for the saved bar/menu placement (falls back to the element's `id`, then a slug of the label).
+
+Activating either kind **clicks the element**, then Apollo re-reads the tracklist so its grid reflects the change. This fits tools that are **parameterless or pop their own settings on click** (e.g. a Track parser); tools that need their controls rendered *inline* in Apollo's bar aren't surfaced this way.
 
 
 ## Annotation editor
