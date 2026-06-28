@@ -162,6 +162,15 @@ Besides the integrated tools, there are a few new ones:
 - **Search & Replace** — search a string within track titles and replace it. Clicking the tool name starts a fresh session with the current options applied and the fields cleared.
 - **Resize Columns** — set column sizes to predefined variants (Fit, Centered, Default).
 
+#### Tools from other userscripts
+
+When another userscript adds a fire-and-forget button to the page, Apollo can surface it in the **Tools ▾** menu so you don't have to leave the Apollo view to use it. Two ways:
+
+- **Recognised buttons** — known buttons are adopted as-is. Currently **Guess punctuation** (kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation)) — it appears in the menu only when that script is installed.
+- **Convention** — any element a script tags `class="apollo-tool"` (optional `data-apollo-label` / `data-apollo-icon`) is offered too, so a cooperating script self-registers with no change to Apollo.
+
+Activating either clicks the element, then re-reads the tracklist so the grid reflects the change. This covers tools that are parameterless or that pop their own settings on click (e.g. a Track parser); tools that need their controls *inline* in Apollo's bar aren't surfaced this way.
+
 
 ## Annotation editor
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.27
+// @version      2026.6.28
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1076,7 +1076,7 @@
 
   /* ════════════════════════ UI ════════════════════════ */
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.6.27';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
+  const VERSION = '2026.6.28';   // keep in sync with @version (fallback when GM_info is unavailable under @grant none)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2493,6 +2493,7 @@
     else if (a === 'guessfeat') guessFeatAll();
     else if (a === 'cols') colsFit();   // the Columns button's default action is Fit
     else if (MEDIUM_TOOLS.has(a)) runMediumTool(a, 0);
+    else if (/^brx\d+$/.test(a)) fireBridge(_bridges[+a.slice(3)]);
   }
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
@@ -2549,6 +2550,46 @@
   const MEDIUM_TOOLS = new Set(['parser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
   const hasParams = act => !!(TOOL[act] && TOOL[act].params);
+
+  /* ── Tier-0 tool bridges (#322) ───────────────────────────────────────────
+     Surface a button that some OTHER (user)script drops on the page as a
+     fire-and-forget Apollo Tool, but ONLY when it's actually present. Two ways:
+
+       (a) Built-in registry — for known buttons we want to adopt UNMODIFIED
+           (e.g. kellnerd's "Guess punctuation"), matched by visible text.
+           Add another by appending one { label, icon, find } entry; `find()`
+           returns the live element or null.
+
+       (b) Convention — any element tagged `class="apollo-tool"` (optional
+           `data-apollo-label` / `data-apollo-icon`) is surfaced too, so a
+           cooperating script self-registers with NO Apollo change.
+
+     Either kind is param-less: activating clicks the element, then Apollo
+     re-reads (the external code writes the native fields / KO model, which
+     Apollo doesn't watch per-value), so its grid reflects the change. ── */
+  const bridgeBtn = re => [...document.querySelectorAll('button, input[type="button"], input[type="submit"]')]
+    .find(b => b.offsetParent !== null && re.test((b.textContent || b.value || '').trim())) || null;
+  const BRIDGE = [
+    { label: 'Guess punctuation', icon: '“”', find: () => bridgeBtn(/^guess\s+punctuation$/i) },
+  ];
+  // collect the tools available right now (built-in matches that resolve + tagged elements)
+  function bridgeItems() {
+    const out = [];
+    for (const b of BRIDGE) { let el = null; try { el = b.find(); } catch (e) {} if (el) out.push({ label: b.label, icon: b.icon, el }); }
+    document.querySelectorAll('.apollo-tool').forEach(el => out.push({
+      label: el.dataset.apolloLabel || (el.textContent || '').trim() || 'Tool',
+      icon:  el.dataset.apolloIcon || '🔧',
+      el,
+    }));
+    return out;
+  }
+  let _bridges = [];   // rebuilt when the Tools menu opens; indexes back the 'brx<N>' acts
+  async function fireBridge(it) {
+    if (!it || !it.el) { Log.warn('Apollo bridge: nothing to fire'); return; }
+    Log.info('Apollo bridge: firing', it.label);
+    it.el.click();
+    try { await rebuild(true); } catch (e) { Log.warn('Apollo bridge: re-render failed', e.message); }   // re-read (no re-match)
+  }
   // default Tools bar (in display order) for a fresh install — every other tool starts
   // in the Tools ▾ menu. Each entry sets the tool's icon/text and whether its params
   // start collapsed (right-click a name toggles that later).
@@ -2625,6 +2666,7 @@
     return b;
   }
   function pickTool(act) {
+    if (/^brx\d+$/.test(act)) return runAction(act);             // bridged external tool — fire-and-forget
     if (OPTLESS.has(act)) return runAction(act);                 // instant (Guess feat.)
     // #280: a param tool picked from the Tools menu has nowhere to show its controls
     // unless it's on the bar — so surface it there for THIS session (not persisted;
@@ -2647,9 +2689,12 @@
   function openToolsMenu(anchor) {
     let m = document.getElementById('tc-menu'); if (m) { m.remove(); return; }
     const off = getToolCfg().filter(t => !t.onBar && !TEMP_BAR.has(t.act));
+    _bridges = bridgeItems();   // external tools (built-in matches + tagged elements), only when present (#322)
     m = document.createElement('div'); m.id = 'tc-menu'; m.className = 'tc-menu';
     m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${esc(TOOL[t.act].icon)}</span>${esc(TOOL[t.act].label)}</div>`).join('')
-      + (off.length ? '<div class="tc-sep"></div>' : '')
+      + (off.length && _bridges.length ? '<div class="tc-sep"></div>' : '')
+      + _bridges.map((it, i) => `<div class="tc-mi" data-act="brx${i}"><span class="tc-mi-ic">${esc(it.icon)}</span>${esc(it.label)}</div>`).join('')
+      + (off.length || _bridges.length ? '<div class="tc-sep"></div>' : '')
       + '<div class="tc-mi tc-mi-cfg" data-act="__cfg"><span class="tc-mi-ic">⚙︎</span>Customize…</div>';
     document.body.appendChild(m);
     const r = anchor.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
