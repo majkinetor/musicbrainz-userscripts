@@ -21,43 +21,38 @@ Each takeover is optional and you can flip back to the native editor at any time
 
 ## Features
 
-- **Tracklist editor**
-    - Artist picker with confidence highlight
-        - Change all matching tracks or single one 
-        - Ctrl-click a search result to set that artist on all unresolved tracks
-        - Paste an MBID or a MusicBrainz artist URL to resolve straight to that artist
-    - Split artist with join-phrase selector
-    - Artist aliases in search results and in selection
-    - Icon representing artist type and direct link
-    - Track actions: create, split, guess case
-        - Right click to execute action on all tracks
-    - Reorder tracks within a medium with the ⠿ handle
-    - Keyboard navigation
-    - Highlighting of changed rows and split artists
-    - **Expand all media** — a release with many media loads with most collapsed; **right-click** a medium's expand arrow (Tracklist) or its expand row (Recordings) to expand **every** collapsed medium at once. Left-click still expands just that one.
-- **Recordings editor**
-    - Side-by-side _Track ↔ Recording_ comparison with a confidence circle per row and inline highlighting of the fields that differ.
-    - **Detailed highlighting** (opt-in, _Matching_ settings) — highlights the exact **differing characters** in a mismatching **title and artist** (including a casing- or punctuation-only difference the match would otherwise tolerate), instead of the whole field, and shades a **length mismatch** by how large the gap is (faint under a second → solid red past five).
-    - **Confusable / invisible characters** — wherever a **title or artist** is shown as text (the recordings comparison, the recording picker — **not** only inside a detailed-highlight diff) every confusable or invisible character (a straight `'` `"` `-`, a curly `’`, an en/em dash, a no-break or zero-width space, a tab, …) is **enlarged**, names its exact codepoint on hover, and draws invisibles as a visible glyph, so the exact character is obvious in any situation. Size is the _Appearance → Enlarge punctuation by N px_ setting (`0` = off, the master switch). On the **Tracklist** tab the **Title** can't be styled while it's an editable `<input>`, so it's shown as styled read-only text that **drops into the native input the moment you click or tab into it** (and returns to the styled view on blur) — you get the visibility without losing inline editing.
-    - **Join-phrase spacing** — a join phrase between two artists should have a space on both sides (`" & "`). Where one is **missing** a highlighted `␣` is drawn (`Gandhabba &␣Render`), and a join phrase **missing entirely** between two artists shows `␣?␣` — on both the **Recordings** comparison and the **Tracklist** artist column (where the join input is outlined and flagged). Shares the _Enlarge punctuation_ master switch (`0` = off).
-    - Recording picker with MusicBrainz suggestions, free-form search, linked "appears on" releases, confidence highlights
-        - Paste a **recording MBID** or a MusicBrainz `/recording/<mbid>` URL into the search field to link that recording immediately (same as the artist picker)
-        - Paste an **ISRC** (with or without separators, e.g. `GB-AYE-06-01498` or `GBAYE0601498`) into the search field to resolve it via MusicBrainz — a single match links immediately, several are listed to choose from. The linked recording's ISRC(s) are shown in the picker header so it's clear when an ISRC drove the selection.
-    - Right-click a recording Title/Artist cell to copy the track's value down to the recording (on submit) — see [Updating recordings](#updating-recordings-titleartist)
-- **[Matching](#matching)**
-    - Auto-match artists and recordings in one click
-    - Release group consideration for quick and precise matching
-    - Configurable match tolerance — length (seconds), title (edit distance), ignore casing and punctuation
-- **[Toolbar](#toolbar)**
-    - Configurable **Tools** bar — pick which tools show, reorder them, set icon/text, collapse params to a hover flyout; plus some new tools
-    - Revert/Clear for a single track or the whole table
-- **[Customization](#settings)** — resizable columns, alternate row colors, grid, multiple layouts, match tolerance
-- **[Annotation editor](#annotation-editor)** — edit the annotation as **Markdown** with a live preview, in the release editor's *Additional information* and on the standalone *Edit annotation* page.
-- **Release Information** tab
-    - The **annotation editor** (above) lives here, in *Additional information*.
-    - External links moved to a right column with a dead-link checker; right-click a favicon/type to edit it
-    - A **front-cover thumbnail** (from the Cover Art Archive) sits under the external links, linking to the release's cover-art page — shown only when the release actually has front art
-- **[Duplicates](#duplicates)** tab — a red→green **Similarity** score per existing release, clickable for a track-by-track comparison, so you can pick the right release to base yours on.
+- **[Tracklist editor](#tracklist-editor)** — clean artist-picker table with confidence highlighting, change-all-matching scope, split/alias-aware credits, track actions, reordering and keyboard navigation.
+- **[Recordings editor](#recordings-editor)** — side-by-side *Track ↔ Recording* comparison with per-row confidence, character-level diff highlighting, and a suggestion/ISRC-aware recording picker.
+- **[Matching](#matching)** — one-click auto-match of artists and recordings, using the whole release group, with configurable tolerance.
+- **[Toolbar](#toolbar)** — configurable **Tools** bar (choose/reorder, icon or text, hover-flyout params) plus extra tools, and Revert/Clear for one track or all.
+- **[Release Information](#release-information)** — Markdown annotation editor, external links in a right column with a dead-link checker, and a front-cover thumbnail.
+- **[Duplicates](#duplicates)** — a red→green **Similarity** score per existing release, expandable to a track-by-track comparison.
+- **[Customization](#settings)** — resizable columns, alternate row colours, grid, layouts and match tolerance.
+- **Original / Apollo switcher** — every takeover is optional; flip back to the native editor at any time.
+
+## Tracklist editor
+
+- Artist picker with a confidence highlight; apply to **all matching tracks or a single one** (the [Change](#toolbar) scope).
+- **Ctrl-click** a search result to set that artist on every unresolved track.
+- Paste an **MBID or a MusicBrainz artist URL** to resolve straight to that artist.
+- **Split** an artist with a join-phrase selector.
+- Artist **aliases** shown in search results and in the selection.
+- Icon for the **artist type**, with a direct link to the artist.
+- **Track actions** — create, split, guess case; **right-click** to run the action on every track.
+- **Reorder** tracks within a medium with the ⠿ handle.
+- **Keyboard navigation**, and highlighting of changed rows and split artists.
+- **Expand all media** — a release with many media loads with most collapsed; **right-click** a medium's expand arrow (Tracklist) or its expand row (Recordings) to expand **every** collapsed medium at once. Left-click still expands just that one.
+
+## Recordings editor
+
+- **Side-by-side _Track ↔ Recording_ comparison** with a confidence circle per row and inline highlighting of the fields that differ.
+- **Detailed highlighting** (opt-in, _Matching_ settings) — highlights the exact **differing characters** in a mismatching **title and artist** (including a casing- or punctuation-only difference the match would otherwise tolerate), instead of the whole field, and shades a **length mismatch** by how large the gap is (faint under a second → solid red past five).
+- **Confusable / invisible characters** — wherever a **title or artist** is shown as text (the recordings comparison, the recording picker — **not** only inside a detailed-highlight diff) every confusable or invisible character (a straight `'` `"` `-`, a curly `’`, an en/em dash, a no-break or zero-width space, a tab, …) is **enlarged**, names its exact codepoint on hover, and draws invisibles as a visible glyph, so the exact character is obvious in any situation. Size is the _Appearance → Enlarge punctuation by N px_ setting (`0` = off, the master switch). On the **Tracklist** tab the **Title** can't be styled while it's an editable `<input>`, so it's shown as styled read-only text that **drops into the native input the moment you click or tab into it** (and returns to the styled view on blur) — you get the visibility without losing inline editing.
+- **Join-phrase spacing** — a join phrase between two artists should have a space on both sides (`" & "`). Where one is **missing** a highlighted `␣` is drawn (`Gandhabba &␣Render`), and a join phrase **missing entirely** between two artists shows `␣?␣` — on both the **Recordings** comparison and the **Tracklist** artist column (where the join input is outlined and flagged). Shares the _Enlarge punctuation_ master switch (`0` = off).
+- **Recording picker** — MusicBrainz suggestions, free-form search, linked "appears on" releases and confidence highlights.
+  - Paste a **recording MBID** or a MusicBrainz `/recording/<mbid>` URL into the search field to link that recording immediately (same as the artist picker).
+  - Paste an **ISRC** (with or without separators, e.g. `GB-AYE-06-01498` or `GBAYE0601498`) to resolve it via MusicBrainz — a single match links immediately, several are listed to choose from. The linked recording's ISRC(s) show in the picker header so it's clear when an ISRC drove the selection.
+- **Copy a track value down to the recording** — right-click a recording Title/Artist cell (applied on submit); see [Updating recordings](#updating-recordings-titleartist).
 
 ## Matching
 
@@ -187,6 +182,14 @@ Apollo can surface a fire-and-forget button that *another* userscript adds to th
 
 Activating either kind **clicks the element**, then Apollo re-reads the tracklist so its grid reflects the change. This fits tools that are **parameterless or pop their own settings on click** (e.g. a Track parser); tools that need their controls rendered *inline* in Apollo's bar aren't surfaced this way.
 
+
+## Release Information
+
+Apollo makes the **Release Information** tab more functional — native help bubbles are suppressed and the external-link icons move to a right column:
+
+- The **[annotation editor](#annotation-editor)** lives here, in *Additional information*.
+- **External links** moved to a right column with a **dead-link checker**; **right-click** a favicon/type to edit it.
+- A **front-cover thumbnail** (from the Cover Art Archive) sits under the external links, linking to the release's cover-art page — shown only when the release actually has front art.
 
 ## Annotation editor
 
