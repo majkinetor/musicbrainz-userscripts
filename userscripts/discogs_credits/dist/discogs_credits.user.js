@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.27
+// @version      2026.6.28.143757
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -3549,7 +3549,9 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
     "lyricist",
     "librettist",
     "revised by",
-    "translator",
+    // NOT 'translator' — a translator credit (liner notes / lyrics / libretto) is a
+    // release-wide credit, so it dispatches at RELEASE level (artist↔release
+    // "translator"), not duplicated onto every work. (MB has the artist-release rel.)
     "reconstructed by",
     // 'arranger',
     // 'instruments arranger',
