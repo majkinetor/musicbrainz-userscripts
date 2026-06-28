@@ -318,6 +318,10 @@
   .mmth-pop .mmth-syn { display:grid; grid-template-columns:auto 1fr; gap:3px 10px; margin:4px 0; }
   .mmth-pop .mmth-sub { font-weight:600; font-size:12px; margin:8px 0 2px; }
   .mmth-toast { position:fixed; z-index:100000; background:#2c3a33; color:#fff; padding:6px 12px; border-radius:6px; font:13px sans-serif; box-shadow:0 4px 14px rgba(0,0,0,.25); left:50%; top:14px; transform:translateX(-50%); }
+  /* While an MB dialog/popover is open, hide Mammoth's panel (incl. the minimized
+     badge) and its popovers — MB's dialogs carry no z-index, so our UI would float
+     on top of them. visibility keeps the docked panel's layout (no jump). #313 */
+  html.mmthf-dialog .mmth-side, html.mmthf-dialog .mmth-badge, html.mmthf-dialog .mmth-pop { visibility:hidden !important; pointer-events:none !important; }
   `;
   (function () { const s = document.createElement('style'); s.textContent = css; (document.head || document.documentElement).appendChild(s); })();
   // #268: only the release editor wants its edit-note .half-width column widened to
@@ -831,7 +835,13 @@
       try { new ResizeObserver(syncFloor).observe(side); new ResizeObserver(syncFloor).observe(ta); } catch (x) {}
     });
   }
-  new MutationObserver(() => injectAll()).observe(document.documentElement, { childList: true, subtree: true });
+  // Toggle the "an MB dialog is open" flag so Mammoth's floating UI (main panel
+  // badge/pop + babies) hides under it — MB's dialogs/popovers carry no z-index
+  // and no backdrop, so they can't otherwise win the stack. Global (runs even
+  // when babies are off). #313
+  const syncDialog = () => document.documentElement.classList.toggle('mmthf-dialog', !!document.querySelector('.dialog.popover, .relationship-dialog'));
+  new MutationObserver(() => { injectAll(); syncDialog(); }).observe(document.documentElement, { childList: true, subtree: true });
+  syncDialog();
 
   // #252 Ctrl/Cmd+Enter submits the edit. The submit control differs per page, so
   // look in order: the release editor's "Enter edit" button, then the edit form's
@@ -1228,9 +1238,6 @@
     }
     const reopen = p => { closePop(); openPop(p); };
 
-    // Toggle the "an MB dialog is open" flag so the babies hide under it (MB's
-    // dialogs/popovers carry no z-index, so they can't otherwise win the stack).
-    const syncDialog = () => document.documentElement.classList.toggle('mmthf-dialog', !!document.querySelector('.dialog.popover, .relationship-dialog'));
     const relayout = () => { syncDialog(); if (running && !raf) raf = requestAnimationFrame(() => { raf = 0; layout(); }); };
     function start() {
       if (running) return; running = true;
