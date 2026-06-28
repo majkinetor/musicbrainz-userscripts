@@ -38,6 +38,7 @@ It runs on a release's **Cover art** tab (`/release/<mbid>/cover-art`) and an ev
   - Fresh covers shown faster than native UI
 - **Full-screen viewer**
   - Arrow keys for navigation (left/right) and zoom (up/down) with zoom level remembered
+  - **Mouse-follow pan** — when zoomed, just move the mouse to pan across the image (no click-and-drag). On by default; toggle in **Setup** (turn off to go back to drag-to-pan).
   - Slideshow
   - Set comment and type
   - `<Delete>` key to remove image 
@@ -101,6 +102,8 @@ where `none` is used where no type is given
 | right-click / right-drag | select / paint-select covers |
 | scroll wheel over the size slider | resize thumbnails |
 | **hold right-click + scroll wheel** (anywhere in the gallery) | resize thumbnails |
+| full-screen, zoomed: **move the mouse** | pan the image (follow-pan; on by default — see Setup). Off → click-and-drag to pan |
+| full-screen: **scroll wheel** | zoom toward the cursor |
 
 ## Applying changes
 

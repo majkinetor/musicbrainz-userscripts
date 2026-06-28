@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.27
+// @version      2026.6.28
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -208,7 +208,7 @@
     } catch (e) { asLog.debug('archive.org: metadata unavailable — ' + ((e && e.message) || e)); }   // size is a nicety — never block the gallery
   }
   let SETTINGS = load();
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true }; try { return Object.assign(d, JSON.parse(localStorage.getItem('artstation:settings') || '{}')); } catch (e) { return d; } }
   function save() { try { localStorage.setItem('artstation:settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -383,6 +383,7 @@
       + `<div class="as-setup-opt"><label class="as-setup-optlbl"><input type="checkbox" class="as-setup-autofront"${SETTINGS.autoFront ? ' checked' : ''}> Set type to “Front” on first import</label>`
       + ` <select class="as-setup-autofront-mode"><option value="whenNone"${SETTINGS.autoFrontMode !== 'always' ? ' selected' : ''}>when none exists</option><option value="always"${SETTINGS.autoFrontMode === 'always' ? ' selected' : ''}>always</option></select></div>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-clearsel"${SETTINGS.clearSelAfterOp ? ' checked' : ''}> Clear the selection after a batch action (type, comment, download, report)</label>`
+      + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-followpan"${SETTINGS.followPan ? ' checked' : ''}> Full-screen: pan a zoomed image by moving the mouse (no dragging)</label>`
       + `</div>`;
     document.body.appendChild(panel);
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
@@ -391,6 +392,7 @@
     panel.querySelector('.as-setup-autofront').onchange = e => { SETTINGS.autoFront = e.target.checked; save(); };
     panel.querySelector('.as-setup-autofront-mode').onchange = e => { SETTINGS.autoFrontMode = e.target.value; save(); };
     panel.querySelector('.as-setup-clearsel').onchange = e => { SETTINGS.clearSelAfterOp = e.target.checked; save(); };
+    panel.querySelector('.as-setup-followpan').onchange = e => { SETTINGS.followPan = e.target.checked; save(); const img = document.querySelector('.as-lb-img'); if (img) applyZoom(img); };
     const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
     panel.querySelector('.as-setup-logbtn').onclick = () => { panel.remove(); document.removeEventListener('mousedown', off); openLog(); };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
@@ -2362,7 +2364,7 @@
   let _lb = null;          // current lightbox image id
   let _z = { s: 1, x: 0, y: 0 };   // wheel-zoom state (scale + translate)
   let _pinch = null, _pan = null;  // #251 active touch pinch-zoom / one-finger pan
-  function applyZoom(img) { img.style.transform = `translate(${_z.x}px,${_z.y}px) scale(${_z.s})`; img.style.cursor = _z.s > 1 ? 'grab' : ''; }
+  function applyZoom(img) { img.style.transform = `translate(${_z.x}px,${_z.y}px) scale(${_z.s})`; img.style.cursor = _z.s > 1 ? (SETTINGS.followPan ? 'crosshair' : 'grab') : ''; }
   function resetZoom() { _z = { s: 1, x: 0, y: 0 }; const img = document.querySelector('.as-lb-img'); if (img) applyZoom(img); }
   // keyboard zoom (↑/↓ in the lightbox) — anchored on the image centre, same step as the wheel
   function zoomKey(dir) {
@@ -2425,13 +2427,27 @@
         if (ns === 1) { _z.x = 0; _z.y = 0; }
         applyZoom(img);
       }, { passive: false });
-      // drag to pan when zoomed
+      // drag to pan when zoomed (skipped when follow-pan is on — mousemove handles it)
       ov.querySelector('.as-lb-img').addEventListener('mousedown', e => {
-        if (_z.s <= 1) return; e.preventDefault();
+        if (SETTINGS.followPan || _z.s <= 1) return; e.preventDefault();
         const sx = e.clientX, sy = e.clientY, ox = _z.x, oy = _z.y, img = e.currentTarget;
         const mv = ev => { _z.x = ox + (ev.clientX - sx); _z.y = oy + (ev.clientY - sy); applyZoom(img); };
         const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
         document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+      });
+      // #323 follow-pan: when zoomed, moving the mouse over the image pans the view
+      // (cursor position maps across the image's extent). Default on; only over the
+      // image itself, so the bars/buttons stay usable.
+      ov.addEventListener('mousemove', e => {
+        if (!SETTINGS.followPan || _z.s <= 1) return;
+        const img = ov.querySelector('.as-lb-img'); if (!img || e.target !== img) return;
+        const r = img.getBoundingClientRect();
+        const w0 = r.width / _z.s, h0 = r.height / _z.s; if (!w0 || !h0) return;
+        const cx = r.left + r.width / 2 - _z.x, cy = r.top + r.height / 2 - _z.y;   // pan-invariant centre
+        const clamp = v => v < -1 ? -1 : v > 1 ? 1 : v;
+        const fx = clamp((e.clientX - cx) / (w0 / 2)), fy = clamp((e.clientY - cy) / (h0 / 2));
+        _z.x = -fx * (_z.s - 1) * (w0 / 2); _z.y = -fy * (_z.s - 1) * (h0 / 2);
+        applyZoom(img);
       });
       // #251 mobile: just the full image — swipe left/right to navigate, swipe down
       // to close, tap toggles the controls; pinch to zoom, one finger to pan, tap to
