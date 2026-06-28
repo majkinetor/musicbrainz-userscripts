@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.27
+// @version      2026.6.28
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1578,7 +1578,13 @@ function tokenMatch(a, b, mode = 'max', threshold = 0.6) {
     return common / denom >= threshold;
 }
 const titleSimilar  = (a, b) => tokenMatch(a, b, 'max', 0.6);
-const artistSimilar = (a, b) => tokenMatch(a, b, 'min', 0.8);
+// #324: min-mode leniency is for the intended direction only — the MB credit being
+// SHORTER than the platform's (e.g. "Hamad Kalkaba" ⊂ "Hamad Kalkaba & The Golden
+// Sounds"). When the *candidate* is the shorter side it has dropped MB tokens — often
+// a disambiguator like the "61" in "UFO 61" vs a bare "UFO!" — so be strict (max),
+// or a wrong same-prefixed release scores a full artist match. (Root cause of #314.)
+const artistTokenCount = s => normName(s).split(' ').filter(t => t.length >= 2).length;
+const artistSimilar = (cand, mb) => tokenMatch(cand, mb, artistTokenCount(mb) <= artistTokenCount(cand) ? 'min' : 'max', 0.8);
 
 // Score: tracks +100 / ±2 +30, title +60, artist +80 (non-VA).
 //
