@@ -855,6 +855,18 @@
     if (btn) { e.preventDefault(); btn.click(); }
   });
 
+  // #304: Ctrl/Cmd+, focuses the note search box (the panel nearest the focused
+  // field, else the first visible one). No-op when search is off/hidden.
+  document.addEventListener('keydown', e => {
+    if (e.key !== ',' || !(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
+    const visible = [...document.querySelectorAll('.mmth-filter')].filter(i => i.offsetParent !== null);
+    if (!visible.length) return;
+    const wrap = e.target && e.target.closest && e.target.closest('.mmth-wrap');
+    const near = wrap && wrap.querySelector('.mmth-filter');
+    const target = (near && near.offsetParent !== null) ? near : visible[0];
+    e.preventDefault(); target.focus(); target.select();
+  });
+
   injectAll();
   if (SET.showBabies !== false) babyMammoths.start();
 

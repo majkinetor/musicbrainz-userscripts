@@ -31,7 +31,7 @@ Batch load/export multiple notes; it is contextual for given input type; entity 
 - **Compact, one-line rows**<br>
 With the full note on hover; choose how many show before scrolling (the list hides its scrollbar — the mouse wheel scrolls it).
 - **Replace or Insert**<br>
-Click does your default (replace/append); right-click does the other. Append skips a line already present in the field. Ctrl/⌘ + ↑/↓ cycles saved notes.
+Click does your default (replace/append); right-click does the other. Append skips a line already present in the field. Ctrl/⌘ + ↑/↓ cycles saved notes; Ctrl/⌘ + , focuses the search box.
 - **Resizable**<br>
 The native edit-note field is widened and centered (it spans the full form width on the release editor). Drag the separator to resize the field vs. the panel, and the field's own height; both are remembered.
 - **Minimized mode**<br>
