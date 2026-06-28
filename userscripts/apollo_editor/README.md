@@ -11,6 +11,7 @@ UI and tools for advanced adding and editing of a MusicBrainz release.
 <img width="1200" src="./screenshots/release.png" /><br>
 <img width="1200" src="./screenshots/tools.png" />
 <img width="1200" src="./screenshots/duplicates.png" />
+<img width="1200" src="./screenshots/annotation.png" />
 </details>
 
 When you add a release, each track's artist may be set as **plain text with no MBID**, and the recordings are unset. Linking them one by one — searching, picking, occasionally splitting *A feat. B* into two credits — is the slowest part of adding a release. Apollo Editor does the whole tracklist and recording set in one pass and lets you apply the confident matches with one click.
