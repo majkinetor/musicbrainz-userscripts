@@ -899,11 +899,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
                 candidateList.innerHTML = '';
                 const selRow = document.createElement('div');
-                selRow.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;';
+                selRow.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;';
                 const selA = document.createElement('a');
                 selA.href = 'https:' + mbUrl; selA.target = '_blank'; selA.rel = 'noopener noreferrer nofollow';
                 selA.textContent = '\u2713 ' + a.name + (a.disambiguation ? ` (${a.disambiguation})` : '');
                 selA.style.fontWeight = 'bold';
+                selA.style.whiteSpace = 'nowrap'; selA.style.flex = '0 0 auto';   // #132: name never collapses to a 1-char vertical column when MB-roles chips expand
                 // Allow un-confirming
                 const undoBtn = document.createElement('button');
                 undoBtn.textContent = '\u2715';
@@ -1557,11 +1558,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
                 candidateList.innerHTML = '';
                 const selRow = document.createElement('div');
-                selRow.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;';
+                selRow.style.cssText = 'padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;';
                 const selA = document.createElement('a');
                 selA.href = 'https:' + correctedMbUrl; selA.target = '_blank'; selA.rel = 'noopener noreferrer nofollow';
                 selA.textContent = '\u2713 ' + displayName2 + (initMbDisam ? ` (${initMbDisam})` : '') + (!initMbName ? ' ⚠ name unknown' : '');
                 selA.style.fontWeight = 'bold';
+                selA.style.whiteSpace = 'nowrap'; selA.style.flex = '0 0 auto';   // #132: name never collapses to a 1-char vertical column when MB-roles chips expand
                 const undoBtn = document.createElement('button');
                 undoBtn.textContent = '\u2715';
                 undoBtn.title = 'Clear selection';

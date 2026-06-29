@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Import Discogs Credits
 // @namespace    majkinetor
-// @version      2026.6.28.143757
+// @version      2026.6.29.171601
 // @description  User interface for importing Discogs release credits to MusicBrainz relationships
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/discogs_credits/icon.png
@@ -2803,13 +2803,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           searchBtn.disabled = true;
           candidateList.innerHTML = "";
           const selRow = document.createElement("div");
-          selRow.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;";
+          selRow.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;";
           const selA = document.createElement("a");
           selA.href = "https:" + mbUrl;
           selA.target = "_blank";
           selA.rel = "noopener noreferrer nofollow";
           selA.textContent = "\u2713 " + a.name + (a.disambiguation ? ` (${a.disambiguation})` : "");
           selA.style.fontWeight = "bold";
+          selA.style.whiteSpace = "nowrap";
+          selA.style.flex = "0 0 auto";
           const undoBtn = document.createElement("button");
           undoBtn.textContent = "\u2715";
           undoBtn.title = "Clear selection";
@@ -3231,13 +3233,15 @@ Leave empty to use the default (Discogs name, or MB's most-frequent existing cre
           const fakeA = { id: mbid, name: displayName2, disambiguation: initMbDisam };
           candidateList.innerHTML = "";
           const selRow = document.createElement("div");
-          selRow.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;";
+          selRow.style.cssText = "padding:0.15rem 0.4rem;border:1px solid #5a5;border-radius:3px;background:#e8f8e8;display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem;font-size:0.85rem;";
           const selA = document.createElement("a");
           selA.href = "https:" + correctedMbUrl;
           selA.target = "_blank";
           selA.rel = "noopener noreferrer nofollow";
           selA.textContent = "\u2713 " + displayName2 + (initMbDisam ? ` (${initMbDisam})` : "") + (!initMbName ? " \u26A0 name unknown" : "");
           selA.style.fontWeight = "bold";
+          selA.style.whiteSpace = "nowrap";
+          selA.style.flex = "0 0 auto";
           const undoBtn = document.createElement("button");
           undoBtn.textContent = "\u2715";
           undoBtn.title = "Clear selection";
