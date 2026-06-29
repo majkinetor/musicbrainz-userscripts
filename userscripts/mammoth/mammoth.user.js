@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.28
+// @version      2026.6.29
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -36,7 +36,7 @@
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309)
-  const VERSION = '2026.6.28';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.6.29';   // keep in sync with @version (fallback when GM_info is unavailable)
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
@@ -866,11 +866,17 @@
   });
 
   // #304: Ctrl/Cmd+, focuses the note search box (the panel nearest the focused
-  // field, else the first visible one). No-op when search is off/hidden.
+  // field, else the first visible one). When the panel is minimized, restore it
+  // first so the box is reachable. No-op when search is off.
   document.addEventListener('keydown', e => {
     if (e.key !== ',' || !(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
-    const visible = [...document.querySelectorAll('.mmth-filter')].filter(i => i.offsetParent !== null);
-    if (!visible.length) return;
+    const onScreen = () => [...document.querySelectorAll('.mmth-filter')].filter(i => i.offsetParent !== null);
+    let visible = onScreen();
+    if (!visible.length) {
+      // search box is hidden because the panel is minimized — restore and retry
+      if (SET.minimized && SET.noteSearch === true) { setMinimized(false); visible = onScreen(); }
+      if (!visible.length) return;
+    }
     const wrap = e.target && e.target.closest && e.target.closest('.mmth-wrap');
     const near = wrap && wrap.querySelector('.mmth-filter');
     const target = (near && near.offsetParent !== null) ? near : visible[0];
