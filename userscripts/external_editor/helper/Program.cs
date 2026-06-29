@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
-const string Version = "0.1.0";
+const string Version = "0.1.1";
 
 // ── args ──────────────────────────────────────────────────────────────────
 int port = 17999;
@@ -169,13 +169,19 @@ void LaunchEditor(string file)
         if (editor == "none") return;   // don't auto-open (let the user open the file themselves / for testing)
         if (editor is { Length: > 0 })
         {
-            // "--editor" is a command; split off the first token as the exe, pass the file last
-            var parts = editor.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-            var psi = new ProcessStartInfo(parts[0]) { UseShellExecute = false };
-            if (parts.Length > 1) psi.ArgumentList.Add(parts[1]);
-            psi.ArgumentList.Add(file);
-            Process.Start(psi);
-            return;
+            // "--editor" is a command line; tokenize it honoring quotes so an exe path
+            // WITH SPACES survives, e.g.  --editor "'C:\Program Files\Microsoft VS Code\Code.exe' -w"
+            // or  --editor "\"C:\Program Files\...\Code.exe\" -w".  First token = exe,
+            // the rest = its args, the file is appended last.
+            var toks = Tokenize(editor);
+            if (toks.Count > 0)
+            {
+                var psi = new ProcessStartInfo(toks[0]) { UseShellExecute = false };
+                for (int i = 1; i < toks.Count; i++) psi.ArgumentList.Add(toks[i]);
+                psi.ArgumentList.Add(file);
+                Process.Start(psi);
+                return;
+            }
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             Process.Start(new ProcessStartInfo(file) { UseShellExecute = true });
@@ -194,6 +200,32 @@ static async Task Json(HttpListenerResponse res, int code, object body)
     var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(body));
     res.ContentLength64 = bytes.Length;
     await res.OutputStream.WriteAsync(bytes);
+}
+
+// Split a command line into tokens, honoring single OR double quotes around a
+// segment (so a quoted exe path with spaces stays one token). Quotes are stripped.
+static List<string> Tokenize(string s)
+{
+    var toks = new List<string>();
+    var sb = new StringBuilder();
+    char quote = '\0';
+    bool has = false;
+    foreach (var ch in s)
+    {
+        if (quote != '\0')
+        {
+            if (ch == quote) quote = '\0';
+            else sb.Append(ch);
+        }
+        else if (ch == '"' || ch == '\'') { quote = ch; has = true; }
+        else if (char.IsWhiteSpace(ch))
+        {
+            if (has) { toks.Add(sb.ToString()); sb.Clear(); has = false; }
+        }
+        else { sb.Append(ch); has = true; }
+    }
+    if (has) toks.Add(sb.ToString());
+    return toks;
 }
 
 static bool FixedEquals(string a, string b)
