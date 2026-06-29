@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.6.28
+// @version      2026.6.29
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1602,6 +1602,19 @@ const artistSimilar = (cand, mb) => tokenMatch(cand, mb, artistTokenCount(mb) <=
 //     (100) is not enough — that was the bug behind picking the Jaiye
 //     Omo album for Om Unit's "Self (The Remixes)" purely because both
 //     happened to be 4-track EPs.
+// Two non-empty titles that share ZERO significant tokens = a clearly different
+// album (e.g. "Mambo Loco" vs "Para Bailar A Millón"). #324: an artist with many
+// same-track-count albums (tracks 100 + artist 80) would otherwise be picked on a
+// totally different title; a disjoint title is a strong negative signal.
+function titleDisjoint(a, b) {
+    const na = normName(a), nb = normName(b);
+    if (!na || !nb) return false;
+    const T = s => new Set(s.split(' ').filter(t => t.length >= 2));
+    const ta = T(na), tb = T(nb);
+    if (!ta.size || !tb.size) return false;
+    for (const t of ta) if (tb.has(t)) return false;
+    return true;
+}
 function scoreCandidate(meta, mbTracks, mbAlbum, mbArtist, isVA) {
     if (!meta) return -1;
     let s = 0;
@@ -1611,6 +1624,9 @@ function scoreCandidate(meta, mbTracks, mbAlbum, mbArtist, isVA) {
     }
     const titleMatch = meta.title && titleSimilar(meta.title, mbAlbum);
     if (titleMatch) s += 60;
+    // #324: a clearly different title outweighs tracks+artist (an album the same
+    // artist also made, with the same track count, is a common false positive).
+    else if (meta.title && mbAlbum && titleDisjoint(meta.title, mbAlbum)) s -= 100;
     if (!isVA && mbArtist && meta.artist) {
         if (artistSimilar(meta.artist, mbArtist)) s += 80;
         else if (!titleMatch) s -= 80;
