@@ -175,17 +175,33 @@
     ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
     reMinIfRestored();
   }
-  // wrap the selection in `marker`; with no selection, wrap the word the caret
-  // is in (or just drop the markers if the caret isn't inside a word).
+  // Toggle `marker` around the selection (GitHub-style): if the text is already
+  // wrapped, strip the markers; otherwise add them. With no selection, act on the
+  // word the caret is in (or just insert/remove an empty pair).
   function wrapSel(ta, marker) {
     const v = ta.value;
+    const m = marker, ml = m.length;
     let s = ta.selectionStart ?? v.length, e = ta.selectionEnd ?? s;
     if (s === e) { let a = s, b = e; while (a > 0 && /\S/.test(v[a - 1])) a--; while (b < v.length && /\S/.test(v[b])) b++; if (b > a) { s = a; e = b; } }
     const sel = v.slice(s, e);
-    setValue(ta, v.slice(0, s) + marker + sel + marker + v.slice(e));
-    ta.focus();
-    const caret = sel ? s + marker.length * 2 + sel.length : s + marker.length;
-    try { ta.setSelectionRange(sel ? s + marker.length : caret, sel ? s + marker.length + sel.length : caret); } catch (x) {}
+    const reselect = (from, len) => { ta.focus(); try { ta.setSelectionRange(from, from + len); } catch (x) {} };
+    // #326: already wrapped — markers INSIDE the selection → unwrap
+    if (sel.length >= 2 * ml && sel.startsWith(m) && sel.endsWith(m)) {
+      const inner = sel.slice(ml, sel.length - ml);
+      setValue(ta, v.slice(0, s) + inner + v.slice(e));
+      reselect(s, inner.length);
+      return;
+    }
+    // #326: already wrapped — markers just OUTSIDE the selection → unwrap
+    if (v.slice(s - ml, s) === m && v.slice(e, e + ml) === m) {
+      setValue(ta, v.slice(0, s - ml) + sel + v.slice(e + ml));
+      reselect(s - ml, sel.length);
+      return;
+    }
+    // otherwise wrap
+    setValue(ta, v.slice(0, s) + m + sel + m + v.slice(e));
+    if (sel) reselect(s + ml, sel.length);
+    else { const caret = s + ml; ta.focus(); try { ta.setSelectionRange(caret, caret); } catch (x) {} }
   }
 
   // ── capture on submit ────────────────────────────────────────────────────────
