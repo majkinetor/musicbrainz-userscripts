@@ -675,8 +675,13 @@
     const dflt = SET.defaultInsert;
     pinned.forEach(it => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-segb'; b.textContent = cap(it.text); b.style.maxWidth = (n + 1) + 'ch';
-      b.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'})`;
-      b.onclick = e => { e.preventDefault(); applyNote(inst.ta, it.text, dflt === 'replace'); bumpUse(it.id); };
+      b.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · shift-click: replace + submit)`;
+      b.onclick = e => {
+        e.preventDefault();
+        // #328: shift-click = replace the note and submit the edit (same as a list row)
+        if (e.shiftKey) { applyNote(inst.ta, it.text, true); bumpUse(it.id); const sb = findSubmitBtn(inst.ta); if (sb) sb.click(); return; }
+        applyNote(inst.ta, it.text, dflt === 'replace'); bumpUse(it.id);
+      };
       b.oncontextmenu = e => { e.preventDefault(); applyNote(inst.ta, it.text, dflt !== 'replace'); bumpUse(it.id); };
       bar.appendChild(b);
     });
