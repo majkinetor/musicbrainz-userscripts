@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.29
+// @version      2026.6.29.1
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1863,6 +1863,32 @@
     am.value = SETTINGS.applyMode || 'all';
     am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); document.querySelectorAll('.tc-applymode').forEach(s => { s.value = am.value; }); Log.info('applyMode =', am.value); };
   }
+  // #330: per-medium "Pregap" / "Data track" checkboxes that drive MB's writable medium
+  // observables hasPregap()/hasDataTracks() (the same thing native MB's buttons do), then
+  // rebuild so the new/removed track shows. Returns a <span> or null (locked / no medium).
+  // Deep data-section editing (its own Add-track, bounded reorder) intentionally stays native.
+  function mediumOpts(target) {
+    if (target == null || mediumLocked(target)) return null;
+    const med = mediums()[target]; if (!med) return null;
+    const opts = document.createElement('span'); opts.className = 'tc-medopts';
+    const mkOpt = (label, prop, help) => {
+      const lbl = document.createElement('label'); lbl.className = 'tc-medopt'; lbl.title = help;
+      const cb = document.createElement('input'); cb.type = 'checkbox';
+      try { cb.checked = typeof med[prop] === 'function' && !!med[prop](); } catch (e) {}
+      cb.onchange = () => {
+        _selfEdit = true;
+        try { med[prop](cb.checked); } catch (e) { Log.warn(`${label} toggle failed`, e.message); }
+        finally { _selfEdit = false; }
+        Log.info(`medium ${target + 1}: ${label} ${cb.checked ? 'added' : 'removed'}`);
+        MODEL = buildShell(); if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); } rerender();
+      };
+      lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' ' + label));
+      return lbl;
+    };
+    opts.appendChild(mkOpt('Pregap', 'hasPregap', 'Add / remove a hidden pregap track (position 0)'));
+    opts.appendChild(mkOpt('Data track', 'hasDataTracks', 'Add / remove a trailing data track (for several, use the native editor)'));
+    return opts;
+  }
   // one Apollo table for a single medium (its own header row + Add footer); returns the tbody.
   // mi == null renders the whole release into one table (the floating panel).
   function mountTable(container, mi) {
@@ -1885,29 +1911,10 @@
       addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" title="add blank tracks">＋</button>`;
       const addn = addrow.querySelector('.tc-addn'), addbtn = addrow.querySelector('.tc-addbtn');
       addbtn.onclick = () => addTracks(target, Math.max(1, parseInt(addn.value, 10) || 1));
-      // #330: pregap + data-track toggles — drive MB's writable medium observables, then
-      // rebuild so the new/removed track shows. (Deep data-section editing stays native.)
-      const med = mediums()[target];
-      if (med) {
-        const opts = document.createElement('span'); opts.className = 'tc-medopts';
-        const mkOpt = (label, prop, help) => {
-          const lbl = document.createElement('label'); lbl.className = 'tc-medopt'; lbl.title = help;
-          const cb = document.createElement('input'); cb.type = 'checkbox';
-          try { cb.checked = typeof med[prop] === 'function' && !!med[prop](); } catch (e) {}
-          cb.onchange = () => {
-            _selfEdit = true;
-            try { med[prop](cb.checked); } catch (e) { Log.warn(`${label} toggle failed`, e.message); }
-            finally { _selfEdit = false; }
-            Log.info(`medium ${target + 1}: ${label} ${cb.checked ? 'added' : 'removed'}`);
-            MODEL = buildShell(); if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); } rerender();
-          };
-          lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' ' + label));
-          return lbl;
-        };
-        opts.appendChild(mkOpt('Pregap', 'hasPregap', 'Add / remove a hidden pregap track (position 0)'));
-        opts.appendChild(mkOpt('Data track', 'hasDataTracks', 'Add / remove a trailing data track (for several, use the native editor)'));
-        addrow.appendChild(opts);
-      }
+      // #330: pregap + data-track toggles (per medium). In the combined multi-medium
+      // view they live on each medium header instead (see fillRows) — only attach them to
+      // this footer for a per-medium section or a single-medium release.
+      if (mi != null || mediums().length <= 1) { const o = mediumOpts(target); if (o) addrow.appendChild(o); }
       container.appendChild(addrow);
     }
     return table.querySelector('tbody');
@@ -2423,7 +2430,7 @@
     tbody.innerHTML = ''; let lastMi = -1, lastDataMi = -1; const multi = mediums().length > 1 && mi == null;
     const tracks = (mi == null) ? MODEL.tracks : MODEL.tracks.filter(t => t.mi === mi);
     tracks.forEach(t => {
-      if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
+      if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); const td = document.createElement('td'); td.className = 'tc-medhdr'; td.colSpan = COLS.length; td.textContent = `Medium ${t.mi + 1}`; const o = mediumOpts(t.mi); if (o) td.appendChild(o); r.appendChild(td); tbody.appendChild(r); lastMi = t.mi; }   // #330: per-medium pregap/data toggles in the combined view
       const kind = trackKind(t);   // #330: pregap / data / audio
       if (kind === 'data' && t.mi !== lastDataMi) { const dr = document.createElement('tr'); dr.className = 'tc-datadiv'; dr.innerHTML = `<td colspan="${COLS.length}">⤓ Data tracks</td>`; tbody.appendChild(dr); lastDataMi = t.mi; }
       const tr = document.createElement('tr'); tr.dataset.tk = t.mi + ':' + t.ti; tr.dataset.mi = t.mi; tr.dataset.ti = t.ti;
