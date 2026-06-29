@@ -157,6 +157,10 @@
     }
     ta.dispatchEvent(new Event('change', { bubbles: true }));
   }
+  // #304: set when Ctrl/⌘+, un-minimized the panel just to reach search — so we
+  // re-minimize once a note is applied (or the search is cancelled).
+  let restoredFromMin = false;
+  const reMinIfRestored = () => { if (restoredFromMin) { restoredFromMin = false; setMinimized(true); } };
   function applyNote(ta, text, replace) {
     const cur = ta.value || '';
     if (!replace && cur.trim()) {
@@ -165,10 +169,11 @@
       const norm = s => s.split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean).join('\n').trim();
       const tN = norm(text);
       const cands = [cur, ...cur.split(/\n{2,}/), ...cur.split('\n')].map(norm);
-      if (tN && cands.includes(tN)) { toast('Already in the note'); return; }
+      if (tN && cands.includes(tN)) { toast('Already in the note'); reMinIfRestored(); return; }
     }
     setValue(ta, (replace || !cur.trim()) ? text : cur.replace(/\s+$/, '') + (SET.appendNewline ? '\n\n' : '\n') + text);
     ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
+    reMinIfRestored();
   }
   // wrap the selection in `marker`; with no selection, wrap the word the caret
   // is in (or just drop the markers if the caret isn't inside a word).
@@ -580,7 +585,7 @@
     const fInput = document.createElement('input'); fInput.type = 'text'; fInput.className = 'mmth-filter'; fInput.placeholder = 'Search notes…';
     fInput.addEventListener('input', () => { inst.filter = fInput.value; inst.cycId = null; renderInst(inst); });
     fInput.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { fInput.value = ''; inst.filter = ''; inst.cycId = null; renderInst(inst); return; }
+      if (e.key === 'Escape') { fInput.value = ''; inst.filter = ''; inst.cycId = null; renderInst(inst); ta.focus(); reMinIfRestored(); return; }   // #304: backing out re-minimizes if we'd auto-restored
       // #304: ↑/↓ move the highlighted match; Enter uses the highlighted one (or the first)
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         const items = inst.viewItems || []; if (!items.length) return;
@@ -619,7 +624,7 @@
     scopeChip.title = 'Saved notes & history are kept separate per edit-note type — these are your "' + scopeLabel(SCOPE) + '" notes (#309)';
     scopeChip.style.display = SET.scopePerResource ? '' : 'none';   // only shown when scoping is on
     ft.appendChild(scopeChip);
-    inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => setMinimized(!SET.minimized));   // #265: left of the ? button
+    inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => { restoredFromMin = false; setMinimized(!SET.minimized); });   // #265: left of the ? button
     ft.appendChild(inst.minBtn);
     ft.appendChild(fb('?', 'Edit-note syntax', 'mmth-pop-anchor', e => openSyntax(e.currentTarget)));
     ft.appendChild(fb('⚙︎', 'Settings', 'mmth-pop-anchor', e => openSettings(e.currentTarget)));
@@ -874,7 +879,7 @@
     let visible = onScreen();
     if (!visible.length) {
       // search box is hidden because the panel is minimized — restore and retry
-      if (SET.minimized && SET.noteSearch === true) { setMinimized(false); visible = onScreen(); }
+      if (SET.minimized && SET.noteSearch === true) { setMinimized(false); restoredFromMin = true; visible = onScreen(); }
       if (!visible.length) return;
     }
     const wrap = e.target && e.target.closest && e.target.closest('.mmth-wrap');
