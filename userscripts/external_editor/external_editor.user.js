@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         External Editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.6.29.2
+// @version      2026.6.29.3
 // @description  Edit text fields in your real editor (VS Code, Vim, Notepad…) on a hotkey. Press it in a field and its text opens in your editor; save the file and the field updates. Link many fields at once and bounce between them — each stays connected (re-press to refocus its file), with no time limit. Standalone — needs the bundled `extedit` localhost helper. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/*
@@ -195,7 +195,7 @@
       name.onclick = () => focusField(s);
       row.appendChild(name);
       const fb = document.createElement('button'); fb.textContent = '◎'; fb.title = 'Focus this field in the browser'; fb.style.cssText = _btn; fb.onclick = () => focusField(s); row.appendChild(fb);
-      const rf = document.createElement('button'); rf.textContent = '⟳'; rf.title = 'Re-open in your editor'; rf.style.cssText = _btn; rf.onclick = () => reopen(s); row.appendChild(rf);
+      const rf = document.createElement('button'); rf.textContent = '✎'; rf.title = 'Re-open in your editor'; rf.style.cssText = _btn; rf.onclick = () => reopen(s); row.appendChild(rf);
       const x = document.createElement('button'); x.textContent = '✕'; x.title = 'Disconnect'; x.style.cssText = _btn; x.onclick = () => disconnect(s.el, false); row.appendChild(x);
       panel.appendChild(row);
     }

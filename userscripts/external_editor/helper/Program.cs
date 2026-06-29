@@ -6,7 +6,10 @@
 // long-poll. The whole round trip rides on the userscript manager's
 // GM_xmlhttpRequest, so there's no CORS / mixed-content wall (see README).
 //
-//   dotnet run -- --port 17999 --token <shared-secret> [--editor "code -w"]
+//   dotnet run -- --port 17999 --token <shared-secret> [--editor "code -r"]
+//   ("-r" reuses the window and reveals/focuses the file's tab. extedit detects saves by
+//    watching the file's mtime, so a "-w"/wait flag is NOT needed — and "-w" stops VS Code
+//    from re-revealing the tab when you re-open a still-linked field.)
 //
 // Endpoints (all on 127.0.0.1 only):
 //   POST /open            { id, content, ext? }  -> writes file, opens editor

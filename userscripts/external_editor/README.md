@@ -34,7 +34,8 @@ dotnet publish -c Release -r <win-x64|linux-x64|osx-arm64|…> --self-contained 
 Options:
 - `--port` — listen port (default `17999`).
 - `--token` — shared secret; **set the same value** in the userscript (Tampermonkey menu → *Set token*). Default `extedit`.
-- `--editor "<cmd>"` — command to open the file (e.g. `--editor "code -w"`, `--editor "subl -w"`, `--editor vim`). Omit to use the OS default app for the file type. `--editor none` = don't auto-open (open the temp file yourself).
+- `--editor "<cmd>"` — command to open the file (e.g. `--editor "code -r"`, `--editor "subl"`, `--editor vim`). Omit to use the OS default app for the file type. `--editor none` = don't auto-open (open the temp file yourself).
+  - **Don't use a wait flag** (`code -w` / `subl -w`): extedit detects saves by watching the file's mtime, so it isn't needed — and with VS Code, `-w` stops the file's tab from being re-revealed when you re-open a still-linked field. Use `-r` (reuse window + reveal the tab) instead.
 
 Keep it running in the background while you edit. Loopback-only; every request must carry the token.
 
