@@ -1111,13 +1111,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         }
                     }
 
-                    if (!discogsHref) {
-                        // No external URL — skip URL check entirely. The Titles
-                        // source has no per-entity page concept at all, so show
-                        // nothing (the "no page" chip would just be noise on
-                        // every row); other sources keep the informational chip.
+                    if (!discogsHref || placeholderUrl) {
+                        // No external URL (or a synthetic /_company/ placeholder that 404s,
+                        // #325) — skip the URL check + the 🔗 add-link affordance entirely
+                        // (there's nothing to add, and it must not count as a missing link).
+                        // The Titles source / a placeholder show nothing (the chip would be
+                        // noise); other real sources keep the informational "no page" chip.
                         linkState.set(_entityKey, 'na'); rowLinkChips.delete(_entityKey); updateLinksBadge();   // no link to add
-                        if (srcName === 'Titles') {
+                        if (srcName === 'Titles' || placeholderUrl) {
                             linkSlot.remove();
                         } else {
                             linkSlot.textContent = `⚠ No ${srcName} page`;
