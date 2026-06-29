@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
-const string Version = "0.1.1";
+const string Version = "0.2.0";
 
 // ── args ──────────────────────────────────────────────────────────────────
 int port = 17999;
@@ -92,6 +92,7 @@ async Task Handle(HttpListenerContext ctx)
 
         if (path == "/open" && req.HttpMethod == "POST") { await Open(req, res); return; }
         if (path == "/result" && req.HttpMethod == "GET") { await Result(req, res); return; }
+        if (path == "/close") { Close(req, res); return; }   // GET/POST/DELETE — a no-body POST trips http.sys 411, so GET is allowed
 
         await Json(res, 404, new { error = "not found" });
     }
@@ -108,6 +109,17 @@ async Task Open(HttpListenerRequest req, HttpListenerResponse res)
     var body = await sr.ReadToEndAsync();
     var doc = JsonDocument.Parse(body).RootElement;
     var id = doc.TryGetProperty("id", out var idv) ? idv.GetString() ?? Guid.NewGuid().ToString("N") : Guid.NewGuid().ToString("N");
+
+    // Re-open: a field that's already linked re-opens the SAME temp file so the editor
+    // just refocuses it — don't recreate the file or reset the saved-state baseline.
+    if (sessions.TryGetValue(id, out var existing))
+    {
+        LaunchEditor(existing.File);
+        Console.WriteLine($"[reopen] id={id} -> {existing.File}");
+        await Json(res, 200, new { ok = true, id, file = existing.File, reopened = true });
+        return;
+    }
+
     var content = doc.TryGetProperty("content", out var cv) ? cv.GetString() ?? "" : "";
     var ext = doc.TryGetProperty("ext", out var ev) ? (ev.GetString() ?? "txt") : "txt";
     ext = new string(ext.Where(char.IsLetterOrDigit).ToArray());
@@ -126,12 +138,17 @@ async Task Open(HttpListenerRequest req, HttpListenerResponse res)
 async Task Result(HttpListenerRequest req, HttpListenerResponse res)
 {
     var id = req.QueryString["id"] ?? "";
-    if (!sessions.TryGetValue(id, out var s)) { await Json(res, 404, new { error = "unknown id" }); return; }
+    if (!sessions.ContainsKey(id)) { await Json(res, 410, new { error = "unknown id" }); return; }
 
-    // long-poll: hold up to ~25s, return as soon as the file is saved (mtime advances)
-    var deadline = DateTime.UtcNow.AddSeconds(25);
-    while (DateTime.UtcNow < deadline)
+    // Long-poll. No 25s cap — a session stays linked for as long as you keep editing
+    // (a field is "connected" until /close or page unload). The file can be saved many
+    // times; each save is reported and the baseline re-armed for the next one. A 10-min
+    // backstop just yields a 204 (the client immediately re-polls) so an abandoned poll
+    // can't hold a response forever.
+    var backstop = DateTime.UtcNow.AddMinutes(10);
+    while (DateTime.UtcNow < backstop)
     {
+        if (!sessions.TryGetValue(id, out var s)) { await Json(res, 410, new { error = "closed" }); return; }   // /close fired
         var mtime = File.GetLastWriteTimeUtc(s.File);
         if (mtime > s.BaseMtime)
         {
@@ -145,7 +162,24 @@ async Task Result(HttpListenerRequest req, HttpListenerResponse res)
         }
         await Task.Delay(250);
     }
-    res.StatusCode = 204;   // no change yet — client re-polls
+    res.StatusCode = 204;   // still editing — client re-polls
+}
+
+// Disconnect a field: drop the session and delete its temp file. Any held /result
+// for this id then returns 410 on its next loop, so the userscript stops polling.
+void Close(HttpListenerRequest req, HttpListenerResponse res)
+{
+    var id = req.QueryString["id"] ?? "";
+    if (sessions.TryRemove(id, out var s))
+    {
+        try { File.Delete(s.File); } catch { }
+        Console.WriteLine($"[close] id={id}");
+    }
+    res.StatusCode = 200;
+    res.ContentType = "application/json";
+    var bytes = Encoding.UTF8.GetBytes("{\"ok\":true}");
+    res.ContentLength64 = bytes.Length;
+    res.OutputStream.Write(bytes);
 }
 
 // read a file whose size has stopped changing (avoids catching a half-written save)
