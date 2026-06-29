@@ -1301,7 +1301,11 @@ function runTidalImport(tidalUrl, getOpts) {
             li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${harvest.tracks.length} tracks — raw Tidal harvest</strong></summary></details>`;
             li.querySelector('details').appendChild(pre);
             _logs.appendChild(li);
-            const { tracklistRels, tracklist, skipped, multiVolume } = tidalToEngine(harvest.tracks);
+            // #325: obey the "Per-track credits" option like Discogs — off ⇒ import
+            // release-level only (move-to-tracks still applies them via dispatch).
+            const processTracklist = !!getOpts().processTracklist;
+            const { tracklistRels: ptRels, tracklist, skipped, multiVolume } = tidalToEngine(harvest.tracks);
+            const tracklistRels = processTracklist ? ptRels : [];
             // Release-level credits (Info tab): bridge → shared role mapper.
             // Publishers come back pre-formed (label→work) and label release
             // credits (distributor) as companies — both bypass the artist
@@ -1316,10 +1320,12 @@ function runTidalImport(tidalUrl, getOpts) {
             }
             const companies = relCompanies || [];
             log.info(`Tidal credits: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s)${companies.length ? ` + ${companies.length} label/company` : ''} across ${tracklist.length} track(s)`);
-            skipped.concat(relSkipped).forEach(s => log.info(`Not imported (v1 scope): ${s}`));
+            if (!processTracklist) log.info(`Per-track credits disabled — importing release-level credits only${getOpts().applyToTracks ? ' (applied to tracks)' : ''}.`);
+            // when per-track is off the per-track "skipped" list is moot (none imported)
+            (processTracklist ? skipped.concat(relSkipped) : relSkipped).forEach(s => log.info(`Not imported (v1 scope): ${s}`));
             if (multiVolume) log.warn(`Multi-volume Tidal album — track numbers repeat per volume; positions may not all match this release's mediums. Review carefully.`);
             if (!tracklistRels.length && !artistRoles.length && !companies.length) { log.warn('No importable credits found on the Tidal credits page.'); document.querySelector('.discogs-bar')?._setStopMessage?.('No importable credits found'); return; }
-            return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist: true, getOpts });
+            return runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, sourceUrl: tidalUrl, processTracklist, getOpts });
         })
         .catch(err => { log.error(err.message || String(err)); });
 }

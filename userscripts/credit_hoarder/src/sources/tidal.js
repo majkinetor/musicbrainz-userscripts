@@ -96,6 +96,16 @@ export const TIDAL_RELEASE_ROLE_MAP = {
     'Lyricist':            'Lyrics By',
     'Writer':              'Written-By',
     'Orchestrator':        'Orchestrated By',
+    // #325 instrument-name variants Tidal uses that the INSTRUMENTS table doesn't
+    // match verbatim (plurals / qualified forms) → canonical Discogs instrument names.
+    'Guitars':             'Guitar',
+    'Bass Instrument':     'Bass',
+    'Bass Guitars':        'Bass Guitar',
+    'Sax (Alto)':          'Alto Saxophone',
+    'Sax (Tenor)':         'Tenor Saxophone',
+    'Sax (Baritone)':      'Baritone Saxophone',
+    'Sax (Soprano)':       'Soprano Saxophone',
+    'Keyboard':            'Keyboards',
 };
 
 // Release-level roles that are label/company credits → release↔label rels (the
