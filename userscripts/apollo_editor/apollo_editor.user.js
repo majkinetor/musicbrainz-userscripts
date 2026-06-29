@@ -5007,6 +5007,7 @@
     /* #297: front cover thumbnail under the external-links section (display only) */
     #tc-ri-cover{margin:14px 0 0}
     #tc-ri-cover .tc-ri-cover-h{font:600 11px Arial;letter-spacing:.06em;text-transform:uppercase;color:#8a7bb8;padding:0 0 5px;margin:0 0 6px;border-bottom:1px solid #ece7f6}
+    #tc-ri-cover a{display:inline-block;line-height:0}   /* shrink-wrap the image so only the cover itself is the link, not the empty space beside it */
     #tc-ri-cover img{display:block;width:180px;max-width:100%;height:auto;border:1px solid #e0d9f0;border-radius:6px;box-shadow:0 1px 5px rgba(40,20,80,.14)}
 
     /* ---- external links as a grid: the URL row spans every column, the link's type combos flow into aligned
