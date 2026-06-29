@@ -938,6 +938,18 @@
   // a medium with a CD disc ID (TOC) has a fixed track count — native MB locks adding/removing/
   // reordering its tracks. Mirror that so Apollo never silently corrupts the disc-ID association. #125
   function mediumLocked(mi) { try { const m = mediums()[mi]; return !!(m && typeof m.hasToc === 'function' && m.hasToc()); } catch (e) { return false; } }
+  // #329: on a disc-ID (TOC) medium the audio tracks' lengths are fixed by the TOC, so
+  // native MB makes them read-only. Pregap (position 0) and data tracks aren't covered by
+  // the audio TOC and stay editable — mirror that for Apollo's length cells.
+  function trackLenLocked(entry) {
+    if (!mediumLocked(entry.mi)) return false;
+    try {
+      const ko = koTrack(entry.mi, entry.ti);
+      const isPregap = typeof ko.position === 'function' && ko.position() === 0;
+      const isData = typeof ko.isDataTrack === 'function' && !!ko.isDataTrack();
+      return !isPregap && !isData;
+    } catch (e) { return false; }
+  }
   function removeTrack(entry) { if (mediumLocked(entry.mi)) { Log.info('medium', entry.mi + 1, 'disc-ID locked — remove blocked'); return; } _selfEdit = true; try { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); } finally { _selfEdit = false; } Log.info('removed track', entry.number); }
   function moveTrack(entry, dir) { if (mediumLocked(entry.mi)) { Log.info('medium', entry.mi + 1, 'disc-ID locked — move blocked'); return; } const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); _selfEdit = true; try { (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); } finally { _selfEdit = false; } }
   // move a track to a target index WITHIN its medium by stepping MB's own up/down ops — never touches the
@@ -1146,6 +1158,8 @@
     .tc-mirror input.t-len,.tc-mirror input.t-num{text-align:right;color:#666}
     .tc-mirror input.t-num{text-align:center}
     .tc-mirror input.t-title:hover,.tc-mirror input.t-title:focus,.tc-mirror input.t-len:hover,.tc-mirror input.t-len:focus,.tc-mirror input.t-num:hover,.tc-mirror input.t-num:focus{border-color:#bbb;background:#fff}
+    .tc-mirror input.t-len[readonly]{color:#b3b3b3;cursor:default}   /* #329: TOC-fixed length — not editable */
+    .tc-mirror input.t-len[readonly]:hover,.tc-mirror input.t-len[readonly]:focus{border-color:transparent;background:transparent}
     .tc-mirror .t-wrap{display:flex;align-items:center;gap:3px;position:relative}.tc-mirror .t-wrap input.t-title{flex:1;min-width:0;width:auto}
     /* In-cell action buttons (Aa / ⋔) overlay the input's right edge instead of
        sitting in the flex flow, so they don't reserve width and shrink the input —
@@ -2382,11 +2396,12 @@
       if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
       const tr = document.createElement('tr'); tr.dataset.tk = t.mi + ':' + t.ti; tr.dataset.mi = t.mi; tr.dataset.ti = t.ti;
       const locked = mediumLocked(t.mi);   // disc-ID medium: no reorder handle (#125)
+      const lenLocked = trackLenLocked(t); // disc-ID medium: audio-track length fixed by the TOC (#329)
       tr.innerHTML = `<td class="c-mv">${locked ? '' : '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>'}</td>
         <td class="c-num"><input class="t-num" value="${esc(t.number)}" title="track number"></td>
         <td class="c-title"><div class="t-wrap"><input class="t-title" value="${esc(t.title)}"></div></td>
         <td class="c-art"></td>
-        <td class="c-len"><input class="t-len" value="${esc(t.length)}"></td>
+        <td class="c-len"><input class="t-len" value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" title="Length is fixed by this medium’s Disc ID"' : ''}></td>
         <td class="c-badge"></td>`;
       const badgeCell = tr.querySelector('.c-badge'); const refreshBadges = () => renderBadgeCell(badgeCell, t);
       const art = tr.querySelector('.c-art'); t.slots.forEach((s, si) => art.appendChild(slotEl(t, s, si, refreshBadges)));
@@ -2440,7 +2455,7 @@
       if (paintDisp) paintDisp(t.title);   // re-sync after the diff / feat blocks set their state classes
       const numIn = tr.querySelector('.t-num'), lenIn = tr.querySelector('.t-len');
       numIn.onchange = e => { setNumber(t, e.target.value); refreshBadges(); }; wireRowNav(numIn);
-      lenIn.onchange = e => {
+      if (!lenLocked) lenIn.onchange = e => {
         let v = e.target.value.trim();
         if (v) { const ed = getEditor(); const ms = ed && ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : NaN; if (ms == null || isNaN(ms)) v = ''; }   // invalid (letters/garbage) → delete; valid shorthand like "111" is kept (MB normalizes it to 1:11)
         setLength(t, v);
