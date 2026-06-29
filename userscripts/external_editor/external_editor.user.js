@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         External Editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.6.29.1
+// @version      2026.6.29.2
 // @description  Edit text fields in your real editor (VS Code, Vim, Notepad…) on a hotkey. Press it in a field and its text opens in your editor; save the file and the field updates. Link many fields at once and bounce between them — each stays connected (re-press to refocus its file), with no time limit. Standalone — needs the bundled `extedit` localhost helper. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/*
@@ -163,6 +163,8 @@
   }
   function flashLinked(el) { el.style.boxShadow = '0 0 0 3px #57d07e'; setTimeout(() => { if (sessions.has(el)) el.style.boxShadow = '0 0 0 2px #2e9e5b'; }, 380); }
 
+  const focusField = s => { try { s.el.scrollIntoView({ block: 'center' }); s.el.focus(); } catch (e) {} };
+
   let panel = null;
   const _btn = 'background:#3d5147;color:#fff;border:none;border-radius:4px;padding:1px 7px;cursor:pointer;font-size:12px;line-height:1.4;';
   function renderPanel() {
@@ -174,16 +176,25 @@
     }
     panel.style.display = ''; panel.textContent = '';
     const head = document.createElement('div');
-    head.textContent = `✎ External Editor — ${sessions.size} linked`;
-    head.style.cssText = 'font-weight:600;margin-bottom:5px;opacity:.85;'; panel.appendChild(head);
+    head.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:6px;';
+    const title = document.createElement('span');
+    title.textContent = `✎ External Editor — ${sessions.size} linked`;
+    title.style.cssText = 'font-weight:600;opacity:.85;flex:1;white-space:nowrap;';
+    head.appendChild(title);
+    const finishAll = document.createElement('button');
+    finishAll.textContent = 'Finish all'; finishAll.title = 'Disconnect every linked field';
+    finishAll.style.cssText = _btn; finishAll.onclick = () => disconnectAll();
+    head.appendChild(finishAll);
+    panel.appendChild(head);
     for (const s of sessions.values()) {
       const row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:3px 0;';
       const dot = document.createElement('span'); dot.textContent = '●'; dot.style.color = '#57d07e'; row.appendChild(dot);
       const name = document.createElement('span');
-      name.textContent = s.label; name.title = 'Scroll to this field';
+      name.textContent = s.label; name.title = 'Focus this field in the browser';
       name.style.cssText = 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;';
-      name.onclick = () => { try { s.el.scrollIntoView({ block: 'center' }); s.el.focus(); } catch (e) {} };
+      name.onclick = () => focusField(s);
       row.appendChild(name);
+      const fb = document.createElement('button'); fb.textContent = '◎'; fb.title = 'Focus this field in the browser'; fb.style.cssText = _btn; fb.onclick = () => focusField(s); row.appendChild(fb);
       const rf = document.createElement('button'); rf.textContent = '⟳'; rf.title = 'Re-open in your editor'; rf.style.cssText = _btn; rf.onclick = () => reopen(s); row.appendChild(rf);
       const x = document.createElement('button'); x.textContent = '✕'; x.title = 'Disconnect'; x.style.cssText = _btn; x.onclick = () => disconnect(s.el, false); row.appendChild(x);
       panel.appendChild(row);
