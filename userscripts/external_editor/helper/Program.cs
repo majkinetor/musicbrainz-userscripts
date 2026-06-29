@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
-const string Version = "0.2.0";
+const string Version = "0.2.1";
 
 // ── args ──────────────────────────────────────────────────────────────────
 int port = 17999;
@@ -125,7 +125,11 @@ async Task Open(HttpListenerRequest req, HttpListenerResponse res)
     ext = new string(ext.Where(char.IsLetterOrDigit).ToArray());
     if (ext.Length == 0) ext = "txt";
 
-    var file = Path.Combine(tmpDir, $"extedit-{id}.{ext}");
+    // Name the temp file after the field (e.g. "Annotation") so the editor tab is
+    // recognizable when several fields are open at once. The id keeps it unique.
+    var name = doc.TryGetProperty("name", out var nv) ? (nv.GetString() ?? "") : "";
+    var slug = Slug(name);
+    var file = Path.Combine(tmpDir, $"extedit-{(slug.Length > 0 ? slug + "-" : "")}{id}.{ext}");
     await File.WriteAllTextAsync(file, content, new UTF8Encoding(false));
     var baseMtime = File.GetLastWriteTimeUtc(file);
     sessions[id] = new Session(file, baseMtime);
@@ -214,6 +218,7 @@ void LaunchEditor(string file)
                 for (int i = 1; i < toks.Count; i++) psi.ArgumentList.Add(toks[i]);
                 psi.ArgumentList.Add(file);
                 Process.Start(psi);
+                FocusAfterLaunch(toks[0]);   // bring the editor window to the front (Windows blocks a bg console from doing it implicitly)
                 return;
             }
         }
@@ -270,4 +275,76 @@ static bool FixedEquals(string a, string b)
     return diff == 0;
 }
 
+// Filename-safe slug of a field label: keep letters/digits, collapse the rest to single
+// dashes, cap the length. "Annotation" → "Annotation"; "edit-note.0.text" → "edit-note-0-text".
+static string Slug(string s)
+{
+    var sb = new StringBuilder();
+    foreach (var ch in s ?? "")
+    {
+        if (char.IsLetterOrDigit(ch)) sb.Append(ch);
+        else if (sb.Length > 0 && sb[^1] != '-') sb.Append('-');
+    }
+    var r = sb.ToString().Trim('-');
+    return r.Length > 40 ? r.Substring(0, 40).TrimEnd('-') : r;
+}
+
+// Bring the editor window to the foreground after launching it. Windows' focus-stealing
+// prevention stops a background console (us) from raising another app's window, so do it
+// explicitly. No-op on non-Windows (the OS usually focuses there). Best-effort + async so
+// it never blocks the /open response. Matches the editor by its exe base name (VS Code's
+// "code"/"Code.exe" → process "Code"; notepad → "notepad"; etc.).
+static void FocusAfterLaunch(string editorToken)
+{
+    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
+    var name = Path.GetFileNameWithoutExtension(editorToken);
+    if (string.IsNullOrWhiteSpace(name)) return;
+    System.Threading.Tasks.Task.Run(() => { try { Native.BringToFront(name); } catch { } });
+}
+
 record Session(string File, DateTime BaseMtime);
+
+static class Native
+{
+    const int SW_RESTORE = 9;
+    [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hWnd);
+    [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr hWnd);
+    [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);
+    [DllImport("user32.dll")] static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+    [DllImport("kernel32.dll")] static extern uint GetCurrentThreadId();
+
+    // The editor window may not exist yet on a cold start — poll briefly for it.
+    public static void BringToFront(string procName)
+    {
+        for (int i = 0; i < 30; i++)
+        {
+            var h = FindWindow(procName);
+            if (h != IntPtr.Zero) { ForceForeground(h); return; }
+            System.Threading.Thread.Sleep(120);
+        }
+    }
+
+    static IntPtr FindWindow(string procName)
+    {
+        foreach (var p in System.Diagnostics.Process.GetProcessesByName(procName))
+        {
+            try { var h = p.MainWindowHandle; if (h != IntPtr.Zero && IsWindowVisible(h)) return h; }
+            catch { }
+        }
+        return IntPtr.Zero;
+    }
+
+    static void ForceForeground(IntPtr hWnd)
+    {
+        ShowWindow(hWnd, SW_RESTORE);   // un-minimize if needed
+        var fg = GetForegroundWindow();
+        uint fgThread = GetWindowThreadProcessId(fg, out _);
+        uint cur = GetCurrentThreadId();
+        // attach to the current foreground thread's input queue to bypass focus-stealing prevention
+        bool attached = fgThread != 0 && fgThread != cur && AttachThreadInput(fgThread, cur, true);
+        SetForegroundWindow(hWnd);
+        if (attached) AttachThreadInput(fgThread, cur, false);
+    }
+}

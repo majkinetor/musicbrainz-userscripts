@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         External Editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.6.29
+// @version      2026.6.29.1
 // @description  Edit text fields in your real editor (VS Code, Vim, Notepad…) on a hotkey. Press it in a field and its text opens in your editor; save the file and the field updates. Link many fields at once and bounce between them — each stays connected (re-press to refocus its file), with no time limit. Standalone — needs the bundled `extedit` localhost helper. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @match        *://*.musicbrainz.org/*
@@ -114,7 +114,7 @@
     setLinked(t.el, true); renderPanel();
     try {
       const open = await gm({ method: 'POST', url: base() + '/open', headers: { 'Content-Type': 'application/json' },
-        data: JSON.stringify({ id, content: readVal(t), ext: extFor(t.el) }) });
+        data: JSON.stringify({ id, content: readVal(t), ext: extFor(t.el), name: s.label }) });   // name → recognizable temp-file name in the editor
       if (open.status !== 200) { toast(`Open failed (HTTP ${open.status})`, 'err'); disconnect(t.el, true); return; }
     } catch (e) { toast('Open error: ' + e.message, 'err'); disconnect(t.el, true); return; }
     toast(`“${s.label}” opened in your editor — save to apply (stays linked; Esc to disconnect)`, 'ok');
