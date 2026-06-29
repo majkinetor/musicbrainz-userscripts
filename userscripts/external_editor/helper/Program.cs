@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
-const string Version = "0.2.2";
+const string Version = "0.2.3";
 
 // ── args ──────────────────────────────────────────────────────────────────
 int port = 17999;
@@ -215,10 +215,14 @@ void LaunchEditor(string file)
             var toks = Tokenize(editor);
             if (toks.Count > 0)
             {
-                var psi = new ProcessStartInfo(toks[0]) { UseShellExecute = false };
+                // Redirect + drain the editor's stdio so its own chatter (e.g. VS Code's
+                // Electron/Chromium logs like "service_worker_storage … Database IO error")
+                // doesn't leak into our console interleaved with the [open]/[result] lines.
+                var psi = new ProcessStartInfo(toks[0]) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
                 for (int i = 1; i < toks.Count; i++) psi.ArgumentList.Add(toks[i]);
                 psi.ArgumentList.Add(file);
-                Process.Start(psi);
+                var p = Process.Start(psi);
+                if (p != null) { p.OutputDataReceived += (_, __) => { }; p.ErrorDataReceived += (_, __) => { }; try { p.BeginOutputReadLine(); p.BeginErrorReadLine(); } catch { } }
                 FocusAfterLaunch(toks[0]);   // bring the editor window to the front (Windows blocks a bg console from doing it implicitly)
                 return;
             }
