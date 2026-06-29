@@ -60,6 +60,14 @@ In the edit-note field (and Mammoth's panel):
 | `Ctrl`/`⌘` + `I` | Wrap the selection — or the word at the caret — in *italic* markup |
 | `Ctrl`/`⌘` + `,` | Focus the note search box |
 
+On a saved-note row or a pinned quick-button:
+
+| Action | Result |
+|---|---|
+| click | apply with your default (replace / append) |
+| right-click | apply the other way |
+| `Ctrl`/`⌘` + click | replace the field **and submit** the edit (parity with `Ctrl`/`⌘` + `Enter`) |
+
 In the note search box:
 
 | Key | Action |

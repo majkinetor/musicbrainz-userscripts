@@ -675,11 +675,12 @@
     const dflt = SET.defaultInsert;
     pinned.forEach(it => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-segb'; b.textContent = cap(it.text); b.style.maxWidth = (n + 1) + 'ch';
-      b.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · shift-click: replace + submit)`;
+      b.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · Ctrl/⌘-click: replace + submit)`;
       b.onclick = e => {
         e.preventDefault();
-        // #328: shift-click = replace the note and submit the edit (same as a list row)
-        if (e.shiftKey) { applyNote(inst.ta, it.text, true); bumpUse(it.id); const sb = findSubmitBtn(inst.ta); if (sb) sb.click(); return; }
+        // #328: Ctrl/⌘-click = replace the note and submit the edit (parity with Ctrl/⌘+Enter;
+        // shift was prone to text selection). Same as a list row.
+        if (e.ctrlKey || e.metaKey) { applyNote(inst.ta, it.text, true); bumpUse(it.id); const sb = findSubmitBtn(inst.ta); if (sb) sb.click(); return; }
         applyNote(inst.ta, it.text, dflt === 'replace'); bumpUse(it.id);
       };
       b.oncontextmenu = e => { e.preventDefault(); applyNote(inst.ta, it.text, dflt !== 'replace'); bumpUse(it.id); };
@@ -713,7 +714,7 @@
       if (saved && it.pinned) row.classList.add('mmth-pinned');
       if (it.id === inst.cycId) row.classList.add('mmth-cyc');   // arrow-key / cycle selection (both views) #304
       const dflt = SET.defaultInsert;
-      row.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · shift-click: set + submit)`;
+      row.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · Ctrl/⌘-click: set + submit)`;
 
       const txt = document.createElement('span'); txt.className = 'mmth-txt'; txt.textContent = it.text.replace(/\s+/g, ' ').trim();
       row.appendChild(txt);
@@ -733,9 +734,9 @@
       }
 
       row.onclick = e => {
-        // #289: shift-click sets the note (replace) AND submits the edit — like
-        // Ctrl+Enter (reuses findSubmitBtn) — a time-saver for repetitive merges.
-        if (e.shiftKey) { applyNote(ta, it.text, true); if (saved) bumpUse(it.id); const b = findSubmitBtn(ta); if (b) b.click(); return; }
+        // #289/#328: Ctrl/⌘-click sets the note (replace) AND submits the edit — parity
+        // with Ctrl/⌘+Enter (reuses findSubmitBtn); shift was prone to text selection.
+        if (e.ctrlKey || e.metaKey) { applyNote(ta, it.text, true); if (saved) bumpUse(it.id); const b = findSubmitBtn(ta); if (b) b.click(); return; }
         applyNote(ta, it.text, SET.defaultInsert === 'replace'); if (saved) bumpUse(it.id);
       };
       row.oncontextmenu = e => { e.preventDefault(); applyNote(ta, it.text, SET.defaultInsert !== 'replace'); if (saved) bumpUse(it.id); };
