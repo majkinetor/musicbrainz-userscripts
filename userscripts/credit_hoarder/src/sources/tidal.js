@@ -304,12 +304,19 @@ export function tidalToEngine(tracks) {
     const tracklistRels = [];
     const tracklist = [];
     const skipped = [];
-    const seenPositions = new Set();
-    let multiVolume = false;
-    for (const t of filterTidalCredits(tracks)) {
-        const position = String(t.num || '').trim();
-        if (seenPositions.has(position)) multiVolume = true;
-        seenPositions.add(position);
+    const filtered = filterTidalCredits(tracks);
+    // #325: a multi-volume Tidal album repeats track numbers per volume (1..n, 1..n).
+    // Detect it (a number seen earlier) and emit compound "volume-track" positions so
+    // each maps onto the right medium — the dispatch position map keys multi-medium
+    // releases as "<medium>-<track>", and bare numbers would all collapse onto medium 1.
+    const nums = filtered.map(t => String(t.num || '').trim());
+    const multiVolume = nums.some((n, i) => n && nums.indexOf(n) < i);
+    let vol = 1; const seenInVol = new Set();
+    for (const t of filtered) {
+        const num = String(t.num || '').trim();
+        if (multiVolume && num && seenInVol.has(num)) { vol++; seenInVol.clear(); }
+        if (num) seenInVol.add(num);
+        const position = multiVolume ? `${vol}-${num}` : num;
         const track = { position, title: t.title || '', type_: 'track' };
         tracklist.push(track);
         for (const c of t.credits) {

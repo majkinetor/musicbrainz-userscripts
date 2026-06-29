@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.29.172549
+// @version      2026.6.29.175252
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -2176,12 +2176,19 @@
     const tracklistRels = [];
     const tracklist = [];
     const skipped = [];
-    const seenPositions = /* @__PURE__ */ new Set();
-    let multiVolume = false;
-    for (const t of filterTidalCredits(tracks)) {
-      const position = String(t.num || "").trim();
-      if (seenPositions.has(position)) multiVolume = true;
-      seenPositions.add(position);
+    const filtered = filterTidalCredits(tracks);
+    const nums = filtered.map((t) => String(t.num || "").trim());
+    const multiVolume = nums.some((n, i) => n && nums.indexOf(n) < i);
+    let vol = 1;
+    const seenInVol = /* @__PURE__ */ new Set();
+    for (const t of filtered) {
+      const num = String(t.num || "").trim();
+      if (multiVolume && num && seenInVol.has(num)) {
+        vol++;
+        seenInVol.clear();
+      }
+      if (num) seenInVol.add(num);
+      const position = multiVolume ? `${vol}-${num}` : num;
       const track = { position, title: t.title || "", type_: "track" };
       tracklist.push(track);
       for (const c of t.credits) {
@@ -3226,7 +3233,8 @@ ${ourBlock}` : ourBlock;
           badge.style.cssText = "font-size:0.7rem;background:#e0e0e0;border-radius:3px;padding:0 0.3rem;margin-right:0.3rem;color:#555;vertical-align:middle;";
           nameWrap.appendChild(badge);
         }
-        const hasDiscogsUrl = !!r.entity?.resource_url;
+        const placeholderUrl = /\/_company\//.test(discogsHref) || /\/_company\//.test(r.entity?.resource_url || "");
+        const hasDiscogsUrl = !!r.entity?.resource_url && !placeholderUrl;
         const dlA = document.createElement(hasDiscogsUrl ? "a" : "span");
         dlA.href = discogsHref;
         dlA.target = "_blank";
@@ -3237,7 +3245,7 @@ ${ourBlock}` : ourBlock;
         if (_srcTitles.length) dlA.title = _srcTitles.join("\n");
         nameWrap.appendChild(dlA);
         const BADGE_BASE = "display:inline-flex;align-items:center;margin-left:0.35rem;padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;border-radius:0.7rem;letter-spacing:0.01em;cursor:help;text-transform:lowercase;line-height:1.4;";
-        if (!hasDiscogsUrl && srcName !== "Titles") {
+        if (!hasDiscogsUrl && !placeholderUrl && srcName !== "Titles") {
           const noUrl = document.createElement("span");
           noUrl.textContent = "no profile";
           noUrl.title = `No ${srcName} artist page \u2014 name lookup unavailable, search MB manually`;

@@ -470,7 +470,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 badge.style.cssText = 'font-size:0.7rem;background:#e0e0e0;border-radius:3px;padding:0 0.3rem;margin-right:0.3rem;color:#555;vertical-align:middle;';
                 nameWrap.appendChild(badge);
             }
-            const hasDiscogsUrl = !!(r.entity?.resource_url);
+            // #325: Tidal exposes no label page, so company credits carry a synthetic
+            // `/_company/` placeholder URL that 404s — render the name as plain text,
+            // not a dead link.
+            const placeholderUrl = /\/_company\//.test(discogsHref) || /\/_company\//.test(r.entity?.resource_url || '');
+            const hasDiscogsUrl = !!(r.entity?.resource_url) && !placeholderUrl;
             const dlA = document.createElement(hasDiscogsUrl ? 'a' : 'span');
             dlA.href = discogsHref; dlA.target = '_blank'; dlA.rel = 'noopener noreferrer nofollow';
             dlA.textContent = displayName;
@@ -496,7 +500,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // no external entity page to miss, so the "no profile" badge is pure
             // noise on every row; skip it. For real URL sources, a URL-less row
             // genuinely lacks a profile, so keep the badge (source-worded).
-            if (!hasDiscogsUrl && srcName !== 'Titles') {
+            if (!hasDiscogsUrl && !placeholderUrl && srcName !== 'Titles') {
                 const noUrl = document.createElement('span');
                 noUrl.textContent = 'no profile';
                 noUrl.title = `No ${srcName} artist page — name lookup unavailable, search MB manually`;
