@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
-const string Version = "0.2.3";
+const string Version = "0.2.4";
 
 // ── args ──────────────────────────────────────────────────────────────────
 int port = 17999;
@@ -315,6 +315,7 @@ static class Native
     [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hWnd);
     [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr hWnd);
+    [DllImport("user32.dll")] static extern bool IsIconic(IntPtr hWnd);   // minimized?
     [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);
     [DllImport("user32.dll")] static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
@@ -343,7 +344,7 @@ static class Native
 
     static void ForceForeground(IntPtr hWnd)
     {
-        ShowWindow(hWnd, SW_RESTORE);   // un-minimize if needed
+        if (IsIconic(hWnd)) ShowWindow(hWnd, SW_RESTORE);   // only un-minimize — leave a maximized window maximized
         var fg = GetForegroundWindow();
         uint fgThread = GetWindowThreadProcessId(fg, out _);
         uint cur = GetCurrentThreadId();
