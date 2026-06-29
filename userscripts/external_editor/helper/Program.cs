@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
-const string Version = "0.2.1";
+const string Version = "0.2.2";
 
 // ── args ──────────────────────────────────────────────────────────────────
 int port = 17999;
@@ -126,10 +126,11 @@ async Task Open(HttpListenerRequest req, HttpListenerResponse res)
     if (ext.Length == 0) ext = "txt";
 
     // Name the temp file after the field (e.g. "Annotation") so the editor tab is
-    // recognizable when several fields are open at once. The id keeps it unique.
+    // recognizable when several fields are open at once. The label leads (so the editor
+    // sorts/shows it first in the tab) followed by the unique id: e.g. "Barcode_extedit-<id>".
     var name = doc.TryGetProperty("name", out var nv) ? (nv.GetString() ?? "") : "";
     var slug = Slug(name);
-    var file = Path.Combine(tmpDir, $"extedit-{(slug.Length > 0 ? slug + "-" : "")}{id}.{ext}");
+    var file = Path.Combine(tmpDir, $"{(slug.Length > 0 ? slug + "_" : "")}extedit-{id}.{ext}");
     await File.WriteAllTextAsync(file, content, new UTF8Encoding(false));
     var baseMtime = File.GetLastWriteTimeUtc(file);
     sessions[id] = new Session(file, baseMtime);
