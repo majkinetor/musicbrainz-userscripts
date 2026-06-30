@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.6.30.22
+// @version      2026.6.30.23
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/scribe/scribe.svg
@@ -19,10 +19,10 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.6.30.22';
+  const VERSION = '2026.6.30.23';
   const NAME = 'Scribe';
-  // quill nib over markdown lines (currentColor — sits on the dark launcher/panel)
-  const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="14" y2="7"/><line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="17" x2="9" y2="17"/><path d="M20 4 L13 11 L11.5 14.5 L15 13 Z" fill="currentColor" stroke="none"/></svg>';
+  // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
+  const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
   // the PAGE window (MB.releaseEditor lives here); a userscript sandbox `window` is isolated,
   // so reach the editor model via unsafeWindow (same as Apollo). Falls back to window for tests.
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
