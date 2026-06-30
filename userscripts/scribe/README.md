@@ -99,9 +99,9 @@ changes apply back to the editor (review and submit yourself). A bottom-right pa
 The page is `https://`, the helper is `http://localhost` — a normal page `fetch`/`WebSocket` there is blocked by **mixed content** and **CORS**. The userscript instead uses **`GM_xmlhttpRequest`**, which the userscript manager performs from its own context, exempt from both walls (just `@connect 127.0.0.1`). The "send the saved file back" step is a **long-poll**: the userscript holds a `GM_xmlhttpRequest` open and the helper completes it the moment the file's modified-time advances (watch → respond). Works the same on Chrome / Firefox / Edge with Tampermonkey / Violentmonkey.
 
 ```
-hotkey ─POST /open {id,content}→ extedit ─writes file, opens your editor
+hotkey ─POST /open {id,content}→ scribe.exe ─writes file, opens your editor
        ←──────── 200 ──────────
-       ─GET /result?id (long-poll)→ extedit ─watches file mtime…
+       ─GET /result?id (long-poll)→ scribe.exe ─watches file mtime…
                                               ↑ you save in your editor
        ←──── 200 {content} ───────  writes the text back into the field
 ```
