@@ -74,8 +74,9 @@ Keep it running in the background while you edit. Loopback-only; every request m
 field-by-field (see [the format spec](./RELEASE_MD_SPEC.md)). On a release **Edit** page a small
 **✎ button appears bottom-left whenever the helper is running** (Scribe pings it, like Picard's
 button) — click it (or press **Ctrl+Alt+R**) to export the release into your editor; **save** and the
-changes apply back to the editor (review and submit yourself). A bottom-right panel shows a live
-**changes** table, a **not-applied** table (each row's ⌖ focuses the field), and a compact log.
+changes apply back to the editor (review and submit yourself). A bottom-right window lists the
+fields you've changed this session — values that can't be applied are flagged (each with a ⌖
+go-to-field button) and counted in a header badge; **✕ stops editing**.
 
 - **Applies**: release info (title / disambiguation / status / packaging / language / script /
   barcode / annotation); release dates & countries; labels & catalogue numbers; per-track title &

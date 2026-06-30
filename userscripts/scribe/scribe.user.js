@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.6.30.23
+// @version      2026.6.30.24
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/scribe/scribe.svg
@@ -19,7 +19,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.6.30.23';
+  const VERSION = '2026.6.30.24';
   const NAME = 'Scribe';
   // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
@@ -41,30 +41,29 @@
   const ping = async () => { try { return (await gm({ url: base() + '/ping', timeout: 4000 })).status === 200; } catch (e) { return false; } };
   const sleep = ms => new Promise(z => setTimeout(z, ms));
 
-  // collapsible bottom-right panel: a status line, a prominent CHANGES table, a prominent
-  // "not applied" table, and a compact log of session messages underneath.
-  let panel = null, bodyEl = null, statusEl = null, chgEl = null, errEl = null, logEl = null, collapsed = false;
+  // bottom-right session window: ONE table of the fields changed this session — errored fields
+  // first (each with a ⌖ "go to field" button) then applied changes — with an error-count badge
+  // in the header. ✕ stops editing (closes the session). No other chatter.
+  let panel = null, bodyEl = null, badgeEl = null, tblEl = null, collapsed = false;
   const trunc = (s, n) => { s = String(s == null ? '' : s).replace(/\n+/g, ' '); n = n || 30; return s.length > n + 2 ? s.slice(0, n) + '…' : s; };
   function ensurePanel() {
     if (panel) return;
-    panel = document.createElement('div');
+    panel = document.createElement('div'); panel.id = 'scribe-panel';
     panel.style.cssText = 'position:fixed;z-index:2147483647;right:12px;bottom:12px;width:360px;max-width:48vw;background:#222c27;color:#e7ece9;border-radius:9px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 6px 22px rgba(0,0,0,.4);overflow:hidden';
     const hdr = document.createElement('div');
     hdr.style.cssText = 'display:flex;align-items:center;gap:6px;padding:7px 10px;background:#1b2520;cursor:move;user-select:none';
     const ic = document.createElement('span'); ic.innerHTML = SCRIBE_ICON; ic.style.cssText = 'display:flex;color:#6cc08a';
     const ttl = document.createElement('span'); ttl.textContent = `${NAME} v${VERSION}`; ttl.style.cssText = 'flex:1;font-weight:700;letter-spacing:.2px';
+    badgeEl = document.createElement('span'); badgeEl.title = 'fields not applied'; badgeEl.style.cssText = 'display:none;background:#c0392b;color:#fff;font-weight:700;font-size:10px;border-radius:9px;padding:1px 7px;min-width:12px;text-align:center';
     const col = document.createElement('span'); col.textContent = '–'; col.title = 'collapse'; col.style.cssText = 'padding:0 7px;cursor:pointer;font-weight:700';
-    const cls = document.createElement('span'); cls.textContent = '✕'; cls.title = 'close'; cls.style.cssText = 'padding:0 4px;cursor:pointer';
-    hdr.append(ic, ttl, col, cls);
+    const cls = document.createElement('span'); cls.textContent = '✕'; cls.title = 'Stop editing this release'; cls.style.cssText = 'padding:0 4px;cursor:pointer';
+    hdr.append(ic, ttl, badgeEl, col, cls);
     bodyEl = document.createElement('div');
-    statusEl = document.createElement('div'); statusEl.style.cssText = 'padding:5px 10px;font-size:11px;color:#aebbb4;background:#26312b;border-bottom:1px solid #1a221d';
-    chgEl = document.createElement('div'); chgEl.style.cssText = 'display:none;max-height:210px;overflow:auto';
-    errEl = document.createElement('div'); errEl.style.cssText = 'display:none;max-height:210px;overflow:auto';
-    logEl = document.createElement('div'); logEl.style.cssText = 'max-height:84px;overflow:auto;padding:4px 9px;display:flex;flex-direction:column;gap:2px;border-top:1px solid #1a221d;background:#1d2622';
-    bodyEl.append(statusEl, chgEl, errEl, logEl);
+    tblEl = document.createElement('div'); tblEl.style.cssText = 'max-height:60vh;overflow:auto';
+    bodyEl.append(tblEl);
     panel.append(hdr, bodyEl); document.body.appendChild(panel);
     const setCol = c => { collapsed = c; bodyEl.style.display = c ? 'none' : ''; col.textContent = c ? '+' : '–'; col.title = c ? 'expand' : 'collapse'; };
-    cls.onclick = e => { e.stopPropagation(); panel.style.display = 'none'; };
+    cls.onclick = e => { e.stopPropagation(); stopSession(); };   // ✕ = stop editing (and close the window)
     let dragging = false, moved = false, dx = 0, dy = 0;
     hdr.addEventListener('mousedown', e => { if (e.target === cls || e.target === col) return; dragging = true; moved = false; const r = panel.getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; e.preventDefault(); });
     window.addEventListener('mousemove', e => { if (!dragging) return; moved = true; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.left = Math.max(0, Math.min(window.innerWidth - 40, e.clientX - dx)) + 'px'; panel.style.top = Math.max(0, Math.min(window.innerHeight - 24, e.clientY - dy)) + 'px'; });
@@ -72,20 +71,9 @@
     hdr.onclick = e => { if (e.target === cls) return; if (moved) { moved = false; return; } setCol(!collapsed); };
   }
   function showPanel() { ensurePanel(); panel.style.display = ''; }
-  function setStatus(msg, kind) { ensurePanel(); panel.style.display = ''; statusEl.textContent = msg; statusEl.style.color = kind === 'err' ? '#ffb3aa' : kind === 'ok' ? '#9fe0b8' : '#aebbb4'; }
-  // compact session log (opened / stopped / errors) — secondary to the tables
-  function note(msg, kind) {
-    ensurePanel(); panel.style.display = '';
-    const row = document.createElement('div');
-    row.textContent = msg;
-    row.style.cssText = 'white-space:pre-line;line-height:1.3;font-size:11px;color:' + (kind === 'err' ? '#ffb3aa' : kind === 'ok' ? '#9fe0b8' : '#9aa8a1');
-    logEl.appendChild(row);
-    while (logEl.children.length > 30) logEl.removeChild(logEl.firstChild);
-    if (!collapsed) logEl.scrollTop = logEl.scrollHeight;
-  }
   // bring the editor window to the front so a flagged value can be fixed
   function reopenEditor() { if (session && session.active) gm({ method: 'POST', url: base() + '/open', headers: { 'Content-Type': 'application/json' }, data: JSON.stringify({ id: session.id }) }).catch(() => {}); }
-  // scroll to + focus + briefly highlight a native MB field (the error-table "go to field" action)
+  // scroll to + focus + briefly highlight a native MB field (the error row's "go to field" action)
   function focusNative(target) {
     const el = typeof target === 'string' ? document.querySelector(target) : target;
     if (!el) return;
@@ -94,39 +82,36 @@
     const prev = el.style.boxShadow; el.style.boxShadow = '0 0 0 3px #e53935';
     setTimeout(() => { try { el.style.boxShadow = prev; } catch (e) {} }, 1600);
   }
-  // CHANGES applied this save (field · from → to) — the prominent green table
-  function renderChanges(changes) {
-    ensurePanel(); chgEl.innerHTML = '';
-    if (!changes || !changes.length) { chgEl.style.display = 'none'; return; }
-    panel.style.display = ''; chgEl.style.display = '';
-    const h = document.createElement('div'); h.textContent = `✓ ${changes.length} applied — review & submit`;
-    h.style.cssText = 'padding:5px 10px;font-weight:700;color:#cfeedd;background:#21492f;font-size:11px;position:sticky;top:0';
-    chgEl.appendChild(h);
-    for (const c of changes.slice(0, 80)) {
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 10px;border-top:1px solid rgba(255,255,255,.05)';
-      const f = document.createElement('span'); f.textContent = c.label; f.title = c.label; f.style.cssText = 'flex:0 0 40%;color:#bfe9cf;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
-      const v = document.createElement('span'); v.textContent = `${trunc(c.from)} → ${trunc(c.to)}`; v.title = `${c.from} → ${c.to}`; v.style.cssText = 'flex:1;color:#e7ece9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
-      row.append(f, v); chgEl.appendChild(row);
+  const sectionHead = (text, kind) => { const h = document.createElement('div'); h.textContent = text; h.style.cssText = 'padding:5px 10px;font-weight:700;font-size:11px;position:sticky;top:0;' + (kind === 'err' ? 'color:#ffd9d4;background:#5e2520' : 'color:#cfeedd;background:#21492f'); return h; };
+  // render the session table from session.changed (accumulated applied) + session.problems (current)
+  function renderSession(placeholder) {
+    ensurePanel(); panel.style.display = ''; tblEl.innerHTML = '';
+    const problems = (session && session.problems) || [];
+    const changed = (session && session.changed) || new Map();
+    badgeEl.style.display = problems.length ? '' : 'none'; badgeEl.textContent = String(problems.length);
+    if (problems.length) {
+      tblEl.appendChild(sectionHead(`⚠ ${problems.length} not applied — fix & save`, 'err'));
+      for (const p of problems) {
+        const row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 10px;background:#3a2420;border-top:1px solid #4a302c';
+        const f = document.createElement('span'); f.textContent = p.field; f.title = p.field; f.style.cssText = 'flex:0 0 40%;color:#e7c9c4;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        const v = document.createElement('span'); v.textContent = p.value == null || p.value === '' ? '(empty)' : p.value; v.title = v.textContent; v.style.cssText = 'flex:1;color:#ffd9d4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        const b = document.createElement('button'); b.textContent = '⌖'; b.title = 'Focus this field in MusicBrainz to fix it'; b.style.cssText = 'flex:0 0 auto;cursor:pointer;background:#6b3a34;color:#fff;border:none;border-radius:4px;padding:1px 7px;font-size:12px';
+        b.onclick = () => (p.focus || reopenEditor)();
+        row.append(f, v, b); tblEl.appendChild(row);
+      }
     }
-  }
-  // the live "not applied" table — rebuilt every save, so a value drops off as soon as it resolves
-  function renderErrors(problems) {
-    ensurePanel(); errEl.innerHTML = '';
-    if (!problems || !problems.length) { errEl.style.display = 'none'; return; }
-    panel.style.display = ''; errEl.style.display = '';
-    const h = document.createElement('div');
-    h.textContent = `⚠ ${problems.length} not applied — fix & save`;
-    h.style.cssText = 'padding:5px 10px;font-weight:700;color:#ffd9d4;background:#5e2520;font-size:11px;position:sticky;top:0';
-    errEl.appendChild(h);
-    for (const p of problems) {
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 10px;background:#3a2420;border-top:1px solid #4a302c';
-      const f = document.createElement('span'); f.textContent = p.field; f.title = p.field; f.style.cssText = 'flex:0 0 40%;color:#e7c9c4;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
-      const v = document.createElement('span'); v.textContent = p.value == null || p.value === '' ? '(empty)' : p.value; v.title = v.textContent; v.style.cssText = 'flex:1;color:#ffd9d4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
-      const b = document.createElement('button'); b.textContent = '⌖'; b.title = 'Focus this field in MusicBrainz to fix it'; b.style.cssText = 'flex:0 0 auto;cursor:pointer;background:#6b3a34;color:#fff;border:none;border-radius:4px;padding:1px 7px;font-size:12px';
-      b.onclick = () => (p.focus || reopenEditor)();
-      row.append(f, v, b); errEl.appendChild(row);
+    if (changed.size) {
+      tblEl.appendChild(sectionHead(`✓ ${changed.size} changed — review & submit`, 'ok'));
+      for (const [field, c] of changed) {
+        const row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 10px;border-top:1px solid rgba(255,255,255,.05)';
+        const f = document.createElement('span'); f.textContent = field; f.title = field; f.style.cssText = 'flex:0 0 40%;color:#bfe9cf;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        const v = document.createElement('span'); v.textContent = `${trunc(c.from)} → ${trunc(c.to)}`; v.title = `${c.from} → ${c.to}`; v.style.cssText = 'flex:1;color:#e7ece9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        row.append(f, v); tblEl.appendChild(row);
+      }
+    }
+    if (!problems.length && !changed.size) {
+      const ph = document.createElement('div'); ph.textContent = placeholder || 'Editing — save in your editor to apply.'; ph.style.cssText = 'padding:8px 10px;color:#9aa8a1;font-size:11px';
+      tblEl.appendChild(ph);
     }
   }
 
@@ -374,19 +359,19 @@
 
   // Open the release MD in the editor and KEEP it linked: every save applies to the editor,
   // so you can iterate (edit · save · see it apply · edit more · save …) until you Stop.
-  let session = null;   // { id, active, lastMd }
+  let session = null;   // { id, active, lastMd, changed:Map(field→{from,to}), problems:[] }
   async function startSession() {
-    if (session && session.active) { showPanel(); setStatus('Already editing — save in your editor to apply.'); return; }
-    if (!onEditPage()) { note('Open a release’s Edit page first', 'err'); return; }
-    showPanel(); setStatus('Exporting release…');
-    let md; try { md = await exportMd(); } catch (e) { setStatus('Export failed: ' + (e.message || e), 'err'); return; }
-    if (!(await ping())) { setStatus(`${NAME} helper not reachable on ${base()} — start it (see README)`, 'err'); updateLauncher(); return; }
+    if (session && session.active) { showPanel(); renderSession(); return; }
+    if (!onEditPage()) return;
+    session = { id: null, active: false, lastMd: '', changed: new Map(), problems: [] };
+    renderSession('Exporting release…');
+    let md; try { md = await exportMd(); } catch (e) { renderSession('Export failed: ' + (e.message || e)); return; }
+    if (!(await ping())) { renderSession(`${NAME} helper not reachable on ${base()}.`); updateLauncher(); return; }
     const id = 'rel-' + (releaseMbid() || '').slice(0, 8) + '-' + Date.now().toString(36);
-    try { const open = await gm({ method: 'POST', url: base() + '/open', headers: { 'Content-Type': 'application/json' }, data: JSON.stringify({ id, content: md, ext: 'md', name: 'release' }) }); if (open.status !== 200) { setStatus(`Open failed (HTTP ${open.status})`, 'err'); return; } }
-    catch (e) { setStatus('Open error: ' + (e.message || e), 'err'); return; }
-    session = { id, active: true, lastMd: md };
-    setStatus('Editing — save in your editor and changes apply here.', 'ok');
-    note('Release opened in your editor — it stays linked until you stop.');
+    try { const open = await gm({ method: 'POST', url: base() + '/open', headers: { 'Content-Type': 'application/json' }, data: JSON.stringify({ id, content: md, ext: 'md', name: 'release' }) }); if (open.status !== 200) { renderSession(`Open failed (HTTP ${open.status})`); return; } }
+    catch (e) { renderSession('Open error: ' + (e.message || e)); return; }
+    session.id = id; session.active = true; session.lastMd = md;
+    renderSession('Editing — save in your editor; changes appear here.');
     updateLauncher();
     poll(session);
   }
@@ -395,27 +380,26 @@
       let r; try { r = await gm({ url: `${base()}/result?id=${encodeURIComponent(s.id)}`, timeout: 660000 }); } catch (e) { if (!s.active) break; await sleep(1200); continue; }
       if (!s.active) break;
       if (r.status === 204) continue;                                  // still editing
-      if (r.status === 404 || r.status === 410) { if (s.active) note('Editor session ended.'); s.active = false; if (session === s) session = null; updateLauncher(); break; }
+      if (r.status === 404 || r.status === 410) { s.active = false; if (session === s) session = null; if (panel) panel.style.display = 'none'; updateLauncher(); break; }
       if (r.status !== 200) { await sleep(1200); continue; }
       let content; try { content = JSON.parse(r.responseText).content || ''; } catch (e) { continue; }
-      if (content.replace(/\s+$/, '') === s.lastMd.replace(/\s+$/, '')) { setStatus('Saved — no changes.'); continue; }
+      if (content.replace(/\s+$/, '') === s.lastMd.replace(/\s+$/, '')) continue;   // saved, nothing changed
       s.lastMd = content;
       try {
         const { changes, problems } = diffMd(parse(content), false);
         if (changes.length) await refreshApollo();   // make Apollo's mirror reflect the model writes (if Apollo is on)
-        renderChanges(changes); renderErrors(problems);   // both tables rebuilt each save
-        const parts = [];
-        if (changes.length) parts.push(`${changes.length} applied`);
-        if (problems.length) parts.push(`${problems.length} not applied`);
-        setStatus(parts.length ? 'Saved — ' + parts.join(', ') + '.' : 'Saved — no applicable changes.', problems.length ? 'err' : 'ok');
-      } catch (e) { setStatus('Apply error: ' + (e.message || e), 'err'); }
+        for (const c of changes) { const ex = s.changed.get(c.label); s.changed.set(c.label, { from: ex ? ex.from : c.from, to: c.to }); }   // accumulate across the session; keep the original "from"
+        s.problems = problems;
+        renderSession();
+      } catch (e) { renderSession('Apply error: ' + (e.message || e)); }
     }
   }
   function stopSession() {
-    if (!session || !session.active) { setStatus('Not editing — click the ✎ button to start.'); return; }
-    const s = session; s.active = false; session = null;
-    gm({ url: `${base()}/close?id=${encodeURIComponent(s.id)}` }).catch(() => {});
-    setStatus('Stopped editing.'); updateLauncher();
+    const s = session;
+    if (s) { s.active = false; if (s.id) gm({ url: `${base()}/close?id=${encodeURIComponent(s.id)}` }).catch(() => {}); }
+    session = null;
+    if (panel) panel.style.display = 'none';   // ✕ / stop closes the window
+    updateLauncher();
   }
   window.addEventListener('pagehide', () => { if (session && session.active) gm({ url: `${base()}/close?id=${encodeURIComponent(session.id)}` }).catch(() => {}); });
 
