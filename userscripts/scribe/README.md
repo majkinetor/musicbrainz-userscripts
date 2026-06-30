@@ -1,26 +1,26 @@
 # Scribe <img src="./scribe.svg" align="left" width="40" height="40">
 
-**Scribe** edits MusicBrainz in your *real* editor (VS Code, Vim, Notepad…) — **one userscript, two ways**, chosen by the trigger you use:
+**Scribe** edits MusicBrainz in your *real* editor (VS Code, Vim, Notepad…).
 
-- **Ctrl+Alt+E** — edit the **focused text field**: cursor in any text box, press it, the text opens in your editor; **save** and the field updates.
-- **Ctrl+Alt+R** (or the bottom-left **✎** button on a release Edit page) — edit a **whole release as one Markdown document** (see [the release editor](#scribe--edit-a-whole-release-as-markdown)).
+---
+
+**NOTE: Experimental**
+
+---
 
 Both ride a tiny **cross-platform .NET CLI** (`scribe`) on `127.0.0.1` that writes the text to a temp file, opens your editor, and hands the saved file back.
 
 - Install: [`scribe.user.js`](./scribe.user.js)
 - Download helper: [`scribe.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe.exe)
 
-## How it works
+## Feature
 
-The page is `https://`, the helper is `http://localhost` — a normal page `fetch`/`WebSocket` there is blocked by **mixed content** and **CORS**. The userscript instead uses **`GM_xmlhttpRequest`**, which the userscript manager performs from its own context, exempt from both walls (just `@connect 127.0.0.1`). The "send the saved file back" step is a **long-poll**: the userscript holds a `GM_xmlhttpRequest` open and the helper completes it the moment the file's modified-time advances (watch → respond). Works the same on Chrome / Firefox / Edge with Tampermonkey / Violentmonkey.
 
-```
-hotkey ─POST /open {id,content}→ extedit ─writes file, opens your editor
-       ←──────── 200 ──────────
-       ─GET /result?id (long-poll)→ extedit ─watches file mtime…
-                                              ↑ you save in your editor
-       ←──── 200 {content} ───────  writes the text back into the field
-```
+- **Edit field** (Ctrl+Alt+E):<br> 
+With cursor in any text box, press it, the text opens in your editor; **save** and the field updates.
+- **Edit release** (Ctrl+Alt+R)<br>
+Edit a whole release as one Markdown document** (see [the release editor](#edit-a-whole-release)).
+
 
 ## Running the helper
 
@@ -31,10 +31,12 @@ hotkey ─POST /open {id,content}→ extedit ─writes file, opens your editor
 # one-time: install the .NET 9 runtime (the helper needs only the base runtime)
 winget install --id Microsoft.DotNet.Runtime.9 -e
 # then run the helper:
-.\scribe.exe --port 17999 --token <your-secret> --editor "code -r"
+.\scribe.exe --port 17999 --editor "notepad"
 ```
 
-**Build it yourself** (any OS) — requires the [.NET SDK](https://dotnet.microsoft.com/download) (9.0+):
+<details><summary>How to build (cross-platform)</summary>
+
+Requires the [.NET SDK](https://dotnet.microsoft.com/download) (9.0+):
 
 ```sh
 cd userscripts/scribe/helper
@@ -45,11 +47,14 @@ dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile
 dotnet publish -c Release -r <win-x64|linux-x64|osx-arm64|…> --self-contained -o ./dist
 ```
 
+</details>
+
+
 Options:
 - `--port` — listen port (default `17999`).
 - `--token` — shared secret; **set the same value** in the userscript (Tampermonkey menu → *Set token*). Default `extedit`.
 - `--editor "<cmd>"` — command to open the file (e.g. `--editor "code -r"`, `--editor "subl"`, `--editor vim`). Omit to use the OS default app for the file type. `--editor none` = don't auto-open (open the temp file yourself).
-  - **Don't use a wait flag** (`code -w` / `subl -w`): the helper detects saves by watching the file's mtime, so it isn't needed — and with VS Code, `-w` stops the file's tab from being re-revealed when you re-open a still-linked field. Use `-r` (reuse window + reveal the tab) instead.
+
 
 ```
 .\scribe.exe --editor "'C:\Program Files\Microsoft VS Code\Code.exe' -r"
@@ -57,14 +62,14 @@ Options:
 
 Keep it running in the background while you edit. Loopback-only; every request must carry the token.
 
-## Using it
+## Usage
 
 1. Start the helper (`scribe.exe …`).
 2. In the userscript-manager menu, set **helper port** / **token** to match (and optionally rebind the field hotkey).
 3. **Edit one field** — focus a text field, press **Ctrl+Alt+E** → it opens in your editor (edit notes / annotations as `.md`); **save** to update it (trailing newline trimmed). **Esc** disconnects it. Link several at once and bounce between them.
 4. **Edit a whole release** — on a release **Edit** page, click the bottom-left **✎** button (appears when the helper is running) or press **Ctrl+Alt+R**; see [the release editor](#scribe--edit-a-whole-release-as-markdown).
 
-## Scribe — edit a whole release as Markdown
+## Edit a whole release
 
 **Scribe** (`scribe.user.js`) edits **most of a release in one Markdown document** instead of
 field-by-field (see [the format spec](./RELEASE_MD_SPEC.md)). On a release **Edit** page a small
@@ -90,9 +95,15 @@ changes apply back to the editor (review and submit yourself). A bottom-right pa
 | **Ctrl+Alt+E** | any MusicBrainz text field | edit the focused field in your editor |
 | **Ctrl+Alt+R** | a release **Edit** page | start / stop editing the whole release as Markdown (Scribe) |
 
-## Notes / limits
+## How it works
 
-- One edit at a time per tab.
-- Works on `<textarea>`, text-like `<input>`, and `contenteditable`.
-- The helper is a localhost service: any site could POST to it, so it requires the shared token — pick a non-default one.
-- This is a standalone utility; it has no dependency on Apollo Editor or any other script.
+The page is `https://`, the helper is `http://localhost` — a normal page `fetch`/`WebSocket` there is blocked by **mixed content** and **CORS**. The userscript instead uses **`GM_xmlhttpRequest`**, which the userscript manager performs from its own context, exempt from both walls (just `@connect 127.0.0.1`). The "send the saved file back" step is a **long-poll**: the userscript holds a `GM_xmlhttpRequest` open and the helper completes it the moment the file's modified-time advances (watch → respond). Works the same on Chrome / Firefox / Edge with Tampermonkey / Violentmonkey.
+
+```
+hotkey ─POST /open {id,content}→ extedit ─writes file, opens your editor
+       ←──────── 200 ──────────
+       ─GET /result?id (long-poll)→ extedit ─watches file mtime…
+                                              ↑ you save in your editor
+       ←──── 200 {content} ───────  writes the text back into the field
+```
+
