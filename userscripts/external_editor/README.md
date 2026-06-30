@@ -1,11 +1,14 @@
-# External Editor 
+# External Editor <img src="./scribe.svg" align="left" width="40" height="40">
 
-Edit the **focused text field** of a MusicBrainz page in your *real* editor (VS Code, Vim, Notepad…). Put the cursor in any text box, press the hotkey, the field's text opens in your editor; **save the file** and the field updates — no copy-paste.
+Edit MusicBrainz in your *real* editor (VS Code, Vim, Notepad…). Two userscripts share one tiny helper:
 
-It's two pieces — the **userscript** (the hotkey + writes the result back) and **helper executable tool** (a tiny **cross-platform .NET CLI** that runs on `127.0.0.1`, writes the text to a temp file, opens your editor, and hands the saved file back).
+- **External Editor** — edit the **focused text field**: cursor in any text box, press the hotkey, the field's text opens in your editor; **save** and the field updates.
+- **Scribe** — edit a **whole release as one Markdown document** (see [Scribe](#scribe--edit-a-whole-release-as-markdown)).
 
-- Install userscript: [latest](./external_editor.user.js)
-- Download helper tool: [`extedit.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/feat/external-editor-poc/userscripts/external_editor/helper/dist/extedit.exe)
+Both ride a tiny **cross-platform .NET CLI** (`extedit`) on `127.0.0.1` that writes the text to a temp file, opens your editor, and hands the saved file back.
+
+- Install: [External Editor](./external_editor.user.js) · [Scribe](./scribe.user.js)
+- Download helper tool: [`extedit.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/external_editor/helper/dist/extedit.exe)
 
 ## How it works
 
@@ -60,6 +63,32 @@ Keep it running in the background while you edit. Loopback-only; every request m
 2. In the userscript manager menu, set **port** / **token** to match, and optionally rebind the **hotkey** (default **Ctrl+Alt+E**).
 3. Focus a text field on a MusicBrainz page, press the hotkey → it opens in your editor (edit notes / annotations open as `.md`).
 4. Edit, **save**. The field updates (a trailing newline your editor adds is trimmed). **Esc** cancels a pending edit.
+
+## Scribe — edit a whole release as Markdown
+
+**Scribe** (`scribe.user.js`) edits **most of a release in one Markdown document** instead of
+field-by-field (see [the format spec](./RELEASE_MD_SPEC.md)). On a release **Edit** page a small
+**✎ button appears bottom-left whenever the helper is running** (Scribe pings it, like Picard's
+button) — click it (or press **Ctrl+Alt+R**) to export the release into your editor; **save** and the
+changes apply back to the editor (review and submit yourself). A bottom-right panel shows a live
+**changes** table, a **not-applied** table (each row's ⌖ focuses the field), and a compact log.
+
+- **Applies**: release info (title / disambiguation / status / packaging / language / script /
+  barcode / annotation); release dates & countries; labels & catalogue numbers; per-track title &
+  length; medium titles; and artist credits (credited-as / join / reorder / add / swap / drop / new).
+  Existing artists & labels are referenced by an MBID footer link; a `[Name]` with no footer creates
+  a new one. A value that can't be applied (e.g. an invalid status) shows in the **not-applied**
+  table rather than being silently skipped.
+- **Not applied yet** (round-trips losslessly — use the native editor): external links, and
+  add / remove / reorder of tracks. (Phase 2.)
+- Needs the same helper running; reuses the External Editor port/token.
+
+## Shortcuts
+
+| Shortcut | Where | Action |
+| --- | --- | --- |
+| **Ctrl+Alt+E** | any MusicBrainz text field | edit the focused field in your editor |
+| **Ctrl+Alt+R** | a release **Edit** page | start / stop editing the whole release as Markdown (Scribe) |
 
 ## Notes / limits
 

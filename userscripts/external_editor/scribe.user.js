@@ -1,0 +1,462 @@
+// ==UserScript==
+// @name         Scribe — edit a MusicBrainz release as Markdown
+// @namespace    https://github.com/majkinetor/musicbrainz-userscripts
+// @version      2026.6.30.20
+// @description  Edit (most of) a MusicBrainz release as ONE Markdown document in your real editor. A bottom-left button (shown only when the extedit helper is running) exports the release, opens it in your editor, and on save applies the changes back. Applies release info (title/disambiguation/status/packaging/language/script/barcode/annotation), release dates & countries, label catalogue numbers, per-track title & length, and artist credits (credited-as / join / reorder / add / swap / drop / new). Needs the bundled extedit helper (see README).
+// @author       majkinetor
+// @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/external_editor/scribe.svg
+// @match        *://*.musicbrainz.org/release/*/edit
+// @match        *://*.musicbrainz.org/release/add
+// @grant        GM_xmlhttpRequest
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @connect      127.0.0.1
+// @connect      localhost
+// @run-at       document-end
+// @noframes
+// ==/UserScript==
+
+/* eslint-disable no-undef */
+(function () {
+  'use strict';
+  const VERSION = '2026.6.30.20';
+  const NAME = 'Scribe';
+  // quill nib over markdown lines (currentColor — sits on the dark launcher/panel)
+  const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="14" y2="7"/><line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="17" x2="9" y2="17"/><path d="M20 4 L13 11 L11.5 14.5 L15 13 Z" fill="currentColor" stroke="none"/></svg>';
+  // the PAGE window (MB.releaseEditor lives here); a userscript sandbox `window` is isolated,
+  // so reach the editor model via unsafeWindow (same as Apollo). Falls back to window for tests.
+  const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
+
+  // ── settings (shared defaults with the field-bridge EE) ───────────────────
+  const cfg = {
+    get port() { return GM_getValue('ee_port', 17999); },
+    get token() { return GM_getValue('ee_token', 'extedit'); },
+  };
+  const base = () => `http://127.0.0.1:${cfg.port}`;
+  const gm = opts => new Promise((res, rej) => GM_xmlhttpRequest({
+    method: opts.method || 'GET', url: opts.url, data: opts.data, timeout: opts.timeout || 30000,
+    headers: Object.assign({ 'X-ExtEdit-Token': cfg.token }, opts.headers || {}),
+    onload: r => res(r), onerror: () => rej(new Error('network')), ontimeout: () => rej(new Error('timeout')),
+  }));
+  const ping = async () => { try { return (await gm({ url: base() + '/ping', timeout: 4000 })).status === 200; } catch (e) { return false; } };
+  const sleep = ms => new Promise(z => setTimeout(z, ms));
+
+  // collapsible bottom-right panel: a status line, a prominent CHANGES table, a prominent
+  // "not applied" table, and a compact log of session messages underneath.
+  let panel = null, bodyEl = null, statusEl = null, chgEl = null, errEl = null, logEl = null, collapsed = false;
+  const trunc = (s, n) => { s = String(s == null ? '' : s).replace(/\n+/g, ' '); n = n || 30; return s.length > n + 2 ? s.slice(0, n) + '…' : s; };
+  function ensurePanel() {
+    if (panel) return;
+    panel = document.createElement('div');
+    panel.style.cssText = 'position:fixed;z-index:2147483647;right:12px;bottom:12px;width:360px;max-width:48vw;background:#222c27;color:#e7ece9;border-radius:9px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 6px 22px rgba(0,0,0,.4);overflow:hidden';
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;gap:6px;padding:7px 10px;background:#1b2520;cursor:move;user-select:none';
+    const ic = document.createElement('span'); ic.innerHTML = SCRIBE_ICON; ic.style.cssText = 'display:flex;color:#6cc08a';
+    const ttl = document.createElement('span'); ttl.textContent = `${NAME} v${VERSION}`; ttl.style.cssText = 'flex:1;font-weight:700;letter-spacing:.2px';
+    const col = document.createElement('span'); col.textContent = '–'; col.title = 'collapse'; col.style.cssText = 'padding:0 7px;cursor:pointer;font-weight:700';
+    const cls = document.createElement('span'); cls.textContent = '✕'; cls.title = 'close'; cls.style.cssText = 'padding:0 4px;cursor:pointer';
+    hdr.append(ic, ttl, col, cls);
+    bodyEl = document.createElement('div');
+    statusEl = document.createElement('div'); statusEl.style.cssText = 'padding:5px 10px;font-size:11px;color:#aebbb4;background:#26312b;border-bottom:1px solid #1a221d';
+    chgEl = document.createElement('div'); chgEl.style.cssText = 'display:none;max-height:210px;overflow:auto';
+    errEl = document.createElement('div'); errEl.style.cssText = 'display:none;max-height:210px;overflow:auto';
+    logEl = document.createElement('div'); logEl.style.cssText = 'max-height:84px;overflow:auto;padding:4px 9px;display:flex;flex-direction:column;gap:2px;border-top:1px solid #1a221d;background:#1d2622';
+    bodyEl.append(statusEl, chgEl, errEl, logEl);
+    panel.append(hdr, bodyEl); document.body.appendChild(panel);
+    const setCol = c => { collapsed = c; bodyEl.style.display = c ? 'none' : ''; col.textContent = c ? '+' : '–'; col.title = c ? 'expand' : 'collapse'; };
+    cls.onclick = e => { e.stopPropagation(); panel.style.display = 'none'; };
+    let dragging = false, moved = false, dx = 0, dy = 0;
+    hdr.addEventListener('mousedown', e => { if (e.target === cls || e.target === col) return; dragging = true; moved = false; const r = panel.getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; e.preventDefault(); });
+    window.addEventListener('mousemove', e => { if (!dragging) return; moved = true; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.left = Math.max(0, Math.min(window.innerWidth - 40, e.clientX - dx)) + 'px'; panel.style.top = Math.max(0, Math.min(window.innerHeight - 24, e.clientY - dy)) + 'px'; });
+    window.addEventListener('mouseup', () => { dragging = false; });
+    hdr.onclick = e => { if (e.target === cls) return; if (moved) { moved = false; return; } setCol(!collapsed); };
+  }
+  function showPanel() { ensurePanel(); panel.style.display = ''; }
+  function setStatus(msg, kind) { ensurePanel(); panel.style.display = ''; statusEl.textContent = msg; statusEl.style.color = kind === 'err' ? '#ffb3aa' : kind === 'ok' ? '#9fe0b8' : '#aebbb4'; }
+  // compact session log (opened / stopped / errors) — secondary to the tables
+  function note(msg, kind) {
+    ensurePanel(); panel.style.display = '';
+    const row = document.createElement('div');
+    row.textContent = msg;
+    row.style.cssText = 'white-space:pre-line;line-height:1.3;font-size:11px;color:' + (kind === 'err' ? '#ffb3aa' : kind === 'ok' ? '#9fe0b8' : '#9aa8a1');
+    logEl.appendChild(row);
+    while (logEl.children.length > 30) logEl.removeChild(logEl.firstChild);
+    if (!collapsed) logEl.scrollTop = logEl.scrollHeight;
+  }
+  // bring the editor window to the front so a flagged value can be fixed
+  function reopenEditor() { if (session && session.active) gm({ method: 'POST', url: base() + '/open', headers: { 'Content-Type': 'application/json' }, data: JSON.stringify({ id: session.id }) }).catch(() => {}); }
+  // scroll to + focus + briefly highlight a native MB field (the error-table "go to field" action)
+  function focusNative(target) {
+    const el = typeof target === 'string' ? document.querySelector(target) : target;
+    if (!el) return;
+    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+    try { (el.focus ? el : el.querySelector('input,select,textarea,button')).focus(); } catch (e) {}
+    const prev = el.style.boxShadow; el.style.boxShadow = '0 0 0 3px #e53935';
+    setTimeout(() => { try { el.style.boxShadow = prev; } catch (e) {} }, 1600);
+  }
+  // CHANGES applied this save (field · from → to) — the prominent green table
+  function renderChanges(changes) {
+    ensurePanel(); chgEl.innerHTML = '';
+    if (!changes || !changes.length) { chgEl.style.display = 'none'; return; }
+    panel.style.display = ''; chgEl.style.display = '';
+    const h = document.createElement('div'); h.textContent = `✓ ${changes.length} applied — review & submit`;
+    h.style.cssText = 'padding:5px 10px;font-weight:700;color:#cfeedd;background:#21492f;font-size:11px;position:sticky;top:0';
+    chgEl.appendChild(h);
+    for (const c of changes.slice(0, 80)) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 10px;border-top:1px solid rgba(255,255,255,.05)';
+      const f = document.createElement('span'); f.textContent = c.label; f.title = c.label; f.style.cssText = 'flex:0 0 40%;color:#bfe9cf;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      const v = document.createElement('span'); v.textContent = `${trunc(c.from)} → ${trunc(c.to)}`; v.title = `${c.from} → ${c.to}`; v.style.cssText = 'flex:1;color:#e7ece9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      row.append(f, v); chgEl.appendChild(row);
+    }
+  }
+  // the live "not applied" table — rebuilt every save, so a value drops off as soon as it resolves
+  function renderErrors(problems) {
+    ensurePanel(); errEl.innerHTML = '';
+    if (!problems || !problems.length) { errEl.style.display = 'none'; return; }
+    panel.style.display = ''; errEl.style.display = '';
+    const h = document.createElement('div');
+    h.textContent = `⚠ ${problems.length} not applied — fix & save`;
+    h.style.cssText = 'padding:5px 10px;font-weight:700;color:#ffd9d4;background:#5e2520;font-size:11px;position:sticky;top:0';
+    errEl.appendChild(h);
+    for (const p of problems) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 10px;background:#3a2420;border-top:1px solid #4a302c';
+      const f = document.createElement('span'); f.textContent = p.field; f.title = p.field; f.style.cssText = 'flex:0 0 40%;color:#e7c9c4;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      const v = document.createElement('span'); v.textContent = p.value == null || p.value === '' ? '(empty)' : p.value; v.title = v.textContent; v.style.cssText = 'flex:1;color:#ffd9d4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      const b = document.createElement('button'); b.textContent = '⌖'; b.title = 'Focus this field in MusicBrainz to fix it'; b.style.cssText = 'flex:0 0 auto;cursor:pointer;background:#6b3a34;color:#fff;border:none;border-radius:4px;padding:1px 7px;font-size:12px';
+      b.onclick = () => (p.focus || reopenEditor)();
+      row.append(f, v, b); errEl.appendChild(row);
+    }
+  }
+
+  // ════════════════════ release ⇄ markdown lib ════════════════════
+  const LANG = { eng: 'English', deu: 'German', fra: 'French', spa: 'Spanish', jpn: 'Japanese', ita: 'Italian', por: 'Portuguese', rus: 'Russian', mul: '[Multiple languages]', zxx: '[No linguistic content]' };   // bracketed names match the editor's <select> option text exactly
+  const SCRIPT = { Latn: 'Latin', Cyrl: 'Cyrillic', Jpan: 'Japanese', Hani: 'Han', Kore: 'Korean', Grek: 'Greek' };
+  const HOST = [[/discogs\.com/, 'Discogs'], [/bandcamp\.com/, 'Bandcamp'], [/open\.spotify|spotify\.com/, 'Spotify'], [/music\.apple\.com/, 'Apple Music'], [/deezer\.com/, 'Deezer'], [/youtube\.com|youtu\.be/, 'YouTube'], [/tidal\.com/, 'Tidal'], [/qobuz\.com/, 'Qobuz']];
+  const MBROOT = 'https://musicbrainz.org';
+  const TYPES = ['artist', 'label', 'recording', 'release-group', 'release', 'area', 'place', 'work'];
+  const esc = s => String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/[\[\]]/g, '\\$&');
+  const escTitle = s => esc(s).replace(/ — /g, ' \\— ');
+  const unesc = s => String(s == null ? '' : s).replace(/\\(.)/g, '$1');
+  const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const ms2len = ms => ms ? `${Math.floor(ms / 60000)}:${String(Math.round(ms % 60000 / 1000)).padStart(2, '0')}` : '';
+  const hostName = u => { for (const [re, n] of HOST) if (re.test(u)) return n; try { return new URL(u).host.replace(/^www\./, ''); } catch (e) { return u; } };
+  const mbidFromUrl = u => (String(u).match(/\/([0-9a-f-]{36})\b/i) || [])[1] || null;
+
+  function makeRefs() {
+    const map = new Map();
+    function ref(display, url, main) { let key = display || main || url, n = 1; while (map.has(key) && map.get(key).url !== url) { n++; key = `${display}·${n}`; } map.set(key, { url, main: main || display }); return key; }
+    return { map, ref };
+  }
+  const ws2Credit = (ac, R) => ({ lead: '', parts: (ac || []).map(n => ({ label: n.artist ? R.ref(n.name, `${MBROOT}/artist/${n.artist.id}`, n.artist.name) : n.name, join: n.joinphrase || '' })) });
+  const emitCredit = c => (c.lead || '') + (c.parts || []).map(p => `[${esc(p.label)}]${p.join}`).join('');
+  function parseCredit(str) {
+    const parts = []; let lead = '', last = 0; const re = /\[((?:\\.|[^\]])*)\]/g; let m, first = true;
+    while ((m = re.exec(str))) { const between = str.slice(last, m.index); if (first) { lead = between; first = false; } else if (parts.length) parts[parts.length - 1].join = between; parts.push({ label: unesc(m[1]), join: '' }); last = re.lastIndex; }
+    if (parts.length) parts[parts.length - 1].join = str.slice(last); else lead = str;
+    return { lead, parts };
+  }
+  function toModel(r) {
+    const R = makeRefs(); const trep = r['text-representation'] || {};
+    const entRef = (type, ent, credited) => ent ? R.ref(credited || ent.name || ent.title, `${MBROOT}/${type}/${ent.id}`, ent.name || ent.title) : null;
+    const m = {
+      mbid: r.id, h1: `${(r['artist-credit'] || []).map(a => a.name).join(', ')} — ${r.title}`,
+      info: { title: r.title, disambiguation: r.disambiguation || '', status: r.status || '', packaging: r.packaging || '', barcode: r.barcode || 'none', language: LANG[trep.language] || trep.language || '', script: SCRIPT[trep.script] || trep.script || '', artist: ws2Credit(r['artist-credit'], R), releaseGroup: r['release-group'] ? entRef('release-group', r['release-group']) : null },
+      events: (r['release-events'] || []).map(ev => ({ date: ev.date || '', country: ev.area ? ev.area.name : '' })),
+      labels: (r['label-info'] || []).map(li => ({ label: li.label ? entRef('label', li.label) : null, catno: li['catalog-number'] || '' })),
+      annotation: (r.annotation || '').trim(),
+      links: (r.relations || []).filter(x => x['target-type'] === 'url').map(rel => { const url = rel.url.resource, host = hostName(url), t = norm(rel.type), h = norm(host), tok = s => (String(s).toLowerCase().match(/[a-z0-9]+/) || [''])[0]; const overlap = (t && h && (t.includes(h) || h.includes(t))) || (tok(host) && tok(host) === tok(rel.type)); return { label: host, url, type: (rel.type && !overlap) ? rel.type : '', begin: rel.begin || '', end: rel.end || '', ended: !!rel.ended }; }),   // inline [host](url); suppress a type that just echoes the host (discogs/discogs, amazon.co.uk/"amazon asin")
+      media: (r.media || []).map(med => ({ position: med.position, format: med.format || '', title: med.title || '', tracks: (med.tracks || []).map(t => ({ position: t.position, title: t.title, credit: ws2Credit(t['artist-credit'], R), length: t.length ? ms2len(t.length) : '', recording: entRef('recording', t.recording) })) })),
+      refs: R.map,
+    };
+    return m;
+  }
+  function emit(m) {
+    const L = [], P = (...x) => L.push(...x), i = m.info;
+    P(`# ${escTitle(m.h1)}`, '', `<!-- release ${m.mbid} · format v1 · DO NOT EDIT THIS LINE -->`, '');
+    P('## Release information');
+    P(`- **Title**: ${esc(i.title)}`, `- **Disambiguation**: ${esc(i.disambiguation)}`);   // always emit Disambiguation (even empty) so it can be filled in
+    // enum values are controlled vocab whose canonical names can include brackets ([Multiple languages]);
+    // a field value parses whole (brackets don't break it), so emit them unescaped to match the <select> text
+    P(`- **Status**: ${i.status}`, `- **Packaging**: ${i.packaging}`, `- **Barcode**: ${i.barcode}`, `- **Language**: ${i.language}`, `- **Script**: ${i.script}`, `- **Artist**: ${emitCredit(i.artist)}`);
+    if (i.releaseGroup) P(`- **Release group**: [${esc(i.releaseGroup)}]`);
+    P('', '## Release events'); for (const e of m.events) P(`- ${[e.date, esc(e.country)].filter(Boolean).join(', ')}`);
+    P('', '## Labels'); for (const l of m.labels) P(`- ${l.label ? `[${esc(l.label)}]` : ''}${l.catno ? ' — ' + esc(l.catno) : ''}`);
+    P('', '## Annotation', m.annotation, '<!-- /end -->', '', '## External links');
+    for (const lk of m.links) { P(`- [${esc(lk.label)}](${lk.url || ''})`); let dr = ''; if (lk.begin || lk.end) dr = `${lk.begin} → ${lk.end}`.trim(); if (lk.ended && !lk.end) dr = (dr ? dr + ' · ' : '') + 'ended'; const parts = [lk.type || null, dr].filter(Boolean); if (parts.length) P(`  - ${parts.join(' · ')}`); }
+    P('', '## Tracklist');
+    for (const med of m.media) { P(`### Medium ${med.position}${med.format ? ' — ' + esc(med.format) : ''}${med.title ? ' — ' + esc(med.title) : ''}`); for (const t of med.tracks) { const tail = [emitCredit(t.credit), t.length ? `(${t.length})` : ''].filter(Boolean).join(' '); const rec = t.recording ? ' → [' + esc(t.recording) + ']' : ''; P(`${t.position}. ${escTitle(t.title)}${(tail || rec) ? ' — ' + tail + rec : ''}`); } P(''); }
+    P('<!-- references -->'); for (const [lbl, v] of m.refs) P(`[${esc(lbl)}]: ${v.url}${v.main && v.main !== lbl ? ' (' + v.main + ')' : ''}`);
+    return L.join('\n');
+  }
+  const splitDelim = s => { const m = s.match(/(^|[^\\]) — /); if (!m) return [s, null]; const at = m.index + m[1].length; return [s.slice(0, at), s.slice(at + 3)]; };
+  function parse(md) {
+    const lines = md.split('\n'); const m = { mbid: null, h1: '', info: {}, events: [], labels: [], annotation: '', links: [], media: [], refs: new Map() };
+    const idm = md.match(/<!-- release (\S+) · format/); if (idm) m.mbid = idm[1];
+    for (const ln of lines) { const r = ln.match(/^\[((?:\\.|[^\]])*)\]:\s+(\S+)(?:\s+\((.*)\))?\s*$/); if (r) m.refs.set(unesc(r[1]), { url: r[2], main: r[3] != null ? r[3] : unesc(r[1]) }); }
+    const field = s => { const r = s.match(/^- \*\*[^*]+\*\*:\s?(.*)$/); return r ? r[1] : null; };
+    const reflbl = s => { const r = (s || '').match(/^\[((?:\\.|[^\]])*)\]$/); return r ? unesc(r[1]) : null; };
+    let sec = '', med = null;
+    for (let k = 0; k < lines.length; k++) {
+      let ln = lines[k];
+      if (/^# /.test(ln)) { m.h1 = unesc(ln.slice(2)); continue; }
+      let h = ln.match(/^## (.+)/); if (h) { sec = h[1].trim(); med = null; if (sec === 'Annotation') { const body = []; k++; while (k < lines.length && lines[k].trim() !== '<!-- /end -->') body.push(lines[k++]); m.annotation = body.join('\n').replace(/^\n+|\n+$/g, ''); } continue; }
+      let mh = ln.match(/^### Medium (\d+)(?: — (.*))?$/); if (mh) { const rest = mh[2] || '', dash = rest.indexOf(' — '); med = { position: +mh[1], format: dash >= 0 ? unesc(rest.slice(0, dash)) : unesc(rest), title: dash >= 0 ? unesc(rest.slice(dash + 3)) : '', tracks: [] }; m.media.push(med); continue; }
+      if (sec === 'Release information') {
+        const v = field(ln); if (v == null) continue; const key = (ln.match(/\*\*([^*]+)\*\*/) || [])[1];
+        if (key === 'Title') m.info.title = unesc(v); else if (key === 'Disambiguation') m.info.disambiguation = unesc(v); else if (key === 'Status') m.info.status = unesc(v);
+        else if (key === 'Packaging') m.info.packaging = unesc(v); else if (key === 'Barcode') m.info.barcode = v; else if (key === 'Language') m.info.language = unesc(v);
+        else if (key === 'Script') m.info.script = unesc(v); else if (key === 'Artist') m.info.artist = parseCredit(v); else if (key === 'Release group') m.info.releaseGroup = reflbl(v);
+      } else if (sec === 'Release events') { const r = ln.match(/^- (.*)$/); if (r) { const c = r[1].split(', '); m.events.push({ date: c[0] || '', country: unesc(c.slice(1).join(', ')) }); } }
+      else if (sec === 'Labels') { const r = ln.match(/^- (.*)$/); if (r) { const sp = splitDelim(r[1]); m.labels.push({ label: reflbl(sp[0]), catno: sp[1] ? unesc(sp[1]) : '' }); } }
+      else if (sec === 'External links') {
+        let r = ln.match(/^- \[((?:\\.|[^\]])*)\](?:\(([^)]*)\))?\s*$/); if (r) { m.links.push({ label: unesc(r[1]), url: (r[2] || '').trim(), type: '', begin: '', end: '', ended: false }); continue; }   // [label](url) inline notation (url optional)
+        let a = ln.match(/^  - (.*)$/); if (a && m.links.length) { const lk = m.links[m.links.length - 1]; for (const s of a[1].split(' · ')) { const dm = s.match(/^(\S*) → (\S*)$/); if (dm) { lk.begin = dm[1]; lk.end = dm[2]; } else if (s === 'ended') lk.ended = true; else lk.type = s; } }
+      } else if (med && /^\d+\. /.test(ln)) {
+        const r = ln.match(/^(\d+)\. (.*)$/); let [titlePart, rest] = splitDelim(r[2]);
+        const t = { position: +r[1], title: unesc(titlePart.replace(/\s+$/, '')), credit: { lead: '', parts: [] }, length: '', recording: null };
+        if (rest != null) { let recM = rest.match(/ → \[((?:\\.|[^\]])*)\]\s*$/); if (recM) { t.recording = unesc(recM[1]); rest = rest.slice(0, recM.index); } let lenM = rest.match(/\((\d?\d:\d\d(?::\d\d)?)\)\s*$/); if (lenM) { t.length = lenM[1]; rest = rest.slice(0, lenM.index); } t.credit = parseCredit(rest.replace(/\s+$/, '')); }
+        med.tracks.push(t);
+      }
+    }
+    return m;
+  }
+
+  // ════════════════════ MB page glue ════════════════════
+  const u = v => { try { return typeof v === 'function' ? v() : v; } catch (e) { return undefined; } };
+  const releaseMbid = () => (location.pathname.match(/release\/([0-9a-f-]{36})/i) || [])[1] || null;
+  const onEditPage = () => /\/release\/[0-9a-f-]{36}\/edit/i.test(location.pathname) && releaseMbid();
+  async function fetchWs2(id) {
+    const inc = 'artist-credits+labels+recordings+release-groups+url-rels+media+annotation';
+    const r = await fetch(`/ws/2/release/${id}?inc=${inc}&fmt=json`, { headers: { Accept: 'application/json' } });
+    if (!r.ok) throw new Error('WS2 ' + r.status); return r.json();
+  }
+  async function exportMd() { const id = releaseMbid(); if (!id) throw new Error('no release id'); return emit(toModel(await fetchWs2(id))); }
+
+  // Apollo mirrors the model from a snapshot and doesn't observe our model writes, so nudge it
+  // to rebuild after we apply (native MB updates on its own). No-op if Apollo isn't installed.
+  async function refreshApollo() {
+    const A = W.__apolloEditor; if (!A) return;
+    try { if ('apolloOn' in A && !A.apolloOn) return; } catch (e) { return; }   // Apollo is off — don't switch it on
+    try {
+      // nudge Apollo's Markdown annotation editor to re-read the value we just set (it syncs on
+      // the textarea's input event, not on a programmatic ko change)
+      const ta = document.getElementById('annotation'); if (ta) ta.dispatchEvent(new Event('input', { bubbles: true }));
+      if (typeof A.rebuild === 'function') { await A.rebuild(true); return; }                       // light: rebuild model + rerender, no re-match (newer Apollo)
+      // older Apollo: refresh its model from the editor, then re-mount the mirror so the rows
+      // actually re-render (showMirror alone doesn't re-render an already-mounted mirror).
+      if (typeof A.buildModel === 'function') await A.buildModel();
+      if (typeof A.hideMirror === 'function' && typeof A.showMirror === 'function') { A.hideMirror(); await A.showMirror(); }
+    } catch (e) {}
+  }
+
+  const gidOf = art => { try { return art ? (typeof art.gid === 'function' ? art.gid() : art.gid) : null; } catch (e) { return null; } };
+  const creditStr = names => (names || []).map(n => (u(n.name) || '') + (u(n.joinPhrase) || '')).join('') || '(none)';
+  // Credit apply/diff. The artistCredit is a ko observable wrapping a plain object whose `names`
+  // is a plain array of {name:credited-as, artist, joinPhrase}. We rebuild that array reusing the
+  // existing artist objects (credited-as / join / reorder / drop), build entities for swap/add by
+  // MBID, and name-only entities for brand-new artists. Records a {from,to} diff; writes only when
+  // not `dry`.
+  function applyCredit(acObs, pc, refs, changes, label, dry, problems) {
+    if (!pc || typeof acObs !== 'function') return;
+    const ac = acObs(); if (!ac || !Array.isArray(ac.names)) return;
+    const curNames = ac.names, parts = pc.parts || [];
+    // emptied the field but there ARE artists → can't remove (a release/track requires an artist) → flag it
+    if (!parts.length) { if (curNames.length && problems) problems.push({ field: label, value: '(empty — an artist is required)' }); return; }
+    const byGid = new Map(); curNames.forEach(n => { const g = gidOf(n.artist); if (g) byGid.set(g, n.artist); });
+    const desired = [];
+    for (const p of parts) {
+      const r = refs.get(p.label), gid = r && mbidFromUrl(r.url);
+      let artist = gid ? byGid.get(gid) : null;
+      if (!artist) { try { artist = gid ? W.MB.entity({ gid, name: r.main || p.label }, 'artist') : W.MB.entity({ name: p.label }, 'artist'); } catch (e) { problems && problems.push({ field: label, value: p.label }); return; } }
+      if (!artist || (gid && gidOf(artist) !== gid)) { problems && problems.push({ field: label, value: p.label }); return; }
+      desired.push({ name: p.label, artist, joinPhrase: p.join || '' });
+    }
+    const sig = arr => arr.map(n => `${gidOf(n.artist) || ''}|${u(n.name) || ''}|${u(n.joinPhrase) || ''}`).join('§');
+    if (sig(curNames) === sig(desired)) return;
+    changes.push({ label, from: creditStr(curNames), to: creditStr(desired) });
+    if (!dry) { try { acObs(Object.assign({}, ac, { names: desired })); } catch (e) {} }
+  }
+
+  // Compute the diff between the parsed MD and the live editor model as [{label, from, to}].
+  // With dry=true it ONLY computes (no writes) — the dry-run preview; otherwise it also applies.
+  function diffMd(parsed, dry) {
+    const ed = W.MB && W.MB.releaseEditor; if (!ed) throw new Error('release editor not ready');
+    const rel = ed.rootField.release(); const changes = [], problems = [];
+    const setObs = (label, obs, val) => { if (typeof obs !== 'function') return; const f = String(u(obs) == null ? '' : u(obs)), t = String(val == null ? '' : val); if (f !== t) { changes.push({ label, from: f || '(empty)', to: t || '(empty)' }); if (!dry) try { obs(val); } catch (e) {} } };
+    const i = parsed.info || {};
+    if (i.title != null) setObs('release title', rel.name, i.title);
+    if (i.disambiguation != null) setObs('disambiguation', rel.comment, i.disambiguation);
+    if (i.barcode != null && rel.barcode && typeof rel.barcode.value === 'function') { const bv = i.barcode === 'none' ? '' : i.barcode, f = String(u(rel.barcode.value) || ''); if (f !== bv) { changes.push({ label: 'barcode', from: f || '(none)', to: bv || '(none)' }); if (!dry) try { rel.barcode.value(bv); } catch (e) {} } }
+    if (parsed.annotation != null) setObs('annotation', rel.annotation, parsed.annotation);
+    if (i.artist) applyCredit(rel.artistCredit, i.artist, parsed.refs, changes, 'release artist', dry, problems);
+    for (const med of (parsed.media || [])) {
+      const lm = rel.mediums()[med.position - 1]; if (!lm) continue; const lts = lm.tracks();
+      if (med.title) setObs(`medium ${med.position} title`, lm.name, med.title);   // the medium's own title (lm.name); only set non-empty (a format-less "### Medium 1 — Title" parses ambiguously)
+      for (const t of med.tracks) {
+        let lt = null; const recUrl = t.recording && parsed.refs.get(t.recording) && parsed.refs.get(t.recording).url; const recGid = recUrl && mbidFromUrl(recUrl);
+        if (recGid) lt = lts.find(x => { const rc = u(x.recording); return rc && u(rc.gid) === recGid; });
+        if (!lt) lt = lts[t.position - 1]; if (!lt) continue;
+        const tag = `track ${med.position}.${t.position}`;
+        setObs(`${tag} title`, lt.name, t.title);   // the "N." marker is position/order, not the `number` field — not written
+        if (t.length != null) setObs(`${tag} length`, lt.formattedLength, t.length);   // '' clears an existing length (export always shows present lengths, so '' = removed)
+        applyCredit(lt.artistCredit, t.credit, parsed.refs, changes, `${tag} artist`, dry, problems);
+      }
+    }
+    // release-level enums — name → id via the page's ko-bound <select> options
+    const selFor = fid => [...document.querySelectorAll('select')].find(s => (s.getAttribute('data-bind') || '').includes('value: ' + fid));
+    const optText = (s, val) => { const o = [...s.options].find(o => o.value === String(val)); return o ? o.textContent.trim() : String(val); };
+    const setEnum = (label, obs, fid, name) => {
+      if (name == null || typeof obs !== 'function') return;   // field absent → leave it; '' means clear (the empty <option>)
+      const s = selFor(fid); if (!s) return;
+      const ci = x => String(x).trim().toLowerCase();   // option text match is case-insensitive (digibook == Digibook)
+      const opt = name === '' ? [...s.options].find(o => o.value === '') : [...s.options].find(o => ci(o.textContent) === ci(name));
+      if (!opt) { problems.push({ field: label, value: name, focus: () => focusNative(selFor(fid)) }); return; }   // unknown value → surface it, don't silently skip
+      const cur = String(u(obs)); if (cur !== String(opt.value)) { changes.push({ label, from: optText(s, cur) || '(none)', to: opt.value === '' ? '(none)' : opt.textContent.trim() }); if (!dry) try { obs(opt.value); } catch (e) {} }
+    };
+    setEnum('status', rel.statusID, 'statusID', i.status);
+    setEnum('packaging', rel.packagingID, 'packagingID', i.packaging);
+    setEnum('language', rel.languageID, 'languageID', i.language);
+    setEnum('script', rel.scriptID, 'scriptID', i.script);
+    const ci = x => String(x).trim().toLowerCase();
+    // release events — add/remove to match the MD, then edit each by index
+    const fmtd = (y, mo, d) => (y ? '' + y : '') + (mo ? '-' + String(mo).padStart(2, '0') : '') + (d ? '-' + String(d).padStart(2, '0') : '');
+    const pevents = parsed.events || [];
+    const evArr = () => (typeof rel.events === 'function' && rel.events()) || [];
+    const ev0 = evArr().length;
+    for (let idx = pevents.length; idx < ev0; idx++) { const le = evArr()[idx]; changes.push({ label: `event ${idx + 1} (remove)`, from: (le && le.date ? fmtd(u(le.date.year), u(le.date.month), u(le.date.day)) : '') || '(event)', to: '(removed)' }); }
+    if (!dry) { const cur = evArr().slice(); for (let idx = cur.length - 1; idx >= pevents.length; idx--) try { rel.events.remove(cur[idx]); } catch (e) {} }
+    for (let idx = ev0; idx < pevents.length; idx++) { const pe = pevents[idx]; changes.push({ label: `event ${idx + 1} (add)`, from: '(none)', to: [pe.date, pe.country].filter(Boolean).join(', ') || '(event)' }); if (!dry) try { rel.events.push(new ed.fields.ReleaseEvent({}, rel)); } catch (e) {} }
+    pevents.forEach((pe, idx) => {
+      const le = evArr()[idx]; if (!le) return;
+      if (le.date && typeof le.date.year === 'function') {
+        const m = (pe.date || '').match(/^(\d{4})?(?:-(\d{1,2}))?(?:-(\d{1,2}))?$/) || [];
+        const ny = m[1] || '', nmo = m[2] || '', nd = m[3] || '';   // STRINGS — a numeric year trips MB's "year should have four digits" check
+        const cy = u(le.date.year), cmo = u(le.date.month), cd = u(le.date.day);
+        const same = (a, b) => String(a == null || a === '' ? '' : +a) === String(b == null || b === '' ? '' : +b);
+        if (!same(cy, ny) || !same(cmo, nmo) || !same(cd, nd)) {
+          changes.push({ label: `event ${idx + 1} date`, from: fmtd(cy, cmo, cd) || '(none)', to: fmtd(ny, nmo, nd) || '(none)' });
+          if (!dry) try { le.date.year(ny); le.date.month(nmo); le.date.day(nd); } catch (e) {}
+        }
+      }
+      if (pe.country != null && typeof le.countryID === 'function') {   // '' clears the country (the empty <option>)
+        const s = selFor('countryID'), opt = s && (pe.country === '' ? [...s.options].find(o => o.value === '') : [...s.options].find(o => ci(o.textContent) === ci(pe.country)));
+        if (opt) { const cur = String(u(le.countryID)); if (cur !== String(opt.value)) { changes.push({ label: `event ${idx + 1} country`, from: (s ? optText(s, cur) : cur) || '(none)', to: opt.value === '' ? '(none)' : opt.textContent.trim() }); if (!dry) try { le.countryID(opt.value); } catch (e) {} } }
+        else problems.push({ field: `event ${idx + 1} country`, value: pe.country, focus: () => focusNative([...document.querySelectorAll('select')].filter(x => (x.getAttribute('data-bind') || '').includes('value: countryID'))[idx]) });
+      }
+    });
+    // labels — add/remove to match the MD, then change entity + cat# by index
+    const plabels = parsed.labels || [];
+    const labArr = () => (typeof rel.labels === 'function' && rel.labels()) || [];
+    // a label entity: by MBID if a footer ref resolves, else a brand-new label by name (like new artists) — no link needed
+    const labEnt = pl => { if (!pl.label) return null; const ref = parsed.refs.get(pl.label), gid = ref && mbidFromUrl(ref.url); return gid ? { gid, name: ref.main || pl.label } : { name: pl.label }; };
+    const lab0 = labArr().length;
+    for (let idx = plabels.length; idx < lab0; idx++) { const ll = labArr()[idx], nm = ll && u(ll.label) && u(u(ll.label).name); changes.push({ label: `label ${idx + 1} (remove)`, from: nm || (ll && u(ll.catalogNumber)) || '(label)', to: '(removed)' }); }
+    if (!dry) { const cur = labArr().slice(); for (let idx = cur.length - 1; idx >= plabels.length; idx--) try { rel.labels.remove(cur[idx]); } catch (e) {} }
+    for (let idx = lab0; idx < plabels.length; idx++) { const pl = plabels[idx], e = labEnt(pl); changes.push({ label: `label ${idx + 1} (add)`, from: '(none)', to: (pl.label || '(label)') + (pl.catno ? ' — ' + pl.catno : '') }); if (!dry) try { rel.labels.push(new ed.fields.ReleaseLabel({ label: e ? W.MB.entity(e, 'label') : null, catalogNumber: pl.catno || '' }, rel)); } catch (e2) {} }
+    plabels.forEach((pl, idx) => {
+      const ll = labArr()[idx]; if (!ll) return;
+      const e = labEnt(pl);
+      if (e && typeof ll.label === 'function') {
+        const curL = u(ll.label), curGid = gidOf(curL), curName = curL ? u(curL.name) : '';
+        // gid → swap to that exact label; name-only → set/rename to a new label whenever the name
+        // actually changed (so renaming a linked label to plain text works; an unchanged name = no-op,
+        // which preserves an existing link if you only removed its footer)
+        const differs = e.gid ? (curGid !== e.gid) : (curName !== e.name);
+        if (differs) { changes.push({ label: `label ${idx + 1}`, from: curName || '(none)', to: e.name }); if (!dry) try { ll.label(W.MB.entity(e, 'label')); } catch (e2) {} }
+      }
+      if (typeof ll.catalogNumber === 'function') { const f = String(u(ll.catalogNumber) || ''), t = String(pl.catno || ''); if (f !== t) { changes.push({ label: `label ${idx + 1} cat#`, from: f || '(none)', to: t || '(none)' }); if (!dry) try { ll.catalogNumber(t); } catch (e2) {} } }
+    });
+    return { changes, problems };
+  }
+  const applyMd = parsed => diffMd(parsed, false).changes;   // compute + write (back-compat for the test hook)
+
+  // Open the release MD in the editor and KEEP it linked: every save applies to the editor,
+  // so you can iterate (edit · save · see it apply · edit more · save …) until you Stop.
+  let session = null;   // { id, active, lastMd }
+  async function startSession() {
+    if (session && session.active) { showPanel(); setStatus('Already editing — save in your editor to apply.'); return; }
+    if (!onEditPage()) { note('Open a release’s Edit page first', 'err'); return; }
+    showPanel(); setStatus('Exporting release…');
+    let md; try { md = await exportMd(); } catch (e) { setStatus('Export failed: ' + (e.message || e), 'err'); return; }
+    if (!(await ping())) { setStatus(`${NAME} helper not reachable on ${base()} — start it (see README)`, 'err'); updateLauncher(); return; }
+    const id = 'rel-' + (releaseMbid() || '').slice(0, 8) + '-' + Date.now().toString(36);
+    try { const open = await gm({ method: 'POST', url: base() + '/open', headers: { 'Content-Type': 'application/json' }, data: JSON.stringify({ id, content: md, ext: 'md', name: 'release' }) }); if (open.status !== 200) { setStatus(`Open failed (HTTP ${open.status})`, 'err'); return; } }
+    catch (e) { setStatus('Open error: ' + (e.message || e), 'err'); return; }
+    session = { id, active: true, lastMd: md };
+    setStatus('Editing — save in your editor and changes apply here.', 'ok');
+    note('Release opened in your editor — it stays linked until you stop.');
+    updateLauncher();
+    poll(session);
+  }
+  async function poll(s) {
+    while (s.active) {
+      let r; try { r = await gm({ url: `${base()}/result?id=${encodeURIComponent(s.id)}`, timeout: 660000 }); } catch (e) { if (!s.active) break; await sleep(1200); continue; }
+      if (!s.active) break;
+      if (r.status === 204) continue;                                  // still editing
+      if (r.status === 404 || r.status === 410) { if (s.active) note('Editor session ended.'); s.active = false; if (session === s) session = null; updateLauncher(); break; }
+      if (r.status !== 200) { await sleep(1200); continue; }
+      let content; try { content = JSON.parse(r.responseText).content || ''; } catch (e) { continue; }
+      if (content.replace(/\s+$/, '') === s.lastMd.replace(/\s+$/, '')) { setStatus('Saved — no changes.'); continue; }
+      s.lastMd = content;
+      try {
+        const { changes, problems } = diffMd(parse(content), false);
+        if (changes.length) await refreshApollo();   // make Apollo's mirror reflect the model writes (if Apollo is on)
+        renderChanges(changes); renderErrors(problems);   // both tables rebuilt each save
+        const parts = [];
+        if (changes.length) parts.push(`${changes.length} applied`);
+        if (problems.length) parts.push(`${problems.length} not applied`);
+        setStatus(parts.length ? 'Saved — ' + parts.join(', ') + '.' : 'Saved — no applicable changes.', problems.length ? 'err' : 'ok');
+      } catch (e) { setStatus('Apply error: ' + (e.message || e), 'err'); }
+    }
+  }
+  function stopSession() {
+    if (!session || !session.active) { setStatus('Not editing — click the ✎ button to start.'); return; }
+    const s = session; s.active = false; session = null;
+    gm({ url: `${base()}/close?id=${encodeURIComponent(s.id)}` }).catch(() => {});
+    setStatus('Stopped editing.'); updateLauncher();
+  }
+  window.addEventListener('pagehide', () => { if (session && session.active) gm({ url: `${base()}/close?id=${encodeURIComponent(session.id)}` }).catch(() => {}); });
+
+  // ── bottom-left launcher: shown only while the extedit helper is reachable (pinged) ──
+  let launcher = null, _helperUp = false;
+  function ensureLauncher() {
+    if (launcher) return;
+    launcher = document.createElement('button');
+    launcher.type = 'button'; launcher.id = 'scribe-launcher';
+    launcher.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:2147483646;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;background:#2c3a33;color:#fff;box-shadow:0 3px 12px rgba(0,0,0,.32);transition:background .15s,transform .1s';
+    launcher.innerHTML = SCRIBE_ICON;
+    launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.06)'; };
+    launcher.onmouseleave = () => { launcher.style.transform = 'scale(1)'; };
+    launcher.onclick = () => { if (session && session.active) stopSession(); else startSession(); };
+    document.body.appendChild(launcher);
+  }
+  function updateLauncher() {
+    if (!launcher) return;
+    const active = !!(session && session.active);
+    launcher.style.display = _helperUp ? 'flex' : 'none';
+    launcher.style.background = active ? '#2e9e5b' : '#2c3a33';
+    launcher.title = !_helperUp ? `${NAME} — start the extedit helper to enable`
+      : active ? `${NAME} — editing this release · click to stop` : `${NAME} — edit this release as Markdown (Ctrl+Alt+R)`;
+  }
+  async function pollHelper() {
+    while (true) {
+      const up = onEditPage() ? await ping() : false;
+      if (up !== _helperUp) { _helperUp = up; ensureLauncher(); updateLauncher(); }
+      await sleep(up ? 15000 : 4000);   // re-check often while down (so it appears when you start the helper), relax once up
+    }
+  }
+  // Ctrl+Alt+R toggles the session — only on a release Edit page
+  window.addEventListener('keydown', e => {
+    if (!e.ctrlKey || !e.altKey || e.shiftKey || e.metaKey) return;
+    if (e.code !== 'KeyR' && (e.key || '').toLowerCase() !== 'r') return;
+    if (!onEditPage()) return;
+    e.preventDefault(); e.stopPropagation();
+    if (session && session.active) stopSession(); else startSession();
+  }, true);
+  if (onEditPage()) { ensureLauncher(); pollHelper(); }
+  // test/automation hook
+  try { W.__releaseMd = W.__scribe = { exportMd, parse, emit, toModel, applyMd, diffMd, refreshApollo, startSession, stopSession }; } catch (e) {}
+  console.log(`[${NAME}] v${VERSION} ready — bottom-left button appears when the extedit helper is running (${base()})`);
+})();

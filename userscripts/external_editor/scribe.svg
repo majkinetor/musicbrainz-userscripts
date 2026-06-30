@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="26" fill="#2e9e5b"/>
+  <!-- markdown text lines -->
+  <g stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.95">
+    <line x1="28" y1="46" x2="80" y2="46"/>
+    <line x1="28" y1="70" x2="66" y2="70"/>
+    <line x1="28" y1="94" x2="56" y2="94"/>
+  </g>
+  <!-- quill nib pointing down-left onto the lines -->
+  <path d="M106 22 L64 64 L57 84 L77 77 Z" fill="#ffffff" stroke="#2f6f54" stroke-width="4" stroke-linejoin="round"/>
+  <line x1="66" y1="74" x2="72" y2="80" stroke="#2f6f54" stroke-width="4" stroke-linecap="round"/>
+</svg>
