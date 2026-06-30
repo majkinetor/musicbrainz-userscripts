@@ -22,4 +22,7 @@ Edit-note memory: remembers your recent edit notes and lets you save and recall 
 [Platform Check](./userscripts/platform_check/README.md)<img src="./userscripts/platform_check/icon.svg" align="left" width="32"><br>
 Find and verify URLs for a particular MusicBrainz release on online platforms
 
+[Scribe](./userscripts/scribe/README.md) <img src="./userscripts/scribe/scribe.svg" align="left" width="32"><br>
+Edit MusicBrainz in your real editor (VS Code, Vim, …): **Ctrl+Alt+E** opens the focused field; on a release Edit page a bottom-left button (or **Ctrl+Alt+R**) edits the whole release as one Markdown document and applies your saves back. Needs the bundled `scribe` localhost helper.
+
 View [users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=by+majkinetor&conditions.1.field=edit_note_author&conditions.1.operator=%21%3D&conditions.1.name=majkinetor&conditions.1.args.0=1601832&field=Please+choose+a+condition).

@@ -1,4 +1,4 @@
-// External Editor — a tiny cross-platform localhost bridge.
+// Scribe helper (extedit) — a tiny cross-platform localhost bridge.
 //
 // A browser userscript POSTs the text of the field you're editing here (on a
 // hotkey); this tool writes it to a temp file and opens it in your editor. When
@@ -59,7 +59,7 @@ catch (HttpListenerException ex)
     return 1;
 }
 
-Console.WriteLine($"External Editor v{Version} listening on http://127.0.0.1:{port}/");
+Console.WriteLine($"Scribe helper v{Version} listening on http://127.0.0.1:{port}/");
 Console.WriteLine($"  token: {(token == "extedit" ? "extedit (default — set --token for a real secret)" : "(set)")}");
 Console.WriteLine($"  editor: {editor ?? "OS default for the file type"}");
 Console.WriteLine("Ctrl+C to stop.");

@@ -1,14 +1,14 @@
-# External Editor <img src="./scribe.svg" align="left" width="40" height="40">
+# Scribe <img src="./scribe.svg" align="left" width="40" height="40">
 
-Edit MusicBrainz in your *real* editor (VS Code, Vim, Notepad…). Two userscripts share one tiny helper:
+**Scribe** edits MusicBrainz in your *real* editor (VS Code, Vim, Notepad…) — **one userscript, two ways**, chosen by the trigger you use:
 
-- **External Editor** — edit the **focused text field**: cursor in any text box, press the hotkey, the field's text opens in your editor; **save** and the field updates.
-- **Scribe** — edit a **whole release as one Markdown document** (see [Scribe](#scribe--edit-a-whole-release-as-markdown)).
+- **Ctrl+Alt+E** — edit the **focused text field**: cursor in any text box, press it, the text opens in your editor; **save** and the field updates.
+- **Ctrl+Alt+R** (or the bottom-left **✎** button on a release Edit page) — edit a **whole release as one Markdown document** (see [the release editor](#scribe--edit-a-whole-release-as-markdown)).
 
-Both ride a tiny **cross-platform .NET CLI** (`extedit`) on `127.0.0.1` that writes the text to a temp file, opens your editor, and hands the saved file back.
+Both ride a tiny **cross-platform .NET CLI** (`scribe`) on `127.0.0.1` that writes the text to a temp file, opens your editor, and hands the saved file back.
 
-- Install: [External Editor](./external_editor.user.js) · [Scribe](./scribe.user.js)
-- Download helper tool: [`extedit.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/external_editor/helper/dist/extedit.exe)
+- Install: [`scribe.user.js`](./scribe.user.js)
+- Download helper: [`scribe.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe.exe)
 
 ## How it works
 
@@ -31,13 +31,13 @@ hotkey ─POST /open {id,content}→ extedit ─writes file, opens your editor
 # one-time: install the .NET 9 runtime (the helper needs only the base runtime)
 winget install --id Microsoft.DotNet.Runtime.9 -e
 # then run the helper:
-.\extedit.exe --port 17999 --token <your-secret> --editor "code -r"
+.\scribe.exe --port 17999 --token <your-secret> --editor "code -r"
 ```
 
 **Build it yourself** (any OS) — requires the [.NET SDK](https://dotnet.microsoft.com/download) (9.0+):
 
 ```sh
-cd userscripts/external_editor/helper
+cd userscripts/scribe/helper
 dotnet run -- --port 17999 --token <your-secret>
 # smallest exe (needs the .NET runtime, ~190 KB — this is what dist/ ships):
 dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugType=none -o ./dist
@@ -49,20 +49,20 @@ Options:
 - `--port` — listen port (default `17999`).
 - `--token` — shared secret; **set the same value** in the userscript (Tampermonkey menu → *Set token*). Default `extedit`.
 - `--editor "<cmd>"` — command to open the file (e.g. `--editor "code -r"`, `--editor "subl"`, `--editor vim`). Omit to use the OS default app for the file type. `--editor none` = don't auto-open (open the temp file yourself).
-  - **Don't use a wait flag** (`code -w` / `subl -w`): extedit detects saves by watching the file's mtime, so it isn't needed — and with VS Code, `-w` stops the file's tab from being re-revealed when you re-open a still-linked field. Use `-r` (reuse window + reveal the tab) instead.
+  - **Don't use a wait flag** (`code -w` / `subl -w`): the helper detects saves by watching the file's mtime, so it isn't needed — and with VS Code, `-w` stops the file's tab from being re-revealed when you re-open a still-linked field. Use `-r` (reuse window + reveal the tab) instead.
 
 ```
-.\extedit.exe --editor "'C:\Program Files\Microsoft VS Code\Code.exe' -w"
+.\scribe.exe --editor "'C:\Program Files\Microsoft VS Code\Code.exe' -r"
 ```
 
 Keep it running in the background while you edit. Loopback-only; every request must carry the token.
 
 ## Using it
 
-1. Start the helper.
-2. In the userscript manager menu, set **port** / **token** to match, and optionally rebind the **hotkey** (default **Ctrl+Alt+E**).
-3. Focus a text field on a MusicBrainz page, press the hotkey → it opens in your editor (edit notes / annotations open as `.md`).
-4. Edit, **save**. The field updates (a trailing newline your editor adds is trimmed). **Esc** cancels a pending edit.
+1. Start the helper (`scribe.exe …`).
+2. In the userscript-manager menu, set **helper port** / **token** to match (and optionally rebind the field hotkey).
+3. **Edit one field** — focus a text field, press **Ctrl+Alt+E** → it opens in your editor (edit notes / annotations as `.md`); **save** to update it (trailing newline trimmed). **Esc** disconnects it. Link several at once and bounce between them.
+4. **Edit a whole release** — on a release **Edit** page, click the bottom-left **✎** button (appears when the helper is running) or press **Ctrl+Alt+R**; see [the release editor](#scribe--edit-a-whole-release-as-markdown).
 
 ## Scribe — edit a whole release as Markdown
 
@@ -81,7 +81,7 @@ changes apply back to the editor (review and submit yourself). A bottom-right pa
   table rather than being silently skipped.
 - **Not applied yet** (round-trips losslessly — use the native editor): external links, and
   add / remove / reorder of tracks. (Phase 2.)
-- Needs the same helper running; reuses the External Editor port/token.
+- Needs the same helper running; shares the field-editor's port/token.
 
 ## Shortcuts
 
