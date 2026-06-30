@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.6.30.21
+// @version      2026.6.30.22
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/scribe/scribe.svg
@@ -19,7 +19,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.6.30.20';
+  const VERSION = '2026.6.30.22';
   const NAME = 'Scribe';
   // quill nib over markdown lines (currentColor — sits on the dark launcher/panel)
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="14" y2="7"/><line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="17" x2="9" y2="17"/><path d="M20 4 L13 11 L11.5 14.5 L15 13 Z" fill="currentColor" stroke="none"/></svg>';
@@ -175,18 +175,18 @@
   function emit(m) {
     const L = [], P = (...x) => L.push(...x), i = m.info;
     P(`# ${escTitle(m.h1)}`, '', `<!-- release ${m.mbid} · format v1 · DO NOT EDIT THIS LINE -->`, '');
-    P('## Release information');
+    P('## Release information', '');   // blank line after every section header (header ↕ body)
     P(`- **Title**: ${esc(i.title)}`, `- **Disambiguation**: ${esc(i.disambiguation)}`);   // always emit Disambiguation (even empty) so it can be filled in
     // enum values are controlled vocab whose canonical names can include brackets ([Multiple languages]);
     // a field value parses whole (brackets don't break it), so emit them unescaped to match the <select> text
     P(`- **Status**: ${i.status}`, `- **Packaging**: ${i.packaging}`, `- **Barcode**: ${i.barcode}`, `- **Language**: ${i.language}`, `- **Script**: ${i.script}`, `- **Artist**: ${emitCredit(i.artist)}`);
     if (i.releaseGroup) P(`- **Release group**: [${esc(i.releaseGroup)}]`);
-    P('', '## Release events'); for (const e of m.events) P(`- ${[e.date, esc(e.country)].filter(Boolean).join(', ')}`);
-    P('', '## Labels'); for (const l of m.labels) P(`- ${l.label ? `[${esc(l.label)}]` : ''}${l.catno ? ' — ' + esc(l.catno) : ''}`);
-    P('', '## Annotation', m.annotation, '<!-- /end -->', '', '## External links');
+    P('', '### Release events', ''); for (const e of m.events) P(`- ${[e.date, esc(e.country)].filter(Boolean).join(', ')}`);
+    P('', '### Labels', ''); for (const l of m.labels) P(`- ${l.label ? `[${esc(l.label)}]` : ''}${l.catno ? ' — ' + esc(l.catno) : ''}`);
+    P('', '### Annotation', '', m.annotation, '<!-- /end -->', '', '### External links', '');
     for (const lk of m.links) { P(`- [${esc(lk.label)}](${lk.url || ''})`); let dr = ''; if (lk.begin || lk.end) dr = `${lk.begin} → ${lk.end}`.trim(); if (lk.ended && !lk.end) dr = (dr ? dr + ' · ' : '') + 'ended'; const parts = [lk.type || null, dr].filter(Boolean); if (parts.length) P(`  - ${parts.join(' · ')}`); }
-    P('', '## Tracklist');
-    for (const med of m.media) { P(`### Medium ${med.position}${med.format ? ' — ' + esc(med.format) : ''}${med.title ? ' — ' + esc(med.title) : ''}`); for (const t of med.tracks) { const tail = [emitCredit(t.credit), t.length ? `(${t.length})` : ''].filter(Boolean).join(' '); const rec = t.recording ? ' → [' + esc(t.recording) + ']' : ''; P(`${t.position}. ${escTitle(t.title)}${(tail || rec) ? ' — ' + tail + rec : ''}`); } P(''); }
+    P('', '## Tracklist', '');
+    for (const med of m.media) { P(`### Medium ${med.position}${med.format ? ' — ' + esc(med.format) : ''}${med.title ? ' — ' + esc(med.title) : ''}`, ''); for (const t of med.tracks) { const tail = [emitCredit(t.credit), t.length ? `(${t.length})` : ''].filter(Boolean).join(' '); const rec = t.recording ? ' → [' + esc(t.recording) + ']' : ''; P(`${t.position}. ${escTitle(t.title)}${(tail || rec) ? ' — ' + tail + rec : ''}`); } P(''); }
     P('<!-- references -->'); for (const [lbl, v] of m.refs) P(`[${esc(lbl)}]: ${v.url}${v.main && v.main !== lbl ? ' (' + v.main + ')' : ''}`);
     return L.join('\n');
   }
@@ -201,8 +201,8 @@
     for (let k = 0; k < lines.length; k++) {
       let ln = lines[k];
       if (/^# /.test(ln)) { m.h1 = unesc(ln.slice(2)); continue; }
-      let h = ln.match(/^## (.+)/); if (h) { sec = h[1].trim(); med = null; if (sec === 'Annotation') { const body = []; k++; while (k < lines.length && lines[k].trim() !== '<!-- /end -->') body.push(lines[k++]); m.annotation = body.join('\n').replace(/^\n+|\n+$/g, ''); } continue; }
-      let mh = ln.match(/^### Medium (\d+)(?: — (.*))?$/); if (mh) { const rest = mh[2] || '', dash = rest.indexOf(' — '); med = { position: +mh[1], format: dash >= 0 ? unesc(rest.slice(0, dash)) : unesc(rest), title: dash >= 0 ? unesc(rest.slice(dash + 3)) : '', tracks: [] }; m.media.push(med); continue; }
+      let mh = ln.match(/^### Medium (\d+)(?: — (.*))?$/); if (mh) { const rest = mh[2] || '', dash = rest.indexOf(' — '); med = { position: +mh[1], format: dash >= 0 ? unesc(rest.slice(0, dash)) : unesc(rest), title: dash >= 0 ? unesc(rest.slice(dash + 3)) : '', tracks: [] }; m.media.push(med); continue; }   // check medium BEFORE the generic ## / ### section header
+      let h = ln.match(/^#{2,3} (.+)/); if (h) { sec = h[1].trim(); med = null; if (sec === 'Annotation') { const body = []; k++; while (k < lines.length && lines[k].trim() !== '<!-- /end -->') body.push(lines[k++]); m.annotation = body.join('\n').replace(/^\n+|\n+$/g, ''); } continue; }   // ## Release information / ## Tracklist, and ### Release events|Labels|Annotation|External links
       if (sec === 'Release information') {
         const v = field(ln); if (v == null) continue; const key = (ln.match(/\*\*([^*]+)\*\*/) || [])[1];
         if (key === 'Title') m.info.title = unesc(v); else if (key === 'Disambiguation') m.info.disambiguation = unesc(v); else if (key === 'Status') m.info.status = unesc(v);
