@@ -5,13 +5,19 @@
 - Install: [`scribe.user.js`](./scribe.user.js)
 - Download helper: [`scribe.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe.exe)
 
-## Feature
+## Features
 
 - **Edit field** (Ctrl+Alt+E):<br> 
 With cursor in any text box, press it, the text opens in your editor; **save** and the field updates.
 - **Edit release** (Ctrl+Alt+R)<br>
 Edit a whole release as one Markdown document** (see [the release editor](#edit-a-whole-release)).
 
+## Usage
+
+1. Start the helper (`scribe.exe …`).
+    1. Optionally, set **helper port** / **token** to match (and rebind the field hotkey).
+3. **Edit one field** — focus a text field, press **Ctrl+Alt+E** → it opens in your editor (edit notes / annotations as `.md`); **save** to update it (trailing newline trimmed). **Esc** disconnects it. Link several at once and bounce between them.
+4. **Edit a whole release** — on a release **Edit** page, click the bottom-left **✎** button (appears when the helper is running) or press **Ctrl+Alt+R**; see [the release editor](#scribe--edit-a-whole-release-as-markdown).
 
 ## Running the helper
 
@@ -59,13 +65,6 @@ Options:
 ```
 
 Keep it running in the background while you edit. Loopback-only; every request must carry the token.
-
-## Usage
-
-1. Start the helper (`scribe.exe …`).
-2. In the userscript-manager menu, set **helper port** / **token** to match (and optionally rebind the field hotkey).
-3. **Edit one field** — focus a text field, press **Ctrl+Alt+E** → it opens in your editor (edit notes / annotations as `.md`); **save** to update it (trailing newline trimmed). **Esc** disconnects it. Link several at once and bounce between them.
-4. **Edit a whole release** — on a release **Edit** page, click the bottom-left **✎** button (appears when the helper is running) or press **Ctrl+Alt+R**; see [the release editor](#scribe--edit-a-whole-release-as-markdown).
 
 ## Edit a whole release
 
