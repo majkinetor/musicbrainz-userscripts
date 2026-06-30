@@ -4,7 +4,7 @@ Edit the **focused text field** of a MusicBrainz page in your *real* editor (VS 
 
 It's two pieces — the **userscript** (the hotkey + writes the result back) and **helper executable tool** (a tiny **cross-platform .NET CLI** that runs on `127.0.0.1`, writes the text to a temp file, opens your editor, and hands the saved file back).
 
-- Install userscript: [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/external_editor/external_editor.user.js)
+- Install userscript: [latest](./external_editor.user.js)
 - Download helper tool: [`extedit.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/feat/external-editor-poc/userscripts/external_editor/helper/dist/extedit.exe)
 
 ## How it works
