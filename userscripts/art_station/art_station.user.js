@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.28
+// @version      2026.6.30
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -839,7 +839,7 @@
       dz.onclick = pickFiles;
       dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
       dz.ondragleave = () => dz.classList.remove('over');
-      dz.ondrop = async e => { e.preventDefault(); dz.classList.remove('over'); addFiles(await filesFromDrop(e.dataTransfer)); };
+      dz.ondrop = async e => { e.preventDefault(); dz.classList.remove('over'); await addFromDrop(e.dataTransfer); };
     }
 
     // type pill → popover
@@ -1871,7 +1871,8 @@
   // won't navigate to the file). Internal reorder drags carry no Files, so they're ignored;
   // the zone auto-hides after a drop or when the drag leaves the window.
   let _autoDz = false;
-  const isFileDrag = e => { try { return [...((e.dataTransfer && e.dataTransfer.types) || [])].includes('Files'); } catch (x) { return false; } };
+  // a drag we accept: local files, OR an image dragged from another tab/page (a URL — #331)
+  const isFileDrag = e => { try { const t = [...((e.dataTransfer && e.dataTransfer.types) || [])]; return t.includes('Files') || t.includes('text/uri-list'); } catch (x) { return false; } };
   window.addEventListener('dragover', e => {
     if (!isFileDrag(e)) return;
     e.preventDefault();
@@ -1882,8 +1883,8 @@
     e.preventDefault(); e.stopPropagation();   // stage every file drop here (a near-miss outside the zone still works); also stops the zone's own ondrop double-adding
     _autoDz = false;
     root.querySelector('.as-dropzone')?.classList.remove('over');
-    const files = await filesFromDrop(e.dataTransfer);
-    if (files && files.length) addFiles(files); else { _dropZone = false; render(); }
+    const added = await addFromDrop(e.dataTransfer);
+    if (!added) { _dropZone = false; render(); }
   }, true);
   window.addEventListener('dragleave', e => { if (_autoDz && !e.relatedTarget) { _dropZone = false; _autoDz = false; render(); } });
   function newItem(f, meta) {
@@ -1972,6 +1973,45 @@
       readBatch();
     });
     return Promise.all(entries.map(walk)).then(() => out);
+  }
+  // #331: an image dragged from another tab/page arrives as a URL, not a File. Pull it out
+  // of the drop (uri-list → <img src> in the HTML → a plain-text URL).
+  function urlFromDrop(dt) {
+    try {
+      const uri = (dt.getData('text/uri-list') || '').split(/\r?\n/).map(s => s.trim()).find(s => s && !s.startsWith('#'));
+      if (uri) return uri;
+      const m = (dt.getData('text/html') || '').match(/<img[^>]+src\s*=\s*["']([^"']+)["']/i);
+      if (m) return m[1];
+      const txt = (dt.getData('text/plain') || '').trim();
+      if (/^https?:\/\//i.test(txt)) return txt;
+    } catch (e) {}
+    return null;
+  }
+  // Fetch a dropped image URL (CORS-free via fetchBytes/GM) and wrap it as a File. Sniffs the
+  // bytes for a CAA-accepted type (JPEG/PNG/GIF/PDF); warns + skips anything else (e.g. webp).
+  async function fileFromUrl(url) {
+    asLog.info('Fetching dropped image…');
+    const bytes = await fetchBytes(url);
+    const hex = [...bytes.slice(0, 4)].map(b => b.toString(16).padStart(2, '0')).join('');
+    let type, ext;
+    if (hex.startsWith('ffd8ff')) { type = 'image/jpeg'; ext = 'jpg'; }
+    else if (hex.startsWith('89504e47')) { type = 'image/png'; ext = 'png'; }
+    else if (hex.startsWith('47494638')) { type = 'image/gif'; ext = 'gif'; }
+    else if (hex.startsWith('25504446')) { type = 'application/pdf'; ext = 'pdf'; }
+    else { asLog.warn(`Dropped image isn't a Cover Art Archive type (JPEG/PNG/GIF/PDF) — skipped: ${url.slice(0, 90)}`); return null; }
+    let name = ''; try { name = decodeURIComponent(new URL(url).pathname.split('/').pop() || ''); } catch (e) {}
+    if (!/\.(jpe?g|png|gif|pdf)$/i.test(name)) name = (name.replace(/\.[^./]*$/, '') || 'dropped-image') + '.' + ext;
+    return new File([bytes], name, { type });
+  }
+  // Unified drop ingest: local files if present, else fetch a dropped image URL. Returns true
+  // when something was staged.
+  async function addFromDrop(dt) {
+    const files = await filesFromDrop(dt);
+    if (files && files.length) { addFiles(files); return true; }
+    const url = urlFromDrop(dt); if (!url) return false;
+    try { const f = await fileFromUrl(url); if (f) { addFiles([f], [{ provImageUrl: url, provUrl: url }]); return true; } }
+    catch (e) { asLog.err('Drop fetch failed: ' + (e.message || e)); }
+    return false;
   }
   function pickFiles() {
     // Only the types MusicBrainz / the Cover Art Archive accept — `image/*` was too
