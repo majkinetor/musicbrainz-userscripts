@@ -22,12 +22,23 @@ hotkey ─POST /open {id,content}→ extedit ─writes file, opens your editor
 
 ## Running the helper
 
-Requires the [.NET SDK](https://dotnet.microsoft.com/download) (9.0+).
+**Quick install (Windows, prebuilt):** grab the tiny prebuilt exe and run it — needs the
+[.NET 9 runtime](https://dotnet.microsoft.com/download/dotnet/9.0) installed:
+
+- **[Download `extedit.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/feat/external-editor-poc/userscripts/external_editor/helper/dist/extedit.exe)** (latest on this branch) — `userscripts/external_editor/helper/dist/extedit.exe`
+
+```powershell
+.\extedit.exe --port 17999 --token <your-secret> --editor "code -r"
+```
+
+**Build it yourself** (any OS) — requires the [.NET SDK](https://dotnet.microsoft.com/download) (9.0+):
 
 ```sh
 cd userscripts/external_editor/helper
 dotnet run -- --port 17999 --token <your-secret>
-# or build a standalone binary:
+# smallest exe (needs the .NET runtime, ~190 KB — this is what dist/ ships):
+dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugType=none -o ./dist
+# fully standalone (no runtime needed, but large):
 dotnet publish -c Release -r <win-x64|linux-x64|osx-arm64|…> --self-contained -o ./dist
 ```
 
