@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.28
+// @version      2026.6.29.3
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -938,18 +938,19 @@
   // a medium with a CD disc ID (TOC) has a fixed track count — native MB locks adding/removing/
   // reordering its tracks. Mirror that so Apollo never silently corrupts the disc-ID association. #125
   function mediumLocked(mi) { try { const m = mediums()[mi]; return !!(m && typeof m.hasToc === 'function' && m.hasToc()); } catch (e) { return false; } }
-  // #329: on a disc-ID (TOC) medium the audio tracks' lengths are fixed by the TOC, so
-  // native MB makes them read-only. Pregap (position 0) and data tracks aren't covered by
-  // the audio TOC and stay editable — mirror that for Apollo's length cells.
-  function trackLenLocked(entry) {
-    if (!mediumLocked(entry.mi)) return false;
+  // #329/#330: classify a track. Pregap = position 0; data track = isDataTrack(); else audio.
+  function trackKind(entry) {
     try {
       const ko = koTrack(entry.mi, entry.ti);
-      const isPregap = typeof ko.position === 'function' && ko.position() === 0;
-      const isData = typeof ko.isDataTrack === 'function' && !!ko.isDataTrack();
-      return !isPregap && !isData;
-    } catch (e) { return false; }
+      if (typeof ko.position === 'function' && ko.position() === 0) return 'pregap';
+      if (typeof ko.isDataTrack === 'function' && !!ko.isDataTrack()) return 'data';
+    } catch (e) {}
+    return 'audio';
   }
+  // #329: on a disc-ID (TOC) medium the audio tracks' lengths are fixed by the TOC, so
+  // native MB makes them read-only. Pregap + data tracks aren't covered by the audio TOC
+  // and stay editable — mirror that for Apollo's length cells.
+  function trackLenLocked(entry) { return mediumLocked(entry.mi) && trackKind(entry) === 'audio'; }
   function removeTrack(entry) { if (mediumLocked(entry.mi)) { Log.info('medium', entry.mi + 1, 'disc-ID locked — remove blocked'); return; } _selfEdit = true; try { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); } finally { _selfEdit = false; } Log.info('removed track', entry.number); }
   function moveTrack(entry, dir) { if (mediumLocked(entry.mi)) { Log.info('medium', entry.mi + 1, 'disc-ID locked — move blocked'); return; } const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); _selfEdit = true; try { (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); } finally { _selfEdit = false; } }
   // move a track to a target index WITHIN its medium by stepping MB's own up/down ops — never touches the
@@ -1363,6 +1364,13 @@
     .tc-addrow input.tc-addn{width:54px;font:13px Arial;padding:2px 4px;border:1px solid #bbb;border-radius:3px}
     .tc-addbtn{width:22px;height:22px;border-radius:50%;border:1px solid #d6cdec;background:transparent;color:#9a8fc0;font:bold 15px/1 Arial;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
     .tc-addbtn:hover{background:#f0ecfa;color:#6f42c1;border-color:#b9a4e0}
+    /* #330: pregap/data-track toggles + row markers */
+    .tc-medopts{display:inline-flex;align-items:center;gap:12px;margin-left:14px}
+    .tc-medopt{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:#666;cursor:pointer;white-space:nowrap}
+    .tc-medopt:has(input:disabled){color:#b0b0b0;cursor:default}   /* #330: disc-ID medium — toggle shown but locked */
+    .tc-trkkind{flex:none;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#5a7a45;background:#eef6e8;border:1px solid #cfe3bf;border-radius:8px;padding:0 5px;margin-right:5px}
+    .tc-mirror tr.tc-row-pregap td,.tc-mirror tr.tc-row-data td{background:#f7f5fb}
+    .tc-mirror tr.tc-datadiv td{background:#efeaf9;color:#5b4a86;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 8px}
     .tc-mirror th .tc-hstatus{font-weight:normal;font-style:italic;color:#999;margin-left:12px;font-size:11px}
     .tc-mirror th .tc-hstatus.tc-unres{font-style:normal;font-weight:bold;color:#fff;background:#d6342c;padding:1px 7px;border-radius:9px;font-size:11px}
     .tc-mirror th .tc-hdr-am{float:right;font-weight:normal;font-style:normal;font-size:11px;color:#444;margin-right:14px;max-width:140px}
@@ -1856,6 +1864,35 @@
     am.value = SETTINGS.applyMode || 'all';
     am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); document.querySelectorAll('.tc-applymode').forEach(s => { s.value = am.value; }); Log.info('applyMode =', am.value); };
   }
+  // #330: per-medium "Pregap" / "Data track" checkboxes that drive MB's writable medium
+  // observables hasPregap()/hasDataTracks() (the same thing native MB's buttons do), then
+  // rebuild so the new/removed track shows. Returns a <span> or null (locked / no medium).
+  // Deep data-section editing (its own Add-track, bounded reorder) intentionally stays native.
+  function mediumOpts(target) {
+    if (target == null) return null;
+    const med = mediums()[target]; if (!med) return null;
+    // #330: show the toggles on EVERY medium and keep them ENABLED even on a disc-ID medium.
+    // Pregap/data tracks live outside the audio TOC (the same reason their lengths stay editable,
+    // #329), and native MB leaves these controls enabled there too.
+    const opts = document.createElement('span'); opts.className = 'tc-medopts';
+    const mkOpt = (label, prop, help) => {
+      const lbl = document.createElement('label'); lbl.className = 'tc-medopt'; lbl.title = help;
+      const cb = document.createElement('input'); cb.type = 'checkbox';
+      try { cb.checked = typeof med[prop] === 'function' && !!med[prop](); } catch (e) {}
+      cb.onchange = () => {
+        _selfEdit = true;
+        try { med[prop](cb.checked); } catch (e) { Log.warn(`${label} toggle failed`, e.message); }
+        finally { _selfEdit = false; }
+        Log.info(`medium ${target + 1}: ${label} ${cb.checked ? 'added' : 'removed'}`);
+        MODEL = buildShell(); if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); } rerender();
+      };
+      lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' ' + label));
+      return lbl;
+    };
+    opts.appendChild(mkOpt('Pregap', 'hasPregap', 'Add / remove a hidden pregap track (position 0)'));
+    opts.appendChild(mkOpt('Data track', 'hasDataTracks', 'Add / remove a trailing data track (for several, use the native editor)'));
+    return opts;
+  }
   // one Apollo table for a single medium (its own header row + Add footer); returns the tbody.
   // mi == null renders the whole release into one table (the floating panel).
   function mountTable(container, mi) {
@@ -1868,16 +1905,23 @@
       am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); document.querySelectorAll('.tc-applymode').forEach(s => { s.value = am.value; }); Log.info('applyMode =', am.value); };
       ['mousedown', 'mousemove', 'click'].forEach(ev => am.addEventListener(ev, e => e.stopPropagation()));   // don't let the column resizer hijack it
     }
-    // "Add N track(s)" footer — adds to THIS medium (or the last medium for the combined panel).
-    // Mirror native MB: a medium locked by a CD disc ID has a fixed track count and offers no
-    // add-tracks control, so only show the footer when the target medium can actually take new
-    // tracks — i.e. "if add tracks exists in the original, it exists in Apollo". #125
+    // Footer per medium: "Add N track(s)" (only when the medium can take new tracks —
+    // a disc-ID medium has a fixed track count, #125) PLUS the pregap/data toggles. The
+    // toggles render even on a locked medium (disabled, #330), so every medium shows them.
+    // In the combined multi-medium view the toggles live on each medium header instead
+    // (see fillRows), so only attach them to this footer for a per-medium section or a
+    // single-medium release.
     const target = (mi == null) ? Math.max(0, mediums().length - 1) : mi;
-    if (!mediumLocked(target)) {
+    const canAdd = !mediumLocked(target);
+    const opts = (mi != null || mediums().length <= 1) ? mediumOpts(target) : null;
+    if (canAdd || opts) {
       const addrow = document.createElement('div'); addrow.className = 'tc-addrow';
-      addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" title="add blank tracks">＋</button>`;
-      const addn = addrow.querySelector('.tc-addn'), addbtn = addrow.querySelector('.tc-addbtn');
-      addbtn.onclick = () => addTracks(target, Math.max(1, parseInt(addn.value, 10) || 1));
+      if (canAdd) {
+        addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" title="add blank tracks">＋</button>`;
+        const addn = addrow.querySelector('.tc-addn'), addbtn = addrow.querySelector('.tc-addbtn');
+        addbtn.onclick = () => addTracks(target, Math.max(1, parseInt(addn.value, 10) || 1));
+      }
+      if (opts) addrow.appendChild(opts);
       container.appendChild(addrow);
     }
     return table.querySelector('tbody');
@@ -2390,16 +2434,20 @@
   }
   function fillRows(tbody, mi) {
     document.querySelectorAll('.tc-acpop').forEach(p => p.remove());   // rebuilding rows detaches inputs — drop any open search/join popups so they can't orphan
-    tbody.innerHTML = ''; let lastMi = -1; const multi = mediums().length > 1 && mi == null;
+    tbody.innerHTML = ''; let lastMi = -1, lastDataMi = -1; const multi = mediums().length > 1 && mi == null;
     const tracks = (mi == null) ? MODEL.tracks : MODEL.tracks.filter(t => t.mi === mi);
     tracks.forEach(t => {
-      if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); r.innerHTML = `<td class="tc-medhdr" colspan="${COLS.length}">Medium ${t.mi + 1}</td>`; tbody.appendChild(r); lastMi = t.mi; }
+      if (multi && t.mi !== lastMi) { const r = document.createElement('tr'); const td = document.createElement('td'); td.className = 'tc-medhdr'; td.colSpan = COLS.length; td.textContent = `Medium ${t.mi + 1}`; const o = mediumOpts(t.mi); if (o) td.appendChild(o); r.appendChild(td); tbody.appendChild(r); lastMi = t.mi; }   // #330: per-medium pregap/data toggles in the combined view
+      const kind = trackKind(t);   // #330: pregap / data / audio
+      if (kind === 'data' && t.mi !== lastDataMi) { const dr = document.createElement('tr'); dr.className = 'tc-datadiv'; dr.innerHTML = `<td colspan="${COLS.length}">⤓ Data tracks</td>`; tbody.appendChild(dr); lastDataMi = t.mi; }
       const tr = document.createElement('tr'); tr.dataset.tk = t.mi + ':' + t.ti; tr.dataset.mi = t.mi; tr.dataset.ti = t.ti;
+      if (kind !== 'audio') tr.classList.add(kind === 'pregap' ? 'tc-row-pregap' : 'tc-row-data');
       const locked = mediumLocked(t.mi);   // disc-ID medium: no reorder handle (#125)
       const lenLocked = trackLenLocked(t); // disc-ID medium: audio-track length fixed by the TOC (#329)
-      tr.innerHTML = `<td class="c-mv">${locked ? '' : '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>'}</td>
+      const canDrag = !locked && kind === 'audio';   // #330: pregap is pinned at 0, data tracks aren't reordered here
+      tr.innerHTML = `<td class="c-mv">${canDrag ? '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>' : ''}</td>
         <td class="c-num"><input class="t-num" value="${esc(t.number)}" title="track number"></td>
-        <td class="c-title"><div class="t-wrap"><input class="t-title" value="${esc(t.title)}"></div></td>
+        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" title="Hidden pregap track (position 0)">pregap</span>' : ''}<input class="t-title" value="${esc(t.title)}"></div></td>
         <td class="c-art"></td>
         <td class="c-len"><input class="t-len" value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" title="Length is fixed by this medium’s Disc ID"' : ''}></td>
         <td class="c-badge"></td>`;
@@ -2462,7 +2510,7 @@
         try { const ko = koTrack(t.mi, t.ti); const norm = typeof ko.formattedLength === 'function' ? (u(ko.formattedLength()) || '') : v; e.target.value = norm; t.length = norm; } catch (err) { e.target.value = v; t.length = v; }   // reflect MB's normalized value back into the cell immediately
         refreshBadges();
       }; wireRowNav(lenIn);
-      wireDragReorder(tr, t);
+      if (canDrag) wireDragReorder(tr, t);   // #330: don't make pregap/data rows drag sources or drop targets
       tbody.appendChild(tr);
     });
   }
