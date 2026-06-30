@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.6.30.28
+// @version      2026.6.30.29
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/scribe/scribe.svg
@@ -19,7 +19,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.6.30.28';
+  const VERSION = '2026.6.30.29';
   const NAME = 'Scribe';
   // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
@@ -69,6 +69,10 @@
     window.addEventListener('mousemove', e => { if (!dragging) return; moved = true; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.left = Math.max(0, Math.min(window.innerWidth - 40, e.clientX - dx)) + 'px'; panel.style.top = Math.max(0, Math.min(window.innerHeight - 24, e.clientY - dy)) + 'px'; });
     window.addEventListener('mouseup', () => { dragging = false; });
     hdr.onclick = e => { if (e.target === cls) return; if (moved) { moved = false; return; } setCol(!collapsed); };
+    // keep the MB-validation list live as the editor's own errors appear/clear (not only on save);
+    // observe the editor (NOT body — the panel lives in body, so this can't loop on its own render)
+    const er = editorRoot();
+    if (er) { try { panel._mbObs = new MutationObserver(() => { clearTimeout(panel._mbT); panel._mbT = setTimeout(() => { if (session && session.active && !collapsed) renderSession(); }, 400); }); panel._mbObs.observe(er, { subtree: true, childList: true, characterData: true }); } catch (e) {} }
   }
   function showPanel() { ensurePanel(); panel.style.display = ''; }
   // bring the editor window to the front so a flagged value can be fixed
@@ -83,12 +87,43 @@
     setTimeout(() => { try { el.style.boxShadow = prev; } catch (e) {} }, 1600);
   }
   const sectionHead = (text, kind) => { const h = document.createElement('div'); h.textContent = text; h.style.cssText = 'padding:5px 10px;font-weight:700;font-size:11px;position:sticky;top:0;' + (kind === 'err' ? 'color:#ffd9d4;background:#5e2520' : 'color:#cfeedd;background:#21492f'); return h; };
+  // MusicBrainz's OWN validation errors rendered inline in the editor (e.g. "A release title is
+  // required", duplicate dates) — surfaced in the panel next to Scribe's own findings, each ⌖-jumpable.
+  const editorRoot = () => document.getElementById('release-editor') || document.querySelector('.release-editor, form#page-content') || null;
+  function mbValidationErrors() {
+    const root = editorRoot() || document.body; if (!root) return [];
+    // MB renders ALL error rows always but COLLAPSES inactive ones to height 0; an active (visible)
+    // error is the one with a real layout box. That — not display/offsetParent — is the test, and it
+    // matches exactly the red messages the user sees.
+    const shown = el => { try { const s = getComputedStyle(el); if (s.display === 'none' || s.visibility === 'hidden' || el.offsetParent === null) return false; const r = el.getBoundingClientRect(); return r.height > 0 && r.width > 0; } catch (e) { return false; } };
+    const out = [], seen = new Set();
+    for (const el of root.querySelectorAll('.error, .field-error')) {
+      if (/ui-tabs|ui-state|tabs/.test(el.className)) continue;   // skip the tab bar's error indicator
+      if (!shown(el)) continue;
+      const text = el.textContent.trim().replace(/\s+/g, ' ');
+      if (!text || text.length > 200 || seen.has(text)) continue;   // dedupe by text (a row + its nested .error coincide)
+      seen.add(text); out.push({ text, el });
+    }
+    return out;
+  }
   // render the session table from session.changed (accumulated applied) + session.problems (current)
   function renderSession(placeholder) {
     ensurePanel(); panel.style.display = ''; tblEl.innerHTML = '';
     const problems = (session && session.problems) || [];
     const changed = (session && session.changed) || new Map();
-    badgeEl.style.display = problems.length ? '' : 'none'; badgeEl.textContent = String(problems.length);
+    const mbErrors = mbValidationErrors();
+    const errCount = problems.length + mbErrors.length;
+    badgeEl.style.display = errCount ? '' : 'none'; badgeEl.textContent = String(errCount);
+    if (mbErrors.length) {
+      tblEl.appendChild(sectionHead(`⚠ ${mbErrors.length} MusicBrainz error${mbErrors.length > 1 ? 's' : ''}`, 'err'));
+      for (const e of mbErrors) {
+        const row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 10px;background:#3a2420;border-top:1px solid #4a302c';
+        const v = document.createElement('span'); v.textContent = e.text; v.title = e.text; v.style.cssText = 'flex:1;color:#ffd9d4;line-height:1.3';
+        const b = document.createElement('button'); b.textContent = '⌖'; b.title = 'Scroll to this error'; b.style.cssText = 'flex:0 0 auto;cursor:pointer;background:#6b3a34;color:#fff;border:none;border-radius:4px;padding:1px 7px;font-size:12px;align-self:flex-start';
+        b.onclick = () => focusNative(e.el);
+        row.append(v, b); tblEl.appendChild(row);
+      }
+    }
     if (problems.length) {
       tblEl.appendChild(sectionHead(`⚠ ${problems.length} not applied — fix & save`, 'err'));
       for (const p of problems) {
@@ -109,7 +144,7 @@
         row.append(f, v); tblEl.appendChild(row);
       }
     }
-    if (!problems.length && !changed.size) {
+    if (!problems.length && !changed.size && !mbErrors.length) {
       const ph = document.createElement('div'); ph.textContent = placeholder || 'Editing — save in your editor to apply.'; ph.style.cssText = 'padding:8px 10px;color:#9aa8a1;font-size:11px';
       tblEl.appendChild(ph);
     }
@@ -161,11 +196,12 @@
     const L = [], P = (...x) => L.push(...x), i = m.info;
     P(`# ${esc(m.h1)}`, '', `<!-- release ${m.mbid} · format v1 · DO NOT EDIT THIS LINE -->`, '');   // H1 is display-only (never split) — no need to escape the — delimiter here
     P('## Release information', '');   // blank line after every section header (header ↕ body)
-    P(`- **Title**: ${esc(i.title)}`, `- **Disambiguation**: ${esc(i.disambiguation)}`);   // always emit Disambiguation (even empty) so it can be filled in
+    // order: Title · Artist · Release group · Status · Language · Script · Barcode · Packaging · Disambiguation
+    P(`- **Title**: ${esc(i.title)}`, `- **Artist**: ${emitCredit(i.artist)}`);
+    if (i.releaseGroup) P(`- **Release group**: [${esc(i.releaseGroup)}]`);
     // enum values are controlled vocab whose canonical names can include brackets ([Multiple languages]);
     // a field value parses whole (brackets don't break it), so emit them unescaped to match the <select> text
-    P(`- **Status**: ${i.status}`, `- **Packaging**: ${i.packaging}`, `- **Barcode**: ${i.barcode}`, `- **Language**: ${i.language}`, `- **Script**: ${i.script}`, `- **Artist**: ${emitCredit(i.artist)}`);
-    if (i.releaseGroup) P(`- **Release group**: [${esc(i.releaseGroup)}]`);
+    P(`- **Status**: ${i.status}`, `- **Language**: ${i.language}`, `- **Script**: ${i.script}`, `- **Barcode**: ${i.barcode}`, `- **Packaging**: ${i.packaging}`, `- **Disambiguation**: ${esc(i.disambiguation)}`);   // always emit Disambiguation (even empty) so it can be filled in
     P('', '### Release events', ''); for (const e of m.events) P(`- ${[e.date, esc(e.country)].filter(Boolean).join(', ')}`);
     P('', '### Labels', ''); for (const l of m.labels) P(`- ${l.label ? `[${esc(l.label)}]` : ''}${l.catno ? ' — ' + esc(l.catno) : ''}`);
     P('', '### Annotation', '', m.annotation, '<!-- /end -->', '', '### External links', '<!-- NOT applied: links round-trip but are not written back yet — add/edit/reorder links in the native editor -->', '');
