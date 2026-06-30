@@ -1,6 +1,6 @@
 # Scribe <img src="./scribe.svg" align="left" width="40" height="40">
 
-**Scribe** edits MusicBrainz in your *real* editor (VS Code, Vim, Notepad…).
+**Scribe** edits MusicBrainz release in your *real* editor (VS Code, Vim, Notepad…).
 
 ---
 
@@ -8,7 +8,6 @@
 
 ---
 
-Both ride a tiny **cross-platform .NET CLI** (`scribe`) on `127.0.0.1` that writes the text to a temp file, opens your editor, and hands the saved file back.
 
 - Install: [`scribe.user.js`](./scribe.user.js)
 - Download helper: [`scribe.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe.exe)
