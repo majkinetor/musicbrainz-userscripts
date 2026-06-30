@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
-const string Version = "0.2.4";
+const string Version = "0.2.5";
 
 // ── args ──────────────────────────────────────────────────────────────────
 int port = 17999;
@@ -314,14 +314,17 @@ record Session(string File, DateTime BaseMtime);
 
 static class Native
 {
-    const int SW_RESTORE = 9;
+    const int SW_RESTORE = 9, SW_SHOW = 5;
+    const byte VK_MENU = 0x12; const uint KEYEVENTF_KEYUP = 0x2;
     [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hWnd);
+    [DllImport("user32.dll")] static extern bool BringWindowToTop(IntPtr hWnd);
     [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr hWnd);
     [DllImport("user32.dll")] static extern bool IsIconic(IntPtr hWnd);   // minimized?
     [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);
     [DllImport("user32.dll")] static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+    [DllImport("user32.dll")] static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
     [DllImport("kernel32.dll")] static extern uint GetCurrentThreadId();
 
     // The editor window may not exist yet on a cold start — poll briefly for it.
@@ -347,12 +350,18 @@ static class Native
 
     static void ForceForeground(IntPtr hWnd)
     {
-        if (IsIconic(hWnd)) ShowWindow(hWnd, SW_RESTORE);   // only un-minimize — leave a maximized window maximized
+        if (IsIconic(hWnd)) ShowWindow(hWnd, SW_RESTORE);   // un-minimize — but leave a maximized window maximized
         var fg = GetForegroundWindow();
         uint fgThread = GetWindowThreadProcessId(fg, out _);
         uint cur = GetCurrentThreadId();
         // attach to the current foreground thread's input queue to bypass focus-stealing prevention
         bool attached = fgThread != 0 && fgThread != cur && AttachThreadInput(fgThread, cur, true);
+        // a synthetic ALT tap makes Windows treat US as having just received input, which lifts the
+        // foreground lock so SetForegroundWindow actually raises the window (AttachThreadInput alone
+        // is unreliable from a background console). ALT press+release on its own is a no-op otherwise.
+        keybd_event(VK_MENU, 0, 0, UIntPtr.Zero);
+        keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+        BringWindowToTop(hWnd);
         SetForegroundWindow(hWnd);
         if (attached) AttachThreadInput(fgThread, cur, false);
     }
