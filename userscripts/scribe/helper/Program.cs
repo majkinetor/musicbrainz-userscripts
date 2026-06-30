@@ -29,7 +29,7 @@ using System.Text.Json;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
-const string Version = "0.2.7";
+const string Version = "0.2.8";
 
 // ── args ──────────────────────────────────────────────────────────────────
 int port = 17999;
@@ -77,7 +77,7 @@ Log.Write($"Listening on http://127.0.0.1:{port}/  (token {(token == "extedit" ?
 // loop stays on the main thread. The tray's Exit ends the whole process. No console window.
 try
 {
-    var tt = new System.Threading.Thread(() => { try { Application.Run(new ScribeTray(port, BuildRunCommand(port, token))); } catch (Exception ex) { Log.Write("tray failed: " + ex.Message); } });
+    var tt = new System.Threading.Thread(() => { try { Application.Run(new ScribeTray(port, Version, BuildRunCommand(port, token))); } catch (Exception ex) { Log.Write("tray failed: " + ex.Message); } });
     tt.SetApartmentState(System.Threading.ApartmentState.STA); tt.IsBackground = true; tt.Start();
 }
 catch (Exception ex) { Log.Write("tray thread failed: " + ex.Message); }
@@ -455,10 +455,10 @@ static class Settings
 class ScribeTray : ApplicationContext
 {
     readonly NotifyIcon _icon;
-    public ScribeTray(int port, string runCmd)
+    public ScribeTray(int port, string version, string runCmd)
     {
         var menu = new ContextMenuStrip();
-        menu.Items.Add(new ToolStripMenuItem($"Scribe helper — port {port}") { Enabled = false });
+        menu.Items.Add(new ToolStripMenuItem($"Scribe helper v{version} — port {port}") { Enabled = false });
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Set editor…", null, (_, __) =>
         {
