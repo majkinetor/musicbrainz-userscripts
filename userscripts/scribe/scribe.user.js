@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.6.30.32
+// @version      2026.6.30.33
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/scribe/scribe.svg
@@ -19,7 +19,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.6.30.32';
+  const VERSION = '2026.6.30.33';
   const NAME = 'Scribe';
   // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
@@ -312,14 +312,11 @@
     const ed = W.MB && W.MB.releaseEditor; if (!ed) throw new Error('release editor not ready');
     const rel = ed.rootField.release(); const changes = [], problems = [];
     const setObs = (label, obs, val) => { if (typeof obs !== 'function') return; const f = String(u(obs) == null ? '' : u(obs)), t = String(val == null ? '' : val); if (f !== t) { changes.push({ label, from: f || '(empty)', to: t || '(empty)' }); if (!dry) try { obs(val); } catch (e) {} } };
-    // typing convenience for the text body: a lone "--" becomes an em dash (— is awkward to type);
-    // 3+ dashes are left alone. Applied to free text (title / disambiguation / annotation / titles).
-    const dashify = s => typeof s === 'string' ? s.replace(/(?<!-)--(?!-)/g, '—') : s;
     const i = parsed.info || {};
-    if (i.title != null) setObs('release title', rel.name, dashify(i.title));
-    if (i.disambiguation != null) setObs('disambiguation', rel.comment, dashify(i.disambiguation));
+    if (i.title != null) setObs('release title', rel.name, i.title);
+    if (i.disambiguation != null) setObs('disambiguation', rel.comment, i.disambiguation);
     if (i.barcode != null && rel.barcode && typeof rel.barcode.value === 'function') { const bv = i.barcode === 'none' ? '' : i.barcode, f = String(u(rel.barcode.value) || ''); if (f !== bv) { changes.push({ label: 'barcode', from: f || '(none)', to: bv || '(none)' }); if (!dry) try { rel.barcode.value(bv); } catch (e) {} } }
-    if (parsed.annotation != null) setObs('annotation', rel.annotation, dashify(parsed.annotation));
+    if (parsed.annotation != null) setObs('annotation', rel.annotation, parsed.annotation);
     if (i.artist) applyCredit(rel.artistCredit, i.artist, parsed.refs, changes, 'release artist', dry, problems);
     for (const med of (parsed.media || [])) {
       const lm = rel.mediums()[med.position - 1]; if (!lm) continue; const lts = lm.tracks();
@@ -333,13 +330,13 @@
         else if (fsel && !med.title) medTitle = med.format;   // select found but segment-1 isn't a known format → it's the medium title, not a format
         else if (fsel) problems.push({ field: `medium ${med.position} format`, value: med.format, focus: () => focusNative(fsel) });   // 2-segment header with an invalid format → flag it
       }
-      if (medTitle) setObs(`medium ${med.position} title`, lm.name, dashify(medTitle));   // the medium's own title (lm.name)
+      if (medTitle) setObs(`medium ${med.position} title`, lm.name, medTitle);   // the medium's own title (lm.name)
       for (const t of med.tracks) {
         let lt = null; const recUrl = t.recording && parsed.refs.get(t.recording) && parsed.refs.get(t.recording).url; const recGid = recUrl && mbidFromUrl(recUrl);
         if (recGid) lt = lts.find(x => { const rc = u(x.recording); return rc && u(rc.gid) === recGid; });
         if (!lt) lt = lts[t.position - 1]; if (!lt) continue;
         const tag = `track ${med.position}.${t.position}`;
-        setObs(`${tag} title`, lt.name, dashify(t.title));   // the "N." marker is position/order, not the `number` field — not written
+        setObs(`${tag} title`, lt.name, t.title);   // the "N." marker is position/order, not the `number` field — not written
         if (t.length != null) setObs(`${tag} length`, lt.formattedLength, t.length);   // '' clears an existing length (export always shows present lengths, so '' = removed)
         applyCredit(lt.artistCredit, t.credit, parsed.refs, changes, `${tag} artist`, dry, problems);
       }
