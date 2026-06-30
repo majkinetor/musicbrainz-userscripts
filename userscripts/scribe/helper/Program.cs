@@ -26,22 +26,33 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Windows.Forms;
+using Microsoft.Win32;
 
-const string Version = "0.2.5";
+const string Version = "0.2.6";
 
 // ── args ──────────────────────────────────────────────────────────────────
 int port = 17999;
 string token = "extedit";
 string? editor = null;
-for (int i = 0; i < args.Length - 1; i++)
+string? startup = null;   // "on" | "off" | null (leave the OS-startup setting as-is)
+for (int i = 0; i < args.Length; i++)
 {
     switch (args[i])
     {
-        case "--port": int.TryParse(args[i + 1], out port); break;
-        case "--token": token = args[i + 1]; break;
-        case "--editor": editor = args[i + 1]; break;
+        case "--port": if (i + 1 < args.Length) int.TryParse(args[++i], out port); break;
+        case "--token": if (i + 1 < args.Length) token = args[++i]; break;
+        case "--editor": if (i + 1 < args.Length) editor = args[++i]; break;
+        case "--startup": startup = (i + 1 < args.Length && args[i + 1] == "off") ? "off" : "on"; if (i + 1 < args.Length && (args[i + 1] == "on" || args[i + 1] == "off")) i++; break;
+        case "--no-startup": startup = "off"; break;
     }
 }
+
+Log.Init();
+Log.Write($"Scribe helper v{Version} starting — port {port}, editor {editor ?? "(OS default)"}");
+
+// --startup [on|off]: register/unregister "run with the OS" (Windows login)
+if (startup != null) { try { Startup.Set(startup == "on", BuildRunCommand(port, token, editor)); Log.Write("Run at startup: " + startup); } catch (Exception ex) { Log.Write("startup set failed: " + ex.Message); } }
 
 // token → the file we're watching for this edit session
 var sessions = new ConcurrentDictionary<string, Session>();
@@ -54,15 +65,20 @@ foreach (var host in new[] { "127.0.0.1", "localhost" })
 try { listener.Start(); }
 catch (HttpListenerException ex)
 {
-    Console.Error.WriteLine($"Could not bind http://127.0.0.1:{port}/ — {ex.Message}");
-    Console.Error.WriteLine("Try another --port, or free the one in use.");
+    Log.Write($"Could not bind http://127.0.0.1:{port}/ — {ex.Message}");
+    try { MessageBox.Show($"Scribe couldn't bind port {port}.\n{ex.Message}\n\nTry another --port, or free the port in use.", "Scribe helper", MessageBoxButtons.OK, MessageBoxIcon.Error); } catch { }
     return 1;
 }
+Log.Write($"Listening on http://127.0.0.1:{port}/  (token {(token == "extedit" ? "default — set --token for a real secret" : "set")})");
 
-Console.WriteLine($"Scribe helper v{Version} listening on http://127.0.0.1:{port}/");
-Console.WriteLine($"  token: {(token == "extedit" ? "extedit (default — set --token for a real secret)" : "(set)")}");
-Console.WriteLine($"  editor: {editor ?? "OS default for the file type"}");
-Console.WriteLine("Ctrl+C to stop.");
+// system-tray UI on its own STA thread (Open log · Run at startup · Exit); the HTTP accept
+// loop stays on the main thread. The tray's Exit ends the whole process. No console window.
+try
+{
+    var tt = new System.Threading.Thread(() => { try { Application.Run(new ScribeTray(port, BuildRunCommand(port, token, editor))); } catch (Exception ex) { Log.Write("tray failed: " + ex.Message); } });
+    tt.SetApartmentState(System.Threading.ApartmentState.STA); tt.IsBackground = true; tt.Start();
+}
+catch (Exception ex) { Log.Write("tray thread failed: " + ex.Message); }
 
 while (true)
 {
@@ -72,6 +88,16 @@ while (true)
     _ = Task.Run(() => Handle(ctx));   // each request on its own task (long-polls mustn't block others)
 }
 return 0;
+
+// the command written to the OS "Run" key — this exe with its current port/token/editor
+static string BuildRunCommand(int port, string token, string? editor)
+{
+    var exe = Environment.ProcessPath ?? "scribe.exe";
+    var sb = new StringBuilder();
+    sb.Append('"').Append(exe).Append("\" --port ").Append(port).Append(" --token \"").Append(token).Append('"');
+    if (!string.IsNullOrEmpty(editor)) sb.Append(" --editor \"").Append(editor).Append('"');
+    return sb.ToString();
+}
 
 // ── request handling ────────────────────────────────────────────────────────
 async Task Handle(HttpListenerContext ctx)
@@ -118,7 +144,7 @@ async Task Open(HttpListenerRequest req, HttpListenerResponse res)
     if (sessions.TryGetValue(id, out var existing))
     {
         LaunchEditor(existing.File);
-        Console.WriteLine($"[reopen] id={id} -> {existing.File}");
+        Log.Write($"[reopen] id={id} -> {existing.File}");
         await Json(res, 200, new { ok = true, id, file = existing.File, reopened = true });
         return;
     }
@@ -139,7 +165,7 @@ async Task Open(HttpListenerRequest req, HttpListenerResponse res)
     sessions[id] = new Session(file, baseMtime);
 
     LaunchEditor(file);
-    Console.WriteLine($"[open] id={id} -> {file}");
+    Log.Write($"[open] id={id} -> {file}");
     await Json(res, 200, new { ok = true, id, file });
 }
 
@@ -164,7 +190,7 @@ async Task Result(HttpListenerRequest req, HttpListenerResponse res)
             await Task.Delay(150);
             var content = await ReadStable(s.File);
             sessions[id] = s with { BaseMtime = File.GetLastWriteTimeUtc(s.File) };   // arm for the next save
-            Console.WriteLine($"[result] id={id} changed -> {content.Length} chars");
+            Log.Write($"[result] id={id} changed -> {content.Length} chars");
             await Json(res, 200, new { ok = true, id, content });
             return;
         }
@@ -181,7 +207,7 @@ void Close(HttpListenerRequest req, HttpListenerResponse res)
     if (sessions.TryRemove(id, out var s))
     {
         try { File.Delete(s.File); } catch { }
-        Console.WriteLine($"[close] id={id}");
+        Log.Write($"[close] id={id}");
     }
     res.StatusCode = 200;
     res.ContentType = "application/json";
@@ -237,7 +263,7 @@ void LaunchEditor(string file)
         else
             Process.Start("xdg-open", new[] { file });
     }
-    catch (Exception ex) { Console.Error.WriteLine($"[editor] launch failed: {ex.Message} (file: {file})"); }
+    catch (Exception ex) { Log.Write($"[editor] launch failed: {ex.Message} (file: {file})"); }
 }
 
 static async Task Json(HttpListenerResponse res, int code, object body)
@@ -364,5 +390,85 @@ static class Native
         BringWindowToTop(hWnd);
         SetForegroundWindow(hWnd);
         if (attached) AttachThreadInput(fgThread, cur, false);
+    }
+}
+
+// ── file logging (no console: this is a windowless tray app) ──────────────
+static class Log
+{
+    static string _path = "";
+    static readonly object _lock = new();
+    public static string Path => _path;
+    public static void Init()
+    {
+        try
+        {
+            var dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Scribe");
+            Directory.CreateDirectory(dir);
+            _path = System.IO.Path.Combine(dir, "scribe.log");
+        }
+        catch { _path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "scribe.log"); }
+    }
+    public static void Write(string msg)
+    {
+        var line = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  " + msg;
+        try { lock (_lock) File.AppendAllText(_path, line + Environment.NewLine); } catch { }
+    }
+}
+
+// ── run with the OS (HKCU Run key) ────────────────────────────────────────
+static class Startup
+{
+    const string KeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    const string ValueName = "Scribe";
+    public static bool IsEnabled()
+    {
+        try { using var k = Registry.CurrentUser.OpenSubKey(KeyPath); return k?.GetValue(ValueName) != null; }
+        catch { return false; }
+    }
+    public static void Set(bool on, string command)
+    {
+        using var k = Registry.CurrentUser.OpenSubKey(KeyPath, true) ?? Registry.CurrentUser.CreateSubKey(KeyPath);
+        if (on) k!.SetValue(ValueName, command);
+        else k!.DeleteValue(ValueName, false);
+    }
+}
+
+// ── system-tray icon + menu (Open log · Run at startup · Exit) ─────────────
+class ScribeTray : ApplicationContext
+{
+    readonly NotifyIcon _icon;
+    public ScribeTray(int port, string runCmd)
+    {
+        var menu = new ContextMenuStrip();
+        menu.Items.Add(new ToolStripMenuItem($"Scribe helper — port {port}") { Enabled = false });
+        menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add("Open log", null, (_, __) => OpenLog());
+        var startupItem = new ToolStripMenuItem("Run at startup") { CheckOnClick = true, Checked = Startup.IsEnabled() };
+        startupItem.Click += (_, __) => { try { Startup.Set(startupItem.Checked, runCmd); Log.Write("Run at startup: " + (startupItem.Checked ? "on" : "off")); } catch (Exception ex) { Log.Write("startup toggle failed: " + ex.Message); } };
+        menu.Items.Add(startupItem);
+        menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add("Exit", null, (_, __) => { _icon.Visible = false; Environment.Exit(0); });
+        _icon = new NotifyIcon { Icon = TrayIcon(), Text = "Scribe helper", Visible = true, ContextMenuStrip = menu };
+        _icon.DoubleClick += (_, __) => OpenLog();
+    }
+    static void OpenLog() { try { Process.Start(new ProcessStartInfo(Log.Path) { UseShellExecute = true }); } catch (Exception ex) { Log.Write("open log failed: " + ex.Message); } }
+    // the [ … ] brackets-and-nib mark, drawn so the tray icon matches the userscript icon
+    static System.Drawing.Icon TrayIcon()
+    {
+        try
+        {
+            using var bmp = new System.Drawing.Bitmap(32, 32);
+            using var g = System.Drawing.Graphics.FromImage(bmp);
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            g.Clear(System.Drawing.Color.Transparent);
+            using var pen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(47, 111, 84), 3f) { StartCap = System.Drawing.Drawing2D.LineCap.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round };
+            g.DrawLines(pen, new[] { new System.Drawing.PointF(11, 5), new System.Drawing.PointF(6, 5), new System.Drawing.PointF(6, 27), new System.Drawing.PointF(11, 27) });
+            g.DrawLines(pen, new[] { new System.Drawing.PointF(21, 5), new System.Drawing.PointF(26, 5), new System.Drawing.PointF(26, 27), new System.Drawing.PointF(21, 27) });
+            using var br = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(46, 158, 91));
+            g.FillPolygon(br, new[] { new System.Drawing.PointF(16, 9), new System.Drawing.PointF(11, 18), new System.Drawing.PointF(16, 26), new System.Drawing.PointF(21, 18) });
+            return System.Drawing.Icon.FromHandle(bmp.GetHicon());
+        }
+        catch { return System.Drawing.SystemIcons.Application; }
     }
 }

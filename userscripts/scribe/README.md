@@ -29,9 +29,14 @@ Edit a whole release as one Markdown document** (see [the release editor](#edit-
 ```powershell
 # one-time: install the .NET 9 runtime (the helper needs only the base runtime)
 winget install --id Microsoft.DotNet.Runtime.9 -e
-# then run the helper:
-.\scribe.exe --port 17999 --editor "notepad"
+# run it — sits in the system tray, no console window:
+.\scribe.exe --port 17999 --editor "code -r"
+# …or run it AND start it with Windows from now on:
+.\scribe.exe --startup --editor "code -r"
 ```
+
+It runs as a **background tray app** (no console). Right-click the tray icon for **Open log** ·
+**Run at startup** (toggle) · **Exit**. Output goes to `%LOCALAPPDATA%\Scribe\scribe.log`.
 
 <details><summary>How to build (cross-platform)</summary>
 
@@ -53,6 +58,7 @@ Options:
 - `--port` — listen port (default `17999`).
 - `--token` — shared secret; **set the same value** in the userscript (Tampermonkey menu → *Set token*). Default `extedit`.
 - `--editor "<cmd>"` — command to open the file (e.g. `--editor "code -r"`, `--editor "subl"`, `--editor vim`). Omit to use the OS default app for the file type. `--editor none` = don't auto-open (open the temp file yourself).
+- `--startup` / `--startup off` — register / unregister "run with Windows" (also toggleable from the tray menu).
 
 
 ```
