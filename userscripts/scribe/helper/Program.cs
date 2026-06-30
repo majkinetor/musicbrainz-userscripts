@@ -29,7 +29,7 @@ using System.Text.Json;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
-const string Version = "0.2.6";
+const string Version = "0.2.7";
 
 // ── args ──────────────────────────────────────────────────────────────────
 int port = 17999;
@@ -49,10 +49,12 @@ for (int i = 0; i < args.Length; i++)
 }
 
 Log.Init();
-Log.Write($"Scribe helper v{Version} starting — port {port}, editor {editor ?? "(OS default)"}");
+Settings.Load();
+if (editor != null) Settings.SaveEditor(editor);   // a --editor arg overrides + persists the saved editor
+Log.Write($"Scribe helper v{Version} starting — port {port}, editor {Settings.Editor ?? "(OS default)"}");
 
 // --startup [on|off]: register/unregister "run with the OS" (Windows login)
-if (startup != null) { try { Startup.Set(startup == "on", BuildRunCommand(port, token, editor)); Log.Write("Run at startup: " + startup); } catch (Exception ex) { Log.Write("startup set failed: " + ex.Message); } }
+if (startup != null) { try { Startup.Set(startup == "on", BuildRunCommand(port, token)); Log.Write("Run at startup: " + startup); } catch (Exception ex) { Log.Write("startup set failed: " + ex.Message); } }
 
 // token → the file we're watching for this edit session
 var sessions = new ConcurrentDictionary<string, Session>();
@@ -75,7 +77,7 @@ Log.Write($"Listening on http://127.0.0.1:{port}/  (token {(token == "extedit" ?
 // loop stays on the main thread. The tray's Exit ends the whole process. No console window.
 try
 {
-    var tt = new System.Threading.Thread(() => { try { Application.Run(new ScribeTray(port, BuildRunCommand(port, token, editor))); } catch (Exception ex) { Log.Write("tray failed: " + ex.Message); } });
+    var tt = new System.Threading.Thread(() => { try { Application.Run(new ScribeTray(port, BuildRunCommand(port, token))); } catch (Exception ex) { Log.Write("tray failed: " + ex.Message); } });
     tt.SetApartmentState(System.Threading.ApartmentState.STA); tt.IsBackground = true; tt.Start();
 }
 catch (Exception ex) { Log.Write("tray thread failed: " + ex.Message); }
@@ -89,14 +91,12 @@ while (true)
 }
 return 0;
 
-// the command written to the OS "Run" key — this exe with its current port/token/editor
-static string BuildRunCommand(int port, string token, string? editor)
+// the command written to the OS "Run" key — this exe with its port/token (the editor is
+// persisted separately via Settings, so it's picked up on the next start automatically)
+static string BuildRunCommand(int port, string token)
 {
     var exe = Environment.ProcessPath ?? "scribe.exe";
-    var sb = new StringBuilder();
-    sb.Append('"').Append(exe).Append("\" --port ").Append(port).Append(" --token \"").Append(token).Append('"');
-    if (!string.IsNullOrEmpty(editor)) sb.Append(" --editor \"").Append(editor).Append('"');
-    return sb.ToString();
+    return $"\"{exe}\" --port {port} --token \"{token}\"";
 }
 
 // ── request handling ────────────────────────────────────────────────────────
@@ -234,6 +234,7 @@ void LaunchEditor(string file)
 {
     try
     {
+        var editor = Settings.Editor;   // persisted; changeable live from the tray
         if (editor == "none") return;   // don't auto-open (let the user open the file themselves / for testing)
         if (editor is { Length: > 0 })
         {
@@ -434,6 +435,22 @@ static class Startup
     }
 }
 
+// ── persisted settings (the editor command) ───────────────────────────────
+static class Settings
+{
+    const string KeyPath = @"Software\Scribe";
+    public static volatile string? Editor;   // read by LaunchEditor on each open; set from --editor or the tray
+    public static void Load()
+    {
+        try { using var k = Registry.CurrentUser.OpenSubKey(KeyPath); Editor = k?.GetValue("Editor") as string; } catch { }
+    }
+    public static void SaveEditor(string? v)
+    {
+        Editor = string.IsNullOrWhiteSpace(v) ? null : v.Trim();
+        try { using var k = Registry.CurrentUser.CreateSubKey(KeyPath); if (Editor == null) k.DeleteValue("Editor", false); else k.SetValue("Editor", Editor); } catch { }
+    }
+}
+
 // ── system-tray icon + menu (Open log · Run at startup · Exit) ─────────────
 class ScribeTray : ApplicationContext
 {
@@ -443,6 +460,11 @@ class ScribeTray : ApplicationContext
         var menu = new ContextMenuStrip();
         menu.Items.Add(new ToolStripMenuItem($"Scribe helper — port {port}") { Enabled = false });
         menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add("Set editor…", null, (_, __) =>
+        {
+            var v = Prompt("Editor command — e.g.  code -r   ·   subl   ·   \"C:\\Program Files\\…\\Code.exe\" -r\nBlank = OS default for the file type;  none = don't auto-open.", "Scribe — set editor", Settings.Editor ?? "");
+            if (v != null) { Settings.SaveEditor(v); Log.Write("editor set: " + (Settings.Editor ?? "(OS default)")); }
+        });
         menu.Items.Add("Open log", null, (_, __) => OpenLog());
         var startupItem = new ToolStripMenuItem("Run at startup") { CheckOnClick = true, Checked = Startup.IsEnabled() };
         startupItem.Click += (_, __) => { try { Startup.Set(startupItem.Checked, runCmd); Log.Write("Run at startup: " + (startupItem.Checked ? "on" : "off")); } catch (Exception ex) { Log.Write("startup toggle failed: " + ex.Message); } };
@@ -453,6 +475,18 @@ class ScribeTray : ApplicationContext
         _icon.DoubleClick += (_, __) => OpenLog();
     }
     static void OpenLog() { try { Process.Start(new ProcessStartInfo(Log.Path) { UseShellExecute = true }); } catch (Exception ex) { Log.Write("open log failed: " + ex.Message); } }
+    // a tiny modal text prompt (WinForms has no built-in InputBox); returns null on Cancel
+    static string? Prompt(string text, string title, string def)
+    {
+        using var f = new Form { Text = title, Width = 480, Height = 200, FormBorderStyle = FormBorderStyle.FixedDialog, StartPosition = FormStartPosition.CenterScreen, MinimizeBox = false, MaximizeBox = false, TopMost = true, ShowInTaskbar = false };
+        var lbl = new Label { Left = 12, Top = 10, Width = 444, Height = 56, Text = text };
+        var tb = new TextBox { Left = 12, Top = 74, Width = 444, Text = def };
+        var ok = new Button { Text = "OK", Left = 296, Top = 112, Width = 75, DialogResult = DialogResult.OK };
+        var cancel = new Button { Text = "Cancel", Left = 381, Top = 112, Width = 75, DialogResult = DialogResult.Cancel };
+        f.Controls.AddRange(new Control[] { lbl, tb, ok, cancel });
+        f.AcceptButton = ok; f.CancelButton = cancel;
+        return f.ShowDialog() == DialogResult.OK ? tb.Text : null;
+    }
     // the [ … ] brackets-and-nib mark, drawn so the tray icon matches the userscript icon
     static System.Drawing.Icon TrayIcon()
     {

@@ -35,8 +35,9 @@ winget install --id Microsoft.DotNet.Runtime.9 -e
 .\scribe.exe --startup --editor "code -r"
 ```
 
-It runs as a **background tray app** (no console). Right-click the tray icon for **Open log** ·
-**Run at startup** (toggle) · **Exit**. Output goes to `%LOCALAPPDATA%\Scribe\scribe.log`.
+It runs as a **background tray app** (no console). Right-click the tray icon for **Set editor…** ·
+**Open log** · **Run at startup** (toggle) · **Exit**. The editor you set is **remembered** (so
+`--editor` is optional after the first time). Output goes to `%LOCALAPPDATA%\Scribe\scribe.log`.
 
 <details><summary>How to build (cross-platform)</summary>
 
