@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.6.30.25
+// @version      2026.6.30.26
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/scribe/scribe.svg
@@ -19,7 +19,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.6.30.25';
+  const VERSION = '2026.6.30.26';
   const NAME = 'Scribe';
   // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
@@ -129,6 +129,44 @@
   const hostName = u => { for (const [re, n] of HOST) if (re.test(u)) return n; try { return new URL(u).host.replace(/^www\./, ''); } catch (e) { return u; } };
   const mbidFromUrl = u => (String(u).match(/\/([0-9a-f-]{36})\b/i) || [])[1] || null;
 
+  // annotation ⇄ Markdown (ported from Apollo): the annotation rides as Markdown in the doc and is
+  // converted to/from MB annotation markup on apply/export, so **bold**, lists, links, etc. work.
+  function mdToAnno(src) {
+    if (!src) return src;
+    const urls = [], blocks = [];
+    const stashU = u => '\x05' + (urls.push(u) - 1) + '\x06';
+    const stashB = b => '\x07' + (blocks.push(b) - 1) + '\x08';
+    src = src.replace(/^```[^\n]*\n([\s\S]*?)\n```[ \t]*$/gm, (_m, code) => stashB(code.split('\n').map(l => '        ' + l).join('\n')));
+    src = src.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text, url) => `[${stashU(url)}|${text}]`);
+    src = src.replace(/(^|[\s(])((?:https?|ftp):\/\/[^\s<>]+)/g, (_m, pre, url) => pre + stashU(url));
+    src = src.replace(/\[([^\[\]]*)\]/g, (m, inner) => inner.includes('\x05') ? m : '&#91;' + inner + '&#93;');
+    src = src.replace(/^(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$/gm, (_m, h, t) => { const n = Math.min(h.length, 3); const e = '='.repeat(n); return `${e} ${t} ${e}`; });
+    src = src.replace(/(\*\*|__)(.+?)\1/g, "'''$2'''");
+    src = src.replace(/(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])/g, "''$1''");
+    src = src.replace(/(?<![_\w])_(?!\s)(.+?)(?<!\s)_(?![_\w])/g, "''$1''");
+    src = src.replace(/^[ \t]*(?:-{3,}|\*{3,}|_{3,})[ \t]*$/gm, '----');
+    src = src.replace(/(?<!-)--(?!-)/g, '—');   // -- → em dash (— is awkward to type); 3+ dashes (hr) untouched
+    src = src.replace(/^([ \t]*)\d+\.[ \t]+/gm, (_m, ind) => { const sp = ind.replace(/\t/g, '  ').length; return ' '.repeat((Math.floor(sp / 2) + 1) * 4) + 'a. '; });
+    src = src.replace(/^([ \t]*)[-*+][ \t]+/gm, (_m, ind) => { const sp = ind.replace(/\t/g, '  ').length; return ' '.repeat((Math.floor(sp / 2) + 1) * 4) + '* '; });
+    src = src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
+    return src.replace(/\x05(\d+)\x06/g, (_m, i) => urls[+i]);
+  }
+  function annoToMd(src) {
+    if (!src) return src;
+    const blocks = [];
+    const stashB = b => '\x07' + (blocks.push(b) - 1) + '\x08';
+    src = src.replace(/(?:^ {8}(?! *(?:\*|[a-z]\.)[ \t]).*(?:\n|$))+/gim, m => { const trail = m.endsWith('\n') ? '\n' : ''; const code = m.replace(/\n$/, '').split('\n').map(l => l.slice(8)).join('\n'); return stashB('```\n' + code + '\n```') + trail; });
+    src = src.replace(/\[([^\]|]+)\|([^\]]*)\]/g, (_m, url, text) => text ? `[${text}](${url})` : url);
+    src = src.replace(/\[((?:https?|ftp):\/\/[^\]|]+)\]/g, (_m, url) => url);
+    src = src.replace(/'''''(.+?)'''''/g, '***$1***').replace(/'''(.+?)'''/g, '**$1**').replace(/''(.+?)''/g, '*$1*');
+    src = src.replace(/^(={1,6})[ \t]*(.*?)[ \t]*=*[ \t]*$/gm, (_m, e, t) => '#'.repeat(e.length) + ' ' + t);
+    src = src.replace(/^( {4,})[a-z]\.[ \t]+/gim, (_m, ind) => '  '.repeat(Math.max(0, Math.floor(ind.length / 4) - 1)) + '1. ');
+    src = src.replace(/^( {4,})\*[ \t]+/gm, (_m, ind) => '  '.repeat(Math.max(0, Math.floor(ind.length / 4) - 1)) + '- ');
+    src = src.replace(/^-{4,}[ \t]*$/gm, '---');
+    src = src.replace(/&#91;/g, '[').replace(/&#93;/g, ']');
+    return src.replace(/\x07(\d+)\x08/g, (_m, i) => blocks[+i]);
+  }
+
   function makeRefs() {
     const map = new Map();
     function ref(display, url, main) { let key = display || main || url, n = 1; while (map.has(key) && map.get(key).url !== url) { n++; key = `${display}·${n}`; } map.set(key, { url, main: main || display }); return key; }
@@ -150,7 +188,7 @@
       info: { title: r.title, disambiguation: r.disambiguation || '', status: r.status || '', packaging: r.packaging || '', barcode: r.barcode || 'none', language: LANG[trep.language] || trep.language || '', script: SCRIPT[trep.script] || trep.script || '', artist: ws2Credit(r['artist-credit'], R), releaseGroup: r['release-group'] ? entRef('release-group', r['release-group']) : null },
       events: (r['release-events'] || []).map(ev => ({ date: ev.date || '', country: ev.area ? ev.area.name : '' })),
       labels: (r['label-info'] || []).map(li => ({ label: li.label ? entRef('label', li.label) : null, catno: li['catalog-number'] || '' })),
-      annotation: (r.annotation || '').trim(),
+      annotation: annoToMd((r.annotation || '').trim()),
       links: (r.relations || []).filter(x => x['target-type'] === 'url').map(rel => { const url = rel.url.resource, host = hostName(url), t = norm(rel.type), h = norm(host), tok = s => (String(s).toLowerCase().match(/[a-z0-9]+/) || [''])[0]; const overlap = (t && h && (t.includes(h) || h.includes(t))) || (tok(host) && tok(host) === tok(rel.type)); return { label: host, url, type: (rel.type && !overlap) ? rel.type : '', begin: rel.begin || '', end: rel.end || '', ended: !!rel.ended }; }),   // inline [host](url); suppress a type that just echoes the host (discogs/discogs, amazon.co.uk/"amazon asin")
       media: (r.media || []).map(med => ({ position: med.position, format: med.format || '', title: med.title || '', tracks: (med.tracks || []).map(t => ({ position: t.position, title: t.title, credit: ws2Credit(t['artist-credit'], R), length: t.length ? ms2len(t.length) : '', recording: entRef('recording', t.recording) })) })),
       refs: R.map,
@@ -279,7 +317,7 @@
     if (i.title != null) setObs('release title', rel.name, i.title);
     if (i.disambiguation != null) setObs('disambiguation', rel.comment, i.disambiguation);
     if (i.barcode != null && rel.barcode && typeof rel.barcode.value === 'function') { const bv = i.barcode === 'none' ? '' : i.barcode, f = String(u(rel.barcode.value) || ''); if (f !== bv) { changes.push({ label: 'barcode', from: f || '(none)', to: bv || '(none)' }); if (!dry) try { rel.barcode.value(bv); } catch (e) {} } }
-    if (parsed.annotation != null) setObs('annotation', rel.annotation, parsed.annotation);
+    if (parsed.annotation != null) setObs('annotation', rel.annotation, mdToAnno(parsed.annotation));
     if (i.artist) applyCredit(rel.artistCredit, i.artist, parsed.refs, changes, 'release artist', dry, problems);
     for (const med of (parsed.media || [])) {
       const lm = rel.mediums()[med.position - 1]; if (!lm) continue; const lts = lm.tracks();
@@ -446,7 +484,7 @@
   }, true);
   if (onEditPage()) { ensureLauncher(); pollHelper(); }
   // test/automation hook
-  try { W.__releaseMd = W.__scribe = { exportMd, parse, emit, toModel, applyMd, diffMd, refreshApollo, startSession, stopSession }; } catch (e) {}
+  try { W.__releaseMd = W.__scribe = { exportMd, parse, emit, toModel, applyMd, diffMd, refreshApollo, startSession, stopSession, mdToAnno, annoToMd }; } catch (e) {}
   console.log(`[${NAME}] release editor ready — bottom-left button appears when the helper is running (${base()})`);
 })();
 
