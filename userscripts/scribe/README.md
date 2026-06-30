@@ -37,18 +37,22 @@ It runs as a **background tray app** (no console). Right-click the tray icon for
 **Open log** · **Run at startup** (toggle) · **Exit**. The editor you set is **remembered** (so
 `--editor` is optional after the first time). Output goes to `%LOCALAPPDATA%\Scribe\scribe.log`.
 
-<details><summary>How to build (cross-platform)</summary>
+<details><summary>How to build</summary>
 
-Requires the [.NET SDK](https://dotnet.microsoft.com/download) (9.0+):
+The helper is a Windows tray app (targets `net9.0-windows`, uses WinForms for the tray icon + the
+"Set editor" prompt), so it builds on **Windows** with the [.NET SDK](https://dotnet.microsoft.com/download) (9.0+):
 
-```sh
+```powershell
 cd userscripts/scribe/helper
-dotnet run -- --port 17999 --token <your-secret>
+dotnet run -- --port 17999 --token <your-secret>   # runs to the tray (no console)
 # smallest exe (needs the .NET runtime, ~190 KB — this is what dist/ ships):
 dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugType=none -o ./dist
 # fully standalone (no runtime needed, but large):
-dotnet publish -c Release -r <win-x64|linux-x64|osx-arm64|…> --self-contained -o ./dist
+dotnet publish -c Release -r win-x64 --self-contained -o ./dist
 ```
+
+The HTTP protocol itself is plain loopback and OS-agnostic; only the shipped helper (tray, run-at-startup,
+windowless) is Windows-specific.
 
 </details>
 

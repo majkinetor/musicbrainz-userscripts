@@ -1,4 +1,4 @@
-// Scribe helper (extedit) — a tiny cross-platform localhost bridge.
+// Scribe helper — a tiny Windows system-tray localhost bridge (formerly the "extedit" console CLI).
 //
 // A browser userscript POSTs the text of the field you're editing here (on a
 // hotkey); this tool writes it to a temp file and opens it in your editor. When
@@ -6,8 +6,11 @@
 // long-poll. The whole round trip rides on the userscript manager's
 // GM_xmlhttpRequest, so there's no CORS / mixed-content wall (see README).
 //
-//   dotnet run -- --port 17999 --token <shared-secret> [--editor "code -r"]
-//   ("-r" reuses the window and reveals/focuses the file's tab. extedit detects saves by
+// Runs windowless in the system tray (Set editor · Open log · Run at startup · Exit); no console —
+// output goes to %LOCALAPPDATA%\Scribe\scribe.log. The editor is persisted (HKCU\Software\Scribe).
+//
+//   scribe.exe --port 17999 --token <shared-secret> [--editor "code -r"] [--startup]
+//   ("-r" reuses the window and reveals/focuses the file's tab. The helper detects saves by
 //    watching the file's mtime, so a "-w"/wait flag is NOT needed — and "-w" stops VS Code
 //    from re-revealing the tab when you re-open a still-linked field.)
 //
