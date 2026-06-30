@@ -25,6 +25,9 @@ hotkey ─POST /open {id,content}→ extedit ─writes file, opens your editor
 [.NET 9 runtime](https://dotnet.microsoft.com/download/dotnet/9.0) installed:
 
 ```powershell
+# one-time: install the .NET 9 runtime (the helper needs only the base runtime)
+winget install --id Microsoft.DotNet.Runtime.9 -e
+# then run the helper:
 .\extedit.exe --port 17999 --token <your-secret> --editor "code -r"
 ```
 
