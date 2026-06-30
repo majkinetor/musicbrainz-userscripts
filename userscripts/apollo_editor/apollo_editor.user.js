@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.29.3
+// @version      2026.6.30
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3263,7 +3263,12 @@
   // Release-level metadata (name/count) is still deliberately ignored.
   const _simRatio = (a, b) => a === b ? 1 : 1 - recLev(a, b) / Math.max(a.length, b.length, 1);
   const _titleOk = (a, b) => a === b || _simRatio(a, b) >= 0.85;
-  const _artistOk = (a, b) => !a || !b || a === b;
+  // #332: artist is a soft FACTOR, not an exact gate. A fuller credit ("Roy Ayers" vs
+  // "Roy Ayers Ubiquity", "Horace Tapscott" vs "Horace Tapscott with …") or a near-variant
+  // ("Phil"/"Philip", "&"/"and") is the SAME track — exact-only matching scored those as misses
+  // and tanked an otherwise-identical release (62% when it should read ~90%).
+  const _artistPrefix = (a, b) => { const s = a.length <= b.length ? a : b, l = a.length <= b.length ? b : a; return s.length >= 3 && l.startsWith(s) && (l.length === s.length || l[s.length] === ' '); };
+  const _artistFactor = (a, b) => (!a || !b || a === b) ? 1 : (_artistPrefix(a, b) || _simRatio(a, b) >= 0.7) ? 0.85 : 0.5;
   function dupTrackScore(media, entered) {
     const cand = [];
     (media || []).forEach(m => (m.tracks || []).forEach(t => cand.push({ t: fold(t.title || ''), a: fold(t.artist || '') })));
@@ -3271,7 +3276,7 @@
     if (!ent.some(x => x.t) || !cand.length) return null;   // can't judge overlap → no confident score
     let matched = 0;
     const n = Math.min(ent.length, cand.length);
-    for (let i = 0; i < n; i++) { const e = ent[i], c = cand[i]; if (e.t && c.t && _titleOk(e.t, c.t) && _artistOk(e.a, c.a)) matched++; }
+    for (let i = 0; i < n; i++) { const e = ent[i], c = cand[i]; if (e.t && c.t && _titleOk(e.t, c.t)) matched += _artistFactor(e.a, c.a); }   // title gates; artist scales
     return matched / Math.max(ent.length, cand.length);
   }
   // one WS fetch per existing release, shared between the score and the expand view
