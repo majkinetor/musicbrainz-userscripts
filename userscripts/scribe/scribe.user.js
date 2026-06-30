@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe — edit MusicBrainz in your editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.6.30.30
+// @version      2026.6.30.31
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/scribe/scribe.svg
@@ -19,7 +19,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.6.30.30';
+  const VERSION = '2026.6.30.31';
   const NAME = 'Scribe';
   // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
@@ -282,7 +282,13 @@
     const sig = arr => arr.map(n => `${gidOf(n.artist) || ''}|${u(n.name) || ''}|${u(n.joinPhrase) || ''}`).join('§');
     if (sig(curNames) === sig(desired)) return;
     changes.push({ label, from: creditStr(curNames), to: creditStr(desired) });
-    if (!dry) { try { acObs(Object.assign({}, ac, { names: desired })); } catch (e) {} }
+    if (!dry) {
+      const write = () => { try { const cur = acObs(); acObs(Object.assign({}, cur || ac, { names: desired })); } catch (e) {} };
+      write();
+      // MB's React artist-credit widget re-syncs moments later and drops freshly-built linked entities
+      // (keeping only the credited-as text — the "set as text only" bug); re-assert until it settles.
+      setTimeout(write, 800); setTimeout(write, 1800);
+    }
   }
 
   // Compute the diff between the parsed MD and the live editor model as [{label, from, to}].
