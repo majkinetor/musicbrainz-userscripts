@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.30
+// @version      2026.6.30.1
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -5905,6 +5905,19 @@
 
     md.value = annoToMd(ta.value);   // seed the Markdown surface from existing MB markup (no annoSet → no spurious dirty)
     apply();
+    // reflect EXTERNAL changes to the annotation (Scribe, scripts, revert) in the Markdown surface.
+    // ko's `value` binding sets the textarea WITHOUT firing input, so a DOM listener can't see it —
+    // subscribe to the observable. Our own md→field writes round-trip equal, so they're ignored (no loop).
+    try {
+      const annoObs = getEditor().rootField.release().annotation;
+      if (annoObs && typeof annoObs.subscribe === 'function' && !ta._tcAnnoSub) {
+        ta._tcAnnoSub = annoObs.subscribe(v => {
+          const nv = v || '';
+          if (mdToAnno(md.value) === nv) return;   // our own write / already in sync
+          md.value = annoToMd(nv); renderPreview();
+        });
+      }
+    } catch (e) {}
     setTimeout(() => autoResolve(activeEl()), 400);   // name any unnamed links already in the annotation
   }
 
