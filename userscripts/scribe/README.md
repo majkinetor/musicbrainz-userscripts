@@ -2,18 +2,10 @@
 
 **Scribe** edits MusicBrainz release in your *real* editor (VS Code, Vim, Notepad…).
 
----
-
-**NOTE: Experimental**
-
----
-
-
 - Install: [`scribe.user.js`](./scribe.user.js)
 - Download helper: [`scribe.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe.exe)
 
 ## Feature
-
 
 - **Edit field** (Ctrl+Alt+E):<br> 
 With cursor in any text box, press it, the text opens in your editor; **save** and the field updates.
