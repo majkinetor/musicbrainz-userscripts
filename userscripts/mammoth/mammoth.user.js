@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.6.29.1
+// @version      2026.6.30
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -860,7 +860,14 @@
   // badge/pop + babies) hides under it — MB's dialogs/popovers carry no z-index
   // and no backdrop, so they can't otherwise win the stack. Global (runs even
   // when babies are off). #313
-  const syncDialog = () => document.documentElement.classList.toggle('mmthf-dialog', !!document.querySelector('.dialog.popover, .relationship-dialog'));
+  // #333: the artist-credit editor is itself a .dialog.popover, but it holds fields we DO pin
+  // (ac-source-artist-*). Don't treat such a dialog as blocking, or we'd hide the baby on its
+  // own rows (and leave its reserved strip empty). Only block for dialogs without our fields.
+  const syncDialog = () => {
+    const dlgs = [...document.querySelectorAll('.dialog.popover, .relationship-dialog')];
+    const blocking = dlgs.some(d => !d.querySelector('input[id^="ac-source-artist-"]'));
+    document.documentElement.classList.toggle('mmthf-dialog', blocking);
+  };
   new MutationObserver(() => { injectAll(); syncDialog(); }).observe(document.documentElement, { childList: true, subtree: true });
   syncDialog();
 
