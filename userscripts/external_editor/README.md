@@ -1,14 +1,13 @@
-# External Editor <img src="../apollo_editor/icon.svg" align="left" width="44" height="44">
+# External Editor 
 
 Edit the **focused text field** of a MusicBrainz page in your *real* editor (VS Code, Vim, Notepad…). Put the cursor in any text box, press the hotkey, the field's text opens in your editor; **save the file** and the field updates — no copy-paste.
 
-It's two pieces:
-- **`external_editor.user.js`** — the userscript (the hotkey + writes the result back).
-- **`helper/`** — a tiny **cross-platform .NET CLI** (`extedit`) that runs on `127.0.0.1`, writes the text to a temp file, opens your editor, and hands the saved file back.
+It's two pieces — the **userscript** (the hotkey + writes the result back) and **helper executable tool** (a tiny **cross-platform .NET CLI** that runs on `127.0.0.1`, writes the text to a temp file, opens your editor, and hands the saved file back).
 
-- Install the userscript: [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/external_editor/external_editor.user.js)
+- Install userscript: [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/external_editor/external_editor.user.js)
+- Download helper tool: [`extedit.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/feat/external-editor-poc/userscripts/external_editor/helper/dist/extedit.exe)
 
-## How it works (and why it's cross-browser)
+## How it works
 
 The page is `https://`, the helper is `http://localhost` — a normal page `fetch`/`WebSocket` there is blocked by **mixed content** and **CORS**. The userscript instead uses **`GM_xmlhttpRequest`**, which the userscript manager performs from its own context, exempt from both walls (just `@connect 127.0.0.1`). The "send the saved file back" step is a **long-poll**: the userscript holds a `GM_xmlhttpRequest` open and the helper completes it the moment the file's modified-time advances (watch → respond). Works the same on Chrome / Firefox / Edge with Tampermonkey / Violentmonkey.
 
@@ -24,8 +23,6 @@ hotkey ─POST /open {id,content}→ extedit ─writes file, opens your editor
 
 **Quick install (Windows, prebuilt):** grab the tiny prebuilt exe and run it — needs the
 [.NET 9 runtime](https://dotnet.microsoft.com/download/dotnet/9.0) installed:
-
-- **[Download `extedit.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/feat/external-editor-poc/userscripts/external_editor/helper/dist/extedit.exe)** (latest on this branch) — `userscripts/external_editor/helper/dist/extedit.exe`
 
 ```powershell
 .\extedit.exe --port 17999 --token <your-secret> --editor "code -r"
