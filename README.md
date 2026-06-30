@@ -17,7 +17,7 @@ Import credits from several providers with a review phase
 Reads the release's existing ISRCs and streaming links and fills in the missing ones
 
 [Mammoth](./userscripts/mammoth/README.md)<img src="./userscripts/mammoth/icon.svg" align="left" width="32"><br>
-Remembers your recent edit notes and lets you save and recall reusable ones on every edit form
+Remembers your edit notes and options and lets you save and recall them
 
 [Platform Check](./userscripts/platform_check/README.md)<img src="./userscripts/platform_check/icon.svg" align="left" width="32"><br>
 Find and verify URLs for a particular MusicBrainz release on online platforms
