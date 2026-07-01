@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.3
+// @version      2026.7.1.4
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1';
+  const VERSION = '2026.7.1.4';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -156,13 +156,16 @@
     return out.join(', ');
   }
   let tipEl = null;
-  function showTip(x, y, info) {
-    if (!info || !info.n) { hideTip(); return; }
+  function showTip(x, y, info, name) {
+    if (!info || (!info.n && !name)) { hideTip(); return; }
     if (!tipEl) { tipEl = el('div', 'gt-tip'); document.body.appendChild(tipEl); }
-    const parts = [`${info.n}×`];
-    if (info.tracks && info.tracks.size) parts.push(`track${info.tracks.size > 1 ? 's' : ''} ${ranges(info.tracks)}`);
-    if (info.release) parts.push('release');
-    tipEl.textContent = parts.join(' · ');
+    tipEl.innerHTML = '';
+    // we hid MB's native title (the entity's real/sort name, shown when Credited As differs) —
+    // so surface it here instead so that info isn't lost.
+    if (name) tipEl.appendChild(el('div', 'gt-tip-name', name));
+    const parts = [];
+    if (info.n) { parts.push(`${info.n}×`); if (info.tracks && info.tracks.size) parts.push(`track${info.tracks.size > 1 ? 's' : ''} ${ranges(info.tracks)}`); if (info.release) parts.push('release'); }
+    if (parts.length) tipEl.appendChild(el('div', 'gt-tip-stat', parts.join(' · ')));
     tipEl.style.display = '';
     const r = tipEl.getBoundingClientRect();
     tipEl.style.left = Math.min(x + 14, window.innerWidth - r.width - 8) + 'px';
@@ -174,7 +177,7 @@
   let _hidTitle = null;
   function suppressTitle(target) { const te = target.closest && target.closest('[title]'); if (!te || (_hidTitle && te === _hidTitle.el)) return; restoreTitle(); const v = te.getAttribute('title'); if (v == null) return; _hidTitle = { el: te, val: v }; te.removeAttribute('title'); }
   function restoreTitle() { if (_hidTitle) { try { _hidTitle.el.setAttribute('title', _hidTitle.val); } catch (e) {} _hidTitle = null; } }
-  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; suppressTitle(ev.target); const info = highlightPage(nd); showTip(ev.clientX, ev.clientY, info); }
+  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; suppressTitle(ev.target); const nm = (_hidTitle && _hidTitle.val && _hidTitle.val !== nd) ? _hidTitle.val : null; const info = highlightPage(nd); showTip(ev.clientX, ev.clientY, info, nm); }
   function onMove(ev) { if (tipEl && tipEl.style.display !== 'none' && needleFor(ev.target)) { tipEl.style.left = Math.min(ev.clientX + 14, window.innerWidth - tipEl.offsetWidth - 8) + 'px'; tipEl.style.top = Math.min(ev.clientY + 16, window.innerHeight - tipEl.offsetHeight - 8) + 'px'; } }
   function onOut(ev) { if (!needleFor(ev.target)) return; const rt = ev.relatedTarget; if (_hidTitle && rt && _hidTitle.el.contains && _hidTitle.el.contains(rt)) return; clearHighlight(); hideTip(); restoreTitle(); }
 
@@ -197,7 +200,9 @@
       ::highlight(gt-hl-existing){background:#1f6feb;color:#fff}
       ::highlight(gt-hl-new){background:#1f6feb;color:#ffe066}
       .gt-tip{position:fixed;z-index:2147483647;pointer-events:none;background:#1b2430;color:#eef2f7;
-        font:12px -apple-system,Segoe UI,Arial,sans-serif;padding:3px 8px;border-radius:5px;box-shadow:0 3px 12px rgba(0,0,0,.28);white-space:nowrap}
+        font:12px -apple-system,Segoe UI,Arial,sans-serif;padding:4px 9px;border-radius:5px;box-shadow:0 3px 12px rgba(0,0,0,.28);white-space:nowrap}
+      .gt-tip .gt-tip-name{font-weight:600}
+      .gt-tip .gt-tip-stat{color:#aeb8c6;font-size:11px;margin-top:1px}
     `;
     document.head.appendChild(s);
   }
