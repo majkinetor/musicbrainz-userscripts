@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.6
+// @version      2026.7.1.7
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.6';
+  const VERSION = '2026.7.1.7';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -105,6 +105,9 @@
       .map(r => ({ pos: r.pos == null ? 'rel' : r.pos, text: [...new Set(r.vals.filter(Boolean))].join(', ') }));
   }
   function onContextMenu(ev) {
+    // #338 P2: right-click a recording's checkbox → copy/move its credits to the ticked recordings
+    const recCb = ev.target.closest && ev.target.closest('input.recording');
+    if (recCb) { const tr = recCb.closest('tr.track'); if (tr) { ev.preventDefault(); openCopyMenu(tr, ev.clientX, ev.clientY); } return; }
     const btn = ev.target.closest && ev.target.closest(REMOVE_SEL);
     if (!btn) return;   // not a rel × — let the browser menu through
     ev.preventDefault();
@@ -221,6 +224,10 @@
         font:12px -apple-system,Segoe UI,Arial,sans-serif;padding:4px 9px;border-radius:5px;box-shadow:0 3px 12px rgba(0,0,0,.28);white-space:nowrap}
       .gt-tip .gt-tip-name{font-weight:600}
       .gt-tip .gt-tip-stat{color:#aeb8c6;font-size:11px;margin-top:1px}
+      .gt-toast{position:fixed;z-index:2147483647;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);opacity:0;
+        pointer-events:none;transition:opacity .18s,transform .18s;background:#1b2430;color:#eef2f7;
+        font:13px -apple-system,Segoe UI,Arial,sans-serif;padding:8px 14px;border-radius:7px;box-shadow:0 6px 22px rgba(0,0,0,.3)}
+      .gt-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     `;
     document.head.appendChild(s);
   }
@@ -269,7 +276,8 @@
       if (!rec0 && !rec1) return;
       const other = rec0 ? rel.entity1 : rel.entity0;
       const credit = rec0 ? rel.entity1_credit : rel.entity0_credit;
-      out.push({ other, credit: val(credit) || '', linkTypeID: rel.linkTypeID, attributes: rel.attributes || null });
+      // _status: 0 = existing, 1 = added this session, 3 = marked removed (stays in the DOM struck)
+      out.push({ item, other, credit: val(credit) || '', linkTypeID: rel.linkTypeID, attributes: rel.attributes || null, removed: rel._status === 3 });
     });
     return out;
   }
@@ -304,6 +312,61 @@
     for (const dest of destRecordings) for (const s of srcRels) { dispatchRelationship(re, dest, s.other, s.linkTypeID, s.credit, s.attributes); n++; }
     return n;
   }
+  // destination recordings = every OTHER track row whose recording checkbox is ticked
+  function checkedDestinations(sourceTr) {
+    const dests = [];
+    document.querySelectorAll('tr.track').forEach(tr => {
+      if (tr === sourceTr) return;
+      const cb = tr.querySelector('input.recording');
+      if (cb && cb.checked) { const rec = recordingEntity(tr); if (rec) dests.push(rec); }
+    });
+    return dests;
+  }
+  // for Move: click MB's own × on each source rel (so React removes it like a manual click).
+  // Must go ONE AT A TIME with a re-read between clicks — all the rels are on the same row, and
+  // each removal re-renders it, so pre-collected × buttons go stale after the first click. We
+  // re-query the row each pass and remove the next rel matching (linkType + target gid).
+  const rowForRecording = gid => [...document.querySelectorAll('tr.track')].find(tr => { const rec = recordingEntity(tr); return rec && rec.gid === gid; });
+  async function removeSourceRels(srcGid, srcRels) {
+    const want = new Set(srcRels.map(s => s.linkTypeID + '|' + (s.other && s.other.gid)));
+    for (let guard = 0; guard < 300; guard++) {
+      const tr = rowForRecording(srcGid); if (!tr) break;   // re-find the row each pass — React replaces it on every removal
+      // skip rels already marked removed (_status 3) — × leaves them struck in the DOM, so
+      // without this the loop would re-click the same one forever
+      const hit = recordingRels(tr).find(r => !r.removed && want.has(r.linkTypeID + '|' + (r.other && r.other.gid)));
+      const b = hit && hit.item && hit.item.querySelector(REMOVE_SEL);
+      if (!b) break;
+      try { b.click(); } catch (e) {}
+      await new Promise(r => setTimeout(r, 70));   // let React re-render before re-finding
+    }
+  }
+
+  let toastEl = null, toastTimer = null;
+  function toast(msg) {
+    if (!toastEl) { toastEl = el('div', 'gt-toast'); document.body.appendChild(toastEl); }
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+  }
+
+  const ltName = id => (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id] || {}).name || String(id);
+  function openCopyMenu(sourceTr, x, y) {
+    // only live artist credits — copying work/url rels across recordings rarely makes sense,
+    // and skip any already marked removed
+    const srcRels = recordingRels(sourceTr).filter(r => !r.removed && r.other && r.other.entityType === 'artist');
+    const relLines = srcRels.map(s => ({ pos: ltName(s.linkTypeID), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
+    const dests = checkedDestinations(sourceTr);
+    const nR = srcRels.length, nD = dests.length;
+    const items = [];
+    if (!nR) { items.push({ label: 'No artist credits to copy here' }); }
+    else if (!nD) { items.push({ label: `${nR} credit${nR > 1 ? 's' : ''} — tick destination recordings first`, sub: String(nR), lines: relLines }); }
+    else {
+      items.push({ label: `Copy → ${nD} recording${nD > 1 ? 's' : ''}`, sub: String(nR), lines: relLines,
+        run: () => { copyCredits(srcRels, dests); toast(`Copied ${nR} credit${nR > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } });
+      items.push({ label: `Move → ${nD} recording${nD > 1 ? 's' : ''} (remove here)`, danger: true,
+        run: () => { const srcGid = (recordingEntity(sourceTr) || {}).gid; copyCredits(srcRels, dests); removeSourceRels(srcGid, srcRels); toast(`Moved ${nR} credit${nR > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } });
+    }
+    openMenu(x, y, items);
+  }
 
   // ── boot ────────────────────────────────────────────────────────────────
   function boot() {
@@ -313,7 +376,7 @@
     document.body.addEventListener('mousemove', onMove);
     document.body.addEventListener('mouseout', onOut);
     try { GM_registerMenuCommand(`Group Therapy v${VERSION}`, () => {}); } catch (e) {}
-    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, RE }; } catch (e) {}
+    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, RE }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
   if (document.body) boot(); else document.addEventListener('DOMContentLoaded', boot, { once: true });

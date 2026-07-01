@@ -30,14 +30,23 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
   page (existing rels blue/white, newly-added blue/yellow), with a tooltip showing the count and which
   tracks / the release it appears on, e.g. *48× · tracks 1–12*.
 
+- **Copy / move credits** — tick the destination recordings (MB's own recording checkboxes), then
+  **right-click the source recording's checkbox** for a menu:
+  - *Copy → N recordings* — duplicate this recording's artist credits (role, artist, credited-as **and
+    attributes** like instruments/vocals) onto every ticked recording. MB merges any it already has.
+  - *Move → N recordings* — the same, then remove them from the source.
+
+  It reads each credit straight off MB's own rendered relationship (so nothing is lost) and adds them
+  through MB's editor — **review and save** like any manual edit; nothing is submitted for you.
+
 ### Planned
 
-- **Copy / Move recording credits** to other recordings (or the release), and clone a whole release's
-  credits from another release (format-aware).
+- **Clone a whole release's credits** from another release (format-aware).
 
 ## Shortcuts
 
 | Where | Action |
 | --- | --- |
 | right-click a relationship's **×** | open the group-delete menu |
+| right-click a recording's **checkbox** | copy / move its credits to the ticked recordings |
 | hover an entity name / role label | highlight all matches + show a count tooltip |
