@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.8
+// @version      2026.7.1.9
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.8';
+  const VERSION = '2026.7.1.9';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -233,6 +233,9 @@
         pointer-events:none;transition:opacity .18s,transform .18s;background:#1b2430;color:#eef2f7;
         font:13px -apple-system,Segoe UI,Arial,sans-serif;padding:8px 14px;border-radius:7px;box-shadow:0 6px 22px rgba(0,0,0,.3)}
       .gt-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+      .gt-clone-btn{margin-left:10px;font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:#2e6da4;background:#eef4fb;
+        border:1px solid #cfe0f0;border-radius:5px;padding:2px 9px;cursor:pointer;vertical-align:middle}
+      .gt-clone-btn:hover{background:#e2edf8}
     `;
     document.head.appendChild(s);
   }
@@ -358,6 +361,55 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
   }
 
+  // build an MB attribute ImmutableTree from a /ws/js rel's attribute array (they carry typeIDs directly)
+  function buildAttrTree(wsAttrs) {
+    if (!wsAttrs || !wsAttrs.length) return null;
+    const MB = W.MB, lat = MB && MB.linkedEntities && MB.linkedEntities.link_attribute_type;
+    if (!lat || !MB.tree) return null;
+    const objs = wsAttrs.map(a => ({ type: lat[a.typeID], typeID: a.typeID, text_value: a.text_value || '', credited_as: a.credited_as || '' }))
+      .filter(o => o.type).sort((a, b) => a.typeID - b.typeID);
+    if (!objs.length) return null;
+    try { return MB.tree.fromDistinctAscArray(objs); } catch (e) { return null; }
+  }
+  // clone another release's release-level credits (artists + labels) onto this release
+  async function cloneFromRelease(sourceGid) {
+    const re = RE(); if (!re) return 0;
+    const j = await (await fetch('/ws/js/entity/' + sourceGid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } })).json();
+    const rels = (j.relationships || []).filter(r => (r.target_type === 'artist' || r.target_type === 'label') && r.target && r.target.id != null);
+    const here = re.state.entity;
+    let n = 0;
+    for (const r of rels) {
+      const target = { entityType: r.target_type, id: r.target.id, gid: r.target.gid, name: r.target.name };
+      // artist/label sort before "release", so the target is entity0 and carries entity0_credit
+      dispatchRelationship(re, here, target, r.linkTypeID, r.entity0_credit || '', buildAttrTree(r.attributes), { begin_date: r.begin_date, end_date: r.end_date, ended: r.ended });
+      n++;
+    }
+    return n;
+  }
+  const GID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  async function onCloneClick() {
+    const input = W.prompt('Clone release-level credits (artists + labels) FROM which release?\nPaste a MusicBrainz release URL or MBID:');
+    if (!input) return;
+    const m = input.match(GID_RE);
+    if (!m) { toast('No release MBID found in that input'); return; }
+    const src = m[0].toLowerCase(), here = ((RE() && RE().state.entity.gid) || '').toLowerCase();
+    if (src === here) { toast('That’s this release'); return; }
+    toast('Fetching…');
+    try { const n = await cloneFromRelease(src); toast(n ? `Cloned ${n} release credit${n > 1 ? 's' : ''} — review & save` : 'No artist/label credits on that release'); }
+    catch (e) { toast('Clone failed: ' + (e && e.message || e)); }
+  }
+  function injectCloneButton() {
+    const h2 = [...document.querySelectorAll('h2')].find(h => /^\s*Release relationships/i.test(h.textContent || ''));
+    if (!h2) return false;
+    if (h2.querySelector('.gt-clone-btn')) return true;
+    const b = el('button', 'gt-clone-btn', '⧉ Clone from release…');
+    b.title = 'Copy release-level credits (artists, labels) from another release onto this one';
+    b.type = 'button';
+    b.onclick = onCloneClick;
+    h2.appendChild(b);
+    return true;
+  }
+
   const ltName = id => (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id] || {}).name || String(id);
   const trackPosOfRow = tr => { const m = (tr.textContent || '').match(/^\s*(\d+)\b/); return m ? +m[1] : null; };
   // mode 'credits' (recording checkbox) copies every recording rel except work/url/recording-samples
@@ -395,8 +447,9 @@
     document.body.addEventListener('mouseover', onOver);
     document.body.addEventListener('mousemove', onMove);
     document.body.addEventListener('mouseout', onOut);
+    let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
     try { GM_registerMenuCommand(`Group Therapy v${VERSION}`, () => {}); } catch (e) {}
-    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, RE }; } catch (e) {}
+    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, cloneFromRelease, injectCloneButton, RE }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
   if (document.body) boot(); else document.addEventListener('DOMContentLoaded', boot, { once: true });
