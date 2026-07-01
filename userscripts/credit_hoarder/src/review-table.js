@@ -1644,17 +1644,35 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         }
         issueNote.addEventListener('click', jumpNextUnresolved);
 
+        // #113: count checked vs total recording rows straight from the editor's DOM checkboxes
+        // (a recording link in the row). DOM-based on purpose — walking MB's medium ImmutableTree at
+        // review time could hang the renderer, and this matches exactly the boxes the user sees.
+        function recSelectionCounts() {
+            try {
+                let total = 0, checked = 0;
+                for (const tr of document.querySelectorAll('tr')) {
+                    if (!tr.querySelector('a[href*="/recording/"]')) continue;
+                    const cb = tr.querySelector('input[type="checkbox"]');
+                    if (!cb) continue;
+                    total++; if (cb.checked) checked++;
+                }
+                return total ? { checked, total } : null;
+            } catch (e) { return null; }
+        }
         function updateImportBtn() {
             const unresolved = [...rowState.values()].filter(s => !s.confirmed).length;
+            // #113: show a partial recording selection on the button, e.g. "Start import (2/14)"
+            const sel = recSelectionCounts();
+            const selLabel = (sel && sel.checked > 0 && sel.checked < sel.total) ? ` (${sel.checked}/${sel.total})` : '';
             if (unresolved === 0) {
-                importBtn.innerHTML = 'Start import \u2192';   // #272: source icon now lives in the toolbar \u2014 don't double it here
+                importBtn.innerHTML = `Start import${selLabel} \u2192`;   // #272: source icon now lives in the toolbar \u2014 don't double it here
                 importBtn.style.background = '#2ecc40';
                 importBtn.style.color = '#fff';
                 issueNote.textContent = '';
                 issueNote.classList.remove('clickable');
                 issueNote.removeAttribute('title');
             } else {
-                importBtn.innerHTML = 'Start import anyway \u2192';   // #272: icon shown in the toolbar
+                importBtn.innerHTML = `Start import anyway${selLabel} \u2192`;   // #272: icon shown in the toolbar
                 importBtn.style.background = '#e0a800';
                 importBtn.style.color = '#fff';
                 issueNote.textContent = `\u26a0 ${unresolved} unresolved`;
@@ -1663,6 +1681,16 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             }
         }
         updateImportBtn();
+        // Keep the (N/M) count live as the user ticks recording checkboxes — a light poll, NOT a
+        // document change-listener (a capture listener drowns in MB's change-event storm during the
+        // import and crashes the renderer). Only re-renders the button when the count actually changes;
+        // stops once the import starts or the panel goes away.
+        let _lastSelKey = '';
+        const _recSelPoll = setInterval(() => {
+            if (!importBtn.isConnected) { clearInterval(_recSelPoll); return; }
+            const s = recSelectionCounts(); const k = s ? `${s.checked}/${s.total}` : '';
+            if (k !== _lastSelKey) { _lastSelKey = k; updateImportBtn(); }
+        }, 1000);
 
         // Build the static "log summary" table from the current `rowState` and
         // wrap it in an `<li>` ready to append to the log. Used in two places:
@@ -1737,6 +1765,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         }
 
         importBtn.addEventListener('click', () => {
+            clearInterval(_recSelPoll);   // #113: stop polling the recording selection once the import starts
             const confirmedMap = new Map();
             rowState.forEach((s, key) => {
                 if (s.mbUrl) confirmedMap.set(key, s.mbUrl);

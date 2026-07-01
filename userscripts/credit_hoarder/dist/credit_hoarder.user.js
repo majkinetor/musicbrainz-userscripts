@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.7.1.120536
+// @version      2026.7.1.131537
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -4149,17 +4149,34 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         input.select?.();
       }
       issueNote.addEventListener("click", jumpNextUnresolved);
+      function recSelectionCounts() {
+        try {
+          let total = 0, checked = 0;
+          for (const tr of document.querySelectorAll("tr")) {
+            if (!tr.querySelector('a[href*="/recording/"]')) continue;
+            const cb = tr.querySelector('input[type="checkbox"]');
+            if (!cb) continue;
+            total++;
+            if (cb.checked) checked++;
+          }
+          return total ? { checked, total } : null;
+        } catch (e) {
+          return null;
+        }
+      }
       function updateImportBtn() {
         const unresolved = [...rowState.values()].filter((s) => !s.confirmed).length;
+        const sel = recSelectionCounts();
+        const selLabel = sel && sel.checked > 0 && sel.checked < sel.total ? ` (${sel.checked}/${sel.total})` : "";
         if (unresolved === 0) {
-          importBtn.innerHTML = "Start import \u2192";
+          importBtn.innerHTML = `Start import${selLabel} \u2192`;
           importBtn.style.background = "#2ecc40";
           importBtn.style.color = "#fff";
           issueNote.textContent = "";
           issueNote.classList.remove("clickable");
           issueNote.removeAttribute("title");
         } else {
-          importBtn.innerHTML = "Start import anyway \u2192";
+          importBtn.innerHTML = `Start import anyway${selLabel} \u2192`;
           importBtn.style.background = "#e0a800";
           importBtn.style.color = "#fff";
           issueNote.textContent = `\u26A0 ${unresolved} unresolved`;
@@ -4168,6 +4185,19 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         }
       }
       updateImportBtn();
+      let _lastSelKey = "";
+      const _recSelPoll = setInterval(() => {
+        if (!importBtn.isConnected) {
+          clearInterval(_recSelPoll);
+          return;
+        }
+        const s = recSelectionCounts();
+        const k = s ? `${s.checked}/${s.total}` : "";
+        if (k !== _lastSelKey) {
+          _lastSelKey = k;
+          updateImportBtn();
+        }
+      }, 1e3);
       function buildStaticTableLi() {
         const tbl = document.createElement("table");
         tbl.style.cssText = "border-collapse:collapse;width:100%;font-size:0.78rem;margin:0.4rem 0;";
@@ -4220,6 +4250,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         return tblLi;
       }
       importBtn.addEventListener("click", () => {
+        clearInterval(_recSelPoll);
         const confirmedMap = /* @__PURE__ */ new Map();
         rowState.forEach((s, key) => {
           if (s.mbUrl) confirmedMap.set(key, s.mbUrl);
