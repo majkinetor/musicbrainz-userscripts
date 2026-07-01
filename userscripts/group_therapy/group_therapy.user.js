@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.1
+// @version      2026.7.1.2
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -153,9 +153,14 @@
     tipEl.style.top = Math.min(y + 16, window.innerHeight - r.height - 8) + 'px';
   }
   function hideTip() { if (tipEl) tipEl.style.display = 'none'; }
-  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; const info = highlightPage(nd); showTip(ev.clientX, ev.clientY, info); }
+  // MB puts the entity's sort name in the link's `title`, so the browser's native tooltip stacks on
+  // top of ours. Temporarily strip it while our count tooltip is up, and restore it on the way out.
+  let _hidTitle = null;
+  function suppressTitle(target) { const te = target.closest && target.closest('[title]'); if (!te || (_hidTitle && te === _hidTitle.el)) return; restoreTitle(); const v = te.getAttribute('title'); if (v == null) return; _hidTitle = { el: te, val: v }; te.removeAttribute('title'); }
+  function restoreTitle() { if (_hidTitle) { try { _hidTitle.el.setAttribute('title', _hidTitle.val); } catch (e) {} _hidTitle = null; } }
+  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; suppressTitle(ev.target); const info = highlightPage(nd); showTip(ev.clientX, ev.clientY, info); }
   function onMove(ev) { if (tipEl && tipEl.style.display !== 'none' && needleFor(ev.target)) { tipEl.style.left = Math.min(ev.clientX + 14, window.innerWidth - tipEl.offsetWidth - 8) + 'px'; tipEl.style.top = Math.min(ev.clientY + 16, window.innerHeight - tipEl.offsetHeight - 8) + 'px'; } }
-  function onOut(ev) { if (needleFor(ev.target)) { clearHighlight(); hideTip(); } }
+  function onOut(ev) { if (!needleFor(ev.target)) return; const rt = ev.relatedTarget; if (_hidTitle && rt && _hidTitle.el.contains && _hidTitle.el.contains(rt)) return; clearHighlight(); hideTip(); restoreTitle(); }
 
   // ── styles ────────────────────────────────────────────────────────────────
   function injectStyle() {
