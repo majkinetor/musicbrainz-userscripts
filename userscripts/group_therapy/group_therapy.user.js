@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.21
+// @version      2026.7.1.22
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.21';
+  const VERSION = '2026.7.1.22';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -318,6 +318,11 @@
       .gt-clone-btn{margin-left:10px;font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:#2e6da4;background:#eef4fb;
         border:1px solid #cfe0f0;border-radius:5px;padding:2px 9px;cursor:pointer;vertical-align:middle}
       .gt-clone-btn:hover{background:#e2edf8}
+      .gt-cfg-btn{float:right;margin-left:8px;font-size:15px;line-height:1.4;color:#8892a0;background:none;border:none;cursor:pointer;padding:2px 7px;border-radius:5px}
+      .gt-cfg-btn:hover{background:#eef1f6;color:#556}
+      .gt-about .gt-about-ver{padding:2px 9px 4px;font-size:12px;color:#556}
+      .gt-about .gt-about-help{display:block;padding:6px 9px;font-size:13px;color:#2e6da4;text-decoration:none}
+      .gt-about .gt-about-help:hover{text-decoration:underline;background:#eef1f6;border-radius:5px}
       .gt-pop{position:fixed;z-index:2147483647;min-width:300px;max-width:460px;background:#fff;border:1px solid #cfd4da;border-radius:8px;
         box-shadow:0 10px 30px rgba(0,0,0,.2);padding:6px;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222}
       .gt-pop .gt-pop-hdr{padding:4px 8px 6px;font-size:11px;font-weight:700;letter-spacing:.02em;color:#6a7482;text-transform:uppercase}
@@ -487,24 +492,21 @@
     if (!objs.length) return null;
     try { return MB.tree.fromDistinctAscArray(objs); } catch (e) { return null; }
   }
-  // clone another release's release-level credits (artists + labels) onto this release
-  async function cloneFromRelease(sourceGid) {
-    const re = RE(); if (!re) return 0;
+  // fetch another release's release-level credits (artists + labels) as copy specs (not yet dispatched)
+  async function fetchReleaseRels(sourceGid) {
     const j = await (await fetch('/ws/js/entity/' + sourceGid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } })).json();
-    const rels = (j.relationships || []).filter(r => (r.target_type === 'artist' || r.target_type === 'label') && r.target && r.target.id != null);
-    const here = re.state.entity;
-    let n = 0;
-    for (const r of rels) {
-      const target = { entityType: r.target_type, id: r.target.id, gid: r.target.gid, name: r.target.name };
-      // artist/label sort before "release", so the target is entity0 and carries entity0_credit
-      dispatchRelationship(re, here, target, r.linkTypeID, r.entity0_credit || '', buildAttrTree(r.attributes), { begin_date: r.begin_date, end_date: r.end_date, ended: r.ended });
-      n++;
-    }
-    return n;
+    return (j.relationships || []).filter(r => (r.target_type === 'artist' || r.target_type === 'label') && r.target && r.target.id != null)
+      .map(r => ({
+        other: { entityType: r.target_type, id: r.target.id, gid: r.target.gid, name: r.target.name },   // artist/label sort before release → carries entity0_credit
+        linkTypeID: r.linkTypeID, credit: r.entity0_credit || '',
+        attributes: buildAttrTree(r.attributes), begin_date: r.begin_date || null, end_date: r.end_date || null, ended: !!r.ended,
+      }));
   }
+  // this release's single medium format (from tr.subh), or '' when mixed/unknown
+  const releaseFormat = () => { const f = [...new Set([...document.querySelectorAll('tr.subh')].map(s => (s.textContent || '').replace(/^\s*\d+\s*/, '').replace(/^[^A-Za-z0-9]+/, '').trim().toLowerCase()).filter(Boolean))]; return f.length === 1 ? f[0] : ''; };
   const GID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
   // popover: pick a sibling release from this release group, or paste any release URL/MBID
-  let popEl = null;
+  let popEl = null, cloneBtnRef = null;
   function closePopover() { if (popEl) { popEl.remove(); popEl = null; document.removeEventListener('mousedown', onPopDown, true); document.removeEventListener('keydown', onPopKey, true); } }
   function onPopKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closePopover(); } }
   function onPopDown(e) {
@@ -517,11 +519,23 @@
   }
   async function doCopyFrom(gid) {
     if (!gid) return;
-    const here = ((RE() && RE().state.entity.gid) || '').toLowerCase();
-    if (gid.toLowerCase() === here) { toast('That’s this release'); return; }
+    const here = RE() && RE().state.entity; if (!here) return;
+    if (gid.toLowerCase() === (here.gid || '').toLowerCase()) { toast('That’s this release'); return; }
+    const a = cloneBtnRef && cloneBtnRef.getBoundingClientRect(); const ax = a ? a.left : 120, ay = a ? a.bottom + 4 : 120;
     closePopover(); toast('Fetching…');
-    try { const n = await cloneFromRelease(gid); toast(n ? `Copied ${n} release credit${n > 1 ? 's' : ''} — review & save` : 'No artist/label credits on that release'); }
-    catch (e) { toast('Copy failed: ' + (e && e.message || e)); }
+    let specs; try { specs = await fetchReleaseRels(gid); } catch (e) { toast('Copy failed: ' + (e && e.message || e)); return; }
+    if (!specs.length) { toast('No artist/label credits on that release'); return; }
+    // show a checklist of what will be copied (like the recording/work menus), with format-aware
+    // cleansing against THIS release's format (cross-format copy is where cleansing matters)
+    const entries = specs.map(s => ({ rel: s, role: s.linkTypeID, pos: ltName(s.linkTypeID), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
+    const chosen = () => entries.filter(e => !e.cb || e.cb.checked).map(e => e.rel);
+    const fmt = releaseFormat(), exRoles = formatExcludeRolesFor(fmt); let excluded = 0;
+    if (exRoles.length) entries.forEach(e => { const rn = ltName(e.rel.linkTypeID).toLowerCase(); if (exRoles.some(k => rn.includes(k))) { e.checked = false; e.text += ` — off (not typical for ${fmt})`; excluded++; } });
+    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, [here]); toast(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} — review & save`); } };
+    const items = [{ header: 'Copy release credits' }];
+    if (excluded) items.push({ note: `${excluded} pre-unticked for format “${fmt}”` });
+    items.push({ checklist: entries, onToggle: () => { copyItem._setSub && copyItem._setSub(String(chosen().length)); } }, copyItem);
+    openMenu(ax, ay, items);
   }
   async function loadRgReleases(list) {
     try {
@@ -564,6 +578,19 @@
     setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); try { inp.focus(); } catch (e) {} }, 0);
     loadRgReleases(list);
   }
+  function openAboutPopover(anchor) {
+    closePopover();
+    popEl = el('div', 'gt-pop gt-about');
+    popEl.appendChild(el('div', 'gt-pop-hdr', 'Group Therapy'));
+    popEl.appendChild(el('div', 'gt-about-ver', `version ${VERSION}`));
+    const help = el('a', 'gt-about-help', '? Help'); help.href = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/group_therapy'; help.target = '_blank'; help.rel = 'noopener';
+    popEl.appendChild(help);
+    document.body.appendChild(popEl);
+    const a = anchor.getBoundingClientRect(), r = popEl.getBoundingClientRect();
+    popEl.style.left = Math.max(8, Math.min(a.right - r.width, window.innerWidth - r.width - 8)) + 'px';
+    popEl.style.top = Math.min(a.bottom + 4, window.innerHeight - r.height - 8) + 'px';
+    setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); }, 0);
+  }
   function injectCloneButton() {
     const h2 = [...document.querySelectorAll('h2')].find(h => /^\s*Release relationships/i.test(h.textContent || ''));
     if (!h2) return false;
@@ -573,6 +600,10 @@
     b.type = 'button';
     b.onclick = () => openCopyFromPopover(b);
     h2.appendChild(b);
+    cloneBtnRef = b;
+    const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — about / help';
+    cfg.onclick = () => openAboutPopover(cfg);
+    h2.appendChild(cfg);
     return true;
   }
 
@@ -602,12 +633,6 @@
     const destRows = [...document.querySelectorAll('tr.track')].filter(tr => { if (tr === sourceTr) return false; const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
     const dests = destRows.map(recordingEntity).filter(Boolean);
     const destPos = new Set(destRows.map(trackPosOfRow).filter(p => p != null));
-    // format-aware cleansing: when all destinations share one format, pre-untick credits whose role
-    // doesn't fit it (kept in the list, overridable).
-    const destFmts = [...new Set(destRows.map(mediumFormatOf).filter(Boolean).map(f => f.toLowerCase()))];
-    const destFmt = destFmts.length === 1 ? destFmts[0] : '';
-    const exRoles = formatExcludeRolesFor(destFmt); let excluded = 0;
-    if (exRoles.length) entries.forEach(e => { const rn = ltName(e.rel.linkTypeID).toLowerCase(); if (exRoles.some(k => rn.includes(k))) { e.checked = false; e.text += ` — off (not typical for ${destFmt})`; excluded++; } });
     const nR = srcRels.length, nD = dests.length;
     const where = destPos.size ? `track${destPos.size > 1 ? 's' : ''} ${ranges(destPos)}` : `${nD} recording${nD > 1 ? 's' : ''}`;
     const items = [];
@@ -616,9 +641,8 @@
     else {
       const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, dests); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
       const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const srcGid = (recordingEntity(sourceTr) || {}).gid; copyCredits(c, dests); removeSourceRels(srcGid, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
-      items.push({ header: `Copy to ${where}` });
-      if (excluded) items.push({ note: `${excluded} credit${excluded > 1 ? 's' : ''} pre-unticked for format “${destFmt}”` });
-      items.push({ checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
+      items.push({ header: `Copy to ${where}` },
+        { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
         copyItem, moveItem);
     }
     openMenu(x, y, items);
@@ -715,7 +739,7 @@
     document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
     try { GM_registerMenuCommand(`Group Therapy v${VERSION}`, () => {}); } catch (e) {}
-    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, cloneFromRelease, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE }; } catch (e) {}
+    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, fetchReleaseRels, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
   if (document.body) boot(); else document.addEventListener('DOMContentLoaded', boot, { once: true });
