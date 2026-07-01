@@ -4,7 +4,6 @@
 
 ### Features
 
-1. Mammoth babies on "Add relationship dialog" ([#316](https://github.com/majkinetor/musicbrainz-userscripts/issues/316))
 1. Arrows navigate note search results ([#312](https://github.com/majkinetor/musicbrainz-userscripts/issues/312))
 
 ### Fixes
