@@ -1,15 +1,8 @@
 # Group Therapy <img src="./icon.svg" align="left" width="40" height="40">
 
-**Group Therapy** is a subtle relationship-editor helper for the MusicBrainz **Edit relationships**
-page. Chrome-light on purpose — it adds context menus and hover affordances, not another toolbar.
+Relationship editor helper for the MusicBrainz **Edit relationships**.
 
----
-
-**NOTE: Experimental — work in progress ([#338](https://github.com/majkinetor/musicbrainz-userscripts/issues/338))**
-
----
-
-- Install: [`group_therapy.user.js`](./group_therapy.user.js)
+- Install: [latest](./group_therapy.user.js)
 
 ## Features
 
