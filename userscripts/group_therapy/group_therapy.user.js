@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.13
+// @version      2026.7.1.14
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.13';
+  const VERSION = '2026.7.1.14';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -366,11 +366,19 @@
     });
   }
 
-  // copy a set of source rels onto each destination recording entity (preserving credit, attributes, dates)
-  function copyCredits(srcRels, destRecordings) {
+  // copy a set of source rels onto each destination entity (recording or work), preserving credit,
+  // attributes and dates. Each dispatch is guarded so one bad target can't abort the whole batch.
+  function copyCredits(srcRels, destEntities) {
     const re = RE(); if (!re) return 0;
-    let n = 0;
-    for (const dest of destRecordings) for (const s of srcRels) { dispatchRelationship(re, dest, s.other, s.linkTypeID, s.credit, s.attributes, s); n++; }
+    let n = 0, failed = 0;
+    for (const dest of destEntities) {
+      if (!dest || dest.id == null) { failed++; try { console.warn('[Group Therapy] skipping copy to a target with no id (unsaved entity?):', dest && val(dest.name)); } catch (e) {} continue; }
+      for (const s of srcRels) {
+        try { dispatchRelationship(re, dest, s.other, s.linkTypeID, s.credit, s.attributes, s); n++; }
+        catch (e) { failed++; try { console.warn('[Group Therapy] copy failed for one credit:', e); } catch (_) {} }
+      }
+    }
+    if (failed) try { toast(`Copied ${n}, but ${failed} could not be copied (see console)`); } catch (e) {}
     return n;
   }
   // destination recordings = every OTHER track row whose recording checkbox is ticked
