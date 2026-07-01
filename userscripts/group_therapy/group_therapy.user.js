@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.16
+// @version      2026.7.1.17
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.16';
+  const VERSION = '2026.7.1.17';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -315,8 +315,10 @@
     return null;
   }
   const looksRel = o => o && typeof o === 'object' && ('linkTypeID' in o) && ('entity0' in o || 'entity1' in o);
-  const looksRec = o => o && typeof o === 'object' && o.entityType === 'recording' && o.gid;
-  const looksWork = o => o && typeof o === 'object' && o.entityType === 'work' && o.gid;
+  // gid OR id != null — new (in-session) works/recordings have a NEGATIVE id and no gid yet
+  const looksRec = o => o && typeof o === 'object' && o.entityType === 'recording' && (o.gid || o.id != null);
+  const looksWork = o => o && typeof o === 'object' && o.entityType === 'work' && (o.gid || o.id != null);
+  const sameEntity = (e, ref) => !!(e && ref && ((ref.gid && e.gid === ref.gid) || (ref.id != null && e.id === ref.id)));
   const relFromNode = node => fiberFind(node, looksRel);
   const recordingEntity = tr => fiberFind(tr, looksRec);
   const workEntity = node => fiberFind(node, looksWork);
@@ -550,7 +552,7 @@
     const out = [], seen = new Set();
     document.querySelectorAll('.relationship-item').forEach(item => {
       const rel = relFromNode(item); if (!rel || !looksRel(rel)) return;
-      const w0 = rel.entity0 && rel.entity0.gid === work.gid, w1 = rel.entity1 && rel.entity1.gid === work.gid;
+      const w0 = sameEntity(rel.entity0, work), w1 = sameEntity(rel.entity1, work);
       if (!w0 && !w1) return;
       const other = w0 ? rel.entity1 : rel.entity0;
       if (!other || ['recording', 'url', 'work'].includes(other.entityType)) return;   // work credits (writer/composer/lyricist/publisher/…) — skip performance (recording), based-on (work), url
@@ -560,13 +562,13 @@
     });
     return out;
   }
-  async function removeWorkRels(workGid, srcRels) {
+  async function removeWorkRels(work, srcRels) {
     const want = new Set(srcRels.map(s => s.linkTypeID + '|' + (s.other && s.other.gid)));
     for (let guard = 0; guard < 300; guard++) {
       let btn = null;
       for (const item of document.querySelectorAll('.relationship-item')) {
         const rel = relFromNode(item); if (!rel || !looksRel(rel) || rel._status === 3) continue;
-        const w0 = rel.entity0 && rel.entity0.gid === workGid, w1 = rel.entity1 && rel.entity1.gid === workGid;
+        const w0 = sameEntity(rel.entity0, work), w1 = sameEntity(rel.entity1, work);
         if (!w0 && !w1) continue;
         const other = w0 ? rel.entity1 : rel.entity0;
         if (other && !['recording', 'url', 'work'].includes(other.entityType) && want.has(rel.linkTypeID + '|' + other.gid)) { btn = item.querySelector(REMOVE_SEL); break; }
@@ -604,7 +606,7 @@
       items.push({ header: `Copy to ${nD} work${nD > 1 ? 's' : ''}` });
       items.push({ note: destNames.slice(0, 6).join(' · ') + (destNames.length > 6 ? ` +${destNames.length - 6} more` : '') });
       items.push({ label: 'Copy', sub: String(nR), lines: relLines, run: () => { copyCredits(srcRels, destWorks); toast(`Copied ${nounN} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } });
-      items.push({ label: 'Move (remove here)', danger: true, run: () => { copyCredits(srcRels, destWorks); removeWorkRels(srcWork.gid, srcRels); toast(`Moved ${nounN} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } });
+      items.push({ label: 'Move (remove here)', danger: true, run: () => { copyCredits(srcRels, destWorks); removeWorkRels(srcWork, srcRels); toast(`Moved ${nounN} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } });
     }
     openMenu(x, y, items);
   }
