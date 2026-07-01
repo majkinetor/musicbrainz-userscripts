@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.22
+// @version      2026.7.1.23
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.22';
+  const VERSION = '2026.7.1.23';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -615,7 +615,7 @@
   // format start UNTICKED in the copy checklist (re-tick to override) — e.g. don't carry a vinyl-only
   // production credit onto a digital edition. Keys = format-name substrings (case-insensitive),
   // values = role-name substrings. Replace the whole map via GM value 'gt-format-exclude' (JSON object).
-  const FORMAT_EXCLUDE_DEFAULT = { digital: ['lacquer', 'vinyl'] };
+  const FORMAT_EXCLUDE_DEFAULT = { digital: ['lacquer', 'vinyl', 'pressed'] };
   function formatExcludeMap() { try { const raw = (typeof GM_getValue === 'function') && GM_getValue('gt-format-exclude', ''); if (raw) return JSON.parse(raw); } catch (e) {} return FORMAT_EXCLUDE_DEFAULT; }
   function formatExcludeRolesFor(fmt) {
     fmt = (fmt || '').toLowerCase(); if (!fmt) return [];
