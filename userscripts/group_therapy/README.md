@@ -31,10 +31,13 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
   tracks / the release it appears on, e.g. *48× · tracks 1–12*.
 
 - **Copy / move credits** — tick the destination recordings (MB's own recording checkboxes), then
-  **right-click the source recording's checkbox** for a menu:
-  - *Copy → N recordings* — duplicate this recording's artist credits (role, artist, credited-as **and
-    attributes** like instruments/vocals) onto every ticked recording. MB merges any it already has.
-  - *Move → N recordings* — the same, then remove them from the source.
+  **right-click the source recording's checkbox** for a menu (its header shows which tracks you're
+  copying to):
+  - *Copy* — duplicate this recording's credits onto every ticked recording. Covers artists,
+    ℗/© **labels**, recorded-at **places**, etc. — with role, credited-as, **attributes** (instruments/
+    vocals) and **dates** (e.g. the ℗ year) preserved. MB merges any it already has.
+  - *Move* — the same, then remove them from the source.
+  - **Right-click a work's checkbox** to copy/move that recording's **works** the same way.
 
   It reads each credit straight off MB's own rendered relationship (so nothing is lost) and adds them
   through MB's editor — **review and save** like any manual edit; nothing is submitted for you.
@@ -49,4 +52,5 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
 | --- | --- |
 | right-click a relationship's **×** | open the group-delete menu |
 | right-click a recording's **checkbox** | copy / move its credits to the ticked recordings |
+| right-click a work's **checkbox** | copy / move that recording's works to the ticked recordings |
 | hover an entity name / role label | highlight all matches + show a count tooltip |

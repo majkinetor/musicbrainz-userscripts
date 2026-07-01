@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.7
+// @version      2026.7.1.8
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.7';
+  const VERSION = '2026.7.1.8';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -55,6 +55,7 @@
     menuEl = el('div', 'gt-menu');
     for (const it of items) {
       if (it === 'sep') { menuEl.appendChild(el('div', 'gt-sep')); continue; }
+      if (it.header != null) { menuEl.appendChild(el('div', 'gt-hdr', it.header)); continue; }
       const row = el('button', 'gt-mi' + (it.danger ? ' gt-danger' : ''));
       const top = el('div', 'gt-mi-top');
       top.appendChild(el('span', 'gt-mi-l', it.label));
@@ -105,9 +106,12 @@
       .map(r => ({ pos: r.pos == null ? 'rel' : r.pos, text: [...new Set(r.vals.filter(Boolean))].join(', ') }));
   }
   function onContextMenu(ev) {
-    // #338 P2: right-click a recording's checkbox → copy/move its credits to the ticked recordings
+    // #338 P2: right-click a recording's checkbox → copy/move its credits to the ticked recordings;
+    // right-click a work checkbox → copy/move its work rels the same way
     const recCb = ev.target.closest && ev.target.closest('input.recording');
-    if (recCb) { const tr = recCb.closest('tr.track'); if (tr) { ev.preventDefault(); openCopyMenu(tr, ev.clientX, ev.clientY); } return; }
+    if (recCb) { const tr = recCb.closest('tr.track'); if (tr) { ev.preventDefault(); openCopyMenu(tr, ev.clientX, ev.clientY, 'credits'); } return; }
+    const workCb = ev.target.closest && ev.target.closest('input.work');
+    if (workCb) { const tr = workCb.closest('tr.track'); if (tr) { ev.preventDefault(); openCopyMenu(tr, ev.clientX, ev.clientY, 'work'); } return; }
     const btn = ev.target.closest && ev.target.closest(REMOVE_SEL);
     if (!btn) return;   // not a rel × — let the browser menu through
     ev.preventDefault();
@@ -209,6 +213,7 @@
       .gt-mi .gt-mi-tx{flex:1;white-space:normal;word-break:break-word}
       .gt-mi .gt-mi-more{color:#9aa3b0;font-style:italic}
       .gt-menu .gt-sep{height:1px;background:#e7e9ee;margin:4px 2px}
+      .gt-menu .gt-hdr{padding:5px 9px 4px;font-size:11px;font-weight:700;letter-spacing:.02em;color:#6a7482;text-transform:uppercase}
       .gt-mi{display:block;width:100%;box-sizing:border-box;background:none;border:none;text-align:left;
         padding:6px 9px;border-radius:5px;cursor:pointer;color:inherit;font:inherit}
       .gt-mi:hover{background:#eef1f6}
@@ -277,14 +282,16 @@
       const other = rec0 ? rel.entity1 : rel.entity0;
       const credit = rec0 ? rel.entity1_credit : rel.entity0_credit;
       // _status: 0 = existing, 1 = added this session, 3 = marked removed (stays in the DOM struck)
-      out.push({ item, other, credit: val(credit) || '', linkTypeID: rel.linkTypeID, attributes: rel.attributes || null, removed: rel._status === 3 });
+      out.push({ item, other, credit: val(credit) || '', linkTypeID: rel.linkTypeID, attributes: rel.attributes || null,
+        begin_date: rel.begin_date || null, end_date: rel.end_date || null, ended: !!rel.ended,   // preserve ℗/© years etc. on copy
+        removed: rel._status === 3 });
     });
     return out;
   }
 
   // dispatch one rel into MB's editor (ported from Credit Hoarder's editor-state — the shared
   // editing lib). MB requires entity0 to be the lower entityType; swap + route credit accordingly.
-  function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes) {
+  function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes, dates) {
     if (credit && credit === (val(targetEntity.name) || '')) credit = '';
     const swapped = sourceEntity.entityType > targetEntity.entityType;
     const e0 = swapped ? targetEntity : sourceEntity;
@@ -301,15 +308,18 @@
         entity0: e0, entity0_credit: swapped ? (credit || '') : '',
         entity1: e1, entity1_credit: swapped ? '' : (credit || ''),
         id: re.getRelationshipStateId(), linkTypeID, attributes: attributes || null,
+        begin_date: (dates && dates.begin_date) || null,
+        end_date: (dates && dates.end_date) || null,
+        ended: !!(dates && dates.ended),
       },
     });
   }
 
-  // copy a set of source rels onto each destination recording entity
+  // copy a set of source rels onto each destination recording entity (preserving credit, attributes, dates)
   function copyCredits(srcRels, destRecordings) {
     const re = RE(); if (!re) return 0;
     let n = 0;
-    for (const dest of destRecordings) for (const s of srcRels) { dispatchRelationship(re, dest, s.other, s.linkTypeID, s.credit, s.attributes); n++; }
+    for (const dest of destRecordings) for (const s of srcRels) { dispatchRelationship(re, dest, s.other, s.linkTypeID, s.credit, s.attributes, s); n++; }
     return n;
   }
   // destination recordings = every OTHER track row whose recording checkbox is ticked
@@ -349,21 +359,31 @@
   }
 
   const ltName = id => (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id] || {}).name || String(id);
-  function openCopyMenu(sourceTr, x, y) {
-    // only live artist credits — copying work/url rels across recordings rarely makes sense,
-    // and skip any already marked removed
-    const srcRels = recordingRels(sourceTr).filter(r => !r.removed && r.other && r.other.entityType === 'artist');
+  const trackPosOfRow = tr => { const m = (tr.textContent || '').match(/^\s*(\d+)\b/); return m ? +m[1] : null; };
+  // mode 'credits' (recording checkbox) copies every recording rel except work/url/recording-samples
+  // (so artists, ℗/© labels, recorded-at places, …); mode 'work' (work checkbox) copies the work rels.
+  function openCopyMenu(sourceTr, x, y, mode) {
+    const isWork = mode === 'work';
+    const keep = r => r.other && (isWork ? r.other.entityType === 'work' : !['work', 'url', 'recording'].includes(r.other.entityType));
+    const srcRels = recordingRels(sourceTr).filter(r => !r.removed && keep(r));
+    const noun = isWork ? 'work' : 'credit';
     const relLines = srcRels.map(s => ({ pos: ltName(s.linkTypeID), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
-    const dests = checkedDestinations(sourceTr);
+    // destination rows = ticked recording checkboxes (other than the source) → entities + track positions
+    const destRows = [...document.querySelectorAll('tr.track')].filter(tr => { if (tr === sourceTr) return false; const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
+    const dests = destRows.map(recordingEntity).filter(Boolean);
+    const destPos = new Set(destRows.map(trackPosOfRow).filter(p => p != null));
     const nR = srcRels.length, nD = dests.length;
+    const nounN = `${nR} ${noun}${nR > 1 ? 's' : ''}`;
+    const where = destPos.size ? `track${destPos.size > 1 ? 's' : ''} ${ranges(destPos)}` : `${nD} recording${nD > 1 ? 's' : ''}`;
     const items = [];
-    if (!nR) { items.push({ label: 'No artist credits to copy here' }); }
-    else if (!nD) { items.push({ label: `${nR} credit${nR > 1 ? 's' : ''} — tick destination recordings first`, sub: String(nR), lines: relLines }); }
+    if (!nR) { items.push({ header: `No ${noun}s here` }); }
+    else if (!nD) { items.push({ header: 'Tick destination recordings first' }, { label: `${nounN} to copy`, sub: String(nR), lines: relLines }); }
     else {
-      items.push({ label: `Copy → ${nD} recording${nD > 1 ? 's' : ''}`, sub: String(nR), lines: relLines,
-        run: () => { copyCredits(srcRels, dests); toast(`Copied ${nR} credit${nR > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } });
-      items.push({ label: `Move → ${nD} recording${nD > 1 ? 's' : ''} (remove here)`, danger: true,
-        run: () => { const srcGid = (recordingEntity(sourceTr) || {}).gid; copyCredits(srcRels, dests); removeSourceRels(srcGid, srcRels); toast(`Moved ${nR} credit${nR > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } });
+      items.push({ header: `Copy ${isWork ? (nR > 1 ? 'works ' : 'work ') : ''}to ${where}` });
+      items.push({ label: 'Copy', sub: String(nR), lines: relLines,
+        run: () => { copyCredits(srcRels, dests); toast(`Copied ${nounN} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } });
+      items.push({ label: 'Move (remove here)', danger: true,
+        run: () => { const srcGid = (recordingEntity(sourceTr) || {}).gid; copyCredits(srcRels, dests); removeSourceRels(srcGid, srcRels); toast(`Moved ${nounN} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } });
     }
     openMenu(x, y, items);
   }
