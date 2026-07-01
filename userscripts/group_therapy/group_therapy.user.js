@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.11
+// @version      2026.7.1.12
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.11';
+  const VERSION = '2026.7.1.12';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -261,6 +261,19 @@
       .gt-clone-btn{margin-left:10px;font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:#2e6da4;background:#eef4fb;
         border:1px solid #cfe0f0;border-radius:5px;padding:2px 9px;cursor:pointer;vertical-align:middle}
       .gt-clone-btn:hover{background:#e2edf8}
+      .gt-pop{position:fixed;z-index:2147483647;min-width:300px;max-width:460px;background:#fff;border:1px solid #cfd4da;border-radius:8px;
+        box-shadow:0 10px 30px rgba(0,0,0,.2);padding:6px;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222}
+      .gt-pop .gt-pop-hdr{padding:4px 8px 6px;font-size:11px;font-weight:700;letter-spacing:.02em;color:#6a7482;text-transform:uppercase}
+      .gt-pop .gt-pop-list{max-height:44vh;overflow-y:auto}
+      .gt-pop .gt-pop-note{padding:8px;color:#8892a0;font-size:12px}
+      .gt-pop .gt-pop-rel{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:none;border-radius:5px;padding:6px 9px;cursor:pointer;color:inherit;font:inherit}
+      .gt-pop .gt-pop-rel:hover{background:#eef1f6}
+      .gt-pop .gt-pop-rel-t{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .gt-pop .gt-pop-rel-m{display:block;font-size:11px;color:#8892a0;margin-top:1px}
+      .gt-pop .gt-pop-row{display:flex;gap:6px;padding:6px 6px 4px}
+      .gt-pop .gt-pop-tf{flex:1;min-width:0;padding:5px 8px;border:1px solid #cfd4da;border-radius:5px;font:inherit}
+      .gt-pop .gt-pop-go{flex:none;background:#2e9e5b;color:#fff;border:none;border-radius:5px;padding:5px 12px;cursor:pointer;font:600 13px inherit}
+      .gt-pop .gt-pop-go:hover{background:#28864d}
       /* subtle discoverability: the controls Group Therapy adds a right-click menu to (recording/work
          checkboxes → copy/move; the × → group delete) get a faint green accent, and a clearer ring on hover */
       tr.track input.recording, tr.track input.work { accent-color:#2e9e5b; }
@@ -420,25 +433,75 @@
     return n;
   }
   const GID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-  async function onCloneClick() {
-    const input = W.prompt('Clone release-level credits (artists + labels) FROM which release?\nPaste a MusicBrainz release URL or MBID:');
-    if (!input) return;
-    const m = input.match(GID_RE);
-    if (!m) { toast('No release MBID found in that input'); return; }
-    const src = m[0].toLowerCase(), here = ((RE() && RE().state.entity.gid) || '').toLowerCase();
-    if (src === here) { toast('That’s this release'); return; }
-    toast('Fetching…');
-    try { const n = await cloneFromRelease(src); toast(n ? `Cloned ${n} release credit${n > 1 ? 's' : ''} — review & save` : 'No artist/label credits on that release'); }
-    catch (e) { toast('Clone failed: ' + (e && e.message || e)); }
+  // popover: pick a sibling release from this release group, or paste any release URL/MBID
+  let popEl = null;
+  function closePopover() { if (popEl) { popEl.remove(); popEl = null; document.removeEventListener('mousedown', onPopDown, true); document.removeEventListener('keydown', onPopKey, true); } }
+  function onPopKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closePopover(); } }
+  function onPopDown(e) {
+    if (!popEl || popEl.contains(e.target)) return;
+    closePopover();
+    // swallow the trailing click so dismissing doesn't activate whatever's underneath (#305)
+    const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); document.removeEventListener('click', swallow, true); };
+    document.addEventListener('click', swallow, true);
+    setTimeout(() => document.removeEventListener('click', swallow, true), 500);
+  }
+  async function doCopyFrom(gid) {
+    if (!gid) return;
+    const here = ((RE() && RE().state.entity.gid) || '').toLowerCase();
+    if (gid.toLowerCase() === here) { toast('That’s this release'); return; }
+    closePopover(); toast('Fetching…');
+    try { const n = await cloneFromRelease(gid); toast(n ? `Copied ${n} release credit${n > 1 ? 's' : ''} — review & save` : 'No artist/label credits on that release'); }
+    catch (e) { toast('Copy failed: ' + (e && e.message || e)); }
+  }
+  async function loadRgReleases(list) {
+    try {
+      const here = RE().state.entity.gid;
+      const rg = await (await fetch('/ws/2/release/' + here + '?inc=release-groups&fmt=json', { headers: { Accept: 'application/json' } })).json();
+      const rgid = rg['release-group'] && rg['release-group'].id;
+      if (!rgid) { list.textContent = ''; list.appendChild(el('div', 'gt-pop-note', 'No release group')); return; }
+      const sib = await (await fetch('/ws/2/release?release-group=' + rgid + '&inc=media&limit=100&fmt=json', { headers: { Accept: 'application/json' } })).json();
+      const rels = (sib.releases || []).filter(r => r.id !== here);
+      list.textContent = '';
+      if (!rels.length) { list.appendChild(el('div', 'gt-pop-note', 'No other releases in this group')); return; }
+      for (const r of rels) {
+        const b = el('button', 'gt-pop-rel');
+        b.appendChild(el('span', 'gt-pop-rel-t', r.title + (r.disambiguation ? ` (${r.disambiguation})` : '')));
+        const fmt = [...new Set((r.media || []).map(m => m.format).filter(Boolean))].join(' + ');
+        const tracks = (r.media || []).reduce((s, m) => s + (m['track-count'] || 0), 0);
+        const meta = [r.date, r.country, fmt, tracks ? tracks + ' tracks' : ''].filter(Boolean).join(' · ');
+        if (meta) b.appendChild(el('span', 'gt-pop-rel-m', meta));
+        b.onclick = () => doCopyFrom(r.id);
+        list.appendChild(b);
+      }
+    } catch (e) { list.textContent = ''; list.appendChild(el('div', 'gt-pop-note', 'Could not load release group')); }
+  }
+  function openCopyFromPopover(anchor) {
+    closePopover();
+    popEl = el('div', 'gt-pop');
+    popEl.appendChild(el('div', 'gt-pop-hdr', 'Copy release credits from…'));
+    const list = el('div', 'gt-pop-list'); list.appendChild(el('div', 'gt-pop-note', 'Loading release group…')); popEl.appendChild(list);
+    popEl.appendChild(el('div', 'gt-sep'));
+    const row = el('div', 'gt-pop-row');
+    const inp = el('input', 'gt-pop-tf'); inp.type = 'text'; inp.placeholder = 'or paste a release URL / MBID';
+    const go = el('button', 'gt-pop-go', 'Copy');
+    const fromInput = () => { const m = (inp.value || '').match(GID_RE); if (!m) { toast('No release MBID in that text'); return; } doCopyFrom(m[0]); };
+    go.onclick = fromInput; inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fromInput(); } });
+    row.appendChild(inp); row.appendChild(go); popEl.appendChild(row);
+    document.body.appendChild(popEl);
+    const a = anchor.getBoundingClientRect(), r = popEl.getBoundingClientRect();
+    popEl.style.left = Math.max(8, Math.min(a.left, window.innerWidth - r.width - 8)) + 'px';
+    popEl.style.top = Math.min(a.bottom + 4, window.innerHeight - r.height - 8) + 'px';
+    setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); try { inp.focus(); } catch (e) {} }, 0);
+    loadRgReleases(list);
   }
   function injectCloneButton() {
     const h2 = [...document.querySelectorAll('h2')].find(h => /^\s*Release relationships/i.test(h.textContent || ''));
     if (!h2) return false;
     if (h2.querySelector('.gt-clone-btn')) return true;
-    const b = el('button', 'gt-clone-btn', '⧉ Clone from release…');
+    const b = el('button', 'gt-clone-btn', '⧉ Copy from release…');
     b.title = 'Copy release-level credits (artists, labels) from another release onto this one';
     b.type = 'button';
-    b.onclick = onCloneClick;
+    b.onclick = () => openCopyFromPopover(b);
     h2.appendChild(b);
     return true;
   }
@@ -544,7 +607,7 @@
     document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
     try { GM_registerMenuCommand(`Group Therapy v${VERSION}`, () => {}); } catch (e) {}
-    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, cloneFromRelease, injectCloneButton, workEntity, workArtistRels, openWorkMenu, RE }; } catch (e) {}
+    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, cloneFromRelease, injectCloneButton, openCopyFromPopover, workEntity, workArtistRels, openWorkMenu, RE }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
   if (document.body) boot(); else document.addEventListener('DOMContentLoaded', boot, { once: true });

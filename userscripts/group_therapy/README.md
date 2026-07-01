@@ -43,9 +43,10 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
   It reads each credit straight off MB's own rendered relationship (so nothing is lost) and adds them
   through MB's editor — **review and save** like any manual edit; nothing is submitted for you.
 
-- **Clone from another release** — the **⧉ Clone from release…** button next to the *Release
-  relationships* heading pulls that release's release-level credits (artists + labels, with credited-as,
-  attributes and dates) onto this one. Paste any MB release URL or MBID; MB merges any it already has.
+- **Copy from another release** — the **⧉ Copy from release…** button next to the *Release
+  relationships* heading opens a picker: choose one of this **release group's** other releases, or paste
+  any release URL/MBID. It pulls that release's release-level credits (artists + labels, with
+  credited-as, attributes and dates) onto this one; MB merges any it already has.
 
 ### Planned
 
