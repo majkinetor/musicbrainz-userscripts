@@ -37,7 +37,8 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
     ℗/© **labels**, recorded-at **places**, etc. — with role, credited-as, **attributes** (instruments/
     vocals) and **dates** (e.g. the ℗ year) preserved. MB merges any it already has.
   - *Move* — the same, then remove them from the source.
-  - **Right-click a work's checkbox** to copy/move that recording's **works** the same way.
+  - **Right-click a work's checkbox** to copy/move that **work's own credits** (writer, composer,
+    lyricist, …) onto the ticked **works**.
 
   It reads each credit straight off MB's own rendered relationship (so nothing is lost) and adds them
   through MB's editor — **review and save** like any manual edit; nothing is submitted for you.
@@ -56,5 +57,5 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
 | --- | --- |
 | right-click a relationship's **×** | open the group-delete menu |
 | right-click a recording's **checkbox** | copy / move its credits to the ticked recordings |
-| right-click a work's **checkbox** | copy / move that recording's works to the ticked recordings |
+| right-click a work's **checkbox** | copy / move that work's credits (writer/composer/…) to the ticked works |
 | hover an entity name / role label | highlight all matches + show a count tooltip |
