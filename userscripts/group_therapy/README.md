@@ -20,6 +20,9 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
   - *Remove “\<target\>” — everywhere*
   - *Remove “\<role\>” + “\<target\>”*
 
+  Each option shows its **blast radius** — the count and which tracks (or the release) it touches,
+  e.g. *guitar — all tracks (14) · tracks 1–12*.
+
   It never fabricates a removal — it clicks MB's own **×** buttons, so React handles each exactly like
   a manual click (works on existing **and** newly-added relationships).
 

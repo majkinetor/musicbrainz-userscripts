@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.2
+// @version      2026.7.1.3
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -56,8 +56,11 @@
     for (const it of items) {
       if (it === 'sep') { menuEl.appendChild(el('div', 'gt-sep')); continue; }
       const row = el('button', 'gt-mi' + (it.danger ? ' gt-danger' : ''));
-      row.appendChild(el('span', 'gt-mi-l', it.label));
-      if (it.sub != null) row.appendChild(el('span', 'gt-mi-s', it.sub));
+      const top = el('div', 'gt-mi-top');
+      top.appendChild(el('span', 'gt-mi-l', it.label));
+      if (it.sub != null) top.appendChild(el('span', 'gt-mi-s', it.sub));
+      row.appendChild(top);
+      if (it.detail) row.appendChild(el('div', 'gt-mi-d', it.detail));   // #338: blast-radius detail (which tracks / release)
       row.onclick = () => { closeMenu(); try { it.run(); } catch (e) {} };
       menuEl.appendChild(row);
     }
@@ -76,6 +79,18 @@
     const btns = removeButtons(items);
     for (const b of btns) { try { b.click(); } catch (e) {} }
   }
+  // blast radius of a removal group: which tracks (positions) + whether the release itself is hit
+  function scopeOf(items) {
+    const tracks = new Set(); let release = false;
+    for (const it of items) { const tr = it.closest && it.closest('tr.track'); if (tr) { const m = (tr.textContent || '').match(/^\s*(\d+)\b/); if (m) { tracks.add(+m[1]); continue; } } release = true; }
+    return { tracks, release };
+  }
+  function scopeText(items) {
+    const s = scopeOf(items), parts = [];
+    if (s.tracks.size) parts.push(`track${s.tracks.size > 1 ? 's' : ''} ${ranges(s.tracks)}`);
+    if (s.release) parts.push('release');
+    return parts.join(' · ');
+  }
   function onContextMenu(ev) {
     const btn = ev.target.closest && ev.target.closest(REMOVE_SEL);
     if (!btn) return;   // not a rel × — let the browser menu through
@@ -84,12 +99,13 @@
     const roleLabel = pickRoleLabel(seedRow), tgt = targetLabel(seedItem);
     const roleItems = collect(btn, 'role'), tgtItems = collect(btn, 'target'), bothItems = collect(btn, 'role-and-target');
     const trunc = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+    const opt = (label, its) => ({ label, sub: String(its.length), detail: scopeText(its), danger: true, run: () => runRemoval(its) });
     const items = [
-      { label: `Remove this one`, run: () => { try { btn.click(); } catch (e) {} } },
+      { label: `Remove this one`, detail: scopeText([seedItem]), run: () => { try { btn.click(); } catch (e) {} } },
       'sep',
-      { label: `Remove “${trunc(roleLabel, 26)}” — all tracks`, sub: String(roleItems.length), danger: true, run: () => runRemoval(roleItems) },
-      { label: `Remove “${trunc(tgt, 26)}” — everywhere`, sub: String(tgtItems.length), danger: true, run: () => runRemoval(tgtItems) },
-      { label: `Remove “${trunc(roleLabel, 16)}” + “${trunc(tgt, 16)}”`, sub: String(bothItems.length), danger: true, run: () => runRemoval(bothItems) },
+      opt(`Remove “${trunc(roleLabel, 26)}” — all tracks`, roleItems),
+      opt(`Remove “${trunc(tgt, 26)}” — everywhere`, tgtItems),
+      opt(`Remove “${trunc(roleLabel, 16)}” + “${trunc(tgt, 16)}”`, bothItems),
     ];
     openMenu(ev.clientX, ev.clientY, items);
   }
@@ -169,10 +185,12 @@
       .gt-menu{position:fixed;z-index:2147483647;min-width:210px;background:#fff;border:1px solid #cfd4da;border-radius:7px;
         box-shadow:0 8px 26px rgba(0,0,0,.18);padding:4px;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222;user-select:none}
       .gt-menu .gt-sep{height:1px;background:#e7e9ee;margin:4px 2px}
-      .gt-mi{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;background:none;border:none;text-align:left;
+      .gt-mi{display:block;width:100%;box-sizing:border-box;background:none;border:none;text-align:left;
         padding:6px 9px;border-radius:5px;cursor:pointer;color:inherit;font:inherit}
       .gt-mi:hover{background:#eef1f6}
+      .gt-mi .gt-mi-top{display:flex;align-items:center;gap:10px}
       .gt-mi .gt-mi-l{flex:1;white-space:nowrap}
+      .gt-mi .gt-mi-d{font-size:11px;color:#8892a0;margin-top:2px}
       .gt-mi .gt-mi-s{flex:none;min-width:20px;text-align:center;font-weight:700;font-size:11px;color:#556;background:#eef1f6;border-radius:9px;padding:1px 7px}
       .gt-mi.gt-danger:hover{background:#fbe3e0}
       .gt-mi.gt-danger .gt-mi-s{color:#fff;background:#c0392b}
