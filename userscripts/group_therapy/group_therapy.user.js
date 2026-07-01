@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.23
+// @version      2026.7.1.24
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.23';
+  const VERSION = '2026.7.1.24';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -60,16 +60,24 @@
   const rowHasClass = (tr, cls) => !!(tr && cls && tr.classList.contains(cls));
   const itemHasHref = (item, href) => !!(href && item.querySelector(`a[href="${CSS.escape(href)}"]`));
 
+  // a rel's "role" for grouping = its link type PLUS its attributes — because e.g. every instrument rel
+  // shares the one "instrument" link type and the specific instrument (drums, shakers, …) is an
+  // attribute; matching on the CSS role class alone would lump drums + shakers + vocals together.
+  const _roleKeyCache = new WeakMap();
+  function relRoleKey(item) {
+    if (_roleKeyCache.has(item)) return _roleKeyCache.get(item);
+    const rel = relFromNode(item); let key = null;
+    if (rel) { let attrs = ''; try { if (rel.attributes) attrs = [...W.MB.tree.iterate(rel.attributes)].map(a => a.typeID).sort((x, y) => x - y).join(','); } catch (e) {} key = rel.linkTypeID + '#' + attrs; }
+    _roleKeyCache.set(item, key); return key;
+  }
   // collect peer relationship-items matching a scope relative to a seed × button
   function collect(seedBtn, scope) {
-    const seedItem = seedBtn.closest('.relationship-item'), seedRow = seedBtn.closest('tr');
-    if (!seedItem || !seedRow) return [];
-    const roleClass = pickRoleClass(seedRow), href = targetHref(seedItem);
-    const all = [...document.querySelectorAll('.relationship-item')];
-    return all.filter(item => {
-      if (scope === 'role') return rowHasClass(item.closest('tr'), roleClass);
+    const seedItem = seedBtn.closest('.relationship-item'); if (!seedItem) return [];
+    const seedKey = relRoleKey(seedItem), href = targetHref(seedItem);
+    return [...document.querySelectorAll('.relationship-item')].filter(item => {
+      if (scope === 'role') return relRoleKey(item) === seedKey;
       if (scope === 'target') return itemHasHref(item, href);
-      return rowHasClass(item.closest('tr'), roleClass) && itemHasHref(item, href);   // role+target
+      return relRoleKey(item) === seedKey && itemHasHref(item, href);   // role+target
     });
   }
   const removeButtons = items => items.map(it => it.querySelector(REMOVE_SEL)).filter(Boolean);
@@ -615,7 +623,7 @@
   // format start UNTICKED in the copy checklist (re-tick to override) — e.g. don't carry a vinyl-only
   // production credit onto a digital edition. Keys = format-name substrings (case-insensitive),
   // values = role-name substrings. Replace the whole map via GM value 'gt-format-exclude' (JSON object).
-  const FORMAT_EXCLUDE_DEFAULT = { digital: ['lacquer', 'vinyl', 'pressed'] };
+  const FORMAT_EXCLUDE_DEFAULT = { digital: ['lacquer', 'vinyl', 'pressed', 'printed', 'manufactured'] };
   function formatExcludeMap() { try { const raw = (typeof GM_getValue === 'function') && GM_getValue('gt-format-exclude', ''); if (raw) return JSON.parse(raw); } catch (e) {} return FORMAT_EXCLUDE_DEFAULT; }
   function formatExcludeRolesFor(fmt) {
     fmt = (fmt || '').toLowerCase(); if (!fmt) return [];
