@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.20
+// @version      2026.7.1.21
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.20';
+  const VERSION = '2026.7.1.21';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -148,6 +148,23 @@
     return [...byPos.values()].sort((a, b) => { if (a.pos == null) return 1; if (b.pos == null) return -1; return String(a.pos).localeCompare(String(b.pos), undefined, { numeric: true }); })
       .map(r => ({ pos: r.pos == null ? 'rel' : r.pos, text: [...new Set(r.vals.filter(Boolean))].join(', ') }));
   }
+  // keys of the recordings / works MB currently has selected (ticked checkboxes)
+  function selectionKeys() {
+    const re = RE(), recs = new Set(), works = new Set(); if (!re) return { recs, works };
+    const add = (tree, set) => { try { for (const e of W.MB.tree.iterate(tree)) { const w = Array.isArray(e) ? e[1] : e; if (w) set.add((w.gid || '') + '|' + w.id); } } catch (e) {} };
+    add(re.state.selectedRecordings, recs); add(re.state.selectedWorks, works);
+    return { recs, works };
+  }
+  // is a rel item on one of the selected recordings/works?
+  function itemInSelection(item, sel) {
+    const rel = relFromNode(item); if (!rel) return true;   // unreadable → don't exclude
+    for (const e of [rel.entity0, rel.entity1]) {
+      if (!e) continue; const key = (e.gid || '') + '|' + e.id;
+      if (e.entityType === 'recording' && sel.recs.has(key)) return true;
+      if (e.entityType === 'work' && sel.works.has(key)) return true;
+    }
+    return false;
+  }
   function onContextMenu(ev) {
     // #338 P2: right-click a recording's checkbox → copy/move its credits to the ticked recordings;
     // right-click a work checkbox → copy/move its work rels the same way
@@ -160,16 +177,27 @@
     ev.preventDefault();
     const seedRow = btn.closest('tr'), seedItem = btn.closest('.relationship-item');
     const roleLabel = pickRoleLabel(seedRow), tgt = targetLabel(seedItem);
-    const roleItems = collect(btn, 'role'), tgtItems = collect(btn, 'target'), bothItems = collect(btn, 'role-and-target');
+    let roleItems = collect(btn, 'role'), tgtItems = collect(btn, 'target'), bothItems = collect(btn, 'role-and-target');
+    // scope the group removals to the selected recordings/works, if any are ticked (#338)
+    const sel = selectionKeys(); let scopeNote = null;
+    if (sel.recs.size || sel.works.size) {
+      const keep = it => itemInSelection(it, sel);
+      roleItems = roleItems.filter(keep); tgtItems = tgtItems.filter(keep); bothItems = bothItems.filter(keep);
+      const parts = []; if (sel.recs.size) parts.push(`${sel.recs.size} recording${sel.recs.size > 1 ? 's' : ''}`); if (sel.works.size) parts.push(`${sel.works.size} work${sel.works.size > 1 ? 's' : ''}`);
+      scopeNote = `scoped to ${parts.join(' + ')} selected`;
+    }
     const trunc = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
     const opt = (label, its, scope) => ({ label, sub: String(its.length), lines: breakdown(its, scope), danger: true, run: () => runRemoval(its) });
     const items = [
       { label: `Remove this one`, run: () => { try { btn.click(); } catch (e) {} } },
       'sep',
+    ];
+    if (scopeNote) items.push({ note: scopeNote });
+    items.push(
       opt(`Remove ${trunc(roleLabel, 46)}`, roleItems, 'role'),
       opt(`Remove “${trunc(tgt, 46)}”`, tgtItems, 'target'),
       opt(`Remove ${trunc(roleLabel, 24)} + ${trunc(tgt, 24)}`, bothItems, 'role-and-target'),
-    ];
+    );
     openMenu(ev.clientX, ev.clientY, items);
   }
 

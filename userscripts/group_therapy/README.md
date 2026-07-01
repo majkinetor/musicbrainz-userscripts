@@ -22,6 +22,8 @@ Right-click a relationship's **(x)** button for a menu that removes a whole grou
 
 Each option shows its **blast radius** — the count and which tracks (or the release) it touches, e.g. *guitar — all tracks (14) · tracks 1–12*.
 
+If you've **selected recordings/works** (ticked their checkboxes), the group options are **scoped to just those** — so *Remove “guitar”* removes it only from the selected recordings, and the menu notes the scope.
+
 ### Copy / Move
 
 Tick the destination recordings (MB's own recording checkboxes), then
