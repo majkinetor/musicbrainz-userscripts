@@ -1,5 +1,12 @@
 # Art Station Changelog
 
+## [2026.7.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.1)
+
+### Features
+
+1. Drag & drop a web image URL onto the drop zone to upload ([#331](https://github.com/majkinetor/musicbrainz-userscripts/issues/331))
+1. Option for view window in full screen to follow mouse movement ([#323](https://github.com/majkinetor/musicbrainz-userscripts/issues/323))
+
 ## [2026.6.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.27)
 
 - Small improvements

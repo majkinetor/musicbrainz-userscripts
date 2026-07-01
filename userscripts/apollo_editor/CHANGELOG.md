@@ -1,5 +1,17 @@
 # Apollo Editor Changelog
 
+## [2026.7.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.1)
+
+### Features
+
+1. Support for pregap and data tracks ([#330](https://github.com/majkinetor/musicbrainz-userscripts/issues/330))
+1. Guess Punctuation tool ([#322](https://github.com/majkinetor/musicbrainz-userscripts/issues/322))
+
+### Fixes
+
+1. Duplicate similarity too low ([#332](https://github.com/majkinetor/musicbrainz-userscripts/issues/332))
+1. Track lengths are editable when Disc ID is present ([#329](https://github.com/majkinetor/musicbrainz-userscripts/issues/329))
+
 ## [2026.6.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.27)
 
 ### Features

@@ -1,5 +1,11 @@
 # Platform Check Changelog
 
+## [2026.7.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.1)
+
+### Fixes
+
+1. Wrong match: candidate's is a subset of the MB artist, album name ([#324](https://github.com/majkinetor/musicbrainz-userscripts/issues/324))
+
 ## [2026.6.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.27)
 
 - Small improvements

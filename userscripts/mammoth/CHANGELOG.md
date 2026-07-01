@@ -1,5 +1,19 @@
 # Mammoth Changelog
 
+## [2026.7.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.1)
+
+### Features
+
+1. Mammoth babies on "Add relationship dialog" ([#316](https://github.com/majkinetor/musicbrainz-userscripts/issues/316))
+1. Arrows navigate note search results ([#312](https://github.com/majkinetor/musicbrainz-userscripts/issues/312))
+
+### Fixes
+
+1. Mammoth baby missing from detailed artists edit and reserving space ([#333](https://github.com/majkinetor/musicbrainz-userscripts/issues/333))
+1. Shift-Click not working on pinned edit notes ([#328](https://github.com/majkinetor/musicbrainz-userscripts/issues/328))
+1. Toggle edit note formatting via shortcut ([#326](https://github.com/majkinetor/musicbrainz-userscripts/issues/326))
+1. Mammoth babies float on top of MB dialogs (Add/Edit relationship) ([#313](https://github.com/majkinetor/musicbrainz-userscripts/issues/313))
+
 ## [2026.6.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.27)
 
 ### Features

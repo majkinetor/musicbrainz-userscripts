@@ -1,5 +1,11 @@
 # ISRC Scout Changelog
 
+## [2026.7.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.1)
+
+### Fixes
+
+1. Track links removal doesn't work ([#327](https://github.com/majkinetor/musicbrainz-userscripts/issues/327))
+
 ## [2026.6.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.27)
 
 ### Features

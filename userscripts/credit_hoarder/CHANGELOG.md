@@ -1,5 +1,18 @@
 # Credit Hoarder Changelog
 
+## [2026.7.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.1)
+
+### Features
+
+1. Acccounting for recording selection during the import ([#113](https://github.com/majkinetor/musicbrainz-userscripts/issues/113))
+
+### Fixes
+
+1. Tidal with both track and release info: unrecognized credits, mediums collapse ([#325](https://github.com/majkinetor/musicbrainz-userscripts/issues/325))
+1. Translator is a release-level credit, not per-work ([#319](https://github.com/majkinetor/musicbrainz-userscripts/issues/319))
+1. Qobuz credits mis-parsed (spaced role names + instruments) ([#311](https://github.com/majkinetor/musicbrainz-userscripts/issues/311))
+1. Tidal per-track instrument & vocal credits dropped ([#310](https://github.com/majkinetor/musicbrainz-userscripts/issues/310))
+
 ## [2026.6.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.6.27)
 
 ### Fixes
