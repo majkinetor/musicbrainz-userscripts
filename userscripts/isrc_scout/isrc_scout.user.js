@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.1.1
+// @version      2026.7.1.2
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -538,6 +538,8 @@
     .ii-tl svg { width: 16px; height: 16px; display: block; }
     .ii-tl.linked  { color: #adb5bd; }                                               /* already on MB → quiet monochrome */
     .ii-tl.linked:hover { color: #6c757d; }
+    .ii-tl.linked.ended { opacity: .4; }                                             /* #341: relationship marked ended → faded */
+    .ii-tl.linked.ended:hover { opacity: .7; }
     .ii-tl.new     { cursor: pointer; }                                              /* resolved, not linked → click to add (brand colour set inline) */
     .ii-tl.new:hover { filter: brightness(1.12); }
     .ii-tl.cand    { display: none; }                                               /* not resolved yet → hidden until Find links */
@@ -929,6 +931,7 @@
             number:    trk.number,
             existing:  (rec.isrcs || []).slice(),
             recUrls:   (rec.relations || []).map(rel => rel.url && rel.url.resource).filter(Boolean),   // #219: existing url rels on the recording
+            endedUrls: new Set((rec.relations || []).filter(rel => rel.url && rel.url.resource && rel.ended).map(rel => rel.url.resource)),   // #341: url rels already marked ended → render faded
             pending:   '',
           });
         });
@@ -2076,10 +2079,20 @@
 
     // scope tabs (#301): the two operations on a record
     modal.querySelectorAll('.ii-tab').forEach(t => t.addEventListener('click', () => setScope(t.dataset.scope)));
-    // #301: remove links from the LINKED column (symmetric to Add) — right-click
-    // removes one, Ctrl+right-click removes all on the track, Alt+right-click removes
-    // the provider everywhere. Left-click just opens the link.
+    // #341: right-click a LINKED link toggles its "ended" flag — Ctrl = whole track, Alt = that
+    // provider everywhere; right-clicking an already-ended (faded) link reverts it. MIDDLE-click
+    // (with the same modifiers) does the actual removal (#301). Left-click just opens the link.
     tbody.addEventListener('contextmenu', e => {
+      const a = e.target.closest('.ii-tl-linked .ii-tl.linked'); if (!a) return;
+      e.preventDefault();
+      const tr = a.closest('tr[data-idx]'); if (!tr) return;
+      const idx = +tr.dataset.idx;
+      if (e.ctrlKey || e.metaKey) TrackLinks.endTrack(idx, a.dataset.code);
+      else if (e.altKey) TrackLinks.endProvider(a.dataset.code, idx);
+      else TrackLinks.endOne(idx, a.dataset.code);
+    });
+    tbody.addEventListener('auxclick', e => {
+      if (e.button !== 1) return;   // middle button
       const a = e.target.closest('.ii-tl-linked .ii-tl.linked'); if (!a) return;
       e.preventDefault();
       const tr = a.closest('tr[data-idx]'); if (!tr) return;
@@ -2088,6 +2101,8 @@
       else if (e.altKey) TrackLinks.removeProvider(a.dataset.code);
       else TrackLinks.removeOne(idx, a.dataset.code);
     });
+    // stop the browser opening the link in a new tab on middle-click (fires on mousedown in some browsers)
+    tbody.addEventListener('mousedown', e => { if (e.button === 1 && e.target.closest('.ii-tl-linked .ii-tl.linked')) e.preventDefault(); });
     // Esc closes the modal (no ✕ in the header) — but first let an open pane close,
     // and ignore it while typing in a field.
     document.addEventListener('keydown', e => {
@@ -2505,12 +2520,13 @@
     // #301: two columns. LINKED = monochrome icons for providers already linked on
     // MB; ADD = a hidden candidate slot per not-yet-linked provider (Find links fills
     // them, and an added one moves over to the LINKED column).
-    function linkedIcon(p, url) {
-      return '<a class="ii-tl linked" data-code="' + p.code + '" style="color:' + p.color + '" href="' + esc(url) + '" target="_blank" rel="noopener" ' +
-        'title="' + esc(p.name) + ' — linked on MusicBrainz · left-click opens · right-click removes · Ctrl+right-click removes all on this track · Alt+right-click removes ' + esc(p.name) + ' on every track">' + p.icon + '</a>';
+    function linkedIcon(p, url, ended) {
+      const verb = ended ? 'un-ends' : 'marks ended';
+      return '<a class="ii-tl linked' + (ended ? ' ended' : '') + '" data-code="' + p.code + '" style="color:' + p.color + '" href="' + esc(url) + '" target="_blank" rel="noopener" ' +
+        'title="' + esc(p.name) + ' — linked' + (ended ? ' · ENDED' : '') + ' · left-click opens · right-click ' + verb + ' (Ctrl: whole track · Alt: ' + esc(p.name) + ' everywhere) · middle-click removes (same modifiers)">' + p.icon + '</a>';
     }
     function linkedHtml(t) {
-      const cells = providersFor(t).map(p => { const ex = t.recId ? linkedUrl(t, p) : null; return ex ? linkedIcon(p, ex) : ''; }).filter(Boolean).join('');
+      const cells = providersFor(t).map(p => { const ex = t.recId ? linkedUrl(t, p) : null; return ex ? linkedIcon(p, ex, !!(t.endedUrls && t.endedUrls.has(ex))) : ''; }).filter(Boolean).join('');
       return '<div class="ii-tl-linked" data-rec="' + esc(t.recId || '') + '">' + cells + '</div>';
     }
     function addHtml(t) {
@@ -2702,6 +2718,45 @@
     const removeTrack = idx => removeBatch(linkedIcons('tr[data-idx="' + idx + '"] .ii-tl-linked .ii-tl.linked'));
     const removeProvider = code => removeBatch(linkedIcons('.ii-tl-linked .ii-tl.linked[data-code="' + code + '"]'));
 
+    // #341: toggle the "ended" flag on a link's relationship (EDIT_RELATIONSHIP, edit_type 91) —
+    // e.g. a release taken down so its streaming links no longer resolve. Reversible. Verified: MB
+    // applies `ended` via edit_type 91 with no end_date required.
+    function endNote(provs, ended) {
+      const counts = {}; provs.forEach(p => { counts[p.name] = (counts[p.name] || 0) + 1; });
+      const breakdown = Object.keys(counts).sort().map(n => n + ' (' + counts[n] + ')').join(', ');
+      return [noteHeader(), '', 'Release: ' + MB_ROOT + '/release/' + mbid,
+        (ended ? 'Marked ' : 'Un-ended ') + provs.length + ' streaming link' + (provs.length === 1 ? '' : 's') + (ended ? ' as ended' : '') + (breakdown ? ': ' + breakdown : '')].join('\n');
+    }
+    async function endBatch(icons, ended) {
+      if (!icons.length) return;
+      icons.forEach(ic => ic.el.classList.add('removing'));
+      try {
+        const edits = [], used = [];
+        for (const ic of icons) {
+          const t = RELEASE.tracks[ic.idx]; if (!t.recId) continue;
+          const rels = await recUrlRels(t.recId);
+          const rel = rels.find(r => (r.target && r.target.name) === ic.url) || rels.find(r => ic.p.test((r.target && r.target.name) || '') && r.linkTypeID === ic.p.linkTypeID);
+          if (!rel) { Log.warn('No ' + ic.p.name + ' relationship found on "' + (t.title || t.recId) + '"'); ic.el.classList.remove('removing'); continue; }
+          if (!!rel.ended === ended) { ic.el.classList.remove('removing'); ic.el.classList.toggle('ended', ended); continue; }   // already in the desired state
+          edits.push({ edit_type: 91, id: rel.id, linkTypeID: rel.linkTypeID, attributes: [], ended: ended, entities: [{ entityType: 'recording', gid: t.recId }, { entityType: 'url', gid: rel.target.gid, name: rel.target.name }] });
+          used.push(ic);
+        }
+        if (!edits.length) return;
+        await postEdits(edits, endNote(used.map(ic => ic.p), ended));
+        used.forEach(ic => {
+          const t = RELEASE.tracks[ic.idx];
+          if (t) { t.endedUrls = t.endedUrls || new Set(); if (ended) t.endedUrls.add(ic.url); else t.endedUrls.delete(ic.url); delete _relCache[t.recId]; }
+          ic.el.classList.remove('removing');
+          ic.el.classList.toggle('ended', ended);
+        });
+        Log.info((ended ? 'Marked ' : 'Un-ended ') + used.length + ' link' + (used.length === 1 ? '' : 's') + (ended ? ' as ended' : '') + ' on MusicBrainz');
+      } catch (e) { Log.err('End toggle failed: ' + errText(e)); icons.forEach(ic => ic.el.classList.remove('removing')); }
+    }
+    const iconEnded = ic => ic.el.classList.contains('ended');
+    const endOne = (idx, code) => { const ics = linkedIcons('tr[data-idx="' + idx + '"] .ii-tl-linked .ii-tl.linked[data-code="' + code + '"]'); if (ics.length) endBatch(ics, !iconEnded(ics[0])); };
+    const endTrack = (idx, code) => { const c = linkedIcons('tr[data-idx="' + idx + '"] .ii-tl-linked .ii-tl.linked[data-code="' + code + '"]')[0]; endBatch(linkedIcons('tr[data-idx="' + idx + '"] .ii-tl-linked .ii-tl.linked'), c ? !iconEnded(c) : true); };
+    const endProvider = (code, idx) => { const c = linkedIcons('tr[data-idx="' + idx + '"] .ii-tl-linked .ii-tl.linked[data-code="' + code + '"]')[0]; endBatch(linkedIcons('.ii-tl-linked .ii-tl.linked[data-code="' + code + '"]'), c ? !iconEnded(c) : true); };
+
     // Show/label the toolbar "Add N links" button based on resolved candidates.
     // A track is "missing" links when it has none of our providers linked
     // (at least one link → not missing) — parallels the ISRC "N missing" badge.
@@ -2794,7 +2849,7 @@
       return rows;
     }
 
-    return { linkedHtml, addHtml, resolve, addAll, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, linkRows };
+    return { linkedHtml, addHtml, resolve, addAll, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
 
   /* ── render the track table ── */

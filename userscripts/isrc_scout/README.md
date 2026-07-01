@@ -102,9 +102,11 @@ A provider is offered for a track only when it's resolvable (Deezer/Tidal need t
 - On an **Add** icon: **left-click** opens the provider track · **right-click** adds it · **Ctrl + right-click** adds every link on that track · **Alt + right-click** adds that provider across all tracks. **➕ Add links** in the footer adds everything found at once.
 - Adds happen **in the background** via MusicBrainz's internal edit API over your **logged-in session** — no OAuth needed (unlike ISRC submission); auto-applied if you're an auto-editor, otherwise queued. The edit note matches ISRC Scout's standard format.
 
-### Removing
+### Ending & removing
 
-The **Linked** column works the same way in reverse: **left-click** opens · **right-click** removes that link · **Ctrl + right-click** removes all on the track · **Alt + right-click** removes that provider everywhere.
+On a **Linked** icon, **left-click** opens the provider track. **Right-click toggles the relationship's *ended* flag** — use it when a release is taken down and its streaming links no longer resolve ([MB style](https://musicbrainz.org/doc/Style/Relationships/URLs#When_to_remove)); an ended link is shown **faded**, and right-clicking it again reverts it. **Ctrl + right-click** ends the whole track, **Alt + right-click** ends that provider everywhere.
+
+Actual **removal** is on **middle-click** (right-click's modifiers already scope the *ended* toggle): **middle-click** removes that link · **Ctrl + middle-click** removes all on the track · **Alt + middle-click** removes that provider everywhere.
 
 ### Use providers from the whole release group (option)
 
@@ -122,12 +124,15 @@ Keyboard, in the editor / Links modal:
 
 Modifier-clicks on the **Links tab** Add / Linked icons (see [Track links](#track-links-links-tab) for the full description):
 
-| Click | Action |
-|---|---|
-| left-click | Open the provider track |
-| right-click | Add / remove that one link |
-| `Ctrl`/`⌘` + right-click | Add / remove every link on that track |
-| `Alt` + right-click | Add / remove that provider across all tracks |
+| Click | Add column | Linked column |
+|---|---|---|
+| left-click | — | Open the provider track |
+| right-click | Add that one link | Toggle *ended* on that link (faded when ended; right-click reverts) |
+| `Ctrl`/`⌘` + right-click | Add every link on that track | End every link on that track |
+| `Alt` + right-click | Add that provider across all tracks | End that provider across all tracks |
+| middle-click | — | Remove that one link |
+| `Ctrl`/`⌘` + middle-click | — | Remove every link on that track |
+| `Alt` + middle-click | — | Remove that provider across all tracks |
 
 ## Submitting (one-time authorization)
 
