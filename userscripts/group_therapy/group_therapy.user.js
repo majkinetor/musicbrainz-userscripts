@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.19
+// @version      2026.7.1.20
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.19';
+  const VERSION = '2026.7.1.20';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -36,6 +36,13 @@
     let med = null; const tbl = tr.closest && tr.closest('table');
     if (tbl) { const all = [...tbl.querySelectorAll('tr')], idx = all.indexOf(tr); for (let i = idx - 1; i >= 0; i--) { if (all[i].classList && all[i].classList.contains('subh')) { const m = (all[i].textContent || '').match(/(\d+)/); med = m ? m[1] : null; break; } } }
     _medCache.set(tr, med); return med;
+  };
+  // medium FORMAT label for a track row (from the nearest preceding tr.subh, e.g. "1▼CD" → "CD", "2▼12″ Vinyl" → "12″ Vinyl")
+  const mediumFormatOf = tr => {
+    const tbl = tr && tr.closest && tr.closest('table'); if (!tbl) return '';
+    const all = [...tbl.querySelectorAll('tr')], idx = all.indexOf(tr);
+    for (let i = idx - 1; i >= 0; i--) { if (all[i].classList && all[i].classList.contains('subh')) return (all[i].textContent || '').replace(/^\s*\d+\s*/, '').replace(/^[^A-Za-z0-9]+/, '').trim(); }
+    return '';
   };
   // track position label from the row's position cell — handles vinyl/multi-disc numbers ("D5", "A1")
   // as well as plain "5". On multi-medium releases, a plain number is prefixed with the medium so
@@ -543,6 +550,20 @@
 
   const ltName = id => (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id] || {}).name || String(id);
   const trackPosOfRow = tr => posLabel(tr);
+
+  // ── format-aware cleansing (#338) ─────────────────────────────────────────
+  // When copying credits onto a destination of a given FORMAT, credits whose ROLE is listed for that
+  // format start UNTICKED in the copy checklist (re-tick to override) — e.g. don't carry a vinyl-only
+  // production credit onto a digital edition. Keys = format-name substrings (case-insensitive),
+  // values = role-name substrings. Replace the whole map via GM value 'gt-format-exclude' (JSON object).
+  const FORMAT_EXCLUDE_DEFAULT = { digital: ['lacquer', 'vinyl'] };
+  function formatExcludeMap() { try { const raw = (typeof GM_getValue === 'function') && GM_getValue('gt-format-exclude', ''); if (raw) return JSON.parse(raw); } catch (e) {} return FORMAT_EXCLUDE_DEFAULT; }
+  function formatExcludeRolesFor(fmt) {
+    fmt = (fmt || '').toLowerCase(); if (!fmt) return [];
+    const map = formatExcludeMap(), out = [];
+    for (const k in map) if (fmt.includes(String(k).toLowerCase())) out.push(...(map[k] || []));
+    return out.map(s => String(s).toLowerCase());
+  }
   // recording checkbox → copy every recording rel except work/url/recording-samples
   // (so artists, ℗/© labels, recorded-at places, …) onto the ticked recordings
   function openCopyMenu(sourceTr, x, y) {
@@ -553,16 +574,23 @@
     const destRows = [...document.querySelectorAll('tr.track')].filter(tr => { if (tr === sourceTr) return false; const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
     const dests = destRows.map(recordingEntity).filter(Boolean);
     const destPos = new Set(destRows.map(trackPosOfRow).filter(p => p != null));
+    // format-aware cleansing: when all destinations share one format, pre-untick credits whose role
+    // doesn't fit it (kept in the list, overridable).
+    const destFmts = [...new Set(destRows.map(mediumFormatOf).filter(Boolean).map(f => f.toLowerCase()))];
+    const destFmt = destFmts.length === 1 ? destFmts[0] : '';
+    const exRoles = formatExcludeRolesFor(destFmt); let excluded = 0;
+    if (exRoles.length) entries.forEach(e => { const rn = ltName(e.rel.linkTypeID).toLowerCase(); if (exRoles.some(k => rn.includes(k))) { e.checked = false; e.text += ` — off (not typical for ${destFmt})`; excluded++; } });
     const nR = srcRels.length, nD = dests.length;
     const where = destPos.size ? `track${destPos.size > 1 ? 's' : ''} ${ranges(destPos)}` : `${nD} recording${nD > 1 ? 's' : ''}`;
     const items = [];
     if (!nR) { items.push({ header: 'No credits here' }); }
     else if (!nD) { items.push({ header: 'Tick destination recordings first' }, { checklist: entries }); }
     else {
-      const copyItem = { label: 'Copy', sub: String(nR), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, dests); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
+      const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, dests); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
       const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const srcGid = (recordingEntity(sourceTr) || {}).gid; copyCredits(c, dests); removeSourceRels(srcGid, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
-      items.push({ header: `Copy to ${where}` },
-        { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
+      items.push({ header: `Copy to ${where}` });
+      if (excluded) items.push({ note: `${excluded} credit${excluded > 1 ? 's' : ''} pre-unticked for format “${destFmt}”` });
+      items.push({ checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
         copyItem, moveItem);
     }
     openMenu(x, y, items);
@@ -659,7 +687,7 @@
     document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
     try { GM_registerMenuCommand(`Group Therapy v${VERSION}`, () => {}); } catch (e) {}
-    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, cloneFromRelease, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, RE }; } catch (e) {}
+    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, cloneFromRelease, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
   if (document.body) boot(); else document.addEventListener('DOMContentLoaded', boot, { once: true });

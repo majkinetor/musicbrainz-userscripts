@@ -36,6 +36,10 @@ Right-click the source recording's checkbox for a menu (its header shows which t
 
 The menu lists each credit with a **checkbox** (all on by default) — untick any you don't want to copy, or **right-click a credit to select only that role** (e.g. just the composers). Copy/Move act on the ticked credits, and the count updates live.
 
+##### Format-aware cleansing
+
+When the destination recordings all share one **format**, credits whose role doesn't suit that format start **unticked** in the checklist (re-tick to override), and the menu notes how many — so you don't carry, say, a vinyl-only production credit onto a digital edition. The rules are a configurable map of **format-name → role-name** substrings (case-insensitive). The default only unticks vinyl/lacquer roles on a *digital* edition; override the whole map with the **`gt-format-exclude`** GM value (a JSON object), e.g. `{"digital":["lacquer","vinyl mastering"],"cd":["lacquer"]}`.
+
 #### From release 
 
 The **⧉ Copy from release…** button next to the *Release relationships* heading opens a picker: choose one of this **release group's** other releases — each shown with its **date · country · format · track count** so you can tell editions apart — or paste any release URL/MBID. It pulls that release's release-level credits (artists + labels, with credited-as, attributes and dates) onto this one; MB merges any it already has.
