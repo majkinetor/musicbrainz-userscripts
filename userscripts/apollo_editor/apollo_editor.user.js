@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.1
+// @version      2026.7.1.1
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -719,6 +719,9 @@
   const DISCOGS_LINK_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
   // warning triangle shown when the Discogs URL links a DIFFERENT MB artist (#227)
   const DISCOGS_WARN_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  // #—: a distinct glyph for a Discogs "mismatch" (artist links a different page) — a circle-! so it
+  // reads apart from the "conflict" triangle at a glance (and not by colour alone).
+  const DISCOGS_MISMATCH_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12.5"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
   // after the artist's Discogs link changes (foreground return or background
   // postback): drop the stale caches and re-tag every slot crediting that artist.
   async function reTagAfterDiscogsLink(gid, url, name) {
@@ -1263,7 +1266,8 @@
     .tc-tic{flex:none;width:18px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#6f54c0;text-decoration:none}
     .tc-tic.link{cursor:pointer}.tc-tic.link:hover{color:#4f2bab}.tc-tic.dim{color:#c6bbe6}
     .tc-tic.discogs-add{color:#0a7a8c;cursor:pointer;background:#d6eff3;border-radius:4px}.tc-tic.discogs-add:hover{color:#075e6b;background:#bfe6ed}
-    .tc-tic.discogs-warn{color:#b26a00;cursor:pointer;background:#fdecc8;border-radius:4px}.tc-tic.discogs-warn:hover{color:#915700;background:#fbe0a8}
+    .tc-tic.discogs-conflict{color:#c0392b;cursor:pointer;background:#fbe3e0;border-radius:4px}.tc-tic.discogs-conflict:hover{color:#96271c;background:#f6cfc9}
+    .tc-tic.discogs-mismatch{color:#b26a00;cursor:pointer;background:#fdecc8;border-radius:4px}.tc-tic.discogs-mismatch:hover{color:#915700;background:#fbe0a8}
     /* one fixed-width search box per artist (so all lines align); name fills it, ＋ + join sit at the right */
     .tc-search{flex:1 1 0;min-width:0;align-self:stretch;display:flex;align-items:center;gap:4px;border:none;border-radius:4px;background:#fff;padding:0 6px;overflow:hidden;transition:box-shadow .12s}   /* unmatched = plain white; the green fill marks a match. transition: fade the #284 hover-highlight ring in/out */
     .tc-nm-clr{flex:none;display:none;align-items:center;border:none;background:none;color:#bbb;cursor:pointer;font-size:16px;line-height:1;padding:0 2px;visibility:hidden}   /* a little bigger */
@@ -2327,7 +2331,10 @@
       // different MB artist (conflict) or the artist already links a different
       // Discogs page (mismatch); plain teal link icon otherwise.
       const conf = s._discogsConflict, mism = s._discogsMismatch;
-      ic = document.createElement('a'); ic.className = 'tc-tic ' + ((conf || mism) ? 'discogs-warn' : 'discogs-add'); ic.href = '#'; ic.innerHTML = (conf || mism) ? DISCOGS_WARN_SVG : DISCOGS_LINK_SVG;
+      // conflict (URL belongs to a different MB artist) → red triangle; mismatch (artist links a
+      // different Discogs page) → amber circle-! ; conflict wins the icon when both are flagged.
+      const warnCls = conf ? 'discogs-conflict' : 'discogs-mismatch', warnSvg = conf ? DISCOGS_WARN_SVG : DISCOGS_MISMATCH_SVG;
+      ic = document.createElement('a'); ic.className = 'tc-tic ' + ((conf || mism) ? warnCls : 'discogs-add'); ic.href = '#'; ic.innerHTML = (conf || mism) ? warnSvg : DISCOGS_LINK_SVG;
       ic.title = discAddTooltip(s);
       ic.title += '  ·  right-click: do it silently in a background tab';
       ic.onmousedown = e => e.preventDefault();
@@ -2335,7 +2342,7 @@
       ic.oncontextmenu = e => { e.preventDefault(); addOrCreateDiscogsLink(s, true); };   // #273 background
     } else if (s._discogsConflict) {
       // unresolved slot whose Discogs URL already belongs to an MB artist — info only (pick that artist)
-      ic = document.createElement('a'); ic.className = 'tc-tic discogs-warn'; ic.innerHTML = DISCOGS_WARN_SVG;
+      ic = document.createElement('a'); ic.className = 'tc-tic discogs-conflict'; ic.innerHTML = DISCOGS_WARN_SVG;
       ic.href = `${ORIGIN}/artist/${s._discogsConflict.gid}`; ic.target = '_blank'; ic.rel = 'noopener';
       ic.title = `Discogs links this URL to ${s._discogsConflict.name} — pick that artist`;
     } else {
