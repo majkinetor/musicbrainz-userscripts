@@ -236,6 +236,19 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         log.warn(`Iterating MB state: ${e.message}`);
     }
 
+    // #113: honor the relationship editor's per-recording checkboxes. If SOME (but not all)
+    // recordings are checked, apply only to those; if ALL or NONE are checked, apply to all.
+    const checkedRecGids = new Set();
+    try {
+        for (const raw of MB.tree.iterate(re.state.selectedRecordings)) {
+            const rec = Array.isArray(raw) ? raw[1] : raw;
+            if (rec?.gid) checkedRecGids.add(rec.gid);
+        }
+    } catch (e) {}
+    const recSelectionActive = checkedRecGids.size > 0 && checkedRecGids.size < recordingByGid.size;
+    const applyToRec = (gid) => !recSelectionActive || checkedRecGids.has(gid);
+    if (recSelectionActive) log.info(`Recording selection: applying only to ${checkedRecGids.size}/${recordingByGid.size} checked recording(s).`);
+
     // ── Fetch position→GID map from WS2 (authoritative, always correct) ──────
     const positionToGid = new Map(); // "1" / "A1" → recording GID
     try {
@@ -625,6 +638,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                     }
                     const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
                     for (const recEntity of recordingByGid.values()) {
+                        if (!applyToRec(recEntity.gid)) continue;   // #113: skip unchecked recordings
                         await processOne(recEntity, 'artist', 'recording', role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || '*');
                     }
                 }
@@ -655,6 +669,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 failed++;
                 continue;
             }
+            if (!applyToRec(recEntity.gid)) continue;   // #113: skip unchecked recordings
             if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
             workOnlyByGid.get(recEntity.gid).push({ role, recEntity });
         }
@@ -665,6 +680,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
             if (includeOnlyResolved && !confirmedMbUrl(role.artist)) continue;
             for (const recEntity of recordingByGid.values()) {
+                if (!applyToRec(recEntity.gid)) continue;   // #113: skip unchecked recordings
                 const syntheticRole = { ...role, track: { position: '', title: recEntity.name || '' } };
                 if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
                 workOnlyByGid.get(recEntity.gid).push({ role: syntheticRole, recEntity });
@@ -677,6 +693,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         // composer/lyricist/writer credit are left alone.
         if (createWorksMode === 'when-missing' && recordingOfLinkTypeId) {
             for (const recEntity of recordingByGid.values()) {
+                if (!applyToRec(recEntity.gid)) continue;   // #113: skip unchecked recordings
                 if (!workOnlyByGid.has(recEntity.gid)) {
                     workOnlyByGid.set(recEntity.gid, []); // empty roles — work creation only
                 }
@@ -861,6 +878,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 log.warn(`No recording found for track ${role.track.position} "${role.track.title}" — skipped`);
                 failed++; continue;
             }
+            if (!applyToRec(recEntity.gid)) continue;   // #113: skip unchecked recordings
 
             const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
             const attrKey = (role.attributes||[]).map(a=>typeof a==='string'?a:(a.value||a._type||'')).join(',');

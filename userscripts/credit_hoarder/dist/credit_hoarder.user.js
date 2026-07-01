@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.6.29.180517
+// @version      2026.7.1.112821
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -4574,6 +4574,17 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     } catch (e) {
       log.warn(`Iterating MB state: ${e.message}`);
     }
+    const checkedRecGids = /* @__PURE__ */ new Set();
+    try {
+      for (const raw of MB.tree.iterate(re.state.selectedRecordings)) {
+        const rec = Array.isArray(raw) ? raw[1] : raw;
+        if (rec?.gid) checkedRecGids.add(rec.gid);
+      }
+    } catch (e) {
+    }
+    const recSelectionActive = checkedRecGids.size > 0 && checkedRecGids.size < recordingByGid.size;
+    const applyToRec = (gid) => !recSelectionActive || checkedRecGids.has(gid);
+    if (recSelectionActive) log.info(`Recording selection: applying only to ${checkedRecGids.size}/${recordingByGid.size} checked recording(s).`);
     const positionToGid = /* @__PURE__ */ new Map();
     try {
       const relMbid = releaseEntity.gid;
@@ -4843,6 +4854,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             }
             const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
             for (const recEntity of recordingByGid.values()) {
+              if (!applyToRec(recEntity.gid)) continue;
               await processOne(recEntity, "artist", "recording", role.linkType, mbUrl, role.attributes || [], credit, positionByGid.get(recEntity.gid) || "*");
             }
           }
@@ -4862,6 +4874,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           failed++;
           continue;
         }
+        if (!applyToRec(recEntity.gid)) continue;
         if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
         workOnlyByGid.get(recEntity.gid).push({ role, recEntity });
       }
@@ -4869,6 +4882,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         if (!WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue;
         if (includeOnlyResolved && !confirmedMbUrl(role.artist)) continue;
         for (const recEntity of recordingByGid.values()) {
+          if (!applyToRec(recEntity.gid)) continue;
           const syntheticRole = { ...role, track: { position: "", title: recEntity.name || "" } };
           if (!workOnlyByGid.has(recEntity.gid)) workOnlyByGid.set(recEntity.gid, []);
           workOnlyByGid.get(recEntity.gid).push({ role: syntheticRole, recEntity });
@@ -4876,6 +4890,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       }
       if (createWorksMode === "when-missing" && recordingOfLinkTypeId) {
         for (const recEntity of recordingByGid.values()) {
+          if (!applyToRec(recEntity.gid)) continue;
           if (!workOnlyByGid.has(recEntity.gid)) {
             workOnlyByGid.set(recEntity.gid, []);
           }
@@ -5017,6 +5032,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           failed++;
           continue;
         }
+        if (!applyToRec(recEntity.gid)) continue;
         const credit = role.creditedAs || role.artist.anv?.trim() || role.artist.name;
         const attrKey = (role.attributes || []).map((a) => typeof a === "string" ? a : a.value || a._type || "").join(",");
         const trackRelKey = `${role.track.position}|${role.linkType}|${mbUrl}|${attrKey}`;
