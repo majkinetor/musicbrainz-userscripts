@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.14
+// @version      2026.7.1.15
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.14';
+  const VERSION = '2026.7.1.15';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -133,7 +133,7 @@
     const recCb = ev.target.closest && ev.target.closest('input.recording');
     if (recCb) { const tr = recCb.closest('tr.track'); if (tr) { ev.preventDefault(); openCopyMenu(tr, ev.clientX, ev.clientY); } return; }
     const workCb = ev.target.closest && ev.target.closest('input.work');
-    if (workCb && workCb.closest('tr.track')) { ev.preventDefault(); openWorkMenu(workCb, ev.clientX, ev.clientY); return; }
+    if (workCb) { ev.preventDefault(); openWorkMenu(workCb, ev.clientX, ev.clientY); return; }
     const btn = ev.target.closest && ev.target.closest(REMOVE_SEL);
     if (!btn) return;   // not a rel × — let the browser menu through
     ev.preventDefault();
@@ -578,12 +578,14 @@
   }
   function openWorkMenu(workCb, x, y) {
     const srcWork = workEntity(workCb);
+    try { console.log('[Group Therapy] work right-click → source work:', srcWork ? `${val(srcWork.name)} (id ${srcWork.id}, gid ${srcWork.gid})` : 'NOT READ'); } catch (e) {}
     if (!srcWork) { openMenu(x, y, [{ header: 'Could not read this work' }]); return; }
     const srcRels = workCreditRels(srcWork).filter(r => !r.removed);
     const relLines = srcRels.map(s => ({ pos: ltName(s.linkTypeID), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
     const destWorks = [];
     document.querySelectorAll('input.work').forEach(cb => { if (!cb.checked) return; const w = workEntity(cb); if (w && w.gid !== srcWork.gid && !destWorks.some(d => d.gid === w.gid)) destWorks.push(w); });
     const nR = srcRels.length, nD = destWorks.length, nounN = `${nR} credit${nR > 1 ? 's' : ''}`;
+    try { console.log(`[Group Therapy] work copy: ${nR} credit(s) from source; ${nD} ticked destination work(s):`, destWorks.map(w => `${val(w.name)} (id ${w.id})`)); } catch (e) {}
     const destNames = destWorks.map(w => val(w.name));
     const items = [];
     if (!nR) items.push({ header: `“${trunc(val(srcWork.name), 34)}” has no credits` });
@@ -591,7 +593,7 @@
     else {
       items.push({ header: `Copy to ${nD} work${nD > 1 ? 's' : ''}` });
       items.push({ note: destNames.slice(0, 6).join(' · ') + (destNames.length > 6 ? ` +${destNames.length - 6} more` : '') });
-      items.push({ label: 'Copy', sub: String(nR), lines: relLines, run: () => { copyCredits(srcRels, destWorks); toast(`Copied ${nounN} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } });
+      items.push({ label: 'Copy', sub: String(nR), lines: relLines, run: () => { const n = copyCredits(srcRels, destWorks); try { console.log(`[Group Therapy] work copy dispatched ${n}`); } catch (e) {} setTimeout(() => { try { console.log('[Group Therapy] after copy, destination credit counts:', destWorks.map(w => `${val(w.name)}: ${workCreditRels(w).filter(r => !r.removed).length}`)); } catch (e) {} }, 800); toast(`Copied ${nounN} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } });
       items.push({ label: 'Move (remove here)', danger: true, run: () => { copyCredits(srcRels, destWorks); removeWorkRels(srcWork.gid, srcRels); toast(`Moved ${nounN} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } });
     }
     openMenu(x, y, items);
