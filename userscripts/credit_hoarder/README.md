@@ -6,6 +6,8 @@ Import track and release credits from streaming and database providers into Musi
 - [Changelog](./CHANGELOG.md)
 
 > Credit Hoarder is the multi-source successor to the single-source [Discogs Importer](../discogs_credits/README.md)
+>
+> Companion: **[Group Therapy](../group_therapy/README.md)** adds general relationship-editor helpers — batch group-delete, hover-highlight, and copy/move credits between recordings, works and releases. (These used to live in Credit Hoarder and now have their own script.)
 
 <img width="600" src="./screenshots/bar.png" />
 
@@ -28,7 +30,6 @@ The script presents itself on the **Edit relationships** screen of a MusicBrainz
 - **[Import bar](#import-bar)** — pick a source (Discogs / Tidal / Qobuz / Titles) and the import options (per-track credits, move-to-tracks, create-works, dedup).
 - **[Credit Review Table](#credit-review-table)** — confirm each source ↔ MusicBrainz match before dispatch: parallel lookup, inline search, auto-match, entity creation.
 - **[Instant Fill](#instant-fill)** — write the confirmed relationships into the MB relationship editor in one pass.
-- **[Page-wide helpers](#page-wide-helpers)** — hover-highlight and batch-remove for existing relationships.
 
 ### Import bar
 
@@ -85,24 +86,11 @@ The dispatch-based, zero-dialog import. Idempotent — skips relationships that 
 - Work-level: lyrics, composer, writer (with work auto-creation per the chosen *Create works* option), …
 - Detailed statistics in the edit note. When several sources are run on one release before submitting, each source's stats **stack** under one shared header (newest on top, one block per source). A credit a previous source already staged is reported as *already added this session* — distinct from *already in MB* — so e.g. Discogs shows "10 added" and a following Tidal run shows "2 added, 4 already added this session" rather than a misleading combined total.
 
-### Page-wide helpers
-
-These run on every `/edit-relationships` page regardless of which provider (if any) is present:
-
-- **Hover-highlight** — hovering an entity in the relationship editor highlights every relationship that references it (and vice versa). Also runs against the review table while it's open.
-- **Batch-remove** — modifier-click (SHIFT, CTRL, SHIFT+CTRL) on any `(×)` button opens a popup to remove all relationships matching a chosen scope (by entity, by link type, by track range, only-this-session).
+> **Looking for hover-highlight and batch-remove?** Those page-wide relationship-editor helpers moved to the **[Group Therapy](../group_therapy/README.md)** userscript (along with copy/move credits). Install it alongside Credit Hoarder.
 
 ## Shortcuts
 
-**Batch-remove** — hold a modifier and click any relationship's `(×)` remove button to open the batch-remove popup, seeded by scope:
-
-| Click | Scope |
-|---|---|
-| `Shift` + click | same **role** |
-| `Ctrl`/`⌘` + click | same **target** entity |
-| `Ctrl`/`⌘` + `Shift` + click | same **role and target** |
-
-In the review table's create-artist popup and the batch-remove dialog: `Enter` confirms, `Esc` closes. In a search box, `Enter` runs the search.
+In the review table's create-artist popup: `Enter` confirms, `Esc` closes. In a search box, `Enter` runs the search.
 
 ## Diagnostics
 

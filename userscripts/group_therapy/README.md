@@ -44,13 +44,18 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
   through MB's editor — **review and save** like any manual edit; nothing is submitted for you.
 
 - **Copy from another release** — the **⧉ Copy from release…** button next to the *Release
-  relationships* heading opens a picker: choose one of this **release group's** other releases, or paste
-  any release URL/MBID. It pulls that release's release-level credits (artists + labels, with
-  credited-as, attributes and dates) onto this one; MB merges any it already has.
+  relationships* heading opens a picker: choose one of this **release group's** other releases — each
+  shown with its **date · country · format · track count** so you can tell editions apart — or paste any
+  release URL/MBID. It pulls that release's release-level credits (artists + labels, with credited-as,
+  attributes and dates) onto this one; MB merges any it already has.
 
 ### Planned
 
-- Per-track clone across releases (match by position) and a format-exclusion map.
+- **Per-track copy across releases** — match tracks by position and copy their credits too, not just the
+  release-level ones.
+- **Format-exclusion map** — when copying between releases of different **formats** (e.g. vinyl → CD),
+  skip credits that don't apply to the target format, via a configurable per-format rule set. The
+  Copy-from-release picker already surfaces each edition's format so format mismatches are easy to spot.
 
 ## Shortcuts
 
@@ -60,3 +65,18 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
 | right-click a recording's **checkbox** | copy / move its credits to the ticked recordings |
 | right-click a work's **checkbox** | copy / move that work's credits (writer/composer/…) to the ticked works |
 | hover an entity name / role label | highlight all matches + show a count tooltip |
+
+The recording/work checkboxes and the `×` buttons carry a faint green accent and a tooltip so the
+right-click features are discoverable.
+
+## Under the hood
+
+Group Therapy drives MusicBrainz's own relationship editor: it reads each relationship straight off the
+rendered rows (via their React state) and writes changes through MB's reducer — the same mechanism
+[Credit Hoarder](../credit_hoarder/README.md) uses to dispatch credits. Nothing is submitted for you;
+every change lands in the editor for you to **review and save**.
+
+The small MB-editor dispatch helper is **bundled directly into this single file** rather than shared as a
+separate module, so Group Therapy stays a one-file, dependency-free userscript. If that helper is ever
+extracted into a standalone library for both scripts to import, it will live **outside** either userscript
+and be documented on its own.
