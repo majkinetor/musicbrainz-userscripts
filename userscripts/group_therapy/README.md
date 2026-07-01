@@ -22,10 +22,6 @@ Right-click a relationship's **(x)** button for a menu that removes a whole grou
 
 Each option shows its **blast radius** — the count and which tracks (or the release) it touches, e.g. *guitar — all tracks (14) · tracks 1–12*.
 
-### Highlight
-
-Hover any entity name or role label to light up every matching occurrence on the page (existing rels blue/white, newly-added blue/yellow), with a tooltip showing the count and which  tracks / the release it appears on, e.g. *48× · tracks 1–12*.
-
 ### Copy / Move
 
 Tick the destination recordings (MB's own recording checkboxes), then
@@ -41,6 +37,10 @@ Right-click the source recording's checkbox for a menu (its header shows which t
 #### From release 
 
 The **⧉ Copy from release…** button next to the *Release relationships* heading opens a picker: choose one of this **release group's** other releases — each shown with its **date · country · format · track count** so you can tell editions apart — or paste any release URL/MBID. It pulls that release's release-level credits (artists + labels, with credited-as, attributes and dates) onto this one; MB merges any it already has.
+
+### Highlight
+
+Hover any entity name or role label to light up every matching occurrence on the page (existing rels blue/white, newly-added blue/yellow), with a tooltip showing the count and which  tracks / the release it appears on, e.g. *48× · tracks 1–12*.
 
 ## Shortcuts
 
