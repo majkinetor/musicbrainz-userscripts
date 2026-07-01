@@ -1,6 +1,6 @@
 # Group Therapy <img src="./icon.svg" align="left" width="40" height="40">
 
-Relationship editor helper for the MusicBrainz **Edit relationships**.
+Batch operations on the MusicBrainz **Edit relationships**.
 
 - Install: [latest](./group_therapy.user.js)
 
@@ -9,7 +9,7 @@ Relationship editor helper for the MusicBrainz **Edit relationships**.
 - Batch delete role, entity, both
 - Highlight role or entity everywhere and show tooltip with overall counts
 - Copy/move credits from recording to recordings, work to works, release to release
-- Works on existing and* newly-added relationships
+- Works on existing and newly-added relationships
 
 ## Batch delete
 
@@ -32,7 +32,7 @@ Tick the destination recordings (MB's own recording checkboxes), then
   
 #### From recording/work
 
-Right-click the source recording's checkbox** for a menu (its header shows which tracks you're copying to):
+Right-click the source recording's checkbox for a menu (its header shows which tracks you're copying to):
 - *Copy* — duplicate this recording's credits onto every ticked recording with credits updated if there are already some
 - *Move* — the same, then remove them from the source. 
 
