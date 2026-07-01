@@ -13,6 +13,9 @@ Cover/event-art editor: view, reorder, retype, comment, remove, download, add so
 [Credit Hoarder](./userscripts/credit_hoarder/README.md)<img src="./userscripts/credit_hoarder/icon.svg" align="left" width="32"><br>
 Import credits from several providers with a review phase
 
+[Group Therapy](./userscripts/group_therapy/README.md) <img src="./userscripts/group_therapy/icon.svg" align="left" width="32"><br>
+Subtle relationship-editor helpers: right-click group delete, highlight, copy/move credits
+
 [ISRC Scout](./userscripts/isrc_scout/README.md)<img src="./userscripts/isrc_scout/icon.svg" align="left" width="32"><br>
 Reads the release's existing ISRCs and streaming links and fills in the missing ones
 
