@@ -1,6 +1,6 @@
 # Group Therapy <img src="./icon.svg" align="left" width="40" height="40">
 
-Batch operations on the MusicBrainz **Edit relationships**.
+Batch operations and various helpers on the MusicBrainz *Edit relationships* page.
 
 - Install: [latest](./group_therapy.user.js)
 
