@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.5
+// @version      2026.7.1.6
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.5';
+  const VERSION = '2026.7.1.6';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -225,6 +225,86 @@
     document.head.appendChild(s);
   }
 
+  // ── copy / move credits (P2, #338) ────────────────────────────────────────
+  // Reuse MB's own editing path. We read a source recording's rels straight off the
+  // rendered `.relationship-item` nodes — each carries the full rel object on its React
+  // fiber (linkTypeID, both entities WITH internal ids, credits, and the attributes tree) —
+  // then dispatch copies onto the destination recordings through MB's reducer. No lossy
+  // DOM-text parsing, no nested-state traversal.
+  const REL_TEMPLATE = { _lineage: [], _original: null, _status: 1, attributes: null, begin_date: null, editsPending: false, end_date: null, ended: false, entity0_credit: '', entity1_credit: '', id: null, linkOrder: 0, linkTypeID: null };
+  const RE = () => (W.MB && W.MB.relationshipEditor) || null;
+  const val = v => (typeof v === 'function' ? v() : v);
+
+  // walk a DOM node's React fiber to the rel object (or entity) it renders
+  function fiberFind(node, looks) {
+    const key = node && Object.keys(node).find(k => k.startsWith('__reactFiber$') || k.startsWith('__reactInternalInstance$'));
+    if (!key) return null;
+    const seen = new Set(), q = [node[key]]; let steps = 0;
+    while (q.length && steps < 80) {
+      steps++; const f = q.shift(); if (!f || seen.has(f)) continue; seen.add(f);
+      for (const prop of ['memoizedProps', 'pendingProps', 'memoizedState']) {
+        const p = f[prop]; if (p && typeof p === 'object') for (const v of Object.values(p)) {
+          if (looks(v)) return v;
+          if (v && typeof v === 'object' && looks(v.relationship)) return v.relationship;
+          if (v && typeof v === 'object' && looks(v.recording)) return v.recording;
+        }
+      }
+      if (f.child) q.push(f.child); if (f.sibling) q.push(f.sibling); if (f.return) q.push(f.return);
+    }
+    return null;
+  }
+  const looksRel = o => o && typeof o === 'object' && ('linkTypeID' in o) && ('entity0' in o || 'entity1' in o);
+  const looksRec = o => o && typeof o === 'object' && o.entityType === 'recording' && o.gid;
+  const relFromNode = node => fiberFind(node, looksRel);
+  const recordingEntity = tr => fiberFind(tr, looksRec);
+
+  // a recording track-row's rels, normalised to {other, credit, linkTypeID, attributes}
+  // where `other` is the non-recording entity (the artist/work/…) and `credit` its credited-as
+  function recordingRels(tr) {
+    const out = [];
+    tr.querySelectorAll('.relationship-item').forEach(item => {
+      const rel = relFromNode(item); if (!rel || !looksRel(rel)) return;
+      const rec0 = rel.entity0 && rel.entity0.entityType === 'recording';
+      const rec1 = rel.entity1 && rel.entity1.entityType === 'recording';
+      if (!rec0 && !rec1) return;
+      const other = rec0 ? rel.entity1 : rel.entity0;
+      const credit = rec0 ? rel.entity1_credit : rel.entity0_credit;
+      out.push({ other, credit: val(credit) || '', linkTypeID: rel.linkTypeID, attributes: rel.attributes || null });
+    });
+    return out;
+  }
+
+  // dispatch one rel into MB's editor (ported from Credit Hoarder's editor-state — the shared
+  // editing lib). MB requires entity0 to be the lower entityType; swap + route credit accordingly.
+  function dispatchRelationship(re, sourceEntity, targetEntity, linkTypeID, credit, attributes) {
+    if (credit && credit === (val(targetEntity.name) || '')) credit = '';
+    const swapped = sourceEntity.entityType > targetEntity.entityType;
+    const e0 = swapped ? targetEntity : sourceEntity;
+    const e1 = swapped ? sourceEntity : targetEntity;
+    re.dispatch({
+      type: 'update-relationship-state',
+      sourceEntity,
+      batchSelectionCount: null,
+      creditsToChangeForSource: '',
+      creditsToChangeForTarget: '',
+      oldRelationshipState: null,
+      newRelationshipState: {
+        ...REL_TEMPLATE,
+        entity0: e0, entity0_credit: swapped ? (credit || '') : '',
+        entity1: e1, entity1_credit: swapped ? '' : (credit || ''),
+        id: re.getRelationshipStateId(), linkTypeID, attributes: attributes || null,
+      },
+    });
+  }
+
+  // copy a set of source rels onto each destination recording entity
+  function copyCredits(srcRels, destRecordings) {
+    const re = RE(); if (!re) return 0;
+    let n = 0;
+    for (const dest of destRecordings) for (const s of srcRels) { dispatchRelationship(re, dest, s.other, s.linkTypeID, s.credit, s.attributes); n++; }
+    return n;
+  }
+
   // ── boot ────────────────────────────────────────────────────────────────
   function boot() {
     injectStyle();
@@ -233,7 +313,7 @@
     document.body.addEventListener('mousemove', onMove);
     document.body.addEventListener('mouseout', onOut);
     try { GM_registerMenuCommand(`Group Therapy v${VERSION}`, () => {}); } catch (e) {}
-    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage }; } catch (e) {}
+    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, RE }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
   if (document.body) boot(); else document.addEventListener('DOMContentLoaded', boot, { once: true });
