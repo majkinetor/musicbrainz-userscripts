@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.17
+// @version      2026.7.1.18
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.17';
+  const VERSION = '2026.7.1.18';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -318,7 +318,10 @@
   // gid OR id != null — new (in-session) works/recordings have a NEGATIVE id and no gid yet
   const looksRec = o => o && typeof o === 'object' && o.entityType === 'recording' && (o.gid || o.id != null);
   const looksWork = o => o && typeof o === 'object' && o.entityType === 'work' && (o.gid || o.id != null);
-  const sameEntity = (e, ref) => !!(e && ref && ((ref.gid && e.gid === ref.gid) || (ref.id != null && e.id === ref.id)));
+  // same MB entity — MUST compare entityType too: a work id and a recording id can be the SAME number
+  // (e.g. "Phuture Jacks" work #6762137 vs recording #6762137), so an id-only match would wrongly pull
+  // a recording's producer/mix rels into a work.
+  const sameEntity = (e, ref) => !!(e && ref && e.entityType === ref.entityType && ((ref.gid && e.gid === ref.gid) || (ref.id != null && e.id === ref.id)));
   const relFromNode = node => fiberFind(node, looksRel);
   const recordingEntity = tr => fiberFind(tr, looksRec);
   const workEntity = node => fiberFind(node, looksWork);
