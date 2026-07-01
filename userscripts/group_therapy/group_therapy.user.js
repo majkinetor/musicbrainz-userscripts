@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.12
+// @version      2026.7.1.13
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.12';
+  const VERSION = '2026.7.1.13';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -78,6 +78,7 @@
     for (const it of items) {
       if (it === 'sep') { menuEl.appendChild(el('div', 'gt-sep')); continue; }
       if (it.header != null) { menuEl.appendChild(el('div', 'gt-hdr', it.header)); continue; }
+      if (it.note != null) { menuEl.appendChild(el('div', 'gt-note', it.note)); continue; }
       const row = el('button', 'gt-mi' + (it.danger ? ' gt-danger' : ''));
       const top = el('div', 'gt-mi-top');
       top.appendChild(el('span', 'gt-mi-l', it.label));
@@ -239,6 +240,7 @@
       .gt-mi .gt-mi-more{color:#9aa3b0;font-style:italic}
       .gt-menu .gt-sep{height:1px;background:#e7e9ee;margin:4px 2px}
       .gt-menu .gt-hdr{padding:5px 9px 4px;font-size:11px;font-weight:700;letter-spacing:.02em;color:#6a7482;text-transform:uppercase}
+      .gt-menu .gt-note{padding:0 9px 6px;font-size:11px;color:#8892a0;white-space:normal;word-break:break-word}
       .gt-mi{display:block;width:100%;box-sizing:border-box;background:none;border:none;text-align:left;
         padding:6px 9px;border-radius:5px;cursor:pointer;color:inherit;font:inherit}
       .gt-mi:hover{background:#eef1f6}
@@ -536,14 +538,14 @@
   // ── work credits: right-click a work's checkbox → copy its writer/composer credits to ticked works ─
   // (Per maintainer: we don't copy the work itself, we add the source work's own relationships to the
   //  selected works.) Read the work's artist rels (writer/composer/lyricist/…) via fiber, dedup, dispatch.
-  function workArtistRels(work) {
+  function workCreditRels(work) {
     const out = [], seen = new Set();
     document.querySelectorAll('.relationship-item').forEach(item => {
       const rel = relFromNode(item); if (!rel || !looksRel(rel)) return;
       const w0 = rel.entity0 && rel.entity0.gid === work.gid, w1 = rel.entity1 && rel.entity1.gid === work.gid;
       if (!w0 && !w1) return;
       const other = w0 ? rel.entity1 : rel.entity0;
-      if (!other || other.entityType !== 'artist') return;   // only artist credits — skip performance (recording), work↔work, …
+      if (!other || ['recording', 'url', 'work'].includes(other.entityType)) return;   // work credits (writer/composer/lyricist/publisher/…) — skip performance (recording), based-on (work), url
       const k = rel.linkTypeID + '|' + other.gid; if (seen.has(k)) return; seen.add(k);
       const credit = w0 ? rel.entity1_credit : rel.entity0_credit;
       out.push({ item, other, credit: val(credit) || '', linkTypeID: rel.linkTypeID, attributes: rel.attributes || null, begin_date: rel.begin_date || null, end_date: rel.end_date || null, ended: !!rel.ended, removed: rel._status === 3 });
@@ -559,7 +561,7 @@
         const w0 = rel.entity0 && rel.entity0.gid === workGid, w1 = rel.entity1 && rel.entity1.gid === workGid;
         if (!w0 && !w1) continue;
         const other = w0 ? rel.entity1 : rel.entity0;
-        if (other && other.entityType === 'artist' && want.has(rel.linkTypeID + '|' + other.gid)) { btn = item.querySelector(REMOVE_SEL); break; }
+        if (other && !['recording', 'url', 'work'].includes(other.entityType) && want.has(rel.linkTypeID + '|' + other.gid)) { btn = item.querySelector(REMOVE_SEL); break; }
       }
       if (!btn) break;
       try { btn.click(); } catch (e) {}
@@ -569,16 +571,18 @@
   function openWorkMenu(workCb, x, y) {
     const srcWork = workEntity(workCb);
     if (!srcWork) { openMenu(x, y, [{ header: 'Could not read this work' }]); return; }
-    const srcRels = workArtistRels(srcWork).filter(r => !r.removed);
+    const srcRels = workCreditRels(srcWork).filter(r => !r.removed);
     const relLines = srcRels.map(s => ({ pos: ltName(s.linkTypeID), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
     const destWorks = [];
     document.querySelectorAll('input.work').forEach(cb => { if (!cb.checked) return; const w = workEntity(cb); if (w && w.gid !== srcWork.gid && !destWorks.some(d => d.gid === w.gid)) destWorks.push(w); });
     const nR = srcRels.length, nD = destWorks.length, nounN = `${nR} credit${nR > 1 ? 's' : ''}`;
+    const destNames = destWorks.map(w => val(w.name));
     const items = [];
-    if (!nR) items.push({ header: `“${trunc(val(srcWork.name), 34)}” has no writer/composer credits` });
+    if (!nR) items.push({ header: `“${trunc(val(srcWork.name), 34)}” has no credits` });
     else if (!nD) items.push({ header: 'Tick destination works first' }, { label: `${nounN} to copy`, sub: String(nR), lines: relLines });
     else {
       items.push({ header: `Copy to ${nD} work${nD > 1 ? 's' : ''}` });
+      items.push({ note: destNames.slice(0, 6).join(' · ') + (destNames.length > 6 ? ` +${destNames.length - 6} more` : '') });
       items.push({ label: 'Copy', sub: String(nR), lines: relLines, run: () => { copyCredits(srcRels, destWorks); toast(`Copied ${nounN} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } });
       items.push({ label: 'Move (remove here)', danger: true, run: () => { copyCredits(srcRels, destWorks); removeWorkRels(srcWork.gid, srcRels); toast(`Moved ${nounN} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } });
     }
@@ -607,7 +611,7 @@
     document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
     try { GM_registerMenuCommand(`Group Therapy v${VERSION}`, () => {}); } catch (e) {}
-    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, cloneFromRelease, injectCloneButton, openCopyFromPopover, workEntity, workArtistRels, openWorkMenu, RE }; } catch (e) {}
+    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, cloneFromRelease, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, RE }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
   if (document.body) boot(); else document.addEventListener('DOMContentLoaded', boot, { once: true });
