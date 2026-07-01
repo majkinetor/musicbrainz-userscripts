@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.9
+// @version      2026.7.1.10
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.9';
+  const VERSION = '2026.7.1.10';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -26,6 +26,27 @@
   const ROLE_STOP = new Set(['odd', 'even', 'highlighted', 'selected', 'subrow', 'rel-add', 'rel-edit', 'rel-remove']);
   const pickRoleClass = tr => { if (!tr) return null; for (const c of tr.classList) if (!ROLE_STOP.has(c) && /^[a-z][a-z0-9-]*$/.test(c)) return c; return null; };
   const pickRoleLabel = tr => { const l = tr && tr.querySelector('th.link-phrase label'); return l ? (l.textContent || '').replace(/:\s*$/, '').trim() : 'role'; };
+  // medium number a track row belongs to — the nearest preceding `tr.subh` ("1▼CD" → 1). Each medium
+  // is its own <tbody>, so we scan the table's rows in document order (not just siblings). Cached per row.
+  const _medCache = new WeakMap();
+  const mediumNumberOf = tr => {
+    if (!tr) return null;
+    if (_medCache.has(tr)) return _medCache.get(tr);
+    let med = null; const tbl = tr.closest && tr.closest('table');
+    if (tbl) { const all = [...tbl.querySelectorAll('tr')], idx = all.indexOf(tr); for (let i = idx - 1; i >= 0; i--) { if (all[i].classList && all[i].classList.contains('subh')) { const m = (all[i].textContent || '').match(/(\d+)/); med = m ? m[1] : null; break; } } }
+    _medCache.set(tr, med); return med;
+  };
+  // track position label from the row's position cell — handles vinyl/multi-disc numbers ("D5", "A1")
+  // as well as plain "5". On multi-medium releases, a plain number is prefixed with the medium so
+  // "1" on CD 1 vs CD 2 read as "1.1" / "2.1". Returns a string (or null for non-track rows).
+  const posLabel = tr => {
+    if (!tr || !tr.querySelector) return null;
+    const c = tr.querySelector('td.pos'); let t = c ? (c.textContent || '').trim() : '';
+    if (!t) { const m = (tr.textContent || '').match(/^\s*(\d+)\b/); t = m ? m[1] : ''; }
+    if (!t) return null;
+    if (/^\d+$/.test(t) && document.querySelectorAll('tr.subh').length > 1) { const med = mediumNumberOf(tr); if (med) t = med + '.' + t; }
+    return t;
+  };
   const targetHref = item => { const a = item && item.querySelector('a[href*="/artist/"], a[href*="/work/"], a[href*="/label/"], a[href*="/place/"], a[href*="/recording/"], a[href*="/url/"], a[href*="/event/"], a[href*="/instrument/"]'); return a ? a.getAttribute('href') : null; };
   const targetLabel = item => { const a = item && item.querySelector('a[href*="/"]'); return a ? (a.textContent || '').trim() : 'target'; };
   const rowHasClass = (tr, cls) => !!(tr && cls && tr.classList.contains(cls));
@@ -89,9 +110,8 @@
   function itemInfo(it) {
     const roleTr = it.closest && it.closest('tr');
     const trackTr = it.closest && it.closest('tr.track');
-    const m = trackTr && (trackTr.textContent || '').match(/^\s*(\d+)\b/);
     const a = it.querySelector('a[href*="/"]');
-    return { pos: m ? +m[1] : null, role: pickRoleLabel(roleTr), target: a ? (a.textContent || '').trim() : '' };
+    return { pos: posLabel(trackTr), role: pickRoleLabel(roleTr), target: a ? (a.textContent || '').trim() : '' };
   }
   // fully-detailed blast breakdown: group the group's rels by track, and per track list the varying
   // dimension — the targets (for a role scope), the roles (for a target scope), the role (for both).
@@ -102,7 +122,7 @@
       if (!byPos.has(key)) byPos.set(key, { pos: info.pos, vals: [] });
       byPos.get(key).vals.push(scope === 'role' ? info.target : info.role);
     }
-    return [...byPos.values()].sort((a, b) => (a.pos == null ? 1e9 : a.pos) - (b.pos == null ? 1e9 : b.pos))
+    return [...byPos.values()].sort((a, b) => { if (a.pos == null) return 1; if (b.pos == null) return -1; return String(a.pos).localeCompare(String(b.pos), undefined, { numeric: true }); })
       .map(r => ({ pos: r.pos == null ? 'rel' : r.pos, text: [...new Set(r.vals.filter(Boolean))].join(', ') }));
   }
   function onContextMenu(ev) {
@@ -123,9 +143,9 @@
     const items = [
       { label: `Remove this one`, run: () => { try { btn.click(); } catch (e) {} } },
       'sep',
-      opt(`Remove ${trunc(roleLabel, 22)}`, roleItems, 'role'),
-      opt(`Remove “${trunc(tgt, 22)}”`, tgtItems, 'target'),
-      opt(`Remove ${trunc(roleLabel, 13)} + ${trunc(tgt, 13)}`, bothItems, 'role-and-target'),
+      opt(`Remove ${trunc(roleLabel, 46)}`, roleItems, 'role'),
+      opt(`Remove “${trunc(tgt, 46)}”`, tgtItems, 'target'),
+      opt(`Remove ${trunc(roleLabel, 24)} + ${trunc(tgt, 24)}`, bothItems, 'role-and-target'),
     ];
     openMenu(ev.clientX, ev.clientY, items);
   }
@@ -151,7 +171,7 @@
     const segs = rm.id.split('-'), last = segs[segs.length - 1];
     return (segs[segs.length - 2] === '' && /^\d+$/.test(last)) || /^-\d+$/.test(last);
   }
-  const trackPosOf = node => { const tr = node.parentNode && node.parentNode.closest ? node.parentNode.closest('tr.track') : null; if (!tr) return null; const m = (tr.textContent || '').match(/^\s*(\d+)\b/); return m ? +m[1] : null; };
+  const trackPosOf = node => { const tr = node.parentNode && node.parentNode.closest ? node.parentNode.closest('tr.track') : null; return posLabel(tr); };
   function highlightPage(needle) {
     if (!needle || !window.CSS?.highlights || typeof Highlight === 'undefined') return { n: 0 };
     const lower = needle.toLowerCase(); if (lower.length < 2) return { n: 0 };
@@ -168,12 +188,16 @@
     return { n, tracks, release };
   }
   function clearHighlight() { try { window.CSS.highlights?.delete('gt-hl-existing'); window.CSS.highlights?.delete('gt-hl-new'); } catch (e) {} }
-  // compress [1,2,3,5] → "1–3, 5"
-  function ranges(nums) {
-    const a = [...nums].sort((x, y) => x - y), out = []; let s = null, p = null;
-    for (const v of a) { if (s == null) { s = p = v; } else if (v === p + 1) { p = v; } else { out.push(s === p ? `${s}` : `${s}–${p}`); s = p = v; } }
-    if (s != null) out.push(s === p ? `${s}` : `${s}–${p}`);
-    return out.join(', ');
+  // compress [1,2,3,5] → "1–3, 5"; non-numeric positions (vinyl "D4","D5") are natural-sorted + joined
+  function ranges(vals) {
+    const a = [...vals];
+    if (a.length && a.every(v => /^\d+$/.test(String(v)))) {
+      const nums = a.map(Number).sort((x, y) => x - y), out = []; let s = null, p = null;
+      for (const v of nums) { if (s == null) { s = p = v; } else if (v === p + 1) { p = v; } else { out.push(s === p ? `${s}` : `${s}–${p}`); s = p = v; } }
+      if (s != null) out.push(s === p ? `${s}` : `${s}–${p}`);
+      return out.join(', ');
+    }
+    return a.map(String).sort((x, y) => x.localeCompare(y, undefined, { numeric: true })).join(', ');
   }
   let tipEl = null;
   function showTip(x, y, info, name) {
@@ -205,7 +229,7 @@
   function injectStyle() {
     const s = el('style');
     s.textContent = `
-      .gt-menu{position:fixed;z-index:2147483647;min-width:230px;max-width:420px;max-height:74vh;overflow-y:auto;background:#fff;border:1px solid #cfd4da;border-radius:7px;
+      .gt-menu{position:fixed;z-index:2147483647;min-width:230px;max-width:480px;max-height:74vh;overflow-y:auto;background:#fff;border:1px solid #cfd4da;border-radius:7px;
         box-shadow:0 8px 26px rgba(0,0,0,.18);padding:4px;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222;user-select:none}
       .gt-mi .gt-mi-lines{margin:3px 0 1px 4px}
       .gt-mi .gt-mi-ln{display:flex;gap:6px;font-size:11px;color:#5a6472;line-height:1.4}
@@ -218,7 +242,7 @@
         padding:6px 9px;border-radius:5px;cursor:pointer;color:inherit;font:inherit}
       .gt-mi:hover{background:#eef1f6}
       .gt-mi .gt-mi-top{display:flex;align-items:center;gap:10px}
-      .gt-mi .gt-mi-l{flex:1;white-space:nowrap}
+      .gt-mi .gt-mi-l{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .gt-mi .gt-mi-d{font-size:11px;color:#8892a0;margin-top:2px}
       .gt-mi .gt-mi-s{flex:none;min-width:20px;text-align:center;font-weight:700;font-size:11px;color:#556;background:#eef1f6;border-radius:9px;padding:1px 7px}
       .gt-mi.gt-danger:hover{background:#fbe3e0}
@@ -236,6 +260,11 @@
       .gt-clone-btn{margin-left:10px;font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:#2e6da4;background:#eef4fb;
         border:1px solid #cfe0f0;border-radius:5px;padding:2px 9px;cursor:pointer;vertical-align:middle}
       .gt-clone-btn:hover{background:#e2edf8}
+      /* subtle discoverability: the controls Group Therapy adds a right-click menu to (recording/work
+         checkboxes → copy/move; the × → group delete) get a faint green accent, and a clearer ring on hover */
+      tr.track input.recording, tr.track input.work { accent-color:#2e9e5b; }
+      tr.track input.recording:hover, tr.track input.work:hover, button.icon.remove-item:hover {
+        outline:2px solid rgba(46,158,91,.55); outline-offset:1px; border-radius:3px; }
     `;
     document.head.appendChild(s);
   }
@@ -411,7 +440,7 @@
   }
 
   const ltName = id => (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id] || {}).name || String(id);
-  const trackPosOfRow = tr => { const m = (tr.textContent || '').match(/^\s*(\d+)\b/); return m ? +m[1] : null; };
+  const trackPosOfRow = tr => posLabel(tr);
   // mode 'credits' (recording checkbox) copies every recording rel except work/url/recording-samples
   // (so artists, ℗/© labels, recorded-at places, …); mode 'work' (work checkbox) copies the work rels.
   function openCopyMenu(sourceTr, x, y, mode) {
@@ -440,6 +469,18 @@
     openMenu(x, y, items);
   }
 
+  // discoverability tooltips: label the controls GT hooks (set lazily on first hover; React may wipe
+  // them on re-render, so we re-set via the data flag). Kept out of `title` when MB already set one.
+  function hintControls(ev) {
+    const t = ev.target; if (!t || !t.closest) return;
+    const cb = t.closest && t.closest('tr.track input.recording, tr.track input.work');
+    if (cb && !cb.dataset.gtHint) { cb.dataset.gtHint = '1'; if (!cb.title) cb.title = cb.matches('input.work')
+      ? 'Group Therapy: right-click to copy/move this work’s relationships to the ticked works'
+      : 'Group Therapy: right-click to copy/move this recording’s credits to the ticked recordings'; return; }
+    const x = t.closest('button.icon.remove-item');
+    if (x && !x.dataset.gtHint) { x.dataset.gtHint = '1'; if (!x.title) x.title = 'Group Therapy: right-click to remove a whole group (this role / this target / both)'; }
+  }
+
   // ── boot ────────────────────────────────────────────────────────────────
   function boot() {
     injectStyle();
@@ -447,6 +488,7 @@
     document.body.addEventListener('mouseover', onOver);
     document.body.addEventListener('mousemove', onMove);
     document.body.addEventListener('mouseout', onOut);
+    document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
     try { GM_registerMenuCommand(`Group Therapy v${VERSION}`, () => {}); } catch (e) {}
     try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, cloneFromRelease, injectCloneButton, RE }; } catch (e) {}
