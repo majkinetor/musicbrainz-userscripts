@@ -34,6 +34,8 @@ Right-click the source recording's checkbox for a menu (its header shows which t
 
 **Right-click a work's checkbox** to copy/move that work's own credits (writer, composer, lyricist, …) onto the selected works.
 
+The menu lists each credit with a **checkbox** (all on by default) — untick any you don't want to copy, or **right-click a credit to select only that role** (e.g. just the composers). Copy/Move act on the ticked credits, and the count updates live.
+
 #### From release 
 
 The **⧉ Copy from release…** button next to the *Release relationships* heading opens a picker: choose one of this **release group's** other releases — each shown with its **date · country · format · track count** so you can tell editions apart — or paste any release URL/MBID. It pulls that release's release-level credits (artists + labels, with credited-as, attributes and dates) onto this one; MB merges any it already has.
