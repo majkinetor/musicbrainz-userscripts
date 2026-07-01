@@ -5,6 +5,9 @@
 - Install: [`scribe.user.js`](./scribe.user.js)
 - Download helper: [`scribe.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe.exe)
 
+https://github.com/user-attachments/assets/3fb448db-a46c-487a-9d5d-5f3dce997cbf
+
+
 ## Features
 
 - **Edit field** (Ctrl+Alt+E):<br> 
