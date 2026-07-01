@@ -16,8 +16,6 @@
 import { getSourceUrlsForRelease } from './api-mb.js';
 import { insertDiscogsBar, probeTitleRemixes } from './ui-bar.js';
 import { DISCOGS_CHANNEL }       from './constants.js';
-import { installHoverHighlight } from './hover-highlight.js';
-import { installBatchRemove }    from './batch-remove.js';
 import { runTidalHarvestPage }   from './sources/tidal.js';
 import                                './storage.js';   // opens IndexedDB on load
 
@@ -158,15 +156,7 @@ if (/musicbrainz\.org$/i.test(location.hostname)) $(document).ready(function () 
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
     if (!m) return;
-    // Hover-highlight runs page-wide on the rel-edit page regardless of
-    // whether we mount the import bar. Wiring it here means it's active for
-    // MB's rel editor even before (and after) the review table comes and
-    // goes — see `src/hover-highlight.js` for why.
-    installHoverHighlight();
-    // Batch-remove (issue #68) runs on every rel-edit page too — modifier-
-    // click on any MB `×` button opens our confirmation popup. See
-    // `src/batch-remove.js`.
-    installBatchRemove();
+    // (Hover-highlight #63 and batch-remove #68 moved to the Group Therapy userscript — #338.)
     // One rel probe, every import source (#193): detect the linked providers
     // (Discogs / Tidal / Qobuz), and in parallel probe the track titles for any
     // derivable remixers (#271). The bar mounts only when there's something to
