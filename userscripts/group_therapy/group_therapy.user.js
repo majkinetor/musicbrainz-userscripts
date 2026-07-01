@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1
-// @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
+// @version      2026.7.1.1
+// @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
 // @match        *://*.musicbrainz.org/release/*/edit-relationships
@@ -94,6 +94,69 @@
     openMenu(ev.clientX, ev.clientY, items);
   }
 
+  // ── hover highlight (page-wide) + count tooltip ───────────────────────────
+  // Hover an entity name or a role label → light up every matching occurrence on the page (CSS
+  // Custom Highlight API), split into "already in MB" vs "newly added this session", and show a
+  // tooltip: how many, and which tracks / the release it appears on.
+  function needleFor(target) {
+    if (!target || !target.closest) return null;
+    const phraseTh = target.closest('th.link-phrase');
+    if (phraseTh && !target.closest('button')) { const l = phraseTh.querySelector('label'); if (l) { let t = (l.textContent || '').trim().replace(/:\s*$/, ''); if (t) return t; } }
+    const link = target.closest('a[href]');
+    if (link && /\/(artist|work|label|place|recording|series|release-group|event|instrument|area)\/[a-f0-9-]/.test(link.getAttribute('href') || '')) return (link.textContent || '').trim();
+    return null;
+  }
+  // newly-added rels get negative MB ids on their remove button; persisted ones are positive
+  function isNewRow(node) {
+    const item = node.parentNode && node.parentNode.closest ? node.parentNode.closest('.relationship-item') : null;
+    if (!item) return false;
+    const rm = item.querySelector('button.remove-item[id^="remove-relationship-"]');
+    if (!rm) return false;
+    const segs = rm.id.split('-'), last = segs[segs.length - 1];
+    return (segs[segs.length - 2] === '' && /^\d+$/.test(last)) || /^-\d+$/.test(last);
+  }
+  const trackPosOf = node => { const tr = node.parentNode && node.parentNode.closest ? node.parentNode.closest('tr.track') : null; if (!tr) return null; const m = (tr.textContent || '').match(/^\s*(\d+)\b/); return m ? +m[1] : null; };
+  function highlightPage(needle) {
+    if (!needle || !window.CSS?.highlights || typeof Highlight === 'undefined') return { n: 0 };
+    const lower = needle.toLowerCase(); if (lower.length < 2) return { n: 0 };
+    const exist = [], neu = [], tracks = new Set(); let release = false, n = 0;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode(x) { const p = x.parentNode; if (!p) return NodeFilter.FILTER_REJECT; const t = p.tagName; return (t === 'STYLE' || t === 'SCRIPT' || t === 'NOSCRIPT' || t === 'TEXTAREA' || t === 'INPUT') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; } });
+    let node;
+    while ((node = walker.nextNode())) {
+      const lt = node.nodeValue.toLowerCase(); if (lt.length < lower.length) continue;
+      let i = 0, hit = false;
+      while ((i = lt.indexOf(lower, i)) !== -1) { const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + lower.length); (isNewRow(node) ? neu : exist).push(r); n++; hit = true; i += lower.length; }
+      if (hit) { const p = trackPosOf(node); if (p != null) tracks.add(p); else if (node.parentNode && node.parentNode.closest && node.parentNode.closest('.relationship-item')) release = true; }
+    }
+    try { window.CSS.highlights.set('gt-hl-existing', new Highlight(...exist)); window.CSS.highlights.set('gt-hl-new', new Highlight(...neu)); } catch (e) {}
+    return { n, tracks, release };
+  }
+  function clearHighlight() { try { window.CSS.highlights?.delete('gt-hl-existing'); window.CSS.highlights?.delete('gt-hl-new'); } catch (e) {} }
+  // compress [1,2,3,5] → "1–3, 5"
+  function ranges(nums) {
+    const a = [...nums].sort((x, y) => x - y), out = []; let s = null, p = null;
+    for (const v of a) { if (s == null) { s = p = v; } else if (v === p + 1) { p = v; } else { out.push(s === p ? `${s}` : `${s}–${p}`); s = p = v; } }
+    if (s != null) out.push(s === p ? `${s}` : `${s}–${p}`);
+    return out.join(', ');
+  }
+  let tipEl = null;
+  function showTip(x, y, info) {
+    if (!info || !info.n) { hideTip(); return; }
+    if (!tipEl) { tipEl = el('div', 'gt-tip'); document.body.appendChild(tipEl); }
+    const parts = [`${info.n}×`];
+    if (info.tracks && info.tracks.size) parts.push(`track${info.tracks.size > 1 ? 's' : ''} ${ranges(info.tracks)}`);
+    if (info.release) parts.push('release');
+    tipEl.textContent = parts.join(' · ');
+    tipEl.style.display = '';
+    const r = tipEl.getBoundingClientRect();
+    tipEl.style.left = Math.min(x + 14, window.innerWidth - r.width - 8) + 'px';
+    tipEl.style.top = Math.min(y + 16, window.innerHeight - r.height - 8) + 'px';
+  }
+  function hideTip() { if (tipEl) tipEl.style.display = 'none'; }
+  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; const info = highlightPage(nd); showTip(ev.clientX, ev.clientY, info); }
+  function onMove(ev) { if (tipEl && tipEl.style.display !== 'none' && needleFor(ev.target)) { tipEl.style.left = Math.min(ev.clientX + 14, window.innerWidth - tipEl.offsetWidth - 8) + 'px'; tipEl.style.top = Math.min(ev.clientY + 16, window.innerHeight - tipEl.offsetHeight - 8) + 'px'; } }
+  function onOut(ev) { if (needleFor(ev.target)) { clearHighlight(); hideTip(); } }
+
   // ── styles ────────────────────────────────────────────────────────────────
   function injectStyle() {
     const s = el('style');
@@ -108,6 +171,10 @@
       .gt-mi .gt-mi-s{flex:none;min-width:20px;text-align:center;font-weight:700;font-size:11px;color:#556;background:#eef1f6;border-radius:9px;padding:1px 7px}
       .gt-mi.gt-danger:hover{background:#fbe3e0}
       .gt-mi.gt-danger .gt-mi-s{color:#fff;background:#c0392b}
+      ::highlight(gt-hl-existing){background:#1f6feb;color:#fff}
+      ::highlight(gt-hl-new){background:#1f6feb;color:#ffe066}
+      .gt-tip{position:fixed;z-index:2147483647;pointer-events:none;background:#1b2430;color:#eef2f7;
+        font:12px -apple-system,Segoe UI,Arial,sans-serif;padding:3px 8px;border-radius:5px;box-shadow:0 3px 12px rgba(0,0,0,.28);white-space:nowrap}
     `;
     document.head.appendChild(s);
   }
@@ -116,9 +183,12 @@
   function boot() {
     injectStyle();
     document.body.addEventListener('contextmenu', onContextMenu, true);
+    document.body.addEventListener('mouseover', onOver);
+    document.body.addEventListener('mousemove', onMove);
+    document.body.addEventListener('mouseout', onOut);
     try { GM_registerMenuCommand(`Group Therapy v${VERSION}`, () => {}); } catch (e) {}
-    try { W.__groupTherapy = { VERSION, collect, removeButtons }; } catch (e) {}
-    console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete.`);
+    try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage }; } catch (e) {}
+    console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
   if (document.body) boot(); else document.addEventListener('DOMContentLoaded', boot, { once: true });
 })();
