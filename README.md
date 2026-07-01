@@ -14,7 +14,7 @@ Cover/event-art editor: view, reorder, retype, comment, remove, download, add so
 Import credits from several providers with a review phase
 
 [Group Therapy](./userscripts/group_therapy/README.md) <img src="./userscripts/group_therapy/icon.svg" align="left" width="32"><br>
-Subtle relationship-editor helpers: right-click group delete, hover-highlight, copy/move credits between recordings/works, and copy release credits from another release
+Batch operations and various helpers for editing relationships
 
 [ISRC Scout](./userscripts/isrc_scout/README.md)<img src="./userscripts/isrc_scout/icon.svg" align="left" width="32"><br>
 Reads the release's existing ISRCs and streaming links and fills in the missing ones
