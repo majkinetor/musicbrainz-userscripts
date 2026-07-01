@@ -23,9 +23,12 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
   It never fabricates a removal — it clicks MB's own **×** buttons, so React handles each exactly like
   a manual click (works on existing **and** newly-added relationships).
 
+- **Highlight** — hover any entity name or role label to light up every matching occurrence on the
+  page (existing rels blue/white, newly-added blue/yellow), with a tooltip showing the count and which
+  tracks / the release it appears on, e.g. *48× · tracks 1–12*.
+
 ### Planned
 
-- **Highlight** — page-wide hover highlight of a name/role, with a count tooltip.
 - **Copy / Move recording credits** to other recordings (or the release), and clone a whole release's
   credits from another release (format-aware).
 
@@ -34,3 +37,4 @@ page. Chrome-light on purpose — it adds context menus and hover affordances, n
 | Where | Action |
 | --- | --- |
 | right-click a relationship's **×** | open the group-delete menu |
+| hover an entity name / role label | highlight all matches + show a count tooltip |
