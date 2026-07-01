@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.1
+// @version      2026.7.1.1
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3256,15 +3256,25 @@
     updateSummary();
     toast('Applied ' + applied + ' ISRC' + (applied === 1 ? '' : 's'));
   }
+  // #340: a recording can carry MORE THAN ONE ISRC — collect them all (existing + the pending one),
+  // deduped + validated, so the export never drops the 2nd/3rd ISRC of a track.
+  function allIsrcs(t) {
+    const out = [];
+    for (const raw of [...(t.existing || []), t.pending]) {
+      const v = normalizeIsrc(raw);
+      if (v && isValidIsrc(v) && !out.includes(v)) out.push(v);
+    }
+    return out;
+  }
   function exportText() {
-    const out = RELEASE.tracks.map(t => t.pending || t.existing[0] || '').join('\n');
+    const out = RELEASE.tracks.map(t => allIsrcs(t).join(' ')).join('\n');   // one line per track; multiple ISRCs space-separated
     copyToClipboard(out, out.split('\n').length + ' lines copied');
   }
   function exportJson() {
     const obj = {};
     RELEASE.tracks.forEach(t => {
-      const v = t.pending || t.existing[0];
-      if (v && t.recId) obj[t.recId] = v;
+      const arr = allIsrcs(t);
+      if (arr.length && t.recId) obj[t.recId] = arr.length === 1 ? arr[0] : arr;   // string for one ISRC (back-compat), array for several
     });
     copyToClipboard(JSON.stringify(obj, null, 2), 'JSON copied');
   }
