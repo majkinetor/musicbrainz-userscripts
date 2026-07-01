@@ -44,7 +44,6 @@ The **⧉ Copy from release…** button next to the *Release relationships* head
 
 **Format-aware cleansing** — since the source may be a different edition, credits whose role doesn't suit **this** release's format start **unticked** (re-tick to override), so you don't carry a vinyl-only production credit onto a digital edition. Rules are a configurable map of *format-name → role-name* substrings; the default unticks vinyl/lacquer/pressed/printed/manufactured roles on a *digital* edition. Override the whole map with the **`gt-format-exclude`** GM value (a JSON object), e.g. `{"digital":["lacquer","vinyl mastering"]}`.
 
-The **⚙** icon next to the button shows the script name, version and a help link.
 
 ### Highlight
 
