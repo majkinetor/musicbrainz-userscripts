@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.24
+// @version      2026.7.1.25
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.24';
+  const VERSION = '2026.7.1.25';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -535,7 +535,7 @@
     if (!specs.length) { toast('No artist/label credits on that release'); return; }
     // show a checklist of what will be copied (like the recording/work menus), with format-aware
     // cleansing against THIS release's format (cross-format copy is where cleansing matters)
-    const entries = specs.map(s => ({ rel: s, role: s.linkTypeID, pos: ltName(s.linkTypeID), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
+    const entries = specs.map(s => ({ rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
     const chosen = () => entries.filter(e => !e.cb || e.cb.checked).map(e => e.rel);
     const fmt = releaseFormat(), exRoles = formatExcludeRolesFor(fmt); let excluded = 0;
     if (exRoles.length) entries.forEach(e => { const rn = ltName(e.rel.linkTypeID).toLowerCase(); if (exRoles.some(k => rn.includes(k))) { e.checked = false; e.text += ` — off (not typical for ${fmt})`; excluded++; } });
@@ -616,6 +616,16 @@
   }
 
   const ltName = id => (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id] || {}).name || String(id);
+  // grouping key for a copy spec: link type + its attribute typeIDs (so drums ≠ shakers ≠ vocals)
+  const roleKeyOfSpec = s => { let a = ''; try { if (s.attributes) a = [...W.MB.tree.iterate(s.attributes)].map(x => x.typeID).sort((p, q) => p - q).join(','); } catch (e) {} return s.linkTypeID + '#' + a; };
+  // display label for a copy spec — MB's own rendered role label when the rel is on the page
+  // ("drums (drum set)", "background vocals"); else the link type + resolved attribute names.
+  function roleLabelOf(s) {
+    if (s.item) { const l = pickRoleLabel(s.item.closest && s.item.closest('tr')); if (l && l !== 'role') return l; }
+    const base = ltName(s.linkTypeID), parts = [];
+    try { if (s.attributes) { const lat = W.MB.linkedEntities && W.MB.linkedEntities.link_attribute_type; for (const a of W.MB.tree.iterate(s.attributes)) { const nm = (a.type && a.type.name) || (lat && lat[a.typeID] && lat[a.typeID].name); if (nm) parts.push(a.text_value ? `${nm}: ${a.text_value}` : nm); } } } catch (e) {}
+    return parts.length ? `${base} (${parts.join(', ')})` : base;
+  }
   const trackPosOfRow = tr => posLabel(tr);
 
   // ── format-aware cleansing (#338) ─────────────────────────────────────────
@@ -635,7 +645,7 @@
   // (so artists, ℗/© labels, recorded-at places, …) onto the ticked recordings
   function openCopyMenu(sourceTr, x, y) {
     const srcRels = recordingRels(sourceTr).filter(r => !r.removed && r.other && !['work', 'url', 'recording'].includes(r.other.entityType));
-    const entries = srcRels.map(s => ({ rel: s, role: s.linkTypeID, pos: ltName(s.linkTypeID), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
+    const entries = srcRels.map(s => ({ rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
     const chosen = () => entries.filter(e => !e.cb || e.cb.checked).map(e => e.rel);
     // destination rows = ticked recording checkboxes (other than the source) → entities + track positions
     const destRows = [...document.querySelectorAll('tr.track')].filter(tr => { if (tr === sourceTr) return false; const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
@@ -645,7 +655,7 @@
     const where = destPos.size ? `track${destPos.size > 1 ? 's' : ''} ${ranges(destPos)}` : `${nD} recording${nD > 1 ? 's' : ''}`;
     const items = [];
     if (!nR) { items.push({ header: 'No credits here' }); }
-    else if (!nD) { items.push({ header: 'Tick destination recordings first' }, { checklist: entries }); }
+    else if (!nD) { items.push({ header: 'Tick destination recordings first' }); }
     else {
       const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, dests); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
       const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const srcGid = (recordingEntity(sourceTr) || {}).gid; copyCredits(c, dests); removeSourceRels(srcGid, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
@@ -693,7 +703,7 @@
     const srcWork = workEntity(workCb);
     if (!srcWork) { openMenu(x, y, [{ header: 'Could not read this work' }]); return; }
     const srcRels = workCreditRels(srcWork).filter(r => !r.removed);
-    const entries = srcRels.map(s => ({ rel: s, role: s.linkTypeID, pos: ltName(s.linkTypeID), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
+    const entries = srcRels.map(s => ({ rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
     const chosen = () => entries.filter(e => !e.cb || e.cb.checked).map(e => e.rel);
     // Destinations come from MB's own selection state, not the DOM: a newly-created work's checkbox
     // has no readable React entity (its fiber differs), so a DOM scan misses it — but selectedWorks
@@ -713,7 +723,7 @@
     const destNames = destWorks.map(w => val(w.name));
     const items = [];
     if (!nR) items.push({ header: `“${trunc(val(srcWork.name), 34)}” has no credits` });
-    else if (!nD) items.push({ header: 'Tick destination works first' }, { checklist: entries });
+    else if (!nD) items.push({ header: 'Tick destination works first' });
     else {
       const copyItem = { label: 'Copy', sub: String(nR), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, destWorks); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
       const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, destWorks); removeWorkRels(srcWork, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
