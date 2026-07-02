@@ -3,6 +3,7 @@
 Find URLs for a particular MusicBrainz release on online platforms, verify track counts, surface label / year / format alongside.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/platform_check/platform_check.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/platform_check/platform_check.user.js)
+    - Or via bundle: [String Theory](../string_theory/README.md)
 - [Changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Platform+Check)
 
