@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.1.2
+// @version      2026.7.1.3
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -1072,6 +1072,7 @@
       .mmthf-filterrow { padding:5px 6px; border-bottom:1px solid #e7eee9; background:#f7faf8; }
       .mmthf-filter { display:block; width:100%; box-sizing:border-box; border:1px solid #d7e0db; border-radius:5px; padding:3px 7px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
       .mmthf-filter:focus { outline:none; border-color:#5aa67e; }
+      .mmthf-row.mmthf-sel { background:#e7f2ea; }
       .mmthf-list { max-height:240px; overflow-y:auto; }
       .mmthf-row { position:relative; display:flex; align-items:center; gap:6px; padding:5px 10px; border-top:1px solid #f0f4f2; cursor:pointer; }
       .mmthf-row:first-child { border-top:none; }
@@ -1242,9 +1243,19 @@
       const list = el.querySelector('.mmthf-list');
       if (searchOn) {
         const fin = el.querySelector('.mmthf-filter');
-        const applyFilter = () => { const q = (fin.value || '').trim().toLowerCase(); el.querySelectorAll('.mmthf-row').forEach(r => { const t = (r.querySelector('.mmthf-rtxt') || {}).textContent || ''; r.style.display = (!q || t.toLowerCase().includes(q)) ? '' : 'none'; }); };
+        let hl = -1;   // highlighted row among the currently-visible ones
+        const vis = () => [...el.querySelectorAll('.mmthf-row')].filter(r => r.style.display !== 'none');
+        const paint = () => { const rows = vis(); rows.forEach((r, i) => r.classList.toggle('mmthf-sel', i === hl)); if (rows[hl]) rows[hl].scrollIntoView({ block: 'nearest' }); };
+        const applyFilter = () => { const q = (fin.value || '').trim().toLowerCase(); el.querySelectorAll('.mmthf-row').forEach(r => { const t = (r.querySelector('.mmthf-rtxt') || {}).textContent || ''; r.style.display = (!q || t.toLowerCase().includes(q)) ? '' : 'none'; }); hl = vis().length ? 0 : -1; paint(); };
         fin.addEventListener('input', applyFilter);
-        fin.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); if (fin.value) { fin.value = ''; applyFilter(); } else closePop(); } });
+        fin.addEventListener('keydown', e => {
+          const rows = vis();
+          if (e.key === 'Escape') { e.stopPropagation(); if (fin.value) { fin.value = ''; applyFilter(); } else closePop(); return; }
+          if (e.key === 'ArrowDown') { e.preventDefault(); if (rows.length) { hl = (hl + 1) % rows.length; paint(); } return; }
+          if (e.key === 'ArrowUp') { e.preventDefault(); if (rows.length) { hl = (hl - 1 + rows.length) % rows.length; paint(); } return; }
+          if (e.key === 'Enter') { e.preventDefault(); const r = rows[hl] || rows[0]; if (r) { writeField(p.el, items[+r.dataset.i]); closePop(); } return; }
+        });
+        applyFilter();   // highlight the first item so Enter works immediately
         setTimeout(() => { try { fin.focus(); } catch (e) {} }, 0);
       }
       el.querySelector('.mmthf-save').addEventListener('click', () => { if (!cur.v) return; rememberValue(p.key, cur); refreshState(p); reopen(p); });
