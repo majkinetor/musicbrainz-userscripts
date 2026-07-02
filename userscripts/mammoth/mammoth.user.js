@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.1
+// @version      2026.7.1.4
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -1026,6 +1026,8 @@
       else { setNative(el, ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }
       try { el.focus(); } catch (e) {}
     }
+    // return focus to the field after an interactive apply (caret at end for text inputs)
+    const focusField = el => { try { el.focus(); if (!isSelect(el) && el.setSelectionRange) { const n = (el.value || '').length; el.setSelectionRange(n, n); } } catch (e) {} };
     const fLabelText = el => { const l = el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`); return (l && l.textContent.trim().replace(/:$/, '')) || el.getAttribute('aria-label') || el.placeholder || ''; };
     function keyFor(el, def) {
       if (def && def.key) return def.key;
@@ -1069,6 +1071,10 @@
       .mmthf-fb:hover { background:#dcefe2; }
       .mmthf-fb[aria-disabled="true"] { color:#b7c2bb; cursor:default; background:none; }
       .mmthf-ft-title { flex:1 1 auto; min-width:0; text-align:center; font-weight:700; font-size:13px; color:#293330; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 4px; }
+      .mmthf-filterrow { padding:5px 6px; border-bottom:1px solid #e7eee9; background:#f7faf8; }
+      .mmthf-filter { display:block; width:100%; box-sizing:border-box; border:1px solid #d7e0db; border-radius:5px; padding:3px 7px; font:12px -apple-system,Segoe UI,Arial,sans-serif; }
+      .mmthf-filter:focus { outline:none; border-color:#5aa67e; }
+      .mmthf-row.mmthf-sel { background:#e7f2ea; }
       .mmthf-list { max-height:240px; overflow-y:auto; }
       .mmthf-row { position:relative; display:flex; align-items:center; gap:6px; padding:5px 10px; border-top:1px solid #f0f4f2; cursor:pointer; }
       .mmthf-row:first-child { border-top:none; }
@@ -1160,7 +1166,7 @@
       setReserve(p, items.length > 0);
       if (!items.length) { p.bar.style.display = 'none'; return; }
       const seg = document.createElement('div'); seg.className = 'mmthf-seg';
-      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); }); seg.appendChild(b); });
+      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); focusField(p.el); }); seg.appendChild(b); });
       p.bar.appendChild(seg);
     }
     function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) writeField(p.el, d); }
@@ -1223,6 +1229,9 @@
         const ind = `<span class="mmthf-ind">${it.default ? '<span>◉</span>' : ''}${it.pinned ? '<span>★</span>' : ''}</span>`;
         return `<div class="mmthf-row" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${ind}${acts}</div>`;
       };
+      // #345: per-baby opt-in — a field marked class="mmth-search" gets a filter box in its popover,
+      // independent of the global "Show note search" setting (which only governs the edit-note panel).
+      const searchOn = p.el.classList.contains('mmth-search') && items.length > 1;
       el.innerHTML =
         `<div class="mmthf-ft">
            <button class="mmthf-fb mmthf-save" ${cur.v ? '' : 'aria-disabled="true"'} title="${cur.v ? 'Save current value: ' + esc(cur.label) : 'Field is empty'}">＋</button>
@@ -1230,9 +1239,27 @@
            <span class="mmthf-ft-title"></span>
            <button class="mmthf-fb mmthf-cfg" title="Mammoth settings">⚙︎</button>
          </div>
+         ${searchOn ? '<div class="mmthf-filterrow"><input class="mmthf-filter" type="text" placeholder="Filter…" spellcheck="false"></div>' : ''}
          <div class="mmthf-list">${items.map(rowHtml).join('') || '<div class="mmthf-empty">No saved values yet</div>'}</div>`;
       document.body.appendChild(el); pop = el;
       const list = el.querySelector('.mmthf-list');
+      if (searchOn) {
+        const fin = el.querySelector('.mmthf-filter');
+        let hl = -1;   // highlighted row among the currently-visible ones
+        const vis = () => [...el.querySelectorAll('.mmthf-row')].filter(r => r.style.display !== 'none');
+        const paint = () => { const rows = vis(); rows.forEach((r, i) => r.classList.toggle('mmthf-sel', i === hl)); if (rows[hl]) rows[hl].scrollIntoView({ block: 'nearest' }); };
+        const applyFilter = () => { const q = (fin.value || '').trim().toLowerCase(); el.querySelectorAll('.mmthf-row').forEach(r => { const t = (r.querySelector('.mmthf-rtxt') || {}).textContent || ''; r.style.display = (!q || t.toLowerCase().includes(q)) ? '' : 'none'; }); hl = vis().length ? 0 : -1; paint(); };
+        fin.addEventListener('input', applyFilter);
+        fin.addEventListener('keydown', e => {
+          const rows = vis();
+          if (e.key === 'Escape') { e.stopPropagation(); if (fin.value) { fin.value = ''; applyFilter(); } else closePop(); return; }
+          if (e.key === 'ArrowDown') { e.preventDefault(); if (rows.length) { hl = (hl + 1) % rows.length; paint(); } return; }
+          if (e.key === 'ArrowUp') { e.preventDefault(); if (rows.length) { hl = (hl - 1 + rows.length) % rows.length; paint(); } return; }
+          if (e.key === 'Enter') { e.preventDefault(); const r = rows[hl] || rows[0]; if (r) { writeField(p.el, items[+r.dataset.i]); closePop(); focusField(p.el); } return; }
+        });
+        applyFilter();   // highlight the first item so Enter works immediately
+        setTimeout(() => { try { fin.focus(); } catch (e) {} }, 0);
+      }
       el.querySelector('.mmthf-save').addEventListener('click', () => { if (!cur.v) return; rememberValue(p.key, cur); refreshState(p); reopen(p); });
       el.querySelector('.mmthf-clear').addEventListener('click', () => { clearField(p.el); reopen(p); });
       // #309: open the config with Import/Export scoped to THIS field's values
@@ -1258,7 +1285,7 @@
           if (e.target.closest('.mmthf-star')) { togglePin(p.key, it.v); refreshState(p); reopen(p); return; }
           if (e.target.closest('.mmthf-def')) { setDefault(p.key, it.v); applyDefault(p); reopen(p); return; }
           if (e.target.closest('.mmthf-del')) { forgetValue(p.key, it.v); refreshState(p); reopen(p); return; }
-          writeField(p.el, it); closePop();
+          writeField(p.el, it); closePop(); focusField(p.el);
         });
         const grab = row.querySelector('.mmthf-grab');
         grab.addEventListener('dragstart', e => { _fdrag = { v: it.v }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'row'); } catch (x) {} row.classList.add('mmthf-dragging'); });
@@ -1279,6 +1306,15 @@
       const on = (t, ev, fn, cap) => { t.addEventListener(ev, fn, cap); listeners.push([t, ev, fn, cap]); };
       on(window, 'scroll', relayout, true); on(window, 'resize', relayout, false);
       ['focusin', 'focusout', 'click', 'input', 'keyup'].forEach(ev => on(document, ev, relayout, true));
+      // #345: Ctrl/Cmd+, — if a baby popover with a filter is open, focus it; else if a searchable
+      // (mmth-search) baby field is focused, open its popover (which auto-focuses the filter).
+      on(document, 'keydown', e => {
+        if (e.key !== ',' || !(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
+        if (pop) { const f = pop.querySelector('.mmthf-filter'); if (f) { e.preventDefault(); f.focus(); if (f.select) f.select(); return; } }
+        const el = document.activeElement;
+        const p = el && pins.find(pp => pp.el === el && el.classList && el.classList.contains('mmth-search'));
+        if (p) { e.preventDefault(); openPop(p); }
+      }, true);
       // #296: the release editor keeps reflowing for a few hundred ms after load, so
       // the absolutely-positioned overlays would chase the moving fields and visibly
       // jump. Keep them hidden until the DOM goes quiet for 300ms (capped at 1.5s),

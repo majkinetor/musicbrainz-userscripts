@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.26
+// @version      2026.7.1.31
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
 // @match        *://*.musicbrainz.org/release/*/edit-relationships
-// @grant        GM_registerMenuCommand
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @run-at       document-end
@@ -16,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.26';
+  const VERSION = '2026.7.1.31';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -82,6 +81,32 @@
   }
   const removeButtons = items => items.map(it => it.querySelector(REMOVE_SEL)).filter(Boolean);
 
+  // ── edit-note signature — stamped into MB's edit-note field ONLY when GT actually changes something ──
+  const GT_HOMEPAGE = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md';
+  function editNoteSig() {
+    let s = {}; try { if (typeof GM_info !== 'undefined' && GM_info.script) s = GM_info.script; } catch (e) {}
+    const name = (s.name || 'Group Therapy').split(/\s+[—–-]\s+/)[0].trim();   // drop the "— MusicBrainz relationship helper" suffix
+    return `${name} by ${s.author || 'majkinetor'} v${s.version || VERSION} - ${s.homepageURL || s.homepage || GT_HOMEPAGE}`;
+  }
+  // Stamp our signature into MB's edit-note field and, under it, an accumulating list of what GT did
+  // ("Copied credits from track 4 to tracks 1–5", "Removed guitar (14)"). Any note that preceded ours
+  // (another script's) is preserved ahead of our block. Idempotent per identical action line.
+  function stampEditNote(action) {
+    const ta = document.querySelector('textarea.edit-note, #edit-note-text'); if (!ta) return;
+    const sig = editNoteSig(), cur = ta.value || '';
+    let pre = cur.replace(/\s+$/, ''), ourLines = [];
+    const idx = cur.indexOf(sig);
+    if (idx >= 0) {
+      pre = cur.slice(0, idx).replace(/\s+$/, '');
+      ourLines = cur.slice(idx + sig.length).split('\n').map(l => l.trim()).filter(Boolean);
+    }
+    if (action && !ourLines.includes(action)) ourLines.push(action);
+    const block = ourLines.length ? `${sig}\n\n${ourLines.join('\n')}` : sig;
+    const next = pre ? `${pre}\n\n${block}` : block;
+    try { const set = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(ta), 'value').set; set.call(ta, next); ta.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+  }
+  function markUsed(action) { try { stampEditNote(action); } catch (e) {} }
+
   // ── subtle context menu ───────────────────────────────────────────────────
   let menuEl = null;
   function closeMenu() { if (menuEl) { menuEl.remove(); menuEl = null; document.removeEventListener('mousedown', onDocDown, true); document.removeEventListener('keydown', onKey, true); } }
@@ -133,9 +158,10 @@
   // ── batch delete: right-click a rel's × → remove a whole group ─────────────
   // We never fabricate a removal — we click MB's own peer × buttons, so React
   // handles each exactly like a manual click (works on existing + new rels).
-  function runRemoval(items) {
+  function runRemoval(items, desc) {
     const btns = removeButtons(items);
     for (const b of btns) { try { b.click(); } catch (e) {} }
+    if (btns.length) markUsed(desc || `Removed ${btns.length} relationship${btns.length > 1 ? 's' : ''}`);
   }
   // per-rel facts: its track position (null = release-level), role label, and target name
   function itemInfo(it) {
@@ -195,9 +221,10 @@
       scopeNote = `scoped to ${parts.join(' + ')} selected`;
     }
     const trunc = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
-    const opt = (label, its, scope) => ({ label, sub: String(its.length), lines: breakdown(its, scope), danger: true, run: () => runRemoval(its) });
+    const desc = (label, n) => `${label.replace(/^Remove\s+/, 'Removed ')} (${n})` + (scopeNote ? ` — ${scopeNote}` : '');
+    const opt = (label, its, scope) => ({ label, sub: String(its.length), lines: breakdown(its, scope), danger: true, run: () => runRemoval(its, desc(label, its.length)) });
     const items = [
-      { label: `Remove this one`, run: () => { try { btn.click(); } catch (e) {} } },
+      { label: `Remove this one`, run: () => { try { btn.click(); markUsed(`Removed ${roleLabel}${tgt ? ` — ${tgt}` : ''}`); } catch (e) {} } },
       'sep',
     ];
     if (scopeNote) items.push({ note: scopeNote });
@@ -336,14 +363,18 @@
       .gt-pop .gt-pop-hdr{padding:4px 8px 6px;font-size:11px;font-weight:700;letter-spacing:.02em;color:#6a7482;text-transform:uppercase}
       .gt-pop .gt-pop-list{max-height:44vh;overflow-y:auto}
       .gt-pop .gt-pop-note{padding:8px;color:#8892a0;font-size:12px}
-      .gt-pop .gt-pop-rel{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:none;border-radius:5px;padding:6px 9px;cursor:pointer;color:inherit;font:inherit}
+      .gt-pop .gt-pop-rel{display:flex;align-items:center;gap:4px;border-radius:5px}
       .gt-pop .gt-pop-rel:hover{background:#eef1f6}
+      .gt-pop .gt-pop-rel-info{flex:1;min-width:0;box-sizing:border-box;text-align:left;background:none;border:none;border-radius:5px;padding:6px 9px;cursor:pointer;color:inherit;font:inherit}
       .gt-pop .gt-pop-rel-t{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .gt-pop .gt-pop-rel-m{display:block;font-size:11px;color:#8892a0;margin-top:1px}
-      .gt-pop .gt-pop-row{display:flex;gap:6px;padding:6px 6px 4px}
-      .gt-pop .gt-pop-tf{flex:1;min-width:0;padding:5px 8px;border:1px solid #cfd4da;border-radius:5px;font:inherit}
-      .gt-pop .gt-pop-go{flex:none;background:#2e9e5b;color:#fff;border:none;border-radius:5px;padding:5px 12px;cursor:pointer;font:600 13px inherit}
-      .gt-pop .gt-pop-go:hover{background:#28864d}
+      .gt-pop .gt-pop-rel-open{flex:none;text-decoration:none;color:#8892a0;font-size:14px;line-height:1;padding:6px 9px;border-radius:5px}
+      .gt-pop .gt-pop-rel-open:hover{background:#dfe4ea;color:#2e6da4}
+      .gt-pop .gt-pop-add{padding:4px 6px 6px}
+      .gt-pop .gt-pop-add-btn{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:none;border-radius:5px;padding:6px 9px;cursor:pointer;color:#2e6da4;font:inherit}
+      .gt-pop .gt-pop-add-btn:hover{background:#eef1f6}
+      .gt-pop .gt-pop-tf{display:block;width:100%;box-sizing:border-box;min-width:0;padding:6px 8px;border:1px solid #4a90d9;border-radius:5px;font:inherit;outline:none}
+      .gt-pop .gt-hidden{display:none}
       /* subtle discoverability: the controls Group Therapy adds a right-click menu to (recording/work
          checkboxes → copy/move; the × → group delete) get a faint green accent, and a clearer ring on hover */
       tr.track input.recording, tr.track input.work { accent-color:#2e9e5b; }
@@ -525,7 +556,7 @@
     document.addEventListener('click', swallow, true);
     setTimeout(() => document.removeEventListener('click', swallow, true), 500);
   }
-  async function doCopyFrom(gid) {
+  async function doCopyFrom(gid, srcLabel) {
     if (!gid) return;
     const here = RE() && RE().state.entity; if (!here) return;
     if (gid.toLowerCase() === (here.gid || '').toLowerCase()) { toast('That’s this release'); return; }
@@ -539,7 +570,7 @@
     const chosen = () => entries.filter(e => !e.cb || e.cb.checked).map(e => e.rel);
     const fmt = releaseFormat(), exRoles = formatExcludeRolesFor(fmt); let excluded = 0;
     if (exRoles.length) entries.forEach(e => { const rn = ltName(e.rel.linkTypeID).toLowerCase(); if (exRoles.some(k => rn.includes(k))) { e.checked = false; e.text += ` — off (not typical for ${fmt})`; excluded++; } });
-    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, [here]); toast(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} — review & save`); } };
+    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, [here])) markUsed(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} from ${srcLabel ? `“${srcLabel}” (${gid})` : gid}`); toast(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} — review & save`); } };
     const items = [{ header: 'Copy release credits' }];
     if (excluded) items.push({ note: `${excluded} pre-unticked for format “${fmt}”` });
     items.push({ checklist: entries, onToggle: () => { copyItem._setSub && copyItem._setSub(String(chosen().length)); } }, copyItem);
@@ -556,13 +587,20 @@
       list.textContent = '';
       if (!rels.length) { list.appendChild(el('div', 'gt-pop-note', 'No other releases in this group')); return; }
       for (const r of rels) {
-        const b = el('button', 'gt-pop-rel');
-        b.appendChild(el('span', 'gt-pop-rel-t', r.title + (r.disambiguation ? ` (${r.disambiguation})` : '')));
+        const b = el('div', 'gt-pop-rel');
+        const info = el('button', 'gt-pop-rel-info');
+        info.appendChild(el('span', 'gt-pop-rel-t', r.title + (r.disambiguation ? ` (${r.disambiguation})` : '')));
         const fmt = [...new Set((r.media || []).map(m => m.format).filter(Boolean))].join(' + ');
         const tracks = (r.media || []).reduce((s, m) => s + (m['track-count'] || 0), 0);
         const meta = [r.date, r.country, fmt, tracks ? tracks + ' tracks' : ''].filter(Boolean).join(' · ');
-        if (meta) b.appendChild(el('span', 'gt-pop-rel-m', meta));
-        b.onclick = () => doCopyFrom(r.id);
+        if (meta) info.appendChild(el('span', 'gt-pop-rel-m', meta));
+        info.title = 'Copy this release’s credits onto this one';
+        info.onclick = () => doCopyFrom(r.id, r.title + (r.disambiguation ? ` (${r.disambiguation})` : ''));
+        const open = el('a', 'gt-pop-rel-open', '↗');   // ↗ open the release in a new tab to inspect first
+        open.href = '/release/' + r.id; open.target = '_blank'; open.rel = 'noopener';
+        open.title = 'Open this release in a new tab';
+        open.addEventListener('click', ev => ev.stopPropagation());
+        b.appendChild(info); b.appendChild(open);
         list.appendChild(b);
       }
     } catch (e) { list.textContent = ''; list.appendChild(el('div', 'gt-pop-note', 'Could not load release group')); }
@@ -573,17 +611,21 @@
     popEl.appendChild(el('div', 'gt-pop-hdr', 'Copy release credits from…'));
     const list = el('div', 'gt-pop-list'); list.appendChild(el('div', 'gt-pop-note', 'Loading release group…')); popEl.appendChild(list);
     popEl.appendChild(el('div', 'gt-sep'));
-    const row = el('div', 'gt-pop-row');
-    const inp = el('input', 'gt-pop-tf'); inp.type = 'text'; inp.placeholder = 'or paste a release URL / MBID';
-    const go = el('button', 'gt-pop-go', 'Copy');
-    const fromInput = () => { const m = (inp.value || '').match(GID_RE); if (!m) { toast('No release MBID in that text'); return; } doCopyFrom(m[0]); };
-    go.onclick = fromInput; inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fromInput(); } });
-    row.appendChild(inp); row.appendChild(go); popEl.appendChild(row);
+    // paste-to-copy: a (+) that unrolls into a field and acts immediately on paste — no Copy button
+    // (same idiom as Apollo's link/artist add + ISRC Scout). Enter is a fallback for typed input.
+    const add = el('div', 'gt-pop-add');
+    const plus = el('button', 'gt-pop-add-btn'); plus.type = 'button'; plus.textContent = '＋ from a release URL / MBID';
+    const inp = el('input', 'gt-pop-tf gt-hidden'); inp.type = 'text'; inp.placeholder = 'paste a release URL / MBID…';
+    const fromInput = () => { const m = (inp.value || '').match(GID_RE); if (m) doCopyFrom(m[0]); };
+    plus.onclick = () => { plus.classList.add('gt-hidden'); inp.classList.remove('gt-hidden'); try { inp.focus(); } catch (e) {} };
+    inp.addEventListener('paste', () => setTimeout(fromInput, 0));   // wait for the pasted text to land in .value
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fromInput(); } });
+    add.appendChild(plus); add.appendChild(inp); popEl.appendChild(add);
     document.body.appendChild(popEl);
     const a = anchor.getBoundingClientRect(), r = popEl.getBoundingClientRect();
     popEl.style.left = Math.max(8, Math.min(a.left, window.innerWidth - r.width - 8)) + 'px';
     popEl.style.top = Math.min(a.bottom + 4, window.innerHeight - r.height - 8) + 'px';
-    setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); try { inp.focus(); } catch (e) {} }, 0);
+    setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); }, 0);
     loadRgReleases(list);
   }
   function openAboutPopover(anchor) {
@@ -652,13 +694,14 @@
     const dests = destRows.map(recordingEntity).filter(Boolean);
     const destPos = new Set(destRows.map(trackPosOfRow).filter(p => p != null));
     const nR = srcRels.length, nD = dests.length;
+    const srcPos = posLabel(sourceTr);
     const where = destPos.size ? `track${destPos.size > 1 ? 's' : ''} ${ranges(destPos)}` : `${nD} recording${nD > 1 ? 's' : ''}`;
     const items = [];
     if (!nR) { items.push({ header: 'No credits here' }); }
     else if (!nD) { items.push({ header: 'Tick destination recordings first' }); }
     else {
-      const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, dests); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
-      const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const srcGid = (recordingEntity(sourceTr) || {}).gid; copyCredits(c, dests); removeSourceRels(srcGid, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
+      const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, dests)) markUsed(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} from track ${srcPos || '?'} to ${where}`); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
+      const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const srcGid = (recordingEntity(sourceTr) || {}).gid; if (copyCredits(c, dests)) markUsed(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} from track ${srcPos || '?'} to ${where}`); removeSourceRels(srcGid, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
       items.push({ header: `Copy to ${where}` },
         { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
         copyItem, moveItem);
@@ -725,8 +768,8 @@
     if (!nR) items.push({ header: `“${trunc(val(srcWork.name), 34)}” has no credits` });
     else if (!nD) items.push({ header: 'Tick destination works first' });
     else {
-      const copyItem = { label: 'Copy', sub: String(nR), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, destWorks); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
-      const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, destWorks); removeWorkRels(srcWork, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
+      const copyItem = { label: 'Copy', sub: String(nR), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, destWorks)) markUsed(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} from work “${val(srcWork.name)}” to ${nD} work${nD > 1 ? 's' : ''}`); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
+      const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, destWorks)) markUsed(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} from work “${val(srcWork.name)}” to ${nD} work${nD > 1 ? 's' : ''}`); removeWorkRels(srcWork, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
       items.push({ header: `Copy to ${nD} work${nD > 1 ? 's' : ''}` },
         { note: destNames.slice(0, 6).join(' · ') + (destNames.length > 6 ? ` +${destNames.length - 6} more` : '') },
         { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
@@ -756,7 +799,6 @@
     document.body.addEventListener('mouseout', onOut);
     document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
-    try { GM_registerMenuCommand(`Group Therapy v${VERSION}`, () => {}); } catch (e) {}
     try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, fetchReleaseRels, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }

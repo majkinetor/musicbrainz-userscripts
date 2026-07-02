@@ -50,7 +50,7 @@ The menu lists each credit with a **checkbox** (all on by default) — untick an
 
 #### From release 
 
-The **⧉ Copy from release…** button next to the *Release relationships* heading opens a picker: choose one of this **release group's** other releases — each shown with its **date · country · format · track count** so you can tell editions apart — or paste any release URL/MBID. It then shows a **checklist** of that release's release-level credits (artists + labels, with credited-as, attributes and dates); pick which to copy onto this release (MB merges any it already has).
+The **⧉ Copy from release…** button next to the *Release relationships* heading opens a picker: choose one of this **release group's** other releases — each shown with its **date · country · format · track count** so you can tell editions apart (with an **↗** to open that release in a new tab first) — or use the **＋** to reveal a field and **paste** any release URL/MBID (it acts on paste, no button). It then shows a **checklist** of that release's release-level credits (artists + labels, with credited-as, attributes and dates); pick which to copy onto this release (MB merges any it already has).
 
 **Format-aware cleansing** — since the source may be a different edition, credits whose role doesn't suit **this** release's format start **unticked** (re-tick to override), so you don't carry a vinyl-only production credit onto a digital edition. Rules are a configurable map of *format-name → role-name* substrings; the default unticks vinyl/lacquer/pressed/printed/manufactured roles on a *digital* edition. Override the whole map with the **`gt-format-exclude`** GM value (a JSON object), e.g. `{"digital":["lacquer","vinyl mastering"]}`.
 
@@ -70,6 +70,10 @@ Hover any entity name or role label to light up every matching occurrence on the
 
 The recording/work checkboxes and the `×` buttons carry a faint green accent and a tooltip so the
 right-click features are discoverable.
+
+## Edit note
+
+When (and only when) you actually **use** Group Therapy on a page, it stamps MB's edit-note field with a signature line and, under it, an accumulating list of what it did — e.g. *Copied 2 credits from track 1 to tracks 2–5*, *Removed guitar (14)*, *Copied release credits from “The Vibe! Vol. 9”*. Any note already in the field (from another script, or your own text) is preserved ahead of ours, the signature is written once, and identical action lines aren't repeated. Nothing is submitted — it's there for you to review before you save.
 
 ## Under the hood
 

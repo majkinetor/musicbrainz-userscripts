@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.1
+// @version      2026.7.1.3
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -718,7 +718,7 @@
       <div class="as-dmeta">
         <div class="as-dlbl">Types</div>
         <div class="as-dtypes">${types}</div>
-        <input class="as-dcmt" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets" spellcheck="false">
+        <input class="as-dcmt mmth-pin mmth-search" data-mmth-key="art-station-comment" data-mmth-label="Comment" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets" spellcheck="false">
       </div>
     </div>`;
   }
