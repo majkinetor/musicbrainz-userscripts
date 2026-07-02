@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.27
+// @version      2026.7.1.28
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.27';
+  const VERSION = '2026.7.1.28';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -82,6 +82,31 @@
   }
   const removeButtons = items => items.map(it => it.querySelector(REMOVE_SEL)).filter(Boolean);
 
+  // ── edit-note signature — stamped into MB's edit-note field ONLY when GT actually changes something ──
+  const GT_HOMEPAGE = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md';
+  function editNoteSig() {
+    let s = {}; try { if (typeof GM_info !== 'undefined' && GM_info.script) s = GM_info.script; } catch (e) {}
+    return `${s.name || 'Group Therapy'} v${s.version || VERSION} - ${s.homepageURL || s.homepage || GT_HOMEPAGE}`;
+  }
+  // Stamp our signature into MB's edit-note field and, under it, an accumulating list of what GT did
+  // ("Copied credits from track 4 to tracks 1–5", "Removed guitar (14)"). Any note that preceded ours
+  // (another script's) is preserved ahead of our block. Idempotent per identical action line.
+  function stampEditNote(action) {
+    const ta = document.querySelector('textarea.edit-note, #edit-note-text'); if (!ta) return;
+    const sig = editNoteSig(), cur = ta.value || '';
+    let pre = cur.replace(/\s+$/, ''), ourLines = [];
+    const idx = cur.indexOf(sig);
+    if (idx >= 0) {
+      pre = cur.slice(0, idx).replace(/\s+$/, '');
+      ourLines = cur.slice(idx + sig.length).split('\n').map(l => l.trim()).filter(Boolean);
+    }
+    if (action && !ourLines.includes(action)) ourLines.push(action);
+    const block = ourLines.length ? `${sig}\n\n${ourLines.join('\n')}` : sig;
+    const next = pre ? `${pre}\n\n${block}` : block;
+    try { const set = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(ta), 'value').set; set.call(ta, next); ta.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+  }
+  function markUsed(action) { try { stampEditNote(action); } catch (e) {} }
+
   // ── subtle context menu ───────────────────────────────────────────────────
   let menuEl = null;
   function closeMenu() { if (menuEl) { menuEl.remove(); menuEl = null; document.removeEventListener('mousedown', onDocDown, true); document.removeEventListener('keydown', onKey, true); } }
@@ -133,9 +158,10 @@
   // ── batch delete: right-click a rel's × → remove a whole group ─────────────
   // We never fabricate a removal — we click MB's own peer × buttons, so React
   // handles each exactly like a manual click (works on existing + new rels).
-  function runRemoval(items) {
+  function runRemoval(items, desc) {
     const btns = removeButtons(items);
     for (const b of btns) { try { b.click(); } catch (e) {} }
+    if (btns.length) markUsed(desc || `Removed ${btns.length} relationship${btns.length > 1 ? 's' : ''}`);
   }
   // per-rel facts: its track position (null = release-level), role label, and target name
   function itemInfo(it) {
@@ -195,9 +221,10 @@
       scopeNote = `scoped to ${parts.join(' + ')} selected`;
     }
     const trunc = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
-    const opt = (label, its, scope) => ({ label, sub: String(its.length), lines: breakdown(its, scope), danger: true, run: () => runRemoval(its) });
+    const desc = (label, n) => `${label.replace(/^Remove\s+/, 'Removed ')} (${n})` + (scopeNote ? ` — ${scopeNote}` : '');
+    const opt = (label, its, scope) => ({ label, sub: String(its.length), lines: breakdown(its, scope), danger: true, run: () => runRemoval(its, desc(label, its.length)) });
     const items = [
-      { label: `Remove this one`, run: () => { try { btn.click(); } catch (e) {} } },
+      { label: `Remove this one`, run: () => { try { btn.click(); markUsed(`Removed ${roleLabel}${tgt ? ` — ${tgt}` : ''}`); } catch (e) {} } },
       'sep',
     ];
     if (scopeNote) items.push({ note: scopeNote });
@@ -528,7 +555,7 @@
     document.addEventListener('click', swallow, true);
     setTimeout(() => document.removeEventListener('click', swallow, true), 500);
   }
-  async function doCopyFrom(gid) {
+  async function doCopyFrom(gid, srcLabel) {
     if (!gid) return;
     const here = RE() && RE().state.entity; if (!here) return;
     if (gid.toLowerCase() === (here.gid || '').toLowerCase()) { toast('That’s this release'); return; }
@@ -542,7 +569,7 @@
     const chosen = () => entries.filter(e => !e.cb || e.cb.checked).map(e => e.rel);
     const fmt = releaseFormat(), exRoles = formatExcludeRolesFor(fmt); let excluded = 0;
     if (exRoles.length) entries.forEach(e => { const rn = ltName(e.rel.linkTypeID).toLowerCase(); if (exRoles.some(k => rn.includes(k))) { e.checked = false; e.text += ` — off (not typical for ${fmt})`; excluded++; } });
-    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, [here]); toast(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} — review & save`); } };
+    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, [here])) markUsed(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} from ${srcLabel ? `“${srcLabel}”` : gid}`); toast(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} — review & save`); } };
     const items = [{ header: 'Copy release credits' }];
     if (excluded) items.push({ note: `${excluded} pre-unticked for format “${fmt}”` });
     items.push({ checklist: entries, onToggle: () => { copyItem._setSub && copyItem._setSub(String(chosen().length)); } }, copyItem);
@@ -567,7 +594,7 @@
         const meta = [r.date, r.country, fmt, tracks ? tracks + ' tracks' : ''].filter(Boolean).join(' · ');
         if (meta) info.appendChild(el('span', 'gt-pop-rel-m', meta));
         info.title = 'Copy this release’s credits onto this one';
-        info.onclick = () => doCopyFrom(r.id);
+        info.onclick = () => doCopyFrom(r.id, r.title + (r.disambiguation ? ` (${r.disambiguation})` : ''));
         const open = el('a', 'gt-pop-rel-open', '↗');   // ↗ open the release in a new tab to inspect first
         open.href = '/release/' + r.id; open.target = '_blank'; open.rel = 'noopener';
         open.title = 'Open this release in a new tab';
@@ -662,13 +689,14 @@
     const dests = destRows.map(recordingEntity).filter(Boolean);
     const destPos = new Set(destRows.map(trackPosOfRow).filter(p => p != null));
     const nR = srcRels.length, nD = dests.length;
+    const srcPos = posLabel(sourceTr);
     const where = destPos.size ? `track${destPos.size > 1 ? 's' : ''} ${ranges(destPos)}` : `${nD} recording${nD > 1 ? 's' : ''}`;
     const items = [];
     if (!nR) { items.push({ header: 'No credits here' }); }
     else if (!nD) { items.push({ header: 'Tick destination recordings first' }); }
     else {
-      const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, dests); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
-      const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const srcGid = (recordingEntity(sourceTr) || {}).gid; copyCredits(c, dests); removeSourceRels(srcGid, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
+      const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, dests)) markUsed(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} from track ${srcPos || '?'} to ${where}`); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
+      const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } const srcGid = (recordingEntity(sourceTr) || {}).gid; if (copyCredits(c, dests)) markUsed(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} from track ${srcPos || '?'} to ${where}`); removeSourceRels(srcGid, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} recording${nD > 1 ? 's' : ''} — review & save`); } };
       items.push({ header: `Copy to ${where}` },
         { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
         copyItem, moveItem);
@@ -735,8 +763,8 @@
     if (!nR) items.push({ header: `“${trunc(val(srcWork.name), 34)}” has no credits` });
     else if (!nD) items.push({ header: 'Tick destination works first' });
     else {
-      const copyItem = { label: 'Copy', sub: String(nR), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, destWorks); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
-      const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } copyCredits(c, destWorks); removeWorkRels(srcWork, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
+      const copyItem = { label: 'Copy', sub: String(nR), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, destWorks)) markUsed(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} from work “${val(srcWork.name)}” to ${nD} work${nD > 1 ? 's' : ''}`); toast(`Copied ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
+      const moveItem = { label: 'Move (remove here)', danger: true, run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, destWorks)) markUsed(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} from work “${val(srcWork.name)}” to ${nD} work${nD > 1 ? 's' : ''}`); removeWorkRels(srcWork, c); toast(`Moved ${c.length} credit${c.length > 1 ? 's' : ''} to ${nD} work${nD > 1 ? 's' : ''} — review & save`); } };
       items.push({ header: `Copy to ${nD} work${nD > 1 ? 's' : ''}` },
         { note: destNames.slice(0, 6).join(' · ') + (destNames.length > 6 ? ` +${destNames.length - 6} more` : '') },
         { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); } },
