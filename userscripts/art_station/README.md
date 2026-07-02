@@ -117,7 +117,7 @@ where `none` is used where no type is given
 
 ## Comment memory (Mammoth)
 
-The comment fields (gallery, detailed view and the full-screen viewer) carry the `mmth-pin` class, so if you also run [Mammoth](../mammoth), its **baby field-memory** attaches to them automatically — a small 🦣 pin lets you save and recall past comments (all comment fields share one pool, key `art-station-comment`). No configuration; it's Mammoth's [documented cross-userscript convention](../mammoth/README.md#using-mammoth-from-another-userscript). Art Station's own `comment…` preset list still works independently when Mammoth isn't installed.
+The comment field in the **detailed view** carries the `mmth-pin` class, so if you also run [Mammoth](../mammoth), its **baby field-memory** attaches to it automatically — a small 🦣 pin lets you save and recall past comments (key `art-station-comment`). No configuration; it's Mammoth's [documented cross-userscript convention](../mammoth/README.md#using-mammoth-from-another-userscript). Art Station's own `comment…` preset list still works independently when Mammoth isn't installed.
 
 ## Applying changes
 

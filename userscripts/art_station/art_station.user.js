@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.1.1
+// @version      2026.7.1.2
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -674,7 +674,7 @@
     const dim = `<span class="as-dim">${dimHtml(it)}</span>`;
     if (it._del) return `<div class="as-foot"><div class="as-foot-row"><span class="as-foot-cmt"></span>${dim}</div>${typeRow}</div>`;
     const cmt = it._editcmt
-      ? `<input class="as-cmt mmth-pin" data-mmth-key="art-station-comment" data-mmth-label="Comment" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets">`
+      ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets">`
       : (it.comment
           ? `<span class="as-cmt-text" title="edit comment">${esc(it.comment)}</span>`
           : `<button class="as-pencil" title="add a comment">✎</button>`);
@@ -2579,7 +2579,7 @@
   function paintCmtArea(ov, it) {
     const area = ov.querySelector('.as-lb-cmtarea'); if (!area) return;
     if (_lbEditCmt) {
-      area.innerHTML = `<input class="as-lb-cmt mmth-pin" data-mmth-key="art-station-comment" data-mmth-label="Comment" placeholder="comment…" spellcheck="false" list="as-cmt-presets">`;
+      area.innerHTML = `<input class="as-lb-cmt" placeholder="comment…" spellcheck="false" list="as-cmt-presets">`;
       const inp = area.querySelector('.as-lb-cmt'); inp.value = it.comment || '';
       inp.oninput = () => { const cur = byId(_lb); if (cur) { cur.comment = inp.value; _lbDirty = true; } };
       inp.onblur = () => { _lbEditCmt = false; _lbJustBlurred = true; setTimeout(() => { _lbJustBlurred = false; }, 0); paintCmtArea(ov, byId(_lb)); };
