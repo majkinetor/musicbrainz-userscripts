@@ -6,8 +6,8 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 
 <img width="650" src="./screenshots/copy.png" /> 
 <details><summary>More screenshots</summary>
-<img width="400" src="./screenshots/remove.png" /><br>
-<img width="400" src="./screenshots/remove-work.png" /><br>
+<img width="500" src="./screenshots/remove.png" /><br>
+<img width="500" src="./screenshots/remove-work.png" /><br>
 <img width="500" src="./screenshots/copy-release.png" />
 </details>
 
