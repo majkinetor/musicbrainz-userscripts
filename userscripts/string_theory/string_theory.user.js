@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.001420
+// @version      2026.7.3.004117
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg
@@ -23521,12 +23521,12 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     PROVIDER_ORDER.forEach(p => { document.getElementById(`mb-toggle-${p}`).checked = GM_getValue(`prov_${p}`, true); });
     document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
     document.getElementById('mb-show-names').checked = GM_getValue('pc:show-names', false);
-    document.getElementById('mb-respect-barcode').checked = GM_getValue('pc:respect-barcode', false);
+    document.getElementById('mb-respect-barcode').checked = GM_getValue('pc:respect-barcode', true);
     document.getElementById('mb-barcode-mode').value = GM_getValue('pc:barcode-mode', 'exists');
-    document.getElementById('mb-barcode-mode').disabled = !GM_getValue('pc:respect-barcode', false);
-    document.getElementById('mb-respect-format').checked = GM_getValue('pc:respect-format', false);
+    document.getElementById('mb-barcode-mode').disabled = !GM_getValue('pc:respect-barcode', true);
+    document.getElementById('mb-respect-format').checked = GM_getValue('pc:respect-format', true);
     document.getElementById('mb-format-mode').value = GM_getValue('pc:format-mode', 'exists');
-    document.getElementById('mb-format-mode').disabled = !GM_getValue('pc:respect-format', false);
+    document.getElementById('mb-format-mode').disabled = !GM_getValue('pc:respect-format', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     const marker = GM_getValue('pc:mb-marker', 'circle');
@@ -23848,7 +23848,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     const bcDiff = !!(url && MB_BARCODE && barcode && normBarcode(barcode) !== normBarcode(MB_BARCODE));
     // Format incompatibility (#182) — only marked when the option is on, since
     // "digital link on a physical release" is common enough to be noise otherwise.
-    const fmtDiff = !!(url && GM_getValue('pc:respect-format', false) && formatMismatch(p, format));
+    const fmtDiff = !!(url && GM_getValue('pc:respect-format', true) && formatMismatch(p, format));
 
     // Source-on-hover: tooltip on the provider name. "via MB rels", "via
     // Wikidata", "via API search · cached", etc. Replaces the visible badge
@@ -26187,9 +26187,9 @@ function flashInfo(targetEl, text, bg = '#5B82B0') {
 //   'exists' — withhold only links whose barcode is KNOWN and DIFFERS from MB's.
 //   'strict' — also withhold links we couldn't barcode-confirm (provider exposes
 //              no UPC, e.g. Apple/Spotify) — i.e. only barcode-confirmed links pass.
-// Off by default; the subtle mismatch bar still shows known mismatches regardless.
+// On by default in "if they exist" mode; the subtle mismatch bar still shows known mismatches regardless.
 function barcodeBlocks(platform) {
-    if (!GM_getValue('pc:respect-barcode', false)) return false;
+    if (!GM_getValue('pc:respect-barcode', true)) return false;
     const c = cacheGet(mbid, platform);
     if (!c || !c.url) return false;                // no found URL → nothing to withhold
     const strict = GM_getValue('pc:barcode-mode', 'exists') === 'strict';
@@ -26209,7 +26209,7 @@ function barcodeBlocks(platform) {
 // release, withheld on a physical one); Bandcamp/Discogs use their parsed
 // format. Off by default.
 function formatBlocks(platform) {
-    if (!GM_getValue('pc:respect-format', false)) return false;
+    if (!GM_getValue('pc:respect-format', true)) return false;
     const mbCats = formatCategories(MB_FORMAT);
     if (mbCats.size === 0) return false;                       // MB format unknown → can't judge
     const c = cacheGet(mbid, platform);
