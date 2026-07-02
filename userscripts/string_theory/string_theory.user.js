@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.2.212317
+// @version      2026.7.2.213449
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg
@@ -21283,7 +21283,7 @@ ${lines}
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.1","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.1","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.2","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.2","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -22491,8 +22491,8 @@ ${lines}
     function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('click', onDown, true); } }
     function onDown(e) { if (pop && !pop.contains(e.target) && !e.target.classList.contains('mmthf-pin')) { e.preventDefault(); e.stopPropagation(); closePop(); } }   // #305: swallow the outside click (see closePop note above)
     function place(el, anchor) { const r = anchor.getBoundingClientRect(); el.style.left = Math.max(6, Math.min(innerWidth - el.offsetWidth - 6, r.left)) + 'px'; el.style.top = Math.min(innerHeight - el.offsetHeight - 6, r.bottom + 4) + 'px'; }
-    function togglePop(p) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p); }
-    function openPop(p) {
+    function togglePop(p, atField) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p, atField); }
+    function openPop(p, atField) {
       const cur = captureField(p);   // entity fields capture the selected MBID (#296)
       const items = listFor(p.key);   // raw order — drag (⠿) reorders it freely, like the edit-note panel
       const el = document.createElement('div'); el.className = 'mmthf-pop'; el._key = p.key; el._anchor = p.btn;
@@ -22568,10 +22568,10 @@ ${lines}
         row.addEventListener('dragleave', () => row.classList.remove('mmthf-drop-before', 'mmthf-drop-after'));
         row.addEventListener('drop', e => { if (!_fdrag) return; e.preventDefault(); reorder(p.key, _fdrag.v, it.v, !after(e, row)); clearMarks(list); _fdrag = null; refreshState(p); reopen(p); });
       });
-      place(el, p.el);   // #345: open at the FIELD's left edge, not the pin (which sits far right on long fields)
+      el._atField = atField; place(el, atField ? p.el : p.btn);   // #345: hotkey opens at the field's left edge; a pin CLICK opens at the pin, by the cursor
       setTimeout(() => document.addEventListener('click', onDown, true), 0);
     }
-    const reopen = p => { closePop(); openPop(p); };
+    const reopen = p => { const af = pop ? pop._atField : false; closePop(); openPop(p, af); };   // keep the same anchor across a reopen
 
     const relayout = () => { syncDialog(); if (running && !raf) raf = requestAnimationFrame(() => { raf = 0; layout(); }); };
     function start() {
@@ -22587,7 +22587,7 @@ ${lines}
         if (pop) { const f = pop.querySelector('.mmthf-filter'); if (f) { e.preventDefault(); f.focus(); if (f.select) f.select(); return; } }
         const el = document.activeElement;
         const p = el && pins.find(pp => pp.el === el && el.classList && el.classList.contains('mmth-search'));
-        if (p) { e.preventDefault(); openPop(p); }
+        if (p) { e.preventDefault(); openPop(p, true); }   // hotkey → anchor to the field's left edge
       }, true);
       // #296: the release editor keeps reflowing for a few hundred ms after load, so
       // the absolutely-positioned overlays would chase the moving fields and visibly
