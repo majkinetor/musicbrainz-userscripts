@@ -29,6 +29,10 @@ const YES = process.argv.includes('--yes');
 const raw = (sha, path) => `https://raw.githubusercontent.com/${REPO}/${sha}/${path}`;
 const issueUrl = n => `https://github.com/${REPO}/issues/${n}`;
 const tagUrl = t => `https://github.com/${REPO}/releases/tag/${t}`;
+// The unified bundle: always rebuilt at release (so it's never stale vs its members), always shown
+// with an install link, and listed on top of the release notes.
+const BUNDLE = 'string_theory';
+const hasBundle = existsSync(resolve(ROOT, `userscripts/${BUNDLE}/build.mjs`));
 
 function run(cmd, args, opts = {}) { return execFileSync(cmd, args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, ...opts }).trim(); }
 const git = (...a) => run('git', a);
@@ -82,7 +86,7 @@ function changelogSection(group, tag) {
   let s = `## [${tag}](${tagUrl(tag)})\n`;
   if (group.features.length) s += `\n### Features\n\n${list(group.features)}\n`;
   if (group.fixes.length) s += `\n### Fixes\n\n${list(group.fixes)}\n`;
-  if (!group.features.length && !group.fixes.length) s += `\n- Small improvements\n`;   // changed, but no tracked issues
+  if (!group.features.length && !group.fixes.length) s += group.bundle ? `\n- Rebuilt with the latest of every bundled script\n` : `\n- Small improvements\n`;   // changed, but no tracked issues
   return s;
 }
 function updateChangelog(group, tag) {
@@ -102,7 +106,8 @@ function updateChangelog(group, tag) {
 
 function releaseBody(groups, changed, tag, sha) {
   const lines = [];   // no leading "# <tag>" — GitHub already shows the release title
-  const dirs = [...new Set([...changed, ...Object.keys(groups)])].sort();
+  const dirs = [...new Set([...changed, ...Object.keys(groups)])]
+    .sort((a, b) => a === BUNDLE ? -1 : b === BUNDLE ? 1 : a.localeCompare(b));   // bundle on top
   for (const dir of dirs) {
     const g = groups[dir]; const path = (g && g.path) || userJsPath(dir);
     const name = (g && g.name) || (path && scriptDisplayName(path)) || dir;
@@ -113,7 +118,7 @@ function releaseBody(groups, changed, tag, sha) {
     if (changed.has(dir) && path) lines.push(`[Install — pinned to this release](${raw(sha, path)}) | [Install — latest (auto-updates)](${raw('stable', path)})`, '');
     if (g && g.features.length) { lines.push('### Features', ''); g.features.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
     if (g && g.fixes.length) { lines.push('### Fixes', ''); g.fixes.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
-    if (g && !g.features.length && !g.fixes.length) { lines.push('- Small improvements', ''); }   // changed, but no tracked issues
+    if (g && !g.features.length && !g.fixes.length) { lines.push(g.bundle ? '- Rebuilt with the latest of every bundled script' : '- Small improvements', ''); }   // changed, but no tracked issues
   }
   return lines.join('\n');
 }
@@ -127,6 +132,13 @@ function main() {
   for (const dir of changed) { if (!groups[dir]) { const path = userJsPath(dir); groups[dir] = { dir, name: (path && scriptDisplayName(path)) || dir, path, features: [], fixes: [] }; } }
   const dirs = [...new Set([...Object.keys(groups), ...changed])];
   if (!dirs.length) { console.log('Nothing to publish: no unreleased issues and no changed scripts.'); return; }
+  // The bundle rides along on every release: it aggregates the others, so it's rebuilt and always gets
+  // an install link. (Added after the "nothing to publish" guard so it never triggers a release alone.)
+  if (hasBundle) {
+    changed.add(BUNDLE);
+    const path = userJsPath(BUNDLE);
+    groups[BUNDLE] = { dir: BUNDLE, name: scriptDisplayName(path), path, features: [], fixes: [], bundle: true };
+  }
   const tag = todayTag();
 
   console.log(`\n=== publish ${YES ? '(EXECUTE)' : '(dry run — pass --yes to execute)'} ===`);
@@ -145,6 +157,7 @@ function main() {
   // bump each linked (changed) script's @version to the release date — a script edited days before the
   // release would otherwise ship a stale-dated version that differs from the tag.
   for (const dir of changed) {
+    if (dir === BUNDLE) continue;   // the bundle owns its own build-stamp @version (set by build.mjs)
     const path = userJsPath(dir); if (!path) continue;
     const file = resolve(ROOT, path), cur = readFileSync(file, 'utf8');
     const cm = cur.match(/@version\s+(\S+)/), curV = cm ? cm[1] : '?';
@@ -166,6 +179,9 @@ function main() {
   if (git('status', '--porcelain', '--untracked-files=no')) throw new Error('working tree has uncommitted changes');
   for (const e of edits) writeFileSync(e.file, e.content);
   git('add', ...edits.map(e => e.file));
+  // Rebuild the bundle from the just-written (version-bumped) members so the release ships a current
+  // String Theory, then stage it. (The pre-commit hook also rebuilds it — this makes it explicit.)
+  if (hasBundle) { run('node', [`userscripts/${BUNDLE}/build.mjs`]); git('add', `userscripts/${BUNDLE}/string_theory.user.js`); }
   git('commit', '-m', `changelog: release ${tag}`);
   git('push', 'github', 'main');
   git('checkout', 'stable');
