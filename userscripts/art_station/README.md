@@ -6,7 +6,7 @@ A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reor
     - Or via bundle: [String Theory](../string_theory/README.md)
     - [picker](./as_picker/README.md) helper script: [install](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/art_station/as_picker/as_picker.user.js)
 - [Changelog](./CHANGELOG.md)
-- [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Platform+Check)
+- [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Art+Station)
 
 ![](./screens/screenshot.png)
 
