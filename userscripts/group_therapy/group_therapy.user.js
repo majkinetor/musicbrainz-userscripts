@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.2
+// @version      2026.7.2.1
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -802,5 +802,10 @@
     try { W.__groupTherapy = { VERSION, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, fetchReleaseRels, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE }; } catch (e) {}
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
   }
-  if (document.body) boot(); else document.addEventListener('DOMContentLoaded', boot, { once: true });
+  // Self-guard the page: in the String Theory bundle this script runs on EVERY union-matched URL
+  // (Apollo's /release/*/edit, /artist/*, …), so its hover-highlight etc. would bleed onto other pages.
+  // Standalone the @match restricts it; the bundle doesn't — so only boot on the relationship editor.
+  if (/\/release\/[^/]+\/edit-relationships\/?$/i.test(location.pathname)) {
+    if (document.body) boot(); else document.addEventListener('DOMContentLoaded', boot, { once: true });
+  }
 })();
