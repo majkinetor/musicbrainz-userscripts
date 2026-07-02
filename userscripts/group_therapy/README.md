@@ -4,11 +4,11 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 
 - Install: [latest](./group_therapy.user.js)
 
-<img width="1200" src="./screenshots/copy.png" /> 
+<img width="650" src="./screenshots/copy.png" /> 
 <details><summary>More screenshots</summary>
-<img width="1200" src="./screenshots/remove.png" /><br>
-<img width="1200" src="./screenshots/remove-work.png" /><br>
-<img width="1200" src="./screenshots/copy-release.png" />
+<img width="400" src="./screenshots/remove.png" /><br>
+<img width="400" src="./screenshots/remove-work.png" /><br>
+<img width="500" src="./screenshots/copy-release.png" />
 </details>
 
 ## Features
