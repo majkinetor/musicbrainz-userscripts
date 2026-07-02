@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.26
+// @version      2026.7.1.27
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.26';
+  const VERSION = '2026.7.1.27';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -336,10 +336,13 @@
       .gt-pop .gt-pop-hdr{padding:4px 8px 6px;font-size:11px;font-weight:700;letter-spacing:.02em;color:#6a7482;text-transform:uppercase}
       .gt-pop .gt-pop-list{max-height:44vh;overflow-y:auto}
       .gt-pop .gt-pop-note{padding:8px;color:#8892a0;font-size:12px}
-      .gt-pop .gt-pop-rel{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:none;border-radius:5px;padding:6px 9px;cursor:pointer;color:inherit;font:inherit}
+      .gt-pop .gt-pop-rel{display:flex;align-items:center;gap:4px;border-radius:5px}
       .gt-pop .gt-pop-rel:hover{background:#eef1f6}
+      .gt-pop .gt-pop-rel-info{flex:1;min-width:0;box-sizing:border-box;text-align:left;background:none;border:none;border-radius:5px;padding:6px 9px;cursor:pointer;color:inherit;font:inherit}
       .gt-pop .gt-pop-rel-t{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .gt-pop .gt-pop-rel-m{display:block;font-size:11px;color:#8892a0;margin-top:1px}
+      .gt-pop .gt-pop-rel-open{flex:none;text-decoration:none;color:#8892a0;font-size:14px;line-height:1;padding:6px 9px;border-radius:5px}
+      .gt-pop .gt-pop-rel-open:hover{background:#dfe4ea;color:#2e6da4}
       .gt-pop .gt-pop-row{display:flex;gap:6px;padding:6px 6px 4px}
       .gt-pop .gt-pop-tf{flex:1;min-width:0;padding:5px 8px;border:1px solid #cfd4da;border-radius:5px;font:inherit}
       .gt-pop .gt-pop-go{flex:none;background:#2e9e5b;color:#fff;border:none;border-radius:5px;padding:5px 12px;cursor:pointer;font:600 13px inherit}
@@ -556,13 +559,20 @@
       list.textContent = '';
       if (!rels.length) { list.appendChild(el('div', 'gt-pop-note', 'No other releases in this group')); return; }
       for (const r of rels) {
-        const b = el('button', 'gt-pop-rel');
-        b.appendChild(el('span', 'gt-pop-rel-t', r.title + (r.disambiguation ? ` (${r.disambiguation})` : '')));
+        const b = el('div', 'gt-pop-rel');
+        const info = el('button', 'gt-pop-rel-info');
+        info.appendChild(el('span', 'gt-pop-rel-t', r.title + (r.disambiguation ? ` (${r.disambiguation})` : '')));
         const fmt = [...new Set((r.media || []).map(m => m.format).filter(Boolean))].join(' + ');
         const tracks = (r.media || []).reduce((s, m) => s + (m['track-count'] || 0), 0);
         const meta = [r.date, r.country, fmt, tracks ? tracks + ' tracks' : ''].filter(Boolean).join(' · ');
-        if (meta) b.appendChild(el('span', 'gt-pop-rel-m', meta));
-        b.onclick = () => doCopyFrom(r.id);
+        if (meta) info.appendChild(el('span', 'gt-pop-rel-m', meta));
+        info.title = 'Copy this release’s credits onto this one';
+        info.onclick = () => doCopyFrom(r.id);
+        const open = el('a', 'gt-pop-rel-open', '↗');   // ↗ open the release in a new tab to inspect first
+        open.href = '/release/' + r.id; open.target = '_blank'; open.rel = 'noopener';
+        open.title = 'Open this release in a new tab';
+        open.addEventListener('click', ev => ev.stopPropagation());
+        b.appendChild(info); b.appendChild(open);
         list.appendChild(b);
       }
     } catch (e) { list.textContent = ''; list.appendChild(el('div', 'gt-pop-note', 'Could not load release group')); }
