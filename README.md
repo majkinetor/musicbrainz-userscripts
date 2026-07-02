@@ -4,6 +4,9 @@ This repository contains [userscripts](https://musicbrainz.org/doc/Guides/Usersc
 
 See each script's README for detailed instructions, screenshots and videos:
 
+[String Theory](./userscripts/string_theory/README.md) <img src="./userscripts/string_theory/icon.svg" align="left" width="32"><br>
+One-file bundle of most scripts below (all except the Art Station picker, Scribe and discogs_credits) — install it instead of them individually
+
 [Apollo Editor](./userscripts/apollo_editor/README.md) <img src="./userscripts/apollo_editor/icon.svg" align="left" width="32"><br>
 UI and tools for advanced adding and editing of MusicBrainz release
 

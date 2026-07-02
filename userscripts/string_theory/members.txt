@@ -1,0 +1,20 @@
+# String Theory — the userscripts bundled into string_theory.user.js.
+#
+# One folder name per line (a directory under userscripts/). Blank lines and
+# everything after a '#' are ignored. Add or remove a line to change what the
+# bundle contains, then rebuild:  node userscripts/string_theory/build.mjs
+# (the pre-commit hook rebuilds automatically when this file — or any listed
+# script — is committed).
+#
+# Intentionally NOT bundled:
+#   as_picker       — Art Station's picker helper (separate companion)
+#   scribe          — separate workflow
+#   discogs_credits — parallel twin of credit_hoarder; would double-run
+
+apollo_editor
+art_station
+credit_hoarder
+group_therapy
+isrc_scout
+mammoth
+platform_check
