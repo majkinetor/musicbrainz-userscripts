@@ -2,10 +2,11 @@
 
 This repository contains [userscripts](https://musicbrainz.org/doc/Guides/Userscripts) to be used with [MusicBrainz](https://musicbrainz.org). See each script's README for detailed instructions, screenshots and videos. 
 
-[String Theory](./userscripts/string_theory/README.md) <img src="./userscripts/string_theory/icon.svg" align="left" width="32"><br>
+> [!IMPORTANT]
+>  [String Theory](./userscripts/string_theory/README.md) <img src="./userscripts/string_theory/icon.svg" align="left" width="32"><br>
 One-file bundle of all of the scripts in section bellow — install it *instead* of individuall userscripts
 
----
+<br>
 
 [Apollo Editor](./userscripts/apollo_editor/README.md) <img src="./userscripts/apollo_editor/icon.svg" align="left" width="32"><br>
 UI and tools for advanced adding and editing of MusicBrainz release
