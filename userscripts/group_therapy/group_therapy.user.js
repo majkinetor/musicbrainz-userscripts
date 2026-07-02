@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.29
+// @version      2026.7.1.30
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.29';
+  const VERSION = '2026.7.1.30';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -371,10 +371,11 @@
       .gt-pop .gt-pop-rel-m{display:block;font-size:11px;color:#8892a0;margin-top:1px}
       .gt-pop .gt-pop-rel-open{flex:none;text-decoration:none;color:#8892a0;font-size:14px;line-height:1;padding:6px 9px;border-radius:5px}
       .gt-pop .gt-pop-rel-open:hover{background:#dfe4ea;color:#2e6da4}
-      .gt-pop .gt-pop-row{display:flex;gap:6px;padding:6px 6px 4px}
-      .gt-pop .gt-pop-tf{flex:1;min-width:0;padding:5px 8px;border:1px solid #cfd4da;border-radius:5px;font:inherit}
-      .gt-pop .gt-pop-go{flex:none;background:#2e9e5b;color:#fff;border:none;border-radius:5px;padding:5px 12px;cursor:pointer;font:600 13px inherit}
-      .gt-pop .gt-pop-go:hover{background:#28864d}
+      .gt-pop .gt-pop-add{padding:4px 6px 6px}
+      .gt-pop .gt-pop-add-btn{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:none;border-radius:5px;padding:6px 9px;cursor:pointer;color:#2e6da4;font:inherit}
+      .gt-pop .gt-pop-add-btn:hover{background:#eef1f6}
+      .gt-pop .gt-pop-tf{display:block;width:100%;box-sizing:border-box;min-width:0;padding:6px 8px;border:1px solid #4a90d9;border-radius:5px;font:inherit;outline:none}
+      .gt-pop .gt-hidden{display:none}
       /* subtle discoverability: the controls Group Therapy adds a right-click menu to (recording/work
          checkboxes → copy/move; the × → group delete) get a faint green accent, and a clearer ring on hover */
       tr.track input.recording, tr.track input.work { accent-color:#2e9e5b; }
@@ -611,17 +612,21 @@
     popEl.appendChild(el('div', 'gt-pop-hdr', 'Copy release credits from…'));
     const list = el('div', 'gt-pop-list'); list.appendChild(el('div', 'gt-pop-note', 'Loading release group…')); popEl.appendChild(list);
     popEl.appendChild(el('div', 'gt-sep'));
-    const row = el('div', 'gt-pop-row');
-    const inp = el('input', 'gt-pop-tf'); inp.type = 'text'; inp.placeholder = 'or paste a release URL / MBID';
-    const go = el('button', 'gt-pop-go', 'Copy');
-    const fromInput = () => { const m = (inp.value || '').match(GID_RE); if (!m) { toast('No release MBID in that text'); return; } doCopyFrom(m[0]); };
-    go.onclick = fromInput; inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fromInput(); } });
-    row.appendChild(inp); row.appendChild(go); popEl.appendChild(row);
+    // paste-to-copy: a (+) that unrolls into a field and acts immediately on paste — no Copy button
+    // (same idiom as Apollo's link/artist add + ISRC Scout). Enter is a fallback for typed input.
+    const add = el('div', 'gt-pop-add');
+    const plus = el('button', 'gt-pop-add-btn'); plus.type = 'button'; plus.textContent = '＋ from a release URL / MBID';
+    const inp = el('input', 'gt-pop-tf gt-hidden'); inp.type = 'text'; inp.placeholder = 'paste a release URL / MBID…';
+    const fromInput = () => { const m = (inp.value || '').match(GID_RE); if (m) doCopyFrom(m[0]); };
+    plus.onclick = () => { plus.classList.add('gt-hidden'); inp.classList.remove('gt-hidden'); try { inp.focus(); } catch (e) {} };
+    inp.addEventListener('paste', () => setTimeout(fromInput, 0));   // wait for the pasted text to land in .value
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fromInput(); } });
+    add.appendChild(plus); add.appendChild(inp); popEl.appendChild(add);
     document.body.appendChild(popEl);
     const a = anchor.getBoundingClientRect(), r = popEl.getBoundingClientRect();
     popEl.style.left = Math.max(8, Math.min(a.left, window.innerWidth - r.width - 8)) + 'px';
     popEl.style.top = Math.min(a.bottom + 4, window.innerHeight - r.height - 8) + 'px';
-    setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); try { inp.focus(); } catch (e) {} }, 0);
+    setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); }, 0);
     loadRgReleases(list);
   }
   function openAboutPopover(anchor) {
