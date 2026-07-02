@@ -3,7 +3,7 @@
 This repository contains [userscripts](https://musicbrainz.org/doc/Guides/Userscripts) to be used with [MusicBrainz](https://musicbrainz.org). See each script's README for detailed instructions, screenshots and videos. 
 
 [String Theory](./userscripts/string_theory/README.md) <img src="./userscripts/string_theory/icon.svg" align="left" width="32"><br>
-One-file bundle of most scripts below — install it  *instead* of individuall userscripts
+One-file bundle of all of the scripts in section bellow — install it *instead* of individuall userscripts
 
 ---
 
@@ -27,6 +27,8 @@ Remembers your edit notes and options and lets you save and recall them
 
 [Platform Check](./userscripts/platform_check/README.md)<img src="./userscripts/platform_check/icon.svg" align="left" width="32"><br>
 Find and verify URLs for a particular MusicBrainz release on online platforms
+
+---
 
 [Scribe](./userscripts/scribe/README.md) <img src="./userscripts/scribe/scribe.svg" align="left" width="32"><br>
 Edit MusicBrainz in your real editor (VS Code, Vim, …)
