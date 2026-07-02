@@ -1,6 +1,6 @@
 # String Theory <img src="./icon.svg" align="left" width="46" height="46">
 
-One userscript to install them all. **String Theory** is a build-time bundle of most of this repo's MusicBrainz userscripts, so you can install a **single file** and get them together instead of adding each one separately.
+**String Theory** is a build-time bundle of most of this repo's MusicBrainz userscripts, so you can install a **single userscript** instead of adding each one separately. Each retains its own settings and behaviour.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/string_theory/string_theory.user.js)
 
@@ -8,8 +8,6 @@ One userscript to install them all. **String Theory** is a build-time bundle of 
 > Install String Theory **instead of** the individual scripts it contains — never both, or each would run twice on the pages they share.
 
 ## What's included
-
-The bundled scripts are listed in [`members.txt`](./members.txt), one folder per line — edit that file to add or remove one, then rebuild. Currently everything in the repo **except** the [Art Station picker](../art_station/as_picker) helper, [Scribe](../scribe), and `discogs_credits` (the parallel twin of Credit Hoarder, which would double-run):
 
 | Script | What it does |
 | --- | --- |
@@ -21,7 +19,8 @@ The bundled scripts are listed in [`members.txt`](./members.txt), one folder per
 | [Mammoth](../mammoth) | Remember & recall edit notes and field values |
 | [Platform Check](../platform_check) | Find/verify a release's URLs on online platforms |
 
-Each retains its own settings and behaviour — String Theory just ships them in one file.
+
+The bundled scripts are listed in [`members.txt`](./members.txt).
 
 ## How it's built
 
