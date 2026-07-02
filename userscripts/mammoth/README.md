@@ -128,6 +128,11 @@ To get Mammoth baby on edit utilize `mmth-pin` class:
 - `data-mmth-key` (optional) — storage key; fields sharing a key share their saved values. Omit it and Mammoth derives one from the element's id/name/label (keyFor, :996).
 - `data-mmth-label` (optional) — the popover title.
 - `data-mmth-dx="<px>"` (optional) — nudge the pin (e.g. past a custom affordance).
+- add `mmth-search` (alongside `mmth-pin`) to give **that** field's popover a filter box for its saved values — a per-field opt-in, independent of the global *Show note search* setting. `Ctrl`/`Cmd`+`,` while the field is focused opens the popover and focuses the filter.
+
+  ```html
+  <input class="mmth-pin mmth-search" data-mmth-key="my-comment" data-mmth-label="Comment">
+  ```
 
 Works on `<input>`, `<select>`, `<textarea>`. Stored under its own key mammoth-fields:data (separate from edit-note history).
 
