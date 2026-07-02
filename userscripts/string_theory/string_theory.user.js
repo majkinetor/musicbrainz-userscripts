@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.2.225534
+// @version      2026.7.3.001420
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg
@@ -21288,7 +21288,7 @@ ${lines}
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.5","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.5","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.6","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.6","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -22441,7 +22441,7 @@ ${lines}
       setReserve(p, items.length > 0);
       if (!items.length) { p.bar.style.display = 'none'; return; }
       const seg = document.createElement('div'); seg.className = 'mmthf-seg';
-      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); focusField(p.el); }); seg.appendChild(b); });
+      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${it.label} → click to set`; b.addEventListener('click', e => { e.preventDefault(); writeField(p.el, it); }); seg.appendChild(b); });
       p.bar.appendChild(seg);
     }
     function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) writeField(p.el, d); }
@@ -22530,7 +22530,7 @@ ${lines}
           if (e.key === 'Escape') { e.stopPropagation(); if (fin.value) { fin.value = ''; applyFilter(); } else closePop(); return; }
           if (e.key === 'ArrowDown') { e.preventDefault(); if (rows.length) { hl = (hl + 1) % rows.length; paint(); } return; }
           if (e.key === 'ArrowUp') { e.preventDefault(); if (rows.length) { hl = (hl - 1 + rows.length) % rows.length; paint(); } return; }
-          if (e.key === 'Enter') { e.preventDefault(); const r = rows[hl] || rows[0]; if (r) { writeField(p.el, items[+r.dataset.i]); closePop(); focusField(p.el); } return; }
+          if (e.key === 'Enter') { e.preventDefault(); const r = rows[hl] || rows[0]; if (r) { writeField(p.el, items[+r.dataset.i]); closePop(); focusField(p.el); } return; }   // keyboard apply → refocus the field
         });
         applyFilter();   // highlight the first item so Enter works immediately
         setTimeout(() => { try { fin.focus(); } catch (e) {} }, 0);
@@ -22560,7 +22560,7 @@ ${lines}
           if (e.target.closest('.mmthf-star')) { togglePin(p.key, it.v); refreshState(p); reopen(p); return; }
           if (e.target.closest('.mmthf-def')) { setDefault(p.key, it.v); applyDefault(p); reopen(p); return; }
           if (e.target.closest('.mmthf-del')) { forgetValue(p.key, it.v); refreshState(p); reopen(p); return; }
-          writeField(p.el, it); closePop(); focusField(p.el);
+          writeField(p.el, it); closePop();   // don't refocus the field on apply — it re-triggers autocomplete
         });
         const grab = row.querySelector('.mmthf-grab');
         grab.addEventListener('dragstart', e => { _fdrag = { v: it.v }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'row'); } catch (x) {} row.classList.add('mmthf-dragging'); });
