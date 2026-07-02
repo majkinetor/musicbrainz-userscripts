@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.2.213449
+// @version      2026.7.2.220637
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg
@@ -6265,7 +6265,7 @@
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station","namespace":"https://musicbrainz.org/","version":"2026.7.2","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station","namespace":"https://musicbrainz.org/","version":"2026.7.2","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station","namespace":"https://musicbrainz.org/","version":"2026.7.2.1","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station","namespace":"https://musicbrainz.org/","version":"2026.7.2.1","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -6971,7 +6971,7 @@
       <div class="as-dmeta">
         <div class="as-dlbl">Types</div>
         <div class="as-dtypes">${types}</div>
-        <input class="as-dcmt mmth-pin mmth-search" data-mmth-key="art-station-comment" data-mmth-label="Comment" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets" spellcheck="false">
+        <input class="as-dcmt mmth-pin" data-mmth-key="art-station-comment" data-mmth-label="Comment" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets" spellcheck="false">
       </div>
     </div>`;
   }
@@ -21283,7 +21283,7 @@ ${lines}
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.2","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.2","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.3","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth","namespace":"https://musicbrainz.org/","version":"2026.7.2.3","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -21703,7 +21703,6 @@ ${lines}
         <div class="mmth-cfgsec">Edit note settings</div>
         <label title="Keep saved notes &amp; history separate per edit-note type (release / artist / recording / …)"><input type="checkbox" class="mmth-s-scope"> Scope per resource</label>
         <label><input type="checkbox" class="mmth-s-help"> Hide help text</label>
-        <label><input type="checkbox" class="mmth-s-search"> Show note search</label>
         <label>Sort saved notes
           <select class="mmth-s-sort"><option value="manual">Manual</option><option value="uses">Most used</option><option value="recent">Recent</option></select>
         </label>
@@ -21743,7 +21742,6 @@ ${lines}
     const help = p.querySelector('.mmth-s-help'); help.checked = !!SET.hideHelp;
     const ins = p.querySelector('.mmth-s-ins'); ins.value = SET.defaultInsert;
     const nl = p.querySelector('.mmth-s-nl'); nl.checked = SET.appendNewline !== false;
-    const search = p.querySelector('.mmth-s-search'); search.checked = SET.noteSearch === true;
     const sort = p.querySelector('.mmth-s-sort'); sort.value = SET.noteSort || 'manual';
     const btnc = p.querySelector('.mmth-s-btnchars'); btnc.value = SET.btnChars || 24;
     const rows = p.querySelector('.mmth-s-rows'); rows.value = SET.visibleRows;
@@ -21751,7 +21749,6 @@ ${lines}
     help.onchange = () => { SET.hideHelp = help.checked; saveSet(); };
     ins.onchange = () => { SET.defaultInsert = ins.value; saveSet(); };
     nl.onchange = () => { SET.appendNewline = nl.checked; saveSet(); };
-    search.onchange = () => { SET.noteSearch = search.checked; saveSet(); };
     sort.onchange = () => { SET.noteSort = sort.value; persistSet(); render(); };
     btnc.onchange = () => { SET.btnChars = Math.max(4, Math.min(80, parseInt(btnc.value, 10) || 24)); btnc.value = SET.btnChars; saveSet(); babyMammoths.relabel(); };
     rows.onchange = () => { SET.visibleRows = Math.max(1, Math.min(30, parseInt(rows.value, 10) || 6)); rows.value = SET.visibleRows; saveSet(); };
@@ -21865,7 +21862,7 @@ ${lines}
     const inst = { ta, list, side, pinbar, filterRow, view: 'saved', cycId: null, filter: '', viewItems: [] };
     instances.push(inst);
 
-    // #304: search box + N/total count (shown only when the "Show note search" option is on)
+    // search box + N/total count (always shown)
     const fInput = document.createElement('input'); fInput.type = 'text'; fInput.className = 'mmth-filter'; fInput.placeholder = 'Search notes…';
     fInput.addEventListener('input', () => { inst.filter = fInput.value; inst.cycId = null; renderInst(inst); });
     fInput.addEventListener('keydown', e => {
@@ -21979,13 +21976,11 @@ ${lines}
     if (inst.tabs) { inst.tabs.saved.classList.toggle('on', inst.view === 'saved'); inst.tabs.history.classList.toggle('on', inst.view === 'history'); }
     const saved = inst.view === 'saved';
     renderPinbar(inst);
-    // #304: search is opt-in ("Show note search"); when off, no search row and no filtering
-    const searchOn = SET.noteSearch === true;
-    inst.filterRow.style.display = searchOn ? 'flex' : 'none';
-    if (!searchOn && inst.filter) { inst.filter = ''; if (inst.filterInput) inst.filterInput.value = ''; }
-    // #304: sort (Saved, from config) then search-filter on the full note text; show N/total
+    // the search box is always shown
+    inst.filterRow.style.display = 'flex';
+    // sort (Saved, from config) then search-filter on the full note text; show N/total
     const all = saved ? sortedSaved() : DATA.history;
-    const q = searchOn ? (inst.filter || '').trim().toLowerCase() : '';
+    const q = (inst.filter || '').trim().toLowerCase();
     const items = q ? all.filter(it => it.text.toLowerCase().includes(q)) : all;
     inst.viewItems = items;   // Ctrl+↑/↓ and Enter-in-search use exactly what's shown
     if (inst.countEl) inst.countEl.textContent = q ? (items.length + ' / ' + all.length) : (all.length ? String(all.length) : '');
@@ -22176,7 +22171,7 @@ ${lines}
     let visible = onScreen();
     if (!visible.length) {
       // search box is hidden because the panel is minimized — restore and retry
-      if (SET.minimized && SET.noteSearch === true) { setMinimized(false); restoredFromMin = true; visible = onScreen(); }
+      if (SET.minimized) { setMinimized(false); restoredFromMin = true; visible = onScreen(); }
       if (!visible.length) return;
     }
     const wrap = e.target && e.target.closest && e.target.closest('.mmth-wrap');
@@ -22503,9 +22498,8 @@ ${lines}
         const ind = `<span class="mmthf-ind">${it.default ? '<span>◉</span>' : ''}${it.pinned ? '<span>★</span>' : ''}</span>`;
         return `<div class="mmthf-row" data-i="${i}"><span class="mmthf-rtxt">${esc(it.label)}</span>${ind}${acts}</div>`;
       };
-      // #345: per-baby opt-in — a field marked class="mmth-search" gets a filter box in its popover,
-      // independent of the global "Show note search" setting (which only governs the edit-note panel).
-      const searchOn = p.el.classList.contains('mmth-search') && items.length > 1;
+      // the filter box is always shown (whenever there's a saved value to filter)
+      const searchOn = items.length > 0;
       el.innerHTML =
         `<div class="mmthf-ft">
            <button class="mmthf-fb mmthf-save" ${cur.v ? '' : 'aria-disabled="true"'} title="${cur.v ? 'Save current value: ' + esc(cur.label) : 'Field is empty'}">＋</button>
@@ -22580,13 +22574,13 @@ ${lines}
       const on = (t, ev, fn, cap) => { t.addEventListener(ev, fn, cap); listeners.push([t, ev, fn, cap]); };
       on(window, 'scroll', relayout, true); on(window, 'resize', relayout, false);
       ['focusin', 'focusout', 'click', 'input', 'keyup'].forEach(ev => on(document, ev, relayout, true));
-      // #345: Ctrl/Cmd+, — if a baby popover with a filter is open, focus it; else if a searchable
-      // (mmth-search) baby field is focused, open its popover (which auto-focuses the filter).
+      // Ctrl/Cmd+, — if a baby popover is open, focus its filter; else if a baby field is focused, open
+      // its popover at the field's left edge (which auto-focuses the filter).
       on(document, 'keydown', e => {
         if (e.key !== ',' || !(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
         if (pop) { const f = pop.querySelector('.mmthf-filter'); if (f) { e.preventDefault(); f.focus(); if (f.select) f.select(); return; } }
         const el = document.activeElement;
-        const p = el && pins.find(pp => pp.el === el && el.classList && el.classList.contains('mmth-search'));
+        const p = el && pins.find(pp => pp.el === el);
         if (p) { e.preventDefault(); openPop(p, true); }   // hotkey → anchor to the field's left edge
       }, true);
       // #296: the release editor keeps reflowing for a few hundred ms after load, so
