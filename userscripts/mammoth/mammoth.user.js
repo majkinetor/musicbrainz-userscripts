@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.2.3
+// @version      2026.7.2.4
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -1209,8 +1209,9 @@
       if (pins.some(p => p.dead)) pins = pins.filter(p => !p.dead);
     }
 
-    function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('click', onDown, true); } }
+    function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('click', onDown, true); document.removeEventListener('keydown', onKey, true); } }
     function onDown(e) { if (pop && !pop.contains(e.target) && !e.target.classList.contains('mmthf-pin')) { e.preventDefault(); e.stopPropagation(); closePop(); } }   // #305: swallow the outside click (see closePop note above)
+    function onKey(e) { if (pop && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closePop(); } }   // #346: ESC kills the popover (and doesn't leak to MB / the dialog)
     function place(el, anchor) { const r = anchor.getBoundingClientRect(); el.style.left = Math.max(6, Math.min(innerWidth - el.offsetWidth - 6, r.left)) + 'px'; el.style.top = Math.min(innerHeight - el.offsetHeight - 6, r.bottom + 4) + 'px'; }
     function togglePop(p, atField) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p, atField); }
     function openPop(p, atField) {
@@ -1289,7 +1290,7 @@
         row.addEventListener('drop', e => { if (!_fdrag) return; e.preventDefault(); reorder(p.key, _fdrag.v, it.v, !after(e, row)); clearMarks(list); _fdrag = null; refreshState(p); reopen(p); });
       });
       el._atField = atField; place(el, atField ? p.el : p.btn);   // #345: hotkey opens at the field's left edge; a pin CLICK opens at the pin, by the cursor
-      setTimeout(() => document.addEventListener('click', onDown, true), 0);
+      setTimeout(() => { document.addEventListener('click', onDown, true); document.addEventListener('keydown', onKey, true); }, 0);
     }
     const reopen = p => { const af = pop ? pop._atField : false; closePop(); openPop(p, af); };   // keep the same anchor across a reopen
 
