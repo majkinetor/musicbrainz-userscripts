@@ -8,6 +8,8 @@
 
 > [!IMPORTANT]
 > Install String Theory **instead of** the individual scripts it contains — never both, or each would run twice on the pages they share.
+>
+> Any configuration stored with this script is not visible by the standalone variants and vice versa
 
 ## What's included
 
