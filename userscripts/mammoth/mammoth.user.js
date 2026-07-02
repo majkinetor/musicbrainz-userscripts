@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.2.4
+// @version      2026.7.2.5
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -374,8 +374,9 @@
   // dismiss can never double as activating something below.
   // ── popovers (settings + syntax help) ────────────────────────────────────────
   let pop = null;
-  function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('click', onPopDown, true); } }
+  function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('click', onPopDown, true); document.removeEventListener('keydown', onPopKey, true); } }
   function onPopDown(e) { if (pop && !pop.contains(e.target) && !e.target.closest('.mmth-pop-anchor')) { e.preventDefault(); e.stopPropagation(); closePop(); } }
+  function onPopKey(e) { if (pop && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closePop(); } }   // #347: ESC closes the settings / syntax popup
   function placePop(p, anchor) {
     const W = p.offsetWidth, H = p.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
     const r = anchor && anchor.getBoundingClientRect();
@@ -394,7 +395,7 @@
       }
       p.style.left = left + 'px'; p.style.top = Math.max(6, top) + 'px';
     }
-    setTimeout(() => document.addEventListener('click', onPopDown, true), 0);
+    setTimeout(() => { document.addEventListener('click', onPopDown, true); document.addEventListener('keydown', onPopKey, true); }, 0);
   }
   // #304: drag the popover by its header (so it can be moved out of the way).
   function makeDraggable(popEl, handle) {
@@ -1211,13 +1212,13 @@
 
     function closePop() { if (pop) { pop.remove(); pop = null; document.removeEventListener('click', onDown, true); document.removeEventListener('keydown', onKey, true); } }
     function onDown(e) { if (pop && !pop.contains(e.target) && !e.target.classList.contains('mmthf-pin')) { e.preventDefault(); e.stopPropagation(); closePop(); } }   // #305: swallow the outside click (see closePop note above)
-    function onKey(e) { if (pop && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closePop(); } }   // #346: ESC kills the popover (and doesn't leak to MB / the dialog)
+    function onKey(e) { if (pop && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); const f = pop._field; closePop(); if (f) focusField(f); } }   // #346: ESC kills the popover (no leak to MB) and returns focus to the field
     function place(el, anchor) { const r = anchor.getBoundingClientRect(); el.style.left = Math.max(6, Math.min(innerWidth - el.offsetWidth - 6, r.left)) + 'px'; el.style.top = Math.min(innerHeight - el.offsetHeight - 6, r.bottom + 4) + 'px'; }
     function togglePop(p, atField) { const open = pop && pop._key === p.key && pop._anchor === p.btn; closePop(); if (open) return; openPop(p, atField); }
     function openPop(p, atField) {
       const cur = captureField(p);   // entity fields capture the selected MBID (#296)
       const items = listFor(p.key);   // raw order — drag (⠿) reorders it freely, like the edit-note panel
-      const el = document.createElement('div'); el.className = 'mmthf-pop'; el._key = p.key; el._anchor = p.btn;
+      const el = document.createElement('div'); el.className = 'mmthf-pop'; el._key = p.key; el._anchor = p.btn; el._field = p.el;
       const rowHtml = (it, i) => {
         const star = `<button class="mmthf-ra mmthf-star" title="${it.pinned ? 'Unpin from buttons' : 'Pin as a button'}">${it.pinned ? '★' : '☆'}</button>`;
         const def = `<button class="mmthf-ra mmthf-def" title="${it.default ? 'Default — auto-fills an empty field (click to unset)' : 'Make default (auto-fills an empty field)'}">${it.default ? '◉' : '◯'}</button>`;
