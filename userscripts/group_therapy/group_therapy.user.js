@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.28
+// @version      2026.7.1.29
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -16,7 +16,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.28';
+  const VERSION = '2026.7.1.29';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -86,7 +86,8 @@
   const GT_HOMEPAGE = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md';
   function editNoteSig() {
     let s = {}; try { if (typeof GM_info !== 'undefined' && GM_info.script) s = GM_info.script; } catch (e) {}
-    return `${s.name || 'Group Therapy'} v${s.version || VERSION} - ${s.homepageURL || s.homepage || GT_HOMEPAGE}`;
+    const name = (s.name || 'Group Therapy').split(/\s+[—–-]\s+/)[0].trim();   // drop the "— MusicBrainz relationship helper" suffix
+    return `${name} by ${s.author || 'majkinetor'} v${s.version || VERSION} - ${s.homepageURL || s.homepage || GT_HOMEPAGE}`;
   }
   // Stamp our signature into MB's edit-note field and, under it, an accumulating list of what GT did
   // ("Copied credits from track 4 to tracks 1–5", "Removed guitar (14)"). Any note that preceded ours
@@ -569,7 +570,7 @@
     const chosen = () => entries.filter(e => !e.cb || e.cb.checked).map(e => e.rel);
     const fmt = releaseFormat(), exRoles = formatExcludeRolesFor(fmt); let excluded = 0;
     if (exRoles.length) entries.forEach(e => { const rn = ltName(e.rel.linkTypeID).toLowerCase(); if (exRoles.some(k => rn.includes(k))) { e.checked = false; e.text += ` — off (not typical for ${fmt})`; excluded++; } });
-    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, [here])) markUsed(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} from ${srcLabel ? `“${srcLabel}”` : gid}`); toast(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} — review & save`); } };
+    const copyItem = { label: 'Copy', sub: String(chosen().length), run: () => { const c = chosen(); if (!c.length) { toast('No credits selected'); return; } if (copyCredits(c, [here])) markUsed(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} from ${srcLabel ? `“${srcLabel}” (${gid})` : gid}`); toast(`Copied ${c.length} release credit${c.length > 1 ? 's' : ''} — review & save`); } };
     const items = [{ header: 'Copy release credits' }];
     if (excluded) items.push({ note: `${excluded} pre-unticked for format “${fmt}”` });
     items.push({ checklist: entries, onToggle: () => { copyItem._setSub && copyItem._setSub(String(chosen().length)); } }, copyItem);
