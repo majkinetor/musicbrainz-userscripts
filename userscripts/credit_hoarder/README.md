@@ -3,6 +3,7 @@
 Import track and release credits from streaming and database providers into MusicBrainz relationships, with a review phase so you only ever seed  entities that actually exist in MB.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/credit_hoarder/dist/credit_hoarder.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/credit_hoarder/dist/credit_hoarder.user.js)
+    - Or via bundle: [String Theory](../string_theory/README.md)
 - [Changelog](./CHANGELOG.md)
 
 > Credit Hoarder is the multi-source successor to the single-source [Discogs Importer](../discogs_credits/README.md)

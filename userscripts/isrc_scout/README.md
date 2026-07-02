@@ -5,6 +5,7 @@ Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads
 The editor has two tabs for the two operations on a release's recordings: **ISRCs** and **Links**.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/isrc_scout/isrc_scout.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/isrc_scout/isrc_scout.user.js)
+    - Or via bundle: [String Theory](../string_theory/README.md)
 - [Changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=edit_note_content&conditions.1.operator=includes&conditions.1.args.0=ISRC+Scout)
 
