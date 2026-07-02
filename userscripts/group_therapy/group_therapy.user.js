@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy — MusicBrainz relationship helper
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.1.31
+// @version      2026.7.2
 // @description  Subtle relationship-editor helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and (soon) copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg

@@ -1,5 +1,11 @@
 # Art Station Changelog
 
+## [2026.7.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.2)
+
+### Features
+
+1. Mammoth baby with search on comments in detailed view ([#345](https://github.com/majkinetor/musicbrainz-userscripts/issues/345))
+
 ## [2026.7.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.1)
 
 ### Features
