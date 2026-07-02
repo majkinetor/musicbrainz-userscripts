@@ -2,7 +2,7 @@
 
 One userscript to install them all. **String Theory** is a build-time bundle of most of this repo's MusicBrainz userscripts, so you can install a **single file** and get them together instead of adding each one separately.
 
-- Install: [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/string_theory/string_theory.user.js) or [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js)
+- Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/string_theory/string_theory.user.js)
 
 > [!IMPORTANT]
 > Install String Theory **instead of** the individual scripts it contains — never both, or each would run twice on the pages they share.
