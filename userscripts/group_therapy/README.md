@@ -2,7 +2,9 @@
 
 Batch operations and various helpers on the MusicBrainz *Edit relationships* page.
 
-- Install: [latest](./group_therapy.user.js)
+- Install: [stable] or [latest](./group_therapy.user.js)
+- [Changelog](./CHANGELOG.md)
+- [View Users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Group+Therapy)
 
 <img width="650" src="./screenshots/copy.png" /> 
 <details><summary>More screenshots</summary>
