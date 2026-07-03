@@ -15,7 +15,7 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 <img width="500" src="./screenshots/copy-release.png" /><br>
 <img width="800" src="./screenshots/consolidation.png" /><br>
 <img width="500" src="./screenshots/highlight.png" /><br>
-</details><br>
+</details>
 
 **Note**: [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc) is valuable companion script.
 
