@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.3
+// @version      2026.7.4
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1176,7 +1176,8 @@
     /* #203: rich title display — read-only styled text (confusable chars enlarged) shown
        when the title isn't being edited; clicking/tabbing into it shows the native input.
        Mirrors the input's diff/gcpreview/hasfeat backgrounds so the cell looks unchanged. */
-    .tc-mirror .t-title-disp{flex:1;min-width:0;box-sizing:border-box;border:1px solid transparent;border-radius:3px;background:transparent;font:13px Arial;padding:3px 2px;white-space:pre;overflow:hidden;cursor:text;display:flex;align-items:center}
+    .tc-mirror .t-title-disp{flex:1;min-width:0;min-height:1.55em;box-sizing:border-box;border:1px solid transparent;border-radius:3px;background:transparent;font:13px Arial;padding:3px 2px;white-space:pre;overflow:hidden;cursor:text;display:flex;align-items:center}
+    .tc-mirror .t-title-ph{color:#b7b7b7;font-style:italic}   /* #357: empty-title placeholder in the rich display */
     .tc-mirror .t-title-disp:hover{border-color:#bbb;background:#fff}
     .tc-mirror .t-title-disp.diff{background:#fff6da;border-color:#e7ce8a}
     .tc-mirror .t-title-disp.gcpreview{background:#e3f6e3;border-color:#86c686}
@@ -2454,7 +2455,7 @@
       const canDrag = !locked && kind === 'audio';   // #330: pregap is pinned at 0, data tracks aren't reordered here
       tr.innerHTML = `<td class="c-mv">${canDrag ? '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>' : ''}</td>
         <td class="c-num"><input class="t-num" value="${esc(t.number)}" title="track number"></td>
-        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" title="Hidden pregap track (position 0)">pregap</span>' : ''}<input class="t-title" value="${esc(t.title)}"></div></td>
+        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" title="Hidden pregap track (position 0)">pregap</span>' : ''}<input class="t-title" value="${esc(t.title)}" placeholder="title…"></div></td>
         <td class="c-art"></td>
         <td class="c-len"><input class="t-len" value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" title="Length is fixed by this medium’s Disc ID"' : ''}></td>
         <td class="c-badge"></td>`;
@@ -2471,7 +2472,10 @@
       if ((SETTINGS.recPunctSize | 0) > 0) {
         disp = document.createElement('span'); disp.className = 't-title-disp';
         paintDisp = (val) => {
-          disp.innerHTML = dhRun(val != null ? val : tin.value);
+          const v = val != null ? val : tin.value;
+          // empty title → a faint "title…" placeholder so there's a visible, full-height
+          // click target (an empty disp collapses to a hard-to-hit thin line). #357
+          disp.innerHTML = v ? dhRun(v) : '<span class="t-title-ph">title…</span>';
           ['diff', 'gcpreview', 'hasfeat', 'srflash'].forEach(c => disp.classList.toggle(c, tin.classList.contains(c)));
         };
         tin.classList.add('tc-eml');
