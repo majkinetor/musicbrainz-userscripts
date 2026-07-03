@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.174814
+// @version      2026.7.3.175240
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.174814';
+  const VERSION = '2026.7.3.175240';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -905,7 +905,7 @@
       if (!rgid) return note('No release group');
       const sib = await (await fetch('/ws/2/release?release-group=' + rgid + '&inc=media&limit=100&fmt=json', { headers: { Accept: 'application/json' } })).json();
       releases = (sib.releases || []).sort((a, b) => (a.date || '~').localeCompare(b.date || '~')).map((r, i) => ({
-        gid: r.id, title: r.title + (r.disambiguation ? ` (${r.disambiguation})` : ''), letter: String.fromCharCode(65 + i),
+        gid: r.id, title: r.title + (r.disambiguation ? ` (${r.disambiguation})` : ''), letter: (i < 26 ? '' : String.fromCharCode(64 + Math.floor(i / 26))) + String.fromCharCode(65 + (i % 26)),
         fmt: [...new Set((r.media || []).map(m => m.format).filter(Boolean))].join('+') || '', current: r.id === here,
       }));
     } catch (e) { return note('Could not load release group'); }

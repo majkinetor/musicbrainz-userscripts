@@ -22,6 +22,7 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 - Batch delete role, entity, both
 - Highlight role or entity everywhere and show tooltip with overall counts
 - Copy/move credits from recording to recordings, work to works, release to release
+- Consolidate release-level credits across an entire release group (matrix + one-click apply)
 - Works on existing and newly-added relationships
 
 ## Batch delete
@@ -55,7 +56,20 @@ The menu lists each credit with a **checkbox** (all on by default) — untick an
 
 The **⧉ Copy from release…** button next to the *Release relationships* heading opens a picker: choose one of this **release group's** other releases — each shown with its **date · country · format · track count** so you can tell editions apart (with an **↗** to open that release in a new tab first) — or use the **＋** to reveal a field and **paste** any release URL/MBID (it acts on paste, no button). It then shows a **checklist** of that release's release-level credits (artists + labels, with credited-as, attributes and dates); pick which to copy onto this release (MB merges any it already has).
 
-**Format-aware cleansing** — since the source may be a different edition, credits whose role doesn't suit **this** release's format start **unticked** (re-tick to override), so you don't carry a vinyl-only production credit onto a digital edition. Rules are a configurable map of *format-name → role-name* substrings; the default unticks vinyl/lacquer/pressed/printed/manufactured roles on a *digital* edition. Override the whole map with the **`gt-format-exclude`** GM value (a JSON object), e.g. `{"digital":["lacquer","vinyl mastering"]}`.
+**Format-aware cleansing** — since the source may be a different edition, credits whose role doesn't suit **this** release's format start **unticked** (re-tick to override), so you don't carry a vinyl-only production credit onto a digital edition. Two layers, both configurable:
+- **`gt-format-exclude`** — a *format-name → role-name* substring map; the default unticks pressed/printed/manufactured/vinyl roles on a *digital* edition. Override with a GM value (JSON object).
+- **`gt-format-only`** — a *role-name → the format families it belongs to* map, for roles that suit exactly one format; the default makes *lacquer cutting* vinyl-only and *glass mastering* optical-only (CD/DVD/SACD/Blu-ray), so they're unticked on every other format.
+
+#### Across the whole group — Consolidate
+
+The **▦ Consolidate RG…** button (next to *Copy from release…*) spreads release-level credits across **every** release in the group at once. It reads all the releases in parallel and builds a **role × release matrix**: one row per distinct credit (role + entity, with credited-as/attributes), one column per release — labelled A, B, C… with a compact **format badge** (Digital / Vinyl / CD / Cassette) — and a green cell wherever the credit already exists. Each release title links out so you can inspect it first.
+
+- **Select** what to add: click a **cell** to toggle it, a **column-header letter** to select every addable credit for that release, or **Auto select** for the whole matrix (**Clear** resets). Credits that are format-specific for a release (e.g. *lacquer cut* on a CD) are held back and shown as `·` — click to force one in.
+- The footer shows the plan (*N additions across M releases*). **Apply** creates them as real relationship edits — one batched submission per target release (auto-applied if you're an auto-editor, else queued), each carrying a **detailed edit note** that lists every added credit under the Group Therapy signature.
+
+This is **release-level only** (recordings are already shared across a group). It uses MB's internal edit API, so the additions are submitted directly rather than staged in the editor.
+
+> Best for groups with a handful of editions; a release-selection step for very large groups (many pressings) is planned.
 
 
 ### Highlight
