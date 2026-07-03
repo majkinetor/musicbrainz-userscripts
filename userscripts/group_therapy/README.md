@@ -80,9 +80,11 @@ The **▦ Consolidate RG…** button (next to *Copy from release…*) can spread
 
 This is **release-level only** (recordings are already shared across a group). It uses MB's internal edit API, so the additions are submitted directly rather than staged in the editor.
 
+<img width="800" src="./screenshots/consolidation.png" />
+
 With more than 10 releases in a group you must pick releases to be consolidated manually.
 
-<img width="800" src="./screenshots/consolidation.png" />
+<img width="1000" src="./screenshots/consolidation2.png" />
 
 ### Highlight
 
