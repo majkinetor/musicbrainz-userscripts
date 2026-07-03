@@ -12,6 +12,7 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 <img width="500" src="./screenshots/remove.png" /><br>
 <img width="500" src="./screenshots/remove-work.png" /><br>
 <img width="500" src="./screenshots/copy-release.png" /><br>
+<img width="800" src="./screenshots/consolidation.png" /><br>
 <img width="500" src="./screenshots/highlight.png" /><br>
 </details>
 
