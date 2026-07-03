@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.141140
+// @version      2026.7.3.162758
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.3.141140 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.3\n  · Art Station v2026.7.2.1\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.2.1\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.2.6\n  · Platform Check v2026.7.1.2");
+  console.log('%c String Theory %c v2026.7.3.162758 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.3\n  · Art Station v2026.7.2.1\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.2.6\n  · Platform Check v2026.7.1.2");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16333,12 +16333,12 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.2.1","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.2.1","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.31';
+  const VERSION = '2026.7.3';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -16703,6 +16703,34 @@ ${lines}
       tr.track input.recording, tr.track input.work { accent-color:#2e9e5b; }
       tr.track input.recording:hover, tr.track input.work:hover, button.icon.remove-item:hover {
         outline:2px solid rgba(46,158,91,.55); outline-offset:1px; border-radius:3px; }
+      /* Consolidate RG (#349) — the release×role matrix modal */
+      .gt-cons-ov{position:fixed;inset:0;z-index:2147483646;background:rgba(20,24,30,.44);display:flex;align-items:center;justify-content:center}
+      .gt-cons{background:#fff;border-radius:10px;box-shadow:0 18px 50px rgba(0,0,0,.35);width:min(920px,94vw);max-height:88vh;display:flex;flex-direction:column;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222}
+      .gt-cons-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid #e7e9ee}
+      .gt-cons-title{font-weight:700;font-size:14px;flex:1}
+      .gt-cons-x{background:none;border:none;font-size:16px;color:#8892a0;cursor:pointer;padding:2px 8px;border-radius:5px}
+      .gt-cons-x:hover{background:#eef1f6;color:#556}
+      .gt-cons-body{padding:10px 14px;overflow:auto}
+      .gt-cons-leg{display:flex;flex-wrap:wrap;gap:4px 16px;margin-bottom:10px;font-size:12px;color:#556}
+      .gt-cons-legi b{display:inline-block;min-width:16px;text-align:center;background:#eef4fb;border:1px solid #cfe0f0;border-radius:4px;color:#2e6da4;margin-right:2px}
+      .gt-cons-legi.gt-cur b{background:#2e6da4;color:#fff}
+      .gt-cons-tbl{border-collapse:collapse;width:100%}
+      .gt-cons-tbl th{font-size:11px;color:#6a7482;text-transform:uppercase;letter-spacing:.02em;text-align:left;padding:4px 8px;border-bottom:1px solid #ccc}
+      .gt-cons-tbl th.gt-cons-col{text-align:center;width:30px}
+      .gt-cons-tbl td{padding:4px 8px;border-bottom:1px solid #eef0f3;vertical-align:top}
+      .gt-cons-role{color:#556;white-space:nowrap}
+      .gt-cons-cr{color:#8892a0}
+      .gt-cons-cell{text-align:center;font-weight:700;width:30px;user-select:none}
+      .gt-cons-cell.gt-has{color:#2e9e5b}
+      .gt-cons-cell.gt-prop{color:#2e6da4;outline:1px dashed #9cc2e6;outline-offset:-3px;border-radius:4px}
+      .gt-cons-cell.gt-none{color:#cdd3da}
+      .gt-cons-foot{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #e7e9ee}
+      .gt-cons-btn{font:600 13px inherit;padding:5px 14px;border-radius:6px;border:1px solid #cfe0f0;background:#eef4fb;color:#2e6da4;cursor:pointer}
+      .gt-cons-btn:hover{background:#e2edf8}
+      .gt-cons-apply{margin-left:auto;background:#2e9e5b;border-color:#2e9e5b;color:#fff}
+      .gt-cons-apply:hover{background:#278a4f}
+      .gt-cons-apply:disabled{background:#c9ced4;border-color:#c9ced4;cursor:default}
+      .gt-cons-plan{color:#556;font-size:12px}
     `;
     document.head.appendChild(s);
   }
@@ -16974,6 +17002,11 @@ ${lines}
     b.onclick = () => openCopyFromPopover(b);
     h2.appendChild(b);
     cloneBtnRef = b;
+    const cons = el('button', 'gt-clone-btn', '▦ Consolidate RG…');
+    cons.title = 'Spread release-level credits across every release in this group (union minus format-specific)';
+    cons.type = 'button';
+    cons.onclick = () => openConsolidate();
+    h2.appendChild(cons);
     const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — about / help';
     cfg.onclick = () => openAboutPopover(cfg);
     h2.appendChild(cfg);
@@ -17006,6 +17039,112 @@ ${lines}
     for (const k in map) if (fmt.includes(String(k).toLowerCase())) out.push(...(map[k] || []));
     return out.map(s => String(s).toLowerCase());
   }
+
+  // ── Consolidate RG (#349) ──────────────────────────────────────────────────
+  // Build a (role, entity) × release matrix of every release's release-level ARTIST/LABEL credits,
+  // propose the union minus format-specific roles, and let the user toggle cells. The apply step
+  // (Phase 2) POSTs the additions as edit_type:90 relationship-creates to /ws/js/edit/create (the same
+  // internal endpoint ISRC Scout uses). We read rels via /ws/js so we get the NUMERIC linkTypeID the
+  // edit API needs; formats come from the RG enumeration.
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  async function consFetchRels(gid) {
+    const j = await (await fetch('/ws/js/entity/' + gid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } })).json();
+    return (j.relationships || []).filter(r => (r.target_type === 'artist' || r.target_type === 'label') && r.target && r.target.gid);
+  }
+  const consKey = r => [r.linkTypeID, r.target_type[0] + ':' + r.target.gid, (r.attributes || []).map(a => a.typeID).sort((p, q) => p - q).join(','), r.entity0_credit || ''].join('|');
+  const consLabel = r => ({ role: ltName(r.linkTypeID), ent: r.target.name || '?', credit: r.entity0_credit && r.entity0_credit !== r.target.name ? r.entity0_credit : '' });
+  function consPropose(rows, releases) {
+    for (const row of rows) {
+      row.propose = new Set();
+      const roleName = row.label.role.toLowerCase();
+      for (const rel of releases) {
+        if (row.present.has(rel.gid)) continue;
+        if (!formatExcludeRolesFor(rel.fmt).some(k => roleName.includes(k))) row.propose.add(rel.gid);
+      }
+    }
+  }
+  let consEl = null;
+  function onConsKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closeConsolidate(); } }
+  function closeConsolidate() { if (consEl) { consEl.remove(); consEl = null; document.removeEventListener('keydown', onConsKey, true); } }
+  function applyConsolidation(releases, rows) {
+    let n = 0; const rs = new Set();
+    for (const row of rows) for (const rel of releases) if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { n++; rs.add(rel.gid); }
+    if (!n) { toast('Nothing to add'); return; }
+    // Phase 2 wires the edit_type:90 POST (validated on beta first). For now, preview the plan.
+    toast(`Plan: ${n} relationship edit${n > 1 ? 's' : ''} across ${rs.size} release${rs.size > 1 ? 's' : ''} — apply lands in the next step`);
+  }
+  function renderConsMatrix(body, foot, releases, rows) {
+    body.textContent = '';
+    const leg = el('div', 'gt-cons-leg');
+    releases.forEach(r => { const s = el('span', 'gt-cons-legi' + (r.current ? ' gt-cur' : '')); s.appendChild(el('b', null, r.letter)); s.appendChild(document.createTextNode(' ' + r.title + (r.fmt ? ` · ${r.fmt}` : ''))); leg.appendChild(s); });
+    body.appendChild(leg);
+    const tbl = el('table', 'gt-cons-tbl'), head = el('tr');
+    head.append(el('th', 'gt-cons-role', 'Role'), el('th', 'gt-cons-ent', 'Entity'));
+    releases.forEach(r => { const th = el('th', 'gt-cons-col', r.letter); th.title = r.title; head.appendChild(th); });
+    tbl.appendChild(head); body.appendChild(tbl);
+    foot.textContent = '';
+    const consBtn = el('button', 'gt-cons-btn', 'Consolidate'); consBtn.type = 'button'; consBtn.title = 'Fill every credit across all releases, except format-specific roles';
+    const planLbl = el('span', 'gt-cons-plan');
+    const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
+    const updatePlan = () => { let e = 0; const rs = new Set(); rows.forEach(row => releases.forEach(rel => { if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { e++; rs.add(rel.gid); } })); planLbl.textContent = e ? `${e} addition${e > 1 ? 's' : ''} across ${rs.size} release${rs.size > 1 ? 's' : ''}` : 'nothing to add'; applyBtn.disabled = !e; };
+    const draw = () => {
+      [...tbl.querySelectorAll('tr.gt-cons-row')].forEach(n => n.remove());
+      for (const row of rows) {
+        const tr = el('tr', 'gt-cons-row');
+        tr.appendChild(el('td', 'gt-cons-role', row.label.role));
+        const ent = el('td', 'gt-cons-ent'); ent.appendChild(document.createTextNode(row.label.ent)); if (row.label.credit) ent.appendChild(el('span', 'gt-cons-cr', ' “' + row.label.credit + '”')); tr.appendChild(ent);
+        for (const rel of releases) {
+          const td = el('td', 'gt-cons-cell'), has = row.present.has(rel.gid), prop = row.propose.has(rel.gid);
+          td.classList.add(has ? 'gt-has' : prop ? 'gt-prop' : 'gt-none');
+          td.textContent = has || prop ? rel.letter : '·';
+          if (has) td.title = 'already present';
+          else { td.style.cursor = 'pointer'; td.title = prop ? 'will be added — click to skip' : `skipped (format-specific for ${rel.fmt || '?'}) — click to add`; td.onclick = () => { row.propose.has(rel.gid) ? row.propose.delete(rel.gid) : row.propose.add(rel.gid); draw(); updatePlan(); }; }
+          tr.appendChild(td);
+        }
+        tbl.appendChild(tr);
+      }
+    };
+    consBtn.onclick = () => { consPropose(rows, releases); draw(); updatePlan(); };
+    applyBtn.onclick = () => applyConsolidation(releases, rows);
+    foot.append(consBtn, planLbl, applyBtn);
+    draw(); updatePlan();
+  }
+  async function openConsolidate() {
+    closeConsolidate(); closePopover();
+    consEl = el('div', 'gt-cons-ov');
+    const panel = el('div', 'gt-cons'), hdr = el('div', 'gt-cons-hdr');
+    hdr.appendChild(el('span', 'gt-cons-title', 'Consolidate release-level credits across the group'));
+    const x = el('button', 'gt-cons-x', '✕'); x.type = 'button'; x.onclick = closeConsolidate; hdr.appendChild(x);
+    const body = el('div', 'gt-cons-body'), foot = el('div', 'gt-cons-foot');
+    body.appendChild(el('div', 'gt-pop-note', 'Loading release group…'));
+    panel.append(hdr, body, foot); consEl.appendChild(panel); document.body.appendChild(consEl);
+    document.addEventListener('keydown', onConsKey, true);
+    consEl.addEventListener('mousedown', e => { if (e.target === consEl) closeConsolidate(); });
+    const note = m => { const n = body.querySelector('.gt-pop-note'); if (n) n.textContent = m; };
+    let releases;
+    try {
+      const here = RE().state.entity.gid;
+      const rg = await (await fetch('/ws/2/release/' + here + '?inc=release-groups&fmt=json', { headers: { Accept: 'application/json' } })).json();
+      const rgid = rg['release-group'] && rg['release-group'].id;
+      if (!rgid) return note('No release group');
+      const sib = await (await fetch('/ws/2/release?release-group=' + rgid + '&inc=media&limit=100&fmt=json', { headers: { Accept: 'application/json' } })).json();
+      releases = (sib.releases || []).sort((a, b) => (a.date || '~').localeCompare(b.date || '~')).map((r, i) => ({
+        gid: r.id, title: r.title + (r.disambiguation ? ` (${r.disambiguation})` : ''), letter: String.fromCharCode(65 + i),
+        fmt: [...new Set((r.media || []).map(m => m.format).filter(Boolean))].join('+') || '', current: r.id === here,
+      }));
+    } catch (e) { return note('Could not load release group'); }
+    if (!releases || releases.length < 2) return note('Need at least 2 releases in the group to consolidate');
+    const rows = new Map();
+    for (const rel of releases) {
+      note(`Reading ${rel.letter} — ${rel.title}…`);
+      try { for (const r of await consFetchRels(rel.gid)) { const k = consKey(r); let row = rows.get(k); if (!row) { row = { key: k, sample: r, label: consLabel(r), present: new Set(), propose: new Set() }; rows.set(k, row); } row.present.add(rel.gid); } } catch (e) {}
+      await sleep(1100);
+    }
+    if (!rows.size) return note('No release-level artist/label credits found in this group');
+    const rowList = [...rows.values()].sort((a, b) => (a.label.role + a.label.ent).localeCompare(b.label.role + b.label.ent));
+    renderConsMatrix(body, foot, releases, rowList);
+  }
+
   // recording checkbox → copy every recording rel except work/url/recording-samples
   // (so artists, ℗/© labels, recorded-at places, …) onto the ticked recordings
   function openCopyMenu(sourceTr, x, y) {
