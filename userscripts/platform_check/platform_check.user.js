@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.3.221217
+// @version      2026.7.3.222318
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2667,12 +2667,15 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
         return;
     }
 
-    // Barcode-first: Deezer's `album/upc:<UPC>` is an exact match — no text-search
-    // ambiguity. Falls through to the artist+album search when there's no UPC hit.
+    // Barcode-first: Deezer's `album/upc:<UPC>`. NOTE it is NOT reliably exact — for a
+    // barcode it doesn't have, Deezer sometimes returns an UNRELATED album instead of an
+    // error (e.g. upc:827565029525 → "Ayamma", whose real UPC is 885686990360). So trust
+    // the hit only when the returned album's OWN upc matches what we asked for; otherwise
+    // treat it as no barcode match and fall through to the artist+album search.
     if (!existingUrl && barcode) {
         const br = await gmGet(`https://api.deezer.com/album/upc:${barcode}`);
         let bd = null; try { bd = JSON.parse(br.responseText); } catch {}
-        if (bd && bd.id && !bd.error) {
+        if (bd && bd.id && !bd.error && normBarcode(bd.upc) === normBarcode(barcode)) {
             const albumUrl = bd.link || `https://www.deezer.com/album/${bd.id}`;
             appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
             const meta = await fetchDeezerMeta(albumUrl);
@@ -2681,7 +2684,10 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
             updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
             return;
         }
-        appendLog(label, `Barcode ${barcode}: no UPC match — falling back to search`);
+        if (bd && bd.id && !bd.error)
+            appendLog(label, `Barcode ${barcode}: Deezer returned a different-barcode album (upc ${bd.upc || '?'}, "${bd.title || ''}") — ignoring, falling back to search`, 'warn');
+        else
+            appendLog(label, `Barcode ${barcode}: no UPC match — falling back to search`);
     }
 
     let albumUrl = existingUrl;

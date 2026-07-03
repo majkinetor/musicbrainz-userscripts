@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.221217
+// @version      2026.7.3.222319
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.3.221217 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.3\n  · Art Station v2026.7.3\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.3.221217");
+  console.log('%c String Theory %c v2026.7.3.222319 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.3\n  · Art Station v2026.7.3\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.3.222318");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -22961,7 +22961,7 @@ ${lines}
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.3.221217","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.3.221217","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.3.222318","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.3.222318","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -25596,12 +25596,15 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
         return;
     }
 
-    // Barcode-first: Deezer's `album/upc:<UPC>` is an exact match — no text-search
-    // ambiguity. Falls through to the artist+album search when there's no UPC hit.
+    // Barcode-first: Deezer's `album/upc:<UPC>`. NOTE it is NOT reliably exact — for a
+    // barcode it doesn't have, Deezer sometimes returns an UNRELATED album instead of an
+    // error (e.g. upc:827565029525 → "Ayamma", whose real UPC is 885686990360). So trust
+    // the hit only when the returned album's OWN upc matches what we asked for; otherwise
+    // treat it as no barcode match and fall through to the artist+album search.
     if (!existingUrl && barcode) {
         const br = await gmGet(`https://api.deezer.com/album/upc:${barcode}`);
         let bd = null; try { bd = JSON.parse(br.responseText); } catch {}
-        if (bd && bd.id && !bd.error) {
+        if (bd && bd.id && !bd.error && normBarcode(bd.upc) === normBarcode(barcode)) {
             const albumUrl = bd.link || `https://www.deezer.com/album/${bd.id}`;
             appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
             const meta = await fetchDeezerMeta(albumUrl);
@@ -25610,7 +25613,10 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
             updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
             return;
         }
-        appendLog(label, `Barcode ${barcode}: no UPC match — falling back to search`);
+        if (bd && bd.id && !bd.error)
+            appendLog(label, `Barcode ${barcode}: Deezer returned a different-barcode album (upc ${bd.upc || '?'}, "${bd.title || ''}") — ignoring, falling back to search`, 'warn');
+        else
+            appendLog(label, `Barcode ${barcode}: no UPC match — falling back to search`);
     }
 
     let albumUrl = existingUrl;
