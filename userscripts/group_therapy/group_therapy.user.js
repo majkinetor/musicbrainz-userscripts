@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.165947
+// @version      2026.7.3.171653
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.165947';
+  const VERSION = '2026.7.3.171653';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -705,23 +705,25 @@
   }
   const trackPosOfRow = tr => posLabel(tr);
 
-  // ── format-aware cleansing (#338) ─────────────────────────────────────────
-  // When copying credits onto a destination of a given FORMAT, credits whose ROLE is listed for that
-  // format start UNTICKED in the copy checklist (re-tick to override) — e.g. don't carry a vinyl-only
-  // production credit onto a digital edition. Keys = format-name substrings (case-insensitive),
-  // values = role-name substrings. Replace the whole map via GM value 'gt-format-exclude' (JSON object).
-  // "glass" = glass mastering: the optical-disc (CD/DVD/…) master step, so it's excluded from BOTH digital
-  // AND vinyl (unlike "manufactured", which vinyl shares) — leaving it allowed only on CD/optical formats.
-  const FORMAT_EXCLUDE_DEFAULT = {
-    digital: ['lacquer', 'vinyl', 'pressed', 'printed', 'manufactured', 'glass'],
-    vinyl: ['glass'],
-  };
-  function formatExcludeMap() { try { const raw = (typeof GM_getValue === 'function') && GM_getValue('gt-format-exclude', ''); if (raw) return JSON.parse(raw); } catch (e) {} return FORMAT_EXCLUDE_DEFAULT; }
+  // ── format-aware cleansing (#338, #349) ───────────────────────────────────
+  // When copying/consolidating credits onto a destination of a given FORMAT, credits whose ROLE is
+  // format-inappropriate start UNTICKED (re-tick to override). Two layers:
+  //   FORMAT_EXCLUDE — format-substring → role-substrings dropped FOR that format (physical-only roles off
+  //     a digital edition). Override via GM value 'gt-format-exclude' (JSON object).
+  //   FORMAT_ONLY — role-substring → the ONLY format families it belongs to; dropped from every OTHER
+  //     format. Lacquer cutting is vinyl-only; glass mastering is optical-disc-only (CD/DVD/SACD/Blu-ray).
+  //     Override via GM value 'gt-format-only' (JSON object).
+  const FORMAT_EXCLUDE_DEFAULT = { digital: ['vinyl', 'pressed', 'printed', 'manufactured'] };
+  const FORMAT_ONLY_DEFAULT = { lacquer: ['vinyl'], glass: ['cd', 'dvd', 'sacd', 'blu-ray'] };
+  const _gmJson = (key, def) => { try { const raw = (typeof GM_getValue === 'function') && GM_getValue(key, ''); if (raw) return JSON.parse(raw); } catch (e) {} return def; };
+  function formatExcludeMap() { return _gmJson('gt-format-exclude', FORMAT_EXCLUDE_DEFAULT); }
+  function formatOnlyMap() { return _gmJson('gt-format-only', FORMAT_ONLY_DEFAULT); }
   function formatExcludeRolesFor(fmt) {
     fmt = (fmt || '').toLowerCase(); if (!fmt) return [];
-    const map = formatExcludeMap(), out = [];
-    for (const k in map) if (fmt.includes(String(k).toLowerCase())) out.push(...(map[k] || []));
-    return out.map(s => String(s).toLowerCase());
+    const out = [], excl = formatExcludeMap(), only = formatOnlyMap();
+    for (const k in excl) if (fmt.includes(String(k).toLowerCase())) out.push(...(excl[k] || []));
+    for (const role in only) if (!(only[role] || []).some(f => fmt.includes(String(f).toLowerCase()))) out.push(role);
+    return [...new Set(out.map(s => String(s).toLowerCase()))];
   }
 
   // ── Consolidate RG (#349) ──────────────────────────────────────────────────
