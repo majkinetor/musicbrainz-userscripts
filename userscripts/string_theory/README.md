@@ -25,7 +25,7 @@
 
 - The bundled scripts are listed in [`members.txt`](./members.txt)
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`)
-- 
+ 
 Version details are printed in Console:
 
 ```
