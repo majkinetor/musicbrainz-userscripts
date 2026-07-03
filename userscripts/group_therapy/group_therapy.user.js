@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.165111
+// @version      2026.7.3.165947
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.165111';
+  const VERSION = '2026.7.3.165947';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -725,8 +725,10 @@
   }
 
   // ── Consolidate RG (#349) ──────────────────────────────────────────────────
-  // Build a (role, entity) × release matrix of every release's release-level credits (ALL target types
-  // except the shared recording/work), propose the union minus format-specific roles, and let the user
+  // Build a (role, entity) × release matrix of every release's release-level credits — artist/label/place
+  // entity credits. URLs are EXCLUDED (edition-specific: each release has its own discogs / streaming /
+  // purchase link, so spreading them is wrong); recording/work are excluded too (shared already). Propose
+  // the union minus format-specific roles, and let the user
   // toggle cells, whole columns (click a header letter), or the whole matrix (Auto select). Apply POSTs
   // the additions as edit_type:90 relationship-creates to /ws/js/edit/create — the internal endpoint ISRC
   // Scout uses (session-cookie auth, no CSRF). We read via /ws/js for the NUMERIC linkTypeID + entity
@@ -734,7 +736,7 @@
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   async function consFetchRels(gid) {
     const j = await (await fetch('/ws/js/entity/' + gid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } })).json();
-    return (j.relationships || []).filter(r => r.target && r.target.gid && !['recording', 'work'].includes(r.target_type));
+    return (j.relationships || []).filter(r => r.target && r.target.gid && !['recording', 'work', 'url'].includes(r.target_type));
   }
   const consKey = r => [r.linkTypeID, r.target.gid, (r.attributes || []).map(a => a.typeID).sort((p, q) => p - q).join(','), r.entity0_credit || '', r.entity1_credit || ''].join('|');
   const consLabel = r => {
