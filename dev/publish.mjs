@@ -86,10 +86,14 @@ function changelogSection(group, tag, updatedMembers) {
   let s = `## [${tag}](${tagUrl(tag)})\n`;
   if (group.features.length) s += `\n### Features\n\n${list(group.features)}\n`;
   if (group.fixes.length) s += `\n### Fixes\n\n${list(group.fixes)}\n`;
-  // the bundle lists which member scripts were updated this release, each linking to its own changelog
-  if (group.bundle && updatedMembers && updatedMembers.length)
-    s += `\n### Updated scripts\n\n${updatedMembers.map(m => `1. [${m.name}](../${m.dir}/CHANGELOG.md)`).join('\n')}\n`;
-  else if (!group.features.length && !group.fixes.length)
+  // the bundle is the MASTER changelog: aggregate every updated member's changes, each section's heading
+  // linking to that script's own changelog
+  if (group.bundle && updatedMembers && updatedMembers.length) {
+    for (const m of updatedMembers) {
+      const g = m.group, items = g ? [...g.features, ...g.fixes] : [];
+      s += `\n### [${m.name}](../${m.dir}/CHANGELOG.md)\n\n` + (items.length ? `${items.map(i => `1. ${i.title} ([#${i.number}](${issueUrl(i.number)}))`).join('\n')}\n` : `1. Small improvements\n`);
+    }
+  } else if (!group.features.length && !group.fixes.length)
     s += group.bundle ? `\n- Rebuilt with the latest of every bundled script\n` : `\n- Small improvements\n`;   // changed, but no tracked issues
   return s;
 }
@@ -108,7 +112,7 @@ function updateChangelog(group, tag, updatedMembers) {
   return { file, content };
 }
 
-function releaseBody(groups, changed, tag, sha, updatedMembers) {
+function releaseBody(groups, changed, tag, sha) {
   const lines = [];   // no leading "# <tag>" — GitHub already shows the release title
   const dirs = [...new Set([...changed, ...Object.keys(groups)])]
     .sort((a, b) => a === BUNDLE ? -1 : b === BUNDLE ? 1 : a.localeCompare(b));   // bundle on top
@@ -122,11 +126,7 @@ function releaseBody(groups, changed, tag, sha, updatedMembers) {
     if (changed.has(dir) && path) lines.push(`[Install — pinned to this release](${raw(sha, path)}) | [Install — latest (auto-updates)](${raw('stable', path)})`, '');
     if (g && g.features.length) { lines.push('### Features', ''); g.features.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
     if (g && g.fixes.length) { lines.push('### Fixes', ''); g.fixes.forEach(i => lines.push(`- ${i.title} ([#${i.number}](${issueUrl(i.number)}))`)); lines.push(''); }
-    if (g && g.bundle && updatedMembers && updatedMembers.length) {   // bundle: list the member scripts updated this release, linking each changelog
-      lines.push('### Updated scripts', '');
-      updatedMembers.forEach(m => lines.push(`- [${m.name}](https://github.com/${REPO}/blob/stable/userscripts/${m.dir}/CHANGELOG.md)`));
-      lines.push('');
-    } else if (g && !g.features.length && !g.fixes.length) { lines.push(g.bundle ? '- Rebuilt with the latest of every bundled script' : '- Small improvements', ''); }   // changed, but no tracked issues
+    if (g && !g.features.length && !g.fixes.length) { lines.push(g.bundle ? '- Rebuilt with the latest of every bundled script' : '- Small improvements', ''); }   // changed, but no tracked issues
   }
   return lines.join('\n');
 }
@@ -149,7 +149,7 @@ function main() {
   }
   // members that actually changed this release → the bundle's changelog links to each of their changelogs
   const bundleMembers = hasBundle ? readFileSync(resolve(ROOT, `userscripts/${BUNDLE}/members.txt`), 'utf8').split(/\r?\n/).map(l => l.replace(/#.*/, '').trim()).filter(Boolean) : [];
-  const updatedMembers = [...changed].filter(d => d !== BUNDLE && bundleMembers.includes(d)).sort().map(dir => { const p = userJsPath(dir); return { dir, name: (p && scriptDisplayName(p)) || dir }; });
+  const updatedMembers = [...changed].filter(d => d !== BUNDLE && bundleMembers.includes(d)).sort().map(dir => { const p = userJsPath(dir); return { dir, name: (p && scriptDisplayName(p)) || dir, group: groups[dir] }; });
   const tag = todayTag();
 
   console.log(`\n=== publish ${YES ? '(EXECUTE)' : '(dry run — pass --yes to execute)'} ===`);
@@ -181,7 +181,7 @@ function main() {
     console.log('\n(dry run) — would write the changelogs above, commit on main, merge main→stable,');
     console.log('           push both, create the dated release, and label the issues `released`.');
     console.log('\nRelease body preview:\n');
-    console.log(releaseBody(groups, changed, tag, '<stable-sha>', updatedMembers).split('\n').map(l => '   ' + l).join('\n'));
+    console.log(releaseBody(groups, changed, tag, '<stable-sha>').split('\n').map(l => '   ' + l).join('\n'));
     return;
   }
 
@@ -201,7 +201,7 @@ function main() {
   git('push', 'github', 'stable');
   git('checkout', 'main');
 
-  const body = releaseBody(groups, changed, tag, sha, updatedMembers);
+  const body = releaseBody(groups, changed, tag, sha);
   gh('release', 'create', tag, '--repo', REPO, '--title', tag, '--target', sha, '--notes', body);
   for (const n of included) gh('issue', 'edit', String(n), '--repo', REPO, '--add-label', 'released');
   console.log(`\nPublished ${tag}: ${tagUrl(tag)}`);
