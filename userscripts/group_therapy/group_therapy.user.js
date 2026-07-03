@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.174032
+// @version      2026.7.3.174814
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.174032';
+  const VERSION = '2026.7.3.174814';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -391,6 +391,8 @@
       .gt-cons-leg{display:flex;flex-wrap:wrap;gap:4px 16px;margin-bottom:10px;font-size:12px;color:#556}
       .gt-cons-legi b{display:inline-block;min-width:16px;text-align:center;background:#eef4fb;border:1px solid #cfe0f0;border-radius:4px;color:#2e6da4;margin-right:2px}
       .gt-cons-legi.gt-cur b{background:#2e6da4;color:#fff}
+      .gt-cons-legt{color:inherit;text-decoration:none}
+      .gt-cons-legt:hover{text-decoration:underline;color:#2e6da4}
       .gt-cons-tbl{border-collapse:collapse;width:100%}
       .gt-cons-tbl th{font-size:11px;color:#6a7482;text-transform:uppercase;letter-spacing:.02em;text-align:left;padding:4px 8px;border-bottom:1px solid #ccc}
       .gt-cons-tbl th.gt-cons-col{text-align:center;width:30px}
@@ -841,7 +843,7 @@
   function renderConsMatrix(body, foot, releases, rows) {
     body.textContent = '';
     const leg = el('div', 'gt-cons-leg');
-    releases.forEach(r => { const s = el('span', 'gt-cons-legi' + (r.current ? ' gt-cur' : '')); s.appendChild(el('b', null, r.letter)); s.appendChild(fmtBadges(r.fmt)); s.appendChild(document.createTextNode(' ' + r.title)); leg.appendChild(s); });
+    releases.forEach(r => { const s = el('span', 'gt-cons-legi' + (r.current ? ' gt-cur' : '')); s.appendChild(el('b', null, r.letter)); s.appendChild(fmtBadges(r.fmt)); const a = el('a', 'gt-cons-legt', ' ' + r.title); a.href = '/release/' + r.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Open this release in a new tab'; s.appendChild(a); leg.appendChild(s); });
     body.appendChild(leg);
     const tbl = el('table', 'gt-cons-tbl'), head = el('tr');
     head.append(el('th', 'gt-cons-role', 'Role'), el('th', 'gt-cons-ent', 'Entity'));
