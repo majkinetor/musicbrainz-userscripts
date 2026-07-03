@@ -34,6 +34,8 @@ Once a URL is settled, the script fetches the platform's metadata (track count, 
 - **strictly** — also withhold links whose format can't be determined (a Bandcamp/Discogs parse that yielded no format).
 - A **subtle violet bar on the left edge** marks incompatible rows while the option is on (digital-on-physical is common enough to be noise otherwise). Bandcamp/Discogs editions that *include* MB's medium (e.g. Bandcamp "Digital, CD" on a CD release) are compatible and pass.
 
+**Format marker (#350).** Each release's format is shown as a compact **4-quadrant circle** — Vinyl (top-right), Cassette (top-left), CD (bottom-left), Digital (bottom-right); the present family/families are coloured and the full format is in the tooltip. Any format collapses to those four (optical discs — DVD/SACD/Blu-ray — fold into CD), and a multi-format Discogs/Bandcamp match becomes one glyph instead of a long text list. Prefer text? **Setup → Appearance → Format marker: Circle | Text**.
+
 Link availability is determined by the icon and text color:
 
 1. Color - link is found
