@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.1.2
+// @version      2026.7.3.184511
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1394,7 +1394,7 @@ function setMetaCells(yearId, formatId, labelId, year, format, label) {
     // 2-digit year to save space in the compact row (#173); full year in tooltip.
     const y2 = hasY ? String(year).slice(-2) : '';
     if (yEl) { yEl.textContent = hasY ? (hasF || hasL ? `${y2} ·` : y2) : ''; yEl.title = hasY ? String(year) : ''; }
-    if (fEl) fEl.textContent = hasF ? (hasL ? `${fmt} ·` : fmt) : '';
+    if (fEl) { fEl.textContent = ''; fEl.title = hasF ? fmt : ''; if (hasF) { fEl.appendChild(fmtMarker(fmt)); if (hasL) fEl.appendChild(document.createTextNode(' ·')); } }
     if (lEl) { lEl.textContent = hasL ? label : ''; lEl.title = hasL ? label : ''; }
 }
 
@@ -1402,6 +1402,40 @@ function setMetaCells(yearId, formatId, labelId, year, format, label) {
 // communicates the same thing. Applied at display time so the cache and
 // scan paths can keep MB's canonical value.
 function normalizeFormat(s) { return String(s || '').replace(/\bDigital\s*Media\b/i, 'Digital'); }
+
+// Format-family quadrant marker (#350): collapse any format(s) to Digital / Vinyl / CD / Cassette and draw
+// them as a single circle split into 4 coloured quadrants (present family = its colour). Compact (1 glyph)
+// for multi-format releases where the format text (Discogs/Bandcamp) would otherwise eat horizontal space.
+const PC_FMT_COLOR = { Vinyl: '#2b2b2b', Cassette: '#9a6b3f', CD: '#7d8894', Digital: '#4a90d9' };
+function pcFormatFamily(f) {
+    f = String(f || '').toLowerCase();
+    if (/cassette|tape/.test(f)) return 'Cassette';
+    if (/vinyl|shellac|flexi|\blp\b|7"|10"|12"/.test(f)) return 'Vinyl';
+    if (/cd|sacd|dvd|blu-?ray|hd-?dvd|minidisc|umd|disc/.test(f)) return 'CD';
+    if (/digital|file|stream|web|download|lossless|flac|mp3|wav|aac|hi-?res/.test(f)) return 'Digital';
+    return '';
+}
+const pcFormatFamilies = fmt => [...new Set(String(fmt || '').split(/[,+/]|\s+&\s+/).map(pcFormatFamily).filter(Boolean))];
+function fmtMarker(fmt) {
+    const fams = pcFormatFamilies(fmt);
+    if (!fams.length) return document.createTextNode(normalizeFormat(fmt) || '');   // unknown → keep the text
+    const NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('width', '13'); svg.setAttribute('height', '13');
+    svg.style.verticalAlign = 'middle';
+    // quadrants: Vinyl top-right · Cassette top-left · CD bottom-left · Digital bottom-right
+    const QUAD = { Vinyl: [-90, 0], Cassette: [180, 270], CD: [90, 180], Digital: [0, 90] };
+    const cx = 12, cy = 12, r = 11, rad = d => d * Math.PI / 180;
+    for (const fam in QUAD) {
+        const [a0, a1] = QUAD[fam];
+        const x0 = cx + r * Math.cos(rad(a0)), y0 = cy + r * Math.sin(rad(a0)), x1 = cx + r * Math.cos(rad(a1)), y1 = cy + r * Math.sin(rad(a1));
+        const path = document.createElementNS(NS, 'path');
+        path.setAttribute('d', `M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 0 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z`);
+        path.setAttribute('fill', fams.includes(fam) ? PC_FMT_COLOR[fam] : '#e8eaed');
+        path.setAttribute('stroke', 'rgba(255,255,255,.85)'); path.setAttribute('stroke-width', '0.8');
+        svg.appendChild(path);
+    }
+    return svg;
+}
 
 // Strip leading copyright noise from a label string so the meta line doesn't
 // show the year twice (year · label). Handles ℗/© or "(P)/(C)", a BARE leading
