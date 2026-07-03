@@ -25,7 +25,9 @@ const MEMBERS = readFileSync(resolve(HERE, 'members.txt'), 'utf8')
   .split(/\r?\n/).map(l => l.replace(/#.*/, '').trim()).filter(Boolean);
 if (!MEMBERS.length) throw new Error('members.txt lists no scripts');
 const NAME = 'String Theory';
-const ICON = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg';
+// Embed the icon as a data URI, not a raw GitHub URL — managers render data: icons reliably (no network
+// fetch, no content-type dependency), whereas the raw-URL icon didn't show up in the manager list.
+const ICON = 'data:image/svg+xml;base64,' + readFileSync(resolve(HERE, 'icon.svg')).toString('base64');
 const HOMEPAGE = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory';
 const OUT = resolve(HERE, 'string_theory.user.js');
 
