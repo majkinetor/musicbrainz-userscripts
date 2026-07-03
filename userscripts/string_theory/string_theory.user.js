@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.171654
+// @version      2026.7.3.172341
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.3.171654 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.3\n  · Art Station v2026.7.2.1\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3.171653\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.2.6\n  · Platform Check v2026.7.1.2");
+  console.log('%c String Theory %c v2026.7.3.172341 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.3\n  · Art Station v2026.7.2.1\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3.172340\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.2.6\n  · Platform Check v2026.7.1.2");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16333,12 +16333,12 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3.171653","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3.171653","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3.172340","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3.172340","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.171653';
+  const VERSION = '2026.7.3.172340';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -16719,6 +16719,10 @@ ${lines}
       .gt-cons-tbl th.gt-cons-col{text-align:center;width:30px}
       .gt-cons-tbl th.gt-cons-colsel{cursor:pointer;color:#2e6da4}
       .gt-cons-tbl th.gt-cons-colsel:hover{background:#eef4fb;border-radius:4px}
+      .gt-cons-coll{font-weight:700}
+      .gt-fmt{display:inline-flex;gap:2px;vertical-align:middle;margin:0 4px}
+      .gt-fmt-b{display:inline-block;min-width:13px;box-sizing:border-box;padding:0 3px;border-radius:3px;font:700 9px/14px -apple-system,Segoe UI,Arial,sans-serif;color:#fff;text-align:center;letter-spacing:.02em}
+      .gt-cons-col .gt-fmt{margin:2px 0 0;justify-content:center}
       .gt-cons-tbl td{padding:4px 8px;border-bottom:1px solid #eef0f3;vertical-align:top}
       .gt-cons-role{color:#556;white-space:nowrap}
       .gt-cons-cr{color:#8892a0}
@@ -17049,6 +17053,24 @@ ${lines}
     return [...new Set(out.map(s => String(s).toLowerCase()))];
   }
 
+  // ── format-family markers (#350): collapse any MB format to Digital / Vinyl / CD / Cassette, drawn as a
+  // compact colored badge (full format in the tooltip). Optical (DVD/SACD/Blu-ray) folds into CD.
+  const FMT_FAMILY = { Digital: { label: 'D', color: '#4a90d9' }, Vinyl: { label: 'LP', color: '#3a3f47' }, CD: { label: 'CD', color: '#7d8894' }, Cassette: { label: 'MC', color: '#9a6b3f' } };
+  function formatFamily(f) {
+    f = (f || '').toLowerCase();
+    if (/cassette|tape/.test(f)) return 'Cassette';
+    if (/vinyl|shellac|flexi/.test(f)) return 'Vinyl';
+    if (/cd|sacd|dvd|blu.?ray|hd.?dvd|minidisc|umd|disc/.test(f)) return 'CD';
+    if (/digital|file|download|stream|web/.test(f)) return 'Digital';
+    return '';
+  }
+  const formatFamilies = fmt => [...new Set((fmt || '').split('+').map(formatFamily).filter(Boolean))];
+  function fmtBadges(fmt) {
+    const wrap = el('span', 'gt-fmt');
+    for (const fam of formatFamilies(fmt)) { const b = el('span', 'gt-fmt-b', FMT_FAMILY[fam].label); b.style.background = FMT_FAMILY[fam].color; b.title = fam + (fmt && fmt !== fam ? ` (${fmt})` : ''); wrap.appendChild(b); }
+    return wrap;
+  }
+
   // ── Consolidate RG (#349) ──────────────────────────────────────────────────
   // Build a (role, entity) × release matrix of every release's release-level credits — artist/label/place
   // entity credits. URLs are EXCLUDED (edition-specific: each release has its own discogs / streaming /
@@ -17126,7 +17148,7 @@ ${lines}
   function renderConsMatrix(body, foot, releases, rows) {
     body.textContent = '';
     const leg = el('div', 'gt-cons-leg');
-    releases.forEach(r => { const s = el('span', 'gt-cons-legi' + (r.current ? ' gt-cur' : '')); s.appendChild(el('b', null, r.letter)); s.appendChild(document.createTextNode(' ' + r.title + (r.fmt ? ` · ${r.fmt}` : ''))); leg.appendChild(s); });
+    releases.forEach(r => { const s = el('span', 'gt-cons-legi' + (r.current ? ' gt-cur' : '')); s.appendChild(el('b', null, r.letter)); s.appendChild(fmtBadges(r.fmt)); s.appendChild(document.createTextNode(' ' + r.title)); leg.appendChild(s); });
     body.appendChild(leg);
     const tbl = el('table', 'gt-cons-tbl'), head = el('tr');
     head.append(el('th', 'gt-cons-role', 'Role'), el('th', 'gt-cons-ent', 'Entity'));
@@ -17151,7 +17173,7 @@ ${lines}
     };
     // clickable header letters select/clear an entire release column (skipping format-specific roles)
     releases.forEach(r => {
-      const th = el('th', 'gt-cons-col gt-cons-colsel', r.letter);
+      const th = el('th', 'gt-cons-col gt-cons-colsel'); th.appendChild(el('div', 'gt-cons-coll', r.letter)); th.appendChild(fmtBadges(r.fmt));
       th.title = `${r.title} — click to select / clear every addable credit for this release (skips format-specific)`;
       th.onclick = () => { const p = addableFor(r); const all = p.length && p.every(row => row.propose.has(r.gid)); p.forEach(row => all ? row.propose.delete(r.gid) : row.propose.add(r.gid)); draw(); updatePlan(); };
       head.appendChild(th);

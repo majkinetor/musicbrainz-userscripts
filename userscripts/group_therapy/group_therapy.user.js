@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.171653
+// @version      2026.7.3.172340
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.171653';
+  const VERSION = '2026.7.3.172340';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -396,6 +396,10 @@
       .gt-cons-tbl th.gt-cons-col{text-align:center;width:30px}
       .gt-cons-tbl th.gt-cons-colsel{cursor:pointer;color:#2e6da4}
       .gt-cons-tbl th.gt-cons-colsel:hover{background:#eef4fb;border-radius:4px}
+      .gt-cons-coll{font-weight:700}
+      .gt-fmt{display:inline-flex;gap:2px;vertical-align:middle;margin:0 4px}
+      .gt-fmt-b{display:inline-block;min-width:13px;box-sizing:border-box;padding:0 3px;border-radius:3px;font:700 9px/14px -apple-system,Segoe UI,Arial,sans-serif;color:#fff;text-align:center;letter-spacing:.02em}
+      .gt-cons-col .gt-fmt{margin:2px 0 0;justify-content:center}
       .gt-cons-tbl td{padding:4px 8px;border-bottom:1px solid #eef0f3;vertical-align:top}
       .gt-cons-role{color:#556;white-space:nowrap}
       .gt-cons-cr{color:#8892a0}
@@ -726,6 +730,24 @@
     return [...new Set(out.map(s => String(s).toLowerCase()))];
   }
 
+  // ── format-family markers (#350): collapse any MB format to Digital / Vinyl / CD / Cassette, drawn as a
+  // compact colored badge (full format in the tooltip). Optical (DVD/SACD/Blu-ray) folds into CD.
+  const FMT_FAMILY = { Digital: { label: 'D', color: '#4a90d9' }, Vinyl: { label: 'LP', color: '#3a3f47' }, CD: { label: 'CD', color: '#7d8894' }, Cassette: { label: 'MC', color: '#9a6b3f' } };
+  function formatFamily(f) {
+    f = (f || '').toLowerCase();
+    if (/cassette|tape/.test(f)) return 'Cassette';
+    if (/vinyl|shellac|flexi/.test(f)) return 'Vinyl';
+    if (/cd|sacd|dvd|blu.?ray|hd.?dvd|minidisc|umd|disc/.test(f)) return 'CD';
+    if (/digital|file|download|stream|web/.test(f)) return 'Digital';
+    return '';
+  }
+  const formatFamilies = fmt => [...new Set((fmt || '').split('+').map(formatFamily).filter(Boolean))];
+  function fmtBadges(fmt) {
+    const wrap = el('span', 'gt-fmt');
+    for (const fam of formatFamilies(fmt)) { const b = el('span', 'gt-fmt-b', FMT_FAMILY[fam].label); b.style.background = FMT_FAMILY[fam].color; b.title = fam + (fmt && fmt !== fam ? ` (${fmt})` : ''); wrap.appendChild(b); }
+    return wrap;
+  }
+
   // ── Consolidate RG (#349) ──────────────────────────────────────────────────
   // Build a (role, entity) × release matrix of every release's release-level credits — artist/label/place
   // entity credits. URLs are EXCLUDED (edition-specific: each release has its own discogs / streaming /
@@ -803,7 +825,7 @@
   function renderConsMatrix(body, foot, releases, rows) {
     body.textContent = '';
     const leg = el('div', 'gt-cons-leg');
-    releases.forEach(r => { const s = el('span', 'gt-cons-legi' + (r.current ? ' gt-cur' : '')); s.appendChild(el('b', null, r.letter)); s.appendChild(document.createTextNode(' ' + r.title + (r.fmt ? ` · ${r.fmt}` : ''))); leg.appendChild(s); });
+    releases.forEach(r => { const s = el('span', 'gt-cons-legi' + (r.current ? ' gt-cur' : '')); s.appendChild(el('b', null, r.letter)); s.appendChild(fmtBadges(r.fmt)); s.appendChild(document.createTextNode(' ' + r.title)); leg.appendChild(s); });
     body.appendChild(leg);
     const tbl = el('table', 'gt-cons-tbl'), head = el('tr');
     head.append(el('th', 'gt-cons-role', 'Role'), el('th', 'gt-cons-ent', 'Entity'));
@@ -828,7 +850,7 @@
     };
     // clickable header letters select/clear an entire release column (skipping format-specific roles)
     releases.forEach(r => {
-      const th = el('th', 'gt-cons-col gt-cons-colsel', r.letter);
+      const th = el('th', 'gt-cons-col gt-cons-colsel'); th.appendChild(el('div', 'gt-cons-coll', r.letter)); th.appendChild(fmtBadges(r.fmt));
       th.title = `${r.title} — click to select / clear every addable credit for this release (skips format-specific)`;
       th.onclick = () => { const p = addableFor(r); const all = p.length && p.every(row => row.propose.has(r.gid)); p.forEach(row => all ? row.propose.delete(r.gid) : row.propose.add(r.gid)); draw(); updatePlan(); };
       head.appendChild(th);
