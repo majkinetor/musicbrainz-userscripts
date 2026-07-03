@@ -36,6 +36,8 @@ Once a URL is settled, the script fetches the platform's metadata (track count, 
 
 **Format marker (#350).** Each release's format is shown as a compact **4-quadrant circle** — Vinyl (top-right), Cassette (top-left), CD (bottom-left), Digital (bottom-right); the present family/families are coloured and the full format is in the tooltip. Any format collapses to those four (optical discs — DVD/SACD/Blu-ray — fold into CD), and a multi-format Discogs/Bandcamp match becomes one glyph instead of a long text list. Prefer text? **Setup → Appearance → Format marker: Circle | Text**.
 
+**Compact unmatched providers (#355).** On releases where most platforms come back empty, the list is mostly faded "not found" rows. Enable **Setup → Layout → Compact unmatched providers** to fold every provider that wasn't found — *except Discogs and Bandcamp, which always keep their full rows* — into a single strip of dimmed brand icons at the bottom. Click an icon to run that platform's search, exactly like clicking its row. A provider only folds once its scan has resolved, so rows don't flicker in and out as results stream in. Off by default.
+
 Link availability is determined by the icon and text color:
 
 1. Color - link is found

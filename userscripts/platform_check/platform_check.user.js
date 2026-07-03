@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.3
+// @version      2026.7.3.213205
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -434,6 +434,18 @@ container.innerHTML = `
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: #999 !important; }
   #mb-pc-panel.pc-icons-mode .pc-st-notfound .pc-plat-ico svg { filter: grayscale(1); opacity: .3; }  /* not found */
+  /* Compact unmatched providers (#355): when on, providers that resolved to "not
+     found" (except Discogs/Bandcamp, which keep their full rows) fold away and are
+     represented as a strip of dimmed brand icons; clicking one runs that provider's
+     search, exactly like clicking its row. The full rows are hidden via a class so
+     the per-provider enable/disable (inline display) is left untouched. */
+  #mb-pc-panel .pc-row.pc-compacted { display: none !important; }
+  .pc-compact-strip { display: none; grid-column: 1 / -1; flex-wrap: wrap; align-items: center; gap: 6px; padding: 2px 0 1px; }
+  #mb-pc-panel .pc-compact-strip.pc-has-icons { display: flex; }
+  .pc-compact-ico { display: inline-flex; align-items: center; justify-content: center; width: var(--pc-icon-size, 22px); height: var(--pc-icon-size, 22px); cursor: pointer; border-radius: 50%; box-sizing: border-box; }
+  .pc-compact-ico svg, .pc-compact-ico img { display: block; width: 100%; height: 100%; }
+  .pc-compact-ico { filter: grayscale(1); opacity: .38; transition: opacity .12s, filter .12s; }
+  .pc-compact-ico:hover { filter: none; opacity: 1; }
   /* barcode mismatch (#182): a thin amber bar on the row's left edge — the barcode
      itself is never shown in the dash, only in the row tooltip + the log. */
   #mb-pc-panel .pc-row.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a; }
@@ -576,6 +588,7 @@ container.innerHTML = `
     <span id="master-${p}" class="pc-master-slot pc-cell-master" style="cursor: default;"></span>
     <span id="val-${p}" class="pc-cell-val">—</span>
   </div>`).join('')}
+  <div id="pc-compact-strip" class="pc-compact-strip"></div>
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
   <div style="display: flex; align-items: center; gap: 6px;">
@@ -704,6 +717,8 @@ providerModal.innerHTML = `
           <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="1row" style="margin: 0;"> 1 row</label>
           <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="2row" style="margin: 0;"> 2 rows</label>
         </div>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;" title="Fold every provider that wasn't found (except Discogs and Bandcamp) into a single strip of dimmed icons — click an icon to search that platform, just like clicking its row.">
+          <input type="checkbox" id="mb-compact-unmatched" style="margin: 0; width: 16px; height: 16px;"> Compact <b>unmatched</b> providers</label>
         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 4px 0;">
           <span style="min-width: 44px;">Gap</span><span style="color: #888; font-size: 12px;">row</span>
           <input type="range" id="mb-row-gap" min="0" max="10" step="1" style="flex: 1; min-width: 0; margin: 0;"><span id="mb-row-gap-val" style="min-width: 14px; text-align: right; color: #666;"></span>
@@ -761,7 +776,11 @@ else sidebar.prepend(container);
 // art <img> finishes loading — so a content-sized sidebar can't later be stretched
 // wide by either. (Measuring later would risk capturing an already-widened sidebar.)
 const naturalW = sidebar.clientWidth;
-if (naturalW > 40) container.style.maxWidth = naturalW + 'px';
+// #355: pin a STABLE width (not just a max) so the panel doesn't visibly grow/reflow
+// as async scan results stream longer meta lines in — the "epileptic" resize. At the
+// sidebar's full width the panel starts at its final size; the label column
+// (minmax(0,1fr) + ellipsis) absorbs long text instead of widening the box.
+if (naturalW > 40) { container.style.maxWidth = naturalW + 'px'; container.style.width = naturalW + 'px'; }
 
 const logPanel = document.getElementById('mb-finder-log-panel');
 const providerRows = Object.fromEntries(PROVIDER_ORDER.map(p => [p, document.getElementById(`row-${p}`)]));
@@ -772,6 +791,7 @@ PROVIDER_ORDER.forEach(p => {
 });
 // platform brand icons (default on) — class on the panel hides them all via CSS
 container.classList.toggle('pc-icons-mode', GM_getValue('pc:show-icons', true));
+container.classList.toggle('pc-compact-unmatched', GM_getValue('pc:compact-unmatched', false));   // #355 (opt-in)
 container.classList.toggle('pc-no-names', !GM_getValue('pc:show-names', false));   // names hidden by default (#173) — the brand icon identifies the row
 // row layout — 1-row aligned grid (default) vs 2-row stacked (issue #173)
 container.classList.add(GM_getValue('pc:layout', '1row') === '2row' ? 'pc-layout-2row' : 'pc-layout-1row');
@@ -951,6 +971,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-format-mode').disabled = !GM_getValue('pc:respect-format', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
+    document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', false);
     const marker = GM_getValue('pc:mb-marker', 'circle');
     providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => { r.checked = r.value === marker; });
     const fmtMarkerMode = GM_getValue('pc:format-marker', 'circle');
@@ -980,6 +1001,11 @@ PROVIDER_ORDER.forEach(p => {
 document.getElementById('mb-show-icons').addEventListener('change', e => {
     GM_setValue('pc:show-icons', e.target.checked);
     container.classList.toggle('pc-icons-mode', e.target.checked);
+});
+document.getElementById('mb-compact-unmatched').addEventListener('change', e => {
+    GM_setValue('pc:compact-unmatched', e.target.checked);   // #355
+    container.classList.toggle('pc-compact-unmatched', e.target.checked);
+    refreshCompactStrip();
 });
 document.getElementById('mb-show-names').addEventListener('change', e => {
     GM_setValue('pc:show-names', e.target.checked);
@@ -1368,6 +1394,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         row.onclick       = (e) => rowOpen(e, false);
         row.oncontextmenu = (e) => rowOpen(e, true);
         row.style.cursor  = 'pointer';
+        row.dataset.done  = '1';   // #355: this provider's scan resolved — eligible for the compact strip
     }
     const plat = document.getElementById(`plat-${p}`);
     if (plat) {
@@ -1394,6 +1421,41 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // Meta cells: year · format · label, each its own grid cell so the columns
     // align across providers (1-row layout) — see setMetaCells.
     setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, year, format, label);
+    refreshCompactStrip();   // #355
+}
+
+// #355: rebuild the "compact unmatched providers" strip from the rows' current state.
+// A provider folds into the strip only once its scan has RESOLVED (dataset.done) and
+// came back not-found — pending providers keep their full row so nothing flickers in
+// and back out. Discogs and Bandcamp always keep their full rows. Disabled providers
+// (prov_<p> off) are skipped entirely. Cheap enough to run after every updateRow.
+function refreshCompactStrip() {
+    const strip = document.getElementById('pc-compact-strip');
+    if (!strip) return;
+    const on = container.classList.contains('pc-compact-unmatched');
+    strip.textContent = '';
+    if (on) PROVIDER_ORDER.forEach(p => {
+        if (p === 'discogs' || p === 'bandcamp') return;
+        const row = document.getElementById(`row-${p}`);
+        if (!row) return;
+        const compact = on && row.dataset.done === '1' && row.classList.contains('pc-st-notfound')
+            && GM_getValue(`prov_${p}`, true);
+        row.classList.toggle('pc-compacted', !!compact);
+        if (!compact) return;
+        const a = document.getElementById(`mb-online-${p}`);
+        const ico = document.createElement('span');
+        ico.className = 'pc-compact-ico';
+        ico.title = `${PROVIDER_NAME[p]} — not found · click to search`;
+        ico.innerHTML = PROVIDER_ICON[p] || '';
+        ico.addEventListener('click', () => {
+            const search = (a && a.dataset.searchUrl) || null;
+            if (search) window.open(search, '_blank', 'noopener');
+            else row.click();   // fall back to the row's own open behaviour
+        });
+        strip.appendChild(ico);
+    });
+    else PROVIDER_ORDER.forEach(p => { const r = document.getElementById(`row-${p}`); if (r) r.classList.remove('pc-compacted'); });
+    strip.classList.toggle('pc-has-icons', strip.children.length > 0);
 }
 
 // Fill the three meta cells (year / format / label) for a row. The "·"
@@ -3124,7 +3186,7 @@ function resetRows() {
         const plat = document.getElementById(`plat-${p}`);
         if (plat) { plat.onclick = null; plat.style.cursor = 'default'; }
         const row = document.getElementById(`row-${p}`);
-        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); row.onclick = null; row.oncontextmenu = null; row.style.cursor = ''; }   // back to "not found" look
+        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match', 'pc-compacted'); row.classList.add('pc-st-notfound'); row.onclick = null; row.oncontextmenu = null; row.style.cursor = ''; delete row.dataset.done; }   // back to "not found" look, un-folded (#355)
         if (val)  { val.textContent = '—'; val.style.color = '#BF616A'; }   // neutral dash while re-scanning
         setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, null, null, null);
         // Reset the anchor href to its search-fallback so parseMbFromDom on
@@ -3133,6 +3195,7 @@ function resetRows() {
         // in parseMbFromDom too, but defensive cleanup either way.
         if (a)    { a.href = '#'; a.title = ''; }
     }
+    refreshCompactStrip();   // #355: clear the strip while re-scanning
 }
 
 // VA detection used by both the DOM and API parse paths. Hoisted so both
