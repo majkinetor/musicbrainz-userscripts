@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.3.220039
+// @version      2026.7.3.221217
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -434,11 +434,12 @@ container.innerHTML = `
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: #999 !important; }
   #mb-pc-panel.pc-icons-mode .pc-st-notfound .pc-plat-ico svg { filter: grayscale(1); opacity: .3; }  /* not found */
-  /* Compact unmatched providers (#355): when on, providers that resolved to "not
-     found" (except Discogs/Bandcamp, which keep their full rows) fold away and are
-     represented as a strip of dimmed brand icons; clicking one runs that provider's
-     search, exactly like clicking its row. The full rows are hidden via a class so
-     the per-provider enable/disable (inline display) is left untouched. */
+  /* Compact unmatched providers (#355): when on, every provider starts compact — a
+     strip of dimmed brand icons — and rises into its full row when it matches; the
+     unmatched ones stay in the strip (except Discogs/Bandcamp, which always keep their
+     full rows). Clicking a strip icon runs that provider's search, like clicking its
+     row. Full rows are hidden via a class so the per-provider enable/disable (inline
+     display) is left untouched. */
   #mb-pc-panel .pc-row.pc-compacted { display: none !important; }
   /* the strip sits under the full rows with a clear gap; its icons are a touch
      smaller than the row icons (they're a secondary, collapsed representation). */
@@ -797,7 +798,7 @@ PROVIDER_ORDER.forEach(p => {
 });
 // platform brand icons (default on) — class on the panel hides them all via CSS
 container.classList.toggle('pc-icons-mode', GM_getValue('pc:show-icons', true));
-container.classList.toggle('pc-compact-unmatched', GM_getValue('pc:compact-unmatched', false));   // #355 (opt-in)
+container.classList.toggle('pc-compact-unmatched', GM_getValue('pc:compact-unmatched', true));   // #355 (on by default)
 container.classList.toggle('pc-no-names', !GM_getValue('pc:show-names', false));   // names hidden by default (#173) — the brand icon identifies the row
 // row layout — 1-row aligned grid (default) vs 2-row stacked (issue #173)
 container.classList.add(GM_getValue('pc:layout', '1row') === '2row' ? 'pc-layout-2row' : 'pc-layout-1row');
@@ -978,7 +979,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-format-mode').disabled = !GM_getValue('pc:respect-format', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
-    document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', false);
+    document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
     const marker = GM_getValue('pc:mb-marker', 'circle');
     providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => { r.checked = r.value === marker; });
     const fmtMarkerMode = GM_getValue('pc:format-marker', 'circle');
