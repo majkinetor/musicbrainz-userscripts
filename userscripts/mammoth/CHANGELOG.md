@@ -1,5 +1,12 @@
 # Mammoth Changelog
 
+## [2026.7.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.3)
+
+### Features
+
+1. Close settings with the "Escape" key ([#347](https://github.com/majkinetor/musicbrainz-userscripts/issues/347))
+1. Hotkey for activation ([#346](https://github.com/majkinetor/musicbrainz-userscripts/issues/346))
+
 ## [2026.7.2](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.2)
 
 - Small improvements

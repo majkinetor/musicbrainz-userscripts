@@ -1,5 +1,11 @@
 # Platform Check Changelog
 
+## [2026.7.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.3)
+
+### Features
+
+1. Format markers ([#350](https://github.com/majkinetor/musicbrainz-userscripts/issues/350))
+
 ## [2026.7.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.1)
 
 ### Fixes
