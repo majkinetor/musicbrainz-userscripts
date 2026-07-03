@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.124955
+// @version      2026.7.3.133945
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg
@@ -4054,6 +4054,17 @@
     const eligible = (t, f) => !!t && (nativeDiffFlag(t, f) || copyOn(t, f));
     tbl.addEventListener('contextmenu', e => {
       const tr = e.target.closest('tr.tc-recrow'); if (!tr) return;
+      // #348: right-click a TRACK title cell → set the track NAME to its recording's name, IMMEDIATELY
+      // (the mirror of copying track→recording). It's a real title edit, so the Tracklist tab shows the
+      // row changed and its ↺ reverts it. Alt = do the whole column.
+      if (e.target.closest('td.tc-tkt')) {
+        e.preventDefault();
+        const setFromRec = (m, i) => { const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null; if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} } };
+        if (e.altKey) wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => setFromRec(+row.dataset.mi, +row.dataset.ti));
+        else setFromRec(+tr.dataset.mi, +tr.dataset.ti);
+        rerenderRec();
+        return;
+      }
       const inTitle = !!e.target.closest('td.tc-recname');
       const field = inTitle ? 'title' : (e.target.closest('td.tc-recartist') ? 'artist' : null);
       if (!field) return;   // not a recording cell → leave the native menu
@@ -4257,6 +4268,11 @@
         const rev = document.createElement('button'); rev.className = 'tc-rec-rev'; rev.textContent = '↺'; rev.title = 'revert to the original recording';
         rev.onclick = e => { e.stopPropagation(); revertRecording(r); };
         nameCell.appendChild(rev);
+      }
+      // #348: hint the track-title cell's right-click when there's a differing recording name to copy from
+      const tkt = tr.querySelector('.tc-tkt');
+      if (tkt && !r.isNew && r.recName != null && r.recName !== '' && (r.title || '') !== r.recName) {
+        tkt.title = 'right-click: set track title to the recording title “' + r.recName + '” (Alt: whole column)';
       }
       return tr;
   }
