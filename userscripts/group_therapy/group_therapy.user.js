@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.2.1
+// @version      2026.7.3.175240
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.1.31';
+  const VERSION = '2026.7.3.175240';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -380,6 +380,42 @@
       tr.track input.recording, tr.track input.work { accent-color:#2e9e5b; }
       tr.track input.recording:hover, tr.track input.work:hover, button.icon.remove-item:hover {
         outline:2px solid rgba(46,158,91,.55); outline-offset:1px; border-radius:3px; }
+      /* Consolidate RG (#349) — the release×role matrix modal */
+      .gt-cons-ov{position:fixed;inset:0;z-index:2147483646;background:rgba(20,24,30,.44);display:flex;align-items:center;justify-content:center}
+      .gt-cons{background:#fff;border-radius:10px;box-shadow:0 18px 50px rgba(0,0,0,.35);width:min(920px,94vw);max-height:88vh;display:flex;flex-direction:column;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:#222}
+      .gt-cons-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid #e7e9ee}
+      .gt-cons-title{font-weight:700;font-size:14px;flex:1}
+      .gt-cons-x{background:none;border:none;font-size:16px;color:#8892a0;cursor:pointer;padding:2px 8px;border-radius:5px}
+      .gt-cons-x:hover{background:#eef1f6;color:#556}
+      .gt-cons-body{padding:10px 14px;overflow:auto}
+      .gt-cons-leg{display:flex;flex-wrap:wrap;gap:4px 16px;margin-bottom:10px;font-size:12px;color:#556}
+      .gt-cons-legi b{display:inline-block;min-width:16px;text-align:center;background:#eef4fb;border:1px solid #cfe0f0;border-radius:4px;color:#2e6da4;margin-right:2px}
+      .gt-cons-legi.gt-cur b{background:#2e6da4;color:#fff}
+      .gt-cons-legt{color:inherit;text-decoration:none}
+      .gt-cons-legt:hover{text-decoration:underline;color:#2e6da4}
+      .gt-cons-tbl{border-collapse:collapse;width:100%}
+      .gt-cons-tbl th{font-size:11px;color:#6a7482;text-transform:uppercase;letter-spacing:.02em;text-align:left;padding:4px 8px;border-bottom:1px solid #ccc}
+      .gt-cons-tbl th.gt-cons-col{text-align:center;width:30px}
+      .gt-cons-tbl th.gt-cons-colsel{cursor:pointer;color:#2e6da4}
+      .gt-cons-tbl th.gt-cons-colsel:hover{background:#eef4fb;border-radius:4px}
+      .gt-cons-coll{font-weight:700}
+      .gt-fmt{display:inline-flex;gap:2px;vertical-align:middle;margin:0 4px}
+      .gt-fmt-b{display:inline-block;min-width:13px;box-sizing:border-box;padding:0 3px;border-radius:3px;font:700 9px/14px -apple-system,Segoe UI,Arial,sans-serif;color:#fff;text-align:center;letter-spacing:.02em}
+      .gt-cons-col .gt-fmt{margin:2px 0 0;justify-content:center}
+      .gt-cons-tbl td{padding:4px 8px;border-bottom:1px solid #eef0f3;vertical-align:top}
+      .gt-cons-role{color:#556;white-space:nowrap}
+      .gt-cons-cr{color:#8892a0}
+      .gt-cons-cell{text-align:center;font-weight:700;width:30px;user-select:none}
+      .gt-cons-cell.gt-has{color:#2e9e5b}
+      .gt-cons-cell.gt-prop{color:#2e6da4;outline:1px dashed #9cc2e6;outline-offset:-3px;border-radius:4px}
+      .gt-cons-cell.gt-none{color:#cdd3da}
+      .gt-cons-foot{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #e7e9ee}
+      .gt-cons-btn{font:600 13px inherit;padding:5px 14px;border-radius:6px;border:1px solid #cfe0f0;background:#eef4fb;color:#2e6da4;cursor:pointer}
+      .gt-cons-btn:hover{background:#e2edf8}
+      .gt-cons-apply{margin-left:auto;background:#2e9e5b;border-color:#2e9e5b;color:#fff}
+      .gt-cons-apply:hover{background:#278a4f}
+      .gt-cons-apply:disabled{background:#c9ced4;border-color:#c9ced4;cursor:default}
+      .gt-cons-plan{color:#556;font-size:12px}
     `;
     document.head.appendChild(s);
   }
@@ -651,6 +687,11 @@
     b.onclick = () => openCopyFromPopover(b);
     h2.appendChild(b);
     cloneBtnRef = b;
+    const cons = el('button', 'gt-clone-btn', '▦ Consolidate RG…');
+    cons.title = 'Spread release-level credits across every release in this group (union minus format-specific)';
+    cons.type = 'button';
+    cons.onclick = () => openConsolidate();
+    h2.appendChild(cons);
     const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — about / help';
     cfg.onclick = () => openAboutPopover(cfg);
     h2.appendChild(cfg);
@@ -670,19 +711,222 @@
   }
   const trackPosOfRow = tr => posLabel(tr);
 
-  // ── format-aware cleansing (#338) ─────────────────────────────────────────
-  // When copying credits onto a destination of a given FORMAT, credits whose ROLE is listed for that
-  // format start UNTICKED in the copy checklist (re-tick to override) — e.g. don't carry a vinyl-only
-  // production credit onto a digital edition. Keys = format-name substrings (case-insensitive),
-  // values = role-name substrings. Replace the whole map via GM value 'gt-format-exclude' (JSON object).
-  const FORMAT_EXCLUDE_DEFAULT = { digital: ['lacquer', 'vinyl', 'pressed', 'printed', 'manufactured'] };
-  function formatExcludeMap() { try { const raw = (typeof GM_getValue === 'function') && GM_getValue('gt-format-exclude', ''); if (raw) return JSON.parse(raw); } catch (e) {} return FORMAT_EXCLUDE_DEFAULT; }
+  // ── format-aware cleansing (#338, #349) ───────────────────────────────────
+  // When copying/consolidating credits onto a destination of a given FORMAT, credits whose ROLE is
+  // format-inappropriate start UNTICKED (re-tick to override). Two layers:
+  //   FORMAT_EXCLUDE — format-substring → role-substrings dropped FOR that format (physical-only roles off
+  //     a digital edition). Override via GM value 'gt-format-exclude' (JSON object).
+  //   FORMAT_ONLY — role-substring → the ONLY format families it belongs to; dropped from every OTHER
+  //     format. Lacquer cutting is vinyl-only; glass mastering is optical-disc-only (CD/DVD/SACD/Blu-ray).
+  //     Override via GM value 'gt-format-only' (JSON object).
+  const FORMAT_EXCLUDE_DEFAULT = { digital: ['vinyl', 'pressed', 'printed', 'manufactured'] };
+  const FORMAT_ONLY_DEFAULT = { lacquer: ['vinyl'], glass: ['cd', 'dvd', 'sacd', 'blu-ray'] };
+  const _gmJson = (key, def) => { try { const raw = (typeof GM_getValue === 'function') && GM_getValue(key, ''); if (raw) return JSON.parse(raw); } catch (e) {} return def; };
+  function formatExcludeMap() { return _gmJson('gt-format-exclude', FORMAT_EXCLUDE_DEFAULT); }
+  function formatOnlyMap() { return _gmJson('gt-format-only', FORMAT_ONLY_DEFAULT); }
   function formatExcludeRolesFor(fmt) {
     fmt = (fmt || '').toLowerCase(); if (!fmt) return [];
-    const map = formatExcludeMap(), out = [];
-    for (const k in map) if (fmt.includes(String(k).toLowerCase())) out.push(...(map[k] || []));
-    return out.map(s => String(s).toLowerCase());
+    const out = [], excl = formatExcludeMap(), only = formatOnlyMap();
+    for (const k in excl) if (fmt.includes(String(k).toLowerCase())) out.push(...(excl[k] || []));
+    for (const role in only) if (!(only[role] || []).some(f => fmt.includes(String(f).toLowerCase()))) out.push(role);
+    return [...new Set(out.map(s => String(s).toLowerCase()))];
   }
+
+  // ── format-family markers (#350): collapse any MB format to Digital / Vinyl / CD / Cassette, drawn as a
+  // compact colored badge (full format in the tooltip). Optical (DVD/SACD/Blu-ray) folds into CD.
+  const FMT_FAMILY = { Digital: { label: 'D', color: '#4a90d9' }, Vinyl: { label: 'LP', color: '#3a3f47' }, CD: { label: 'CD', color: '#7d8894' }, Cassette: { label: 'MC', color: '#9a6b3f' } };
+  function formatFamily(f) {
+    f = (f || '').toLowerCase();
+    if (/cassette|tape/.test(f)) return 'Cassette';
+    if (/vinyl|shellac|flexi/.test(f)) return 'Vinyl';
+    if (/cd|sacd|dvd|blu.?ray|hd.?dvd|minidisc|umd|disc/.test(f)) return 'CD';
+    if (/digital|file|download|stream|web/.test(f)) return 'Digital';
+    return '';
+  }
+  const formatFamilies = fmt => [...new Set((fmt || '').split('+').map(formatFamily).filter(Boolean))];
+  function fmtBadges(fmt) {
+    const wrap = el('span', 'gt-fmt');
+    for (const fam of formatFamilies(fmt)) { const b = el('span', 'gt-fmt-b', FMT_FAMILY[fam].label); b.style.background = FMT_FAMILY[fam].color; b.title = fam + (fmt && fmt !== fam ? ` (${fmt})` : ''); wrap.appendChild(b); }
+    return wrap;
+  }
+
+  // ── Consolidate RG (#349) ──────────────────────────────────────────────────
+  // Build a (role, entity) × release matrix of every release's release-level credits — artist/label/place
+  // entity credits. URLs are EXCLUDED (edition-specific: each release has its own discogs / streaming /
+  // purchase link, so spreading them is wrong); recording/work are excluded too (shared already). Propose
+  // the union minus format-specific roles, and let the user
+  // toggle cells, whole columns (click a header letter), or the whole matrix (Auto select). Apply POSTs
+  // the additions as edit_type:90 relationship-creates to /ws/js/edit/create — the internal endpoint ISRC
+  // Scout uses (session-cookie auth, no CSRF). We read via /ws/js for the NUMERIC linkTypeID + entity
+  // credits the edit API needs; formats come from the RG enumeration.
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // fetch one release's release-level rels, retrying on rate-limit (429/503) and transient errors with backoff
+  async function consFetchRels(gid, tries = 4) {
+    for (let i = 0; i < tries; i++) {
+      try {
+        const res = await fetch('/ws/js/entity/' + gid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } });
+        if ((res.status === 429 || res.status === 503) && i < tries - 1) { await sleep(700 * (i + 1)); continue; }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const j = await res.json();
+        return (j.relationships || []).filter(r => r.target && r.target.gid && !['recording', 'work', 'url'].includes(r.target_type));
+      } catch (e) { if (i === tries - 1) throw e; await sleep(600 * (i + 1)); }
+    }
+    return [];
+  }
+  // run worker over items with a bounded number of concurrent tasks (parallel, but throttled)
+  async function throttledMap(items, worker, concurrency = 4) {
+    const out = new Array(items.length); let idx = 0;
+    const run = async () => { while (idx < items.length) { const i = idx++; try { out[i] = await worker(items[i], i); } catch (e) { out[i] = null; } } };
+    await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, run));
+    return out;
+  }
+  const consKey = r => [r.linkTypeID, r.target.gid, (r.attributes || []).map(a => a.typeID).sort((p, q) => p - q).join(','), r.entity0_credit || '', r.entity1_credit || ''].join('|');
+  const consLabel = r => {
+    const ent = r.target_type === 'url' ? (r.target.name || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '') : (r.target.name || '?');
+    const credit = (r.entity0_credit && r.entity0_credit !== r.target.name && r.entity0_credit) || (r.entity1_credit && r.entity1_credit !== r.target.name && r.entity1_credit) || '';
+    return { role: ltName(r.linkTypeID), ent, credit };
+  };
+  const consExcluded = (row, rel) => formatExcludeRolesFor(rel.fmt).some(k => row.label.role.toLowerCase().includes(k));
+  // ── edit_type:90 relationship-create payload for adding `r` onto release `relGid` ──
+  function consAttrs(r) {
+    return (r.attributes || []).map(a => {
+      const gid = (a.type && a.type.gid) || ((W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_attribute_type || {})[a.typeID] || {}).gid;
+      if (!gid) return null;
+      const o = { type: { gid } };
+      if (a.credited_as) o.credited_as = a.credited_as;
+      if (a.text_value) o.text_value = a.text_value;
+      return o;
+    }).filter(Boolean);
+  }
+  function consEdit(r, relGid) {
+    const lt = ((W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type) || {})[r.linkTypeID] || {};
+    const relEnd = { entityType: 'release', gid: relGid }, targetEnd = { entityType: r.target_type, gid: r.target.gid };
+    // entities must match the link type's type0/type1 order; release→url has release as entity0
+    const relIsE0 = lt.type0 === 'release' || r.target_type === 'url';
+    const e = { edit_type: 90, linkTypeID: r.linkTypeID, entities: relIsE0 ? [relEnd, targetEnd] : [targetEnd, relEnd], attributes: consAttrs(r) };
+    if (r.entity0_credit) e.entity0_credit = r.entity0_credit;
+    if (r.entity1_credit) e.entity1_credit = r.entity1_credit;
+    if (r.begin_date) e.begin_date = r.begin_date;
+    if (r.end_date) e.end_date = r.end_date;
+    if (r.ended) e.ended = true;
+    return e;
+  }
+  let consEl = null;
+  function onConsKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closeConsolidate(); } }
+  function closeConsolidate() { if (consEl) { consEl.remove(); consEl = null; document.removeEventListener('keydown', onConsKey, true); } }
+  async function applyConsolidation(releases, rows, refresh) {
+    const byRel = new Map();
+    for (const row of rows) for (const rel of releases) if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { if (!byRel.has(rel.gid)) byRel.set(rel.gid, []); byRel.get(rel.gid).push(row); }
+    const total = [...byRel.values()].reduce((s, a) => s + a.length, 0);
+    if (!total) { toast('Nothing selected to add'); return; }
+    toast(`Applying ${total} edit${total > 1 ? 's' : ''} across ${byRel.size} release${byRel.size > 1 ? 's' : ''}…`);
+    const sig = editNoteSig();
+    let okRel = 0, okEdits = 0; const failed = [];
+    for (const [gid, rowsFor] of byRel) {
+      const rel = releases.find(r => r.gid === gid);
+      const edits = rowsFor.map(row => consEdit(row.sample, gid));
+      const lines = rowsFor.map(row => `• ${row.label.role} — ${row.label.ent}${row.label.credit ? ` (${row.label.credit})` : ''}`);
+      const note = `Consolidated ${edits.length} release-level credit${edits.length > 1 ? 's' : ''} across the release group onto this release:\n${lines.join('\n')}\n\n${sig}`;
+      try {
+        const res = await fetch('/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note, makeVotable: 0 }) });
+        const txt = await res.text().catch(() => ''); let j = null; try { j = JSON.parse(txt); } catch (e) {}
+        if (!res.ok || (j && j.error)) throw new Error((((j && (j.error.message || j.error)) || ('HTTP ' + res.status)) + '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160));
+        okRel++; okEdits += edits.length;
+        rowsFor.forEach(row => { row.present.add(gid); row.propose.delete(gid); });   // reflect success in the matrix
+      } catch (e) { failed.push(`${rel ? rel.letter : gid}: ${(e && e.message) || e}`); }
+      refresh && refresh();
+      await sleep(1200);   // throttle between releases
+    }
+    if (failed.length) toast(`Added ${okEdits} across ${okRel} release(s); ${failed.length} failed — ${failed[0]}`);
+    else toast(`✓ Added ${okEdits} credit${okEdits > 1 ? 's' : ''} across ${okRel} release${okRel > 1 ? 's' : ''} — check your edits`);
+  }
+  function renderConsMatrix(body, foot, releases, rows) {
+    body.textContent = '';
+    const leg = el('div', 'gt-cons-leg');
+    releases.forEach(r => { const s = el('span', 'gt-cons-legi' + (r.current ? ' gt-cur' : '')); s.appendChild(el('b', null, r.letter)); s.appendChild(fmtBadges(r.fmt)); const a = el('a', 'gt-cons-legt', ' ' + r.title); a.href = '/release/' + r.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Open this release in a new tab'; s.appendChild(a); leg.appendChild(s); });
+    body.appendChild(leg);
+    const tbl = el('table', 'gt-cons-tbl'), head = el('tr');
+    head.append(el('th', 'gt-cons-role', 'Role'), el('th', 'gt-cons-ent', 'Entity'));
+    const addableFor = rel => rows.filter(row => !row.present.has(rel.gid) && !consExcluded(row, rel));   // not present + not format-specific
+    const updatePlan = () => { let e = 0; const rs = new Set(); rows.forEach(row => releases.forEach(rel => { if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { e++; rs.add(rel.gid); } })); planLbl.textContent = e ? `${e} addition${e > 1 ? 's' : ''} across ${rs.size} release${rs.size > 1 ? 's' : ''}` : 'nothing selected'; applyBtn.disabled = !e; };
+    const draw = () => {
+      [...tbl.querySelectorAll('tr.gt-cons-row')].forEach(n => n.remove());
+      for (const row of rows) {
+        const tr = el('tr', 'gt-cons-row');
+        tr.appendChild(el('td', 'gt-cons-role', row.label.role));
+        const ent = el('td', 'gt-cons-ent'); ent.appendChild(document.createTextNode(row.label.ent)); if (row.label.credit) ent.appendChild(el('span', 'gt-cons-cr', ' “' + row.label.credit + '”')); tr.appendChild(ent);
+        for (const rel of releases) {
+          const td = el('td', 'gt-cons-cell'), has = row.present.has(rel.gid), prop = row.propose.has(rel.gid);
+          td.classList.add(has ? 'gt-has' : prop ? 'gt-prop' : 'gt-none');
+          td.textContent = has || prop ? rel.letter : '·';
+          if (has) td.title = 'already present';
+          else { td.style.cursor = 'pointer'; td.title = prop ? 'will be added — click to skip' : `skipped (format-specific for ${rel.fmt || '?'}) — click to add`; td.onclick = () => { row.propose.has(rel.gid) ? row.propose.delete(rel.gid) : row.propose.add(rel.gid); draw(); updatePlan(); }; }
+          tr.appendChild(td);
+        }
+        tbl.appendChild(tr);
+      }
+    };
+    // clickable header letters select/clear an entire release column (skipping format-specific roles)
+    releases.forEach(r => {
+      const th = el('th', 'gt-cons-col gt-cons-colsel'); th.appendChild(el('div', 'gt-cons-coll', r.letter)); th.appendChild(fmtBadges(r.fmt));
+      th.title = `${r.title} — click to select / clear every addable credit for this release (skips format-specific)`;
+      th.onclick = () => { const p = addableFor(r); const all = p.length && p.every(row => row.propose.has(r.gid)); p.forEach(row => all ? row.propose.delete(r.gid) : row.propose.add(r.gid)); draw(); updatePlan(); };
+      head.appendChild(th);
+    });
+    tbl.appendChild(head); body.appendChild(tbl);
+    foot.textContent = '';
+    const autoBtn = el('button', 'gt-cons-btn', 'Auto select'); autoBtn.type = 'button'; autoBtn.title = 'Select every addable credit across all releases, except format-specific roles';
+    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.title = 'Deselect everything';
+    const planLbl = el('span', 'gt-cons-plan');
+    const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
+    autoBtn.onclick = () => { releases.forEach(rel => addableFor(rel).forEach(row => row.propose.add(rel.gid))); draw(); updatePlan(); };
+    clearBtn.onclick = () => { rows.forEach(row => row.propose.clear()); draw(); updatePlan(); };
+    applyBtn.onclick = () => applyConsolidation(releases, rows, () => { draw(); updatePlan(); });
+    foot.append(autoBtn, clearBtn, planLbl, applyBtn);
+    draw(); updatePlan();
+  }
+  async function openConsolidate() {
+    closeConsolidate(); closePopover();
+    consEl = el('div', 'gt-cons-ov');
+    const panel = el('div', 'gt-cons'), hdr = el('div', 'gt-cons-hdr');
+    hdr.appendChild(el('span', 'gt-cons-title', 'Consolidate release-level credits across the group'));
+    const x = el('button', 'gt-cons-x', '✕'); x.type = 'button'; x.onclick = closeConsolidate; hdr.appendChild(x);
+    const body = el('div', 'gt-cons-body'), foot = el('div', 'gt-cons-foot');
+    body.appendChild(el('div', 'gt-pop-note', 'Loading release group…'));
+    panel.append(hdr, body, foot); consEl.appendChild(panel); document.body.appendChild(consEl);
+    document.addEventListener('keydown', onConsKey, true);
+    consEl.addEventListener('mousedown', e => { if (e.target === consEl) closeConsolidate(); });
+    const note = m => { const n = body.querySelector('.gt-pop-note'); if (n) n.textContent = m; };
+    let releases;
+    try {
+      const here = RE().state.entity.gid;
+      const rg = await (await fetch('/ws/2/release/' + here + '?inc=release-groups&fmt=json', { headers: { Accept: 'application/json' } })).json();
+      const rgid = rg['release-group'] && rg['release-group'].id;
+      if (!rgid) return note('No release group');
+      const sib = await (await fetch('/ws/2/release?release-group=' + rgid + '&inc=media&limit=100&fmt=json', { headers: { Accept: 'application/json' } })).json();
+      releases = (sib.releases || []).sort((a, b) => (a.date || '~').localeCompare(b.date || '~')).map((r, i) => ({
+        gid: r.id, title: r.title + (r.disambiguation ? ` (${r.disambiguation})` : ''), letter: (i < 26 ? '' : String.fromCharCode(64 + Math.floor(i / 26))) + String.fromCharCode(65 + (i % 26)),
+        fmt: [...new Set((r.media || []).map(m => m.format).filter(Boolean))].join('+') || '', current: r.id === here,
+      }));
+    } catch (e) { return note('Could not load release group'); }
+    if (!releases || releases.length < 2) return note('Need at least 2 releases in the group to consolidate');
+    // fetch every release's rels in parallel (throttled + retried), reporting progress as they land
+    let done = 0;
+    const fetched = await throttledMap(releases, async rel => {
+      const rels = await consFetchRels(rel.gid);
+      note(`Reading releases… ${++done}/${releases.length}`);
+      return { rel, rels };
+    });
+    const rows = new Map();
+    for (const f of fetched) {
+      if (!f) continue;   // a release that failed all retries — skipped, matrix still builds from the rest
+      for (const r of f.rels) { const k = consKey(r); let row = rows.get(k); if (!row) { row = { key: k, sample: r, label: consLabel(r), present: new Set(), propose: new Set() }; rows.set(k, row); } row.present.add(f.rel.gid); }
+    }
+    if (!rows.size) return note('No release-level credits found in this group');
+    const rowList = [...rows.values()].sort((a, b) => (a.label.role + a.label.ent).localeCompare(b.label.role + b.label.ent));
+    renderConsMatrix(body, foot, releases, rowList);
+  }
+
   // recording checkbox → copy every recording rel except work/url/recording-samples
   // (so artists, ℗/© labels, recorded-at places, …) onto the ticked recordings
   function openCopyMenu(sourceTr, x, y) {
