@@ -23,8 +23,21 @@
 | [Mammoth](../mammoth) | Remember & recall edit notes and field values |
 | [Platform Check](../platform_check) | Find/verify a release's URLs on online platforms |
 
-
 The bundled scripts are listed in [`members.txt`](./members.txt).
+
+Version details are printed in Console:
+
+```
+String Theory  v2026.7.3.140303
+String Theory bundles:
+  · Apollo Editor v2026.7.2.2
+  · Art Station v2026.7.2.1
+  · Credit Hoarder v2026.7.2
+  · Group Therapy v2026.7.2.1
+  · ISRC Scout v2026.7.2
+  · Mammoth v2026.7.2.6
+  · Platform Check v2026.7.1.2
+```
 
 ## How it's built
 
