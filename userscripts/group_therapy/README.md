@@ -15,6 +15,7 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 <img width="500" src="./screenshots/copy-release.png" /><br>
 <img width="800" src="./screenshots/consolidation.png" /><br>
 <img width="500" src="./screenshots/highlight.png" /><br>
+<img width="650" src="./screenshots/edit-note.png" />
 </details>
 
 **Note**: [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc) is valuable companion script.
@@ -93,7 +94,7 @@ Hover any entity name or role label to light up every matching occurrence on the
 
 When (and only when) you actually **use** Group Therapy on a page, it stamps MB's edit-note field with a signature line and, under it, an accumulating list of what it did — e.g. *Copied 2 credits from track 1 to tracks 2–5*, *Removed guitar (14)*, *Copied release credits from “The Vibe! Vol. 9”*. Any note already in the field (from another script, or your own text) is preserved ahead of ours, the signature is written once, and identical action lines aren't repeated. Nothing is submitted — it's there for you to review before you save.
 
-<img width="500" src="./screenshots/edit-note.png" />
+<img width="650" src="./screenshots/edit-note.png" />
 
 ## Shortcuts
 
