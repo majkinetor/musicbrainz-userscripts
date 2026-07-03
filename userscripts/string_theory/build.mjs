@@ -93,6 +93,7 @@ function scriptShadow(meta) {
   for (const k of ['name', 'namespace', 'version', 'description', 'author', 'homepage', 'homepageURL', 'supportURL', 'icon']) {
     const v = single(meta, k); m[k] = v == null ? null : v;
   }
+  if (m.name) m.name += '*';   // mark bundle-run scripts (their edit-note signatures read GM_info.script.name)
   return JSON.stringify(m);
 }
 
