@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.181935
+// @version      2026.7.3.183314
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.181935';
+  const VERSION = '2026.7.3.183314';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -395,13 +395,13 @@
       .gt-cons-legt:hover{text-decoration:underline;color:#2e6da4}
       .gt-cons-leglabel{font-size:11px;color:#8892a0;text-transform:uppercase;letter-spacing:.02em;margin-bottom:5px}
       .gt-cons-leg{gap:5px 6px}
-      .gt-cons-selitem{cursor:pointer;border:1px solid transparent;border-radius:6px;padding:2px 7px}
+      .gt-cons-selitem{cursor:pointer;border:1px solid transparent;border-radius:6px;padding:2px 7px;display:inline-flex;align-items:center}
       .gt-cons-selitem.gt-on{background:#eef4fb;border-color:#cfe0f0}
       .gt-cons-selitem:not(.gt-on){opacity:.5}
       .gt-cons-selitem:not(.gt-on):hover{opacity:.85;background:#f2f4f7}
       .gt-cons-legopen{text-decoration:none;color:#8892a0;margin-left:5px}
       .gt-cons-legopen:hover{color:#2e6da4}
-      .gt-cons-legyr{color:#8892a0}
+      .gt-cons-legyr{color:#8892a0;margin-left:5px}
       .gt-cons-paste{display:block;width:100%;box-sizing:border-box;margin:9px 0 2px;padding:5px 8px;border:1px solid #cfd4da;border-radius:5px;font:12px inherit;color:#222;outline:none}
       .gt-cons-paste:focus{border-color:#4a90d9}
       .gt-cons-tbl{border-collapse:collapse;width:100%}
