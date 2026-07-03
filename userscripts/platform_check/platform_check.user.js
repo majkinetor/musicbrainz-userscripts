@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.3.184511
+// @version      2026.7.3.191751
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -481,6 +481,10 @@ container.innerHTML = `
   .pc-cell-year, .pc-cell-format, .pc-cell-label {
                   font-size: 10px; color: #999; font-family: sans-serif; white-space: nowrap; overflow: hidden; }
   .pc-cell-label { text-overflow: ellipsis; min-width: 0; }
+  /* format-family quadrant marker (#350) — vertically centered against the meta text */
+  .pc-cell-format .pc-fmt { vertical-align: -2px; }
+  #mb-pc-panel.pc-fmt-text .pc-cell-format .pc-fmt { display: none; }
+  #mb-pc-panel:not(.pc-fmt-text) .pc-cell-format .pc-fmt-txt { display: none; }
   .pc-cell-val  { font-size: 12px; font-weight: bold; font-family: monospace; color: #777; text-align: right; }
   .pc-cell-master { font-size: 11px; min-width: 14px; }
 
@@ -687,6 +691,12 @@ providerModal.innerHTML = `
         <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="glow" style="margin: 0;"> Glow</label>
       </div>
 
+      <div style="display: flex; align-items: center; gap: 12px; margin: 4px 0;" title="Show each release's format as a compact 4-quadrant circle (Vinyl · Cassette · CD · Digital) or as text.">
+        <span style="font-weight: 600; color: #555;">Format marker</span>
+        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="format-marker" value="circle" style="margin: 0;"> Circle</label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="format-marker" value="text" style="margin: 0;"> Text</label>
+      </div>
+
       <div style="font-weight: 600; color: #555; margin: 8px 0 2px;">Layout</div>
       <div style="padding-left: 14px;">
         <div style="display: flex; align-items: center; gap: 12px; margin: 4px 0;">
@@ -766,6 +776,7 @@ container.classList.toggle('pc-no-names', !GM_getValue('pc:show-names', false));
 // row layout — 1-row aligned grid (default) vs 2-row stacked (issue #173)
 container.classList.add(GM_getValue('pc:layout', '1row') === '2row' ? 'pc-layout-2row' : 'pc-layout-1row');
 container.classList.add(GM_getValue('pc:mb-marker', 'circle') === 'glow' ? 'pc-mark-glow' : 'pc-mark-circle');   // how the in-MB marker is drawn
+container.classList.toggle('pc-fmt-text', GM_getValue('pc:format-marker', 'circle') === 'text');   // format as text instead of the quadrant circle
 // compact-view spacing + name font size (#178) — applied as CSS variables the
 // layout rules read (row/column gap in 1-row, row gap = flex gap in 2-row).
 container.style.setProperty('--pc-row-gap',  `${GM_getValue('pc:row-gap', 5)}px`);
@@ -942,6 +953,8 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     const marker = GM_getValue('pc:mb-marker', 'circle');
     providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => { r.checked = r.value === marker; });
+    const fmtMarkerMode = GM_getValue('pc:format-marker', 'circle');
+    providerModal.querySelectorAll('input[name="format-marker"]').forEach(r => { r.checked = r.value === fmtMarkerMode; });
     bpRefreshSetupUI();
     showSetupView('main');   // #188 always open on the main view
     pcOpenModal(providerModal, provCardEl(), 440, false);
@@ -997,6 +1010,11 @@ providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => r.addEven
     GM_setValue('pc:mb-marker', marker);
     container.classList.toggle('pc-mark-glow', marker === 'glow');
     container.classList.toggle('pc-mark-circle', marker !== 'glow');
+}));
+providerModal.querySelectorAll('input[name="format-marker"]').forEach(r => r.addEventListener('change', () => {
+    const mode = (providerModal.querySelector('input[name="format-marker"]:checked') || {}).value || 'circle';
+    GM_setValue('pc:format-marker', mode);
+    container.classList.toggle('pc-fmt-text', mode === 'text');   // live — both are already in the DOM, CSS just swaps which shows
 }));
 // Compact-view sliders (#178): set the matching CSS variable live + persist.
 [['mb-row-gap', 'pc:row-gap', '--pc-row-gap', 5], ['mb-col-gap', 'pc:col-gap', '--pc-col-gap', 5], ['mb-name-size', 'pc:name-size', '--pc-name-size', 12], ['mb-icon-size', 'pc:icon-size', '--pc-icon-size', 22]].forEach(([id, key, prop, def]) => {
@@ -1394,7 +1412,16 @@ function setMetaCells(yearId, formatId, labelId, year, format, label) {
     // 2-digit year to save space in the compact row (#173); full year in tooltip.
     const y2 = hasY ? String(year).slice(-2) : '';
     if (yEl) { yEl.textContent = hasY ? (hasF || hasL ? `${y2} ·` : y2) : ''; yEl.title = hasY ? String(year) : ''; }
-    if (fEl) { fEl.textContent = ''; fEl.title = hasF ? fmt : ''; if (hasF) { fEl.appendChild(fmtMarker(fmt)); if (hasL) fEl.appendChild(document.createTextNode(' ·')); } }
+    if (fEl) {
+        fEl.textContent = ''; fEl.title = hasF ? fmt : '';
+        if (hasF) {
+            const marker = fmtMarker(fmt); fEl.appendChild(marker);
+            // recognized formats render BOTH the circle and a text span; the "Format marker" option toggles
+            // which shows via a panel class, so switching needs no re-scan. Unknown formats stay text-only.
+            if (marker.nodeType === 1) { const t = document.createElement('span'); t.className = 'pc-fmt-txt'; t.textContent = fmt; fEl.appendChild(t); }
+            if (hasL) fEl.appendChild(document.createTextNode(' ·'));
+        }
+    }
     if (lEl) { lEl.textContent = hasL ? label : ''; lEl.title = hasL ? label : ''; }
 }
 
@@ -1421,7 +1448,7 @@ function fmtMarker(fmt) {
     if (!fams.length) return document.createTextNode(normalizeFormat(fmt) || '');   // unknown → keep the text
     const NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('width', '13'); svg.setAttribute('height', '13');
-    svg.style.verticalAlign = 'middle';
+    svg.setAttribute('class', 'pc-fmt');
     // quadrants: Vinyl top-right · Cassette top-left · CD bottom-left · Digital bottom-right
     const QUAD = { Vinyl: [-90, 0], Cassette: [180, 270], CD: [90, 180], Digital: [0, 90] };
     const cx = 12, cy = 12, r = 11, rad = d => d * Math.PI / 180;
