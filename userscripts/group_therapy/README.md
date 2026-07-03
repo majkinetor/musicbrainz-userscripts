@@ -7,14 +7,15 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 - [Changelog](./CHANGELOG.md)
 - [View Users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Group+Therapy)
 
+
+<details><summary>Screenshots</summary>
 <img width="650" src="./screenshots/copy.png" /> 
-<details><summary>More screenshots</summary>
 <img width="500" src="./screenshots/remove.png" /><br>
 <img width="500" src="./screenshots/remove-work.png" /><br>
 <img width="500" src="./screenshots/copy-release.png" /><br>
 <img width="800" src="./screenshots/consolidation.png" /><br>
 <img width="500" src="./screenshots/highlight.png" /><br>
-</details>
+</details><br>
 
 **Note**: [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc) is valuable companion script.
 
@@ -39,6 +40,10 @@ Each option shows its **blast radius** — the count and which tracks (or the re
 
 If you've **selected recordings/works** (ticked their checkboxes), the group options are **scoped to just those** — so *Remove “guitar”* removes it only from the selected recordings, and the menu notes the scope.
 
+<img width="500" src="./screenshots/remove.png" />
+
+<img width="500" src="./screenshots/remove-work.png" />
+
 ### Copy / Move
 
 Tick the destination recordings (MB's own recording checkboxes), then
@@ -53,6 +58,8 @@ Right-click the source recording's checkbox for a menu (its header shows which t
 
 The menu lists each credit with a **checkbox** (all on by default) — untick any you don't want to copy, or **right-click a credit to select only that role** (e.g. just the composers). Copy/Move act on the ticked credits, and the count updates live.
 
+<img width="650" src="./screenshots/copy.png" /> 
+
 #### From release 
 
 The **⧉ Copy from release…** button next to the *Release relationships* heading opens a picker: choose one of this **release group's** other releases — each shown with its **date · country · format · track count** so you can tell editions apart (with an **↗** to open that release in a new tab first) — or use the **＋** to reveal a field and **paste** any release URL/MBID (it acts on paste, no button). It then shows a **checklist** of that release's release-level credits (artists + labels, with credited-as, attributes and dates); pick which to copy onto this release (MB merges any it already has).
@@ -60,6 +67,8 @@ The **⧉ Copy from release…** button next to the *Release relationships* head
 **Format-aware cleansing** — since the source may be a different edition, credits whose role doesn't suit **this** release's format start **unticked** (re-tick to override), so you don't carry a vinyl-only production credit onto a digital edition. Two layers, both configurable:
 - **`gt-format-exclude`** — a *format-name → role-name* substring map; the default unticks pressed/printed/manufactured/vinyl roles on a *digital* edition. Override with a GM value (JSON object).
 - **`gt-format-only`** — a *role-name → the format families it belongs to* map, for roles that suit exactly one format; the default makes *lacquer cutting* vinyl-only and *glass mastering* optical-only (CD/DVD/SACD/Blu-ray), so they're unticked on every other format.
+
+<img width="500" src="./screenshots/copy-release.png" /><br>
 
 #### Across the whole group — Consolidate
 
@@ -72,10 +81,14 @@ This is **release-level only** (recordings are already shared across a group). I
 
 > Best for groups with a handful of editions; a release-selection step for very large groups (many pressings) is planned.
 
+<img width="800" src="./screenshots/consolidation.png" />
+
 
 ### Highlight
 
 Hover any entity name or role label to light up every matching occurrence on the page (existing rels blue/white, newly-added blue/yellow), with a tooltip showing the count and which  tracks / the release it appears on, e.g. *48× · tracks 1–12*.
+
+<img width="500" src="./screenshots/highlight.png" />
 
 ## Shortcuts
 
