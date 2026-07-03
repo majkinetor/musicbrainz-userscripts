@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.172340
+// @version      2026.7.3.172727
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.172340';
+  const VERSION = '2026.7.3.172727';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -758,9 +758,25 @@
   // Scout uses (session-cookie auth, no CSRF). We read via /ws/js for the NUMERIC linkTypeID + entity
   // credits the edit API needs; formats come from the RG enumeration.
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  async function consFetchRels(gid) {
-    const j = await (await fetch('/ws/js/entity/' + gid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } })).json();
-    return (j.relationships || []).filter(r => r.target && r.target.gid && !['recording', 'work', 'url'].includes(r.target_type));
+  // fetch one release's release-level rels, retrying on rate-limit (429/503) and transient errors with backoff
+  async function consFetchRels(gid, tries = 4) {
+    for (let i = 0; i < tries; i++) {
+      try {
+        const res = await fetch('/ws/js/entity/' + gid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } });
+        if ((res.status === 429 || res.status === 503) && i < tries - 1) { await sleep(700 * (i + 1)); continue; }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const j = await res.json();
+        return (j.relationships || []).filter(r => r.target && r.target.gid && !['recording', 'work', 'url'].includes(r.target_type));
+      } catch (e) { if (i === tries - 1) throw e; await sleep(600 * (i + 1)); }
+    }
+    return [];
+  }
+  // run worker over items with a bounded number of concurrent tasks (parallel, but throttled)
+  async function throttledMap(items, worker, concurrency = 4) {
+    const out = new Array(items.length); let idx = 0;
+    const run = async () => { while (idx < items.length) { const i = idx++; try { out[i] = await worker(items[i], i); } catch (e) { out[i] = null; } } };
+    await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, run));
+    return out;
   }
   const consKey = r => [r.linkTypeID, r.target.gid, (r.attributes || []).map(a => a.typeID).sort((p, q) => p - q).join(','), r.entity0_credit || '', r.entity1_credit || ''].join('|');
   const consLabel = r => {
@@ -892,11 +908,17 @@
       }));
     } catch (e) { return note('Could not load release group'); }
     if (!releases || releases.length < 2) return note('Need at least 2 releases in the group to consolidate');
+    // fetch every release's rels in parallel (throttled + retried), reporting progress as they land
+    let done = 0;
+    const fetched = await throttledMap(releases, async rel => {
+      const rels = await consFetchRels(rel.gid);
+      note(`Reading releases… ${++done}/${releases.length}`);
+      return { rel, rels };
+    });
     const rows = new Map();
-    for (const rel of releases) {
-      note(`Reading ${rel.letter} — ${rel.title}…`);
-      try { for (const r of await consFetchRels(rel.gid)) { const k = consKey(r); let row = rows.get(k); if (!row) { row = { key: k, sample: r, label: consLabel(r), present: new Set(), propose: new Set() }; rows.set(k, row); } row.present.add(rel.gid); } } catch (e) {}
-      await sleep(1100);
+    for (const f of fetched) {
+      if (!f) continue;   // a release that failed all retries — skipped, matrix still builds from the rest
+      for (const r of f.rels) { const k = consKey(r); let row = rows.get(k); if (!row) { row = { key: k, sample: r, label: consLabel(r), present: new Set(), propose: new Set() }; rows.set(k, row); } row.present.add(f.rel.gid); }
     }
     if (!rows.size) return note('No release-level credits found in this group');
     const rowList = [...rows.values()].sort((a, b) => (a.label.role + a.label.ent).localeCompare(b.label.role + b.label.ent));
