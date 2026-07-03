@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.163610
+// @version      2026.7.3.165111
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.163610';
+  const VERSION = '2026.7.3.165111';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -394,6 +394,8 @@
       .gt-cons-tbl{border-collapse:collapse;width:100%}
       .gt-cons-tbl th{font-size:11px;color:#6a7482;text-transform:uppercase;letter-spacing:.02em;text-align:left;padding:4px 8px;border-bottom:1px solid #ccc}
       .gt-cons-tbl th.gt-cons-col{text-align:center;width:30px}
+      .gt-cons-tbl th.gt-cons-colsel{cursor:pointer;color:#2e6da4}
+      .gt-cons-tbl th.gt-cons-colsel:hover{background:#eef4fb;border-radius:4px}
       .gt-cons-tbl td{padding:4px 8px;border-bottom:1px solid #eef0f3;vertical-align:top}
       .gt-cons-role{color:#556;white-space:nowrap}
       .gt-cons-cr{color:#8892a0}
@@ -723,37 +725,76 @@
   }
 
   // ── Consolidate RG (#349) ──────────────────────────────────────────────────
-  // Build a (role, entity) × release matrix of every release's release-level ARTIST/LABEL credits,
-  // propose the union minus format-specific roles, and let the user toggle cells. The apply step
-  // (Phase 2) POSTs the additions as edit_type:90 relationship-creates to /ws/js/edit/create (the same
-  // internal endpoint ISRC Scout uses). We read rels via /ws/js so we get the NUMERIC linkTypeID the
-  // edit API needs; formats come from the RG enumeration.
+  // Build a (role, entity) × release matrix of every release's release-level credits (ALL target types
+  // except the shared recording/work), propose the union minus format-specific roles, and let the user
+  // toggle cells, whole columns (click a header letter), or the whole matrix (Auto select). Apply POSTs
+  // the additions as edit_type:90 relationship-creates to /ws/js/edit/create — the internal endpoint ISRC
+  // Scout uses (session-cookie auth, no CSRF). We read via /ws/js for the NUMERIC linkTypeID + entity
+  // credits the edit API needs; formats come from the RG enumeration.
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   async function consFetchRels(gid) {
     const j = await (await fetch('/ws/js/entity/' + gid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } })).json();
-    return (j.relationships || []).filter(r => (r.target_type === 'artist' || r.target_type === 'label') && r.target && r.target.gid);
+    return (j.relationships || []).filter(r => r.target && r.target.gid && !['recording', 'work'].includes(r.target_type));
   }
-  const consKey = r => [r.linkTypeID, r.target_type[0] + ':' + r.target.gid, (r.attributes || []).map(a => a.typeID).sort((p, q) => p - q).join(','), r.entity0_credit || ''].join('|');
-  const consLabel = r => ({ role: ltName(r.linkTypeID), ent: r.target.name || '?', credit: r.entity0_credit && r.entity0_credit !== r.target.name ? r.entity0_credit : '' });
-  function consPropose(rows, releases) {
-    for (const row of rows) {
-      row.propose = new Set();
-      const roleName = row.label.role.toLowerCase();
-      for (const rel of releases) {
-        if (row.present.has(rel.gid)) continue;
-        if (!formatExcludeRolesFor(rel.fmt).some(k => roleName.includes(k))) row.propose.add(rel.gid);
-      }
-    }
+  const consKey = r => [r.linkTypeID, r.target.gid, (r.attributes || []).map(a => a.typeID).sort((p, q) => p - q).join(','), r.entity0_credit || '', r.entity1_credit || ''].join('|');
+  const consLabel = r => {
+    const ent = r.target_type === 'url' ? (r.target.name || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '') : (r.target.name || '?');
+    const credit = (r.entity0_credit && r.entity0_credit !== r.target.name && r.entity0_credit) || (r.entity1_credit && r.entity1_credit !== r.target.name && r.entity1_credit) || '';
+    return { role: ltName(r.linkTypeID), ent, credit };
+  };
+  const consExcluded = (row, rel) => formatExcludeRolesFor(rel.fmt).some(k => row.label.role.toLowerCase().includes(k));
+  // ── edit_type:90 relationship-create payload for adding `r` onto release `relGid` ──
+  function consAttrs(r) {
+    return (r.attributes || []).map(a => {
+      const gid = (a.type && a.type.gid) || ((W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_attribute_type || {})[a.typeID] || {}).gid;
+      if (!gid) return null;
+      const o = { type: { gid } };
+      if (a.credited_as) o.credited_as = a.credited_as;
+      if (a.text_value) o.text_value = a.text_value;
+      return o;
+    }).filter(Boolean);
+  }
+  function consEdit(r, relGid) {
+    const lt = ((W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type) || {})[r.linkTypeID] || {};
+    const relEnd = { entityType: 'release', gid: relGid }, targetEnd = { entityType: r.target_type, gid: r.target.gid };
+    // entities must match the link type's type0/type1 order; release→url has release as entity0
+    const relIsE0 = lt.type0 === 'release' || r.target_type === 'url';
+    const e = { edit_type: 90, linkTypeID: r.linkTypeID, entities: relIsE0 ? [relEnd, targetEnd] : [targetEnd, relEnd], attributes: consAttrs(r) };
+    if (r.entity0_credit) e.entity0_credit = r.entity0_credit;
+    if (r.entity1_credit) e.entity1_credit = r.entity1_credit;
+    if (r.begin_date) e.begin_date = r.begin_date;
+    if (r.end_date) e.end_date = r.end_date;
+    if (r.ended) e.ended = true;
+    return e;
   }
   let consEl = null;
   function onConsKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closeConsolidate(); } }
   function closeConsolidate() { if (consEl) { consEl.remove(); consEl = null; document.removeEventListener('keydown', onConsKey, true); } }
-  function applyConsolidation(releases, rows) {
-    let n = 0; const rs = new Set();
-    for (const row of rows) for (const rel of releases) if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { n++; rs.add(rel.gid); }
-    if (!n) { toast('Nothing to add'); return; }
-    // Phase 2 wires the edit_type:90 POST (validated on beta first). For now, preview the plan.
-    toast(`Plan: ${n} relationship edit${n > 1 ? 's' : ''} across ${rs.size} release${rs.size > 1 ? 's' : ''} — apply lands in the next step`);
+  async function applyConsolidation(releases, rows, refresh) {
+    const byRel = new Map();
+    for (const row of rows) for (const rel of releases) if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { if (!byRel.has(rel.gid)) byRel.set(rel.gid, []); byRel.get(rel.gid).push(row); }
+    const total = [...byRel.values()].reduce((s, a) => s + a.length, 0);
+    if (!total) { toast('Nothing selected to add'); return; }
+    if (!W.confirm(`Create ${total} relationship edit${total > 1 ? 's' : ''} across ${byRel.size} release${byRel.size > 1 ? 's' : ''}?\n\nAuto-applied if you're an auto-editor, otherwise queued for voting.`)) return;
+    const sig = editNoteSig();
+    let okRel = 0, okEdits = 0; const failed = [];
+    for (const [gid, rowsFor] of byRel) {
+      const rel = releases.find(r => r.gid === gid);
+      const edits = rowsFor.map(row => consEdit(row.sample, gid));
+      const lines = rowsFor.map(row => `• ${row.label.role} — ${row.label.ent}${row.label.credit ? ` (${row.label.credit})` : ''}`);
+      const note = `Consolidated ${edits.length} release-level credit${edits.length > 1 ? 's' : ''} across the release group onto this release:\n${lines.join('\n')}\n\n${sig}`;
+      try {
+        const res = await fetch('/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note, makeVotable: 0 }) });
+        const txt = await res.text().catch(() => ''); let j = null; try { j = JSON.parse(txt); } catch (e) {}
+        if (!res.ok || (j && j.error)) throw new Error((((j && (j.error.message || j.error)) || ('HTTP ' + res.status)) + '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160));
+        okRel++; okEdits += edits.length;
+        rowsFor.forEach(row => { row.present.add(gid); row.propose.delete(gid); });   // reflect success in the matrix
+      } catch (e) { failed.push(`${rel ? rel.letter : gid}: ${(e && e.message) || e}`); }
+      refresh && refresh();
+      await sleep(1200);   // throttle between releases
+    }
+    if (failed.length) toast(`Added ${okEdits} across ${okRel} release(s); ${failed.length} failed — ${failed[0]}`);
+    else toast(`✓ Added ${okEdits} credit${okEdits > 1 ? 's' : ''} across ${okRel} release${okRel > 1 ? 's' : ''} — check your edits`);
   }
   function renderConsMatrix(body, foot, releases, rows) {
     body.textContent = '';
@@ -762,13 +803,8 @@
     body.appendChild(leg);
     const tbl = el('table', 'gt-cons-tbl'), head = el('tr');
     head.append(el('th', 'gt-cons-role', 'Role'), el('th', 'gt-cons-ent', 'Entity'));
-    releases.forEach(r => { const th = el('th', 'gt-cons-col', r.letter); th.title = r.title; head.appendChild(th); });
-    tbl.appendChild(head); body.appendChild(tbl);
-    foot.textContent = '';
-    const consBtn = el('button', 'gt-cons-btn', 'Consolidate'); consBtn.type = 'button'; consBtn.title = 'Fill every credit across all releases, except format-specific roles';
-    const planLbl = el('span', 'gt-cons-plan');
-    const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
-    const updatePlan = () => { let e = 0; const rs = new Set(); rows.forEach(row => releases.forEach(rel => { if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { e++; rs.add(rel.gid); } })); planLbl.textContent = e ? `${e} addition${e > 1 ? 's' : ''} across ${rs.size} release${rs.size > 1 ? 's' : ''}` : 'nothing to add'; applyBtn.disabled = !e; };
+    const addableFor = rel => rows.filter(row => !row.present.has(rel.gid) && !consExcluded(row, rel));   // not present + not format-specific
+    const updatePlan = () => { let e = 0; const rs = new Set(); rows.forEach(row => releases.forEach(rel => { if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { e++; rs.add(rel.gid); } })); planLbl.textContent = e ? `${e} addition${e > 1 ? 's' : ''} across ${rs.size} release${rs.size > 1 ? 's' : ''}` : 'nothing selected'; applyBtn.disabled = !e; };
     const draw = () => {
       [...tbl.querySelectorAll('tr.gt-cons-row')].forEach(n => n.remove());
       for (const row of rows) {
@@ -786,9 +822,23 @@
         tbl.appendChild(tr);
       }
     };
-    consBtn.onclick = () => { consPropose(rows, releases); draw(); updatePlan(); };
-    applyBtn.onclick = () => applyConsolidation(releases, rows);
-    foot.append(consBtn, planLbl, applyBtn);
+    // clickable header letters select/clear an entire release column (skipping format-specific roles)
+    releases.forEach(r => {
+      const th = el('th', 'gt-cons-col gt-cons-colsel', r.letter);
+      th.title = `${r.title} — click to select / clear every addable credit for this release (skips format-specific)`;
+      th.onclick = () => { const p = addableFor(r); const all = p.length && p.every(row => row.propose.has(r.gid)); p.forEach(row => all ? row.propose.delete(r.gid) : row.propose.add(r.gid)); draw(); updatePlan(); };
+      head.appendChild(th);
+    });
+    tbl.appendChild(head); body.appendChild(tbl);
+    foot.textContent = '';
+    const autoBtn = el('button', 'gt-cons-btn', 'Auto select'); autoBtn.type = 'button'; autoBtn.title = 'Select every addable credit across all releases, except format-specific roles';
+    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.title = 'Deselect everything';
+    const planLbl = el('span', 'gt-cons-plan');
+    const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
+    autoBtn.onclick = () => { releases.forEach(rel => addableFor(rel).forEach(row => row.propose.add(rel.gid))); draw(); updatePlan(); };
+    clearBtn.onclick = () => { rows.forEach(row => row.propose.clear()); draw(); updatePlan(); };
+    applyBtn.onclick = () => applyConsolidation(releases, rows, () => { draw(); updatePlan(); });
+    foot.append(autoBtn, clearBtn, planLbl, applyBtn);
     draw(); updatePlan();
   }
   async function openConsolidate() {
@@ -822,7 +872,7 @@
       try { for (const r of await consFetchRels(rel.gid)) { const k = consKey(r); let row = rows.get(k); if (!row) { row = { key: k, sample: r, label: consLabel(r), present: new Set(), propose: new Set() }; rows.set(k, row); } row.present.add(rel.gid); } } catch (e) {}
       await sleep(1100);
     }
-    if (!rows.size) return note('No release-level artist/label credits found in this group');
+    if (!rows.size) return note('No release-level credits found in this group');
     const rowList = [...rows.values()].sort((a, b) => (a.label.role + a.label.ent).localeCompare(b.label.role + b.label.ent));
     renderConsMatrix(body, foot, releases, rowList);
   }
