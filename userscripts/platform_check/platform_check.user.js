@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.3.222318
+// @version      2026.7.3.223736
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -448,6 +448,9 @@ container.innerHTML = `
   .pc-compact-ico { display: inline-flex; align-items: center; justify-content: center; width: calc(var(--pc-icon-size, 22px) * 0.9); height: calc(var(--pc-icon-size, 22px) * 0.9); cursor: pointer; border-radius: 50%; box-sizing: border-box; filter: grayscale(1); opacity: .38; transition: opacity .12s, filter .12s; }
   .pc-compact-ico svg, .pc-compact-ico img { display: block; width: 100%; height: 100%; }
   .pc-compact-ico:hover { filter: none; opacity: 1; }
+  /* a folded MISMATCH (found but wrong barcode/format) keeps an amber ring so the
+     "found but a different release" signal survives the collapse. */
+  .pc-compact-ico.pc-compact-mismatch { box-shadow: 0 0 0 2px #e0892a; opacity: .55; }
   /* subtle rise as a provider leaves the strip on a match — a small fade + lift so
      the panel doesn't jump/flash as results stream in. */
   @keyframes pcRise { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
@@ -1264,6 +1267,28 @@ let MB_BARCODE = null;
 // Normalise a barcode for comparison: digits only, leading zeros stripped (a
 // 12-digit UPC-A and its 13-digit EAN form "0…" are the same barcode).
 function normBarcode(b) { return String(b || '').replace(/\D/g, '').replace(/^0+/, ''); }
+// #354: stores index the same GTIN under different zero-paddings — a 12-digit UPC-A,
+// a 13-digit EAN with a leading 0, or a 14-digit form — so an exact-UPC lookup can
+// miss purely on padding. gtinVariants returns the distinct forms to try (the raw MB
+// barcode first, then the stripped core and the 12/13/14 zero-padded forms). Leading
+// zeros are insignificant in a GTIN, so these are all the SAME barcode — no wrong-match
+// risk. `upcTry` runs a lookup across them and stops at the first hit, so the extra
+// requests only happen on the no-match path.
+function gtinVariants(barcode) {
+    const raw = String(barcode || '').replace(/\D/g, '');
+    if (!raw) return [];
+    const core = raw.replace(/^0+/, '') || raw;
+    const out = [];
+    const push = v => { if (v && !out.includes(v)) out.push(v); };
+    push(raw);                                   // the exact MB barcode (as stored) first
+    push(core);                                  // leading zeros stripped
+    if (core.length >= 11 && core.length <= 14) [12, 13, 14].forEach(n => { if (core.length <= n) push(core.padStart(n, '0')); });
+    return out;
+}
+async function upcTry(barcode, fn) {
+    for (const v of gtinVariants(barcode)) { const r = await fn(v); if (r) return r; }
+    return null;
+}
 
 let MB_FORMAT = null;
 // Format-confidence (#182). Only Bandcamp and Discogs carry a real parsed
@@ -1447,9 +1472,10 @@ function refreshCompactStrip() {
         if (p === 'discogs' || p === 'bandcamp') return;
         const row = document.getElementById(`row-${p}`);
         if (!row) return;
-        // compact unless the row resolved to a match (i.e. it's still in its
-        // not-found state — pending OR genuinely not found).
-        const compact = row.classList.contains('pc-st-notfound') && GM_getValue(`prov_${p}`, true);
+        // compact unless the row is a CLEAN match — so pending, not-found AND
+        // found-but-mismatched (wrong barcode/format) all stay in the strip; only a
+        // real match rises into a full row.
+        const compact = !row.classList.contains('pc-st-match') && GM_getValue(`prov_${p}`, true);
         const was = row.classList.contains('pc-compacted');
         row.classList.toggle('pc-compacted', compact);
         if (!compact) {
@@ -1457,9 +1483,12 @@ function refreshCompactStrip() {
             return;
         }
         const a = document.getElementById(`mb-online-${p}`);
+        // a mismatch (found but wrong release) keeps a subtle amber ring so the
+        // "found but wrong" signal isn't lost when it's folded into the strip.
+        const mismatch = row.classList.contains('pc-st-mismatch');
         const ico = document.createElement('span');
-        ico.className = 'pc-compact-ico';
-        ico.title = `${PROVIDER_NAME[p]} — click to search`;
+        ico.className = 'pc-compact-ico' + (mismatch ? ' pc-compact-mismatch' : '');
+        ico.title = `${PROVIDER_NAME[p]} — ${mismatch ? 'found but a different release · ' : ''}click to search`;
         ico.innerHTML = PROVIDER_ICON[p] || '';
         ico.addEventListener('click', () => {
             const search = (a && a.dataset.searchUrl) || null;
@@ -2151,10 +2180,11 @@ async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVarious
     // Barcode-first: the API matches an exact UPC with no text-search ambiguity.
     // Qobuz indexes the UPC in its stored form, usually the 13-digit EAN with a
     // leading zero (e.g. MB's 199257198605 is "0199257198605" there), so a query
-    // with MB's bare barcode misses — try the zero-padded form too. Geo-dependent,
-    // so it falls through to the normal search on no hit. #201 (chaban-mb)
+    // with MB's bare barcode misses — try the other GTIN paddings too (#354 shared
+    // gtinVariants: raw · stripped · 12/13/14). Geo-dependent, so it falls through
+    // to the normal search on no hit. #201 (chaban-mb)
     if (!existingUrl && barcode) {
-        const queries = [...new Set([barcode, normBarcode(barcode), normBarcode(barcode).padStart(13, '0')])];
+        const queries = gtinVariants(barcode);
         let items = [];
         for (const q of queries) {
             const s = await qobuzApi(`album/search?query=${encodeURIComponent(q)}&limit=10`);
@@ -2673,9 +2703,18 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
     // the hit only when the returned album's OWN upc matches what we asked for; otherwise
     // treat it as no barcode match and fall through to the artist+album search.
     if (!existingUrl && barcode) {
-        const br = await gmGet(`https://api.deezer.com/album/upc:${barcode}`);
-        let bd = null; try { bd = JSON.parse(br.responseText); } catch {}
-        if (bd && bd.id && !bd.error && normBarcode(bd.upc) === normBarcode(barcode)) {
+        // #354: try the raw barcode first, then the other GTIN paddings on a miss. Each
+        // hit is accepted only when the returned album's OWN upc matches (Deezer's
+        // album/upc: can hand back an unrelated album for a barcode it lacks — #356).
+        const bd = await upcTry(barcode, async (u) => {
+            const br = await gmGet(`https://api.deezer.com/album/upc:${u}`);
+            let d = null; try { d = JSON.parse(br.responseText); } catch {}
+            if (!(d && d.id && !d.error)) return null;
+            if (normBarcode(d.upc) === normBarcode(barcode)) return d;
+            appendLog(label, `Barcode ${u}: Deezer returned a different-barcode album (upc ${d.upc || '?'}, "${d.title || ''}") — ignoring`, 'warn');
+            return null;
+        });
+        if (bd) {
             const albumUrl = bd.link || `https://www.deezer.com/album/${bd.id}`;
             appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
             const meta = await fetchDeezerMeta(albumUrl);
@@ -2684,10 +2723,7 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
             updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
             return;
         }
-        if (bd && bd.id && !bd.error)
-            appendLog(label, `Barcode ${barcode}: Deezer returned a different-barcode album (upc ${bd.upc || '?'}, "${bd.title || ''}") — ignoring, falling back to search`, 'warn');
-        else
-            appendLog(label, `Barcode ${barcode}: no UPC match — falling back to search`);
+        appendLog(label, `Barcode ${barcode}: no UPC match — falling back to search`);
     }
 
     let albumUrl = existingUrl;
@@ -2801,9 +2837,12 @@ async function scanApple({ artist, album, mbTracks, existingUrl, mbid, isVarious
     // Barcode-first: iTunes `lookup?upc=<UPC>` is an exact match. Falls through
     // to the term search (and Wikidata) when there's no UPC hit.
     if (!existingUrl && !wikidataAppleId && barcode) {
-        const br = await gmGet(`https://itunes.apple.com/lookup?upc=${barcode}&entity=album`);
-        let bd = null; try { bd = JSON.parse(br.responseText); } catch {}
-        const hit = bd && (bd.results || []).find(r => r.collectionViewUrl);
+        // #354: try the raw barcode first, then the other GTIN paddings on a miss.
+        const hit = await upcTry(barcode, async (u) => {
+            const br = await gmGet(`https://itunes.apple.com/lookup?upc=${u}&entity=album`);
+            let d = null; try { d = JSON.parse(br.responseText); } catch {}
+            return (d && (d.results || []).find(r => r.collectionViewUrl)) || null;
+        });
         if (hit) {
             const albumUrl = hit.collectionViewUrl.split('?')[0];
             appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
