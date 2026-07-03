@@ -1,4 +1,4 @@
-# Group Therapy — MusicBrainz relationship helper Changelog
+# Group Therapy
 
 ## [2026.7.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.3)
 
