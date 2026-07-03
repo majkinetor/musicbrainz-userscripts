@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.181149
+// @version      2026.7.3.181935
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.181149';
+  const VERSION = '2026.7.3.181935';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -401,6 +401,7 @@
       .gt-cons-selitem:not(.gt-on):hover{opacity:.85;background:#f2f4f7}
       .gt-cons-legopen{text-decoration:none;color:#8892a0;margin-left:5px}
       .gt-cons-legopen:hover{color:#2e6da4}
+      .gt-cons-legyr{color:#8892a0}
       .gt-cons-paste{display:block;width:100%;box-sizing:border-box;margin:9px 0 2px;padding:5px 8px;border:1px solid #cfd4da;border-radius:5px;font:12px inherit;color:#222;outline:none}
       .gt-cons-paste:focus{border-color:#4a90d9}
       .gt-cons-tbl{border-collapse:collapse;width:100%}
@@ -861,7 +862,7 @@
     const leg = el('div', 'gt-cons-leg');
     releases.forEach(r => {
       const s = el('span', 'gt-cons-legi gt-cons-selitem' + (r.selected ? ' gt-on' : '') + (r.current ? ' gt-cur' : ''));
-      s.appendChild(el('b', null, r.letter)); s.appendChild(fmtBadges(r.fmt)); s.appendChild(document.createTextNode(' ' + r.title));
+      s.appendChild(el('b', null, r.letter)); s.appendChild(fmtBadges(r.fmt)); s.appendChild(document.createTextNode(' ' + r.title)); if (r.year) s.appendChild(el('span', 'gt-cons-legyr', ' · ' + r.year));
       const open = el('a', 'gt-cons-legopen', '↗'); open.href = '/release/' + r.gid; open.target = '_blank'; open.rel = 'noopener'; open.title = 'Open this release in a new tab'; open.onclick = ev => ev.stopPropagation();
       s.appendChild(open);
       s.title = (r.selected ? 'In the matrix — click to remove its column' : 'Click to add its column') + (r.current ? ' · the release you’re editing' : '');
@@ -954,7 +955,7 @@
       }
       releases = all.sort((a, b) => (a.date || '~').localeCompare(b.date || '~')).map((r, i) => ({
         gid: r.id, title: r.title + (r.disambiguation ? ` (${r.disambiguation})` : ''), letter: (i < 26 ? '' : String.fromCharCode(64 + Math.floor(i / 26))) + String.fromCharCode(65 + (i % 26)),
-        fmt: [...new Set((r.media || []).map(m => m.format).filter(Boolean))].join('+') || '', current: r.id === here, selected: false, _rels: null,
+        fmt: [...new Set((r.media || []).map(m => m.format).filter(Boolean))].join('+') || '', year: (r.date || '').slice(0, 4), current: r.id === here, selected: false, _rels: null,
       }));
     } catch (e) { return note('Could not load release group'); }
     if (!releases || releases.length < 2) return note('Need at least 2 releases in the group to consolidate');
