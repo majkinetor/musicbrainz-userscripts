@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.162758
+// @version      2026.7.3.163610
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/string_theory/icon.svg
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.3.162758 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.3\n  · Art Station v2026.7.2.1\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.2.6\n  · Platform Check v2026.7.1.2");
+  console.log('%c String Theory %c v2026.7.3.163610 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.3\n  · Art Station v2026.7.2.1\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3.163610\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.2.6\n  · Platform Check v2026.7.1.2");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16333,12 +16333,12 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3.163610","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3.163610","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3';
+  const VERSION = '2026.7.3.163610';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -17031,7 +17031,12 @@ ${lines}
   // format start UNTICKED in the copy checklist (re-tick to override) — e.g. don't carry a vinyl-only
   // production credit onto a digital edition. Keys = format-name substrings (case-insensitive),
   // values = role-name substrings. Replace the whole map via GM value 'gt-format-exclude' (JSON object).
-  const FORMAT_EXCLUDE_DEFAULT = { digital: ['lacquer', 'vinyl', 'pressed', 'printed', 'manufactured'] };
+  // "glass" = glass mastering: the optical-disc (CD/DVD/…) master step, so it's excluded from BOTH digital
+  // AND vinyl (unlike "manufactured", which vinyl shares) — leaving it allowed only on CD/optical formats.
+  const FORMAT_EXCLUDE_DEFAULT = {
+    digital: ['lacquer', 'vinyl', 'pressed', 'printed', 'manufactured', 'glass'],
+    vinyl: ['glass'],
+  };
   function formatExcludeMap() { try { const raw = (typeof GM_getValue === 'function') && GM_getValue('gt-format-exclude', ''); if (raw) return JSON.parse(raw); } catch (e) {} return FORMAT_EXCLUDE_DEFAULT; }
   function formatExcludeRolesFor(fmt) {
     fmt = (fmt || '').toLowerCase(); if (!fmt) return [];

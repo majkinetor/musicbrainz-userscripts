@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3
+// @version      2026.7.3.163610
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3';
+  const VERSION = '2026.7.3.163610';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -708,7 +708,12 @@
   // format start UNTICKED in the copy checklist (re-tick to override) — e.g. don't carry a vinyl-only
   // production credit onto a digital edition. Keys = format-name substrings (case-insensitive),
   // values = role-name substrings. Replace the whole map via GM value 'gt-format-exclude' (JSON object).
-  const FORMAT_EXCLUDE_DEFAULT = { digital: ['lacquer', 'vinyl', 'pressed', 'printed', 'manufactured'] };
+  // "glass" = glass mastering: the optical-disc (CD/DVD/…) master step, so it's excluded from BOTH digital
+  // AND vinyl (unlike "manufactured", which vinyl shares) — leaving it allowed only on CD/optical formats.
+  const FORMAT_EXCLUDE_DEFAULT = {
+    digital: ['lacquer', 'vinyl', 'pressed', 'printed', 'manufactured', 'glass'],
+    vinyl: ['glass'],
+  };
   function formatExcludeMap() { try { const raw = (typeof GM_getValue === 'function') && GM_getValue('gt-format-exclude', ''); if (raw) return JSON.parse(raw); } catch (e) {} return FORMAT_EXCLUDE_DEFAULT; }
   function formatExcludeRolesFor(fmt) {
     fmt = (fmt || '').toLowerCase(); if (!fmt) return [];
