@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.172727
+// @version      2026.7.3.174032
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.172727';
+  const VERSION = '2026.7.3.174032';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -817,7 +817,7 @@
     for (const row of rows) for (const rel of releases) if (row.propose.has(rel.gid) && !row.present.has(rel.gid)) { if (!byRel.has(rel.gid)) byRel.set(rel.gid, []); byRel.get(rel.gid).push(row); }
     const total = [...byRel.values()].reduce((s, a) => s + a.length, 0);
     if (!total) { toast('Nothing selected to add'); return; }
-    if (!W.confirm(`Create ${total} relationship edit${total > 1 ? 's' : ''} across ${byRel.size} release${byRel.size > 1 ? 's' : ''}?\n\nAuto-applied if you're an auto-editor, otherwise queued for voting.`)) return;
+    toast(`Applying ${total} edit${total > 1 ? 's' : ''} across ${byRel.size} release${byRel.size > 1 ? 's' : ''}…`);
     const sig = editNoteSig();
     let okRel = 0, okEdits = 0; const failed = [];
     for (const [gid, rowsFor] of byRel) {
