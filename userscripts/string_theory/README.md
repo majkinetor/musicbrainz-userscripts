@@ -23,8 +23,9 @@
 | [Mammoth](../mammoth) | Remember & recall edit notes and field values |
 | [Platform Check](../platform_check) | Find/verify a release's URLs on online platforms |
 
-The bundled scripts are listed in [`members.txt`](./members.txt).
-
+- The bundled scripts are listed in [`members.txt`](./members.txt)
+- In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`)
+- 
 Version details are printed in Console:
 
 ```
