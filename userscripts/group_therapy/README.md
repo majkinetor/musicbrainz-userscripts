@@ -70,25 +70,30 @@ The **⧉ Copy from release…** button next to the *Release relationships* head
 
 <img width="500" src="./screenshots/copy-release.png" /><br>
 
-#### Across the whole group — Consolidate
+#### Relase Group Consolidation
 
-The **▦ Consolidate RG…** button (next to *Copy from release…*) spreads release-level credits across **every** release in the group at once. It reads all the releases in parallel and builds a **role × release matrix**: one row per distinct credit (role + entity, with credited-as/attributes), one column per release — labelled A, B, C… with a compact **format badge** (Digital / Vinyl / CD / Cassette) — and a green cell wherever the credit already exists. Each release title links out so you can inspect it first.
+The **▦ Consolidate RG…** button (next to *Copy from release…*) can spread release-level credits across **every** release in the group at once. It reads all the releases in parallel and builds a **role × release matrix**: one row per distinct credit, one column per release — labelled A, B, C… with a compact **format badge** (Digital / Vinyl / CD / Cassette) — and a green cell wherever the credit already exists.
 
 - **Select** what to add: click a **cell** to toggle it, a **column-header letter** to select every addable credit for that release, or **Auto select** for the whole matrix (**Clear** resets). Credits that are format-specific for a release (e.g. *lacquer cut* on a CD) are held back and shown as `·` — click to force one in.
 - The footer shows the plan (*N additions across M releases*). **Apply** creates them as real relationship edits — one batched submission per target release (auto-applied if you're an auto-editor, else queued), each carrying a **detailed edit note** that lists every added credit under the Group Therapy signature.
 
 This is **release-level only** (recordings are already shared across a group). It uses MB's internal edit API, so the additions are submitted directly rather than staged in the editor.
 
-> Best for groups with a handful of editions; a release-selection step for very large groups (many pressings) is planned.
+With more than 10 releases in a group you must pick releases to be consolidated manually.
 
 <img width="800" src="./screenshots/consolidation.png" />
-
 
 ### Highlight
 
 Hover any entity name or role label to light up every matching occurrence on the page (existing rels blue/white, newly-added blue/yellow), with a tooltip showing the count and which  tracks / the release it appears on, e.g. *48× · tracks 1–12*.
 
 <img width="500" src="./screenshots/highlight.png" />
+
+## Edit note
+
+When (and only when) you actually **use** Group Therapy on a page, it stamps MB's edit-note field with a signature line and, under it, an accumulating list of what it did — e.g. *Copied 2 credits from track 1 to tracks 2–5*, *Removed guitar (14)*, *Copied release credits from “The Vibe! Vol. 9”*. Any note already in the field (from another script, or your own text) is preserved ahead of ours, the signature is written once, and identical action lines aren't repeated. Nothing is submitted — it's there for you to review before you save.
+
+<img width="500" src="./screenshots/edit-note.png" />
 
 ## Shortcuts
 
@@ -101,10 +106,6 @@ Hover any entity name or role label to light up every matching occurrence on the
 
 The recording/work checkboxes and the `×` buttons carry a faint green accent and a tooltip so the
 right-click features are discoverable.
-
-## Edit note
-
-When (and only when) you actually **use** Group Therapy on a page, it stamps MB's edit-note field with a signature line and, under it, an accumulating list of what it did — e.g. *Copied 2 credits from track 1 to tracks 2–5*, *Removed guitar (14)*, *Copied release credits from “The Vibe! Vol. 9”*. Any note already in the field (from another script, or your own text) is preserved ahead of ours, the signature is written once, and identical action lines aren't repeated. Nothing is submitted — it's there for you to review before you save.
 
 ## Under the hood
 
