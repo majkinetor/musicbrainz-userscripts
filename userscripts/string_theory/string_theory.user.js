@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3.200120
+// @version      2026.7.3.221217
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.3.200120 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.3\n  · Art Station v2026.7.3\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.3");
+  console.log('%c String Theory %c v2026.7.3.221217 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.3\n  · Art Station v2026.7.3\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.3.221217");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -22961,7 +22961,7 @@ ${lines}
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.3","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.3","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.3.221217","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.7.3.221217","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -23363,6 +23363,24 @@ container.innerHTML = `
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: #999 !important; }
   #mb-pc-panel.pc-icons-mode .pc-st-notfound .pc-plat-ico svg { filter: grayscale(1); opacity: .3; }  /* not found */
+  /* Compact unmatched providers (#355): when on, every provider starts compact — a
+     strip of dimmed brand icons — and rises into its full row when it matches; the
+     unmatched ones stay in the strip (except Discogs/Bandcamp, which always keep their
+     full rows). Clicking a strip icon runs that provider's search, like clicking its
+     row. Full rows are hidden via a class so the per-provider enable/disable (inline
+     display) is left untouched. */
+  #mb-pc-panel .pc-row.pc-compacted { display: none !important; }
+  /* the strip sits under the full rows with a clear gap; its icons are a touch
+     smaller than the row icons (they're a secondary, collapsed representation). */
+  .pc-compact-strip { display: none; grid-column: 1 / -1; flex-wrap: wrap; align-items: center; gap: 7px; padding: 1rem 0 1px; }
+  #mb-pc-panel .pc-compact-strip.pc-has-icons { display: flex; }
+  .pc-compact-ico { display: inline-flex; align-items: center; justify-content: center; width: calc(var(--pc-icon-size, 22px) * 0.9); height: calc(var(--pc-icon-size, 22px) * 0.9); cursor: pointer; border-radius: 50%; box-sizing: border-box; filter: grayscale(1); opacity: .38; transition: opacity .12s, filter .12s; }
+  .pc-compact-ico svg, .pc-compact-ico img { display: block; width: 100%; height: 100%; }
+  .pc-compact-ico:hover { filter: none; opacity: 1; }
+  /* subtle rise as a provider leaves the strip on a match — a small fade + lift so
+     the panel doesn't jump/flash as results stream in. */
+  @keyframes pcRise { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+  #mb-pc-panel .pc-row.pc-rise { animation: pcRise .28s ease; }
   /* barcode mismatch (#182): a thin amber bar on the row's left edge — the barcode
      itself is never shown in the dash, only in the row tooltip + the log. */
   #mb-pc-panel .pc-row.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a; }
@@ -23505,6 +23523,7 @@ container.innerHTML = `
     <span id="master-${p}" class="pc-master-slot pc-cell-master" style="cursor: default;"></span>
     <span id="val-${p}" class="pc-cell-val">—</span>
   </div>`).join('')}
+  <div id="pc-compact-strip" class="pc-compact-strip"></div>
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #EEE;">
   <div style="display: flex; align-items: center; gap: 6px;">
@@ -23614,6 +23633,9 @@ providerModal.innerHTML = `
         </label>
       </div>
 
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 9px 0 4px;" title="Start every provider compact in a strip of dimmed icons; each rises into a full row when it matches. Discogs and Bandcamp always stay full rows. Click a strip icon to search that platform, just like clicking its row.">
+        <input type="checkbox" id="mb-compact-unmatched" style="margin: 0; width: 16px; height: 16px;"> Compact <b>unmatched</b> providers</label>
+
       <div style="display: flex; align-items: center; gap: 12px; margin: 9px 0 4px;">
         <span style="font-weight: 600; color: #555;">MB marker</span>
         <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-marker" value="circle" style="margin: 0;"> Circle</label>
@@ -23690,7 +23712,11 @@ else sidebar.prepend(container);
 // art <img> finishes loading — so a content-sized sidebar can't later be stretched
 // wide by either. (Measuring later would risk capturing an already-widened sidebar.)
 const naturalW = sidebar.clientWidth;
-if (naturalW > 40) container.style.maxWidth = naturalW + 'px';
+// #355: pin a STABLE width (not just a max) so the panel doesn't visibly grow/reflow
+// as async scan results stream longer meta lines in — the "epileptic" resize. At the
+// sidebar's full width the panel starts at its final size; the label column
+// (minmax(0,1fr) + ellipsis) absorbs long text instead of widening the box.
+if (naturalW > 40) { container.style.maxWidth = naturalW + 'px'; container.style.width = naturalW + 'px'; }
 
 const logPanel = document.getElementById('mb-finder-log-panel');
 const providerRows = Object.fromEntries(PROVIDER_ORDER.map(p => [p, document.getElementById(`row-${p}`)]));
@@ -23701,6 +23727,7 @@ PROVIDER_ORDER.forEach(p => {
 });
 // platform brand icons (default on) — class on the panel hides them all via CSS
 container.classList.toggle('pc-icons-mode', GM_getValue('pc:show-icons', true));
+container.classList.toggle('pc-compact-unmatched', GM_getValue('pc:compact-unmatched', true));   // #355 (on by default)
 container.classList.toggle('pc-no-names', !GM_getValue('pc:show-names', false));   // names hidden by default (#173) — the brand icon identifies the row
 // row layout — 1-row aligned grid (default) vs 2-row stacked (issue #173)
 container.classList.add(GM_getValue('pc:layout', '1row') === '2row' ? 'pc-layout-2row' : 'pc-layout-1row');
@@ -23712,6 +23739,7 @@ container.style.setProperty('--pc-row-gap',  `${GM_getValue('pc:row-gap', 5)}px`
 container.style.setProperty('--pc-col-gap',  `${GM_getValue('pc:col-gap', 5)}px`);
 container.style.setProperty('--pc-name-size', `${GM_getValue('pc:name-size', 12)}px`);
 container.style.setProperty('--pc-icon-size', `${GM_getValue('pc:icon-size', 22)}px`);   // #188 platform icon size
+refreshCompactStrip();   // #355: start everything compact (rows rise out as they match)
 
 // Provider-reorder controls in the providers modal — drag-and-drop. Each row
 // is draggable; dragover on a sibling reorders via the cursor's Y-midpoint
@@ -23880,6 +23908,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-format-mode').disabled = !GM_getValue('pc:respect-format', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
+    document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
     const marker = GM_getValue('pc:mb-marker', 'circle');
     providerModal.querySelectorAll('input[name="mb-marker"]').forEach(r => { r.checked = r.value === marker; });
     const fmtMarkerMode = GM_getValue('pc:format-marker', 'circle');
@@ -23909,6 +23938,11 @@ PROVIDER_ORDER.forEach(p => {
 document.getElementById('mb-show-icons').addEventListener('change', e => {
     GM_setValue('pc:show-icons', e.target.checked);
     container.classList.toggle('pc-icons-mode', e.target.checked);
+});
+document.getElementById('mb-compact-unmatched').addEventListener('change', e => {
+    GM_setValue('pc:compact-unmatched', e.target.checked);   // #355
+    container.classList.toggle('pc-compact-unmatched', e.target.checked);
+    refreshCompactStrip();
 });
 document.getElementById('mb-show-names').addEventListener('change', e => {
     GM_setValue('pc:show-names', e.target.checked);
@@ -24323,6 +24357,48 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // Meta cells: year · format · label, each its own grid cell so the columns
     // align across providers (1-row layout) — see setMetaCells.
     setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, year, format, label);
+    refreshCompactStrip();   // #355
+}
+
+// #355: rebuild the "compact unmatched providers" strip from the rows' current state.
+// Model: everything starts COMPACT (a strip of dimmed icons) and each provider RISES
+// into a full row once it MATCHES — so pending + not-found stay in the strip, only a
+// found row is shown in full. Discogs and Bandcamp always keep their full rows;
+// disabled providers (prov_<p> off) are skipped. A row that leaves the strip gets a
+// subtle rise animation so the panel doesn't jump as results stream in. Cheap enough
+// to run after every updateRow.
+function refreshCompactStrip() {
+    const strip = document.getElementById('pc-compact-strip');
+    if (!strip) return;
+    const on = container.classList.contains('pc-compact-unmatched');
+    strip.textContent = '';
+    if (on) PROVIDER_ORDER.forEach(p => {
+        if (p === 'discogs' || p === 'bandcamp') return;
+        const row = document.getElementById(`row-${p}`);
+        if (!row) return;
+        // compact unless the row resolved to a match (i.e. it's still in its
+        // not-found state — pending OR genuinely not found).
+        const compact = row.classList.contains('pc-st-notfound') && GM_getValue(`prov_${p}`, true);
+        const was = row.classList.contains('pc-compacted');
+        row.classList.toggle('pc-compacted', compact);
+        if (!compact) {
+            if (was) { row.classList.remove('pc-rise'); void row.offsetWidth; row.classList.add('pc-rise'); }   // rose out on a match
+            return;
+        }
+        const a = document.getElementById(`mb-online-${p}`);
+        const ico = document.createElement('span');
+        ico.className = 'pc-compact-ico';
+        ico.title = `${PROVIDER_NAME[p]} — click to search`;
+        ico.innerHTML = PROVIDER_ICON[p] || '';
+        ico.addEventListener('click', () => {
+            const search = (a && a.dataset.searchUrl) || null;
+            if (search) window.open(search, '_blank', 'noopener');
+            else row.click();   // fall back to the row's own open behaviour
+        });
+        strip.appendChild(ico);
+    });
+    else PROVIDER_ORDER.forEach(p => { const r = document.getElementById(`row-${p}`); if (r) r.classList.remove('pc-compacted'); });
+    strip.classList.toggle('pc-has-icons', strip.children.length > 0);
 }
 
 // Fill the three meta cells (year / format / label) for a row. The "·"
@@ -26053,7 +26129,7 @@ function resetRows() {
         const plat = document.getElementById(`plat-${p}`);
         if (plat) { plat.onclick = null; plat.style.cursor = 'default'; }
         const row = document.getElementById(`row-${p}`);
-        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match'); row.classList.add('pc-st-notfound'); row.onclick = null; row.oncontextmenu = null; row.style.cursor = ''; }   // back to "not found" look
+        if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match', 'pc-rise'); row.classList.add('pc-st-notfound'); row.onclick = null; row.oncontextmenu = null; row.style.cursor = ''; }   // back to "not found" — refreshCompactStrip re-folds it (#355)
         if (val)  { val.textContent = '—'; val.style.color = '#BF616A'; }   // neutral dash while re-scanning
         setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, null, null, null);
         // Reset the anchor href to its search-fallback so parseMbFromDom on
@@ -26062,6 +26138,7 @@ function resetRows() {
         // in parseMbFromDom too, but defensive cleanup either way.
         if (a)    { a.href = '#'; a.title = ''; }
     }
+    refreshCompactStrip();   // #355: clear the strip while re-scanning
 }
 
 // VA detection used by both the DOM and API parse paths. Hoisted so both
