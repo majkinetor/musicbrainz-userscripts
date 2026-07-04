@@ -40,6 +40,7 @@ Works on one cover or the whole selection:
 ## Add images
 
 - **File drop** — choose local files and upload to the Cover Art Archive in parallel; the **type is guessed from the file name** (see [File names ⇄ types](#file-names--types)).
+- **Folder upload** (#359) — drop a **folder** on the gallery, or **Shift-click** the drop zone to browse one. It stages the folder's image/PDF files recursively, but bounded: **one level of subfolders deep** and up to **100 files** (a stray huge tree can't flood the gallery).
 - **URL link** — uses [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js) (must be installed) to fetch covers from Discogs, Apple, Spotify, Bandcamp…
 - **[MH Covers](https://covers.musichoarders.xyz)** — pick a cover and it drops into the gallery as a staged new cover.
 - **Reverse-image search** (the 🔍 on each cover) — look for a higher-resolution copy on Yandex / Google Lens / TinEye / Bing. With the optional [Art Station Picker](./as_picker/README.md) companion installed, click the better copy on the results (or any site reachable from there) and it's sent straight back into the gallery.

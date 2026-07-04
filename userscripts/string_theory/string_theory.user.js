@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.4.142630
+// @version      2026.7.5.003232
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.4.142630 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.3\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.5.003232 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.5\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -6367,7 +6367,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.3","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.3","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.5","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.5","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -6939,8 +6939,8 @@ try {
   }
   function dropZone() {
     if (!_dropZone) return '';
-    return `<div class="as-dropzone" tabindex="0" title="drop image / PDF files, or click to browse">
-      <div class="as-dz-in">⬇ Drop ${ENT.noun} files here<span>or click to browse · new ${ITEMS} go first</span></div></div>`;
+    return `<div class="as-dropzone" tabindex="0" title="Drop image / PDF files or a folder, or click to browse. Folders upload one level of subfolders deep, up to ${DIR_MAX_FILES} files. Shift-click to browse a folder.">
+      <div class="as-dz-in">⬇ Drop ${ENT.noun} files or a folder here<span>or click to browse · Shift-click for a folder · new ${ITEMS} go first</span></div></div>`;
   }
   function newSection() {
     if (!SETTINGS.group) return '';   // Position view shows new uploads inline, positioned among covers
@@ -7191,7 +7191,7 @@ try {
 
     const dz = root.querySelector('.as-dropzone');
     if (dz) {
-      dz.onclick = pickFiles;
+      dz.onclick = e => (e.shiftKey ? pickFolder : pickFiles)();   // #359: Shift-click browses a folder
       dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
       dz.ondragleave = () => dz.classList.remove('over');
       dz.ondrop = async e => { e.preventDefault(); dz.classList.remove('over'); await addFromDrop(e.dataTransfer); };
@@ -8316,18 +8316,42 @@ try {
   }
   // #243 a drop can include whole FOLDERS — recurse the directory entries to collect every
   // file. webkitGetAsEntry() must be read synchronously while the drop event is live.
+  // #359: dropped/browsed folders upload recursively, but BOUNDED — one level of
+  // subdirectories deep (the given dir + its immediate subfolders) and at most
+  // DIR_MAX_FILES image/PDF files, so a stray huge tree can't stage thousands. Loose
+  // files dropped directly are kept as-is (type-filtered downstream by addFiles).
+  const DIR_MAX_DEPTH = 1, DIR_MAX_FILES = 100;
+  const DIR_ACCEPT_RE = /\.(jpe?g|png|gif|pdf)$/i;
+  let _dropTruncated = false;
   function filesFromDrop(dt) {
     const entries = [...(dt.items || [])].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
     if (!entries.some(e => e.isDirectory)) return Promise.resolve([...(dt.files || [])]);
-    const out = [];
-    const walk = entry => new Promise(res => {
-      if (entry.isFile) { entry.file(f => { out.push(f); res(); }, () => res()); return; }
+    const out = []; _dropTruncated = false;
+    // walk a directory: collect its image/PDF files, descend into subdirs only while
+    // within DIR_MAX_DEPTH, and stop once DIR_MAX_FILES is reached.
+    const walk = (entry, depth) => new Promise(res => {
+      if (out.length >= DIR_MAX_FILES) { _dropTruncated = true; return res(); }
+      if (entry.isFile) {
+        if (!DIR_ACCEPT_RE.test(entry.name)) return res();   // inside a folder → only CAA image/PDF types
+        entry.file(f => { if (out.length < DIR_MAX_FILES) out.push(f); else _dropTruncated = true; res(); }, () => res());
+        return;
+      }
       if (!entry.isDirectory) return res();
       const rd = entry.createReader();
-      const readBatch = () => rd.readEntries(async ents => { if (!ents.length) return res(); await Promise.all(ents.map(walk)); readBatch(); }, () => res());
+      const readBatch = () => rd.readEntries(async ents => {
+        if (!ents.length || out.length >= DIR_MAX_FILES) return res();
+        if (depth >= DIR_MAX_DEPTH && ents.some(e => e.isDirectory)) _dropTruncated = true;   // deeper levels skipped
+        const next = ents.filter(e => e.isFile || depth < DIR_MAX_DEPTH);
+        await Promise.all(next.map(e => walk(e, e.isDirectory ? depth + 1 : depth)));
+        readBatch();
+      }, () => res());
       readBatch();
     });
-    return Promise.all(entries.map(walk)).then(() => out);
+    // top-level dropped FILES kept as-is; dropped DIRECTORIES walked with the bounds above.
+    return Promise.all(entries.map(e => e.isFile
+      ? new Promise(r => e.file(f => { out.push(f); r(); }, () => r()))
+      : walk(e, 0)
+    )).then(() => out);
   }
   // #331: an image dragged from another tab/page arrives as a URL, not a File. Pull it out
   // of the drop (uri-list → <img src> in the HTML → a plain-text URL).
@@ -8362,7 +8386,7 @@ try {
   // when something was staged.
   async function addFromDrop(dt) {
     const files = await filesFromDrop(dt);
-    if (files && files.length) { addFiles(files); return true; }
+    if (files && files.length) { addFiles(files); if (_dropTruncated) toast(`Folder upload capped: first ${DIR_MAX_FILES} images, one level of subfolders deep`, 6000); return true; }
     const url = urlFromDrop(dt); if (!url) return false;
     try { const f = await fileFromUrl(url); if (f) { addFiles([f], [{ provImageUrl: url, provUrl: url }]); return true; } }
     catch (e) { asLog.err('Drop fetch failed: ' + (e.message || e)); }
@@ -8373,6 +8397,21 @@ try {
     // broad (it offered webp, bmp, … which CAA rejects). JPEG · PNG · GIF · PDF.
     const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/gif,application/pdf'; inp.multiple = true;
     inp.onchange = () => addFiles(inp.files);
+    inp.click();
+  }
+  // #359: pick a FOLDER → upload its image/PDF files one level of subfolders deep, capped
+  // at DIR_MAX_FILES (webkitRelativePath is "folder/[sub/]file", so depth = segments − 2).
+  function pickFolder() {
+    const inp = document.createElement('input'); inp.type = 'file'; inp.webkitdirectory = true; inp.multiple = true;
+    inp.onchange = () => {
+      const imgs = [...inp.files].filter(f => DIR_ACCEPT_RE.test(f.name));
+      const inDepth = imgs.filter(f => (f.webkitRelativePath.split('/').length - 2) <= DIR_MAX_DEPTH);
+      let files = inDepth, truncated = imgs.length > inDepth.length;   // deeper files skipped
+      if (inDepth.length > DIR_MAX_FILES) { files = inDepth.slice(0, DIR_MAX_FILES); truncated = true; }
+      if (files.length) addFiles(files);
+      if (truncated) toast(`Folder upload capped: first ${DIR_MAX_FILES} images, one level of subfolders deep`, 6000);
+      else if (!files.length) toast('No JPEG / PNG / GIF / PDF images in that folder (first level)', 5000);
+    };
     inp.click();
   }
   // ── Phase 2a: apply staged changes as real MB edits (form-replay) ─────────────
