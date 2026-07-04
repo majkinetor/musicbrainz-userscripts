@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.3
+// @version      2026.7.5
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -584,8 +584,8 @@
   }
   function dropZone() {
     if (!_dropZone) return '';
-    return `<div class="as-dropzone" tabindex="0" title="drop image / PDF files, or click to browse">
-      <div class="as-dz-in">⬇ Drop ${ENT.noun} files here<span>or click to browse · new ${ITEMS} go first</span></div></div>`;
+    return `<div class="as-dropzone" tabindex="0" title="Drop image / PDF files or a folder, or click to browse. Folders upload one level of subfolders deep, up to ${DIR_MAX_FILES} files. Shift-click to browse a folder.">
+      <div class="as-dz-in">⬇ Drop ${ENT.noun} files or a folder here<span>or click to browse · Shift-click for a folder · new ${ITEMS} go first</span></div></div>`;
   }
   function newSection() {
     if (!SETTINGS.group) return '';   // Position view shows new uploads inline, positioned among covers
@@ -836,7 +836,7 @@
 
     const dz = root.querySelector('.as-dropzone');
     if (dz) {
-      dz.onclick = pickFiles;
+      dz.onclick = e => (e.shiftKey ? pickFolder : pickFiles)();   // #359: Shift-click browses a folder
       dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
       dz.ondragleave = () => dz.classList.remove('over');
       dz.ondrop = async e => { e.preventDefault(); dz.classList.remove('over'); await addFromDrop(e.dataTransfer); };
@@ -1961,18 +1961,42 @@
   }
   // #243 a drop can include whole FOLDERS — recurse the directory entries to collect every
   // file. webkitGetAsEntry() must be read synchronously while the drop event is live.
+  // #359: dropped/browsed folders upload recursively, but BOUNDED — one level of
+  // subdirectories deep (the given dir + its immediate subfolders) and at most
+  // DIR_MAX_FILES image/PDF files, so a stray huge tree can't stage thousands. Loose
+  // files dropped directly are kept as-is (type-filtered downstream by addFiles).
+  const DIR_MAX_DEPTH = 1, DIR_MAX_FILES = 100;
+  const DIR_ACCEPT_RE = /\.(jpe?g|png|gif|pdf)$/i;
+  let _dropTruncated = false;
   function filesFromDrop(dt) {
     const entries = [...(dt.items || [])].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
     if (!entries.some(e => e.isDirectory)) return Promise.resolve([...(dt.files || [])]);
-    const out = [];
-    const walk = entry => new Promise(res => {
-      if (entry.isFile) { entry.file(f => { out.push(f); res(); }, () => res()); return; }
+    const out = []; _dropTruncated = false;
+    // walk a directory: collect its image/PDF files, descend into subdirs only while
+    // within DIR_MAX_DEPTH, and stop once DIR_MAX_FILES is reached.
+    const walk = (entry, depth) => new Promise(res => {
+      if (out.length >= DIR_MAX_FILES) { _dropTruncated = true; return res(); }
+      if (entry.isFile) {
+        if (!DIR_ACCEPT_RE.test(entry.name)) return res();   // inside a folder → only CAA image/PDF types
+        entry.file(f => { if (out.length < DIR_MAX_FILES) out.push(f); else _dropTruncated = true; res(); }, () => res());
+        return;
+      }
       if (!entry.isDirectory) return res();
       const rd = entry.createReader();
-      const readBatch = () => rd.readEntries(async ents => { if (!ents.length) return res(); await Promise.all(ents.map(walk)); readBatch(); }, () => res());
+      const readBatch = () => rd.readEntries(async ents => {
+        if (!ents.length || out.length >= DIR_MAX_FILES) return res();
+        if (depth >= DIR_MAX_DEPTH && ents.some(e => e.isDirectory)) _dropTruncated = true;   // deeper levels skipped
+        const next = ents.filter(e => e.isFile || depth < DIR_MAX_DEPTH);
+        await Promise.all(next.map(e => walk(e, e.isDirectory ? depth + 1 : depth)));
+        readBatch();
+      }, () => res());
       readBatch();
     });
-    return Promise.all(entries.map(walk)).then(() => out);
+    // top-level dropped FILES kept as-is; dropped DIRECTORIES walked with the bounds above.
+    return Promise.all(entries.map(e => e.isFile
+      ? new Promise(r => e.file(f => { out.push(f); r(); }, () => r()))
+      : walk(e, 0)
+    )).then(() => out);
   }
   // #331: an image dragged from another tab/page arrives as a URL, not a File. Pull it out
   // of the drop (uri-list → <img src> in the HTML → a plain-text URL).
@@ -2007,7 +2031,7 @@
   // when something was staged.
   async function addFromDrop(dt) {
     const files = await filesFromDrop(dt);
-    if (files && files.length) { addFiles(files); return true; }
+    if (files && files.length) { addFiles(files); if (_dropTruncated) toast(`Folder upload capped: first ${DIR_MAX_FILES} images, one level of subfolders deep`, 6000); return true; }
     const url = urlFromDrop(dt); if (!url) return false;
     try { const f = await fileFromUrl(url); if (f) { addFiles([f], [{ provImageUrl: url, provUrl: url }]); return true; } }
     catch (e) { asLog.err('Drop fetch failed: ' + (e.message || e)); }
@@ -2018,6 +2042,21 @@
     // broad (it offered webp, bmp, … which CAA rejects). JPEG · PNG · GIF · PDF.
     const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/gif,application/pdf'; inp.multiple = true;
     inp.onchange = () => addFiles(inp.files);
+    inp.click();
+  }
+  // #359: pick a FOLDER → upload its image/PDF files one level of subfolders deep, capped
+  // at DIR_MAX_FILES (webkitRelativePath is "folder/[sub/]file", so depth = segments − 2).
+  function pickFolder() {
+    const inp = document.createElement('input'); inp.type = 'file'; inp.webkitdirectory = true; inp.multiple = true;
+    inp.onchange = () => {
+      const imgs = [...inp.files].filter(f => DIR_ACCEPT_RE.test(f.name));
+      const inDepth = imgs.filter(f => (f.webkitRelativePath.split('/').length - 2) <= DIR_MAX_DEPTH);
+      let files = inDepth, truncated = imgs.length > inDepth.length;   // deeper files skipped
+      if (inDepth.length > DIR_MAX_FILES) { files = inDepth.slice(0, DIR_MAX_FILES); truncated = true; }
+      if (files.length) addFiles(files);
+      if (truncated) toast(`Folder upload capped: first ${DIR_MAX_FILES} images, one level of subfolders deep`, 6000);
+      else if (!files.length) toast('No JPEG / PNG / GIF / PDF images in that folder (first level)', 5000);
+    };
     inp.click();
   }
   // ── Phase 2a: apply staged changes as real MB edits (form-replay) ─────────────
