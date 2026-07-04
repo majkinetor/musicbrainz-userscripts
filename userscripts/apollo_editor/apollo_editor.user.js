@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.4.133144
+// @version      2026.7.4.134625
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3372,17 +3372,31 @@
     return out;
   }
   function acJoinJson(ac) { return (ac || []).map(n => (n.name || (n.artist && n.artist.name) || '') + (n.joinphrase || '')).join(''); }
+  // #358: render a WS2 artist credit as per-artist links (each credited name → /artist/<gid>),
+  // keeping the join phrases as plain text. Used for the existing release's artists in the
+  // Duplicates comparison so you can click through to each artist.
+  function acLinksJson(ac) {
+    return (ac || []).map(n => {
+      const gid = n.artist && n.artist.id, nm = n.name || (n.artist && n.artist.name) || '';
+      const cell = gid ? `<a href="${ORIGIN}/artist/${gid}" target="_blank" rel="noopener">${esc(nm)}</a>` : esc(nm);
+      return cell + esc(n.joinphrase || '');
+    }).join('');
+  }
   async function fetchDupTracklist(gid) {
     try {
       const j = await fetch(`${ORIGIN}/ws/2/release/${gid}?inc=artist-credits+recordings&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json());
       return (j.media || []).map((m, mi) => ({
         position: m.position || mi + 1, format: m.format || '',
-        tracks: (m.tracks || []).map(t => ({
-          pos: t.number || t.position || '',
-          title: t.title || (t.recording && t.recording.title) || '',
-          artist: acJoinJson(t['artist-credit'] || (t.recording && t.recording['artist-credit'])),
-          len: t.length || (t.recording && t.recording.length) || null,
-        })),
+        tracks: (m.tracks || []).map(t => {
+          const ac = t['artist-credit'] || (t.recording && t.recording['artist-credit']) || [];
+          return {
+            pos: t.number || t.position || '',
+            title: t.title || (t.recording && t.recording.title) || '',
+            artist: acJoinJson(ac),
+            artistAc: ac,   // #358: raw credit → per-artist links on the existing (left) side
+            len: t.length || (t.recording && t.recording.length) || null,
+          };
+        }),
       }));
     } catch (e) { Log.warn('dup tracklist fetch failed', e.message); return null; }
   }
@@ -3415,6 +3429,14 @@
       return '<span class="tc-dh">' + esc(self) + '</span>';   // too different → whole line
     return dupDiffSide(segs, want);
   }
+  // #358: do two strings differ "wholly" (below the char-diff cutoff)? Used to decide
+  // whether the linked left-artist cell gets a whole-cell mismatch highlight.
+  function dupWholeDiff(a, b) {
+    a = a || ''; b = b || ''; if (a === b) return false;
+    const segs = dupCharDiff(a, b); if (!segs) return true;
+    const common = segs.reduce((n, s) => n + (s.t === 0 ? s.s.length : 0), 0);
+    return common / Math.max(a.length, b.length, 1) < DUP_DIFF_CUTOFF;
+  }
   // graded length-gap shade — same as the recordings detailed highlight (#186). null under 1s.
   function dupLenShade(gapMs) {
     const g = Math.abs(gapMs || 0);
@@ -3432,7 +3454,10 @@
         // different title is marked whole, not as scattered characters).
         const titleEx = has ? dupDiffOrWhole(t.title || '', s.title || '', -1) : esc(t.title || '');
         const titleSe = has ? dupDiffOrWhole(t.title || '', s.title || '', 1)  : '';
-        const artEx   = has ? dupDiffOrWhole(t.artist || '', s.artist || '', -1) : esc(t.artist || '');
+        // #358: existing (left) artists as per-artist links; keep the whole-cell "differs"
+        // cue when they diverge below the cutoff (partial diffs just show the links).
+        const artExLinks = acLinksJson(t.artistAc);
+        const artEx   = has && dupWholeDiff(t.artist || '', s.artist || '') ? `<span class="tc-dh">${artExLinks}</span>` : artExLinks;
         const artSe   = has ? dupDiffOrWhole(t.artist || '', s.artist || '', 1)  : '';
         // length: graded shade on both Len cells when the gap is real (#186)
         const sh = (has && t.len && s.len) ? dupLenShade(t.len - s.len) : null;
@@ -3459,6 +3484,8 @@
       .tc-dd-tbl .tc-dd-len { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 48px; }
       .tc-dd-tbl .tc-dd-x { color: #c00; }
       .tc-dd-tbl .tc-dh { background: #ffc9c9; color: #a00000; border-radius: 2px; }
+      .tc-dd-tbl a { color: inherit; text-decoration: underline; text-decoration-color: rgba(0,0,0,.28); text-underline-offset: 2px; }   /* #358: left-artist links, readable on normal + mismatch cells */
+      .tc-dd-tbl a:hover { text-decoration-color: currentColor; }
       .tc-dd-tbl .tc-cf { display: inline-block; padding: 0 .5px; }
       #duplicates-tab .tc-dup-sim .tc-dup-tm { display: inline-block; margin-left: 4px; font-weight: 600; font-size: 10px; opacity: 0.92; white-space: nowrap; }`;
     document.head.appendChild(s);
@@ -4012,7 +4039,7 @@
         const setFromRec = (m, i) => { const t = koTrack(m, i); const rec = t && u(t.recording); const rn = rec ? u(rec.name) : null; if (rn != null && rn !== '' && u(t.name) !== rn) { try { t.name(rn); } catch (x) {} } };
         if (e.altKey) wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => setFromRec(+row.dataset.mi, +row.dataset.ti));
         else setFromRec(+tr.dataset.mi, +tr.dataset.ti);
-        _tlRefreshed = false;   // #348: title changed here — force the Tracklist mirror to reload on next visit so the new title + changed-row marker show (the watcher otherwise reloads it only once)
+        _tlRefreshed = false; scheduleSync();   // #348: title changed here (a self-edit the watcher ignores) — re-sync the Tracklist mirror so the new title + changed-row marker show reliably, not on a racy tab-switch
         rerenderRec();
         return;
       }
@@ -4039,7 +4066,11 @@
         };
         if (e.altKey) wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => setArtistFromRec(+row.dataset.mi, +row.dataset.ti));
         else setArtistFromRec(+tr.dataset.mi, +tr.dataset.ti);
-        _tlRefreshed = false;
+        // #348: the copy is a SELF-edit, which the tracklist change-watcher ignores — so the
+        // Tracklist mirror only refreshes via the lazy _tlRefreshed flag on the next tab-switch,
+        // and that races (the copy lands in the model but the tab paints the stale unmatched slot).
+        // Re-sync the mirror ourselves so the resolved artist shows immediately/reliably.
+        _tlRefreshed = false; scheduleSync();
         rerenderRec();
         return;
       }
