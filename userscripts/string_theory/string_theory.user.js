@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.4.135142
+// @version      2026.7.4.141621
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,13 +67,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.4.135142 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4.135142\n  · Art Station v2026.7.3\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4.110617");
+  console.log('%c String Theory %c v2026.7.4.141621 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4.141620\n  · Art Station v2026.7.3\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4.110617");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.4.135142","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.4.135142","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.4.141620","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.4.141620","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -4108,37 +4108,43 @@ try {
         // entity-aware equality: same artist GID + credited-as + join phrase per name. NOT acText — two
         // different artists sharing a credited name ("Mariz" ≠ "Mariz") must still copy the recording's entity.
         const nameKey = n => (n.artist ? (u(u(n.artist).gid) || '') : '') + '' + (u(n.name) || '') + '' + (u(n.joinPhrase) || '');
-        const setArtistFromRec = (m, i) => {
+        const _entCache = new Map();   // gid → full entity, so a whole-column copy fetches each artist once
+        const fullEntity = async gid => { if (!_entCache.has(gid)) _entCache.set(gid, await fetchEntity(gid)); return _entCache.get(gid); };
+        const setArtistFromRec = async (m, i) => {
           const t = koTrack(m, i), rec = t && u(t.recording), recAc = rec && u(rec.artistCredit);
           const recNames = recAc && (u(recAc.names) || []);
           if (!recNames || !recNames.length) { Log.warn(`#348 artist copy: track ${m}.${i} — recording has no artist credit (recording ${rec ? 'present' : 'null'}) — nothing to copy`); return; }
           const tNames = u(u(t.artistCredit).names) || [];
           if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.info(`#348 artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); return; }
           const gids = recNames.map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
+          // Fetch the FULL artist entity for each credit (same as the paste-MBID resolve → pickArtist
+          // path). Verified live: writing the recording's own LEAN artist — or W.MB.entity(gid,name) —
+          // gets DROPPED by MB on its next re-derive; only the full entity, with its integer id, persists
+          // the match. Keep the recording's credited-as + join phrase. #348
+          const names = [];
+          for (const n of recNames) {
+            const a = u(n.artist), gid = a && u(a.gid);
+            const full = gid ? await fullEntity(gid) : null;
+            names.push({ artist: full || a, name: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' });
+          }
           try {
-            // Intern each artist through W.MB.entity (like recEntityFrom does) so the credit gets a
-            // CANONICAL MB entity — the recording's own artist object is lean, so writing it directly
-            // set the gid transiently but MB dropped the link on its next re-derive, leaving credited
-            // text with no match. The interned entity persists the link. #348
-            t.artistCredit({ names: recNames.map(n => {
-              const a = u(n.artist), gid = a && u(a.gid);
-              const artist = gid ? W.MB.entity({ entityType: 'artist', gid, name: (a && u(a.name)) || '' }, 'artist') : a;
-              return { artist, name: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' };
-            }) });
+            t.artistCredit({ names });
             // read back the WRITTEN track credit — ∅ here (vs a real gid in the recording) means
             // the entity link was dropped and only the credited text stuck (the "set without match" bug).
             const wrote = (u(u(t.artistCredit).names) || []).map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
             Log.info(`#348 artist copy: track ${m}.${i} ← recording "${acText(u(t.artistCredit))}" (recording gid(s): ${gids} · written track gid(s): ${wrote})`);
           } catch (x) { Log.warn(`#348 artist copy: track ${m}.${i} — artistCredit setter threw: ${x && x.message}`); }
         };
-        if (e.altKey) wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => setArtistFromRec(+row.dataset.mi, +row.dataset.ti));
-        else setArtistFromRec(+tr.dataset.mi, +tr.dataset.ti);
+        (async () => {
+        if (e.altKey) { for (const row of wrap.querySelectorAll('tbody tr.tc-recrow')) await setArtistFromRec(+row.dataset.mi, +row.dataset.ti); }
+        else await setArtistFromRec(+tr.dataset.mi, +tr.dataset.ti);
         // #348: the copy is a SELF-edit, which the tracklist change-watcher ignores — so the
         // Tracklist mirror only refreshes via the lazy _tlRefreshed flag on the next tab-switch,
         // and that races (the copy lands in the model but the tab paints the stale unmatched slot).
         // Re-sync the mirror ourselves so the resolved artist shows immediately/reliably.
         _tlRefreshed = false; scheduleSync();
         rerenderRec();
+        })();
         return;
       }
       const inTitle = !!e.target.closest('td.tc-recname');
