@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.4
+// @version      2026.7.4.110617
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -445,7 +445,7 @@ container.innerHTML = `
      smaller than the row icons (they're a secondary, collapsed representation). */
   .pc-compact-strip { display: none; grid-column: 1 / -1; flex-wrap: wrap; align-items: center; gap: 7px; padding: 1rem 0 1px; }
   #mb-pc-panel .pc-compact-strip.pc-has-icons { display: flex; }
-  .pc-compact-ico { display: inline-flex; align-items: center; justify-content: center; width: calc(var(--pc-icon-size, 22px) * 0.9); height: calc(var(--pc-icon-size, 22px) * 0.9); cursor: pointer; border-radius: 50%; box-sizing: border-box; filter: grayscale(1); opacity: .38; transition: opacity .12s, filter .12s; }
+  .pc-compact-ico { display: inline-flex; align-items: center; justify-content: center; width: calc(var(--pc-icon-size, 22px) * 0.8); height: calc(var(--pc-icon-size, 22px) * 0.8); cursor: pointer; border-radius: 50%; box-sizing: border-box; filter: grayscale(1); opacity: .38; transition: opacity .12s, filter .12s; }
   .pc-compact-ico svg, .pc-compact-ico img { display: block; width: 100%; height: 100%; }
   .pc-compact-ico:hover { filter: none; opacity: 1; }
   /* a folded MISMATCH (found but wrong barcode/format) keeps an amber ring so the
