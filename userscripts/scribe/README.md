@@ -3,7 +3,7 @@
 **Scribe** edits MusicBrainz release in your *real* editor (VS Code, Vim, Notepad…).
 
 - Install: [`scribe.user.js`](./scribe.user.js)
-- Download helper: [`scribe.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe.exe)
+- Download the helper — **[Windows](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe.exe)** · **[macOS arm64](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe-osx-arm64)** · **[macOS x64](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe-osx-x64)** · **[Linux x64](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe-linux-x64)** (needs the [.NET 9 runtime](https://dotnet.microsoft.com/download/dotnet/9.0)) — or [build it](./helper/BUILD.md)
 
 https://github.com/user-attachments/assets/3fb448db-a46c-487a-9d5d-5f3dce997cbf
 
@@ -24,40 +24,36 @@ Edit a whole release as one Markdown document** (see [the release editor](#edit-
 
 ## Running the helper
 
-**Quick install (Windows, prebuilt):** grab the tiny prebuilt exe and run it — needs the
-[.NET 9 runtime](https://dotnet.microsoft.com/download/dotnet/9.0) installed:
+The helper runs on **Windows, macOS and Linux**. On **Windows** it's a background **system-tray** app; on **macOS/Linux** it runs **headless** (no tray — configured entirely from the command line and controllable via the launch flags). Same tiny localhost bridge everywhere.
+
+**Windows** (prebuilt [`scribe.exe`](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe.exe) — needs the [.NET 9 Desktop runtime](https://dotnet.microsoft.com/download/dotnet/9.0)):
 
 ```powershell
-# one-time: install the .NET 9 runtime (the helper needs only the base runtime)
-winget install --id Microsoft.DotNet.Runtime.9 -e
-# run it — sits in the system tray, no console window:
 .\scribe.exe --port 17999 --editor "code -r"
-# …or run it AND start it with Windows from now on:
-.\scribe.exe --startup --editor "code -r"
+.\scribe.exe --startup --editor "code -r"      # …and start it with Windows from now on
 ```
 
-It runs as a **background tray app** (no console). Right-click the tray icon for **Set editor…** ·
-**Open log** · **Run at startup** (toggle) · **Exit**. The editor you set is **remembered** (so
-`--editor` is optional after the first time). Output goes to `%LOCALAPPDATA%\Scribe\scribe.log`.
+Right-click the tray icon for **Set editor…** · **Open log** · **Run at startup** (toggle) · **Exit** (double-click opens the log).
 
-<details><summary>How to build</summary>
+**macOS / Linux** (headless — no tray; prebuilt [arm64](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe-osx-arm64) · [Intel](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe-osx-x64) · [Linux](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe-linux-x64), need the [.NET 9 runtime](https://dotnet.microsoft.com/download/dotnet/9.0)):
 
-The helper is a Windows tray app (targets `net9.0-windows`, uses WinForms for the tray icon + the
-"Set editor" prompt), so it builds on **Windows** with the [.NET SDK](https://dotnet.microsoft.com/download) (9.0+):
-
-```powershell
-cd userscripts/scribe/helper
-dotnet run -- --port 17999 --token <your-secret>   # runs to the tray (no console)
-# smallest exe (needs the .NET runtime, ~190 KB — this is what dist/ ships):
-dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugType=none -o ./dist
-# fully standalone (no runtime needed, but large):
-dotnet publish -c Release -r win-x64 --self-contained -o ./dist
+```sh
+chmod +x scribe && ./scribe --port 17999 --editor "code -r"
+./scribe --startup on --editor "code -r"       # register it to start at login
+./scribe --startup off                         # unregister
 ```
 
-The HTTP protocol itself is plain loopback and OS-agnostic; only the shipped helper (tray, run-at-startup,
-windowless) is Windows-specific.
+The editor you set is **remembered** (so `--editor` is optional after the first time), stored with the log in `settings.json`.
 
-</details>
+Per-OS specifics:
+
+| | UI | Log + settings | Run at startup | Focus editor after open |
+| --- | --- | --- | --- | --- |
+| **Windows** | system tray | `%LOCALAPPDATA%\Scribe\` | `HKCU\…\Run` registry | raises the editor window (user32) |
+| **macOS** | headless (CLI) | `~/Library/Application Support/Scribe/` | `~/Library/LaunchAgents/…plist` | OS default |
+| **Linux** | headless (CLI) | `~/.local/share/Scribe/` (XDG) | `~/.config/autostart/scribe.desktop` | OS default |
+
+**Building it yourself:** see [`helper/BUILD.md`](./helper/BUILD.md) — the helper multi-targets `net9.0-windows` (WinForms tray) and `net9.0` (headless macOS/Linux), and `dist/` ships tiny framework-dependent single-file binaries built there.
 
 
 Options:
