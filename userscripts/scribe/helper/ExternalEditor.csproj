@@ -1,15 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Windows: a WinForms system-tray app (no console). macOS/Linux: a headless CLI daemon (no tray).
+         Everything Windows-specific (WinForms tray, registry, user32 focus) is guarded by the WINDOWS
+         symbol, which .NET defines automatically for the -windows target. -->
+    <TargetFrameworks>net9.0-windows;net9.0</TargetFrameworks>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>scribe</AssemblyName>
     <RootNamespace>Scribe</RootNamespace>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <!-- a system-tray background app: no console window (logs go to scribe.log) -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
+
+  <!-- macOS/Linux (net9.0): plain executable, headless -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <!-- Windows (net9.0-windows): WinForms tray, windowless -->
+  <PropertyGroup Condition="$(TargetFramework.EndsWith('-windows'))">
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Registry is used only on Windows (guarded); the package supplies the API on the plain net9.0 build. -->
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+  </ItemGroup>
 
 </Project>
