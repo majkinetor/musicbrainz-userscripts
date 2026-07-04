@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.3.223736
+// @version      2026.7.4
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1488,12 +1488,16 @@ function refreshCompactStrip() {
         const mismatch = row.classList.contains('pc-st-mismatch');
         const ico = document.createElement('span');
         ico.className = 'pc-compact-ico' + (mismatch ? ' pc-compact-mismatch' : '');
-        ico.title = `${PROVIDER_NAME[p]} — ${mismatch ? 'found but a different release · ' : ''}click to search`;
+        ico.title = `${PROVIDER_NAME[p]} — ${mismatch ? 'found but a different release · click to open it' : 'click to search'}`;
         ico.innerHTML = PROVIDER_ICON[p] || '';
         ico.addEventListener('click', () => {
-            const search = (a && a.dataset.searchUrl) || null;
-            if (search) window.open(search, '_blank', 'noopener');
-            else row.click();   // fall back to the row's own open behaviour
+            // behave exactly like clicking the (uncompacted) row: open what was FOUND
+            // when there is one (a mismatch has a found URL), else the provider search.
+            const href = a && a.getAttribute('href');
+            const found = href && /^https?:\/\//.test(href) ? href : null;
+            const dest = found || (a && a.dataset.searchUrl) || null;
+            if (dest) window.open(dest, '_blank', 'noopener');
+            else row.click();   // last-resort fallback (e.g. a pending row)
         });
         strip.appendChild(ico);
     });
