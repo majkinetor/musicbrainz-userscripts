@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.7.4.110617
+// @version      2026.7.4.141822
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1474,8 +1474,9 @@ function refreshCompactStrip() {
         if (!row) return;
         // compact unless the row is a CLEAN match — so pending, not-found AND
         // found-but-mismatched (wrong barcode/format) all stay in the strip; only a
-        // real match rises into a full row.
-        const compact = !row.classList.contains('pc-st-match') && GM_getValue(`prov_${p}`, true);
+        // real match rises into a full row. A link that's already IN MB (pc-inmb) also
+        // always stays a full row, even without a clean match — you added it, so show it.
+        const compact = !row.classList.contains('pc-st-match') && !row.classList.contains('pc-inmb') && GM_getValue(`prov_${p}`, true);
         const was = row.classList.contains('pc-compacted');
         row.classList.toggle('pc-compacted', compact);
         if (!compact) {
