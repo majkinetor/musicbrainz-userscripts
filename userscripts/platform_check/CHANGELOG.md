@@ -1,5 +1,16 @@
 # Platform Check Changelog
 
+## [2026.7.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.4)
+
+### Features
+
+1. Compact unmatched providers ([#355](https://github.com/majkinetor/musicbrainz-userscripts/issues/355))
+1. GTIN padding fallbacks on barcode-first lookups ([#354](https://github.com/majkinetor/musicbrainz-userscripts/issues/354))
+
+### Fixes
+
+1. Deezer UPC search returns unrelated albums  ([#356](https://github.com/majkinetor/musicbrainz-userscripts/issues/356))
+
 ## [2026.7.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.3)
 
 ### Features

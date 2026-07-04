@@ -1,5 +1,18 @@
 # String Theory Changelog
 
+## [2026.7.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.4)
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Link the existing release's artists on the Duplicates comparison ([#358](https://github.com/majkinetor/musicbrainz-userscripts/issues/358))
+1. Empty track title is hard to focus  ([#357](https://github.com/majkinetor/musicbrainz-userscripts/issues/357))
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Compact unmatched providers ([#355](https://github.com/majkinetor/musicbrainz-userscripts/issues/355))
+1. GTIN padding fallbacks on barcode-first lookups ([#354](https://github.com/majkinetor/musicbrainz-userscripts/issues/354))
+1. Deezer UPC search returns unrelated albums  ([#356](https://github.com/majkinetor/musicbrainz-userscripts/issues/356))
+
 ## [2026.7.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.3)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

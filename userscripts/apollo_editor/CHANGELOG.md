@@ -1,5 +1,12 @@
 # Apollo Editor Changelog
 
+## [2026.7.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.4)
+
+### Features
+
+1. Link the existing release's artists on the Duplicates comparison ([#358](https://github.com/majkinetor/musicbrainz-userscripts/issues/358))
+1. Empty track title is hard to focus  ([#357](https://github.com/majkinetor/musicbrainz-userscripts/issues/357))
+
 ## [2026.7.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.7.3)
 
 ### Features
