@@ -23,11 +23,14 @@ console.log('logged in:', loggedIn);
 console.log('Match works button present:', btn);
 if (btn) {
   await page.evaluate(() => [...document.querySelectorAll('button.gt-clone-btn')].find(x => /Match works/.test(x.textContent || '')).click());
-  // wait for matching to finish (throttled WS2)
-  for (let i = 0; i < 40; i++) {
-    const note = await page.evaluate(() => { const n = document.querySelector('.gt-cons .gt-pop-note'); return n ? n.textContent : null; });
-    const rows = await page.evaluate(() => document.querySelectorAll('.gt-wm-tbl tr').length);
-    if (rows > 1) break;
+  // the matrix should appear IMMEDIATELY with all rows pending ("matching…") — capture that first
+  await page.waitForTimeout(700);
+  const early = await page.evaluate(() => ({ rows: Math.max(0, document.querySelectorAll('.gt-wm-tbl tr').length - 1), matching: [...document.querySelectorAll('.gt-wm-wk')].filter(n => /matching…/.test(n.textContent)).length }));
+  console.log(`immediate render: ${early.rows} rows visible, ${early.matching} still "matching…"`);
+  // then wait until every row has resolved
+  for (let i = 0; i < 60; i++) {
+    const pending = await page.evaluate(() => [...document.querySelectorAll('.gt-wm-wk')].filter(n => /matching…/.test(n.textContent)).length);
+    if (!pending && i > 0) break;
     await page.waitForTimeout(1500);
   }
   const res = await page.evaluate(() => {

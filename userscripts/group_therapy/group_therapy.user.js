@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.5.234237
+// @version      2026.7.6.002620
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.5.234237';
+  const VERSION = '2026.7.6.002620';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -1078,10 +1078,10 @@
       + '.gt-wm-alt{color:#8a8f98;font-size:11px;margin-left:4px}.gt-wm-dim{color:#8a8f98;font-style:italic}'
       + '.gt-wm-pick{margin-left:6px;border:0;background:transparent;cursor:pointer;opacity:.6;font-size:13px}.gt-wm-pick:hover{opacity:1}'
       + '.gt-wm-linked{color:#22c55e;font-weight:700}.gt-wm-ck{width:20px}.gt-wm-dt{width:16px;text-align:center}'
-      + '.gt-wm-pop{position:fixed;z-index:2147483647;background:var(--gt-bg,#1c1f26);color:inherit;border:1px solid rgba(127,127,127,.4);border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5);padding:8px;min-width:340px;max-width:460px}'
+      + '.gt-wm-pop{position:fixed;z-index:2147483647;background:#fff;color:#222;border:1px solid #d4d9e0;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:8px;min-width:340px;max-width:460px;font:13px -apple-system,Segoe UI,Arial,sans-serif}'
       + '.gt-wm-q{width:100%;box-sizing:border-box;margin:4px 0 6px;padding:4px 6px}.gt-wm-results{max-height:300px;overflow:auto}'
-      + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:rgba(127,127,127,.18)}.gt-wm-rt{font-size:13px}'
-      + '.gt-wm-wr{color:#8a8f98;font-size:11px}.gt-wm-rw{color:#8a8f98;font-size:11px;margin-left:4px}.gt-wm-cut{margin-right:8px}.gt-wm-newtag{color:#a78bfa}'
+      + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:#eef1f6}.gt-wm-rt{font-size:13px}'
+      + '.gt-wm-wr{color:#8a8f98;font-size:11px}.gt-wm-rw{color:#8a8f98;font-size:11px;margin-left:4px}.gt-wm-cut{margin-right:8px}.gt-wm-newtag{color:#a78bfa}.gt-wm-prog{color:#8a8f98;font-size:11px}'
       + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}';
     document.head.appendChild(s);
   }
@@ -1103,23 +1103,34 @@
     const note = m => { const n = body.querySelector('.gt-pop-note'); if (n) n.textContent = m; };
     const rows = wmRecordings();
     if (!rows.length) { note('No recordings found on this release.'); return; }
-    let done = 0; note(`Matching… 0/${rows.length}`);
-    // serial (concurrency 1) — WS2 rate-limits ~1 req/s per IP; a wider fan-out drops the tail to 503s
-    await throttledMap(rows, async row => { if (!row.hasWorkOnPage) { try { await wmMatchOne(row); } catch (e) {} } note(`Matching… ${++done}/${rows.length}`); }, 1);
-    renderWorkMatch(body, foot, rows);
+    const api = renderWorkMatch(body, foot, rows);   // show the whole matrix at once — rows start "matching…"
+    // then resolve serially (WS2 rate-limits ~1 req/s) and fill each row in as its match lands
+    let done = 0; api.setProgress(0, rows.length);
+    for (const row of rows) {
+      if (!row.hasWorkOnPage) { try { await wmMatchOne(row); } catch (e) {} }
+      row._matched = true; api.setProgress(++done, rows.length); api.draw(); api.updatePlan();
+      if (!wmEl) return;   // dialog closed mid-run
+    }
+    api.setProgress(done, 0);
+    wmLoadWriters(rows, api.draw);
   }
   function wmDot(level) { const d = el('span', 'gt-wm-dot'); const L = WM_LEVEL[level] || WM_LEVEL.none; d.style.background = L.c; d.title = L.t; return d; }
   function renderWorkMatch(body, foot, rows) {
     body.textContent = ''; foot.textContent = '';
-    body.appendChild(el('div', 'gt-cons-leglabel', 'Tick a row to stage a recording→work “performance” relationship. Strong matches (blue/green) are pre-ticked; ✎ to search or pick another.'));
+    const leg = el('div', 'gt-cons-leglabel'); leg.appendChild(document.createTextNode('Tick a row to stage a recording→work “performance” relationship. Strong matches are pre-ticked; ✎ to search, pick, or create a work.'));
+    const prog = el('span', 'gt-wm-prog'); leg.appendChild(prog); body.appendChild(leg);
+    const setProgress = (d, n) => { prog.textContent = n ? `  ·  matching ${d}/${n}…` : ''; };
     const tbl = el('table', 'gt-wm-tbl'), head = el('tr');
     head.append(el('th', null, ''), el('th', null, 'Track'), el('th', null, ''), el('th', null, 'Work')); tbl.appendChild(head);
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
     const plan = el('span', 'gt-cons-plan');
     const updatePlan = () => { const n = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked).length; plan.textContent = n ? `${n} relationship${n > 1 ? 's' : ''} to add` : 'nothing ticked'; applyBtn.disabled = !n; };
     const draw = () => rows.forEach(row => {
-      const wkd = row._wk; if (!wkd) return; wkd.textContent = '';
+      const wkd = row._wk, dotd = row._dt; if (!wkd) return; wkd.textContent = ''; if (dotd) dotd.textContent = '';
+      if (row._cb) { row._cb.checked = !!row.chosen; row._cb.disabled = !row._matched || (!row.best && !row.chosen); }
       if (row.hasWorkOnPage || row.linked) { wkd.appendChild(el('span', 'gt-wm-dim', 'already linked')); return; }
+      if (!row._matched) { if (dotd) dotd.appendChild(wmDot('none')); wkd.appendChild(el('span', 'gt-wm-dim', 'matching…')); return; }
+      if (dotd) dotd.appendChild(wmDot(row.level || 'none'));
       const w = row.chosen || row.best;
       if (w) {
         if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + w.title); nw.title = 'a new work will be created and linked'; wkd.appendChild(nw); }
@@ -1127,17 +1138,16 @@
         if (row.cands && row.cands.length > 1) { const alt = el('span', 'gt-wm-alt', `+${row.cands.length - 1}`); alt.title = `${row.cands.length - 1} other candidate${row.cands.length - 1 > 1 ? 's' : ''}`; wkd.appendChild(alt); }
         if (!w._gtNew && row.writers && row.writers.length) wkd.appendChild(el('span', 'gt-wm-wr', ' — ' + row.writers.slice(0, 4).join(', ')));
       } else wkd.appendChild(el('span', 'gt-wm-dim', 'no match'));
-      const pick = el('button', 'gt-wm-pick', '✎'); pick.type = 'button'; pick.title = 'Search / pick a work'; pick.onclick = () => wmPicker(row, pick, draw, updatePlan); wkd.appendChild(pick);
-      if (row._cb) row._cb.checked = !!row.chosen;
+      const pick = el('button', 'gt-wm-pick', '✎'); pick.type = 'button'; pick.title = 'Search / pick / create a work'; pick.onclick = () => wmPicker(row, pick, draw, updatePlan); wkd.appendChild(pick);
     });
     rows.forEach(row => {
       const tr = el('tr', 'gt-cons-row');
       const cbTd = el('td', 'gt-wm-ck');
       if (row.hasWorkOnPage || row.linked) { const v = el('span', 'gt-wm-linked', '✓'); v.title = 'already linked to a work'; cbTd.appendChild(v); }
-      else { const cb = el('input'); cb.type = 'checkbox'; cb.checked = !!row.chosen; cb.onchange = () => { row.chosen = cb.checked ? (row.chosen || row.best) : null; draw(); updatePlan(); }; row._cb = cb; cbTd.appendChild(cb); }
+      else { const cb = el('input'); cb.type = 'checkbox'; cb.checked = !!row.chosen; cb.disabled = !row._matched; cb.onchange = () => { row.chosen = cb.checked ? (row.chosen || row.best) : null; draw(); updatePlan(); }; row._cb = cb; cbTd.appendChild(cb); }
       tr.appendChild(cbTd);
       const tkd = el('td', 'gt-wm-tk'); tkd.appendChild(el('span', 'gt-wm-pos', row.pos ? `[${row.pos}]` : '')); tkd.appendChild(document.createTextNode(' ' + (row.title || '(untitled)'))); tr.appendChild(tkd);
-      const dotd = el('td', 'gt-wm-dt'); if (!(row.hasWorkOnPage || row.linked)) dotd.appendChild(wmDot(row.level || 'none')); tr.appendChild(dotd);
+      const dotd = el('td', 'gt-wm-dt'); row._dt = dotd; tr.appendChild(dotd);
       const wkd = el('td', 'gt-wm-wk'); row._wk = wkd; tr.appendChild(wkd);
       tbl.appendChild(tr);
     });
@@ -1152,7 +1162,8 @@
     const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.onclick = () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); };
     applyBtn.onclick = () => wmApply(rows, () => renderWorkMatch(body, foot, rows));
     foot.append(cut, autoBtn, newAllBtn, clearBtn, plan, applyBtn);
-    draw(); updatePlan(); wmLoadWriters(rows, draw);
+    draw(); updatePlan();
+    return { draw, updatePlan, setProgress };
   }
   // fill in each proposed work's writers after the matrix is up (lazy, so matching stays fast)
   async function wmLoadWriters(rows, draw) {
@@ -1176,7 +1187,7 @@
     popEl.appendChild(el('div', 'gt-pop-hdr', 'Pick a work for “' + trunc(row.title, 54) + '”'));
     const q = el('input', 'gt-wm-q'); q.type = 'text'; q.placeholder = 'search works, or paste a work MBID / URL…'; popEl.appendChild(q);
     const list = el('div', 'gt-wm-results'); popEl.appendChild(list);
-    const showCands = () => { list.textContent = ''; (row.cands || []).forEach(c => list.appendChild(wmResRow(c.work, row, draw, updatePlan))); if (!(row.cands || []).length) list.appendChild(el('div', 'gt-pop-note', 'No siblings found — search or paste a work.')); };
+    const showCands = () => { list.textContent = ''; (row.cands || []).forEach(c => list.appendChild(wmResRow(c, row, draw, updatePlan))); if (!(row.cands || []).length) list.appendChild(el('div', 'gt-pop-note', 'No candidates yet — search or paste a work.')); };
     showCands();
     let t = null;
     const run = async () => {
