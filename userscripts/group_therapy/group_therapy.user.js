@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.011126
+// @version      2026.7.6.012750
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.6.011126';
+  const VERSION = '2026.7.6.012750';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -1028,7 +1028,9 @@
   async function wmWorkSearch(term) {
     const j = await wmJson('/ws/js/work?q=' + encodeURIComponent(term) + '&direct=false&limit=10');
     const arr = Array.isArray(j) ? j : (j && j.results) || [];
-    return arr.filter(w => w && w.gid).map(w => ({ gid: w.gid, id: w.id, title: w.name, disambiguation: w.comment || '', type: w.typeName || '', authors: (w.authors && w.authors.results) || [], pop: (w.artists && w.artists.hits) || 0 }));
+    // authors (writers) + artist popularity live under related_artists.{authors,artists} — the top-level
+    // w.authors / w.artists are empty
+    return arr.filter(w => w && w.gid).map(w => { const ra = w.related_artists || {}; return { gid: w.gid, id: w.id, title: w.name, disambiguation: w.comment || '', type: w.typeName || '', authors: (ra.authors && ra.authors.results) || [], pop: (ra.artists && ra.artists.hits) || 0 }; });
   }
   const wmNorm = s => (s || '').normalize('NFC').toLowerCase().replace(/[’‘']/g, "'").replace(/[‐‑‒–—―]/g, '-').replace(/…\s*/g, '…').replace(/\s+/g, ' ').trim();
   function performanceLtId() {
