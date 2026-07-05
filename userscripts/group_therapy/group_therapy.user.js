@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.003204
+// @version      2026.7.6.005038
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.6.003204';
+  const VERSION = '2026.7.6.005038';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -1016,11 +1016,16 @@
     if (key) wmNewWorks.set(key, w);
     return w;
   }
+  // proactively space WS2 calls so a long tracklist doesn't burst past the ~1 req/s limit and drop the
+  // tail to 503s (which surfaced as false "no match"). Serialised through a single timestamp.
+  let _wmNext = 0;
+  async function wmGate() { const now = Date.now(); const at = Math.max(now, _wmNext); _wmNext = at + 380; if (at > now) await sleep(at - now); }
   async function wmJson(url) {
     for (let i = 0; i < 5; i++) {
       try {
+        await wmGate();
         const r = await fetch(url, { credentials: 'include', headers: { Accept: 'application/json' } });
-        if ((r.status === 429 || r.status === 503) && i < 4) { await sleep(700 * (i + 1)); continue; }   // WS2 rate limit — back off
+        if ((r.status === 429 || r.status === 503) && i < 4) { await sleep(900 * (i + 1)); continue; }   // WS2 rate limit — back off harder
         if (!r.ok) return null; return await r.json();
       } catch (e) { if (i === 4) return null; await sleep(500 * (i + 1)); }
     }
@@ -1056,10 +1061,16 @@
       const j = await wmJson('/ws/2/isrc/' + encodeURIComponent(code) + '?inc=work-rels&fmt=json');
       (j && j.recordings || []).forEach(r => (r.relations || []).forEach(rel => { if (rel.work) bump({ gid: rel.work.id, title: rel.work.title, disambiguation: rel.work.disambiguation || '' }, 'isrc', 100); }));
     }
-    // work title search — MB's score puts the canonical work (bare title) near 100 and arrangements lower
+    // work title search — MB's score puts the canonical work (bare title) near 100 and arrangements lower.
+    // A DESCRIPTIVE trailing parenthetical ("Take My Breath Away (love theme from “Top Gun”)") isn't part
+    // of the work's title, so the full phrase finds nothing — retry with it stripped. Titles where the
+    // parenthetical IS part of the work ("You Spin Me Round (Like a Record)") match on the full title, so
+    // they never hit the fallback.
     if (row.title) {
-      const j = await wmJson('/ws/2/work?query=' + encodeURIComponent('work:' + wmQesc(row.title)) + '&limit=8&fmt=json');
-      (j && j.works || []).forEach(w => bump({ gid: w.id, title: w.title, disambiguation: w.disambiguation || '' }, 'search', w.score || 0));
+      const search = async t => { const j = await wmJson('/ws/2/work?query=' + encodeURIComponent('work:' + wmQesc(t)) + '&limit=8&fmt=json'); return (j && j.works) || []; };
+      let works = await search(row.title);
+      if (!works.length) { const bare = row.title.replace(/\s*\([^)]*\)\s*$/, '').trim(); if (bare && bare !== row.title) works = await search(bare); }
+      works.forEach(w => bump({ gid: w.id, title: w.title, disambiguation: w.disambiguation || '' }, 'search', w.score || 0));
     }
     const list = [...cands.values()].sort((a, b) => (b.isrc - a.isrc) || (b.score - a.score));
     row.cands = list.map(e => e.work);
@@ -1114,9 +1125,10 @@
       if (!row.hasWorkOnPage) { try { await wmMatchOne(row); } catch (e) {} }
       row._matched = true; api.setProgress(++done, rows.length); api.draw(); api.updatePlan();
       if (!wmEl) return;   // dialog closed mid-run
+      // pull this row's writers straight after its match and repaint — per-row, not a slow tail pass
+      if (row.best && !row.writers) { try { row.writers = await wmWriters(row.best.gid); api.draw(); } catch (e) {} if (!wmEl) return; }
     }
     api.setProgress(done, 0);
-    wmLoadWriters(rows, api.draw);
   }
   function wmDot(level) { const d = el('span', 'gt-wm-dot'); const L = WM_LEVEL[level] || WM_LEVEL.none; d.style.background = L.c; d.title = L.t; return d; }
   function renderWorkMatch(body, foot, rows) {
@@ -1132,6 +1144,7 @@
     const draw = () => rows.forEach(row => {
       const wkd = row._wk, dotd = row._dt; if (!wkd) return; wkd.textContent = ''; if (dotd) dotd.textContent = '';
       if (row._cb) { row._cb.checked = !!row.chosen; row._cb.disabled = !row._matched || (!row.best && !row.chosen); }
+      if (row._artEl) row._artEl.textContent = row.artist ? ' — ' + row.artist : '';
       if (row.hasWorkOnPage || row.linked) { wkd.appendChild(el('span', 'gt-wm-dim', 'already linked')); return; }
       if (!row._matched) { if (dotd) dotd.appendChild(wmDot('none')); wkd.appendChild(el('span', 'gt-wm-dim', 'matching…')); return; }
       if (dotd) dotd.appendChild(wmDot(row.level || 'none'));
@@ -1150,7 +1163,7 @@
       if (row.hasWorkOnPage || row.linked) { const v = el('span', 'gt-wm-linked', '✓'); v.title = 'already linked to a work'; cbTd.appendChild(v); }
       else { const cb = el('input'); cb.type = 'checkbox'; cb.checked = !!row.chosen; cb.disabled = !row._matched; cb.onchange = () => { row.chosen = cb.checked ? (row.chosen || row.best) : null; draw(); updatePlan(); }; row._cb = cb; cbTd.appendChild(cb); }
       tr.appendChild(cbTd);
-      const tkd = el('td', 'gt-wm-tk'); tkd.appendChild(el('span', 'gt-wm-pos', row.pos ? `[${row.pos}]` : '')); tkd.appendChild(document.createTextNode(' ' + (row.title || '(untitled)'))); tr.appendChild(tkd);
+      const tkd = el('td', 'gt-wm-tk'); tkd.appendChild(el('span', 'gt-wm-pos', row.pos ? `[${row.pos}]` : '')); tkd.appendChild(document.createTextNode(' ' + (row.title || '(untitled)'))); const artEl = el('span', 'gt-wm-wr'); row._artEl = artEl; tkd.appendChild(artEl); tr.appendChild(tkd);
       const dotd = el('td', 'gt-wm-dt'); row._dt = dotd; tr.appendChild(dotd);
       const wkd = el('td', 'gt-wm-wk'); row._wk = wkd; tr.appendChild(wkd);
       tbl.appendChild(tr);
@@ -1168,14 +1181,6 @@
     foot.append(cut, autoBtn, newAllBtn, clearBtn, plan, applyBtn);
     draw(); updatePlan();
     return { draw, updatePlan, setProgress };
-  }
-  // fill in each proposed work's writers after the matrix is up (lazy, so matching stays fast)
-  async function wmLoadWriters(rows, draw) {
-    for (const row of rows) {
-      if (row.hasWorkOnPage || row.linked || row.writers) continue;
-      const w = row.chosen || row.best; if (!w) continue;
-      try { row.writers = await wmWriters(w.gid); if (row.writers.length) draw(); } catch (e) {}
-    }
   }
   function wmResRow(work, row, draw, updatePlan) {
     const r = el('div', 'gt-wm-res');
