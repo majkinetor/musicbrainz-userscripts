@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.5
+// @version      2026.7.5.175705
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1864,7 +1864,7 @@
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
 
-  let _dropZone = false;
+  let _dropZone = IS_ADD;   // #361: on the direct /add-(cover|event)-art page, open the drop zone straight away
   function toggleDropZone() { _dropZone = !_dropZone; render(); if (_dropZone) root.querySelector('.as-dropzone')?.scrollIntoView({ block: 'nearest' }); }
   // Reveal the drop zone automatically when files are dragged onto the page, so you don't
   // have to click "Add image" first; the whole gallery then accepts the drop (the browser
