@@ -313,12 +313,22 @@ try {
             Log-Line '    -> skip: already seen (dedupe)'
             continue
         }
-        Log-Line "    -> ACTIONABLE (event): assigned"
+        # The Search result carries the issue CREATOR, not the assigner. Fetch the issue's TIMELINE
+        # and take the actor of the latest `assigned` event for the bot, so "who assigned you" is the
+        # person who actually did it (usually the maintainer, not whoever opened the issue). NOTE: use
+        # /timeline, not /events — the /events endpoint reports the wrong actor for assigned events.
+        $assigner = $iss.user.login   # fallback: issue creator
+        try {
+            $tl = Invoke-RestMethod -Uri "https://api.github.com/repos/$mergeRepo/issues/$($iss.number)/timeline?per_page=100" -Headers $headers -ErrorAction Stop
+            $lastAssign = $tl | Where-Object { $_.event -eq 'assigned' -and $_.assignee.login -eq $botLogin } | Select-Object -Last 1
+            if ($lastAssign -and $lastAssign.actor.login) { $assigner = $lastAssign.actor.login }
+        } catch { Log-Line "    -> WARN: assigner lookup failed: $($_.Exception.Message)" }
+        Log-Line "    -> ACTIONABLE (event): assigned by $assigner"
         $actionable += [pscustomobject]@{
             kind       = 'event'
             number     = $issNum
             title      = $issTitle
-            author     = $iss.user.login
+            author     = $assigner
             type       = 'Issue'
             reason     = 'assigned'
             url        = $iss.html_url
