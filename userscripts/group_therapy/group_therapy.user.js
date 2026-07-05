@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.002620
+// @version      2026.7.6.003204
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.6.002620';
+  const VERSION = '2026.7.6.003204';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -242,10 +242,13 @@
   // tooltip: how many, and which tracks / the release it appears on.
   function needleFor(target) {
     if (!target || !target.closest) return null;
+    // only the actual relationship (track + release credits) UI — not GT's own overlays, and not
+    // stray entity links elsewhere on the page (release title, sidebar, the work-match dialog, …)
+    if (target.closest('.gt-cons-ov, .gt-wm-pop, .gt-pop, .gt-menu, .gt-tip, .gt-toast')) return null;
     const phraseTh = target.closest('th.link-phrase');
     if (phraseTh && !target.closest('button')) { const l = phraseTh.querySelector('label'); if (l) { let t = (l.textContent || '').trim().replace(/:\s*$/, ''); if (t) return t; } }
     const link = target.closest('a[href]');
-    if (link && /\/(artist|work|label|place|recording|series|release-group|event|instrument|area)\/[a-f0-9-]/.test(link.getAttribute('href') || '')) return (link.textContent || '').trim();
+    if (link && link.closest('.relationship-item') && /\/(artist|work|label|place|recording|series|release-group|event|instrument|area)\/[a-f0-9-]/.test(link.getAttribute('href') || '')) return (link.textContent || '').trim();
     return null;
   }
   // newly-added rels get negative MB ids on their remove button; persisted ones are positive
@@ -1042,7 +1045,8 @@
   // gather candidate works for one recording: ISRC-sibling works (lookup) + ranked work-title search
   async function wmMatchOne(row) {
     const rec = row.rec;
-    const self = await wmJson('/ws/2/recording/' + rec.gid + '?inc=isrcs+work-rels&fmt=json');
+    const self = await wmJson('/ws/2/recording/' + rec.gid + '?inc=artist-credits+isrcs+work-rels&fmt=json');
+    if (self && self['artist-credit']) row.artist = self['artist-credit'].map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim();
     if (self && (self.relations || []).some(r => r.work)) { row.linked = true; return; }   // already linked
     const isrcs = (self && self.isrcs) || [];
     const cands = new Map();   // workGid → { work, isrc, score }
@@ -1081,12 +1085,12 @@
       + '.gt-wm-pop{position:fixed;z-index:2147483647;background:#fff;color:#222;border:1px solid #d4d9e0;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:8px;min-width:340px;max-width:460px;font:13px -apple-system,Segoe UI,Arial,sans-serif}'
       + '.gt-wm-q{width:100%;box-sizing:border-box;margin:4px 0 6px;padding:4px 6px}.gt-wm-results{max-height:300px;overflow:auto}'
       + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:#eef1f6}.gt-wm-rt{font-size:13px}'
-      + '.gt-wm-wr{color:#8a8f98;font-size:11px}.gt-wm-rw{color:#8a8f98;font-size:11px;margin-left:4px}.gt-wm-cut{margin-right:8px}.gt-wm-newtag{color:#a78bfa}.gt-wm-prog{color:#8a8f98;font-size:11px}'
+      + '.gt-wm-wr{color:#8a8f98;font-size:11px}.gt-wm-rw{color:#8a8f98;font-size:11px;margin-left:4px}.gt-wm-cut{margin-right:8px}.gt-wm-newtag{color:#a78bfa}.gt-wm-prog{color:#8a8f98;font-size:11px}.gt-wm-sub{color:#6b7280;font-size:11px;margin:-2px 0 5px 2px}'
       + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}';
     document.head.appendChild(s);
   }
   let wmEl = null;
-  function onWmKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closeWorkMatch(); } }
+  function onWmKey(e) { if (e.key === 'Escape') { if (popEl) return; e.stopPropagation(); closeWorkMatch(); } }   // let an open picker take Escape first
   function closeWorkMatch() { if (wmEl) { wmEl.remove(); wmEl = null; document.removeEventListener('keydown', onWmKey, true); } }
   async function openWorkMatch() {
     closeWorkMatch(); closePopover(); wmStyle();
@@ -1185,6 +1189,7 @@
     closePopover();
     popEl = el('div', 'gt-wm-pop');
     popEl.appendChild(el('div', 'gt-pop-hdr', 'Pick a work for “' + trunc(row.title, 54) + '”'));
+    if (row.artist) popEl.appendChild(el('div', 'gt-wm-sub', 'by ' + trunc(row.artist, 60)));
     const q = el('input', 'gt-wm-q'); q.type = 'text'; q.placeholder = 'search works, or paste a work MBID / URL…'; popEl.appendChild(q);
     const list = el('div', 'gt-wm-results'); popEl.appendChild(list);
     const showCands = () => { list.textContent = ''; (row.cands || []).forEach(c => list.appendChild(wmResRow(c, row, draw, updatePlan))); if (!(row.cands || []).length) list.appendChild(el('div', 'gt-pop-note', 'No candidates yet — search or paste a work.')); };
