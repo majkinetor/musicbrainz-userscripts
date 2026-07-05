@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.5.175706
+// @version      2026.7.5.233041
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.5.175706 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.5.175705\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.5.233041 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.5.175705\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.5.231835\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16452,12 +16452,12 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.3","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.5.231835","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.5.231835","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.183314';
+  const VERSION = '2026.7.5.231835';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -17145,6 +17145,11 @@ ${lines}
     cons.type = 'button';
     cons.onclick = () => openConsolidate();
     h2.appendChild(cons);
+    const wm = el('button', 'gt-clone-btn', '◎ Match works…');
+    wm.title = 'Match each recording to an existing MusicBrainz work (via ISRC + title/artist siblings) and stage recording→work “performance” relationships';
+    wm.type = 'button';
+    wm.onclick = () => openWorkMatch();
+    h2.appendChild(wm);
     const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — about / help';
     cfg.onclick = () => openAboutPopover(cfg);
     h2.appendChild(cfg);
@@ -17413,6 +17418,205 @@ ${lines}
       renderConsMatrix(ctx);
     };
     await ctx.recompute();
+  }
+
+  // ══ Work matching (#363) ═══════════════════════════════════════════════════
+  // Match each recording to an EXISTING MB work and stage a recording→work "performance" rel.
+  // Disambiguation is the whole problem — a bare standard title ("St. Louis Blues") matches many works.
+  // Two signals: (1) works of ISRC-sharing recordings — an /isrc LOOKUP returns work-rels (a /recording
+  // SEARCH does not), the strongest when ISRCs exist; and (2) a WORK title search ranked by MB's own
+  // score — the canonical work (bare title) scores ~100 while arrangements trail and are disambiguated,
+  // so the top score + the gap to the runner-up say whether to auto-tick or leave it for a manual pick.
+  const PERF_GID = 'a3005666-a872-32c3-ad06-98af558e99b0';   // recording→work "performance" link type
+  const WM_LEVEL = { exact:{ c:'#3b82f6', t:'ISRC-confirmed work' }, tolerance:{ c:'#22c55e', t:'the only work with this title' }, near:{ c:'#eab308', t:'dominant title match — review before applying' }, low:{ c:'#f97316', t:'ambiguous — pick the right work' }, none:{ c:'#9aa0a6', t:'no work found — search manually' } };
+  const WM_RANK = { exact:0, tolerance:1, near:2, low:3, none:4 };
+  const WM_AUTO_MAX = WM_RANK.near;   // ⚡ auto-ticks ISRC + unique + dominant; ambiguous/none stays manual
+  const wmQesc = s => '"' + String(s || '').replace(/["\\]/g, '\\$&') + '"';
+  async function wmJson(url) {
+    for (let i = 0; i < 5; i++) {
+      try {
+        const r = await fetch(url, { credentials: 'include', headers: { Accept: 'application/json' } });
+        if ((r.status === 429 || r.status === 503) && i < 4) { await sleep(700 * (i + 1)); continue; }   // WS2 rate limit — back off
+        if (!r.ok) return null; return await r.json();
+      } catch (e) { if (i === 4) return null; await sleep(500 * (i + 1)); }
+    }
+    return null;
+  }
+  function performanceLtId() {
+    const lt = W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type; if (!lt) return null;
+    for (const k in lt) if (lt[k] && lt[k].gid === PERF_GID) return lt[k].id != null ? lt[k].id : +k;
+    return null;
+  }
+  // the release's recordings, from the rendered track rows (deduped); flag ones already work-linked on the page
+  function wmRecordings() {
+    const out = [], seen = new Set();
+    document.querySelectorAll('tr.track').forEach(tr => {
+      const rec = recordingEntity(tr); if (!rec) return;
+      const key = (rec.gid || '') + '|' + rec.id; if (seen.has(key)) return; seen.add(key);
+      const hasWork = recordingRels(tr).some(r => !r.removed && r.other && r.other.entityType === 'work');
+      out.push({ tr, rec, pos: posLabel(tr) || '', title: val(rec.name) || '', hasWorkOnPage: hasWork });
+    });
+    return out;
+  }
+  // gather candidate works for one recording: ISRC-sibling works (lookup) + ranked work-title search
+  async function wmMatchOne(row) {
+    const rec = row.rec;
+    const self = await wmJson('/ws/2/recording/' + rec.gid + '?inc=isrcs+work-rels&fmt=json');
+    if (self && (self.relations || []).some(r => r.work)) { row.linked = true; return; }   // already linked
+    const isrcs = (self && self.isrcs) || [];
+    const cands = new Map();   // workGid → { work, isrc, score }
+    const bump = (w, kind, score) => { if (!w || !w.gid) return; let e = cands.get(w.gid); if (!e) { e = { work: w, isrc: 0, score: 0 }; cands.set(w.gid, e); } if (kind === 'isrc') e.isrc++; if (score > e.score) e.score = score; };
+    // ISRC-sharing recordings (the /isrc lookup returns work-rels, unlike a /recording search)
+    for (const code of isrcs.slice(0, 3)) {
+      const j = await wmJson('/ws/2/isrc/' + encodeURIComponent(code) + '?inc=work-rels&fmt=json');
+      (j && j.recordings || []).forEach(r => (r.relations || []).forEach(rel => { if (rel.work) bump({ gid: rel.work.id, title: rel.work.title, disambiguation: rel.work.disambiguation || '' }, 'isrc', 100); }));
+    }
+    // work title search — MB's score puts the canonical work (bare title) near 100 and arrangements lower
+    if (row.title) {
+      const j = await wmJson('/ws/2/work?query=' + encodeURIComponent('work:' + wmQesc(row.title)) + '&limit=8&fmt=json');
+      (j && j.works || []).forEach(w => bump({ gid: w.id, title: w.title, disambiguation: w.disambiguation || '' }, 'search', w.score || 0));
+    }
+    const list = [...cands.values()].sort((a, b) => (b.isrc - a.isrc) || (b.score - a.score));
+    row.cands = list.map(e => e.work);
+    if (!list.length) { row.level = 'none'; return; }
+    const top = list[0], second = list[1];
+    row.best = top.work;
+    const strong = list.filter(e => e.score >= 100).length;
+    if (top.isrc > 0) row.level = 'exact';                                     // ISRC-confirmed
+    else if (strong === 1 && top.score >= 100) row.level = 'tolerance';        // the only score-100 work
+    else if (top.score >= 100 && (!second || top.score - second.score >= 15)) row.level = 'near';   // dominant
+    else row.level = 'low';                                                    // ambiguous — the user picks
+    if (WM_RANK[row.level] <= WM_AUTO_MAX) row.chosen = top.work;
+  }
+  function wmStyle() {
+    if (document.getElementById('gt-wm-style')) return;
+    const s = el('style'); s.id = 'gt-wm-style';
+    s.textContent = '.gt-wm-tbl{width:100%;border-collapse:collapse}.gt-wm-tbl td,.gt-wm-tbl th{padding:3px 8px;text-align:left;vertical-align:top}'
+      + '.gt-wm-dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle}'
+      + '.gt-wm-pos{color:#8a8f98;margin-right:2px}.gt-wm-wa{text-decoration:none}.gt-wm-wa:hover{text-decoration:underline}'
+      + '.gt-wm-alt{color:#8a8f98;font-size:11px;margin-left:4px}.gt-wm-dim{color:#8a8f98;font-style:italic}'
+      + '.gt-wm-pick{margin-left:6px;border:0;background:transparent;cursor:pointer;opacity:.6;font-size:13px}.gt-wm-pick:hover{opacity:1}'
+      + '.gt-wm-linked{color:#22c55e;font-weight:700}.gt-wm-ck{width:20px}.gt-wm-dt{width:16px;text-align:center}'
+      + '.gt-wm-pop{position:fixed;z-index:2147483647;background:var(--gt-bg,#1c1f26);color:inherit;border:1px solid rgba(127,127,127,.4);border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5);padding:8px;min-width:340px;max-width:460px}'
+      + '.gt-wm-q{width:100%;box-sizing:border-box;margin:4px 0 6px;padding:4px 6px}.gt-wm-results{max-height:300px;overflow:auto}'
+      + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:rgba(127,127,127,.18)}.gt-wm-rt{font-size:13px}';
+    document.head.appendChild(s);
+  }
+  let wmEl = null;
+  function onWmKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closeWorkMatch(); } }
+  function closeWorkMatch() { if (wmEl) { wmEl.remove(); wmEl = null; document.removeEventListener('keydown', onWmKey, true); } }
+  async function openWorkMatch() {
+    closeWorkMatch(); closePopover(); wmStyle();
+    const re = RE(); if (!re) { toast('Open the relationship editor first'); return; }
+    if (performanceLtId() == null) { toast('Could not resolve the “performance” link type'); return; }
+    wmEl = el('div', 'gt-cons-ov'); const panel = el('div', 'gt-cons gt-wm'), hdr = el('div', 'gt-cons-hdr');
+    hdr.appendChild(el('span', 'gt-cons-title', 'Match recordings to works'));
+    const x = el('button', 'gt-cons-x', '✕'); x.type = 'button'; x.onclick = closeWorkMatch; hdr.appendChild(x);
+    const body = el('div', 'gt-cons-body'), foot = el('div', 'gt-cons-foot');
+    body.appendChild(el('div', 'gt-pop-note', 'Reading recordings…'));
+    panel.append(hdr, body, foot); wmEl.appendChild(panel); document.body.appendChild(wmEl);
+    document.addEventListener('keydown', onWmKey, true);
+    wmEl.addEventListener('mousedown', e => { if (e.target === wmEl) closeWorkMatch(); });
+    const note = m => { const n = body.querySelector('.gt-pop-note'); if (n) n.textContent = m; };
+    const rows = wmRecordings();
+    if (!rows.length) { note('No recordings found on this release.'); return; }
+    let done = 0; note(`Matching… 0/${rows.length}`);
+    // serial (concurrency 1) — WS2 rate-limits ~1 req/s per IP; a wider fan-out drops the tail to 503s
+    await throttledMap(rows, async row => { if (!row.hasWorkOnPage) { try { await wmMatchOne(row); } catch (e) {} } note(`Matching… ${++done}/${rows.length}`); }, 1);
+    renderWorkMatch(body, foot, rows);
+  }
+  function wmDot(level) { const d = el('span', 'gt-wm-dot'); const L = WM_LEVEL[level] || WM_LEVEL.none; d.style.background = L.c; d.title = L.t; return d; }
+  function renderWorkMatch(body, foot, rows) {
+    body.textContent = ''; foot.textContent = '';
+    body.appendChild(el('div', 'gt-cons-leglabel', 'Tick a row to stage a recording→work “performance” relationship. Strong matches (blue/green) are pre-ticked; ✎ to search or pick another.'));
+    const tbl = el('table', 'gt-wm-tbl'), head = el('tr');
+    head.append(el('th', null, ''), el('th', null, 'Track'), el('th', null, ''), el('th', null, 'Work')); tbl.appendChild(head);
+    const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
+    const plan = el('span', 'gt-cons-plan');
+    const updatePlan = () => { const n = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked).length; plan.textContent = n ? `${n} relationship${n > 1 ? 's' : ''} to add` : 'nothing ticked'; applyBtn.disabled = !n; };
+    const draw = () => rows.forEach(row => {
+      const wkd = row._wk; if (!wkd) return; wkd.textContent = '';
+      if (row.hasWorkOnPage || row.linked) { wkd.appendChild(el('span', 'gt-wm-dim', 'already linked')); return; }
+      const w = row.chosen || row.best;
+      if (w) {
+        const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.onclick = e => e.stopPropagation();
+        wkd.appendChild(a);
+        if (row.cands && row.cands.length > 1) { const alt = el('span', 'gt-wm-alt', `+${row.cands.length - 1}`); alt.title = `${row.cands.length - 1} other candidate${row.cands.length - 1 > 1 ? 's' : ''}`; wkd.appendChild(alt); }
+      } else wkd.appendChild(el('span', 'gt-wm-dim', 'no match'));
+      const pick = el('button', 'gt-wm-pick', '✎'); pick.type = 'button'; pick.title = 'Search / pick a work'; pick.onclick = () => wmPicker(row, pick, draw, updatePlan); wkd.appendChild(pick);
+      if (row._cb) row._cb.checked = !!row.chosen;
+    });
+    rows.forEach(row => {
+      const tr = el('tr', 'gt-cons-row');
+      const cbTd = el('td', 'gt-wm-ck');
+      if (row.hasWorkOnPage || row.linked) { const v = el('span', 'gt-wm-linked', '✓'); v.title = 'already linked to a work'; cbTd.appendChild(v); }
+      else { const cb = el('input'); cb.type = 'checkbox'; cb.checked = !!row.chosen; cb.onchange = () => { row.chosen = cb.checked ? (row.chosen || row.best) : null; draw(); updatePlan(); }; row._cb = cb; cbTd.appendChild(cb); }
+      tr.appendChild(cbTd);
+      const tkd = el('td', 'gt-wm-tk'); tkd.appendChild(el('span', 'gt-wm-pos', row.pos ? `[${row.pos}]` : '')); tkd.appendChild(document.createTextNode(' ' + (row.title || '(untitled)'))); tr.appendChild(tkd);
+      const dotd = el('td', 'gt-wm-dt'); if (!(row.hasWorkOnPage || row.linked)) dotd.appendChild(wmDot(row.level || 'none')); tr.appendChild(dotd);
+      const wkd = el('td', 'gt-wm-wk'); row._wk = wkd; tr.appendChild(wkd);
+      tbl.appendChild(tr);
+    });
+    body.appendChild(tbl);
+    const autoBtn = el('button', 'gt-cons-btn', '⚡ Match'); autoBtn.type = 'button'; autoBtn.title = 'Tick every strong match (blue / green)';
+    autoBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r.best && WM_RANK[r.level] <= WM_AUTO_MAX) r.chosen = r.best; }); draw(); updatePlan(); };
+    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.onclick = () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); };
+    applyBtn.onclick = () => wmApply(rows, () => renderWorkMatch(body, foot, rows));
+    foot.append(autoBtn, clearBtn, plan, applyBtn);
+    draw(); updatePlan();
+  }
+  function wmResRow(work, row, draw, updatePlan) {
+    const r = el('div', 'gt-wm-res');
+    r.appendChild(el('span', 'gt-wm-rt', work.title + (work.disambiguation ? ` (${work.disambiguation})` : '')));
+    r.onclick = () => { row.chosen = work; row.best = row.best || work; if (row.level === 'none' || !row.level) row.level = 'near'; draw && draw(); updatePlan && updatePlan(); closePopover(); };
+    return r;
+  }
+  function wmPicker(row, anchor, draw, updatePlan) {
+    closePopover();
+    popEl = el('div', 'gt-wm-pop');
+    popEl.appendChild(el('div', 'gt-pop-hdr', 'Pick a work for “' + trunc(row.title, 54) + '”'));
+    const q = el('input', 'gt-wm-q'); q.type = 'text'; q.placeholder = 'search works, or paste a work MBID / URL…'; popEl.appendChild(q);
+    const list = el('div', 'gt-wm-results'); popEl.appendChild(list);
+    const showCands = () => { list.textContent = ''; (row.cands || []).forEach(c => list.appendChild(wmResRow(c.work, row, draw, updatePlan))); if (!(row.cands || []).length) list.appendChild(el('div', 'gt-pop-note', 'No siblings found — search or paste a work.')); };
+    showCands();
+    let t = null;
+    const run = async () => {
+      const term = (q.value || '').trim(); if (!term) return showCands();
+      const gid = (term.match(GID_RE) || [])[0];
+      list.textContent = '';
+      if (gid) { const j = await wmJson('/ws/2/work/' + gid + '?fmt=json'); if (j && j.id) list.appendChild(wmResRow({ gid: j.id, title: j.title, disambiguation: j.disambiguation || '' }, row, draw, updatePlan)); else list.appendChild(el('div', 'gt-pop-note', 'No work with that MBID.')); return; }
+      const j = await wmJson('/ws/2/work?query=' + encodeURIComponent(wmQesc(term)) + '&limit=20&fmt=json');
+      const works = (j && j.works) || [];
+      if (!works.length) { list.appendChild(el('div', 'gt-pop-note', 'No matches.')); return; }
+      works.forEach(w => list.appendChild(wmResRow({ gid: w.id, title: w.title, disambiguation: w.disambiguation || '' }, row, draw, updatePlan)));
+    };
+    q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 300); });
+    q.addEventListener('paste', () => setTimeout(run, 0));
+    document.body.appendChild(popEl);
+    const a = anchor.getBoundingClientRect(), r = popEl.getBoundingClientRect();
+    popEl.style.left = Math.max(8, Math.min(a.left, window.innerWidth - r.width - 8)) + 'px';
+    popEl.style.top = Math.min(a.bottom + 4, window.innerHeight - r.height - 8) + 'px';
+    setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); q.focus(); }, 0);
+  }
+  async function wmApply(rows, refresh) {
+    const re = RE(); const ltId = performanceLtId();
+    if (!re || ltId == null) { toast('Cannot apply — editor not ready'); return; }
+    const todo = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked);
+    if (!todo.length) { toast('Nothing ticked'); return; }
+    toast(`Linking ${todo.length} work${todo.length > 1 ? 's' : ''}…`);
+    let ok = 0, fail = 0;
+    for (const row of todo) {
+      try {
+        const full = await wmJson('/ws/js/entity/' + row.chosen.gid);   // the editor needs the work's internal id
+        let workEnt = full; try { if (W.MB && W.MB.entity && full && full.entityType) workEnt = W.MB.entity(full); } catch (e) { workEnt = full; }
+        if (!workEnt || workEnt.id == null) { fail++; continue; }
+        dispatchRelationship(re, row.rec, workEnt, ltId, '', null, null);
+        row.linked = true; row.chosen = null; ok++;
+      } catch (e) { fail++; }
+    }
+    if (ok) markUsed(`Matched ${ok} recording${ok > 1 ? 's' : ''} to works`);
+    toast(fail ? `Linked ${ok}, ${fail} failed — see console` : `✓ Linked ${ok} work${ok > 1 ? 's' : ''} — review & save`);
+    refresh && refresh();
   }
 
   // recording checkbox → copy every recording rel except work/url/recording-samples
