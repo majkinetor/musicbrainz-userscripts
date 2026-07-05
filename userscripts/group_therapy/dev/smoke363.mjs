@@ -44,16 +44,22 @@ if (btn) {
   });
   console.log('modal rows:', res.count);
   res.data.forEach(r => console.log(`  [${r.ticked ? 'x' : ' '}] ${r.tk}  ${r.color}  -> ${r.wk}`));
+  await page.waitForTimeout(9000); // let lazy writer-loading finish
+  const writers = await page.evaluate(() => [...document.querySelectorAll('.gt-wm-wr')].map(n => n.textContent).filter(Boolean).length);
+  console.log('rows showing writers:', writers);
   await page.screenshot({ path: 'userscripts/group_therapy/dev/_smoke363.png' });
-  // verify Apply STAGES recording→work rels into the editor (never submits — safe)
-  const relWorksBefore = await page.evaluate(() => document.querySelectorAll('.relationship-item a[href*="/work/"]').length);
-  await page.evaluate(() => document.querySelector('.gt-cons-apply')?.click());
-  await page.waitForTimeout(6000);
-  const applied = await page.evaluate(() => ({
-    relWorks: document.querySelectorAll('.relationship-item a[href*="/work/"]').length,
-    toast: document.querySelector('.gt-toast')?.textContent || '',
-  }));
-  console.log(`apply: editor work-rels ${relWorksBefore} -> ${applied.relWorks} | toast: "${applied.toast}"`);
+  const clickBtn = re => page.evaluate(r => { const b = [...document.querySelectorAll('.gt-cons-btn, .gt-wm-new, .gt-cons-apply')].find(x => new RegExp(r).test(x.textContent || '')); if (b) { b.click(); return true; } return false; }, re);
+  // existing-work Apply stages rels (never submits)
+  const before = await page.evaluate(() => document.querySelectorAll('.relationship-item a[href*="/work/"]').length);
+  await clickBtn('Apply'); await page.waitForTimeout(6000);
+  const applied = await page.evaluate(() => ({ relWorks: document.querySelectorAll('.relationship-item a[href*="/work/"]').length, toast: document.querySelector('.gt-toast')?.textContent || '', err: window.MB.relationshipEditor.state.reducerError || null }));
+  console.log(`existing-work apply: editor work-rels ${before} -> ${applied.relWorks} | toast: "${applied.toast}" | reducerError: ${applied.err}`);
+  // ＋ new work path: Clear, "+ new for rest", verify tags, Apply, confirm the reducer accepts the new works
+  await clickBtn('Clear'); await clickBtn('new for rest'); await page.waitForTimeout(500);
+  const newtags = await page.evaluate(() => document.querySelectorAll('.gt-wm-newtag').length);
+  await clickBtn('Apply'); await page.waitForTimeout(6000);
+  const newApplied = await page.evaluate(() => ({ toast: document.querySelector('.gt-toast')?.textContent || '', err: window.MB.relationshipEditor.state.reducerError ? String(window.MB.relationshipEditor.state.reducerError).slice(0, 150) : null }));
+  console.log(`new-work path: tags=${newtags} | apply toast: "${newApplied.toast}" | reducerError: ${newApplied.err}`);
   await page.screenshot({ path: 'userscripts/group_therapy/dev/_smoke363_applied.png' });
 }
 console.log('pageerrors:', errs.length ? errs.slice(0, 5) : 'none');

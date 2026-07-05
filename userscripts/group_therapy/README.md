@@ -26,6 +26,7 @@ Batch operations and various helpers on the MusicBrainz *Edit relationships* pag
 - Highlight role or entity everywhere and show tooltip with overall counts
 - Copy/move credits from recording to recordings, work to works, release to release
 - Consolidate release-level credits across an entire release group (matrix + one-click apply)
+- Match recordings to existing works (ISRC + ranked title search) and stage the *performance* relationships
 - Works on existing and newly-added relationships
 
 ## Batch delete
@@ -85,6 +86,16 @@ This is **release-level only** (recordings are already shared across a group). I
 With more than 10 releases in a group you must pick releases to be consolidated manually.
 
 <img width="1000" src="./screenshots/consolidation2.png" />
+
+### Work matching
+
+The **◎ Match works…** button (next to *Consolidate RG…*) links each recording to an **existing** MusicBrainz work, so a release of standards **reuses** the works that already exist instead of creating duplicates. It opens a matrix — one row per recording — that proposes a work and stages a recording→work **performance** relationship.
+
+The hard part is disambiguation (a bare title like *St. Louis Blues* matches many works). Two signals drive it:
+- **ISRC** — recordings that share an ISRC almost always share a work; an `/isrc` lookup returns those works (an MB *search* can't), the strongest signal when ISRCs are present.
+- **Ranked title search** — a `/ws/2/work` search scored by MB's own relevance: the canonical work (bare title) scores ~100 while arrangements trail and are disambiguated, so the top score **and the gap to the runner-up** decide whether it's safe to auto-tick.
+
+Each row shows a **confidence dot** — blue *ISRC-confirmed* · green *only work with this title* · yellow *dominant (review)* · orange *ambiguous (pick)* · grey *none* — plus the proposed work's **writers** to tell homonyms apart. **⚡ Match** ticks everything at/above the confidence you choose in the **cutoff** selector; the **✎** on any row opens a picker to **search**, **paste an MBID/URL**, or **create a new work**. **＋ new for rest** creates a new work (named after the track, same-title tracks sharing one) for every recording still unmatched. **Apply** stages the relationships in the editor — they appear in MB's pending edits for you to review and **save yourself** (the script never submits them).
 
 ### Highlight
 

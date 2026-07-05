@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.5.231835
+// @version      2026.7.5.234237
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.5.231835';
+  const VERSION = '2026.7.5.234237';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -988,8 +988,31 @@
   const PERF_GID = 'a3005666-a872-32c3-ad06-98af558e99b0';   // recording→work "performance" link type
   const WM_LEVEL = { exact:{ c:'#3b82f6', t:'ISRC-confirmed work' }, tolerance:{ c:'#22c55e', t:'the only work with this title' }, near:{ c:'#eab308', t:'dominant title match — review before applying' }, low:{ c:'#f97316', t:'ambiguous — pick the right work' }, none:{ c:'#9aa0a6', t:'no work found — search manually' } };
   const WM_RANK = { exact:0, tolerance:1, near:2, low:3, none:4 };
-  const WM_AUTO_MAX = WM_RANK.near;   // ⚡ auto-ticks ISRC + unique + dominant; ambiguous/none stays manual
+  // how far ⚡ Match / the initial pre-tick reaches down the confidence ladder (persisted)
+  let wmCutoff = (() => { try { const v = GM_getValue('gt-wm-cutoff', WM_RANK.near); return typeof v === 'number' ? v : WM_RANK.near; } catch (e) { return WM_RANK.near; } })();
   const wmQesc = s => '"' + String(s || '').replace(/["\\]/g, '\\$&') + '"';
+  // a work's writers (composer/lyricist/…) — shown to help tell homonymous works apart. Cached per gid.
+  const WM_WRITER_RE = /composer|writer|lyricist|librettist|translat|revis|arrang|orchestrat/i;
+  const wmWriterCache = new Map();
+  async function wmWriters(gid) {
+    if (!gid) return [];
+    if (wmWriterCache.has(gid)) return wmWriterCache.get(gid);
+    const j = await wmJson('/ws/2/work/' + gid + '?inc=artist-rels&fmt=json');
+    const names = j ? [...new Set((j.relations || []).filter(r => r.artist && WM_WRITER_RE.test(r.type || '')).map(r => r.artist.name))] : [];
+    wmWriterCache.set(gid, names); return names;
+  }
+  // create a synthetic NEW work (negative id, no gid) — MB's submit creates it like a natively-added work
+  // (verified: the reducer accepts it and renders a pending new-work rel). Same-title new works within a
+  // session share one entity, so two unmatched same-title tracks don't spawn duplicate works.
+  let wmNewSeq = -1000000;
+  const wmNewWorks = new Map();
+  function wmMakeNewWork(title) {
+    const key = (title || '').normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim();
+    if (key && wmNewWorks.has(key)) return wmNewWorks.get(key);
+    const w = { entityType: 'work', id: wmNewSeq--, gid: null, name: title || '[untitled]', title: title || '[untitled]', disambiguation: '', _gtNew: true };
+    if (key) wmNewWorks.set(key, w);
+    return w;
+  }
   async function wmJson(url) {
     for (let i = 0; i < 5; i++) {
       try {
@@ -1044,7 +1067,7 @@
     else if (strong === 1 && top.score >= 100) row.level = 'tolerance';        // the only score-100 work
     else if (top.score >= 100 && (!second || top.score - second.score >= 15)) row.level = 'near';   // dominant
     else row.level = 'low';                                                    // ambiguous — the user picks
-    if (WM_RANK[row.level] <= WM_AUTO_MAX) row.chosen = top.work;
+    if (WM_RANK[row.level] <= wmCutoff) row.chosen = top.work;
   }
   function wmStyle() {
     if (document.getElementById('gt-wm-style')) return;
@@ -1057,7 +1080,9 @@
       + '.gt-wm-linked{color:#22c55e;font-weight:700}.gt-wm-ck{width:20px}.gt-wm-dt{width:16px;text-align:center}'
       + '.gt-wm-pop{position:fixed;z-index:2147483647;background:var(--gt-bg,#1c1f26);color:inherit;border:1px solid rgba(127,127,127,.4);border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5);padding:8px;min-width:340px;max-width:460px}'
       + '.gt-wm-q{width:100%;box-sizing:border-box;margin:4px 0 6px;padding:4px 6px}.gt-wm-results{max-height:300px;overflow:auto}'
-      + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:rgba(127,127,127,.18)}.gt-wm-rt{font-size:13px}';
+      + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:rgba(127,127,127,.18)}.gt-wm-rt{font-size:13px}'
+      + '.gt-wm-wr{color:#8a8f98;font-size:11px}.gt-wm-rw{color:#8a8f98;font-size:11px;margin-left:4px}.gt-wm-cut{margin-right:8px}.gt-wm-newtag{color:#a78bfa}'
+      + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}';
     document.head.appendChild(s);
   }
   let wmEl = null;
@@ -1097,9 +1122,10 @@
       if (row.hasWorkOnPage || row.linked) { wkd.appendChild(el('span', 'gt-wm-dim', 'already linked')); return; }
       const w = row.chosen || row.best;
       if (w) {
-        const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.onclick = e => e.stopPropagation();
-        wkd.appendChild(a);
+        if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + w.title); nw.title = 'a new work will be created and linked'; wkd.appendChild(nw); }
+        else { const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.onclick = e => e.stopPropagation(); wkd.appendChild(a); }
         if (row.cands && row.cands.length > 1) { const alt = el('span', 'gt-wm-alt', `+${row.cands.length - 1}`); alt.title = `${row.cands.length - 1} other candidate${row.cands.length - 1 > 1 ? 's' : ''}`; wkd.appendChild(alt); }
+        if (!w._gtNew && row.writers && row.writers.length) wkd.appendChild(el('span', 'gt-wm-wr', ' — ' + row.writers.slice(0, 4).join(', ')));
       } else wkd.appendChild(el('span', 'gt-wm-dim', 'no match'));
       const pick = el('button', 'gt-wm-pick', '✎'); pick.type = 'button'; pick.title = 'Search / pick a work'; pick.onclick = () => wmPicker(row, pick, draw, updatePlan); wkd.appendChild(pick);
       if (row._cb) row._cb.checked = !!row.chosen;
@@ -1116,17 +1142,32 @@
       tbl.appendChild(tr);
     });
     body.appendChild(tbl);
-    const autoBtn = el('button', 'gt-cons-btn', '⚡ Match'); autoBtn.type = 'button'; autoBtn.title = 'Tick every strong match (blue / green)';
-    autoBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r.best && WM_RANK[r.level] <= WM_AUTO_MAX) r.chosen = r.best; }); draw(); updatePlan(); };
+    const cut = el('select', 'gt-wm-cut'); cut.title = 'How far “⚡ Match” reaches down the confidence ladder';
+    [['exact', 'ISRC only'], ['tolerance', 'unique title'], ['near', 'dominant (default)'], ['low', 'any candidate']].forEach(([lvl, txt]) => { const o = el('option', null, txt); o.value = String(WM_RANK[lvl]); if (WM_RANK[lvl] === wmCutoff) o.selected = true; cut.appendChild(o); });
+    cut.onchange = () => { wmCutoff = +cut.value; try { GM_setValue('gt-wm-cutoff', wmCutoff); } catch (e) {} rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked)) r.chosen = (r.best && WM_RANK[r.level] <= wmCutoff) ? r.best : null; }); draw(); updatePlan(); };
+    const autoBtn = el('button', 'gt-cons-btn', '⚡ Match'); autoBtn.type = 'button'; autoBtn.title = 'Tick every match at/above the selected confidence';
+    autoBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r.best && WM_RANK[r.level] <= wmCutoff) r.chosen = r.best; }); draw(); updatePlan(); };
+    const newAllBtn = el('button', 'gt-cons-btn', '＋ new for rest'); newAllBtn.type = 'button'; newAllBtn.title = 'Create a new work (named after the track) for every recording with no match yet — same-title tracks share one';
+    newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && !r.chosen) { r.chosen = wmMakeNewWork(r.title); r.best = r.chosen; } }); draw(); updatePlan(); };
     const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.onclick = () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); };
     applyBtn.onclick = () => wmApply(rows, () => renderWorkMatch(body, foot, rows));
-    foot.append(autoBtn, clearBtn, plan, applyBtn);
-    draw(); updatePlan();
+    foot.append(cut, autoBtn, newAllBtn, clearBtn, plan, applyBtn);
+    draw(); updatePlan(); wmLoadWriters(rows, draw);
+  }
+  // fill in each proposed work's writers after the matrix is up (lazy, so matching stays fast)
+  async function wmLoadWriters(rows, draw) {
+    for (const row of rows) {
+      if (row.hasWorkOnPage || row.linked || row.writers) continue;
+      const w = row.chosen || row.best; if (!w) continue;
+      try { row.writers = await wmWriters(w.gid); if (row.writers.length) draw(); } catch (e) {}
+    }
   }
   function wmResRow(work, row, draw, updatePlan) {
     const r = el('div', 'gt-wm-res');
     r.appendChild(el('span', 'gt-wm-rt', work.title + (work.disambiguation ? ` (${work.disambiguation})` : '')));
-    r.onclick = () => { row.chosen = work; row.best = row.best || work; if (row.level === 'none' || !row.level) row.level = 'near'; draw && draw(); updatePlan && updatePlan(); closePopover(); };
+    const wr = el('span', 'gt-wm-rw'); r.appendChild(wr);
+    wmWriters(work.gid).then(n => { if (n.length) wr.textContent = ' — ' + n.slice(0, 4).join(', '); }).catch(() => {});
+    r.onclick = () => { row.chosen = work; row.best = row.best || work; if (!row.level || row.level === 'none') row.level = 'near'; row.writers = wmWriterCache.get(work.gid) || null; if (!row.writers) wmWriters(work.gid).then(n => { row.writers = n; draw && draw(); }); draw && draw(); updatePlan && updatePlan(); closePopover(); };
     return r;
   }
   function wmPicker(row, anchor, draw, updatePlan) {
@@ -1150,6 +1191,9 @@
     };
     q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 300); });
     q.addEventListener('paste', () => setTimeout(run, 0));
+    const newBtn = el('button', 'gt-wm-new', '＋ Create a new work “' + trunc(row.title, 40) + '”'); newBtn.type = 'button';
+    newBtn.onclick = () => { const w = wmMakeNewWork(row.title); row.chosen = w; row.best = w; row.level = (!row.level || row.level === 'none') ? 'near' : row.level; row.writers = []; draw && draw(); updatePlan && updatePlan(); closePopover(); };
+    popEl.appendChild(newBtn);
     document.body.appendChild(popEl);
     const a = anchor.getBoundingClientRect(), r = popEl.getBoundingClientRect();
     popEl.style.left = Math.max(8, Math.min(a.left, window.innerWidth - r.width - 8)) + 'px';
@@ -1165,8 +1209,9 @@
     let ok = 0, fail = 0;
     for (const row of todo) {
       try {
-        const full = await wmJson('/ws/js/entity/' + row.chosen.gid);   // the editor needs the work's internal id
-        let workEnt = full; try { if (W.MB && W.MB.entity && full && full.entityType) workEnt = W.MB.entity(full); } catch (e) { workEnt = full; }
+        // existing work: fetch its internal id (the editor needs it). New work: dispatch the synthetic
+        // entity as-is — MB creates it on submit, exactly like a natively-added new work.
+        const workEnt = row.chosen._gtNew ? row.chosen : await wmJson('/ws/js/entity/' + row.chosen.gid);
         if (!workEnt || workEnt.id == null) { fail++; continue; }
         dispatchRelationship(re, row.rec, workEnt, ltId, '', null, null);
         row.linked = true; row.chosen = null; ok++;
