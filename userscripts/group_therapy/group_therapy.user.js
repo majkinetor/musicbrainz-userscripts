@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.005038
+// @version      2026.7.6.011126
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.6.005038';
+  const VERSION = '2026.7.6.011126';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -993,17 +993,9 @@
   const WM_RANK = { exact:0, tolerance:1, near:2, low:3, none:4 };
   // how far ⚡ Match / the initial pre-tick reaches down the confidence ladder (persisted)
   let wmCutoff = (() => { try { const v = GM_getValue('gt-wm-cutoff', WM_RANK.near); return typeof v === 'number' ? v : WM_RANK.near; } catch (e) { return WM_RANK.near; } })();
-  const wmQesc = s => '"' + String(s || '').replace(/["\\]/g, '\\$&') + '"';
-  // a work's writers (composer/lyricist/…) — shown to help tell homonymous works apart. Cached per gid.
+  // writer/composer relationship types — used to pull authors from a pasted work MBID (the autocomplete
+  // already carries authors inline for searched works)
   const WM_WRITER_RE = /composer|writer|lyricist|librettist|translat|revis|arrang|orchestrat/i;
-  const wmWriterCache = new Map();
-  async function wmWriters(gid) {
-    if (!gid) return [];
-    if (wmWriterCache.has(gid)) return wmWriterCache.get(gid);
-    const j = await wmJson('/ws/2/work/' + gid + '?inc=artist-rels&fmt=json');
-    const names = j ? [...new Set((j.relations || []).filter(r => r.artist && WM_WRITER_RE.test(r.type || '')).map(r => r.artist.name))] : [];
-    wmWriterCache.set(gid, names); return names;
-  }
   // create a synthetic NEW work (negative id, no gid) — MB's submit creates it like a natively-added work
   // (verified: the reducer accepts it and renders a pending new-work rel). Same-title new works within a
   // session share one entity, so two unmatched same-title tracks don't spawn duplicate works.
@@ -1023,14 +1015,22 @@
   async function wmJson(url) {
     for (let i = 0; i < 5; i++) {
       try {
-        await wmGate();
+        if (url.startsWith('/ws/2/')) await wmGate();   // only the public API is rate-limited; /ws/js is the editor's own
         const r = await fetch(url, { credentials: 'include', headers: { Accept: 'application/json' } });
-        if ((r.status === 429 || r.status === 503) && i < 4) { await sleep(900 * (i + 1)); continue; }   // WS2 rate limit — back off harder
+        if ((r.status === 429 || r.status === 503) && i < 4) { await sleep(900 * (i + 1)); continue; }   // rate limit — back off harder
         if (!r.ok) return null; return await r.json();
       } catch (e) { if (i === 4) return null; await sleep(500 * (i + 1)); }
     }
     return null;
   }
+  // MB's internal work autocomplete — returns authors, artist-popularity (hits), type and disambiguation
+  // inline, ranked by relevance, and it's the editor's own endpoint so it isn't on the /ws/2 rate limit.
+  async function wmWorkSearch(term) {
+    const j = await wmJson('/ws/js/work?q=' + encodeURIComponent(term) + '&direct=false&limit=10');
+    const arr = Array.isArray(j) ? j : (j && j.results) || [];
+    return arr.filter(w => w && w.gid).map(w => ({ gid: w.gid, id: w.id, title: w.name, disambiguation: w.comment || '', type: w.typeName || '', authors: (w.authors && w.authors.results) || [], pop: (w.artists && w.artists.hits) || 0 }));
+  }
+  const wmNorm = s => (s || '').normalize('NFC').toLowerCase().replace(/[’‘']/g, "'").replace(/[‐‑‒–—―]/g, '-').replace(/…\s*/g, '…').replace(/\s+/g, ' ').trim();
   function performanceLtId() {
     const lt = W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type; if (!lt) return null;
     for (const k in lt) if (lt[k] && lt[k].gid === PERF_GID) return lt[k].id != null ? lt[k].id : +k;
@@ -1047,42 +1047,46 @@
     });
     return out;
   }
-  // gather candidate works for one recording: ISRC-sibling works (lookup) + ranked work-title search
+  // gather candidate works for one recording: ISRC-sibling works + the internal work autocomplete
   async function wmMatchOne(row) {
     const rec = row.rec;
     const self = await wmJson('/ws/2/recording/' + rec.gid + '?inc=artist-credits+isrcs+work-rels&fmt=json');
     if (self && self['artist-credit']) row.artist = self['artist-credit'].map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim();
     if (self && (self.relations || []).some(r => r.work)) { row.linked = true; return; }   // already linked
     const isrcs = (self && self.isrcs) || [];
-    const cands = new Map();   // workGid → { work, isrc, score }
-    const bump = (w, kind, score) => { if (!w || !w.gid) return; let e = cands.get(w.gid); if (!e) { e = { work: w, isrc: 0, score: 0 }; cands.set(w.gid, e); } if (kind === 'isrc') e.isrc++; if (score > e.score) e.score = score; };
+    // compare exactness against both the full title and the title minus a trailing parenthetical, so
+    // "Take My Breath Away (love theme…)" counts as an exact match of the work "Take My Breath Away"
+    const bare = row.title.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    const tnorm = wmNorm(row.title), bnorm = wmNorm(bare);
+    const isExact = t => { const n = wmNorm(t); return n === tnorm || (!!bnorm && n === bnorm); };
+    const cands = new Map();   // workGid → { gid, id, title, disambiguation, type, authors, pop, isrc, exact }
+    const add = (w, isIsrc) => { if (!w || !w.gid) return; let e = cands.get(w.gid); if (!e) { e = { gid: w.gid, id: w.id != null ? w.id : null, title: w.title, disambiguation: w.disambiguation || '', type: w.type || '', authors: w.authors || [], pop: w.pop || 0, isrc: 0, exact: isExact(w.title) }; cands.set(w.gid, e); } if (isIsrc) e.isrc++; if (!e.authors.length && w.authors && w.authors.length) e.authors = w.authors; };
     // ISRC-sharing recordings (the /isrc lookup returns work-rels, unlike a /recording search)
     for (const code of isrcs.slice(0, 3)) {
       const j = await wmJson('/ws/2/isrc/' + encodeURIComponent(code) + '?inc=work-rels&fmt=json');
-      (j && j.recordings || []).forEach(r => (r.relations || []).forEach(rel => { if (rel.work) bump({ gid: rel.work.id, title: rel.work.title, disambiguation: rel.work.disambiguation || '' }, 'isrc', 100); }));
+      (j && j.recordings || []).forEach(r => (r.relations || []).forEach(rel => { if (rel.work) add({ gid: rel.work.id, id: null, title: rel.work.title, disambiguation: rel.work.disambiguation || '' }, true); }));
     }
-    // work title search — MB's score puts the canonical work (bare title) near 100 and arrangements lower.
-    // A DESCRIPTIVE trailing parenthetical ("Take My Breath Away (love theme from “Top Gun”)") isn't part
-    // of the work's title, so the full phrase finds nothing — retry with it stripped. Titles where the
-    // parenthetical IS part of the work ("You Spin Me Round (Like a Record)") match on the full title, so
-    // they never hit the fallback.
+    // work autocomplete — authors + artist-popularity inline, no per-work lookup. A DESCRIPTIVE trailing
+    // parenthetical ("Take My Breath Away (love theme from “Top Gun”)") isn't part of the work title, so the
+    // full title finds nothing → retry stripped. Titles where it IS part of the work ("You Spin Me Round
+    // (Like a Record)") match on the full title and never hit the fallback.
     if (row.title) {
-      const search = async t => { const j = await wmJson('/ws/2/work?query=' + encodeURIComponent('work:' + wmQesc(t)) + '&limit=8&fmt=json'); return (j && j.works) || []; };
-      let works = await search(row.title);
-      if (!works.length) { const bare = row.title.replace(/\s*\([^)]*\)\s*$/, '').trim(); if (bare && bare !== row.title) works = await search(bare); }
-      works.forEach(w => bump({ gid: w.id, title: w.title, disambiguation: w.disambiguation || '' }, 'search', w.score || 0));
+      let ws = await wmWorkSearch(row.title);
+      if (!ws.length && bare && bare !== row.title) ws = await wmWorkSearch(bare);
+      ws.forEach(w => add(w, false));
     }
-    const list = [...cands.values()].sort((a, b) => (b.isrc - a.isrc) || (b.score - a.score));
-    row.cands = list.map(e => e.work);
+    // rank: ISRC-confirmed first, then exact-title, then by how many recordings use the work (popularity)
+    const list = [...cands.values()].sort((a, b) => (b.isrc - a.isrc) || (b.exact - a.exact) || (b.pop - a.pop));
+    row.cands = list;
     if (!list.length) { row.level = 'none'; return; }
-    const top = list[0], second = list[1];
-    row.best = top.work;
-    const strong = list.filter(e => e.score >= 100).length;
-    if (top.isrc > 0) row.level = 'exact';                                     // ISRC-confirmed
-    else if (strong === 1 && top.score >= 100) row.level = 'tolerance';        // the only score-100 work
-    else if (top.score >= 100 && (!second || top.score - second.score >= 15)) row.level = 'near';   // dominant
-    else row.level = 'low';                                                    // ambiguous — the user picks
-    if (WM_RANK[row.level] <= wmCutoff) row.chosen = top.work;
+    const best = list[0], second = list[1];
+    row.best = best; row.writers = best.authors || [];
+    const exacts = list.filter(c => c.exact).length;
+    if (best.isrc > 0) row.level = 'exact';                                            // ISRC-confirmed
+    else if (best.exact && exacts === 1) row.level = 'tolerance';                      // the only work with this exact title
+    else if (best.exact && (!second || !second.exact || best.pop >= (second.pop || 0) * 2)) row.level = 'near';   // exact + clearly the most-used
+    else row.level = 'low';                                                            // several plausible works — the user picks
+    if (WM_RANK[row.level] <= wmCutoff) row.chosen = best;
   }
   function wmStyle() {
     if (document.getElementById('gt-wm-style')) return;
@@ -1125,8 +1129,6 @@
       if (!row.hasWorkOnPage) { try { await wmMatchOne(row); } catch (e) {} }
       row._matched = true; api.setProgress(++done, rows.length); api.draw(); api.updatePlan();
       if (!wmEl) return;   // dialog closed mid-run
-      // pull this row's writers straight after its match and repaint — per-row, not a slow tail pass
-      if (row.best && !row.writers) { try { row.writers = await wmWriters(row.best.gid); api.draw(); } catch (e) {} if (!wmEl) return; }
     }
     api.setProgress(done, 0);
   }
@@ -1185,9 +1187,9 @@
   function wmResRow(work, row, draw, updatePlan) {
     const r = el('div', 'gt-wm-res');
     r.appendChild(el('span', 'gt-wm-rt', work.title + (work.disambiguation ? ` (${work.disambiguation})` : '')));
-    const wr = el('span', 'gt-wm-rw'); r.appendChild(wr);
-    wmWriters(work.gid).then(n => { if (n.length) wr.textContent = ' — ' + n.slice(0, 4).join(', '); }).catch(() => {});
-    r.onclick = () => { row.chosen = work; row.best = row.best || work; if (!row.level || row.level === 'none') row.level = 'near'; row.writers = wmWriterCache.get(work.gid) || null; if (!row.writers) wmWriters(work.gid).then(n => { row.writers = n; draw && draw(); }); draw && draw(); updatePlan && updatePlan(); closePopover(); };
+    if (work.type && work.type !== 'Song') r.appendChild(el('span', 'gt-wm-rw', ' · ' + work.type));
+    if (work.authors && work.authors.length) r.appendChild(el('span', 'gt-wm-rw', ' — ' + work.authors.slice(0, 4).join(', ')));
+    r.onclick = () => { row.chosen = work; row.best = work; if (!row.level || row.level === 'none') row.level = 'near'; row.writers = work.authors || []; draw && draw(); updatePlan && updatePlan(); closePopover(); };
     return r;
   }
   function wmPicker(row, anchor, draw, updatePlan) {
@@ -1204,11 +1206,10 @@
       const term = (q.value || '').trim(); if (!term) return showCands();
       const gid = (term.match(GID_RE) || [])[0];
       list.textContent = '';
-      if (gid) { const j = await wmJson('/ws/2/work/' + gid + '?fmt=json'); if (j && j.id) list.appendChild(wmResRow({ gid: j.id, title: j.title, disambiguation: j.disambiguation || '' }, row, draw, updatePlan)); else list.appendChild(el('div', 'gt-pop-note', 'No work with that MBID.')); return; }
-      const j = await wmJson('/ws/2/work?query=' + encodeURIComponent(wmQesc(term)) + '&limit=20&fmt=json');
-      const works = (j && j.works) || [];
+      if (gid) { const j = await wmJson('/ws/2/work/' + gid + '?inc=artist-rels&fmt=json'); if (j && j.id) list.appendChild(wmResRow({ gid: j.id, title: j.title, disambiguation: j.disambiguation || '', authors: (j.relations || []).filter(r => r.artist && WM_WRITER_RE.test(r.type || '')).map(r => r.artist.name) }, row, draw, updatePlan)); else list.appendChild(el('div', 'gt-pop-note', 'No work with that MBID.')); return; }
+      const works = await wmWorkSearch(term);
       if (!works.length) { list.appendChild(el('div', 'gt-pop-note', 'No matches.')); return; }
-      works.forEach(w => list.appendChild(wmResRow({ gid: w.id, title: w.title, disambiguation: w.disambiguation || '' }, row, draw, updatePlan)));
+      works.forEach(w => list.appendChild(wmResRow(w, row, draw, updatePlan)));
     };
     q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 300); });
     q.addEventListener('paste', () => setTimeout(run, 0));
