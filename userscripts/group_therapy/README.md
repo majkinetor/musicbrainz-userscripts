@@ -89,13 +89,40 @@ With more than 10 releases in a group you must pick releases to be consolidated 
 
 ### Work matching
 
-The **◎ Match works…** button (next to *Consolidate RG…*) links each recording to an **existing** MusicBrainz work, so a release of standards **reuses** the works that already exist instead of creating duplicates. It opens a matrix — one row per recording — that proposes a work and stages a recording→work **performance** relationship.
+The **◎ Match works…** button (next to *Consolidate RG…*) links each recording on the release to an **existing** MusicBrainz work, so a release of standards or a hits compilation **reuses** the works that already exist instead of creating duplicates. It opens a matrix — one row per recording, **Track** on the left, matched **Work** on the right — and each ticked row stages a recording→work [**performance**](https://musicbrainz.org/relationship/a3005666-a872-32c3-ad06-98af558e99b0) relationship.
 
-The hard part is disambiguation (a bare title like *St. Louis Blues* matches many works). Two signals drive it:
-- **ISRC** — recordings that share an ISRC almost always share a work; an `/isrc` lookup returns those works (an MB *search* can't), the strongest signal when ISRCs are present.
-- **Ranked title search** — a `/ws/2/work` search scored by MB's own relevance: the canonical work (bare title) scores ~100 while arrangements trail and are disambiguated, so the top score **and the gap to the runner-up** decide whether it's safe to auto-tick.
+Both sides show a credit so you can sanity-check a match at a glance: the **performer** on the left (from the recording's artist credit) and the **writers/composers** on the right (from the work).
 
-Each row shows a **confidence dot** — blue *ISRC-confirmed* · green *only work with this title* · yellow *dominant (review)* · orange *ambiguous (pick)* · grey *none* — plus the proposed work's **writers** to tell homonyms apart. **⚡ Match** ticks everything at/above the confidence you choose in the **cutoff** selector; the **✎** on any row opens a picker to **search**, **paste an MBID/URL**, or **create a new work**. **＋ new for rest** creates a new work (named after the track, same-title tracks sharing one) for every recording still unmatched. **Apply** stages the relationships in the editor — they appear in MB's pending edits for you to review and **save yourself** (the script never submits them).
+#### How it matches
+
+The hard part is disambiguation — a bare title like *Beat It* matches many works. Two signals drive it:
+
+- **ISRC** — recordings that share an ISRC almost always share a work; an `/isrc` lookup returns those works (an MB text *search* can't), the strongest signal when ISRCs are present.
+- **Work autocomplete** — MB's own `/ws/js/work` endpoint (the one the native *Add relationship → Work* field uses). It returns the writers, work type, disambiguation, and **how many recordings already use each work** inline. Candidates are ranked by **exact-title match**, then by that **popularity** — so *Beat It* resolves to Michael Jackson's work (100+ recordings) over the same-named covers. Exactness ignores a descriptive trailing parenthetical, so *Take My Breath Away (love theme from "Top Gun")* still matches the work *Take My Breath Away*.
+
+#### The matrix
+
+Each row gets a **confidence dot**:
+
+| Dot | Meaning |
+| --- | --- |
+| 🔵 blue | **ISRC-confirmed** — a sibling recording with the same ISRC links this work |
+| 🟢 green | **unique title** — the only work with exactly this title |
+| 🟡 yellow | **dominant** — exact title and clearly the most-recorded work, but other same-titled works exist (worth a glance) |
+| 🟠 orange | **ambiguous** — several plausible works; pick one |
+| ⚪ grey | **no match** — nothing found |
+
+Controls in the footer:
+
+- **Cutoff selector** — how far down that ladder to auto-tick: *ISRC only* (🔵), *unique title* (🔵🟢), **dominant** (🔵🟢🟡, the default), or *any candidate* (🔵🟢🟡🟠). The matrix pre-ticks per this setting when it opens, and re-ticks immediately when you change it. Persisted.
+- **⚡ Match** — (re)ticks every row at/above the current cutoff. Handy after **Clear** or after hand-editing.
+- **✎** (per row) — opens a picker to **search** works (writers + type shown per candidate, like native), **paste a work MBID/URL**, or **＋ create a new work**.
+- **＋ new for rest** — creates a new work (named after the track) for every recording still unmatched; same-title tracks share one new work, so this never reintroduces duplicates.
+- **Clear** — unticks everything.
+
+**Only ticked rows are staged.** **Apply** dispatches them into the relationship editor, where they show up in MB's **pending edits** — the script never submits; you review and **save** yourself.
+
+> Matching runs progressively — rows appear immediately and fill in one by one. The autocomplete is the editor's own endpoint (not rate-limited); only the per-recording ISRC/artist lookup uses the public API, gently paced so a long tracklist doesn't trip the rate limit.
 
 ### Highlight
 
