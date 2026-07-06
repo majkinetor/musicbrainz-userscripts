@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.165726
+// @version      2026.7.6.171242
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.6.165726';
+  const VERSION = '2026.7.6.171242';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -1032,7 +1032,7 @@
     const arr = Array.isArray(j) ? j : (j && j.results) || [];
     // authors (writers) + artist popularity live under related_artists.{authors,artists} — the top-level
     // w.authors / w.artists are empty
-    return arr.filter(w => w && w.gid).map(w => { const ra = w.related_artists || {}; return { gid: w.gid, id: w.id, title: w.name, disambiguation: w.comment || '', type: w.typeName || '', authors: (ra.authors && ra.authors.results) || [], pop: (ra.artists && ra.artists.hits) || 0 }; });
+    return arr.filter(w => w && w.gid).map(w => { const ra = w.related_artists || {}; return { gid: w.gid, id: w.id, title: w.name, disambiguation: w.comment || '', type: w.typeName || '', authors: (ra.authors && ra.authors.results) || [], artists: (ra.artists && ra.artists.results) || [], pop: (ra.artists && ra.artists.hits) || 0 }; });
   }
   const wmNorm = s => (s || '').normalize('NFC').toLowerCase().replace(/[’‘']/g, "'").replace(/[‐‑‒–—―]/g, '-').replace(/…\s*/g, '…').replace(/\s+/g, ' ').trim();
   function performanceLtId() {
@@ -1076,8 +1076,20 @@
     const bare = row.title.replace(/\s*\([^)]*\)\s*$/, '').trim();
     const tnorm = wmNorm(row.title), bnorm = wmNorm(bare);
     const isExact = t => { const n = wmNorm(t); return n === tnorm || (!!bnorm && n === bnorm); };
-    const cands = new Map();   // workGid → { gid, id, title, disambiguation, type, authors, pop, isrc, exact }
-    const add = (w, isIsrc) => { if (!w || !w.gid) return; let e = cands.get(w.gid); if (!e) { e = { gid: w.gid, id: w.id != null ? w.id : null, title: w.title, disambiguation: w.disambiguation || '', type: w.type || '', authors: w.authors || [], pop: w.pop || 0, isrc: 0, exact: isExact(w.title) }; cands.set(w.gid, e); } if (isIsrc) e.isrc++; if (!e.authors.length && w.authors && w.authors.length) e.authors = w.authors; };
+    // does the work's own writer/artist match the track's performer? A strong signal — e.g. the
+    // "Overnight Success" work whose artist IS Teri DeSario should beat the generic same-titled ones.
+    const perf = wmNorm(row.artist || '');
+    const nameHit = names => !!perf && (names || []).some(n => { const nn = wmNorm(n); return nn.length > 2 && perf.includes(nn); });
+    const cands = new Map();   // workGid → { gid, id, title, disambiguation, type, authors, artists, pop, isrc, exact, artistMatch }
+    const add = (w, isIsrc) => {
+      if (!w || !w.gid) return;
+      let e = cands.get(w.gid);
+      if (!e) { e = { gid: w.gid, id: w.id != null ? w.id : null, title: w.title, disambiguation: w.disambiguation || '', type: w.type || '', authors: w.authors || [], artists: w.artists || [], pop: w.pop || 0, isrc: 0, exact: isExact(w.title) }; e.artistMatch = nameHit(e.authors) || nameHit(e.artists); cands.set(w.gid, e); }
+      if (isIsrc) e.isrc++;
+      if (!e.authors.length && w.authors && w.authors.length) e.authors = w.authors;
+      if (!e.artists.length && w.artists && w.artists.length) e.artists = w.artists;
+      if (!e.artistMatch) e.artistMatch = nameHit(e.authors) || nameHit(e.artists);
+    };
     // ISRC-sharing recordings (the /isrc lookup returns work-rels, unlike a /recording search)
     for (const code of isrcs.slice(0, 3)) {
       const j = await wmJson('/ws/2/isrc/' + encodeURIComponent(code) + '?inc=work-rels&fmt=json');
@@ -1092,16 +1104,16 @@
       if (!ws.length && bare && bare !== row.title) ws = await wmWorkSearch(bare);
       ws.forEach(w => add(w, false));
     }
-    // rank: ISRC-confirmed first, then exact-title, then by how many recordings use the work (popularity)
-    const list = [...cands.values()].sort((a, b) => (b.isrc - a.isrc) || (b.exact - a.exact) || (b.pop - a.pop));
+    // rank: ISRC-confirmed → performer is on the work → exact-title → most-recorded (popularity)
+    const list = [...cands.values()].sort((a, b) => (b.isrc - a.isrc) || ((b.artistMatch ? 1 : 0) - (a.artistMatch ? 1 : 0)) || (b.exact - a.exact) || (b.pop - a.pop));
     row.cands = list;
     if (!list.length) { row.level = 'none'; return; }
     const best = list[0], second = list[1];
     row.best = best; row.writers = best.authors || [];
     const exacts = list.filter(c => c.exact).length;
     if (best.isrc > 0) row.level = 'exact';                                            // ISRC-confirmed
-    else if (best.exact && exacts === 1) row.level = 'tolerance';                      // the only work with this exact title
-    else if (best.exact && (!second || !second.exact || best.pop >= (second.pop || 0) * 2)) row.level = 'near';   // exact + clearly the most-used
+    else if (best.exact && (best.artistMatch || exacts === 1)) row.level = 'tolerance';   // exact title + (performer is on the work | only one such work)
+    else if (best.artistMatch || (best.exact && (!second || !second.exact || best.pop >= (second.pop || 0) * 2))) row.level = 'near';   // performer on the work, or exact + clearly most-used
     else row.level = 'low';                                                            // several plausible works — the user picks
     if (WM_RANK[row.level] <= wmCutoff) row.chosen = best;
   }
