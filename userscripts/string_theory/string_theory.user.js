@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.203903
+// @version      2026.7.6.204056
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.6.203903 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.6.183054\n  · Art Station v2026.7.6.203912\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.6.204056 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.6.183054\n  · Art Station v2026.7.6.204130\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -6372,7 +6372,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.6.203912","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.6.203912","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.6.204130","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.6.204130","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -8591,7 +8591,8 @@ try {
     });
     it._signed = signed;
   }
-  // step 2 (SEQUENTIAL): register on MB. Submitted in order so positions stay correct.
+  // step 2: register on MB. Runs in PARALLEL (#362) — the per-upload `position` only groups the batch, so
+  // the trailing reorder edit is what sets the final order (see buildReorder / runAdds).
   async function registerStep(it, meta, ctl) {
     const form = await addForm();
     const tm = typeMapOf(form, `add-${ART}`);
@@ -8739,7 +8740,9 @@ try {
     await Promise.all(Array.from({ length: Math.min(conc, items.length || 1) }, worker));
   }
   const runPool = (ops, conc, ov, meta, ctl) => pool(ops, conc, op => runOp(ov, op, meta, ctl));
-  // adds: parallel UPLOAD to archive.org, then SEQUENTIAL register (positions stay correct) — like Turbo
+  // adds: upload to archive.org AND register on MB in PARALLEL, per image. Position is not relied on here
+  // (MB's add `position` only places the whole upload as one group) — the trailing reorder edit is what
+  // establishes the final order, so register order no longer matters. (#362)
   async function runAdds(ov, addOps, meta, ctl) {
     if (meta.dry || !addOps.length) return runPool(addOps, meta.dry ? 8 : 1, ov, meta, ctl);
     const rowOf = op => ov.querySelector(`.as-cm-op[data-i="${op._i}"]`);
@@ -8752,15 +8755,14 @@ try {
       // #278: the live upload % drives the per-row bar (was a cramped inline "⏫94%")
       const sz = (op.it && op.it._fileObj && op.it._fileObj.size) ? ` (${fmtBytes(op.it._fileObj.size)})` : '';
       asLog.info(`Upload: ${op.label}${sz} — uploading to archive.org…`);
-      try { await uploadStep(op.it, (l, t) => { setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl); setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); asLog.debug(`Upload: ${op.label} — uploaded, awaiting register`); }
-      catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
-    });  // parallel upload w/ progress (abortable via ctl)
-    for (const op of addOps) {                                   // ordered register
-      if (op._err) continue;
-      if (ctl && ctl.aborted) { stop(op); continue; }
-      try { await registerStep(op.it, meta, ctl); setSt(op, '✅'); setRowBar(rowOf(op), 100, 'done'); asLog.ok(`Upload: ${op.label} — registered on MusicBrainz ✓`); }
-      catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
-    }
+      try {
+        await uploadStep(op.it, (l, t) => { setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl);
+        setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); asLog.debug(`Upload: ${op.label} — uploaded, registering`);
+        if (ctl && ctl.aborted) return stop(op);
+        await registerStep(op.it, meta, ctl);
+        setSt(op, '✅'); setRowBar(rowOf(op), 100, 'done'); asLog.ok(`Upload: ${op.label} — registered on MusicBrainz ✓`);
+      } catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
+    });  // parallel upload+register w/ progress (abortable via ctl); order fixed by the reorder edit below
   }
   async function runPlan(ov, plan, meta, opsToRun) {
     const goBtn = ov.querySelector('.as-cm-go'), cancelBtn = ov.querySelector('.as-cm-cancel');
@@ -8768,7 +8770,14 @@ try {
     // #275: `opsToRun` set → Repeat run (just the failed ops). Keep the original
     // `_i` row mapping; reset each retried row's ❌/error back to pending first.
     const isRepeat = !!opsToRun;
-    const ops = opsToRun || plan;
+    let ops = opsToRun || plan;
+    // #362 register runs in parallel, so ORDER is set by the trailing reorder edit — a repeat that retries
+    // any upload must re-run the reorder too (it re-reads the now-succeeded image ids). Pull the plan's
+    // reorder op into this run if a retried add isn't already accompanied by it.
+    if (isRepeat && ops.some(o => o.kind === 'add')) {
+      const ro = plan.find(o => o.kind === 'reorder');
+      if (ro && !ops.includes(ro)) ops = ops.concat(ro);
+    }
     if (!isRepeat) plan.forEach((op, i) => { op._i = i; });
     else ops.forEach(op => {
       op._err = false;
@@ -8816,7 +8825,7 @@ try {
     prog.hidden = false; tickOverall();
     const progTimer = setInterval(tickOverall, 150);
     if (!meta.dry) asLog.info(`Commit: ${isRepeat ? 'retrying' : 'applying'} ${ops.length} edit${ops.length === 1 ? '' : 's'}${meta.votable ? ' (votable)' : ''}`);
-    // uploads run in parallel (register stays ordered); edits/removes parallel; reorder last.
+    // uploads + register run in parallel; edits/removes parallel; the reorder edit runs LAST and sets order.
     try {
       await runAdds(ov, ops.filter(o => o.kind === 'add'), meta, ctl);
       if (!ctl.aborted) await runPool(ops.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta, ctl);

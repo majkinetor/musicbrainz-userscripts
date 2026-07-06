@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.6.203912
+// @version      2026.7.6.204130
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2231,7 +2231,8 @@
     });
     it._signed = signed;
   }
-  // step 2 (SEQUENTIAL): register on MB. Submitted in order so positions stay correct.
+  // step 2: register on MB. Runs in PARALLEL (#362) — the per-upload `position` only groups the batch, so
+  // the trailing reorder edit is what sets the final order (see buildReorder / runAdds).
   async function registerStep(it, meta, ctl) {
     const form = await addForm();
     const tm = typeMapOf(form, `add-${ART}`);
@@ -2379,7 +2380,9 @@
     await Promise.all(Array.from({ length: Math.min(conc, items.length || 1) }, worker));
   }
   const runPool = (ops, conc, ov, meta, ctl) => pool(ops, conc, op => runOp(ov, op, meta, ctl));
-  // adds: parallel UPLOAD to archive.org, then SEQUENTIAL register (positions stay correct) — like Turbo
+  // adds: upload to archive.org AND register on MB in PARALLEL, per image. Position is not relied on here
+  // (MB's add `position` only places the whole upload as one group) — the trailing reorder edit is what
+  // establishes the final order, so register order no longer matters. (#362)
   async function runAdds(ov, addOps, meta, ctl) {
     if (meta.dry || !addOps.length) return runPool(addOps, meta.dry ? 8 : 1, ov, meta, ctl);
     const rowOf = op => ov.querySelector(`.as-cm-op[data-i="${op._i}"]`);
@@ -2392,15 +2395,14 @@
       // #278: the live upload % drives the per-row bar (was a cramped inline "⏫94%")
       const sz = (op.it && op.it._fileObj && op.it._fileObj.size) ? ` (${fmtBytes(op.it._fileObj.size)})` : '';
       asLog.info(`Upload: ${op.label}${sz} — uploading to archive.org…`);
-      try { await uploadStep(op.it, (l, t) => { setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl); setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); asLog.debug(`Upload: ${op.label} — uploaded, awaiting register`); }
-      catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
-    });  // parallel upload w/ progress (abortable via ctl)
-    for (const op of addOps) {                                   // ordered register
-      if (op._err) continue;
-      if (ctl && ctl.aborted) { stop(op); continue; }
-      try { await registerStep(op.it, meta, ctl); setSt(op, '✅'); setRowBar(rowOf(op), 100, 'done'); asLog.ok(`Upload: ${op.label} — registered on MusicBrainz ✓`); }
-      catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
-    }
+      try {
+        await uploadStep(op.it, (l, t) => { setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl);
+        setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); asLog.debug(`Upload: ${op.label} — uploaded, registering`);
+        if (ctl && ctl.aborted) return stop(op);
+        await registerStep(op.it, meta, ctl);
+        setSt(op, '✅'); setRowBar(rowOf(op), 100, 'done'); asLog.ok(`Upload: ${op.label} — registered on MusicBrainz ✓`);
+      } catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
+    });  // parallel upload+register w/ progress (abortable via ctl); order fixed by the reorder edit below
   }
   async function runPlan(ov, plan, meta, opsToRun) {
     const goBtn = ov.querySelector('.as-cm-go'), cancelBtn = ov.querySelector('.as-cm-cancel');
@@ -2408,7 +2410,14 @@
     // #275: `opsToRun` set → Repeat run (just the failed ops). Keep the original
     // `_i` row mapping; reset each retried row's ❌/error back to pending first.
     const isRepeat = !!opsToRun;
-    const ops = opsToRun || plan;
+    let ops = opsToRun || plan;
+    // #362 register runs in parallel, so ORDER is set by the trailing reorder edit — a repeat that retries
+    // any upload must re-run the reorder too (it re-reads the now-succeeded image ids). Pull the plan's
+    // reorder op into this run if a retried add isn't already accompanied by it.
+    if (isRepeat && ops.some(o => o.kind === 'add')) {
+      const ro = plan.find(o => o.kind === 'reorder');
+      if (ro && !ops.includes(ro)) ops = ops.concat(ro);
+    }
     if (!isRepeat) plan.forEach((op, i) => { op._i = i; });
     else ops.forEach(op => {
       op._err = false;
@@ -2456,7 +2465,7 @@
     prog.hidden = false; tickOverall();
     const progTimer = setInterval(tickOverall, 150);
     if (!meta.dry) asLog.info(`Commit: ${isRepeat ? 'retrying' : 'applying'} ${ops.length} edit${ops.length === 1 ? '' : 's'}${meta.votable ? ' (votable)' : ''}`);
-    // uploads run in parallel (register stays ordered); edits/removes parallel; reorder last.
+    // uploads + register run in parallel; edits/removes parallel; the reorder edit runs LAST and sets order.
     try {
       await runAdds(ov, ops.filter(o => o.kind === 'add'), meta, ctl);
       if (!ctl.aborted) await runPool(ops.filter(o => o.kind === 'edit' || o.kind === 'remove'), CONC, ov, meta, ctl);
