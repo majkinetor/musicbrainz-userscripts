@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.130327
+// @version      2026.7.6.143422
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.6.130327 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.5.175705\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.6.130326\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.6.143422 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.5.175705\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.6.143421\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16452,12 +16452,12 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.6.130326","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.6.130326","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.6.143421","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.6.143421","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.6.130326';
+  const VERSION = '2026.7.6.143421';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -17493,6 +17493,19 @@ ${lines}
     });
     return out;
   }
+  // The recording entities on the page are lean (no artist credit), so the performer can't come from the
+  // fiber. One release lookup fills every row's artist up front — independent of the per-row matching — so
+  // the left column is populated immediately instead of trickling in as each match lands.
+  async function wmPrefetchArtists(rows, draw) {
+    const re = RE(); if (!re || !re.state || !re.state.entity) return;
+    const j = await wmJson('/ws/2/release/' + re.state.entity.gid + '?inc=recordings+artist-credits&fmt=json');
+    if (!j) return;
+    const byGid = new Map();
+    (j.media || []).forEach(m => (m.tracks || []).forEach(t => { const r = t.recording; if (r && r.id) byGid.set(r.id, (r['artist-credit'] || []).map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim()); }));
+    let any = false;
+    rows.forEach(row => { if (!row.artist) { const a = byGid.get(row.rec.gid); if (a) { row.artist = a; any = true; } } });
+    if (any) draw();
+  }
   // gather candidate works for one recording: ISRC-sibling works + the internal work autocomplete
   async function wmMatchOne(row) {
     const rec = row.rec;
@@ -17593,6 +17606,7 @@ ${lines}
     const rows = wmRecordings();
     if (!rows.length) { note('No recordings found on this release.'); return; }
     const api = renderWorkMatch(body, foot, rows);   // show the whole matrix at once — rows start "matching…"
+    wmPrefetchArtists(rows, api.draw);   // fill every performer name from one release lookup, before matching
     // then resolve serially (WS2 rate-limits ~1 req/s) and fill each row in as its match lands
     let done = 0; api.setProgress(0, rows.length);
     for (const row of rows) {

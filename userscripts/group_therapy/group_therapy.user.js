@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.130326
+// @version      2026.7.6.143421
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.6.130326';
+  const VERSION = '2026.7.6.143421';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -1051,6 +1051,19 @@
     });
     return out;
   }
+  // The recording entities on the page are lean (no artist credit), so the performer can't come from the
+  // fiber. One release lookup fills every row's artist up front — independent of the per-row matching — so
+  // the left column is populated immediately instead of trickling in as each match lands.
+  async function wmPrefetchArtists(rows, draw) {
+    const re = RE(); if (!re || !re.state || !re.state.entity) return;
+    const j = await wmJson('/ws/2/release/' + re.state.entity.gid + '?inc=recordings+artist-credits&fmt=json');
+    if (!j) return;
+    const byGid = new Map();
+    (j.media || []).forEach(m => (m.tracks || []).forEach(t => { const r = t.recording; if (r && r.id) byGid.set(r.id, (r['artist-credit'] || []).map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim()); }));
+    let any = false;
+    rows.forEach(row => { if (!row.artist) { const a = byGid.get(row.rec.gid); if (a) { row.artist = a; any = true; } } });
+    if (any) draw();
+  }
   // gather candidate works for one recording: ISRC-sibling works + the internal work autocomplete
   async function wmMatchOne(row) {
     const rec = row.rec;
@@ -1151,6 +1164,7 @@
     const rows = wmRecordings();
     if (!rows.length) { note('No recordings found on this release.'); return; }
     const api = renderWorkMatch(body, foot, rows);   // show the whole matrix at once — rows start "matching…"
+    wmPrefetchArtists(rows, api.draw);   // fill every performer name from one release lookup, before matching
     // then resolve serially (WS2 rate-limits ~1 req/s) and fill each row in as its match lands
     let done = 0; api.setProgress(0, rows.length);
     for (const row of rows) {
