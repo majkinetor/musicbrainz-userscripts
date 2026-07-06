@@ -23,46 +23,35 @@ console.log('logged in:', loggedIn);
 console.log('Match works button present:', btn);
 if (btn) {
   await page.evaluate(() => [...document.querySelectorAll('button.gt-clone-btn')].find(x => /Match works/.test(x.textContent || '')).click());
-  // the matrix should appear IMMEDIATELY with all rows pending ("matching…") — capture that first
+  // matrix appears immediately with rows pending ("matching…")
   await page.waitForTimeout(700);
-  const early = await page.evaluate(() => ({ rows: Math.max(0, document.querySelectorAll('.gt-wm-tbl tr').length - 1), matching: [...document.querySelectorAll('.gt-wm-wk')].filter(n => /matching…/.test(n.textContent)).length }));
+  const early = await page.evaluate(() => ({ rows: document.querySelectorAll('.gt-wm-row').length, matching: [...document.querySelectorAll('.gt-wm-wk')].filter(n => /matching…/.test(n.textContent)).length }));
   console.log(`immediate render: ${early.rows} rows visible, ${early.matching} still "matching…"`);
-  // then wait until every row has resolved
   for (let i = 0; i < 60; i++) {
     const pending = await page.evaluate(() => [...document.querySelectorAll('.gt-wm-wk')].filter(n => /matching…/.test(n.textContent)).length);
     if (!pending && i > 0) break;
     await page.waitForTimeout(1500);
   }
   const res = await page.evaluate(() => {
-    const rows = [...document.querySelectorAll('.gt-wm-tbl tr')].slice(1);
-    const data = rows.map(tr => {
-      const tk = tr.querySelector('.gt-wm-tk')?.textContent?.trim() || '';
-      const dot = tr.querySelector('.gt-wm-dot');
-      const color = dot ? dot.style.background : '';
-      const wk = tr.querySelector('.gt-wm-wa')?.textContent?.trim() || tr.querySelector('.gt-wm-dim')?.textContent?.trim() || '';
-      const ticked = tr.querySelector('input[type=checkbox]')?.checked;
-      return { tk, color, wk, ticked };
+    const rows = [...document.querySelectorAll('.gt-wm-row')].map(tr => {
+      const tk = (tr.querySelector('.gt-wm-tkt')?.textContent || '').trim();
+      const ar = (tr.querySelector('.gt-wm-tka')?.textContent || '').trim();
+      const d = tr.querySelector('.gt-wm-dot'); const dot = d && d.style.visibility !== 'hidden' ? d.style.background : '';
+      const wa = tr.querySelector('.gt-wm-wa'), nt = tr.querySelector('.gt-wm-newtag'), nn = tr.querySelector('.gt-wm-none');
+      const wk = wa ? wa.textContent.trim() : nt ? nt.textContent.trim() : nn ? '— none —' : '';
+      return { tk, ar, dot, wk, authors: (tr.querySelector('.gt-wm-authors')?.textContent || '').trim(), resolved: !!(wa || nt) };
     });
-    return { count: rows.length, data };
+    return { count: rows.length, warn: document.querySelector('.gt-wm-warn')?.textContent || '', data: rows };
   });
-  console.log('modal rows:', res.count);
-  res.data.forEach(r => console.log(`  [${r.ticked ? 'x' : ' '}] ${r.tk}  ${r.color}  -> ${r.wk}`));
-  await page.waitForTimeout(9000); // let lazy writer-loading finish
-  const writers = await page.evaluate(() => [...document.querySelectorAll('.gt-wm-wr')].map(n => n.textContent).filter(Boolean).length);
-  console.log('rows showing writers:', writers);
+  console.log('modal rows:', res.count, '| header:', res.warn || '(0 unresolved)');
+  res.data.forEach(r => console.log(`  [${r.resolved ? 'x' : ' '}] ${r.tk} — ${r.ar}  ${r.dot}  -> ${r.wk}${r.authors ? '  {' + r.authors + '}' : ''}`));
+  console.log('rows with BOTH performer + work-writers:', res.data.filter(r => r.ar && r.authors).length);
   await page.screenshot({ path: 'userscripts/group_therapy/dev/_smoke363.png' });
-  const clickBtn = re => page.evaluate(r => { const b = [...document.querySelectorAll('.gt-cons-btn, .gt-wm-new, .gt-cons-apply')].find(x => new RegExp(r).test(x.textContent || '')); if (b) { b.click(); return true; } return false; }, re);
-  // existing-work Apply stages rels (never submits)
+  // Apply stages every resolved row (never submits)
   const before = await page.evaluate(() => document.querySelectorAll('.relationship-item a[href*="/work/"]').length);
-  await clickBtn('Apply'); await page.waitForTimeout(6000);
+  await page.evaluate(() => document.querySelector('.gt-cons-apply')?.click()); await page.waitForTimeout(6000);
   const applied = await page.evaluate(() => ({ relWorks: document.querySelectorAll('.relationship-item a[href*="/work/"]').length, toast: document.querySelector('.gt-toast')?.textContent || '', err: window.MB.relationshipEditor.state.reducerError || null }));
-  console.log(`existing-work apply: editor work-rels ${before} -> ${applied.relWorks} | toast: "${applied.toast}" | reducerError: ${applied.err}`);
-  // ＋ new work path: Clear, "+ new for rest", verify tags, Apply, confirm the reducer accepts the new works
-  await clickBtn('Clear'); await clickBtn('new for rest'); await page.waitForTimeout(500);
-  const newtags = await page.evaluate(() => document.querySelectorAll('.gt-wm-newtag').length);
-  await clickBtn('Apply'); await page.waitForTimeout(6000);
-  const newApplied = await page.evaluate(() => ({ toast: document.querySelector('.gt-toast')?.textContent || '', err: window.MB.relationshipEditor.state.reducerError ? String(window.MB.relationshipEditor.state.reducerError).slice(0, 150) : null }));
-  console.log(`new-work path: tags=${newtags} | apply toast: "${newApplied.toast}" | reducerError: ${newApplied.err}`);
+  console.log(`apply resolved: editor work-rels ${before} -> ${applied.relWorks} | toast: "${applied.toast}" | reducerError: ${applied.err}`);
   await page.screenshot({ path: 'userscripts/group_therapy/dev/_smoke363_applied.png' });
 }
 console.log('pageerrors:', errs.length ? errs.slice(0, 5) : 'none');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.012750
+// @version      2026.7.6.130326
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.6.012750';
+  const VERSION = '2026.7.6.130326';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -989,8 +989,10 @@
   // score — the canonical work (bare title) scores ~100 while arrangements trail and are disambiguated,
   // so the top score + the gap to the runner-up say whether to auto-tick or leave it for a manual pick.
   const PERF_GID = 'a3005666-a872-32c3-ad06-98af558e99b0';   // recording→work "performance" link type
-  const WM_LEVEL = { exact:{ c:'#3b82f6', t:'ISRC-confirmed work' }, tolerance:{ c:'#22c55e', t:'the only work with this title' }, near:{ c:'#eab308', t:'dominant title match — review before applying' }, low:{ c:'#f97316', t:'ambiguous — pick the right work' }, none:{ c:'#9aa0a6', t:'no work found — search manually' } };
+  // colours mirror Apollo's recording matcher (CONF_COLOR)
+  const WM_LEVEL = { exact:{ c:'#2f6fd6', t:'ISRC-confirmed' }, tolerance:{ c:'#86c686', t:'the only work with this title' }, near:{ c:'#fff176', t:'dominant — most-recorded work' }, low:{ c:'#ffb74d', t:'ambiguous — pick one' }, none:{ c:'#9aa0a6', t:'no work found' } };
   const WM_RANK = { exact:0, tolerance:1, near:2, low:3, none:4 };
+  const WM_LVL_BY_RANK = ['exact', 'tolerance', 'near', 'low'];
   // how far ⚡ Match / the initial pre-tick reaches down the confidence ladder (persisted)
   let wmCutoff = (() => { try { const v = GM_getValue('gt-wm-cutoff', WM_RANK.near); return typeof v === 'number' ? v : WM_RANK.near; } catch (e) { return WM_RANK.near; } })();
   // writer/composer relationship types — used to pull authors from a pasted work MBID (the autocomplete
@@ -1093,16 +1095,40 @@
   function wmStyle() {
     if (document.getElementById('gt-wm-style')) return;
     const s = el('style'); s.id = 'gt-wm-style';
-    s.textContent = '.gt-wm-tbl{width:100%;border-collapse:collapse}.gt-wm-tbl td,.gt-wm-tbl th{padding:3px 8px;text-align:left;vertical-align:top}'
-      + '.gt-wm-dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle}'
-      + '.gt-wm-pos{color:#8a8f98;margin-right:2px}.gt-wm-wa{text-decoration:none}.gt-wm-wa:hover{text-decoration:underline}'
-      + '.gt-wm-alt{color:#8a8f98;font-size:11px;margin-left:4px}.gt-wm-dim{color:#8a8f98;font-style:italic}'
-      + '.gt-wm-pick{margin-left:6px;border:0;background:transparent;cursor:pointer;opacity:.6;font-size:13px}.gt-wm-pick:hover{opacity:1}'
-      + '.gt-wm-linked{color:#22c55e;font-weight:700}.gt-wm-ck{width:20px}.gt-wm-dt{width:16px;text-align:center}'
-      + '.gt-wm-pop{position:fixed;z-index:2147483647;background:#fff;color:#222;border:1px solid #d4d9e0;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:8px;min-width:340px;max-width:460px;font:13px -apple-system,Segoe UI,Arial,sans-serif}'
+    s.textContent =
+      // toolbar (clone of Apollo's .tc-rec-tb)
+      '.gt-wm-tb{display:flex;align-items:center;gap:8px;padding:6px 2px 8px;flex-wrap:wrap}'
+      + '.gt-wm-tb .gt-wm-amstatus{color:#6f42c1;font-size:12px;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:4px}'
+      + '.gt-wm-tbl2{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#555}.gt-wm-tbl2 b{color:#563b8f}'
+      + '.gt-wm-warn{color:#b00;font-weight:600;font-size:12px}.gt-wm-warn.click{cursor:pointer}.gt-wm-warn.click:hover{text-decoration:underline}'
+      + '.gt-wm-tbsep{width:1px;height:18px;background:#ddd;flex:none;margin:0 2px}'
+      + '.gt-wm-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}.gt-wm-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}'
+      + '.gt-wm-btn.primary{color:#5f3ec0;font-weight:bold}.gt-wm-btn.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}'
+      + '.gt-wm-caret{padding:4px 7px;color:#7d6bc0;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial}.gt-wm-caret:hover{background:#f0ecfa}'
+      // cutoff chip (clone of .tc-cutoff)
+      + '.gt-wm-cutoff{display:inline-flex;align-items:center;gap:6px;border:1px solid #cfcfcf;border-radius:14px;padding:2px 9px;cursor:pointer;font:12px Arial;background:#fff;user-select:none}.gt-wm-cutoff:hover{border-color:#b3b3b3}'
+      + '.gt-wm-cutoff-dot,.gt-wm-menu .dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.18);flex:none}.gt-wm-cutoff-caret{color:#999;font-size:10px}'
+      + '.gt-wm-menu{position:fixed;z-index:2147483647;background:#fff;border:1px solid #ccc;border-radius:7px;box-shadow:0 8px 24px rgba(40,20,80,.22);padding:4px;font:13px Arial}'
+      + '.gt-wm-menu .mi{display:flex;align-items:center;gap:9px;padding:5px 11px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;color:#333}.gt-wm-menu .mi:hover,.gt-wm-menu .mi.sel{background:#f0ecfa}'
+      // table (clone of .tc-rectbl)
+      + '.gt-wm-tbl{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed}'
+      + '.gt-wm-tbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ccc;padding:4px 7px;white-space:nowrap}'
+      + '.gt-wm-tbl td{padding:4px 7px;vertical-align:top;font-size:13px}'
+      + '.gt-wm-tbl .c-n{color:#999;text-align:right;width:38px;white-space:nowrap}'
+      + '.gt-wm-tbl .c-sep{width:20px;text-align:center;border-left:1px solid #e6e0f2;border-right:1px solid #e6e0f2}'
+      + '.gt-wm-tbl .tc-grp-l{background:#eef3fb;color:#2c5d9b}.gt-wm-tbl .tc-grp-r{background:#f1ecf9;color:#5b3fa0}'
+      + '.gt-wm-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}'
+      + '.gt-wm-tkt{font-weight:600}.gt-wm-tka{color:#555}'
+      + '.gt-wm-wk{position:relative}.gt-wm-wa{color:#2c5d9b;font-weight:600;text-decoration:none;cursor:pointer}.gt-wm-wa:hover{text-decoration:underline}'
+      + '.gt-wm-none{color:#c0392b;cursor:pointer}.gt-wm-none:hover{text-decoration:underline}.gt-wm-newtag{color:#2c7a51;cursor:pointer}'
+      + '.gt-wm-disamb{color:#999;font-weight:400}.gt-wm-authors{color:#777;font-size:12px}.gt-wm-dim{color:#999;font-style:italic}.gt-wm-linked{color:#2c7a51}'
+      + '.gt-wm-acts{position:absolute;right:2px;top:2px;display:none;gap:2px}.gt-wm-row:hover .gt-wm-acts{display:inline-flex}'
+      + '.gt-wm-act{border:none;background:#fff;cursor:pointer;color:#7d6bc0;font-size:13px;line-height:1;padding:1px 5px;border-radius:3px}.gt-wm-act:hover{background:#f0ecfa}'
+      // picker (kept)
+      + '.gt-wm-pop{position:fixed;z-index:2147483647;background:#fff;color:#222;border:1px solid #d4d9e0;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:8px;min-width:360px;max-width:480px;font:13px -apple-system,Segoe UI,Arial,sans-serif}'
       + '.gt-wm-q{width:100%;box-sizing:border-box;margin:4px 0 6px;padding:4px 6px}.gt-wm-results{max-height:300px;overflow:auto}'
       + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:#eef1f6}.gt-wm-rt{font-size:13px}'
-      + '.gt-wm-wr{color:#8a8f98;font-size:11px}.gt-wm-rw{color:#8a8f98;font-size:11px;margin-left:4px}.gt-wm-cut{margin-right:8px}.gt-wm-newtag{color:#a78bfa}.gt-wm-prog{color:#8a8f98;font-size:11px}.gt-wm-sub{color:#6b7280;font-size:11px;margin:-2px 0 5px 2px}'
+      + '.gt-wm-rw{color:#777;font-size:12px;margin-left:4px}.gt-wm-sub{color:#6b7280;font-size:11px;margin:-2px 0 5px 2px}'
       + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}';
     document.head.appendChild(s);
   }
@@ -1134,55 +1160,93 @@
     }
     api.setProgress(done, 0);
   }
-  function wmDot(level) { const d = el('span', 'gt-wm-dot'); const L = WM_LEVEL[level] || WM_LEVEL.none; d.style.background = L.c; d.title = L.t; return d; }
+  // floating menu near an anchor (cutoff options / caret actions), Apollo-style
+  function wmFloatMenu(anchor, items) {
+    const m = el('div', 'gt-wm-menu');
+    const close = () => { m.remove(); document.removeEventListener('mousedown', onDown, true); };
+    const onDown = e => { if (!m.contains(e.target)) close(); };
+    items.forEach(it => { const mi = el('div', 'mi' + (it.sel ? ' sel' : '')); if (it.dot) { const d = el('span', 'dot'); d.style.background = it.dot; mi.appendChild(d); } mi.appendChild(document.createTextNode(it.label)); mi.onclick = () => { close(); it.run(); }; m.appendChild(mi); });
+    document.body.appendChild(m);
+    const a = anchor.getBoundingClientRect(), r = m.getBoundingClientRect();
+    m.style.left = Math.max(6, Math.min(a.left, window.innerWidth - r.width - 6)) + 'px';
+    m.style.top = Math.min(a.bottom + 4, window.innerHeight - r.height - 6) + 'px';
+    setTimeout(() => document.addEventListener('mousedown', onDown, true), 0);
+  }
+  // interface mirrors Apollo's Recordings matcher: no checkboxes — a row is resolved (has a work) or not;
+  // Apply stages every resolved row; the toolbar carries the cutoff chip, an unresolved count, and ⚡ Match.
   function renderWorkMatch(body, foot, rows) {
     body.textContent = ''; foot.textContent = '';
-    const leg = el('div', 'gt-cons-leglabel'); leg.appendChild(document.createTextNode('Tick a row to stage a recording→work “performance” relationship. Strong matches are pre-ticked; ✎ to search, pick, or create a work.'));
-    const prog = el('span', 'gt-wm-prog'); leg.appendChild(prog); body.appendChild(leg);
-    const setProgress = (d, n) => { prog.textContent = n ? `  ·  matching ${d}/${n}…` : ''; };
-    const tbl = el('table', 'gt-wm-tbl'), head = el('tr');
-    head.append(el('th', null, ''), el('th', null, 'Track'), el('th', null, ''), el('th', null, 'Work')); tbl.appendChild(head);
+    const mkAct = (glyph, title, run) => { const b = el('button', 'gt-wm-act', glyph); b.type = 'button'; b.title = title; b.onclick = e => { e.stopPropagation(); run(); }; return b; };
+    // ── toolbar ──
+    const tb = el('div', 'gt-wm-tb');
+    const amstatus = el('span', 'gt-wm-amstatus');
+    const cutWrap = el('label', 'gt-wm-tbl2'); cutWrap.appendChild(el('b', null, 'Cutoff'));
+    const chip = el('span', 'gt-wm-cutoff'); chip.tabIndex = 0; chip.title = 'lowest confidence that ⚡ Match still resolves';
+    const chipDot = el('span', 'gt-wm-cutoff-dot'), chipLbl = el('span', 'gt-wm-cutoff-lbl');
+    chip.append(chipDot, chipLbl, el('span', 'gt-wm-cutoff-caret', '▾')); cutWrap.appendChild(chip);
+    const paintChip = () => { const lvl = WM_LVL_BY_RANK[wmCutoff] || 'near'; chipDot.style.background = WM_LEVEL[lvl].c; chipLbl.textContent = lvl; };
+    paintChip();
+    const warn = el('span', 'gt-wm-warn');
+    const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.title = 'resolve every unresolved track whose best match is at/above the cutoff';
+    const caret = el('button', 'gt-wm-caret', '▾'); caret.type = 'button'; caret.title = 'clear / new-work actions';
+    tb.append(amstatus, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn, caret); body.appendChild(tb);
+    const setProgress = (d, n) => { amstatus.textContent = n ? `matching ${d}/${n}…` : (d ? `matched ${d} track${d > 1 ? 's' : ''}` : ''); };
+    // ── table ──
+    const tbl = el('table', 'gt-wm-tbl');
+    const grp = el('tr'); const gl = el('th', 'tc-grp-l', 'Track'); gl.colSpan = 3; grp.appendChild(gl); grp.appendChild(el('th', 'c-sep', '')); const gr = el('th', 'tc-grp-r', 'Work'); gr.colSpan = 2; grp.appendChild(gr); tbl.appendChild(grp);
+    const head = el('tr'); head.append(el('th', 'c-n', '#'), el('th', null, 'Title'), el('th', null, 'Artist'), el('th', 'c-sep', ''), el('th', null, 'Work'), el('th', null, 'Writers')); tbl.appendChild(head);
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
     const plan = el('span', 'gt-cons-plan');
-    const updatePlan = () => { const n = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked).length; plan.textContent = n ? `${n} relationship${n > 1 ? 's' : ''} to add` : 'nothing ticked'; applyBtn.disabled = !n; };
+    const updatePlan = () => {
+      const n = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked).length;
+      plan.textContent = n ? `${n} work${n > 1 ? 's' : ''} to add` : 'nothing resolved'; applyBtn.disabled = !n;
+      const uns = rows.filter(r => r._matched && !r.chosen && !r.hasWorkOnPage && !r.linked);
+      warn.textContent = uns.length ? `⚠ ${uns.length} unresolved` : ''; warn.className = 'gt-wm-warn' + (uns.length ? ' click' : '');
+      warn.onclick = uns.length ? () => { const r0 = uns[0]; if (r0._wk) wmPicker(r0, r0._wk, draw, updatePlan); } : null;
+    };
     const draw = () => rows.forEach(row => {
-      const wkd = row._wk, dotd = row._dt; if (!wkd) return; wkd.textContent = ''; if (dotd) dotd.textContent = '';
-      if (row._cb) { row._cb.checked = !!row.chosen; row._cb.disabled = !row._matched || (!row.best && !row.chosen); }
-      if (row._artEl) row._artEl.textContent = row.artist ? ' — ' + row.artist : '';
-      if (row.hasWorkOnPage || row.linked) { wkd.appendChild(el('span', 'gt-wm-dim', 'already linked')); return; }
-      if (!row._matched) { if (dotd) dotd.appendChild(wmDot('none')); wkd.appendChild(el('span', 'gt-wm-dim', 'matching…')); return; }
-      if (dotd) dotd.appendChild(wmDot(row.level || 'none'));
-      const w = row.chosen || row.best;
-      if (w) {
-        if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + w.title); nw.title = 'a new work will be created and linked'; wkd.appendChild(nw); }
-        else { const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.onclick = e => e.stopPropagation(); wkd.appendChild(a); }
-        if (row.cands && row.cands.length > 1) { const alt = el('span', 'gt-wm-alt', `+${row.cands.length - 1}`); alt.title = `${row.cands.length - 1} other candidate${row.cands.length - 1 > 1 ? 's' : ''}`; wkd.appendChild(alt); }
-        if (!w._gtNew && row.writers && row.writers.length) wkd.appendChild(el('span', 'gt-wm-wr', ' — ' + row.writers.slice(0, 4).join(', ')));
-      } else wkd.appendChild(el('span', 'gt-wm-dim', 'no match'));
-      const pick = el('button', 'gt-wm-pick', '✎'); pick.type = 'button'; pick.title = 'Search / pick / create a work'; pick.onclick = () => wmPicker(row, pick, draw, updatePlan); wkd.appendChild(pick);
+      const wkd = row._wk, dot = row._dot, wad = row._wa; if (!wkd) return;
+      wkd.textContent = ''; if (wad) wad.textContent = '';
+      if (row._artEl) row._artEl.textContent = row.artist || '';
+      if (row.hasWorkOnPage || row.linked) { if (dot) dot.style.visibility = 'hidden'; wkd.appendChild(el('span', 'gt-wm-linked', 'already linked ✓')); return; }
+      if (!row._matched) { if (dot) dot.style.visibility = 'hidden'; wkd.appendChild(el('span', 'gt-wm-dim', 'matching…')); return; }
+      const w = row.chosen;
+      if (!w) {
+        if (dot) dot.style.visibility = 'hidden';
+        const none = el('span', 'gt-wm-none', '— none —'); none.title = 'pick a work'; none.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(none);
+        const acts = el('span', 'gt-wm-acts'); acts.appendChild(mkAct('＋', 'set to a new work', () => { row.chosen = wmMakeNewWork(row.title); draw(); updatePlan(); })); wkd.appendChild(acts);
+        return;
+      }
+      if (dot) { dot.style.visibility = 'visible'; if (w._gtNew) { dot.style.background = '#2c7a51'; dot.title = 'new work'; } else { const L = WM_LEVEL[row.level] || WM_LEVEL.near; dot.style.background = L.c; dot.title = L.t; } }
+      if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + w.title); nw.title = 'change / pick a work'; nw.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(nw); }
+      else { const a = el('a', 'gt-wm-wa', w.title); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'change / pick a work (middle-click to open the work)'; a.onclick = e => { e.preventDefault(); e.stopPropagation(); wmPicker(row, wkd, draw, updatePlan); }; wkd.appendChild(a); if (w.disambiguation) wkd.appendChild(el('span', 'gt-wm-disamb', ` (${w.disambiguation})`)); }
+      if (wad && row.writers && row.writers.length) wad.textContent = row.writers.slice(0, 5).join(', ');
+      const acts = el('span', 'gt-wm-acts');
+      acts.appendChild(mkAct('↺', 'clear this match', () => { row.chosen = null; draw(); updatePlan(); }));
+      if (!w._gtNew) acts.appendChild(mkAct('＋', 'set to a new work', () => { row.chosen = wmMakeNewWork(row.title); draw(); updatePlan(); }));
+      wkd.appendChild(acts);
     });
-    rows.forEach(row => {
-      const tr = el('tr', 'gt-cons-row');
-      const cbTd = el('td', 'gt-wm-ck');
-      if (row.hasWorkOnPage || row.linked) { const v = el('span', 'gt-wm-linked', '✓'); v.title = 'already linked to a work'; cbTd.appendChild(v); }
-      else { const cb = el('input'); cb.type = 'checkbox'; cb.checked = !!row.chosen; cb.disabled = !row._matched; cb.onchange = () => { row.chosen = cb.checked ? (row.chosen || row.best) : null; draw(); updatePlan(); }; row._cb = cb; cbTd.appendChild(cb); }
-      tr.appendChild(cbTd);
-      const tkd = el('td', 'gt-wm-tk'); tkd.appendChild(el('span', 'gt-wm-pos', row.pos ? `[${row.pos}]` : '')); tkd.appendChild(document.createTextNode(' ' + (row.title || '(untitled)'))); const artEl = el('span', 'gt-wm-wr'); row._artEl = artEl; tkd.appendChild(artEl); tr.appendChild(tkd);
-      const dotd = el('td', 'gt-wm-dt'); row._dt = dotd; tr.appendChild(dotd);
+    rows.forEach((row, i) => {
+      const tr = el('tr', 'gt-wm-row');
+      tr.appendChild(el('td', 'c-n', row.pos ? String(row.pos) : String(i + 1)));
+      tr.appendChild(el('td', 'gt-wm-tkt', row.title || '(untitled)'));
+      const tka = el('td', 'gt-wm-tka'); row._artEl = tka; tr.appendChild(tka);
+      const sepd = el('td', 'c-sep'); const dot = el('span', 'gt-wm-dot'); dot.style.visibility = 'hidden'; sepd.appendChild(dot); row._dot = dot; tr.appendChild(sepd);
       const wkd = el('td', 'gt-wm-wk'); row._wk = wkd; tr.appendChild(wkd);
+      const wad = el('td', 'gt-wm-authors'); row._wa = wad; tr.appendChild(wad);
       tbl.appendChild(tr);
     });
     body.appendChild(tbl);
-    const cut = el('select', 'gt-wm-cut'); cut.title = 'How far “⚡ Match” reaches down the confidence ladder';
-    [['exact', 'ISRC only'], ['tolerance', 'unique title'], ['near', 'dominant (default)'], ['low', 'any candidate']].forEach(([lvl, txt]) => { const o = el('option', null, txt); o.value = String(WM_RANK[lvl]); if (WM_RANK[lvl] === wmCutoff) o.selected = true; cut.appendChild(o); });
-    cut.onchange = () => { wmCutoff = +cut.value; try { GM_setValue('gt-wm-cutoff', wmCutoff); } catch (e) {} rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked)) r.chosen = (r.best && WM_RANK[r.level] <= wmCutoff) ? r.best : null; }); draw(); updatePlan(); };
-    const autoBtn = el('button', 'gt-cons-btn', '⚡ Match'); autoBtn.type = 'button'; autoBtn.title = 'Tick every match at/above the selected confidence';
-    autoBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r.best && WM_RANK[r.level] <= wmCutoff) r.chosen = r.best; }); draw(); updatePlan(); };
-    const newAllBtn = el('button', 'gt-cons-btn', '＋ new for rest'); newAllBtn.type = 'button'; newAllBtn.title = 'Create a new work (named after the track) for every recording with no match yet — same-title tracks share one';
-    newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && !r.chosen) { r.chosen = wmMakeNewWork(r.title); r.best = r.chosen; } }); draw(); updatePlan(); };
-    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.onclick = () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); };
+    // resolve every matched row whose best is at/above the cutoff (⚡ Match + cutoff change)
+    const applyCutoff = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched) r.chosen = (r.best && WM_RANK[r.level] <= wmCutoff) ? r.best : null; }); draw(); updatePlan(); };
+    matchBtn.onclick = applyCutoff;
+    chip.onclick = () => wmFloatMenu(chip, WM_LVL_BY_RANK.map(lvl => ({ label: lvl, dot: WM_LEVEL[lvl].c, sel: WM_RANK[lvl] === wmCutoff, run: () => { wmCutoff = WM_RANK[lvl]; try { GM_setValue('gt-wm-cutoff', wmCutoff); } catch (e) {} paintChip(); applyCutoff(); } })));
+    caret.onclick = () => wmFloatMenu(caret, [
+      { label: '✕ Clear all', run: () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); } },
+      { label: '＋ New work for all unresolved', run: () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); } },
+    ]);
     applyBtn.onclick = () => wmApply(rows, () => renderWorkMatch(body, foot, rows));
-    foot.append(cut, autoBtn, newAllBtn, clearBtn, plan, applyBtn);
+    foot.append(plan, applyBtn);
     draw(); updatePlan();
     return { draw, updatePlan, setProgress };
   }
@@ -1228,7 +1292,7 @@
     const re = RE(); const ltId = performanceLtId();
     if (!re || ltId == null) { toast('Cannot apply — editor not ready'); return; }
     const todo = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked);
-    if (!todo.length) { toast('Nothing ticked'); return; }
+    if (!todo.length) { toast('Nothing resolved to apply'); return; }
     toast(`Linking ${todo.length} work${todo.length > 1 ? 's' : ''}…`);
     let ok = 0, fail = 0;
     for (const row of todo) {
