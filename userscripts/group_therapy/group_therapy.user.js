@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.230530
+// @version      2026.7.6.231452
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -800,10 +800,18 @@
     return out;
   }
   const consKey = r => [r.linkTypeID, r.target.gid, (r.attributes || []).map(a => a.typeID).sort((p, q) => p - q).join(','), r.entity0_credit || '', r.entity1_credit || ''].join('|');
+  // #371 the link type alone is generic ("instrument"); the specific instrument (guitar, tuba, drums …)
+  // lives in the attributes — resolve their names so every instrument row is distinguishable, matching
+  // roleLabelOf. Consolidation rels come from /ws/js (plain array, typeID only), so resolve via linkedEntities.
+  const consRole = r => {
+    const base = ltName(r.linkTypeID), lat = W.MB.linkedEntities && W.MB.linkedEntities.link_attribute_type;
+    const parts = (r.attributes || []).map(a => { const nm = (a.type && a.type.name) || (lat && lat[a.typeID] && lat[a.typeID].name); return nm ? (a.text_value ? `${nm}: ${a.text_value}` : nm) : null; }).filter(Boolean);
+    return parts.length ? `${base} (${parts.join(', ')})` : base;
+  };
   const consLabel = r => {
     const ent = r.target_type === 'url' ? (r.target.name || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '') : (r.target.name || '?');
     const credit = (r.entity0_credit && r.entity0_credit !== r.target.name && r.entity0_credit) || (r.entity1_credit && r.entity1_credit !== r.target.name && r.entity1_credit) || '';
-    return { role: ltName(r.linkTypeID), ent, credit };
+    return { role: consRole(r), ent, credit };
   };
   const consExcluded = (row, rel) => formatExcludeRolesFor(rel.fmt).some(k => row.label.role.toLowerCase().includes(k));
   // ── edit_type:90 relationship-create payload for adding `r` onto release `relGid` ──
