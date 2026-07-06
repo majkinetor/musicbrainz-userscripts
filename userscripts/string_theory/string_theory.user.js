@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.143422
+// @version      2026.7.6.165726
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.6.143422 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.5.175705\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.6.143421\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.6.165726 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.5.175705\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.6.165726\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16452,12 +16452,12 @@ ${lines}
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.6.143421","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.6.143421","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.6.165726","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.7.6.165726","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.6.143421';
+  const VERSION = '2026.7.6.165726';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -17584,6 +17584,8 @@ ${lines}
       + '.gt-wm-q{width:100%;box-sizing:border-box;margin:4px 0 6px;padding:4px 6px}.gt-wm-results{max-height:300px;overflow:auto}'
       + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:#eef1f6}.gt-wm-rt{font-size:13px}'
       + '.gt-wm-rw{color:#777;font-size:12px;margin-left:4px}.gt-wm-sub{color:#6b7280;font-size:11px;margin:-2px 0 5px 2px}'
+      + '.gt-wm-open{margin-left:6px;color:#2c5d9b;text-decoration:none;font-size:12px}.gt-wm-open:hover{text-decoration:underline}'
+      + '.gt-wm-cur{margin:2px 0 6px;padding:4px 7px;background:#f6f3fc;border-radius:5px;font-size:12px}.gt-wm-cur-l{color:#777}'
       + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}';
     document.head.appendChild(s);
   }
@@ -17644,11 +17646,11 @@ ${lines}
     paintChip();
     const warn = el('span', 'gt-wm-warn');
     const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.title = 'resolve every unresolved track whose best match is at/above the cutoff';
-    const caret = el('button', 'gt-wm-caret', '▾'); caret.type = 'button'; caret.title = 'clear / new-work actions';
-    tb.append(amstatus, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn, caret); body.appendChild(tb);
+    tb.append(amstatus, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn); body.appendChild(tb);
     const setProgress = (d, n) => { amstatus.textContent = n ? `matching ${d}/${n}…` : (d ? `matched ${d} track${d > 1 ? 's' : ''}` : ''); };
     // ── table ──
     const tbl = el('table', 'gt-wm-tbl');
+    const cg = document.createElement('colgroup'); ['4%', '27%', '19%', '3%', '28%', '19%'].forEach(w => { const c = document.createElement('col'); c.style.width = w; cg.appendChild(c); }); tbl.appendChild(cg);   // fixed widths — the # column was ballooning to an equal 1/6 (blank left column)
     const grp = el('tr'); const gl = el('th', 'tc-grp-l', 'Track'); gl.colSpan = 3; grp.appendChild(gl); grp.appendChild(el('th', 'c-sep', '')); const gr = el('th', 'tc-grp-r', 'Work'); gr.colSpan = 2; grp.appendChild(gr); tbl.appendChild(grp);
     const head = el('tr'); head.append(el('th', 'c-n', '#'), el('th', null, 'Title'), el('th', null, 'Artist'), el('th', 'c-sep', ''), el('th', null, 'Work'), el('th', null, 'Writers')); tbl.appendChild(head);
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
@@ -17697,12 +17699,12 @@ ${lines}
     const applyCutoff = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched) r.chosen = (r.best && WM_RANK[r.level] <= wmCutoff) ? r.best : null; }); draw(); updatePlan(); };
     matchBtn.onclick = applyCutoff;
     chip.onclick = () => wmFloatMenu(chip, WM_LVL_BY_RANK.map(lvl => ({ label: lvl, dot: WM_LEVEL[lvl].c, sel: WM_RANK[lvl] === wmCutoff, run: () => { wmCutoff = WM_RANK[lvl]; try { GM_setValue('gt-wm-cutoff', wmCutoff); } catch (e) {} paintChip(); applyCutoff(); } })));
-    caret.onclick = () => wmFloatMenu(caret, [
-      { label: '✕ Clear all', run: () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); } },
-      { label: '＋ New work for all unresolved', run: () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); } },
-    ]);
+    const newAllBtn = el('button', 'gt-cons-btn', '＋ New work for unresolved'); newAllBtn.type = 'button'; newAllBtn.title = 'Create a new work (named after the track) for every recording still unresolved — same-title tracks share one';
+    newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); };
+    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.title = 'Clear every match';
+    clearBtn.onclick = () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); };
     applyBtn.onclick = () => wmApply(rows, () => renderWorkMatch(body, foot, rows));
-    foot.append(plan, applyBtn);
+    foot.append(newAllBtn, clearBtn, plan, applyBtn);
     draw(); updatePlan();
     return { draw, updatePlan, setProgress };
   }
@@ -17711,6 +17713,7 @@ ${lines}
     r.appendChild(el('span', 'gt-wm-rt', work.title + (work.disambiguation ? ` (${work.disambiguation})` : '')));
     if (work.type && work.type !== 'Song') r.appendChild(el('span', 'gt-wm-rw', ' · ' + work.type));
     if (work.authors && work.authors.length) r.appendChild(el('span', 'gt-wm-rw', ' — ' + work.authors.slice(0, 4).join(', ')));
+    if (work.gid) { const open = el('a', 'gt-wm-open', '↗'); open.href = '/work/' + work.gid; open.target = '_blank'; open.rel = 'noopener'; open.title = 'open this work in a new tab'; open.onclick = e => e.stopPropagation(); r.appendChild(open); }
     r.onclick = () => { row.chosen = work; row.best = work; if (!row.level || row.level === 'none') row.level = 'near'; row.writers = work.authors || []; draw && draw(); updatePlan && updatePlan(); closePopover(); };
     return r;
   }
@@ -17719,6 +17722,19 @@ ${lines}
     popEl = el('div', 'gt-wm-pop');
     popEl.appendChild(el('div', 'gt-pop-hdr', 'Pick a work for “' + trunc(row.title, 54) + '”'));
     if (row.artist) popEl.appendChild(el('div', 'gt-wm-sub', 'by ' + trunc(row.artist, 60)));
+    // current match (mirrors Apollo's picker header) — the work as a link you can open in a new tab, its
+    // writers, and a clear button
+    const cur = el('div', 'gt-wm-cur');
+    const paintCur = () => {
+      cur.textContent = ''; cur.appendChild(el('span', 'gt-wm-cur-l', 'Current: '));
+      const w = row.chosen;
+      if (!w) { cur.appendChild(el('span', 'gt-wm-none', '— none —')); return; }
+      if (w._gtNew) { cur.appendChild(el('span', 'gt-wm-newtag', '＋ new work: ' + w.title)); return; }
+      const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'open this work in a new tab'; cur.appendChild(a);
+      if (row.writers && row.writers.length) cur.appendChild(el('span', 'gt-wm-rw', ' — ' + row.writers.slice(0, 4).join(', ')));
+      const clr = el('button', 'gt-wm-act', '↺'); clr.type = 'button'; clr.title = 'clear this match'; clr.onclick = () => { row.chosen = null; paintCur(); draw && draw(); updatePlan && updatePlan(); }; cur.appendChild(clr);
+    };
+    paintCur(); popEl.appendChild(cur);
     const q = el('input', 'gt-wm-q'); q.type = 'text'; q.placeholder = 'search works, or paste a work MBID / URL…'; popEl.appendChild(q);
     const list = el('div', 'gt-wm-results'); popEl.appendChild(list);
     const showCands = () => { list.textContent = ''; (row.cands || []).forEach(c => list.appendChild(wmResRow(c, row, draw, updatePlan))); if (!(row.cands || []).length) list.appendChild(el('div', 'gt-pop-note', 'No candidates yet — search or paste a work.')); };
