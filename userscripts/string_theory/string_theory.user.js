@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.5.175706
+// @version      2026.7.6.194312
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.5.175706 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.5.175705\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.6.194312 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.6.194312\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -6367,7 +6367,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.5.175705","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.5.175705","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.6.194312","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.6.194312","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -6548,10 +6548,12 @@ try {
     const el = document.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-dim`);
     if (el) el.innerHTML = dimHtml(it);
   }
-  // one request per release: archive.org item metadata carries every original's byte size
+  // one request per release: archive.org item metadata carries every original's byte size — and the
+  // #368 `is_dark` flag for a darkened item (read from this same request, no extra fetch)
   async function loadSizes() {
     try {
       const j = await fetch(`https://archive.org/metadata/mbid-${MBID}`, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
+      if (j && j.is_dark === true && !_caaDarkened) { _caaDarkened = true; detectIaNotice(); }   // #368 surface the darkened notice
       if (!j || !j.files) return;
       for (const f of j.files) {
         if (f.source !== 'original' || !f.size) continue;
@@ -6623,6 +6625,7 @@ try {
       _origTypes: s.types.slice(), _origComment: s.comment, _origOrder: i,
     }));
     render();
+    watchIaNotice();   // #367/#368 surface IA "difficulties" warnings + darkened-item notices
     asLog.info(`Loaded ${MODEL.length} ${MODEL.length === 1 ? ITEM : ITEMS}`);
     MODEL.forEach(measure);   // lazy-fill dimensions
     loadSizes();              // lazy-fill file sizes (single archive.org request)
@@ -6659,6 +6662,9 @@ try {
   function mount() {
     if (_mounted) return; _mounted = true;
     const anchor = document.querySelector('#content') || document.body;
+    // #367 record whether MB is actually SHOWING its IA-difficulties warning (it's always present but
+    // display:none'd unless the IA is down) — read it now, before we hide the native UI below
+    try { const cw = anchor.querySelector('.warning.caa-warning, .caa-warning'); _iaWarnShown = !!(cw && iaVisible(cw)); } catch (e) {}
     // #230: sit BELOW the MB header + the entity tabs. ul.tabs is nested in a
     // div.tabs child of #content, so climb to that #content-level ancestor.
     const childOf = (el) => { if (!el) return null; let n = el; while (n.parentElement && n.parentElement !== anchor) n = n.parentElement; return n.parentElement === anchor ? n : null; };
@@ -6700,6 +6706,48 @@ try {
     root.classList.toggle('as-orig', _showOrig);                     // hides the whole Art Station UI
     ensureSwitch();
     applyHideFooter();
+  }
+  // #367/#368 surface the Internet Archive notices MB shows on the cover-art page that our takeover would
+  // otherwise hide: the "IA is having difficulties — adding images unlikely to work" upload warning, and
+  // darkened-item notices ("Cannot show cover art" / "hidden … takedown request"). A darkened item can't be
+  // added to / removed / reordered, so while such a notice is up we disable editing.
+  let _iaDark = '', _iaDown = '', _iaWarnShown = false, _caaDarkened = false;
+  const iaVisible = node => { for (let n = node; n && n.nodeType === 1 && n !== document.body; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === 'none' || s.visibility === 'hidden') return false; } return true; };
+  // MB renders the darkened notice as a bare <h2> (+ <p>) directly under #content, in the current UI
+  // language — grab it for display, but detection itself keys on the language-independent CAA 403.
+  function nativeDarkMsg() {
+    const c = document.getElementById('content'); if (!c) return '';
+    const h2 = [...c.children].find(n => n.tagName === 'H2' && !n.closest('#as-root'));
+    if (!h2) return '';
+    let m = (h2.textContent || '').replace(/\s+/g, ' ').trim();
+    const p = h2.nextElementSibling; if (p && p.tagName === 'P') m += ' — ' + (p.textContent || '').replace(/\s+/g, ' ').trim();
+    return m;
+  }
+  function detectIaNotice() {
+    const scope = document.getElementById('content') || document.body;
+    // #367: MB's `.caa-warning` is ALWAYS in the DOM, wrapped in display:none unless the IA is actually
+    // down — so trust its MB-visibility (captured at mount, before our own hiding could mask it), not text.
+    const w = scope.querySelector('.warning.caa-warning, .caa-warning');
+    const down = (w && _iaWarnShown) ? (w.textContent || '').replace(/\s+/g, ' ').trim() : '';
+    // #368: detected via the CAA 403 (darkened archive.org item) — language-independent, unlike the on-page
+    // notice. Show MB's own localized wording when present, else a default.
+    const dark = _caaDarkened ? (nativeDarkMsg() || 'This item is darkened at the Internet Archive — its cover art can’t be shown, added, removed or reordered.') : '';
+    if (dark === _iaDark && down === _iaDown) return;
+    _iaDark = dark; _iaDown = down;
+    if (_mounted) render();
+  }
+  const iaNoticeHtml = () => (!_iaDark && !_iaDown) ? ''
+    : `<div class="as-ia ${_iaDark ? 'as-ia-dark' : 'as-ia-warn'}">${_iaDark ? '⛔' : '⚠'} ${esc(_iaDark || _iaDown)}</div>`;
+  // the darkened/warning notice can appear after load (the artwork area fills from CAA asynchronously)
+  let _iaObs = null;
+  function watchIaNotice() {
+    detectIaNotice();
+    if (_iaObs) return;
+    const scope = document.getElementById('content') || document.body;
+    let t = null;
+    _iaObs = new MutationObserver(() => { clearTimeout(t); t = setTimeout(detectIaNotice, 200); });
+    _iaObs.observe(scope, { childList: true, subtree: true, characterData: true });
+    setTimeout(() => { if (_iaObs) { _iaObs.disconnect(); _iaObs = null; } }, 15000);   // stop once the page settles
   }
   // optional (setup): hide MB's native button row (Add / Reorder / Import from …)
   // under the gallery — redundant with Art Station's own toolbar. Revealed in Original.
@@ -6822,7 +6870,8 @@ try {
       : SETTINGS.group
         ? groups.map(g => groupRow(g.type, g.items)).join('')   // compact: label column + cards beside it
         : groups.map(g => section(g.type, g.items)).join('');
-    root.innerHTML = bar(n) + commentPresets() + dropZone() + newSection() + body + deletedSection();
+    root.innerHTML = iaNoticeHtml() + bar(n) + commentPresets() + dropZone() + newSection() + body + deletedSection();
+    root.classList.toggle('as-darkened', !!_iaDark);   // #368 disable editing while a darkened notice is up
     wire();
     hydrateImgs();     // re-attach cached <img> for new/pending covers so they don't reload
     applyOriginal();   // keep the native/script view state across re-renders
@@ -9312,6 +9361,10 @@ try {
      anchoring so the scrollbar stays put (Art Station owns this page's scroll). */
   html{overflow-anchor:none}
   #as-root{font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;margin:0 0 18px}
+  .as-ia{margin:0 0 8px;padding:9px 13px;border-radius:8px;font-size:13px;line-height:1.45;border:1px solid}
+  .as-ia-warn{background:#fff7e6;border-color:#f0c877;color:#7a5200}
+  .as-ia-dark{background:#fdecec;border-color:#e2a1a1;color:#8a1f1f;font-weight:600}
+  .as-darkened .as-add,.as-darkened .as-commit,.as-darkened .as-tbtn,.as-darkened .as-src{opacity:.4;pointer-events:none}
   .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px 11px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:wrap;margin-bottom:6px}
   .as-setup-ic{width:30px;height:30px;object-fit:contain;flex:0 0 auto}
   .as-bar>*{flex:0 0 auto}
