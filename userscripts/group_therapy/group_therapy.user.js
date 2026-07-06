@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.172031
+// @version      2026.7.6.180535
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.6.172031';
+  const VERSION = '2026.7.6.180535';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -1078,8 +1078,10 @@
     const isExact = t => { const n = wmNorm(t); return n === tnorm || (!!bnorm && n === bnorm); };
     // does the work's own writer/artist match the track's performer? A strong signal — e.g. the
     // "Overnight Success" work whose artist IS Teri DeSario should beat the generic same-titled ones.
-    const perf = wmNorm(row.artist || '');
-    const nameHit = names => !!perf && (names || []).some(n => { const nn = wmNorm(n); return nn.length > 2 && perf.includes(nn); });
+    // split the performer credit into individual names so a duet matches regardless of order/join —
+    // recording "Ann Wilson & Mike Reno" vs work artist "Mike Reno & Ann Wilson"
+    const perfNames = wmNorm(row.artist || '').split(/\s*(?:&|,|;|\/|\bfeat\.?\b|\bfeaturing\b|\bwith\b|\bvs\.?\b|\band\b|\bx\b)\s*/).map(x => x.trim()).filter(x => x.length > 2);
+    const nameHit = names => !!perfNames.length && (names || []).some(n => { const nn = wmNorm(n); return perfNames.some(p => nn.includes(p)); });
     const cands = new Map();   // workGid → { gid, id, title, disambiguation, type, authors, artists, pop, isrc, exact, artistMatch }
     const add = (w, isIsrc) => {
       if (!w || !w.gid) return;
