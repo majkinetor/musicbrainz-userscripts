@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.3
+// @version      2026.7.6.180535
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -15,7 +15,7 @@
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = '2026.7.3.183314';
+  const VERSION = '2026.7.6.180535';
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -242,10 +242,13 @@
   // tooltip: how many, and which tracks / the release it appears on.
   function needleFor(target) {
     if (!target || !target.closest) return null;
+    // only the actual relationship (track + release credits) UI — not GT's own overlays, and not
+    // stray entity links elsewhere on the page (release title, sidebar, the work-match dialog, …)
+    if (target.closest('.gt-cons-ov, .gt-wm-pop, .gt-pop, .gt-menu, .gt-tip, .gt-toast')) return null;
     const phraseTh = target.closest('th.link-phrase');
     if (phraseTh && !target.closest('button')) { const l = phraseTh.querySelector('label'); if (l) { let t = (l.textContent || '').trim().replace(/:\s*$/, ''); if (t) return t; } }
     const link = target.closest('a[href]');
-    if (link && /\/(artist|work|label|place|recording|series|release-group|event|instrument|area)\/[a-f0-9-]/.test(link.getAttribute('href') || '')) return (link.textContent || '').trim();
+    if (link && link.closest('.relationship-item') && /\/(artist|work|label|place|recording|series|release-group|event|instrument|area)\/[a-f0-9-]/.test(link.getAttribute('href') || '')) return (link.textContent || '').trim();
     return null;
   }
   // newly-added rels get negative MB ids on their remove button; persisted ones are positive
@@ -703,6 +706,11 @@
     cons.type = 'button';
     cons.onclick = () => openConsolidate();
     h2.appendChild(cons);
+    const wm = el('button', 'gt-clone-btn', '◎ Match works…');
+    wm.title = 'Match each recording to an existing MusicBrainz work (via ISRC + title/artist siblings) and stage recording→work “performance” relationships';
+    wm.type = 'button';
+    wm.onclick = () => openWorkMatch();
+    h2.appendChild(wm);
     const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — about / help';
     cfg.onclick = () => openAboutPopover(cfg);
     h2.appendChild(cfg);
@@ -971,6 +979,387 @@
       renderConsMatrix(ctx);
     };
     await ctx.recompute();
+  }
+
+  // ══ Work matching (#363) ═══════════════════════════════════════════════════
+  // Match each recording to an EXISTING MB work and stage a recording→work "performance" rel.
+  // Disambiguation is the whole problem — a bare standard title ("St. Louis Blues") matches many works.
+  // Two signals: (1) works of ISRC-sharing recordings — an /isrc LOOKUP returns work-rels (a /recording
+  // SEARCH does not), the strongest when ISRCs exist; and (2) a WORK title search ranked by MB's own
+  // score — the canonical work (bare title) scores ~100 while arrangements trail and are disambiguated,
+  // so the top score + the gap to the runner-up say whether to auto-tick or leave it for a manual pick.
+  const PERF_GID = 'a3005666-a872-32c3-ad06-98af558e99b0';   // recording→work "performance" link type
+  // colours mirror Apollo's recording matcher (CONF_COLOR)
+  const WM_LEVEL = { exact:{ c:'#2f6fd6', t:'ISRC-confirmed' }, tolerance:{ c:'#86c686', t:'the only work with this title' }, near:{ c:'#fff176', t:'dominant — most-recorded work' }, low:{ c:'#ffb74d', t:'ambiguous — pick one' }, none:{ c:'#9aa0a6', t:'no work found' } };
+  const WM_RANK = { exact:0, tolerance:1, near:2, low:3, none:4 };
+  const WM_LVL_BY_RANK = ['exact', 'tolerance', 'near', 'low'];
+  // how far ⚡ Match / the initial pre-tick reaches down the confidence ladder (persisted)
+  let wmCutoff = (() => { try { const v = GM_getValue('gt-wm-cutoff', WM_RANK.near); return typeof v === 'number' ? v : WM_RANK.near; } catch (e) { return WM_RANK.near; } })();
+  // writer/composer relationship types — used to pull authors from a pasted work MBID (the autocomplete
+  // already carries authors inline for searched works)
+  const WM_WRITER_RE = /composer|writer|lyricist|librettist|translat|revis|arrang|orchestrat/i;
+  // create a synthetic NEW work (negative id, no gid) — MB's submit creates it like a natively-added work
+  // (verified: the reducer accepts it and renders a pending new-work rel). Same-title new works within a
+  // session share one entity, so two unmatched same-title tracks don't spawn duplicate works.
+  let wmNewSeq = -1000000;
+  const wmNewWorks = new Map();
+  function wmMakeNewWork(title) {
+    const key = (title || '').normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim();
+    if (key && wmNewWorks.has(key)) return wmNewWorks.get(key);
+    const w = { entityType: 'work', id: wmNewSeq--, gid: null, name: title || '[untitled]', title: title || '[untitled]', disambiguation: '', _gtNew: true };
+    if (key) wmNewWorks.set(key, w);
+    return w;
+  }
+  // proactively space WS2 calls so a long tracklist doesn't burst past the ~1 req/s limit and drop the
+  // tail to 503s (which surfaced as false "no match"). Serialised through a single timestamp.
+  let _wmNext = 0;
+  async function wmGate() { const now = Date.now(); const at = Math.max(now, _wmNext); _wmNext = at + 380; if (at > now) await sleep(at - now); }
+  async function wmJson(url) {
+    for (let i = 0; i < 5; i++) {
+      try {
+        if (url.startsWith('/ws/2/')) await wmGate();   // only the public API is rate-limited; /ws/js is the editor's own
+        const r = await fetch(url, { credentials: 'include', headers: { Accept: 'application/json' } });
+        if ((r.status === 429 || r.status === 503) && i < 4) { await sleep(900 * (i + 1)); continue; }   // rate limit — back off harder
+        if (!r.ok) return null; return await r.json();
+      } catch (e) { if (i === 4) return null; await sleep(500 * (i + 1)); }
+    }
+    return null;
+  }
+  // MB's internal work autocomplete — returns authors, artist-popularity (hits), type and disambiguation
+  // inline, ranked by relevance, and it's the editor's own endpoint so it isn't on the /ws/2 rate limit.
+  async function wmWorkSearch(term) {
+    const j = await wmJson('/ws/js/work?q=' + encodeURIComponent(term) + '&direct=false&limit=10');
+    const arr = Array.isArray(j) ? j : (j && j.results) || [];
+    // authors (writers) + artist popularity live under related_artists.{authors,artists} — the top-level
+    // w.authors / w.artists are empty
+    return arr.filter(w => w && w.gid).map(w => { const ra = w.related_artists || {}; return { gid: w.gid, id: w.id, title: w.name, disambiguation: w.comment || '', type: w.typeName || '', authors: (ra.authors && ra.authors.results) || [], artists: (ra.artists && ra.artists.results) || [], pop: (ra.artists && ra.artists.hits) || 0 }; });
+  }
+  const wmNorm = s => (s || '').normalize('NFC').toLowerCase().replace(/[’‘']/g, "'").replace(/[‐‑‒–—―]/g, '-').replace(/…\s*/g, '…').replace(/\s+/g, ' ').trim();
+  function performanceLtId() {
+    const lt = W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type; if (!lt) return null;
+    for (const k in lt) if (lt[k] && lt[k].gid === PERF_GID) return lt[k].id != null ? lt[k].id : +k;
+    return null;
+  }
+  // the release's recordings, from the rendered track rows (deduped); flag ones already work-linked on the page
+  function wmRecordings() {
+    const out = [], seen = new Set();
+    document.querySelectorAll('tr.track').forEach(tr => {
+      const rec = recordingEntity(tr); if (!rec) return;
+      const key = (rec.gid || '') + '|' + rec.id; if (seen.has(key)) return; seen.add(key);
+      const hasWork = recordingRels(tr).some(r => !r.removed && r.other && r.other.entityType === 'work');
+      out.push({ tr, rec, pos: posLabel(tr) || '', title: val(rec.name) || '', hasWorkOnPage: hasWork });
+    });
+    return out;
+  }
+  // The recording entities on the page are lean (no artist credit), so the performer can't come from the
+  // fiber. One release lookup fills every row's artist up front — independent of the per-row matching — so
+  // the left column is populated immediately instead of trickling in as each match lands.
+  async function wmPrefetchArtists(rows, draw) {
+    const re = RE(); if (!re || !re.state || !re.state.entity) return;
+    const j = await wmJson('/ws/2/release/' + re.state.entity.gid + '?inc=recordings+artist-credits&fmt=json');
+    if (!j) return;
+    const byGid = new Map();
+    (j.media || []).forEach(m => (m.tracks || []).forEach(t => { const r = t.recording; if (r && r.id) byGid.set(r.id, (r['artist-credit'] || []).map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim()); }));
+    let any = false;
+    rows.forEach(row => { if (!row.artist) { const a = byGid.get(row.rec.gid); if (a) { row.artist = a; any = true; } } });
+    if (any) draw();
+  }
+  // gather candidate works for one recording: ISRC-sibling works + the internal work autocomplete
+  async function wmMatchOne(row) {
+    const rec = row.rec;
+    const self = await wmJson('/ws/2/recording/' + rec.gid + '?inc=artist-credits+isrcs+work-rels&fmt=json');
+    if (self && self['artist-credit']) row.artist = self['artist-credit'].map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('').trim();
+    if (self && (self.relations || []).some(r => r.work)) { row.linked = true; return; }   // already linked
+    const isrcs = (self && self.isrcs) || [];
+    // compare exactness against both the full title and the title minus a trailing parenthetical, so
+    // "Take My Breath Away (love theme…)" counts as an exact match of the work "Take My Breath Away"
+    const bare = row.title.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    const tnorm = wmNorm(row.title), bnorm = wmNorm(bare);
+    const isExact = t => { const n = wmNorm(t); return n === tnorm || (!!bnorm && n === bnorm); };
+    // does the work's own writer/artist match the track's performer? A strong signal — e.g. the
+    // "Overnight Success" work whose artist IS Teri DeSario should beat the generic same-titled ones.
+    // split the performer credit into individual names so a duet matches regardless of order/join —
+    // recording "Ann Wilson & Mike Reno" vs work artist "Mike Reno & Ann Wilson"
+    const perfNames = wmNorm(row.artist || '').split(/\s*(?:&|,|;|\/|\bfeat\.?\b|\bfeaturing\b|\bwith\b|\bvs\.?\b|\band\b|\bx\b)\s*/).map(x => x.trim()).filter(x => x.length > 2);
+    const nameHit = names => !!perfNames.length && (names || []).some(n => { const nn = wmNorm(n); return perfNames.some(p => nn.includes(p)); });
+    const cands = new Map();   // workGid → { gid, id, title, disambiguation, type, authors, artists, pop, isrc, exact, artistMatch }
+    const add = (w, isIsrc) => {
+      if (!w || !w.gid) return;
+      let e = cands.get(w.gid);
+      if (!e) { e = { gid: w.gid, id: w.id != null ? w.id : null, title: w.title, disambiguation: w.disambiguation || '', type: w.type || '', authors: w.authors || [], artists: w.artists || [], pop: w.pop || 0, isrc: 0, exact: isExact(w.title) }; e.artistMatch = nameHit(e.authors) || nameHit(e.artists); cands.set(w.gid, e); }
+      if (isIsrc) e.isrc++;
+      if (!e.authors.length && w.authors && w.authors.length) e.authors = w.authors;
+      if (!e.artists.length && w.artists && w.artists.length) e.artists = w.artists;
+      if (!e.artistMatch) e.artistMatch = nameHit(e.authors) || nameHit(e.artists);
+    };
+    // ISRC-sharing recordings (the /isrc lookup returns work-rels, unlike a /recording search)
+    for (const code of isrcs.slice(0, 3)) {
+      const j = await wmJson('/ws/2/isrc/' + encodeURIComponent(code) + '?inc=work-rels&fmt=json');
+      (j && j.recordings || []).forEach(r => (r.relations || []).forEach(rel => { if (rel.work) add({ gid: rel.work.id, id: null, title: rel.work.title, disambiguation: rel.work.disambiguation || '' }, true); }));
+    }
+    // work autocomplete — authors + artist-popularity inline, no per-work lookup. A DESCRIPTIVE trailing
+    // parenthetical ("Take My Breath Away (love theme from “Top Gun”)") isn't part of the work title, so the
+    // full title finds nothing → retry stripped. Titles where it IS part of the work ("You Spin Me Round
+    // (Like a Record)") match on the full title and never hit the fallback.
+    if (row.title) {
+      let ws = await wmWorkSearch(row.title);
+      if (!ws.length && bare && bare !== row.title) ws = await wmWorkSearch(bare);
+      ws.forEach(w => add(w, false));
+    }
+    // rank: ISRC-confirmed → performer is on the work → exact-title → most-recorded (popularity)
+    const list = [...cands.values()].sort((a, b) => (b.isrc - a.isrc) || ((b.artistMatch ? 1 : 0) - (a.artistMatch ? 1 : 0)) || (b.exact - a.exact) || (b.pop - a.pop));
+    row.cands = list;
+    if (!list.length) { row.level = 'none'; return; }
+    const best = list[0], second = list[1];
+    row.best = best; row.writers = best.authors || []; row.workArtists = best.artists || []; row.artistMatched = !!best.artistMatch;
+    const exacts = list.filter(c => c.exact).length;
+    if (best.isrc > 0) row.level = 'exact';                                            // ISRC-confirmed
+    else if (best.exact && (best.artistMatch || exacts === 1)) row.level = 'tolerance';   // exact title + (performer is on the work | only one such work)
+    else if (best.artistMatch || (best.exact && (!second || !second.exact || best.pop >= (second.pop || 0) * 2))) row.level = 'near';   // performer on the work, or exact + clearly most-used
+    else row.level = 'low';                                                            // several plausible works — the user picks
+    if (WM_RANK[row.level] <= wmCutoff) row.chosen = best;
+  }
+  function wmStyle() {
+    if (document.getElementById('gt-wm-style')) return;
+    const s = el('style'); s.id = 'gt-wm-style';
+    s.textContent =
+      // toolbar (clone of Apollo's .tc-rec-tb)
+      '.gt-wm-tb{display:flex;align-items:center;gap:8px;padding:6px 2px 8px;flex-wrap:wrap}'
+      + '.gt-wm-tb .gt-wm-amstatus{color:#6f42c1;font-size:12px;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:4px}'
+      + '.gt-wm-tbl2{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#555}.gt-wm-tbl2 b{color:#563b8f}'
+      + '.gt-wm-warn{color:#b00;font-weight:600;font-size:12px}.gt-wm-warn.click{cursor:pointer}.gt-wm-warn.click:hover{text-decoration:underline}'
+      + '.gt-wm-tbsep{width:1px;height:18px;background:#ddd;flex:none;margin:0 2px}'
+      + '.gt-wm-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}.gt-wm-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}'
+      + '.gt-wm-btn.primary{color:#5f3ec0;font-weight:bold}.gt-wm-btn.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}'
+      + '.gt-wm-caret{padding:4px 7px;color:#7d6bc0;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial}.gt-wm-caret:hover{background:#f0ecfa}'
+      // cutoff chip (clone of .tc-cutoff)
+      + '.gt-wm-cutoff{display:inline-flex;align-items:center;gap:6px;border:1px solid #cfcfcf;border-radius:14px;padding:2px 9px;cursor:pointer;font:12px Arial;background:#fff;user-select:none}.gt-wm-cutoff:hover{border-color:#b3b3b3}'
+      + '.gt-wm-cutoff-dot,.gt-wm-menu .dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.18);flex:none}.gt-wm-cutoff-caret{color:#999;font-size:10px}'
+      + '.gt-wm-menu{position:fixed;z-index:2147483647;background:#fff;border:1px solid #ccc;border-radius:7px;box-shadow:0 8px 24px rgba(40,20,80,.22);padding:4px;font:13px Arial}'
+      + '.gt-wm-menu .mi{display:flex;align-items:center;gap:9px;padding:5px 11px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;color:#333}.gt-wm-menu .mi:hover,.gt-wm-menu .mi.sel{background:#f0ecfa}'
+      // table (clone of .tc-rectbl)
+      + '.gt-wm-tbl{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed}'
+      + '.gt-wm-tbl th{text-align:left;font-size:11px;color:#777;border-bottom:1px solid #ccc;padding:4px 7px;white-space:nowrap}'
+      + '.gt-wm-tbl td{padding:4px 7px;vertical-align:top;font-size:13px}'
+      + '.gt-wm-tbl .c-n{color:#999;text-align:right;width:38px;white-space:nowrap}'
+      + '.gt-wm-tbl .c-sep{width:20px;text-align:center;border-left:1px solid #e6e0f2;border-right:1px solid #e6e0f2}'
+      + '.gt-wm-tbl .tc-grp-l{background:#eef3fb;color:#2c5d9b}.gt-wm-tbl .tc-grp-r{background:#f1ecf9;color:#5b3fa0}'
+      + '.gt-wm-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}'
+      + '.gt-wm-tkt{font-weight:600}.gt-wm-tka{color:#555}'
+      + '.gt-wm-wk{position:relative}.gt-wm-wa{color:#2c5d9b;font-weight:600;text-decoration:none;cursor:pointer}.gt-wm-wa:hover{text-decoration:underline}'
+      + '.gt-wm-none{color:#c0392b;cursor:pointer}.gt-wm-none:hover{text-decoration:underline}.gt-wm-newtag{color:#2c7a51;cursor:pointer}'
+      + '.gt-wm-disamb{color:#999;font-weight:400}.gt-wm-authors{color:#777;font-size:12px}.gt-wm-dim{color:#999;font-style:italic}.gt-wm-linked{color:#2c7a51}'
+      + '.gt-wm-wwr{color:#777}.gt-wm-wart{display:block;color:#8a8f98;font-size:11px;margin-top:1px}'
+      + '.gt-wm-acts{position:absolute;right:2px;top:2px;display:none;gap:2px}.gt-wm-row:hover .gt-wm-acts{display:inline-flex}'
+      + '.gt-wm-act{border:none;background:#fff;cursor:pointer;color:#7d6bc0;font-size:13px;line-height:1;padding:1px 5px;border-radius:3px}.gt-wm-act:hover{background:#f0ecfa}'
+      // picker (kept)
+      + '.gt-wm-pop{position:fixed;z-index:2147483647;background:#fff;color:#222;border:1px solid #d4d9e0;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:8px;min-width:360px;max-width:480px;font:13px -apple-system,Segoe UI,Arial,sans-serif}'
+      + '.gt-wm-q{width:100%;box-sizing:border-box;margin:4px 0 6px;padding:4px 6px}.gt-wm-results{max-height:300px;overflow:auto}'
+      + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:#eef1f6}.gt-wm-rt{font-size:13px}'
+      + '.gt-wm-rw{color:#777;font-size:12px;margin-left:4px}.gt-wm-sub{color:#6b7280;font-size:11px;margin:-2px 0 5px 2px}'
+      + '.gt-wm-open{margin-left:6px;color:#2c5d9b;text-decoration:none;font-size:12px}.gt-wm-open:hover{text-decoration:underline}'
+      + '.gt-wm-cur{margin:2px 0 6px;padding:4px 7px;background:#f6f3fc;border-radius:5px;font-size:12px}.gt-wm-cur-l{color:#777}'
+      + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}';
+    document.head.appendChild(s);
+  }
+  let wmEl = null;
+  function onWmKey(e) { if (e.key === 'Escape') { if (popEl) return; e.stopPropagation(); closeWorkMatch(); } }   // let an open picker take Escape first
+  function closeWorkMatch() { if (wmEl) { wmEl.remove(); wmEl = null; document.removeEventListener('keydown', onWmKey, true); } }
+  async function openWorkMatch() {
+    closeWorkMatch(); closePopover(); wmStyle();
+    const re = RE(); if (!re) { toast('Open the relationship editor first'); return; }
+    if (performanceLtId() == null) { toast('Could not resolve the “performance” link type'); return; }
+    wmEl = el('div', 'gt-cons-ov'); const panel = el('div', 'gt-cons gt-wm'), hdr = el('div', 'gt-cons-hdr');
+    hdr.appendChild(el('span', 'gt-cons-title', 'Match recordings to works'));
+    const x = el('button', 'gt-cons-x', '✕'); x.type = 'button'; x.onclick = closeWorkMatch; hdr.appendChild(x);
+    const body = el('div', 'gt-cons-body'), foot = el('div', 'gt-cons-foot');
+    body.appendChild(el('div', 'gt-pop-note', 'Reading recordings…'));
+    panel.append(hdr, body, foot); wmEl.appendChild(panel); document.body.appendChild(wmEl);
+    document.addEventListener('keydown', onWmKey, true);
+    wmEl.addEventListener('mousedown', e => { if (e.target === wmEl) closeWorkMatch(); });
+    const note = m => { const n = body.querySelector('.gt-pop-note'); if (n) n.textContent = m; };
+    const rows = wmRecordings();
+    if (!rows.length) { note('No recordings found on this release.'); return; }
+    const api = renderWorkMatch(body, foot, rows);   // show the whole matrix at once — rows start "matching…"
+    wmPrefetchArtists(rows, api.draw);   // fill every performer name from one release lookup, before matching
+    // then resolve serially (WS2 rate-limits ~1 req/s) and fill each row in as its match lands
+    let done = 0; api.setProgress(0, rows.length);
+    for (const row of rows) {
+      if (!row.hasWorkOnPage) { try { await wmMatchOne(row); } catch (e) {} }
+      row._matched = true; api.setProgress(++done, rows.length); api.draw(); api.updatePlan();
+      if (!wmEl) return;   // dialog closed mid-run
+    }
+    api.setProgress(done, 0);
+  }
+  // floating menu near an anchor (cutoff options / caret actions), Apollo-style
+  function wmFloatMenu(anchor, items) {
+    const m = el('div', 'gt-wm-menu');
+    const close = () => { m.remove(); document.removeEventListener('mousedown', onDown, true); };
+    const onDown = e => { if (!m.contains(e.target)) close(); };
+    items.forEach(it => { const mi = el('div', 'mi' + (it.sel ? ' sel' : '')); if (it.dot) { const d = el('span', 'dot'); d.style.background = it.dot; mi.appendChild(d); } mi.appendChild(document.createTextNode(it.label)); mi.onclick = () => { close(); it.run(); }; m.appendChild(mi); });
+    document.body.appendChild(m);
+    const a = anchor.getBoundingClientRect(), r = m.getBoundingClientRect();
+    m.style.left = Math.max(6, Math.min(a.left, window.innerWidth - r.width - 6)) + 'px';
+    m.style.top = Math.min(a.bottom + 4, window.innerHeight - r.height - 6) + 'px';
+    setTimeout(() => document.addEventListener('mousedown', onDown, true), 0);
+  }
+  // interface mirrors Apollo's Recordings matcher: no checkboxes — a row is resolved (has a work) or not;
+  // Apply stages every resolved row; the toolbar carries the cutoff chip, an unresolved count, and ⚡ Match.
+  function renderWorkMatch(body, foot, rows) {
+    body.textContent = ''; foot.textContent = '';
+    const mkAct = (glyph, title, run) => { const b = el('button', 'gt-wm-act', glyph); b.type = 'button'; b.title = title; b.onclick = e => { e.stopPropagation(); run(); }; return b; };
+    // ── toolbar ──
+    const tb = el('div', 'gt-wm-tb');
+    const amstatus = el('span', 'gt-wm-amstatus');
+    const cutWrap = el('label', 'gt-wm-tbl2'); cutWrap.appendChild(el('b', null, 'Cutoff'));
+    const chip = el('span', 'gt-wm-cutoff'); chip.tabIndex = 0; chip.title = 'lowest confidence that ⚡ Match still resolves';
+    const chipDot = el('span', 'gt-wm-cutoff-dot'), chipLbl = el('span', 'gt-wm-cutoff-lbl');
+    chip.append(chipDot, chipLbl, el('span', 'gt-wm-cutoff-caret', '▾')); cutWrap.appendChild(chip);
+    const paintChip = () => { const lvl = WM_LVL_BY_RANK[wmCutoff] || 'near'; chipDot.style.background = WM_LEVEL[lvl].c; chipLbl.textContent = lvl; };
+    paintChip();
+    const warn = el('span', 'gt-wm-warn');
+    const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.title = 'resolve every unresolved track whose best match is at/above the cutoff';
+    tb.append(amstatus, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn); body.appendChild(tb);
+    const setProgress = (d, n) => { amstatus.textContent = n ? `matching ${d}/${n}…` : (d ? `matched ${d} track${d > 1 ? 's' : ''}` : ''); };
+    // ── table ──
+    const tbl = el('table', 'gt-wm-tbl');
+    const cg = document.createElement('colgroup'); ['4%', '27%', '19%', '3%', '28%', '19%'].forEach(w => { const c = document.createElement('col'); c.style.width = w; cg.appendChild(c); }); tbl.appendChild(cg);   // fixed widths — the # column was ballooning to an equal 1/6 (blank left column)
+    const grp = el('tr'); const gl = el('th', 'tc-grp-l', 'Track'); gl.colSpan = 3; grp.appendChild(gl); grp.appendChild(el('th', 'c-sep', '')); const gr = el('th', 'tc-grp-r', 'Work'); gr.colSpan = 2; grp.appendChild(gr); tbl.appendChild(grp);
+    const head = el('tr'); head.append(el('th', 'c-n', '#'), el('th', null, 'Title'), el('th', null, 'Artist'), el('th', 'c-sep', ''), el('th', null, 'Work'), el('th', null, 'Writers')); tbl.appendChild(head);
+    const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
+    const plan = el('span', 'gt-cons-plan');
+    const updatePlan = () => {
+      const n = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked).length;
+      plan.textContent = n ? `${n} work${n > 1 ? 's' : ''} to add` : 'nothing resolved'; applyBtn.disabled = !n;
+      const uns = rows.filter(r => r._matched && !r.chosen && !r.hasWorkOnPage && !r.linked);
+      warn.textContent = uns.length ? `⚠ ${uns.length} unresolved` : ''; warn.className = 'gt-wm-warn' + (uns.length ? ' click' : '');
+      warn.onclick = uns.length ? () => { const r0 = uns[0]; if (r0._wk) wmPicker(r0, r0._wk, draw, updatePlan); } : null;
+    };
+    const draw = () => rows.forEach(row => {
+      const wkd = row._wk, dot = row._dot, wad = row._wa; if (!wkd) return;
+      wkd.textContent = ''; if (wad) wad.textContent = '';
+      if (row._artEl) row._artEl.textContent = row.artist || '';
+      if (row.hasWorkOnPage || row.linked) { if (dot) dot.style.visibility = 'hidden'; wkd.appendChild(el('span', 'gt-wm-linked', 'already linked ✓')); return; }
+      if (!row._matched) { if (dot) dot.style.visibility = 'hidden'; wkd.appendChild(el('span', 'gt-wm-dim', 'matching…')); return; }
+      const w = row.chosen;
+      if (!w) {
+        if (dot) dot.style.visibility = 'hidden';
+        const none = el('span', 'gt-wm-none', '— none —'); none.title = 'pick a work'; none.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(none);
+        const acts = el('span', 'gt-wm-acts'); acts.appendChild(mkAct('＋', 'set to a new work', () => { row.chosen = wmMakeNewWork(row.title); draw(); updatePlan(); })); wkd.appendChild(acts);
+        return;
+      }
+      if (dot) { dot.style.visibility = 'visible'; if (w._gtNew) { dot.style.background = '#2c7a51'; dot.title = 'new work'; } else { const L = WM_LEVEL[row.level] || WM_LEVEL.near; dot.style.background = L.c; dot.title = L.t; } }
+      if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + w.title); nw.title = 'change / pick a work'; nw.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(nw); }
+      else { const a = el('a', 'gt-wm-wa', w.title); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'change / pick a work (middle-click to open the work)'; a.onclick = e => { e.preventDefault(); e.stopPropagation(); wmPicker(row, wkd, draw, updatePlan); }; wkd.appendChild(a); if (w.disambiguation) wkd.appendChild(el('span', 'gt-wm-disamb', ` (${w.disambiguation})`)); }
+      if (wad) {
+        wad.textContent = '';
+        if (row.writers && row.writers.length) wad.appendChild(el('span', 'gt-wm-wwr', row.writers.slice(0, 4).join(', ')));
+        // when the performer is one of the work's recording artists (why it matched), show them too — the
+        // native work dropdown's "Artists:" line, e.g. Phil Collins on "You Can't Hurry Love"
+        if (row.artistMatched && row.workArtists && row.workArtists.length) { const ar = el('span', 'gt-wm-wart', '♫ ' + row.workArtists.slice(0, 3).join(', ')); ar.title = 'recording artists of this work — the performer is among them'; wad.appendChild(ar); }
+      }
+      const acts = el('span', 'gt-wm-acts');
+      acts.appendChild(mkAct('↺', 'clear this match', () => { row.chosen = null; draw(); updatePlan(); }));
+      if (!w._gtNew) acts.appendChild(mkAct('＋', 'set to a new work', () => { row.chosen = wmMakeNewWork(row.title); draw(); updatePlan(); }));
+      wkd.appendChild(acts);
+    });
+    rows.forEach((row, i) => {
+      const tr = el('tr', 'gt-wm-row');
+      tr.appendChild(el('td', 'c-n', row.pos ? String(row.pos) : String(i + 1)));
+      tr.appendChild(el('td', 'gt-wm-tkt', row.title || '(untitled)'));
+      const tka = el('td', 'gt-wm-tka'); row._artEl = tka; tr.appendChild(tka);
+      const sepd = el('td', 'c-sep'); const dot = el('span', 'gt-wm-dot'); dot.style.visibility = 'hidden'; sepd.appendChild(dot); row._dot = dot; tr.appendChild(sepd);
+      const wkd = el('td', 'gt-wm-wk'); row._wk = wkd; tr.appendChild(wkd);
+      const wad = el('td', 'gt-wm-authors'); row._wa = wad; tr.appendChild(wad);
+      tbl.appendChild(tr);
+    });
+    body.appendChild(tbl);
+    // resolve every matched row whose best is at/above the cutoff (⚡ Match + cutoff change)
+    const applyCutoff = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched) r.chosen = (r.best && WM_RANK[r.level] <= wmCutoff) ? r.best : null; }); draw(); updatePlan(); };
+    matchBtn.onclick = applyCutoff;
+    chip.onclick = () => wmFloatMenu(chip, WM_LVL_BY_RANK.map(lvl => ({ label: lvl, dot: WM_LEVEL[lvl].c, sel: WM_RANK[lvl] === wmCutoff, run: () => { wmCutoff = WM_RANK[lvl]; try { GM_setValue('gt-wm-cutoff', wmCutoff); } catch (e) {} paintChip(); applyCutoff(); } })));
+    const newAllBtn = el('button', 'gt-cons-btn', '＋ New work for unresolved'); newAllBtn.type = 'button'; newAllBtn.title = 'Create a new work (named after the track) for every recording still unresolved — same-title tracks share one';
+    newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); };
+    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.title = 'Clear every match';
+    clearBtn.onclick = () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); };
+    applyBtn.onclick = () => wmApply(rows, () => renderWorkMatch(body, foot, rows));
+    foot.append(newAllBtn, clearBtn, plan, applyBtn);
+    draw(); updatePlan();
+    return { draw, updatePlan, setProgress };
+  }
+  function wmResRow(work, row, draw, updatePlan) {
+    const r = el('div', 'gt-wm-res');
+    r.appendChild(el('span', 'gt-wm-rt', work.title + (work.disambiguation ? ` (${work.disambiguation})` : '')));
+    if (work.type && work.type !== 'Song') r.appendChild(el('span', 'gt-wm-rw', ' · ' + work.type));
+    if (work.authors && work.authors.length) r.appendChild(el('span', 'gt-wm-rw', ' — ' + work.authors.slice(0, 4).join(', ')));
+    if (work.artists && work.artists.length) r.appendChild(el('span', 'gt-wm-rw', ' · ♫ ' + work.artists.slice(0, 3).join(', ')));
+    if (work.gid) { const open = el('a', 'gt-wm-open', '↗'); open.href = '/work/' + work.gid; open.target = '_blank'; open.rel = 'noopener'; open.title = 'open this work in a new tab'; open.onclick = e => e.stopPropagation(); r.appendChild(open); }
+    r.onclick = () => { row.chosen = work; row.best = work; if (!row.level || row.level === 'none') row.level = 'near'; row.writers = work.authors || []; draw && draw(); updatePlan && updatePlan(); closePopover(); };
+    return r;
+  }
+  function wmPicker(row, anchor, draw, updatePlan) {
+    closePopover();
+    popEl = el('div', 'gt-wm-pop');
+    popEl.appendChild(el('div', 'gt-pop-hdr', 'Pick a work for “' + trunc(row.title, 54) + '”'));
+    if (row.artist) popEl.appendChild(el('div', 'gt-wm-sub', 'by ' + trunc(row.artist, 60)));
+    // current match (mirrors Apollo's picker header) — the work as a link you can open in a new tab, its
+    // writers, and a clear button
+    const cur = el('div', 'gt-wm-cur');
+    const paintCur = () => {
+      cur.textContent = ''; cur.appendChild(el('span', 'gt-wm-cur-l', 'Current: '));
+      const w = row.chosen;
+      if (!w) { cur.appendChild(el('span', 'gt-wm-none', '— none —')); return; }
+      if (w._gtNew) { cur.appendChild(el('span', 'gt-wm-newtag', '＋ new work: ' + w.title)); return; }
+      const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'open this work in a new tab'; cur.appendChild(a);
+      if (row.writers && row.writers.length) cur.appendChild(el('span', 'gt-wm-rw', ' — ' + row.writers.slice(0, 4).join(', ')));
+      const clr = el('button', 'gt-wm-act', '↺'); clr.type = 'button'; clr.title = 'clear this match'; clr.onclick = () => { row.chosen = null; paintCur(); draw && draw(); updatePlan && updatePlan(); }; cur.appendChild(clr);
+    };
+    paintCur(); popEl.appendChild(cur);
+    const q = el('input', 'gt-wm-q'); q.type = 'text'; q.placeholder = 'search works, or paste a work MBID / URL…'; popEl.appendChild(q);
+    const list = el('div', 'gt-wm-results'); popEl.appendChild(list);
+    const showCands = () => { list.textContent = ''; (row.cands || []).forEach(c => list.appendChild(wmResRow(c, row, draw, updatePlan))); if (!(row.cands || []).length) list.appendChild(el('div', 'gt-pop-note', 'No candidates yet — search or paste a work.')); };
+    showCands();
+    let t = null;
+    const run = async () => {
+      const term = (q.value || '').trim(); if (!term) return showCands();
+      const gid = (term.match(GID_RE) || [])[0];
+      list.textContent = '';
+      if (gid) { const j = await wmJson('/ws/2/work/' + gid + '?inc=artist-rels&fmt=json'); if (j && j.id) list.appendChild(wmResRow({ gid: j.id, title: j.title, disambiguation: j.disambiguation || '', authors: (j.relations || []).filter(r => r.artist && WM_WRITER_RE.test(r.type || '')).map(r => r.artist.name) }, row, draw, updatePlan)); else list.appendChild(el('div', 'gt-pop-note', 'No work with that MBID.')); return; }
+      const works = await wmWorkSearch(term);
+      if (!works.length) { list.appendChild(el('div', 'gt-pop-note', 'No matches.')); return; }
+      works.forEach(w => list.appendChild(wmResRow(w, row, draw, updatePlan)));
+    };
+    q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 300); });
+    q.addEventListener('paste', () => setTimeout(run, 0));
+    const newBtn = el('button', 'gt-wm-new', '＋ Create a new work “' + trunc(row.title, 40) + '”'); newBtn.type = 'button';
+    newBtn.onclick = () => { const w = wmMakeNewWork(row.title); row.chosen = w; row.best = w; row.level = (!row.level || row.level === 'none') ? 'near' : row.level; row.writers = []; draw && draw(); updatePlan && updatePlan(); closePopover(); };
+    popEl.appendChild(newBtn);
+    document.body.appendChild(popEl);
+    const a = anchor.getBoundingClientRect(), r = popEl.getBoundingClientRect();
+    popEl.style.left = Math.max(8, Math.min(a.left, window.innerWidth - r.width - 8)) + 'px';
+    popEl.style.top = Math.min(a.bottom + 4, window.innerHeight - r.height - 8) + 'px';
+    setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); q.focus(); }, 0);
+  }
+  async function wmApply(rows, refresh) {
+    const re = RE(); const ltId = performanceLtId();
+    if (!re || ltId == null) { toast('Cannot apply — editor not ready'); return; }
+    const todo = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked);
+    if (!todo.length) { toast('Nothing resolved to apply'); return; }
+    toast(`Linking ${todo.length} work${todo.length > 1 ? 's' : ''}…`);
+    let ok = 0, fail = 0;
+    for (const row of todo) {
+      try {
+        // existing work: fetch its internal id (the editor needs it). New work: dispatch the synthetic
+        // entity as-is — MB creates it on submit, exactly like a natively-added new work.
+        const workEnt = row.chosen._gtNew ? row.chosen : await wmJson('/ws/js/entity/' + row.chosen.gid);
+        if (!workEnt || workEnt.id == null) { fail++; continue; }
+        dispatchRelationship(re, row.rec, workEnt, ltId, '', null, null);
+        row.linked = true; row.chosen = null; ok++;
+      } catch (e) { fail++; }
+    }
+    if (ok) markUsed(`Matched ${ok} recording${ok > 1 ? 's' : ''} to works`);
+    toast(fail ? `Linked ${ok}, ${fail} failed — see console` : `✓ Linked ${ok} work${ok > 1 ? 's' : ''} — review & save`);
+    refresh && refresh();
   }
 
   // recording checkbox → copy every recording rel except work/url/recording-samples
