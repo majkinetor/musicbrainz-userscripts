@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.6.181821
+// @version      2026.7.6.182439
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -305,6 +305,9 @@
   function mount() {
     if (_mounted) return; _mounted = true;
     const anchor = document.querySelector('#content') || document.body;
+    // #367 record whether MB is actually SHOWING its IA-difficulties warning (it's always present but
+    // display:none'd unless the IA is down) — read it now, before we hide the native UI below
+    try { const cw = anchor.querySelector('.warning.caa-warning, .caa-warning'); _iaWarnShown = !!(cw && iaVisible(cw)); } catch (e) {}
     // #230: sit BELOW the MB header + the entity tabs. ul.tabs is nested in a
     // div.tabs child of #content, so climb to that #content-level ancestor.
     const childOf = (el) => { if (!el) return null; let n = el; while (n.parentElement && n.parentElement !== anchor) n = n.parentElement; return n.parentElement === anchor ? n : null; };
@@ -351,19 +354,21 @@
   // otherwise hide: the "IA is having difficulties — adding images unlikely to work" upload warning, and
   // darkened-item notices ("Cannot show cover art" / "hidden … takedown request"). A darkened item can't be
   // added to / removed / reordered, so while such a notice is up we disable editing.
-  let _iaDark = '', _iaDown = '';
-  const IA_DARK_RE = /cannot show cover art|hidden by the internet archive because of a takedown|\bdarkened\b/i;
-  const IA_DOWN_RE = /internet archive is currently experiencing difficulties|adding images is unlikely to work/i;
+  let _iaDark = '', _iaDown = '', _iaWarnShown = false;
+  const IA_DARK_RE = /cannot show cover art|hidden by the internet archive because of a takedown/i;
+  const iaVisible = node => { for (let n = node; n && n.nodeType === 1 && n !== document.body; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === 'none' || s.visibility === 'hidden') return false; } return true; };
   function detectIaNotice() {
     const scope = document.getElementById('content') || document.body;
-    let dark = '', down = '';
-    for (const node of scope.querySelectorAll('p, div, span, td, li, h2, strong, b')) {
+    // #367: MB's `.caa-warning` is ALWAYS in the DOM, wrapped in display:none unless the IA is actually
+    // down — so trust its MB-visibility (captured at mount, before our own hiding could mask it), not text.
+    const w = scope.querySelector('.warning.caa-warning, .caa-warning');
+    const down = (w && _iaWarnShown) ? (w.textContent || '').replace(/\s+/g, ' ').trim() : '';
+    // #368: the darkened-item notice is only rendered for an actually-darkened item, so a text scan is safe
+    let dark = '';
+    for (const node of scope.querySelectorAll('p, div, td, li, strong, b')) {
       if (node.closest('#as-root')) continue;                    // ignore our own UI
       const t = (node.textContent || '').replace(/\s+/g, ' ').trim();
-      if (!t || t.length > 400) continue;
-      if (!dark && IA_DARK_RE.test(t)) dark = t;
-      if (!down && IA_DOWN_RE.test(t)) down = t;
-      if (dark && down) break;
+      if (t && t.length <= 300 && IA_DARK_RE.test(t)) { dark = t; break; }
     }
     if (dark === _iaDark && down === _iaDown) return;
     _iaDark = dark; _iaDown = down;
