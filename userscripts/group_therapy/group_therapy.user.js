@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.180535
+// @version      2026.7.6.230530
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1006,7 +1006,18 @@
   function wmMakeNewWork(title) {
     const key = (title || '').normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim();
     if (key && wmNewWorks.has(key)) return wmNewWorks.get(key);
-    const w = { entityType: 'work', id: wmNewSeq--, gid: null, name: title || '[untitled]', title: title || '[untitled]', disambiguation: '', _gtNew: true };
+    // Mirror EXACTLY the entity MB's own "Batch-add new works" produces (captured from the reducer): a
+    // negative id + empty-string gid, every field the editor reads present with an empty default, and the
+    // `_fromBatchCreateWorksDialog` flag. That flag is what marks it as a to-be-created work — without it MB
+    // rejected the target ("must select … target entity") and threw loading its relationships ("e is null").
+    // MB creates the work for real on submit. `_gtNew` is our own UI flag. (#363 follow-up)
+    const w = {
+      entityType: 'work', id: wmNewSeq--, gid: '',
+      name: title || '[untitled]', comment: '', typeID: null,
+      languages: [], iswcs: [], attributes: [],
+      artists: [], other_artists: [], authors: [], editsPending: false, last_updated: null,
+      _fromBatchCreateWorksDialog: true, _gtNew: true,
+    };
     if (key) wmNewWorks.set(key, w);
     return w;
   }
@@ -1282,7 +1293,7 @@
     newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); };
     const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.title = 'Clear every match';
     clearBtn.onclick = () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); };
-    applyBtn.onclick = () => wmApply(rows, () => renderWorkMatch(body, foot, rows));
+    applyBtn.onclick = async () => { const n = await wmApply(rows, null); if (n > 0) closeWorkMatch(); };   // close the popup once staged (#363 follow-up)
     foot.append(newAllBtn, clearBtn, plan, applyBtn);
     draw(); updatePlan();
     return { draw, updatePlan, setProgress };
@@ -1360,6 +1371,7 @@
     if (ok) markUsed(`Matched ${ok} recording${ok > 1 ? 's' : ''} to works`);
     toast(fail ? `Linked ${ok}, ${fail} failed — see console` : `✓ Linked ${ok} work${ok > 1 ? 's' : ''} — review & save`);
     refresh && refresh();
+    return ok;
   }
 
   // recording checkbox → copy every recording rel except work/url/recording-samples
