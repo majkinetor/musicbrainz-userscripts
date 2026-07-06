@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.6.182439
+// @version      2026.7.6.183917
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -244,9 +244,13 @@
       if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 600);   // #283 reopen the log if it was left open
     }
     const pageArt = parsePageArt();
-    let caa = [];
-    try { const j = await fetch(CAA, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null); if (j) caa = j.images || []; }
-    catch (e) { asLog.debug('CAA: cover-art metadata fetch failed — ' + ((e && e.message) || e)); }   // not propagated / none yet
+    let caa = [], caaFailed = false;
+    // #368 a darkened Internet Archive item makes the CAA request 403 (vs 200 with art / 404 none) — a
+    // language-independent signal (the on-page notice is localized). The browser can't READ that 403 (it
+    // comes from archive.org after a redirect, cross-origin), so confirm it via GM below when this fails.
+    try { const r = await fetch(CAA, { headers: { Accept: 'application/json' } }); const j = r.ok ? await r.json() : null; if (j) caa = j.images || []; if (!r.ok) caaFailed = true; }
+    catch (e) { caaFailed = true; asLog.debug('CAA: cover-art metadata fetch failed — ' + ((e && e.message) || e)); }   // not propagated / none yet
+    _caaDarkened = caaFailed ? await caaDarkenedCheck() : false;
     const byId = new Map(caa.map(im => [String(im.id), im]));
     const source = (pageArt && pageArt.length)
       ? pageArt.map(p => ({ id: p.id, types: p.types, comment: p.comment || (byId.get(String(p.id)) || {}).comment || '', pending: p.pending, img: p.img || (byId.get(String(p.id)) || {}).image || imgUrl(p.id), pdf: p.pdf }))
@@ -354,22 +358,27 @@
   // otherwise hide: the "IA is having difficulties — adding images unlikely to work" upload warning, and
   // darkened-item notices ("Cannot show cover art" / "hidden … takedown request"). A darkened item can't be
   // added to / removed / reordered, so while such a notice is up we disable editing.
-  let _iaDark = '', _iaDown = '', _iaWarnShown = false;
-  const IA_DARK_RE = /cannot show cover art|hidden by the internet archive because of a takedown/i;
+  let _iaDark = '', _iaDown = '', _iaWarnShown = false, _caaDarkened = false;
   const iaVisible = node => { for (let n = node; n && n.nodeType === 1 && n !== document.body; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === 'none' || s.visibility === 'hidden') return false; } return true; };
+  // MB renders the darkened notice as a bare <h2> (+ <p>) directly under #content, in the current UI
+  // language — grab it for display, but detection itself keys on the language-independent CAA 403.
+  function nativeDarkMsg() {
+    const c = document.getElementById('content'); if (!c) return '';
+    const h2 = [...c.children].find(n => n.tagName === 'H2' && !n.closest('#as-root'));
+    if (!h2) return '';
+    let m = (h2.textContent || '').replace(/\s+/g, ' ').trim();
+    const p = h2.nextElementSibling; if (p && p.tagName === 'P') m += ' — ' + (p.textContent || '').replace(/\s+/g, ' ').trim();
+    return m;
+  }
   function detectIaNotice() {
     const scope = document.getElementById('content') || document.body;
     // #367: MB's `.caa-warning` is ALWAYS in the DOM, wrapped in display:none unless the IA is actually
     // down — so trust its MB-visibility (captured at mount, before our own hiding could mask it), not text.
     const w = scope.querySelector('.warning.caa-warning, .caa-warning');
     const down = (w && _iaWarnShown) ? (w.textContent || '').replace(/\s+/g, ' ').trim() : '';
-    // #368: the darkened-item notice is only rendered for an actually-darkened item, so a text scan is safe
-    let dark = '';
-    for (const node of scope.querySelectorAll('p, div, td, li, strong, b')) {
-      if (node.closest('#as-root')) continue;                    // ignore our own UI
-      const t = (node.textContent || '').replace(/\s+/g, ' ').trim();
-      if (t && t.length <= 300 && IA_DARK_RE.test(t)) { dark = t; break; }
-    }
+    // #368: detected via the CAA 403 (darkened archive.org item) — language-independent, unlike the on-page
+    // notice. Show MB's own localized wording when present, else a default.
+    const dark = _caaDarkened ? (nativeDarkMsg() || 'This item is darkened at the Internet Archive — its cover art can’t be shown, added, removed or reordered.') : '';
     if (dark === _iaDark && down === _iaDown) return;
     _iaDark = dark; _iaDown = down;
     if (_mounted) render();
@@ -1400,6 +1409,17 @@
   //    as a staged NEW cover, so it rides the normal Enter-edit upload flow. ─────
   const MH_ORIGIN = 'https://covers.musichoarders.xyz';
   // cross-origin GET → Blob (covers can be on any provider host → needs GM xhr)
+  // #368 confirm a darkened item via the CAA 403 using GM (not CORS-bound, unlike the page's own fetch).
+  // Only called when the normal CAA fetch already failed, so it's off the happy path.
+  function caaDarkenedCheck() {
+    return new Promise(resolve => {
+      const gx = (typeof GM !== 'undefined' && GM.xmlHttpRequest && GM.xmlHttpRequest.bind(GM))
+              || (typeof GM_xmlhttpRequest !== 'undefined' && GM_xmlhttpRequest) || null;
+      if (!gx) return resolve(false);
+      try { gx({ method: 'GET', url: CAA, headers: { Accept: 'application/json' }, timeout: 12000, onload: r => resolve(r.status === 403), onerror: () => resolve(false), ontimeout: () => resolve(false) }); }
+      catch (e) { resolve(false); }
+    });
+  }
   function gmFetch(url, onProgress) {
     return new Promise((resolve, reject) => {
       const gx = (typeof GM !== 'undefined' && GM.xmlHttpRequest && GM.xmlHttpRequest.bind(GM))
