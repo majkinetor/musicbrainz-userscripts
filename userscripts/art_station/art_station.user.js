@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.6.204404
+// @version      2026.7.7.001238
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1988,9 +1988,12 @@
       .filter(x => x.f.type.startsWith('image/') || x.f.type === 'application/pdf').map(x => newItem(x.f, x.meta));
     if (!news.length) return;
     maybeAutoFront(news);   // #262 type the first untyped imported cover Front (per setting), before they're inserted
-    // new covers go FIRST (majkinetor: they were landing last), then existing in order
+    // new covers go before the existing/published ones (majkinetor: they were landing last). A new batch
+    // appends AFTER covers already staged this session, so an import that arrives in several passes (e.g.
+    // ECAU seeding rows one at a time, or several providers) keeps its source order instead of reversing (#370).
     const rest = MODEL.slice().sort((a, b) => a.order - b.order);
-    MODEL = [...news, ...rest];
+    const stagedNew = rest.filter(m => m._new), published = rest.filter(m => !m._new);
+    MODEL = [...stagedNew, ...news, ...published];
     MODEL.forEach((it, i) => it.order = i);
     news.forEach(measure);   // fill in each new cover's resolution from its local file
     _dropZone = false; render();
