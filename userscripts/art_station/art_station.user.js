@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.6.192328
+// @version      2026.7.6.194312
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -193,10 +193,12 @@
     const el = document.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-dim`);
     if (el) el.innerHTML = dimHtml(it);
   }
-  // one request per release: archive.org item metadata carries every original's byte size
+  // one request per release: archive.org item metadata carries every original's byte size — and the
+  // #368 `is_dark` flag for a darkened item (read from this same request, no extra fetch)
   async function loadSizes() {
     try {
       const j = await fetch(`https://archive.org/metadata/mbid-${MBID}`, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
+      if (j && j.is_dark === true && !_caaDarkened) { _caaDarkened = true; detectIaNotice(); }   // #368 surface the darkened notice
       if (!j || !j.files) return;
       for (const f of j.files) {
         if (f.source !== 'original' || !f.size) continue;
@@ -244,12 +246,9 @@
       if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 600);   // #283 reopen the log if it was left open
     }
     const pageArt = parsePageArt();
-    let caa = [], caaFailed = false;
-    try { const r = await fetch(CAA, { headers: { Accept: 'application/json' } }); const j = r.ok ? await r.json() : null; if (j) caa = j.images || []; if (!r.ok) caaFailed = true; }
-    catch (e) { caaFailed = true; asLog.debug('CAA: cover-art metadata fetch failed — ' + ((e && e.message) || e)); }   // not propagated / none yet
-    // #368 a failed CAA request may mean the item is DARKENED (vs simply having no art) — confirm via the
-    // archive.org metadata `is_dark` flag (language-independent); detectIaNotice then surfaces the notice.
-    _caaDarkened = caaFailed ? await caaDarkenedCheck() : false;
+    let caa = [];
+    try { const j = await fetch(CAA, { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null); if (j) caa = j.images || []; }
+    catch (e) { asLog.debug('CAA: cover-art metadata fetch failed — ' + ((e && e.message) || e)); }   // not propagated / none yet
     const byId = new Map(caa.map(im => [String(im.id), im]));
     const source = (pageArt && pageArt.length)
       ? pageArt.map(p => ({ id: p.id, types: p.types, comment: p.comment || (byId.get(String(p.id)) || {}).comment || '', pending: p.pending, img: p.img || (byId.get(String(p.id)) || {}).image || imgUrl(p.id), pdf: p.pdf }))
@@ -1408,12 +1407,6 @@
   //    as a staged NEW cover, so it rides the normal Enter-edit upload flow. ─────
   const MH_ORIGIN = 'https://covers.musichoarders.xyz';
   // cross-origin GET → Blob (covers can be on any provider host → needs GM xhr)
-  // #368 archive.org exposes `is_dark` on the item's metadata — CORS-accessible, explicit and language
-  // independent (thanks @chaban-mb). Only called when the CAA fetch already failed, so it's off the happy path.
-  async function caaDarkenedCheck() {
-    try { const j = await fetch('https://archive.org/metadata/mbid-' + MBID).then(r => r.ok ? r.json() : null); return !!(j && j.is_dark === true); }
-    catch (e) { return false; }
-  }
   function gmFetch(url, onProgress) {
     return new Promise((resolve, reject) => {
       const gx = (typeof GM !== 'undefined' && GM.xmlHttpRequest && GM.xmlHttpRequest.bind(GM))
