@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.5.175706
+// @version      2026.7.6.170820
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,8 +67,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.5.175706 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.5.175705\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.6.170820 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.4\n  · Art Station v2026.7.6.170819\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.3\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -6367,7 +6367,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.5.175705","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.5.175705","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.6.170819","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.7.6.170819","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -8058,6 +8058,17 @@ try {
         const directUrl = /^https?:/i.test(src) ? src : '';
         metas.push({ types, comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url, provImageUrl: directUrl });
       }
+      // #364 ECAU pre-fills the add-page edit note with its source attribution. On the native add page we
+      // harvest that (harvestSeeds → _seedNote); do the same from this hidden sourcing frame so the commit
+      // dialog is pre-filled with the same note on the release page too. Mark these covers so their own
+      // source line isn't stacked on top of it.
+      if (files.length) {
+        try {
+          const en = doc.querySelector('textarea.edit-note, textarea[name*="edit_note"]');
+          const note = en && (en.value || '').trim();
+          if (note) { _seedNote = _seedNote && _seedNote.includes(note) ? _seedNote : (_seedNote ? _seedNote + '\n\n' + note : note); metas.forEach(m => { m.ecauNote = true; }); }
+        } catch (e) {}
+      }
       return { files, metas };
     }
     const poll = setInterval(async () => {
@@ -8254,6 +8265,7 @@ try {
       bytes: f.size, _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
       _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '', _provUrl: (meta && meta.provUrl) || '',   // #249 where this image was sourced (shown until committed)
       _provImageUrl: (meta && meta.provImageUrl) || '',   // #260 direct image URL when the provider exposes one (e.g. Discogs)
+      _ecauNote: !!(meta && meta.ecauNote),   // #364 its source is already in the seeded commit note → don't add a per-cover source line too
       _seedSrc: (meta && meta.seedSrc) || '', _seedTypes: (meta && meta.seedTypes) ? meta.seedTypes.slice() : null,   // #248 native-uploader row + last types synced from it
       _seedBlobSrc: (meta && meta.seedBlobSrc) || '',   // #253 the row's current blob URL (changes when ECAU maximises)
       _contentKey: (meta && meta.contentKey) || '',     // #253 image-content fingerprint, to drop duplicate sourced/seeded covers
@@ -8423,7 +8435,7 @@ try {
   // note is shared across all ops, so this per-cover provenance is appended only to that
   // upload (sourced covers carry _provider/_provUrl; local uploads have neither → nothing added).
   const sourceLine = it => {
-    if (!it) return '';
+    if (!it || it._ecauNote) return '';   // #364 attribution already carried in the seeded commit note
     const who = (it._provider && String(it._provider).trim()) || '';
     const page = (it._provUrl && String(it._provUrl).trim()) || '';
     const img = (it._provImageUrl && String(it._provImageUrl).trim()) || '';
@@ -8610,7 +8622,7 @@ try {
       <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
     </div>`;
     document.body.appendChild(ov);
-    if (IS_ADD && _seedNote) ov.querySelector('.as-cm-note').value = _seedNote;   // #248 carry over the add page's edit note
+    if (_seedNote) ov.querySelector('.as-cm-note').value = _seedNote;   // #248/#364 carry over a seeded edit note (native add page, or captured from a hidden ECAU sourcing frame)
     // backdrop click closes — but NOT while a live run is in flight (#269): that
     // path bypassed the abort, orphaning the in-flight edits. During a run the only
     // exits are Cancel (aborts) or Close (after it finishes).
