@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.6.183054
+// @version      2026.7.6.220859
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3711,7 +3711,10 @@
     [0x0060, 'grave accent / backtick'], [0x00B4, 'acute accent'], [0x02BC, 'modifier letter apostrophe'],
     [0x0022, 'quotation mark (straight)'], [0x201C, 'left double quote'], [0x201D, 'right double quote'],
     [0x2032, 'prime'], [0x2033, 'double prime'],
-    [0x002D, 'hyphen-minus'], [0x2010, 'hyphen'], [0x2011, 'non-breaking hyphen'], [0x2012, 'figure dash'],
+    // #369 NOT U+002D hyphen-minus — it's the correct, standard hyphen in MB titles ("Cat-O-Nine",
+    // "Afro-Jamaican"), so enlarging+bolding every one of them just mangled normal text. Its LOOK-ALIKES
+    // (real hyphen, non-breaking hyphen, dashes, minus) stay flagged so an odd one still stands out.
+    [0x2010, 'hyphen'], [0x2011, 'non-breaking hyphen'], [0x2012, 'figure dash'],
     [0x2013, 'en dash'], [0x2014, 'em dash'], [0x2015, 'horizontal bar'], [0x2212, 'minus sign'],
     [0x00AD, 'soft hyphen', '·'], [0x2026, 'horizontal ellipsis'],
     [0x00A0, 'no-break space', '␣'], [0x202F, 'narrow no-break space', '␣'], [0x2009, 'thin space', '␣'],
@@ -3722,8 +3725,8 @@
   // Mark EVERY confusable / invisible character, wherever a title/artist is shown
   // (not just inside a detailed-highlight diff): each gets a tooltip naming it + its
   // codepoint, invisibles draw a visible glyph, and all are enlarged by the Appearance
-  // "punctuation size" setting (px). Straight ' " - are marked too — the point is to
-  // see the exact character in ANY situation (#203). px = 0 disables it (master switch).
+  // "punctuation size" setting (px). Straight ' " are marked too (MB style prefers curly), but a plain
+  // hyphen-minus is NOT — it's the correct char (#369). px = 0 disables it (master switch).
   function dhRun(str) {
     const px = SETTINGS.recPunctSize | 0;
     if (px <= 0) return esc(String(str));   // 0 = disabled everywhere
