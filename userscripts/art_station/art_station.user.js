@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.5.175705
+// @version      2026.7.6.181821
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -268,6 +268,7 @@
       _origTypes: s.types.slice(), _origComment: s.comment, _origOrder: i,
     }));
     render();
+    watchIaNotice();   // #367/#368 surface IA "difficulties" warnings + darkened-item notices
     asLog.info(`Loaded ${MODEL.length} ${MODEL.length === 1 ? ITEM : ITEMS}`);
     MODEL.forEach(measure);   // lazy-fill dimensions
     loadSizes();              // lazy-fill file sizes (single archive.org request)
@@ -345,6 +346,41 @@
     root.classList.toggle('as-orig', _showOrig);                     // hides the whole Art Station UI
     ensureSwitch();
     applyHideFooter();
+  }
+  // #367/#368 surface the Internet Archive notices MB shows on the cover-art page that our takeover would
+  // otherwise hide: the "IA is having difficulties — adding images unlikely to work" upload warning, and
+  // darkened-item notices ("Cannot show cover art" / "hidden … takedown request"). A darkened item can't be
+  // added to / removed / reordered, so while such a notice is up we disable editing.
+  let _iaDark = '', _iaDown = '';
+  const IA_DARK_RE = /cannot show cover art|hidden by the internet archive because of a takedown|\bdarkened\b/i;
+  const IA_DOWN_RE = /internet archive is currently experiencing difficulties|adding images is unlikely to work/i;
+  function detectIaNotice() {
+    const scope = document.getElementById('content') || document.body;
+    let dark = '', down = '';
+    for (const node of scope.querySelectorAll('p, div, span, td, li, h2, strong, b')) {
+      if (node.closest('#as-root')) continue;                    // ignore our own UI
+      const t = (node.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!t || t.length > 400) continue;
+      if (!dark && IA_DARK_RE.test(t)) dark = t;
+      if (!down && IA_DOWN_RE.test(t)) down = t;
+      if (dark && down) break;
+    }
+    if (dark === _iaDark && down === _iaDown) return;
+    _iaDark = dark; _iaDown = down;
+    if (_mounted) render();
+  }
+  const iaNoticeHtml = () => (!_iaDark && !_iaDown) ? ''
+    : `<div class="as-ia ${_iaDark ? 'as-ia-dark' : 'as-ia-warn'}">${_iaDark ? '⛔' : '⚠'} ${esc(_iaDark || _iaDown)}</div>`;
+  // the darkened/warning notice can appear after load (the artwork area fills from CAA asynchronously)
+  let _iaObs = null;
+  function watchIaNotice() {
+    detectIaNotice();
+    if (_iaObs) return;
+    const scope = document.getElementById('content') || document.body;
+    let t = null;
+    _iaObs = new MutationObserver(() => { clearTimeout(t); t = setTimeout(detectIaNotice, 200); });
+    _iaObs.observe(scope, { childList: true, subtree: true, characterData: true });
+    setTimeout(() => { if (_iaObs) { _iaObs.disconnect(); _iaObs = null; } }, 15000);   // stop once the page settles
   }
   // optional (setup): hide MB's native button row (Add / Reorder / Import from …)
   // under the gallery — redundant with Art Station's own toolbar. Revealed in Original.
@@ -467,7 +503,8 @@
       : SETTINGS.group
         ? groups.map(g => groupRow(g.type, g.items)).join('')   // compact: label column + cards beside it
         : groups.map(g => section(g.type, g.items)).join('');
-    root.innerHTML = bar(n) + commentPresets() + dropZone() + newSection() + body + deletedSection();
+    root.innerHTML = iaNoticeHtml() + bar(n) + commentPresets() + dropZone() + newSection() + body + deletedSection();
+    root.classList.toggle('as-darkened', !!_iaDark);   // #368 disable editing while a darkened notice is up
     wire();
     hydrateImgs();     // re-attach cached <img> for new/pending covers so they don't reload
     applyOriginal();   // keep the native/script view state across re-renders
@@ -2957,6 +2994,10 @@
      anchoring so the scrollbar stays put (Art Station owns this page's scroll). */
   html{overflow-anchor:none}
   #as-root{font:14px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#222;margin:0 0 18px}
+  .as-ia{margin:0 0 8px;padding:9px 13px;border-radius:8px;font-size:13px;line-height:1.45;border:1px solid}
+  .as-ia-warn{background:#fff7e6;border-color:#f0c877;color:#7a5200}
+  .as-ia-dark{background:#fdecec;border-color:#e2a1a1;color:#8a1f1f;font-weight:600}
+  .as-darkened .as-add,.as-darkened .as-commit,.as-darkened .as-tbtn,.as-darkened .as-src{opacity:.4;pointer-events:none}
   .as-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px 11px;padding:8px 12px;background:#fff;border:1px solid #e2dcef;border-radius:9px;box-shadow:0 1px 5px rgba(60,40,110,.07);flex-wrap:wrap;margin-bottom:6px}
   .as-setup-ic{width:30px;height:30px;object-fit:contain;flex:0 0 auto}
   .as-bar>*{flex:0 0 auto}
