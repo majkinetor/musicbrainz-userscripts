@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.6.183917
+// @version      2026.7.6.192328
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -245,11 +245,10 @@
     }
     const pageArt = parsePageArt();
     let caa = [], caaFailed = false;
-    // #368 a darkened Internet Archive item makes the CAA request 403 (vs 200 with art / 404 none) — a
-    // language-independent signal (the on-page notice is localized). The browser can't READ that 403 (it
-    // comes from archive.org after a redirect, cross-origin), so confirm it via GM below when this fails.
     try { const r = await fetch(CAA, { headers: { Accept: 'application/json' } }); const j = r.ok ? await r.json() : null; if (j) caa = j.images || []; if (!r.ok) caaFailed = true; }
     catch (e) { caaFailed = true; asLog.debug('CAA: cover-art metadata fetch failed — ' + ((e && e.message) || e)); }   // not propagated / none yet
+    // #368 a failed CAA request may mean the item is DARKENED (vs simply having no art) — confirm via the
+    // archive.org metadata `is_dark` flag (language-independent); detectIaNotice then surfaces the notice.
     _caaDarkened = caaFailed ? await caaDarkenedCheck() : false;
     const byId = new Map(caa.map(im => [String(im.id), im]));
     const source = (pageArt && pageArt.length)
@@ -1409,16 +1408,11 @@
   //    as a staged NEW cover, so it rides the normal Enter-edit upload flow. ─────
   const MH_ORIGIN = 'https://covers.musichoarders.xyz';
   // cross-origin GET → Blob (covers can be on any provider host → needs GM xhr)
-  // #368 confirm a darkened item via the CAA 403 using GM (not CORS-bound, unlike the page's own fetch).
-  // Only called when the normal CAA fetch already failed, so it's off the happy path.
-  function caaDarkenedCheck() {
-    return new Promise(resolve => {
-      const gx = (typeof GM !== 'undefined' && GM.xmlHttpRequest && GM.xmlHttpRequest.bind(GM))
-              || (typeof GM_xmlhttpRequest !== 'undefined' && GM_xmlhttpRequest) || null;
-      if (!gx) return resolve(false);
-      try { gx({ method: 'GET', url: CAA, headers: { Accept: 'application/json' }, timeout: 12000, onload: r => resolve(r.status === 403), onerror: () => resolve(false), ontimeout: () => resolve(false) }); }
-      catch (e) { resolve(false); }
-    });
+  // #368 archive.org exposes `is_dark` on the item's metadata — CORS-accessible, explicit and language
+  // independent (thanks @chaban-mb). Only called when the CAA fetch already failed, so it's off the happy path.
+  async function caaDarkenedCheck() {
+    try { const j = await fetch('https://archive.org/metadata/mbid-' + MBID).then(r => r.ok ? r.json() : null); return !!(j && j.is_dark === true); }
+    catch (e) { return false; }
   }
   function gmFetch(url, onProgress) {
     return new Promise((resolve, reject) => {
