@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.7.215254
+// @version      2026.7.7.230752
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1410,10 +1410,8 @@
     .tc-srbtn:hover{background:#efeaf9;border-color:#bcaae6}
     .tc-srbtn.on{background:#6f42c1;color:#fff;border-color:#5f3ec0}
     .tc-sr-find.tc-sr-bad{border-color:#d6342c!important;background:#fff1f0}
-    .tc-sr-findwrap{position:relative;display:inline-flex;align-items:center}
-    .tc-sr-findwrap .tc-sr-find{padding-right:16px}
-    .tc-sr-caret{position:absolute;right:2px;top:50%;transform:translateY(-50%);border:none;background:none;color:#6f42c1;cursor:pointer;font-size:12px;padding:0 3px;line-height:1}
-    .tc-sr-caret:hover{color:#4b2f9e}
+    .tc-sr-star{color:#e0a800;font-size:13px;line-height:1;padding:3px 8px}   /* #375 fav-star button opens Saved & History */
+    .tc-sr-star:hover{color:#c69500;background:#fff8e6;border-color:#e6cf8a}
     .tc-srtpl{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;min-width:460px;max-width:680px;max-height:70vh;overflow:auto}
     .tc-srtpl-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;position:sticky;top:0;background:#fff;z-index:1}
     .tc-srtpl-hdt{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0}
@@ -2819,21 +2817,19 @@
       host.appendChild(box);   // #280: no Apply button — clicking the "Aa Guess case" icon/name applies it
     } else if (act === 'sr') {
       srActivate(); const box = document.createElement('span'); box.className = 'tc-sro';
-      // #375 the search field carries a caret that opens Saved & History (↓ in either field opens it too)
-      const findWrap = document.createElement('span'); findWrap.className = 'tc-sr-findwrap';
+      // #375 open Saved & History via ↓ in either field, or a ★ button after RE (the in-field caret was hard to hit)
       const find = document.createElement('input'); find.type = 'text'; find.className = 'tc-sr-find'; find.placeholder = srRegexOn() ? 'search (regex)' : 'search';
-      const caret = document.createElement('button'); caret.type = 'button'; caret.className = 'tc-sr-caret'; caret.textContent = '▾'; caret.title = 'Saved & recent search-and-replace patterns';
-      findWrap.append(find, caret);
       const rep = document.createElement('input'); rep.type = 'text'; rep.className = 'tc-sr-rep'; rep.placeholder = 'replace';
       const run = () => srLive(find.value, rep.value, true);
       find.oninput = rep.oninput = run;
-      caret.onclick = () => openSrTemplates(findWrap, find, rep, re);
-      const openOnDown = e => { if (e.key === 'ArrowDown' && !_srPop) { e.preventDefault(); openSrTemplates(findWrap, find, rep, re); } };
+      const openOnDown = e => { if (e.key === 'ArrowDown' && !_srPop) { e.preventDefault(); openSrTemplates(find, find, rep, re); } };   // popup anchors to the search field (left-aligned)
       find.addEventListener('keydown', openOnDown); rep.addEventListener('keydown', openOnDown);
       const re = document.createElement('button'); re.type = 'button'; re.className = 'tc-srbtn tc-sr-re' + (srRegexOn() ? ' on' : ''); re.textContent = 'RE';
       re.title = 'Use regular expressions (search is a regex; $1, $<name> work in replace)';
       re.onclick = () => { SETTINGS.srRegex = !srRegexOn(); saveSettings(); re.classList.toggle('on', srRegexOn()); find.placeholder = srRegexOn() ? 'search (regex)' : 'search'; run(); };
-      box.append(findWrap, rep, re); host.appendChild(box);
+      const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.title = 'Saved & recent patterns (or press ↓ in the search field)';
+      star.onclick = () => openSrTemplates(find, find, rep, re);
+      box.append(find, rep, re, star); host.appendChild(box);
     } else if (act === 'cols') {
       const box = document.createElement('span'); box.className = 'tc-colso';
       const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-colbtn'; b.textContent = label; b.title = title; b.onclick = fn; return b; };
