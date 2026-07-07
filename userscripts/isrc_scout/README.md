@@ -23,7 +23,7 @@ https://github.com/user-attachments/assets/7549eacf-8993-4fd7-ad17-2566ad827da0
     - **[Delete existing ISRCs](#deleting-existing-isrcs)**, plus bulk fill / export
     - **[Per-track helpers](#per-track-helpers)** — per-row provider lookup with metadata match checks and highlighting.
     - **[Submit to MusicBrainz](#submitting)** — one-time OAuth, then submit straight from the editor
-- **[Links](#track-links-links-tab)** — find and add streaming links to recordings (Deezer, Tidal, Bandcamp, Apple Music).
+- **[Links](#links)** — find and add streaming links to recordings (Deezer, Tidal, Bandcamp, Apple Music).
   - Find links based on release external and ISRCs 
   - [Batch ending or removing](#ending--removing) link relationship
 - Using release group external links and [Platform Check](../platform_check/README.md) links
@@ -99,7 +99,7 @@ Check the box next to any existing ISRC and click **🗑 Delete checked**. Delet
 - **Apply to empty fields** / **Apply (overwrite)**.
 - **Export text** (one per line) / **Export JSON** (`{ recordingMBID: "ISRC" }`) — copied to clipboard.
 
-## Track links (Links tab)
+## Links
 
 ISRC Scout also adds **streaming links to recordings** in the background. The **Links** tab shows two columns per track:
 
@@ -143,7 +143,7 @@ Keyboard, in the editor / Links modal:
 | `Esc` | Close the SoundExchange search panel |
 | `Enter` | Submit the focused **Add link** URL / code input, or run the SoundExchange search |
 
-Modifier-clicks on the **Links tab** Add / Linked icons (see [Track links](#track-links-links-tab) for the full description):
+Modifier-clicks on the **Links tab** Add / Linked icons (see [links tab](#links) for the full description):
 
 | Click | Add column | Linked column |
 |---|---|---|
