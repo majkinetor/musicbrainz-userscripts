@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.231700
+// @version      2026.7.7.233127
 // @description  Unified bundle of 7 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -67,13 +67,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.7.7.231700 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.7.140343\n  · Art Station v2026.7.7.133551\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.7.231700\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
+  console.log('%c String Theory %c v2026.7.7.233127 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.7.7.230752\n  · Art Station v2026.7.7.133551\n  · Credit Hoarder v2026.7.2\n  · Group Therapy v2026.7.7.231700\n  · ISRC Scout v2026.7.2\n  · Mammoth v2026.7.3\n  · Platform Check v2026.7.4");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.7.140343","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.7.140343","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.7.230752","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.7.7.230752","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -257,9 +257,10 @@ try {
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
+  try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
   let _cfgTab = 'general';   // remembered settings tab (#294), per session
   // measure a name's pixel width so an artist input can shrink-wrap to its text (so the
   // clear × hugs the name instead of sitting at the box's far right). #284 follow-up.
@@ -1463,26 +1464,32 @@ try {
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid #bbb;border-radius:4px;background:#fff;cursor:pointer;color:#333}
     .tc-colbtn:hover{background:#f0ecfa;border-color:#a98fe0}
-    /* #152: Search & Replace — RE toggle, Templates button, invalid-regex flag, templates popup */
+    /* #152/#375: Search & Replace — RE toggle, search caret, invalid-regex flag, Saved & History popup */
     .tc-srbtn{cursor:pointer;border:1px solid #d6cdec;background:#fff;color:#6f42c1;font:bold 11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}
     .tc-srbtn:hover{background:#efeaf9;border-color:#bcaae6}
     .tc-srbtn.on{background:#6f42c1;color:#fff;border-color:#5f3ec0}
     .tc-sr-find.tc-sr-bad{border-color:#d6342c!important;background:#fff1f0}
+    .tc-sr-star{color:#e0a800;font-size:13px;line-height:1;padding:3px 8px}   /* #375 fav-star button opens Saved & History */
+    .tc-sr-star:hover{color:#c69500;background:#fff8e6;border-color:#e6cf8a}
     .tc-srtpl{position:fixed;z-index:100003;background:#fff;border:1px solid #b9a4e0;border-radius:7px;box-shadow:0 8px 26px rgba(40,20,80,.28);font:12px Arial;color:#1c1c1c;min-width:460px;max-width:680px;max-height:70vh;overflow:auto}
-    .tc-srtpl-hd{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0;padding:8px 12px;border-bottom:1px solid #ece7f6;position:sticky;top:0;background:#fff}
+    .tc-srtpl-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #ece7f6;position:sticky;top:0;background:#fff;z-index:1}
+    .tc-srtpl-hdt{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:#5f3ec0}
+    .tc-srtpl-savebtn{margin-left:auto;cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 11px Arial;border-radius:4px;padding:3px 9px;white-space:nowrap}
+    .tc-srtpl-savebtn:hover{background:#e6f6e6;border-color:#a9dca9}
+    .tc-srtpl-savewrap{display:flex;align-items:center;gap:6px;margin-left:auto;flex:1}
+    .tc-srtpl-saveok{cursor:pointer;border:1px solid #cdeccd;background:#f2fbf2;color:#2e7d32;font:bold 12px Arial;border-radius:4px;padding:2px 8px}
+    .tc-srtpl-saveok:hover{background:#e6f6e6}
     .tc-srtpl-empty{padding:12px;color:#999;font-style:italic}
+    .tc-srtpl-sec{font:700 10px Arial;letter-spacing:.05em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff;padding:5px 12px;border-top:1px solid #ece7f6;border-bottom:1px solid #f0ebfa}
     .tc-srtpl-row{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr 26px 18px;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-bottom:1px solid #f4f0fc}
-    .tc-srtpl-row:hover{background:#f3f0fb}
-    .tc-srtpl-cap{cursor:default;font:700 10px Arial;letter-spacing:.04em;text-transform:uppercase;color:#9a8fb5;background:#faf8ff}
-    .tc-srtpl-cap:hover{background:#faf8ff}
+    .tc-srtpl-row:hover,.tc-srtpl-row.tc-srtpl-sel{background:#f0ebfb}
     .tc-srtpl-nm{font-weight:600;color:#4b3a82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .tc-srtpl-f,.tc-srtpl-r{font-family:'Courier New',monospace;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tc-srtpl-f,.tc-srtpl-r{font-family:ui-monospace,Consolas,'Liberation Mono',Menlo,monospace;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* #375: curly quotes render cleanly (Courier New mangled them) */
     .tc-srtpl-re{font:bold 10px Arial;color:#6f42c1;text-align:center}
+    .tc-srtpl-tail{text-align:center}
     .tc-srtpl-x{visibility:hidden;border:none;background:none;color:#cc6699;cursor:pointer;font-size:12px;padding:0;line-height:1}
-    .tc-srtpl-row:hover .tc-srtpl-x{visibility:visible}.tc-srtpl-x:hover{color:#c0392b}
-    .tc-srtpl-new{padding:9px 12px;border-top:1px solid #ece7f6;background:#faf8ff;position:sticky;bottom:0}
-    .tc-srtpl-newlbl{color:#777;margin-bottom:4px}
-    .tc-srtpl-name{width:100%;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:4px 7px;font:13px Arial}
+    .tc-srtpl-row:hover .tc-srtpl-x,.tc-srtpl-row.tc-srtpl-sel .tc-srtpl-x{visibility:visible}.tc-srtpl-x:hover{color:#c0392b}
+    .tc-srtpl-name{flex:1;min-width:120px;box-sizing:border-box;border:1px solid #d6cdec;border-radius:4px;padding:3px 7px;font:13px Arial}
     .tc-srtpl-name:focus{border-color:#8a72c8;outline:none}
     .tc-toolopts label,.tc-opt label{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555}
     .tc-toolopts input[type=text],.tc-opt input[type=text]{font:12px Arial;padding:2px 5px;border:1px solid #bbb;border-radius:3px;width:120px}
@@ -2869,16 +2876,19 @@ try {
       host.appendChild(box);   // #280: no Apply button — clicking the "Aa Guess case" icon/name applies it
     } else if (act === 'sr') {
       srActivate(); const box = document.createElement('span'); box.className = 'tc-sro';
+      // #375 open Saved & History via ↓ in either field, or a ★ button after RE (the in-field caret was hard to hit)
       const find = document.createElement('input'); find.type = 'text'; find.className = 'tc-sr-find'; find.placeholder = srRegexOn() ? 'search (regex)' : 'search';
       const rep = document.createElement('input'); rep.type = 'text'; rep.className = 'tc-sr-rep'; rep.placeholder = 'replace';
       const run = () => srLive(find.value, rep.value, true);
       find.oninput = rep.oninput = run;
+      const openOnDown = e => { if (e.key === 'ArrowDown' && !_srPop) { e.preventDefault(); openSrTemplates(find, find, rep, re); } };   // popup anchors to the search field (left-aligned)
+      find.addEventListener('keydown', openOnDown); rep.addEventListener('keydown', openOnDown);
       const re = document.createElement('button'); re.type = 'button'; re.className = 'tc-srbtn tc-sr-re' + (srRegexOn() ? ' on' : ''); re.textContent = 'RE';
       re.title = 'Use regular expressions (search is a regex; $1, $<name> work in replace)';
       re.onclick = () => { SETTINGS.srRegex = !srRegexOn(); saveSettings(); re.classList.toggle('on', srRegexOn()); find.placeholder = srRegexOn() ? 'search (regex)' : 'search'; run(); };
-      const tpl = document.createElement('button'); tpl.type = 'button'; tpl.className = 'tc-srbtn tc-sr-tpl'; tpl.textContent = 'Templates ▾'; tpl.title = 'Save / load search-and-replace templates';
-      tpl.onclick = () => openSrTemplates(tpl, find, rep, re);
-      box.append(find, rep, re, tpl); host.appendChild(box);
+      const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.title = 'Saved & recent patterns (or press ↓ in the search field)';
+      star.onclick = () => openSrTemplates(find, find, rep, re);
+      box.append(find, rep, re, star); host.appendChild(box);
     } else if (act === 'cols') {
       const box = document.createElement('span'); box.className = 'tc-colso';
       const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-colbtn'; b.textContent = label; b.title = title; b.onclick = fn; return b; };
@@ -3027,7 +3037,7 @@ try {
   // in literal mode the replacement is literal too — escape `$` so "$1" inserts "$1", not a backref
   const srRepl = replace => srRegexOn() ? replace : replace.replace(/\$/g, '$$$$');
   let _srSnap = null;
-  function srActivate() { _srSnap = MODEL ? MODEL.tracks.map(t => t.title) : []; }
+  function srActivate() { _srSnap = MODEL ? MODEL.tracks.map(t => t.title) : []; if (MODEL) MODEL.tracks.forEach(t => { delete t._srLastResult; }); }
   function srLive(find, replace, ci) {
     if (!MODEL) return; if (!_srSnap || _srSnap.length !== MODEL.tracks.length) srActivate();
     const re = find ? srRe(find, ci, true) : null;
@@ -3036,10 +3046,14 @@ try {
     if (bad) { srRememberLast(find, replace); return; }
     const repl = srRepl(replace); let changed = 0;
     MODEL.tracks.forEach((t, i) => {
+      // #375: if the title changed since our last replace (a manual edit, Guess Case, etc.), re-base the
+      // snapshot to it — otherwise we'd replace from the stale original and clobber the manual change.
+      if (t._srLastResult != null && t.title !== t._srLastResult) _srSnap[i] = t.title;
       const base = _srSnap[i] != null ? _srSnap[i] : t.title;
       const nt = re ? base.replace(re, repl) : base;
       if (nt !== base) changed++;
       if (nt !== t.title) { setTitle(t, nt); t.title = nt; t.guessTitle = guessTitleStr(t); }
+      t._srLastResult = t.title;   // remember what we left it as, to detect the next manual edit
       t._srFlash = !!(find && nt !== base);
     });
     rerender(); toast(changed ? `${changed} title${changed !== 1 ? 's' : ''} replaced` : '');
@@ -3048,14 +3062,39 @@ try {
   // #152 — named search/replace templates, persisted in settings. "_Last" is a special auto-kept entry
   // (the most recent pattern) that sorts first because "_" precedes letters.
   function srTemplates() { if (!Array.isArray(SETTINGS.srTemplates)) SETTINGS.srTemplates = []; return SETTINGS.srTemplates; }
+  // #375: seed two handy defaults on first run only — never re-add once seeded, so we don't fight an
+  // editor who cleared them or already has their own set.
+  function srSeedTemplates() {
+    // migrate the legacy "_Last" entry out of Saved (history lives in srHistory now)
+    if (srTemplates().some(t => t.name === '_Last')) SETTINGS.srTemplates = srTemplates().filter(t => t.name !== '_Last');
+    if ((SETTINGS.srSeedV || 0) >= 1) { saveSettings(); return; }   // seed version bump re-seeds once even for users who had the buggy `_Last`-blocked run
+    SETTINGS.srSeedV = 1;
+    // seed only when there are no USER (non-"_") templates — an existing `_Last` no longer blocks it
+    if (!srTemplates().some(t => t.name && t.name[0] !== '_')) {
+      srTemplates().push({ name: 'Quotes', find: '"(.+?)"', replace: '“$1”', re: true });
+      srTemplates().push({ name: 'Single quote', find: "'", replace: '’', re: false });
+    }
+    saveSettings();
+  }
   let _srLastTimer = null;
+  // #375: History — the 5 most-recent (distinct) patterns, most-recent first. Separate from the named
+  // Saved templates. (Supersedes the old single "_Last" entry that used to live inside srTemplates.)
+  function srHistoryList() { if (!Array.isArray(SETTINGS.srHistory)) SETTINGS.srHistory = []; return SETTINGS.srHistory; }
   function srRememberLast(find, replace) {
     if (!find) return;
-    const list = srTemplates(); const prev = list.find(t => t.name === '_Last');
-    if (prev && prev.find === find && prev.replace === replace && prev.re === srRegexOn()) return;
-    const ent = { name: '_Last', find, replace, re: srRegexOn() };
-    if (prev) Object.assign(prev, ent); else list.push(ent);
-    clearTimeout(_srLastTimer); _srLastTimer = setTimeout(saveSettings, 600);   // debounce the localStorage write across keystrokes
+    const re = srRegexOn();
+    // #375 debounce the ENTRY itself — record only after typing settles (~1.4s), so one search isn't
+    // logged character-by-character (h, he, hel, …). The latest pattern wins.
+    clearTimeout(_srLastTimer);
+    _srLastTimer = setTimeout(() => {
+      const hist = srHistoryList();
+      const i = hist.findIndex(h => h.find === find && h.replace === replace && !!h.re === re);
+      if (i === 0) return;                     // already the most-recent
+      if (i > 0) hist.splice(i, 1);            // seen before → move to front
+      hist.unshift({ find, replace, re });
+      if (hist.length > 5) hist.length = 5;
+      saveSettings();
+    }, 1400);
   }
   function srSaveTemplate(name, find, replace) {
     name = (name || '').trim(); if (!name || !find) return false;
@@ -3068,39 +3107,58 @@ try {
   // the Templates popup — sorted list (｢_Last｣ first), click a row to load+apply, ✕ to remove,
   // and a "new template" section (shown only when the search field is non-empty). #152
   let _srPop = null, _srPopOff = null;
-  function closeSrTemplates() { if (_srPop) { _srPop.remove(); _srPop = null; } if (_srPopOff) { document.removeEventListener('mousedown', _srPopOff, true); _srPopOff = null; } }
+  let _srPopKey = null;
+  function closeSrTemplates() { if (_srPop) { _srPop.remove(); _srPop = null; } if (_srPopOff) { document.removeEventListener('mousedown', _srPopOff, true); _srPopOff = null; } if (_srPopKey) { document.removeEventListener('keydown', _srPopKey, true); _srPopKey = null; } }
+  // #375 the Saved & History popup — Saved (named) templates on top with an inline "Save current",
+  // then a History section of the 5 most-recent patterns. Opens off the search field (caret or ↓);
+  // ↑/↓ move the selection, Enter loads. Left-aligned to the search field.
   function openSrTemplates(anchor, findEl, repEl, reBtn) {
     if (_srPop) { closeSrTemplates(); return; }
     const pop = document.createElement('div'); pop.className = 'tc-srtpl'; _srPop = pop;
-    const loadTpl = t => {
-      findEl.value = t.find; repEl.value = t.replace; SETTINGS.srRegex = !!t.re; saveSettings();
-      if (reBtn) { reBtn.classList.toggle('on', !!t.re); findEl.placeholder = srRegexOn() ? 'search (regex)' : 'search'; }
+    let navRows = [], sel = -1;
+    const highlight = () => navRows.forEach((r, i) => { r.classList.toggle('tc-srtpl-sel', i === sel); if (i === sel) r.scrollIntoView({ block: 'nearest' }); });
+    const applyEntry = (find, replace, re) => {
+      findEl.value = find; repEl.value = replace; SETTINGS.srRegex = !!re; saveSettings();
+      if (reBtn) { reBtn.classList.toggle('on', !!re); findEl.placeholder = srRegexOn() ? 'search (regex)' : 'search'; }
       srLive(findEl.value, repEl.value, true); closeSrTemplates(); findEl.focus();
     };
+    const mkRow = (cells, onClick, extras) => {
+      const row = document.createElement('div'); row.className = 'tc-srtpl-row';
+      cells.forEach(c => { const s = document.createElement('span'); s.className = c.cls; s.textContent = c.txt; s.title = c.txt; row.appendChild(s); });
+      const rec = document.createElement('span'); rec.className = 'tc-srtpl-re'; rec.textContent = extras && extras.re ? 'RE' : ''; row.appendChild(rec);
+      const tail = document.createElement('span'); tail.className = 'tc-srtpl-tail';
+      if (extras && extras.onRemove) { const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-srtpl-x'; x.textContent = '✕'; x.title = 'Remove'; x.onclick = e => { e.stopPropagation(); extras.onRemove(); }; tail.appendChild(x); }
+      row.appendChild(tail);
+      row.onclick = onClick; row.onmousemove = () => { sel = navRows.indexOf(row); highlight(); };
+      navRows.push(row); return row;
+    };
     const render = () => {
-      pop.innerHTML = '<div class="tc-srtpl-hd">Templates</div>';
-      const list = srTemplates().slice().sort((a, b) => a.name.localeCompare(b.name));
-      if (list.length) {
-        const cap = document.createElement('div'); cap.className = 'tc-srtpl-row tc-srtpl-cap';
-        cap.innerHTML = '<span>Name</span><span>Search</span><span>Replace</span><span>RE</span><span></span>';
-        pop.appendChild(cap);
-        list.forEach(t => {
-          const row = document.createElement('div'); row.className = 'tc-srtpl-row';
-          ['tc-srtpl-nm', 'tc-srtpl-f', 'tc-srtpl-r'].forEach((c, i) => { const s = document.createElement('span'); s.className = c; s.textContent = [t.name, t.find, t.replace][i]; s.title = [t.name, t.find, t.replace][i]; row.appendChild(s); });
-          const rec = document.createElement('span'); rec.className = 'tc-srtpl-re'; rec.textContent = t.re ? 'RE' : ''; row.appendChild(rec);
-          const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-srtpl-x'; x.textContent = '✕'; x.title = 'Remove this template';
-          x.onclick = e => { e.stopPropagation(); srRemoveTemplate(t.name); render(); };
-          row.appendChild(x);
-          row.onclick = () => loadTpl(t);
-          pop.appendChild(row);
-        });
-      } else { const e = document.createElement('div'); e.className = 'tc-srtpl-empty'; e.textContent = 'No saved templates yet.'; pop.appendChild(e); }
-      if (findEl.value.trim()) {   // offer to save the current pattern
-        const sec = document.createElement('div'); sec.className = 'tc-srtpl-new';
-        const lbl = document.createElement('div'); lbl.className = 'tc-srtpl-newlbl'; lbl.textContent = 'Enter name for new template'; sec.appendChild(lbl);
-        const nm = document.createElement('input'); nm.type = 'text'; nm.className = 'tc-srtpl-name'; nm.placeholder = 'My new template';
-        nm.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); if (srSaveTemplate(nm.value, findEl.value, repEl.value)) render(); } };
-        sec.appendChild(nm); pop.appendChild(sec); setTimeout(() => nm.focus(), 0);
+      pop.innerHTML = ''; navRows = []; sel = -1;
+      // header: "Saved" + inline "Save current" that unrolls a name field
+      const hd = document.createElement('div'); hd.className = 'tc-srtpl-hd';
+      const title = document.createElement('span'); title.textContent = 'Saved'; title.className = 'tc-srtpl-hdt'; hd.appendChild(title);
+      const saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.className = 'tc-srtpl-savebtn'; saveBtn.textContent = '＋ Save current';
+      const wrap = document.createElement('span'); wrap.className = 'tc-srtpl-savewrap'; wrap.style.display = 'none';
+      const nm = document.createElement('input'); nm.type = 'text'; nm.className = 'tc-srtpl-name'; nm.placeholder = 'name this pattern';
+      const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'tc-srtpl-saveok'; ok.textContent = '✓'; ok.title = 'Save';
+      const doSave = () => { if (srSaveTemplate(nm.value, findEl.value, repEl.value)) render(); };
+      ok.onclick = doSave;
+      nm.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); doSave(); } else if (e.key === 'Escape') { e.preventDefault(); wrap.style.display = 'none'; saveBtn.style.display = ''; } };
+      saveBtn.onclick = () => { if (!findEl.value.trim()) { toast('Type a search first, then save it'); return; } saveBtn.style.display = 'none'; wrap.style.display = ''; nm.value = ''; setTimeout(() => nm.focus(), 0); };
+      wrap.append(nm, ok); hd.append(saveBtn, wrap); pop.appendChild(hd);
+      // saved (named) templates — internal "_"-prefixed names never show here
+      const saved = srTemplates().filter(t => t.name && t.name[0] !== '_').sort((a, b) => a.name.localeCompare(b.name));
+      if (saved.length) saved.forEach(t => pop.appendChild(mkRow(
+        [{ cls: 'tc-srtpl-nm', txt: t.name }, { cls: 'tc-srtpl-f', txt: t.find }, { cls: 'tc-srtpl-r', txt: t.replace }],
+        () => applyEntry(t.find, t.replace, t.re), { re: t.re, onRemove: () => { srRemoveTemplate(t.name); render(); } })));
+      else { const e = document.createElement('div'); e.className = 'tc-srtpl-empty'; e.textContent = 'No saved patterns yet — use ＋ Save current.'; pop.appendChild(e); }
+      // history — the 5 most-recent
+      const hist = srHistoryList();
+      if (hist.length) {
+        const div = document.createElement('div'); div.className = 'tc-srtpl-sec'; div.textContent = 'History'; pop.appendChild(div);
+        hist.slice(0, 5).forEach(h => pop.appendChild(mkRow(
+          [{ cls: 'tc-srtpl-nm tc-srtpl-hnm', txt: '' }, { cls: 'tc-srtpl-f', txt: h.find }, { cls: 'tc-srtpl-r', txt: h.replace }],
+          () => applyEntry(h.find, h.replace, h.re), { re: h.re })));
       }
     };
     render();
@@ -3110,6 +3168,14 @@ try {
     pop.style.top = (r.bottom + 4) + 'px';
     _srPopOff = e => { if (!pop.contains(e.target) && e.target !== anchor) closeSrTemplates(); };
     setTimeout(() => document.addEventListener('mousedown', _srPopOff, true), 0);
+    _srPopKey = e => {   // ↑/↓ navigate, Enter loads, Esc closes — unless typing in the name field
+      if (document.activeElement && document.activeElement.className === 'tc-srtpl-name') return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); if (navRows.length) { sel = Math.min(navRows.length - 1, sel + 1); highlight(); } }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); if (navRows.length) { sel = Math.max(0, sel - 1); highlight(); } }
+      else if (e.key === 'Enter') { if (sel >= 0 && navRows[sel]) { e.preventDefault(); navRows[sel].click(); } }
+      else if (e.key === 'Escape') { e.preventDefault(); closeSrTemplates(); findEl.focus(); }
+    };
+    document.addEventListener('keydown', _srPopKey, true);
   }
 
   const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolsmenu" title="more tools &amp; customize">Tools ▾</span><span class="tc-toolbtns"></span></div>`
