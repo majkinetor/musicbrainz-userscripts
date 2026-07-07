@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.163227
+// @version      2026.7.7.163737
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1550,7 +1550,8 @@
   function openCopyMenu(sourceTr, x, y, preselect) {
     const srcRels = recordingRels(sourceTr).filter(r => !r.removed && r.other && !['work', 'url', 'recording'].includes(r.other.entityType));
     const entries = srcRels.map(s => ({ rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : ''), checked: preselect ? !!preselect(s) : true }));
-    const chosen = () => entries.filter(e => !e.cb || e.cb.checked).map(e => e.rel);
+    // before the checkboxes render, respect the preselect (e.checked) so the Copy count reflects the ticked subset (#373)
+    const chosen = () => entries.filter(e => e.cb ? e.cb.checked : e.checked !== false).map(e => e.rel);
     // destination rows = ticked recording checkboxes (other than the source) → entities + track positions
     const destRows = [...document.querySelectorAll('tr.track')].filter(tr => { if (tr === sourceTr) return false; const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
     const dests = destRows.map(recordingEntity).filter(Boolean);
