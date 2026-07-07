@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.171035
+// @version      2026.7.7.195442
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -361,6 +361,11 @@
       /* #372 top toolbar (moved off the "Release relationships" heading to the top of the tab) */
       .gt-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 14px;padding:8px 10px;background:#f7f9fc;border:1px solid #e5ebf3;border-radius:7px}
       .gt-toolbar .gt-clone-btn{margin-left:0}
+      /* #365 "Vertical:" section — label + two icon-only up/down buttons */
+      .gt-vert{display:inline-flex;align-items:center;gap:5px}
+      .gt-vert-lbl{font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:#66707c}
+      .gt-vert-btn{margin-left:0;font-size:14px;line-height:1;padding:2px 8px}
+      .gt-vert .gt-vert-btn+.gt-vert-btn{margin-left:0}
       .gt-toolbar .gt-cfg-btn{float:none;margin-left:auto}
       /* #372 config window (⚙): standard header (icon + name + version + Help) + options body */
       .gt-cfg-pop{min-width:270px;padding:0}
@@ -594,8 +599,11 @@
     const selTr = [...document.querySelectorAll('tr.track')].filter(tr => { const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
     const dests = (selTr.length ? selTr : [...document.querySelectorAll('tr.track')]).map(recordingEntity).filter(Boolean);
     const where = selTr.length ? `${dests.length} selected recording${dests.length > 1 ? 's' : ''}` : `all ${dests.length} recordings`;
-    const entries = srcRels.map(s => ({ rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : '') }));
-    const chosen = () => entries.filter(e => e.cb ? e.cb.checked : true).map(e => e.rel);
+    // #365 cleansing — release-level / packaging roles that don't belong on a recording start UNTICKED
+    // (re-tick to override). Matched as substrings against the role label.
+    const CLEANSE = ['liner note', 'compiler', 'mastering', 'remaster', 'artwork', 'art direction', 'design', 'illustration', 'photograph', 'graphic', 'manufactured', 'pressed by', 'printed by', 'booklet', 'translat', 'lacquer', 'publish', 'copyright', 'booking', '℗', '©'];
+    const entries = srcRels.map(s => { const lbl = (roleLabelOf(s) || '').toLowerCase(); return { rel: s, role: roleKeyOfSpec(s), pos: roleLabelOf(s), text: val(s.other.name) + (s.credit && s.credit !== val(s.other.name) ? ` (${s.credit})` : ''), checked: !CLEANSE.some(k => lbl.includes(k)) }; });
+    const chosen = () => entries.filter(e => e.cb ? e.cb.checked : e.checked !== false).map(e => e.rel);
     const r = anchor.getBoundingClientRect();
     if (!srcRels.length) { openMenu(r.left, r.bottom + 4, [{ header: 'No release-level credits to copy' }]); return; }
     if (!dests.length) { openMenu(r.left, r.bottom + 4, [{ header: 'No recordings on this release' }]); return; }
@@ -806,12 +814,17 @@
     const wm = el('button', 'gt-clone-btn', '◎ Match works…');
     wm.title = 'Match each recording to an existing MusicBrainz work (via ISRC + title/artist siblings) and stage recording→work “performance” relationships';
     wm.type = 'button'; wm.onclick = () => openWorkMatch(); bar.appendChild(wm);
-    const r2r = el('button', 'gt-clone-btn', '⇊ Release → recordings…');   // #365
-    r2r.title = 'Copy (or move) the release-level credits onto its recordings — the ticked ones, or all if none ticked';
-    r2r.type = 'button'; r2r.onclick = () => openRelToRec(r2r); bar.appendChild(r2r);
-    const c2r = el('button', 'gt-clone-btn', '⇈ Recordings → release…');   // #365
-    c2r.title = 'Collect the recordings’ credits onto the release — a union across all tracks (shows the track range each covers)';
-    c2r.type = 'button'; c2r.onclick = () => openRecToRel(c2r); bar.appendChild(c2r);
+    // #365 one "Vertical:" section — ⬆ pushes the release's credits DOWN to its recordings, ⬇ pulls the
+    // recordings' credits UP to the release (icons per majkinetor: up = release→recordings, down = →release)
+    const vwrap = el('span', 'gt-vert');
+    vwrap.appendChild(el('span', 'gt-vert-lbl', 'Vertical:'));
+    const r2r = el('button', 'gt-clone-btn gt-vert-btn', '⬆');
+    r2r.title = 'Release → recordings: copy (or move) the release-level credits onto its recordings — the ticked ones, or all if none ticked';
+    r2r.type = 'button'; r2r.onclick = () => openRelToRec(r2r);
+    const c2r = el('button', 'gt-clone-btn gt-vert-btn', '⬇');
+    c2r.title = 'Recordings → release: collect the recordings’ credits onto the release — a union across all tracks (shows the track range each covers)';
+    c2r.type = 'button'; c2r.onclick = () => openRecToRel(c2r);
+    vwrap.append(r2r, c2r); bar.appendChild(vwrap);
     const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — options, about / help';
     cfg.onclick = () => openAboutPopover(cfg); bar.appendChild(cfg);
     // #372 the toolbar goes at the top of the tab (right after the entity tabs), not on the heading
