@@ -17,7 +17,7 @@ https://github.com/user-attachments/assets/7549eacf-8993-4fd7-ad17-2566ad827da0
 
 ## Features
 
-- **[ISRC badge](#isrc-badge** showing how many are missing
+- **[ISRC badge](#isrc-badge)** showing how many are missing
 - **[ISRC](#isrc-editor)** — a per-track table of existing/new ISRCs with live validation
     - **[Import sources](#import-sources)** — fill the missing ISRCs from several providers
     - **[Delete existing ISRCs](#deleting-existing-isrcs)**, plus bulk fill / export
