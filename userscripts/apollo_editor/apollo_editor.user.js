@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.7.201700
+// @version      2026.7.7.215254
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -198,7 +198,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeeded: false, srHistory: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: false, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [] }; try { const stored = JSON.parse(localStorage.getItem(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -3010,12 +3010,14 @@
   // #375: seed two handy defaults on first run only — never re-add once seeded, so we don't fight an
   // editor who cleared them or already has their own set.
   function srSeedTemplates() {
-    if (SETTINGS.srSeeded) return;
-    SETTINGS.srSeeded = true;
-    const list = srTemplates();
-    if (!list.length) {
-      list.push({ name: 'Quotes', find: '"(.+?)"', replace: '“$1”', re: true });
-      list.push({ name: 'Single quote', find: "'", replace: '’', re: false });
+    // migrate the legacy "_Last" entry out of Saved (history lives in srHistory now)
+    if (srTemplates().some(t => t.name === '_Last')) SETTINGS.srTemplates = srTemplates().filter(t => t.name !== '_Last');
+    if ((SETTINGS.srSeedV || 0) >= 1) { saveSettings(); return; }   // seed version bump re-seeds once even for users who had the buggy `_Last`-blocked run
+    SETTINGS.srSeedV = 1;
+    // seed only when there are no USER (non-"_") templates — an existing `_Last` no longer blocks it
+    if (!srTemplates().some(t => t.name && t.name[0] !== '_')) {
+      srTemplates().push({ name: 'Quotes', find: '"(.+?)"', replace: '“$1”', re: true });
+      srTemplates().push({ name: 'Single quote', find: "'", replace: '’', re: false });
     }
     saveSettings();
   }
@@ -3025,13 +3027,19 @@
   function srHistoryList() { if (!Array.isArray(SETTINGS.srHistory)) SETTINGS.srHistory = []; return SETTINGS.srHistory; }
   function srRememberLast(find, replace) {
     if (!find) return;
-    const hist = srHistoryList(), re = srRegexOn();
-    const i = hist.findIndex(h => h.find === find && h.replace === replace && !!h.re === re);
-    if (i === 0) return;                       // already the most-recent
-    if (i > 0) hist.splice(i, 1);              // seen before → move to front
-    hist.unshift({ find, replace, re });
-    if (hist.length > 5) hist.length = 5;
-    clearTimeout(_srLastTimer); _srLastTimer = setTimeout(saveSettings, 600);   // debounce the localStorage write across keystrokes
+    const re = srRegexOn();
+    // #375 debounce the ENTRY itself — record only after typing settles (~1.4s), so one search isn't
+    // logged character-by-character (h, he, hel, …). The latest pattern wins.
+    clearTimeout(_srLastTimer);
+    _srLastTimer = setTimeout(() => {
+      const hist = srHistoryList();
+      const i = hist.findIndex(h => h.find === find && h.replace === replace && !!h.re === re);
+      if (i === 0) return;                     // already the most-recent
+      if (i > 0) hist.splice(i, 1);            // seen before → move to front
+      hist.unshift({ find, replace, re });
+      if (hist.length > 5) hist.length = 5;
+      saveSettings();
+    }, 1400);
   }
   function srSaveTemplate(name, find, replace) {
     name = (name || '').trim(); if (!name || !find) return false;
