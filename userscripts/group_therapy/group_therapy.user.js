@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.224924
+// @version      2026.7.7.225500
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -206,6 +206,10 @@
     if (recCb) { const tr = recCb.closest('tr.track'); if (tr) { ev.preventDefault(); openCopyMenu(tr, ev.clientX, ev.clientY); } return; }
     const workCb = ev.target.closest && ev.target.closest('input.work');
     if (workCb) { ev.preventDefault(); openWorkMenu(workCb, ev.clientX, ev.clientY); return; }
+    // #374 right-click a "recording of" rel (or its pencil) → copy its attributes + dates onto the selected
+    // recordings' own recording-of rels (or all if none selected). Handled before the credit +/pencil below.
+    const roItem = ev.target.closest && ev.target.closest('.relationship-item');
+    if (roItem) { const rr = relFromNode(roItem); if (rr && rr.entity0 && rr.entity0.entityType === 'recording' && rr.entity1 && rr.entity1.entityType === 'work') { ev.preventDefault(); openRecOfMenu(roItem, ev.clientX, ev.clientY); return; } }
     // #373 right-click the role-group "+" (add another) → copy scoped to that role's credits; right-click a
     // rel's pencil (edit) → copy scoped to just that one credit. Both reuse the recording copy menu.
     const addBtn = ev.target.closest && ev.target.closest('button.add-item.add-another-entity');
@@ -712,6 +716,40 @@
       .filter(o => o.type).sort((a, b) => a.typeID - b.typeID);
     if (!objs.length) return null;
     try { return MB.tree.fromDistinctAscArray(objs); } catch (e) { return null; }
+  }
+  // #374 apply recording-of attributes + dates onto an EXISTING recording→work rel — an update (keeps the
+  // rel's id/entities, replaces its attributes/dates), not an add. Verified against MB's reducer.
+  function updateRelAttrs(re, destRel, attrList, dates) {
+    const src = destRel.entity0 && destRel.entity0.entityType === 'recording' ? destRel.entity0 : destRel.entity1;
+    re.dispatch({
+      type: 'update-relationship-state', sourceEntity: src, batchSelectionCount: null,
+      creditsToChangeForSource: '', creditsToChangeForTarget: '',
+      oldRelationshipState: destRel,
+      newRelationshipState: { ...destRel, attributes: buildAttrTree(attrList), begin_date: (dates && dates.begin_date) || null, end_date: (dates && dates.end_date) || null, ended: !!(dates && dates.ended) },
+    });
+  }
+  function relAttrList(rel) {   // a rel's attributes as [{typeID, text_value, credited_as, name}]
+    if (!rel || !rel.attributes || !W.MB || !W.MB.tree) return [];
+    try { return [...W.MB.tree.iterate(rel.attributes)].map(a => ({ typeID: a.typeID, text_value: a.text_value || '', credited_as: a.credited_as || '', name: (a.type && a.type.name) || ((W.MB.linkedEntities.link_attribute_type[a.typeID] || {}).name) || '' })); } catch (e) { return []; }
+  }
+  const fmtRoDate = d => { const one = x => x && x.year ? [x.year, x.month, x.day].filter(Boolean).join('‑') : ''; const b = one(d.begin_date), e = one(d.end_date); if (b && e) return `${b} → ${e}`; if (b) return d.ended ? `${b} → ` : b; if (e) return `→ ${e}`; return d.ended ? 'ended' : ''; };
+  // #374 copy a "recording of" rel's attributes + dates onto the selected recordings' own recording-of
+  // rels (or all if none selected) — "always set the others exactly like that one".
+  function openRecOfMenu(sourceItem, x, y) {
+    const re = RE(); if (!re) return;
+    const srcRel = relFromNode(sourceItem); if (!srcRel) return;
+    const attrList = relAttrList(srcRel);
+    const dates = { begin_date: srcRel.begin_date || null, end_date: srcRel.end_date || null, ended: !!srcRel.ended };
+    const selTr = [...document.querySelectorAll('tr.track')].filter(tr => { const cb = tr.querySelector('input.recording'); return cb && cb.checked; });
+    const trs = selTr.length ? selTr : [...document.querySelectorAll('tr.track')];
+    const destRels = [];
+    trs.forEach(tr => tr.querySelectorAll('.relationship-item').forEach(it => { if (it === sourceItem) return; const r = relFromNode(it); if (r && r._status !== 3 && r.entity0 && r.entity0.entityType === 'recording' && r.entity1 && r.entity1.entityType === 'work') destRels.push(r); }));
+    const summary = [attrList.map(a => a.name).filter(Boolean).join(', '), fmtRoDate(dates)].filter(Boolean).join(' · ') || '(no attributes or dates set)';
+    const where = selTr.length ? `${destRels.length} selected` : `all ${destRels.length}`;
+    const items = [{ header: `Copy “recording of” attributes → ${where} recording${destRels.length !== 1 ? 's' : ''}` }, { note: summary }];
+    if (!destRels.length) items.push({ header: 'No other recording-of rels to copy to' });
+    else items.push({ label: 'Copy', run: () => { let n = 0; destRels.forEach(dr => { try { updateRelAttrs(re, dr, attrList, dates); n++; } catch (e) {} }); if (n) markUsed(`Copied “recording of” attributes to ${n} recording${n !== 1 ? 's' : ''}`); toast(`Set “recording of” attributes on ${n} — review & save`); } });
+    openMenu(x, y, items);
   }
   // fetch another release's release-level credits (artists + labels) as copy specs (not yet dispatched)
   async function fetchReleaseRels(sourceGid) {
