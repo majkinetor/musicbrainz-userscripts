@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.7.7.230752
+// @version      2026.7.7.233700
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -231,6 +231,18 @@
   function release() { return u(getEditor().rootField.release); }
   function mediums() { return u(release().mediums) || []; }
   function koTrack(mi, ti) { return u(mediums()[mi].tracks)[ti]; }
+  // #376 pending-edit state for a track's recording: {rec} if the recording itself has open edits,
+  // {art} if any artist in its credit does — MB marks each with span.mp (gold).
+  function recPendingState(mi, ti) {
+    try {
+      const ko = koTrack(mi, ti), rec = u(ko.recording);
+      // #376 check the CURRENTLY-shown artist credit (the track's), not the recording's — so picking a
+      // different (non-pending) artist clears the highlight. Title pending stays recording-level.
+      let art = false; const ac = u(ko.artistCredit), names = ac && u(ac.names);
+      if (names) for (const n of names) { const a = u(n.artist); if (a && u(a.editsPending)) { art = true; break; } }
+      return { rec: rec ? !!u(rec.editsPending) : false, art };
+    } catch (e) { return null; }
+  }
   function liveNames(track) { const ac = u(track.artistCredit) || {}; return u(ac.names) || []; }
 
   const ORIGINALS = new Map();
@@ -1189,6 +1201,10 @@
     .tc-mirror .t-title-disp.gcpreview{background:#e3f6e3;border-color:#86c686}
     .tc-mirror .t-title-disp.hasfeat{background:#eaf1fb;border-color:#9bbbe0}
     .tc-mirror .t-title-disp.tc-hidden{display:none}
+    /* #376 mirror MB's native gold "modification pending" mark — color ONLY the pending field
+       (the title for a recording edit, the artist for an artist edit), not the whole row */
+    .tc-mirror tr.tc-rec-pending td.c-title .t-title-disp,.tc-mirror tr.tc-rec-pending td.c-title input.t-title{background:#ffdd99;border-color:#e5b544}
+    .tc-mirror tr.tc-art-pending td.c-art .tc-search{background:#ffdd99!important;border-color:#e5b544}
     .tc-mirror.compact .t-title-disp{padding:0 2px;font-size:12px}
     .tc-mirror input.t-title.tc-eml:not(.tc-editing){position:absolute;width:1px;height:1px;min-width:0;padding:0;margin:0;border:0;opacity:0;pointer-events:none}
     /* MB medium-format select made to read as plain text — click still opens the native dropdown */
@@ -2462,6 +2478,8 @@
       if (kind === 'data' && t.mi !== lastDataMi) { const dr = document.createElement('tr'); dr.className = 'tc-datadiv'; dr.innerHTML = `<td colspan="${COLS.length}">⤓ Data tracks</td>`; tbody.appendChild(dr); lastDataMi = t.mi; }
       const tr = document.createElement('tr'); tr.dataset.tk = t.mi + ':' + t.ti; tr.dataset.mi = t.mi; tr.dataset.ti = t.ti;
       if (kind !== 'audio') tr.classList.add(kind === 'pregap' ? 'tc-row-pregap' : 'tc-row-data');
+      // #376 mirror MB's native "modification pending" mark (span.mp): flag recordings that have open edits
+      { const ps = recPendingState(t.mi, t.ti); if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.title = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; } }
       const locked = mediumLocked(t.mi);   // disc-ID medium: no reorder handle (#125)
       const lenLocked = trackLenLocked(t); // disc-ID medium: audio-track length fixed by the TOC (#329)
       const canDrag = !locked && kind === 'audio';   // #330: pregap is pinned at 0, data tracks aren't reordered here
@@ -3935,6 +3953,9 @@
       // grid option: column separators on both tables
       '.tc-rectbl.gridcols td,.tc-rectbl.gridcols th{border-right:1px solid #ededed}.tc-rectbl.gridcols td:last-child,.tc-rectbl.gridcols th:last-child{border-right:none}',
       '.tc-rectbl.alt tbody tr.tc-recrow:nth-of-type(even) td:not(.tc-diff):not(.tc-copy){background:#f6f4fb}',   // zebra skips highlighted cells so their colour always shows',
+      // #376 pending-edit recordings — gold tint + gold title (!important to beat the higher-specificity zebra)
+      '.tc-rectbl tr.tc-recrow.tc-rec-pending td:nth-child(2){background:#ffdd99!important;border-radius:3px}',   // #376 title pending
+      '.tc-rectbl tr.tc-recrow.tc-art-pending td:nth-child(3){background:#ffdd99!important;border-radius:3px}',   // #376 artist pending
       '.tc-rectbl tr.tc-recmed td{background:#f3f0fa;font-weight:600;color:#4b2e83}',
       // collapsed-medium expand control (#149)
       '.tc-rectbl tr.tc-recmed-coll td{padding:0}',
@@ -4343,6 +4364,7 @@
         if (sh) { recLenCls = 'tc-dh-len'; recLenStyle = ' style="background:' + sh.bg + ';color:' + sh.fg + '"'; }
       }
       const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : ''); tr.dataset.mi = r.mi; tr.dataset.ti = r.ti;
+      { const ps = recPendingState(r.mi, r.ti); if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.title = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; } }   // #376
       tr.innerHTML =
         '<td class="c-n">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
         '<td class="tc-tkt">' + trackTitleHtml + '</td>' +
