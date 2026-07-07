@@ -1,32 +1,38 @@
 # ISRC Scout <img src="icon.svg" align="left" width="48">
 
-Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads the release's existing ISRCs, lets you fill in the missing ones from several sources, and submits them straight to MusicBrainz — and, on a second tab, finds and adds **streaming links to the recordings** (Deezer, Tidal, Bandcamp, Apple Music).
-
-The editor has two tabs for the two operations on a release's recordings: **ISRCs** and **Links**.
+Self-contained ISRC editor that lives **on the MusicBrainz release page**. Reads the release's existing ISRCs, lets you fill in the missing ones from several sources, and submits them straight to MusicBrainz. With ISRC present, finds and adds **streaming links to the recordings** (Deezer, Tidal, Bandcamp, Apple Music).
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/isrc_scout/isrc_scout.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/isrc_scout/isrc_scout.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
 - [Changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=edit_note_content&conditions.1.operator=includes&conditions.1.args.0=ISRC+Scout)
 
-![screenshot](./screenshot.png)
+![screenshot](./screenshots/isrc.png)
+<details><summary>More Screenshots</summary>
+
+<img width="1000" src="./screenshots/options.png" /><br> 
 
 https://github.com/user-attachments/assets/7549eacf-8993-4fd7-ad17-2566ad827da0
+</details>
 
 ## Features
 
-- **[ISRC editor](#the-editor)** — a per-track table of existing/new ISRCs with live validation, opened from an [ISRC button](#the-button) on the release title.
-- **[Import sources](#import-sources)** — fill the missing ISRCs from several providers.
-- **[Per-track helpers](#per-track-helpers)** — per-row provider lookup with metadata match checks and highlighting.
-- **[Delete existing ISRCs](#deleting-existing-isrcs)**, plus bulk fill / export.
-- **[Track links](#track-links-links-tab)** — find and add streaming links to recordings (Deezer, Tidal, Bandcamp, Apple Music).
-- **[Submit to MusicBrainz](#submitting-one-time-authorization)** — one-time OAuth, then submit straight from the editor.
+- **[ISRC badge](#isrc-badge** showing how many are missing
+- **[ISRC](#isrc-editor)** — a per-track table of existing/new ISRCs with live validation
+    - **[Import sources](#import-sources)** — fill the missing ISRCs from several providers
+    - **[Delete existing ISRCs](#deleting-existing-isrcs)**, plus bulk fill / export
+    - **[Per-track helpers](#per-track-helpers)** — per-row provider lookup with metadata match checks and highlighting.
+    - **[Submit to MusicBrainz](#submitting)** — one-time OAuth, then submit straight from the editor
+- **[Links](#track-links-links-tab)** — find and add streaming links to recordings (Deezer, Tidal, Bandcamp, Apple Music).
+  - Find links based on release external and ISRCs 
+  - [Batch ending or removing](#ending--removing) link relationship
+- Using release group external links and [Platform Check](../platform_check/README.md) links
 
-## The button
+## ISRC badge
 
 An **ISRC** button is injected next to the release title, showing how many tracks already have an ISRC (`✓ 12/12`) or pulsing pink when some are missing (`⚠ 9/12`). Click it to open the editor.
 
-## The editor
+## ISRC editor
 
 A table of every track with its existing ISRCs and an input for the new one. Live validation flags invalid (red), duplicate (orange), and good (green) values. The footer shows how many will be submitted.
 
@@ -48,13 +54,27 @@ The **Deezer**, **Beatport**, **Tidal**, **Volumo** and **HDtracks** buttons eac
 
 The import-source buttons can show as **brand icons, text labels, or both** — toggle under **⚙ Setup → Import-source buttons** (defaults to icons, to keep the toolbar compact). The **⟳ SoundExchange** *exact title/artist/release* toggles are collapsed behind a small **exact ▾** control (state remembered) for the same reason.
 
+#### Spotify 
+
+The script uses [ISRC Hunt](https://isrchunt.com), which does the Spotify lookup **server-side** (with its own credentials) and renders the ISRCs into a plain HTML table. The script fetches `isrchunt.com/spotify/importisrc?releaseId=<album url>`, scrapes that table, and maps the ISRCs to your tracks.
+
+#### Beatport 
+
+Beatport release pages embed the full tracklist — including each track's ISRC — in their `__NEXT_DATA__` hydration JSON, but the site is behind Cloudflare, so a `GM_xmlhttpRequest` from MusicBrainz is always challenged. To get around that the script **also runs on `beatport.com/release/*`**: when you import, it opens the release in a background tab, the in-page copy reads the ISRCs from `__NEXT_DATA__`, stashes them in shared storage for the MusicBrainz tab, and the tab closes itself. Tabs you (or Platform Check) open are harvested too but left open. Harvested ISRCs are cached per release.
+
+#### Tidal
+
+Uses Tidal's official API (`openapi.tidal.com`) with a baked-in client-credentials app token — app-level catalog access, so **no Tidal login is needed**. It reads `/albums/{id}/relationships/items`, taking each track's ISRC from the included track resources and the disc/track number from the relationship metadata.
+
 ### Per-track helpers
 
 - **+1** — fill with the previous track's ISRC incremented by one.
-- **SX** — look up this track's ISRC on demand: verifies the ISRC currently in the field, or — when the field is empty — opens the refine panel to search by title/artist.
-- **ISRC provider menu (▾ on each per-track button)** — the per-track button is an *ISRC lookup*: it takes the ISRC in the row (entered or existing) and looks it up **on the selected provider**, showing that track's metadata (title · artist · length, mismatches highlighted) next to the row. It **only searches — it never fills the field**. Each button has a **▾** that opens a provider menu: SoundExchange (default) plus every other provider available for the release. Picking one re-skins **all** per-track buttons to that provider's icon (global for the release, **not remembered**). **Right-click** a button to look up every track at once. Providers with a global by-ISRC endpoint (**SoundExchange**, **Deezer**, **Tidal**) work on any release; the album-based ones (**HDtracks / Volumo / Beatport**) read the release's album (so they need its link, in MB or found by Platform Check) and match by ISRC. (Spotify isn't offered here — its only by-ISRC route needs a paid app token.) The bulk **⟳ SoundExchange** button is unchanged.
-- Click any SoundExchange candidate to use it, or **⚙ refine search** to open a panel where you can tweak the title/artist/release + exact toggles. The panel has a **Search on SoundExchange ↗** link that runs the same query on the SoundExchange website.
-- Track titles link to the MB recording. To avoid hammering SoundExchange (which now serves a captcha after too many requests), SoundExchange is **not** called automatically as you type or when values are imported from Deezer / Spotify / **+1**. A field is verified on SoundExchange only when you **blur a manually-typed ISRC**, press the row's **SX** button, or run the bulk **⟳ SoundExchange** search; values picked from a SoundExchange search still show their match instantly (from cache, no extra request). ISRCs duplicated across different recordings are flagged pink. If SoundExchange shows a captcha, the toolbar links you to solve it in the browser, then retry.
+- **ISRC lookup**<br>
+Displays track metadata from the ISRC provider. It takes the ISRC in the row (entered or existing) and looks it up **on the selected provider**, showing that track's metadata (title · artist · length, mismatches highlighted) next to the row. It's menu lets you choose an available provider: SoundExchange (default) plus every other provider available for the release. Picking one re-skins **all** per-track buttons to that provider's icon (global for the release, not remembered). **Right-click** a button to inoke on all tracks. Providers with a global by-ISRC endpoint (**SoundExchange**, **Deezer**, **Tidal**) work on any release; the album-based ones (**HDtracks / Volumo / Beatport**) read the release's album (so they need its link, in MB or found by Platform Check) and match by ISRC.
+- **⚙ search on SoundExchange**<br>
+Open a panel where you can tweak the title/artist/release + exact toggles for SX. The panel has a **Search on SoundExchange ↗** link that runs the same query on the SoundExchange website.
+
+To avoid overloading ISRC providers, lookup is not called automatically as you type or when values are imported from provider or set via **+1**. A field is verified on provider only when you **unfocus a manually-typed ISRC**, press the row's **ISRC lookup** button, or run the bulk **⟳ SoundExchange** search (as values picked from a SoundExchange without extra request). If SoundExchange shows a captcha or rate limit error, it is shown in the toolbar. Resolve captcha manually to continue.
 
 #### Match checks & highlighting
 
@@ -135,7 +155,7 @@ Modifier-clicks on the **Links tab** Add / Linked icons (see [Track links](#trac
 | `Ctrl`/`⌘` + middle-click | — | Remove every link on that track |
 | `Alt` + middle-click | — | Remove that provider across all tracks |
 
-## Submitting (one-time authorization)
+## Submitting
 
 ISRC submission to MusicBrainz **requires OAuth**:
 
@@ -144,14 +164,4 @@ ISRC submission to MusicBrainz **requires OAuth**:
 
 Credentials and tokens are stored in the userscript's local storage (`GM_setValue`). **Sign out** in Setup clears the stored token.
 
-### Spotify import
 
-The script uses [ISRC Hunt](https://isrchunt.com), which does the Spotify lookup **server-side** (with its own credentials) and renders the ISRCs into a plain HTML table. The script fetches `isrchunt.com/spotify/importisrc?releaseId=<album url>`, scrapes that table, and maps the ISRCs to your tracks.
-
-### Beatport import
-
-Beatport release pages embed the full tracklist — including each track's ISRC — in their `__NEXT_DATA__` hydration JSON, but the site is behind Cloudflare, so a `GM_xmlhttpRequest` from MusicBrainz is always challenged. To get around that the script **also runs on `beatport.com/release/*`**: when you import, it opens the release in a background tab, the in-page copy reads the ISRCs from `__NEXT_DATA__`, stashes them in shared storage for the MusicBrainz tab, and the tab closes itself. Tabs you (or Platform Check) open are harvested too but left open. Harvested ISRCs are cached per release.
-
-### Tidal import
-
-Uses Tidal's official API (`openapi.tidal.com`) with a baked-in client-credentials app token — app-level catalog access, so **no Tidal login is needed**. It reads `/albums/{id}/relationships/items`, taking each track's ISRC from the included track resources and the disc/track number from the relationship metadata.
