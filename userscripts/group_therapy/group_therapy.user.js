@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.150044
+// @version      2026.7.7.150814
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -358,6 +358,10 @@
       .gt-clone-btn:hover{background:#e2edf8}
       .gt-cfg-btn{float:right;margin-left:8px;font-size:15px;line-height:1.4;color:#8892a0;background:none;border:none;cursor:pointer;padding:2px 7px;border-radius:5px}
       .gt-cfg-btn:hover{background:#eef1f6;color:#556}
+      /* #372 top toolbar (moved off the "Release relationships" heading to the top of the tab) */
+      .gt-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 14px;padding:8px 10px;background:#f7f9fc;border:1px solid #e5ebf3;border-radius:7px}
+      .gt-toolbar .gt-clone-btn{margin-left:0}
+      .gt-toolbar .gt-cfg-btn{float:none;margin-left:auto}
       .gt-about .gt-about-ver{padding:2px 9px 4px;font-size:12px;color:#556}
       .gt-about .gt-about-help{display:block;padding:6px 9px;font-size:13px;color:#2e6da4;text-decoration:none}
       .gt-about .gt-about-help:hover{text-decoration:underline;background:#eef1f6;border-radius:5px}
@@ -692,29 +696,36 @@
     setTimeout(() => { document.addEventListener('mousedown', onPopDown, true); document.addEventListener('keydown', onPopKey, true); }, 0);
   }
   function injectCloneButton() {
-    const h2 = [...document.querySelectorAll('h2')].find(h => /^\s*Release relationships/i.test(h.textContent || ''));
-    if (!h2) return false;
-    if (h2.querySelector('.gt-clone-btn')) return true;
+    const content = document.getElementById('content'); if (!content) return false;
+    if (content.querySelector('.gt-toolbar')) { gtApplyHelp(); return true; }
+    // wait until the relationship editor has rendered (its heading is the readiness signal)
+    if (![...document.querySelectorAll('h2')].some(h => /^\s*Release relationships/i.test(h.textContent || ''))) return false;
+    const bar = el('div', 'gt-toolbar');
     const b = el('button', 'gt-clone-btn', '⧉ Copy from release…');
     b.title = 'Copy release-level credits (artists, labels) from another release onto this one';
-    b.type = 'button';
-    b.onclick = () => openCopyFromPopover(b);
-    h2.appendChild(b);
-    cloneBtnRef = b;
+    b.type = 'button'; b.onclick = () => openCopyFromPopover(b); bar.appendChild(b); cloneBtnRef = b;
     const cons = el('button', 'gt-clone-btn', '▦ Consolidate RG…');
     cons.title = 'Spread release-level credits across every release in this group (union minus format-specific)';
-    cons.type = 'button';
-    cons.onclick = () => openConsolidate();
-    h2.appendChild(cons);
+    cons.type = 'button'; cons.onclick = () => openConsolidate(); bar.appendChild(cons);
     const wm = el('button', 'gt-clone-btn', '◎ Match works…');
     wm.title = 'Match each recording to an existing MusicBrainz work (via ISRC + title/artist siblings) and stage recording→work “performance” relationships';
-    wm.type = 'button';
-    wm.onclick = () => openWorkMatch();
-    h2.appendChild(wm);
-    const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — about / help';
-    cfg.onclick = () => openAboutPopover(cfg);
-    h2.appendChild(cfg);
+    wm.type = 'button'; wm.onclick = () => openWorkMatch(); bar.appendChild(wm);
+    const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — options, about / help';
+    cfg.onclick = () => openGtMenu(cfg); bar.appendChild(cfg);
+    // #372 the toolbar goes at the top of the tab (right after the entity tabs), not on the heading
+    const tabs = content.querySelector(':scope > .tabs');
+    content.insertBefore(bar, tabs ? tabs.nextSibling : content.firstChild);
+    gtApplyHelp();
+    if (gtAutoMatch) setTimeout(() => { try { openWorkMatch(); } catch (e) {} }, 500);   // #372 auto-open + match
     return true;
+  }
+  // #372 the ⚙ menu — the two page options + the about/help card
+  function openGtMenu(anchor) {
+    wmFloatMenu(anchor, [
+      { label: 'Hide help text', sel: gtHideHelp, run: () => { gtHideHelp = !gtHideHelp; try { GM_setValue('gt-hide-help', gtHideHelp); } catch (e) {} gtApplyHelp(); openGtMenu(anchor); } },
+      { label: 'Auto-match on start', sel: gtAutoMatch, run: () => { gtAutoMatch = !gtAutoMatch; try { GM_setValue('gt-auto-match', gtAutoMatch); } catch (e) {} openGtMenu(anchor); } },
+      { label: 'About / Help…', run: () => openAboutPopover(anchor) },
+    ]);
   }
 
   const ltName = id => (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id] || {}).name || String(id);
@@ -1003,6 +1014,13 @@
   const WM_LVL_BY_RANK = ['exact', 'tolerance', 'near', 'low'];
   // how far ⚡ Match / the initial pre-tick reaches down the confidence ladder (persisted)
   let wmCutoff = (() => { try { const v = GM_getValue('gt-wm-cutoff', WM_RANK.near); return typeof v === 'number' ? v : WM_RANK.near; } catch (e) { return WM_RANK.near; } })();
+  // #372 page options (persisted): hide MB's edit-relationships help text (on by default), and auto-open +
+  // run the work matcher on page load (off by default).
+  let gtHideHelp = (() => { try { return GM_getValue('gt-hide-help', true) !== false; } catch (e) { return true; } })();
+  let gtAutoMatch = (() => { try { return GM_getValue('gt-auto-match', false) === true; } catch (e) { return false; } })();
+  // the two help paragraphs are the only direct-child <p> of #content (the batch-tools hint + the guidelines
+  // link) — a stable selector even after we insert our toolbar, since that's a <div>.
+  const gtApplyHelp = () => { document.querySelectorAll('#content > p').forEach(p => { p.style.display = gtHideHelp ? 'none' : ''; }); };
   // writer/composer relationship types — used to pull authors from a pasted work MBID (the autocomplete
   // already carries authors inline for searched works)
   const WM_WRITER_RE = /composer|writer|lyricist|librettist|translat|revis|arrang|orchestrat/i;
