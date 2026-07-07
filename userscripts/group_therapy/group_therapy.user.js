@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.153425
+// @version      2026.7.7.160551
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1022,7 +1022,7 @@
   // so the top score + the gap to the runner-up say whether to auto-tick or leave it for a manual pick.
   const PERF_GID = 'a3005666-a872-32c3-ad06-98af558e99b0';   // recording→work "performance" link type
   // colours mirror Apollo's recording matcher (CONF_COLOR)
-  const WM_LEVEL = { exact:{ c:'#2f6fd6', t:'ISRC-confirmed' }, tolerance:{ c:'#86c686', t:'the only work with this title' }, near:{ c:'#fff176', t:'dominant — most-recorded work' }, low:{ c:'#ffb74d', t:'ambiguous — pick one' }, none:{ c:'#9aa0a6', t:'no work found' } };
+  const WM_LEVEL = { exact:{ c:'#2f6fd6', t:'ISRC-confirmed' }, tolerance:{ c:'#86c686', t:'the only work with this title' }, near:{ c:'#fff176', t:'dominant — most-recorded work' }, low:{ c:'#e5534b', t:'ambiguous — often wrong, check it' }, none:{ c:'#9aa0a6', t:'no work found' } };
   const WM_RANK = { exact:0, tolerance:1, near:2, low:3, none:4 };
   const WM_LVL_BY_RANK = ['exact', 'tolerance', 'near', 'low'];
   // how far ⚡ Match / the initial pre-tick reaches down the confidence ladder (persisted)
@@ -1274,6 +1274,7 @@
       + '.gt-wm-warn{color:#b00;font-weight:600;font-size:12px}.gt-wm-warn.click{cursor:pointer}.gt-wm-warn.click:hover{text-decoration:underline}'
       + '.gt-wm-tbsep{width:1px;height:18px;background:#ddd;flex:none;margin:0 2px}'
       + '.gt-wm-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:#444}.gt-wm-btn:hover{background:linear-gradient(#fff,#eee);border-color:#bbb}'
+      + '.gt-wm-btn:disabled,.gt-wm-caret:disabled{opacity:.45;cursor:default;pointer-events:none}'
       + '.gt-wm-btn.primary{color:#5f3ec0;font-weight:bold}.gt-wm-btn.primary:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:#4f33a3}'
       + '.gt-wm-caret{padding:4px 7px;color:#7d6bc0;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial}.gt-wm-caret:hover{background:#f0ecfa}'
       // cutoff chip (clone of .tc-cutoff)
@@ -1384,10 +1385,10 @@
     const warn = el('span', 'gt-wm-warn');
     const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.title = 'resolve every unresolved track whose best match is at/above the cutoff';
     const matchCaret = el('button', 'gt-wm-caret', '▾'); matchCaret.type = 'button'; matchCaret.title = 'more actions';
-    matchCaret.onclick = () => wmFloatMenu(matchCaret, [{ label: 'Clear all matches', run: () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); } }]);
+    matchCaret.onclick = () => wmFloatMenu(matchCaret, [{ label: 'Clear all', run: () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); } }]);
     // #363 new-work options on the left; matched status + cutoff + Match (with a caret menu for Clear) on the right
     tb.append(wmNewParamsUi(), amstatus, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn, matchCaret); body.appendChild(tb);
-    const setProgress = (d, n) => { amstatus.textContent = n ? `matching ${d}/${n}…` : (d ? `matched ${d} track${d > 1 ? 's' : ''}` : ''); };
+    const setProgress = (d, n) => { amstatus.textContent = n ? `matching ${d}/${n}…` : (d ? `matched ${d} track${d > 1 ? 's' : ''}` : ''); matchBtn.disabled = !!n; matchCaret.disabled = !!n; };   // disable ⚡ Match while matching runs
     // ── table ──
     const tbl = el('table', 'gt-wm-tbl');
     const cg = document.createElement('colgroup'); ['4%', '27%', '19%', '3%', '28%', '19%'].forEach(w => { const c = document.createElement('col'); c.style.width = w; cg.appendChild(c); }); tbl.appendChild(cg);   // fixed widths — the # column was ballooning to an equal 1/6 (blank left column)
@@ -1395,12 +1396,16 @@
     const head = el('tr'); head.append(el('th', 'c-n', '#'), el('th', null, 'Title'), el('th', null, 'Artist'), el('th', 'c-sep', ''), el('th', null, 'Work'), el('th', null, 'Writers')); tbl.appendChild(head);
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
     const plan = el('span', 'gt-cons-plan');
+    let unresCursor = 0;   // #363 cycle through the unresolved on each ⚠ click, not always the first
     const updatePlan = () => {
       const n = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked).length;
       plan.textContent = n ? `${n} work${n > 1 ? 's' : ''} to add` : 'nothing resolved'; applyBtn.disabled = !n;
       const uns = rows.filter(r => r._matched && !r.chosen && !r.hasWorkOnPage && !r.linked);
       warn.textContent = uns.length ? `⚠ ${uns.length} unresolved` : ''; warn.className = 'gt-wm-warn' + (uns.length ? ' click' : '');
-      warn.onclick = uns.length ? () => { const r0 = uns[0]; if (r0._wk) wmPicker(r0, r0._wk, draw, updatePlan); } : null;
+      warn.onclick = uns.length ? () => {
+        const r0 = uns[unresCursor % uns.length]; unresCursor++;
+        if (r0 && r0._wk) { try { r0._wk.scrollIntoView({ block: 'center' }); } catch (e) {} wmPicker(r0, r0._wk, draw, updatePlan); }
+      } : null;
     };
     const draw = () => rows.forEach(row => {
       const wkd = row._wk, dot = row._dot, wad = row._wa; if (!wkd) return;

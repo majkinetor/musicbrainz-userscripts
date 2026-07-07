@@ -106,15 +106,15 @@ Each row gets a **confidence dot**:
 | 🔵 blue | **ISRC-confirmed** — a sibling recording with the same ISRC links this work |
 | 🟢 green | **unique title** — the only work with exactly this title |
 | 🟡 yellow | **dominant** — exact title and clearly the most-recorded work, but other same-titled works exist |
-| 🟠 orange | **ambiguous** — several plausible works |
+| 🔴 red | **ambiguous** — several plausible works, often wrong; check it |
 
 Available options:
 
 - **Cutoff** — confidence level (persisted)
-- **⚡ Match** — selects every row at and above the current cutoff
+- **⚡ Match** — selects every row at and above the current cutoff (disabled while matching runs)
 - **✎** (per row) — opens a picker to **search** works (writers + type shown per candidate), **paste a work MBID/URL**, or **＋ create a new work**.
 - **＋ New work for unresolved** — creates a new work (named after the track) for every recording still unmatched
-- **Clear** — removes all work associations in the review table
+- **Clear all** — removes all work associations in the review table (in the ▾ menu next to Match)
 
 **Apply** dispatches all associated works into the relationship editor, where they show up in MB's **pending edits** — the script never submits; you review and **save** yourself.
 
