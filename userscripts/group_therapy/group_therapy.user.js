@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.7.225256
+// @version      2026.7.7.231700
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -168,7 +168,11 @@
     const roleTr = it.closest && it.closest('tr');
     const trackTr = it.closest && it.closest('tr.track');
     const a = it.querySelector('a[href*="/"]');
-    return { pos: posLabel(trackTr), role: pickRoleLabel(roleTr), target: a ? (a.textContent || '').trim() : '' };
+    // #373 a work credit (writer/composer/…) belongs to its WORK, not the track it's nested under — so the
+    // ×-delete blast-radius counts and lists it by work, not by track position.
+    const rc = relClass(it);
+    const pos = (rc && rc.kind === 'work' && rc.work) ? ('“' + (val(rc.work.name) || 'work') + '”') : posLabel(trackTr);
+    return { pos, role: pickRoleLabel(roleTr), target: a ? (a.textContent || '').trim() : '' };
   }
   // fully-detailed blast breakdown: group the group's rels by track, and per track list the varying
   // dimension — the targets (for a role scope), the roles (for a target scope), the role (for both).
