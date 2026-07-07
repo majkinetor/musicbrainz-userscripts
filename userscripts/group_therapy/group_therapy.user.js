@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.7.6.231452
+// @version      2026.7.7.150044
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg
@@ -1011,6 +1011,35 @@
   // session share one entity, so two unmatched same-title tracks don't spawn duplicate works.
   let wmNewSeq = -1000000;
   const wmNewWorks = new Map();
+  // #363 optional params applied to every new work created this session — Type + lyrics language(s), like
+  // MB's own "Batch-add new works" dialog. Both catalogues live on the page (MB.linkedEntities), so there's
+  // no pagination/fetch: cache them once for the searchable combos. Choices are NOT persisted (per maintainer).
+  let _wmTypesCache = null, _wmLangsCache = null;
+  const wmWorkTypes = () => (_wmTypesCache || (_wmTypesCache = Object.values((W.MB.linkedEntities && W.MB.linkedEntities.work_type) || {}).slice().sort((a, b) => a.name.localeCompare(b.name))));
+  const wmLanguages = () => (_wmLangsCache || (_wmLangsCache = Object.values((W.MB.linkedEntities && W.MB.linkedEntities.language) || {}).filter(l => l.frequency > 0 || l.name).sort((a, b) => (b.frequency - a.frequency) || a.name.localeCompare(b.name))));
+  let wmNewType = null;      // work-type id (number) or null
+  let wmNewLangs = [];       // array of MB language objects
+  const wmLangRels = () => wmNewLangs.map(l => ({ language: l, last_updated: null }));   // MB's work.languages shape
+  // #363 attributes + dates that go on the recording→work "recording of" RELATIONSHIP (not the work) —
+  // acappella/cover/demo/instrumental/karaoke/live/medley/partial + begin/end date + ended. Eligible
+  // attributes are read from the performance link type itself, so we track whatever MB currently allows.
+  const wmRelAttrs = new Set();   // selected attribute typeIDs
+  let wmBegin = { year: null, month: null, day: null }, wmEnd = { year: null, month: null, day: null }, wmEnded = false;
+  let _wmPerfAttrsCache = null;
+  const wmPerfAttrs = () => (_wmPerfAttrsCache || (_wmPerfAttrsCache = (() => {
+    const le = W.MB.linkedEntities, lat = le && le.link_attribute_type, perf = le && Object.values(le.link_type || {}).find(t => t.gid === PERF_GID);
+    if (!perf || !perf.attributes || !lat) return [];
+    return Object.keys(perf.attributes).map(k => { const id = perf.attributes[k].type_id || +k; return { typeID: id, name: lat[id] && lat[id].name }; }).filter(a => a.name).sort((a, b) => a.name.localeCompare(b.name));
+  })()));
+  const wmHasDates = () => !!(wmBegin.year || wmBegin.month || wmBegin.day || wmEnd.year || wmEnd.month || wmEnd.day || wmEnded);
+  // the attribute tree + dates object to hand dispatchRelationship for a recording→work rel
+  const wmRelExtras = () => ({
+    attrs: wmRelAttrs.size ? buildAttrTree([...wmRelAttrs].map(id => ({ typeID: id }))) : null,
+    dates: wmHasDates() ? { begin_date: wmBegin, end_date: wmEnd, ended: wmEnded } : null,
+  });
+  // push the current Type/language choice onto every new work already staged (params can change after some
+  // were created — MB reads these off the entity on submit)
+  function wmApplyNewParams() { wmNewWorks.forEach(w => { w.typeID = wmNewType; w.languages = wmLangRels(); }); }
   function wmMakeNewWork(title) {
     const key = (title || '').normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim();
     if (key && wmNewWorks.has(key)) return wmNewWorks.get(key);
@@ -1018,16 +1047,81 @@
     // negative id + empty-string gid, every field the editor reads present with an empty default, and the
     // `_fromBatchCreateWorksDialog` flag. That flag is what marks it as a to-be-created work — without it MB
     // rejected the target ("must select … target entity") and threw loading its relationships ("e is null").
-    // MB creates the work for real on submit. `_gtNew` is our own UI flag. (#363 follow-up)
+    // typeID + languages carry the optional #363 params. MB creates the work for real on submit. (#363)
     const w = {
       entityType: 'work', id: wmNewSeq--, gid: '',
-      name: title || '[untitled]', comment: '', typeID: null,
-      languages: [], iswcs: [], attributes: [],
+      name: title || '[untitled]', comment: '', typeID: wmNewType,
+      languages: wmLangRels(), iswcs: [], attributes: [],
       artists: [], other_artists: [], authors: [], editsPending: false, last_updated: null,
       _fromBatchCreateWorksDialog: true, _gtNew: true,
     };
     if (key) wmNewWorks.set(key, w);
     return w;
+  }
+  // #363 the "New work options" controls in the matcher toolbar — a Type <select> and a searchable,
+  // multi-select Lyrics-language combo (common languages first). Both catalogues are already on the page.
+  function wmNewParamsUi() {
+    const wrap = el('div', 'gt-wm-nwp');
+    const typeSel = el('select', 'gt-wm-nwp-type'); typeSel.title = 'Work type applied to every new work';
+    typeSel.appendChild(new Option('— type —', ''));
+    wmWorkTypes().forEach(t => { const o = new Option(t.name, String(t.id)); if (t.id === wmNewType) o.selected = true; typeSel.appendChild(o); });
+    typeSel.onchange = () => { wmNewType = typeSel.value ? +typeSel.value : null; wmApplyNewParams(); };
+    wrap.appendChild(typeSel);
+    const lc = el('div', 'gt-wm-nwp-lang'); lc.title = 'Lyrics language(s) applied to every new work';
+    const chips = el('span', 'gt-wm-nwp-chips'), inp = el('input', 'gt-wm-nwp-inp');
+    inp.placeholder = 'lyrics language…'; inp.spellcheck = false;
+    let drop = null;
+    const onDown = e => { if (!lc.contains(e.target)) closeDrop(); };
+    function closeDrop() { if (drop) { drop.remove(); drop = null; document.removeEventListener('mousedown', onDown, true); } }
+    function renderChips() {
+      chips.textContent = '';
+      wmNewLangs.forEach(l => { const c = el('span', 'gt-wm-nwp-chip', l.name); const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove'; x.onclick = () => { wmNewLangs = wmNewLangs.filter(o => o !== l); wmApplyNewParams(); renderChips(); }; c.appendChild(x); chips.appendChild(c); });
+    }
+    function showDrop() {
+      closeDrop();
+      const q = inp.value.trim().toLowerCase(), picked = new Set(wmNewLangs.map(l => l.id));
+      const list = wmLanguages().filter(l => !picked.has(l.id) && (!q || l.name.toLowerCase().includes(q)));
+      if (!list.length) return;
+      drop = el('div', 'gt-wm-nwp-drop');
+      list.slice(0, 50).forEach(l => { const it = el('div', 'gt-wm-nwp-opt', l.name); it.onmousedown = e => { e.preventDefault(); wmNewLangs.push(l); wmApplyNewParams(); renderChips(); inp.value = ''; showDrop(); inp.focus(); }; drop.appendChild(it); });
+      lc.appendChild(drop); document.addEventListener('mousedown', onDown, true);
+    }
+    inp.oninput = showDrop; inp.onfocus = showDrop;
+    inp.onkeydown = e => { if (e.key === 'Escape' && drop) { closeDrop(); e.stopPropagation(); } };
+    lc.append(chips, inp); wrap.appendChild(lc); renderChips();
+    const more = el('button', 'gt-wm-nwp-more', '⋯'); more.type = 'button'; more.title = 'recording-of relationship options — attributes (live, cover…) + dates';
+    more.onclick = () => wmRelOptsPopover(more); wrap.appendChild(more);
+    return wrap;
+  }
+  // #363 the recording-of relationship options popover (opened by the ⋯ button): the performance
+  // attributes as checkboxes + begin/end date + ended. These go on the recording→work rel, not the work.
+  let wmRoPop = null;
+  function closeRoPop() { if (wmRoPop) { wmRoPop.remove(); wmRoPop = null; document.removeEventListener('mousedown', wmRoDown, true); document.removeEventListener('keydown', wmRoKey, true); } }
+  function wmRoDown(e) { if (wmRoPop && !wmRoPop.contains(e.target) && !e.target.classList.contains('gt-wm-nwp-more')) closeRoPop(); }
+  function wmRoKey(e) { if (e.key === 'Escape' && wmRoPop) { e.stopPropagation(); closeRoPop(); } }
+  function wmRelOptsPopover(anchor) {
+    if (wmRoPop) { closeRoPop(); return; }
+    const pop = el('div', 'gt-wm-relopts'); wmRoPop = pop;
+    pop.appendChild(el('div', 'gt-wm-ro-hd', 'recording of'));
+    wmPerfAttrs().forEach(a => {
+      const lb = el('label', 'gt-wm-ro-cb'); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = wmRelAttrs.has(a.typeID);
+      cb.onchange = () => { if (cb.checked) wmRelAttrs.add(a.typeID); else wmRelAttrs.delete(a.typeID); };
+      lb.append(cb, el('span', null, a.name)); pop.appendChild(lb);
+    });
+    const mkDate = (label, obj) => {
+      const row = el('div', 'gt-wm-ro-date'); row.appendChild(el('span', 'gt-wm-ro-dl', label));
+      const mk = (ph, key, cls) => { const i = el('input', cls); i.type = 'text'; i.placeholder = ph; i.value = obj[key] || ''; i.oninput = () => { const v = parseInt(i.value, 10); obj[key] = Number.isFinite(v) ? v : null; }; return i; };
+      row.append(mk('YYYY', 'year', 'gt-wm-ro-y'), el('span', 'gt-wm-ro-sep', '‑'), mk('MM', 'month', 'gt-wm-ro-m'), el('span', 'gt-wm-ro-sep', '‑'), mk('DD', 'day', 'gt-wm-ro-d')); return row;
+    };
+    pop.appendChild(mkDate('Begin date', wmBegin));
+    pop.appendChild(mkDate('End date', wmEnd));
+    const endedL = el('label', 'gt-wm-ro-cb'); const endedCb = document.createElement('input'); endedCb.type = 'checkbox'; endedCb.checked = wmEnded;
+    endedCb.onchange = () => { wmEnded = endedCb.checked; }; endedL.append(endedCb, el('span', null, 'This relationship has ended.')); pop.appendChild(endedL);
+    document.body.appendChild(pop);
+    const r = anchor.getBoundingClientRect();
+    pop.style.left = Math.min(r.left, window.innerWidth - pop.offsetWidth - 8) + 'px';
+    pop.style.top = (r.bottom + 4) + 'px';
+    setTimeout(() => { document.addEventListener('mousedown', wmRoDown, true); document.addEventListener('keydown', wmRoKey, true); }, 0);
   }
   // proactively space WS2 calls so a long tracklist doesn't burst past the ~1 req/s limit and drop the
   // tail to 503s (which surfaced as false "no match"). Serialised through a single timestamp.
@@ -1178,12 +1272,30 @@
       + '.gt-wm-rw{color:#777;font-size:12px;margin-left:4px}.gt-wm-sub{color:#6b7280;font-size:11px;margin:-2px 0 5px 2px}'
       + '.gt-wm-open{margin-left:6px;color:#2c5d9b;text-decoration:none;font-size:12px}.gt-wm-open:hover{text-decoration:underline}'
       + '.gt-wm-cur{margin:2px 0 6px;padding:4px 7px;background:#f6f3fc;border-radius:5px;font-size:12px}.gt-wm-cur-l{color:#777}'
-      + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}';
+      + '.gt-wm-new{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:5px;border:1px dashed rgba(127,127,127,.5);border-radius:5px;background:transparent;color:inherit;cursor:pointer}.gt-wm-new:hover{background:rgba(127,127,127,.15)}'
+      // #363 New-work params (Type + searchable lyrics-language combo) in the footer
+      + '.gt-wm-nwp{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#555}'
+      + '.gt-wm-nwp-more{padding:2px 6px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;color:#6f42c1;cursor:pointer;font:13px Arial;line-height:1}.gt-wm-nwp-more:hover{background:#f0ecfa}'
+      + '.gt-wm-nwp-type{font:12px Arial;padding:2px 4px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;max-width:130px}'
+      + '.gt-wm-nwp-lang{position:relative;display:inline-flex;align-items:center;flex-wrap:wrap;gap:3px;min-width:120px;max-width:240px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;padding:2px 4px}'
+      + '.gt-wm-nwp-chip{display:inline-flex;align-items:center;gap:3px;background:#efeaf9;color:#5b4a86;border-radius:9px;padding:1px 4px 1px 7px;font-size:11px;white-space:nowrap}'
+      + '.gt-wm-nwp-x{cursor:pointer;color:#8a7fb0;font-weight:700;line-height:1}.gt-wm-nwp-x:hover{color:#c0392b}'
+      + '.gt-wm-nwp-inp{border:none;outline:none;background:transparent;font:12px Arial;min-width:60px;flex:1 1 60px}'
+      + '.gt-wm-nwp-drop{position:absolute;left:0;top:100%;z-index:5;margin-top:2px;max-height:220px;overflow:auto;min-width:160px;background:#fff;border:1px solid #cfcfcf;border-radius:5px;box-shadow:0 4px 14px rgba(0,0,0,.15)}'
+      + '.gt-wm-nwp-opt{padding:4px 9px;cursor:pointer;font-size:12px;white-space:nowrap}.gt-wm-nwp-opt:hover{background:#f0ecfa}'
+      // #363 recording-of relationship options popover
+      + '.gt-wm-relopts{position:fixed;z-index:2147483647;background:#fff;border:1px solid #cbb9ea;border-radius:6px;box-shadow:0 6px 20px rgba(40,20,80,.22);padding:8px 12px;font-size:13px;color:#333;min-width:190px}'
+      + '.gt-wm-ro-hd{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8a8496;margin-bottom:5px}'
+      + '.gt-wm-ro-cb{display:flex;align-items:center;gap:6px;padding:2px 0;cursor:pointer}.gt-wm-ro-cb input{margin:0}'
+      + '.gt-wm-ro-date{display:flex;align-items:center;gap:3px;margin-top:5px}'
+      + '.gt-wm-ro-dl{width:66px;color:#666;font-size:12px;text-align:right;margin-right:4px}'
+      + '.gt-wm-ro-y{width:44px}.gt-wm-ro-m,.gt-wm-ro-d{width:30px}.gt-wm-relopts input[type=text]{border:1px solid #cfcfcf;border-radius:3px;padding:2px 3px;font:12px Arial;text-align:center}'
+      + '.gt-wm-ro-sep{color:#999}';
     document.head.appendChild(s);
   }
   let wmEl = null;
   function onWmKey(e) { if (e.key === 'Escape') { if (popEl) return; e.stopPropagation(); closeWorkMatch(); } }   // let an open picker take Escape first
-  function closeWorkMatch() { if (wmEl) { wmEl.remove(); wmEl = null; document.removeEventListener('keydown', onWmKey, true); } }
+  function closeWorkMatch() { closeRoPop(); if (wmEl) { wmEl.remove(); wmEl = null; document.removeEventListener('keydown', onWmKey, true); } }
   async function openWorkMatch() {
     closeWorkMatch(); closePopover(); wmStyle();
     const re = RE(); if (!re) { toast('Open the relationship editor first'); return; }
@@ -1238,7 +1350,10 @@
     paintChip();
     const warn = el('span', 'gt-wm-warn');
     const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.title = 'resolve every unresolved track whose best match is at/above the cutoff';
-    tb.append(amstatus, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn); body.appendChild(tb);
+    const matchCaret = el('button', 'gt-wm-caret', '▾'); matchCaret.type = 'button'; matchCaret.title = 'more actions';
+    matchCaret.onclick = () => wmFloatMenu(matchCaret, [{ label: 'Clear all matches', run: () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); } }]);
+    // #363 new-work options on the left; matched status + cutoff + Match (with a caret menu for Clear) on the right
+    tb.append(wmNewParamsUi(), amstatus, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn, matchCaret); body.appendChild(tb);
     const setProgress = (d, n) => { amstatus.textContent = n ? `matching ${d}/${n}…` : (d ? `matched ${d} track${d > 1 ? 's' : ''}` : ''); };
     // ── table ──
     const tbl = el('table', 'gt-wm-tbl');
@@ -1299,10 +1414,8 @@
     chip.onclick = () => wmFloatMenu(chip, WM_LVL_BY_RANK.map(lvl => ({ label: lvl, dot: WM_LEVEL[lvl].c, sel: WM_RANK[lvl] === wmCutoff, run: () => { wmCutoff = WM_RANK[lvl]; try { GM_setValue('gt-wm-cutoff', wmCutoff); } catch (e) {} paintChip(); applyCutoff(); } })));
     const newAllBtn = el('button', 'gt-cons-btn', '＋ New work for unresolved'); newAllBtn.type = 'button'; newAllBtn.title = 'Create a new work (named after the track) for every recording still unresolved — same-title tracks share one';
     newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && r._matched && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); };
-    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.title = 'Clear every match';
-    clearBtn.onclick = () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); };
     applyBtn.onclick = async () => { const n = await wmApply(rows, null); if (n > 0) closeWorkMatch(); };   // close the popup once staged (#363 follow-up)
-    foot.append(newAllBtn, clearBtn, plan, applyBtn);
+    foot.append(newAllBtn, plan, applyBtn);   // #363 Clear moved to the Match caret menu; new-work options moved to the toolbar
     draw(); updatePlan();
     return { draw, updatePlan, setProgress };
   }
@@ -1366,13 +1479,14 @@
     if (!todo.length) { toast('Nothing resolved to apply'); return; }
     toast(`Linking ${todo.length} work${todo.length > 1 ? 's' : ''}…`);
     let ok = 0, fail = 0;
+    const extras = wmRelExtras();   // #363 recording-of attributes + dates, applied to every staged rel
     for (const row of todo) {
       try {
         // existing work: fetch its internal id (the editor needs it). New work: dispatch the synthetic
         // entity as-is — MB creates it on submit, exactly like a natively-added new work.
         const workEnt = row.chosen._gtNew ? row.chosen : await wmJson('/ws/js/entity/' + row.chosen.gid);
         if (!workEnt || workEnt.id == null) { fail++; continue; }
-        dispatchRelationship(re, row.rec, workEnt, ltId, '', null, null);
+        dispatchRelationship(re, row.rec, workEnt, ltId, '', extras.attrs, extras.dates);
         row.linked = true; row.chosen = null; ok++;
       } catch (e) { fail++; }
     }
